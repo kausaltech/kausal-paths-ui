@@ -5,7 +5,7 @@ const localeSubpaths = {
 }
 const path = require('path')
 
-const DEFAULT_GRAPHQL_API_URL = 'http://localhost:5000/graphql';
+const DEFAULT_GRAPHQL_API_URL = 'https://api.paths.kausal.tech/v1/graphql/';
 
 module.exports = {
   //rewrites: async () => nextI18NextRewrites(localeSubpaths),

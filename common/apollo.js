@@ -17,7 +17,6 @@ function createApolloClient() {
     ssrMode: ssrMode,
     link: new HttpLink({
       uri: uri,
-      credentials: 'include',
     }),
     cache: new InMemoryCache({
       typePolicies: {
