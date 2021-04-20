@@ -49,6 +49,8 @@ export default function Home() {
   const [activeYear, setActiveYear] = useState(2030);
   const [activeSector, setActiveSector] = useState(undefined);
 
+  const unit = 'kt CO₂e';
+
   if (loading) {
     return <Spinner style={{ width: '3rem', height: '3rem' }} />
   }
@@ -83,13 +85,19 @@ export default function Home() {
           <Col>
             <EmissionsCard
               date={activeYear}
-              unit="kt CO₂e"
+              unit={unit}
               sector={rootSector}
               subSectors={subSectors}
               state="active"
-            ></EmissionsCard>
+            />
           </Col>
         </Row>
+        <EmissionsCardSet
+          sectors={data.page.emissionSectors}
+          rootSector={rootSector.id}
+          unit={unit}
+          date={activeYear}
+        />
       </Container>
     </Layout>
   )

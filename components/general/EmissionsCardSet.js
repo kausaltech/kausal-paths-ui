@@ -4,37 +4,26 @@ import styled from 'styled-components';
 import EmissionsCard from './EmissionsCard';
 
 const EmissionsCardSet = (props) => {
-  const { cards } = props;
-  const goal = 2030;
+  const { sectors, rootSector, unit, date  } = props;
+
+  //            sectors={data.page.emissionSectors}
+  //rootSector={rootSector.id}
+  //unit={unit}
+  //date={activeYear}
+
+  const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector);
 
   return (
     <div>
       <Row>
-        { cards.map((card, indx) => (
-          <Col key={card.id} sm="3">
+        { cardSectors.map((sector, indx) => (
+          <Col key={sector.id} sm="3">
             <EmissionsCard
-              date={goal}
-              unit="kt CO₂e"
-              card={card}
-              state="active"
-            />
-          </Col>
-        ))}
-        { cards.map((card, indx) => (
-          <Col key={card.id} sm="3">
-            <EmissionsCard
-              date={goal}
-              unit="kt CO₂e"
-              card={card}
-            />
-          </Col>
-        ))}
-        { cards.map((card, indx) => (
-          <Col key={card.id} sm="3">
-            <EmissionsCard
-              date={goal}
-              unit="kt CO₂e"
-              card={card}
+              date={date}
+              unit={unit}
+              sector={sector}
+              subSectors={sectors.filter((sector) => sector.parent?.id === sector.id)}
+              state="inactive"
             />
           </Col>
         ))}
