@@ -44,7 +44,7 @@ const TabButton = styled(Button)`
 const MainValue = styled.div`
   text-align: right;
   font-size: 2rem;
-  line-height: 1;
+  line-height: 1.2;
   font-weight: 700;
 `;
 
@@ -57,7 +57,7 @@ const EmissionsCard = (props) => {
   const status = state !== 'active' ?  'inactive' : 'active';
 
   const baseEmissions = sector.metric.historicalValues[0];
-  const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date);
+  const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date) || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date) ;
   const change =  -Math.round(((baseEmissions.value-goalEmissions.value)/baseEmissions.value)*100);
 
   return (
@@ -67,7 +67,7 @@ const EmissionsCard = (props) => {
           <Name>{sector.name}</Name>
         </Title>
         <Status>
-          {change} % ({baseEmissions.year})
+          {change}%
         </Status>
       </Header>
       <Body>
@@ -80,7 +80,7 @@ const EmissionsCard = (props) => {
         <div />
         <MainValue>
           <MainUnit>{ date }</MainUnit>
-          {goalEmissions.value}
+          {goalEmissions.value.toLocaleString('fi-FI')}
           <MainUnit>{unit}</MainUnit>
         </MainValue>
       </Body>
