@@ -89,6 +89,7 @@ export default function Home() {
               sector={rootSector}
               subSectors={subSectors}
               state="active"
+              onHover={()=>undefined}
             />
           </Col>
         </Row>

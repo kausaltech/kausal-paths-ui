@@ -13,6 +13,21 @@ const Title = styled.div`
 
 `;
 
+const CardAnchor = styled.a`
+  &:hover {
+    text-decoration: none;
+  }
+  &::after {
+    content: '';
+    position: absolute; 
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    cursor: pointer;
+  }
+`;
+
 const Name = styled.h2`
   margin-bottom: 0;
   font-size: 1rem;
@@ -54,7 +69,7 @@ const MainUnit = styled.div`
 `;
 
 const EmissionsCard = (props) => {
-  const { date, unit, sector, subSectors, state } = props;
+  const { date, unit, sector, subSectors, state, hovered, onHover } = props;
   const status = state !== 'active' ?  'inactive' : 'active';
 
   const baseEmissions = sector.metric.historicalValues[0];
@@ -62,10 +77,15 @@ const EmissionsCard = (props) => {
   const change =  -Math.round(((baseEmissions.value-goalEmissions.value)/baseEmissions.value)*100);
 
   return (
-    <DashCard state={status}>
+    <DashCard state={status} hovered={hovered}>
       <Header>
         <Title>
-          <Name>{sector.name}</Name>
+          <CardAnchor
+            onMouseEnter={() => onHover(sector.id)}
+            onMouseLeave={() => onHover(undefined)}
+          >
+            <Name>{sector.name}</Name>
+          </CardAnchor>
         </Title>
         <Status>
           {change}%
