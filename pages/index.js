@@ -10,28 +10,29 @@ const GET_PAGE_CONTENT = gql`
 {
   page(path: "/") {
     id
-    path
     name
-    cards {
-      id
-      name
-      metrics {
+    ... on EmissionPageNode {
+      emissionSectors {
         id
         name
-        historicalValues {
-          year
-          value
+        color
+        parent {
+          id
         }
-        forecastValues {
-          year
-          value
+        metric {
+          forecastValues {
+            year
+            value
+          }
+          baselineForecastValues {
+            year
+            value
+          }
+          historicalValues {
+            year
+            value
+          }
         }
-      }
-      upstreamCards {
-        id
-      }
-      downstreamCards {
-        id
       }
     }
   }
@@ -39,19 +40,17 @@ const GET_PAGE_CONTENT = gql`
 `;
 export default function Home() {
   const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
-  let displayData = undefined;
+  const observationYear = 2030;
 
   if (loading) {
     return <Spinner style={{ width: '3rem', height: '3rem' }} />
   }
   if (error) {
-    console.log(error);
-  }
-  if (data) {
-    displayData = data;
+    return <div>{error}</div>
   }
 
-  const mainCard = displayData.page.cards?.find((card) => card.downstreamCards?.length === 0);
+  const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
+  const subSectors = data?.page.emissionSectors.filter((sector) => sector.parent?.id === rootSector.id);
 
   return (
     <Layout>
@@ -59,18 +58,16 @@ export default function Home() {
         <title>Kausal Paths</title>
       </Head>
       <Container fluid className="mt-4">
-        <h1>{displayData.page.name}</h1>
+        <h1>{data?.page.name}</h1>
         <Row>
           <Col>
             <EmissionsCard
-              date="2030"
+              date={observationYear}
               unit="kt CO₂e"
-              card={mainCard}
+              sector={rootSector}
+              subSectors={subSectors}
               state="active"
             ></EmissionsCard>
-            <EmissionsCardSet
-              cards={displayData.page.cards?.filter((card) => card.downstreamCards.length > 0)}
-            />
           </Col>
         </Row>
       </Container>

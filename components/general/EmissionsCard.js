@@ -52,36 +52,22 @@ const MainUnit = styled.div`
   font-size: 0.8rem;
 `;
 
-const getTotalEmissions = (card, goal) => {
-  let totalEmissions = 0;
-  card.metrics.forEach((metric) => {
-    totalEmissions += metric.forecastValues.find((metric) => metric.year === parseInt(goal))?.value;
-  });
-  return totalEmissions;
-}
-
-const getChange = (card, goal) => {
-  let currentEmissions = 0;
-  card.metrics.forEach((metric) => {
-    currentEmissions += metric.historicalValues[metric.historicalValues.length-1].value;
-  });
-  const totalEmissions = getTotalEmissions(card, goal);
-  return -Math.round(((currentEmissions-totalEmissions)/currentEmissions)*100);
-}
-
 const EmissionsCard = (props) => {
-  const { unit, card, date, state  } = props;
+  const { date, unit, sector, subSectors, state } = props;
   const status = state !== 'active' ?  'inactive' : 'active';
+
+  const baseEmissions = sector.metric.historicalValues[0];
+  const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date);
+  const change =  -Math.round(((baseEmissions.value-goalEmissions.value)/baseEmissions.value)*100);
 
   return (
     <DashCard state={status}>
       <Header>
         <Title>
-          <Name>{card.name}</Name>
-          <Date>{date}</Date>
+          <Name>{sector.name}</Name>
         </Title>
         <Status>
-          {getChange(card, date)} %
+          {change} % ({baseEmissions.year})
         </Status>
       </Header>
       <Body>
@@ -93,7 +79,8 @@ const EmissionsCard = (props) => {
         }
         <div />
         <MainValue>
-          {getTotalEmissions(card, date)}
+          <MainUnit>{ date }</MainUnit>
+          {goalEmissions.value}
           <MainUnit>{unit}</MainUnit>
         </MainValue>
       </Body>
