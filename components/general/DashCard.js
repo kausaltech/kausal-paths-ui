@@ -6,6 +6,11 @@ import styled from 'styled-components';
 
 const CardWithState = styled(Card)`
 
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
   &.inactive {
     background-color: #ccc;
   }
