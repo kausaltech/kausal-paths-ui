@@ -6,7 +6,6 @@ import styled from 'styled-components';
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid #999;
 `;
 
 const Title = styled.div`
@@ -42,6 +41,7 @@ const Status = styled.div`
   text-align: right;
   white-space: nowrap;
   color: #999999;
+  font-size: 0.8rem;
   font-weight: 700;
 `;
 
@@ -69,7 +69,7 @@ const MainUnit = styled.div`
 `;
 
 const EmissionsCard = (props) => {
-  const { date, unit, sector, subSectors, state, hovered, onHover } = props;
+  const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active } = props;
   const status = state !== 'active' ?  'inactive' : 'active';
 
   const baseEmissions = sector.metric.historicalValues[0];
@@ -77,19 +77,17 @@ const EmissionsCard = (props) => {
   const change =  -Math.round(((baseEmissions.value-goalEmissions.value)/baseEmissions.value)*100);
 
   return (
-    <DashCard state={status} hovered={hovered}>
+    <DashCard state={status} hovered={hovered} active={active}>
       <Header>
         <Title>
           <CardAnchor
             onMouseEnter={() => onHover(sector.id)}
             onMouseLeave={() => onHover(undefined)}
+            onClick={() => handleClick(active ? undefined : sector.id)}
           >
-            <Name>{sector.name}</Name>
+            <Name>{sector.name} {date}</Name>
           </CardAnchor>
         </Title>
-        <Status>
-          {change}%
-        </Status>
       </Header>
       <Body>
         { state === 'active' &&
@@ -100,7 +98,9 @@ const EmissionsCard = (props) => {
         }
         <div />
         <MainValue>
-          <MainUnit>{ date }</MainUnit>
+          <Status>
+            {change}% ({baseEmissions.year})
+          </Status>
           {goalEmissions.value.toLocaleString('fi-FI')}
           <MainUnit>{unit}</MainUnit>
         </MainValue>

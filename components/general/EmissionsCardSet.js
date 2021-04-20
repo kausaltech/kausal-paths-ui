@@ -11,7 +11,7 @@ const CardDeck = styled.div`
 
 const CardContainer = styled.div`  
   flex: 0 0 240px;
-  margin: 0 .5rem;
+  margin: 0 .5rem .5rem 0;
 
   .card {
     height: 100%;
@@ -32,7 +32,11 @@ const Segment = styled.div`
   height: 1.5rem;
 
   &.hovered {
-    border-color: ${(props) => props.theme.graphColors.grey050};
+    border-color: ${(props) => props.theme.graphColors.grey070};
+  }
+
+  &.active {
+    border-color: ${(props) => props.theme.themeColors.dark};
   }
 `;
 
@@ -40,7 +44,7 @@ const getSectorValue = (sector, date) => {
   return sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value;
 }
 const EmissionsBar = (props) => {
-  const { sectors, date, hovered, onHover } = props;
+  const { sectors, date, hovered, onHover, handleClick, activeSector } = props;
 
   const sectorsTotal = _.sum(sectors.map((sector) => getSectorValue(sector, date)));
   return (
@@ -52,9 +56,10 @@ const EmissionsBar = (props) => {
             width: `${(getSectorValue(sector,date)/sectorsTotal)*100}%`,
             backgroundColor: sector.color,
           }}
-          className={hovered === sector.id && 'hovered' }
+          className={`${hovered === sector.id ? 'hovered' : ''} ${activeSector === sector.id ? 'active' : ''}` }
           onMouseEnter={() => onHover(sector.id)}
           onMouseLeave={() => onHover(undefined)}
+          onClick={() => handleClick(activeSector === sector.id ? undefined : sector.id)}
         />
       ))}
     </Bar>
@@ -65,15 +70,27 @@ const EmissionsCardSet = (props) => {
   const { sectors, rootSector, unit, date  } = props;
 
   const [hoveredSector, setHoveredSector] = useState(undefined);
+  const [activeSector, setActiveSector] = useState(undefined);
   const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector);
 
   const handleHover = (evt) => {
     setHoveredSector(evt);
   }
 
+  const handleClick = (evt) => {
+    setActiveSector(evt);
+  }
+
   return (
     <div>
-      <EmissionsBar sectors={cardSectors} date={date} hovered={hoveredSector} onHover={handleHover}/>
+      <EmissionsBar
+        sectors={cardSectors}
+        date={date}
+        hovered={hoveredSector} 
+        onHover={handleHover}
+        handleClick={handleClick}
+        activeSector={activeSector}
+      />
       <CardDeck>
         { cardSectors.map((sector, indx) => (
           <CardContainer key={sector.id}>
@@ -84,7 +101,9 @@ const EmissionsCardSet = (props) => {
               subSectors={sectors.filter((sector) => sector.parent?.id === sector.id)}
               state="inactive"
               hovered={hoveredSector === sector.id}
+              active={activeSector === sector.id}
               onHover={handleHover}
+              handleClick={handleClick}
             />
           </CardContainer>
         ))}
