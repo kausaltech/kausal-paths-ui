@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
@@ -104,6 +105,8 @@ export default function Home() {
   )
 }
 
-Home.getInitialProps = async () => ({
-  namespacesRequired: ['common'],
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...await serverSideTranslations(locale, ['common']),
+  }
 })

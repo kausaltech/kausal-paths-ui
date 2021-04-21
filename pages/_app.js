@@ -7,7 +7,7 @@ import { Spinner } from 'reactstrap';
 
 import { useApollo } from 'common/apollo';
 import AreaContext from 'common/area';
-// import { appWithTranslation } from '../i18n';
+import { appWithTranslation } from 'next-i18next';
 
 
 const QUERY = gql`
@@ -49,5 +49,4 @@ PathsApp.getInitialProps = async (appContext) => {
   return { ...appProps }
 }
 
-// export default appWithTranslation(PathsApp)
-export default PathsApp
+export default appWithTranslation(PathsApp)

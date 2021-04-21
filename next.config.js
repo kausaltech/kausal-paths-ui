@@ -1,14 +1,14 @@
-//const { nextI18NextRewrites } = require('next-i18next/rewrites')
+const { i18n } = require('./next-i18next.config')
+
 const localeSubpaths = {
   en: 'en',
   fi: 'fi',
 }
 const path = require('path')
 
-const DEFAULT_GRAPHQL_API_URL = 'https://api.paths.kausal.tech/v1/graphql/';
+const DEFAULT_GRAPHQL_API_URL = process.env.DEFAULT_GRAPHQL_API_URL || 'https://api.paths.kausal.tech/v1/graphql/';
 
 module.exports = {
-  //rewrites: async () => nextI18NextRewrites(localeSubpaths),
   serverRuntimeConfig: {
     graphqlUrl: process.env.SERVER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
   },
@@ -19,4 +19,8 @@ module.exports = {
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
+  future: {
+    webpack5: true,
+  },
+  i18n,
 }
