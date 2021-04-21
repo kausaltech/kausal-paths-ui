@@ -9,7 +9,8 @@ const Header = styled.div`
 `;
 
 const Title = styled.div`
-
+  // border-left: 6px solid ${(props) => props.color};
+  // padding-left: 6px;
 `;
 
 const CardAnchor = styled.a`
@@ -29,18 +30,16 @@ const CardAnchor = styled.a`
 
 const Name = styled.h2`
   margin-bottom: 0;
-  font-size: 1rem;
+  font-size: 0.8rem;
 `;
 
 const Date = styled.p`
   margin-bottom: 0;
-  color: #333333;
 `;
 
 const Status = styled.div`
   text-align: right;
   white-space: nowrap;
-  color: #999999;
   font-size: 0.8rem;
   font-weight: 700;
 `;
@@ -59,7 +58,7 @@ const TabButton = styled(Button)`
 
 const MainValue = styled.div`
   text-align: right;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   line-height: 1.2;
   font-weight: 700;
 `;
@@ -69,17 +68,18 @@ const MainUnit = styled.div`
 `;
 
 const EmissionsCard = (props) => {
-  const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active } = props;
+  const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active, color } = props;
   const status = state !== 'active' ?  'inactive' : 'active';
 
   const baseEmissions = sector.metric.historicalValues[0];
-  const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date) || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date);
-  const change =  -Math.round(((baseEmissions.value-goalEmissions.value)/baseEmissions.value)*100);
+  const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)
+    || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date);
+  const change =  -Math.round(((baseEmissions.value-goalEmissions?.value)/baseEmissions.value)*100);
 
   return (
-    <DashCard state={status} hovered={hovered} active={active}>
+    <DashCard state={status} hovered={hovered} active={active} color={color}>
       <Header>
-        <Title>
+        <Title color={color}>
           <CardAnchor
             onMouseEnter={() => onHover(sector.id)}
             onMouseLeave={() => onHover(undefined)}
@@ -92,16 +92,16 @@ const EmissionsCard = (props) => {
       <Body>
         { state === 'active' &&
           <ButtonGroup>
-            <TabButton outline color="dark"><BarChartFill /></TabButton>
-            <TabButton outline color="dark"><InfoSquare /></TabButton>
+            <TabButton outline color="info"><BarChartFill /></TabButton>
+            <TabButton outline color="info"><InfoSquare /></TabButton>
           </ButtonGroup>
         }
         <div />
         <MainValue>
           <Status>
-            {change}% ({baseEmissions.year})
+            {change}%
           </Status>
-          {goalEmissions.value.toLocaleString('fi-FI')}
+          {goalEmissions?.value.toLocaleString('fi-FI')}
           <MainUnit>{unit}</MainUnit>
         </MainValue>
       </Body>

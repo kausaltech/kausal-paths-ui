@@ -6,7 +6,7 @@ const PageContainer = styled.div`
   display: flex;
   width: 100%;
   height: 100vh;
-  background-color: ${(props) => props.theme.themeColors.light};
+  background-color: ${(props) => props.theme.graphColors.grey030};
 
   .side-wrapper {
     flex-grow: 1;
@@ -28,9 +28,6 @@ const Layout = ({ children }) => {
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <PageContainer>
-      <div className="side-wrapper">
-        <SideBarNav />
-      </div>
       <main className="main">
         {children}
       </main>

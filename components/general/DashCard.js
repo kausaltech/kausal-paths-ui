@@ -13,23 +13,54 @@ const CardWithState = styled(Card)`
     justify-content: space-between;
   }
   &.inactive {
-    background-color: ${(props) => props.theme.themeColors.white};
+    color: ${(props) => props.theme.graphColors.grey050};
+    background-color: ${(props) => props.theme.themeColors.light};
+
+    h2 {
+      color: ${(props) => props.theme.graphColors.grey050};
+    }
   }
 
   &.hovered {
-    border: 2px solid ${(props) => props.theme.graphColors.grey050};
+    color: ${(props) => props.theme.graphColors.grey090};
+    background-color: ${(props) => props.theme.themeColors.white};
+    border-color: ${(props) => props.color};
+    
+    h2 {
+      color: ${(props) => props.theme.graphColors.grey070};
+    }
   }
 
   &.active {
-    border: 2px solid ${(props) => props.theme.graphColors.grey070};
+    position: relative;
+    color: ${(props) => props.theme.graphColors.grey090};
+    background-color: ${(props) => props.theme.themeColors.white};
+    border-color: ${(props) => props.color};
+    border-bottom: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+
+    &::after {
+      position: absolute;
+      z-index: 500;
+      content: '';
+      width: 100%;
+
+      background-color: #fff;
+    }
+  
+    h2 {
+      color: ${(props) => props.theme.graphColors.grey090};
+    }
   }
 `;
 
 const DashCard = (props) => {
-  const { children, state, hovered, active } = props;
+  const { children, state, hovered, active, color } = props;
   return (
     <CardWithState
-      className={`mb-4 ${state} ${hovered ? 'hovered' : ''}  ${active ? 'active' : ''}`}
+      className={`${state} ${hovered ? 'hovered' : ''}  ${active ? 'active' : ''}`}
+      color={color}
     >
       <CardBody>
         { children }

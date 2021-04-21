@@ -10,6 +10,10 @@ import EmissionsCardSet from 'components/general/EmissionsCardSet';
 
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
+
+  h1 {
+    font-size: 1.5rem;
+  }
 `;
 
 const GET_PAGE_CONTENT = gql`
@@ -75,11 +79,11 @@ export default function Home() {
         <PageHeader>
           <h1>{data?.page.name}</h1>
           <ButtonGroup>
-            <Button size="sm" color="primary" onClick={() => setActiveYear(baseYear)} active={activeYear === baseYear}>{baseYear}</Button>
-            <Button size="sm" color="primary" disabled> - </Button>
-            <Button size="sm" color="primary" onClick={() => setActiveYear(currentYear)} active={activeYear === currentYear}>{currentYear}</Button>
-            <Button size="sm" color="primary" disabled> - </Button>
-            <Button size="sm" color="primary" onClick={() => setActiveYear(targetYear)} active={activeYear === targetYear}>{targetYear}</Button>
+            <Button size="sm" color="info" onClick={() => setActiveYear(baseYear)} active={activeYear === baseYear}>{baseYear}</Button>
+            <Button size="sm" color="info" disabled> - </Button>
+            <Button size="sm" color="info" onClick={() => setActiveYear(currentYear)} active={activeYear === currentYear}>{currentYear}</Button>
+            <Button size="sm" color="info" disabled> - </Button>
+            <Button size="sm" color="info" onClick={() => setActiveYear(targetYear)} active={activeYear === targetYear}>{targetYear}</Button>
           </ButtonGroup>
         </PageHeader>
         <Row>
@@ -96,9 +100,10 @@ export default function Home() {
         </Row>
         <EmissionsCardSet
           sectors={data.page.emissionSectors}
-          rootSector={rootSector.id}
+          rootSector={rootSector}
           unit={unit}
           date={activeYear}
+          parentColor="#333"
         />
       </Container>
     </Layout>
