@@ -1,17 +1,11 @@
 import { useState } from 'react';
 import _ from 'lodash';
 import styled from 'styled-components';
-import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import { Button, ButtonGroup } from 'reactstrap';
 import EmissionsCard from './EmissionsCard';
-import DashCard from 'components/general/DashCard';
+import EmissionSectorContent from 'components/general/EmissionSectorContent';
 
 const CardSet = styled.div` 
-`;
-
-const ContentArea = styled.div`
-  padding: .5rem;
-  background-color: ${(props) => props.theme.themeColors.white};
 `;
 
 const CardDeck = styled.div`  
@@ -33,9 +27,9 @@ const CardContainer = styled.div`
   }
 `;
 
-const TabButton = styled(Button)`
-  padding-top: 0.2rem;
-  padding-bottom: 0.4rem;
+const ContentArea = styled.div`
+  padding: .5rem;
+  background-color: ${(props) => props.theme.themeColors.white};
 `;
 
 const Bar = styled.div`
@@ -108,6 +102,7 @@ const EmissionsCardSet = (props) => {
 
   const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
   const [activeSectorId, setActiveSectorId] = useState(undefined);
+  const [openTabId, setOpenTabId] = useState(undefined);
   const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector.id);
 
   const handleHover = (evt) => {
@@ -123,10 +118,12 @@ const EmissionsCardSet = (props) => {
   return (
     <CardSet>
       <ContentArea>
-        <ButtonGroup>
-          <TabButton color="light"><BarChartFill /></TabButton>
-          <TabButton color="light"><InfoSquare /></TabButton>
-        </ButtonGroup>
+        <EmissionSectorContent
+          sector={rootSector}
+          subSectors={cardSectors}
+          color={parentColor}
+          year={date}
+        />
       </ContentArea>
       <EmissionsBar
         sectors={cardSectors}

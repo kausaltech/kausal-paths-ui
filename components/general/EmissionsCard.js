@@ -65,6 +65,19 @@ const MainUnit = styled.div`
   font-size: 0.8rem;
 `;
 
+// Use Finnish style numeric display formatting
+function beautifyValue(x) {
+  let out;
+  if (!Number.isInteger(x)) {
+    out = x.toFixed(x<10 ? 1 : 0);
+  } else {
+    out = x;
+  }
+  const s = out.toString();
+  const displayNumber = s.replace('.', ',');
+  return displayNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 const EmissionsCard = (props) => {
   const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active, color } = props;
 
@@ -73,6 +86,7 @@ const EmissionsCard = (props) => {
     || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date);
   const change =  -Math.round(((baseEmissions.value-goalEmissions?.value)/baseEmissions.value)*100);
 
+  const displayEmissions = goalEmissions?.value.toFixed(1);
   if (!goalEmissions) return null;
 
   return (
@@ -96,7 +110,7 @@ const EmissionsCard = (props) => {
       <Body>
         <div />
         <MainValue>
-          {goalEmissions?.value.toLocaleString('fi-FI')}
+          {beautifyValue(goalEmissions?.value)}
           <MainUnit>{unit}</MainUnit>
           <Status>
             {change}%

@@ -36,6 +36,9 @@ const GET_PAGE_CONTENT = gql`
           id
         }
         metric {
+          id
+          name
+          unit
           forecastValues {
             year
             value
@@ -114,7 +117,7 @@ export default function Home() {
           rootSector={rootSector}
           unit={unit}
           date={activeYear}
-          parentColor="#fff"
+          parentColor="#666"
         />
       </Container>
     </Layout>
