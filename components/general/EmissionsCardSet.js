@@ -33,6 +33,7 @@ const ContentArea = styled.div`
 `;
 
 const Bar = styled.div`
+  display: flex;
   padding: .5rem .5rem 3.5rem;
   background-color: ${(props) => props.theme.themeColors.white};
   border-radius: 0 0 12px 12px;
@@ -77,6 +78,7 @@ const EmissionsBar = (props) => {
   const { sectors, date, hovered, onHover, handleClick, activeSector, parentColor } = props;
 
   const sectorsTotal = _.sum(sectors.map((sector) => getSectorValue(sector, date)));
+
   return (
     <Bar color={parentColor}>
       { sectors.map((sector) => (

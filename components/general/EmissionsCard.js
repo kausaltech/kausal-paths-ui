@@ -84,7 +84,7 @@ const EmissionsCard = (props) => {
   const baseEmissions = sector.metric.historicalValues[0];
   const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)
     || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date);
-  const change =  -Math.round(((baseEmissions.value-goalEmissions?.value)/baseEmissions.value)*100);
+  const change =  baseEmissions.value !== 0 ? -Math.round(((baseEmissions.value-goalEmissions?.value)/baseEmissions.value)*100) : undefined;
 
   const displayEmissions = goalEmissions?.value.toFixed(1);
   if (!goalEmissions) return null;
@@ -113,7 +113,8 @@ const EmissionsCard = (props) => {
           {beautifyValue(goalEmissions?.value)}
           <MainUnit>{unit}</MainUnit>
           <Status>
-            {change}%
+            {change > 0 && '+'}
+            {change ? `${change}%` : '-'}
           </Status>
         </MainValue>
       </Body>
