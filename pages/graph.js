@@ -8,6 +8,8 @@ query GetNodes {
     id
     name
     color
+    quantity
+    isAction
     inputNodes {
       id
     }
