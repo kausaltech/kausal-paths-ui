@@ -97,7 +97,8 @@ export default function Home() {
         <Row>
           <Col>
             <RangeSelector 
-              values={_.union(rootSector.metric.historicalValues.map((metric) => metric.year), rootSector.metric.forecastValues.map((metric) => metric.year))}
+              historicalYears={rootSector.metric.historicalValues.map((metric) => metric.year)}
+              forecastYears={rootSector.metric.forecastValues.map((metric) => metric.year)}
               handleChange={setActiveYear}
             />
             <EmissionsCard
