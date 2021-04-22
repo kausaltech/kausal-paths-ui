@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { gql, useQuery, useMutation } from "@apollo/client";
+import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
 import EmissionsCard from 'components/general/EmissionsCard';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
+import RangeSelector from 'components/general/RangeSelector';
 
 const HeaderSection = styled.div`
   padding: 4rem 0 1rem; 
@@ -94,13 +96,10 @@ export default function Home() {
       <Container className="my-5">
         <Row>
           <Col>
-            <ButtonGroup className="mb-4">
-              <Button size="sm" color="light" onClick={() => setActiveYear(baseYear)} active={activeYear === baseYear}>{baseYear}</Button>
-              <Button size="sm" color="light" disabled> - </Button>
-              <Button size="sm" color="light" onClick={() => setActiveYear(currentYear)} active={activeYear === currentYear}>{currentYear}</Button>
-              <Button size="sm" color="light" disabled> - </Button>
-              <Button size="sm" color="light" onClick={() => setActiveYear(targetYear)} active={activeYear === targetYear}>{targetYear}</Button>
-            </ButtonGroup>
+            <RangeSelector 
+              values={_.union(rootSector.metric.historicalValues.map((metric) => metric.year), rootSector.metric.forecastValues.map((metric) => metric.year))}
+              handleChange={setActiveYear}
+            />
             <EmissionsCard
               date={activeYear}
               unit={unit}
