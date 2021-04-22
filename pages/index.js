@@ -8,11 +8,17 @@ import Layout from 'components/Layout';
 import EmissionsCard from 'components/general/EmissionsCard';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
 
+const HeaderSection = styled.div`
+  padding: 4rem 0 1rem; 
+  background-color: ${(props) => props.theme.graphColors.grey070};
+`;
+
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
 
   h1 {
     font-size: 1.5rem;
+    color: ${(props) => props.theme.themeColors.white};
   }
 `;
 
@@ -73,27 +79,32 @@ export default function Home() {
   return (
     <Layout>
       <Head>
-        <title>Kausal Paths</title>
+        <title>{data?.page.name}</title>
       </Head>
-      <Container fluid className="mt-4">
-        <PageHeader>
-          <h1>{data?.page.name}</h1>
-          <ButtonGroup>
-            <Button size="sm" color="info" onClick={() => setActiveYear(baseYear)} active={activeYear === baseYear}>{baseYear}</Button>
-            <Button size="sm" color="info" disabled> - </Button>
-            <Button size="sm" color="info" onClick={() => setActiveYear(currentYear)} active={activeYear === currentYear}>{currentYear}</Button>
-            <Button size="sm" color="info" disabled> - </Button>
-            <Button size="sm" color="info" onClick={() => setActiveYear(targetYear)} active={activeYear === targetYear}>{targetYear}</Button>
-          </ButtonGroup>
-        </PageHeader>
+      <HeaderSection>
+        <Container>
+          <PageHeader>
+            <h1>{data?.page.name}</h1>
+          </PageHeader>
+        </Container>
+      </HeaderSection>
+      <Container className="my-5">
         <Row>
           <Col>
+            <ButtonGroup className="mb-4">
+              <Button size="sm" color="light" onClick={() => setActiveYear(baseYear)} active={activeYear === baseYear}>{baseYear}</Button>
+              <Button size="sm" color="light" disabled> - </Button>
+              <Button size="sm" color="light" onClick={() => setActiveYear(currentYear)} active={activeYear === currentYear}>{currentYear}</Button>
+              <Button size="sm" color="light" disabled> - </Button>
+              <Button size="sm" color="light" onClick={() => setActiveYear(targetYear)} active={activeYear === targetYear}>{targetYear}</Button>
+            </ButtonGroup>
             <EmissionsCard
               date={activeYear}
               unit={unit}
               sector={rootSector}
               subSectors={subSectors}
-              state="active"
+              state="root"
+              active
               onHover={()=>undefined}
             />
           </Col>
@@ -103,7 +114,7 @@ export default function Home() {
           rootSector={rootSector}
           unit={unit}
           date={activeYear}
-          parentColor="#333"
+          parentColor="#fff"
         />
       </Container>
     </Layout>

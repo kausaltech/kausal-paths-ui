@@ -11,8 +11,21 @@ const CardWithState = styled(Card)`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: .5rem;
   }
-  &.inactive {
+
+  &.open, &.root {
+    border-bottom: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    color: ${(props) => props.theme.graphColors.grey050};
+    background-color: ${(props) => props.theme.themeColors.light};
+    h2 {
+      color: ${(props) => props.theme.graphColors.grey050};
+    }
+  }
+
+  &.inactive, &.closed {
     color: ${(props) => props.theme.graphColors.grey050};
     background-color: ${(props) => props.theme.themeColors.light};
 
@@ -31,14 +44,10 @@ const CardWithState = styled(Card)`
     }
   }
 
-  &.active {
+  &.active.open, &.root {
     position: relative;
     color: ${(props) => props.theme.graphColors.grey090};
     background-color: ${(props) => props.theme.themeColors.white};
-    border-color: ${(props) => props.color};
-    border-bottom: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
 
     &::after {
       position: absolute;

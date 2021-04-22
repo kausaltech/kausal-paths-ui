@@ -1,11 +1,13 @@
 import DashCard from 'components/general/DashCard';
-import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
-import { Button, ButtonGroup } from 'reactstrap';
 import styled from 'styled-components';
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
+
+  &.root h2 {
+    font-size: 1.5rem;
+  }
 `;
 
 const Title = styled.div`
@@ -30,7 +32,7 @@ const CardAnchor = styled.a`
 
 const Name = styled.h2`
   margin-bottom: 0;
-  font-size: 0.8rem;
+  font-size: 1rem;
 `;
 
 const Date = styled.p`
@@ -38,9 +40,10 @@ const Date = styled.p`
 `;
 
 const Status = styled.div`
+  margin-top: .5rem;
   text-align: right;
   white-space: nowrap;
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 700;
 `;
 
@@ -48,12 +51,7 @@ const Body = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-top: 1rem;
-`;
-
-const TabButton = styled(Button)`
-  padding-top: 0.2rem;
-  padding-bottom: 0.4rem;
+  margin-top: .5rem;
 `;
 
 const MainValue = styled.div`
@@ -69,40 +67,40 @@ const MainUnit = styled.div`
 
 const EmissionsCard = (props) => {
   const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active, color } = props;
-  const status = state !== 'active' ?  'inactive' : 'active';
 
   const baseEmissions = sector.metric.historicalValues[0];
   const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)
     || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date);
   const change =  -Math.round(((baseEmissions.value-goalEmissions?.value)/baseEmissions.value)*100);
 
+  if (!goalEmissions) return null;
+
   return (
-    <DashCard state={status} hovered={hovered} active={active} color={color}>
-      <Header>
+    <DashCard
+      state={state}
+      hovered={hovered}
+      active={active}
+      color={color}
+    >
+      <Header className={state}>
         <Title color={color}>
           <CardAnchor
             onMouseEnter={() => onHover(sector.id)}
             onMouseLeave={() => onHover(undefined)}
             onClick={() => handleClick(active ? undefined : sector.id)}
           >
-            <Name>{sector.name} {date}</Name>
+            <Name>{sector.name}</Name>
           </CardAnchor>
         </Title>
       </Header>
       <Body>
-        { state === 'active' &&
-          <ButtonGroup>
-            <TabButton outline color="info"><BarChartFill /></TabButton>
-            <TabButton outline color="info"><InfoSquare /></TabButton>
-          </ButtonGroup>
-        }
         <div />
         <MainValue>
+          {goalEmissions?.value.toLocaleString('fi-FI')}
+          <MainUnit>{unit}</MainUnit>
           <Status>
             {change}%
           </Status>
-          {goalEmissions?.value.toLocaleString('fi-FI')}
-          <MainUnit>{unit}</MainUnit>
         </MainValue>
       </Body>
     </DashCard>

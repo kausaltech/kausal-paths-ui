@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import _ from 'lodash';
 import styled from 'styled-components';
+import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
+import { Button, ButtonGroup } from 'reactstrap';
 import EmissionsCard from './EmissionsCard';
 import DashCard from 'components/general/DashCard';
 
 const CardSet = styled.div` 
+`;
+
+const ContentArea = styled.div`
+  padding: .5rem;
+  background-color: ${(props) => props.theme.themeColors.white};
 `;
 
 const CardDeck = styled.div`  
@@ -17,22 +24,27 @@ const CardContainer = styled.div`
   flex: 0 0 200px;
   margin: 0 .25rem 0;
 
+  &:first-child {
+    margin-left: 0;
+  }
+
   .card {
     height: 100%;
   }
+`;
 
-  .card-body {
-    padding: 1rem;
-  }
+const TabButton = styled(Button)`
+  padding-top: 0.2rem;
+  padding-bottom: 0.4rem;
 `;
 
 const Bar = styled.div`
-  padding: 1rem .5rem 3.5rem;
+  padding: .5rem .5rem 3.5rem;
   background-color: ${(props) => props.theme.themeColors.white};
   border-radius: 0 0 12px 12px;
-  margin-bottom: 1rem;
-  height: 2.5rem;
-  border: ${(props) => props.theme.themeColors.dark} solid;
+  margin-bottom: 2rem;
+  height: 2rem;
+  border: ${(props) => props.color} solid;
   border-width: 0;
   border-top: 0;
   cursor: pointer;
@@ -72,13 +84,14 @@ const EmissionsBar = (props) => {
 
   const sectorsTotal = _.sum(sectors.map((sector) => getSectorValue(sector, date)));
   return (
-    <Bar>
+    <Bar color={parentColor}>
       { sectors.map((sector) => (
         <Segment
           key={sector.id}
           style={{
-            width: `${(getSectorValue(sector,date)/sectorsTotal)*100}%`,
+            width: `${(getSectorValue(sector,date)/sectorsTotal)*100 || 0}%`,
             backgroundColor: sector.color || parentColor,
+            display: `${getSectorValue(sector,date) ? '' : 'none'}`,
           }}
           className={`${hovered === sector.id ? 'hovered' : ''} ${activeSector === sector.id ? 'active' : ''}` }
           onMouseEnter={() => onHover(sector.id)}
@@ -109,6 +122,12 @@ const EmissionsCardSet = (props) => {
 
   return (
     <CardSet>
+      <ContentArea>
+        <ButtonGroup>
+          <TabButton color="light"><BarChartFill /></TabButton>
+          <TabButton color="light"><InfoSquare /></TabButton>
+        </ButtonGroup>
+      </ContentArea>
       <EmissionsBar
         sectors={cardSectors}
         date={date}
@@ -126,7 +145,7 @@ const EmissionsCardSet = (props) => {
               unit={unit}
               sector={sector}
               subSectors={sectors.filter((sector) => sector.parent?.id === sector.id)}
-              state="inactive"
+              state={activeSectorId === undefined ? 'closed' : 'open'}
               hovered={hoveredSectorId === sector.id}
               active={activeSectorId === sector.id}
               onHover={handleHover}
