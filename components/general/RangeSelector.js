@@ -51,7 +51,8 @@ const RangeSelector = (props) => {
       min={_.min(allYears)}
       max={_.max(allYears)}
       values={selectedValue}
-      onChange={(values) => handleSliderChange( values )}
+      onFinalChange={(values) => handleSliderChange( values )}
+      onChange={(values)=>setSelectedValue(values)}
       renderTrack={({ props, children }) => (
         <div
           {...props}
@@ -61,7 +62,7 @@ const RangeSelector = (props) => {
             margin: '1rem 1.5rem', 
             width: '100%',
             borderRadius: '3px',
-            backgroundColor: '#666'
+            backgroundColor: '#999'
           }}
         >
           {children}

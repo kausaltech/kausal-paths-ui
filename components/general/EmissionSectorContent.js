@@ -65,7 +65,7 @@ const EmissionsGraph = (props) => {
     x1: year,
     y1: 1,
     line: {
-      color: '#999999',
+      color: '#D46262',
       width: 2,
       dash: "dot",
     }

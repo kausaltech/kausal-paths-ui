@@ -11,7 +11,7 @@ import EmissionsCardSet from 'components/general/EmissionsCardSet';
 import RangeSelector from 'components/general/RangeSelector';
 
 const HeaderSection = styled.div`
-  padding: 4rem 0 1rem; 
+  padding: 3rem 0 1rem; 
   background-color: ${(props) => props.theme.graphColors.grey070};
 `;
 
@@ -108,7 +108,8 @@ export default function Home() {
               subSectors={subSectors}
               state="root"
               active
-              onHover={()=>undefined}
+              onHover={() => null}
+              handleClick={() => null}
             />
           </Col>
         </Row>

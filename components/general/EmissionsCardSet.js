@@ -105,7 +105,7 @@ const EmissionsCardSet = (props) => {
   const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
   const [activeSectorId, setActiveSectorId] = useState(undefined);
   const [openTabId, setOpenTabId] = useState(undefined);
-  const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector.id);
+  const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector?.id);
 
   const handleHover = (evt) => {
     setHoveredSectorId(evt);
