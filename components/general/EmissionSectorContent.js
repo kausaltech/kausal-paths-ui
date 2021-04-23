@@ -16,45 +16,52 @@ const TabButton = styled(Button)`
 
 const EmissionsGraph = (props) => {
   const { sector, subSectors, color, year } = props;
-  const historicalValues = [];
-  const forecastValues = [];
-  const historicalDates = [];
-  const forecastDates = [];
+
   const shapes = [];
+  const plotData = [];
 
-  sector.metric.historicalValues.forEach((dataPoint) => {
-    historicalValues.push(dataPoint.value);
-    historicalDates.push(dataPoint.year);
-  })
+  const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
 
-  forecastValues.push(historicalValues[historicalValues.length-1]);
-  forecastDates.push(historicalDates[historicalDates.length-1]);
-
-  sector.metric.forecastValues.forEach((dataPoint) => {
-    forecastValues.push(dataPoint.value);
-    forecastDates.push(dataPoint.year);
-  })
-
-  const plotData = [
-    {
-      x: historicalDates,
-      y: historicalValues,
-      name: sector.name,
-      type: 'scatter',
-      fill: 'tozeroy',
-      mode: 'none',
-      fillcolor: sector.color || color,
-    },
-    {
-      x: forecastDates,
-      y: forecastValues,
-      name: `${sector.name} (pred)`,
-      type: 'scatter',
-      fill: 'tozeroy',
-      mode: 'none',
-      fillcolor: lighten(0.2, sector.color || color),
-    },
-  ];
+  displaySectors?.forEach((sector, index) => {
+    const historicalValues = [];
+    const forecastValues = [];
+    const historicalDates = [];
+    const forecastDates = [];
+    sector.metric.historicalValues.forEach((dataPoint) => {
+      historicalValues.push(dataPoint.value);
+      historicalDates.push(dataPoint.year);
+    });
+    plotData.push(
+      {
+        x: historicalDates,
+        y: historicalValues,
+        name: sector.name,
+        type: 'scatter',
+        fill: 'tonexty',
+        mode: 'none',
+        fillcolor: sector.color || color,
+        stackgroup: 'group1',
+      }
+    );
+    sector.metric.forecastValues.forEach((dataPoint) => {
+      forecastValues.push(dataPoint.value);
+      forecastDates.push(dataPoint.year);
+    });
+    forecastValues.push(historicalValues[historicalValues.length-1]);
+    forecastDates.push(historicalDates[historicalDates.length-1]);
+    plotData.push(
+      {
+        x: forecastDates,
+        y: forecastValues,
+        name: `${sector.name} (pred)`,
+        type: 'scatter',
+        fill: 'tonexty',
+        mode: 'none',
+        fillcolor: lighten(0.2, sector.color || color),
+        stackgroup: 'group2',
+      }
+    )
+  });
 
   const todaymarker =
   {
@@ -83,9 +90,6 @@ const EmissionsGraph = (props) => {
     xaxis: {
     },
     yaxis: {
-      title: {
-        text: sector.metric.unit,
-      },
     },
     yaxis2: {
       overlaying: 'y',
