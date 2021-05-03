@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import styled from 'styled-components';
-import SideBarNav from 'components/general/SideBarNav';
+import GlobalNav from 'components/general/GlobalNav';
 
 const PageContainer = styled.div`
   display: flex;
@@ -24,9 +24,10 @@ const PageContainer = styled.div`
 const Layout = ({ children }) => {
   return (
     <>
-    <Head>
+    <Head> 
       <link rel="icon" href="/favicon.ico" />
     </Head>
+    <GlobalNav />
     <PageContainer>
       <main className="main">
         {children}
