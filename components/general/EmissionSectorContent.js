@@ -122,8 +122,8 @@ const EmissionSectorContent = (props) => {
   return (
     <div>
       <ButtonGroup>
-        <TabButton color="light" onClick={() => setActiveTabId('graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
-        <TabButton color="light" onClick={() => setActiveTabId(undefined)} active={activeTabId === undefined}><InfoSquare /></TabButton>
+        <TabButton color="link" onClick={() => setActiveTabId('graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
+        <TabButton color="link" onClick={() => setActiveTabId(undefined)} active={activeTabId === undefined}><InfoSquare /></TabButton>
       </ButtonGroup> 
       <div>
         { activeTabId === 'graph' && (

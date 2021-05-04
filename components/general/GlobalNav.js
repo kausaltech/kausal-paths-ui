@@ -17,7 +17,7 @@ const GlobalNav = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <Navbar color="light" light expand="md" fixed>
+    <Navbar color="light" light expand="md">
     <Container>
       <Link href="/" passHref>
         <NavbarBrand href="/">

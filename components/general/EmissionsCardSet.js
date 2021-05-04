@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import _ from 'lodash';
 import styled from 'styled-components';
-import { Button, ButtonGroup } from 'reactstrap';
+import { getEmissionsValue, getSectorsTotal, beautifyValue } from 'common/preprocess';
 import EmissionsCard from './EmissionsCard';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 
@@ -29,6 +29,25 @@ const CardContainer = styled.div`
   .card {
     height: 100%;
   }
+`;
+
+const CardSetHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const CardSetSummary = styled.div`
+  text-align: right;
+  line-height: 1.2;
+  font-weight: 700;
+`;
+
+const TotalValue = styled.div`
+  font-size: 2rem;
+`;
+
+const TotalUnit = styled.div`
+  font-size: 0.75rem;
 `;
 
 const ContentArea = styled.div`
@@ -71,13 +90,10 @@ const Segment = styled.div`
   }
 `;
 
-const getSectorValue = (sector, date) => {
-  return sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value;
-}
 const EmissionsBar = (props) => {
   const { sectors, date, hovered, onHover, handleClick, activeSector, parentColor } = props;
 
-  const sectorsTotal = _.sum(sectors.map((sector) => getSectorValue(sector, date)));
+  const sectorsTotal = getSectorsTotal(sectors, date);
 
   return (
     <Bar color={parentColor}>
@@ -85,9 +101,9 @@ const EmissionsBar = (props) => {
         <Segment
           key={sector.id}
           style={{
-            width: `${(getSectorValue(sector,date)/sectorsTotal)*100 || 0}%`,
+            width: `${(getEmissionsValue(sector,date)/sectorsTotal)*100 || 0}%`,
             backgroundColor: sector.color || parentColor,
-            display: `${getSectorValue(sector,date) ? '' : 'none'}`,
+            display: `${getEmissionsValue(sector,date) ? '' : 'none'}`,
           }}
           className={`${hovered === sector.id ? 'hovered' : ''} ${activeSector === sector.id ? 'active' : ''}` }
           onMouseEnter={() => onHover(sector.id)}
@@ -95,6 +111,14 @@ const EmissionsBar = (props) => {
           onClick={() => handleClick(activeSector === sector.id ? undefined : sector.id)}
         />
       ))}
+      { sectors.length < 2 && (
+        <Segment
+          style={{
+            width: `100%`,
+            backgroundColor: parentColor,
+          }}
+        />
+      )}
     </Bar>
   )
 };
@@ -104,7 +128,6 @@ const EmissionsCardSet = (props) => {
 
   const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
   const [activeSectorId, setActiveSectorId] = useState(undefined);
-  const [openTabId, setOpenTabId] = useState(undefined);
   const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector?.id);
 
   const handleHover = (evt) => {
@@ -117,11 +140,18 @@ const EmissionsCardSet = (props) => {
 
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
+  const sectorsTotal = beautifyValue(getEmissionsValue(rootSector, date));
   return (
     <>
     <CardSet>
       <ContentArea>
-        <h5>{ rootSector.name }</h5>
+        <CardSetHeader>
+          <h5>{ rootSector.name }</h5>
+          <CardSetSummary>
+            <TotalValue>{ sectorsTotal }</TotalValue>
+            <TotalUnit>{ unit }</TotalUnit>
+          </CardSetSummary>
+        </CardSetHeader>
         <EmissionSectorContent
           sector={rootSector}
           subSectors={cardSectors}

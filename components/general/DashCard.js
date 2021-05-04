@@ -24,17 +24,16 @@ const CardWithState = styled(Card)`
   }
 
   &.inactive, &.closed {
-    color: ${(props) => props.theme.graphColors.grey050};
+    color: ${(props) => props.theme.graphColors.grey090};
     background-color: ${(props) => props.theme.graphColors.grey000};
 
     h2 {
-      color: ${(props) => props.theme.graphColors.grey050};
+      color: ${(props) => props.theme.graphColors.grey090};
     }
   }
 
   &.hovered {
     color: ${(props) => props.theme.graphColors.grey090};
-    background-color: ${(props) => props.theme.themeColors.white};
     border-color: ${(props) => props.color};
     
     h2 {
@@ -45,7 +44,7 @@ const CardWithState = styled(Card)`
   &.active.open, &.root {
     position: relative;
     color: ${(props) => props.theme.graphColors.grey090};
-    background-color: ${(props) => props.theme.graphColors.grey000};
+    background-color: ${(props) => props.theme.themeColors.white};
     border-color: ${(props) => props.color};
 
     &::after {
@@ -53,8 +52,7 @@ const CardWithState = styled(Card)`
       z-index: 500;
       content: '';
       width: 100%;
-
-      background-color: #fff;
+      background-color: ${(props) => props.theme.themeColors.white};
     }
   
     h2 {

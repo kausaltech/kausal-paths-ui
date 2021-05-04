@@ -1,5 +1,6 @@
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
+import {beautifyValue, getEmissionsChange, getInitialEmissions, getEmissionsValue } from 'common/preprocess';
 
 const Header = styled.div`
   display: flex;
@@ -45,6 +46,7 @@ const Status = styled.div`
   white-space: nowrap;
   font-size: 1rem;
   font-weight: 700;
+  color: ${(props) => props.theme.graphColors.grey050};
 `;
 
 const Body = styled.div`
@@ -62,32 +64,18 @@ const MainValue = styled.div`
 `;
 
 const MainUnit = styled.div`
-  font-size: 0.8rem;
+  font-size: 0.6rem;
 `;
-
-// Use Finnish style numeric display formatting
-function beautifyValue(x) {
-  let out;
-  if (!Number.isInteger(x)) {
-    out = x.toFixed(x<10 ? 1 : 0);
-  } else {
-    out = x;
-  }
-  const s = out.toString();
-  const displayNumber = s.replace('.', ',');
-  return displayNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-}
 
 const EmissionsCard = (props) => {
   const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active, color } = props;
 
-  const baseEmissions = sector.metric.historicalValues[0];
-  const goalEmissions = sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)
-    || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date);
-  const change =  baseEmissions.value !== 0 ? -Math.round(((baseEmissions.value-goalEmissions?.value)/baseEmissions.value)*100) : undefined;
+  const baseEmissions = getInitialEmissions(sector);
+  const goalEmissionsValue = getEmissionsValue(sector, date);
+  const change =  getEmissionsChange(baseEmissions.value, goalEmissionsValue);
 
-  const displayEmissions = goalEmissions?.value.toFixed(1);
-  if (!goalEmissions) return null;
+  // If there is on emission value for active year, do not display card set
+  if (!goalEmissionsValue) return null;
 
   return (
     <DashCard
@@ -110,7 +98,7 @@ const EmissionsCard = (props) => {
       <Body>
         <div />
         <MainValue>
-          {beautifyValue(goalEmissions?.value)}
+          {beautifyValue(goalEmissionsValue)}
           <MainUnit>{unit}</MainUnit>
           <Status>
             {change > 0 && '+'}
