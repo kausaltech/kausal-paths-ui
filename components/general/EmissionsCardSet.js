@@ -6,6 +6,10 @@ import EmissionsCard from './EmissionsCard';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 
 const CardSet = styled.div` 
+  padding: 0.5rem;
+  margin-top: 1rem;
+  background-color: #FFF;
+  border-radius: 12px;
 `;
 
 const CardDeck = styled.div`  
@@ -29,13 +33,11 @@ const CardContainer = styled.div`
 
 const ContentArea = styled.div`
   padding: .5rem;
-  border-radius: 0 0 12px 12px;
-  background-color: ${(props) => props.theme.themeColors.white};
 `;
 
 const Bar = styled.div`
   display: flex;
-  margin: 2.5rem 0 1.5rem;
+  margin: .5rem 0 1.5rem;
   height: 1rem;
   border: ${(props) => props.color} solid;
   border-width: 0;
@@ -116,8 +118,10 @@ const EmissionsCardSet = (props) => {
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
   return (
+    <>
     <CardSet>
       <ContentArea>
+        <h5>{ rootSector.name }</h5>
         <EmissionSectorContent
           sector={rootSector}
           subSectors={cardSectors}
@@ -152,17 +156,17 @@ const EmissionsCardSet = (props) => {
           </CardContainer>
         ))}
       </CardDeck>
-      { activeSectorId && (
-        <EmissionsCardSet
-          sectors={sectors}
-          rootSector={cardSectors.find((sector) => sector.id === activeSectorId)}
-          unit={unit}
-          date={date}
-          parentColor={activeSectorColor}
-        />
-      )}
-      
     </CardSet>
+    { activeSectorId && (
+      <EmissionsCardSet
+        sectors={sectors}
+        rootSector={cardSectors.find((sector) => sector.id === activeSectorId)}
+        unit={unit}
+        date={date}
+        parentColor={activeSectorColor}
+      />
+    )}
+    </>
   );
 };
 

@@ -15,11 +15,9 @@ const CardWithState = styled(Card)`
   }
 
   &.open, &.root {
-    border-bottom: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
+
     color: ${(props) => props.theme.graphColors.grey050};
-    background-color: ${(props) => props.theme.graphColors.grey010};
+    background-color: ${(props) => props.theme.graphColors.grey000};
     h2 {
       color: ${(props) => props.theme.graphColors.grey050};
     }
@@ -48,6 +46,7 @@ const CardWithState = styled(Card)`
     position: relative;
     color: ${(props) => props.theme.graphColors.grey090};
     background-color: ${(props) => props.theme.graphColors.grey000};
+    border-color: ${(props) => props.color};
 
     &::after {
       position: absolute;

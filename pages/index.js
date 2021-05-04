@@ -100,16 +100,6 @@ export default function Home() {
               forecastYears={rootSector.metric.forecastValues.map((metric) => metric.year)}
               handleChange={setActiveYear}
             />
-            <EmissionsCard
-              date={activeYear}
-              unit={unit}
-              sector={rootSector}
-              subSectors={subSectors}
-              state="root"
-              active
-              onHover={() => null}
-              handleClick={() => null}
-            />
           </Col>
         </Row>
         <EmissionsCardSet
