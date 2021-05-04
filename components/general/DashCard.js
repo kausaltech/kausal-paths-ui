@@ -19,7 +19,7 @@ const CardWithState = styled(Card)`
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
     color: ${(props) => props.theme.graphColors.grey050};
-    background-color: ${(props) => props.theme.themeColors.light};
+    background-color: ${(props) => props.theme.graphColors.grey010};
     h2 {
       color: ${(props) => props.theme.graphColors.grey050};
     }
@@ -27,7 +27,7 @@ const CardWithState = styled(Card)`
 
   &.inactive, &.closed {
     color: ${(props) => props.theme.graphColors.grey050};
-    background-color: ${(props) => props.theme.themeColors.light};
+    background-color: ${(props) => props.theme.graphColors.grey000};
 
     h2 {
       color: ${(props) => props.theme.graphColors.grey050};
@@ -47,7 +47,7 @@ const CardWithState = styled(Card)`
   &.active.open, &.root {
     position: relative;
     color: ${(props) => props.theme.graphColors.grey090};
-    background-color: ${(props) => props.theme.themeColors.white};
+    background-color: ${(props) => props.theme.graphColors.grey000};
 
     &::after {
       position: absolute;

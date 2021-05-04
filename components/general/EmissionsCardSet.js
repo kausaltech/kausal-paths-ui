@@ -29,16 +29,14 @@ const CardContainer = styled.div`
 
 const ContentArea = styled.div`
   padding: .5rem;
+  border-radius: 0 0 12px 12px;
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 
 const Bar = styled.div`
   display: flex;
-  padding: .5rem .5rem 3.5rem;
-  background-color: ${(props) => props.theme.themeColors.white};
-  border-radius: 0 0 12px 12px;
-  margin-bottom: 2rem;
-  height: 2rem;
+  margin: 2.5rem 0 1.5rem;
+  height: 1rem;
   border: ${(props) => props.color} solid;
   border-width: 0;
   border-top: 0;
@@ -50,7 +48,7 @@ const Segment = styled.div`
   position: relative;
   border: ${(props) => props.theme.themeColors.white} solid;
   border-width: 2px;
-  height: 2.5rem;
+  height: 1.5rem;
 
   &.hovered::after {
     content: '';

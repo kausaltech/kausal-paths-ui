@@ -12,7 +12,7 @@ import RangeSelector from 'components/general/RangeSelector';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
-  background-color: ${(props) => props.theme.graphColors.grey070};
+  background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
 const PageHeader = styled.div` 
@@ -20,7 +20,7 @@ const PageHeader = styled.div`
 
   h1 {
     font-size: 1.5rem;
-    color: ${(props) => props.theme.themeColors.white};
+    color: ${(props) => props.theme.themeColors.dark};
   }
 `;
 

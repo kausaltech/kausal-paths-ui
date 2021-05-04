@@ -22,9 +22,9 @@ const RangeWrapper = styled.div`
 `;
 
 const ActiveYearDisplay = styled.h2`
-  flex: 3 1 100px;
-  margin: 0 0 0 1rem;
-  text-align: left;
+  flex: 3 1 125px;
+  margin: 0 1rem 0 0;
+  text-align: center;
 `;
 
 const RangeSelector = (props) => {
@@ -46,6 +46,7 @@ const RangeSelector = (props) => {
   return (
     <SectionWrapper>
     <RangeWrapper>
+    <ActiveYearDisplay>{ selectedValue[0] }</ActiveYearDisplay>
     <Range
       step={1}
       min={_.min(allYears)}
@@ -73,8 +74,8 @@ const RangeSelector = (props) => {
           {...props}
           style={{
             ...props.style,
-            height: '42px',
-            width: '42px',
+            height: '32px',
+            width: '32px',
             borderRadius: '4px',
             backgroundColor: '#074A35',
             display: 'flex',
@@ -93,7 +94,6 @@ const RangeSelector = (props) => {
         </div>
       )}
     />
-    <ActiveYearDisplay>{ selectedValue[0] }</ActiveYearDisplay>
     </RangeWrapper>
     <ForecastNotice>{ _.indexOf(forecastYears, selectedValue[0]) > -1 && '(forecast)' }</ForecastNotice>
     </SectionWrapper>

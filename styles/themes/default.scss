@@ -179,12 +179,21 @@
  
  $theme-custom-styles-url: '';
  
+
+
  $graph-colors: (
-   grey010: rgb(238, 238, 238),
-   grey030: rgb(199, 199, 199),
-   grey050: rgb(160, 160, 160),
-   grey070: rgb(99, 99, 99),
-   grey090: rgb(63, 63, 63),
+   grey000: rgba(247, 246, 243, 1),
+   grey005: rgba(236, 234, 230, 1),
+   grey010: rgba(225, 223, 218, 1),
+   grey020: rgba(203, 199, 193, 1),
+   grey030: rgba(181, 177, 169, 1),
+   grey040: rgba(159, 154, 146, 1),
+   grey050: rgba(136, 132, 124, 1),
+   grey060: rgba(114, 110, 103, 1),
+   grey070: rgba(92, 88, 83, 1),
+   grey080: rgba(70, 66, 62, 1),
+   grey090: rgba(48, 45, 43, 1),
+   grey100:rgba(26, 24, 23, 1),
    green010: #A7EBC0,
    green030: #56C38E,
    green050: #279A6D,

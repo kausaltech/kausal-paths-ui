@@ -6,7 +6,7 @@ const PageContainer = styled.div`
   display: flex;
   width: 100%;
   height: 100vh;
-  background-color: ${(props) => props.theme.graphColors.grey030};
+  background-color: ${(props) => props.theme.graphColors.grey005};
 
   .side-wrapper {
     flex-grow: 1;

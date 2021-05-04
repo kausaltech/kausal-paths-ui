@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import Link from 'next/link'
 import {
+  Container,
   Collapse,
   Navbar,
   NavbarToggler,
@@ -16,7 +17,8 @@ const GlobalNav = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <Navbar color="light" light expand="md">
+    <Navbar color="light" light expand="md" fixed>
+    <Container>
       <Link href="/" passHref>
         <NavbarBrand href="/">
           Tampereen päästöskenaariot
@@ -41,6 +43,7 @@ const GlobalNav = (props) => {
           </NavItem>
         </Nav>
       </Collapse>
+    </Container>
     </Navbar>
   )
 }
