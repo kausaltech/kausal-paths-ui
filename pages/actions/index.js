@@ -19,7 +19,7 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1.5rem;
+    font-size: 1rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
@@ -49,7 +49,7 @@ export default function ActionsPage() {
   const [activeSector, setActiveSector] = useState(undefined);
 
   if (loading) {
-    return <Spinner style={{ width: '3rem', height: '3rem' }} />
+    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
   }
   if (error) {
     return <div>{error}</div>

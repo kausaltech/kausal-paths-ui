@@ -18,7 +18,7 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1.5rem;
+    font-size: 1rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
@@ -67,7 +67,7 @@ export default function Home() {
   const unit = 'kt CO₂e';
 
   if (loading) {
-    return <Spinner style={{ width: '3rem', height: '3rem' }} />
+    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
   }
   if (error) {
     return <div>{error}</div>
@@ -90,18 +90,14 @@ export default function Home() {
           <PageHeader>
             <h1>{data?.page.name}</h1>
           </PageHeader>
-        </Container>
-      </HeaderSection>
-      <Container className="my-5">
-        <Row>
-          <Col>
-            <RangeSelector 
+          <RangeSelector 
               historicalYears={rootSector.metric.historicalValues.map((metric) => metric.year)}
               forecastYears={rootSector.metric.forecastValues.map((metric) => metric.year)}
               handleChange={setActiveYear}
             />
-          </Col>
-        </Row>
+        </Container>
+      </HeaderSection>
+      <Container className="my-5">
         <EmissionsCardSet
           sectors={data.page.emissionSectors}
           rootSector={rootSector}

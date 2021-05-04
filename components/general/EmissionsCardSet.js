@@ -138,6 +138,8 @@ const EmissionsCardSet = (props) => {
     setActiveSectorId(evt);
   }
 
+  if (!rootSector) return null;
+
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
   const sectorsTotal = beautifyValue(getEmissionsValue(rootSector, date));
