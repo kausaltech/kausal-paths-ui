@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import _ from 'lodash';
-import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { Spinner, Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
 import EmissionsCard from 'components/general/EmissionsCard';
@@ -125,8 +124,6 @@ export default function Home() {
   )
 }
 
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...await serverSideTranslations(locale, ['common']),
-  }
-})
+Home.getInitialProps = async ({ query }) => ({
+  namespacesRequired: ['common'],
+});

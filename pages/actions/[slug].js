@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { useRouter } from 'next/router'
 import { gql, useQuery, useMutation } from "@apollo/client";
@@ -74,15 +73,7 @@ export default function ActionPage() {
   )
 }
 
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...await serverSideTranslations(locale, ['common']),
-  }
-})
-
-export async function getStaticPaths() {
-  return {
-    paths: [ ],
-    fallback: true,
-  }
-}
+ActionPage.getInitialProps = async ({ query }) => ({
+  slug: query.slug,
+  namespacesRequired: ['common'],
+});

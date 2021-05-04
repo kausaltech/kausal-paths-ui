@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import Link from 'next/link';
 import { gql, useQuery, useMutation } from "@apollo/client";
@@ -43,7 +42,7 @@ const GET_PAGE_CONTENT = gql`
   }
 }
 `;
-export default function Actions() {
+export default function ActionsPage() {
   const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
 
   const [activeYear, setActiveYear] = useState(2030);
@@ -89,8 +88,6 @@ export default function Actions() {
   )
 }
 
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...await serverSideTranslations(locale, ['common']),
-  }
-})
+ActionsPage.getInitialProps = async ({ query }) => ({
+  namespacesRequired: ['common'],
+});
