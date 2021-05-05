@@ -70,6 +70,7 @@ const CausalCard = (props) => {
   const { nodes, nodeId } = props;
   const thisNode = getNode(nodes, nodeId);
 
+  const [actionValue, setActionValue] = useState('on');
   // emission_factor file-x
   // action journal-check
   // emission    patch-exclamation cloud-fog
@@ -82,8 +83,14 @@ const CausalCard = (props) => {
         { thisNode.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
         { thisNode.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
         <h4>{thisNode.name}</h4>
+        <p><strong>00</strong> {thisNode.unit}</p>
 
-        <p>00 {thisNode.unit}</p>
+        { thisNode.isAction && (
+          <ButtonGroup size="sm">
+            <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
+            <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
+          </ButtonGroup>
+        )}
       </DashCard>
     </NodeCard>
     {thisNode.outputNodes?.map((node) =>(

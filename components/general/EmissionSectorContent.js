@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link'
 import { Button, ButtonGroup } from 'reactstrap';
-import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
+import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
 import styled from 'styled-components';
 
@@ -12,6 +13,11 @@ const DynamicPlot = dynamic(() => import('react-plotly.js'),
 const TabButton = styled(Button)`
   padding-top: 0.2rem;
   padding-bottom: 0.4rem;
+`;
+
+const TabText = styled.div`
+  max-width: 640px;
+  margin-bottom: 2rem;
 `;
 
 const EmissionsGraph = (props) => {
@@ -117,14 +123,10 @@ const EmissionsGraph = (props) => {
 
 const EmissionSectorContent = (props) => {
   const { sector, subSectors, color, year } = props;
-  const [activeTabId, setActiveTabId] = useState(undefined);
+  const [activeTabId, setActiveTabId] = useState('graph');
 
   return (
     <div>
-      <ButtonGroup>
-        <TabButton color="light" onClick={() => setActiveTabId('graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
-        <TabButton color="light" onClick={() => setActiveTabId(undefined)} active={activeTabId === undefined}><InfoSquare /></TabButton>
-      </ButtonGroup> 
       <div>
         { activeTabId === 'graph' && (
           <EmissionsGraph
@@ -134,7 +136,22 @@ const EmissionSectorContent = (props) => {
             year={year}
           />
         )}
+        { activeTabId === 'info' && (
+          <TabText>
+            <h5>Kuvaus</h5>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <h6><Journals size={24} className="mr-2" /> Päästöihin vaikuttavat toimenpiteet</h6>
+            <ul>
+              <li><Link href="/actions/naistenlahti3"><a>Toimenpide 1</a></Link></li>
+              <li><Link href="/actions/other_renewable_district_heating"><a>Toimenpide 2</a></Link></li>
+            </ul>
+          </TabText>
+        )}
       </div>
+      <ButtonGroup>
+        <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
+        <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>
+      </ButtonGroup> 
     </div>
   );
 };
