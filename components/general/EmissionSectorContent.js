@@ -10,6 +10,13 @@ import styled from 'styled-components';
 const DynamicPlot = dynamic(() => import('react-plotly.js'),
     { ssr: false });
 
+const SectorContent = styled.div`
+  padding: 1rem;
+  margin: .5rem 0;
+  border: 1px solid ${(props) => props.theme.graphColors.grey020};
+  border-radius: 10px;
+`;
+
 const TabButton = styled(Button)`
   padding-top: 0.2rem;
   padding-bottom: 0.4rem;
@@ -47,6 +54,10 @@ const EmissionsGraph = (props) => {
         mode: 'none',
         fillcolor: sector.color || color,
         stackgroup: 'group1',
+        line: {
+          shape: 'spline',
+        },
+        smoothing: true,
       }
     );
     sector.metric.forecastValues.forEach((dataPoint) => {
@@ -65,6 +76,10 @@ const EmissionsGraph = (props) => {
         mode: 'none',
         fillcolor: lighten(0.2, sector.color || color),
         stackgroup: 'group2',
+        line: {
+          shape: 'spline',
+        },
+        smoothing: true,
       }
     )
   });
@@ -127,27 +142,29 @@ const EmissionSectorContent = (props) => {
 
   return (
     <div>
-      <div>
+      
         { activeTabId === 'graph' && (
-          <EmissionsGraph
-            sector={sector}
-            subSectors={subSectors}
-            color={color}
-            year={year}
-          />
+          <SectorContent>
+            <EmissionsGraph
+              sector={sector}
+              subSectors={subSectors}
+              color={color}
+              year={year}
+            />
+          </SectorContent>
         )}
         { activeTabId === 'info' && (
-          <TabText>
-            <h5>Kuvaus</h5>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            <h6><Journals size={24} className="mr-2" /> Päästöihin vaikuttavat toimenpiteet</h6>
-            <ul>
-              <li><Link href="/actions/naistenlahti3"><a>Toimenpide 1</a></Link></li>
-              <li><Link href="/actions/other_renewable_district_heating"><a>Toimenpide 2</a></Link></li>
-            </ul>
-          </TabText>
+          <SectorContent>
+            <TabText>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+              <h6><Journals size={24} className="mr-2" /> Päästöihin vaikuttavat toimenpiteet</h6>
+              <ul>
+                <li><Link href="/actions/naistenlahti3"><a>Toimenpide 1</a></Link></li>
+                <li><Link href="/actions/other_renewable_district_heating"><a>Toimenpide 2</a></Link></li>
+              </ul>
+            </TabText>
+          </SectorContent>
         )}
-      </div>
       <ButtonGroup>
         <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
         <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>

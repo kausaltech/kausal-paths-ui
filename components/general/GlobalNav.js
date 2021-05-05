@@ -25,7 +25,6 @@ const GlobalNav = (props) => {
         </NavbarBrand>
       </Link>
       <NavbarToggler onClick={toggle} />
-      <Collapse isOpen={isOpen} navbar>
         <Nav className="mr-auto" navbar>
           <NavItem>
             <Link href="/" passHref>
@@ -42,7 +41,6 @@ const GlobalNav = (props) => {
             </Link>
           </NavItem>
         </Nav>
-      </Collapse>
     </Container>
     </Navbar>
   )
