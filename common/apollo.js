@@ -1,5 +1,4 @@
 // Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
-import { i18n } from 'next-i18next';
 import { useMemo } from "react";
 import getConfig from 'next/config'
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
@@ -7,13 +6,21 @@ import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/clien
 
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig()
 
+let i18n = null;
+
 
 const localeMiddleware = new ApolloLink((operation, forward) => {
   // Inject @locale directive into the query root object
   const { query } = operation;
   const { definitions } = query;
+  let language = 'fi';
 
-  if (!i18n || !i18n.language || definitions[0].operation === 'mutation') return forward(operation);
+  /*
+  if (i18n && i18n.language) {
+    language = i18n.language;
+  }
+  */
+  if (!language || definitions[0].operation === 'mutation') return forward(operation);
 
   const localeDirective = {
     kind: 'Directive',
@@ -24,7 +31,7 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
     arguments: [{
       kind: 'Argument',
       name: { kind: 'Name', value: 'lang' },
-      value: { kind: 'StringValue', value: i18n.language, block: false },
+      value: { kind: 'StringValue', value: language, block: false },
     }],
   };
 
