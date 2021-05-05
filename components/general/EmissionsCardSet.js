@@ -19,7 +19,7 @@ const CardDeck = styled.div`
 `;
 
 const CardContainer = styled.div`  
-  flex: 0 0 200px;
+  flex: 0 0 175px;
   margin: 0 .25rem 0;
 
   &:first-child {

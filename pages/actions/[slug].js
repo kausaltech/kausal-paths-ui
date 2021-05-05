@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router'
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
+import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
-import EmissionsCard from 'components/general/EmissionsCard';
-import EmissionsCardSet from 'components/general/EmissionsCardSet';
-import RangeSelector from 'components/general/RangeSelector';
+import DashCard from 'components/general/DashCard';
+import { I18nContext } from 'react-i18next';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -22,6 +22,27 @@ const PageHeader = styled.div`
     font-size: 1rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
+`;
+
+const ActionLinks = styled.div`
+  margin-bottom: 8rem;
+`;
+
+const NodeCard = styled.div`
+  margin-bottom: 1rem;
+
+  &.action .card {
+    border:${(props) => props.theme.graphColors.grey030} 2px solid;
+  }
+
+  &.emissions .card {
+
+  }
+`;
+
+const Causality = styled.div`
+  text-align: center;
+  margin: 1rem 0;
 `;
 
 const GET_PAGE_CONTENT = gql`
@@ -42,6 +63,46 @@ const GET_PAGE_CONTENT = gql`
   }
 }
 `;
+
+const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
+
+const CausalCard = (props) => {
+  const { nodes, nodeId } = props;
+  const thisNode = getNode(nodes, nodeId);
+
+  // emission_factor file-x
+  // action journal-check
+  // emission    patch-exclamation cloud-fog
+
+  return (
+    <ActionLinks>
+    <NodeCard className={`${thisNode.isAction && 'action'} ${thisNode.quantity}`}>
+      <DashCard>
+        { thisNode.isAction && <Icon.Journals size={24} className="mb-3" /> }
+        { thisNode.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
+        { thisNode.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
+        <h4>{thisNode.name}</h4>
+
+        <p>00 {thisNode.unit}</p>
+      </DashCard>
+    </NodeCard>
+    {thisNode.outputNodes?.map((node) =>(
+      <>
+        <Causality>
+          <Icon.ArrowDown
+            size={36}
+            color="#999999"
+          />
+        </Causality>
+        <CausalCard
+          nodes={nodes}
+          nodeId={node.id}
+        />
+      </>
+      ))}
+    </ActionLinks>
+  )
+}
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -69,6 +130,16 @@ export default function ActionPage() {
           </PageHeader>
         </Container>
       </HeaderSection>
+      <Container>
+        <Row>
+          <Col md={{size: 6, offset: 3}} className="py-5">
+            <CausalCard
+              nodes={data.nodes}
+              nodeId={action.id}
+            />
+          </Col>
+        </Row>
+      </Container>
     </Layout>
   )
 }
