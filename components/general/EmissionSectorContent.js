@@ -15,6 +15,10 @@ const SectorContent = styled.div`
   margin: .5rem 0;
   border: 1px solid ${(props) => props.theme.graphColors.grey020};
   border-radius: 10px;
+
+  .x2sstick text, .xtick text {
+    text-anchor: end !important;
+  }
 `;
 
 const TabButton = styled(Button)`
@@ -27,27 +31,52 @@ const TabText = styled.div`
   margin-bottom: 2rem;
 `;
 
+const BASE_YEAR = 1990;
+
 const EmissionsGraph = (props) => {
   const { sector, subSectors, color, year } = props;
 
+  console.log(sector, subSectors)
   const shapes = [];
   const plotData = [];
+  const basebarData = [];
 
   const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
 
   displaySectors?.forEach((sector, index) => {
     const historicalValues = [];
+    let baseValue;
     const forecastValues = [];
     const historicalDates = [];
     const forecastDates = [];
     sector.metric.historicalValues.forEach((dataPoint) => {
-      historicalValues.push(dataPoint.value);
-      historicalDates.push(dataPoint.year);
+      if (dataPoint.year === BASE_YEAR) {
+        baseValue = dataPoint.value;
+      } else {
+        historicalValues.push(dataPoint.value);
+        historicalDates.push(dataPoint.year);
+      }
     });
+    plotData.push(
+      {
+        x: [BASE_YEAR-1,BASE_YEAR],
+        y: [baseValue, baseValue],
+        name: sector.name,
+        type: 'scatter',
+        fill: 'tonexty',
+        mode: 'none',
+        stackgroup: 'group2',
+        fillcolor: sector.color || color,
+        xaxis: 'x1',
+        yaxis: 'y1'
+      }
+    );
     plotData.push(
       {
         x: historicalDates,
         y: historicalValues,
+        xaxis: 'x2',
+        yaxis: 'y1',
         name: sector.name,
         type: 'scatter',
         fill: 'tonexty',
@@ -70,6 +99,8 @@ const EmissionsGraph = (props) => {
       {
         x: forecastDates,
         y: forecastValues,
+        xaxis: 'x2',
+        yaxis: 'y1',
         name: `${sector.name} (pred)`,
         type: 'scatter',
         fill: 'tonexty',
@@ -109,12 +140,23 @@ const EmissionsGraph = (props) => {
       b: 48,
     },
     xaxis: {
+      domain: [0, 0.03],
+      anchor: 'y1',
+      nticks: 1,
+      ticklen: 5,
     },
     yaxis: {
+      domain: [0, 1],
+      anchor: 'x1'
+    },
+    xaxis2: {
+      domain: [0.075, 1],
+      anchor: 'y2',
+      ticklen: 5,
     },
     yaxis2: {
-      overlaying: 'y',
-      side: 'right'
+      domain: [0, 1],
+      anchor: 'x2'
     },
     autosize: true,
     font: {
@@ -122,9 +164,11 @@ const EmissionsGraph = (props) => {
     },
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: false,
-    shapes,
+    grid: {rows: 1, columns: 2, pattern: 'independent'},
   }
 
+  console.log('basebar', basebarData);
+  console.log('plot', plotData);
   return (
     <DynamicPlot
       data={plotData}
