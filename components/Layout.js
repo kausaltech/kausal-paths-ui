@@ -17,6 +17,7 @@ const PageContainer = styled.div`
     flex-basis: 0;
     flex-grow: 999;
     overflow: scroll;
+    padding-bottom: 4rem;
   }
 `;
 

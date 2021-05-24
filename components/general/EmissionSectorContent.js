@@ -34,13 +34,13 @@ const TabText = styled.div`
 const BASE_YEAR = 1990;
 
 const EmissionsGraph = (props) => {
-  const { sector, subSectors, color, year } = props;
+  const { sector, subSectors, color, year, startYear, endYear } = props;
 
-  console.log(sector, subSectors)
   const shapes = [];
   const plotData = [];
   const basebarData = [];
 
+  //const minLimit = startYear !== BASE_YEAR ? startYear : displaySectors[0].metric.historicalValues[1].year;
   const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
 
   displaySectors?.forEach((sector, index) => {
@@ -52,7 +52,7 @@ const EmissionsGraph = (props) => {
     sector.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year === BASE_YEAR) {
         baseValue = dataPoint.value;
-      } else {
+      } else if(dataPoint.year <= endYear){
         historicalValues.push(dataPoint.value);
         historicalDates.push(dataPoint.year);
       }
@@ -90,8 +90,10 @@ const EmissionsGraph = (props) => {
       }
     );
     sector.metric.forecastValues.forEach((dataPoint) => {
+      if(dataPoint.year <= endYear) {
       forecastValues.push(dataPoint.value);
       forecastDates.push(dataPoint.year);
+      }
     });
     forecastValues.push(historicalValues[historicalValues.length-1]);
     forecastDates.push(historicalDates[historicalDates.length-1]);
@@ -167,8 +169,8 @@ const EmissionsGraph = (props) => {
     grid: {rows: 1, columns: 2, pattern: 'independent'},
   }
 
-  console.log('basebar', basebarData);
-  console.log('plot', plotData);
+  // console.log('basebar', basebarData);
+  // console.log('plot', plotData);
   return (
     <DynamicPlot
       data={plotData}
@@ -181,7 +183,7 @@ const EmissionsGraph = (props) => {
 }
 
 const EmissionSectorContent = (props) => {
-  const { sector, subSectors, color, year } = props;
+  const { sector, subSectors, color, year, startYear, endYear } = props;
   const [activeTabId, setActiveTabId] = useState('graph');
 
   return (
@@ -194,6 +196,8 @@ const EmissionSectorContent = (props) => {
               subSectors={subSectors}
               color={color}
               year={year}
+              startYear={startYear}
+              endYear={endYear}
             />
           </SectorContent>
         )}

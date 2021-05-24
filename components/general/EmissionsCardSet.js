@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import _ from 'lodash';
 import styled from 'styled-components';
-import { getEmissionsValue, getSectorsTotal, beautifyValue } from 'common/preprocess';
+import { getEmissionsValue, getSectorsTotal, beautifyValue, getEmissionsChange } from 'common/preprocess';
 import EmissionsCard from './EmissionsCard';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 
 const CardSet = styled.div` 
   padding: 0.5rem;
   margin-top: 1rem;
-  background-color: #FFF;
+  background-color: ${(props) => props.theme.themeColors.white};
   border-radius: 12px;
 `;
 
@@ -48,6 +48,11 @@ const TotalValue = styled.div`
 
 const TotalUnit = styled.div`
   font-size: 0.75rem;
+`;
+
+const TotalChange = styled.div`
+  margin: .25rem 0;
+  color: ${(props) => props.theme.graphColors.grey050 };
 `;
 
 const ContentArea = styled.div`
@@ -124,7 +129,7 @@ const EmissionsBar = (props) => {
 };
 
 const EmissionsCardSet = (props) => {
-  const { sectors, rootSector, unit, date, parentColor  } = props;
+  const { sectors, rootSector, unit, date, parentColor, startYear, endYear } = props;
 
   const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
   const [activeSectorId, setActiveSectorId] = useState(undefined);
@@ -142,7 +147,10 @@ const EmissionsCardSet = (props) => {
 
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
-  const sectorsTotal = beautifyValue(getEmissionsValue(rootSector, date));
+  const sectorsTotal = getEmissionsValue(rootSector, endYear);
+  const sectorsBase = getEmissionsValue(rootSector, startYear);
+  const emissionsChange = getEmissionsChange(sectorsBase, sectorsTotal);
+
   return (
     <>
     <CardSet>
@@ -150,8 +158,9 @@ const EmissionsCardSet = (props) => {
         <CardSetHeader>
           <h5>{ rootSector.name }</h5>
           <CardSetSummary>
-            <TotalValue>{ sectorsTotal }</TotalValue>
+            <TotalValue>{ beautifyValue(sectorsTotal) }</TotalValue>
             <TotalUnit>{ unit }</TotalUnit>
+            <TotalChange>{ `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` }</TotalChange>
           </CardSetSummary>
         </CardSetHeader>
         <EmissionSectorContent
@@ -159,8 +168,11 @@ const EmissionsCardSet = (props) => {
           subSectors={cardSectors}
           color={parentColor}
           year={date}
+          startYear={startYear}
+          endYear={endYear}
         />
       </ContentArea>
+      { cardSectors.length > 1 && (
       <EmissionsBar
         sectors={cardSectors}
         date={date}
@@ -169,12 +181,14 @@ const EmissionsCardSet = (props) => {
         handleClick={handleClick}
         activeSector={activeSectorId}
         parentColor={parentColor}
-      />
+      /> )}
       <CardDeck>
         { cardSectors.map((sector, indx) => (
           <CardContainer key={sector.id}>
             <EmissionsCard
               date={date}
+              startYear={startYear}
+              endYear={endYear}
               unit={unit}
               sector={sector}
               subSectors={sectors.filter((sector) => sector.parent?.id === sector.id)}
@@ -195,6 +209,8 @@ const EmissionsCardSet = (props) => {
         rootSector={cardSectors.find((sector) => sector.id === activeSectorId)}
         unit={unit}
         date={date}
+        startYear={startYear}
+        endYear={endYear}
         parentColor={activeSectorColor}
       />
     )}

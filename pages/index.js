@@ -10,15 +10,15 @@ import EmissionsCardSet from 'components/general/EmissionsCardSet';
 import RangeSelector from 'components/general/RangeSelector';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 1rem; 
-  background-color: ${(props) => props.theme.graphColors.grey020};
+  padding: 3rem 0 0; 
 `;
 
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
@@ -58,10 +58,13 @@ const GET_PAGE_CONTENT = gql`
   }
 }
 `;
+
+const BASE_YEAR = 1990;
+const TARGET_YEAR = 2030;
 export default function Home() {
   const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
 
-  const [activeYear, setActiveYear] = useState(2030);
+  const [activeYear, setActiveYear] = useState([BASE_YEAR, TARGET_YEAR]);
   const [activeSector, setActiveSector] = useState(undefined);
 
   const unit = 'kt CO₂e';
@@ -76,9 +79,9 @@ export default function Home() {
   const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
   const subSectors = data?.page.emissionSectors.filter((sector) => sector.parent?.id === rootSector.id);
 
-  const baseYear = rootSector.metric.historicalValues[0].year;
-  const currentYear = rootSector.metric.historicalValues[rootSector.metric.historicalValues.length-1].year;
-  const targetYear = 2030;
+  // remove base year from years scale
+  const historicalYears = _.remove(rootSector.metric.historicalValues.map((metric) => metric.year), (y) => y!==BASE_YEAR);
+  const forecastYears = rootSector.metric.forecastValues.map((metric) => metric.year);
 
   return (
     <Layout>
@@ -91,18 +94,21 @@ export default function Home() {
             <h1>{data?.page.name}</h1>
           </PageHeader>
           <RangeSelector 
-              historicalYears={rootSector.metric.historicalValues.map((metric) => metric.year)}
-              forecastYears={rootSector.metric.forecastValues.map((metric) => metric.year)}
+              historicalYears={historicalYears}
+              forecastYears={forecastYears}
               handleChange={setActiveYear}
+              baseYear={BASE_YEAR}
             />
         </Container>
       </HeaderSection>
-      <Container className="my-5">
+      <Container className="my-2">
         <EmissionsCardSet
           sectors={data.page.emissionSectors}
           rootSector={rootSector}
           unit={unit}
-          date={activeYear}
+          date={activeYear[1]}
+          startYear={activeYear[0]}
+          endYear={activeYear[1]}
           parentColor="#666"
         />
       </Container>
