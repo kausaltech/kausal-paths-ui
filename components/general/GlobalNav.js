@@ -1,5 +1,7 @@
 import React, { useState, useContext } from 'react';
 import Link from 'next/link'
+import styled from 'styled-components';
+
 import {
   Container,
   Collapse,
@@ -11,6 +13,14 @@ import {
   NavLink,
 } from 'reactstrap';
 
+const Brand = styled.div`
+  margin-right: .5rem;
+
+  a {
+    color: ${(props) => props.theme.graphColors.grey010 };
+  }
+`;
+
 const GlobalNav = (props) => {
 
   const [isOpen, setIsOpen] = useState(false);
@@ -19,11 +29,13 @@ const GlobalNav = (props) => {
   return (
     <Navbar color="dark" dark expand="md">
     <Container>
-      <Link href="/" passHref>
-        <NavbarBrand href="/">
-          Tampereen päästöskenaariot
-        </NavbarBrand>
-      </Link>
+      <Brand>
+        <Link href="/" passHref>
+          <a>
+            Tampereen päästöskenaariot
+          </a>
+        </Link>
+      </Brand>
       <NavbarToggler onClick={toggle} />
         <Nav className="mr-auto" navbar>
           <NavItem>

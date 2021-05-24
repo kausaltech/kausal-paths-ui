@@ -31,29 +31,7 @@ const CardContainer = styled.div`
   }
 `;
 
-const CardSetHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;
 
-const CardSetSummary = styled.div`
-  text-align: right;
-  line-height: 1.2;
-  font-weight: 700;
-`;
-
-const TotalValue = styled.div`
-  font-size: 2rem;
-`;
-
-const TotalUnit = styled.div`
-  font-size: 0.75rem;
-`;
-
-const TotalChange = styled.div`
-  margin: .25rem 0;
-  color: ${(props) => props.theme.graphColors.grey050 };
-`;
 
 const ContentArea = styled.div`
   padding: .5rem;
@@ -67,6 +45,11 @@ const Bar = styled.div`
   border-width: 0;
   border-top: 0;
   cursor: pointer;
+`;
+
+const BarHeader = styled.h5`
+  font-size: 1rem;
+  color: ${(props) => props.theme.graphColors.grey060};
 `;
 
 const Segment = styled.div`  
@@ -101,6 +84,8 @@ const EmissionsBar = (props) => {
   const sectorsTotal = getSectorsTotal(sectors, date);
 
   return (
+    <>
+    <BarHeader>Jakauma {date}</BarHeader>
     <Bar color={parentColor}>
       { sectors.map((sector) => (
         <Segment
@@ -125,6 +110,7 @@ const EmissionsBar = (props) => {
         />
       )}
     </Bar>
+    </>
   )
 };
 
@@ -155,14 +141,6 @@ const EmissionsCardSet = (props) => {
     <>
     <CardSet>
       <ContentArea>
-        <CardSetHeader>
-          <h5>{ rootSector.name }</h5>
-          <CardSetSummary>
-            <TotalValue>{ beautifyValue(sectorsTotal) }</TotalValue>
-            <TotalUnit>{ unit }</TotalUnit>
-            <TotalChange>{ `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` }</TotalChange>
-          </CardSetSummary>
-        </CardSetHeader>
         <EmissionSectorContent
           sector={rootSector}
           subSectors={cardSectors}
@@ -170,6 +148,7 @@ const EmissionsCardSet = (props) => {
           year={date}
           startYear={startYear}
           endYear={endYear}
+          unit={unit}
         />
       </ContentArea>
       { cardSectors.length > 1 && (

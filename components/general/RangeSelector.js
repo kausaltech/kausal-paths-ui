@@ -8,7 +8,7 @@ import styled from 'styled-components';
 const SectionWrapper = styled.div`
   display: flex;
   justify-content: center;
-  margin-bottom : 2rem;
+  margin-bottom : 1.5rem;
 `;
 
 const ForecastNotice = styled.div`
@@ -92,8 +92,11 @@ const RangeSelector = (props) => {
         onClick={()=>handleBaseYear(!useBase)}
       >
         { useBase ? (
-          <span><Icon.PenFill /> Edit</span>
-          ) : 'Use 1990' }
+            <span><Icon.PenFill /> Edit</span>
+          ) : (
+            <span><Icon.ArrowCounterclockwise /> 1990</span>
+          )
+        }
       </ButtonToggle>
       </ActiveYearDisplay>
       { useBase ? (
@@ -195,7 +198,7 @@ const RangeSelector = (props) => {
           style={{
             ...props.style,
           }}
-          color={index == 0 ? '#205D82' : '#107251'}
+          color={index == 0 ? '#107251' : '#107251'}
         >
           { index === 0 ? <Icon.CaretRightFill color="#eee"/> : <Icon.CaretLeftFill color="#eee"/> }
         </Thumb>

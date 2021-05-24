@@ -5,6 +5,7 @@ import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
 import styled from 'styled-components';
+import { getEmissionsValue, getSectorsTotal, beautifyValue, getEmissionsChange } from 'common/preprocess';
 
 // Plotly doesn't work with SSR
 const DynamicPlot = dynamic(() => import('react-plotly.js'),
@@ -29,6 +30,30 @@ const TabButton = styled(Button)`
 const TabText = styled.div`
   max-width: 640px;
   margin-bottom: 2rem;
+`;
+
+const CardSetHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const CardSetSummary = styled.div`
+  text-align: right;
+  line-height: 1.2;
+  font-weight: 700;
+`;
+
+const TotalValue = styled.div`
+  font-size: 2rem;
+`;
+
+const TotalUnit = styled.div`
+  font-size: 0.75rem;
+`;
+
+const TotalChange = styled.div`
+  margin: .25rem 0;
+  color: ${(props) => props.theme.graphColors.grey050 };
 `;
 
 const BASE_YEAR = 1990;
@@ -183,12 +208,29 @@ const EmissionsGraph = (props) => {
 }
 
 const EmissionSectorContent = (props) => {
-  const { sector, subSectors, color, year, startYear, endYear } = props;
+  const { sector, subSectors, color, year, startYear, endYear, unit } = props;
   const [activeTabId, setActiveTabId] = useState('graph');
+
+  const sectorsTotal = getEmissionsValue(sector, endYear);
+  const sectorsBase = getEmissionsValue(sector, startYear);
+  const emissionsChange = getEmissionsChange(sectorsBase, sectorsTotal);
 
   return (
     <div>
-      
+      <CardSetHeader>
+        <div>
+        <h5>{ sector.name }</h5>
+        <ButtonGroup>
+          <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
+          <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>
+        </ButtonGroup>
+        </div>
+        <CardSetSummary>
+          <TotalValue>{ beautifyValue(sectorsTotal) }</TotalValue>
+          <TotalUnit>{ unit }</TotalUnit>
+          <TotalChange>{ `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` }</TotalChange>
+        </CardSetSummary>
+      </CardSetHeader>
         { activeTabId === 'graph' && (
           <SectorContent>
             <EmissionsGraph
@@ -213,10 +255,7 @@ const EmissionSectorContent = (props) => {
             </TabText>
           </SectorContent>
         )}
-      <ButtonGroup>
-        <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
-        <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>
-      </ButtonGroup> 
+
     </div>
   );
 };
