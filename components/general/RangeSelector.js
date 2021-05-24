@@ -2,6 +2,7 @@ import { useState } from 'react';
 import _ from 'lodash';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle } from "reactstrap";
+import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
 const SectionWrapper = styled.div`
@@ -22,10 +23,17 @@ const RangeWrapper = styled.div`
   flex: 0 1 360px;
 `;
 
-const ActiveYearDisplay = styled.h2`
+const YearDescription = styled.div`
+  font-size: 0.75rem;
+`;
+
+const ActiveYearDisplay = styled.div`
   flex: 0 1 125px;
-  margin: 0 1rem 0 0;
+  margin: 0;
   text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
 `;
 
 const Thumb = styled.div`
@@ -74,6 +82,7 @@ const RangeSelector = (props) => {
   return (
     <SectionWrapper>
       <ActiveYearDisplay>
+      <YearDescription>Vertailuvuosi</YearDescription>
       { useBase ? baseYear : values[0] }
       <ButtonToggle
         color="link"
@@ -82,7 +91,9 @@ const RangeSelector = (props) => {
         active={useBase}
         onClick={()=>handleBaseYear(!useBase)}
       >
-        { useBase ? 'Customize' : 'Use 1990' }
+        { useBase ? (
+          <span><Icon.PenFill /> Edit</span>
+          ) : 'Use 1990' }
       </ButtonToggle>
       </ActiveYearDisplay>
       { useBase ? (
@@ -132,7 +143,9 @@ const RangeSelector = (props) => {
                 ...props.style,
               }}
               color={'#107251'}
-            />
+            >
+              <Icon.CaretLeftFill color="#eee"/>
+            </Thumb>
           )}
         />
       </RangeWrapper>
@@ -183,12 +196,15 @@ const RangeSelector = (props) => {
             ...props.style,
           }}
           color={index == 0 ? '#205D82' : '#107251'}
-        />
+        >
+          { index === 0 ? <Icon.CaretRightFill color="#eee"/> : <Icon.CaretLeftFill color="#eee"/> }
+        </Thumb>
       )}
     />
   </RangeWrapper>
 )}
       <ActiveYearDisplay>
+        <YearDescription>Tavoitevuosi</YearDescription>
         { useBase ? values[0] : values[1] }
         <ForecastNotice>{ _.indexOf(forecastYears, useBase ? values[0] : values[1]) > -1 && '(forecast)' }</ForecastNotice>
       </ActiveYearDisplay>

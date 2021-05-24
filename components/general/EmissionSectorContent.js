@@ -52,7 +52,7 @@ const EmissionsGraph = (props) => {
     sector.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year === BASE_YEAR) {
         baseValue = dataPoint.value;
-      } else if(dataPoint.year <= endYear){
+      } else if(dataPoint.year <= endYear && dataPoint.year >= startYear){
         historicalValues.push(dataPoint.value);
         historicalDates.push(dataPoint.year);
       }
@@ -90,7 +90,7 @@ const EmissionsGraph = (props) => {
       }
     );
     sector.metric.forecastValues.forEach((dataPoint) => {
-      if(dataPoint.year <= endYear) {
+      if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
       forecastValues.push(dataPoint.value);
       forecastDates.push(dataPoint.year);
       }
