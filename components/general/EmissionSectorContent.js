@@ -260,7 +260,7 @@ const EmissionSectorContent = (props) => {
           <SectorContent>
             <TabText>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-              <h6><Journals size={24} className="mr-2" /> Päästöihin vaikuttavat toimenpiteet</h6>
+              <h6><Journals size={24} className="mr-2" /> Actions influencing emissions in this sector</h6>
               <ul>
                 <li><Link href="/actions/naistenlahti3"><a>Toimenpide 1</a></Link></li>
                 <li><Link href="/actions/other_renewable_district_heating"><a>Toimenpide 2</a></Link></li>

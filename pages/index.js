@@ -39,7 +39,9 @@ const GET_PAGE_CONTENT = gql`
         metric {
           id
           name
-          unit
+          unit {
+            htmlShort
+          }
           forecastValues {
             year
             value
