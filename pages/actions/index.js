@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { gql, useQuery, useMutation } from "@apollo/client";
 import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
-import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { Spinner, Container, Row, Col, ButtonGroup, Button, Popover, UncontrolledPopover, PopoverHeader, PopoverBody, Badge } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
@@ -18,7 +18,8 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1rem;
+    text-align: center;
+    font-size: 2rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
@@ -32,9 +33,45 @@ const ActionItem = styled.li`
   margin-bottom: 1rem;
 `;
 
-const CardContent = styled.div`
+const CardHeader = styled.div`
   display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
+`;
+
+const ActionCategory = styled.div`
+  flex: 1;
+  text-align: right;
+`;
+
+const CardContent = styled.div`
   padding: .5rem;
+`;
+
+const CardDetails = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const ActionState = styled.div`
+  
+`;
+
+const ActionImpact = styled.div`
+  
+`;
+
+const ActionImpactFigure = styled.div`
+  text-align: right;
+  font-size: 2rem;
+  line-height: 1;
+`;
+
+const ActionImpactUnit = styled.div`
+  text-align: right;
+  font-size: 0.75rem;
 `;
 
 const GET_PAGE_CONTENT = gql`
@@ -60,8 +97,7 @@ const GET_PAGE_CONTENT = gql`
 export default function ActionsPage() {
   const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
 
-  const [activeYear, setActiveYear] = useState(2030);
-  const [activeSector, setActiveSector] = useState(undefined);
+  const [actionValue, setActionValue] = useState('on');
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
@@ -80,7 +116,7 @@ export default function ActionsPage() {
       <HeaderSection>
         <Container>
           <PageHeader>
-            <h1>Toimet</h1>
+            <h1>Päästöskenaarion toimet</h1>
           </PageHeader>
         </Container>
       </HeaderSection>
@@ -92,14 +128,39 @@ export default function ActionsPage() {
               <ActionItem key={action.id}>
                 <DashCard>
                   <CardContent>
-                    <Icon.JournalCheck size={24} className="mr-3" /> 
-                    <Link href={`/actions/${action.id}`}>
-                      <a>
-                        <h5>
-                        {action.name}
-                        </h5>
-                      </a>
-                    </Link>
+                    <CardHeader>
+                      <Icon.Journals size={24} className="mr-3" /> 
+                      <Link href={`/actions/${action.id}`}>
+                        <a>
+                          <h5>
+                          {action.name}
+                          </h5>
+                        </a>
+                      </Link>
+                      <ActionCategory><Badge>Energia</Badge></ActionCategory>
+                    </CardHeader>
+                    <CardDetails>
+                      <ActionState>
+                        <Button id={`pop-${action.id}`} type="button" size="sm" color="primary" outline>
+                          Toteutetaan
+                        </Button>
+                        <UncontrolledPopover placement="bottom" target={`pop-${action.id}`} trigger="click">
+                          <PopoverHeader>Hankkeen toteuttaminen</PopoverHeader>
+                          <PopoverBody>
+                            <ButtonGroup size="sm">
+                              <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
+                              <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
+                            </ButtonGroup>
+                          </PopoverBody>
+                        </UncontrolledPopover>
+                      </ActionState>
+                      <ActionImpact>
+                        <ActionImpactUnit>Vaikutus</ActionImpactUnit>
+                        <ActionImpactFigure>-5</ActionImpactFigure>
+                        <ActionImpactUnit>kt CO₂e/vuosi</ActionImpactUnit>
+                      </ActionImpact>
+                    </CardDetails>
+                    
                   </CardContent>
                 </DashCard>
               </ActionItem>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router'
+import Link from 'next/link';
 import { gql, useQuery } from "@apollo/client";
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
@@ -19,7 +20,7 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1rem;
+    font-size: 1.5rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
@@ -135,7 +136,15 @@ export default function ActionPage() {
       <HeaderSection>
         <Container>
           <PageHeader>
-            <h1>{action.name}</h1>
+            <h1>
+              <Link href="/actions">
+                <a>
+                  Toimet
+                </a>
+              </Link>
+              {' '}/{' '}
+              {action.name}
+            </h1>
           </PageHeader>
         </Container>
       </HeaderSection>
