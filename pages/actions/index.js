@@ -43,7 +43,9 @@ const GET_PAGE_CONTENT = gql`
     id
     name
     color
-    unit
+    unit {
+      htmlShort
+    }
     quantity
     isAction
     inputNodes {
