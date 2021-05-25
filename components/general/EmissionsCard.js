@@ -36,10 +36,6 @@ const Name = styled.h2`
   font-size: 1rem;
 `;
 
-const Date = styled.p`
-  margin-bottom: 0;
-`;
-
 const Status = styled.div`
   margin-top: .5rem;
   text-align: right;
@@ -68,11 +64,11 @@ const MainUnit = styled.div`
 `;
 
 const EmissionsCard = (props) => {
-  const { date, unit, sector, subSectors, state, hovered, onHover, handleClick, active, color } = props;
+  const { unit, sector, subSectors, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
-  const baseEmissions = getInitialEmissions(sector);
-  const goalEmissionsValue = getEmissionsValue(sector, date);
-  const change =  getEmissionsChange(baseEmissions.value, goalEmissionsValue);
+  const baseEmissionsValue = getEmissionsValue(sector, startYear);
+  const goalEmissionsValue = getEmissionsValue(sector, endYear);
+  const change =  getEmissionsChange(baseEmissionsValue, goalEmissionsValue);
 
   // If there is on emission value for active year, do not display card set
   if (!goalEmissionsValue) return null;

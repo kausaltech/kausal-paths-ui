@@ -38,12 +38,13 @@ const CardSetHeader = styled.div`
 `;
 
 const CardSetSummary = styled.div`
-  text-align: right;
+  display: flex;
   line-height: 1.2;
   font-weight: 700;
 `;
 
 const TotalValue = styled.div`
+  margin: 0 .5rem;
   font-size: 2rem;
 `;
 
@@ -52,8 +53,15 @@ const TotalUnit = styled.div`
 `;
 
 const TotalChange = styled.div`
-  margin: .25rem 0;
+  margin: 0 .5rem;
+  font-size: 2rem;
   color: ${(props) => props.theme.graphColors.grey050 };
+`;
+
+const YearRange = styled.div`
+  text-align: right;
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.graphColors.grey050};
 `;
 
 const BASE_YEAR = 1990;
@@ -226,9 +234,14 @@ const EmissionSectorContent = (props) => {
         </ButtonGroup>
         </div>
         <CardSetSummary>
-          <TotalValue>{ beautifyValue(sectorsTotal) }</TotalValue>
-          <TotalUnit>{ unit }</TotalUnit>
-          <TotalChange>{ `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` }</TotalChange>
+          <TotalChange>
+            { `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` }
+            <YearRange>{startYear}-{endYear}</YearRange>
+          </TotalChange>
+          <TotalValue>
+            { beautifyValue(sectorsTotal) }
+            <TotalUnit>{ unit }</TotalUnit>
+          </TotalValue>
         </CardSetSummary>
       </CardSetHeader>
         { activeTabId === 'graph' && (

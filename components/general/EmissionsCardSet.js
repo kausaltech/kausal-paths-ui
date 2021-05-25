@@ -115,7 +115,7 @@ const EmissionsBar = (props) => {
 };
 
 const EmissionsCardSet = (props) => {
-  const { sectors, rootSector, unit, date, parentColor, startYear, endYear } = props;
+  const { sectors, rootSector, unit, parentColor, startYear, endYear } = props;
 
   const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
   const [activeSectorId, setActiveSectorId] = useState(undefined);
@@ -145,7 +145,6 @@ const EmissionsCardSet = (props) => {
           sector={rootSector}
           subSectors={cardSectors}
           color={parentColor}
-          year={date}
           startYear={startYear}
           endYear={endYear}
           unit={unit}
@@ -154,7 +153,7 @@ const EmissionsCardSet = (props) => {
       { cardSectors.length > 1 && (
       <EmissionsBar
         sectors={cardSectors}
-        date={date}
+        date={endYear}
         hovered={hoveredSectorId} 
         onHover={handleHover}
         handleClick={handleClick}
@@ -165,7 +164,6 @@ const EmissionsCardSet = (props) => {
         { cardSectors.map((sector, indx) => (
           <CardContainer key={sector.id}>
             <EmissionsCard
-              date={date}
               startYear={startYear}
               endYear={endYear}
               unit={unit}
@@ -187,7 +185,6 @@ const EmissionsCardSet = (props) => {
         sectors={sectors}
         rootSector={cardSectors.find((sector) => sector.id === activeSectorId)}
         unit={unit}
-        date={date}
         startYear={startYear}
         endYear={endYear}
         parentColor={activeSectorColor}

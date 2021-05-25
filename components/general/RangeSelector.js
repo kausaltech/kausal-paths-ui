@@ -92,7 +92,7 @@ const RangeSelector = (props) => {
         onClick={()=>handleBaseYear(!useBase)}
       >
         { useBase ? (
-            <span><Icon.PenFill /> Edit</span>
+            <span><Icon.PenFill /> Muokkaa</span>
           ) : (
             <span><Icon.ArrowCounterclockwise /> 1990</span>
           )
@@ -209,7 +209,7 @@ const RangeSelector = (props) => {
       <ActiveYearDisplay>
         <YearDescription>Tavoitevuosi</YearDescription>
         { useBase ? values[0] : values[1] }
-        <ForecastNotice>{ _.indexOf(forecastYears, useBase ? values[0] : values[1]) > -1 && '(forecast)' }</ForecastNotice>
+        <ForecastNotice>{ _.indexOf(forecastYears, useBase ? values[0] : values[1]) > -1 ? 'Ennuste':'Toteutunut' }</ForecastNotice>
       </ActiveYearDisplay>
     </SectionWrapper>
   );
