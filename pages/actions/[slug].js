@@ -47,11 +47,13 @@ const Causality = styled.div`
 
 const GET_PAGE_CONTENT = gql`
 {
-  nodes{
+  nodes {
     id
     name
     color
-    unit
+    unit {
+      htmlShort
+    }
     quantity
     isAction
     inputNodes {
@@ -83,7 +85,7 @@ const CausalCard = (props) => {
         { thisNode.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
         { thisNode.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
         <h4>{thisNode.name}</h4>
-        <p><strong>00</strong> {thisNode.unit}</p>
+        <p><strong>00</strong> <span dangerouslySetInnerHTML={{__html: thisNode.unit.htmlShort}} /></p>
 
         { thisNode.isAction && (
           <ButtonGroup size="sm">
