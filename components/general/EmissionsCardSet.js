@@ -85,7 +85,7 @@ const EmissionsBar = (props) => {
 
   return (
     <>
-    <BarHeader>Emissions {date}</BarHeader>
+    <BarHeader>Jakauma {date}</BarHeader>
     <Bar color={parentColor}>
       { sectors.map((sector) => (
         <Segment

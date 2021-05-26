@@ -82,7 +82,7 @@ const RangeSelector = (props) => {
   return (
     <SectionWrapper>
       <ActiveYearDisplay>
-      <YearDescription>Comparison year</YearDescription>
+      <YearDescription>Vertailuvuosi</YearDescription>
       { useBase ? baseYear : values[0] }
       <ButtonToggle
         color="link"
@@ -207,7 +207,7 @@ const RangeSelector = (props) => {
   </RangeWrapper>
 )}
       <ActiveYearDisplay>
-        <YearDescription>Goal year</YearDescription>
+        <YearDescription>Tavoitevuosi</YearDescription>
         { useBase ? values[0] : values[1] }
         <ForecastNotice>{ _.indexOf(forecastYears, useBase ? values[0] : values[1]) > -1 ? 'Ennuste':'Toteutunut' }</ForecastNotice>
       </ActiveYearDisplay>
