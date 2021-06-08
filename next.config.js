@@ -15,6 +15,7 @@ module.exports = {
   publicRuntimeConfig: {
     localeSubpaths,
     graphqlUrl: process.env.BROWSER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
+    defaultLanguage: process.env.DEFAULT_LANGUAGE || 'en',
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],

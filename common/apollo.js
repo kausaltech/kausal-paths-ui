@@ -13,7 +13,7 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
   // Inject @locale directive into the query root object
   const { query } = operation;
   const { definitions } = query;
-  let language = 'fi';
+  let language = publicRuntimeConfig.defaultLanguage;
 
   /*
   if (i18n && i18n.language) {
