@@ -6,7 +6,7 @@ import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
 import { Spinner, Container, Row, Col, ButtonGroup, Button, Popover, UncontrolledPopover, PopoverHeader, PopoverBody, Badge } from 'reactstrap';
 import styled from 'styled-components';
-import { getMetricValue, beautifyValue } from 'common/preprocess';
+import { summarizeYearlyValues, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
 import ParameterWidget from 'components/general/ParameterWidget';
@@ -76,9 +76,9 @@ const ActionImpactUnit = styled.div`
   font-size: 0.75rem;
 `;
 
-const GET_PAGE_CONTENT = gql`
-{
-  nodes{
+const GET_ACTION_LIST = gql`
+query GetActionList {
+  actions {
     id
     name
     description
@@ -110,15 +110,13 @@ const GET_PAGE_CONTENT = gql`
       }
     }
     quantity
-    isAction
     inputNodes {
       id
     }
     outputNodes {
       id
     }
-    metric {
-      name
+    impactMetric {
       id
       unit {
         htmlShort
@@ -131,16 +129,12 @@ const GET_PAGE_CONTENT = gql`
         value
         year
       }
-      baselineForecastValues {
-        year
-        value
-      }
     }
   }
 }
 `;
 export default function ActionsPage() {
-  const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
+  const { loading, error, data } = useQuery(GET_ACTION_LIST);
 
   const [actionValue, setActionValue] = useState('on');
 
@@ -151,8 +145,7 @@ export default function ActionsPage() {
     return <div>{error}</div>
   }
 
-  const actions = data?.nodes.filter((node) => node.isAction);
-
+  const actions = data?.actions;
   return (
     <Layout>
       <Head>
@@ -185,6 +178,9 @@ export default function ActionsPage() {
                       <ActionCategory><Badge>Energia</Badge></ActionCategory>
                     </CardHeader>
                     <CardDetails>
+                      {action.description && (
+                        <div dangerouslySetInnerHTML={{__html: action.description}} />
+                      )}
                       <ActionState>
 
                         { action.parameters.map((parameter) => (
@@ -196,13 +192,14 @@ export default function ActionsPage() {
                         ))}
 
                       </ActionState>
-                      <ActionImpact>
-                        <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
-                        <ActionImpactFigure>{beautifyValue(getMetricValue(action, 2030))}</ActionImpactFigure>
-                        <ActionImpactUnit>kt CO₂e</ActionImpactUnit>
-                      </ActionImpact>
+                      {action.impactMetric && (
+                        <ActionImpact>
+                          <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
+                          <ActionImpactFigure>{beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues))}</ActionImpactFigure>
+                          <ActionImpactUnit>kt CO₂e</ActionImpactUnit>
+                        </ActionImpact>
+                      )}
                     </CardDetails>
-                    
                   </CardContent>
                 </DashCard>
               </ActionItem>

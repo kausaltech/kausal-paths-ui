@@ -49,7 +49,7 @@ const Causality = styled.div`
 `;
 
 const GET_PAGE_CONTENT = gql`
-query GetNodeContent($node: ID!) {
+query GetPageContent($node: ID!) {
   node(id: $node) {
     id
     name
