@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
 import { gql, useQuery } from "@apollo/client";
+import { ALL_METRIC_FIELDS } from 'common/fragments';
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
@@ -47,6 +48,7 @@ const Causality = styled.div`
 `;
 
 const GET_PAGE_CONTENT = gql`
+${ALL_METRIC_FIELDS}
 query GetNodeContent($node: ID!) {
   node(id: $node) {
     id
@@ -58,23 +60,7 @@ query GetNodeContent($node: ID!) {
     quantity
     isAction
     metric {
-      name
-      id
-      unit {
-        htmlShort
-      }
-      historicalValues {
-        year
-        value
-      }
-      forecastValues {
-        value
-        year
-      }
-      baselineForecastValues {
-        year
-        value
-      }
+      ...AllMetricFields
     }
     inputNodes {
       id
@@ -86,23 +72,7 @@ query GetNodeContent($node: ID!) {
       quantity
       isAction
       metric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
+        ...AllMetricFields
       }
     }
     outputNodes {
@@ -115,23 +85,7 @@ query GetNodeContent($node: ID!) {
       quantity
       isAction
       metric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
+        ...AllMetricFields
       }
     }
   }
