@@ -20,3 +20,5 @@ export const getMetricValue = (sector, date) => sector.metric.forecastValues.fin
 export const getMetricChange = (initial, current) =>  initial !== 0 ? -Math.round(((initial-current)/initial)*100) : undefined;
 
 export const getSectorsTotal = (sectors, date)  => _.sum(sectors.map((sector) => getMetricValue(sector, date)));
+
+export const summarizeYearlyValues = (yearlyValues) => _.sum(yearlyValues.map((v) => v.value));
