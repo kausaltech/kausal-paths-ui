@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
+import ParameterWidget from 'components/general/ParameterWidget';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -84,6 +85,29 @@ const GET_PAGE_CONTENT = gql`
     color
     unit {
       htmlShort
+    }
+    parameters {
+      __typename
+      id
+      nodeRelativeId
+      node {
+        id
+      }
+      isCustomized
+      ... on NumberParameterType {
+        numberValue: value
+        numberDefaultValue: defaultValue
+        minValue
+        maxValue
+      }
+      ... on BoolParameterType {
+        boolValue: value
+        boolDefaultValue: defaultValue
+      }
+      ... on StringParameterType {
+        stringValue: value
+        stringDefaultValue: defaultValue
+      }
     }
     quantity
     isAction
@@ -162,18 +186,15 @@ export default function ActionsPage() {
                     </CardHeader>
                     <CardDetails>
                       <ActionState>
-                        <Button id={`pop-${action.id}`} type="button" size="sm" color="primary" outline>
-                          Toteutetaan
-                        </Button>
-                        <UncontrolledPopover placement="bottom" target={`pop-${action.id}`} trigger="click">
-                          <PopoverHeader>Hankkeen toteuttaminen</PopoverHeader>
-                          <PopoverBody>
-                            <ButtonGroup size="sm">
-                              <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
-                              <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
-                            </ButtonGroup>
-                          </PopoverBody>
-                        </UncontrolledPopover>
+
+                        { action.parameters.map((parameter) => (
+                          <ParameterWidget
+                            key={parameter.id}
+                            parameter={parameter}
+                            parameterType={parameter.__typename}
+                          />
+                        ))}
+
                       </ActionState>
                       <ActionImpact>
                         <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
