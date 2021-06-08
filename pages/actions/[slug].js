@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
-import { I18nContext } from 'react-i18next';
+import ParameterWidget from 'components/general/ParameterWidget';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -51,11 +51,34 @@ const GET_PAGE_CONTENT = gql`
 query GetNodeContent($node: ID!) {
   node(id: $node) {
     id
-    name
+    name 
     description
     color	
     unit {
       htmlShort
+    }
+    parameters {
+      __typename
+      id
+      nodeRelativeId
+      node {
+        id
+      }
+      isCustomized
+      ... on NumberParameterType {
+        numberValue: value
+        numberDefaultValue: defaultValue
+        minValue
+        maxValue
+      }
+      ... on BoolParameterType {
+        boolValue: value
+        boolDefaultValue: defaultValue
+      }
+      ... on StringParameterType {
+        stringValue: value
+        stringDefaultValue: defaultValue
+      }
     }
     quantity
     isAction
@@ -141,11 +164,14 @@ const CausalCard = (props) => {
           <p>{node.description}</p>
           <p><strong>{beautifyValue(getMetricValue(node, 2030))}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
 
-          { node.isAction && (
-            <ButtonGroup size="sm">
-              <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
-              <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
-            </ButtonGroup>
+          { node.isAction && node.parameters?.map((parameter) => (
+              <ParameterWidget
+                key={parameter.id}
+                parameter={parameter}
+                parameterType={parameter.__typename}
+                unit={node.unit.htmlShort}
+              />
+            )
           )}
         </DashCard>
       </NodeCard>

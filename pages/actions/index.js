@@ -178,20 +178,21 @@ export default function ActionsPage() {
                       <ActionCategory><Badge>Energia</Badge></ActionCategory>
                     </CardHeader>
                     <CardDetails>
+                      <div>
                       {action.description && (
                         <div dangerouslySetInnerHTML={{__html: action.description}} />
                       )}
                       <ActionState>
-
                         { action.parameters.map((parameter) => (
                           <ParameterWidget
                             key={parameter.id}
                             parameter={parameter}
                             parameterType={parameter.__typename}
+                            unit={action.unit.htmlShort}
                           />
                         ))}
-
                       </ActionState>
+                      </div>
                       {action.impactMetric && (
                         <ActionImpact>
                           <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
