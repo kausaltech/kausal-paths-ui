@@ -47,21 +47,92 @@ const Causality = styled.div`
 `;
 
 const GET_PAGE_CONTENT = gql`
-{
-  nodes {
+query GetNodeContent($node: ID!) {
+  node(id: $node) {
     id
     name
-    color
+    color	
     unit {
       htmlShort
     }
     quantity
     isAction
+    metric {
+      name
+      id
+      unit {
+        htmlShort
+      }
+      historicalValues {
+        year
+        value
+      }
+      forecastValues {
+        value
+        year
+      }
+      baselineForecastValues {
+        year
+        value
+      }
+    }
     inputNodes {
       id
+      name
+      color	
+      unit {
+        htmlShort
+      }
+      quantity
+      isAction
+      metric {
+        name
+        id
+        unit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+        baselineForecastValues {
+          year
+          value
+        }
+      }
     }
     outputNodes {
       id
+      name
+      color	
+      unit {
+        htmlShort
+      }
+      quantity
+      isAction
+      metric {
+        name
+        id
+        unit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+        baselineForecastValues {
+          year
+          value
+        }
+      }
     }
   }
 }
@@ -70,8 +141,8 @@ const GET_PAGE_CONTENT = gql`
 const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
 
 const CausalCard = (props) => {
-  const { nodes, nodeId } = props;
-  const thisNode = getNode(nodes, nodeId);
+  const { node, nodeId } = props;
+  const thisNode = node;
 
   const [actionValue, setActionValue] = useState('on');
   // emission_factor file-x
@@ -86,7 +157,7 @@ const CausalCard = (props) => {
         { thisNode.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
         { thisNode.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
         <h4>{thisNode.name}</h4>
-        <p><strong>00</strong> <span dangerouslySetInnerHTML={{__html: thisNode.unit.htmlShort}} /></p>
+        <p><strong>00</strong> <span dangerouslySetInnerHTML={{__html: thisNode.unit?.htmlShort}} /></p>
 
         { thisNode.isAction && (
           <ButtonGroup size="sm">
@@ -96,20 +167,6 @@ const CausalCard = (props) => {
         )}
       </DashCard>
     </NodeCard>
-    {thisNode.outputNodes?.map((node) =>(
-      <>
-        <Causality>
-          <Icon.ArrowDown
-            size={36}
-            color="#999999"
-          />
-        </Causality>
-        <CausalCard
-          nodes={nodes}
-          nodeId={node.id}
-        />
-      </>
-      ))}
     </ActionLinks>
   )
 }
@@ -117,16 +174,21 @@ export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
 
-  const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
+  const { loading, error, data } = useQuery(GET_PAGE_CONTENT, {
+    variables: {
+      node: slug,
+    }
+  });
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
   }
   if (error) {
-    return <div>{error}</div>
+    return <Layout><div>{error}</div></Layout>
   }
 
-  const action = data?.nodes.find((node) => node.id === slug);
+  console.log(data)
+  const action = data.node;
 
   return (
     <Layout>
@@ -152,9 +214,23 @@ export default function ActionPage() {
         <Row>
           <Col md={{size: 6, offset: 3}} className="py-5">
             <CausalCard
-              nodes={data.nodes}
+              node={action}
               nodeId={action.id}
             />
+
+            {action.outputNodes?.map((node) =>(
+            <>
+              <Causality>
+                <Icon.ArrowDown
+                  size={36}
+                  color="#999999"
+                />
+              </Causality>
+              <CausalCard
+                node={node}
+              />
+            </>
+            ))} 
           </Col>
         </Row>
       </Container>
