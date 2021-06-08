@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import _ from 'lodash';
 import styled from 'styled-components';
-import { getEmissionsValue, getSectorsTotal, beautifyValue, getEmissionsChange } from 'common/preprocess';
+import { getMetricValue, getSectorsTotal, getMetricChange } from 'common/preprocess';
 import EmissionsCard from './EmissionsCard';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 
@@ -91,9 +91,9 @@ const EmissionsBar = (props) => {
         <Segment
           key={sector.id}
           style={{
-            width: `${(getEmissionsValue(sector,date)/sectorsTotal)*100 || 0}%`,
+            width: `${(getMetricValue(sector,date)/sectorsTotal)*100 || 0}%`,
             backgroundColor: sector.color || parentColor,
-            display: `${getEmissionsValue(sector,date) ? '' : 'none'}`,
+            display: `${getMetricValue(sector,date) ? '' : 'none'}`,
           }}
           className={`${hovered === sector.id ? 'hovered' : ''} ${activeSector === sector.id ? 'active' : ''}` }
           onMouseEnter={() => onHover(sector.id)}
@@ -133,9 +133,9 @@ const EmissionsCardSet = (props) => {
 
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
-  const sectorsTotal = getEmissionsValue(rootSector, endYear);
-  const sectorsBase = getEmissionsValue(rootSector, startYear);
-  const emissionsChange = getEmissionsChange(sectorsBase, sectorsTotal);
+  const sectorsTotal = getMetricValue(rootSector, endYear);
+  const sectorsBase = getMetricValue(rootSector, startYear);
+  const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
 
   return (
     <>

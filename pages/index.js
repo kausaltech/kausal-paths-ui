@@ -28,7 +28,7 @@ const GET_PAGE_CONTENT = gql`
   page(path: "/") {
     id
     name
-    ... on EmissionPageNode {
+    ... on EmissionPageType {
       emissionSectors {
         id
         name

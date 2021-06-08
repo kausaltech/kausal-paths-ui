@@ -13,10 +13,10 @@ export const beautifyValue = (x) => {
   return displayNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-export const getInitialEmissions = (sector) => sector.metric.historicalValues[0];
+export const getInitialMetric = (sector) => sector.metric.historicalValues[0];
 
-export const getEmissionsValue = (sector, date) => sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value;
+export const getMetricValue = (sector, date) => sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value;
 
-export const getEmissionsChange = (initial, current) =>  initial !== 0 ? -Math.round(((initial-current)/initial)*100) : undefined;
+export const getMetricChange = (initial, current) =>  initial !== 0 ? -Math.round(((initial-current)/initial)*100) : undefined;
 
-export const getSectorsTotal = (sectors, date)  => _.sum(sectors.map((sector) => getEmissionsValue(sector, date)));
+export const getSectorsTotal = (sectors, date)  => _.sum(sectors.map((sector) => getMetricValue(sector, date)));

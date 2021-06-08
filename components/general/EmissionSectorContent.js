@@ -5,7 +5,7 @@ import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
 import styled from 'styled-components';
-import { getEmissionsValue, getSectorsTotal, beautifyValue, getEmissionsChange } from 'common/preprocess';
+import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 
 // Plotly doesn't work with SSR
 const DynamicPlot = dynamic(() => import('react-plotly.js'),
@@ -97,7 +97,10 @@ const EmissionsGraph = (props) => {
         name: sector.name,
         type: 'scatter',
         fill: 'tonexty',
-        mode: 'none',
+        line: {
+          color: '#ffffff',
+          width: '0.75',
+        },
         stackgroup: 'group2',
         fillcolor: sector.color || color,
         xaxis: 'x1',
@@ -113,11 +116,12 @@ const EmissionsGraph = (props) => {
         name: sector.name,
         type: 'scatter',
         fill: 'tonexty',
-        mode: 'none',
         fillcolor: sector.color || color,
         stackgroup: 'group1',
         line: {
+          color: '#ffffff',
           shape: 'spline',
+          width: '0.75',
         },
         smoothing: true,
       }
@@ -139,11 +143,12 @@ const EmissionsGraph = (props) => {
         name: `${sector.name} (pred)`,
         type: 'scatter',
         fill: 'tonexty',
-        mode: 'none',
         fillcolor: lighten(0.2, sector.color || color),
         stackgroup: 'group2',
         line: {
+          color: 'white',
           shape: 'spline',
+          width: '0.5',
         },
         smoothing: true,
       }
@@ -219,9 +224,9 @@ const EmissionSectorContent = (props) => {
   const { sector, subSectors, color, year, startYear, endYear, unit } = props;
   const [activeTabId, setActiveTabId] = useState('graph');
 
-  const sectorsTotal = getEmissionsValue(sector, endYear);
-  const sectorsBase = getEmissionsValue(sector, startYear);
-  const emissionsChange = getEmissionsChange(sectorsBase, sectorsTotal);
+  const sectorsTotal = getMetricValue(sector, endYear);
+  const sectorsBase = getMetricValue(sector, startYear);
+  const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
 
   return (
     <div>

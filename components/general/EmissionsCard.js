@@ -1,6 +1,6 @@
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
-import {beautifyValue, getEmissionsChange, getInitialEmissions, getEmissionsValue } from 'common/preprocess';
+import {beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
 
 const Header = styled.div`
   display: flex;
@@ -66,9 +66,9 @@ const MainUnit = styled.div`
 const EmissionsCard = (props) => {
   const { unit, sector, subSectors, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
-  const baseEmissionsValue = getEmissionsValue(sector, startYear);
-  const goalEmissionsValue = getEmissionsValue(sector, endYear);
-  const change =  getEmissionsChange(baseEmissionsValue, goalEmissionsValue);
+  const baseEmissionsValue = getMetricValue(sector, startYear);
+  const goalEmissionsValue = getMetricValue(sector, endYear);
+  const change =  getMetricChange(baseEmissionsValue, goalEmissionsValue);
 
   // If there is on emission value for active year, do not display card set
   if (!goalEmissionsValue) return null;

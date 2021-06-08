@@ -3,11 +3,11 @@ import Head from 'next/head';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
 import { gql, useQuery } from "@apollo/client";
-import { ALL_METRIC_FIELDS } from 'common/fragments';
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
+import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
 import { I18nContext } from 'react-i18next';
@@ -27,7 +27,7 @@ const PageHeader = styled.div`
 `;
 
 const ActionLinks = styled.div`
-  margin-bottom: 8rem;
+  margin-bottom: 1rem;
 `;
 
 const NodeCard = styled.div`
@@ -48,11 +48,11 @@ const Causality = styled.div`
 `;
 
 const GET_PAGE_CONTENT = gql`
-${ALL_METRIC_FIELDS}
 query GetNodeContent($node: ID!) {
   node(id: $node) {
     id
     name
+    description
     color	
     unit {
       htmlShort
@@ -60,11 +60,28 @@ query GetNodeContent($node: ID!) {
     quantity
     isAction
     metric {
-      ...AllMetricFields
+      name
+      id
+      unit {
+        htmlShort
+      }
+      historicalValues {
+        year
+        value
+      }
+      forecastValues {
+        value
+        year
+      }
+      baselineForecastValues {
+        year
+        value
+      }
     }
-    inputNodes {
+    descendantNodes {
       id
       name
+      description
       color	
       unit {
         htmlShort
@@ -72,20 +89,23 @@ query GetNodeContent($node: ID!) {
       quantity
       isAction
       metric {
-        ...AllMetricFields
-      }
-    }
-    outputNodes {
-      id
-      name
-      color	
-      unit {
-        htmlShort
-      }
-      quantity
-      isAction
-      metric {
-        ...AllMetricFields
+        name
+        id
+        unit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+        baselineForecastValues {
+          year
+          value
+        }
       }
     }
   }
@@ -95,8 +115,7 @@ query GetNodeContent($node: ID!) {
 const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
 
 const CausalCard = (props) => {
-  const { node, nodeId } = props;
-  const thisNode = node;
+  const { node, index } = props;
 
   const [actionValue, setActionValue] = useState('on');
   // emission_factor file-x
@@ -105,22 +124,31 @@ const CausalCard = (props) => {
 
   return (
     <ActionLinks>
-    <NodeCard className={`${thisNode.isAction && 'action'} ${thisNode.quantity}`}>
-      <DashCard>
-        { thisNode.isAction && <Icon.Journals size={24} className="mb-3" /> }
-        { thisNode.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
-        { thisNode.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
-        <h4>{thisNode.name}</h4>
-        <p><strong>00</strong> <span dangerouslySetInnerHTML={{__html: thisNode.unit?.htmlShort}} /></p>
+      { index !== 0 && (
+      <Causality>
+        <Icon.ArrowDown
+          size={36}
+          color="#999999"
+        />
+      </Causality>
+      )}
+      <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
+        <DashCard>
+          { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
+          { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
+          { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
+          <h4>{node.name}</h4>
+          <p>{node.description}</p>
+          <p><strong>{beautifyValue(getMetricValue(node, 2030))}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
 
-        { thisNode.isAction && (
-          <ButtonGroup size="sm">
-            <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
-            <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
-          </ButtonGroup>
-        )}
-      </DashCard>
-    </NodeCard>
+          { node.isAction && (
+            <ButtonGroup size="sm">
+              <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
+              <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
+            </ButtonGroup>
+          )}
+        </DashCard>
+      </NodeCard>
     </ActionLinks>
   )
 }
@@ -167,23 +195,12 @@ export default function ActionPage() {
       <Container>
         <Row>
           <Col md={{size: 6, offset: 3}} className="py-5">
-            <CausalCard
-              node={action}
-              nodeId={action.id}
-            />
-
-            {action.outputNodes?.map((node) =>(
-            <>
-              <Causality>
-                <Icon.ArrowDown
-                  size={36}
-                  color="#999999"
-                />
-              </Causality>
+            {action.descendantNodes?.map((node, index) =>(
               <CausalCard
+                key={node.id}
                 node={node}
+                index={index}
               />
-            </>
             ))} 
           </Col>
         </Row>
