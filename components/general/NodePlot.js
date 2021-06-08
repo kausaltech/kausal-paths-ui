@@ -25,10 +25,38 @@ const NodePlot = (props) => {
   const plotData = [];
 
     const historicalValues = [];
-
     const forecastValues = [];
+    const baselineForecastValues = [];
+  
     const historicalDates = [];
     const forecastDates = [];
+    const baselineForecastDates = [];
+
+    metric.baselineForecastValues.forEach((dataPoint) => {
+      if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
+        baselineForecastValues.push(dataPoint.value);
+        baselineForecastDates.push(dataPoint.year);
+      }
+    });
+
+    plotData.push(
+      {
+        x: baselineForecastDates,
+        y: baselineForecastValues,
+        xaxis: 'x2',
+        yaxis: 'y1',
+        marker: {size: 8},
+        name: 'pohjaennuste',
+        type: 'scatter',
+        line: {
+          color: "#999999",
+          shape: 'spline',
+          width: '3',
+          dash: 'dot',
+        },
+        smoothing: true,
+      }
+    )
 
     metric.historicalValues.forEach((dataPoint) => {
       if(dataPoint.year <= endYear && dataPoint.year >= startYear){
@@ -44,7 +72,7 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         marker: {size: 8},
-        name: metric.name,
+        name: 'toteutunut',
         type: 'scatter',
         line: {
           color: plotColor,
@@ -72,7 +100,7 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         marker: {size: 8},
-        name: metric.name,
+        name: 'skenaario',
         type: 'scatter',
         line: {
           color: lighten(0.25, plotColor),
