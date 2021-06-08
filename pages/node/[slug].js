@@ -9,6 +9,7 @@ import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
+import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
 import { I18nContext } from 'react-i18next';
 
@@ -78,7 +79,7 @@ query GetNodeContent($node: ID!) {
         value
       }
     }
-    descendantNodes {
+    inputNodes {
       id
       name
       description
@@ -88,25 +89,17 @@ query GetNodeContent($node: ID!) {
       }
       quantity
       isAction
-      metric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
+    }
+    outputNodes {
+      id
+      name
+      description
+      color	
+      unit {
+        htmlShort
       }
+      quantity
+      isAction
     }
   }
 }
@@ -137,7 +130,7 @@ const CausalCard = (props) => {
           { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
           { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
           { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
-          <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
+          <h4>{node.name}</h4>
           <p>{node.description}</p>
           <p><strong>{beautifyValue(getMetricValue(node, 2030))}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
 
@@ -169,40 +162,59 @@ export default function ActionPage() {
     return <Layout><div>{error}</div></Layout>
   }
 
-  const action = data.node;
+  const node = data.node;
 
   return (
     <Layout>
       <Head>
-        <title>{action.name}</title>
+        <title>{node.name}</title>
       </Head>
       <HeaderSection>
         <Container>
           <PageHeader>
             <h1>
-              <Link href="/actions">
-                <a>
-                  Toimet
-                </a>
-              </Link>
-              {' '}/{' '}
-              {action.name}
+              {node.name}
             </h1>
+            <p>
+              {node.description}
+            </p>
+            <NodePlot
+              metric={node.metric}
+              year="2021"
+              startYear="2010"
+              endYear="2030"
+              color={node.color}
+            />
           </PageHeader>
         </Container>
       </HeaderSection>
       <Container>
-        <Row>
-          <Col md={{size: 6, offset: 3}} className="py-5">
-            {action.descendantNodes?.map((node, index) =>(
-              <CausalCard
-                key={node.id}
-                node={node}
-                index={index}
-              />
-            ))} 
-          </Col>
-        </Row>
+        { node.inputNodes.length > 0 && (
+        <>
+        <h2>Tähän vaikuttaa</h2>
+        <ul>
+          { node.inputNodes.map((inputNode, index) => (
+            <li key={inputNode.id}>
+              <Link href={`/${inputNode.isAction ? 'actions' : 'node'}/${inputNode.id}`}>
+                <a>
+                  { inputNode.name }
+                </a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        </>
+        )}        
+        { node.outputNodes.length > 0 && (
+        <>
+        <h2>Tämä vaikuttaa</h2>
+        <ul>
+          { node.outputNodes.map((outputNode, index) => (
+            <li key={outputNode.id}><Link href={`/node/${outputNode.id}`}><a>{ outputNode.name }</a></Link></li>
+          ))}
+        </ul>
+        </>
+        )}
       </Container>
     </Layout>
   )

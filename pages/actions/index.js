@@ -6,6 +6,7 @@ import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
 import { Spinner, Container, Row, Col, ButtonGroup, Button, Popover, UncontrolledPopover, PopoverHeader, PopoverBody, Badge } from 'reactstrap';
 import styled from 'styled-components';
+import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
 
@@ -79,6 +80,7 @@ const GET_PAGE_CONTENT = gql`
   nodes{
     id
     name
+    description
     color
     unit {
       htmlShort
@@ -90,6 +92,25 @@ const GET_PAGE_CONTENT = gql`
     }
     outputNodes {
       id
+    }
+    metric {
+      name
+      id
+      unit {
+        htmlShort
+      }
+      historicalValues {
+        year
+        value
+      }
+      forecastValues {
+        value
+        year
+      }
+      baselineForecastValues {
+        year
+        value
+      }
     }
   }
 }
@@ -155,9 +176,9 @@ export default function ActionsPage() {
                         </UncontrolledPopover>
                       </ActionState>
                       <ActionImpact>
-                        <ActionImpactUnit>Vaikutus</ActionImpactUnit>
-                        <ActionImpactFigure>-5</ActionImpactFigure>
-                        <ActionImpactUnit>kt CO₂e/vuosi</ActionImpactUnit>
+                        <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
+                        <ActionImpactFigure>{beautifyValue(getMetricValue(action, 2030))}</ActionImpactFigure>
+                        <ActionImpactUnit>kt CO₂e</ActionImpactUnit>
                       </ActionImpact>
                     </CardDetails>
                     
