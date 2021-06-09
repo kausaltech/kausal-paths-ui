@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
+import NodePlot from 'components/general/NodePlot';
 import ParameterWidget from 'components/general/ParameterWidget';
 
 const HeaderSection = styled.div`
@@ -173,6 +174,14 @@ const CausalCard = (props) => {
               />
             )
           )}
+
+          <NodePlot
+            metric={node.metric}
+            year="2021"
+            startYear="2010"
+            endYear="2030"
+            color={node.color}
+          />
         </DashCard>
       </NodeCard>
     </ActionLinks>
