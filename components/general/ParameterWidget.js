@@ -45,18 +45,23 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
-  const { initialValue, min, max, isCustomized } = props;
+  const { id, initialValue, min, max, isCustomized, handleChange, loading } = props;
   const [values, setValues] = useState([initialValue]);
+
+  const handleSlide = (newValues) => {
+    setValues(newValues);
+    handleChange( { parameterId: id, numberValue: newValues[0] });
+  };
 
   return (
     <RangeWrapper>
     <Range
     key="Base"
-    step={1}
+    step={0.01}
     min={min}
     max={max}
     values={values}
-    onChange={(values) => setValues( values )}
+    onChange={(values) => handleSlide( values )}
     renderTrack={({ props, children }) => (
       <div
       onMouseDown={props.onMouseDown}
@@ -69,6 +74,7 @@ const NumberWidget = (props) => {
       }}
     >
       <div
+        disabled={loading}
         ref={props.ref}
         style={{
           height: '5px',
@@ -98,7 +104,7 @@ const NumberWidget = (props) => {
       />
     )}
   />
-  <RangeValue>{`${100*values[0].toFixed(1)} %${isCustomized ? '*' : ''}`}</RangeValue>
+  <RangeValue>{`${(100*values[0]).toFixed(0)} %${isCustomized ? '*' : ''}`}</RangeValue>
   </RangeWrapper>
   )
 };
@@ -135,7 +141,7 @@ const ParameterWidget = (props) => {
   };
 
   switch(parameterType) {
-    case 'NumberParameterType': return <NumberWidget initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit} loading={mutationLoading} isCustomized={parameter.isCustomized}/>
+    case 'NumberParameterType': return <NumberWidget id={parameter.id} initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit} loading={mutationLoading} isCustomized={parameter.isCustomized}/>
     break;
     case 'StringParameterType': return <div>String</div>
     break;

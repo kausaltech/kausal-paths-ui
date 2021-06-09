@@ -158,11 +158,10 @@ export default function ActionsPage() {
   } else {
     actions = data?.actions
     refetching = false
-    console.log(actions) };
 
   const onScenarioChange = (evt) => {
     refetch();
-    console.log("refereshing data", evt);
+    console.log("refereshing data");
   }
 
   return (
