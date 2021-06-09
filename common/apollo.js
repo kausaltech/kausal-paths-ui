@@ -59,6 +59,7 @@ function createApolloClient() {
 
   const httpLink = new HttpLink({
     uri: uri,
+    credentials: 'include',
   });
 
   // console.log("endpoint...", uri)
