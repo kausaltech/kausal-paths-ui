@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
@@ -6,7 +6,7 @@ import { gql, useQuery } from "@apollo/client";
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
-import styled from 'styled-components';
+import styled, { ThemeContext } from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
@@ -58,29 +58,6 @@ query GetNodeContent($node: ID!) {
     unit {
       htmlShort
     }
-    parameters {
-      __typename
-      id
-      nodeRelativeId
-      node {
-        id
-      }
-      isCustomized
-      ... on NumberParameterType {
-        numberValue: value
-        numberDefaultValue: defaultValue
-        minValue
-        maxValue
-      }
-      ... on BoolParameterType {
-        boolValue: value
-        boolDefaultValue: defaultValue
-      }
-      ... on StringParameterType {
-        stringValue: value
-        stringDefaultValue: defaultValue
-      }
-    }
     quantity
     isAction
     metric {
@@ -112,6 +89,29 @@ query GetNodeContent($node: ID!) {
       }
       quantity
       isAction
+      parameters {
+        __typename
+        id
+        nodeRelativeId
+        node {
+          id
+        }
+        isCustomized
+        ... on NumberParameterType {
+          numberValue: value
+          numberDefaultValue: defaultValue
+          minValue
+          maxValue
+        }
+        ... on BoolParameterType {
+          boolValue: value
+          boolDefaultValue: defaultValue
+        }
+        ... on StringParameterType {
+          stringValue: value
+          stringDefaultValue: defaultValue
+        }
+      }
       metric {
         name
         id
@@ -140,7 +140,7 @@ const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
 
 const CausalCard = (props) => {
   const { node, index } = props;
-
+  const theme = useContext(ThemeContext);
   const [actionValue, setActionValue] = useState('on');
   // emission_factor file-x
   // action journal-check
@@ -152,7 +152,7 @@ const CausalCard = (props) => {
       <Causality>
         <Icon.ArrowDown
           size={36}
-          color="#999999"
+          color={theme.graphColors.grey050}
         />
       </Causality>
       )}
@@ -191,10 +191,8 @@ export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
 
-  const { loading, error, data } = useQuery(GET_PAGE_CONTENT, {
-    variables: {
-      node: slug,
-    }
+  const { loading, error, data, refetch, networkStatus } = useQuery(GET_PAGE_CONTENT, {
+    fetchPolicy: "no-cache"
   });
 
   if (loading) {

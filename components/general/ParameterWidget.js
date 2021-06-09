@@ -45,7 +45,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
-  const { initialValue, min, max } = props;
+  const { initialValue, min, max, isCustomized } = props;
   const [values, setValues] = useState([initialValue]);
 
   return (
@@ -99,13 +99,15 @@ const NumberWidget = (props) => {
     )}
   />
   <RangeValue>{`${100*values[0].toFixed(1)} %`}</RangeValue>
+  { isCustomized && <span>*</span> }
   </RangeWrapper>
   )
 };
 
 const BoolWidget = (props) => {
-  const { id, toggled, handleChange, loading } = props;
+  const { id, toggled, handleChange, loading, isCustomized} = props;
   return (
+    <>
     <CustomInput
       type="switch"
       id={`${id}-switch`}
@@ -115,6 +117,8 @@ const BoolWidget = (props) => {
       onChange={()=> handleChange( { parameterId: id, boolValue: !toggled })}
       disabled={loading}
     />
+    { isCustomized && <span>*</span>}
+    </>
   )
 };
 
@@ -122,26 +126,22 @@ const ParameterWidget = (props) => {
   const { parameter, parameterType, unit, handleChange } = props;
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
-    onCompleted({data}) {
+    onCompleted(data) {
       console.log(data);
-      handleChange();
+      handleChange(data);
     }
   });
-
-  useEffect(() => {
-    console.log(parameter);
-  }, [parameter]);
 
   const handleUserSelection = (evt) => {
     SetParameter({variables: evt});
   };
 
   switch(parameterType) {
-    case 'NumberParameterType': return <NumberWidget initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit} loading={mutationLoading}/>
+    case 'NumberParameterType': return <NumberWidget initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit} loading={mutationLoading} isCustomized={parameter.isCustomized}/>
     break;
     case 'StringParameterType': return <div>String</div>
     break;
-    case 'BoolParameterType': return <BoolWidget id={parameter.id} toggled={parameter.boolValue} handleChange={handleUserSelection} loading={mutationLoading}/>
+    case 'BoolParameterType': return <BoolWidget id={parameter.id} toggled={parameter.boolValue} handleChange={handleUserSelection} loading={mutationLoading} isCustomized={parameter.isCustomized}/>
     break;
     default: return <div />
   }

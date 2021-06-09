@@ -154,7 +154,7 @@ export default function ActionsPage() {
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   } else if (error) {
-    <Layout><div>Error loading data</div></Layout>;
+    return <Layout><div>Error loading data</div></Layout>;
   } else {
     actions = data?.actions
     refetching = false
@@ -162,7 +162,7 @@ export default function ActionsPage() {
 
   const onScenarioChange = (evt) => {
     refetch();
-    console.log("refereshing data");
+    console.log("refereshing data", evt);
   }
 
   return (
@@ -174,6 +174,7 @@ export default function ActionsPage() {
         <Container>
           <PageHeader>
             <h1>Päästöskenaarion toimet</h1>
+                    <button onClick={() => refetch()}>Refetch!</button>
           </PageHeader>
         </Container>
       </HeaderSection>

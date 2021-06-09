@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useContext } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link'
 import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
-import styled from 'styled-components';
+import { ThemeContext } from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 
 // Plotly doesn't work with SSR
@@ -20,7 +20,9 @@ const NodePlot = (props) => {
     color
   } = props;
 
-  const plotColor = color || "#333333";
+  const theme = useContext(ThemeContext);
+
+  const plotColor = color || theme.graphColors.blue070;
   const shapes = [];
   const plotData = [];
 
@@ -49,7 +51,7 @@ const NodePlot = (props) => {
         name: 'pohjaennuste',
         type: 'scatter',
         line: {
-          color: "#999999",
+          color: theme.graphColors.grey030,
           shape: 'spline',
           width: '3',
           dash: 'dot',
@@ -132,8 +134,9 @@ const NodePlot = (props) => {
     height: 300,
     margin: {
       t: 24,
-      r: 48,
+      r: 32,
       b: 48,
+      l: 24,
     },
     xaxis: {
       domain: [0, 0.03],
