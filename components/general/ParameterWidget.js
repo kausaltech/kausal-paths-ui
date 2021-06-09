@@ -98,8 +98,7 @@ const NumberWidget = (props) => {
       />
     )}
   />
-  <RangeValue>{`${100*values[0].toFixed(1)} %`}</RangeValue>
-  { isCustomized && <span>*</span> }
+  <RangeValue>{`${100*values[0].toFixed(1)} %${isCustomized ? '*' : ''}`}</RangeValue>
   </RangeWrapper>
   )
 };
@@ -112,12 +111,11 @@ const BoolWidget = (props) => {
       type="switch"
       id={`${id}-switch`}
       name={id}
-      label="Toteutetaan"
+      label={`Toteutetaan ${isCustomized ? '*' : ''}`}
       checked={toggled}
       onChange={()=> handleChange( { parameterId: id, boolValue: !toggled })}
       disabled={loading}
     />
-    { isCustomized && <span>*</span>}
     </>
   )
 };

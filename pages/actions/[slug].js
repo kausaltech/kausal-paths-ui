@@ -60,6 +60,29 @@ query GetNodeContent($node: ID!) {
     }
     quantity
     isAction
+    parameters {
+      __typename
+      id
+      nodeRelativeId
+      node {
+        id
+      }
+      isCustomized
+      ... on NumberParameterType {
+        numberValue: value
+        numberDefaultValue: defaultValue
+        minValue
+        maxValue
+      }
+      ... on BoolParameterType {
+        boolValue: value
+        boolDefaultValue: defaultValue
+      }
+      ... on StringParameterType {
+        stringValue: value
+        stringDefaultValue: defaultValue
+      }
+    }
     metric {
       name
       id
@@ -86,6 +109,13 @@ query GetNodeContent($node: ID!) {
       color	
       unit {
         htmlShort
+      }
+      impactMetric {
+        id
+        name
+        unit {
+          htmlShort
+        }
       }
       quantity
       isAction
@@ -139,12 +169,8 @@ query GetNodeContent($node: ID!) {
 const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
 
 const CausalCard = (props) => {
-  const { node, index } = props;
+  const { node, index, handleChange } = props;
   const theme = useContext(ThemeContext);
-  const [actionValue, setActionValue] = useState('on');
-  // emission_factor file-x
-  // action journal-check
-  // emission    patch-exclamation cloud-fog
 
   return (
     <ActionLinks>
@@ -163,7 +189,7 @@ const CausalCard = (props) => {
           { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
           <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
           <p>{node.description}</p>
-          <p><strong>{beautifyValue(getMetricValue(node, 2030))}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
+          <p><strong>{beautifyValue(getMetricValue(node, 2030) || 0)}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
 
           { node.isAction && node.parameters?.map((parameter) => (
               <ParameterWidget
@@ -171,6 +197,7 @@ const CausalCard = (props) => {
                 parameter={parameter}
                 parameterType={parameter.__typename}
                 unit={node.unit.htmlShort}
+                handleChange={handleChange}
               />
             )
           )}
@@ -192,7 +219,10 @@ export default function ActionPage() {
   const { slug } = router.query;
 
   const { loading, error, data, refetch, networkStatus } = useQuery(GET_PAGE_CONTENT, {
-    fetchPolicy: "no-cache"
+    fetchPolicy: "no-cache",
+    variables: {
+      node: slug,
+    }
   });
 
   if (loading) {
@@ -201,6 +231,10 @@ export default function ActionPage() {
   if (error) {
     return <Layout><div>{error}</div></Layout>
   }
+
+  const handleChange = (evt) => {
+    refetch();
+  };
 
   const action = data.node;
 
@@ -227,11 +261,18 @@ export default function ActionPage() {
       <Container>
         <Row>
           <Col md={{size: 6, offset: 3}} className="py-5">
+            <CausalCard
+              key={action.id}
+              node={action}
+              index={0}
+              handleChange={handleChange}
+            />
             {action.descendantNodes?.map((node, index) =>(
               <CausalCard
                 key={node.id}
                 node={node}
-                index={index}
+                index={index+1}
+                handleChange={handleChange}
               />
             ))} 
           </Col>
