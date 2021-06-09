@@ -136,28 +136,23 @@ query GetActionList {
 export default function ActionsPage() {
 
   const { loading, error, data, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
-    fetchPolicy: "no-cache"
+    fetchPolicy: "no-cache",
   });
 
-  useEffect(() => {
-    console.log(networkStatus)
-  }, [networkStatus]);
-
   let actions;
-  let refetching = false;
 
-  if (networkStatus === NetworkStatus.refetch) {
-    console.log("refetching");
-    refetching = true;
-  }
+  /*
+  useEffect(() => {
+    if(networkStatus === NetworkStatus.refetch) console.log("let's refetch!");
+  }, [networkStatus]);
+  */
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   } else if (error) {
     return <Layout><div>Error loading data</div></Layout>;
   } else {
-    actions = data?.actions
-    refetching = false
+    actions = data?.actions;
   };
 
   const onScenarioChange = (evt) => {
@@ -174,7 +169,6 @@ export default function ActionsPage() {
         <Container>
           <PageHeader>
             <h1>Päästöskenaarion toimet</h1>
-                    <button onClick={() => refetch()}>Refetch!</button>
           </PageHeader>
         </Container>
       </HeaderSection>
@@ -213,7 +207,7 @@ export default function ActionsPage() {
                         ))}
                       </ActionState>
                       </div>
-                      {action.impactMetric && !refetching && (
+                      {action.impactMetric && (
                         <ActionImpact>
                           <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
                           <ActionImpactFigure>{beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues))}</ActionImpactFigure>
