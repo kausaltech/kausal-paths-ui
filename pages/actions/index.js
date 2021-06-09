@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { gql, useQuery, NetworkStatus } from "@apollo/client";
 import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
 import { Spinner, Container, Row, Col, ButtonGroup, Button, Popover, UncontrolledPopover, PopoverHeader, PopoverBody, Badge } from 'reactstrap';
@@ -134,18 +134,37 @@ query GetActionList {
 }
 `;
 export default function ActionsPage() {
-  const { loading, error, data } = useQuery(GET_ACTION_LIST);
 
-  const [actionValue, setActionValue] = useState('on');
+  const { loading, error, data, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
+    fetchPolicy: "no-cache"
+  });
+
+  useEffect(() => {
+    console.log(networkStatus)
+  }, [networkStatus]);
+
+  let actions;
+  let refetching = false;
+
+  if (networkStatus === NetworkStatus.refetch) {
+    console.log("refetching");
+    refetching = true;
+  }
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
-  }
-  if (error) {
-    return <div>{error}</div>
+    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
+  } else if (error) {
+    <Layout><div>Error loading data</div></Layout>;
+  } else {
+    actions = data?.actions
+    refetching = false
+    console.log(actions) };
+
+  const onScenarioChange = (evt) => {
+    refetch();
+    console.log("refereshing data");
   }
 
-  const actions = data?.actions;
   return (
     <Layout>
       <Head>
@@ -188,12 +207,12 @@ export default function ActionsPage() {
                             key={parameter.id}
                             parameter={parameter}
                             parameterType={parameter.__typename}
-                            unit={action.unit.htmlShort}
+                            handleChange={onScenarioChange}
                           />
                         ))}
                       </ActionState>
                       </div>
-                      {action.impactMetric && (
+                      {action.impactMetric && !refetching && (
                         <ActionImpact>
                           <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
                           <ActionImpactFigure>{beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues))}</ActionImpactFigure>

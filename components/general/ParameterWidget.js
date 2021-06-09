@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { gql, useMutation, useQuery } from "@apollo/client";
 import {
   CustomInput
@@ -33,13 +33,21 @@ const SET_PARAMETER = gql`
   mutation SetParameter($parameterId: ID!, $boolValue: Boolean, $numberValue: Float, $stringValue: String) {
     setParameter(id: $parameterId, boolValue: $boolValue, numberValue: $numberValue, stringValue: $stringValue) {
       ok
+      parameter {
+        isCustomized
+        ... on BoolParameterType {
+        boolValue: value
+        boolDefaultValue: defaultValue
+      }
+      }
     }
   }
 `;
 
 const NumberWidget = (props) => {
-  const { initialValue, min, max, unit } = props;
+  const { initialValue, min, max } = props;
   const [values, setValues] = useState([initialValue]);
+
   return (
     <RangeWrapper>
     <Range
@@ -90,34 +98,50 @@ const NumberWidget = (props) => {
       />
     )}
   />
-  <RangeValue>{`${values[0].toFixed(1)} ${unit}`}</RangeValue>
+  <RangeValue>{`${100*values[0].toFixed(1)} %`}</RangeValue>
   </RangeWrapper>
   )
 };
 
 const BoolWidget = (props) => {
-  const { id, toggled, handleChange } = props;
-  return <CustomInput type="switch" size="lg" id={`${id}-switch`} name={id} label="Toteutetaan" checked={toggled} onChange={()=> handleChange( { parameterId: id, boolValue: toggled })} />
+  const { id, toggled, handleChange, loading } = props;
+  return (
+    <CustomInput
+      type="switch"
+      id={`${id}-switch`}
+      name={id}
+      label="Toteutetaan"
+      checked={toggled}
+      onChange={()=> handleChange( { parameterId: id, boolValue: !toggled })}
+      disabled={loading}
+    />
+  )
 };
 
 const ParameterWidget = (props) => {
-  const { parameter, parameterType, unit } = props;
+  const { parameter, parameterType, unit, handleChange } = props;
 
-  const [SetParameter] = useMutation(SET_PARAMETER, {
+  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     onCompleted({data}) {
+      console.log(data);
+      handleChange();
     }
   });
+
+  useEffect(() => {
+    console.log(parameter);
+  }, [parameter]);
 
   const handleUserSelection = (evt) => {
     SetParameter({variables: evt});
   };
 
   switch(parameterType) {
-    case 'NumberParameterType': return <NumberWidget initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit}/>
+    case 'NumberParameterType': return <NumberWidget initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit} loading={mutationLoading}/>
     break;
     case 'StringParameterType': return <div>String</div>
     break;
-    case 'BoolParameterType': return <BoolWidget id={parameter.id} toggled={parameter.boolValue} handleChange={handleUserSelection} />
+    case 'BoolParameterType': return <BoolWidget id={parameter.id} toggled={parameter.boolValue} handleChange={handleUserSelection} loading={mutationLoading}/>
     break;
     default: return <div />
   }
