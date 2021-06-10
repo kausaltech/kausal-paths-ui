@@ -111,10 +111,22 @@ query GetNodeContent($node: ID!) {
         htmlShort
       }
       impactMetric {
-        id
         name
+        id
         unit {
           htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+        baselineForecastValues {
+          year
+          value
         }
       }
       quantity
@@ -204,10 +216,12 @@ const CausalCard = (props) => {
 
           <NodePlot
             metric={node.metric}
+            impactMetric={node.impactMetric}
             year="2021"
             startYear="2010"
             endYear="2030"
             color={node.color}
+            isAction={node.isAction}
           />
         </DashCard>
       </NodeCard>
