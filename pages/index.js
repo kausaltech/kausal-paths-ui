@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import Head from 'next/head';
 import { gql, useQuery } from "@apollo/client";
 import _ from 'lodash';
 import { Spinner, Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
-import EmissionsCard from 'components/general/EmissionsCard';
+import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
-import RangeSelector from 'components/general/RangeSelector';
+import SettingsContext from 'common/settings-context';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 0; 
@@ -68,6 +68,7 @@ export default function Home() {
 
   const [activeYear, setActiveYear] = useState([BASE_YEAR, TARGET_YEAR]);
   const [activeSector, setActiveSector] = useState(undefined);
+  const settings = useContext(SettingsContext);
 
   const unit = 'kt CO₂e';
 
@@ -95,12 +96,6 @@ export default function Home() {
           <PageHeader>
             <h1>{data?.page.name}</h1>
           </PageHeader>
-          <RangeSelector 
-              historicalYears={historicalYears}
-              forecastYears={forecastYears}
-              handleChange={setActiveYear}
-              baseYear={BASE_YEAR}
-            />
         </Container>
       </HeaderSection>
       <Container className="my-2">
@@ -108,12 +103,13 @@ export default function Home() {
           sectors={data.page.emissionSectors}
           rootSector={rootSector}
           unit={unit}
-          date={activeYear[1]}
-          startYear={activeYear[0]}
-          endYear={activeYear[1]}
+          date={settings.yearRange[1]}
+          startYear={settings.yearRange[0]}
+          endYear={settings.yearRange[1]}
           parentColor="#666"
         />
       </Container>
+      <SettingsPanel />
     </Layout>
   )
 }

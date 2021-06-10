@@ -8,8 +8,6 @@ import styled from 'styled-components';
 
 const SectionWrapper = styled.div`
   display: flex;
-  justify-content: center;
-  margin-bottom : 1.5rem;
 `;
 
 const ForecastNotice = styled.div`
@@ -21,20 +19,27 @@ const ForecastNotice = styled.div`
 
 const RangeWrapper = styled.div`
   display: flex;
-  flex: 0 1 360px;
+  flex: 0 1 150px;
 `;
 
 const YearDescription = styled.div`
   font-size: 0.75rem;
 `;
 
+const ActiveYear = styled.div`
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+`;
+
 const ActiveYearDisplay = styled.div`
   flex: 0 1 125px;
   margin: 0;
   text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1;
+
+  .btn {
+    color: ${(props) => props.theme.graphColors.grey050 };
+  }
 `;
 
 const Thumb = styled.div`
@@ -45,14 +50,11 @@ const Thumb = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0px 2px 6px #AAA;
 `;
 
 const RangeSelector = (props) => {
-  const { historicalYears, forecastYears, handleChange, baseYear } = props;
-  const allYears = _.union(historicalYears, forecastYears);
-  const min = _.min(allYears);
-  const max = _.max(allYears);
+  const { min, max, baseYear } = props;
+
   const [useBase, setUseBase] = useState(true);
   const [values, setValues] = useState(useBase ? [max] : [min, max]);
   const settings = useContext(SettingsContext);
@@ -67,7 +69,6 @@ const RangeSelector = (props) => {
     setValues(changedValues);
     //console.log(values);
     const newRange = useBase ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]];
-    handleChange(newRange);
     settings.setYearRange(newRange);
   }
 
@@ -85,22 +86,22 @@ const RangeSelector = (props) => {
   return (
     <SectionWrapper>
       <ActiveYearDisplay>
-      <YearDescription>Vertailuvuosi</YearDescription>
-      { useBase ? baseYear : values[0] }
-      <ButtonToggle
-        color="link"
-        size="sm"
-        outline
-        active={useBase}
-        onClick={()=>handleBaseYear(!useBase)}
-      >
-        { useBase ? (
-            <span><Icon.PenFill /> Muokkaa</span>
-          ) : (
-            <span><Icon.ArrowCounterclockwise /> 1990</span>
-          )
-        }
-      </ButtonToggle>
+        <YearDescription>Vertailuvuosi</YearDescription>
+        <ActiveYear>{ useBase ? baseYear : values[0] }</ActiveYear>
+        <ButtonToggle
+          color="link"
+          size="sm"
+          outline
+          active={useBase}
+          onClick={()=>handleBaseYear(!useBase)}
+        >
+          { useBase ? (
+              <span><Icon.PenFill /> Muokkaa</span>
+            ) : (
+              <span><Icon.ArrowCounterclockwise /> 1990</span>
+            )
+          }
+        </ButtonToggle>
       </ActiveYearDisplay>
       { useBase ? (
       <RangeWrapper>
@@ -211,8 +212,7 @@ const RangeSelector = (props) => {
 )}
       <ActiveYearDisplay>
         <YearDescription>Tavoitevuosi</YearDescription>
-        { useBase ? values[0] : values[1] }
-        <ForecastNotice>{ _.indexOf(forecastYears, useBase ? values[0] : values[1]) > -1 ? 'Ennuste':'Toteutunut' }</ForecastNotice>
+        <ActiveYear>{ useBase ? values[0] : values[1] }</ActiveYear>
       </ActiveYearDisplay>
     </SectionWrapper>
   );
