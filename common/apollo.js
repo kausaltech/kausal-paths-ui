@@ -1,19 +1,17 @@
 // Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
-import { useMemo } from "react";
-import getConfig from 'next/config'
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
+import { useMemo } from 'react';
+import getConfig from 'next/config';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
 
+const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
-const { serverRuntimeConfig, publicRuntimeConfig } = getConfig()
-
-let i18n = null;
-
+const i18n = null;
 
 const localeMiddleware = new ApolloLink((operation, forward) => {
   // Inject @locale directive into the query root object
   const { query } = operation;
   const { definitions } = query;
-  let language = publicRuntimeConfig.defaultLanguage;
+  const language = publicRuntimeConfig.defaultLanguage;
 
   /*
   if (i18n && i18n.language) {
@@ -49,22 +47,20 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-
-
 let apolloClient;
 
 function createApolloClient() {
-  let ssrMode = typeof window === "undefined";
-  let uri = ssrMode ? serverRuntimeConfig.graphqlUrl : publicRuntimeConfig.graphqlUrl;
+  const ssrMode = typeof window === 'undefined';
+  const uri = ssrMode ? serverRuntimeConfig.graphqlUrl : publicRuntimeConfig.graphqlUrl;
 
   const httpLink = new HttpLink({
-    uri: uri,
+    uri,
     credentials: 'include',
   });
 
   // console.log("endpoint...", uri)
   return new ApolloClient({
-    ssrMode: ssrMode,
+    ssrMode,
     link: ApolloLink.from([localeMiddleware, httpLink]),
     cache: new InMemoryCache(),
   });
@@ -83,7 +79,7 @@ export function initializeApollo(initialState = null) {
     _apolloClient.cache.restore({ ...existingCache, ...initialState });
   }
   // For SSG and SSR always create a new Apollo Client
-  if (typeof window === "undefined") return _apolloClient;
+  if (typeof window === 'undefined') return _apolloClient;
   // Create the Apollo Client once in the client
   if (!apolloClient) apolloClient = _apolloClient;
   return _apolloClient;

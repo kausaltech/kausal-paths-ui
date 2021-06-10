@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import Link from 'next/link'
+import Link from 'next/link';
 import styled from 'styled-components';
 
 import {
@@ -17,7 +17,7 @@ const Brand = styled.div`
   margin-right: .5rem;
 
   a {
-    color: ${(props) => props.theme.graphColors.grey010 };
+    color: ${(props) => props.theme.graphColors.grey010};
   }
 `;
 
@@ -26,16 +26,16 @@ const GlobalNav = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <Navbar color="dark" dark expand="md">
-    <Container>
-      <Brand>
-        <Link href="/" passHref>
-          <a>
-            Tampereen päästöskenaariot
-          </a>
-        </Link>
-      </Brand>
-      <NavbarToggler onClick={toggle} />
+    <Navbar color="primary" dark expand="md">
+      <Container>
+        <Brand>
+          <Link href="/" passHref>
+            <a>
+              Tampereen päästöskenaariot
+            </a>
+          </Link>
+        </Brand>
+        <NavbarToggler onClick={toggle} />
         <Nav className="mr-auto" navbar>
           <NavItem>
             <Link href="/" passHref>
@@ -52,9 +52,9 @@ const GlobalNav = (props) => {
             </Link>
           </NavItem>
         </Nav>
-    </Container>
+      </Container>
     </Navbar>
-  )
-}
+  );
+};
 
 export default GlobalNav;

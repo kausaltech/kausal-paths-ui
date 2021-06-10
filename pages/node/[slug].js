@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import Head from 'next/head';
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery } from '@apollo/client';
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
@@ -132,7 +132,11 @@ const CausalCard = (props) => {
           { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
           <h4>{node.name}</h4>
           <p>{node.description}</p>
-          <p><strong>{beautifyValue(getMetricValue(node, 2030))}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
+          <p>
+            <strong>{beautifyValue(getMetricValue(node, 2030))}</strong>
+            {' '}
+            <span dangerouslySetInnerHTML={{ __html: node.unit?.htmlShort }} />
+          </p>
 
           { node.isAction && (
             <ButtonGroup size="sm">
@@ -143,8 +147,8 @@ const CausalCard = (props) => {
         </DashCard>
       </NodeCard>
     </ActionLinks>
-  )
-}
+  );
+};
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -152,17 +156,17 @@ export default function ActionPage() {
   const { loading, error, data } = useQuery(GET_PAGE_CONTENT, {
     variables: {
       node: slug,
-    }
+    },
   });
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
+    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   }
   if (error) {
-    return <Layout><div>{error}</div></Layout>
+    return <Layout><div>{error}</div></Layout>;
   }
 
-  const node = data.node;
+  const { node } = data;
 
   return (
     <Layout>
@@ -191,33 +195,33 @@ export default function ActionPage() {
       <Container>
         { node.inputNodes.length > 0 && (
         <>
-        <h2>Tähän vaikuttaa</h2>
-        <ul>
-          { node.inputNodes.map((inputNode, index) => (
-            <li key={inputNode.id}>
-              <Link href={`/${inputNode.isAction ? 'actions' : 'node'}/${inputNode.id}`}>
-                <a>
-                  { inputNode.name }
-                </a>
-              </Link>
-            </li>
-          ))}
-        </ul>
+          <h2>Tähän vaikuttaa</h2>
+          <ul>
+            { node.inputNodes.map((inputNode, index) => (
+              <li key={inputNode.id}>
+                <Link href={`/${inputNode.isAction ? 'actions' : 'node'}/${inputNode.id}`}>
+                  <a>
+                    { inputNode.name }
+                  </a>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </>
-        )}        
+        )}
         { node.outputNodes.length > 0 && (
         <>
-        <h2>Tämä vaikuttaa</h2>
-        <ul>
-          { node.outputNodes.map((outputNode, index) => (
-            <li key={outputNode.id}><Link href={`/node/${outputNode.id}`}><a>{ outputNode.name }</a></Link></li>
-          ))}
-        </ul>
+          <h2>Tämä vaikuttaa</h2>
+          <ul>
+            { node.outputNodes.map((outputNode, index) => (
+              <li key={outputNode.id}><Link href={`/node/${outputNode.id}`}><a>{ outputNode.name }</a></Link></li>
+            ))}
+          </ul>
         </>
         )}
       </Container>
     </Layout>
-  )
+  );
 }
 
 ActionPage.getInitialProps = async ({ query }) => ({

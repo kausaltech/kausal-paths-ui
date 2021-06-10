@@ -21,11 +21,9 @@ const PageContainer = styled.div`
   }
 `;
 
-
-const Layout = ({ children }) => {
-  return (
-    <>
-    <Head> 
+const Layout = ({ children }) => (
+  <>
+    <Head>
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <GlobalNav />
@@ -34,8 +32,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
     </PageContainer>
-    </>
-  );
-};
+  </>
+);
 
 export default Layout;

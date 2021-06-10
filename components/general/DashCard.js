@@ -1,5 +1,5 @@
 import {
-  Card, CardBody
+  Card, CardBody,
 } from 'reactstrap';
 import styled from 'styled-components';
 

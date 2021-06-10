@@ -1,8 +1,8 @@
 import { useState, useContext } from 'react';
 import Head from 'next/head';
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery } from '@apollo/client';
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
@@ -201,18 +201,21 @@ const CausalCard = (props) => {
           { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
           <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
           <p>{node.description}</p>
-          <p><strong>{beautifyValue(getMetricValue(node, 2030) || 0)}</strong> <span dangerouslySetInnerHTML={{__html: node.unit?.htmlShort}} /></p>
+          <p>
+            <strong>{beautifyValue(getMetricValue(node, 2030) || 0)}</strong>
+            {' '}
+            <span dangerouslySetInnerHTML={{ __html: node.unit?.htmlShort }} />
+          </p>
 
           { node.isAction && node.parameters?.map((parameter) => (
-              <ParameterWidget
-                key={parameter.id}
-                parameter={parameter}
-                parameterType={parameter.__typename}
-                unit={node.unit.htmlShort}
-                handleChange={handleChange}
-              />
-            )
-          )}
+            <ParameterWidget
+              key={parameter.id}
+              parameter={parameter}
+              parameterType={parameter.__typename}
+              unit={node.unit.htmlShort}
+              handleChange={handleChange}
+            />
+          ))}
 
           <NodePlot
             metric={node.metric}
@@ -226,24 +229,24 @@ const CausalCard = (props) => {
         </DashCard>
       </NodeCard>
     </ActionLinks>
-  )
-}
+  );
+};
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
 
   const { loading, error, data, refetch, networkStatus } = useQuery(GET_PAGE_CONTENT, {
-    fetchPolicy: "no-cache",
+    fetchPolicy: 'no-cache',
     variables: {
       node: slug,
-    }
+    },
   });
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
+    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   }
   if (error) {
-    return <Layout><div>{error}</div></Layout>
+    return <Layout><div>{error}</div></Layout>;
   }
 
   const handleChange = (evt) => {
@@ -266,7 +269,9 @@ export default function ActionPage() {
                   Toimet
                 </a>
               </Link>
-              {' '}/{' '}
+              {' '}
+              /
+              {' '}
               {action.name}
             </h1>
           </PageHeader>
@@ -274,26 +279,26 @@ export default function ActionPage() {
       </HeaderSection>
       <Container>
         <Row>
-          <Col md={{size: 6, offset: 3}} className="py-5">
+          <Col md={{ size: 6, offset: 3 }} className="py-5">
             <CausalCard
               key={action.id}
               node={action}
               index={0}
               handleChange={handleChange}
             />
-            {action.descendantNodes?.map((node, index) =>(
+            {action.descendantNodes?.map((node, index) => (
               <CausalCard
                 key={node.id}
                 node={node}
-                index={index+1}
+                index={index + 1}
                 handleChange={handleChange}
               />
-            ))} 
+            ))}
           </Col>
         </Row>
       </Container>
     </Layout>
-  )
+  );
 }
 
 ActionPage.getInitialProps = async ({ query }) => ({

@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link'
+import Link from 'next/link';
 import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, Filter, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
@@ -9,12 +9,12 @@ import { getMetricValue, beautifyValue, getMetricChange } from 'common/preproces
 
 // Plotly doesn't work with SSR
 const DynamicPlot = dynamic(() => import('react-plotly.js'),
-    { ssr: false });
+  { ssr: false });
 
 const metricToPlot = (metric, segment, startYear, endYear) => {
-  const plot = {x:[],y:[]};
+  const plot = { x: [], y: [] };
   metric[segment].forEach((dataPoint) => {
-    if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
+    if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
       plot.x.push(dataPoint.year);
       plot.y.push(dataPoint.value);
     }
@@ -41,9 +41,9 @@ const NodePlot = (props) => {
 
   const hasImpact = impactMetric?.forecastValues.length && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
-  const baselineForecast = metricToPlot(metric, "baselineForecastValues", startYear, endYear);
-  const historical = metricToPlot(metric, "historicalValues", startYear, endYear);
-  const forecast = metricToPlot(metric, "forecastValues", startYear, endYear);
+  const baselineForecast = metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
+  const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
+  const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
 
   plotData.push(
     {
@@ -51,7 +51,7 @@ const NodePlot = (props) => {
       y: historical.y,
       xaxis: 'x2',
       yaxis: 'y1',
-      marker: {size: 8},
+      marker: { size: 8 },
       name: 'toteutunut',
       type: 'scatter',
       line: {
@@ -60,7 +60,7 @@ const NodePlot = (props) => {
         width: '3',
       },
       smoothing: true,
-    }
+    },
   );
 
   if (!isAction) {
@@ -80,17 +80,17 @@ const NodePlot = (props) => {
           dash: 'dash',
         },
         smoothing: true,
-      }
-    )
+      },
+    );
   }
 
   if (hasImpact) {
-    const impact = metricToPlot(metric, "forecastValues", startYear, endYear);
+    const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
 
     impact.y.map((dataPoint, index) => {
-      impact.y[index] = impact.y[index]-impactMetric.forecastValues[index].value;
+      impact.y[index] = impact.y[index] - impactMetric.forecastValues[index].value;
     });
-  
+
     plotData.push(
       {
         x: impact.x,
@@ -107,12 +107,12 @@ const NodePlot = (props) => {
           dash: 'dash',
         },
         smoothing: true,
-      }
-    )
+      },
+    );
   }
 
-    //forecastValues.unshift(historicalValues[historicalValues.length-1]);
-    //forecastDates.unshift(historicalDates[historicalDates.length-1]);
+  // forecastValues.unshift(historicalValues[historicalValues.length-1]);
+  // forecastDates.unshift(historicalDates[historicalDates.length-1]);
 
   plotData.push(
     {
@@ -120,7 +120,7 @@ const NodePlot = (props) => {
       y: forecast.y,
       xaxis: 'x2',
       yaxis: 'y1',
-      marker: {size: 8},
+      marker: { size: 8 },
       name: 'skenaario',
       type: 'scatter',
       line: {
@@ -129,11 +129,10 @@ const NodePlot = (props) => {
         width: '3',
       },
       smoothing: true,
-    }
-  )
+    },
+  );
 
-  const todaymarker =
-  {
+  const todaymarker = {
     type: 'line',
     yref: 'paper',
     x0: year,
@@ -143,8 +142,8 @@ const NodePlot = (props) => {
     line: {
       color: '#D46262',
       width: 2,
-      dash: "dot",
-    }
+      dash: 'dot',
+    },
   };
 
   shapes.push(todaymarker);
@@ -165,7 +164,7 @@ const NodePlot = (props) => {
     },
     yaxis: {
       domain: [0, 1],
-      anchor: 'x1'
+      anchor: 'x1',
     },
     xaxis2: {
       domain: [0.075, 1],
@@ -174,7 +173,7 @@ const NodePlot = (props) => {
     },
     yaxis2: {
       domain: [0, 1],
-      anchor: 'x2'
+      anchor: 'x2',
     },
     autosize: true,
     font: {
@@ -185,20 +184,20 @@ const NodePlot = (props) => {
     legend: {
       x: 1,
       xanchor: 'right',
-      y: 1
+      y: 1,
     },
-    grid: {rows: 1, columns: 2, pattern: 'independent'},
-  }
+    grid: { rows: 1, columns: 2, pattern: 'independent' },
+  };
 
   return (
     <DynamicPlot
       data={plotData}
       layout={layout}
       useResizeHandler
-      style={{width: '100%'}}
-      config={{displayModeBar: false}}
+      style={{ width: '100%' }}
+      config={{ displayModeBar: false }}
     />
-  )
-}
+  );
+};
 
 export default NodePlot;

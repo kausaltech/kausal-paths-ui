@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { Nav, NavItem as BSNavItem, Button } from 'reactstrap';
 // import { i18n, Link, useTranslation } from 'i18n';
@@ -8,36 +8,36 @@ import { Nav, NavItem as BSNavItem, Button } from 'reactstrap';
 const SideNav = styled.div`
   width: 240px;
   min-height: 100vh;
-  padding: ${(props)=>props.theme.spaces.s100};
+  padding: ${(props) => props.theme.spaces.s100};
 
-  background-color: ${(props)=>props.theme.themeColors.dark};
-  color: ${(props)=>props.theme.themeColors.light};
+  background-color: ${(props) => props.theme.themeColors.dark};
+  color: ${(props) => props.theme.themeColors.light};
 `;
 
 const SideHeader = styled.div`
-  margin-bottom: ${(props)=>props.theme.spaces.s100};
+  margin-bottom: ${(props) => props.theme.spaces.s100};
   padding: 0.5rem 1rem;
 `;
 
 const AppTitle = styled.h1`
   margin-bottom: 0;
-  font-size: ${(props)=>props.theme.fontSizeLg};
-  line-height: ${(props)=>props.theme.lineHeightSm};
-  font-weight: ${(props) => props.theme.fontWeightBold };
-  color: ${(props)=>props.theme.themeColors.light};
+  font-size: ${(props) => props.theme.fontSizeLg};
+  line-height: ${(props) => props.theme.lineHeightSm};
+  font-weight: ${(props) => props.theme.fontWeightBold};
+  color: ${(props) => props.theme.themeColors.light};
   letter-spacing: 4px;
 `;
 
 const LanguageSwitch = styled.div`
-  margin-top: ${(props)=>props.theme.spaces.s100};
+  margin-top: ${(props) => props.theme.spaces.s100};
   padding: 0.5rem 0.5rem;
 
   .btn.btn-link {
-    color: ${(props)=>props.theme.brandLight};
+    color: ${(props) => props.theme.brandLight};
     opacity: .65;
 
     &.disabled {
-      color: ${(props)=>props.theme.brandLight};
+      color: ${(props) => props.theme.brandLight};
       opacity: 1;
     }
   }
@@ -47,19 +47,19 @@ const NavItem = styled(BSNavItem)`
 
   &.active > a {
     font-weight: 700;
-    color: ${(props)=>props.theme.brandLight};
+    color: ${(props) => props.theme.brandLight};
   }
 
   > a {
     display: block;
     padding: 0.5rem 1rem;
-    color: ${(props)=>props.theme.themeColors.light};
+    color: ${(props) => props.theme.themeColors.light};
     ${({ disabled }) => disabled && `
       opacity: .3;
     `}
 
     &:hover {
-      color: ${(props)=>props.theme.brandLight};
+      color: ${(props) => props.theme.brandLight};
       ${({ disabled }) => disabled && `
         text-decoration: none;
       `}
@@ -68,7 +68,6 @@ const NavItem = styled(BSNavItem)`
 `;
 
 const SideBarNav = ({ children }) => {
-
   // const { i18n: { language } } = useContext(I18nContext);
   // const { t } = useTranslation(['common']);
   const router = useRouter();

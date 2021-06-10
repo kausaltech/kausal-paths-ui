@@ -1,4 +1,4 @@
-import {createContext} from 'react';
+import { createContext } from 'react';
 
 const SettingsContext = createContext({});
 export const SettingsContextProvider = SettingsContext.Provider;

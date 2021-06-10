@@ -183,7 +183,7 @@ class CytoGraph extends React.Component {
             'line-color': 'data(color)',
             'text-outline-width': 3,
             'text-outline-color': 'data(color)',
-            'color': '#ffffff',
+            color: '#ffffff',
             'curve-style': 'bezier',
             'font-size': '18px',
             'font-weight': theme.fontWeightBold,

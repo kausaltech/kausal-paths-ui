@@ -5,14 +5,14 @@ function Error({ statusCode }) {
         ? `An error ${statusCode} occurred on server`
         : 'An error occurred on client'}
     </p>
-  )
+  );
 }
 
 // TODO: 404 error
 
 Error.getInitialProps = ({ res, err }) => {
-  const statusCode = res ? res.statusCode : err ? err.statusCode : 404
-  return { namespacesRequired: ['common'], statusCode, }
-}
+  const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
+  return { namespacesRequired: ['common'], statusCode };
+};
 
-export default Error
+export default Error;

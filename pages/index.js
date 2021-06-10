@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import Head from 'next/head';
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery } from '@apollo/client';
 import _ from 'lodash';
 import { Spinner, Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
@@ -73,17 +73,17 @@ export default function Home() {
   const unit = 'kt CO₂e';
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>
+    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   }
   if (error) {
-    return <div>{error}</div>
+    return <div>{error}</div>;
   }
 
   const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
   const subSectors = data?.page.emissionSectors.filter((sector) => sector.parent?.id === rootSector.id);
 
   // remove base year from years scale
-  const historicalYears = _.remove(rootSector.metric.historicalValues.map((metric) => metric.year), (y) => y!==BASE_YEAR);
+  const historicalYears = _.remove(rootSector.metric.historicalValues.map((metric) => metric.year), (y) => y !== BASE_YEAR);
   const forecastYears = rootSector.metric.forecastValues.map((metric) => metric.year);
 
   return (
@@ -111,7 +111,7 @@ export default function Home() {
       </Container>
       <SettingsPanel />
     </Layout>
-  )
+  );
 }
 
 Home.getInitialProps = async ({ query }) => ({
