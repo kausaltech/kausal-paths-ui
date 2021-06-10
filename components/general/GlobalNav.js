@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import Link from 'next/link'
+import SettingsContext from 'common/settings-context';
 import styled from 'styled-components';
 
 import {
@@ -25,6 +26,7 @@ const GlobalNav = (props) => {
 
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
+  const settings = useContext(SettingsContext);
 
   return (
     <Navbar color="dark" dark expand="md">
@@ -51,6 +53,11 @@ const GlobalNav = (props) => {
                 Toimet
               </NavLink>
             </Link>
+          </NavItem>
+        </Nav>
+        <Nav>
+          <NavItem>
+          {settings.yearRange[0]}-{settings.yearRange[1]}
           </NavItem>
         </Nav>
     </Container>

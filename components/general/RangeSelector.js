@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import _ from 'lodash';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle } from "reactstrap";
+import SettingsContext from 'common/settings-context';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
@@ -54,7 +55,7 @@ const RangeSelector = (props) => {
   const max = _.max(allYears);
   const [useBase, setUseBase] = useState(true);
   const [values, setValues] = useState(useBase ? [max] : [min, max]);
-
+  const settings = useContext(SettingsContext);
   //console.log('allyears', allYears);
   //console.log(values)
   const findClosest = (goal, options) => options.reduce((prev, curr) =>
@@ -65,7 +66,9 @@ const RangeSelector = (props) => {
     // const fixedValue = findClosest(changedValues[1], allYears);
     setValues(changedValues);
     //console.log(values);
-    handleChange( useBase ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]]);
+    const newRange = useBase ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]];
+    handleChange(newRange);
+    settings.setYearRange(newRange);
   }
 
   const handleBaseYear = (usesBaseYear) => {
