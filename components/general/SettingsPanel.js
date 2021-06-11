@@ -1,7 +1,7 @@
-import { useContext } from 'react';
+import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import SettingsContext from 'common/settings-context';
 import RangeSelector from 'components/general/RangeSelector';
+import { yearRangeVar, settingsVar } from 'common/cache';
 
 const FixedPanel = styled.div`
   position: fixed;
@@ -16,14 +16,15 @@ const FixedPanel = styled.div`
 `;
 
 const SettingsPanel = (props) => {
-  const settings = useContext(SettingsContext);
+  const settings = useReactiveVar(settingsVar);
 
   return (
     <FixedPanel expanded>
       <RangeSelector
-        min={2010}
-        max={2030}
-        baseYear={1990}
+        min={settings.minYear}
+        max={settings.maxYear}
+        baseYear={settings.baseYear}
+        handleChange={yearRangeVar}
       />
     </FixedPanel>
   );

@@ -1,7 +1,8 @@
 // Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
 import { useMemo } from 'react';
 import getConfig from 'next/config';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloClient, ApolloLink, HttpLink } from '@apollo/client';
+import { cache } from 'common/cache';
 
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
@@ -62,7 +63,7 @@ function createApolloClient() {
   return new ApolloClient({
     ssrMode,
     link: ApolloLink.from([localeMiddleware, httpLink]),
-    cache: new InMemoryCache(),
+    cache,
   });
 }
 

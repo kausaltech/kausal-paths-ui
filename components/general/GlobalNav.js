@@ -1,13 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import styled from 'styled-components';
 
 import {
   Container,
-  Collapse,
   Navbar,
   NavbarToggler,
-  NavbarBrand,
   Nav,
   NavItem,
   NavLink,
@@ -30,7 +28,7 @@ const GlobalNav = (props) => {
       <Container>
         <Brand>
           <Link href="/" passHref>
-            <a>
+            <a href>
               Tampereen päästöskenaariot
             </a>
           </Link>

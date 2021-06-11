@@ -1,8 +1,6 @@
-import { useState, useContext } from 'react';
-import _ from 'lodash';
+import { useState } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle } from 'reactstrap';
-import SettingsContext from 'common/settings-context';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
@@ -53,21 +51,15 @@ const Thumb = styled.div`
 `;
 
 const RangeSelector = (props) => {
-  const { min, max, baseYear } = props;
+  const { min, max, baseYear, handleChange } = props;
 
   const [useBase, setUseBase] = useState(true);
   const [values, setValues] = useState(useBase ? [max] : [min, max]);
-  const settings = useContext(SettingsContext);
-  // console.log('allyears', allYears);
-  // console.log(values)
-  const findClosest = (goal, options) => options.reduce((prev, curr) => (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev));
 
   const handleSliderChange = (changedValues) => {
-    // const fixedValue = findClosest(changedValues[1], allYears);
     setValues(changedValues);
-    // console.log(values);
     const newRange = useBase ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]];
-    settings.setYearRange(newRange);
+    handleChange(newRange);
   };
 
   const handleBaseYear = (usesBaseYear) => {
@@ -172,6 +164,7 @@ const RangeSelector = (props) => {
             onChange={(values) => handleSliderChange(values)}
             renderTrack={({ props, children }) => (
               <div
+                aria-hidden="true"
                 onMouseDown={props.onMouseDown}
                 onTouchStart={props.onTouchStart}
                 style={{

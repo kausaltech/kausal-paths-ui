@@ -1,13 +1,11 @@
-import { useState, useContext } from 'react';
 import Head from 'next/head';
-import { gql, useQuery } from '@apollo/client';
-import _ from 'lodash';
-import { Spinner, Container, Row, Col } from 'reactstrap';
+import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
-import SettingsContext from 'common/settings-context';
+import { yearRangeVar, settingsVar } from 'common/cache';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 0; 
@@ -60,15 +58,11 @@ const GET_PAGE_CONTENT = gql`
   }
 }
 `;
-
-const BASE_YEAR = 1990;
-const TARGET_YEAR = 2030;
 export default function Home() {
   const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
 
-  const [activeYear, setActiveYear] = useState([BASE_YEAR, TARGET_YEAR]);
-  const [activeSector, setActiveSector] = useState(undefined);
-  const settings = useContext(SettingsContext);
+  const yearRange = useReactiveVar(yearRangeVar);
+  const settings = useReactiveVar(settingsVar);
 
   const unit = 'kt CO₂e';
 
@@ -80,11 +74,6 @@ export default function Home() {
   }
 
   const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
-  const subSectors = data?.page.emissionSectors.filter((sector) => sector.parent?.id === rootSector.id);
-
-  // remove base year from years scale
-  const historicalYears = _.remove(rootSector.metric.historicalValues.map((metric) => metric.year), (y) => y !== BASE_YEAR);
-  const forecastYears = rootSector.metric.forecastValues.map((metric) => metric.year);
 
   return (
     <Layout>
@@ -103,9 +92,9 @@ export default function Home() {
           sectors={data.page.emissionSectors}
           rootSector={rootSector}
           unit={unit}
-          date={settings.yearRange[1]}
-          startYear={settings.yearRange[0]}
-          endYear={settings.yearRange[1]}
+          date={yearRange[1]}
+          startYear={yearRange[0]}
+          endYear={yearRange[1]}
           parentColor="#666"
         />
       </Container>
