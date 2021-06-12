@@ -200,7 +200,7 @@ const CausalCard = (props) => {
           { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
           { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
           <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
-          <p>{node.description}</p>
+          <div dangerouslySetInnerHTML={{ __html: node.description }} />
           <p>
             <strong>{beautifyValue(getMetricValue(node, 2030) || 0)}</strong>
             {' '}
