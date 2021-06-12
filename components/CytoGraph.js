@@ -4,6 +4,7 @@ import {
   Col, Container, Row, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem,
 } from 'reactstrap';
 import styled, { withTheme } from 'styled-components';
+import { withRouter } from 'next/router'
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 
@@ -81,7 +82,7 @@ class CytoGraph extends React.Component {
 
   renderNetwork() {
     const visNode = this.visRef.current;
-    const { nodes, theme } = this.props;
+    const { nodes, theme, router } = this.props;
     const elements = [];
 
     // Nodes
@@ -192,6 +193,11 @@ class CytoGraph extends React.Component {
         },
       ],
     });
+    cy.nodes().on('click', (e) => {
+      const clickedNode = e.target;
+      const nodeId = clickedNode.data('id');
+      router.push(`/node/${nodeId}`);
+    });
     this.cy = cy;
   }
 
@@ -202,4 +208,4 @@ class CytoGraph extends React.Component {
   }
 }
 
-export default withTheme(CytoGraph);
+export default withRouter(withTheme(CytoGraph));
