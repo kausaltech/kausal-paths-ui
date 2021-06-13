@@ -5,3 +5,7 @@
 @import 'variables';
 @import 'themes/default';
 @import 'bootstrap/scss/bootstrap.scss';
+
+.popover {
+  max-width: 480px;
+}
