@@ -29,8 +29,10 @@ const ScenarioSelector = () => {
 
   const scenarios = data?.scenarios;
 
-  const activeScenario = scenarios?.find((scenario) => scenario.isActive) || scenarios?.find((scenario) => scenario.isDefault);
-  const displayScenario = `Skenaario: ${activeScenario.name.length > 15 ? `${activeScenario.name.substring(0, 15)}&hellip;` : activeScenario.name}`;
+  const activeScenario = scenarios?.find((scenario) => scenario.isActive)
+    || scenarios?.find((scenario) => scenario.isDefault);
+  const displayScenario = `Skenaario: ${activeScenario.name.length > 15
+    ? `${activeScenario.name.substring(0, 15)}&hellip;` : activeScenario.name}`;
 
   return (
     <Dropdown isOpen={dropdownOpen} toggle={toggle}>
@@ -38,8 +40,9 @@ const ScenarioSelector = () => {
         <span dangerouslySetInnerHTML={{ __html: displayScenario }} />
       </DropdownToggle>
       <DropdownMenu>
+        <DropdownItem header>Valitse skenaario</DropdownItem>
         { scenarios?.map((scenario) => (
-          <DropdownItem header key={scenario.id}>{ scenario.name }</DropdownItem>
+          <DropdownItem key={scenario.id} active={scenario.isActive}>{ scenario.name }</DropdownItem>
         ))}
       </DropdownMenu>
     </Dropdown>

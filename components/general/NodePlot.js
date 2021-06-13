@@ -13,6 +13,7 @@ const DynamicPlot = dynamic(() => import('react-plotly.js'),
 
 const metricToPlot = (metric, segment, startYear, endYear) => {
   const plot = { x: [], y: [] };
+  if (!metric) return [];
   metric[segment].forEach((dataPoint) => {
     if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
       plot.x.push(dataPoint.year);

@@ -7,6 +7,7 @@ import styled from 'styled-components';
 const SectionWrapper = styled.div`
   display: flex;
   min-width: 320px;
+  padding: .5rem 0 0 0;
 `;
 
 const PopoverWrapper = styled.div`
@@ -33,6 +34,7 @@ const ActiveYear = styled.div`
 const ActiveYearDisplay = styled.div`
   flex: 0 1 125px;
   margin: 0;
+  padding: .25rem 0 .25rem;
   text-align: center;
 
   .btn {
@@ -41,9 +43,9 @@ const ActiveYearDisplay = styled.div`
 `;
 
 const Thumb = styled.div`
-  height: 32px;
-  width: 32px;
-  border-radius: 16px;
+  height: 28px;
+  width: 28px;
+  border-radius: 14px;
   background-color: ${(props) => (props.dragged ? props.color : props.color)};
   display: flex;
   justify-content: center;
@@ -81,7 +83,6 @@ const RangeSelector = (props) => {
         {`Vertaillaan muutosta: ${useBase ? baseYear : values[0]} - ${useBase ? values[0] : values[1]}`}
       </Button>
       <Popover placement="bottom" isOpen={popoverOpen} target="Popover1" toggle={toggle}>
-        <PopoverHeader>Valitse vertailtavat vuodet</PopoverHeader>
         <PopoverBody>
           <SectionWrapper>
             <ActiveYearDisplay>

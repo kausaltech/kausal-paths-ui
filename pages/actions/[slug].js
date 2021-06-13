@@ -9,19 +9,38 @@ import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
+import SettingsPanel from 'components/general/SettingsPanel';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
 import ParameterWidget from 'components/general/ParameterWidget';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 1rem; 
-  background-color: ${(props) => props.theme.graphColors.grey020};
+  padding: 3rem 0 1rem;
+  margin-bottom: 4rem;
+  background-color: ${(props) => props.theme.graphColors.blue070};
+`;
+
+const HeaderCard = styled.div` 
+  margin: 3rem 0 -8rem;
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: ${(props) => props.theme.themeColors.white};
+`;
+
+const ActionDescription = styled.div`
+  margin-bottom: 2rem;
+  font-size: 1.15rem;
+`;
+
+const Parameters = styled.div` 
+  margin: 1rem 0;
 `;
 
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
 
   h1 {
+    margin-bottom: 2rem;
     font-size: 1.5rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
@@ -207,16 +226,6 @@ const CausalCard = (props) => {
             <span dangerouslySetInnerHTML={{ __html: node.unit?.htmlShort }} />
           </p>
 
-          { node.isAction && node.parameters?.map((parameter) => (
-            <ParameterWidget
-              key={parameter.id}
-              parameter={parameter}
-              parameterType={parameter.__typename}
-              unit={node.unit.htmlShort}
-              handleChange={handleChange}
-            />
-          ))}
-
           <NodePlot
             metric={node.metric}
             impactMetric={node.impactMetric}
@@ -249,7 +258,7 @@ export default function ActionPage() {
     return <Layout><div>{error}</div></Layout>;
   }
 
-  const handleChange = (evt) => {
+  const handleChange = () => {
     refetch();
   };
 
@@ -263,29 +272,46 @@ export default function ActionPage() {
       <HeaderSection>
         <Container>
           <PageHeader>
-            <h1>
-              <Link href="/actions">
-                <a>
-                  Toimet
-                </a>
-              </Link>
-              {' '}
-              /
-              {' '}
-              {action.name}
-            </h1>
+            <HeaderCard>
+              <h1>
+                <Link href="/actions">
+                  <a href>
+                    Toimet
+                  </a>
+                </Link>
+                {' '}
+                /
+                {' '}
+                {action.name}
+              </h1>
+              <ActionDescription dangerouslySetInnerHTML={{ __html: action.description }} />
+              <Parameters>
+                { action.parameters?.map((parameter) => (
+                  <ParameterWidget
+                    key={parameter.id}
+                    parameter={parameter}
+                    parameterType={parameter.__typename}
+                    unit={action.unit.htmlShort}
+                    handleChange={handleChange}
+                  />
+                ))}
+              </Parameters>
+              <NodePlot
+                metric={action.metric}
+                impactMetric={action.impactMetric}
+                year="2021"
+                startYear="2010"
+                endYear="2030"
+                color={action.color}
+                isAction={action.isAction}
+              />
+            </HeaderCard>
           </PageHeader>
         </Container>
       </HeaderSection>
       <Container>
         <Row>
           <Col md={{ size: 6, offset: 3 }} className="py-5">
-            <CausalCard
-              key={action.id}
-              node={action}
-              index={0}
-              handleChange={handleChange}
-            />
             {action.descendantNodes?.map((node, index) => (
               <CausalCard
                 key={node.id}
@@ -297,6 +323,7 @@ export default function ActionPage() {
           </Col>
         </Row>
       </Container>
+      <SettingsPanel />
     </Layout>
   );
 }
