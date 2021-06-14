@@ -15,5 +15,6 @@
   "comparison-year": "Comparison year",
   "target-year": "Target year",
   "emissions": "Emissions",
-  "plot-actualized": "Actualised"
+  "plot-actualized": "Actualised",
+  "actions-influencing-this": "Actions influencing emissions in this sector"
 }

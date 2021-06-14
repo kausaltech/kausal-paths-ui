@@ -10,6 +10,7 @@ const CardSet = styled.div`
   margin-top: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
   border-radius: 12px;
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
 const CardDeck = styled.div`  

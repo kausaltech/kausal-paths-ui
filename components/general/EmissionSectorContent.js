@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link'
-import { Button, ButtonGroup } from 'reactstrap';
+import { Button, ButtonGroup, ListGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
 import styled from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
+import { useTranslation } from 'react-i18next';
 
 // Plotly doesn't work with SSR
 const DynamicPlot = dynamic(() => import('react-plotly.js'),
@@ -14,7 +15,7 @@ const DynamicPlot = dynamic(() => import('react-plotly.js'),
 const SectorContent = styled.div`
   padding: 1rem;
   margin: .5rem 0;
-  border: 1px solid ${(props) => props.theme.graphColors.grey020};
+  background-color: ${(props) => props.theme.graphColors.grey005};
   border-radius: 10px;
 
   .x2sstick text, .xtick text {
@@ -29,7 +30,7 @@ const TabButton = styled(Button)`
 
 const TabText = styled.div`
   max-width: 640px;
-  margin-bottom: 2rem;
+  margin: 1rem 0;
 `;
 
 const CardSetHeader = styled.div`
@@ -62,6 +63,16 @@ const YearRange = styled.div`
   text-align: right;
   font-size: 0.75rem;
   color: ${(props) => props.theme.graphColors.grey050};
+`;
+
+const ActionsList = styled.ul`
+  padding: 0;
+  margin: 0;
+  list-style: none;
+`;
+
+const ActionsListItem = styled.li`
+  padding: 0;
 `;
 
 const BASE_YEAR = 1990;
@@ -222,6 +233,7 @@ const EmissionsGraph = (props) => {
 
 const EmissionSectorContent = (props) => {
   const { sector, subSectors, color, year, startYear, endYear, unit } = props;
+  const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
 
   const sectorsTotal = getMetricValue(sector, endYear);
@@ -232,7 +244,7 @@ const EmissionSectorContent = (props) => {
     <div>
       <CardSetHeader>
         <div>
-        <h5>{ sector.name }</h5>
+        <h4>{ sector.name }</h4>
         <ButtonGroup>
           <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
           <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>
@@ -264,12 +276,25 @@ const EmissionSectorContent = (props) => {
         { activeTabId === 'info' && (
           <SectorContent>
             <TabText>
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-              <h6><Journals size={24} className="mr-2" /> Actions influencing emissions in this sector</h6>
-              <ul>
-                <li><Link href="/actions/naistenlahti3"><a>Toimenpide 1</a></Link></li>
-                <li><Link href="/actions/other_renewable_district_heating"><a>Toimenpide 2</a></Link></li>
-              </ul>
+              {sector.node.description && (
+                <div dangerouslySetInnerHTML={{__html: action.description}} />
+              )}
+              { sector.node.upstreamActions.length > 0 && (
+                <h6>
+                  { t('actions-influencing-this') }
+                </h6>
+              )}
+              <ActionsList>
+                { sector.node.upstreamActions.map((action) => (
+                  <ActionsListItem>
+                    <Link href={`/actions/${action.id}`}>
+                      <a>
+                        {action.name}
+                      </a>
+                    </Link>
+                  </ActionsListItem>
+                ))}
+              </ActionsList>
             </TabText>
           </SectorContent>
         )}

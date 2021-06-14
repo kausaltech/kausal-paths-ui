@@ -4,7 +4,7 @@ import GlobalNav from 'components/general/GlobalNav';
 
 const PageContainer = styled.div`
   width: 100%;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${(props) => props.theme.graphColors.grey020};
   padding-bottom: 10rem;
 
   .popover {

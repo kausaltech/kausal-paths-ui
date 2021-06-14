@@ -26,33 +26,31 @@ const GlobalNav = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <Navbar color="primary" dark expand="md">
-      <Container>
-        <Brand>
+    <Navbar color="dark" dark expand="md">
+      <Brand>
+        <Link href="/" passHref>
+          <a href>
+            Tampereen päästöskenaariot
+          </a>
+        </Link>
+      </Brand>
+      <NavbarToggler onClick={toggle} />
+      <Nav className="mr-auto" navbar>
+        <NavItem>
           <Link href="/" passHref>
-            <a href>
-              Tampereen päästöskenaariot
-            </a>
+            <NavLink>
+              { t('emissions') }
+            </NavLink>
           </Link>
-        </Brand>
-        <NavbarToggler onClick={toggle} />
-        <Nav className="mr-auto" navbar>
-          <NavItem>
-            <Link href="/" passHref>
-              <NavLink>
-                { t('emissions') }
-              </NavLink>
-            </Link>
-          </NavItem>
-          <NavItem>
-            <Link href="/actions" passHref>
-              <NavLink>
-                { t('actions') }
-              </NavLink>
-            </Link>
-          </NavItem>
-        </Nav>
-      </Container>
+        </NavItem>
+        <NavItem>
+          <Link href="/actions" passHref>
+            <NavLink>
+              { t('actions') }
+            </NavLink>
+          </Link>
+        </NavItem>
+      </Nav>
     </Navbar>
   );
 };

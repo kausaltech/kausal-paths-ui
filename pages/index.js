@@ -54,6 +54,17 @@ query GetHomePage {
             value
           }
         }
+        node {
+          id
+          description
+          upstreamActions {
+            id
+            name
+            parameters {
+              isCustomized
+            }
+          }
+        }
       }
     }
   }
