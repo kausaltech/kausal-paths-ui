@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery } from '@apollo/client';
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
@@ -11,7 +12,6 @@ import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
-import { I18nContext } from 'react-i18next';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -48,8 +48,8 @@ const Causality = styled.div`
   margin: 1rem 0;
 `;
 
-const GET_PAGE_CONTENT = gql`
-query GetPageContent($node: ID!) {
+const GET_ACTION_PAGE_CONTENT = gql`
+query GetActionPage($node: ID!) {
   node(id: $node) {
     id
     name
@@ -149,11 +149,11 @@ const CausalCard = (props) => {
     </ActionLinks>
   );
 };
-export default function ActionPage() {
+export default function NodePage() {
   const router = useRouter();
   const { slug } = router.query;
 
-  const { loading, error, data } = useQuery(GET_PAGE_CONTENT, {
+  const { loading, error, data } = useQuery(GET_ACTION_PAGE_CONTENT, {
     variables: {
       node: slug,
     },
@@ -224,7 +224,11 @@ export default function ActionPage() {
   );
 }
 
-ActionPage.getInitialProps = async ({ query }) => ({
-  slug: query.slug,
-  namespacesRequired: ['common'],
-});
+
+export async function getServerSideProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common'])),
+    },
+  };
+}

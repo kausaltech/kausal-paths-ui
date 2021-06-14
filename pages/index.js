@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
@@ -21,8 +22,8 @@ const PageHeader = styled.div`
   }
 `;
 
-const GET_PAGE_CONTENT = gql`
-{
+const GET_HOME_PAGE = gql`
+query GetHomePage {
   page(path: "/") {
     id
     name
@@ -59,7 +60,7 @@ const GET_PAGE_CONTENT = gql`
 }
 `;
 export default function Home() {
-  const { loading, error, data } = useQuery(GET_PAGE_CONTENT);
+  const { loading, error, data } = useQuery(GET_HOME_PAGE);
 
   const yearRange = useReactiveVar(yearRangeVar);
   const settings = useReactiveVar(settingsVar);
@@ -103,6 +104,10 @@ export default function Home() {
   );
 }
 
-Home.getInitialProps = async ({ query }) => ({
-  namespacesRequired: ['common'],
-});
+export async function getServerSideProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common'])),
+    },
+  };
+}

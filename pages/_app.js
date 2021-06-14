@@ -51,9 +51,4 @@ function PathsApp({ Component, pageProps }) {
   );
 }
 
-PathsApp.getInitialProps = async (appContext) => {
-  const appProps = await App.getInitialProps(appContext);
-  return { ...appProps };
-};
-
 export default appWithTranslation(PathsApp);

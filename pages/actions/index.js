@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery, NetworkStatus } from "@apollo/client";
 import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
@@ -226,6 +227,10 @@ export default function ActionsPage() {
   )
 }
 
-ActionsPage.getInitialProps = async ({ query }) => ({
-  namespacesRequired: ['common'],
-});
+export async function getServerSideProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common'])),
+    },
+  };
+}
