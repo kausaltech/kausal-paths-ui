@@ -131,7 +131,6 @@ const ParameterWidget = (props) => {
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     onCompleted(data) {
-      console.log(data);
       handleChange(data);
     },
   });
