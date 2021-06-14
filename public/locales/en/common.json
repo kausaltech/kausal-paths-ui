@@ -1,4 +1,19 @@
 {
   "forecast": "Forecast",
-  "will_be_implemented": "Is implemented"
+  "will_be_implemented": "Is implemented",
+  "action-impact": "Impact",
+  "actions-available": "Scenario actions",
+  "actions": "Actions",
+  "error-loading-data": "Error loading data",
+  "plot-measured": "Measured",
+  "plot-baseline": "Baseline",
+  "plot-without-action": "Without this action",
+  "plot-scenario": "Scenario",
+  "change-scenario": "Change scenario",
+  "scenario": "Scenario",
+  "comparing-years": "Comparing years",
+  "comparison-year": "Comparison year",
+  "target-year": "Target year",
+  "emissions": "Emissions",
+  "plot-actualized": "Actualised"
 }

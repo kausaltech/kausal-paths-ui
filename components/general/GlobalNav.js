@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
 import styled from 'styled-components';
 
@@ -20,6 +21,7 @@ const Brand = styled.div`
 `;
 
 const GlobalNav = (props) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
 
@@ -38,14 +40,14 @@ const GlobalNav = (props) => {
           <NavItem>
             <Link href="/" passHref>
               <NavLink>
-                Päästöt
+                { t('emissions') }
               </NavLink>
             </Link>
           </NavItem>
           <NavItem>
             <Link href="/actions" passHref>
               <NavLink>
-                Toimet
+                { t('actions') }
               </NavLink>
             </Link>
           </NavItem>

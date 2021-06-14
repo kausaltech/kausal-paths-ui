@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { gql, useQuery, NetworkStatus } from "@apollo/client";
 import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
@@ -135,7 +135,7 @@ query GetActionList {
 }
 `;
 export default function ActionsPage() {
-
+  const { t } = useTranslation();
   const { loading, error, data, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
     fetchPolicy: "no-cache",
   });
@@ -151,7 +151,7 @@ export default function ActionsPage() {
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   } else if (error) {
-    return <Layout><div>Error loading data</div></Layout>;
+    return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   } else {
     actions = data?.actions;
   };
@@ -163,12 +163,12 @@ export default function ActionsPage() {
   return (
     <Layout>
       <Head>
-        <title>Toimet</title>
+        <title>{t('actions')}</title>
       </Head>
       <HeaderSection>
         <Container>
           <PageHeader>
-            <h1>Päästöskenaarion toimet</h1>
+            <h1>{t('actions-available')}</h1>
           </PageHeader>
         </Container>
       </HeaderSection>
@@ -209,9 +209,9 @@ export default function ActionsPage() {
                       </div>
                       {action.impactMetric && (
                         <ActionImpact>
-                          <ActionImpactUnit>Päästövaikutus</ActionImpactUnit>
+                          <ActionImpactUnit>{t('action-impact')}</ActionImpactUnit>
                           <ActionImpactFigure>{beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues))}</ActionImpactFigure>
-                          <ActionImpactUnit>kt CO₂e</ActionImpactUnit>
+                          <ActionImpactUnit>kt CO₂e/v</ActionImpactUnit>
                         </ActionImpact>
                       )}
                     </CardDetails>

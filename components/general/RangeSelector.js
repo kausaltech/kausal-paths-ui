@@ -3,6 +3,7 @@ import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle, Button, Popover, PopoverHeader, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 
 const SectionWrapper = styled.div`
   display: flex;
@@ -54,7 +55,7 @@ const Thumb = styled.div`
 
 const RangeSelector = (props) => {
   const { min, max, baseYear, handleChange } = props;
-
+  const { t } = useTranslation();
   const [useBase, setUseBase] = useState(true);
   const [values, setValues] = useState(useBase ? [max] : [min, max]);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -80,13 +81,13 @@ const RangeSelector = (props) => {
   return (
     <PopoverWrapper>
       <Button id="Popover1" type="button" color="light">
-        {`Vertaillaan muutosta: ${useBase ? baseYear : values[0]} - ${useBase ? values[0] : values[1]}`}
+        {`${t('comparing-years')}: ${useBase ? baseYear : values[0]} - ${useBase ? values[0] : values[1]}`}
       </Button>
       <Popover placement="bottom" isOpen={popoverOpen} target="Popover1" toggle={toggle}>
         <PopoverBody>
           <SectionWrapper>
             <ActiveYearDisplay>
-              <YearDescription>Vertailuvuosi</YearDescription>
+              <YearDescription>{t('comparison-year')}</YearDescription>
               <ActiveYear>{ useBase ? baseYear : values[0] }</ActiveYear>
               <ButtonToggle
                 color="link"
@@ -98,8 +99,7 @@ const RangeSelector = (props) => {
                 { useBase ? (
                   <span>
                     <Icon.PenFill />
-                    {' '}
-                    Muokkaa
+                    {` ${t('edit')}`}
                   </span>
                 ) : (
                   <span>
@@ -219,7 +219,7 @@ const RangeSelector = (props) => {
               </RangeWrapper>
             )}
             <ActiveYearDisplay>
-              <YearDescription>Tavoitevuosi</YearDescription>
+              <YearDescription>{t('target-year')}</YearDescription>
               <ActiveYear>{ useBase ? values[0] : values[1] }</ActiveYear>
             </ActiveYearDisplay>
           </SectionWrapper>

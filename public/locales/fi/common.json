@@ -1,4 +1,17 @@
 {
   "forecast": "Ennuste",
-  "will_be_implemented": "Toteutetaan"
+  "will_be_implemented": "Toteutetaan",
+  "action-impact": "Päästövaikutus",
+  "actions": "Toimet",
+  "error-loading-data": "Virhe tietojen haussa",
+  "plot-measured": "Toteutunut",
+  "plot-baseline": "Perusura",
+  "plot-without-action": "Ilman toimenpidettä",
+  "plot-scenario": "Skenaario",
+  "change-scenario": "Vaihda skenaariota",
+  "scenario": "Skenaario",
+  "comparing-years": "Vertaillaan vuosia",
+  "comparison-year": "Vertailuvuosi",
+  "target-year": "Tavoitevuosi",
+  "emissions": "Päästöt"
 }

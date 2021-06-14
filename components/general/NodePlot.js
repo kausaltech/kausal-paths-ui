@@ -1,11 +1,8 @@
 import { useContext } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Button, ButtonGroup } from 'reactstrap';
-import { BarChartFill, Filter, InfoSquare, Journals } from 'react-bootstrap-icons';
+import { useTranslation } from 'next-i18next';
 import { lighten } from 'polished';
 import { ThemeContext } from 'styled-components';
-import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 
 // Plotly doesn't work with SSR
 const DynamicPlot = dynamic(() => import('react-plotly.js'),
@@ -34,13 +31,15 @@ const NodePlot = (props) => {
     isAction,
   } = props;
 
+  const { t } = useTranslation();
   const theme = useContext(ThemeContext);
 
   const plotColor = color || theme.graphColors.blue070;
   const shapes = [];
   const plotData = [];
 
-  const hasImpact = impactMetric?.forecastValues.length && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
+  const hasImpact = impactMetric?.forecastValues.length
+    && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
   const baselineForecast = metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
   const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
@@ -53,7 +52,7 @@ const NodePlot = (props) => {
       xaxis: 'x2',
       yaxis: 'y1',
       marker: { size: 8 },
-      name: 'toteutunut',
+      name: t('plot-actualized'),
       type: 'scatter',
       line: {
         color: plotColor,
@@ -72,7 +71,7 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
-        name: 'pohjaennuste',
+        name: t('plot-baseline'),
         type: 'scatter',
         line: {
           color: theme.graphColors.grey030,
@@ -99,7 +98,7 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
-        name: 'ei toimenpidettä',
+        name: t('plot-without-action'),
         type: 'scatter',
         line: {
           color: lighten(0.25, plotColor),
@@ -122,7 +121,7 @@ const NodePlot = (props) => {
       xaxis: 'x2',
       yaxis: 'y1',
       marker: { size: 8 },
-      name: 'skenaario',
+      name: t('plot-scenario'),
       type: 'scatter',
       line: {
         color: hasImpact || isAction ? theme.graphColors.green050 : lighten(0.25, plotColor),
