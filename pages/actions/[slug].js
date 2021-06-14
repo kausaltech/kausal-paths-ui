@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery } from '@apollo/client';
 import * as Icon from 'react-bootstrap-icons';
 import _ from 'lodash';
@@ -328,7 +329,11 @@ export default function ActionPage() {
   );
 }
 
-ActionPage.getInitialProps = async ({ query }) => ({
-  slug: query.slug,
-  namespacesRequired: ['common'],
-});
+
+export async function getServerSideProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common'])),
+    },
+  };
+}

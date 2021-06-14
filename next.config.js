@@ -15,7 +15,7 @@ module.exports = {
   publicRuntimeConfig: {
     localeSubpaths,
     graphqlUrl: process.env.BROWSER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
-    defaultLanguage: process.env.DEFAULT_LANGUAGE || 'en',
+    defaultLanguage: i18n.defaultLocale,
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
@@ -23,8 +23,5 @@ module.exports = {
   future: {
     webpack5: true,
   },
-  i18n: {
-    locales: ['en', 'fi'],
-    defaultLocale: 'fi',
-  },
+  i18n,
 }

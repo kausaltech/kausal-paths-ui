@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import {
   CustomInput,
 } from 'reactstrap';
@@ -111,13 +112,17 @@ const NumberWidget = (props) => {
 
 const BoolWidget = (props) => {
   const { id, toggled, handleChange, loading, isCustomized } = props;
+  const { t } = useTranslation();
+
+  const label = t('will_be_implemented');
+
   return (
     <>
       <CustomInput
         type="switch"
         id={`${id}-switch`}
         name={id}
-        label={`Toteutetaan ${isCustomized ? '*' : ''}`}
+        label={`${label} ${isCustomized ? '*' : ''}`}
         checked={toggled}
         onChange={() => handleChange({ parameterId: id, boolValue: !toggled })}
         disabled={loading}

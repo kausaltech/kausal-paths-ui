@@ -1,6 +1,6 @@
 module.exports = {
   i18n: {
-    defaultLocale: 'fi',
+    defaultLocale: process.env.DEFAULT_LANGUAGE || 'en',
     locales: ['fi', 'en'],
   },
 }
