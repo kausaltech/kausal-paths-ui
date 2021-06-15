@@ -52,7 +52,6 @@ const NumberWidget = (props) => {
   const [values, setValues] = useState([initialValue]);
 
   const handleSlide = (newValues) => {
-    setValues(newValues);
     handleChange({ parameterId: id, numberValue: newValues[0] });
   };
 
@@ -64,7 +63,8 @@ const NumberWidget = (props) => {
         min={min}
         max={max}
         values={values}
-        onChange={(values) => handleSlide(values)}
+        onChange={(vals) => setValues(vals)}
+        onFinalChange={(vals) => handleSlide(vals)}
         renderTrack={({ props, children }) => (
           <div
             onMouseDown={props.onMouseDown}
@@ -96,7 +96,7 @@ const NumberWidget = (props) => {
             </div>
           </div>
         )}
-        renderThumb={({ props, isDragged, index }) => (
+        renderThumb={({ props, isDragged }) => (
           <Thumb
             {...props}
             dragged={isDragged}

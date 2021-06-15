@@ -16,5 +16,6 @@
   "emissions": "Päästöt",
   "actions-influencing-this": "Tämän sektorin päästöihin vaikuttavat toimenpiteet",
   "actions-available": "Toimet skenaariossa",
-  "loading": "Ladataan"
+  "loading": "Ladataan",
+  "abbr-per-annum": "/v"
 }

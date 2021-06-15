@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'react-i18next';
 import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
@@ -26,10 +27,9 @@ const PageHeader = styled.div`
 export default function Home() {
   const { loading, error, data } = useQuery(GET_HOME_PAGE);
 
+  const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
-
-  const unit = 'kt CO₂e';
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
@@ -49,9 +49,7 @@ export default function Home() {
         <Container>
           <PageHeader>
             <h1>
-              Päästöt:
-              {' '}
-              { activeScenario?.name }
+              { `${t('emissions')}: ${activeScenario?.name} ` }
             </h1>
           </PageHeader>
         </Container>
@@ -60,7 +58,6 @@ export default function Home() {
         <EmissionsCardSet
           sectors={data.page.emissionSectors}
           rootSector={rootSector}
-          unit={unit}
           date={yearRange[1]}
           startYear={yearRange[0]}
           endYear={yearRange[1]}

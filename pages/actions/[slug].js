@@ -1,12 +1,12 @@
-import { useState, useContext } from 'react';
+import { useContext } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'react-i18next';
 import { gql, useQuery } from '@apollo/client';
 import * as Icon from 'react-bootstrap-icons';
-import _ from 'lodash';
-import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { Spinner, Container, Row, Col } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
@@ -198,8 +198,6 @@ query GetNodeContent($node: ID!) {
 }
 `;
 
-const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
-
 const CausalCard = (props) => {
   const { node, index, handleChange } = props;
   const theme = useContext(ThemeContext);
@@ -241,9 +239,11 @@ const CausalCard = (props) => {
     </ActionLinks>
   );
 };
+
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
+  const { t } = useTranslation();
 
   const { loading, error, data, refetch, networkStatus } = useQuery(GET_PAGE_CONTENT, {
     fetchPolicy: 'no-cache',
@@ -277,7 +277,7 @@ export default function ActionPage() {
               <h1>
                 <Link href="/actions">
                   <a href>
-                    Toimet
+                    { t('actions') }
                   </a>
                 </Link>
                 {' '}
@@ -328,7 +328,6 @@ export default function ActionPage() {
     </Layout>
   );
 }
-
 
 export async function getServerSideProps({ locale }) {
   return {

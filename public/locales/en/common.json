@@ -17,5 +17,6 @@
   "emissions": "Emissions",
   "plot-actualized": "Actualised",
   "actions-influencing-this": "Actions influencing emissions in this sector",
-  "loading": "Loading"
+  "loading": "Loading",
+  "abbr-per-annum": "/a"
 }

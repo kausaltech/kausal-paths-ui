@@ -37,6 +37,11 @@ const ActionList = styled.ul`
 
 const ActionItem = styled.li`
   margin-bottom: 1rem;
+  color: ${(props) => props.isActive ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050 };
+
+  .card {
+    background-color: ${(props) => props.isActive ? props.theme.themeColors.white : props.theme.graphColors.grey005 };
+  }
 `;
 
 const CardHeader = styled.div`
@@ -96,6 +101,8 @@ export default function ActionsPage() {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   };
 
+  const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
+
   return (
     <Layout>
       <Head>
@@ -113,7 +120,10 @@ export default function ActionsPage() {
           <Col>
           <ActionList>
             { data?.actions?.map((action) => (
-              <ActionItem key={action.id}>
+              <ActionItem
+                key={action.id}
+                isActive={action.parameters.find((param) => param.__typename == 'BoolParameterType')?.boolValue}
+              >
                 <DashCard>
                   <CardContent>
                     <CardHeader>
@@ -125,7 +135,7 @@ export default function ActionsPage() {
                           </h5>
                         </a>
                       </Link>
-                      <ActionCategory><Badge>Energia</Badge></ActionCategory>
+                      <ActionCategory><Badge>Category</Badge></ActionCategory>
                     </CardHeader>
                     <CardDetails>
                       <div>
@@ -146,7 +156,7 @@ export default function ActionsPage() {
                         <ActionImpact>
                           <ActionImpactUnit>{t('action-impact')}</ActionImpactUnit>
                           <ActionImpactFigure>{beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues))}</ActionImpactFigure>
-                          <ActionImpactUnit>kt CO₂e/v</ActionImpactUnit>
+                          <ActionImpactUnit dangerouslySetInnerHTML={{ __html: unit }} />
                         </ActionImpact>
                       )}
                     </CardDetails>

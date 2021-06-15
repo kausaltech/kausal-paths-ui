@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
@@ -64,12 +65,14 @@ const MainUnit = styled.div`
 `;
 
 const EmissionsCard = (props) => {
-  const { unit, sector, subSectors, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
+  const { sector, subSectors, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
+  const { t } = useTranslation();
   const baseEmissionsValue = getMetricValue(sector, startYear);
   const goalEmissionsValue = getMetricValue(sector, endYear);
   const change = getMetricChange(baseEmissionsValue, goalEmissionsValue);
 
+  const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   // If there is on emission value for active year, do not display card set
   if (!goalEmissionsValue) return null;
 
@@ -95,7 +98,7 @@ const EmissionsCard = (props) => {
         <div />
         <MainValue>
           {beautifyValue(goalEmissionsValue)}
-          <MainUnit>{unit}</MainUnit>
+          <MainUnit dangerouslySetInnerHTML={{ __html: unit }} />
           <Status>
             {change > 0 && '+'}
             {change ? `${change}%` : '-'}

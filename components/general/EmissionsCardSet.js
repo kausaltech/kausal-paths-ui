@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import _ from 'lodash';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import { getMetricValue, getSectorsTotal, getMetricChange } from 'common/preprocess';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 import EmissionsCard from './EmissionsCard';
@@ -79,15 +79,13 @@ const Segment = styled.div`
 
 const EmissionsBar = (props) => {
   const { sectors, date, hovered, onHover, handleClick, activeSector, parentColor } = props;
-
+  const { t } = useTranslation();
   const sectorsTotal = getSectorsTotal(sectors, date);
 
   return (
     <>
       <BarHeader>
-        Jakauma
-        {' '}
-        {date}
+        { `${t('distribution')} ${date}`}
       </BarHeader>
       <Bar color={parentColor}>
         { sectors.map((sector) => (
@@ -118,7 +116,7 @@ const EmissionsBar = (props) => {
 };
 
 const EmissionsCardSet = (props) => {
-  const { sectors, rootSector, unit, parentColor, startYear, endYear } = props;
+  const { sectors, rootSector, parentColor, startYear, endYear } = props;
 
   const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
   const [activeSectorId, setActiveSectorId] = useState(undefined);
@@ -150,7 +148,6 @@ const EmissionsCardSet = (props) => {
             color={parentColor}
             startYear={startYear}
             endYear={endYear}
-            unit={unit}
           />
         </ContentArea>
         { cardSectors.length > 1 && (
@@ -170,7 +167,6 @@ const EmissionsCardSet = (props) => {
               <EmissionsCard
                 startYear={startYear}
                 endYear={endYear}
-                unit={unit}
                 sector={sector}
                 subSectors={sectors.filter((sector) => sector.parent?.id === sector.id)}
                 state={activeSectorId === undefined ? 'closed' : 'open'}
@@ -188,7 +184,6 @@ const EmissionsCardSet = (props) => {
       <EmissionsCardSet
         sectors={sectors}
         rootSector={cardSectors.find((sector) => sector.id === activeSectorId)}
-        unit={unit}
         startYear={startYear}
         endYear={endYear}
         parentColor={activeSectorColor}

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next';
 import { Button, ButtonGroup, ListGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
 import styled from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
-import { useTranslation } from 'react-i18next';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
@@ -54,8 +54,10 @@ const TotalUnit = styled.div`
 
 const TotalChange = styled.div`
   margin: 0 .5rem;
+  padding: 0 .5rem;
   font-size: 2rem;
   color: ${(props) => props.theme.graphColors.grey050 };
+  border-right: 1px solid ${(props) => props.theme.graphColors.grey020 };
 `;
 
 const YearRange = styled.div`
@@ -266,13 +268,15 @@ const EmissionsGraph = (props) => {
 }
 
 const EmissionSectorContent = (props) => {
-  const { sector, subSectors, color, year, startYear, endYear, unit } = props;
+  const { sector, subSectors, color, year, startYear, endYear } = props;
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
 
   const sectorsTotal = getMetricValue(sector, endYear);
   const sectorsBase = getMetricValue(sector, startYear);
   const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
+
+  const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
 
   return (
     <div>
@@ -286,12 +290,13 @@ const EmissionSectorContent = (props) => {
         </div>
         <CardSetSummary>
           <TotalChange>
-            { `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` }
             <YearRange>{startYear}-{endYear}</YearRange>
+            { emissionsChange ? `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` : '-'}
           </TotalChange>
           <TotalValue>
+            <YearRange>{endYear}</YearRange>
             { beautifyValue(sectorsTotal) }
-            <TotalUnit>{ unit }</TotalUnit>
+            <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} />
           </TotalValue>
         </CardSetSummary>
       </CardSetHeader>
