@@ -175,6 +175,7 @@ const EmissionsGraph = (props) => {
       smoothing: true,
       hoverinfo: 'skip',
     };
+    plotData.push(joinData);
 
     plotData.push(
       {
