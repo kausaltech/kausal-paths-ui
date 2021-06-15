@@ -28,7 +28,7 @@ function PathsApp({ Component, pageProps }) {
   const apolloClient = useApollo(pageProps.initialApolloState);
 
   const {
-    loading, error, data,
+    loading, error, data, previousData,
   } = useQuery(GET_INSTANCE, { client: apolloClient });
   let component;
 
@@ -38,14 +38,17 @@ function PathsApp({ Component, pageProps }) {
     component = <Spinner style={{ width: '3rem', height: '3rem' }} />;
   } else {
     component = <Component {...pageProps} />;
-    yearRangeVar([1990, data.instance.targetYear]);
-    settingsVar({
-      baseYear: 1990,
-      minYear: 2010,
-      maxYear: data.instance.targetYear,
-      totalEmissions: 540,
-    });
-    activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
+    if (!previousData) {
+      console.log('rerendering app');
+      yearRangeVar([1990, data.instance.targetYear]);
+      settingsVar({
+        baseYear: 1990,
+        minYear: 2010,
+        maxYear: data.instance.targetYear,
+        totalEmissions: 540,
+      });
+      activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
+    }
   }
 
   return (

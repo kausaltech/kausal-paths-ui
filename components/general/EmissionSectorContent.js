@@ -286,7 +286,7 @@ const EmissionSectorContent = (props) => {
               )}
               <ActionsList>
                 { sector.node.upstreamActions.map((action) => (
-                  <ActionsListItem>
+                  <ActionsListItem key={action.id}>
                     <Link href={`/actions/${action.id}`}>
                       <a>
                         {action.name}
