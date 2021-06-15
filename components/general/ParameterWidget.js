@@ -60,7 +60,7 @@ const NumberWidget = (props) => {
     <RangeWrapper>
       <Range
         key="Base"
-        step={0.01}
+        step={1}
         min={min}
         max={max}
         values={values}
@@ -107,7 +107,7 @@ const NumberWidget = (props) => {
           />
         )}
       />
-      <RangeValue>{`${(100 * values[0]).toFixed(0)} %${isCustomized ? '*' : ''}`}</RangeValue>
+      <RangeValue>{`${(values[0]).toFixed(0)} %${isCustomized ? '*' : ''}`}</RangeValue>
     </RangeWrapper>
   );
 };
@@ -147,15 +147,38 @@ const ParameterWidget = (props) => {
     SetParameter({ variables: evt });
   };
 
+  let widget = <div>Parameter type missing</div>;
+
   switch (parameterType) {
-    case 'NumberParameterType': return <NumberWidget id={parameter.id} initialValue={parameter.numberValue} min={parameter.minValue} max={parameter.maxValue} handleChange={handleUserSelection} unit={unit} loading={mutationLoading} isCustomized={parameter.isCustomized} />;
+    case 'NumberParameterType':
+      widget = (
+        <NumberWidget
+          id={parameter.id}
+          initialValue={parameter.numberValue}
+          min={parameter.minValue}
+          max={parameter.maxValue}
+          handleChange={handleUserSelection}
+          unit={unit}
+          loading={mutationLoading}
+          isCustomized={parameter.isCustomized}
+        />
+      );
       break;
-    case 'StringParameterType': return <div>String</div>;
+    case 'StringParameterType': widget = <div>String</div>;
       break;
-    case 'BoolParameterType': return <BoolWidget id={parameter.id} toggled={parameter.boolValue} handleChange={handleUserSelection} loading={mutationLoading} isCustomized={parameter.isCustomized} />;
+    case 'BoolParameterType': widget = (
+      <BoolWidget
+        id={parameter.id}
+        toggled={parameter.boolValue}
+        handleChange={handleUserSelection}
+        loading={mutationLoading}
+        isCustomized={parameter.isCustomized}
+      />
+    );
       break;
-    default: return <div />;
+    default: return widget;
   }
+  return widget;
 };
 
 export default ParameterWidget;
