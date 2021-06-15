@@ -8,8 +8,7 @@ import styled from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import { useTranslation } from 'react-i18next';
 
-// Plotly doesn't work with SSR
-const DynamicPlot = dynamic(() => import('react-plotly.js'),
+const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
 
 const SectorContent = styled.div`
@@ -86,6 +85,16 @@ const EmissionsGraph = (props) => {
 
   //const minLimit = startYear !== BASE_YEAR ? startYear : displaySectors[0].metric.historicalValues[1].year;
   const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
+  const formatHover = (name, color, isPred) => {
+    const predText = isPred ? ' <i> (enn.)</i>' : '';
+    const out = {
+      hovertemplate: `${name}<br />%{x}: %{y:.3r} kt${predText}<extra></extra>`,
+      hoverlabel: {
+        bgcolor: color,
+      }
+    };
+    return out;
+  }
 
   displaySectors?.forEach((sector, index) => {
     const historicalValues = [];
@@ -93,6 +102,8 @@ const EmissionsGraph = (props) => {
     const forecastValues = [];
     const historicalDates = [];
     const forecastDates = [];
+    const fillColor = sector.color || color;
+
     sector.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year === BASE_YEAR) {
         baseValue = dataPoint.value;
@@ -113,9 +124,10 @@ const EmissionsGraph = (props) => {
           width: '0.75',
         },
         stackgroup: 'group2',
-        fillcolor: sector.color || color,
+        fillcolor: fillColor,
         xaxis: 'x1',
-        yaxis: 'y1'
+        yaxis: 'y1',
+        ...formatHover(sector.name, fillColor, false),
       }
     );
     plotData.push(
@@ -127,7 +139,7 @@ const EmissionsGraph = (props) => {
         name: sector.name,
         type: 'scatter',
         fill: 'tonexty',
-        fillcolor: sector.color || color,
+        fillcolor: fillColor,
         stackgroup: 'group1',
         line: {
           color: '#ffffff',
@@ -135,6 +147,7 @@ const EmissionsGraph = (props) => {
           width: '0.75',
         },
         smoothing: true,
+        ...formatHover(sector.name, fillColor, false),
       }
     );
     sector.metric.forecastValues.forEach((dataPoint) => {
@@ -143,8 +156,26 @@ const EmissionsGraph = (props) => {
       forecastDates.push(dataPoint.year);
       }
     });
-    forecastValues.push(historicalValues[historicalValues.length-1]);
-    forecastDates.push(historicalDates[historicalDates.length-1]);
+
+    const joinData = {
+      y: [historicalValues[historicalValues.length-1], forecastValues[0]],
+      x: [historicalDates[historicalDates.length-1], forecastDates[0]],
+      xaxis: 'x2',
+      yaxis: 'y1',
+      name: '',
+      type: 'scatter',
+      fill: 'tonexty',
+      fillcolor: lighten(0.2, fillColor),
+      stackgroup: 'group3',
+      line: {
+        color: 'white',
+        shape: 'spline',
+        width: '0.5',
+      },
+      smoothing: true,
+      hoverinfo: 'skip',
+    };
+
     plotData.push(
       {
         x: forecastDates,
@@ -154,7 +185,7 @@ const EmissionsGraph = (props) => {
         name: `${sector.name} (pred)`,
         type: 'scatter',
         fill: 'tonexty',
-        fillcolor: lighten(0.2, sector.color || color),
+        fillcolor: lighten(0.2, fillColor),
         stackgroup: 'group2',
         line: {
           color: 'white',
@@ -162,6 +193,7 @@ const EmissionsGraph = (props) => {
           width: '0.5',
         },
         smoothing: true,
+        ...formatHover(sector.name, fillColor, true),
       }
     )
   });
@@ -216,12 +248,13 @@ const EmissionsGraph = (props) => {
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: false,
     grid: {rows: 1, columns: 2, pattern: 'independent'},
+    hovermode: 'x',
   }
 
   // console.log('basebar', basebarData);
   // console.log('plot', plotData);
   return (
-    <DynamicPlot
+    <Plot
       data={plotData}
       layout={layout}
       useResizeHandler
