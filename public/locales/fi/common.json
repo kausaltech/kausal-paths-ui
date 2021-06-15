@@ -15,5 +15,6 @@
   "target-year": "Tavoitevuosi",
   "emissions": "Päästöt",
   "actions-influencing-this": "Tämän sektorin päästöihin vaikuttavat toimenpiteet",
-  "actions-available": "Toimet skenaariossa"
+  "actions-available": "Toimet skenaariossa",
+  "loading": "Ladataan"
 }
