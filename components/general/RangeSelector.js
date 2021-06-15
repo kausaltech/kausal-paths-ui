@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Range, getTrackBackground } from 'react-range';
-import { ButtonToggle, Button, Popover, PopoverHeader, PopoverBody } from 'reactstrap';
+import { ButtonToggle, Button, Popover, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';

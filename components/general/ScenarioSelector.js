@@ -1,18 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
-
-const GET_SCENARIOS = gql` 
-  query GetScenarios {
-    scenarios {
-      id
-      name
-      isActive
-      isDefault
-    }
-  }
-`;
+import { activeScenarioVar } from 'common/cache';
+import { GET_HOME_PAGE } from 'common/queries/getHomePage';
+import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
 const ACTIVATE_SCENARIO = gql` 
   mutation ActivateScenario($scenarioId: ID!) {
@@ -27,10 +20,14 @@ const ScenarioSelector = () => {
 
   const [activateScenario] = useMutation(ACTIVATE_SCENARIO, {
     refetchQueries: [
+      { query: GET_ACTION_LIST },
       { query: GET_SCENARIOS },
+      { query: GET_HOME_PAGE },
     ],
   });
 
+  // activateScenario.refetchQueries(GET_SCENARIOS);
+  // activateScenario.refetchQueries(GET_HOME_PAGE);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggle = () => setDropdownOpen((prevState) => !prevState);

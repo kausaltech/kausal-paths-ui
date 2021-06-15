@@ -2,15 +2,18 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
-import { gql, useQuery, NetworkStatus } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
-import { Spinner, Container, Row, Col, ButtonGroup, Button, Popover, UncontrolledPopover, PopoverHeader, PopoverBody, Badge } from 'reactstrap';
+import { Spinner, Container, Row, Col, Badge } from 'reactstrap';
 import styled from 'styled-components';
 import { summarizeYearlyValues, beautifyValue } from 'common/preprocess';
+import { activeScenarioVar } from 'common/cache';
+import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
 import ParameterWidget from 'components/general/ParameterWidget';
+import SettingsPanel from 'components/general/SettingsPanel';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -18,7 +21,7 @@ const HeaderSection = styled.div`
 `;
 
 const PageHeader = styled.div` 
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 
   h1 {
     text-align: center;
@@ -77,71 +80,10 @@ const ActionImpactUnit = styled.div`
   font-size: 0.75rem;
 `;
 
-const GET_ACTION_LIST = gql`
-query GetActionList {
-  actions {
-    id
-    name
-    description
-    color
-    unit {
-      htmlShort
-    }
-    parameters {
-      __typename
-      id
-      nodeRelativeId
-      node {
-        id
-      }
-      isCustomized
-      ... on NumberParameterType {
-        numberValue: value
-        numberDefaultValue: defaultValue
-        minValue
-        maxValue
-      }
-      ... on BoolParameterType {
-        boolValue: value
-        boolDefaultValue: defaultValue
-      }
-      ... on StringParameterType {
-        stringValue: value
-        stringDefaultValue: defaultValue
-      }
-    }
-    quantity
-    inputNodes {
-      id
-    }
-    outputNodes {
-      id
-    }
-    impactMetric {
-      id
-      unit {
-        htmlShort
-      }
-      historicalValues {
-        year
-        value
-      }
-      forecastValues {
-        value
-        year
-      }
-    }
-  }
-}
-`;
 export default function ActionsPage() {
   const { t } = useTranslation();
-  const { loading, error, data, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
-    fetchPolicy: "no-cache",
-  });
-
-  let actions;
-
+  const { loading, error, data } = useQuery(GET_ACTION_LIST);
+  const activeScenario = useReactiveVar(activeScenarioVar);
   /*
   useEffect(() => {
     if(networkStatus === NetworkStatus.refetch) console.log("let's refetch!");
@@ -152,13 +94,7 @@ export default function ActionsPage() {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   } else if (error) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
-  } else {
-    actions = data?.actions;
   };
-
-  const onScenarioChange = (evt) => {
-    refetch();
-  }
 
   return (
     <Layout>
@@ -168,15 +104,15 @@ export default function ActionsPage() {
       <HeaderSection>
         <Container>
           <PageHeader>
-            <h1>{t('actions-available')}</h1>
+            <h1>{t('actions-available')}: {activeScenario?.name}</h1>
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container className="my-5">
+      <Container className="mb-5">
         <Row>
           <Col>
           <ActionList>
-            { actions?.map((action) => (
+            { data?.actions?.map((action) => (
               <ActionItem key={action.id}>
                 <DashCard>
                   <CardContent>
@@ -202,7 +138,6 @@ export default function ActionsPage() {
                             key={parameter.id}
                             parameter={parameter}
                             parameterType={parameter.__typename}
-                            handleChange={onScenarioChange}
                           />
                         ))}
                       </ActionState>
@@ -223,6 +158,7 @@ export default function ActionsPage() {
           </Col>
         </Row>
       </Container>
+      <SettingsPanel />
     </Layout>
   )
 }

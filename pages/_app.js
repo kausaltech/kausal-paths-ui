@@ -1,10 +1,9 @@
 import 'styles/globals.scss';
-import App from 'next/app';
 import { useApollo } from 'common/apollo';
 import { gql, useQuery, ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from 'styled-components';
 import { Spinner } from 'reactstrap';
-import { yearRangeVar, settingsVar } from 'common/cache';
+import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 
 import { appWithTranslation } from 'next-i18next';
 
@@ -15,6 +14,12 @@ const GET_INSTANCE = gql`
   instance {
     id
     targetYear
+  }
+  scenarios {
+    id
+    isActive
+    isDefault
+    name
   }
 }
 `;
@@ -40,6 +45,7 @@ function PathsApp({ Component, pageProps }) {
       maxYear: data.instance.targetYear,
       totalEmissions: 540,
     });
+    activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
   }
 
   return (

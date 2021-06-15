@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import RangeSelector from 'components/general/RangeSelector';
-import { yearRangeVar, settingsVar } from 'common/cache';
+import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
 
 const FixedPanel = styled.div`
@@ -28,7 +28,9 @@ const SettingsPanel = (props) => {
   return (
     <FixedPanel expanded>
       <RangeSelectorWrapper>
-        <ScenarioSelector />
+        <ScenarioSelector
+          handleChange={activeScenarioVar}
+        />
       </RangeSelectorWrapper>
       <RangeSelectorWrapper>
         <RangeSelector

@@ -1,12 +1,13 @@
 import Head from 'next/head';
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
+import { GET_HOME_PAGE } from 'common/queries/getHomePage';
 import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
-import { yearRangeVar, settingsVar } from 'common/cache';
+import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 0; 
@@ -17,64 +18,16 @@ const PageHeader = styled.div`
 
   h1 {
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
 
-const GET_HOME_PAGE = gql`
-query GetHomePage {
-  page(path: "/") {
-    id
-    name
-    ... on EmissionPageType {
-      emissionSectors {
-        id
-        name
-        color
-        parent {
-          id
-        }
-        metric {
-          id
-          name
-          unit {
-            htmlShort
-          }
-          forecastValues {
-            year
-            value
-          }
-          baselineForecastValues {
-            year
-            value
-          }
-          historicalValues {
-            year
-            value
-          }
-        }
-        node {
-          id
-          description
-          upstreamActions {
-            id
-            name
-            parameters {
-              isCustomized
-            }
-          }
-        }
-      }
-    }
-  }
-}
-`;
 export default function Home() {
   const { loading, error, data } = useQuery(GET_HOME_PAGE);
 
   const yearRange = useReactiveVar(yearRangeVar);
-  const settings = useReactiveVar(settingsVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
   const unit = 'kt CO₂e';
 
@@ -95,7 +48,11 @@ export default function Home() {
       <HeaderSection>
         <Container>
           <PageHeader>
-            <h1>{data?.page.name}</h1>
+            <h1>
+              Päästöt:
+              {' '}
+              { activeScenario?.name }
+            </h1>
           </PageHeader>
         </Container>
       </HeaderSection>

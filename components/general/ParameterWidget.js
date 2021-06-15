@@ -6,6 +6,8 @@ import {
 } from 'reactstrap';
 import { Range, getTrackBackground } from 'react-range';
 import styled from 'styled-components';
+import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
 const RangeWrapper = styled.div`
   display: flex;
@@ -132,12 +134,13 @@ const BoolWidget = (props) => {
 };
 
 const ParameterWidget = (props) => {
-  const { parameter, parameterType, unit, handleChange } = props;
+  const { parameter, parameterType, unit } = props;
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
-    onCompleted(data) {
-      handleChange(data);
-    },
+    refetchQueries: [
+      { query: GET_ACTION_LIST },
+      { query: GET_SCENARIOS },
+    ],
   });
 
   const handleUserSelection = (evt) => {
