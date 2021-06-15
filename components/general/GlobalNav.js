@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
 import styled from 'styled-components';
-
 import {
-  Container,
   Navbar,
   NavbarToggler,
   Nav,
   NavItem,
   NavLink,
 } from 'reactstrap';
+import LanguageSelector from './LanguageSelector';
 
 const Brand = styled.div`
   margin-right: .5rem;
@@ -50,6 +49,9 @@ const GlobalNav = (props) => {
             </NavLink>
           </Link>
         </NavItem>
+      </Nav>
+      <Nav>
+        <LanguageSelector />
       </Nav>
     </Navbar>
   );
