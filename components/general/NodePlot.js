@@ -4,8 +4,7 @@ import { useTranslation } from 'next-i18next';
 import { lighten } from 'polished';
 import { ThemeContext } from 'styled-components';
 
-// Plotly doesn't work with SSR
-const DynamicPlot = dynamic(() => import('react-plotly.js'),
+const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
 
 const metricToPlot = (metric, segment, startYear, endYear) => {
@@ -190,7 +189,7 @@ const NodePlot = (props) => {
   };
 
   return (
-    <DynamicPlot
+    <Plot
       data={plotData}
       layout={layout}
       useResizeHandler
