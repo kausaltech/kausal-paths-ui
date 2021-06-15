@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
@@ -17,19 +17,7 @@ const ACTIVATE_SCENARIO = gql`
 
 const ScenarioSelector = () => {
   const { t } = useTranslation();
-
-  const [activateScenario] = useMutation(ACTIVATE_SCENARIO, {
-    refetchQueries: [
-      { query: GET_ACTION_LIST },
-      { query: GET_SCENARIOS },
-      { query: GET_HOME_PAGE },
-    ],
-  });
-
-  // activateScenario.refetchQueries(GET_SCENARIOS);
-  // activateScenario.refetchQueries(GET_HOME_PAGE);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const toggle = () => setDropdownOpen((prevState) => !prevState);
 
   const { loading, error, data } = useQuery(GET_SCENARIOS);
@@ -42,6 +30,19 @@ const ScenarioSelector = () => {
   }
 
   const scenarios = data?.scenarios;
+
+  const [activateScenario] = useMutation(ACTIVATE_SCENARIO, {
+    refetchQueries: [
+      { query: GET_ACTION_LIST },
+      { query: GET_SCENARIOS },
+      { query: GET_HOME_PAGE },
+    ],
+    // TODO: figure out which scenario got just activated... this one returns the previous active
+    onCompleted: (data) => activeScenarioVar(scenarios.find((scen) => scen.isActive)),
+  });
+
+  // activateScenario.refetchQueries(GET_SCENARIOS);
+  // activateScenario.refetchQueries(GET_HOME_PAGE);
 
   const activeScenario = scenarios?.find((scenario) => scenario.isActive)
     || scenarios?.find((scenario) => scenario.isDefault);
