@@ -68,7 +68,7 @@ const Causality = styled.div`
   margin: 1rem 0;
 `;
 
-const GET_PAGE_CONTENT = gql`
+const GET_NODE_CONTENT = gql`
 query GetNodeContent($node: ID!) {
   node(id: $node) {
     id
@@ -245,7 +245,7 @@ export default function ActionPage() {
   const { slug } = router.query;
   const { t } = useTranslation();
 
-  const { loading, error, data, refetch, networkStatus } = useQuery(GET_PAGE_CONTENT, {
+  const { loading, error, data, refetch, networkStatus } = useQuery(GET_NODE_CONTENT, {
     fetchPolicy: 'no-cache',
     variables: {
       node: slug,
@@ -259,7 +259,7 @@ export default function ActionPage() {
     return <Layout><div>{error}</div></Layout>;
   }
 
-  const handleChange = () => {
+  const handleParamChange = () => {
     refetch();
   };
 
@@ -293,7 +293,7 @@ export default function ActionPage() {
                     parameter={parameter}
                     parameterType={parameter.__typename}
                     unit={action.unit.htmlShort}
-                    handleChange={handleChange}
+                    handleChange={handleParamChange}
                   />
                 ))}
               </Parameters>
@@ -318,7 +318,7 @@ export default function ActionPage() {
                 key={node.id}
                 node={node}
                 index={index + 1}
-                handleChange={handleChange}
+                handleChange={handleParamChange}
               />
             ))}
           </Col>
