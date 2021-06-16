@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import PlotlyPlot from 'react-plotly.js';
-import { fi, en } from 'plotly.js-locales';
+import fiLocale from 'plotly.js-locales/fi';
 
 
 export default function Plot(props) {
@@ -10,11 +10,10 @@ export default function Plot(props) {
   const { i18n } = useTranslation();
 
   if (i18n.language === 'fi') {
-    config.locales = {fi};
+    config.locales = {fi: fiLocale};
     config.locale = 'fi';
     separators = ', ';
   } else if (i18n.language === 'en') {
-    config.locales = {en};
     config.locale = 'en';
     separators = '.,'
   }
