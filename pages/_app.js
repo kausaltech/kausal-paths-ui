@@ -39,7 +39,6 @@ function PathsApp({ Component, pageProps }) {
   } else {
     component = <Component {...pageProps} />;
     if (!previousData) {
-      console.log('rerendering app');
       yearRangeVar([1990, data.instance.targetYear]);
       settingsVar({
         baseYear: 1990,

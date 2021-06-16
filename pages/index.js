@@ -64,7 +64,9 @@ export default function Home() {
           parentColor="#666"
         />
       </Container>
-      <SettingsPanel />
+      <SettingsPanel
+        defaultYearRange={yearRange}
+      />
     </Layout>
   );
 }

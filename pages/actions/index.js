@@ -168,7 +168,9 @@ export default function ActionsPage() {
           </Col>
         </Row>
       </Container>
-      <SettingsPanel />
+      <SettingsPanel
+        defaultYearRange={[2018,2030]}
+      />
     </Layout>
   )
 }

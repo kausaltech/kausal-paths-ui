@@ -4,10 +4,12 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'react-i18next';
-import { gql, useQuery } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import * as Icon from 'react-bootstrap-icons';
 import { Spinner, Container, Row, Col } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
+import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
+import { yearRangeVar } from 'common/cache';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
@@ -68,138 +70,8 @@ const Causality = styled.div`
   margin: 1rem 0;
 `;
 
-const GET_PAGE_CONTENT = gql`
-query GetNodeContent($node: ID!) {
-  node(id: $node) {
-    id
-    name 
-    description
-    color	
-    unit {
-      htmlShort
-    }
-    quantity
-    isAction
-    parameters {
-      __typename
-      id
-      nodeRelativeId
-      node {
-        id
-      }
-      isCustomized
-      ... on NumberParameterType {
-        numberValue: value
-        numberDefaultValue: defaultValue
-        minValue
-        maxValue
-      }
-      ... on BoolParameterType {
-        boolValue: value
-        boolDefaultValue: defaultValue
-      }
-      ... on StringParameterType {
-        stringValue: value
-        stringDefaultValue: defaultValue
-      }
-    }
-    metric {
-      name
-      id
-      unit {
-        htmlShort
-      }
-      historicalValues {
-        year
-        value
-      }
-      forecastValues {
-        value
-        year
-      }
-      baselineForecastValues {
-        year
-        value
-      }
-    }
-    descendantNodes {
-      id
-      name
-      description
-      color	
-      unit {
-        htmlShort
-      }
-      impactMetric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
-      }
-      quantity
-      isAction
-      parameters {
-        __typename
-        id
-        nodeRelativeId
-        node {
-          id
-        }
-        isCustomized
-        ... on NumberParameterType {
-          numberValue: value
-          numberDefaultValue: defaultValue
-          minValue
-          maxValue
-        }
-        ... on BoolParameterType {
-          boolValue: value
-          boolDefaultValue: defaultValue
-        }
-        ... on StringParameterType {
-          stringValue: value
-          stringDefaultValue: defaultValue
-        }
-      }
-      metric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
-      }
-    }
-  }
-}
-`;
-
 const CausalCard = (props) => {
-  const { node, index, handleChange } = props;
+  const { node, index, startYear, endYear } = props;
   const theme = useContext(ThemeContext);
 
   return (
@@ -229,8 +101,8 @@ const CausalCard = (props) => {
             metric={node.metric}
             impactMetric={node.impactMetric}
             year="2021"
-            startYear="2010"
-            endYear="2030"
+            startYear={startYear}
+            endYear={endYear}
             color={node.color}
             isAction={node.isAction}
           />
@@ -244,8 +116,9 @@ export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
   const { t } = useTranslation();
+  const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch, networkStatus } = useQuery(GET_PAGE_CONTENT, {
+  const { loading, error, data, refetch } = useQuery(GET_ACTION_CONTENT, {
     fetchPolicy: 'no-cache',
     variables: {
       node: slug,
@@ -301,8 +174,8 @@ export default function ActionPage() {
                 metric={action.metric}
                 impactMetric={action.impactMetric}
                 year="2021"
-                startYear="2010"
-                endYear="2030"
+                startYear={yearRange[0]}
+                endYear={yearRange[1]}
                 color={action.color}
                 isAction={action.isAction}
               />
@@ -318,13 +191,16 @@ export default function ActionPage() {
                 key={node.id}
                 node={node}
                 index={index + 1}
-                handleChange={handleChange}
+                startYear={yearRange[0]}
+                endYear={yearRange[1]}
               />
             ))}
           </Col>
         </Row>
       </Container>
-      <SettingsPanel />
+      <SettingsPanel
+        defaultYearRange={[2018, 2030]}
+      />
     </Layout>
   );
 }

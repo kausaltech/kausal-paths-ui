@@ -54,10 +54,10 @@ const Thumb = styled.div`
 `;
 
 const RangeSelector = (props) => {
-  const { min, max, baseYear, handleChange } = props;
+  const { min, max, baseYear, handleChange, initMin, initMax } = props;
   const { t } = useTranslation();
-  const [useBase, setUseBase] = useState(true);
-  const [values, setValues] = useState(useBase ? [max] : [min, max]);
+  const [useBase, setUseBase] = useState(baseYear === initMin);
+  const [values, setValues] = useState(useBase ? [initMax] : [initMin, initMax]);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const toggle = () => setPopoverOpen(!popoverOpen);
 

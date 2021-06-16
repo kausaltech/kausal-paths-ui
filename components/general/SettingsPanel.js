@@ -23,8 +23,10 @@ const RangeSelectorWrapper = styled.div`
 `;
 
 const SettingsPanel = (props) => {
+  const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
 
+  yearRangeVar(defaultYearRange);
   return (
     <FixedPanel expanded>
       <RangeSelectorWrapper>
@@ -36,6 +38,8 @@ const SettingsPanel = (props) => {
         <RangeSelector
           min={settings.minYear}
           max={settings.maxYear}
+          initMin={defaultYearRange[0]}
+          initMax={defaultYearRange[1]}
           baseYear={settings.baseYear}
           handleChange={yearRangeVar}
         />
