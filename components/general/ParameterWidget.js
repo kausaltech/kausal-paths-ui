@@ -134,13 +134,15 @@ const BoolWidget = (props) => {
 };
 
 const ParameterWidget = (props) => {
-  const { parameter, parameterType, unit } = props;
+  const { parameter, parameterType, unit, handleChange } = props;
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     refetchQueries: [
-      { query: GET_ACTION_LIST },
       { query: GET_SCENARIOS },
     ],
+    onCompleted: () => {
+      if (handleChange) handleChange();
+    }
   });
 
   const handleUserSelection = (evt) => {

@@ -132,7 +132,7 @@ export default function ActionPage() {
     return <Layout><div>{error}</div></Layout>;
   }
 
-  const handleChange = () => {
+  const handleParamChange = () => {
     refetch();
   };
 
@@ -166,7 +166,7 @@ export default function ActionPage() {
                     parameter={parameter}
                     parameterType={parameter.__typename}
                     unit={action.unit.htmlShort}
-                    handleChange={handleChange}
+                    handleChange={handleParamChange}
                   />
                 ))}
               </Parameters>

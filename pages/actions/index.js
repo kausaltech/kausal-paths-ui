@@ -87,13 +87,17 @@ const ActionImpactUnit = styled.div`
 
 export default function ActionsPage() {
   const { t } = useTranslation();
-  const { loading, error, data } = useQuery(GET_ACTION_LIST);
+  const { loading, error, data, refetch } = useQuery(GET_ACTION_LIST);
   const activeScenario = useReactiveVar(activeScenarioVar);
   /*
   useEffect(() => {
     if(networkStatus === NetworkStatus.refetch) console.log("let's refetch!");
   }, [networkStatus]);
   */
+
+  const handleParamChange = () => {
+    refetch();
+  };
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
@@ -148,6 +152,7 @@ export default function ActionsPage() {
                             key={parameter.id}
                             parameter={parameter}
                             parameterType={parameter.__typename}
+                            handleChange={handleParamChange}
                           />
                         ))}
                       </ActionState>
