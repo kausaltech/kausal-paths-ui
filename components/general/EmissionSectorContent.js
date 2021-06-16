@@ -233,12 +233,13 @@ const EmissionsGraph = (props) => {
     },
     yaxis: {
       domain: [0, 1],
-      anchor: 'x1'
+      anchor: 'x1',
     },
     xaxis2: {
       domain: [0.075, 1],
       anchor: 'y2',
       ticklen: 5,
+      tickformat: 'd',
     },
     yaxis2: {
       domain: [0, 1],
@@ -251,7 +252,6 @@ const EmissionsGraph = (props) => {
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: false,
     grid: {rows: 1, columns: 2, pattern: 'independent'},
-    hovermode: 'x',
   }
 
   // console.log('basebar', basebarData);
