@@ -90,7 +90,7 @@ const EmissionsGraph = (props) => {
   const formatHover = (name, color, isPred) => {
     const predText = isPred ? ' <i> (enn.)</i>' : '';
     const out = {
-      hovertemplate: `${name}<br />%{x}: %{y:.3r} kt${predText}<extra></extra>`,
+      hovertemplate: `${name}<br />%{x}: <b>%{y:.3r} kt</b>${predText}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
       }

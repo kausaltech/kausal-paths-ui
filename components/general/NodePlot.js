@@ -37,6 +37,16 @@ const NodePlot = (props) => {
   const shapes = [];
   const plotData = [];
 
+  const formatHover = (name, color) => {
+    const out = {
+      hovertemplate: `${name}<br />%{x}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
+      hoverlabel: {
+        bgcolor: color,
+      }
+    };
+    return out;
+  }
+
   const hasImpact = impactMetric?.forecastValues.length
     && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
@@ -59,6 +69,7 @@ const NodePlot = (props) => {
         width: '3',
       },
       smoothing: true,
+      ...formatHover(t('plot-actualized'), plotColor)
     },
   );
 
@@ -79,6 +90,7 @@ const NodePlot = (props) => {
           dash: 'dash',
         },
         smoothing: true,
+        ...formatHover(t('plot-baseline', theme.graphColors.grey030)),
       },
     );
   }
@@ -106,12 +118,33 @@ const NodePlot = (props) => {
           dash: 'dash',
         },
         smoothing: true,
+        ...formatHover(t('plot-without-action'), lighten(0.25, plotColor)),
       },
     );
   }
 
-  // forecastValues.unshift(historicalValues[historicalValues.length-1]);
-  // forecastDates.unshift(historicalDates[historicalDates.length-1]);
+  const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : lighten(0.25, plotColor);
+  // Two-entry trace to join historical and scenario together
+  if (historical?.x && forecast?.x) {
+    const joinTrace = {
+      x: [historical.x[historical.x.length - 1], forecast.x[0]],
+      y: [historical.y[historical.y.length - 1], forecast.y[0]],
+      xaxis: 'x2',
+      yaxis: 'y1',
+      marker: { size: 8 },
+      name: t('plot-scenario'),
+      type: 'scatter',
+      line: {
+        color: scenarioPlotColor,
+        width: '3',
+        dash: 'dot',
+      },
+      mode: 'lines',
+      hoverinfo: 'skip',
+      showlegend: false,
+    };
+    plotData.push(joinTrace);
+  }
 
   plotData.push(
     {
@@ -123,11 +156,12 @@ const NodePlot = (props) => {
       name: t('plot-scenario'),
       type: 'scatter',
       line: {
-        color: hasImpact || isAction ? theme.graphColors.green050 : lighten(0.25, plotColor),
+        color: scenarioPlotColor,
         shape: 'spline',
         width: '3',
       },
       smoothing: true,
+      ...formatHover(t('plot-scenario', scenarioPlotColor)),
     },
   );
 
@@ -164,6 +198,7 @@ const NodePlot = (props) => {
     yaxis: {
       domain: [0, 1],
       anchor: 'x1',
+      title: metric?.unit?.htmlShort
     },
     xaxis2: {
       domain: [0.075, 1],
