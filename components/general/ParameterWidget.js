@@ -134,7 +134,7 @@ const BoolWidget = (props) => {
 };
 
 const ParameterWidget = (props) => {
-  const { parameter, parameterType, unit, handleChange } = props;
+  const { parameter, parameterType, handleChange } = props;
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     refetchQueries: [
@@ -142,7 +142,7 @@ const ParameterWidget = (props) => {
     ],
     onCompleted: () => {
       if (handleChange) handleChange();
-    }
+    },
   });
 
   const handleUserSelection = (evt) => {
@@ -160,7 +160,6 @@ const ParameterWidget = (props) => {
           min={parameter.minValue}
           max={parameter.maxValue}
           handleChange={handleUserSelection}
-          unit={unit}
           loading={mutationLoading}
           isCustomized={parameter.isCustomized}
         />

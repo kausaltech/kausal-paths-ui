@@ -12,7 +12,7 @@ import { activeScenarioVar } from 'common/cache';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Layout from 'components/Layout';
 import DashCard from 'components/general/DashCard';
-import ParameterWidget from 'components/general/ParameterWidget';
+import ActionParameters from 'components/general/ActionParameters';
 import SettingsPanel from 'components/general/SettingsPanel';
 
 const HeaderSection = styled.div`
@@ -147,14 +147,10 @@ export default function ActionsPage() {
                         <div dangerouslySetInnerHTML={{__html: action.description}} />
                       )}
                       <ActionState>
-                        { action.parameters.map((parameter) => (
-                          <ParameterWidget
-                            key={parameter.id}
-                            parameter={parameter}
-                            parameterType={parameter.__typename}
-                            handleChange={handleParamChange}
-                          />
-                        ))}
+                        <ActionParameters
+                          parameters={action.parameters}
+                          handleParamChange={handleParamChange}
+                        />
                       </ActionState>
                       </div>
                       {action.impactMetric && (

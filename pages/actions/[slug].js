@@ -15,7 +15,7 @@ import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
-import ParameterWidget from 'components/general/ParameterWidget';
+import ActionParameters from 'components/general/ActionParameters';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -149,7 +149,7 @@ export default function ActionPage() {
             <HeaderCard>
               <h1>
                 <Link href="/actions">
-                  <a href>
+                  <a>
                     { t('actions') }
                   </a>
                 </Link>
@@ -159,17 +159,10 @@ export default function ActionPage() {
                 {action.name}
               </h1>
               <ActionDescription dangerouslySetInnerHTML={{ __html: action.description }} />
-              <Parameters>
-                { action.parameters?.map((parameter) => (
-                  <ParameterWidget
-                    key={parameter.id}
-                    parameter={parameter}
-                    parameterType={parameter.__typename}
-                    unit={action.unit.htmlShort}
-                    handleChange={handleParamChange}
-                  />
-                ))}
-              </Parameters>
+              <ActionParameters
+                parameters={action.parameters}
+                handleParamChange={handleParamChange}
+              />
               <NodePlot
                 metric={action.metric}
                 impactMetric={action.impactMetric}
