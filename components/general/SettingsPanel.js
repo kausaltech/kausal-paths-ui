@@ -1,7 +1,8 @@
+import { useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import RangeSelector from 'components/general/RangeSelector';
-import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
+import { yearRangeVar, settingsVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
 
 const FixedPanel = styled.div`
@@ -26,13 +27,14 @@ const SettingsPanel = (props) => {
   const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
 
-  yearRangeVar(defaultYearRange);
+  useEffect(() => {
+    yearRangeVar(defaultYearRange);
+  });
+
   return (
     <FixedPanel expanded>
       <RangeSelectorWrapper>
-        <ScenarioSelector
-          handleChange={activeScenarioVar}
-        />
+        <ScenarioSelector />
       </RangeSelectorWrapper>
       <RangeSelectorWrapper>
         <RangeSelector
@@ -44,7 +46,6 @@ const SettingsPanel = (props) => {
           handleChange={yearRangeVar}
         />
       </RangeSelectorWrapper>
-
     </FixedPanel>
   );
 };
