@@ -7,6 +7,7 @@ import { BarChartFill, InfoSquare, Journals } from 'react-bootstrap-icons';
 import { lighten } from 'polished';
 import styled from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
+import HighlightValue from 'components/general/HighlightValue';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
@@ -39,31 +40,6 @@ const CardSetHeader = styled.div`
 
 const CardSetSummary = styled.div`
   display: flex;
-  line-height: 1.2;
-  font-weight: 700;
-`;
-
-const TotalValue = styled.div`
-  margin: 0 .5rem;
-  font-size: 2rem;
-`;
-
-const TotalUnit = styled.div`
-  font-size: 0.75rem;
-`;
-
-const TotalChange = styled.div`
-  margin: 0 .5rem;
-  padding: 0 .5rem;
-  font-size: 2rem;
-  color: ${(props) => props.theme.graphColors.grey050 };
-  border-right: 1px solid ${(props) => props.theme.graphColors.grey020 };
-`;
-
-const YearRange = styled.div`
-  text-align: right;
-  font-size: 0.75rem;
-  color: ${(props) => props.theme.graphColors.grey050};
 `;
 
 const ActionsList = styled.ul`
@@ -289,15 +265,16 @@ const EmissionSectorContent = (props) => {
         </ButtonGroup>
         </div>
         <CardSetSummary>
-          <TotalChange>
-            <YearRange>{startYear}-{endYear}</YearRange>
-            { emissionsChange ? `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` : '-'}
-          </TotalChange>
-          <TotalValue>
-            <YearRange>{endYear}</YearRange>
-            { beautifyValue(sectorsTotal) }
-            <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} />
-          </TotalValue>
+          <HighlightValue
+            displayValue={emissionsChange ? `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` : '-'}
+            header={`${startYear}-${endYear}`}
+            unit=""
+          />
+          <HighlightValue
+            displayValue={beautifyValue(sectorsTotal)}
+            header={`${endYear}`}
+            unit={unit}
+          />
         </CardSetSummary>
       </CardSetHeader>
         { activeTabId === 'graph' && (

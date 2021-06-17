@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useState } from 'react';
+import { gql, useMutation } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import {
   CustomInput,
 } from 'reactstrap';
 import { Range, getTrackBackground } from 'react-range';
 import styled from 'styled-components';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
 const RangeWrapper = styled.div`
   display: flex;
   min-width: 240px;
+  max-width: 320px;
 `;
 
 const RangeValue = styled.div` 

@@ -19,5 +19,9 @@
   "loading": "Ladataan",
   "abbr-per-annum": "/v",
   "distribution": "Jakauma",
-  "plot-actualized": "Toteuma"
+  "plot-actualized": "Toteuma",
+  "display-effect-on-emissions": "Näytetään vaikutus",
+  "display-yearly-effect": "vuosipäästöihin",
+  "display-cumulative-effect": "kumulatiivisiin päästöihin",
+  "total-effect-until": "Kokonaisvaikutus -"
 }

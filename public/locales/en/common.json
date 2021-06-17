@@ -19,5 +19,9 @@
   "actions-influencing-this": "Actions influencing emissions in this sector",
   "loading": "Loading",
   "abbr-per-annum": "/a",
-  "distribution": "Distribution"
+  "distribution": "Distribution",
+  "display-effect-on-emissions": "Diplay effect",
+  "display-yearly-effect": "on yearly emissions",
+  "display-cumulative-effect": "on cumulated emissions",
+  "total-effect-until": "Total effect until"
 }
