@@ -42,10 +42,10 @@ const NodePlot = (props) => {
       hovertemplate: `${name}<br />%{x}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
-      }
+      },
     };
     return out;
-  }
+  };
 
   const hasImpact = impactMetric?.forecastValues.length
     && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
@@ -69,7 +69,7 @@ const NodePlot = (props) => {
         width: '3',
       },
       smoothing: true,
-      ...formatHover(t('plot-actualized'), plotColor)
+      ...formatHover(t('plot-actualized'), plotColor),
     },
   );
 
@@ -198,12 +198,17 @@ const NodePlot = (props) => {
     yaxis: {
       domain: [0, 1],
       anchor: 'x1',
-      title: metric?.unit?.htmlShort
+      title: metric?.unit?.htmlShort,
     },
     xaxis2: {
       domain: [0.075, 1],
       anchor: 'y2',
       ticklen: 5,
+      type: 'date',
+      dtick: 'M12',
+      range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
+      gridcolor: '#eeeeee',
+      tickcolor: '#eeeeee',
     },
     yaxis2: {
       domain: [0, 1],

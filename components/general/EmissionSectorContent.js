@@ -219,7 +219,9 @@ const EmissionsGraph = (props) => {
     },
     yaxis2: {
       domain: [0, 1],
-      anchor: 'x2'
+      anchor: 'x2',
+      type: 'date',
+      dtick: 'M12',
     },
     autosize: true,
     font: {

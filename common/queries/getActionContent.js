@@ -12,6 +12,12 @@ const GET_ACTION_CONTENT = gql`
       }
       quantity
       isAction
+      outputNodes{
+        id
+      }
+      inputNodes{
+        id
+      }
       parameters {
         __typename
         id
@@ -58,9 +64,15 @@ const GET_ACTION_CONTENT = gql`
         id
         name
         description
-        color	
+        color
         unit {
           htmlShort
+        }
+        inputNodes{
+          id
+        }
+        outputNodes{
+          id
         }
         impactMetric {
           name
