@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import {
@@ -51,6 +51,10 @@ const SET_PARAMETER = gql`
 const NumberWidget = (props) => {
   const { id, initialValue, min, max, isCustomized, handleChange, loading } = props;
   const [values, setValues] = useState([initialValue]);
+
+  useEffect(() => {
+    setValues([initialValue]);
+  }, [initialValue]);
 
   const handleSlide = (newValues) => {
     handleChange({ parameterId: id, numberValue: newValues[0] });
