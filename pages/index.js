@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -8,7 +9,7 @@ import Layout from 'components/Layout';
 import { GET_HOME_PAGE } from 'common/queries/getHomePage';
 import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
-import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar } from 'common/cache';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 0; 
@@ -25,11 +26,15 @@ const PageHeader = styled.div`
 `;
 
 export default function Home() {
-  const { loading, error, data } = useQuery(GET_HOME_PAGE);
+  const { loading, error, data, refetch } = useQuery(GET_HOME_PAGE);
 
   const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
+
+  useEffect(() => {
+    refetch();
+  }, [activeScenario]);
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;

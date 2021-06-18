@@ -23,27 +23,34 @@ const ScenarioSelector = () => {
   const { t } = useTranslation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggle = () => setDropdownOpen((prevState) => !prevState);
-  const activeScenario = useReactiveVar(activeScenarioVar);
+  // const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const { loading, error, data } = useQuery(GET_SCENARIOS);
+  const { loading, error, data } = useQuery(GET_SCENARIOS, {
+    fetchPolicy: 'network-only',
+    notifyOnNetworkStatusChange: true,
+    onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive)),
+  });
   const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation(ACTIVATE_SCENARIO, {
     refetchQueries: [
-      { query: GET_ACTION_LIST },
       { query: GET_SCENARIOS },
-      { query: GET_HOME_PAGE },
     ],
-    onCompleted: (dat) => activeScenarioVar(dat.activateScenario.activeScenario),
   });
 
   if (loading) {
-    return <Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} />;
+    return (
+      <Dropdown>
+        <DropdownToggle caret color="light">
+          Loading
+        </DropdownToggle>
+      </Dropdown>
+    );
   }
   if (error) {
     return <div>{error}</div>;
   }
 
   const scenarios = data?.scenarios;
-
+  const activeScenario = scenarios.find((scen) => scen.isActive);
   const displayScenario = `${t('scenario')}: ${activeScenario.name.length > 20
     ? `${activeScenario.name.substring(0, 20)}&hellip;` : activeScenario.name}`;
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -49,16 +49,15 @@ export default function ActionsPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
   const [displayType, setDisplayType] = useState(DISPLAY_YEARLY);
+  useEffect(() => {
+    refetch();
+  }, [activeScenario]);
 
   /*
   useEffect(() => {
     if(networkStatus === NetworkStatus.refetch) console.log("let's refetch!");
   }, [networkStatus]);
   */
-
-  const handleParamChange = () => {
-    refetch();
-  };
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
@@ -108,8 +107,8 @@ export default function ActionsPage() {
             <ActionList>
               { data?.actions?.map((action) => (
                 <ActionListCard
+                  key={action.id}
                   action={action}
-                  handleParamChange={handleParamChange}
                   displayType={displayType}
                   displayYears={yearRange}
                 />

@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import * as Icon from 'react-bootstrap-icons';
 import { Spinner, Container, Row, Col } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
-import { yearRangeVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar } from 'common/cache';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
@@ -117,6 +117,7 @@ export default function ActionPage() {
   const { slug } = router.query;
   const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
   const { loading, error, data, refetch } = useQuery(GET_ACTION_CONTENT, {
     fetchPolicy: 'no-cache',
@@ -125,16 +126,16 @@ export default function ActionPage() {
     },
   });
 
+  useEffect(() => {
+    refetch();
+  }, [activeScenario]);
+
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
   }
   if (error) {
     return <Layout><div>{error}</div></Layout>;
   }
-
-  const handleParamChange = () => {
-    refetch();
-  };
 
   const action = data.node;
 
@@ -161,7 +162,6 @@ export default function ActionPage() {
               <ActionDescription dangerouslySetInnerHTML={{ __html: action.description }} />
               <ActionParameters
                 parameters={action.parameters}
-                handleParamChange={handleParamChange}
               />
               <NodePlot
                 metric={action.metric}

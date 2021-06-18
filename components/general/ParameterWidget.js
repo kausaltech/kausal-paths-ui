@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import {
   CustomInput,
 } from 'reactstrap';
 import { Range, getTrackBackground } from 'react-range';
 import styled from 'styled-components';
+import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
 const RangeWrapper = styled.div`
@@ -134,14 +135,15 @@ const BoolWidget = (props) => {
 };
 
 const ParameterWidget = (props) => {
-  const { parameter, parameterType, handleChange } = props;
+  const { parameter, parameterType } = props;
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     refetchQueries: [
       { query: GET_SCENARIOS },
     ],
     onCompleted: () => {
-      if (handleChange) handleChange();
+      activeScenarioVar({ ...activeScenario, stamp: Date.now() });
     },
   });
 

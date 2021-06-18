@@ -1,17 +1,15 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { gql, useQuery } from '@apollo/client';
-import * as Icon from 'react-bootstrap-icons';
-import _ from 'lodash';
+import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
-import { getMetricValue, beautifyValue } from 'common/preprocess';
+import { activeScenarioVar } from 'common/cache';
 import Layout from 'components/Layout';
+import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
-import DashCard from 'components/general/DashCard';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -27,29 +25,8 @@ const PageHeader = styled.div`
   }
 `;
 
-const ActionLinks = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const NodeCard = styled.div`
-  margin-bottom: 1rem;
-
-  &.action .card {
-    border:${(props) => props.theme.graphColors.grey030} 2px solid;
-  }
-
-  &.emissions .card {
-
-  }
-`;
-
-const Causality = styled.div`
-  text-align: center;
-  margin: 1rem 0;
-`;
-
-const GET_ACTION_PAGE_CONTENT = gql`
-query GetActionPage($node: ID!) {
+const GET_NODE_PAGE_CONTENT = gql`
+query GetNodePage($node: ID!) {
   node(id: $node) {
     id
     name
@@ -105,59 +82,21 @@ query GetActionPage($node: ID!) {
 }
 `;
 
-const getNode = (nodes, nodeId) => nodes.find((node) => node.id === nodeId);
-
-const CausalCard = (props) => {
-  const { node, index } = props;
-
-  const [actionValue, setActionValue] = useState('on');
-  // emission_factor file-x
-  // action journal-check
-  // emission    patch-exclamation cloud-fog
-
-  return (
-    <ActionLinks>
-      { index !== 0 && (
-      <Causality>
-        <Icon.ArrowDown
-          size={36}
-          color="#999999"
-        />
-      </Causality>
-      )}
-      <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
-        <DashCard>
-          { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
-          { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
-          { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
-          <h4>{node.name}</h4>
-          <p>{node.description}</p>
-          <p>
-            <strong>{beautifyValue(getMetricValue(node, 2030))}</strong>
-            {' '}
-            <span dangerouslySetInnerHTML={{ __html: node.unit?.htmlShort }} />
-          </p>
-
-          { node.isAction && (
-            <ButtonGroup size="sm">
-              <Button color="primary" onClick={() => setActionValue('on')} active={actionValue === 'on'}>Toteutetaan</Button>
-              <Button color="primary" onClick={() => setActionValue('off')} active={actionValue === 'off'}>Ei toteuteta</Button>
-            </ButtonGroup>
-          )}
-        </DashCard>
-      </NodeCard>
-    </ActionLinks>
-  );
-};
 export default function NodePage() {
   const router = useRouter();
   const { slug } = router.query;
 
-  const { loading, error, data } = useQuery(GET_ACTION_PAGE_CONTENT, {
+  const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
     },
   });
+
+  const activeScenario = useReactiveVar(activeScenarioVar);
+
+  useEffect(() => {
+    refetch();
+  }, [activeScenario]);
 
   if (loading) {
     return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
@@ -220,10 +159,12 @@ export default function NodePage() {
         </>
         )}
       </Container>
+      <SettingsPanel
+        defaultYearRange={[2018, 2030]}
+      />
     </Layout>
   );
 }
-
 
 export async function getServerSideProps({ locale }) {
   return {

@@ -48,7 +48,7 @@ const ActionState = styled.div`
 `;
 
 const ActionListCard = (props) => {
-  const { action, handleParamChange, displayType, displayYears } = props;
+  const { action, displayType, displayYears } = props;
   const { t } = useTranslation();
 
   let unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
@@ -91,7 +91,6 @@ const ActionListCard = (props) => {
               <ActionState>
                 <ActionParameters
                   parameters={action.parameters}
-                  handleParamChange={handleParamChange}
                 />
               </ActionState>
             </div>
