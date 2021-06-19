@@ -280,7 +280,7 @@ const EmissionSectorContent = (props) => {
         </CardSetSummary>
       </CardSetHeader>
         { activeTabId === 'graph' && (
-          <SectorContent>
+          <ContentWrapper>
             <EmissionsGraph
               sector={sector}
               subSectors={subSectors}
@@ -289,7 +289,7 @@ const EmissionSectorContent = (props) => {
               startYear={startYear}
               endYear={endYear}
             />
-          </SectorContent>
+          </ContentWrapper>
         )}
         { activeTabId === 'info' && (
           <ContentWrapper>
