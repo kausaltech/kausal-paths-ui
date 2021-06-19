@@ -12,7 +12,7 @@ import HighlightValue from 'components/general/HighlightValue';
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
 
-const SectorContent = styled.div`
+const ContentWrapper = styled.div`
   padding: 1rem;
   margin: .5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
@@ -292,7 +292,7 @@ const EmissionSectorContent = (props) => {
           </SectorContent>
         )}
         { activeTabId === 'info' && (
-          <SectorContent>
+          <ContentWrapper>
             <TabText>
               {sector.node.description && (
                 <div dangerouslySetInnerHTML={{__html: action.description}} />
@@ -314,7 +314,7 @@ const EmissionSectorContent = (props) => {
                 ))}
               </ActionsList>
             </TabText>
-          </SectorContent>
+          </ContentWrapper>
         )}
 
     </div>

@@ -43,6 +43,17 @@ const PageHeader = styled.div`
   }
 `;
 
+const ContentWrapper = styled.div`
+  padding: 1rem;
+  margin: .5rem 0;
+  background-color: ${(props) => props.theme.graphColors.grey005};
+  border-radius: 10px;
+
+  .x2sstick text, .xtick text {
+    text-anchor: end !important;
+  }
+`;
+
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -98,15 +109,17 @@ export default function ActionPage() {
                 parameters={action.parameters}
               />
               { action.metric && (
-              <NodePlot
-                metric={action.metric}
-                impactMetric={action.impactMetric}
-                year="2021"
-                startYear={yearRange[0]}
-                endYear={yearRange[1]}
-                color={action.color}
-                isAction={action.isAction}
-              />
+              <ContentWrapper>
+                <NodePlot
+                  metric={action.metric}
+                  impactMetric={action.impactMetric}
+                  year="2021"
+                  startYear={yearRange[0]}
+                  endYear={yearRange[1]}
+                  color={action.color}
+                  isAction={action.isAction}
+                />
+              </ContentWrapper>
               )}
             </HeaderCard>
           </PageHeader>

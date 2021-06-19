@@ -23,11 +23,12 @@ const NodePlot = (props) => {
   const {
     metric,
     impactMetric,
-    year,
     startYear,
     endYear,
     color,
     isAction,
+    targetLevel,
+    targetYear,
   } = props;
 
   const { t } = useTranslation();
@@ -165,29 +166,42 @@ const NodePlot = (props) => {
     },
   );
 
-  const todaymarker = {
-    type: 'line',
-    yref: 'paper',
-    x0: year,
-    y0: 0,
-    x1: year,
-    y1: 1,
-    line: {
-      color: '#D46262',
-      width: 2,
-      dash: 'dot',
-    },
-  };
-
-  shapes.push(todaymarker);
+  if (targetLevel) {
+    shapes.push({
+      type: 'line',
+      yref: 'y',
+      x0: Date.parse(`Nov 1, ${startYear - 1}`),
+      y0: targetLevel,
+      x1: Date.parse(`Feb 1, ${endYear}`),
+      y1: targetLevel,
+      line: {
+        color: theme.graphColors.red050,
+        width: 2,
+        dash: 'dot',
+      },
+    });
+    plotData.push({
+      x: [endYear],
+      y: [targetLevel],
+      type: 'scatter',
+      xaxis: 'x2',
+      yaxis: 'y1',
+      name: `${t('target')} ${targetYear}`,
+      line: {
+        color: theme.graphColors.red050,
+        width: 2,
+        dash: 'dot',
+      },
+    });
+  }
 
   const layout = {
     height: 300,
     margin: {
       t: 24,
-      r: 32,
+      r: 24,
       b: 48,
-      l: 24,
+      l: 12,
     },
     xaxis: {
       domain: [0, 0.03],
@@ -198,6 +212,9 @@ const NodePlot = (props) => {
     yaxis: {
       domain: [0, 1],
       anchor: 'x1',
+      ticklen: 5,
+      gridcolor: theme.graphColors.grey010,
+      tickcolor: theme.graphColors.grey030,
       title: metric?.unit?.htmlShort,
     },
     xaxis2: {
@@ -207,8 +224,8 @@ const NodePlot = (props) => {
       type: 'date',
       dtick: 'M12',
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
-      gridcolor: '#eeeeee',
-      tickcolor: '#eeeeee',
+      gridcolor: theme.graphColors.grey010,
+      tickcolor: theme.graphColors.grey030,
     },
     yaxis2: {
       domain: [0, 1],
@@ -226,6 +243,7 @@ const NodePlot = (props) => {
       y: 1,
     },
     grid: { rows: 1, columns: 2, pattern: 'independent' },
+    shapes,
   };
 
   return (

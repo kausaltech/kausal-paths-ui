@@ -23,5 +23,6 @@
   "display-effect-on-emissions": "Näytetään vaikutus",
   "display-yearly-effect": "vuosipäästöihin",
   "display-cumulative-effect": "kumulatiivisiin päästöihin",
-  "total-effect-until": "Kokonaisvaikutus -"
+  "total-effect-until": "Kokonaisvaikutus -",
+  "target": "Tavoite"
 }
