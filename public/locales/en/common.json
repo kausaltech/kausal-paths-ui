@@ -24,5 +24,6 @@
   "display-yearly-effect": "on yearly emissions",
   "display-cumulative-effect": "on cumulated emissions",
   "total-effect-until": "Total effect until",
-  "target": "Target"
+  "target": "Target",
+  "plot-action-impact": "Action impact"
 }

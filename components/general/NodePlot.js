@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
-import { lighten } from 'polished';
+import { lighten, transparentize } from 'polished';
 import { ThemeContext } from 'styled-components';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -96,34 +96,6 @@ const NodePlot = (props) => {
     );
   }
 
-  if (hasImpact) {
-    const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
-
-    impact.y.map((dataPoint, index) => {
-      impact.y[index] = impact.y[index] - impactMetric.forecastValues[index].value;
-    });
-
-    plotData.push(
-      {
-        x: impact.x,
-        y: impact.y,
-        xaxis: 'x2',
-        yaxis: 'y1',
-        mode: 'lines',
-        name: t('plot-without-action'),
-        type: 'scatter',
-        line: {
-          color: lighten(0.25, plotColor),
-          shape: 'spline',
-          width: '3',
-          dash: 'dash',
-        },
-        smoothing: true,
-        ...formatHover(t('plot-without-action'), lighten(0.25, plotColor)),
-      },
-    );
-  }
-
   const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : lighten(0.25, plotColor);
   // Two-entry trace to join historical and scenario together
   if (historical?.x && forecast?.x) {
@@ -165,6 +137,31 @@ const NodePlot = (props) => {
       ...formatHover(t('plot-scenario', scenarioPlotColor)),
     },
   );
+
+  if (hasImpact) {
+    const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
+
+    impact.y.forEach((dataPoint, index) => {
+      impact.y[index] -= impactMetric.forecastValues[index].value;
+    });
+
+    plotData.push(
+      {
+        x: impact.x,
+        y: impact.y,
+        xaxis: 'x2',
+        yaxis: 'y1',
+        mode: 'lines',
+        name: t('plot-action-impact'),
+        type: 'scatter',
+        fill: 'tonexty',
+        fillcolor: transparentize(0.85, scenarioPlotColor),
+        line: { width: 0 },
+        smoothing: true,
+        ...formatHover(t('plot-without-action'), lighten(0.45, scenarioPlotColor)),
+      },
+    );
+  }
 
   if (targetLevel) {
     shapes.push({
