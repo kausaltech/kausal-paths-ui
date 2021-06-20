@@ -64,6 +64,7 @@ const CausalCard = (props) => {
               isAction={node.isAction}
               targetLevel={targetLevel}
               targetYear={targetYear}
+              filled={node.quantity === 'emissions'}
             />
           </ContentWrapper>
         </DashCard>

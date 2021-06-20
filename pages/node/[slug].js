@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
 import Layout from 'components/Layout';
@@ -127,6 +127,7 @@ export default function NodePage() {
               startYear="2010"
               endYear="2030"
               color={node.color}
+              filled
             />
           </PageHeader>
         </Container>

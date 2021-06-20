@@ -29,6 +29,7 @@ const NodePlot = (props) => {
     isAction,
     targetLevel,
     targetYear,
+    filled,
   } = props;
 
   const { t } = useTranslation();
@@ -55,6 +56,17 @@ const NodePlot = (props) => {
   const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
   const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
 
+  const filledStyles = filled ? {
+    fill: 'tozeroy',
+    marker: { opacity: 0 },
+    line: {
+      color: 'white',
+      width: '1',
+      dash: 'solid',
+      shape: 'spline',
+    },
+  } : {};
+
   plotData.push(
     {
       x: historical.x,
@@ -69,32 +81,12 @@ const NodePlot = (props) => {
         shape: 'spline',
         width: '3',
       },
+      fillcolor: plotColor,
       smoothing: true,
+      ...filledStyles,
       ...formatHover(t('plot-actualized'), plotColor),
     },
   );
-
-  if (!isAction) {
-    plotData.push(
-      {
-        x: baselineForecast.x,
-        y: baselineForecast.y,
-        xaxis: 'x2',
-        yaxis: 'y1',
-        mode: 'lines',
-        name: t('plot-baseline'),
-        type: 'scatter',
-        line: {
-          color: theme.graphColors.grey030,
-          shape: 'spline',
-          width: '3',
-          dash: 'dash',
-        },
-        smoothing: true,
-        ...formatHover(t('plot-baseline', theme.graphColors.grey030)),
-      },
-    );
-  }
 
   const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : lighten(0.25, plotColor);
   // Two-entry trace to join historical and scenario together
@@ -115,6 +107,8 @@ const NodePlot = (props) => {
       mode: 'lines',
       hoverinfo: 'skip',
       showlegend: false,
+      fillcolor: scenarioPlotColor,
+      ...filledStyles,
     };
     plotData.push(joinTrace);
   }
@@ -134,6 +128,8 @@ const NodePlot = (props) => {
         width: '3',
       },
       smoothing: true,
+      fillcolor: scenarioPlotColor,
+      ...filledStyles,
       ...formatHover(t('plot-scenario', scenarioPlotColor)),
     },
   );
@@ -163,6 +159,28 @@ const NodePlot = (props) => {
     );
   }
 
+  if (!isAction) {
+    plotData.push(
+      {
+        x: baselineForecast.x,
+        y: baselineForecast.y,
+        xaxis: 'x2',
+        yaxis: 'y1',
+        mode: 'lines',
+        name: t('plot-baseline'),
+        type: 'scatter',
+        line: {
+          color: theme.graphColors.grey060,
+          shape: 'spline',
+          width: '2',
+          dash: 'dash',
+        },
+        smoothing: true,
+        ...formatHover(t('plot-baseline', theme.graphColors.grey030)),
+      },
+    );
+  }
+
   if (targetLevel) {
     shapes.push({
       type: 'line',
@@ -172,7 +190,7 @@ const NodePlot = (props) => {
       x1: Date.parse(`Feb 1, ${endYear}`),
       y1: targetLevel,
       line: {
-        color: theme.graphColors.red050,
+        color: theme.graphColors.red070,
         width: 2,
         dash: 'dot',
       },
@@ -185,7 +203,7 @@ const NodePlot = (props) => {
       yaxis: 'y1',
       name: `${t('target')} ${targetYear}`,
       line: {
-        color: theme.graphColors.red050,
+        color: theme.graphColors.red070,
         width: 2,
         dash: 'dot',
       },
