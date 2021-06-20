@@ -105,7 +105,7 @@ const RangeSelector = (props) => {
                   <span>
                     <Icon.ArrowCounterclockwise />
                     {' '}
-                    1990
+                    { baseYear }
                   </span>
                 )}
               </ButtonToggle>

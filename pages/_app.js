@@ -44,7 +44,9 @@ function PathsApp({ Component, pageProps }) {
         baseYear: 1990,
         minYear: 2010,
         maxYear: data.instance.targetYear,
+        latestMetricYear: 2018,
         totalEmissions: 540,
+        emissionsTarget: 266,
       });
       activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
     }

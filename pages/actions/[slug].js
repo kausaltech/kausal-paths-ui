@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
-import { yearRangeVar, activeScenarioVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
@@ -130,7 +130,7 @@ export default function ActionPage() {
         yearRange={yearRange}
       />
       <SettingsPanel
-        defaultYearRange={[2018, 2030]}
+        defaultYearRange={settingsVar().latestMetricYear, settingsVar().maxYear]}
       />
     </Layout>
   );

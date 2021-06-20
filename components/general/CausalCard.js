@@ -2,6 +2,7 @@ import Link from 'next/link';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { getMetricValue, beautifyValue } from 'common/preprocess';
+import { settingsVar } from 'common/cache';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
 import HighlightValue from 'components/general/HighlightValue';
@@ -38,7 +39,7 @@ const CausalCard = (props) => {
 
   let targetLevel;
   let targetYear;
-  if (node.id === 'net_emissions') { targetLevel = 266; targetYear = 2030; }
+  if (node.id === 'net_emissions') { targetLevel = settingsVar().emissionsTarget; targetYear = settingsVar().maxYear; }
 
   return (
     <ActionLinks>
@@ -50,7 +51,7 @@ const CausalCard = (props) => {
           <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
           <div dangerouslySetInnerHTML={{ __html: node.description }} />
           <HighlightValue
-            displayValue={beautifyValue(getMetricValue(node, 2030) || 0)}
+            displayValue={beautifyValue(getMetricValue(node, settingsVar().maxYear) || 0)}
             header={endYear}
             unit={node.unit?.htmlShort}
           />

@@ -5,7 +5,7 @@ import { useTranslation } from 'next-i18next';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
-import { activeScenarioVar, yearRangeVar } from 'common/cache';
+import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Layout from 'components/Layout';
 import ActionListCard from 'components/general/ActionListCard';
@@ -118,7 +118,7 @@ export default function ActionsPage() {
         </Row>
       </Container>
       <SettingsPanel
-        defaultYearRange={[2018, 2030]}
+        defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
       />
     </Layout>
   );

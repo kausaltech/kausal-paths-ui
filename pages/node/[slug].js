@@ -6,7 +6,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { Spinner, Container } from 'reactstrap';
 import styled from 'styled-components';
-import { activeScenarioVar } from 'common/cache';
+import { activeScenarioVar, settingsVar } from 'common/cache';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
@@ -123,9 +123,8 @@ export default function NodePage() {
             </p>
             <NodePlot
               metric={node.metric}
-              year="2021"
-              startYear="2010"
-              endYear="2030"
+              startYear={settingsVar().minYear}
+              endYear={settingsVar().maxYear}
               color={node.color}
               filled
             />
@@ -161,7 +160,7 @@ export default function NodePage() {
         )}
       </Container>
       <SettingsPanel
-        defaultYearRange={[2018, 2030]}
+        defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
       />
     </Layout>
   );

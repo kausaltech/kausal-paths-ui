@@ -1,14 +1,12 @@
 import dynamic from 'next/dynamic';
 import { lighten } from 'polished';
+import { settingsVar } from 'common/cache';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
 
     
 const EmissionsGraph = (props) => {
-  
-  const BASE_YEAR = 1990;
-
   const { sector, subSectors, color, year, startYear, endYear } = props;
 
   const shapes = [];
@@ -37,7 +35,7 @@ const EmissionsGraph = (props) => {
     const fillColor = sector.color || color;
 
     sector.metric.historicalValues.forEach((dataPoint) => {
-      if (dataPoint.year === BASE_YEAR) {
+      if (dataPoint.year ===  settingsVar().baseYear) {
         baseValue = dataPoint.value;
       } else if(dataPoint.year <= endYear && dataPoint.year >= startYear){
         historicalValues.push(dataPoint.value);
@@ -46,7 +44,7 @@ const EmissionsGraph = (props) => {
     });
     plotData.push(
       {
-        x: [BASE_YEAR-1,BASE_YEAR],
+        x: [ settingsVar().baseYear-1, settingsVar().baseYear],
         y: [baseValue, baseValue],
         name: sector.name,
         type: 'scatter',
