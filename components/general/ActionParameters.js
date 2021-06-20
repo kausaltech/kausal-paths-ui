@@ -8,7 +8,8 @@ margin: 1rem 0;
 const ActionParameters = (props) => {
   const { parameters } = props;
 
-  const actionParameterSwitch = parameters.find((param) => param.__typename === 'BoolParameterType');
+  // Separate mandatory on/off parameter with standard id
+  const actionParameterSwitch = parameters.find((param) => param.id === `${param.node.id}.enabled`);
   const actionOtherParameters = parameters.filter((param) => param.id !== actionParameterSwitch?.id);
 
   return (
