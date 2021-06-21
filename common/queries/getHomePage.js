@@ -34,7 +34,7 @@ const GET_HOME_PAGE = gql`
           }
           node {
             id
-            description
+            shortDescription
             upstreamActions {
               id
               name

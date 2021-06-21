@@ -5,7 +5,7 @@ const GET_ACTION_LIST = gql`
     actions {
       id
       name
-      description
+      shortDescription
       color
       unit {
         htmlShort

@@ -97,8 +97,8 @@ const EmissionSectorContent = (props) => {
       { activeTabId === 'info' && (
       <ContentWrapper>
         <TabText>
-          {sector.node.description && (
-          <div dangerouslySetInnerHTML={{ __html: action.description }} />
+          {sector.node.shortDescription && (
+          <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
           )}
           { sector.node.upstreamActions.length > 0 && (
           <h6>

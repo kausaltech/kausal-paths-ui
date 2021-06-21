@@ -85,8 +85,8 @@ const ActionListCard = (props) => {
           </CardHeader>
           <CardDetails>
             <div>
-              {action.description && (
-              <div dangerouslySetInnerHTML={{ __html: action.description }} />
+              {action.shortDescription && (
+              <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
               )}
               <ActionState>
                 <ActionParameters

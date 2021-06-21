@@ -38,7 +38,7 @@ const CausalCard = (props) => {
   const { node, index, startYear, endYear } = props;
 
   const { targetYearGoal } = node;
-  let targetYear;
+  const { maxYear } = settingsVar();
 
   return (
     <ActionLinks>
@@ -63,7 +63,7 @@ const CausalCard = (props) => {
               color={node.color}
               isAction={node.isAction}
               targetYearGoal={targetYearGoal}
-              targetYear={targetYear}
+              targetYear={maxYear}
             />
           </ContentWrapper>
         </DashCard>

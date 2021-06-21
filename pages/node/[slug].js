@@ -30,6 +30,7 @@ query GetNodePage($node: ID!) {
   node(id: $node) {
     id
     name
+    shortDescription
     description
     color	
     unit {
@@ -59,8 +60,8 @@ query GetNodePage($node: ID!) {
     inputNodes {
       id
       name
-      description
-      color	
+      shortDescription
+      color
       unit {
         htmlShort
       }
@@ -70,8 +71,8 @@ query GetNodePage($node: ID!) {
     outputNodes {
       id
       name
-      description
-      color	
+      shortDescription
+      color
       unit {
         htmlShort
       }
@@ -118,9 +119,7 @@ export default function NodePage() {
             <h1>
               {node.name}
             </h1>
-            <p>
-              {node.description}
-            </p>
+            <div dangerouslySetInnerHTML={{ __html: node.description }} />
             <NodePlot
               metric={node.metric}
               startYear={settingsVar().minYear}

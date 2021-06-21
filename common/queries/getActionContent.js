@@ -63,7 +63,7 @@ const GET_ACTION_CONTENT = gql`
       descendantNodes {
         id
         name
-        description
+        shortDescription
         color
         targetYearGoal
         unit {
