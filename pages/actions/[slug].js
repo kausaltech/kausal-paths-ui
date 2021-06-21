@@ -130,7 +130,7 @@ export default function ActionPage() {
         yearRange={yearRange}
       />
       <SettingsPanel
-        defaultYearRange={settingsVar().latestMetricYear, settingsVar().maxYear]}
+        defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
       />
     </Layout>
   );

@@ -126,7 +126,6 @@ export default function NodePage() {
               startYear={settingsVar().minYear}
               endYear={settingsVar().maxYear}
               color={node.color}
-              filled
             />
           </PageHeader>
         </Container>

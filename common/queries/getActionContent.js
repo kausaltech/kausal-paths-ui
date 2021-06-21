@@ -65,6 +65,7 @@ const GET_ACTION_CONTENT = gql`
         name
         description
         color
+        targetYearGoal
         unit {
           htmlShort
         }

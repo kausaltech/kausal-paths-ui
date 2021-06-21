@@ -37,9 +37,8 @@ const ContentWrapper = styled.div`
 const CausalCard = (props) => {
   const { node, index, startYear, endYear } = props;
 
-  let targetLevel;
+  const { targetYearGoal } = node;
   let targetYear;
-  if (node.id === 'net_emissions') { targetLevel = settingsVar().emissionsTarget; targetYear = settingsVar().maxYear; }
 
   return (
     <ActionLinks>
@@ -63,9 +62,8 @@ const CausalCard = (props) => {
               endYear={endYear}
               color={node.color}
               isAction={node.isAction}
-              targetLevel={targetLevel}
+              targetYearGoal={targetYearGoal}
               targetYear={targetYear}
-              filled={node.quantity === 'emissions'}
             />
           </ContentWrapper>
         </DashCard>

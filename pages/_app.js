@@ -13,7 +13,11 @@ const GET_INSTANCE = gql`
 {
   instance {
     id
+    name
     targetYear
+    referenceYear
+    minimumHistoricalYear
+    maximumHistoricalYear
   }
   scenarios {
     id
@@ -39,12 +43,12 @@ function PathsApp({ Component, pageProps }) {
   } else {
     component = <Component {...pageProps} />;
     if (!previousData) {
-      yearRangeVar([1990, data.instance.targetYear]);
+      yearRangeVar([data.instance.referenceYear || 1990, data.instance.targetYear]);
       settingsVar({
-        baseYear: 1990,
-        minYear: 2010,
+        baseYear: data.instance.referenceYear || 1990,
+        minYear: data.instance.minimumHistoricalYear || 2010,
         maxYear: data.instance.targetYear,
-        latestMetricYear: 2018,
+        latestMetricYear: data.instance.maximumHistoricalYear || 2018,
         totalEmissions: 540,
         emissionsTarget: 266,
       });

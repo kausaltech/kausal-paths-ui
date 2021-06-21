@@ -27,7 +27,7 @@ const NodePlot = (props) => {
     endYear,
     color,
     isAction,
-    targetLevel,
+    targetYearGoal,
     targetYear,
     filled,
   } = props;
@@ -181,14 +181,14 @@ const NodePlot = (props) => {
     );
   }
 
-  if (targetLevel) {
+  if (targetYearGoal) {
     shapes.push({
       type: 'line',
       yref: 'y',
       x0: Date.parse(`Nov 1, ${startYear - 1}`),
-      y0: targetLevel,
+      y0: targetYearGoal,
       x1: Date.parse(`Feb 1, ${endYear}`),
-      y1: targetLevel,
+      y1: targetYearGoal,
       line: {
         color: theme.graphColors.red070,
         width: 2,
@@ -197,7 +197,7 @@ const NodePlot = (props) => {
     });
     plotData.push({
       x: [endYear],
-      y: [targetLevel],
+      y: [targetYearGoal],
       type: 'scatter',
       xaxis: 'x2',
       yaxis: 'y1',
