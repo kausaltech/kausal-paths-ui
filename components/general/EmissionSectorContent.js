@@ -36,6 +36,10 @@ const CardSetHeader = styled.div`
 
 const CardSetSummary = styled.div`
   display: flex;
+
+  .figure {
+    margin-left: 1rem;
+  }
 `;
 
 const ActionsList = styled.ul`
@@ -63,7 +67,13 @@ const EmissionSectorContent = (props) => {
     <div>
       <CardSetHeader>
         <div>
-          <h4>{ sector.name }</h4>
+          <h4>
+            <Link href={`/node/${sector.id}`}>
+              <a>
+                { sector.name }
+              </a>
+            </Link>
+          </h4>
           <ButtonGroup>
             <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
             <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>
@@ -71,11 +81,13 @@ const EmissionSectorContent = (props) => {
         </div>
         <CardSetSummary>
           <HighlightValue
+            className="figure"
             displayValue={emissionsChange ? `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` : '-'}
             header={`${startYear}-${endYear}`}
             unit=""
           />
           <HighlightValue
+            className="figure"
             displayValue={beautifyValue(sectorsTotal)}
             header={`${endYear}`}
             unit={unit}
@@ -98,8 +110,13 @@ const EmissionSectorContent = (props) => {
       <ContentWrapper>
         <TabText>
           {sector.node.shortDescription && (
-          <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
+          <div dangerouslySetInnerHTML={{ __html: sector.node.shortDescription }} />
           )}
+          <Link href={`/node/${sector.node.id}`}>
+            <a>
+              Lue lisää
+            </a>
+          </Link>
           { sector.node.upstreamActions.length > 0 && (
           <h6>
             { t('actions-influencing-this') }

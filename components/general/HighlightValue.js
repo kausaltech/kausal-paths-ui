@@ -4,7 +4,7 @@ const TotalValue = styled.div`
   text-align: right;
   line-height: 1.2;
   font-weight: 700;
-  font-size: 2rem;
+  font-size: 1.5rem;
 `;
 
 const TotalUnit = styled.div`
@@ -17,10 +17,10 @@ const YearRange = styled.div`
 `;
 
 const HighlightValue = (props) => {
-  const { displayValue, header, unit } = props;
+  const { displayValue, header, unit, className } = props;
 
   return (
-    <TotalValue>
+    <TotalValue className={className}>
       <YearRange dangerouslySetInnerHTML={{ __html: header }} />
       { displayValue }
       <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} />

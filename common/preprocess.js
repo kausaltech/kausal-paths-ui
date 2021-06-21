@@ -13,12 +13,34 @@ export const beautifyValue = (x) => {
   return displayNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 };
 
-export const getInitialMetric = (sector) => sector.metric.historicalValues[0];
+export const getInitialMetric = (node) => node.metric.historicalValues[0];
 
-export const getMetricValue = (sector, date) => sector.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value || sector.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value;
+export const getMetricValue = (node, date) => (
+  node.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value
+  || node.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
+);
 
-export const getMetricChange = (initial, current) => (initial !== 0 ? -Math.round(((initial - current) / initial) * 100) : undefined);
+export const getImpactMetricValue = (node, date) => (
+  node.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value
+  || node.impactMetric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
+  || 0
+);
+
+export const getMetricChange = (initial, current) => (
+  (initial !== 0 ? -Math.round(((initial - current) / initial) * 100) : undefined)
+);
 
 export const getSectorsTotal = (sectors, date) => _.sum(sectors.map((sector) => getMetricValue(sector, date)));
 
 export const summarizeYearlyValues = (yearlyValues) => _.sum(yearlyValues.map((v) => v.value));
+
+export const summarizeYearlyValuesBetween = (metric, startYear, endYear) => {
+  const yearlyValues = [];
+  metric.historicalValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
+  });
+  metric.forecastValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
+  });
+  return summarizeYearlyValues(yearlyValues);
+};
