@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import RangeSelector from 'components/general/RangeSelector';
 import { yearRangeVar, settingsVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
+import TotalEmissionsBar from './TotalEmissionsBar';
 
 const FixedPanel = styled.div`
   display: flex;
@@ -23,6 +24,17 @@ const RangeSelectorWrapper = styled.div`
   margin-right: 2rem;
 `;
 
+const ScenarioSelectorWrapper = styled.div`
+  flex: 0 0;
+  margin-right: 2rem;
+`;
+
+const StatusBarWrapper = styled.div`
+  flex: 0 2 100%;
+  margin-left: 2rem;
+  text-align: right;
+`;
+
 const SettingsPanel = (props) => {
   const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
@@ -33,9 +45,9 @@ const SettingsPanel = (props) => {
 
   return (
     <FixedPanel expanded>
-      <RangeSelectorWrapper>
+      <ScenarioSelectorWrapper>
         <ScenarioSelector />
-      </RangeSelectorWrapper>
+      </ScenarioSelectorWrapper>
       <RangeSelectorWrapper>
         <RangeSelector
           min={settings.minYear}
@@ -46,6 +58,9 @@ const SettingsPanel = (props) => {
           handleChange={yearRangeVar}
         />
       </RangeSelectorWrapper>
+      <StatusBarWrapper>
+        <TotalEmissionsBar />
+      </StatusBarWrapper>
     </FixedPanel>
   );
 };
