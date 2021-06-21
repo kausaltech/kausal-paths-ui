@@ -32,6 +32,10 @@ const TabText = styled.div`
 const CardSetHeader = styled.div`
   display: flex;
   justify-content: space-between;
+
+  a {
+    color: ${(props) => props.theme.themeColors.dark};
+  }
 `;
 
 const CardSetSummary = styled.div`

@@ -19,7 +19,6 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    text-align: center;
     font-size: 2rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
@@ -54,8 +53,11 @@ export default function Home() {
         <Container>
           <PageHeader>
             <h1>
-              { `${t('emissions')}: ${activeScenario?.name} ` }
+              {t('emissions')}
             </h1>
+            <h3>
+              {activeScenario?.name}
+            </h3>
           </PageHeader>
         </Container>
       </HeaderSection>
