@@ -253,9 +253,11 @@ const NodePlot = (props) => {
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: true,
     legend: {
-      x: 1,
+      orientation: 'h',
+      yanchor: 'top',
+      y: -0.2,
       xanchor: 'right',
-      y: 1,
+      x: 1,
     },
     grid: { rows: 1, columns: 2, pattern: 'independent' },
     shapes,
