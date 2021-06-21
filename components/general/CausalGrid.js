@@ -5,8 +5,10 @@ import { Container } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
+import { summarizeYearlyValuesBetween, beautifyValue, getImpactMetricValue } from 'common/preprocess';
 import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
+import HighlightValue from 'components/general/HighlightValue';
 
 const ActionPoint = styled.div`
   height: 1rem;
@@ -69,6 +71,20 @@ const ContentWrapper = styled.div`
   }
 `;
 
+const ImpactFigures = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+
+  .figure-left, .figure-right {
+    flex: 1 1 50%;
+  }
+
+  .figure-left {
+    text-align: left;
+  }
+`;
+
 const CausalGrid = (props) => {
   const { nodes, yearRange } = props;
   const { t } = useTranslation();
@@ -106,6 +122,11 @@ const CausalGrid = (props) => {
   const lastNode = nodes.find((node) => node.outputNodes.length === 0);
 
   const causalGridNodes = findOutputs([lastNode.id], []);
+
+  const impactAtTargetYear = getImpactMetricValue(lastNode, yearRange[1]);
+  // TODO: use isACtivity when available, for now cumulate impact on emissions
+  const cumulativeImpact = lastNode.quantity === 'emissions'
+    ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1]) : undefined;
 
   return (
     <ArcherContainer
@@ -174,6 +195,22 @@ const CausalGrid = (props) => {
                     </Link>
                   </h2>
                   <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.description }} />
+                  <ImpactFigures>
+                    { cumulativeImpact !== undefined && (
+                      <HighlightValue
+                        className="figure-left"
+                        displayValue={beautifyValue(cumulativeImpact)}
+                        header={`${t('total-impact')} ${yearRange[0]} - ${yearRange[1]}`}
+                        unit={lastNode.unit?.htmlShort}
+                      />
+                    )}
+                    <HighlightValue
+                      className="figure-right"
+                      displayValue={beautifyValue(impactAtTargetYear)}
+                      header={`${t('impact-on-year')} ${yearRange[1]}`}
+                      unit={lastNode.unit?.htmlShort}
+                    />
+                  </ImpactFigures>
                   { lastNode.metric && (
                   <ContentWrapper>
                     <NodePlot

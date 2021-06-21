@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import _ from 'lodash';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween, beautifyValue, getImpactMetricValue } from 'common/preprocess';
@@ -52,8 +51,12 @@ const ImpactFigures = styled.div`
   width: 100%;
   justify-content: flex-end;
 
-  .figure {
-    margin-left: 2rem;
+  .figure-left, .figure-right {
+    flex: 1 1 50%;
+  }
+
+  .figure-left {
+    text-align: left;
   }
 `;
 
@@ -71,7 +74,7 @@ const CausalCard = (props) => {
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact = node.quantity === 'emissions'
     ? summarizeYearlyValuesBetween(node.impactMetric, startYear, endYear) : undefined;
-    // _.concat(node.impactMetric.historicalValues, node.impactMetric.forecastValues)
+
   return (
     <ActionLinks>
       <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
@@ -87,14 +90,14 @@ const CausalCard = (props) => {
           <ImpactFigures>
             { cumulativeImpact !== undefined && (
               <HighlightValue
-                className="figure"
+                className="figure-left"
                 displayValue={beautifyValue(cumulativeImpact)}
                 header={`${t('total-impact')} ${startYear} - ${endYear}`}
                 unit={node.unit?.htmlShort}
               />
             )}
             <HighlightValue
-              className="figure"
+              className="figure-right"
               displayValue={beautifyValue(impactAtTargetYear)}
               header={`${t('impact-on-year')} ${endYear}`}
               unit={node.unit?.htmlShort}
