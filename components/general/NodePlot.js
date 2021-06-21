@@ -228,7 +228,7 @@ const NodePlot = (props) => {
       domain: [0, 1],
       anchor: 'x1',
       ticklen: 5,
-      gridcolor: theme.graphColors.grey010,
+      gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       title: metric?.unit?.htmlShort,
     },
@@ -239,7 +239,7 @@ const NodePlot = (props) => {
       type: 'date',
       dtick: 'M12',
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
-      gridcolor: theme.graphColors.grey010,
+      gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
     },
     yaxis2: {
