@@ -14,9 +14,9 @@ const FixedPanel = styled.div`
   bottom: 0;
   width: 100%;
   padding: 1.5rem;
-  background-color: #ffffff;
+  background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
-  box-shadow: 0 0 6px 6px rgba(20,20,20,0.05);
+  box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
 `;
 
 const RangeSelectorWrapper = styled.div`

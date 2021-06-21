@@ -29,9 +29,8 @@ const CardHeader = styled.div`
   border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
 `;
 
-const ActionCategory = styled.div`
-  flex: 1;
-  text-align: right;
+const TextContent = styled.div`
+  margin-right: 2rem;
 `;
 
 const CardContent = styled.div`
@@ -81,12 +80,11 @@ const ActionListCard = (props) => {
                 </h5>
               </a>
             </Link>
-            <ActionCategory><Badge>Category</Badge></ActionCategory>
           </CardHeader>
           <CardDetails>
             <div>
               {action.shortDescription && (
-              <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
+              <TextContent dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
               )}
               <ActionState>
                 <ActionParameters

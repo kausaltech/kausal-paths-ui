@@ -32,7 +32,8 @@ query GetNodePage($node: ID!) {
     name
     shortDescription
     description
-    color	
+    body
+    color
     unit {
       htmlShort
     }
@@ -156,6 +157,9 @@ export default function NodePage() {
           </ul>
         </>
         )}
+      </Container>
+      <Container>
+        <div dangerouslySetInnerHTML={{ __html: node.body }} />
       </Container>
       <SettingsPanel
         defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}

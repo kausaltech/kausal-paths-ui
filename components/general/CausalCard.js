@@ -17,7 +17,8 @@ const NodeCard = styled.div`
   margin-bottom: 1rem;
 
   &.action .card {
-    border:${(props) => props.theme.graphColors.grey030} 2px solid;
+    background-color: ${(props) => props.theme.graphColors.grey000};
+    border: ${(props) => props.theme.graphColors.grey030} 2px solid;
   }
 
   &.emissions .card {
@@ -25,8 +26,18 @@ const NodeCard = styled.div`
   }
 `;
 
+const CardHeader = styled.div`
+  display: flex;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid ${(props) => props.theme.graphColors.grey020};
+
+  svg {
+    margin-right: 0.5rem;
+  }
+`;
+
 const ContentWrapper = styled.div`
-  padding: 1rem;
+  padding: 0 1rem;
   margin: .5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
   border-radius: 10px;
@@ -46,6 +57,10 @@ const ImpactFigures = styled.div`
   }
 `;
 
+const TextContent = styled.div`
+  padding: .5rem .5rem 0;
+`;
+
 const CausalCard = (props) => {
   const { node, index, startYear, endYear } = props;
   const { t } = useTranslation();
@@ -57,16 +72,18 @@ const CausalCard = (props) => {
   const cumulativeImpact = node.quantity === 'emissions'
     ? summarizeYearlyValuesBetween(node.impactMetric, startYear, endYear) : undefined;
     // _.concat(node.impactMetric.historicalValues, node.impactMetric.forecastValues)
-  console.log(cumulativeImpact);
   return (
     <ActionLinks>
       <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
         <DashCard>
-          { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
-          { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
-          { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
-          <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
-          <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
+          <CardHeader>
+            { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
+            { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
+            { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
+            { node.quantity === 'energy' && <Icon.BatteryCharging size={24} className="mb-3" /> }
+            { node.quantity === 'mileage' && <Icon.Signpost size={24} className="mb-3" /> }
+            <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
+          </CardHeader>
           <ImpactFigures>
             { cumulativeImpact !== undefined && (
               <HighlightValue
@@ -95,6 +112,7 @@ const CausalCard = (props) => {
               targetYear={maxYear}
             />
           </ContentWrapper>
+          { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
         </DashCard>
       </NodeCard>
     </ActionLinks>

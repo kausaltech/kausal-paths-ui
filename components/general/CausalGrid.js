@@ -1,8 +1,11 @@
 import { useRef, useContext } from 'react';
 import _ from 'lodash';
+import Link from 'next/link';
 import { Container } from 'reactstrap';
+import { useTranslation } from 'react-i18next';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
+import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
 
 const ActionPoint = styled.div`
@@ -22,8 +25,53 @@ const GridCol = styled.div`
   margin: 3rem .5rem;
 `;
 
+const GoalSection = styled.div`
+  padding: 1rem 0 8rem;
+  margin-top: 10rem;
+  margin-bottom: -10rem;
+  background-color: ${(props) => props.theme.graphColors.grey070};
+`;
+
+const GoalCard = styled.div` 
+  margin: -8rem 0 3rem;
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey000};
+`;
+
+const ActionDescription = styled.div`
+  margin-bottom: 2rem;
+  font-size: 1.15rem;
+`;
+
+const PageHeader = styled.div` 
+  margin-bottom: 2rem;
+
+  a {
+    color: ${(props) => props.theme.themeColors.dark};
+  }
+
+  h2 {
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    color: ${(props) => props.theme.themeColors.dark};
+  }
+`;
+
+const ContentWrapper = styled.div`
+  padding: 1rem;
+  margin: .5rem 0;
+  background-color: ${(props) => props.theme.graphColors.grey005};
+  border-radius: 10px;
+
+  .x2sstick text, .xtick text {
+    text-anchor: end !important;
+  }
+`;
+
 const CausalGrid = (props) => {
   const { nodes, yearRange } = props;
+  const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const gridCanvas = useRef(null);
 
@@ -57,16 +105,16 @@ const CausalGrid = (props) => {
   // Build the grid from bbottom up
   const lastNode = nodes.find((node) => node.outputNodes.length === 0);
 
-  const causalGridNodes = findOutputs([lastNode.id], [[lastNode]]);
+  const causalGridNodes = findOutputs([lastNode.id], []);
 
   return (
-    <Container fluid>
-      <ArcherContainer
-        strokeColor={theme.graphColors.grey060}
-        strokeWidth={6}
-        endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
-        ref={gridCanvas}
-      >
+    <ArcherContainer
+      strokeColor={theme.graphColors.grey060}
+      strokeWidth={6}
+      endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
+      ref={gridCanvas}
+    >
+      <Container fluid>
         <ArcherElement
           relations={causalGridNodes[0].map((node) => (
             { targetId: node.id,
@@ -109,8 +157,43 @@ const CausalGrid = (props) => {
             ))}
           </GridRow>
         ))}
-      </ArcherContainer>
-    </Container>
+      </Container>
+      <GoalSection>
+        <Container>
+          <PageHeader>
+            <ArcherElement
+              id={lastNode.id}
+            >
+              <div>
+                <GoalCard>
+                  <h2>
+                    <Link href={`/node/${lastNode.id}`}>
+                      <a>
+                        {lastNode.name}
+                      </a>
+                    </Link>
+                  </h2>
+                  <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.description }} />
+                  { lastNode.metric && (
+                  <ContentWrapper>
+                    <NodePlot
+                      metric={lastNode.metric}
+                      impactMetric={lastNode.impactMetric}
+                      year="2021"
+                      startYear={yearRange[0]}
+                      endYear={yearRange[1]}
+                      color={lastNode.color}
+                      isAction={lastNode.isAction}
+                    />
+                  </ContentWrapper>
+                  )}
+                </GoalCard>
+              </div>
+            </ArcherElement>
+          </PageHeader>
+        </Container>
+      </GoalSection>
+    </ArcherContainer>
   );
 };
 
