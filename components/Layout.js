@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import styled from 'styled-components';
-import GlobalNav from 'components/general/GlobalNav';
+import GlobalNav from 'components/common/GlobalNav';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -17,7 +17,23 @@ const Layout = ({ children }) => (
     <Head>
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <GlobalNav />
+    <GlobalNav
+      siteTitle="Tampereen päästöskenaariot"
+      ownerName="Tampereen kaupunki"
+      navItems={[
+        {
+          name: 'Päästöt',
+          slug: '',
+          urlPath: '/',
+        },
+        {
+          name: 'Toimet',
+          slug: 'actions',
+          urlPath: '/actions',
+        },
+      ]}
+      fullwidth
+    />
     <PageContainer>
       <main className="main">
         {children}

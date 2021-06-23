@@ -6,6 +6,7 @@ import {
   Collapse, Container, Navbar, Nav, NavItem,
   UncontrolledDropdown, DropdownToggle, DropdownItem, DropdownMenu,
 } from 'reactstrap';
+import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
@@ -97,7 +98,7 @@ const NavLink = styled.div`
 
     @media (min-width: ${(props) => props.theme.breakpointMd}) {
       align-self: flex-end;
-      margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
+      margin: 0 ${(props) => props.theme.spaces.s100} 0;
     }
   }
 `;
@@ -295,8 +296,8 @@ function GlobalNav(props) {
             type="button"
           >
             { isOpen
-              ? <Icon name="times" color={theme.brandNavColor} />
-              : <Icon name="bars" color={theme.brandNavColor} /> }
+              ? <Icon.XLg color={theme.brandNavColor} />
+              : <Icon.List color={theme.brandNavColor} /> }
           </NavbarToggler>
         </Container>
       </TopNav>
@@ -320,11 +321,13 @@ function GlobalNav(props) {
                   ) : (
                     <NavItem key={page.slug} active={page.active}>
                       <NavLink>
-                        <NavigationLink slug={page.urlPath}>
-                          <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
-                            {page.name}
-                          </NavHighlighter>
-                        </NavigationLink>
+                        <Link href={page.urlPath}>
+                          <a>
+                            <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
+                              {page.name}
+                            </NavHighlighter>
+                          </a>
+                        </Link>
                       </NavLink>
                     </NavItem>
                   )

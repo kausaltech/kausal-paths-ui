@@ -306,6 +306,11 @@
   resolved "https://registry.yarnpkg.com/@mapbox/whoots-js/-/whoots-js-3.1.0.tgz#497c67a1cef50d1a2459ba60f315e448d2ad87fe"
   integrity sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==
 
+"@n8tb1t/use-scroll-position@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@n8tb1t/use-scroll-position/-/use-scroll-position-2.0.3.tgz#207c54d584285cac0954d556964f83cf5774940b"
+  integrity sha512-6GO4FHVJTMI4jbRHborzemuL6B319qh2cVLOLj8DApJhjyT71eLgANbQ4bNKSZ51zBm3uJ3WmqnyNF17eSsDyw==
+
 "@next/env@10.1.3":
   version "10.1.3"
   resolved "https://registry.yarnpkg.com/@next/env/-/env-10.1.3.tgz#29e5d62919b4a7b1859f8d36169848dc3f5ddebe"
@@ -2269,6 +2274,11 @@ evp_bytestokey@^1.0.0, evp_bytestokey@^1.0.3:
   dependencies:
     md5.js "^1.3.4"
     safe-buffer "^5.1.1"
+
+exenv@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/exenv/-/exenv-1.2.2.tgz#2ae78e85d9894158670b03d47bec1f03bd91bb9d"
+  integrity sha1-KueOhdmJQVhnCwPUe+wfA72Ru50=
 
 ext@^1.1.2:
   version "1.4.0"
@@ -4907,6 +4917,11 @@ react-fast-compare@^2.0.1, react-fast-compare@^2.0.4:
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-2.0.4.tgz#e84b4d455b0fec113e0402c329352715196f81f9"
   integrity sha512-suNP+J1VU1MWFKcyt7RtjiSWUjvidmQSlqu+eHslq+342xCbGTYmC0mEhPCOHxlW0CywylOC1u2DFAT+bv4dBw==
 
+react-from-dom@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/react-from-dom/-/react-from-dom-0.6.0.tgz#8b9710ba7fbd36cde9e13e9eb26f5f67ab933678"
+  integrity sha512-W5m1pYV7qlc9bmpA7p2K/wspYNlAh3aqJ9Tc5KRXe6vt/JlX6/84ol+RQlCMK69z+5e38sOpoVW5i4Qpqgs+EA==
+
 react-i18next@^11.8.13:
   version "11.11.0"
   resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-11.11.0.tgz#2f7c6cb4f81f94d1728a02d60e4bb5216709f942"
@@ -4919,6 +4934,14 @@ react-inline-svg@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-inline-svg/-/react-inline-svg-1.1.0.tgz#196b56f53040d93d33a0d501328ef33b42276ab3"
   integrity sha1-GWtW9TBA2T0zoNUBMo7zO0InarM=
+
+react-inlinesvg@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/react-inlinesvg/-/react-inlinesvg-2.3.0.tgz#62283c0ce7e9d11d8190ec3e89589102288830fd"
+  integrity sha512-fEGOdDf4k4bcveArbEpj01pJcH8pOCKLxmSj2POFdGvEk5YK0NZVnH6BXpW/PzACHPRsuh1YKAhNZyFnD28oxg==
+  dependencies:
+    exenv "^1.2.2"
+    react-from-dom "^0.6.0"
 
 react-is@16.13.1, react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"
@@ -6192,11 +6215,6 @@ url@^0.11.0:
   dependencies:
     punycode "1.3.2"
     querystring "0.2.0"
-
-use-scroll-position@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/use-scroll-position/-/use-scroll-position-0.0.4.tgz#60b15bcee69a1596b04be1fc7da1a71778500e04"
-  integrity sha512-niACVxsyo26TOR4F6MxipXULZE8W/HyB7SBkXnax1XrbuohLU2tZbMGySHBctgGH2E55gM+wGyCcFvueeWmbQA==
 
 use-subscription@1.5.1:
   version "1.5.1"
