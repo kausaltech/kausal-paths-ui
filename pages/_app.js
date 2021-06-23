@@ -1,13 +1,14 @@
-import 'styles/globals.scss';
 import { useApollo } from 'common/apollo';
 import { gql, useQuery, ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from 'styled-components';
 import { Spinner } from 'reactstrap';
+import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
 import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 
 import { appWithTranslation } from 'next-i18next';
 
-const appTheme = require('sass-extract-loader?{"plugins": ["sass-extract-js"]}!styles/themes/default.scss');
+require('../styles/default/main.scss');
+const defaultTheme = require('public/static/themes/tampere-ilmasto/theme.json');
 
 const GET_INSTANCE = gql`
 {
@@ -58,7 +59,8 @@ function PathsApp({ Component, pageProps }) {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <ThemeProvider theme={appTheme}>
+      <ThemeProvider theme={defaultTheme}>
+        <ThemedGlobalStyles />
         { component }
       </ThemeProvider>
     </ApolloProvider>
