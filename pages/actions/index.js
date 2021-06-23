@@ -3,13 +3,14 @@ import Head from 'next/head';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { useQuery, useReactiveVar } from '@apollo/client';
-import { Spinner, Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Layout from 'components/Layout';
 import ActionListCard from 'components/general/ActionListCard';
 import SettingsPanel from 'components/general/SettingsPanel';
+import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem; 
@@ -60,7 +61,7 @@ export default function ActionsPage() {
   */
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
+    return <Layout><ContentLoader /></Layout>;
   } if (error) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }

@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { Spinner, Container, Row, Col } from 'reactstrap';
+import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import Layout from 'components/Layout';
@@ -11,6 +11,7 @@ import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
 import NodeLinks from 'components/general/NodeLinks';
+import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -128,7 +129,7 @@ export default function NodePage() {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
+    return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
     return <Layout><div>{error}</div></Layout>;

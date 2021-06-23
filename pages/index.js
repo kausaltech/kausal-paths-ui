@@ -3,13 +3,14 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'react-i18next';
-import { Spinner, Container } from 'reactstrap';
+import { Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
 import { GET_HOME_PAGE } from 'common/queries/getHomePage';
 import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
+import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 0; 
@@ -36,7 +37,7 @@ export default function Home() {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
+    return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
     return <div>{error}</div>;

@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'react-i18next';
-import { Spinner, Container } from 'reactstrap';
+import { Container } from 'reactstrap';
 import styled from 'styled-components';
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
@@ -14,6 +14,7 @@ import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
 import ActionParameters from 'components/general/ActionParameters';
+import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -73,7 +74,7 @@ export default function ActionPage() {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><Spinner className="m-5" style={{ width: '3rem', height: '3rem' }} /></Layout>;
+    return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
     return <Layout><div>{error}</div></Layout>;

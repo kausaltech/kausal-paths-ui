@@ -1,11 +1,10 @@
 import { useApollo } from 'common/apollo';
 import { gql, useQuery, ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from 'styled-components';
-import { Spinner } from 'reactstrap';
 import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
 import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
-
 import { appWithTranslation } from 'next-i18next';
+import ContentLoader from 'components/common/ContentLoader';
 
 require('../styles/default/main.scss');
 const defaultTheme = require('public/static/themes/tampere-ilmasto/theme.json');
@@ -40,7 +39,7 @@ function PathsApp({ Component, pageProps }) {
   if (error) {
     component = <div>{`Error loading data: ${error}`}</div>;
   } else if (loading) {
-    component = <Spinner style={{ width: '3rem', height: '3rem' }} />;
+    component = <ContentLoader />;
   } else {
     component = <Component {...pageProps} />;
     if (!previousData) {
