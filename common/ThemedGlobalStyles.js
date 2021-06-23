@@ -203,6 +203,11 @@ button.btn:focus {
       border-color: ${(props) => props.theme.themeColors.black};
     }
   }
+
+  .custom-control-input:checked ~ .custom-control-label::before {
+    border-color: ${(props) => props.theme.brandDark};
+    background-color: ${(props) => props.theme.brandDark};
+  }
 `;
 
 function ThemedGlobalStyles({ theme, children }) {

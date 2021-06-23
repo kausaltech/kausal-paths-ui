@@ -5,7 +5,7 @@ import {
   CustomInput,
 } from 'reactstrap';
 import { Range, getTrackBackground } from 'react-range';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
@@ -50,6 +50,7 @@ const SET_PARAMETER = gql`
 
 const NumberWidget = (props) => {
   const { id, initialValue, min, max, isCustomized, handleChange, loading } = props;
+  const theme = useTheme();
   const [values, setValues] = useState([initialValue]);
 
   useEffect(() => {
@@ -90,7 +91,7 @@ const NumberWidget = (props) => {
                 borderRadius: '4px',
                 background: getTrackBackground({
                   values,
-                  colors: ['#107251', '#B5B1A9'],
+                  colors: [theme.brandDark, theme.graphColors.grey030],
                   min,
                   max,
                 }),
@@ -108,7 +109,7 @@ const NumberWidget = (props) => {
             style={{
               ...props.style,
             }}
-            color="#107251"
+            color={theme.brandDark}
           />
         )}
       />

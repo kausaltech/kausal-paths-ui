@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle, Button, Popover, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
 const SectionWrapper = styled.div`
@@ -56,6 +56,7 @@ const Thumb = styled.div`
 const RangeSelector = (props) => {
   const { min, max, baseYear, handleChange, initMin, initMax } = props;
   const { t } = useTranslation();
+  const theme = useTheme();
   const [useBase, setUseBase] = useState(baseYear === initMin);
   const [values, setValues] = useState(useBase ? [initMax] : [initMin, initMax]);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -142,7 +143,7 @@ const RangeSelector = (props) => {
                           borderRadius: '4px',
                           background: getTrackBackground({
                             values,
-                            colors: ['#107251', '#B5B1A9'],
+                            colors: [theme.brandDark, theme.graphColors.grey030],
                             min,
                             max,
                           }),
@@ -160,7 +161,7 @@ const RangeSelector = (props) => {
                       style={{
                         ...props.style,
                       }}
-                      color="#107251"
+                      color={theme.brandDark}
                     >
                       <Icon.CaretLeftFill color="#eee" />
                     </Thumb>
@@ -196,7 +197,7 @@ const RangeSelector = (props) => {
                           borderRadius: '4px',
                           background: getTrackBackground({
                             values,
-                            colors: ['#B5B1A9', '#107251', '#B5B1A9'],
+                            colors: [theme.graphColors.grey030, theme.brandDark, theme.graphColors.grey030],
                             min,
                             max,
                           }),
@@ -214,9 +215,9 @@ const RangeSelector = (props) => {
                       style={{
                         ...props.style,
                       }}
-                      color={index == 0 ? '#107251' : '#107251'}
+                      color={theme.brandDark}
                     >
-                      { index === 0 ? <Icon.CaretRightFill color="#eee" /> : <Icon.CaretLeftFill color="#eee" /> }
+                      { index === 0 ? <Icon.CaretRightFill color={theme.graphColors.grey000} /> : <Icon.CaretLeftFill color={theme.graphColors.grey010} /> }
                     </Thumb>
                   )}
                 />
