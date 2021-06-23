@@ -11,6 +11,8 @@ import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { transparentize } from 'polished';
+import NavDropdown from 'components/common/NavDropdown';
+import LanguageSelector from 'components/general/LanguageSelector';
 
 const TopNav = styled(Navbar)`
   background-color: ${(props) => props.theme.brandNavBackground};
@@ -288,6 +290,9 @@ function GlobalNav(props) {
               <span>{siteTitle}</span>
             </HomeLink>
           </Link>
+          <Nav navbar className="ml-auto">
+            <LanguageSelector />
+          </Nav>
           <NavbarToggler
             onClick={() => toggleOpen(!isOpen)}
             aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
@@ -312,12 +317,13 @@ function GlobalNav(props) {
               { navItems && navItems.map((page) => (
                 page.children
                   ? (
-                    <DropdownList
-                      parentName={page.name}
+                    <NavDropdown
                       items={page.children}
                       active={page.active}
                       key={page.slug}
-                    />
+                    >
+                      {page.name}
+                    </NavDropdown>
                   ) : (
                     <NavItem key={page.slug} active={page.active}>
                       <NavLink>
