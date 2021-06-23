@@ -9,7 +9,7 @@ import Layout from 'components/Layout';
 import { GET_HOME_PAGE } from 'common/queries/getHomePage';
 import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
-import { yearRangeVar, activeScenarioVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 0; 
@@ -72,7 +72,7 @@ export default function Home() {
         />
       </Container>
       <SettingsPanel
-        defaultYearRange={yearRange}
+        defaultYearRange={[settingsVar().baseYear, settingsVar().maxYear]}
       />
     </Layout>
   );

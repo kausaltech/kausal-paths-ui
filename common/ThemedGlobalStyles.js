@@ -208,6 +208,12 @@ button.btn:focus {
     border-color: ${(props) => props.theme.brandDark};
     background-color: ${(props) => props.theme.brandDark};
   }
+
+  .dropdown-item.active, .dropdown-item:active {
+    color: #fff;
+    text-decoration: none;
+    background-color: ${(props) => props.theme.brandDark};
+  }
 `;
 
 function ThemedGlobalStyles({ theme, children }) {

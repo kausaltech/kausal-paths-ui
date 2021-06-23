@@ -17,9 +17,15 @@ const PopoverWrapper = styled.div`
   }
 `;
 
+const ButtonLabel = styled.div`
+  white-space: nowrap;
+  font-size: 0.8rem;
+`;
+
 const RangeWrapper = styled.div`
   display: flex;
   flex: 0 1 150px;
+  margin: 0 0.5rem;
 `;
 
 const YearDescription = styled.div`
@@ -27,13 +33,13 @@ const YearDescription = styled.div`
 `;
 
 const ActiveYear = styled.div`
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1;
 `;
 
 const ActiveYearDisplay = styled.div`
-  flex: 0 1 125px;
+  flex: 0 1 100px;
   margin: 0;
   padding: .25rem 0 .25rem;
   text-align: center;
@@ -83,10 +89,13 @@ const RangeSelector = (props) => {
     }
   };
 
+  const isCustom = (useBase ? initMin !== baseYear : initMin !== values[0]) || (useBase ? initMax !== values[0] : initMax !== values[1]);
+
   return (
     <PopoverWrapper>
-      <Button id="Popover1" type="button" color="light">
-        {`${t('comparing-years')}: ${useBase ? baseYear : values[0]} - ${useBase ? values[0] : values[1]}`}
+      <ButtonLabel>{t('comparing-years')}</ButtonLabel>
+      <Button id="Popover1" type="button" color={`${isCustom ? 'secondary' : 'light'}`}>
+        {`${useBase ? baseYear : values[0]} - ${useBase ? values[0] : values[1]}`}
       </Button>
       <Popover placement="bottom" isOpen={popoverOpen} target="Popover1" toggle={toggle}>
         <PopoverBody>

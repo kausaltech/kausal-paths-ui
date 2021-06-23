@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import { gql, useQuery, useMutation, useReactiveVar } from '@apollo/client';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import styled from 'styled-components';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
 import { activeScenarioVar } from 'common/cache';
-import { GET_HOME_PAGE } from 'common/queries/getHomePage';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
 const ACTIVATE_SCENARIO = gql` 
@@ -17,6 +16,20 @@ const ACTIVATE_SCENARIO = gql`
       }
     }
   }
+`;
+
+const StyledDropdown = styled(Dropdown)` 
+  min-width: 200px;
+
+  .btn {
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+  }
+`;
+
+const DropdownLabel = styled.div` 
+  font-size: 0.8rem;
 `;
 
 const ScenarioSelector = () => {
@@ -38,11 +51,12 @@ const ScenarioSelector = () => {
 
   if (loading) {
     return (
-      <Dropdown>
-        <DropdownToggle caret color="light">
-          Loading
+      <StyledDropdown>
+        <DropdownLabel>{t('scenario')}</DropdownLabel>
+        <DropdownToggle color="light">
+          <span><Spinner size="sm" color="primary" /></span>
         </DropdownToggle>
-      </Dropdown>
+      </StyledDropdown>
     );
   }
   if (error) {
@@ -51,15 +65,15 @@ const ScenarioSelector = () => {
 
   const scenarios = data?.scenarios;
   const activeScenario = scenarios.find((scen) => scen.isActive);
-  const displayScenario = `${t('scenario')}: ${activeScenario.name.length > 20
-    ? `${activeScenario.name.substring(0, 20)}&hellip;` : activeScenario.name}`;
+  const displayScenario = activeScenario.name.length > 20
+    ? `${activeScenario.name.substring(0, 20)}&hellip;` : activeScenario.name;
 
   return (
-    <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-      <DropdownToggle caret color="light">
-        { mutationLoading
-          ? <span>{ `${t('scenario')}: ${t('loading')}` }</span>
-          : <span dangerouslySetInnerHTML={{ __html: displayScenario }} /> }
+    <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
+      <DropdownLabel>{t('scenario')}</DropdownLabel>
+      <DropdownToggle color={`${activeScenario.id === 'custom' ? 'secondary' : 'light'}`}>
+        <span dangerouslySetInnerHTML={{ __html: displayScenario }} />
+        {activeScenario.id === 'custom' && '*'}
       </DropdownToggle>
       <DropdownMenu>
         <DropdownItem header>{ t('change-scenario') }</DropdownItem>
@@ -73,7 +87,7 @@ const ScenarioSelector = () => {
           </DropdownItem>
         ))}
       </DropdownMenu>
-    </Dropdown>
+    </StyledDropdown>
   );
 };
 

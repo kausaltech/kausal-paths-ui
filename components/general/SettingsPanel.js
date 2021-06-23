@@ -13,7 +13,7 @@ const FixedPanel = styled.div`
   left: 0;
   bottom: 0;
   width: 100%;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
   box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
@@ -26,7 +26,7 @@ const RangeSelectorWrapper = styled.div`
 
 const ScenarioSelectorWrapper = styled.div`
   flex: 0 0;
-  margin-right: 2rem;
+  margin-right: 1rem;
 `;
 
 const StatusBarWrapper = styled.div`

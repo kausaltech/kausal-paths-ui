@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
 
@@ -12,34 +13,40 @@ const PageContainer = styled.div`
   }
 `;
 
-const Layout = ({ children }) => (
-  <>
-    <Head>
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
-    <GlobalNav
-      siteTitle="Tampereen päästöskenaariot"
-      ownerName="Tampereen kaupunki"
-      navItems={[
-        {
-          name: 'Päästöt',
-          slug: '',
-          urlPath: '/',
-        },
-        {
-          name: 'Toimet',
-          slug: 'actions',
-          urlPath: '/actions',
-        },
-      ]}
-      fullwidth
-    />
-    <PageContainer>
-      <main className="main">
-        {children}
-      </main>
-    </PageContainer>
-  </>
-);
+const Layout = ({ children }) => {
+  const router = useRouter();
+
+  return (
+    <>
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <GlobalNav
+        siteTitle="Tampereen päästöskenaariot"
+        ownerName="Tampereen kaupunki"
+        navItems={[
+          {
+            name: 'Päästöt',
+            slug: '',
+            urlPath: '/',
+            active: router.pathname === '/',
+          },
+          {
+            name: 'Toimet',
+            slug: 'actions',
+            urlPath: '/actions',
+            active: router.pathname.startsWith('/actions'),
+          },
+        ]}
+        fullwidth
+      />
+      <PageContainer>
+        <main className="main">
+          {children}
+        </main>
+      </PageContainer>
+    </>
+  );
+};
 
 export default Layout;
