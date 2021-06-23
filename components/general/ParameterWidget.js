@@ -15,6 +15,11 @@ const RangeWrapper = styled.div`
   max-width: 320px;
 `;
 
+const WidgetWrapper = styled.div`
+  margin-top: 1rem;
+  font-size: 0.8rem;
+`;
+
 const RangeValue = styled.div` 
   min-width: 75px;
   margin-left: 1rem;
@@ -49,7 +54,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
-  const { id, initialValue, min, max, isCustomized, handleChange, loading } = props;
+  const { id, initialValue, min, max, isCustomized, handleChange, loading, description } = props;
   const theme = useTheme();
   const [values, setValues] = useState([initialValue]);
 
@@ -62,80 +67,88 @@ const NumberWidget = (props) => {
   };
 
   return (
-    <RangeWrapper>
-      <Range
-        key="Base"
-        step={1}
-        min={min}
-        max={max}
-        values={values}
-        onChange={(vals) => setValues(vals)}
-        onFinalChange={(vals) => handleSlide(vals)}
-        renderTrack={({ props, children }) => (
-          <div
-            onMouseDown={props.onMouseDown}
-            onTouchStart={props.onTouchStart}
-            style={{
-              ...props.style,
-              height: '36px',
-              display: 'flex',
-              width: '100%',
-            }}
-          >
+    <WidgetWrapper>
+      <div>
+        { description }
+      </div>
+      <RangeWrapper>
+        <Range
+          key="Base"
+          step={1}
+          min={min}
+          max={max}
+          values={values}
+          onChange={(vals) => setValues(vals)}
+          onFinalChange={(vals) => handleSlide(vals)}
+          renderTrack={({ props, children }) => (
             <div
-              disabled={loading}
-              ref={props.ref}
+              onMouseDown={props.onMouseDown}
+              onTouchStart={props.onTouchStart}
               style={{
-                height: '5px',
+                ...props.style,
+                height: '36px',
+                display: 'flex',
                 width: '100%',
-                borderRadius: '4px',
-                background: getTrackBackground({
-                  values,
-                  colors: [theme.brandDark, theme.graphColors.grey030],
-                  min,
-                  max,
-                }),
-                alignSelf: 'center',
               }}
             >
-              {children}
+              <div
+                disabled={loading}
+                ref={props.ref}
+                style={{
+                  height: '5px',
+                  width: '100%',
+                  borderRadius: '4px',
+                  background: getTrackBackground({
+                    values,
+                    colors: [theme.brandDark, theme.graphColors.grey030],
+                    min,
+                    max,
+                  }),
+                  alignSelf: 'center',
+                }}
+              >
+                {children}
+              </div>
             </div>
-          </div>
-        )}
-        renderThumb={({ props, isDragged }) => (
-          <Thumb
-            {...props}
-            dragged={isDragged}
-            style={{
-              ...props.style,
-            }}
-            color={theme.brandDark}
-          />
-        )}
-      />
-      <RangeValue>{`${(values[0]).toFixed(0)} %${isCustomized ? '*' : ''}`}</RangeValue>
-    </RangeWrapper>
+          )}
+          renderThumb={({ props, isDragged }) => (
+            <Thumb
+              {...props}
+              dragged={isDragged}
+              style={{
+                ...props.style,
+              }}
+              color={theme.brandDark}
+            />
+          )}
+        />
+        <RangeValue>{`${(values[0]).toFixed(0)} %${isCustomized ? '*' : ''}`}</RangeValue>
+      </RangeWrapper>
+    </WidgetWrapper>
   );
 };
 
 const BoolWidget = (props) => {
-  const { id, toggled, handleChange, loading, isCustomized } = props;
+  const { id, toggled, handleChange, loading, isCustomized, description } = props;
   const { t } = useTranslation();
 
-  const label = t('will_be_implemented');
+  const label = description || t('will_be_implemented');
 
   return (
-    <>
+    <WidgetWrapper>
+      <div>
+        { label }
+      </div>
       <CustomInput
         type="switch"
         id={`${id}-switch`}
         name={id}
-        label={`${label} ${isCustomized ? '*' : ''}`}
+        label={isCustomized ? '*' : ''}
         checked={toggled}
         onChange={() => handleChange({ parameterId: id, boolValue: !toggled })}
         disabled={loading}
       />
-    </>
+    </WidgetWrapper>
   );
 };
 
@@ -169,6 +182,7 @@ const ParameterWidget = (props) => {
           handleChange={handleUserSelection}
           loading={mutationLoading}
           isCustomized={parameter.isCustomized}
+          description={parameter.description}
         />
       );
       break;
@@ -181,6 +195,7 @@ const ParameterWidget = (props) => {
         handleChange={handleUserSelection}
         loading={mutationLoading}
         isCustomized={parameter.isCustomized}
+        description={parameter.description}
       />
     );
       break;

@@ -1,8 +1,14 @@
 import styled from 'styled-components';
 import ParameterWidget from 'components/general/ParameterWidget';
 
-const Parameters = styled.div` 
-margin: 1rem 0;
+const Parameters = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+
+  & > div {
+    margin-right: 1.5rem;
+  }
 `;
 
 const ActionParameters = (props) => {
