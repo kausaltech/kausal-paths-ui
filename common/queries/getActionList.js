@@ -13,6 +13,7 @@ const GET_ACTION_LIST = gql`
       parameters {
         __typename
         id
+        description
         nodeRelativeId
         node {
           id

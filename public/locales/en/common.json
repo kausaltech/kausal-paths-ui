@@ -1,7 +1,7 @@
 {
   "forecast": "Forecast",
   "will_be_implemented": "Is implemented",
-  "action-impact": "Impact",
+  "action-impact": "Impact on",
   "actions-available": "Actions on scenario",
   "actions": "Actions",
   "error-loading-data": "Error loading data",
@@ -23,7 +23,7 @@
   "display-effect-on-emissions": "Diplay effect",
   "display-yearly-effect": "on yearly emissions",
   "display-cumulative-effect": "on cumulated emissions",
-  "total-effect-until": "Total effect until",
+  "total-effect-until": "Total impact",
   "target": "Target",
   "plot-action-impact": "Action impact",
   "impact-on-year": "Impact on year",

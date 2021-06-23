@@ -57,7 +57,6 @@ query GetNodePage($node: ID!) {
     id
     name
     shortDescription
-    description
     body
     color
     unit {
@@ -149,7 +148,7 @@ export default function NodePage() {
               <h1>
                 {node.name}
               </h1>
-              <ActionDescription dangerouslySetInnerHTML={{ __html: node.description }} />
+              <ActionDescription dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
               { node.metric && (
               <ContentWrapper>
                 <NodePlot

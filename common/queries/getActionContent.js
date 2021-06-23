@@ -4,8 +4,9 @@ const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!) {
     node(id: $node) {
       id
-      name 
-      description
+      name
+      shortDescription
+      body
       color
       unit {
         htmlShort
@@ -21,6 +22,7 @@ const GET_ACTION_CONTENT = gql`
       parameters {
         __typename
         id
+        description
         nodeRelativeId
         node {
           id
@@ -98,6 +100,7 @@ const GET_ACTION_CONTENT = gql`
         isAction
         parameters {
           __typename
+          description
           id
           nodeRelativeId
           node {

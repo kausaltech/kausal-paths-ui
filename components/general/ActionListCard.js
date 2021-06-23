@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import * as Icon from 'react-bootstrap-icons';
-import { Badge } from 'reactstrap';
 import styled from 'styled-components';
-import { summarizeYearlyValues, beautifyValue } from 'common/preprocess';
+import { summarizeYearlyValuesBetween, beautifyValue } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
 import HighlightValue from 'components/general/HighlightValue';
@@ -52,16 +51,18 @@ const ActionListCard = (props) => {
 
   let unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   let actionEffect = 0;
-  let effectHeader = `${t('action-impact')} ${displayYears[1]}`;
+  let effectHeader = `${t('action-impact')} ${displayYears[0]} - ${displayYears[1]}`;
 
   if (displayType === 'displayTypeYearly') {
-    actionEffect = beautifyValue(action.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === displayYears[1])?.value || 0);
+    actionEffect = beautifyValue(action.impactMetric.forecastValues.find(
+      (dataPoint) => dataPoint.year === displayYears[1],
+    )?.value || 0);
   }
 
   if (displayType === 'displayTypeCumulative') {
-    actionEffect = beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues));
+    actionEffect = beautifyValue(summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]));
     unit = 'kt CO<sub>2</sub>e';
-    effectHeader = `${t('total-effect-until')} ${displayYears[1]}`;
+    effectHeader = `${t('total-effect-until')} ${displayYears[0]} - ${displayYears[1]}`;
   }
 
   return (
@@ -72,7 +73,6 @@ const ActionListCard = (props) => {
       <DashCard>
         <CardContent>
           <CardHeader>
-            <Icon.Journals size={24} className="mr-3" />
             <Link href={`/actions/${action.id}`}>
               <a>
                 <h5>
