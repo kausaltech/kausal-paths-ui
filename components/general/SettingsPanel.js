@@ -39,10 +39,6 @@ const SettingsPanel = (props) => {
   const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
 
-  useEffect(() => {
-    yearRangeVar(defaultYearRange);
-  });
-
   return (
     <FixedPanel expanded>
       <ScenarioSelectorWrapper>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle, Button, Popover, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
@@ -60,6 +60,10 @@ const RangeSelector = (props) => {
   const [values, setValues] = useState(useBase ? [initMax] : [initMin, initMax]);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const toggle = () => setPopoverOpen(!popoverOpen);
+
+  useEffect(() => {
+    handleChange([initMin, initMax]);
+  }, [initMin, initMax]);
 
   const handleSliderChange = (changedValues) => {
     setValues(changedValues);
