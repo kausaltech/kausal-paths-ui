@@ -13,15 +13,14 @@ import SettingsPanel from 'components/general/SettingsPanel';
 import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
-  padding: 6rem 0 10rem; 
+  padding: 4rem 0 10rem; 
   background-color: ${(props) => props.theme.graphColors.blue070};
 `;
 
 const PageHeader = styled.div` 
   margin-bottom: 1rem;
-
+  text-align: center;
   h1 {
-    text-align: center;
     font-size: 2rem;
     color: ${(props) => props.theme.themeColors.white};
   }
@@ -30,10 +29,11 @@ const PageHeader = styled.div`
 const ActiveScenario = styled.span`
   display: inline-block;
   padding: .5rem;
-  margin-left: 1rem;
+  margin: 0 auto;
   border-radius: 8px;
   background-color: ${(props) => props.theme.brandDark};
-  font-size: 1.2rem;
+  color: ${(props) => props.theme.themeColors.white};
+  font-size: 1rem;
   font-weight: 700;
   vertical-align: middle;
 `;
@@ -86,11 +86,10 @@ export default function ActionsPage() {
           <PageHeader>
             <h1>
               {t('actions')}
-              :
-              <ActiveScenario>
-                {activeScenario?.name}
-              </ActiveScenario>
             </h1>
+            <ActiveScenario>
+              {activeScenario?.name}
+            </ActiveScenario>
           </PageHeader>
         </Container>
       </HeaderSection>
@@ -102,6 +101,7 @@ export default function ActionsPage() {
                 <h6>{t('display-effect-on-emissions')}</h6>
                 <ButtonGroup>
                   <TabButton
+                    size="sm"
                     color="primary"
                     onClick={() => setDisplayType(DISPLAY_YEARLY)}
                     active={displayType === DISPLAY_YEARLY}
@@ -109,6 +109,7 @@ export default function ActionsPage() {
                     {t('display-yearly-effect')}
                   </TabButton>
                   <TabButton
+                    size="sm"
                     color="primary"
                     onClick={() => setDisplayType(DISPLAY_CUMULATIVE)}
                     active={displayType === DISPLAY_CUMULATIVE}

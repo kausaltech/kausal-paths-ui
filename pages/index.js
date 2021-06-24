@@ -20,9 +20,9 @@ const HeaderSection = styled.div`
 
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
+  text-align: center;
 
   h1 {
-    text-align: center;
     font-size: 2rem;
     color: ${(props) => props.theme.themeColors.white};
   }
@@ -38,6 +38,7 @@ const ActiveScenario = styled.span`
   margin-left: 1rem;
   border-radius: 8px;
   background-color: ${(props) => props.theme.brandDark};
+  color: ${(props) => props.theme.themeColors.white};
   font-size: 1.2rem;
   font-weight: 700;
   vertical-align: middle;
@@ -74,11 +75,10 @@ export default function Home() {
           <PageHeader>
             <h1>
               {t('emission-forecast')}
-              :
-              <ActiveScenario>
-                {activeScenario?.name}
-              </ActiveScenario>
             </h1>
+            <ActiveScenario>
+              {activeScenario?.name}
+            </ActiveScenario>
           </PageHeader>
         </Container>
       </HeaderSection>
