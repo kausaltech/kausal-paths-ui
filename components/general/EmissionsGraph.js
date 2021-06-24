@@ -13,6 +13,8 @@ const EmissionsGraph = (props) => {
   const plotData = [];
   const basebarData = [];
 
+  const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
+
   //const minLimit = startYear !== BASE_YEAR ? startYear : displaySectors[0].metric.historicalValues[1].year;
   const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
   const formatHover = (name, color, isPred) => {
@@ -21,6 +23,9 @@ const EmissionsGraph = (props) => {
       hovertemplate: `${name}<br />%{x}: <b>%{y:.3r} kt</b>${predText}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
+        font: {
+          family: systemFont,
+        }
       }
     };
     return out;
@@ -177,7 +182,7 @@ const EmissionsGraph = (props) => {
     },
     autosize: true,
     font: {
-      family: 'Inter',
+      family: systemFont,
     },
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: false,

@@ -35,6 +35,7 @@ const NodePlot = (props) => {
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
 
+  const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
   const plotColor = color || theme.graphColors.blue070;
   const shapes = [];
   const plotData = [];
@@ -44,6 +45,9 @@ const NodePlot = (props) => {
       hovertemplate: `${name}<br />%{x}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
+        font: {
+          family: systemFont,
+        },
       },
     };
     return out;
@@ -248,7 +252,7 @@ const NodePlot = (props) => {
     },
     autosize: true,
     font: {
-      family: 'Inter',
+      family: systemFont,
     },
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: true,
