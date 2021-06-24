@@ -16,6 +16,7 @@ module.exports = {
     localeSubpaths,
     graphqlUrl: process.env.BROWSER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
     defaultLanguage: i18n.defaultLocale,
+    basePath: process.env.BASE_PATH,
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
@@ -23,5 +24,6 @@ module.exports = {
   future: {
     webpack5: true,
   },
+  basePath: process.env.BASE_PATH,
   i18n,
 }

@@ -1,6 +1,9 @@
 import React from 'react';
 import { createGlobalStyle, withTheme } from 'styled-components';
+
+import { formatUrl } from 'common/urls';
 import Fonts from './fonts';
+
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -219,7 +222,7 @@ button.btn:focus {
 function ThemedGlobalStyles({ theme, children }) {
   if (typeof window !== 'undefined') {
     const { fontUrl, fontFamily, headingsFontFamily } = theme;
-    Fonts(fontFamily, headingsFontFamily, fontUrl);
+    Fonts(fontFamily, headingsFontFamily, formatUrl(fontUrl));
   }
 
   return (

@@ -11,6 +11,7 @@ import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { transparentize } from 'polished';
+import { formatUrl } from 'common/urls';
 import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
 
@@ -258,7 +259,7 @@ function GlobalNav(props) {
 
   const OrgLogo = () => (
     <SVG
-      src={theme.themeLogoUrl}
+      src={formatUrl(theme.themeLogoUrl)}
       title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
       preserveAspectRatio="xMinYMid meet"
     />
