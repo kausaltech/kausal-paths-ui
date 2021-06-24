@@ -132,7 +132,7 @@ const TotalEmissionsBar = (props) => {
       labelSide: undefined,
     },
     {
-      label: yearRange[1],
+      label: `${t('scenario')} ${yearRange[1]}`,
       value: emissionsTotal,
       unit,
       barColor: emissionsTotalColor,
