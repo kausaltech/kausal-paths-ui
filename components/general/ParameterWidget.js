@@ -58,7 +58,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
-  const { id, initialValue, min, max, isCustomized, handleChange, loading, description } = props;
+  const { id, initialValue, min, max, isCustomized, handleChange, loading, description, unit } = props;
   const theme = useTheme();
   const [values, setValues] = useState([initialValue]);
 
@@ -126,7 +126,7 @@ const NumberWidget = (props) => {
             />
           )}
         />
-        <RangeValue>{`${(values[0]).toFixed(0)} %${isCustomized ? '*' : ''}`}</RangeValue>
+        <RangeValue>{`${(values[0]).toFixed(0)} ${unit?.htmlShort || ''} ${isCustomized ? '*' : ''}`}</RangeValue>
       </RangeWrapper>
     </WidgetWrapper>
   );
@@ -187,6 +187,7 @@ const ParameterWidget = (props) => {
           loading={mutationLoading}
           isCustomized={parameter.isCustomized}
           description={parameter.description}
+          unit={parameter.unit}
         />
       );
       break;

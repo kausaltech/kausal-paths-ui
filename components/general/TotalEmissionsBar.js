@@ -8,7 +8,7 @@ import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'react-i18next';
 
 const GET_NET_EMISSIONS = gql`
-query GetNodePage($node: ID!) {
+query GetNetEmissions($node: ID!) {
   node(id: $node) {
     id
     name

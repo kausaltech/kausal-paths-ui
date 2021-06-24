@@ -25,6 +25,9 @@ const GET_ACTION_LIST = gql`
           numberDefaultValue: defaultValue
           minValue
           maxValue
+          unit {
+            htmlShort
+          }
         }
         ... on BoolParameterType {
           boolValue: value
