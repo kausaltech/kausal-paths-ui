@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
+import { Badge } from 'reactstrap';
 import { summarizeYearlyValuesBetween, beautifyValue } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
@@ -27,6 +28,12 @@ const CardHeader = styled.div`
   border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
 `;
 
+const ActionCategory = styled.div`
+  flex: 1;
+  margin-bottom: .5rem;
+  text-align: right;
+`;
+
 const TextContent = styled.div`
   margin-right: 2rem;
 `;
@@ -45,7 +52,7 @@ const ActionState = styled.div`
 `;
 
 const ActionListCard = (props) => {
-  const { action, displayType, displayYears } = props;
+  const { action, displayType, displayYears, level } = props;
   const { t } = useTranslation();
 
   let unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
@@ -79,6 +86,7 @@ const ActionListCard = (props) => {
                 </h5>
               </a>
             </Link>
+            { level === 'NATION' && <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory> }
           </CardHeader>
           <CardDetails>
             <div>

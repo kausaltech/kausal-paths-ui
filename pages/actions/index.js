@@ -123,6 +123,7 @@ export default function ActionsPage() {
                   action={action}
                   displayType={displayType}
                   displayYears={yearRange}
+                  level={action.decisionLevel}
                 />
               ))}
             </ActionList>

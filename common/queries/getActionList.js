@@ -7,6 +7,7 @@ const GET_ACTION_LIST = gql`
       name
       shortDescription
       color
+      decisionLevel
       unit {
         htmlShort
       }

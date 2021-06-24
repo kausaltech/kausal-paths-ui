@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'react-i18next';
-import { Container } from 'reactstrap';
+import { Container, Badge } from 'reactstrap';
 import styled from 'styled-components';
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
@@ -32,6 +32,9 @@ const HeaderCard = styled.div`
 const ActionDescription = styled.div`
   margin-bottom: 2rem;
   font-size: 1.15rem;
+`;
+
+const ActionCategory = styled.div`
 `;
 
 const PageHeader = styled.div` 
@@ -105,6 +108,9 @@ export default function ActionPage() {
                 {' '}
                 {action.name}
               </h1>
+              { action.decisionLevel === 'NATION' && (
+                <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory>
+              )}
               <ActionDescription dangerouslySetInnerHTML={{ __html: action.description }} />
               <ActionParameters
                 parameters={action.parameters}

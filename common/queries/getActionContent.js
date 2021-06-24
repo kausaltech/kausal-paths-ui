@@ -8,6 +8,7 @@ const GET_ACTION_CONTENT = gql`
       shortDescription
       body
       color
+      decisionLevel
       unit {
         htmlShort
       }
