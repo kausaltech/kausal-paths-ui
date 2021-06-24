@@ -15,11 +15,18 @@ const ActionPoint = styled.div`
   margin-bottom: 3rem;
 `;
 
+const GridRowWrapper = styled.div`
+  width: auto;
+  overflow-y: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+`;
+
 const GridRow = styled.div`
   display: flex;
   justify-content: space-around;
   width: 100%;
-  overflow: scroll;
 `;
 
 const GridCol = styled.div`
@@ -150,33 +157,36 @@ const CausalGrid = (props) => {
           <ActionPoint />
         </ArcherElement>
         {causalGridNodes?.map((row, rowIndex) => (
-          <GridRow onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
-            {row.map((col, colindex) => (
-              <GridCol key={col.id}>
-                <ArcherElement
-                  id={col.id}
-                  relations={col.outputNodes.map((node) => (
-                    { targetId: node.id,
-                      targetAnchor: 'top',
-                      sourceAnchor: 'bottom',
-                      style: {
-                        style: { strokeDasharray: '5,5' },
-                      },
-                    }
-                  ))}
-                >
-                  <div>
-                    <CausalCard
-                      node={col}
-                      index={colindex + 1}
-                      startYear={yearRange[0]}
-                      endYear={yearRange[1]}
-                    />
-                  </div>
-                </ArcherElement>
-              </GridCol>
-            ))}
-          </GridRow>
+
+          <GridRowWrapper onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
+            <GridRow>
+              {row.map((col, colindex) => (
+                <GridCol key={col.id}>
+                  <ArcherElement
+                    id={col.id}
+                    relations={col.outputNodes.map((node) => (
+                      { targetId: node.id,
+                        targetAnchor: 'top',
+                        sourceAnchor: 'bottom',
+                        style: {
+                          style: { strokeDasharray: '5,5' },
+                        },
+                      }
+                    ))}
+                  >
+                    <div>
+                      <CausalCard
+                        node={col}
+                        index={colindex + 1}
+                        startYear={yearRange[0]}
+                        endYear={yearRange[1]}
+                      />
+                    </div>
+                  </ArcherElement>
+                </GridCol>
+              ))}
+            </GridRow>
+          </GridRowWrapper>
         ))}
       </Container>
       <GoalSection>

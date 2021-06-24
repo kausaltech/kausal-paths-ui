@@ -18,6 +18,10 @@ const RangeWrapper = styled.div`
 const WidgetWrapper = styled.div`
   margin-top: 1rem;
   font-size: 0.8rem;
+
+  .custom-switch {
+    margin-top: .25rem;
+  }
 `;
 
 const RangeValue = styled.div` 

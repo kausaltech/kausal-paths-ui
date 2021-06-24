@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
-import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween, beautifyValue } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
@@ -51,7 +50,7 @@ const ActionListCard = (props) => {
 
   let unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   let actionEffect = 0;
-  let effectHeader = `${t('action-impact')} ${displayYears[0]} - ${displayYears[1]}`;
+  let effectHeader = `${t('action-impact')} ${displayYears[1]}`;
 
   if (displayType === 'displayTypeYearly') {
     actionEffect = beautifyValue(action.impactMetric.forecastValues.find(
