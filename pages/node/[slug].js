@@ -14,9 +14,9 @@ import NodeLinks from 'components/general/NodeLinks';
 import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 1rem;
+  padding: 1rem 0 1rem;
   margin-bottom: 8rem;
-  background-color: ${(props) => props.theme.graphColors.grey050};
+  background-color: ${(props) => props.theme.graphColors.grey070};
 `;
 
 const PageHeader = styled.div` 

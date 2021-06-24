@@ -13,27 +13,43 @@ import SettingsPanel from 'components/general/SettingsPanel';
 import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 1rem; 
-  background-color: ${(props) => props.theme.graphColors.grey020};
+  padding: 6rem 0 10rem; 
+  background-color: ${(props) => props.theme.graphColors.blue070};
 `;
 
 const PageHeader = styled.div` 
   margin-bottom: 1rem;
 
   h1 {
+    text-align: center;
     font-size: 2rem;
-    color: ${(props) => props.theme.themeColors.dark};
+    color: ${(props) => props.theme.themeColors.white};
   }
 `;
 
+const ActiveScenario = styled.span`
+  display: inline-block;
+  padding: .5rem;
+  margin-left: 1rem;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.brandDark};
+  font-size: 1.2rem;
+  font-weight: 700;
+  vertical-align: middle;
+`;
+
 const ActionList = styled.ul`
-  margin: 1rem 0;
+  margin: -8rem 0 2rem;
   padding: 0;
   list-style: none;
 `;
 
 const DisplaySelector = styled.div`
   text-align: right;
+  margin-bottom: 2rem;
+  h6 {
+    color: ${(props) => props.theme.themeColors.white};
+  }
 `;
 
 const TabButton = styled(Button)`
@@ -54,12 +70,6 @@ export default function ActionsPage() {
     refetch();
   }, [activeScenario]);
 
-  /*
-  useEffect(() => {
-    if(networkStatus === NetworkStatus.refetch) console.log("let's refetch!");
-  }, [networkStatus]);
-  */
-
   if (loading) {
     return <Layout><ContentLoader /></Layout>;
   } if (error) {
@@ -75,30 +85,12 @@ export default function ActionsPage() {
         <Container>
           <PageHeader>
             <h1>
-              {t('actions-available')}
+              {t('actions')}
+              :
+              <ActiveScenario>
+                {activeScenario?.name}
+              </ActiveScenario>
             </h1>
-            <h3>
-              {activeScenario?.name}
-            </h3>
-            <DisplaySelector>
-              <h6>{t('display-effect-on-emissions')}</h6>
-              <ButtonGroup>
-                <TabButton
-                  color="primary"
-                  onClick={() => setDisplayType(DISPLAY_YEARLY)}
-                  active={displayType === DISPLAY_YEARLY}
-                >
-                  {t('display-yearly-effect')}
-                </TabButton>
-                <TabButton
-                  color="primary"
-                  onClick={() => setDisplayType(DISPLAY_CUMULATIVE)}
-                  active={displayType === DISPLAY_CUMULATIVE}
-                >
-                  {t('display-cumulative-effect')}
-                </TabButton>
-              </ButtonGroup>
-            </DisplaySelector>
           </PageHeader>
         </Container>
       </HeaderSection>
@@ -106,6 +98,25 @@ export default function ActionsPage() {
         <Row>
           <Col>
             <ActionList>
+              <DisplaySelector>
+                <h6>{t('display-effect-on-emissions')}</h6>
+                <ButtonGroup>
+                  <TabButton
+                    color="primary"
+                    onClick={() => setDisplayType(DISPLAY_YEARLY)}
+                    active={displayType === DISPLAY_YEARLY}
+                  >
+                    {t('display-yearly-effect')}
+                  </TabButton>
+                  <TabButton
+                    color="primary"
+                    onClick={() => setDisplayType(DISPLAY_CUMULATIVE)}
+                    active={displayType === DISPLAY_CUMULATIVE}
+                  >
+                    {t('display-cumulative-effect')}
+                  </TabButton>
+                </ButtonGroup>
+              </DisplaySelector>
               { data?.actions?.map((action) => (
                 <ActionListCard
                   key={action.id}

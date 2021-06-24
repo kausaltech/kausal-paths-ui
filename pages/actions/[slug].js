@@ -23,7 +23,7 @@ const HeaderSection = styled.div`
 `;
 
 const HeaderCard = styled.div` 
-  margin: 3rem 0 -8rem;
+  margin: 1rem 0 -8rem;
   padding: 2rem;
   border-radius: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
