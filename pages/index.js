@@ -11,18 +11,36 @@ import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
+import FrontPageHeader from 'components/general/FrontPageHeader';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 0; 
+  padding: 0 0 10rem; 
+  background-color: ${(props) => props.theme.graphColors.blue070};
 `;
 
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
 
   h1 {
+    text-align: center;
     font-size: 2rem;
-    color: ${(props) => props.theme.themeColors.dark};
+    color: ${(props) => props.theme.themeColors.white};
   }
+`;
+
+const EmissionsSection = styled.div`
+  margin-top: -10rem;
+`;
+
+const ActiveScenario = styled.span`
+  display: inline-block;
+  padding: .5rem;
+  margin-left: 1rem;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.brandDark};
+  font-size: 1.2rem;
+  font-weight: 700;
+  vertical-align: middle;
 `;
 
 export default function Home() {
@@ -50,27 +68,31 @@ export default function Home() {
       <Head>
         <title>{data?.page.name}</title>
       </Head>
+      <FrontPageHeader />
       <HeaderSection>
-        <Container>
+        <Container fluid>
           <PageHeader>
             <h1>
-              {t('emissions')}
+              {t('emission-forecast')}
+              :
+              <ActiveScenario>
+                {activeScenario?.name}
+              </ActiveScenario>
             </h1>
-            <h3>
-              {activeScenario?.name}
-            </h3>
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container className="my-2">
-        <EmissionsCardSet
-          sectors={data.page.emissionSectors}
-          rootSector={rootSector}
-          date={yearRange[1]}
-          startYear={yearRange[0]}
-          endYear={yearRange[1]}
-          parentColor="#666"
-        />
+      <Container fluid>
+        <EmissionsSection>
+          <EmissionsCardSet
+            sectors={data.page.emissionSectors}
+            rootSector={rootSector}
+            date={yearRange[1]}
+            startYear={yearRange[0]}
+            endYear={yearRange[1]}
+            parentColor="#666"
+          />
+        </EmissionsSection>
       </Container>
       <SettingsPanel
         defaultYearRange={[settingsVar().baseYear, settingsVar().maxYear]}

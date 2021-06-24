@@ -27,5 +27,6 @@
   "target": "Target",
   "plot-action-impact": "Action impact",
   "impact-on-year": "Impact on year",
-  "total-impact": "Total impact"
+  "total-impact": "Total impact",
+  "emission-forecast": "Emission forecast"
 }

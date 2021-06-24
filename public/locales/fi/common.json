@@ -27,5 +27,6 @@
   "target": "Tavoite",
   "plot-action-impact": "Toimenpiteen vaikutus",
   "impact-on-year": "Vaikutus vuonna",
-  "total-impact": "Kokonaisvaikutus"
+  "total-impact": "Kokonaisvaikutus",
+  "emission-forecast": "Päästöennuste"
 }
