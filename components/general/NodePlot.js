@@ -42,7 +42,7 @@ const NodePlot = (props) => {
 
   const formatHover = (name, color) => {
     const out = {
-      hovertemplate: `${name}<br />%{x}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
+      hovertemplate: `${name}<br />%{x|%Y}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
         font: {
