@@ -9,6 +9,7 @@ const GET_ACTION_CONTENT = gql`
       body
       color
       decisionLevel
+      targetYearGoal
       unit {
         htmlShort
       }

@@ -59,6 +59,7 @@ query GetNodePage($node: ID!) {
     shortDescription
     body
     color
+    targetYearGoal
     unit {
       htmlShort
     }
@@ -121,6 +122,7 @@ export default function NodePage() {
     },
   });
 
+  console.log(data);
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   useEffect(() => {
@@ -159,6 +161,7 @@ export default function NodePage() {
                   endYear={yearRange[1]}
                   color={node.color}
                   isAction={node.isAction}
+                  targetYearGoal={node.targetYearGoal}
                 />
               </ContentWrapper>
               )}

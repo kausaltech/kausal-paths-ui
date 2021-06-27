@@ -126,6 +126,7 @@ export default function ActionPage() {
                   endYear={yearRange[1]}
                   color={action.color}
                   isAction={action.isAction}
+                  targetYearGoal={action.targetYearGoal}
                 />
               </ContentWrapper>
               )}

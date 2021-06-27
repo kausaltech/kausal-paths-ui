@@ -225,6 +225,7 @@ const CausalGrid = (props) => {
                       endYear={yearRange[1]}
                       color={lastNode.color}
                       isAction={lastNode.isAction}
+                      targetYearGoal={lastNode.targetYearGoal}
                     />
                   </ContentWrapper>
                   )}
