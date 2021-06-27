@@ -97,27 +97,6 @@ export default function ActionsPage() {
         <Row>
           <Col>
             <ActionList>
-              <DisplaySelector>
-                <h6>{t('display-effect-on-emissions')}</h6>
-                <ButtonGroup>
-                  <TabButton
-                    size="sm"
-                    color="primary"
-                    onClick={() => setDisplayType(DISPLAY_YEARLY)}
-                    active={displayType === DISPLAY_YEARLY}
-                  >
-                    {t('display-yearly-effect')}
-                  </TabButton>
-                  <TabButton
-                    size="sm"
-                    color="primary"
-                    onClick={() => setDisplayType(DISPLAY_CUMULATIVE)}
-                    active={displayType === DISPLAY_CUMULATIVE}
-                  >
-                    {t('display-cumulative-effect')}
-                  </TabButton>
-                </ButtonGroup>
-              </DisplaySelector>
               { data?.actions?.map((action) => (
                 <ActionListCard
                   key={action.id}

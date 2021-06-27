@@ -4,7 +4,6 @@ import ParameterWidget from 'components/general/ParameterWidget';
 const Parameters = styled.div`
   display: flex;
   flex-wrap: wrap;
-  margin: 1rem 0;
 
   & > div {
     margin-right: 1.5rem;

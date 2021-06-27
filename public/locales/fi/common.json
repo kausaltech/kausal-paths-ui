@@ -26,8 +26,10 @@
   "total-effect-until": "Kokonaisvaikutus",
   "target": "Tavoite",
   "plot-action-impact": "Toimenpiteen vaikutus",
-  "impact-on-year": "Vaikutus vuonna",
+  "impact-on-year": "Vuonna",
   "total-impact": "Kokonaisvaikutus",
   "emission-forecast": "Päästöennuste",
-  "decision-national": "Valtakunnallinen"
+  "decision-national": "Valtakunnallinen",
+  "impact-total": "Yhteensä",
+  "impact": "Vaikutus"
 }

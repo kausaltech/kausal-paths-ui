@@ -26,8 +26,10 @@
   "total-effect-until": "Total impact",
   "target": "Target",
   "plot-action-impact": "Action impact",
-  "impact-on-year": "Impact on year",
+  "impact-on-year": "On year",
   "total-impact": "Total impact",
   "emission-forecast": "Emission forecast",
-  "decision-national": "National"
+  "decision-national": "National",
+  "impact-total": "Total",
+  "impact": "Impact"
 }

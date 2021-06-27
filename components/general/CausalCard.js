@@ -5,8 +5,7 @@ import { summarizeYearlyValuesBetween, beautifyValue, getImpactMetricValue } fro
 import { settingsVar } from 'common/cache';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
-import HighlightValue from 'components/general/HighlightValue';
-import { useTranslation } from 'react-i18next';
+import ImpactDisplay from './ImpactDisplay';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -14,6 +13,7 @@ const ActionLinks = styled.div`
 
 const NodeCard = styled.div`
   margin-bottom: 1rem;
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 
   &.action .card {
     background-color: ${(props) => props.theme.graphColors.grey000};
@@ -65,8 +65,7 @@ const TextContent = styled.div`
 `;
 
 const CausalCard = (props) => {
-  const { node, index, startYear, endYear } = props;
-  const { t } = useTranslation();
+  const { node, index, startYear, endYear, noEffect } = props;
   const { targetYearGoal } = node;
   const { maxYear } = settingsVar();
 
@@ -88,19 +87,13 @@ const CausalCard = (props) => {
             <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
           </CardHeader>
           <ImpactFigures>
-            { cumulativeImpact !== undefined && (
-              <HighlightValue
-                className="figure-left"
-                displayValue={beautifyValue(cumulativeImpact)}
-                header={`${t('total-impact')} ${startYear} - ${endYear}`}
-                unit={node.unit?.htmlShort}
-              />
-            )}
-            <HighlightValue
-              className="figure-right"
-              displayValue={beautifyValue(impactAtTargetYear)}
-              header={`${t('impact-on-year')} ${endYear}`}
-              unit={node.unit?.htmlShort}
+            <ImpactDisplay
+              effectCumulative={cumulativeImpact ? beautifyValue(cumulativeImpact) : undefined}
+              effectYearly={beautifyValue(impactAtTargetYear)}
+              yearRange={[startYear, endYear]}
+              unitCumulative={node.unit?.htmlShort}
+              unitYearly={node.unit?.htmlShort}
+              muted={noEffect}
             />
           </ImpactFigures>
           <ContentWrapper>

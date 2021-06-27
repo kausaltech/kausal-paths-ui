@@ -27,6 +27,7 @@ const HeaderCard = styled.div`
   padding: 2rem;
   border-radius: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
 const ActionDescription = styled.div`
@@ -85,7 +86,7 @@ export default function ActionPage() {
 
   const action = data.node;
   const causalNodes = data.node.descendantNodes;
-
+  const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   // actionTree.filter((node) => node.inputNodes.find((input) => input.id === parentId));
 
   return (
@@ -135,6 +136,7 @@ export default function ActionPage() {
       <CausalGrid
         nodes={causalNodes}
         yearRange={yearRange}
+        actionIsOff={!isActive}
       />
       <SettingsPanel
         defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}

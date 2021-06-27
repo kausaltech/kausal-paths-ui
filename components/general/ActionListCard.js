@@ -5,7 +5,7 @@ import { Badge } from 'reactstrap';
 import { summarizeYearlyValuesBetween, beautifyValue } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
-import HighlightValue from 'components/general/HighlightValue';
+import ImpactDisplay from 'components/general/ImpactDisplay';
 
 const ActionItem = styled.li`
   margin-bottom: 1.5rem;
@@ -17,6 +17,7 @@ const ActionItem = styled.li`
 
   .card {
     background-color: ${(props) => (props.isActive ? props.theme.themeColors.white : props.theme.graphColors.grey005)};
+    box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
   }
 `;
 
@@ -35,77 +36,76 @@ const ActionCategory = styled.div`
 `;
 
 const TextContent = styled.div`
-  margin-right: 2rem;
+  margin: 1rem 0;
 `;
 
 const CardContent = styled.div`
+  display: flex;
+  flex-direction: column;
   padding: .5rem;
 `;
 
 const CardDetails = styled.div`
-  display: flex;
-  justify-content: space-between;
+  max-width: 720px;
 `;
 
 const ActionState = styled.div`
-  
+  display: flex;
+  justify-content: space-between;
 `;
 
 const ActionListCard = (props) => {
   const { action, displayType, displayYears, level } = props;
   const { t } = useTranslation();
 
-  let unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  let actionEffect = 0;
-  let effectHeader = `${t('action-impact')} ${displayYears[1]}`;
+  const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
+  const actionEffectYearly = beautifyValue(action.impactMetric.forecastValues.find(
+    (dataPoint) => dataPoint.year === displayYears[1],
+  )?.value || 0);
 
-  if (displayType === 'displayTypeYearly') {
-    actionEffect = beautifyValue(action.impactMetric.forecastValues.find(
-      (dataPoint) => dataPoint.year === displayYears[1],
-    )?.value || 0);
-  }
+  const actionEffectCumulative = beautifyValue(summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]));
+  const unitCumulative = 'kt CO<sub>2</sub>e';
 
-  if (displayType === 'displayTypeCumulative') {
-    actionEffect = beautifyValue(summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]));
-    unit = 'kt CO<sub>2</sub>e';
-    effectHeader = `${t('total-effect-until')} ${displayYears[0]} - ${displayYears[1]}`;
-  }
+  const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
 
   return (
     <ActionItem
       key={action.id}
-      isActive={action.parameters.find((param) => param.__typename == 'BoolParameterType')?.boolValue}
+      isActive={isActive}
     >
       <DashCard>
+        <CardHeader>
+          <Link href={`/actions/${action.id}`}>
+            <a>
+              <h5>
+                {action.name}
+              </h5>
+            </a>
+          </Link>
+          { level === 'NATION' && <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory> }
+        </CardHeader>
         <CardContent>
-          <CardHeader>
-            <Link href={`/actions/${action.id}`}>
-              <a>
-                <h5>
-                  {action.name}
-                </h5>
-              </a>
-            </Link>
-            { level === 'NATION' && <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory> }
-          </CardHeader>
+          <ActionState>
+            <ActionParameters
+              parameters={action.parameters}
+            />
+            {action.impactMetric && (
+              <ImpactDisplay
+                effectCumulative={actionEffectCumulative}
+                effectYearly={actionEffectYearly}
+                yearRange={displayYears}
+                unitCumulative={unitCumulative}
+                unitYearly={unitYearly}
+                muted={!isActive}
+              />
+            )}
+          </ActionState>
           <CardDetails>
             <div>
               {action.shortDescription && (
               <TextContent dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
               )}
-              <ActionState>
-                <ActionParameters
-                  parameters={action.parameters}
-                />
-              </ActionState>
             </div>
-            {action.impactMetric && (
-              <HighlightValue
-                displayValue={actionEffect}
-                header={effectHeader}
-                unit={unit}
-              />
-            )}
           </CardDetails>
         </CardContent>
       </DashCard>

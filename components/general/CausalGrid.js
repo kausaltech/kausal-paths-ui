@@ -2,13 +2,12 @@ import { useRef, useContext } from 'react';
 import _ from 'lodash';
 import Link from 'next/link';
 import { Container } from 'reactstrap';
-import { useTranslation } from 'react-i18next';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
 import { summarizeYearlyValuesBetween, beautifyValue, getImpactMetricValue } from 'common/preprocess';
 import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
-import HighlightValue from 'components/general/HighlightValue';
+import ImpactDisplay from 'components/general/ImpactDisplay';
 
 const ActionPoint = styled.div`
   height: 1rem;
@@ -45,7 +44,8 @@ const GoalCard = styled.div`
   margin: -8rem 0 3rem;
   padding: 2rem;
   border-radius: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey000};
+  background-color: ${(props) => props.theme.themeColors.white};
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
 const ActionDescription = styled.div`
@@ -93,8 +93,7 @@ const ImpactFigures = styled.div`
 `;
 
 const CausalGrid = (props) => {
-  const { nodes, yearRange } = props;
-  const { t } = useTranslation();
+  const { nodes, yearRange, actionIsOff } = props;
   const theme = useContext(ThemeContext);
   const gridCanvas = useRef(null);
 
@@ -180,6 +179,7 @@ const CausalGrid = (props) => {
                         index={colindex + 1}
                         startYear={yearRange[0]}
                         endYear={yearRange[1]}
+                        noEffect={actionIsOff}
                       />
                     </div>
                   </ArcherElement>
@@ -206,19 +206,13 @@ const CausalGrid = (props) => {
                   </h2>
                   <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.description }} />
                   <ImpactFigures>
-                    { cumulativeImpact !== undefined && (
-                      <HighlightValue
-                        className="figure-left"
-                        displayValue={beautifyValue(cumulativeImpact)}
-                        header={`${t('total-impact')} ${yearRange[0]} - ${yearRange[1]}`}
-                        unit={lastNode.unit?.htmlShort}
-                      />
-                    )}
-                    <HighlightValue
-                      className="figure-right"
-                      displayValue={beautifyValue(impactAtTargetYear)}
-                      header={`${t('impact-on-year')} ${yearRange[1]}`}
-                      unit={lastNode.unit?.htmlShort}
+                    <ImpactDisplay
+                      effectCumulative={cumulativeImpact ? beautifyValue(cumulativeImpact) : undefined}
+                      effectYearly={beautifyValue(impactAtTargetYear)}
+                      yearRange={yearRange}
+                      unitCumulative={lastNode.unit?.htmlShort}
+                      unitYearly={lastNode.unit?.htmlShort}
+                      muted={actionIsOff}
                     />
                   </ImpactFigures>
                   { lastNode.metric && (
