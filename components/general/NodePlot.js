@@ -3,21 +3,10 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { lighten, transparentize } from 'polished';
 import { ThemeContext } from 'styled-components';
+import { metricToPlot } from 'common/preprocess';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
-
-const metricToPlot = (metric, segment, startYear, endYear) => {
-  const plot = { x: [], y: [] };
-  if (!metric) return [];
-  metric[segment].forEach((dataPoint) => {
-    if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
-      plot.x.push(dataPoint.year);
-      plot.y.push(dataPoint.value);
-    }
-  });
-  return plot;
-};
 
 const NodePlot = (props) => {
   const {

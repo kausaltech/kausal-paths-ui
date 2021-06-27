@@ -1,21 +1,27 @@
+import { useContext } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslation } from 'next-i18next';
+import { ThemeContext } from 'styled-components';
 import { lighten } from 'polished';
 import { settingsVar } from 'common/cache';
+import { metricToPlot } from 'common/preprocess';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
 
     
 const EmissionsGraph = (props) => {
-  const { sector, subSectors, color, year, startYear, endYear } = props;
-
+  const { sector, subSectors, color, startYear, endYear } = props;
+  const { t } = useTranslation();
+  const theme = useContext(ThemeContext);
   const shapes = [];
   const plotData = [];
-  const basebarData = [];
+ 
+  const baselineForecast = sector.metric.baselineForecastValues && metricToPlot(sector.metric, 'baselineForecastValues', startYear, endYear);
+  const targetYearGoal = sector.node.targetYearGoal;
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
-  //const minLimit = startYear !== BASE_YEAR ? startYear : displaySectors[0].metric.historicalValues[1].year;
   const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
   const formatHover = (name, color, isPred) => {
     const predText = isPred ? ' <i> (enn.)</i>' : '';
@@ -134,22 +140,61 @@ const EmissionsGraph = (props) => {
     )
   });
 
-  const todaymarker =
-  {
-    type: 'line',
-    yref: 'paper',
-    x0: year,
-    y0: 0,
-    x1: year,
-    y1: 1,
-    line: {
-      color: '#D46262',
-      width: 2,
-      dash: "dot",
-    }
-  };
+  if (baselineForecast) {
+    plotData.push(
+      {
+        x: baselineForecast.x,
+        y: baselineForecast.y,
+        xaxis: 'x2',
+        yaxis: 'y1',
+        mode: 'lines',
+        name: t('plot-baseline'),
+        type: 'scatter',
+        line: {
+          color: theme.graphColors.grey060,
+          shape: 'spline',
+          width: '2',
+          dash: 'dash',
+        },
+        smoothing: true,
+        ...formatHover(t('plot-baseline', theme.graphColors.grey030)),
+      },
+    );
+  }
 
-  shapes.push(todaymarker);
+  if (targetYearGoal) {
+    shapes.push({
+      type: 'line',
+      yref: 'y',
+      xref: 'x2',
+      x0: startYear ===  settingsVar().baseYear ? settingsVar().minYear : startYear,
+      y0: targetYearGoal,
+      x1: endYear,
+      y1: targetYearGoal,
+      xaxis: 'x1',
+      yaxis: 'y1',
+      line: {
+        color: theme.graphColors.red070,
+        width: 2,
+        dash: 'dot',
+      },
+    });
+    if(endYear === settingsVar().maxYear) {
+      plotData.push({
+        x: [settingsVar().maxYear],
+        y: [targetYearGoal],
+        type: 'scatter',
+        xaxis: 'x2',
+        yaxis: 'y1',
+        name: `${t('target')} ${settingsVar().maxYear}`,
+        line: {
+          color: theme.graphColors.red070,
+          width: 2,
+          dash: 'dot',
+        },
+      });
+    }
+  }
 
   const layout = {
     height: 300,
@@ -187,6 +232,7 @@ const EmissionsGraph = (props) => {
     paper_bgcolor: 'rgba(0,0,0,0)',
     showlegend: false,
     grid: {rows: 1, columns: 2, pattern: 'independent'},
+    shapes,
   }
 
   // console.log('basebar', basebarData);

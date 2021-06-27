@@ -113,7 +113,6 @@ query GetNodePage($node: ID!) {
 export default function NodePage() {
   const router = useRouter();
   const { slug } = router.query;
-  // const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
 
   const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
@@ -122,7 +121,6 @@ export default function NodePage() {
     },
   });
 
-  console.log(data);
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   useEffect(() => {

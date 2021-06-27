@@ -44,3 +44,15 @@ export const summarizeYearlyValuesBetween = (metric, startYear, endYear) => {
   });
   return summarizeYearlyValues(yearlyValues);
 };
+
+export const metricToPlot = (metric, segment, startYear, endYear) => {
+  const plot = { x: [], y: [] };
+  if (!metric) return [];
+  metric[segment].forEach((dataPoint) => {
+    if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
+      plot.x.push(dataPoint.year);
+      plot.y.push(dataPoint.value);
+    }
+  });
+  return plot;
+};

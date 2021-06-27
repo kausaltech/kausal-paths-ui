@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import EmissionsGraph from 'components/general/EmissionsGraph';
+import { settingsVar } from 'common/cache';
 
 const ContentWrapper = styled.div`
   padding: 1rem;
@@ -57,7 +58,7 @@ const ActionsListItem = styled.li`
 `;
 
 const EmissionSectorContent = (props) => {
-  const { sector, subSectors, color, year, startYear, endYear } = props;
+  const { sector, subSectors, color, startYear, endYear } = props;
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
 
@@ -104,9 +105,9 @@ const EmissionSectorContent = (props) => {
           sector={sector}
           subSectors={subSectors}
           color={color}
-          year={year}
           startYear={startYear}
           endYear={endYear}
+          targetYear={settingsVar().maxYear}
         />
       </ContentWrapper>
       )}

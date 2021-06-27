@@ -35,6 +35,7 @@ const GET_HOME_PAGE = gql`
           node {
             id
             shortDescription
+            targetYearGoal
             upstreamActions {
               id
               name
