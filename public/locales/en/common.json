@@ -1,7 +1,7 @@
 {
   "forecast": "Forecast",
   "will_be_implemented": "Is implemented",
-  "action-impact": "Impact on",
+  "action-impact": "Action impact",
   "actions-available": "Actions on scenario",
   "actions": "Actions",
   "error-loading-data": "Error loading data",
@@ -31,5 +31,6 @@
   "emission-forecast": "Emission forecast",
   "decision-national": "National",
   "impact-total": "Total",
-  "impact": "Impact"
+  "impact": "Impact",
+  "read-more": "Read more"
 }

@@ -1,7 +1,7 @@
 {
   "forecast": "Ennuste",
   "will_be_implemented": "Toteutetaan",
-  "action-impact": "Vaikutus vuosipäästöihin",
+  "action-impact": "Toimenpiteen vaikutus",
   "actions": "Toimet",
   "error-loading-data": "Virhe tietojen haussa",
   "plot-measured": "Toteutunut",
@@ -31,5 +31,6 @@
   "emission-forecast": "Päästöennuste",
   "decision-national": "Valtakunnallinen",
   "impact-total": "Yhteensä",
-  "impact": "Vaikutus"
+  "impact": "Vaikutus",
+  "read-more": "Lue lisää"
 }

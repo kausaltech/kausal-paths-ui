@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
+import Link from 'next/link';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col } from 'reactstrap';
@@ -15,8 +17,8 @@ import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
   padding: 1rem 0 1rem;
-  margin-bottom: 8rem;
-  background-color: ${(props) => props.theme.graphColors.grey070};
+  margin-bottom: 7rem;
+  background-color: ${(props) => props.color || props.theme.graphColors.grey070};
 `;
 
 const PageHeader = styled.div` 
@@ -24,8 +26,17 @@ const PageHeader = styled.div`
 
   h1 {
     font-size: 1.5rem;
+    margin-bottom: 2rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
+`;
+
+const NodeDescription = styled.div`
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey010};
 `;
 
 const HeaderCard = styled.div` 
@@ -35,13 +46,12 @@ const HeaderCard = styled.div`
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 
-const ActionDescription = styled.div`
+const NodeBodyText = styled.div`
   margin-bottom: 2rem;
-  font-size: 1.15rem;
 `;
 
 const ContentWrapper = styled.div`
-  padding: 1rem;
+  padding: 1.5rem;
   margin: .5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
   border-radius: 10px;
@@ -49,6 +59,10 @@ const ContentWrapper = styled.div`
   .x2sstick text, .xtick text {
     text-anchor: end !important;
   }
+`;
+
+const BodyText = styled.div`
+  padding: 1rem;
 `;
 
 const GET_NODE_PAGE_CONTENT = gql`
@@ -112,6 +126,7 @@ query GetNodePage($node: ID!) {
 
 export default function NodePage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
 
@@ -141,14 +156,25 @@ export default function NodePage() {
       <Head>
         <title>{node.name}</title>
       </Head>
-      <HeaderSection>
+      <HeaderSection color={node.color}>
         <Container>
           <PageHeader>
             <HeaderCard>
               <h1>
                 {node.name}
               </h1>
-              <ActionDescription dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
+              { (node.shortDescription || node.isAction) && (
+                <NodeDescription>
+                  <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
+                  { node.isAction && (
+                  <Link href={`/actions/${node.id}`}>
+                    <a>
+                      {t('action-impact')}
+                    </a>
+                  </Link>
+                  )}
+                </NodeDescription>
+              )}
               { node.metric && (
               <ContentWrapper>
                 <NodePlot
@@ -167,23 +193,25 @@ export default function NodePage() {
           </PageHeader>
         </Container>
       </HeaderSection>
+      { node.body && (
+      <NodeBodyText>
+        <Container>
+          <Row>
+            <Col md={{ size: 8, offset: 2 }}>
+              <DashCard>
+                <BodyText dangerouslySetInnerHTML={{ __html: node.body }} />
+              </DashCard>
+            </Col>
+          </Row>
+        </Container>
+      </NodeBodyText>
+      )}
       <Container>
         <NodeLinks
           outputNodes={node.outputNodes}
           inputNodes={node.inputNodes}
         />
       </Container>
-      { node.body && (
-      <Container>
-        <Row>
-          <Col md={{ size: 8, offset: 2 }}>
-            <DashCard>
-              <div dangerouslySetInnerHTML={{ __html: node.body }} />
-            </DashCard>
-          </Col>
-        </Row>
-      </Container>
-      )}
       <SettingsPanel
         defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
       />

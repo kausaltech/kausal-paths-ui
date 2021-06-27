@@ -24,7 +24,7 @@ const HeaderSection = styled.div`
 
 const HeaderCard = styled.div` 
   margin: 1rem 0 -8rem;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
@@ -32,7 +32,10 @@ const HeaderCard = styled.div`
 
 const ActionDescription = styled.div`
   margin-bottom: 2rem;
-  font-size: 1.15rem;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey010};
 `;
 
 const ActionCategory = styled.div`
@@ -112,10 +115,14 @@ export default function ActionPage() {
               { action.decisionLevel === 'NATION' && (
                 <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory>
               )}
-              <ActionDescription dangerouslySetInnerHTML={{ __html: action.description }} />
+              <ActionDescription>
+                <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
+                <Link href={`/node/${action.id}`}><a>{t('read-more')}</a></Link>
+                <hr />
               <ActionParameters
                 parameters={action.parameters}
               />
+                </ActionDescription>
               { action.metric && (
               <ContentWrapper>
                 <NodePlot

@@ -5,6 +5,10 @@ import { Container, Row, Col, ListGroup, ListGroupItem } from 'reactstrap';
 
 const InputNodes = styled.div`
   margin-bottom: 4rem;
+  padding: .5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey005};
 
   .list-group-item {
     display: flex;
@@ -19,7 +23,10 @@ const InputNodes = styled.div`
 const OutputNodes = styled.div`
   margin-bottom: 4rem;
   text-align: right;
-
+  padding: .5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey005};
   .list-group-item {
     display: flex;
     flex-direction: row-reverse;
