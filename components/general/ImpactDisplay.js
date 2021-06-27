@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import HighlightValue from 'components/general/HighlightValue';
+import { beautifyValue } from 'common/preprocess';
 import { useTranslation } from 'react-i18next';
 
 const ImpactDisplayWrapper = styled.div`
@@ -33,15 +34,18 @@ const ImpactDisplay = (props) => {
   const { effectCumulative, effectYearly, yearRange, unitCumulative, unitYearly, muted } = props;
   const { t } = useTranslation();
 
+  const cumulativePrefix = effectCumulative > 0 ? '+' : '';
+  const yearlyPrefix = effectYearly > 0 ? '+' : '';
+
   return (
     <ImpactDisplayWrapper>
       <ImpactDisplayHeader muted={muted}>
         { t('impact') }
       </ImpactDisplayHeader>
-      { effectCumulative && (
+      { effectCumulative !== 0 && (
       <ImpactDisplayItem>
         <HighlightValue
-          displayValue={effectCumulative}
+          displayValue={`${cumulativePrefix}${beautifyValue(effectCumulative || 0)}`}
           header={`${t('impact-total')} ${yearRange[0]} - ${yearRange[1]}`}
           unit={unitCumulative}
           muted={muted}
@@ -50,7 +54,7 @@ const ImpactDisplay = (props) => {
       )}
       <ImpactDisplayItem>
         <HighlightValue
-          displayValue={effectYearly}
+          displayValue={`${yearlyPrefix}${beautifyValue(effectYearly || 0)}`}
           header={`${t('impact-on-year')} ${yearRange[1]}`}
           unit={unitYearly}
           muted={muted}

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Container } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
-import { summarizeYearlyValuesBetween, beautifyValue, getImpactMetricValue } from 'common/preprocess';
+import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
 import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
@@ -207,8 +207,8 @@ const CausalGrid = (props) => {
                   <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.description }} />
                   <ImpactFigures>
                     <ImpactDisplay
-                      effectCumulative={cumulativeImpact ? beautifyValue(cumulativeImpact) : undefined}
-                      effectYearly={beautifyValue(impactAtTargetYear)}
+                      effectCumulative={cumulativeImpact || undefined}
+                      effectYearly={impactAtTargetYear}
                       yearRange={yearRange}
                       unitCumulative={lastNode.unit?.htmlShort}
                       unitYearly={lastNode.unit?.htmlShort}

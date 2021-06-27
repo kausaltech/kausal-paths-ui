@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { Badge } from 'reactstrap';
-import { summarizeYearlyValuesBetween, beautifyValue } from 'common/preprocess';
+import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
@@ -59,11 +59,11 @@ const ActionListCard = (props) => {
   const { t } = useTranslation();
 
   const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  const actionEffectYearly = beautifyValue(action.impactMetric.forecastValues.find(
+  const actionEffectYearly = action.impactMetric.forecastValues.find(
     (dataPoint) => dataPoint.year === displayYears[1],
-  )?.value || 0);
+  )?.value || 0;
 
-  const actionEffectCumulative = beautifyValue(summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]));
+  const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]);
   const unitCumulative = 'kt CO<sub>2</sub>e';
 
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;

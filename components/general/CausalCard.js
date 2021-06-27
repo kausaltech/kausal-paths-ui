@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
-import { summarizeYearlyValuesBetween, beautifyValue, getImpactMetricValue } from 'common/preprocess';
+import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
 import { settingsVar } from 'common/cache';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
@@ -88,8 +88,8 @@ const CausalCard = (props) => {
           </CardHeader>
           <ImpactFigures>
             <ImpactDisplay
-              effectCumulative={cumulativeImpact ? beautifyValue(cumulativeImpact) : undefined}
-              effectYearly={beautifyValue(impactAtTargetYear)}
+              effectCumulative={cumulativeImpact || undefined}
+              effectYearly={impactAtTargetYear}
               yearRange={[startYear, endYear]}
               unitCumulative={node.unit?.htmlShort}
               unitYearly={node.unit?.htmlShort}
