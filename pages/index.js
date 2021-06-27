@@ -96,6 +96,7 @@ export default function Home() {
       </Container>
       <SettingsPanel
         defaultYearRange={[settingsVar().baseYear, settingsVar().maxYear]}
+        useBase
       />
     </Layout>
   );

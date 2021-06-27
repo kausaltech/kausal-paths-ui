@@ -184,7 +184,7 @@ export default function NodePage() {
       </Container>
       )}
       <SettingsPanel
-        defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
+        defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
       />
     </Layout>
   );

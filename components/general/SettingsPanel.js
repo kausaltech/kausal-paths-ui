@@ -36,7 +36,7 @@ const StatusBarWrapper = styled.div`
 `;
 
 const SettingsPanel = (props) => {
-  const { defaultYearRange } = props;
+  const { defaultYearRange, useBase } = props;
   const settings = useReactiveVar(settingsVar);
 
   return (
@@ -50,7 +50,7 @@ const SettingsPanel = (props) => {
           max={settings.maxYear}
           initMin={defaultYearRange[0]}
           initMax={defaultYearRange[1]}
-          baseYear={settings.baseYear}
+          baseYear={useBase && settings.baseYear}
           handleChange={yearRangeVar}
         />
       </RangeSelectorWrapper>

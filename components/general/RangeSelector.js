@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 const SectionWrapper = styled.div`
   display: flex;
   min-width: 320px;
-  padding: .5rem 0 0 0;
+  padding: .75rem 0;
 `;
 
 const PopoverWrapper = styled.div`
@@ -30,6 +30,7 @@ const RangeWrapper = styled.div`
 
 const YearDescription = styled.div`
   font-size: 0.75rem;
+  line-height: 1;
 `;
 
 const ActiveYear = styled.div`
@@ -61,6 +62,7 @@ const Thumb = styled.div`
 
 const RangeSelector = (props) => {
   const { min, max, baseYear, handleChange, initMin, initMax } = props;
+
   const { t } = useTranslation();
   const theme = useTheme();
   const [useBase, setUseBase] = useState(baseYear === initMin);
@@ -103,6 +105,7 @@ const RangeSelector = (props) => {
             <ActiveYearDisplay>
               <YearDescription>{t('comparison-year')}</YearDescription>
               <ActiveYear>{ useBase ? baseYear : values[0] }</ActiveYear>
+              { baseYear && (
               <ButtonToggle
                 color="link"
                 size="sm"
@@ -123,6 +126,7 @@ const RangeSelector = (props) => {
                   </span>
                 )}
               </ButtonToggle>
+              )}
             </ActiveYearDisplay>
             { useBase ? (
               <RangeWrapper>
