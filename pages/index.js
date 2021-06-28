@@ -20,7 +20,6 @@ const HeaderSection = styled.div`
 
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
-  text-align: center;
 
   h1 {
     font-size: 2rem;
@@ -75,10 +74,10 @@ export default function Home() {
           <PageHeader>
             <h1>
               {t('emission-forecast')}
+              <ActiveScenario>
+                {activeScenario?.name}
+              </ActiveScenario>
             </h1>
-            <ActiveScenario>
-              {activeScenario?.name}
-            </ActiveScenario>
           </PageHeader>
         </Container>
       </HeaderSection>

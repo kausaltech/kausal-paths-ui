@@ -18,8 +18,8 @@ const HeaderSection = styled.div`
 `;
 
 const PageHeader = styled.div` 
-  margin-bottom: 1rem;
-  text-align: center;
+  margin-bottom: 2rem;
+
   h1 {
     font-size: 2rem;
     color: ${(props) => props.theme.themeColors.white};
@@ -29,11 +29,11 @@ const PageHeader = styled.div`
 const ActiveScenario = styled.span`
   display: inline-block;
   padding: .5rem;
-  margin: 0 auto;
+  margin-left: 1rem;
   border-radius: 8px;
   background-color: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   vertical-align: middle;
 `;
@@ -86,10 +86,10 @@ export default function ActionsPage() {
           <PageHeader>
             <h1>
               {t('actions')}
+              <ActiveScenario>
+                {activeScenario?.name}
+              </ActiveScenario>
             </h1>
-            <ActiveScenario>
-              {activeScenario?.name}
-            </ActiveScenario>
           </PageHeader>
         </Container>
       </HeaderSection>

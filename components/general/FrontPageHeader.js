@@ -39,11 +39,8 @@ const ContentWrapper = styled.div`
 `;
 
 const FrontPageHeader = () => {
-  // const { t } = useTranslation();
-  const yearRange = useReactiveVar(yearRangeVar);
-  const activeScenario = useReactiveVar(activeScenarioVar);
+  const description = 'Tampereen tavoitteena on tulla hiilineutraaliksi vuoteen 2030 mennessä: silloin kasvihuonekaasupäästöt saavat olla enintään 260 kilotonnia. Tampereen päästöskenaariot näyttää, mistä Tampereen päästöt syntyvät ja miten kaupunki aikoo niitä vähentää. Voit tarkastella, miten päästöt kehittyvät erilaisissa skenaarioissa ja rakentaa myös oman skenaarion valitsemistasi toimista.';
 
-  const description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.';
   return (
     <HeaderSection>
       <Container fluid>
