@@ -314,7 +314,7 @@ function GlobalNav(props) {
       >
         <Container fluid={fullwidth}>
           <Collapse isOpen={isOpen} navbar>
-            <Nav navbar>
+            <Nav navbar className="mr-auto">
               { navItems && navItems.map((page) => (
                 page.children
                   ? (
@@ -339,6 +339,19 @@ function GlobalNav(props) {
                     </NavItem>
                   )
               ))}
+            </Nav>
+            <Nav navbar>
+              <NavItem>
+                <NavLink>
+                  <Link href="https://ilmastovahti.tampere.fi">
+                    <a>
+                      <NavHighlighter className="highlighter">
+                        Ilmastovahti
+                      </NavHighlighter>
+                    </a>
+                  </Link>
+                </NavLink>
+              </NavItem>
             </Nav>
           </Collapse>
         </Container>
