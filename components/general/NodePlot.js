@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { lighten, transparentize } from 'polished';
 import { ThemeContext } from 'styled-components';
+import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -160,7 +161,7 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
-        name: t('plot-baseline'),
+        name: settingsVar().baselineName,
         type: 'scatter',
         line: {
           color: theme.graphColors.grey060,
@@ -169,7 +170,7 @@ const NodePlot = (props) => {
           dash: 'dash',
         },
         smoothing: true,
-        ...formatHover(t('plot-baseline', theme.graphColors.grey030)),
+        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030),
       },
     );
   }

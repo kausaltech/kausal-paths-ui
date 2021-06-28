@@ -148,7 +148,7 @@ const EmissionsGraph = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
-        name: t('plot-baseline'),
+        name: settingsVar().baselineName,
         type: 'scatter',
         line: {
           color: theme.graphColors.grey060,
@@ -157,7 +157,7 @@ const EmissionsGraph = (props) => {
           dash: 'dash',
         },
         smoothing: true,
-        ...formatHover(t('plot-baseline', theme.graphColors.grey030)),
+        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030),
       },
     );
   }

@@ -51,6 +51,7 @@ function PathsApp({ Component, pageProps }) {
         latestMetricYear: data.instance.maximumHistoricalYear || 2018,
         totalEmissions: 540,
         emissionsTarget: 266,
+        baselineName: data.scenarios.find((scenario) => scenario.id === 'baseline').name,
       });
       activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
     }
