@@ -3,7 +3,9 @@ import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import {
   CustomInput,
+  Button,
 } from 'reactstrap';
+import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
@@ -23,10 +25,12 @@ const WidgetWrapper = styled.div`
   }
 `;
 
-const RangeValue = styled.div` 
+const RangeValue = styled.div`
+  display: flex;
+  white-space: nowrap;
   min-width: 75px;
   margin-left: 1rem;
-  line-height: 2.5;
+  line-height: 3;
 `;
 
 const Thumb = styled.div`
@@ -57,7 +61,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
-  const { id, initialValue, min, max, isCustomized, handleChange, loading, description, unit } = props;
+  const { id, initialValue, defaultValue, min, max, isCustomized, handleChange, loading, description, unit } = props;
   const theme = useTheme();
   const [values, setValues] = useState([initialValue]);
 
@@ -68,6 +72,19 @@ const NumberWidget = (props) => {
   const handleSlide = (newValues) => {
     handleChange({ parameterId: id, numberValue: newValues[0] });
   };
+
+  const Reset = () => defaultValue && (
+    <Button
+      id="reset-button"
+      color="link"
+      size="sm"
+      outline
+      on
+      onClick={() => setValues([defaultValue])}
+    >
+      <ArrowCounterclockwise />
+    </Button>
+  );
 
   return (
     <WidgetWrapper>
@@ -125,7 +142,10 @@ const NumberWidget = (props) => {
             />
           )}
         />
-        <RangeValue>{`${(values[0]).toFixed(0)} ${unit?.htmlShort || ''} ${isCustomized ? '*' : ''}`}</RangeValue>
+        <RangeValue>
+          {`${(values[0]).toFixed(0)} ${unit?.htmlShort || ''}`}
+          {isCustomized && <Reset />}
+        </RangeValue>
       </RangeWrapper>
     </WidgetWrapper>
   );
@@ -180,6 +200,7 @@ const ParameterWidget = (props) => {
         <NumberWidget
           id={parameter.id}
           initialValue={parameter.numberValue}
+          defaultValue={parameter.numberDefaultValue}
           min={parameter.minValue}
           max={parameter.maxValue}
           handleChange={handleUserSelection}
