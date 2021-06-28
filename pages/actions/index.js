@@ -79,7 +79,13 @@ export default function ActionsPage() {
   return (
     <Layout>
       <Head>
-        <title>{t('actions')}</title>
+        <title>
+          {settingsVar().siteTitle}
+          {' '}
+          |
+          {' '}
+          {t('actions')}
+        </title>
       </Head>
       <HeaderSection>
         <Container>

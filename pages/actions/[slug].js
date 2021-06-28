@@ -95,7 +95,13 @@ export default function ActionPage() {
   return (
     <Layout>
       <Head>
-        <title>{action.name}</title>
+        <title>
+          {settingsVar().siteTitle}
+          {' '}
+          |
+          {' '}
+          {action.name}
+        </title>
       </Head>
       <HeaderSection>
         <Container>

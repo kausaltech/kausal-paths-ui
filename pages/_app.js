@@ -52,6 +52,9 @@ function PathsApp({ Component, pageProps }) {
         totalEmissions: 540,
         emissionsTarget: 266,
         baselineName: data.scenarios.find((scenario) => scenario.id === 'baseline').name,
+        iconBase: '/static/themes/tampere-ilmasto/images/favicon',
+        siteTitle: 'Tampereen päästöskenaariot',
+        ogImage: '/static/themes/tampere-ilmasto/images/og-image-default.png',
       });
       activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
     }

@@ -154,7 +154,13 @@ export default function NodePage() {
   return (
     <Layout>
       <Head>
-        <title>{node.name}</title>
+        <title>
+          {settingsVar().siteTitle}
+          {' '}
+          |
+          {' '}
+          {node.name}
+        </title>
       </Head>
       <HeaderSection color={node.color}>
         <Container>
