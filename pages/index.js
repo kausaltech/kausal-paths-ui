@@ -66,9 +66,18 @@ export default function Home() {
   return (
     <Layout>
       <Head>
-        <title>{data?.page.name}</title>
+        <title>
+          {settingsVar().siteTitle}
+          {' '}
+          |
+          {' '}
+          {data?.page.name}
+        </title>
       </Head>
-      <FrontPageHeader />
+      <FrontPageHeader
+        leadTitle={data.instance.leadTitle}
+        leadParagraph={data.instance.leadParagraph}
+      />
       <HeaderSection>
         <Container fluid>
           <PageHeader>

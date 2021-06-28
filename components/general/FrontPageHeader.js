@@ -38,8 +38,8 @@ const ContentWrapper = styled.div`
   }
 `;
 
-const FrontPageHeader = () => {
-  const description = 'Tampereen tavoitteena on tulla hiilineutraaliksi vuoteen 2030 mennessä: silloin kasvihuonekaasupäästöt saavat olla enintään 260 kilotonnia. Tampereen päästöskenaariot näyttää, mistä Tampereen päästöt syntyvät ja miten kaupunki aikoo niitä vähentää. Voit tarkastella, miten päästöt kehittyvät erilaisissa skenaarioissa ja rakentaa myös oman skenaarion valitsemistasi toimista.';
+const FrontPageHeader = (props) => {
+  const { leadTitle, leadParagraph } = props;
 
   return (
     <HeaderSection>
@@ -49,9 +49,9 @@ const FrontPageHeader = () => {
             <PageHeader>
               <HeaderCard>
                 <h1>
-                  Tampereen päästöskenaariot
+                  { leadTitle }
                 </h1>
-                <Description dangerouslySetInnerHTML={{ __html: description }} />
+                <Description dangerouslySetInnerHTML={{ __html: leadParagraph }} />
               </HeaderCard>
             </PageHeader>
           </Col>

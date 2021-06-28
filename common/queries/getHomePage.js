@@ -2,6 +2,12 @@ import { gql } from '@apollo/client';
 
 const GET_HOME_PAGE = gql`
   query GetHomePage {
+    instance {
+      id
+      name
+      leadTitle
+      leadParagraph
+    }
     page(path: "/") {
       id
       name
