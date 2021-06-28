@@ -42,7 +42,7 @@ const ImpactDisplay = (props) => {
       <ImpactDisplayHeader muted={muted}>
         { t('impact') }
       </ImpactDisplayHeader>
-      { effectCumulative !== 0 && (
+      { effectCumulative && (
       <ImpactDisplayItem>
         <HighlightValue
           displayValue={`${cumulativePrefix}${beautifyValue(effectCumulative || 0)}`}

@@ -88,7 +88,7 @@ const CausalCard = (props) => {
           </CardHeader>
           <ImpactFigures>
             <ImpactDisplay
-              effectCumulative={cumulativeImpact || undefined}
+              effectCumulative={cumulativeImpact}
               effectYearly={impactAtTargetYear}
               yearRange={[startYear, endYear]}
               unitCumulative={node.unit?.htmlShort}
