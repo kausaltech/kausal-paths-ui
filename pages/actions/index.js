@@ -93,6 +93,9 @@ export default function ActionsPage() {
             <h1>
               {t('actions')}
               <ActiveScenario>
+                {t('scenario')}
+                :
+                {' '}
                 {activeScenario?.name}
               </ActiveScenario>
             </h1>

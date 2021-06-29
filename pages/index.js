@@ -14,12 +14,12 @@ import ContentLoader from 'components/common/ContentLoader';
 import FrontPageHeader from 'components/general/FrontPageHeader';
 
 const HeaderSection = styled.div`
-  padding: 0 0 10rem; 
+  padding: 3rem 0 10rem; 
   background-color: ${(props) => props.theme.graphColors.blue070};
 `;
 
 const PageHeader = styled.div` 
-  margin-bottom: 2rem;
+  margin: 1rem 0 2rem;
 
   h1 {
     font-size: 2rem;
@@ -79,11 +79,14 @@ export default function Home() {
         leadParagraph={data.instance.leadParagraph}
       />
       <HeaderSection>
-        <Container fluid>
+        <Container>
           <PageHeader>
             <h1>
               {t('emission-forecast')}
               <ActiveScenario>
+                {t('scenario')}
+                :
+                {' '}
                 {activeScenario?.name}
               </ActiveScenario>
             </h1>
@@ -91,7 +94,7 @@ export default function Home() {
         </Container>
       </HeaderSection>
       <Container fluid>
-        <EmissionsSection>
+        <EmissionsSection className="mx-md-4">
           <EmissionsCardSet
             sectors={data.page.emissionSectors}
             rootSector={rootSector}

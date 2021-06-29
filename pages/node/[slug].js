@@ -203,7 +203,7 @@ export default function NodePage() {
       <NodeBodyText>
         <Container>
           <Row>
-            <Col md={{ size: 8, offset: 2 }}>
+            <Col lg={{ size: 10, offset: 1 }}>
               <DashCard>
                 <BodyText dangerouslySetInnerHTML={{ __html: node.body }} />
               </DashCard>

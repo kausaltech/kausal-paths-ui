@@ -52,7 +52,6 @@ const Layout = ({ children }) => {
             active: router.pathname.startsWith('/actions'),
           },
         ]}
-        fullwidth
       />
       <PageContainer>
         <main className="main">

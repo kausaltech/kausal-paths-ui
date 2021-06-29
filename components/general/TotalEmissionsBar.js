@@ -37,7 +37,7 @@ const EmissionsBar = styled.div`
   background-color: ${(props) => props.theme.themeColors.white};
   margin: 24px 0;
   margin-left: auto;
-  width: 400px;
+  max-width: 500px;
   height: 24px;
 `;
 

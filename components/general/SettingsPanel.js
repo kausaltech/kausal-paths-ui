@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
+import { Container, Row, Col } from 'reactstrap';
 import RangeSelector from 'components/general/RangeSelector';
 import { yearRangeVar, settingsVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
@@ -19,44 +19,32 @@ const FixedPanel = styled.div`
   box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
 `;
 
-const RangeSelectorWrapper = styled.div`
-  flex: 0 0;
-  margin-right: 2rem;
-`;
-
-const ScenarioSelectorWrapper = styled.div`
-  flex: 0 0;
-  margin-right: 1rem;
-`;
-
-const StatusBarWrapper = styled.div`
-  flex: 0 2 100%;
-  margin-left: 2rem;
-  text-align: right;
-`;
-
 const SettingsPanel = (props) => {
   const { defaultYearRange, useBase } = props;
   const settings = useReactiveVar(settingsVar);
 
   return (
     <FixedPanel expanded>
-      <ScenarioSelectorWrapper>
-        <ScenarioSelector />
-      </ScenarioSelectorWrapper>
-      <RangeSelectorWrapper>
-        <RangeSelector
-          min={settings.minYear}
-          max={settings.maxYear}
-          initMin={defaultYearRange[0]}
-          initMax={defaultYearRange[1]}
-          baseYear={useBase && settings.baseYear}
-          handleChange={yearRangeVar}
-        />
-      </RangeSelectorWrapper>
-      <StatusBarWrapper>
-        <TotalEmissionsBar />
-      </StatusBarWrapper>
+      <Container fluid>
+        <Row>
+          <Col md="4" sm="4" xs="8">
+            <ScenarioSelector />
+          </Col>
+          <Col md="2" sm="3" xs="4">
+            <RangeSelector
+              min={settings.minYear}
+              max={settings.maxYear}
+              initMin={defaultYearRange[0]}
+              initMax={defaultYearRange[1]}
+              baseYear={useBase && settings.baseYear}
+              handleChange={yearRangeVar}
+            />
+          </Col>
+          <Col md="6" sm="5" xs="12" className="mt-3 mt-sm-0">
+            <TotalEmissionsBar />
+          </Col>
+        </Row>
+      </Container>
     </FixedPanel>
   );
 };
