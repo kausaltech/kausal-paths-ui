@@ -48,9 +48,7 @@ const CardSetSummary = styled.div`
 `;
 
 const ActionsList = styled.ul`
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  font-size: 0.9rem;
 `;
 
 const ActionsListItem = styled.li`
@@ -117,15 +115,17 @@ const EmissionSectorContent = (props) => {
           {sector.node.shortDescription && (
           <div dangerouslySetInnerHTML={{ __html: sector.node.shortDescription }} />
           )}
-          <Link href={`/node/${sector.node.id}`}>
-            <a>
-              Lue lisää
-            </a>
-          </Link>
+          <p>
+            <Link href={`/node/${sector.node.id}`}>
+              <a>
+                {t('read-more')}
+              </a>
+            </Link>
+          </p>
           { sector.node.upstreamActions.length > 0 && (
-          <h6>
+          <h5>
             { t('actions-influencing-this') }
-          </h6>
+          </h5>
           )}
           <ActionsList>
             { sector.node.upstreamActions.map((action) => (

@@ -29,7 +29,6 @@ const PageHeader = styled.div`
 const ActiveScenario = styled.span`
   display: inline-block;
   padding: .5rem;
-  margin-left: 1rem;
   border-radius: 8px;
   background-color: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
@@ -92,6 +91,7 @@ export default function ActionsPage() {
           <PageHeader>
             <h1>
               {t('actions')}
+              {' '}
               <ActiveScenario>
                 {t('scenario')}
                 :
