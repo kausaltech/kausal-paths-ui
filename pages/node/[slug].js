@@ -192,6 +192,7 @@ export default function NodePage() {
                   color={node.color}
                   isAction={node.isAction}
                   targetYearGoal={node.targetYearGoal}
+                  quantity={node.quantity}
                 />
               </ContentWrapper>
               )}

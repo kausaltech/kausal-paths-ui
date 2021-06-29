@@ -20,6 +20,7 @@ const NodePlot = (props) => {
     targetYearGoal,
     targetYear,
     filled,
+    quantity,
   } = props;
 
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ const NodePlot = (props) => {
   const plotColor = color || theme.graphColors.blue070;
   const shapes = [];
   const plotData = [];
+  const rangeMode = quantity === 'emissions' ? 'tozero' : 'normal';
 
   const formatHover = (name, color) => {
     const out = {
@@ -225,6 +227,7 @@ const NodePlot = (props) => {
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       title: metric?.unit?.htmlShort,
+      rangemode: rangeMode,
     },
     xaxis2: {
       domain: [0.075, 1],

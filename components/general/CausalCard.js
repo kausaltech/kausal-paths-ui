@@ -106,6 +106,7 @@ const CausalCard = (props) => {
               isAction={node.isAction}
               targetYearGoal={targetYearGoal}
               targetYear={maxYear}
+              quantity={node.quantity}
             />
           </ContentWrapper>
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }

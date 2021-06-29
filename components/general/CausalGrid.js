@@ -226,6 +226,7 @@ const CausalGrid = (props) => {
                       color={lastNode.color}
                       isAction={lastNode.isAction}
                       targetYearGoal={lastNode.targetYearGoal}
+                      quantity={lastNode.quantity}
                     />
                   </ContentWrapper>
                   )}
