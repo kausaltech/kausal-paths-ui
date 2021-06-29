@@ -291,9 +291,6 @@ function GlobalNav(props) {
               <span>{siteTitle}</span>
             </HomeLink>
           </Link>
-          <Nav navbar className="ml-auto">
-            <LanguageSelector />
-          </Nav>
           <NavbarToggler
             onClick={() => toggleOpen(!isOpen)}
             aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
