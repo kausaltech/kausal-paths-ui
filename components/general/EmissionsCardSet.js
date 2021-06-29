@@ -92,9 +92,9 @@ const EmissionsBar = (props) => {
           <Segment
             key={sector.id}
             style={{
-              width: `${(getMetricValue(sector, date) / sectorsTotal) * 100 || 0}%`,
+              width: `${(getMetricValue(sector.node, date) / sectorsTotal) * 100 || 0}%`,
               backgroundColor: sector.color || parentColor,
-              display: `${getMetricValue(sector, date) ? '' : 'none'}`,
+              display: `${getMetricValue(sector.node, date) ? '' : 'none'}`,
             }}
             className={`${hovered === sector.id ? 'hovered' : ''} ${activeSector === sector.id ? 'active' : ''}`}
             onMouseEnter={() => onHover(sector.id)}
@@ -134,8 +134,8 @@ const EmissionsCardSet = (props) => {
 
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
-  const sectorsTotal = getMetricValue(rootSector, endYear);
-  const sectorsBase = getMetricValue(rootSector, startYear);
+  const sectorsTotal = getMetricValue(rootSector.node, endYear);
+  const sectorsBase = getMetricValue(rootSector.node, startYear);
   const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
 
   return (

@@ -19,29 +19,29 @@ const GET_HOME_PAGE = gql`
           parent {
             id
           }
-          metric {
-            id
-            name
-            unit {
-              htmlShort
-            }
-            forecastValues {
-              year
-              value
-            }
-            baselineForecastValues {
-              year
-              value
-            }
-            historicalValues {
-              year
-              value
-            }
-          }
           node {
             id
             shortDescription
             targetYearGoal
+            metric {
+              id
+              name
+              unit {
+                htmlShort
+              }
+              forecastValues {
+                year
+                value
+              }
+              baselineForecastValues {
+                year
+                value
+              }
+              historicalValues {
+                year
+                value
+              }
+            }
             upstreamActions {
               id
               name

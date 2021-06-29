@@ -68,8 +68,8 @@ const EmissionsCard = (props) => {
   const { sector, subSectors, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
   const { t } = useTranslation();
-  const baseEmissionsValue = getMetricValue(sector, startYear);
-  const goalEmissionsValue = getMetricValue(sector, endYear);
+  const baseEmissionsValue = getMetricValue(sector.node, startYear);
+  const goalEmissionsValue = getMetricValue(sector.node, endYear);
   const change = getMetricChange(baseEmissionsValue, goalEmissionsValue);
 
   const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;

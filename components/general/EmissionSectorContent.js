@@ -62,8 +62,8 @@ const EmissionSectorContent = (props) => {
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
 
-  const sectorsTotal = getMetricValue(sector, endYear);
-  const sectorsBase = getMetricValue(sector, startYear);
+  const sectorsTotal = getMetricValue(sector.node, endYear);
+  const sectorsBase = getMetricValue(sector.node, startYear);
   const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
 
   const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;

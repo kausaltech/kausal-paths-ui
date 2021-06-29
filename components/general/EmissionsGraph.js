@@ -17,7 +17,7 @@ const EmissionsGraph = (props) => {
   const shapes = [];
   const plotData = [];
  
-  const baselineForecast = sector.metric.baselineForecastValues && metricToPlot(sector.metric, 'baselineForecastValues', startYear, endYear);
+  const baselineForecast = sector.node.metric.baselineForecastValues && metricToPlot(sector.node.metric, 'baselineForecastValues', startYear, endYear);
   const targetYearGoal = sector.node.targetYearGoal;
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
@@ -45,7 +45,7 @@ const EmissionsGraph = (props) => {
     const forecastDates = [];
     const fillColor = sector.color || color;
 
-    sector.metric.historicalValues.forEach((dataPoint) => {
+    sector.node.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year ===  settingsVar().baseYear) {
         baseValue = dataPoint.value;
       } else if(dataPoint.year <= endYear && dataPoint.year >= startYear){
@@ -91,7 +91,7 @@ const EmissionsGraph = (props) => {
         ...formatHover(sector.name, fillColor, false),
       }
     );
-    sector.metric.forecastValues.forEach((dataPoint) => {
+    sector.node.metric.forecastValues.forEach((dataPoint) => {
       if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
       forecastValues.push(dataPoint.value);
       forecastDates.push(dataPoint.year);
