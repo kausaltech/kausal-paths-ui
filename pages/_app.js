@@ -11,7 +11,7 @@ const { publicRuntimeConfig } = getConfig();
 const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
 
 require('../styles/default/main.scss');
-const defaultTheme = require('public/static/themes/tampere-ilmasto/theme.json');
+const defaultTheme = require('public/static/themes/panorama/theme.json');
 
 const GET_INSTANCE = gql`
 {
@@ -47,18 +47,18 @@ function PathsApp({ Component, pageProps }) {
   } else {
     component = <Component {...pageProps} />;
     if (!previousData) {
-      yearRangeVar([data.instance.referenceYear || 1990, data.instance.targetYear]);
+      yearRangeVar([data.instance.referenceYear || 1990, 2018]);
       settingsVar({
         baseYear: data.instance.referenceYear || 1990,
         minYear: data.instance.minimumHistoricalYear || 2010,
-        maxYear: data.instance.targetYear,
+        maxYear: 2018,
         latestMetricYear: data.instance.maximumHistoricalYear || 2018,
         totalEmissions: 540,
         emissionsTarget: 266,
         baselineName: data.scenarios.find((scenario) => scenario.id === 'baseline').name,
-        iconBase: `${basePath}/static/themes/tampere-ilmasto/images/favicon`,
-        siteTitle: 'Tampereen päästöskenaariot',
-        ogImage: `${basePath}/static/themes/tampere-ilmasto/images/og-image-default.png`,
+        iconBase: `${basePath}/static/themes/panorama/images/favicon`,
+        siteTitle: 'Panorama',
+        ogImage: `${basePath}/static/themes/panorama/images/og-image-default.png`,
       });
       activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
     }

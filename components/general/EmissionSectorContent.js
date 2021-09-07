@@ -13,7 +13,7 @@ const ContentWrapper = styled.div`
   padding: 1rem;
   margin: .5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
-  border-radius: 10px;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
 
   .x2sstick text, .xtick text {
     text-anchor: end !important;

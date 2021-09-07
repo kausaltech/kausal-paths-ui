@@ -15,7 +15,8 @@ import FrontPageHeader from 'components/general/FrontPageHeader';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 10rem; 
-  background-color: ${(props) => props.theme.graphColors.blue070};
+  background: ${(props) => props.theme.brandDark};
+  background: linear-gradient(180deg, rgba(51, 149, 204) 0%, ${(props) => props.theme.brandDark} 100%);
 `;
 
 const PageHeader = styled.div` 
@@ -34,7 +35,7 @@ const EmissionsSection = styled.div`
 const ActiveScenario = styled.span`
   display: inline-block;
   padding: .5rem;
-  border-radius: 8px;
+  border-radius: calc(${(props) => props.theme.cardBorderRadius}/2);
   background-color: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
   font-size: 1.2rem;
@@ -73,10 +74,6 @@ export default function Home() {
           {data?.page.name}
         </title>
       </Head>
-      <FrontPageHeader
-        leadTitle={data.instance.leadTitle}
-        leadParagraph={data.instance.leadParagraph}
-      />
       <HeaderSection>
         <Container>
           <PageHeader>
@@ -93,7 +90,7 @@ export default function Home() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container fluid>
+      <Container>
         <EmissionsSection className="mx-md-4">
           <EmissionsCardSet
             sectors={data.page.emissionSectors}
@@ -105,10 +102,6 @@ export default function Home() {
           />
         </EmissionsSection>
       </Container>
-      <SettingsPanel
-        defaultYearRange={[settingsVar().baseYear, settingsVar().maxYear]}
-        useBase
-      />
     </Layout>
   );
 }

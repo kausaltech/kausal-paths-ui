@@ -7,7 +7,7 @@ const ImpactDisplayWrapper = styled.div`
 display: flex;
 flex-wrap: wrap;
 border: 1px solid ${(props) => props.theme.graphColors.grey030};
-border-radius: 6px;
+border-radius:  calc(${(props) => props.theme.cardBorderRadius}/2);
 `;
 
 const ImpactDisplayHeader = styled.div`

@@ -18,21 +18,19 @@ const HeaderSection = styled.div`
 `;
 
 const PageHeader = styled.div` 
-  margin-bottom: 2rem;
-
   h1 {
+    margin-bottom: 2rem;
     font-size: 2rem;
     color: ${(props) => props.theme.themeColors.white};
   }
 `;
 
-const ActiveScenario = styled.span`
-  display: inline-block;
-  padding: .5rem;
-  border-radius: 8px;
+const ActiveScenario = styled.div`
+  padding: .75rem;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
   vertical-align: middle;
 `;
@@ -92,13 +90,13 @@ export default function ActionsPage() {
             <h1>
               {t('actions')}
               {' '}
-              <ActiveScenario>
-                {t('scenario')}
-                :
-                {' '}
-                {activeScenario?.name}
-              </ActiveScenario>
             </h1>
+            <ActiveScenario>
+              {t('scenario')}
+              :
+              {' '}
+              {activeScenario?.name}
+            </ActiveScenario>
           </PageHeader>
         </Container>
       </HeaderSection>

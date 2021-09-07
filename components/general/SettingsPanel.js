@@ -25,7 +25,7 @@ const SettingsPanel = (props) => {
 
   return (
     <FixedPanel expanded>
-      <Container fluid>
+      <Container>
         <Row>
           <Col md="4" sm="4" xs="8">
             <ScenarioSelector />

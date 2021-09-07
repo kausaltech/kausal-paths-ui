@@ -3,7 +3,8 @@ import styled from 'styled-components';
 
 const HeaderSection = styled.div`
   padding: .5rem 0 1rem;
-  background-color: ${(props) => props.theme.brandDark};
+  background: ${(props) => props.theme.brandDark};
+  background: linear-gradient(0deg, ${(props) => props.theme.themeColors.dark} 0%, ${(props) => props.theme.brandDark} 35%, ${(props) => props.theme.brandDark} 35% 100%);
 `;
 
 const PageHeader = styled.div` 
@@ -19,7 +20,7 @@ const PageHeader = styled.div`
 const HeaderCard = styled.div` 
   margin: 3rem 0;
   padding: 2rem;
-  border-radius: 1rem;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 

@@ -16,7 +16,8 @@ const EmissionsGraph = (props) => {
   const theme = useContext(ThemeContext);
   const shapes = [];
   const plotData = [];
- 
+  const useBase = false;
+
   const baselineForecast = sector.node.metric.baselineForecastValues && metricToPlot(sector.node.metric, 'baselineForecastValues', startYear, endYear);
   const targetYearGoal = sector.node.targetYearGoal;
 
@@ -53,25 +54,28 @@ const EmissionsGraph = (props) => {
         historicalDates.push(dataPoint.year);
       }
     });
-    plotData.push(
-      {
-        x: [ settingsVar().baseYear-1, settingsVar().baseYear],
-        y: [baseValue, baseValue],
-        name: sector.name,
-        showlegend: false,
-        type: 'scatter',
-        fill: 'tonexty',
-        line: {
-          color: '#ffffff',
-          width: '0.75',
-        },
-        stackgroup: 'group2',
-        fillcolor: fillColor,
-        xaxis: 'x1',
-        yaxis: 'y1',
-        ...formatHover(sector.name, fillColor, false),
-      }
-    );
+    if (useBase) {
+      plotData.push(
+        {
+          x: [ settingsVar().baseYear-1, settingsVar().baseYear],
+          y: [baseValue, baseValue],
+          name: sector.name,
+          showlegend: false,
+          type: 'scatter',
+          fill: 'tonexty',
+          line: {
+            color: '#ffffff',
+            width: '0.75',
+          },
+          stackgroup: 'group2',
+          fillcolor: fillColor,
+          xaxis: 'x1',
+          yaxis: 'y1',
+          ...formatHover(sector.name, fillColor, false),
+        }
+      );
+    };
+
     plotData.push(
       {
         x: historicalDates,
@@ -208,7 +212,7 @@ const EmissionsGraph = (props) => {
       b: 48,
     },
     xaxis: {
-      domain: [0, 0.03],
+      domain: [0, 1],
       anchor: 'y1',
       nticks: 1,
       ticklen: 5,
@@ -216,18 +220,6 @@ const EmissionsGraph = (props) => {
     yaxis: {
       domain: [0, 1],
       anchor: 'x1',
-    },
-    xaxis2: {
-      domain: [0.075, 1],
-      anchor: 'y2',
-      ticklen: 5,
-      tickformat: 'd',
-    },
-    yaxis2: {
-      domain: [0, 1],
-      anchor: 'x2',
-      type: 'date',
-      dtick: 'M12',
     },
     autosize: true,
     font: {
@@ -242,9 +234,34 @@ const EmissionsGraph = (props) => {
       xanchor: 'right',
       x: 1,
     },
-    grid: {rows: 1, columns: 2, pattern: 'independent'},
     shapes,
   }
+
+  if (useBase) {
+    layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
+    layout.xaxis= {
+      domain: [0, 0.03],
+      anchor: 'y1',
+      nticks: 1,
+      ticklen: 5,
+    };
+    layout.yaxis= {
+      domain: [0, 1],
+      anchor: 'x1',
+    };
+    layout.xaxis2= {
+      domain: [0.075, 1],
+      anchor: 'y2',
+      ticklen: 5,
+      tickformat: 'd',
+    };
+    layout.yaxis2= {
+      domain: [0, 1],
+      anchor: 'x2',
+      type: 'date',
+      dtick: 'M12',
+    };
+  };
 
   // console.log('basebar', basebarData);
   // console.log('plot', plotData);

@@ -25,6 +25,7 @@ const StyledDropdown = styled(Dropdown)`
     width: 100%;
     text-align: left;
     white-space: nowrap;
+    overflow: hidden;
   }
 `;
 
@@ -65,14 +66,12 @@ const ScenarioSelector = () => {
 
   const scenarios = data?.scenarios;
   const activeScenario = scenarios.find((scen) => scen.isActive);
-  const displayScenario = activeScenario.name.length > 20
-    ? `${activeScenario.name.substring(0, 20)}&hellip;` : activeScenario.name;
 
   return (
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
       <DropdownLabel>{t('scenario')}</DropdownLabel>
       <DropdownToggle color={`${activeScenario.id === 'custom' ? 'secondary' : 'light'}`}>
-        <span dangerouslySetInnerHTML={{ __html: displayScenario }} />
+        {activeScenario.name}
         {activeScenario.id === 'custom' && '*'}
       </DropdownToggle>
       <DropdownMenu>

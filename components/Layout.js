@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import GlobalNav from 'components/common/GlobalNav';
 import { settingsVar } from 'common/cache';
 
@@ -17,6 +18,7 @@ const PageContainer = styled.div`
 const Layout = ({ children }) => {
   const router = useRouter();
   const { iconBase, siteTitle, ogImage } = settingsVar();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -40,13 +42,13 @@ const Layout = ({ children }) => {
         ownerName="Tampereen kaupunki"
         navItems={[
           {
-            name: 'Päästöt',
+            name: t('emissions'),
             slug: '',
             urlPath: '/',
             active: router.pathname === '/',
           },
           {
-            name: 'Toimet',
+            name: t('actions'),
             slug: 'actions',
             urlPath: '/actions',
             active: router.pathname.startsWith('/actions'),

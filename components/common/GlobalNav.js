@@ -16,7 +16,9 @@ import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
 
 const TopNav = styled(Navbar)`
+  padding: 0 ${(props) => props.theme.spaces.s100};
   background-color: ${(props) => props.theme.brandNavBackground};
+  border-bottom: 1px solid ${(props) => props.theme.themeColors.light};
 `;
 
 const BotNav = styled(Navbar)`
@@ -46,6 +48,12 @@ const BotNav = styled(Navbar)`
       flex-direction: row;
     }
   }
+`;
+
+const SiteTitle = styled.div`
+  font-size: 1.25rem;
+  line-height: 1.666rem;
+  padding: ${(props) => props.theme.spaces.s150} 0 ${(props) => props.theme.spaces.s150};
 `;
 
 const HomeLink = styled.a`
@@ -84,6 +92,24 @@ const HomeLink = styled.a`
   }
 `;
 
+const EmptyLogo = styled.div`
+      width: 0;
+      height: ${(props) => props.theme.spaces.s200};
+      margin: ${(props) => props.theme.spaces.s050}
+              0
+              ${(props) => props.theme.spaces.s050}
+              0;
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    width: 0;
+    height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
+    margin: ${(props) => props.theme.spaces.s050}
+          0
+          ${(props) => props.theme.spaces.s050}
+          0;
+  }
+`;
+
 const NavLink = styled.div`
   a {
     display: block;
@@ -95,13 +121,13 @@ const NavLink = styled.div`
         color: ${(props) => props.theme.neutralDark};
 
         .highlighter {
-          border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
+          border-bottom: 5px solid ${(props) => props.theme.brandDark};
         }
       }
 
     @media (min-width: ${(props) => props.theme.breakpointMd}) {
       align-self: flex-end;
-      margin: 0 ${(props) => props.theme.spaces.s100} 0;
+      margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
     }
   }
 `;
@@ -113,7 +139,7 @@ const NavHighlighter = styled.span`
   transition: border 200ms;
 
   &.active {
-    border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
+    border-bottom: 5px solid ${(props) => props.theme.brandDark};
   }
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
@@ -132,7 +158,7 @@ const StyledDropdownToggle = styled(DropdownToggle)`
     color: ${(props) => props.theme.neutralDark};
 
     .highlighter {
-      border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
+      border-bottom: 5px solid ${(props) => props.theme.brandDark};
     }
   }
 
@@ -143,6 +169,11 @@ const StyledDropdownToggle = styled(DropdownToggle)`
 `;
 
 const StyledDropdown = styled(UncontrolledDropdown)`
+
+  .dropdown-toggle.nav-link {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
   .dropdown-menu {
     border: 0px;
@@ -199,7 +230,6 @@ const NavbarToggler = styled.button`
     display: none;
   }
 `;
-
 function DropdownList(props) {
   const { parentName, items, active } = props;
   return (
@@ -288,7 +318,7 @@ function GlobalNav(props) {
           <Link href="/" passHref>
             <HomeLink>
               <OrgLogo className="org-logo" />
-              <span>{siteTitle}</span>
+              <SiteTitle>{'\u00A0'}</SiteTitle>
             </HomeLink>
           </Link>
           <NavbarToggler
@@ -338,17 +368,7 @@ function GlobalNav(props) {
               ))}
             </Nav>
             <Nav navbar>
-              <NavItem>
-                <NavLink>
-                  <Link href="https://ilmastovahti.tampere.fi">
-                    <a>
-                      <NavHighlighter className="highlighter">
-                        Ilmastovahti
-                      </NavHighlighter>
-                    </a>
-                  </Link>
-                </NavLink>
-              </NavItem>
+              <NavItem />
             </Nav>
           </Collapse>
         </Container>

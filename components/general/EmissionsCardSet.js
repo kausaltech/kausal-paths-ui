@@ -1,25 +1,30 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
+import { useSpring, animated } from 'react-spring';
 import { getMetricValue, getSectorsTotal, getMetricChange } from 'common/preprocess';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 import EmissionsCard from './EmissionsCard';
 
-const CardSet = styled.div` 
+const CardSet = styled(animated.div)` 
   padding: 0.5rem;
   margin-top: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
-  border-radius: 12px;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border: 2px solid ${(props) => props.color || props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
-const CardDeck = styled.div`  
+const CardDeck = styled.div`
+  position: relative;
   display: flex;
-  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: visible;
   align-items: stretch;
 `;
 
-const CardContainer = styled.div`  
+const CardContainer = styled.div`
+  position: relative;
   flex: 0 0 175px;
   margin: 0 .25rem 0;
 
@@ -122,6 +127,13 @@ const EmissionsCardSet = (props) => {
   const [activeSectorId, setActiveSectorId] = useState(undefined);
   const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector?.id);
 
+  if (!rootSector) return null;
+
+  const fadeIn = useSpring({
+    to: { opacity: 1 },
+    from: { opacity: 0 },
+  });
+
   const handleHover = (evt) => {
     setHoveredSectorId(evt);
   };
@@ -129,8 +141,6 @@ const EmissionsCardSet = (props) => {
   const handleClick = (evt) => {
     setActiveSectorId(evt);
   };
-
-  if (!rootSector) return null;
 
   const activeSectorColor = cardSectors.find((sector) => sector.id === activeSectorId)?.color || parentColor;
 
@@ -140,7 +150,11 @@ const EmissionsCardSet = (props) => {
 
   return (
     <>
-      <CardSet>
+      <CardSet
+        id={rootSector.id}
+        style={fadeIn}
+        color={rootSector.color}
+      >
         <ContentArea>
           <EmissionSectorContent
             sector={rootSector}

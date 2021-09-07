@@ -43,7 +43,7 @@ const GoalSection = styled.div`
 const GoalCard = styled.div` 
   margin: -8rem 0 3rem;
   padding: 2rem;
-  border-radius: 1rem;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
@@ -71,7 +71,7 @@ const ContentWrapper = styled.div`
   padding: 1rem;
   margin: .5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
-  border-radius: 10px;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
 
   .x2sstick text, .xtick text {
     text-anchor: end !important;
@@ -141,7 +141,7 @@ const CausalGrid = (props) => {
       endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
       ref={gridCanvas}
     >
-      <Container fluid>
+      <Container>
         <ArcherElement
           relations={causalGridNodes[0].map((node) => (
             { targetId: node.id,
