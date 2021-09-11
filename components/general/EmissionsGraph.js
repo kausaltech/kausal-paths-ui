@@ -1,15 +1,24 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
-import { ThemeContext } from 'styled-components';
+import styled, { ThemeContext } from 'styled-components';
 import { lighten } from 'polished';
+import { Spinner } from 'reactstrap';
 import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
 
-    
+
+const PlotLoader = styled.div`
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${(props) => props.theme.graphColors.grey020};
+`;
+
 const EmissionsGraph = (props) => {
   const { sector, subSectors, color, startYear, endYear } = props;
   const { t } = useTranslation();
@@ -17,6 +26,7 @@ const EmissionsGraph = (props) => {
   const shapes = [];
   const plotData = [];
   const useBase = false;
+  const [loading, setLoading] = useState(true);
 
   const baselineForecast = sector.node.metric.baselineForecastValues && metricToPlot(sector.node.metric, 'baselineForecastValues', startYear, endYear);
   const targetYearGoal = sector.node.targetYearGoal;
@@ -266,13 +276,22 @@ const EmissionsGraph = (props) => {
   // console.log('basebar', basebarData);
   // console.log('plot', plotData);
   return (
-    <Plot
-      data={plotData}
-      layout={layout}
-      useResizeHandler
-      style={{width: '100%'}}
-      config={{displayModeBar: false}}
-    />
+    <>
+      { loading && (
+        <PlotLoader>
+          <Spinner color="dark" />
+        </PlotLoader>
+        )
+      }
+      <Plot
+        data={plotData}
+        layout={layout}
+        useResizeHandler
+        style={{width: '100%'}}
+        config={{displayModeBar: false}}
+        onInitialized={() => setLoading(false)}
+      />
+    </>
   )
 }
 
