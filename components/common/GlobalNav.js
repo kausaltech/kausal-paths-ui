@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
@@ -11,6 +11,7 @@ import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { transparentize } from 'polished';
+import SiteContext from 'context/site';
 import { formatUrl } from 'common/urls';
 import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
@@ -280,6 +281,7 @@ DropdownList.propTypes = {
 
 function GlobalNav(props) {
   const { t } = useTranslation();
+  const site = useContext(SiteContext);
   const theme = useTheme();
   const [navIsFixed, setnavIsFixed] = useState(false);
   const [isOpen, toggleOpen] = useState(false);
@@ -321,6 +323,23 @@ function GlobalNav(props) {
               <SiteTitle>{'\u00A0'}</SiteTitle>
             </HomeLink>
           </Link>
+          { site.loginLink && (
+            <Nav navbar className="ml-auto">
+              <NavItem>
+                <NavLink>
+                  <Link href="#admin">
+                    <a>
+                      <NavHighlighter className="highlighter">
+                        <Icon.Person size={20} color={theme.brandNavColor} />
+                        {' '}
+                        Log in
+                      </NavHighlighter>
+                    </a>
+                  </Link>
+                </NavLink>
+              </NavItem>
+            </Nav>
+          )}
           <NavbarToggler
             onClick={() => toggleOpen(!isOpen)}
             aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}

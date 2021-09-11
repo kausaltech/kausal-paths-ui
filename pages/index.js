@@ -102,6 +102,9 @@ export default function Home() {
           />
         </EmissionsSection>
       </Container>
+      <SettingsPanel
+        defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
+      />
     </Layout>
   );
 }
