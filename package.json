@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@apollo/client": "^3.3.15",
@@ -39,13 +41,20 @@
     "react-plotly.js": "^2.5.1",
     "react-range": "^1.8.7",
     "react-spring": "^9.2.4",
+    "react-spring-scroll-to-hook": "^1.0.3",
     "reactstrap": "^8.9.0",
     "reactstrap-date-picker": "^0.0.11",
     "styled-components": "^5.2.3",
     "yup": "^0.32.9"
   },
   "devDependencies": {
+    "@babel/core": "^7.15.5",
+    "@storybook/addon-actions": "^6.3.8",
+    "@storybook/addon-essentials": "^6.3.8",
+    "@storybook/addon-links": "^6.3.8",
+    "@storybook/react": "^6.3.8",
     "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.2.2",
     "babel-plugin-styled-components": "^1.12.0",
     "eslint": "^7.28.0",
     "eslint-config-airbnb": "^18.2.1",
