@@ -12,8 +12,19 @@ import ContentLoader from 'components/common/ContentLoader';
 const { publicRuntimeConfig } = getConfig();
 const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
 
+const siteContext = {
+  theme: 'default',
+  showYearSelector: true,
+  showScenarios: true,
+  showTargetBar: true,
+  split: true,
+  loginLink: true,
+  defaultLanguage: 'en',
+};
+
 require('../styles/default/main.scss');
-const defaultTheme = require('public/static/themes/default/theme.json');
+
+const defaultTheme = require(`public/static/themes/${siteContext.theme}/theme.json`);
 
 const GET_INSTANCE = gql`
 query GetInstance {
@@ -41,15 +52,6 @@ function PathsApp({ Component, pageProps }) {
     loading, error, data, previousData,
   } = useQuery(GET_INSTANCE, { client: apolloClient });
   let component;
-
-  const siteContext = {
-    showYearSelector: true,
-    showScenarios: true,
-    showTargetBar: true,
-    split: true,
-    loginLink: true,
-    defaultLanguage: 'en',
-  };
 
   if (error) {
     component = <div>{`Error loading data: ${error}`}</div>;

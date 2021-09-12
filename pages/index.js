@@ -1,8 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
+import { config } from '@react-spring/web';
+import useScrollTo from 'react-spring-scroll-to-hook';
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
@@ -16,7 +19,7 @@ import FrontPageHeader from 'components/general/FrontPageHeader';
 const HeaderSection = styled.div`
   padding: 3rem 0 10rem; 
   background: ${(props) => props.theme.brandDark};
-  background: linear-gradient(180deg, rgba(51, 149, 204) 0%, ${(props) => props.theme.brandDark} 100%);
+  background: linear-gradient(180deg, ${(props) => props.theme.brandDark} 0%, ${(props) => props.theme.brandDark} 100%);
 `;
 
 const PageHeader = styled.div` 
@@ -43,16 +46,34 @@ const ActiveScenario = styled.span`
   vertical-align: middle;
 `;
 
+const findVisibleSectors = (allSectors, lastSectorId, visibleSectors = []) => {
+  // Using last active sector Id, create an array of all visible sectors
+  const lastSector = allSectors.find((sector) => sector.id === lastSectorId);
+  visibleSectors.unshift(lastSector);
+  if (lastSector.parent !== null) findVisibleSectors(allSectors, lastSector.parent.id, visibleSectors);
+  return visibleSectors;
+};
+
 export default function Home() {
   const { loading, error, data, refetch } = useQuery(GET_HOME_PAGE);
 
   const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
+  const router = useRouter();
+  const [lastActiveSectorId, setLastActiveSectorId] = useState(router.query.sector || undefined);
 
   useEffect(() => {
     refetch();
   }, [activeScenario]);
+
+  useEffect(() => {
+    router.push({
+      pathname: '/',
+      query: { sector: lastActiveSectorId },
+    },
+    undefined, { shallow: true });
+  }, [lastActiveSectorId]);
 
   if (loading) {
     return <Layout><ContentLoader /></Layout>;
@@ -60,8 +81,10 @@ export default function Home() {
   if (error) {
     return <div>{error}</div>;
   }
-
+  // console.log(data?.page.emissionSectors);
   const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
+  const visibleSectors = findVisibleSectors(data?.page.emissionSectors, lastActiveSectorId || rootSector.id);
+  // console.log(visibleSectors);
 
   return (
     <Layout>
@@ -92,14 +115,20 @@ export default function Home() {
       </HeaderSection>
       <Container>
         <EmissionsSection className="mx-md-4">
-          <EmissionsCardSet
-            sectors={data.page.emissionSectors}
-            rootSector={rootSector}
-            date={yearRange[1]}
-            startYear={yearRange[0]}
-            endYear={yearRange[1]}
-            parentColor="#666"
-          />
+          { visibleSectors.map((sector, index) => (
+            <EmissionsCardSet
+              key={sector.id}
+              sectors={data.page.emissionSectors}
+              rootSector={sector}
+              date={yearRange[1]}
+              startYear={yearRange[0]}
+              endYear={yearRange[1]}
+              parentColor="#666"
+              activeSectorId={index < visibleSectors.length - 1 ? visibleSectors[index + 1].id : undefined}
+              lastActiveSectorId={lastActiveSectorId}
+              setLastActiveSectorId={setLastActiveSectorId}
+            />
+          ))}
         </EmissionsSection>
       </Container>
       <SettingsPanel

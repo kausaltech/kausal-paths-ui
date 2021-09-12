@@ -65,7 +65,7 @@ const MainUnit = styled.div`
 `;
 
 const EmissionsCard = (props) => {
-  const { sector, subSectors, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
+  const { sector, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
   const { t } = useTranslation();
   const baseEmissionsValue = getMetricValue(sector.node, startYear);
@@ -88,7 +88,7 @@ const EmissionsCard = (props) => {
           <CardAnchor
             onMouseEnter={() => onHover(sector.id)}
             onMouseLeave={() => onHover(undefined)}
-            onClick={() => handleClick(active ? undefined : sector.id)}
+            onClick={() => handleClick(sector.id)}
           >
             <Name>{sector.name}</Name>
           </CardAnchor>
