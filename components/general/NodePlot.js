@@ -5,6 +5,7 @@ import { lighten, transparentize } from 'polished';
 import { ThemeContext } from 'styled-components';
 import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
+import SiteContext from 'context/site';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
@@ -25,6 +26,7 @@ const NodePlot = (props) => {
 
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
+  const site = useContext(SiteContext);
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
   const plotColor = color || theme.graphColors.blue070;
@@ -155,28 +157,6 @@ const NodePlot = (props) => {
     );
   }
 
-  if (!isAction) {
-    plotData.push(
-      {
-        x: baselineForecast.x,
-        y: baselineForecast.y,
-        xaxis: 'x2',
-        yaxis: 'y1',
-        mode: 'lines',
-        name: settingsVar().baselineName,
-        type: 'scatter',
-        line: {
-          color: theme.graphColors.grey060,
-          shape: 'spline',
-          width: '2',
-          dash: 'dash',
-        },
-        smoothing: true,
-        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030),
-      },
-    );
-  }
-
   if (targetYearGoal) {
     shapes.push({
       type: 'line',
@@ -218,12 +198,12 @@ const NodePlot = (props) => {
       domain: [0, 0.03],
       anchor: 'y1',
       nticks: 1,
-      ticklen: 5,
+      ticklen: 10,
     },
     yaxis: {
       domain: [0, 1],
       anchor: 'x1',
-      ticklen: 5,
+      ticklen: 10,
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       title: metric?.unit?.htmlShort,
@@ -232,7 +212,7 @@ const NodePlot = (props) => {
     xaxis2: {
       domain: [0.075, 1],
       anchor: 'y2',
-      ticklen: 5,
+      ticklen: 10,
       type: 'date',
       dtick: 'M12',
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],

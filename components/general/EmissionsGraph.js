@@ -226,21 +226,21 @@ const EmissionsGraph = (props) => {
       domain: [0, 1],
       anchor: 'x1',
       ticklen: 10,
-      tickcolor: theme.graphColors.grey040,
+      tickcolor: theme.graphColors.grey030,
     },
     xaxis: {
       domain: [0, 1],
       anchor: 'y1',
       nticks: 1,
       ticklen: 10,
-      tickcolor: theme.graphColors.grey040,
+      tickcolor: theme.graphColors.grey030,
     },
     xaxis2: {
       domain: [0, 1],
       anchor: 'y',
       ticklen: 10,
       tickformat: 'd',
-      tickcolor: theme.graphColors.grey040,
+      tickcolor: theme.graphColors.grey030,
     },
     autosize: true,
     font: {
@@ -265,20 +265,20 @@ const EmissionsGraph = (props) => {
       anchor: 'y1',
       nticks: 1,
       ticklen: 10,
-      tickcolor: theme.graphColors.grey040,
+      tickcolor: theme.graphColors.grey030,
     };
     layout.yaxis= {
       domain: [0, 1],
       anchor: 'x1',
       ticklen: 10,
-      tickcolor: theme.graphColors.grey040,
+      tickcolor: theme.graphColors.grey030,
     };
     layout.xaxis2= {
       domain: [0.066, 1],
       anchor: 'y',
       ticklen: 10,
       tickformat: 'd',
-      tickcolor: theme.graphColors.grey040,
+      tickcolor: theme.graphColors.grey030,
     };
   };
 
