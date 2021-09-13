@@ -20,6 +20,9 @@ const siteContext = {
   split: true,
   loginLink: true,
   defaultLanguage: 'en',
+  showBaseline: false,
+  showTarget: false,
+  useBaseYear: false,
 };
 
 require('../styles/default/main.scss');

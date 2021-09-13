@@ -6,6 +6,7 @@ import { lighten } from 'polished';
 import { Spinner } from 'reactstrap';
 import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
+import SiteContext from 'context/site';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
@@ -23,9 +24,9 @@ const EmissionsGraph = (props) => {
   const { sector, subSectors, color, startYear, endYear } = props;
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
+  const site = useContext(SiteContext);
   const shapes = [];
   const plotData = [];
-  const useBase = false;
   const [loading, setLoading] = useState(true);
 
   const baselineForecast = sector.node.metric.baselineForecastValues && metricToPlot(sector.node.metric, 'baselineForecastValues', startYear, endYear);
@@ -64,7 +65,7 @@ const EmissionsGraph = (props) => {
         historicalDates.push(dataPoint.year);
       }
     });
-    if (useBase) {
+    if (site.useBaseYear) {
       plotData.push(
         {
           x: [ settingsVar().baseYear-1, settingsVar().baseYear],
@@ -158,7 +159,7 @@ const EmissionsGraph = (props) => {
     )
   });
 
-  if (baselineForecast) {
+  if (baselineForecast && site.showBaseline) {
     plotData.push(
       {
         x: baselineForecast.x,
@@ -180,7 +181,7 @@ const EmissionsGraph = (props) => {
     );
   }
 
-  if (targetYearGoal) {
+  if (targetYearGoal && site.showTarget) {
     shapes.push({
       type: 'line',
       yref: 'y',
@@ -221,15 +222,25 @@ const EmissionsGraph = (props) => {
       r: 48,
       b: 48,
     },
+    yaxis: {
+      domain: [0, 1],
+      anchor: 'x1',
+      ticklen: 10,
+      tickcolor: theme.graphColors.grey040,
+    },
     xaxis: {
       domain: [0, 1],
       anchor: 'y1',
       nticks: 1,
-      ticklen: 5,
+      ticklen: 10,
+      tickcolor: theme.graphColors.grey040,
     },
-    yaxis: {
+    xaxis2: {
       domain: [0, 1],
-      anchor: 'x1',
+      anchor: 'y',
+      ticklen: 10,
+      tickformat: 'd',
+      tickcolor: theme.graphColors.grey040,
     },
     autosize: true,
     font: {
@@ -247,29 +258,27 @@ const EmissionsGraph = (props) => {
     shapes,
   }
 
-  if (useBase) {
+  if (site.useBaseYear) {
     layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
     layout.xaxis= {
       domain: [0, 0.03],
       anchor: 'y1',
       nticks: 1,
-      ticklen: 5,
+      ticklen: 10,
+      tickcolor: theme.graphColors.grey040,
     };
     layout.yaxis= {
       domain: [0, 1],
       anchor: 'x1',
+      ticklen: 10,
+      tickcolor: theme.graphColors.grey040,
     };
     layout.xaxis2= {
-      domain: [0.075, 1],
-      anchor: 'y2',
-      ticklen: 5,
+      domain: [0.066, 1],
+      anchor: 'y',
+      ticklen: 10,
       tickformat: 'd',
-    };
-    layout.yaxis2= {
-      domain: [0, 1],
-      anchor: 'x2',
-      type: 'date',
-      dtick: 'M12',
+      tickcolor: theme.graphColors.grey040,
     };
   };
 
