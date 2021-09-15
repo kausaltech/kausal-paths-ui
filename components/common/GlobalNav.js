@@ -20,6 +20,10 @@ const TopNav = styled(Navbar)`
   padding: 0 ${(props) => props.theme.spaces.s100};
   background-color: ${(props) => props.theme.brandNavBackground};
   border-bottom: 1px solid ${(props) => props.theme.themeColors.light};
+
+  .nav-item a, .nav-item a:hover {
+    color: ${(props) => props.theme.brandNavColor};
+  }
 `;
 
 const BotNav = styled(Navbar)`
@@ -320,7 +324,9 @@ function GlobalNav(props) {
           <Link href="/" passHref>
             <HomeLink>
               <OrgLogo className="org-logo" />
-              <SiteTitle>{'\u00A0'}</SiteTitle>
+              { site.showNavTitle
+                ? <SiteTitle>{siteTitle}</SiteTitle>
+                : <SiteTitle>{'\u00A0'}</SiteTitle>}
             </HomeLink>
           </Link>
           { site.loginLink && (

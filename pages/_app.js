@@ -18,11 +18,12 @@ const siteContext = {
   showScenarios: true,
   showTargetBar: true,
   split: true,
-  loginLink: true,
+  loginLink: false,
   defaultLanguage: 'en',
-  showBaseline: false,
-  showTarget: false,
+  showBaseline: true,
+  showTarget: true,
   useBaseYear: false,
+  showNavTitle: true,
 };
 
 require('../styles/default/main.scss');
@@ -76,7 +77,7 @@ function PathsApp({ Component, pageProps }) {
         emissionsTarget: 266,
         baselineName: data.scenarios.find((scenario) => scenario.id === 'baseline').name,
         iconBase: `${basePath}/static/themes/default/images/favicon`,
-        siteTitle: 'MMMM',
+        siteTitle: data.instance.name,
         ogImage: `${basePath}/static/themes/default/images/og-image-default.png`,
       });
       activeScenarioVar(data.scenarios.find((scenario) => scenario.isActive));
