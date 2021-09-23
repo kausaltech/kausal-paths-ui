@@ -1,6 +1,6 @@
 {
-  "name": "panorama",
-  "brandLight": "rgb(232, 241, 222)",
+  "name": "kpr",
+  "brandLight": "rgb(192, 224, 183)",
   "brandDark": "rgb(0, 79, 116)",
   "neutralLight": "rgb(240, 240, 240)",
   "neutralDark": "rgb(30, 30, 30)",
@@ -16,8 +16,8 @@
     "black": "rgb(30, 30, 30)",
     "white": "rgb(247, 246, 243)"
   },
-  "imageOverlay": "rgb(0, 79, 116)",
-  "fontUrl": "/static/themes/panorama/fonts/fonts.css",
+  "imageOverlay": "rgb(255, 255, 255)",
+  "fontUrl": "/static/themes/kpr/fonts/fonts.css",
   "fontFamily": "Poppins",
   "headingsFontFamily": "Poppins",
   "headingsFontWeight": 700,
@@ -72,7 +72,8 @@
   "brandNavColor": "rgb(30, 30, 30)",
   "brandNavBackground": "rgb(255, 255, 255)",
   "navLogoVisible": true,
-  "footerLogoPlacement": "left",
+  "navTitleVisible": false,
+  "footerLogoPlacement": "top",
   "footerLogoSize": "1",
   "footerBackgroundColor": "rgb(30, 30, 30)",
   "footerColor": "rgb(247, 246, 243)",
@@ -108,8 +109,8 @@
   "breakpointLg": "992px",
   "breakpointXl": "1200px",
   "iconsUrl": "/static/themes/default/icons",
-  "themeLogoUrl": "/static/themes/panorama/images/panorama-logo-color.svg",
-  "themeLogoWhiteUrl": "/static/themes/panorama/images/panorama-logo-white.svg",
+  "themeLogoUrl": "/static/themes/kpr/images/panorama-logo-color.svg",
+  "themeLogoWhiteUrl": "/static/themes/kpr/images/panorama-logo-white.svg",
   "iconIndicatorsUrl": "",
   "iconActionsUrl": "",
   "themeCustomStylesUrl": "",
@@ -149,8 +150,8 @@
   },
   "settings": {
     "dashboard": {
-      "showResponsibles": true,
-      "showIndicators": true
+      "showResponsibles": false,
+      "showIndicators": false
     },
     "categories": {
       "showIdentifiers": false,

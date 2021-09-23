@@ -13,17 +13,17 @@ const { publicRuntimeConfig } = getConfig();
 const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
 
 const siteContext = {
-  theme: 'default',
+  theme: 'kpr',
   showYearSelector: true,
   showScenarios: true,
   showTargetBar: true,
-  split: true,
+  split: false,
   loginLink: false,
-  defaultLanguage: 'en',
+  defaultLanguage: 'sv',
   showBaseline: true,
   showTarget: true,
   useBaseYear: false,
-  showNavTitle: true,
+  showNavTitle: false,
 };
 
 require('../styles/default/main.scss');
