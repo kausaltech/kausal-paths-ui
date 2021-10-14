@@ -33,5 +33,10 @@
   "impact-total": "Yhteensä",
   "impact": "Vaikutus",
   "read-more": "Lue lisää",
-  "pred": "enn."
+  "pred": "enn.",
+  "table-year": "Vuosi",
+  "table-historical": "Toteutunut",
+  "table-scenario-forecast": "Skenaarion ennuste",
+  "table-action-impact": "Toimenpiteen vaikutus",
+  "download-data": "Lataa csv"
 }

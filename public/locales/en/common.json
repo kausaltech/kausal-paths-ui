@@ -33,5 +33,10 @@
   "impact-total": "Total",
   "impact": "Impact",
   "read-more": "Read more",
-  "pred": "pred"
+  "pred": "pred",
+  "table-year": "Year",
+  "table-historical": "Measured",
+  "table-scenario-forecast": "Scenario forecast",
+  "table-action-impact": "Action's impact",
+  "download-data": "Download csv"
 }

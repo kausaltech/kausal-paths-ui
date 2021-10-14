@@ -13,7 +13,7 @@ const { publicRuntimeConfig } = getConfig();
 const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
 
 const siteContext = {
-  theme: 'default',
+  theme: 'tampere-ilmasto',
   showYearSelector: true,
   showScenarios: true,
   showTargetBar: true,

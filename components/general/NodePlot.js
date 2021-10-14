@@ -2,13 +2,20 @@ import { useContext } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { lighten, transparentize } from 'polished';
-import { ThemeContext } from 'styled-components';
+import styled, { ThemeContext } from 'styled-components';
 import { settingsVar } from 'common/cache';
+import { CloudArrowDown } from 'react-bootstrap-icons';
+import CsvDownload from 'react-json-to-csv';
 import { metricToPlot } from 'common/preprocess';
 import SiteContext from 'context/site';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
+
+const Tools = styled.div`
+  padding: 0 1rem .5rem;
+  text-align: right;
+`;
 
 const NodePlot = (props) => {
   const {
@@ -24,6 +31,7 @@ const NodePlot = (props) => {
     quantity,
   } = props;
 
+  console.log('metric', metric);
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
@@ -51,8 +59,47 @@ const NodePlot = (props) => {
     && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
   const baselineForecast = metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
+
   const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
   const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
+  const impactHistorical = hasImpact && metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
+  const impactForecast = hasImpact && metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
+
+  console.log('historical', historical);
+  console.log('forecast', forecast);
+  console.log('impactHistory', impactHistorical);
+  console.log('impactForecast', impactForecast);
+
+  // create downloadable table
+  const tableColumns = [
+    t('table-year'),
+    t('table-historical'),
+    t('table-scenario-forecast'),
+    settingsVar().baselineName,
+    t('table-action-impact'),
+  ];
+
+  const downloadableHistorical = historical.x.map((date, index) => (
+    {
+      [tableColumns[0]]: date,
+      [tableColumns[1]]: historical.y[index],
+      [tableColumns[2]]: '',
+      [tableColumns[3]]: '',
+      [tableColumns[4]]: hasImpact ? impactHistorical.y[index] : '',
+    }
+  ));
+
+  const downloadableForecast = forecast.x.map((date, index) => (
+    {
+      [tableColumns[0]]: date,
+      [tableColumns[1]]: '',
+      [tableColumns[2]]: forecast.y[index],
+      [tableColumns[3]]: baselineForecast.y[index],
+      [tableColumns[4]]: hasImpact ? impactForecast.y[index] : '',
+    }
+  ));
+
+  const downloadableTable = downloadableHistorical.concat(downloadableForecast);
 
   const filledStyles = filled ? {
     fill: 'tozeroy',
@@ -157,6 +204,28 @@ const NodePlot = (props) => {
     );
   }
 
+  if (!isAction && site.showBaseline) {
+    plotData.push(
+      {
+        x: baselineForecast.x,
+        y: baselineForecast.y,
+        xaxis: 'x2',
+        yaxis: 'y1',
+        mode: 'lines',
+        name: settingsVar().baselineName,
+        type: 'scatter',
+        line: {
+          color: theme.graphColors.grey060,
+          shape: 'spline',
+          width: '2',
+          dash: 'dash',
+        },
+        smoothing: true,
+        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030),
+      },
+    );
+  }
+
   if (targetYearGoal) {
     shapes.push({
       type: 'line',
@@ -239,15 +308,27 @@ const NodePlot = (props) => {
     grid: { rows: 1, columns: 2, pattern: 'independent' },
     shapes,
   };
-
+  console.log('plotData', plotData);
   return (
-    <Plot
-      data={plotData}
-      layout={layout}
-      useResizeHandler
-      style={{ width: '100%' }}
-      config={{ displayModeBar: false }}
-    />
+    <>
+      <Plot
+        data={plotData}
+        layout={layout}
+        useResizeHandler
+        style={{ width: '100%' }}
+        config={{ displayModeBar: false }}
+      />
+      <Tools>
+        <CsvDownload
+          data={downloadableTable}
+          filename={`${metric.id}.csv`}
+          className="btn btn-link btn-sm"
+        >
+          <CloudArrowDown />
+          { ` ${t('download-data')}` }
+        </CsvDownload>
+      </Tools>
+    </>
   );
 };
 

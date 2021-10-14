@@ -33,5 +33,10 @@
   "impact-total": "Totalt",
   "impact": "Impact",
   "read-more": "Läs mer",
-  "pred": "förutspådde"
+  "pred": "förutspådde",
+  "table-year": "År",
+  "table-historical": "Verklig",
+  "table-scenario-forecast": "scenarioprognos",
+  "table-action-impact": "Åtgärdens inverkan",
+  "download-data": "Ladda csv"
 }

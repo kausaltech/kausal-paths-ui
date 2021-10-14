@@ -282,8 +282,6 @@ const EmissionsGraph = (props) => {
     };
   };
 
-  // console.log('basebar', basebarData);
-  // console.log('plot', plotData);
   return (
     <>
       { loading && (
