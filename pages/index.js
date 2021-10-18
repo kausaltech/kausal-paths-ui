@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
-import { config } from '@react-spring/web';
-import useScrollTo from 'react-spring-scroll-to-hook';
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 import Layout from 'components/Layout';
 import { GET_HOME_PAGE } from 'common/queries/getHomePage';
 import SettingsPanel from 'components/general/SettingsPanel';
 import EmissionsCardSet from 'components/general/EmissionsCardSet';
+import { useSite } from 'context/site';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
 import FrontPageHeader from 'components/general/FrontPageHeader';
@@ -58,6 +56,7 @@ export default function Home() {
   const { loading, error, data, refetch } = useQuery(GET_HOME_PAGE);
 
   const { t } = useTranslation();
+  const site = useSite();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const router = useRouter();
@@ -68,11 +67,13 @@ export default function Home() {
   }, [activeScenario]);
 
   useEffect(() => {
+    const query = {};
+    if (lastActiveSectorId)
+      query.sector = lastActiveSectorId;
     router.push({
       pathname: '/',
-      query: { sector: lastActiveSectorId },
-    },
-    undefined, { shallow: true });
+      query,
+    }, undefined, { shallow: true });
   }, [lastActiveSectorId]);
 
   if (loading) {
@@ -81,16 +82,14 @@ export default function Home() {
   if (error) {
     return <div>{error}</div>;
   }
-  // console.log(data?.page.emissionSectors);
   const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
   const visibleSectors = findVisibleSectors(data?.page.emissionSectors, lastActiveSectorId || rootSector.id);
-  // console.log(visibleSectors);
 
   return (
     <Layout>
       <Head>
         <title>
-          {settingsVar().siteTitle}
+          {site.title}
           {' '}
           |
           {' '}
@@ -136,12 +135,4 @@ export default function Home() {
       />
     </Layout>
   );
-}
-
-export async function getServerSideProps({ locale }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
 }
