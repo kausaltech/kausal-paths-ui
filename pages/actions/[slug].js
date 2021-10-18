@@ -3,12 +3,13 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'react-i18next';
 import { Container, Badge } from 'reactstrap';
 import styled from 'styled-components';
+
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
+import { useSite } from 'context/site';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
@@ -68,6 +69,7 @@ export default function ActionPage() {
   const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
+  const site = useSite();
 
   const { loading, error, data, refetch } = useQuery(GET_ACTION_CONTENT, {
     fetchPolicy: 'no-cache',
@@ -96,7 +98,7 @@ export default function ActionPage() {
     <Layout>
       <Head>
         <title>
-          {settingsVar().siteTitle}
+          {site.title}
           {' '}
           |
           {' '}
@@ -157,12 +159,4 @@ export default function ActionPage() {
       />
     </Layout>
   );
-}
-
-export async function getServerSideProps({ locale }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
 }

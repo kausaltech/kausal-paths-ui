@@ -1,56 +1,58 @@
 // Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
+import { i18n } from 'next-i18next'
 import { useMemo } from 'react';
 import getConfig from 'next/config';
-import { ApolloClient, ApolloLink, HttpLink } from '@apollo/client';
-import { cache } from 'common/cache';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
 
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
-const i18n = null;
-
 const localeMiddleware = new ApolloLink((operation, forward) => {
-  // Inject @locale directive into the query root object
-  const { query } = operation;
-  const { definitions } = query;
-  const language = publicRuntimeConfig.defaultLanguage;
-
-  /*
-  if (i18n && i18n.language) {
-    language = i18n.language;
-  }
-  */
-  if (!language || definitions[0].operation === 'mutation') return forward(operation);
-
-  const localeDirective = {
-    kind: 'Directive',
-    name: {
-      kind: 'Name',
-      value: 'locale',
-    },
-    arguments: [{
-      kind: 'Argument',
-      name: { kind: 'Name', value: 'lang' },
-      value: { kind: 'StringValue', value: language, block: false },
-    }],
-  };
-
-  operation.query = {
-    ...query,
-    definitions: [{
-      ...definitions[0],
-      directives: [
-        ...definitions[0].directives,
-        localeDirective,
-      ],
-    }, ...definitions.slice(1)],
-  };
+  operation.setContext(({ headers = {}, locale }) => {
+    if (locale || (i18n && i18n.language)) {
+      return {
+        headers: {
+          ...headers,
+          "accept-language": locale || i18n.language,
+        }
+      }
+    }
+  });
 
   return forward(operation);
 });
 
+const makeInstanceMiddleware = (opts) => {
+  /**
+   * Middleware that sets HTTP headers for identifying the Paths instance.
+   *
+   * If identifier is set directly, use that, or fall back to request hostname.
+   */
+  const { instanceHostname, instanceIdentifier } = opts;
+  if (!instanceHostname && !instanceIdentifier) {
+    throw new Error("Neither hostname or identifier set for the instance")
+  }
+
+  const middleware = new ApolloLink((operation, forward) => {
+    operation.setContext(({ headers = {} }) => {
+      if (instanceIdentifier)
+        headers['x-paths-instance-identifier'] = instanceIdentifier;
+      else if (instanceHostname)
+        headers['x-paths-instance-hostname'] = instanceHostname;
+      return {
+        headers
+      }
+    });
+
+    return forward(operation);
+  });
+
+  return middleware;
+}
+
+
 let apolloClient;
 
-function createApolloClient() {
+function createApolloClient(opts) {
   const ssrMode = typeof window === 'undefined';
   const uri = ssrMode ? serverRuntimeConfig.graphqlUrl : publicRuntimeConfig.graphqlUrl;
 
@@ -59,16 +61,17 @@ function createApolloClient() {
     credentials: 'include',
   });
 
-  // console.log("endpoint...", uri)
   return new ApolloClient({
     ssrMode,
-    link: ApolloLink.from([localeMiddleware, httpLink]),
-    cache,
+    link: ApolloLink.from([
+      localeMiddleware, makeInstanceMiddleware(opts), httpLink
+    ]),
+    cache: new InMemoryCache(),
   });
 }
 
-export function initializeApollo(initialState = null) {
-  const _apolloClient = apolloClient ?? createApolloClient();
+export function initializeApollo(initialState, opts) {
+  const _apolloClient = apolloClient ?? createApolloClient(opts);
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // gets hydrated here
@@ -86,7 +89,15 @@ export function initializeApollo(initialState = null) {
   return _apolloClient;
 }
 
-export function useApollo(initialState) {
-  const store = useMemo(() => initializeApollo(initialState), [initialState]);
+export function useApollo(initialState, siteContext) {
+  return initializeApollo(initialState, siteContext);
+  const { instanceIdentifier, instanceHostname } = siteContext;
+  const store = useMemo(
+    () => initializeApollo(initialState, {
+      instanceIdentifier,
+      instanceHostname
+    }),
+    [initialState, instanceIdentifier, instanceHostname]
+  );
   return store;
 }

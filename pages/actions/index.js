@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Head from 'next/head';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import styled from 'styled-components';
+
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
+import { useSite } from 'context/site';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Layout from 'components/Layout';
 import ActionListCard from 'components/general/ActionListCard';
@@ -59,6 +60,7 @@ const DISPLAY_CUMULATIVE = 'displayTypeCumulative';
 
 export default function ActionsPage() {
   const { t } = useTranslation();
+  const site = useSite();
   const { loading, error, data, refetch } = useQuery(GET_ACTION_LIST);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
@@ -77,7 +79,7 @@ export default function ActionsPage() {
     <Layout>
       <Head>
         <title>
-          {settingsVar().siteTitle}
+          {site.title}
           {' '}
           |
           {' '}
@@ -122,12 +124,4 @@ export default function ActionsPage() {
       />
     </Layout>
   );
-}
-
-export async function getServerSideProps({ locale }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
 }

@@ -3,11 +3,11 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
+import { useSite } from 'context/site';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
@@ -126,6 +126,7 @@ query GetNodePage($node: ID!) {
 
 export default function NodePage() {
   const router = useRouter();
+  const site = useSite();
   const { t } = useTranslation();
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
@@ -155,7 +156,7 @@ export default function NodePage() {
     <Layout>
       <Head>
         <title>
-          {settingsVar().siteTitle}
+          {site.title}
           {' '}
           |
           {' '}
@@ -224,12 +225,4 @@ export default function NodePage() {
       />
     </Layout>
   );
-}
-
-export async function getServerSideProps({ locale }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
 }

@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import GlobalNav from 'components/common/GlobalNav';
 import { settingsVar } from 'common/cache';
+import { useSite } from 'context/site';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -17,15 +18,16 @@ const PageContainer = styled.div`
 
 const Layout = ({ children }) => {
   const router = useRouter();
-  const { iconBase, siteTitle, ogImage } = settingsVar();
+  const { iconBase, ogImage } = settingsVar();
   const { t } = useTranslation();
+  const site = useSite();
 
   return (
     <>
       <Head>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content={siteTitle} />
+        <meta property="og:site_name" content={site.title} />
         {iconBase && (
           <>
             <link rel="icon" href={`${iconBase}/icon.svg`} type="image/svg+xml" />
@@ -38,7 +40,7 @@ const Layout = ({ children }) => {
         )}
       </Head>
       <GlobalNav
-        siteTitle={siteTitle}
+        siteTitle={site.title}
         ownerName="Tampereen kaupunki"
         navItems={[
           {
