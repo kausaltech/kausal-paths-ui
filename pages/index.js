@@ -70,7 +70,7 @@ export default function Home() {
     const query = {};
     if (lastActiveSectorId)
       query.sector = lastActiveSectorId;
-    router.push({
+    router.replace({
       pathname: '/',
       query,
     }, undefined, { shallow: true });
