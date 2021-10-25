@@ -13,7 +13,7 @@ const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== "production";
 
 const GET_INSTANCE = gql`
-query GetInstanceConfig($hostname: String, $identifier: String) @instance(identifier: $identifier, hostname: $hostname) {
+query GetInstanceConfig($hostname: String, $identifier: ID) @instance(identifier: $identifier, hostname: $hostname) {
   instance {
     id
     defaultLanguage
