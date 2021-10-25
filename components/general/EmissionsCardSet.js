@@ -6,6 +6,7 @@ import useScrollTo from 'react-spring-scroll-to-hook';
 import { getMetricValue, getSectorsTotal } from 'common/preprocess';
 import EmissionSectorContent from 'components/general/EmissionSectorContent';
 import EmissionsCard from './EmissionsCard';
+import InputNodeCards from './InputNodeCards';
 
 const CardSet = styled(animated.div)`
   position: relative;
@@ -136,8 +137,9 @@ const EmissionsCardSet = (props) => {
   const { scrollTo } = useScrollTo(config.molasses);
   // const [activeSectorId, setActiveSectorId] = useState(undefined);
   const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector?.id);
-
+  const inputNodes = rootSector.node.inputNodes?.filter((node) => !sectors.find((sect) => sect.id === node.id));
   // If this is the last active scenario, scroll to view after render
+
   useEffect(() => {
     if (lastActiveSectorId === rootSector.id) scrollTo(document.querySelector(`#${lastActiveSectorId}`), -150);
   }, []);
@@ -208,6 +210,7 @@ const EmissionsCardSet = (props) => {
             </CardContainer>
           ))}
         </CardDeck>
+        { inputNodes.length > 0 ? <InputNodeCards nodes={inputNodes} /> : ''}
       </CardSet>
     </>
   );

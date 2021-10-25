@@ -42,6 +42,16 @@ const GET_HOME_PAGE = gql`
                 value
               }
             }
+            inputNodes {
+              id
+              name
+              unit {
+                short
+                htmlShort
+              }
+              quantity
+              shortDescription
+            }
             upstreamActions {
               id
               name
