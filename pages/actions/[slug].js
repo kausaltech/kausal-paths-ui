@@ -154,6 +154,7 @@ export default function ActionPage() {
         nodes={causalNodes}
         yearRange={yearRange}
         actionIsOff={!isActive}
+        actionId={action.id}
       />
       <SettingsPanel
         defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}

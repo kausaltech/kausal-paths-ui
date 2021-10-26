@@ -93,7 +93,7 @@ const ImpactFigures = styled.div`
 `;
 
 const CausalGrid = (props) => {
-  const { nodes, yearRange, actionIsOff } = props;
+  const { nodes, yearRange, actionIsOff, actionId } = props;
   const theme = useContext(ThemeContext);
   const gridCanvas = useRef(null);
 
@@ -124,15 +124,17 @@ const CausalGrid = (props) => {
     return grid;
   };
 
-  // Build the grid from bbottom up
+  // Build the grid from bottom up
   const lastNode = nodes.find((node) => node.outputNodes.length === 0);
-
   const causalGridNodes = findOutputs([lastNode.id], []);
 
   const impactAtTargetYear = getImpactMetricValue(lastNode, yearRange[1]);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact = lastNode.quantity === 'emissions'
     ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1]) : undefined;
+
+  // find nodes that the action affects directly
+  const actionOutputNodes = nodes.filter((node) => node.inputNodes.find((inputNode) => inputNode.id === actionId));
 
   return (
     <ArcherContainer
@@ -143,7 +145,7 @@ const CausalGrid = (props) => {
     >
       <Container>
         <ArcherElement
-          relations={causalGridNodes[0].map((node) => (
+          relations={actionOutputNodes.map((node) => (
             { targetId: node.id,
               targetAnchor: 'top',
               sourceAnchor: 'bottom',
