@@ -95,7 +95,7 @@ class PathsServer {
   async handleRequest(ctx) {
     const instance = await this.getInstance(ctx);
     if (!instance) return;
-    const basePath = instance.basePath || '';
+    const basePath = instance.hostname?.basePath || '';
     this.setBasePath(basePath);
     this.setLocale(instance.defaultLanguage, instance.supportedLanguages)
     this.nextServer.nextConfig.publicRuntimeConfig.instance = instance;
