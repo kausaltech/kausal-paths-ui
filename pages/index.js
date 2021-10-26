@@ -97,6 +97,11 @@ export default function Home() {
           {data?.page.name}
         </title>
       </Head>
+      { (data.instance.leadTitle || data.instance.leadParagraph) && (
+      <FrontPageHeader
+        leadTitle={data.instance.leadTitle}
+        leadParagraph={data.instance.leadParagraph}
+      /> )}
       <HeaderSection>
         <Container>
           <PageHeader>
@@ -114,7 +119,7 @@ export default function Home() {
         </Container>
       </HeaderSection>
       <Container>
-        <EmissionsSection className="mx-md-4">
+        <EmissionsSection>
           { visibleSectors.map((sector, index) => (
             <EmissionsCardSet
               key={sector.id}
