@@ -80,7 +80,8 @@ export default function Home() {
     return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
-    return <div>{error}</div>;
+    console.log("Error", JSON.stringify(error));
+    return <Layout><Container><h2 className="p-5">{t('error-loading-data')}</h2></Container></Layout>;
   }
   const rootSector = data?.page.emissionSectors.find((sector) => sector.parent === null);
   const visibleSectors = findVisibleSectors(data?.page.emissionSectors, lastActiveSectorId || rootSector.id);

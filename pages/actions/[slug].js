@@ -86,7 +86,8 @@ export default function ActionPage() {
     return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
-    return <Layout><div>{error}</div></Layout>;
+    console.log("Error", JSON.stringify(error));
+    return <Layout><Container><h2 className="p-5">{t('error-loading-data')}</h2></Container></Layout>;
   }
 
   const action = data.node;
