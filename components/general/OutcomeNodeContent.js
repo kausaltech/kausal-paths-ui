@@ -6,7 +6,7 @@ import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
-import EmissionsGraph from 'components/general/EmissionsGraph';
+import OutcomeGraph from 'components/general/OutcomeGraph';
 import { settingsVar } from 'common/cache';
 
 const ContentWrapper = styled.div`
@@ -55,14 +55,14 @@ const ActionsListItem = styled.li`
   padding: 0;
 `;
 
-const EmissionSectorContent = (props) => {
-  const { sector, subSectors, color, startYear, endYear } = props;
+const OutcomeNodeContent = (props) => {
+  const { node, subNodes, color, startYear, endYear } = props;
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
 
-  const sectorsTotal = getMetricValue(sector.node, endYear);
-  const sectorsBase = getMetricValue(sector.node, startYear);
-  const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
+  const nodesTotal = getMetricValue(node, endYear);
+  const nodesBase = getMetricValue(node, startYear);
+  const outcomeChange = getMetricChange(nodesBase, nodesTotal);
 
   const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
 
@@ -71,9 +71,9 @@ const EmissionSectorContent = (props) => {
       <CardSetHeader>
         <div>
           <h4>
-            <Link href={`/node/${sector.id}`}>
+            <Link href={`/node/${node.id}`}>
               <a>
-                { sector.name }
+                { node.name }
               </a>
             </Link>
           </h4>
@@ -85,13 +85,13 @@ const EmissionSectorContent = (props) => {
         <CardSetSummary>
           <HighlightValue
             className="figure"
-            displayValue={emissionsChange ? `${emissionsChange > 0 ? '+' : ''}${emissionsChange}%` : '-'}
+            displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}%` : '-'}
             header={`${startYear}-${endYear}`}
             unit=""
           />
           <HighlightValue
             className="figure"
-            displayValue={beautifyValue(sectorsTotal)}
+            displayValue={beautifyValue(nodesTotal)}
             header={`${endYear}`}
             unit={unit}
           />
@@ -99,9 +99,9 @@ const EmissionSectorContent = (props) => {
       </CardSetHeader>
       { activeTabId === 'graph' && (
       <ContentWrapper>
-        <EmissionsGraph
-          sector={sector}
-          subSectors={subSectors}
+        <OutcomeGraph
+          node={node}
+          subNodes={subNodes}
           color={color}
           startYear={startYear}
           endYear={endYear}
@@ -112,23 +112,23 @@ const EmissionSectorContent = (props) => {
       { activeTabId === 'info' && (
       <ContentWrapper>
         <TabText>
-          {sector.node.shortDescription && (
-          <div dangerouslySetInnerHTML={{ __html: sector.node.shortDescription }} />
+          {node.shortDescription && (
+          <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
           )}
           <p>
-            <Link href={`/node/${sector.node.id}`}>
+            <Link href={`/node/${node.id}`}>
               <a>
                 {t('read-more')}
               </a>
             </Link>
           </p>
-          { sector.node.upstreamActions.length > 0 && (
+          { node.upstreamActions.length > 0 && (
           <h5>
             { t('actions-influencing-this') }
           </h5>
           )}
           <ActionsList>
-            { sector.node.upstreamActions.map((action) => (
+            { node.upstreamActions.map((action) => (
               <ActionsListItem key={action.id}>
                 <Link href={`/actions/${action.id}`}>
                   <a>
@@ -146,4 +146,4 @@ const EmissionSectorContent = (props) => {
   );
 };
 
-export default EmissionSectorContent;
+export default OutcomeNodeContent;

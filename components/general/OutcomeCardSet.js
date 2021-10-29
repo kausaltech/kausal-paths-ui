@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useSpring, animated, config } from 'react-spring';
 import useScrollTo from 'react-spring-scroll-to-hook';
-import { getMetricValue, getSectorsTotal } from 'common/preprocess';
-import EmissionSectorContent from 'components/general/EmissionSectorContent';
-import EmissionsCard from './EmissionsCard';
+import { getMetricValue, getOutcomeTotal } from 'common/preprocess';
+import OutcomeNodeContent from 'components/general/OutcomeNodeContent';
+import OutcomeCard from './OutcomeCard';
 import InputNodeCards from './InputNodeCards';
 
 const CardSet = styled(animated.div)`
@@ -83,10 +83,10 @@ const Segment = styled.div`
   }
 `;
 
-const EmissionsBar = (props) => {
-  const { sectors, date, hovered, onHover, handleClick, activeSector, parentColor } = props;
+const OutcomeBar = (props) => {
+  const { nodes, date, hovered, onHover, handleClick, activeNode, parentColor } = props;
   const { t } = useTranslation();
-  const sectorsTotal = getSectorsTotal(sectors, date);
+  const nodesTotal = getOutcomeTotal(nodes, date);
 
   return (
     <>
@@ -94,21 +94,21 @@ const EmissionsBar = (props) => {
         { `${t('emissions')} ${date}`}
       </BarHeader>
       <Bar color={parentColor}>
-        { sectors.map((sector) => (
+        { nodes.map((node) => (
           <Segment
-            key={sector.id}
+            key={node.id}
             style={{
-              width: `${(getMetricValue(sector.node, date) / sectorsTotal) * 100 || 0}%`,
-              backgroundColor: sector.color || parentColor,
-              display: `${getMetricValue(sector.node, date) ? '' : 'none'}`,
+              width: `${(getMetricValue(node, date) / nodesTotal) * 100 || 0}%`,
+              backgroundColor: node.color || parentColor,
+              display: `${getMetricValue(node, date) ? '' : 'none'}`,
             }}
-            className={`${hovered === sector.id ? 'hovered' : ''} ${activeSector === sector.id ? 'active' : ''}`}
-            onMouseEnter={() => onHover(sector.id)}
+            className={`${hovered === node.id ? 'hovered' : ''} ${activeNode === node.id ? 'active' : ''}`}
+            onMouseEnter={() => onHover(node.id)}
             onMouseLeave={() => onHover(undefined)}
-            onClick={() => handleClick(sector.id)}
+            onClick={() => handleClick(node.id)}
           />
         ))}
-        { sectors.length < 2 && (
+        { nodes.length < 2 && (
         <Segment
           style={{
             width: '100%',
@@ -121,27 +121,28 @@ const EmissionsBar = (props) => {
   );
 };
 
-const EmissionsCardSet = (props) => {
+const OutcomeCardSet = (props) => {
   const {
-    sectors,
-    rootSector,
+    nodeMap,
+    rootNode,
     parentColor,
     startYear,
     endYear,
-    activeSectorId,
-    lastActiveSectorId,
-    setLastActiveSectorId,
+    activeNodeId,
+    lastActiveNodeId,
+    setLastActiveNodeId,
   } = props;
 
-  const [hoveredSectorId, setHoveredSectorId] = useState(undefined);
+  const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
   const { scrollTo } = useScrollTo(config.molasses);
-  // const [activeSectorId, setActiveSectorId] = useState(undefined);
-  const cardSectors = sectors.filter((sector) => sector.parent?.id === rootSector?.id);
-  const inputNodes = rootSector.node.inputNodes?.filter((node) => !sectors.find((sect) => sect.id === node.id));
+  // const [activeNodeId, setActiveNodeId] = useState(undefined);
+  const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
+  const cardNodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
+  const inputNodes = rootNode.inputNodes?.filter((node) => !nodeMap.has(node.id));
   // If this is the last active scenario, scroll to view after render
 
   useEffect(() => {
-    if (lastActiveSectorId === rootSector.id) scrollTo(document.querySelector(`#${lastActiveSectorId}`), -150);
+    if (lastActiveNodeId === rootNode.id) scrollTo(document.querySelector(`#${lastActiveNodeId}`), -150);
   }, []);
 
   const fadeIn = useSpring({
@@ -150,62 +151,62 @@ const EmissionsCardSet = (props) => {
   });
 
   const handleHover = (evt) => {
-    setHoveredSectorId(evt);
+    setHoveredNodeId(evt);
   };
 
   const handleClick = (segmentId) => {
-    // if active sector clicked, make its parent active sector
-    const newActiveSector = segmentId === activeSectorId ? rootSector.id : segmentId;
-    setLastActiveSectorId(newActiveSector);
+    // if active node clicked, make its parent active node
+    const newActiveNode = segmentId === activeNodeId ? rootNode.id : segmentId;
+    setLastActiveNodeId(newActiveNode);
   };
 
-  // const sectorsTotal = getMetricValue(rootSector.node, endYear);
-  // const sectorsBase = getMetricValue(rootSector.node, startYear);
-  // const emissionsChange = getMetricChange(sectorsBase, sectorsTotal);
+  // const nodesTotal = getMetricValue(rootNode.node, endYear);
+  // const nodesBase = getMetricValue(rootNode.node, startYear);
+  // const emissionsChange = getMetricChange(nodesBase, nodesTotal);
 
   return (
     <>
       <CardSet
-        id={rootSector.id}
+        id={rootNode.id}
         style={fadeIn}
-        color={rootSector.color}
+        color={rootNode.color}
       >
         <ContentArea>
-          <EmissionSectorContent
-            sector={rootSector}
-            subSectors={cardSectors}
+          <OutcomeNodeContent
+            node={rootNode}
+            subNodes={cardNodes}
             color={parentColor}
             startYear={startYear}
             endYear={endYear}
           />
         </ContentArea>
-        { cardSectors.length > 1 && (
+        { cardNodes.length > 1 && (
         <>
-          <EmissionsBar
-            sectors={cardSectors}
+          <OutcomeBar
+            nodes={cardNodes}
             date={endYear}
-            hovered={hoveredSectorId}
+            hovered={hoveredNodeId}
             onHover={handleHover}
             handleClick={handleClick}
-            activeSector={activeSectorId}
+            activeNode={activeNodeId}
             parentColor={parentColor}
           />
         </>
         )}
         <CardDeck>
-          { cardSectors.map((sector, indx) => (
-            <CardContainer key={sector.id}>
-              <EmissionsCard
+          { cardNodes.map((node, indx) => (
+            <CardContainer key={node.id}>
+              <OutcomeCard
                 startYear={startYear}
                 endYear={endYear}
-                sector={sector}
-                subSectors={sectors.filter((sector) => sector.parent?.id === sector.id)}
-                state={activeSectorId === undefined ? 'closed' : 'open'}
-                hovered={hoveredSectorId === sector.id}
-                active={activeSectorId === sector.id}
+                node={node}
+                subNodes={node.inputNodes.map((child) => nodeMap.get(child.id)).filter((child) => !!child)}
+                state={activeNodeId === undefined ? 'closed' : 'open'}
+                hovered={hoveredNodeId === node.id}
+                active={activeNodeId === node.id}
                 onHover={handleHover}
                 handleClick={handleClick}
-                color={sector.color || parentColor}
+                color={node.color || parentColor}
               />
             </CardContainer>
           ))}
@@ -216,4 +217,4 @@ const EmissionsCardSet = (props) => {
   );
 };
 
-export default EmissionsCardSet;
+export default OutcomeCardSet;

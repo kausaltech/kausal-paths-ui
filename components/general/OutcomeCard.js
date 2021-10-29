@@ -64,12 +64,12 @@ const MainUnit = styled.div`
   font-size: 0.6rem;
 `;
 
-const EmissionsCard = (props) => {
-  const { sector, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
+const OutcomeCard = (props) => {
+  const { node, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
   const { t } = useTranslation();
-  const baseEmissionsValue = getMetricValue(sector.node, startYear);
-  const goalEmissionsValue = getMetricValue(sector.node, endYear);
+  const baseEmissionsValue = getMetricValue(node, startYear);
+  const goalEmissionsValue = getMetricValue(node, endYear);
   const change = getMetricChange(baseEmissionsValue, goalEmissionsValue);
 
   const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
@@ -86,11 +86,11 @@ const EmissionsCard = (props) => {
       <Header className={state}>
         <Title color={color}>
           <CardAnchor
-            onMouseEnter={() => onHover(sector.id)}
+            onMouseEnter={() => onHover(node.id)}
             onMouseLeave={() => onHover(undefined)}
-            onClick={() => handleClick(sector.id)}
+            onClick={() => handleClick(node.id)}
           >
-            <Name>{sector.name}</Name>
+            <Name>{node.name}</Name>
           </CardAnchor>
         </Title>
       </Header>
@@ -109,4 +109,4 @@ const EmissionsCard = (props) => {
   );
 };
 
-export default EmissionsCard;
+export default OutcomeCard;

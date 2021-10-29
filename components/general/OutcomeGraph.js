@@ -20,8 +20,8 @@ const PlotLoader = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const EmissionsGraph = (props) => {
-  const { sector, subSectors, color, startYear, endYear } = props;
+const OutcomeGraph = (props) => {
+  const { node, subNodes, color, startYear, endYear } = props;
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
@@ -29,12 +29,12 @@ const EmissionsGraph = (props) => {
   const plotData = [];
   const [loading, setLoading] = useState(true);
 
-  const baselineForecast = sector.node.metric.baselineForecastValues && metricToPlot(sector.node.metric, 'baselineForecastValues', startYear, endYear);
-  const targetYearGoal = sector.node.targetYearGoal;
+  const baselineForecast = node.metric.baselineForecastValues && metricToPlot(node.metric, 'baselineForecastValues', startYear, endYear);
+  const targetYearGoal = node.targetYearGoal;
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
-  const displaySectors = subSectors?.length > 1 ? subSectors : sector && [sector];
+  const displayNodes = subNodes?.length > 1 ? subNodes : node && [node];
   const formatHover = (name, color, isPred) => {
     const predText = isPred ? ' <i> (enn.)</i>' : '';
     const out = {
@@ -49,15 +49,15 @@ const EmissionsGraph = (props) => {
     return out;
   }
 
-  displaySectors?.forEach((sector, index) => {
+  displayNodes?.forEach((node, index) => {
     const historicalValues = [];
     let baseValue;
     const forecastValues = [];
     const historicalDates = [];
     const forecastDates = [];
-    const fillColor = sector.color || color;
+    const fillColor = node.color || color;
 
-    sector.node.metric.historicalValues.forEach((dataPoint) => {
+    node.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year ===  settingsVar().baseYear) {
         baseValue = dataPoint.value;
       } else if(dataPoint.year <= endYear && dataPoint.year >= startYear){
@@ -70,7 +70,7 @@ const EmissionsGraph = (props) => {
         {
           x: [ settingsVar().baseYear-1, settingsVar().baseYear],
           y: [baseValue, baseValue],
-          name: sector.name,
+          name: node.name,
           showlegend: false,
           type: 'scatter',
           fill: 'tonexty',
@@ -82,7 +82,7 @@ const EmissionsGraph = (props) => {
           fillcolor: fillColor,
           xaxis: 'x1',
           yaxis: 'y1',
-          ...formatHover(sector.name, fillColor, false),
+          ...formatHover(node.name, fillColor, false),
         }
       );
     };
@@ -93,7 +93,7 @@ const EmissionsGraph = (props) => {
         y: historicalValues,
         xaxis: 'x2',
         yaxis: 'y1',
-        name: sector.name,
+        name: node.name,
         showlegend: false,
         type: 'scatter',
         fill: 'tonexty',
@@ -105,10 +105,10 @@ const EmissionsGraph = (props) => {
           width: '0.75',
         },
         smoothing: true,
-        ...formatHover(sector.name, fillColor, false),
+        ...formatHover(node.name, fillColor, false),
       }
     );
-    sector.node.metric.forecastValues.forEach((dataPoint) => {
+    node.metric.forecastValues.forEach((dataPoint) => {
       if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
       forecastValues.push(dataPoint.value);
       forecastDates.push(dataPoint.year);
@@ -142,7 +142,7 @@ const EmissionsGraph = (props) => {
         y: forecastValues,
         xaxis: 'x2',
         yaxis: 'y1',
-        name: `${sector.name} (${t('pred')})`,
+        name: `${node.name} (${t('pred')})`,
         showlegend: false,
         type: 'scatter',
         fill: 'tonexty',
@@ -154,7 +154,7 @@ const EmissionsGraph = (props) => {
           width: '0.5',
         },
         smoothing: true,
-        ...formatHover(sector.name, fillColor, true),
+        ...formatHover(node.name, fillColor, true),
       }
     )
   });
@@ -302,4 +302,4 @@ const EmissionsGraph = (props) => {
   )
 }
 
-export default EmissionsGraph;
+export default OutcomeGraph;

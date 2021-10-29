@@ -166,9 +166,14 @@ async function getSiteContext(req, locale) {
 PathsApp.getInitialProps = async (appContext) => {
   const appProps = await App.getInitialProps(appContext);
   const { ctx } = appContext; 
-  const { req } = ctx;
+  const { req, err } = ctx;
 
   if (!process.browser) {
+    if (err) {
+      return {
+        ...appProps
+      }
+    }
     const { serverSideTranslations } = require('next-i18next/serverSideTranslations');
 
     const conf = {
