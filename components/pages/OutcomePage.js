@@ -4,9 +4,6 @@ import { Container } from 'reactstrap';
 
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
-import FrontPageHeader from 'components/general/FrontPageHeader';
-import Head from 'next/head';
-import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
@@ -84,16 +81,7 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
   const visibleNodes = findVisibleNodes(allNodes, lastActiveNodeId || outcomeNode.id, []);
 
   return (
-    <Layout>
-      <Head>
-        <title>
-          {site.title}
-          {' '}
-          |
-          {' '}
-          {page.title}
-        </title>
-      </Head>
+    <>
       <HeaderSection>
         <Container>
           <PageHeader>
@@ -131,6 +119,6 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
       <SettingsPanel
         defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
       />
-    </Layout>
+    </>
   );
 }

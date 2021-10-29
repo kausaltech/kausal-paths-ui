@@ -67,6 +67,8 @@ query GetInstance {
       referenceYear
       minimumHistoricalYear
       maximumHistoricalYear
+      leadTitle
+      leadParagraph
     }
     scenarios {
       id
