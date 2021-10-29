@@ -53,7 +53,7 @@ const NodeLinks = (props) => {
               </ListGroupItem>
               { inputNodes.map((inputNode, index) => (
                 <Link key={inputNode.id} href={`/node/${inputNode.id}`}>
-                  <ListGroupItem tag="a" href="#">
+                  <ListGroupItem tag="a" href=''>
                     <span>{ inputNode.name }</span>
                   </ListGroupItem>
                 </Link>
@@ -71,7 +71,7 @@ const NodeLinks = (props) => {
             <ListGroup>
               { outputNodes.map((outputNode, index) => (
                 <Link key={outputNode.id} href={`/node/${outputNode.id}`}>
-                  <ListGroupItem tag="a" href="#">
+                  <ListGroupItem tag="a" href=''>
                     <span>{ outputNode.name }</span>
                   </ListGroupItem>
                 </Link>

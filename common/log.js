@@ -13,7 +13,11 @@ export function logError(error, context) {
     if (networkError) {
       const { message, result } = networkError;
       console.log(`Network error: ${message}`);
-      console.log('Network result', result);
+      if (result?.errors?.length) {
+        result.errors.forEach((err) => console.log(err));
+      } else {
+        console.log(result);
+      }
     }
     if (context?.query) {
       console.log('Query: ', context.query);

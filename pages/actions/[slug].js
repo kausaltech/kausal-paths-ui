@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 import { useSite } from 'context/site';
+import { logError } from 'common/log';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
@@ -86,12 +87,12 @@ export default function ActionPage() {
     return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
-    console.log("Error", JSON.stringify(error));
+    logError(error, {query: GET_ACTION_CONTENT});
     return <Layout><Container><h2 className="p-5">{t('error-loading-data')}</h2></Container></Layout>;
   }
 
   const action = data.node;
-  const causalNodes = data.node.descendantNodes;
+  const causalNodes = action.downstreamNodes;
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   // actionTree.filter((node) => node.inputNodes.find((input) => input.id === parentId));
 

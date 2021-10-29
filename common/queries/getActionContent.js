@@ -6,7 +6,7 @@ const GET_ACTION_CONTENT = gql`
       id
       name
       shortDescription
-      body
+      description
       color
       decisionLevel
       targetYearGoal
@@ -67,7 +67,7 @@ const GET_ACTION_CONTENT = gql`
           value
         }
       }
-      descendantNodes {
+      downstreamNodes {
         id
         name
         shortDescription

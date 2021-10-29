@@ -6,9 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
+import { ArrowRight } from 'react-bootstrap-icons';
+
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
-import { ArrowRight } from 'react-bootstrap-icons';
+import { logError } from 'common/log';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
@@ -70,7 +72,7 @@ query GetNodePage($node: ID!) {
     id
     name
     shortDescription
-    body
+    description
     color
     targetYearGoal
     unit {
@@ -146,7 +148,7 @@ export default function NodePage() {
     return <Layout><ContentLoader /></Layout>;
   }
   if (error) {
-    console.log("Error", JSON.stringify(error));
+    logError(error, {query: GET_NODE_PAGE_CONTENT});
     return <Layout><Container><h2 className="p-5">{t('error-loading-data')}</h2></Container></Layout>;
   }
 
@@ -202,13 +204,13 @@ export default function NodePage() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      { node.body && (
+      { node.description && (
       <NodeBodyText>
         <Container>
           <Row>
             <Col lg={{ size: 10, offset: 1 }}>
               <DashCard>
-                <BodyText dangerouslySetInnerHTML={{ __html: node.body }} />
+                <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
               </DashCard>
             </Col>
           </Row>
