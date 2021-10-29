@@ -121,6 +121,21 @@ const OutcomeBar = (props) => {
   );
 };
 
+function orderByMetric(nodes) {
+  function getLastValue(node) {
+    const { metric } = node;
+    const lastValue = metric.historicalValues[metric.historicalValues.length - 1]?.value;
+    if (lastValue == undefined)
+      return 0;
+    return lastValue;
+  }
+  nodes.sort((a, b) => {
+    const aVal = getLastValue(a);
+    const bVal = getLastValue(b);
+    return bVal - aVal;
+  });
+}
+
 const OutcomeCardSet = (props) => {
   const {
     nodeMap,
@@ -138,6 +153,7 @@ const OutcomeCardSet = (props) => {
   // const [activeNodeId, setActiveNodeId] = useState(undefined);
   const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
   const cardNodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
+  orderByMetric(cardNodes);
   const inputNodes = rootNode.inputNodes?.filter((node) => !nodeMap.has(node.id));
   // If this is the last active scenario, scroll to view after render
 
