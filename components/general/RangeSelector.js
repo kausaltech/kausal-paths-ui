@@ -98,7 +98,7 @@ const RangeSelector = (props) => {
     <PopoverWrapper>
       <ButtonLabel>{t('comparing-years')}</ButtonLabel>
       <Button id="Popover1" type="button" color={`${isCustom ? 'secondary' : 'light'}`}>
-        {`${baseYearActive ? baseYear : values[0]} - ${baseYearActive ? values[0] : values[1]}`}
+        {`${baseYearActive ? baseYear : values[0]}–${baseYearActive ? values[0] : values[1]}`}
       </Button>
       <Popover placement="bottom" isOpen={popoverOpen} target="Popover1" toggle={toggle}>
         <PopoverBody>

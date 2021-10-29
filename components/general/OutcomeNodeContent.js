@@ -86,7 +86,7 @@ const OutcomeNodeContent = (props) => {
           <HighlightValue
             className="figure"
             displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}%` : '-'}
-            header={`${startYear}-${endYear}`}
+            header={`${startYear}–${endYear}`}
             unit=""
           />
           <HighlightValue
