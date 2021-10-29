@@ -76,6 +76,14 @@ query GetInstance {
       isDefault
       name
     }
+    menuPages: pages(inMenu: true) {
+      id
+      title
+      urlPath
+      parent {
+        id
+      }
+    }
 }
 `;
 

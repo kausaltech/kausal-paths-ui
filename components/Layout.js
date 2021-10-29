@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import GlobalNav from 'components/common/GlobalNav';
 import { settingsVar } from 'common/cache';
 import { useSite } from 'context/site';
+import ActionPage from 'pages/actions/[slug]';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -18,9 +19,34 @@ const PageContainer = styled.div`
 
 const Layout = ({ children }) => {
   const router = useRouter();
+  const { pathname } = router;
   const { iconBase, ogImage } = settingsVar();
   const { t } = useTranslation();
   const site = useSite();
+  const { menuPages } = site;
+  let activePage;
+
+  for (const page in menuPages) {
+    if (pathname === page.urlPath) {
+      activePage = page;
+      break;
+    }
+  }
+  if (!activePage) {
+    for (const page in menuPages) {
+      if (pathname.startsWith(page.urlPath)) {
+        activePage = page;
+        break;
+      }
+    }
+  }
+
+  const navItems = menuPages.map((page) => ({
+    name: page.title,
+    slug: page.urlPath,
+    urlPath: page.urlPath,
+    active: page == activePage,
+  }));
 
   return (
     <>
@@ -41,21 +67,8 @@ const Layout = ({ children }) => {
       </Head>
       <GlobalNav
         siteTitle={site.title}
-        ownerName="Tampereen kaupunki"
-        navItems={[
-          {
-            name: t('emissions'),
-            slug: '',
-            urlPath: '/',
-            active: router.pathname === '/',
-          },
-          {
-            name: t('actions'),
-            slug: 'actions',
-            urlPath: '/actions',
-            active: router.pathname.startsWith('/actions'),
-          },
-        ]}
+        ownerName={site.owner}
+        navItems={navItems}
       />
       <PageContainer>
         <main className="main">
