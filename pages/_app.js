@@ -36,7 +36,7 @@ const defaultSiteContext = {
     loginLink: false,
     showBaseline: true,
     showTarget: true,
-    useBaseYear: false,
+    useBaseYear: true,
     showNavTitle: true,
   },
   ilmastoruoka: {

@@ -8,6 +8,7 @@ import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
+import { ArrowRight } from 'react-bootstrap-icons';
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
@@ -25,18 +26,16 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
 
 const NodeDescription = styled.div`
   margin-bottom: 1rem;
-  padding: 1rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
-  font-size: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey010};
+  font-size: 1.25rem;
+  max-width: 720px;
 `;
 
 const HeaderCard = styled.div` 
@@ -168,21 +167,22 @@ export default function NodePage() {
         <Container>
           <PageHeader>
             <HeaderCard>
+              { node.isAction && <span>Toimenpide</span> }
               <h1>
                 {node.name}
               </h1>
-              { (node.shortDescription || node.isAction) && (
                 <NodeDescription>
                   <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
-                  { node.isAction && (
+                </NodeDescription>
+                { node.isAction && (
                   <Link href={`/actions/${node.id}`}>
                     <a>
                       {t('action-impact')}
+                      {' '}
+                      <ArrowRight />
                     </a>
                   </Link>
                   )}
-                </NodeDescription>
-              )}
               { node.metric && (
               <ContentWrapper>
                 <NodePlot

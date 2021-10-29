@@ -65,8 +65,8 @@ const RangeSelector = (props) => {
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const [useBase, setUseBase] = useState(baseYear === initMin);
-  const [values, setValues] = useState(useBase ? [initMax] : [initMin, initMax]);
+  const [baseYearActive, setBaseYearActive] = useState(baseYear === initMin);
+  const [values, setValues] = useState(baseYearActive ? [initMax] : [initMin, initMax]);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const toggle = () => setPopoverOpen(!popoverOpen);
 
@@ -76,44 +76,45 @@ const RangeSelector = (props) => {
 
   const handleSliderChange = (changedValues) => {
     setValues(changedValues);
-    const newRange = useBase ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]];
+    const newRange = baseYearActive ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]];
     handleChange(newRange);
   };
 
-  const handleBaseYear = (usesBaseYear) => {
-    if (usesBaseYear) {
+  const handleBaseYear = (baseYearIsActive) => {
+    if (baseYearIsActive) {
+      setBaseYearActive(true);
       setValues([values[1]]);
-      setUseBase(true);
+      handleChange([baseYear, values[1]]);
     } else {
-      // const currentValue=values[];
+      setBaseYearActive(false);
       setValues([min, values[0]]);
-      setUseBase(false);
+      handleChange([min, values[0]]);
     }
   };
 
-  const isCustom = (useBase ? initMin !== baseYear : initMin !== values[0]) || (useBase ? initMax !== values[0] : initMax !== values[1]);
+  const isCustom = (baseYearActive ? initMin !== baseYear : initMin !== values[0]) || (baseYearActive ? initMax !== values[0] : initMax !== values[1]);
 
   return (
     <PopoverWrapper>
       <ButtonLabel>{t('comparing-years')}</ButtonLabel>
       <Button id="Popover1" type="button" color={`${isCustom ? 'secondary' : 'light'}`}>
-        {`${useBase ? baseYear : values[0]} - ${useBase ? values[0] : values[1]}`}
+        {`${baseYearActive ? baseYear : values[0]} - ${baseYearActive ? values[0] : values[1]}`}
       </Button>
       <Popover placement="bottom" isOpen={popoverOpen} target="Popover1" toggle={toggle}>
         <PopoverBody>
           <SectionWrapper>
             <ActiveYearDisplay>
               <YearDescription>{t('comparison-year')}</YearDescription>
-              <ActiveYear>{ useBase ? baseYear : values[0] }</ActiveYear>
+              <ActiveYear>{ baseYearActive ? baseYear : values[0] }</ActiveYear>
               { baseYear && (
               <ButtonToggle
                 color="link"
                 size="sm"
                 outline
-                active={useBase}
-                onClick={() => handleBaseYear(!useBase)}
+                active={baseYearActive}
+                onClick={() => handleBaseYear(!baseYearActive)}
               >
-                { useBase ? (
+                { baseYearActive ? (
                   <span>
                     <Icon.PenFill />
                     {` ${t('edit')}`}
@@ -128,7 +129,7 @@ const RangeSelector = (props) => {
               </ButtonToggle>
               )}
             </ActiveYearDisplay>
-            { useBase ? (
+            { baseYearActive ? (
               <RangeWrapper>
                 <Range
                   key="Base"
@@ -238,7 +239,7 @@ const RangeSelector = (props) => {
             )}
             <ActiveYearDisplay>
               <YearDescription>{t('target-year')}</YearDescription>
-              <ActiveYear>{ useBase ? values[0] : values[1] }</ActiveYear>
+              <ActiveYear>{ baseYearActive ? values[0] : values[1] }</ActiveYear>
             </ActiveYearDisplay>
           </SectionWrapper>
         </PopoverBody>

@@ -31,7 +31,6 @@ const NodePlot = (props) => {
     quantity,
   } = props;
 
-  console.log('metric', metric);
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
@@ -64,11 +63,6 @@ const NodePlot = (props) => {
   const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
   const impactHistorical = hasImpact && metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
   const impactForecast = hasImpact && metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
-
-  console.log('historical', historical);
-  console.log('forecast', forecast);
-  console.log('impactHistory', impactHistorical);
-  console.log('impactForecast', impactForecast);
 
   // create downloadable table
   const tableColumns = [
@@ -308,7 +302,7 @@ const NodePlot = (props) => {
     grid: { rows: 1, columns: 2, pattern: 'independent' },
     shapes,
   };
-  console.log('plotData', plotData);
+
   return (
     <>
       <Plot

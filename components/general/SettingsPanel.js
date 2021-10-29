@@ -22,7 +22,7 @@ const FixedPanel = styled.div`
 `;
 
 const SettingsPanel = (props) => {
-  const { defaultYearRange, useBase } = props;
+  const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
   const site = useContext(SiteContext);
 
@@ -42,7 +42,7 @@ const SettingsPanel = (props) => {
               max={settings.maxYear}
               initMin={defaultYearRange[0]}
               initMax={defaultYearRange[1]}
-              baseYear={useBase && settings.baseYear}
+              baseYear={ site.useBaseYear && settings.baseYear}
               handleChange={yearRangeVar}
             />
             )}
