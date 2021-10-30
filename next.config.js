@@ -10,7 +10,10 @@ const path = require('path')
 const DEFAULT_GRAPHQL_API_URL = process.env.DEFAULT_GRAPHQL_API_URL || 'https://api.paths.kausal.tech/v1/graphql/';
 const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
 
-module.exports = {
+/**
+ * @type {import('next').NextConfig}
+ */
+const nextConfig = {
   serverRuntimeConfig: {
     graphqlUrl: process.env.SERVER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
   },
@@ -29,6 +32,9 @@ module.exports = {
     return config;
   },
   webpack5: true,
-  basePath: process.env.BASE_PATH,
+  swcMinify: false,
+  // basePath: process.env.BASE_PATH,
   i18n,
 }
+
+module.exports = nextConfig;

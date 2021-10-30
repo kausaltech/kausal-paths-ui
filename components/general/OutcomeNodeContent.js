@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import styled from 'styled-components';
+
+import { ActionLink, Link, NodeLink } from 'common/urls';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
@@ -72,11 +73,11 @@ const OutcomeNodeContent = (props) => {
       <CardSetHeader>
         <div>
           <h4>
-            <Link href={`/node/${node.id}`}>
+            <NodeLink node={node}>
               <a>
                 { node.name }
               </a>
-            </Link>
+            </NodeLink>
           </h4>
           <ButtonGroup>
             <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
@@ -117,11 +118,11 @@ const OutcomeNodeContent = (props) => {
           <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
           )}
           <p>
-            <Link href={`/node/${node.id}`}>
+            <NodeLink node={node}>
               <a>
                 {t('read-more')}
               </a>
-            </Link>
+            </NodeLink>
           </p>
           { node.upstreamActions.length > 0 && (
           <h5>
@@ -131,11 +132,11 @@ const OutcomeNodeContent = (props) => {
           <ActionsList>
             { node.upstreamActions.map((action) => (
               <ActionsListItem key={action.id}>
-                <Link href={`/actions/${action.id}`}>
+                <ActionLink action={action}>
                   <a>
                     {action.name}
                   </a>
-                </Link>
+                </ActionLink>
               </ActionsListItem>
             ))}
           </ActionsList>

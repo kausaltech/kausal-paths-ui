@@ -1,6 +1,5 @@
 import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import {
   Collapse, Container, Navbar, Nav, NavItem,
@@ -12,7 +11,7 @@ import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { transparentize } from 'polished';
 import SiteContext from 'context/site';
-import { formatUrl } from 'common/urls';
+import { formatUrl, Link } from 'common/urls';
 import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
 
