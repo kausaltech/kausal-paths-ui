@@ -60,6 +60,8 @@ query GetPage($path: String!) {
     __typename
     title
     ... on OutcomePage {
+      leadTitle
+      leadParagraph
       outcomeNode {
         ...OutcomeNodeFields
         upstreamNodes(sameQuantity: true, sameUnit: true) {

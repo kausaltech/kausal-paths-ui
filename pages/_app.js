@@ -43,7 +43,7 @@ const defaultSiteContext = {
     theme: 'default',
     showYearSelector: true,
     showScenarios: true,
-    showTargetBar: true,
+    showTargetBar: false,
     split: true,
     loginLink: false,
     showBaseline: true,

@@ -68,13 +68,14 @@ const OutcomeCard = (props) => {
   const { node, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
   const { t } = useTranslation();
-  const baseEmissionsValue = getMetricValue(node, startYear);
-  const goalEmissionsValue = getMetricValue(node, endYear);
-  const change = getMetricChange(baseEmissionsValue, goalEmissionsValue);
+  const baseOutcomeValue = getMetricValue(node, startYear);
+  const goalOutcomeValue = getMetricValue(node, endYear);
+  const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
 
-  const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  // If there is on emission value for active year, do not display card set
-  if (!goalEmissionsValue) return null;
+  // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
+  const unit = node.unit.htmlShort;
+  // If there is no outcome  value for active year, do not display card set
+  if (!goalOutcomeValue) return null;
 
   return (
     <DashCard
@@ -97,7 +98,7 @@ const OutcomeCard = (props) => {
       <Body>
         <div />
         <MainValue>
-          {beautifyValue(goalEmissionsValue)}
+          {beautifyValue(goalOutcomeValue)}
           <MainUnit dangerouslySetInnerHTML={{ __html: unit }} />
           <Status>
             {change > 0 && '+'}

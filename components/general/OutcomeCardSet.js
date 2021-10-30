@@ -88,10 +88,14 @@ const OutcomeBar = (props) => {
   const { t } = useTranslation();
   const nodesTotal = getOutcomeTotal(nodes, date);
 
+  // Let's get the outcome type from first node and use it with translate to give bar a title
+  // TODO: get title from API
+  const outcomeType = nodes[0].quantity;
+
   return (
     <>
       <BarHeader>
-        { `${t('emissions')} ${date}`}
+        { `${t(outcomeType)} ${date}`}
       </BarHeader>
       <Bar color={parentColor}>
         { nodes.map((node) => (

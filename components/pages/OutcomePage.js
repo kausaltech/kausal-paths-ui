@@ -80,13 +80,15 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
   allNodes.set(outcomeNode.id, outcomeNode);
   const visibleNodes = findVisibleNodes(allNodes, lastActiveNodeId || outcomeNode.id, []);
 
+  const outcomeType = visibleNodes[0].quantity;
+
   return (
     <>
       <HeaderSection>
         <Container>
           <PageHeader>
             <h1>
-              {t('emission-forecast')}
+              {t(`${outcomeType}-forecast`)}
               {' '}
               <ActiveScenario>
                 {t('scenario')}
@@ -99,7 +101,7 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
         </Container>
       </HeaderSection>
       <Container>
-        <OutcomeSection className="mx-md-4">
+        <OutcomeSection>
           { visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}

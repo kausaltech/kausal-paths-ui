@@ -64,7 +64,8 @@ const OutcomeNodeContent = (props) => {
   const nodesBase = getMetricValue(node, startYear);
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
 
-  const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
+  // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
+  const unit = node.unit.htmlShort;
 
   return (
     <div>
