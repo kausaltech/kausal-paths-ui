@@ -5,6 +5,7 @@ import { Container } from 'reactstrap';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
 import SettingsPanel from 'components/general/SettingsPanel';
+import FrontPageHeader from 'components/general/FrontPageHeader';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
@@ -83,7 +84,13 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
   const outcomeType = visibleNodes[0].quantity;
 
   return (
-    <>
+    <> 
+      { (page.leadTitle || page.leadParagraph) && (
+        <FrontPageHeader
+          leadTitle={page?.leadTitle}
+          leadParagraph={page?.leadParagraph}
+        />
+      )}
       <HeaderSection>
         <Container>
           <PageHeader>
