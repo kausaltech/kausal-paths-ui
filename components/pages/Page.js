@@ -43,6 +43,7 @@ export default function Page({ path, headerExtra }) {
   const { page, activeScenario } = data;
   let pageContent;
   if (!page) {
+    console.error(`No page found for path ${path}`);
     return <Error message={t('page-not-found')} />;
   }
   if (page.__typename === 'OutcomePage') {
