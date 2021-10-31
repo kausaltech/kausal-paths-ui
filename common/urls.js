@@ -44,7 +44,7 @@ export function NodeLink(props) {
 export function ActionLink(props) {
   const { node, action, ...rest } = props;
   const linkProps = {
-    href: `/actions/${node.id || action.id}`,
+    href: `/actions/${node?.id || action?.id}`,
     ...rest,
   }
   return <NextLink {...linkProps} />
