@@ -6,7 +6,7 @@ import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
 import SettingsPanel from 'components/general/SettingsPanel';
 import FrontPageHeader from 'components/general/FrontPageHeader';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +53,7 @@ const findVisibleNodes = (allNodes, lastNodeId, visibleNodes) => {
 
 export default function OutcomePage({ page, refetch, activeScenario: queryActiveScenario }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const site = useSite();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -89,6 +90,7 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
         <FrontPageHeader
           leadTitle={page?.leadTitle}
           leadParagraph={page?.leadParagraph}
+          backgroundColor={theme.brandDark}
         />
       )}
       <HeaderSection>

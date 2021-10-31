@@ -9,7 +9,7 @@ import Layout from 'components/Layout';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import OutcomePage from 'components/pages/OutcomePage';
-
+import ActionListPage from 'components/pages/ActionListPage';
 
 function Error({ message }) {
   return (
@@ -48,9 +48,12 @@ export default function Page({ path, headerExtra }) {
   }
   if (page.__typename === 'OutcomePage') {
     pageContent = <OutcomePage page={page} refetch={refetch} activeScenario={activeScenario} />
+  }
+  else if (page.__typename === 'ActionListPage') {
+    pageContent = <ActionListPage page={page} refetch={refetch} activeScenario={activeScenario} />
   } else {
     console.error('Invalid page type: ', page.__typename);
-    return <Error message={t('invalid-page-type')} />;
+    return <Error message={`${t('invalid-page-type')} : ${page.__typename}`} />;
   }
   return (
     <Layout>

@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useTranslation } from 'next-i18next';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { useSite } from 'context/site';
@@ -11,6 +11,7 @@ import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Layout from 'components/Layout';
 import ActionListCard from 'components/general/ActionListCard';
 import SettingsPanel from 'components/general/SettingsPanel';
+import FrontPageHeader from 'components/general/FrontPageHeader';
 import ContentLoader from 'components/common/ContentLoader';
 
 const HeaderSection = styled.div`
@@ -42,24 +43,13 @@ const ActionList = styled.ul`
   list-style: none;
 `;
 
-const DisplaySelector = styled.div`
-  text-align: right;
-  margin-bottom: 2rem;
-  h6 {
-    color: ${(props) => props.theme.themeColors.white};
-  }
-`;
-
-const TabButton = styled(Button)`
-  padding-top: 0.2rem;
-  padding-bottom: 0.4rem;
-`;
-
 const DISPLAY_YEARLY = 'displayTypeYearly';
 const DISPLAY_CUMULATIVE = 'displayTypeCumulative';
 
-export default function ActionsPage() {
+export default function ActionListPage(props) {
+  const { page, activeScenario: queryActiveScenario } = props;
   const { t } = useTranslation();
+  const theme = useTheme();
   const site = useSite();
   const { loading, error, data, refetch } = useQuery(GET_ACTION_LIST);
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -75,17 +65,16 @@ export default function ActionsPage() {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }
 
+  console.log(page);
   return (
-    <Layout>
-      <Head>
-        <title>
-          {site.title}
-          {' '}
-          |
-          {' '}
-          {t('actions')}
-        </title>
-      </Head>
+    <>
+      { (page.actionListLeadTitle || page.actionListLeadParagraph) && (
+        <FrontPageHeader
+          leadTitle={page?.actionListLeadTitle}
+          leadParagraph={page?.actionListLeadParagraph}
+          backgroundColor={theme.graphColors.blue070}
+        />
+      )}
       <HeaderSection>
         <Container>
           <PageHeader>
@@ -122,6 +111,6 @@ export default function ActionsPage() {
       <SettingsPanel
         defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
       />
-    </Layout>
+    </>
   );
 }

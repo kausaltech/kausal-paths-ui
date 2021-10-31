@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const HeaderSection = styled.div`
   padding: .5rem 0 1rem;
-  background: ${(props) => props.theme.brandDark};
+  background: ${(props) => props.backgroundColor || props.theme.brandDark};
 `;
 
 const PageHeader = styled.div` 
@@ -27,10 +27,10 @@ const Description = styled.div`
 `;
 
 const FrontPageHeader = (props) => {
-  const { leadTitle, leadParagraph } = props;
+  const { leadTitle, leadParagraph, backgroundColor } = props;
 
   return (
-    <HeaderSection>
+    <HeaderSection backgroundColor={backgroundColor}>
       <Container>
         <Row>
           <Col md={{ size: 10, offset: 1 }}>

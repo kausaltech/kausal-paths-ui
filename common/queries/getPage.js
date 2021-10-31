@@ -69,6 +69,10 @@ query GetPage($path: String!) {
         }
       }
     }
+    ... on ActionListPage {
+      actionListLeadTitle: leadTitle
+      actionListLeadParagraph: leadParagraph
+    }
   }
 }
 `;
