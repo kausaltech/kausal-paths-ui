@@ -65,7 +65,6 @@ export default function ActionListPage(props) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }
 
-  console.log(page);
   return (
     <>
       { (page.actionListLeadTitle || page.actionListLeadParagraph) && (
