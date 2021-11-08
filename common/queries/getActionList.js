@@ -50,6 +50,9 @@ const GET_ACTION_LIST = gql`
         unit {
           htmlShort
         }
+        yearlyCumulativeUnit {
+          htmlShort
+        }
         historicalValues {
           year
           value

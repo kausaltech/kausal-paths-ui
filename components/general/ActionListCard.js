@@ -59,14 +59,14 @@ const ActionListCard = (props) => {
   const { t } = useTranslation();
 
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  const unitYearly = `${action.impactMetric.unit?.htmlShort} ${t('abbr-per-annum')}`;
+  const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
     (dataPoint) => dataPoint.year === displayYears[1],
   )?.value || 0;
 
   const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]);
   // const unitCumulative = 'kt CO<sub>2</sub>e';
-  const unitCumulative = action.impactMetric.unit?.htmlShort;
+  const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
 
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
 
