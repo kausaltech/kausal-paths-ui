@@ -37,7 +37,7 @@ const LanguageSelector = (props) => {
       </DropdownToggle>
       <DropdownMenu right>
         { locales.map((locale) => (
-          <Link href={asPath} locale={locale}>
+          <Link href={pathname} locale={locale}>
             <DropdownItem key={locale}>
               {languageNames[locale]}
             </DropdownItem>
