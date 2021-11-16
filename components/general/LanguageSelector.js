@@ -26,6 +26,11 @@ const languageNames = {
 const LanguageSelector = (props) => {
   const router = useRouter();
 
+  const { locales, pathname, asPath, query } = router
+  if (locales?.length < 2) return (null);
+
+  const handleNewLocale = (nextLocale) => router.push({ pathname, query }, asPath, { locale: nextLocale });
+
   return (
     <UncontrolledDropdown nav inNavbar>
       <DropdownToggle nav>
@@ -33,13 +38,9 @@ const LanguageSelector = (props) => {
         <CurrentLanguage>{ router.locale }</CurrentLanguage>
       </DropdownToggle>
       <DropdownMenu right>
-        { router.locales.map((locale) => (
-          <DropdownItem key={locale}>
-            <Link href="/" locale={locale}>
-              <a className="dropdown-item">
+        { locales.map((locale) => (
+          <DropdownItem key={locale} onClick={() => handleNewLocale(locale)}>
                 {languageNames[locale]}
-              </a>
-            </Link>
           </DropdownItem>
         ))}
       </DropdownMenu>

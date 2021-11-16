@@ -23,6 +23,15 @@ const TopNav = styled(Navbar)`
   .nav-item a, .nav-item a:hover {
     color: ${(props) => props.theme.brandNavColor};
   }
+
+  .dropdown-item {
+    text-align: left;
+  }
+
+  a.dropdown-item, a.dropdown-item:hover {
+    color: ${(props) => props.theme.themeColors.dark};
+    text-align: left;
+  }
 `;
 
 const BotNav = styled(Navbar)`
@@ -345,6 +354,9 @@ function GlobalNav(props) {
               </NavItem>
             </Nav>
           )}
+          <Nav navbar className="ml-auto">
+            <LanguageSelector />
+          </Nav>
           <NavbarToggler
             onClick={() => toggleOpen(!isOpen)}
             aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
@@ -391,9 +403,21 @@ function GlobalNav(props) {
                   )
               ))}
             </Nav>
-            <Nav navbar>
-              <NavItem />
-            </Nav>
+            { site.watchLink ? (
+              <Nav navbar>
+                <NavItem>
+                  <NavLink>
+                    <Link href={ site.watchLink.url }>
+                      <a>
+                        <NavHighlighter className="highlighter">
+                          { site.watchLink.title }
+                        </NavHighlighter>
+                      </a>
+                    </Link>
+                  </NavLink>
+                </NavItem>
+              </Nav>
+            ) : null }
           </Collapse>
         </Container>
       </BotNav>

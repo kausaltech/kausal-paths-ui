@@ -26,6 +26,8 @@ const defaultSiteContext = {
     showTarget: true,
     useBaseYear: false,
     showNavTitle: false,
+    showLangSelector: false,
+    watchLink: null,
   },
   tampere: {
     theme: 'tampere-ilmasto',
@@ -38,6 +40,11 @@ const defaultSiteContext = {
     showTarget: true,
     useBaseYear: true,
     showNavTitle: true,
+    showLangSelector: true,
+    watchLink: {
+      title: 'Ilmastovahti',
+      url: 'https://ilmastovahti.tampere.fi',
+    },
   },
   ilmastoruoka: {
     theme: 'default',
@@ -50,6 +57,8 @@ const defaultSiteContext = {
     showTarget: true,
     useBaseYear: false,
     showNavTitle: true,
+    showLangSelector: false,
+    watchLink: null,
   }
 }
 
