@@ -28,9 +28,10 @@ const TopNav = styled(Navbar)`
     text-align: left;
   }
 
-  a.dropdown-item, a.dropdown-item:hover {
+  a.dropdown-item, a.dropdown-item:hover, .dropdown-item a, .dropdown-item a:hover {
     color: ${(props) => props.theme.themeColors.dark};
     text-align: left;
+    text-decoration: none;
   }
 `;
 

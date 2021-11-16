@@ -37,11 +37,11 @@ const LanguageSelector = (props) => {
       </DropdownToggle>
       <DropdownMenu right>
         { locales.map((locale) => (
-          <Link href={pathname} locale={locale}>
             <DropdownItem key={locale}>
-              {languageNames[locale]}
+              <Link href={pathname} locale={locale}>
+                {languageNames[locale]}
+              </Link>
             </DropdownItem>
-          </Link>
         ))}
       </DropdownMenu>
     </UncontrolledDropdown>
