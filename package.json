@@ -15,6 +15,7 @@
     "@babel/eslint-parser": "^7.16.0",
     "@koa/router": "^10.1.1",
     "@n8tb1t/use-scroll-position": "^2.0.3",
+    "@sentry/nextjs": "^6.15.0",
     "bootstrap": "^4",
     "bootstrap-icons": "^1.6.1",
     "cytoscape": "^3.20.0",
