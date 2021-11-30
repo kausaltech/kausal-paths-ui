@@ -59,6 +59,20 @@ const defaultSiteContext = {
     showNavTitle: true,
     showLangSelector: false,
     watchLink: null,
+  },
+  healthimpact: {
+    theme: 'default',
+    showYearSelector: true,
+    showScenarios: true,
+    showTargetBar: false,
+    split: true,
+    loginLink: false,
+    showBaseline: true,
+    showTarget: true,
+    useBaseYear: false,
+    showNavTitle: true,
+    showLangSelector: false,
+    watchLink: null,
   }
 }
 
