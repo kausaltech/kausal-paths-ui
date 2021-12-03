@@ -49,6 +49,9 @@ const OutcomeGraph = (props) => {
     return out;
   }
 
+  const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
+  const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
+
   displayNodes?.forEach((node, index) => {
     const historicalValues = [];
     let baseValue;
@@ -60,10 +63,21 @@ const OutcomeGraph = (props) => {
     node.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year ===  settingsVar().baseYear) {
         baseValue = dataPoint.value;
-      } else if(dataPoint.year <= endYear && dataPoint.year >= startYear){
-        historicalValues.push(dataPoint.value);
-        historicalDates.push(dataPoint.year);
+        return;
       }
+      if (dataPoint.year > endYear || dataPoint.year < startYear)
+        return;
+      let valueArray;
+      let dateArray;
+      if (minForecastYear && dataPoint.year >= minForecastYear) {
+        valueArray = forecastValues;
+        dateArray = forecastDates;
+      } else {
+        valueArray = historicalValues;
+        dateArray = historicalDates;
+      }
+      valueArray.push(dataPoint.value);
+      dateArray.push(dataPoint.year);
     });
     if (site.useBaseYear) {
       plotData.push(
