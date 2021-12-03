@@ -1,0 +1,21 @@
+diff --git a/node_modules/next/dist/shared/lib/router/router.js b/node_modules/next/dist/shared/lib/router/router.js
+index 10c00a9..02af996 100644
+--- a/node_modules/next/dist/shared/lib/router/router.js
++++ b/node_modules/next/dist/shared/lib/router/router.js
+@@ -35,7 +35,7 @@ let detectDomainLocale;
+ if (process.env.__NEXT_I18N_SUPPORT) {
+     detectDomainLocale = require('../i18n/detect-domain-locale').detectDomainLocale;
+ }
+-const basePath = process.env.__NEXT_ROUTER_BASEPATH || '';
++let basePath = process.env.__NEXT_ROUTER_BASEPATH || '';
+ function buildCancellationError() {
+     return Object.assign(new Error('Route Cancelled'), {
+         cancelled: true
+@@ -1252,4 +1252,7 @@ class Router {
+ Router.events = (0, _mitt).default();
+ exports.default = Router;
+ 
++exports.setBasePath = function(newBasePath) {
++  basePath = newBasePath;
++}
+ //# sourceMappingURL=router.js.map

@@ -7,12 +7,17 @@ import getConfig from 'next/config';
 import { appWithTranslation } from 'next-i18next';
 
 import { useApollo } from 'common/apollo';
+import { setBasePath } from 'common/urls';
 import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
 import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 import SiteContext from 'context/site';
 
 const { publicRuntimeConfig } = getConfig();
 const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
+
+if (process.browser) {
+  setBasePath();
+}
 
 const defaultSiteContext = {
   kpr: {
@@ -118,9 +123,14 @@ function PathsApp(props) {
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);
 
-  // Change active locale based on the instance front settings
-  // causes some sort of loop, find an alternative solution
-  // router.push(router.pathname, router.pathname, { locale: siteContext.defaultLanguage });
+  // NextJS messes up client router's defaultLocale in some instances.
+  // Override it here.
+  if (process.browser) {
+    const defaultLocale = window.__NEXT_DATA__.defaultLocale;
+    if (router.defaultLocale !== defaultLocale) {
+      router.defaultLocale = defaultLocale;
+    }
+  }
 
   useEffect(() => {
     yearRangeVar([instance.referenceYear || 1990, instance.targetYear]);
@@ -197,9 +207,10 @@ async function getSiteContext(req, locale) {
 }
 
 PathsApp.getInitialProps = async (appContext) => {
-  const appProps = await App.getInitialProps(appContext);
+  setBasePath();
   const { ctx } = appContext; 
   const { req, err } = ctx;
+  const appProps = await App.getInitialProps(appContext);
 
   if (!process.browser) {
     if (err) {

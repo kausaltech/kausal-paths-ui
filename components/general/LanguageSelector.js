@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from 'common/urls';
 import { useRouter } from 'next/router';
 import { Globe2 } from 'react-bootstrap-icons';
 import styled from 'styled-components';
@@ -28,6 +28,10 @@ const LanguageSelector = (props) => {
 
   const { locales, pathname, asPath, query } = router
   if (locales?.length < 2) return (null);
+  const handleLocaleChange = (ev) => {
+    ev.preventDefault();
+    window.location.href = ev.target.href;
+  };
 
   return (
     <UncontrolledDropdown nav inNavbar>
@@ -38,8 +42,8 @@ const LanguageSelector = (props) => {
       <DropdownMenu right>
         { locales.map((locale) => (
             <DropdownItem key={locale}>
-              <Link href={pathname} locale={locale}>
-                {languageNames[locale]}
+              <Link locale={locale} href='/'>
+                <a onClick={handleLocaleChange}>{languageNames[locale]}</a>
               </Link>
             </DropdownItem>
         ))}
