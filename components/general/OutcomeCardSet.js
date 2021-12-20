@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import { useSpring, animated, config } from 'react-spring';
 import useScrollTo from 'react-spring-scroll-to-hook';
 import { getMetricValue, getOutcomeTotal } from 'common/preprocess';

@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import { Container, Badge } from 'reactstrap';
 import styled from 'styled-components';
 

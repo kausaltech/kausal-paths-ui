@@ -5,7 +5,7 @@ import styled, { useTheme } from 'styled-components';
 import { Spinner } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const GET_NET_EMISSIONS = gql`
 query GetNetEmissions($node: ID!) {

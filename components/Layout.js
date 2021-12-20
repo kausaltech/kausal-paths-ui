@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import GlobalNav from 'components/common/GlobalNav';
 import { settingsVar } from 'common/cache';
 import { useSite } from 'context/site';

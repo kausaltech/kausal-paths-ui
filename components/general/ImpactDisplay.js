@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import HighlightValue from 'components/general/HighlightValue';
 import { beautifyValue } from 'common/preprocess';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const ImpactDisplayWrapper = styled.div`
 display: flex;

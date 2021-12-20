@@ -9,7 +9,7 @@ import FrontPageHeader from 'components/general/FrontPageHeader';
 import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 10rem; 

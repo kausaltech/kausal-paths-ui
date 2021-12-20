@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';

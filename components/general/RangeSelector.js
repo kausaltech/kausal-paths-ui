@@ -3,7 +3,7 @@ import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle, Button, Popover, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled, { useTheme } from 'styled-components';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const SectionWrapper = styled.div`
   display: flex;

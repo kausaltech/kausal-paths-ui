@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Spinner } from 'reactstrap';
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const Loader = styled.div`
   padding: ${(props) => props.theme.spaces.s800} ${(props) => props.theme.spaces.s300};

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import PlotlyPlot from 'react-plotly.js';
 import fiLocale from 'plotly.js-locales/fi';
 import svLocale from 'plotly.js-locales/sv';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import styled from 'styled-components';
