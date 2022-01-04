@@ -122,9 +122,11 @@ export default function ActionPage() {
                 {' '}
                 {action.name}
               </h1>
+              <div>
               { action.decisionLevel === 'NATION' && (
                 <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory>
               )}
+              </div>
               <ActionDescription>
                 <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
                 <Link href={`/node/${action.id}`}><a>{t('read-more')}</a></Link>

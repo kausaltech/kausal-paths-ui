@@ -169,13 +169,14 @@ export default function NodePage() {
         <Container>
           <PageHeader>
             <HeaderCard>
-              { node.isAction && <span>Toimenpide</span> }
+              <div>{ node.isAction && <span>Toimenpide</span> }</div>
               <h1>
                 {node.name}
               </h1>
                 <NodeDescription>
                   <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
                 </NodeDescription>
+                <div>
                 { node.isAction && (
                   <Link href={`/actions/${node.id}`}>
                     <a>
@@ -185,6 +186,7 @@ export default function NodePage() {
                     </a>
                   </Link>
                   )}
+                  </div>
               { node.metric && (
               <ContentWrapper>
                 <NodePlot

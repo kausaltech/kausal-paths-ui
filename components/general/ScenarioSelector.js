@@ -53,7 +53,9 @@ const ScenarioSelector = () => {
   if (loading) {
     return (
       <StyledDropdown>
-        <DropdownLabel>{t('scenario')}</DropdownLabel>
+        <DropdownLabel>
+          {t('scenario')}
+        </DropdownLabel>
         <DropdownToggle color="light">
           <span><Spinner size="sm" color="primary" /></span>
         </DropdownToggle>
@@ -72,8 +74,8 @@ const ScenarioSelector = () => {
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
       <DropdownLabel>{t('scenario')}</DropdownLabel>
       <DropdownToggle color={`${activeScenario.id === 'custom' ? 'secondary' : 'light'}`}>
-        {activeScenario.name}
-        {activeScenario.id === 'custom' && '*'}
+        <span>{activeScenario.name}</span>
+        <span>{activeScenario.id === 'custom' && <span>*</span>}</span>
       </DropdownToggle>
       <DropdownMenu>
         <DropdownItem header>{ t('change-scenario') }</DropdownItem>

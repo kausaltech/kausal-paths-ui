@@ -101,8 +101,8 @@ const OutcomeCard = (props) => {
           {beautifyValue(goalOutcomeValue)}
           <MainUnit dangerouslySetInnerHTML={{ __html: unit }} />
           <Status>
-            {change > 0 && '+'}
-            {change ? `${change}%` : '-'}
+            {change > 0 && <span>+</span>}
+            {change ? <span>{`${change}%`}</span> : <span>-</span>}
           </Status>
         </MainValue>
       </Body>
