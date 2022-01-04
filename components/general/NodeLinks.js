@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
-import * as Icon from 'react-bootstrap-icons';
+import { useTranslation } from 'next-i18next';
 import { Container, Row, Col, ListGroup, ListGroupItem } from 'reactstrap';
 
 const InputNodes = styled.div`
@@ -41,6 +41,7 @@ const OutputNodes = styled.div`
 
 const NodeLinks = (props) => {
   const { inputNodes, outputNodes } = props;
+  const { t } = useTranslation();
   return (
     <Container>
       <Row>
@@ -49,7 +50,7 @@ const NodeLinks = (props) => {
           <InputNodes>
             <ListGroup>
               <ListGroupItem tag="h5">
-                Tähän vaikuttaa
+                { t('affected-by') }
               </ListGroupItem>
               { inputNodes.map((inputNode, index) => (
                 <Link key={inputNode.id} href={`/node/${inputNode.id}`}>
@@ -66,7 +67,7 @@ const NodeLinks = (props) => {
           { outputNodes.length > 0 && (
           <OutputNodes>
             <ListGroupItem tag="h5">
-              Tämä vaikuttaa
+              { t('has-effect-on') }
             </ListGroupItem>
             <ListGroup>
               { outputNodes.map((outputNode, index) => (
