@@ -40,12 +40,16 @@ const BotNav = styled(Navbar)`
   padding: 0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.07);
 
+  &.show {
+    padding: 0 0 ${(props) => props.theme.spaces.s150} 0;
+  }
+
   .container {
     flex-wrap: nowrap;
   }
 
   .navbar-nav {
-    padding: ${(props) => props.theme.spaces.s150} 0;
+    padding: ${(props) => props.theme.spaces.s150} 0 0;
   }
 
   .nav-item {
@@ -355,8 +359,8 @@ function GlobalNav(props) {
               </NavItem>
             </Nav>
           )}
-          <Nav navbar className="ml-auto">
-            <LanguageSelector />
+          <Nav navbar className="ml-auto" className="d-none d-md-block">
+            <LanguageSelector mobile={false} />
           </Nav>
           <NavbarToggler
             onClick={() => toggleOpen(!isOpen)}
@@ -404,6 +408,9 @@ function GlobalNav(props) {
                   )
               ))}
             </Nav>
+            <Nav navbar className="d-md-none">
+              <LanguageSelector mobile />
+            </Nav>            
             { site.watchLink ? (
               <Nav navbar>
                 <NavItem>
