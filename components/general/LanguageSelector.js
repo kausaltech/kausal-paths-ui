@@ -52,7 +52,7 @@ const LanguageSelector = (props) => {
   if (locales?.length < 2) return (null);
   const handleLocaleChange = (ev) => {
     ev.preventDefault();
-    window.location.href = ev.target.href;
+    window.location.href = ev.currentTarget.firstChild.href;
   };
 
   return (
@@ -64,11 +64,9 @@ const LanguageSelector = (props) => {
       </DropdownToggle>
       <DropdownMenu right>
         { locales.map((locale) => (
-          <DropdownItem key={locale} tag="div">
+          <DropdownItem key={locale} tag="div" onClick={handleLocaleChange}>
               <Link locale={locale} href='/'>
-                <a onClick={handleLocaleChange}>
-                  {languageNames[locale]}
-                </a>
+                {languageNames[locale]}
               </Link>
             </DropdownItem>
         ))}
