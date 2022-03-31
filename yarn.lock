@@ -6107,6 +6107,11 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
+docker-secret@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/docker-secret/-/docker-secret-1.2.4.tgz#dd5c8c3fd49c9f83f8d6932e767134ecaded982f"
+  integrity sha512-aH3truzfxV8TikMa0wJES8h0v2FAwhuQZYk116ZVOHFZ1vnDTGutgCOvXmBPyLBG1Lo7yv93FdHVRTvhFFaC/g==
+
 doctrine@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-2.1.0.tgz#5cd01fc101621b42c4cd7f5d1a66243716d3f39d"

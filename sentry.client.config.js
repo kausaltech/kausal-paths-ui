@@ -1,17 +1,17 @@
-// This file configures the initialization of Sentry on the browser.
-// The config you add here will be used whenever a page is visited.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
 import * as Sentry from '@sentry/nextjs';
+import getConfig from 'next/config';
 
-const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+const { publicRuntimeConfig } = getConfig();
+
+const SENTRY_DSN = (
+  publicRuntimeConfig?.sentryDsn || process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+);
+const DEPLOYMENT_TYPE = (
+  publicRuntimeConfig?.deploymentType || process.env.DEPLOYMENT_TYPE || 'development'
+);
 
 Sentry.init({
-  dsn: SENTRY_DSN || 'https://cf7003ffbd0a4b63b1e24243f796e227@sentry.kausal.tech/7',
-  // Adjust this value in production, or use tracesSampler for greater control
+  dsn: SENTRY_DSN,
   tracesSampleRate: 1.0,
-  // ...
-  // Note: if you want to override the automatic release value, do not set a
-  // `release` value here - use the environment variable `SENTRY_RELEASE`, so
-  // that it will also get attached to your source maps
+  environment: DEPLOYMENT_TYPE,
 });

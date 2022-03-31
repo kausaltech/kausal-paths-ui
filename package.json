@@ -21,6 +21,7 @@
     "cytoscape": "^3.20.0",
     "cytoscape-dagre": "^2.3.2",
     "dayjs": "^1.10.7",
+    "docker-secret": "^1.2.4",
     "dotenv": "^10.0.0",
     "fontfaceobserver": "^2.1.0",
     "formik": "^2.2.6",

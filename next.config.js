@@ -7,9 +7,12 @@ const i18n = {
 
 const path = require('path')
 const { withSentryConfig } = require('@sentry/nextjs');
+const { secrets } = require('docker-secret');
 
 const DEFAULT_GRAPHQL_API_URL = process.env.DEFAULT_GRAPHQL_API_URL || 'https://api.paths.kausal.tech/v1/graphql/';
 const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
+
+const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
 
 /**
  * @type {import('next').NextConfig}
@@ -22,9 +25,15 @@ const nextConfig = {
     graphqlUrl: process.env.BROWSER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
     basePath: process.env.BASE_PATH,
     instanceIdentifier: INSTANCE_IDENTIFIER,
+    sentryDsn: process.env.SENTRY_DSN,
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
+  },
+  sentry: {
+    // If SENTRY_AUTH_TOKEN is not set, disable uploading source maps to Sentry
+    disableServerWebpackPlugin: !sentryAuthToken,
+    disableClientWebpackPlugin: !sentryAuthToken,
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -39,15 +48,8 @@ const nextConfig = {
 }
 
 const sentryWebpackPluginOptions = {
-  // Additional config options for the Sentry Webpack plugin. Keep in mind that
-  // the following options are set automatically, and overriding them is not
-  // recommended:
-  //   release, url, org, project, authToken, configFile, stripPrefix,
-  //   urlPrefix, include, ignore
-
   silent: true, // Suppresses all logs
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options.
+  authToken: sentryAuthToken,
 };
 
 // Make sure adding Sentry options is the last code to run before exporting, to
