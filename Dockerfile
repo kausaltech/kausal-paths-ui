@@ -1,13 +1,18 @@
-FROM node:14.18-alpine
+FROM node:14.18-alpine as base
 
 RUN mkdir -p /app
 WORKDIR /app
 
+RUN apk --no-cache add git
+
+ENV YARN_CACHE_FOLDER /yarn-cache
 COPY package.json yarn.lock /app/
 COPY patches /app/patches/
-RUN yarn install
+RUN --mount=type=cache,target=/yarn-cache yarn install
 
 COPY . /app
+
+FROM base as bundle
 
 # For Sentry source map upload
 ARG SENTRY_PROJECT
