@@ -10,11 +10,20 @@ query GetNodes {
     color
     quantity
     isAction
+    unit {
+      htmlShort
+    }
     inputNodes {
       id
     }
     outputNodes {
       id
+    }
+    metric {
+      historicalValues(latest: 1) {
+        year
+        value
+      }
     }
   }
 }

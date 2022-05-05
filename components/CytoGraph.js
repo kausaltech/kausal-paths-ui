@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { node } from 'prop-types';
 import {
   Col, Container, Row, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem,
 } from 'reactstrap';
@@ -7,8 +7,10 @@ import styled, { withTheme } from 'styled-components';
 import { withRouter } from 'next/router'
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
+import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
 
 cytoscape.use(dagre);
+cytoscapeNodeHtmlLabel(cytoscape);
 
 const VisContainer = styled.div`
   width: 100%;
@@ -17,8 +19,7 @@ const VisContainer = styled.div`
   margin: 0;
 `;
 
-function wordWrap(inputStr, maxWidth) {
-  const newLineStr = '\n';
+function wordWrap(inputStr, maxWidth, newLineStr = '\n') {
   let done = false;
   let res = '';
   let str = inputStr;
@@ -105,12 +106,26 @@ class CytoGraph extends React.Component {
         }
         return '#eeeeee';
       }
+      let label = wordWrap(node.name, 30);
+      const latestHistorical = node.metric?.historicalValues?.[0];
+      let hist;
+      if (latestHistorical) {
+        const val = latestHistorical.value;
+        hist = {
+          year: latestHistorical.year,
+          value: val < 0 ? val.toPrecision(3) : val.toFixed(0),
+          unit: node.unit.htmlShort,
+        };
+        label += `\n${hist.year}: ${hist.value} ${hist.unit}`
+      }
       const element = {
         group: 'nodes',
         data: {
           id: node.id,
           backgroundColor: getBackgroundColor(),
-          label: wordWrap(node.name, 30),
+          name: node.name,
+          hist,
+          label: label,
         },
       };
       elements.push(element);
@@ -168,6 +183,7 @@ class CytoGraph extends React.Component {
             'text-valign': 'center',
             padding: '24px',
             label: 'data(label)',
+            'text-opacity': 0,
             'text-wrap': 'wrap',
             'text-outline-width': 0,
             'font-weight': theme.fontWeightNormal,
@@ -199,6 +215,18 @@ class CytoGraph extends React.Component {
       router.push(`/node/${nodeId}`);
     });
     this.cy = cy;
+    cy.nodeHtmlLabel([{
+      query: 'node',
+      valign: "center",
+      halign: "center",
+      valignBox: "center",
+      halignBox: "center",
+      tpl: (data) => {
+        const name = wordWrap(data.name, 30, '<br />');
+        const histStr = data.hist ? `<br />${data.hist.year}: <em>${data.hist.value} ${data.hist.unit}</em>` : '';
+        return `<div><strong>${name}</strong>${histStr}</div>`;
+      }
+    }])
   }
 
   render() {
