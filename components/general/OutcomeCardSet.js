@@ -125,6 +125,8 @@ const OutcomeBar = (props) => {
   );
 };
 
+const DEFAULT_NODE_ORDER = 100;
+
 function orderByMetric(nodes) {
   function getLastValue(node) {
     const { metric } = node;
@@ -134,8 +136,18 @@ function orderByMetric(nodes) {
     return lastValue;
   }
   nodes.sort((a, b) => {
+    // First sort by the order field
+    const aOrder = a.order ?? DEFAULT_NODE_ORDER;
+    const bOrder = b.order ?? DEFAULT_NODE_ORDER;
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder;
+    }
+    // or if order is the same, use metric values
     const aVal = getLastValue(a);
     const bVal = getLastValue(b);
+    if (a.order != null && b.order != null) {
+      return b.order - a.order;
+    }
     return bVal - aVal;
   });
 }
