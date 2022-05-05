@@ -17,13 +17,13 @@ export const getInitialMetric = (node) => node.metric.historicalValues[0];
 
 export const getMetricValue = (node, date) => (
   node.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value
-  || node.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
+  ?? node.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
 );
 
 export const getImpactMetricValue = (node, date) => (
   node.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value
-  || node.impactMetric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
-  || 0
+  ?? node.impactMetric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
+  ?? 0
 );
 
 export const getMetricChange = (initial, current) => (

@@ -75,7 +75,7 @@ const OutcomeCard = (props) => {
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.unit.htmlShort;
   // If there is no outcome  value for active year, do not display card set
-  if (!goalOutcomeValue) return null;
+  if (goalOutcomeValue === undefined) return null;
 
   return (
     <DashCard
