@@ -51,7 +51,7 @@
   "listGroupActiveBg": "rgb(57, 115, 104)",
   "listGroupActiveBorderColor": "rgb(57, 115, 104)",
   "inputBtnFocusColor": "rgb(78, 128, 166)",
-  "inputBtnPaddingY": "0.5rem",
+  "inputBtnPaddingY": "1rem",
   "inputBtnPaddingX": "0.75rem",
   "btnBorderRadius": "0.25rem",
   "btnBorderWidth": "1px",

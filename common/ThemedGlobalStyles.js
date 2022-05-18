@@ -175,6 +175,12 @@ const GlobalStyle = createGlobalStyle`
     background-color: rgba(${(props) => props.theme.graphColors.red070}, 0.15);
   }
 
+  .dropdown-item.active, .dropdown-item:active {
+    color: ${(props) => props.theme.white};
+    text-decoration: none;
+    background-color: ${(props) => props.theme.brandDark};
+  }
+
   @media print {
     p,
     h1, h2, h3, h4, h5, h6,
