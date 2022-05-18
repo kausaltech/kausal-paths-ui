@@ -15,39 +15,14 @@ const GlobalStyle = createGlobalStyle`
     color: ${(props) => props.theme.themeColors.black};
   }
 
-  input {
-    background-color: transparent;
-    border: 0px solid;
-    height: 20px;
-    width: 160px;
-    color: #CCC;
-}
-
-*:focus {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-body:not(.user-is-tabbing) button:focus,
-body:not(.user-is-tabbing) input:focus,
-body:not(.user-is-tabbing) select:focus,
-body:not(.user-is-tabbing) textarea:focus {
-  outline: none !important;
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
-  box-shadow: none !important;
-}
-
-button.btn:focus {
-  outline:0 !important;
-  box-shadow: 0 0 0 0 #fff !important;
-
-}
   a {
     color: ${(props) => props.theme.brandDark};
+    text-decoration: none;
+    background-color: transparent;
 
     &:hover {
       color: ${(props) => props.theme.brandDark};
+      text-decoration: underline;
     }
   }
 
@@ -197,25 +172,19 @@ button.btn:focus {
   .form-control.is-invalid,
   .was-validated .custom-select:invalid,
   .custom-select.is-invalid {
-    background-color: rgba(${(props) => props.theme.themeColors.danger}, 0.15);
+    background-color: rgba(${(props) => props.theme.graphColors.red070}, 0.15);
   }
 
-
-  .form-control, .custom-select {
-    &:hover {
-      border-color: ${(props) => props.theme.themeColors.black};
+  @media print {
+    p,
+    h1, h2, h3, h4, h5, h6,
+    .card,
+    .btn,
+    .js-plotly-plot, .plot-container, .plotly,
+    .causal-chain-visualisation
+    {
+      break-inside: avoid-page;
     }
-  }
-
-  .custom-control-input:checked ~ .custom-control-label::before {
-    border-color: ${(props) => props.theme.brandDark};
-    background-color: ${(props) => props.theme.brandDark};
-  }
-
-  .dropdown-item.active, .dropdown-item:active {
-    color: #fff;
-    text-decoration: none;
-    background-color: ${(props) => props.theme.brandDark};
   }
 `;
 
