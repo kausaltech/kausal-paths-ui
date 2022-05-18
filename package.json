@@ -55,7 +55,7 @@
     "react-range": "^1.8.11",
     "react-spring": "^9.3.0",
     "react-spring-scroll-to-hook": "^1.0.3",
-    "reactstrap": "^8",
+    "reactstrap": "^9.0.2",
     "reactstrap-date-picker": "^0.0.12",
     "styled-components": "^5.3.3",
     "yup": "^0.32.11"
