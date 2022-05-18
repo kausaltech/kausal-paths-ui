@@ -23,6 +23,7 @@ const StyledDropdown = styled(Dropdown)`
 
   .btn {
     width: 100%;
+    padding: 1rem;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;

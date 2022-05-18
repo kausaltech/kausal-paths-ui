@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Range, getTrackBackground } from 'react-range';
-import { ButtonToggle, Button, Popover, PopoverBody } from 'reactstrap';
+import { ButtonToggle, Popover, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled, { useTheme } from 'styled-components';
 import { useTranslation } from 'next-i18next';
+import Button from 'components/common/Button';
 
 const SectionWrapper = styled.div`
   display: flex;
@@ -100,7 +101,12 @@ const RangeSelector = (props) => {
       <Button id="Popover1" type="button" color={`${isCustom ? 'secondary' : 'light'}`}>
         {`${baseYearActive ? baseYear : values[0]}–${baseYearActive ? values[0] : values[1]}`}
       </Button>
-      <Popover placement="bottom" isOpen={popoverOpen} target="Popover1" toggle={toggle}>
+      <Popover
+        placement="bottom"
+        isOpen={popoverOpen}
+        target="Popover1"
+        toggle={toggle}
+      >
         <PopoverBody>
           <SectionWrapper>
             <ActiveYearDisplay>

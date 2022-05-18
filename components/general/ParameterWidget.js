@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import {
-  CustomInput,
-  Button,
+  Input as BSCustomInput,
 } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
+import Button from 'components/common/Button';
 
 const RangeWrapper = styled.div`
   display: flex;
@@ -20,8 +20,9 @@ const RangeWrapper = styled.div`
 const WidgetWrapper = styled.div`
   font-size: 0.8rem;
 
-  .custom-switch {
+  .form-check-input {
     margin-top: .25rem;
+    margin-right: 1rem;
   }
 `;
 
@@ -158,19 +159,25 @@ const BoolWidget = (props) => {
   const label = description || t('will_be_implemented');
 
   return (
-    <WidgetWrapper>
-      <div>
-        { label }
-      </div>
-      <CustomInput
-        type="switch"
-        id={`${id}-switch`}
+    <WidgetWrapper className="form-check form-switch">
+      <input
+        className="form-check-input"
+        type="checkbox"
+        role="switch" 
+        id={id}
         name={id}
-        label={isCustomized ? '*' : ''}
         checked={toggled}
         onChange={() => handleChange({ parameterId: id, boolValue: !toggled })}
         disabled={loading}
+        style={{transform: 'scale(1.5)'}}
       />
+      <label
+        className="form-check-label"
+        htmlFor={id}
+      >
+        {label}
+        {isCustomized ? '*' : ''}
+      </label>
     </WidgetWrapper>
   );
 };

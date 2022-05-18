@@ -15,6 +15,9 @@ const Plot = dynamic(() => import('components/graphs/Plot'),
 const Tools = styled.div`
   padding: 0 1rem .5rem;
   text-align: right;
+  .btn-link {
+    text-decoration: none;
+  }
 `;
 
 const NodePlot = (props) => {
@@ -313,7 +316,7 @@ const NodePlot = (props) => {
         config={{ displayModeBar: false }}
       />
       <Tools>
-        <CsvDownload
+        <CsvDownload 
           data={downloadableTable}
           filename={`${metric.id}.csv`}
           className="btn btn-link btn-sm"
