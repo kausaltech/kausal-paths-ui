@@ -42,6 +42,7 @@ const CurrentLanguage = styled.span`
 const languageNames = {
   fi: 'Suomi',
   en: 'English',
+  de: 'Deutsch',
 };
 
 const LanguageSelector = (props) => {
