@@ -20,6 +20,20 @@ if (process.browser) {
 }
 
 const defaultSiteContext = {
+  sunnydale: {
+    theme: 'default',
+    showYearSelector: true,
+    showScenarios: true,
+    showTargetBar: true,
+    split: true,
+    loginLink: false,
+    showBaseline: true,
+    showTarget: true,
+    useBaseYear: true,
+    showNavTitle: true,
+    showLangSelector: true,
+    watchLink: null,
+  },
   kpr: {
     theme: 'kpr',
     showYearSelector: true,
