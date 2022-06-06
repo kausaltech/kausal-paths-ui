@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useTranslation } from 'next-i18next';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import dynamic from 'next/dynamic';
-import fiLocale from 'plotly.js-locales/fi';
-import svLocale from 'plotly.js-locales/sv';
+import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { useTranslation } from 'next-i18next';
 import Layout from 'components/Layout';
+import MacGraph from 'components/graphs/MacGraph';
 
 const MOCK_DATA = {
   actions: [
@@ -63,79 +63,63 @@ const MOCK_DATA = {
     ], 
 };
 
-const Plot = dynamic(() => import('components/graphs/Plot'),
-  { ssr: false });
+const HeaderSection = styled.div`
+  padding: 4rem 0 10rem; 
+  background-color: ${(props) => props.theme.graphColors.blue070};
+`;
+
+const PageHeader = styled.div` 
+  h1 {
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    color: ${(props) => props.theme.themeColors.white};
+  }
+`;
+
+const GraphCard = styled.div` 
+  margin: -8rem 0 3rem;
+  padding: 2rem;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  background-color: ${(props) => props.theme.themeColors.white};
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+`;
+
+const ActiveScenario = styled.div`
+  padding: .75rem;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  background-color: ${(props) => props.theme.brandDark};
+  color: ${(props) => props.theme.themeColors.white};
+  font-size: 1rem;
+  font-weight: 700;
+  vertical-align: middle;
+`;
 
 function MacPage() {
-
-  const theme = useTheme();
-  const [barColors, setBarColors] = useState(MOCK_DATA['netcost'].map((bar) => "rgb(158,202,225)"));
-  const [hoverText, setHoverText] = useState(null);
-
-  let totalSaving = 0;
-  const xPlacement = MOCK_DATA['energySaving'].map((bar) => {
-    totalSaving += bar;
-    return totalSaving - bar + (bar/2);
-  }  );
-
-  const layout = {
-    barmode: 'relative',
-    hoverlabel: { bgcolor: theme.graphColors.grey005 },
-    yaxis: {
-      title: "Marginalnetto-kostnad",
-    },
-    xaxis: {
-      ticksuffix: " kWh/år",
-      title: "Total energibesparing",
-      showticklabels: false,
-    },
-  };
-
-  const handleHover = (evt) => {
-    // console.log("HOVERED", evt);
-    const hoveredIndex = evt.points[0].pointIndex;
-    const hoverColors = MOCK_DATA['netcost'].map((bar) =>  theme.graphColors.green050);
-    hoverColors[hoveredIndex] = theme.graphColors.green090;
-    setBarColors(hoverColors);
-    setHoverText(`${MOCK_DATA.actions[hoveredIndex]}: ${evt.points[0].label} kWh/year — ${evt.points[0].value} SEK/year`);
-    return null;
-  };
+  const { t } = useTranslation();
 
   return (
   <Layout>
-    <h1>MAC</h1>
-    <Plot
-      data={[{
-        type: 'bar',
-        x: xPlacement,
-        y: MOCK_DATA['netcost'],
-        text: MOCK_DATA['actions'],
-        width: MOCK_DATA['energySaving'], 
-        marker: {
-          color: barColors,
-          opacity: 0.9,
-          line: {
-            color: 'rgb(255,255,255)',
-            width: 2
-          }
-        },
-        textposition: 'none',
-        hovertemplate:
-            "<b>%{text}</b><br><br>" +
-            "%{yaxis.title.text}: %{y:.0f} SEK/hWh<br>" +
-            "%{xaxis.title.text}: %{x:.0f} kWh/år<br>" +
-            "<extra></extra>",
-
-      }]}
-      layout={layout}
-      useResizeHandler
-      style={{ width: '100%' }}
-      config={{ displayModeBar: false }}
-      onHover={(evt) => handleHover(evt)}
-    />
-    <div>
-      { hoverText }
-    </div>
+    <HeaderSection>
+      <Container>
+        <PageHeader>
+          <h1>
+            Cost effectiveness
+            {' '}
+          </h1>
+        </PageHeader>
+      </Container>
+    </HeaderSection>
+    <Container className="mb-5">
+      <Row>
+        <Col>
+          <GraphCard>
+            <MacGraph
+            data={MOCK_DATA}
+            />
+          </GraphCard>
+        </Col>
+      </Row>
+    </Container>
   </Layout>
   )
 }
