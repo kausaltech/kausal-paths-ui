@@ -169,7 +169,7 @@ export default function NodePage() {
         <Container>
           <PageHeader>
             <HeaderCard>
-              <div>{ node.isAction && <span>Toimenpide</span> }</div>
+              <div>{ node.isAction && <span>{t('action')}</span> }</div>
               <h1>
                 {node.name}
               </h1>
