@@ -1,6 +1,7 @@
 {
   "abbr-per-annum": "/v",
   "action-impact": "Toimenpiteen vaikutus",
+  "action": "Toimenpide",
   "actions": "Toimet",
   "actions-available": "Toimet skenaariossa",
   "actions-influencing-this": "Tähän vaikuttavat toimenpiteet",
