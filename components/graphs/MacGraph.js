@@ -1,9 +1,23 @@
 import { useState } from 'react';
-import { useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
+
+const GraphContainer = styled.div`
+  .js-plotly-plot {
+    margin-bottom: 1rem;
+  }
+`;
+
+const ActionDescription = styled.div`
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  font-size: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey010};
+`;
 
 function MacGraph(props) {
 
@@ -13,7 +27,7 @@ function MacGraph(props) {
   const barHoverColor = theme.graphColors.green090;
 
   const [barColors, setBarColors] = useState(data['netcost'].map((bar) => barColor));
-  const [hoverText, setHoverText] = useState(null);
+  const [hoverId, setHoverId] = useState(null);
 
   let totalSaving = 0;
   const xPlacement = data['energySaving'].map((bar) => {
@@ -24,8 +38,8 @@ function MacGraph(props) {
   const layout = {
     barmode: 'relative',
     hoverlabel: { 
-      bgcolor: theme.graphColors.grey005,
-      bordercolor: theme.graphColors.grey005,
+      bgcolor: theme.themeColors.white,
+      bordercolor: theme.graphColors.grey030,
       font: {
         family: theme.fontFamily,
         color: theme.graphColors.grey090,
@@ -39,6 +53,15 @@ function MacGraph(props) {
       title: "Total energibesparing",
       showticklabels: false,
     },
+    margin: {
+      l: 50,
+      r: 0,
+      b: 10,
+      t: 10,
+      pad: 0,
+    },
+    paper_bgcolor: theme.themeColors.white,
+    plot_bgcolor: theme.themeColors.white,
   };
 
   const handleHover = (evt) => {
@@ -47,12 +70,12 @@ function MacGraph(props) {
     const hoverColors = data['netcost'].map((bar) =>  barColor);
     hoverColors[hoveredIndex] = barHoverColor;
     setBarColors(hoverColors);
-    setHoverText(`${data.actions[hoveredIndex]}: ${evt.points[0].label} kWh/year — ${evt.points[0].value} SEK/year`);
+    setHoverId(hoveredIndex);
     return null;
   };
 
   return (
-  <>
+  <GraphContainer>
     <Plot
       data={[{
         type: 'bar',
@@ -64,7 +87,7 @@ function MacGraph(props) {
           color: barColors,
           opacity: 0.9,
           line: {
-            color: theme.graphColors.grey005,
+            color: theme.themeColors.white,
             width: 2
           }
         },
@@ -74,7 +97,6 @@ function MacGraph(props) {
             "%{yaxis.title.text}: %{y:,} SEK/hWh<br>" +
             "%{xaxis.title.text}: %{x:,} kWh/år<br>" +
             "<extra></extra>",
-
       }]}
       layout={layout}
       useResizeHandler
@@ -82,10 +104,12 @@ function MacGraph(props) {
       config={{ displayModeBar: false }}
       onHover={(evt) => handleHover(evt)}
     />
-    <div>
-      { hoverText }
-    </div>
-  </>
+    <ActionDescription>
+      <h5>{data.actions[hoverId]}</h5>
+      <p>{data.netcost[hoverId]}</p>
+      <p>{data.energySaving[hoverId]}</p>
+    </ActionDescription>
+  </GraphContainer>
   )
 }
 

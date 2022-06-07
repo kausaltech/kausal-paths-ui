@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import dynamic from 'next/dynamic';
+import { settingsVar } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import { useTranslation } from 'next-i18next';
 import Layout from 'components/Layout';
+import SettingsPanel from 'components/general/SettingsPanel';
 import MacGraph from 'components/graphs/MacGraph';
 
 const MOCK_DATA = {
@@ -120,6 +121,9 @@ function MacPage() {
         </Col>
       </Row>
     </Container>
+    <SettingsPanel
+      defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
+    />
   </Layout>
   )
 }
