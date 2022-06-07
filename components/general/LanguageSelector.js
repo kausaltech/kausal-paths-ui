@@ -43,6 +43,7 @@ const languageNames = {
   fi: 'Suomi',
   en: 'English',
   de: 'Deutsch',
+  sv: 'Svenska',
 };
 
 const LanguageSelector = (props) => {
@@ -69,7 +70,7 @@ const LanguageSelector = (props) => {
               <Link locale={locale} href='/'>
                 {languageNames[locale]}
               </Link>
-            </DropdownItem>
+          </DropdownItem>
         ))}
       </DropdownMenu>
     </UncontrolledDropdown>
