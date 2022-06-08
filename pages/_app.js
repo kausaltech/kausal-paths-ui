@@ -33,6 +33,26 @@ const defaultSiteContext = {
     showNavTitle: true,
     showLangSelector: true,
     watchLink: null,
+    demoPages: [
+      {
+        id: 's-en-1',
+        lang: 'en',
+        title: 'About',
+        urlPath: '/demo/about'
+      },
+      {
+        id: 's-de-1',
+        lang: 'de',
+        title: 'Info',
+        urlPath: '/demo/about'
+      },
+      {
+        id: 's-fi-1',
+        lang: 'fi',
+        title: 'Tietoa palvelusta',
+        urlPath: '/demo/about'
+      },
+    ]
   },
   kpr: {
     theme: 'kpr',
