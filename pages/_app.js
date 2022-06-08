@@ -112,6 +112,20 @@ const defaultSiteContext = {
     showNavTitle: true,
     showLangSelector: false,
     watchLink: null,
+  },
+  greenlogic: {
+    theme: 'default',
+    showYearSelector: true,
+    showScenarios: true,
+    showTargetBar: false,
+    split: true,
+    loginLink: false,
+    showBaseline: true,
+    showTarget: true,
+    useBaseYear: false,
+    showNavTitle: true,
+    showLangSelector: false,
+    watchLink: null,
   }
 }
 
@@ -230,7 +244,7 @@ async function getSiteContext(req, locale) {
     throw new Error(`Error loading instance data: ${error}`);
   }
   Object.assign(siteContext, data);
-  Object.assign(siteContext, defaultSiteContext[data.instance.id]);
+  Object.assign(siteContext, defaultSiteContext[data.instance.id] || defaultSiteContext['sunnydale']);
   siteContext.title = data.instance.name;
 
   // Load the theme
