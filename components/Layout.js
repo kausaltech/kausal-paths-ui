@@ -31,7 +31,7 @@ const Layout = ({ children }) => {
 
   const menuItems = [...menuPages];
   // Add extra pages that are not available in the backend
-  demoSite.demoPages.map((page) => router.locale === page.lang && menuItems.push(page));
+  demoSite.demoPages?.map((page) => router.locale === page.lang && menuItems.push(page));
 
   menuItems.forEach((page)=> {
     if (pathname === page.urlPath) {
