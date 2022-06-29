@@ -127,7 +127,7 @@ function MacGraph(props) {
       config={{ displayModeBar: false }}
       onHover={(evt) => handleHover(evt)}
     />
-    { hoverId > -1 && 
+    { hoverId !== null && 
     <ActionDescription>
       <h4>{data.actions[hoverId]}</h4>
       <Row>
@@ -147,7 +147,7 @@ function MacGraph(props) {
         </Col>
       </Row>
     </ActionDescription>
-}
+  }
   </GraphContainer>
   )
 }

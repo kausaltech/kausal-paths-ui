@@ -120,7 +120,6 @@ function MacPage(props) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }
 
-  console.log(data);
   return (
   <Layout>
     <HeaderSection>
