@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
+import { Col, Row } from 'reactstrap';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
@@ -17,6 +18,25 @@ const ActionDescription = styled.div`
   border-radius:  ${(props) => props.theme.cardBorderRadius};
   font-size: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey010};
+
+  h4 {
+    margin-bottom: 1rem;
+  }
+`;
+
+const HoverValue = styled.div``;
+
+const HoverValueTitle = styled.div`
+`;
+
+const HoverValueValue = styled.span`
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: .5rem;
+`;
+
+const HoverValueUnit = styled.span`
 `;
 
 function MacGraph(props) {
@@ -51,8 +71,8 @@ function MacGraph(props) {
     },
     xaxis: {
       ticksuffix: " GWh/a",
-      title: "Total energy saving (GWh/a)",
-/*      title: "Total energibesparing",*/
+      title: "Energy saving (GWh/a)",
+/*      title: "Energibesparing",*/
       showticklabels: false,
     },
     margin: {
@@ -107,11 +127,27 @@ function MacGraph(props) {
       config={{ displayModeBar: false }}
       onHover={(evt) => handleHover(evt)}
     />
+    { hoverId > -1 && 
     <ActionDescription>
-      <h5>{data.actions[hoverId]}</h5>
-      <p>Marginal net cost: {Number(data.netcost[hoverId]).toLocaleString()} EUR/kWh</p>
-      <p>Energy saving of this action: {Number(data.energySaving[hoverId]).toLocaleString()} GWh/a</p>
+      <h4>{data.actions[hoverId]}</h4>
+      <Row>
+        <Col md={3}>
+          <HoverValue>
+            <HoverValueTitle>Marginal net cost</HoverValueTitle>
+            <HoverValueValue>{Number(data.netcost[hoverId]).toLocaleString()}</HoverValueValue>
+            <HoverValueUnit>EUR/kWh</HoverValueUnit>
+          </HoverValue>
+        </Col>
+        <Col md={3}>
+          <HoverValue>
+            <HoverValueTitle>Energy saving</HoverValueTitle>
+            <HoverValueValue>{Number(data.energySaving[hoverId]).toLocaleString()}</HoverValueValue>
+            <HoverValueUnit>GWh/a</HoverValueUnit>
+          </HoverValue>
+        </Col>
+      </Row>
     </ActionDescription>
+}
   </GraphContainer>
   )
 }
