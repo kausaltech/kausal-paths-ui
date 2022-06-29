@@ -92,10 +92,11 @@ function MacGraph(props) {
           }
         },
         textposition: 'none',
+        customdata: data['energySaving'],
         hovertemplate:
             "<b>%{text}</b><br><br>" +
             "%{yaxis.title.text}: %{y:,} SEK/hWh<br>" +
-            "%{xaxis.title.text}: %{x:,} kWh/år<br>" +
+            "%{xaxis.title.text}: %{customdata:,} kWh/år<br>" +
             "<extra></extra>",
       }]}
       layout={layout}
@@ -106,8 +107,8 @@ function MacGraph(props) {
     />
     <ActionDescription>
       <h5>{data.actions[hoverId]}</h5>
-      <p>{data.netcost[hoverId]}</p>
-      <p>{data.energySaving[hoverId]}</p>
+      <p>Net cost: {Number(data.netcost[hoverId]).toLocaleString()} SEK/hWh</p>
+      <p>Energy saving: {Number(data.energySaving[hoverId]).toLocaleString()} kWh/yr.</p>
     </ActionDescription>
   </GraphContainer>
   )

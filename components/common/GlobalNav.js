@@ -359,7 +359,7 @@ function GlobalNav(props) {
               </NavItem>
             </Nav>
           )}
-          <Nav navbar className="ml-auto" className="d-none d-md-block">
+          <Nav navbar className="ml-auto d-none d-md-block">
             <LanguageSelector mobile={false} />
           </Nav>
           <NavbarToggler
