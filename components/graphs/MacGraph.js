@@ -46,11 +46,13 @@ function MacGraph(props) {
       }
     },
     yaxis: {
-      title: "Marginalnetto-kostnad",
+      title: "Marginal net cost (EUR/kWh)"
+/*      title: "Marginalnetto-kostnad",*/
     },
     xaxis: {
-      ticksuffix: " kWh/år",
-      title: "Total energibesparing",
+      ticksuffix: " GWh/a",
+      title: "Total energy saving (GWh/a)",
+/*      title: "Total energibesparing",*/
       showticklabels: false,
     },
     margin: {
@@ -95,8 +97,8 @@ function MacGraph(props) {
         customdata: data['energySaving'],
         hovertemplate:
             "<b>%{text}</b><br><br>" +
-            "%{yaxis.title.text}: %{y:,} SEK/hWh<br>" +
-            "%{xaxis.title.text}: %{customdata:,} kWh/år<br>" +
+            "%{yaxis.title.text}: %{y:,}<br>" +
+            "%{xaxis.title.text}: %{customdata:,}<br>" +
             "<extra></extra>",
       }]}
       layout={layout}
@@ -107,8 +109,8 @@ function MacGraph(props) {
     />
     <ActionDescription>
       <h5>{data.actions[hoverId]}</h5>
-      <p>Net cost: {Number(data.netcost[hoverId]).toLocaleString()} SEK/hWh</p>
-      <p>Energy saving: {Number(data.energySaving[hoverId]).toLocaleString()} kWh/yr.</p>
+      <p>Marginal net cost: {Number(data.netcost[hoverId]).toLocaleString()} EUR/kWh</p>
+      <p>Energy saving of this action: {Number(data.energySaving[hoverId]).toLocaleString()} GWh/a</p>
     </ActionDescription>
   </GraphContainer>
   )
