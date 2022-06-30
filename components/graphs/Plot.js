@@ -9,18 +9,24 @@ export default function Plot(props) {
   let separators;
   const { i18n } = useTranslation();
 
-  if (i18n.language === 'fi') {
+  if (i18n.language === 'fi') {  /* https://en.wikipedia.org/wiki/Decimal_separator#Examples_of_use */
     config.locales = { fi: fiLocale };
     config.locale = 'fi';
     separators = ', ';
   } else if (i18n.language === 'sv') {
     config.locales = { sv: svLocale };
     config.locale = 'sv';
-    separators = '.,';
+    separators = ', ';
   } else if (i18n.language === 'en') {
     config.locale = 'en';
     separators = '.,';
+  } else if (i18n.language === 'de') {
+    config.locale = 'de';
+    separators = ', ';
+  } else if (i18n.language === 'da') {
+    config.locale = 'da';
+    separators = ', ';
   }
-  props = { ...props, config, layout: { ...layout, separators } };
+props = { ...props, config, layout: { ...layout, separators } };
   return <PlotlyPlot {...props} />;
 }
