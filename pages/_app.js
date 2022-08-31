@@ -160,6 +160,45 @@ query GetInstance {
         id
       }
     }
+    parameters {
+      id
+      __typename
+      ... on NumberParameterType {
+        label
+        description
+        minValue
+        maxValue
+        isCustomized
+        isCustomizable
+        numberDefault:defaultValue
+        numberValue: value
+        node {
+          id
+        }
+      }
+      ... on BoolParameterType {
+        label
+        description
+        isCustomized
+        isCustomizable
+        boolDefault: defaultValue
+        boolValue: value
+        node {
+          id
+        }
+      }
+    ... on StringParameterType {
+    	  label
+        description
+        isCustomized
+        isCustomizable
+        stringDefault: defaultValue
+        stringValue: value
+        node {
+          id
+        }
+      }
+    }
 }
 `;
 
@@ -167,7 +206,7 @@ function PathsApp(props) {
   const {
     Component, pageProps, siteContext
   } = props;
-  const { instance, scenarios } = siteContext;
+  const { instance, scenarios, parameters } = siteContext;
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);
 
@@ -180,6 +219,7 @@ function PathsApp(props) {
     }
   }
 
+  console.log(parameters);
   useEffect(() => {
     yearRangeVar([instance.referenceYear || 1990, instance.targetYear]);
     settingsVar({
@@ -192,6 +232,7 @@ function PathsApp(props) {
       baselineName: scenarios.find((scenario) => scenario.id === 'baseline').name,
       iconBase: `${basePath}/static/themes/default/images/favicon`,
       ogImage: `${basePath}/static/themes/default/images/og-image-default.png`,
+      parameters: parameters,
     });
     activeScenarioVar(scenarios.find((scenario) => scenario.isActive));
   }, []);

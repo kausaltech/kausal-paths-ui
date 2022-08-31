@@ -1,7 +1,9 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import { Container, Row, Col } from 'reactstrap';
+import { Container, Row, Col,
+  FormGroup, Label, Input, CustomInput, Button } from 'reactstrap';
+import { Sliders } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import SiteContext from 'context/site';
 import { yearRangeVar, settingsVar } from 'common/cache';
@@ -9,25 +11,119 @@ import ScenarioSelector from './ScenarioSelector';
 import TotalEmissionsBar from './TotalEmissionsBar';
 
 const FixedPanel = styled.div`
-  display: flex;
   position: fixed;
   z-index: 255;
   left: 0;
   bottom: 0;
   width: 100%;
-  padding: 1rem 1.5rem;
   background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
   box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
 `;
 
+const SettingsControls = styled.div`
+  position: relative;
+`;
+
+const SettingsButton = styled(Button)`
+  position: absolute;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1.5rem;
+  padding: 0;
+  bottom: -12px;
+  right: 50%;
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+`;
+
+const MainSettingsSection = styled.div`
+  position: relative;
+  padding: 1rem 0 1.5rem;
+`;
+
+const ExtraSettingsSection = styled.div`
+  padding: 1rem 0 2rem;
+  background-color: ${(props) => props.theme.graphColors.grey020};
+  display: ${(props) => props.visible ? 'block' : 'none'};
+
+  .form-group {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  label {
+    font-size: ${(props) => props.theme.fontSizeSm};
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+`;
+
+
+const ParameterWidget = (props) => {
+  const { parameterContent: parameter } = props;
+
+  switch(parameter.__typename) { 
+    case 'NumberParameterType': return (
+      <Col lg="2" md="3" sm="4" xs="6">
+          <FormGroup>
+          <Label for={parameter.id}>
+            {parameter.label || parameter.id}
+          </Label>
+          <Input
+            id={parameter.id}
+            name={parameter.id}
+            placeholder={parameter.numberValue}
+            type="text"
+            bsSize="sm"
+          />
+        </FormGroup>
+      </Col>);
+    case 'StringParameterType': return (
+      <Col lg="2" md="3" sm="4" xs="6">
+          <FormGroup>
+          <Label for={parameter.id}>
+            {parameter.label || parameter.id}
+          </Label>
+          <Input
+            id={parameter.id}
+            name={parameter.id}
+            placeholder={parameter.stringValue}
+            type="text"
+            bsSize="sm"
+          />
+        </FormGroup>
+      </Col>);
+    case 'BoolParameterType': return (
+      <Col lg="2" md="3" sm="4" xs="6">
+      <FormGroup>
+        <Label for={parameter.id}>
+          {parameter.label || parameter.id}
+        </Label>
+        <CustomInput
+          type="switch"
+          id={parameter.id}
+          name={parameter.id}
+          checked={parameter.boolValue}
+        />
+        </FormGroup>
+      </Col>);
+    default: return null;
+  };
+}
 const SettingsPanel = (props) => {
   const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
   const site = useContext(SiteContext);
+  const [showExtras, setShowExtras] = useState(false);
+
+  const toggleExtras = (e) => {
+
+  };
 
   return (
     <FixedPanel expanded>
+      <MainSettingsSection>
       <Container>
         <Row>
           <Col md="4" sm="4" xs="8">
@@ -47,12 +143,30 @@ const SettingsPanel = (props) => {
             />
             )}
           </Col>
+          <SettingsButton
+            onClick={(e) => setShowExtras(!showExtras)}
+            color="white"
+          >
+            <Sliders />
+          </SettingsButton>
           <Col md="6" sm="5" xs="12" className="mt-3 mt-sm-0">
             { site.showTargetBar
             && <TotalEmissionsBar /> }
           </Col>
         </Row>
-      </Container>
+        </Container>
+        </MainSettingsSection>
+        <ExtraSettingsSection
+          visible={showExtras}
+        >
+          <Container>
+            <Row>
+              {settings?.parameters.map((param) => 
+                <ParameterWidget parameterContent={param} key={param.id}/>
+              )}
+            </Row>
+          </Container>
+        </ExtraSettingsSection>
     </FixedPanel>
   );
 };
