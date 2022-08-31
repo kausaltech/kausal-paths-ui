@@ -1,12 +1,13 @@
 import { useContext, useState } from 'react';
-import { useReactiveVar } from '@apollo/client';
+import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { Container, Row, Col,
   FormGroup, Label, Input, CustomInput, Button } from 'reactstrap';
 import { Sliders } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import SiteContext from 'context/site';
-import { yearRangeVar, settingsVar } from 'common/cache';
+import { GET_SCENARIOS } from 'common/queries/getScenarios';
+import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
 import TotalEmissionsBar from './TotalEmissionsBar';
 
@@ -19,10 +20,6 @@ const FixedPanel = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
   box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
-`;
-
-const SettingsControls = styled.div`
-  position: relative;
 `;
 
 const SettingsButton = styled(Button)`
@@ -54,14 +51,43 @@ const ExtraSettingsSection = styled.div`
   }
   label {
     font-size: ${(props) => props.theme.fontSizeSm};
+    line-height: 1;
     overflow-wrap: break-word;
     max-width: 100%;
   }
 `;
 
+const SET_PARAMETER = gql`
+  mutation SetParameter($parameterId: ID!, $boolValue: Boolean, $numberValue: Float, $stringValue: String) {
+    setParameter(id: $parameterId, boolValue: $boolValue, numberValue: $numberValue, stringValue: $stringValue) {
+      ok
+      parameter {
+        isCustomized
+        ... on BoolParameterType {
+        boolValue: value
+        boolDefaultValue: defaultValue
+      }
+      }
+    }
+  }
+`;
 
 const ParameterWidget = (props) => {
   const { parameterContent: parameter } = props;
+  const activeScenario = useReactiveVar(activeScenarioVar);
+
+  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
+    refetchQueries: [
+      { query: GET_SCENARIOS },
+    ],
+    onCompleted: () => {
+      activeScenarioVar({ ...activeScenario, stamp: Date.now() });
+    },
+  });
+
+  const handleUserSelection = (evt) => {
+    SetParameter({ variables: evt });
+  };
 
   switch(parameter.__typename) { 
     case 'NumberParameterType': return (
@@ -73,9 +99,10 @@ const ParameterWidget = (props) => {
           <Input
             id={parameter.id}
             name={parameter.id}
-            placeholder={parameter.numberValue}
+            placeholder={mutationLoading ? 'loading' : parameter.numberValue}
             type="text"
             bsSize="sm"
+            onChange={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: e.target.value })}
           />
         </FormGroup>
       </Col>);
@@ -88,9 +115,10 @@ const ParameterWidget = (props) => {
           <Input
             id={parameter.id}
             name={parameter.id}
-            placeholder={parameter.stringValue}
+            placeholder={mutationLoading ? 'loading' : parameter.stringValue}
             type="text"
             bsSize="sm"
+            onChange={(e) => handleUserSelection({ parameterId: parameter.id, stringValue: e.target.value })}
           />
         </FormGroup>
       </Col>);
@@ -105,6 +133,7 @@ const ParameterWidget = (props) => {
           id={parameter.id}
           name={parameter.id}
           checked={parameter.boolValue}
+          onChange={(e) => handleUserSelection({ parameterId: parameter.id, boolValue: !parameter.boolValue })}
         />
         </FormGroup>
       </Col>);

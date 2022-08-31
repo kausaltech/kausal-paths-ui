@@ -219,7 +219,6 @@ function PathsApp(props) {
     }
   }
 
-  console.log(parameters);
   useEffect(() => {
     yearRangeVar([instance.referenceYear || 1990, instance.targetYear]);
     settingsVar({
