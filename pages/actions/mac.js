@@ -12,6 +12,7 @@ import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import MacGraph from 'components/graphs/MacGraph';
 import ContentLoader from 'components/common/ContentLoader';
+import ActionsSubNav from 'components/general/ActionsSubNav';
 
 const MOCK_DATA = {
   actions: [
@@ -92,6 +93,7 @@ const GraphCard = styled.div`
 `;
 
 const ActiveScenario = styled.div`
+  clear: both;
   padding: .75rem;
   border-radius:  ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.brandDark};
@@ -142,9 +144,16 @@ function MacPage(props) {
       <Container>
         <PageHeader>
           <h1>
-            Cost effectiveness
+            {t('actions')}
             {' '}
           </h1>
+          <ActionsSubNav active="mac"/>
+          <ActiveScenario>
+            {t('scenario')}
+            :
+            {' '}
+            {activeScenario?.name}
+          </ActiveScenario>
         </PageHeader>
       </Container>
     </HeaderSection>

@@ -57,11 +57,13 @@ const ParameterWidget = (props) => {
           <FormGroup>
           <Label for={parameter.id}>
             {parameter.label || parameter.id}
+            {parameter.isCustomized && <span> * </span>}
           </Label>
           <Input
             id={parameter.id}
             name={parameter.id}
             placeholder={mutationLoading ? 'loading' : parameter.numberValue}
+            value={mutationLoading ? 'loading' : parameter.numberValue}
             type="text"
             bsSize="sm"
             onChange={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: e.target.value })}
@@ -105,6 +107,7 @@ const ParameterWidget = (props) => {
 
 const GlobalParameters = (props) => {
   const { parameters } = props;
+  console.log("params", parameters);
   return (
     <GlobalParametersPanel>
       {parameters.map((param) => 

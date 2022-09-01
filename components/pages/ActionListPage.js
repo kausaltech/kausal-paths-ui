@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from 'react';
-import Head from 'next/head';
 import { useTranslation } from 'next-i18next';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
@@ -13,6 +12,7 @@ import ActionListCard from 'components/general/ActionListCard';
 import SettingsPanel from 'components/general/SettingsPanel';
 import FrontPageHeader from 'components/general/FrontPageHeader';
 import ContentLoader from 'components/common/ContentLoader';
+import ActionsSubNav from 'components/general/ActionsSubNav';
 
 const HeaderSection = styled.div`
   padding: 4rem 0 10rem; 
@@ -28,6 +28,7 @@ const PageHeader = styled.div`
 `;
 
 const ActiveScenario = styled.div`
+  clear: both;
   padding: .75rem;
   border-radius:  ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.brandDark};
@@ -67,7 +68,7 @@ export default function ActionListPage(props) {
 
   return (
     <>
-      { (page.actionListLeadTitle || page.actionListLeadParagraph) && (
+      { (page.actionListLeadTitle?.length > 10 || page.actionListLeadParagraph?.length > 10) && (
         <FrontPageHeader
           leadTitle={page?.actionListLeadTitle}
           leadParagraph={page?.actionListLeadParagraph}
@@ -81,6 +82,7 @@ export default function ActionListPage(props) {
               {t('actions')}
               {' '}
             </h1>
+            <ActionsSubNav active="list"/>
             <ActiveScenario>
               {t('scenario')}
               :
