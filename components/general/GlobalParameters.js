@@ -45,9 +45,6 @@ const ParameterWidget = (props) => {
     refetchQueries: [
       { query: GET_SCENARIOS },
     ],
-    onCompleted: () => {
-      activeScenarioVar({ ...activeScenario, stamp: Date.now() });
-    },
   });
 
   const handleUserSelection = (evt) => {

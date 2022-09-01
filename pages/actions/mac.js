@@ -115,6 +115,16 @@ function MacPage(props) {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
+  useEffect(() => {
+    refetch();
+  }, [activeScenario]);
+
+  if (loading) {
+    return <Layout><ContentLoader /></Layout>;
+  } if (error) {
+    return <Layout><div>{ t('error-loading-data') }</div></Layout>;
+  }
+
   const actionNames = data?.actions.map((action) => action.name);
   const netcosts = data?.actions.map((action) => action.cost.cumulativeForecastValue / action.energy.cumulativeForecastValue);
   const energysavings = data?.actions.map((action) => -action.energy.cumulativeForecastValue);
@@ -125,16 +135,6 @@ function MacPage(props) {
     netcost: netcosts,
     energySaving: energysavings,
   };
-
-  useEffect(() => {
-    refetch();
-  }, [activeScenario]);
-
-  if (loading) {
-    return <Layout><ContentLoader /></Layout>;
-  } if (error) {
-    return <Layout><div>{ t('error-loading-data') }</div></Layout>;
-  }
 
   return (
   <Layout>
