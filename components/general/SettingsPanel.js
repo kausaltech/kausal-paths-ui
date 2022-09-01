@@ -1,15 +1,14 @@
 import { useContext, useState } from 'react';
-import { gql, useMutation, useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import { Container, Row, Col,
-  FormGroup, Label, Input, CustomInput, Button } from 'reactstrap';
+import { Container, Row, Col, Button } from 'reactstrap';
 import { Sliders } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import SiteContext from 'context/site';
-import { GET_SCENARIOS } from 'common/queries/getScenarios';
-import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
+import { yearRangeVar, settingsVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
 import TotalEmissionsBar from './TotalEmissionsBar';
+import GlobalParameters from './GlobalParameters';
 
 const FixedPanel = styled.div`
   position: fixed;
@@ -41,114 +40,14 @@ const MainSettingsSection = styled.div`
 const ExtraSettingsSection = styled.div`
   padding: 1rem 0 2rem;
   background-color: ${(props) => props.theme.graphColors.grey020};
-  display: ${(props) => props.visible ? 'block' : 'none'};
-
-  .form-group {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  label {
-    font-size: ${(props) => props.theme.fontSizeSm};
-    line-height: 1;
-    overflow-wrap: break-word;
-    max-width: 100%;
-  }
 `;
 
-const SET_PARAMETER = gql`
-  mutation SetParameter($parameterId: ID!, $boolValue: Boolean, $numberValue: Float, $stringValue: String) {
-    setParameter(id: $parameterId, boolValue: $boolValue, numberValue: $numberValue, stringValue: $stringValue) {
-      ok
-      parameter {
-        isCustomized
-        ... on BoolParameterType {
-        boolValue: value
-        boolDefaultValue: defaultValue
-      }
-      }
-    }
-  }
-`;
-
-const ParameterWidget = (props) => {
-  const { parameterContent: parameter } = props;
-  const activeScenario = useReactiveVar(activeScenarioVar);
-
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
-    refetchQueries: [
-      { query: GET_SCENARIOS },
-    ],
-    onCompleted: () => {
-      activeScenarioVar({ ...activeScenario, stamp: Date.now() });
-    },
-  });
-
-  const handleUserSelection = (evt) => {
-    SetParameter({ variables: evt });
-  };
-
-  switch(parameter.__typename) { 
-    case 'NumberParameterType': return (
-      <Col lg="2" md="3" sm="4" xs="6">
-          <FormGroup>
-          <Label for={parameter.id}>
-            {parameter.label || parameter.id}
-          </Label>
-          <Input
-            id={parameter.id}
-            name={parameter.id}
-            placeholder={mutationLoading ? 'loading' : parameter.numberValue}
-            type="text"
-            bsSize="sm"
-            onChange={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: e.target.value })}
-          />
-        </FormGroup>
-      </Col>);
-    case 'StringParameterType': return (
-      <Col lg="2" md="3" sm="4" xs="6">
-          <FormGroup>
-          <Label for={parameter.id}>
-            {parameter.label || parameter.id}
-          </Label>
-          <Input
-            id={parameter.id}
-            name={parameter.id}
-            placeholder={mutationLoading ? 'loading' : parameter.stringValue}
-            type="text"
-            bsSize="sm"
-            onChange={(e) => handleUserSelection({ parameterId: parameter.id, stringValue: e.target.value })}
-          />
-        </FormGroup>
-      </Col>);
-    case 'BoolParameterType': return (
-      <Col lg="2" md="3" sm="4" xs="6">
-      <FormGroup>
-        <Label for={parameter.id}>
-          {parameter.label || parameter.id}
-        </Label>
-        <CustomInput
-          type="switch"
-          id={parameter.id}
-          name={parameter.id}
-          checked={parameter.boolValue}
-          onChange={(e) => handleUserSelection({ parameterId: parameter.id, boolValue: !parameter.boolValue })}
-        />
-        </FormGroup>
-      </Col>);
-    default: return null;
-  };
-}
 const SettingsPanel = (props) => {
   const { defaultYearRange } = props;
   const settings = useReactiveVar(settingsVar);
   const site = useContext(SiteContext);
   const [showExtras, setShowExtras] = useState(false);
-
-  const toggleExtras = (e) => {
-
-  };
+  const hasGlobalParameters = settings?.parameters.find((param) => param.isCustomizable) !== undefined;
 
   return (
     <FixedPanel expanded>
@@ -172,12 +71,14 @@ const SettingsPanel = (props) => {
             />
             )}
           </Col>
-          <SettingsButton
-            onClick={(e) => setShowExtras(!showExtras)}
-            color="white"
-          >
-            <Sliders />
-          </SettingsButton>
+          { hasGlobalParameters &&
+            <SettingsButton
+              onClick={(e) => setShowExtras(!showExtras)}
+              color="white"
+            > 
+              <Sliders />
+            </SettingsButton>
+          }
           <Col md="6" sm="5" xs="12" className="mt-3 mt-sm-0">
             { site.showTargetBar
             && <TotalEmissionsBar /> }
@@ -185,17 +86,13 @@ const SettingsPanel = (props) => {
         </Row>
         </Container>
         </MainSettingsSection>
-        <ExtraSettingsSection
-          visible={showExtras}
-        >
-          <Container>
-            <Row>
-              {settings?.parameters.map((param) => 
-                <ParameterWidget parameterContent={param} key={param.id}/>
-              )}
-            </Row>
-          </Container>
-        </ExtraSettingsSection>
+        { showExtras && (
+          <ExtraSettingsSection>
+            <Container>
+              <GlobalParameters parameters={settings?.parameters} />
+            </Container>
+          </ExtraSettingsSection>
+        )}
     </FixedPanel>
   );
 };
