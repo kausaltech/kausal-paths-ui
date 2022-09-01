@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'reactstrap';
+import {ArrowRight} from 'react-bootstrap-icons';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
@@ -41,7 +42,7 @@ const HoverValueUnit = styled.span`
 
 function MacGraph(props) {
 
-  const { data } = props;
+  const { data, energyUnit, costUnit, actions, actionIds } = props;
   const theme = useTheme();
   const barColor = theme.graphColors.green070;
   const barHoverColor = theme.graphColors.green090;
@@ -66,12 +67,12 @@ function MacGraph(props) {
       }
     },
     yaxis: {
-      title: "Marginal net cost (EUR/kWh)"
+      title: `Marginal net cost (${costUnit}/${energyUnit})`
 /*      title: "Marginalnetto-kostnad",*/
     },
     xaxis: {
-      ticksuffix: " GWh/a",
-      title: "Energy saving (GWh/a)",
+      ticksuffix: ` ${energyUnit}`,
+      title: `Energy saving (${energyUnit})`,
 /*      title: "Energibesparing",*/
       showticklabels: false,
     },
@@ -129,20 +130,25 @@ function MacGraph(props) {
     />
     { hoverId !== null && 
     <ActionDescription>
-      <h4>{data.actions[hoverId]}</h4>
+      <a href={`/actions/${actionIds[hoverId]}/`}>
+        <h4>
+          {data.actions[hoverId]}
+          <ArrowRight />
+        </h4>
+      </a>
       <Row>
         <Col md={3}>
           <HoverValue>
             <HoverValueTitle>Marginal net cost</HoverValueTitle>
             <HoverValueValue>{Number(data.netcost[hoverId]).toLocaleString()}</HoverValueValue>
-            <HoverValueUnit>EUR/kWh</HoverValueUnit>
+            <HoverValueUnit>{costUnit}/{energyUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
         <Col md={3}>
           <HoverValue>
             <HoverValueTitle>Energy saving</HoverValueTitle>
             <HoverValueValue>{Number(data.energySaving[hoverId]).toLocaleString()}</HoverValueValue>
-            <HoverValueUnit>GWh/a</HoverValueUnit>
+            <HoverValueUnit>{energyUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
       </Row>

@@ -6,7 +6,7 @@ import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { GET_ACTION_IMPACTS } from 'common/queries/getActionImpacts';
 
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
@@ -106,9 +106,25 @@ function MacPage(props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const site = useSite();
-  const { loading, error, data, refetch } = useQuery(GET_ACTION_LIST);
+  const { loading, error, data, refetch } = useQuery(GET_ACTION_IMPACTS, {
+    variables: {
+      impact1: 'energy_consumption',
+      impact2: 'social_cost',
+    }
+  });
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
+
+  const actionNames = data?.actions.map((action) => action.name);
+  const netcosts = data?.actions.map((action) => action.cost.cumulativeForecastValue / action.energy.cumulativeForecastValue);
+  const energysavings = data?.actions.map((action) => -action.energy.cumulativeForecastValue);
+  const actionIds = data?.actions.map((action) => action.id);
+
+  const macData = {
+    actions: actionNames,
+    netcost: netcosts,
+    energySaving: energysavings,
+  };
 
   useEffect(() => {
     refetch();
@@ -137,7 +153,11 @@ function MacPage(props) {
         <Col>
           <GraphCard>
             <MacGraph
-            data={MOCK_DATA}
+              data={macData}
+              actions={data?.actions}
+              energyUnit={data?.energyNode.metric.unit.short}
+              costUnit={data?.costNode.metric.unit.short}
+              actionIds={actionIds}
             />
           </GraphCard>
         </Col>

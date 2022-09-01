@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 
 const GET_ACTION_IMPACTS = gql`
   query GetActionImpacts($impact1: ID!, $impact2: ID!) {
-    node(id: $impact1) {
+    energyNode: node(id: $impact1) {
         metric {
           id
           unit {
@@ -13,26 +13,25 @@ const GET_ACTION_IMPACTS = gql`
           }
         }
       }
-      costNode: node(id: $impact2) {
-        metric {
-          id
-          unit {
-            short
-          }
-          yearlyCumulativeUnit {
-            short
-          }
-        }
-      }
-      actions {
-        name
+    costNode: node(id: $impact2) {
+      metric {
         id
-        energy: impactMetric(targetNodeId: $impact1) {
-          cumulativeForecastValue
+        unit {
+          short
         }
-        cost: impactMetric(targetNodeId: $impact2) {
-          cumulativeForecastValue
+        yearlyCumulativeUnit {
+          short
         }
+      }
+    }
+    actions {
+      name
+      id
+      energy: impactMetric(targetNodeId: $impact1) {
+        cumulativeForecastValue
+      }
+      cost: impactMetric(targetNodeId: $impact2) {
+        cumulativeForecastValue
       }
     }
   }
