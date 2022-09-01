@@ -127,10 +127,21 @@ function MacPage(props) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }
 
-  const actionNames = data?.actions.map((action) => action.name);
-  const netcosts = data?.actions.map((action) => action.cost.cumulativeForecastValue / action.energy.cumulativeForecastValue);
-  const energysavings = data?.actions.map((action) => -action.energy.cumulativeForecastValue);
-  const actionIds = data?.actions.map((action) => action.id);
+  /* trying to sort actions by cost, but... */
+  const actionData = data?.actions.map((action) => {
+    return {
+      id: action.id,
+      name: action.name,
+      netCost: action.cost.cumulativeForecastValue / action.energy.cumulativeForecastValue,
+      energySaving: -action.energy.cumulativeForecastValue,
+    }
+  });
+
+  actionData.sort((a,b) => a.netCost > b.netCost);
+  const actionNames = actionData.map((action) => action.name);
+  const netcosts = actionData.map((action) => action.netCost);
+  const energysavings = actionData.map((action) => action.energySaving);
+  const actionIds = actionData.map((action) => action.id);
 
   const macData = {
     actions: actionNames,

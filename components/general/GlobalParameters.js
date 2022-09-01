@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import { Row, Col, FormGroup, Label, Input, CustomInput, Button } from 'reactstrap';
+import { Row, Col, FormGroup, Label, Input, CustomInput, Button, InputGroup } from 'reactstrap';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
@@ -48,7 +48,11 @@ const ParameterWidget = (props) => {
   });
 
   const handleUserSelection = (evt) => {
-    SetParameter({ variables: evt });
+    console.log("param event", evt)
+    if(evt?.char==='Enter') {
+      console.log("enter", evt)
+      SetParameter({ variables: evt });
+    }
   };
 
   switch(parameter.__typename) { 
@@ -59,15 +63,18 @@ const ParameterWidget = (props) => {
             {parameter.label || parameter.id}
             {parameter.isCustomized && <span> * </span>}
           </Label>
-          <Input
-            id={parameter.id}
-            name={parameter.id}
-            placeholder={mutationLoading ? 'loading' : parameter.numberValue}
-            value={mutationLoading ? 'loading' : parameter.numberValue}
-            type="text"
-            bsSize="sm"
-            onChange={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: e.target.value })}
-          />
+          <InputGroup>
+            <Input
+              id={parameter.id}
+              name={parameter.id}
+              placeholder={mutationLoading ? 'loading' : parameter.numberValue}
+              defaultValue={mutationLoading ? 'loading' : parameter.numberValue}
+              type="text"
+              bsSize="sm"
+              onKeyPress={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: e.target.value, char: e.key })}
+            />
+            { parameter.isCustomized && <Button size="sm" outline color="black" disabled={!parameter.isCustomized}>R</Button> }
+          </InputGroup>
         </FormGroup>
       </Col>);
     case 'StringParameterType': return (
@@ -80,9 +87,10 @@ const ParameterWidget = (props) => {
             id={parameter.id}
             name={parameter.id}
             placeholder={mutationLoading ? 'loading' : parameter.stringValue}
+            defaultValue={mutationLoading ? 'loading' : parameter.stringValue}
             type="text"
             bsSize="sm"
-            onChange={(e) => handleUserSelection({ parameterId: parameter.id, stringValue: e.target.value })}
+            onKeyPress={(e) => handleUserSelection({ parameterId: parameter.id, stringValue: e.target.value, char: e.key })}
           />
         </FormGroup>
       </Col>);
