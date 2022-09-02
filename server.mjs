@@ -2,12 +2,11 @@ import path from "path";
 import Koa from "koa";
 import Router from "@koa/router";
 import logger from "koa-logger";
-import {
-  ApolloClient, HttpLink, gql, InMemoryCache, defaultDataIdFromObject
-} from '@apollo/client';
+import apollo from '@apollo/client';
 import 'dotenv/config'
 import next from "next";
 
+const { ApolloClient, HttpLink, InMemoryCache, gql, } = apollo;
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== "production";
