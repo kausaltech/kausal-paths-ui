@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, CustomInput, Button, InputGroup } from 'reactstrap';
+import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 
@@ -73,7 +74,7 @@ const ParameterWidget = (props) => {
               bsSize="sm"
               onKeyPress={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: e.target.value, char: e.key })}
             />
-            { parameter.isCustomized && <Button size="sm" outline color="black" disabled={!parameter.isCustomized}>R</Button> }
+            { parameter.isCustomized && <Button size="sm" outline color="black" disabled={!parameter.isCustomized}><ArrowCounterclockwise /></Button> }
           </InputGroup>
         </FormGroup>
       </Col>);
