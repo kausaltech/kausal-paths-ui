@@ -8,11 +8,17 @@ import { appWithTranslation } from 'next-i18next';
 
 import { useApollo } from 'common/apollo';
 import { setBasePath } from 'common/urls';
+import theme, { setTheme, applyTheme } from 'common/theme';
+import { getI18n } from 'common/i18n';
 import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
 import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
+import InstanceContext, { GET_INSTANCE_CONTEXT } from 'common/instance';
 import SiteContext from 'context/site';
 
 const { publicRuntimeConfig } = getConfig();
+
+require('../styles/default/main.scss');
+
 const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
 
 if (process.browser) {
@@ -129,44 +135,12 @@ const defaultSiteContext = {
   }
 }
 
-require('../styles/default/main.scss');
-
-const GET_INSTANCE = gql`
-query GetInstance {
-    instance {
-      id
-      name
-      owner
-      defaultLanguage
-      supportedLanguages
-      targetYear
-      referenceYear
-      minimumHistoricalYear
-      maximumHistoricalYear
-      leadTitle
-      leadParagraph
-    }
-    scenarios {
-      id
-      isActive
-      isDefault
-      name
-    }
-    menuPages: pages(inMenu: true) {
-      id
-      title
-      urlPath
-      parent {
-        id
-      }
-    }
-}
-`;
 
 function PathsApp(props) {
   const {
-    Component, pageProps, siteContext
+    Component, pageProps, siteContext, themeProps,
   } = props;
+  console.log(props);
   const { instance, scenarios } = siteContext;
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);
@@ -196,12 +170,16 @@ function PathsApp(props) {
     activeScenarioVar(scenarios.find((scenario) => scenario.isActive));
   }, []);
 
+  if (process.browser) {
+    setTheme(themeProps);
+  }
+
   const component = <Component {...pageProps} />;
 
   return (
     <SiteContext.Provider value={siteContext}>
       <ApolloProvider client={apolloClient}>
-        <ThemeProvider theme={siteContext.theme}>
+        <ThemeProvider theme={theme}>
           <ThemedGlobalStyles />
           { component }
         </ThemeProvider>
@@ -235,7 +213,7 @@ async function getSiteContext(req, locale) {
 
   // Load the instance configuration from backend
   const { data, error } = await apolloClient.query({
-    query: GET_INSTANCE,
+    query: GET_INSTANCE_CONTEXT,
     context: {
       locale
     }
@@ -246,13 +224,39 @@ async function getSiteContext(req, locale) {
   Object.assign(siteContext, data);
   Object.assign(siteContext, defaultSiteContext[data.instance.id] || defaultSiteContext['sunnydale']);
   siteContext.title = data.instance.name;
-
-  // Load the theme
-  const theme = await import(`/public/static/themes/${siteContext.theme}/theme.json`);
-  siteContext.theme = JSON.parse(JSON.stringify(theme));
-
-  return siteContext;
+  return {
+    siteContext,
+    instanceContext: data.instance,
+  }
 }
+
+async function getI18nProps(ctx) {
+  const { serverSideTranslations } = require('next-i18next/serverSideTranslations');
+  const nextI18nConfig = require('../next-i18next.config');
+  const { publicRuntimeConfig } = getConfig();
+  let locale = ctx.locale || publicRuntimeConfig.locale;
+  const i18n = getI18n();
+
+  if (!locale) {
+    throw new Error("Locale not set");
+  }
+  if (i18n) {
+    await i18n.changeLanguage(locale);
+  }
+  const conf = {
+    ...nextI18nConfig,
+    i18n: {
+      ...nextI18nConfig.i18n,
+      defaultLocale: ctx.defaultLocale,
+      locales: ctx.locales,
+    }
+  };
+  const i18nConfig = await serverSideTranslations(
+    locale, ['common'], conf
+  );
+  return i18nConfig;
+}
+
 
 PathsApp.getInitialProps = async (appContext) => {
   setBasePath();
@@ -260,33 +264,36 @@ PathsApp.getInitialProps = async (appContext) => {
   const { req, err } = ctx;
   const appProps = await App.getInitialProps(appContext);
 
-  if (!process.browser) {
-    if (err) {
-      return {
-        ...appProps
-      }
-    }
-    const { serverSideTranslations } = require('next-i18next/serverSideTranslations');
+  if (process.browser) {
+    const nextData = window.__NEXT_DATA__;
+    const { _nextI18Next } = nextData.props.pageProps;
+    const { siteContext, instanceContext, themeProps, } = nextData.props;
 
-    const conf = {
-      i18n: {
-        defaultLocale: ctx.defaultLocale,
-        locales: ctx.locales,
-      }
-    }
-    const i18nConfig = await serverSideTranslations(
-      ctx.locale, ['common'], conf
-    );
-    Object.assign(appProps.pageProps, i18nConfig);
-  } else {
-    // Yank the i18next config from __NEXT_DATA__
-    appProps.pageProps._nextI18Next = window.__NEXT_DATA__.props.pageProps._nextI18Next;
+    const ret = {
+      ...appProps,
+      siteContext,
+      instanceContext,
+      themeProps,
+      pageProps: {
+        ...appProps.pageProps,
+        _nextI18Next,
+      },
+    };
+    return ret;
   }
-  const siteContext = await getSiteContext(req, ctx.locale);
-
+  // SSR
+  const i18nProps = await getI18nProps(ctx);
+  const siteProps = await getSiteContext(req, ctx.locale);
+  const pageProps = {
+    ...appProps.pageProps,
+    ...i18nProps,
+  }
+  await applyTheme(siteProps.instanceContext.themeIdentifier);
   return {
     ...appProps,
-    siteContext,
+    ...siteProps,
+    themeProps: theme,
+    pageProps,
   };
 };
 

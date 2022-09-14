@@ -16,6 +16,7 @@ query GetInstanceConfig($hostname: String, $identifier: ID) @instance(identifier
   instance {
     id
     defaultLanguage
+    themeIdentifier
     supportedLanguages
     hostname(hostname: $hostname) {
       basePath

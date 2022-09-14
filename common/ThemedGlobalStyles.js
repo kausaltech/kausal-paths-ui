@@ -1,8 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { createGlobalStyle, withTheme } from 'styled-components';
-
-import { formatUrl } from 'common/urls';
-import Fonts from './fonts';
+import { themeProp } from 'common/theme';
 
 
 const GlobalStyle = createGlobalStyle`
@@ -195,11 +194,6 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function ThemedGlobalStyles({ theme, children }) {
-  if (typeof window !== 'undefined') {
-    const { fontUrl, fontFamily, headingsFontFamily } = theme;
-    Fonts(fontFamily, headingsFontFamily, formatUrl(fontUrl));
-  }
-
   return (
     <>
       <GlobalStyle />
@@ -207,5 +201,9 @@ function ThemedGlobalStyles({ theme, children }) {
     </>
   );
 }
+ThemedGlobalStyles.propTypes = {
+  theme: themeProp.isRequired,
+  children: PropTypes.node,
+};
 
 export default withTheme(React.memo(ThemedGlobalStyles));
