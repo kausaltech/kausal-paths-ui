@@ -1,9 +1,11 @@
+import { useContext} from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
 import GlobalNav from 'components/common/GlobalNav';
 import { settingsVar } from 'common/cache';
+import SiteContext from 'context/site';
 import { useSite } from 'context/site';
 import ActionPage from 'pages/actions/[slug]';
 
@@ -19,35 +21,39 @@ const PageContainer = styled.div`
 
 const Layout = ({ children }) => {
   const router = useRouter();
-  const { pathname } = router;
+  const { asPath:pathname } = router;
   const { iconBase, ogImage } = settingsVar();
   const { t } = useTranslation();
+  const demoSite = useContext(SiteContext);
   const site = useSite();
   const { menuPages } = site;
   let activePage;
 
-  for (const page in menuPages) {
+  const menuItems = [...menuPages];
+  // Add extra pages that are not available in the backend
+  demoSite.demoPages?.map((page) => router.locale === page.lang && menuItems.push(page));
+
+  menuItems.forEach((page)=> {
     if (pathname === page.urlPath) {
       activePage = page;
-      break;
-    }
-  }
+    };
+  });
+
   if (!activePage) {
-    for (const page in menuPages) {
+    menuItems.forEach((page)=> {
       if (pathname.startsWith(page.urlPath)) {
         activePage = page;
-        break;
       }
-    }
-  }
+    });
+  };
 
-  const navItems = menuPages.map((page) => ({
+  const navItems = menuItems.map((page) => ({
     name: page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
     active: page == activePage,
   }));
-
+  
   return (
     <>
       <Head>

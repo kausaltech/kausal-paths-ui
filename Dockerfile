@@ -1,16 +1,27 @@
-FROM node:14.18-alpine as base
+#syntax=docker/dockerfile:1.2
+
+FROM node:17.2.0-alpine3.14 as base
 
 RUN mkdir -p /app
 WORKDIR /app
 
 RUN apk --no-cache add git
 
+ARG YARN_NPM_REGISTRY_SERVER
+ARG YARN_NPM_AUTH_IDENT
+
+ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_AUTH_IDENT:+true}
+ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_ALWAYS_AUTH:-false}
+
 ENV YARN_CACHE_FOLDER /yarn-cache
-COPY package.json yarn.lock /app/
-COPY patches /app/patches/
+RUN yarn set version berry
+COPY yarn.lock package*.json ./
+COPY patches ./patches/
+RUN yarn config set nodeLinker 'node-modules'
+RUN yarn config set logFilters --json '[{"code": "YN0013", "level": "discard"}]'
 RUN --mount=type=cache,target=/yarn-cache yarn install
 
-COPY . /app
+COPY . .
 
 FROM base as bundle
 
@@ -28,5 +39,6 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
     docker/sentry-set-release-commits.sh
 
+COPY ./docker/entrypoint.sh /entrypoint.sh
 EXPOSE 3000
-CMD bin/run.sh
+ENTRYPOINT ["/entrypoint.sh"]

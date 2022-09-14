@@ -20,6 +20,8 @@ jobs:
       - name: Building Docker base container
         run: |
           docker build \
+            --build-arg YARN_NPM_REGISTRY_SERVER=${{ secrets.NPM_REGISTRY_SERVER }} \
+            --build-arg YARN_NPM_AUTH_IDENT=${{ secrets.NPM_AUTH_IDENT }} \
             --tag kausal-paths-ui/base \
             --target base .
 

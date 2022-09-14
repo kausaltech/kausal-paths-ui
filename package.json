@@ -77,5 +77,6 @@
     "eslint-plugin-react": "^7.26.1",
     "eslint-plugin-react-hooks": "^4.2.0",
     "sass": "^1.43.4"
-  }
+  },
+  "packageManager": "yarn@3.2.3"
 }
