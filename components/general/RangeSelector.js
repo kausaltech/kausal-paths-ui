@@ -13,8 +13,12 @@ const SectionWrapper = styled.div`
 `;
 
 const PopoverWrapper = styled.div`
-  .btn{
+  .btn {
+    width: 100%;
+    padding: 1rem .5rem;
+    text-align: center;
     white-space: nowrap;
+    overflow: hidden;
   }
 `;
 

@@ -3,10 +3,16 @@ import PropTypes from 'prop-types';
 import { createGlobalStyle, withTheme } from 'styled-components';
 import { themeProp } from 'common/theme';
 
-
 const GlobalStyle = createGlobalStyle`
+  html {
+    scroll-behavior: auto !important;
+  }
+
   body {
-    font-family: ${(props) => props.theme.fontFamily}, ${(props) => props.theme.fontFamilyFallback};
+    font-family: ${(props) =>
+      props.theme.fontFamily !== ''
+        ? `${props.theme.fontFamily}, ${props.theme.fontFamilyFallback}`
+        : props.theme.fontFamilyFallback};
     font-size: ${(props) => props.theme.fontSizeBase};
     line-height: ${(props) => props.theme.lineHeightBase};
     text-rendering: optimizeLegibility;
@@ -31,7 +37,10 @@ const GlobalStyle = createGlobalStyle`
   }
 
   h1, h2, h3 , h4, h5, h6 {
-    font-family: ${(props) => props.theme.headingsFontFamily}, ${(props) => props.theme.headingsFontFamilyFallback};
+    font-family: ${(props) =>
+      props.theme.fontFamilyHeadings !== ''
+        ? `${props.theme.fontFamilyHeadings}, ${props.theme.fontFamilyFallbackHeadings}`
+        : props.theme.fontFamilyFallbackHeadings};
     font-weight: ${(props) => props.theme.headingsFontWeight};
     line-height: ${(props) => props.theme.lineHeightMd};
     color: ${(props) => props.theme.headingsColor};
@@ -90,6 +99,8 @@ const GlobalStyle = createGlobalStyle`
   }
 
   .text-content {
+    font-family: ${(props) => props.theme.fontFamilyContent};
+
     a {
       text-decoration: underline;
       overflow-wrap: break-word;
@@ -174,12 +185,6 @@ const GlobalStyle = createGlobalStyle`
     background-color: rgba(${(props) => props.theme.graphColors.red070}, 0.15);
   }
 
-  .dropdown-item.active, .dropdown-item:active {
-    color: ${(props) => props.theme.white};
-    text-decoration: none;
-    background-color: ${(props) => props.theme.brandDark};
-  }
-
   @media print {
     p,
     h1, h2, h3, h4, h5, h6,
@@ -201,6 +206,11 @@ function ThemedGlobalStyles({ theme, children }) {
     </>
   );
 }
+
+ThemedGlobalStyles.defaultProps = {
+  children: '',
+};
+
 ThemedGlobalStyles.propTypes = {
   theme: themeProp.isRequired,
   children: PropTypes.node,

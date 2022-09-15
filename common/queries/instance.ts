@@ -6,6 +6,7 @@ query GetInstanceContext {
     instance {
       id
       name
+      themeIdentifier
       owner
       defaultLanguage
       supportedLanguages

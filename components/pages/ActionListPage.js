@@ -60,14 +60,14 @@ export default function ActionListPage(props) {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><ContentLoader /></Layout>;
+    return <><ContentLoader /></>;
   } if (error) {
-    return <Layout><div>{ t('error-loading-data') }</div></Layout>;
+    return <><div>{ t('error-loading-data') }</div></>;
   }
 
   return (
     <>
-      { (page.actionListLeadTitle || page.actionListLeadParagraph) && (
+      { (page.actionListLeadTitle?.length > 10 || page.actionListLeadParagraph?.length > 10) && (
         <FrontPageHeader
           leadTitle={page?.actionListLeadTitle}
           leadParagraph={page?.actionListLeadParagraph}

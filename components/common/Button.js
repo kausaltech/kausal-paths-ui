@@ -36,13 +36,13 @@ const StyledButton = styled(BSButton)`
     border-color: ${(props) => props.theme.neutralLight};
 
     &:hover {
-      background-color: ${(props) => darken(0.05, props.theme.brandLight)};
-      border-color: ${(props) => darken(0.1, props.theme.brandLight)};
+      background-color: ${(props) => darken(0.05, props.theme.neutralLight)};
+      border-color: ${(props) => darken(0.1, props.theme.neutralLight)};
     }
 
     &:not(:disabled):not(.disabled):active {
-      background-color: ${(props) => darken(0.1, props.theme.brandLight)};
-      border-color: ${(props) => darken(0.1, props.theme.brandLight)};
+      background-color: ${(props) => darken(0.1, props.theme.neutralLight)};
+      border-color: ${(props) => darken(0.1, props.theme.neutralLight)};
     }
   }
 
