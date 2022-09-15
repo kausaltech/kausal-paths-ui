@@ -332,8 +332,8 @@ function GlobalNav(props) {
         expand="md"
         id="branding-navigation-bar"
         aria-label={siteTitle}
+        container
       >
-        <Container fluid={fullwidth} className="flex-nowrap">
           <Link href="/" passHref>
             <HomeLink>
               <OrgLogo className="org-logo" />
@@ -359,7 +359,7 @@ function GlobalNav(props) {
               </NavItem>
             </Nav>
           )}
-          <Nav navbar className="ml-auto d-none d-md-block">
+          <Nav navbar className="ml-auto d-none d-md-flex">
             <LanguageSelector mobile={false} />
           </Nav>
           <NavbarToggler
@@ -373,16 +373,15 @@ function GlobalNav(props) {
               ? <Icon.XLg color={theme.brandNavColor} />
               : <Icon.List color={theme.brandNavColor} /> }
           </NavbarToggler>
-        </Container>
       </TopNav>
       <BotNav
         expand="md"
         fixed={navIsFixed ? 'top' : ''}
         id="global-navigation-bar"
+        container
       >
-        <Container fluid={fullwidth}>
           <Collapse isOpen={isOpen} navbar>
-            <Nav navbar className="mr-auto">
+            <Nav navbar className="me-auto">
               { navItems && navItems.map((page) => (
                 page.children
                   ? (
@@ -427,7 +426,6 @@ function GlobalNav(props) {
               </Nav>
             ) : null }
           </Collapse>
-        </Container>
       </BotNav>
     </div>
   );

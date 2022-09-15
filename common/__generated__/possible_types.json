@@ -1,0 +1,42 @@
+{
+  "possibleTypes": {
+    "PageInterface": [
+      "ActionListPage",
+      "NodePage",
+      "OutcomePage",
+      "Page"
+    ],
+    "ParameterInterface": [
+      "BoolParameterType",
+      "NumberParameterType",
+      "StringParameterType"
+    ],
+    "StreamFieldInterface": [
+      "BlockQuoteBlock",
+      "BooleanBlock",
+      "CharBlock",
+      "ChoiceBlock",
+      "DateBlock",
+      "DateTimeBlock",
+      "DecimalBlock",
+      "DocumentChooserBlock",
+      "EmailBlock",
+      "EmbedBlock",
+      "FloatBlock",
+      "ImageChooserBlock",
+      "IntegerBlock",
+      "ListBlock",
+      "PageChooserBlock",
+      "RawHTMLBlock",
+      "RegexBlock",
+      "RichTextBlock",
+      "StaticBlock",
+      "StreamBlock",
+      "StreamFieldBlock",
+      "StructBlock",
+      "TextBlock",
+      "TimeBlock",
+      "URLBlock"
+    ]
+  }
+}

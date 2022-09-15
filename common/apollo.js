@@ -3,6 +3,8 @@ import { i18n } from 'next-i18next'
 import { useMemo } from 'react';
 import getConfig from 'next/config';
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
+import possibleTypes from 'common/__generated__/possible_types.json';
+
 
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
@@ -66,7 +68,9 @@ function createApolloClient(opts) {
     link: ApolloLink.from([
       localeMiddleware, makeInstanceMiddleware(opts), httpLink
     ]),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      possibleTypes: possibleTypes.possibleTypes,
+    }),
   });
 }
 

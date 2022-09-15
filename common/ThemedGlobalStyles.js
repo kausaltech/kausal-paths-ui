@@ -1,13 +1,18 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { createGlobalStyle, withTheme } from 'styled-components';
-
-import { formatUrl } from 'common/urls';
-import Fonts from './fonts';
-
+import { themeProp } from 'common/theme';
 
 const GlobalStyle = createGlobalStyle`
+  html {
+    scroll-behavior: auto !important;
+  }
+
   body {
-    font-family: ${(props) => props.theme.fontFamily}, ${(props) => props.theme.fontFamilyFallback};
+    font-family: ${(props) =>
+      props.theme.fontFamily !== ''
+        ? `${props.theme.fontFamily}, ${props.theme.fontFamilyFallback}`
+        : props.theme.fontFamilyFallback};
     font-size: ${(props) => props.theme.fontSizeBase};
     line-height: ${(props) => props.theme.lineHeightBase};
     text-rendering: optimizeLegibility;
@@ -15,39 +20,14 @@ const GlobalStyle = createGlobalStyle`
     color: ${(props) => props.theme.themeColors.black};
   }
 
-  input {
-    background-color: transparent;
-    border: 0px solid;
-    height: 20px;
-    width: 160px;
-    color: #CCC;
-}
-
-*:focus {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-body:not(.user-is-tabbing) button:focus,
-body:not(.user-is-tabbing) input:focus,
-body:not(.user-is-tabbing) select:focus,
-body:not(.user-is-tabbing) textarea:focus {
-  outline: none !important;
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
-  box-shadow: none !important;
-}
-
-button.btn:focus {
-  outline:0 !important;
-  box-shadow: 0 0 0 0 #fff !important;
-
-}
   a {
     color: ${(props) => props.theme.brandDark};
+    text-decoration: none;
+    background-color: transparent;
 
     &:hover {
       color: ${(props) => props.theme.brandDark};
+      text-decoration: underline;
     }
   }
 
@@ -57,7 +37,10 @@ button.btn:focus {
   }
 
   h1, h2, h3 , h4, h5, h6 {
-    font-family: ${(props) => props.theme.headingsFontFamily}, ${(props) => props.theme.headingsFontFamilyFallback};
+    font-family: ${(props) =>
+      props.theme.fontFamilyHeadings !== ''
+        ? `${props.theme.fontFamilyHeadings}, ${props.theme.fontFamilyFallbackHeadings}`
+        : props.theme.fontFamilyFallbackHeadings};
     font-weight: ${(props) => props.theme.headingsFontWeight};
     line-height: ${(props) => props.theme.lineHeightMd};
     color: ${(props) => props.theme.headingsColor};
@@ -116,6 +99,8 @@ button.btn:focus {
   }
 
   .text-content {
+    font-family: ${(props) => props.theme.fontFamilyContent};
+
     a {
       text-decoration: underline;
       overflow-wrap: break-word;
@@ -197,34 +182,23 @@ button.btn:focus {
   .form-control.is-invalid,
   .was-validated .custom-select:invalid,
   .custom-select.is-invalid {
-    background-color: rgba(${(props) => props.theme.themeColors.danger}, 0.15);
+    background-color: rgba(${(props) => props.theme.graphColors.red070}, 0.15);
   }
 
-
-  .form-control, .custom-select {
-    &:hover {
-      border-color: ${(props) => props.theme.themeColors.black};
+  @media print {
+    p,
+    h1, h2, h3, h4, h5, h6,
+    .card,
+    .btn,
+    .js-plotly-plot, .plot-container, .plotly,
+    .causal-chain-visualisation
+    {
+      break-inside: avoid-page;
     }
-  }
-
-  .custom-control-input:checked ~ .custom-control-label::before {
-    border-color: ${(props) => props.theme.brandDark};
-    background-color: ${(props) => props.theme.brandDark};
-  }
-
-  .dropdown-item.active, .dropdown-item:active {
-    color: #fff;
-    text-decoration: none;
-    background-color: ${(props) => props.theme.brandDark};
   }
 `;
 
 function ThemedGlobalStyles({ theme, children }) {
-  if (typeof window !== 'undefined') {
-    const { fontUrl, fontFamily, headingsFontFamily } = theme;
-    Fonts(fontFamily, headingsFontFamily, formatUrl(fontUrl));
-  }
-
   return (
     <>
       <GlobalStyle />
@@ -232,5 +206,14 @@ function ThemedGlobalStyles({ theme, children }) {
     </>
   );
 }
+
+ThemedGlobalStyles.defaultProps = {
+  children: '',
+};
+
+ThemedGlobalStyles.propTypes = {
+  theme: themeProp.isRequired,
+  children: PropTypes.node,
+};
 
 export default withTheme(React.memo(ThemedGlobalStyles));

@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from 'react';
 import { Link } from 'common/urls';
 import { useRouter } from 'next/router';
 import { Globe2 } from 'react-bootstrap-icons';
@@ -10,9 +9,12 @@ import {
   DropdownItem,
 } from 'reactstrap';
 
-const NavLink = styled.div`
+
+const Selector = styled(UncontrolledDropdown)`
   a {
-    display: block;
+    height: 100%;
+    display: flex;
+    align-items: center;
     margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
     color: ${(props) => props.theme.neutralDark};
 
@@ -26,9 +28,13 @@ const NavLink = styled.div`
       }
 
     @media (min-width: ${(props) => props.theme.breakpointMd}) {
-      align-self: flex-end;
+      align-self: center;
       margin: 0;
     }
+  }
+
+  svg.icon {
+    fill: ${(props) => props.mobile === 'true' ? props.theme.themeColors.dark : props.theme.brandNavColor} !important;
   }
 `;
 
@@ -37,6 +43,12 @@ const CurrentLanguage = styled.span`
   width: 1.5rem;
   margin: 0 .5rem;
   text-transform: uppercase;
+  font-size: 90%;
+  color: ${(props) => props.mobile === 'true' ? props.theme.themeColors.dark : props.theme.brandNavColor};
+`;
+
+const StyledDropdownMenu = styled(DropdownMenu)`
+  right: 0;
 `;
 
 const languageNames = {
@@ -54,28 +66,27 @@ const LanguageSelector = (props) => {
   if (locales?.length < 2) return (null);
   const handleLocaleChange = (ev) => {
     ev.preventDefault();
-    window.location.href = ev.currentTarget.firstChild.href;
+    window.location.href = ev.target.href;
   };
 
   return (
-    <NavLink>
-    <UncontrolledDropdown nav inNavbar>
-      <DropdownToggle nav>
-        <Globe2 color={ mobile ? 'black' : 'white'} />
-        <CurrentLanguage>{ router.locale }</CurrentLanguage>
-      </DropdownToggle>
-      <DropdownMenu right>
-        { locales.map((locale) => (
-          <DropdownItem key={locale} tag="div" onClick={handleLocaleChange}>
-              <Link locale={locale} href='/'>
-                {languageNames[locale]}
-              </Link>
-          </DropdownItem>
-        ))}
-      </DropdownMenu>
-    </UncontrolledDropdown>
-    
-</NavLink>
+      <Selector nav inNavbar mobile={mobile.toString()} className={mobile && 'd-md-none'}>
+        <DropdownToggle nav>
+          <Globe2 color={ mobile ? 'black' : 'white'} />
+          <CurrentLanguage mobile={mobile.toString()}>{ router.locale }</CurrentLanguage>
+        </DropdownToggle>
+        <StyledDropdownMenu end>
+          { locales.map((locale) => (
+            <DropdownItem key={locale} tag="div">
+                <Link locale={locale} href='/'>
+                  <a onClick={handleLocaleChange}>
+                    {languageNames[locale]}
+                  </a>
+                </Link>
+              </DropdownItem>
+          ))}
+        </StyledDropdownMenu>
+      </Selector>
   );
 };
 
