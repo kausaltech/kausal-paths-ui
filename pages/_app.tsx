@@ -119,7 +119,7 @@ const defaultSiteContext = {
     showLangSelector: false,
     watchLink: null,
   },
-  greenlogic: {
+  gronlogik: {
     theme: 'default',
     showYearSelector: true,
     showScenarios: true,
@@ -141,7 +141,7 @@ function PathsApp(props) {
     Component, pageProps, siteContext, themeProps,
   } = props;
   console.log(props);
-  const { instance, scenarios } = siteContext;
+  const { instance, scenarios, parameters } = siteContext;
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);
 

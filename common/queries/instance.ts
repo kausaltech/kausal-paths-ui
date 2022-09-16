@@ -31,6 +31,45 @@ query GetInstanceContext {
         id
       }
     }
+    parameters {
+      id
+      __typename
+      ... on NumberParameterType {
+        label
+        description
+        minValue
+        maxValue
+        isCustomized
+        isCustomizable
+        numberDefault:defaultValue
+        numberValue: value
+        node {
+          id
+        }
+      }
+      ... on BoolParameterType {
+        label
+        description
+        isCustomized
+        isCustomizable
+        boolDefault: defaultValue
+        boolValue: value
+        node {
+          id
+        }
+      }
+      ... on StringParameterType {
+        label
+        description
+        isCustomized
+        isCustomizable
+        stringDefault: defaultValue
+        stringValue: value
+        node {
+          id
+        }
+      }
+    }
 }
 `;
 
