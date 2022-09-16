@@ -66,10 +66,10 @@ const NodeLinks = (props) => {
         <Col md={{ size: 5, offset: 2 }}>
           { outputNodes.length > 0 && (
           <OutputNodes>
-            <ListGroupItem tag="h5">
-              { t('has-effect-on') }
-            </ListGroupItem>
             <ListGroup>
+              <ListGroupItem tag="h5">
+                { t('has-effect-on') }
+              </ListGroupItem>
               { outputNodes.map((outputNode, index) => (
                 <Link key={outputNode.id} href={`/node/${outputNode.id}`}>
                   <ListGroupItem tag="a" href=''>

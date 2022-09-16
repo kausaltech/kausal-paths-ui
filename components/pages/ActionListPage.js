@@ -61,9 +61,9 @@ export default function ActionListPage(props) {
   }, [activeScenario]);
 
   if (loading) {
-    return <div><ContentLoader /></div>;
+    return <><ContentLoader /></>;
   } if (error) {
-    return <div>{ t('error-loading-data') }</div>;
+    return <><div>{ t('error-loading-data') }</div></>;
   }
 
   return (

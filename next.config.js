@@ -1,18 +1,27 @@
-const SUPPORTED_LANGUAGES = ['en', 'fi', 'sv'];
-const i18n = {
-  defaultLocale: 'en',
-  locales: SUPPORTED_LANGUAGES,
-  localeDetection: false,
-};
-
 const path = require('path')
 const { withSentryConfig } = require('@sentry/nextjs');
 const { secrets } = require('docker-secret');
+const { i18n, SUPPORTED_LANGUAGES } = require('./next-i18next.config');
 
 const DEFAULT_GRAPHQL_API_URL = process.env.DEFAULT_GRAPHQL_API_URL || 'https://api.paths.kausal.tech/v1/graphql/';
 const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
 
 const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
+
+function initializeThemes() {
+  const destPath = path.join(__dirname, 'public', 'static', 'themes');
+  const { generateThemeSymlinks: generateThemeSymlinksPublic } = require('@kausal/themes');
+  generateThemeSymlinksPublic(destPath, { verbose: true });
+  try {
+    const { generateThemeSymlinks: generateThemeSymlinksPrivate } = require('@kausal/themes-private');
+    generateThemeSymlinksPrivate(destPath, { verbose: true });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+initializeThemes();
+
 
 /**
  * @type {import('next').NextConfig}
@@ -35,11 +44,38 @@ const nextConfig = {
     disableServerWebpackPlugin: !sentryAuthToken,
     disableClientWebpackPlugin: !sentryAuthToken,
   },
-  webpack: (config, { isServer }) => {
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
+  productionBrowserSourceMaps: true,
+  compiler: {
+    // Enables the styled-components SWC transform
+    styledComponents: true
+  },
+  swcMinify: true,
+  experimental: {
+    modularizeImports: {
+      lodash: {
+        transform: 'lodash/{{member}}',
+      },
+    },
+  },
+  webpack: (cfg, { isServer }) => {
     if (!isServer) {
-      config.resolve.alias['next-i18next/serverSideTranslations'] = false;
+      cfg.resolve.alias['next-i18next/serverSideTranslations'] = false;
+      cfg.resolve.alias['./next-i18next.config'] = false;
+      cfg.resolve.symlinks = true;
     }
-    return config;
+    return cfg;
   },
   webpack5: true,
   swcMinify: false,
