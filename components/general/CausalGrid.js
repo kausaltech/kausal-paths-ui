@@ -14,6 +14,10 @@ const ActionPoint = styled.div`
   margin-bottom: 3rem;
 `;
 
+const GridSesction = styled.div`
+  width: 100%;
+`;
+
 const GridRowWrapper = styled.div`
   width: auto;
   overflow-y: hidden;
@@ -24,7 +28,6 @@ const GridRowWrapper = styled.div`
 
 const GridRow = styled.div`
   display: flex;
-  justify-content: space-around;
   width: 100%;
 `;
 
@@ -143,7 +146,7 @@ const CausalGrid = (props) => {
       endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
       ref={gridCanvas}
     >
-      <Container>
+      <GridSesction>
         <ArcherElement
           relations={actionOutputNodes.map((node) => (
             { targetId: node.id,
@@ -190,7 +193,7 @@ const CausalGrid = (props) => {
             </GridRow>
           </GridRowWrapper>
         ))}
-      </Container>
+      </GridSesction>
       <GoalSection>
         <Container>
           <PageHeader>
