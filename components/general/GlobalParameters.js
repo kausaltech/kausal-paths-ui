@@ -97,14 +97,14 @@ const ParameterWidget = (props) => {
       </Col>);
     case 'BoolParameterType': return (
       <Col lg="2" md="3" sm="4" xs="6">
-      <FormGroup>
+      <FormGroup switch>
         <Label for={parameter.id}>
           {parameter.label || parameter.id}
         </Label>
-        <CustomInput
+        <Input
           type="switch"
           id={parameter.id}
-          name={parameter.id}
+          name={parameter?.id || 'something'}
           checked={parameter.boolValue}
           onChange={(e) => handleUserSelection({ parameterId: parameter.id, boolValue: !parameter.boolValue })}
         />
@@ -116,7 +116,7 @@ const ParameterWidget = (props) => {
 
 const GlobalParameters = (props) => {
   const { parameters } = props;
-  console.log("params", parameters);
+  console.log("Global params", parameters);
   return (
     <GlobalParametersPanel>
       {parameters.map((param) => 
