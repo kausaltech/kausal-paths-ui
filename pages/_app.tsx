@@ -140,7 +140,7 @@ function PathsApp(props) {
   const {
     Component, pageProps, siteContext, themeProps,
   } = props;
-  console.log(props);
+  console.log("App Props", props);
   const { instance, scenarios, parameters } = siteContext;
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);

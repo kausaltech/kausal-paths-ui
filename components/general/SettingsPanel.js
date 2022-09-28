@@ -49,6 +49,9 @@ const SettingsPanel = (props) => {
   const [showExtras, setShowExtras] = useState(false);
   const hasGlobalParameters = settings?.parameters.find((param) => param.isCustomizable) !== undefined;
 
+  //console.log("settings panel props", props);
+  //console.log("app settings", settings);
+
   return (
     <FixedPanel expanded>
       <MainSettingsSection>
