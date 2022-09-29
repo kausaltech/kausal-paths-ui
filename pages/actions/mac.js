@@ -6,7 +6,7 @@ import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';
-import { GET_ACTION_IMPACTS } from 'common/queries/getActionImpacts';
+import { GET_ACTION_EFFICIENCY } from 'common/queries/getActionEfficiency';
 
 import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
@@ -108,12 +108,7 @@ function MacPage(props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const site = useSite();
-  const { loading, error, data, refetch } = useQuery(GET_ACTION_IMPACTS, {
-    variables: {
-      impact1: 'energy_consumption',
-      impact2: 'social_cost',
-    }
-  });
+  const { loading, error, data, refetch } = useQuery(GET_ACTION_EFFICIENCY);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
@@ -127,27 +122,39 @@ function MacPage(props) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }
 
-  /* trying to sort actions by cost, but... */
-  const actionData = data?.actions.map((action) => {
-    return {
-      id: action.id,
-      name: action.name,
-      netCost: action.cost.cumulativeForecastValue / action.energy.cumulativeForecastValue,
-      energySaving: -action.energy.cumulativeForecastValue,
-    }
-  });
+  // console.log(data);
 
-  actionData.sort((a,b) => a.netCost > b.netCost);
+  /* trying to sort actions by cost, but... */
+  const actionData = data?.actionEfficiencyPairs[0].actions.map((action) => {
+    return {
+      id: action.action.id,
+      name: action.action.name,
+      cost: action.cumulativeCost,
+      efficiency: action.cumulativeEfficiency,
+      impact: action.cumulativeImpact,
+    }
+  }).sort((a,b) => a.efficiency - b.efficiency);
+
   const actionNames = actionData.map((action) => action.name);
-  const netcosts = actionData.map((action) => action.netCost);
-  const energysavings = actionData.map((action) => action.energySaving);
+  const netcosts = actionData.map((action) => action.cost);
+  const impacts = actionData.map((action) => action.impact);
+  const efficiencies = actionData.map((action) => action.efficiency);
   const actionIds = actionData.map((action) => action.id);
 
   const macData = {
     actions: actionNames,
     netcost: netcosts,
-    energySaving: energysavings,
+    efficiency: efficiencies,
+    impact: impacts,
   };
+
+  const efficiencyUnit = data.actionEfficiencyPairs[0].efficiencyUnit.short;
+
+  const impactName = data.actionEfficiencyPairs[0].impactNode.name; 
+  const impactUnit = data.actionEfficiencyPairs[0].impactNode.unit.short; 
+
+  const costName = data.actionEfficiencyPairs[0].costNode.name;
+  const costUnit = data.actionEfficiencyPairs[0].costNode.unit.short; 
 
   return (
   <Layout>
@@ -175,8 +182,10 @@ function MacPage(props) {
             <MacGraph
               data={macData}
               actions={data?.actions}
-              energyUnit={data?.energyNode.metric.unit.short}
-              costUnit={data?.costNode.metric.unit.short}
+              impactName={`${impactName} impact`}
+              impactUnit={impactUnit}
+              efficiencyName={`${costName} efficiency`}
+              efficiencyUnit={efficiencyUnit}
               actionIds={actionIds}
             />
           </GraphCard>

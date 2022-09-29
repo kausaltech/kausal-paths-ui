@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'reactstrap';
@@ -42,16 +43,20 @@ const HoverValueUnit = styled.span`
 
 function MacGraph(props) {
 
-  const { data, energyUnit, costUnit, actions, actionIds } = props;
+  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actions, actionIds } = props;
   const theme = useTheme();
+  const { i18n } = useTranslation();
   const barColor = theme.graphColors.green070;
   const barHoverColor = theme.graphColors.green090;
 
-  const [barColors, setBarColors] = useState(data['netcost'].map((bar) => barColor));
+  const [barColors, setBarColors] = useState(data['efficiency'].map((bar) => barColor));
   const [hoverId, setHoverId] = useState(null);
 
+  //console.log("mac props", props);
+  // TODO: Add sorting of data here
+
   let totalSaving = 0;
-  const xPlacement = data['energySaving'].map((bar) => {
+  const xPlacement = data['impact'].map((bar) => {
     totalSaving += bar;
     return totalSaving - bar + (bar/2);
   }  );
@@ -67,12 +72,12 @@ function MacGraph(props) {
       }
     },
     yaxis: {
-      title: `Marginal net cost (${costUnit}/${energyUnit})`
+      title: `${efficiencyName} (${efficiencyUnit})`
 /*      title: "Marginalnetto-kostnad",*/
     },
     xaxis: {
-      ticksuffix: ` ${energyUnit}`,
-      title: `Energy saving (${energyUnit})`,
+      ticksuffix: ` ${impactUnit}`,
+      title: `${impactName} (${impactUnit})`,
 /*      title: "Energibesparing",*/
       showticklabels: false,
     },
@@ -90,7 +95,7 @@ function MacGraph(props) {
   const handleHover = (evt) => {
     // console.log("HOVERED", evt);
     const hoveredIndex = evt.points[0].pointIndex;
-    const hoverColors = data['netcost'].map((bar) =>  barColor);
+    const hoverColors = data['efficiency'].map((bar) =>  barColor);
     hoverColors[hoveredIndex] = barHoverColor;
     setBarColors(hoverColors);
     setHoverId(hoveredIndex);
@@ -103,9 +108,9 @@ function MacGraph(props) {
       data={[{
         type: 'bar',
         x: xPlacement,
-        y: data['netcost'],
+        y: data['efficiency'],
         text: data['actions'],
-        width: data['energySaving'], 
+        width: data['impact'], 
         marker: {
           color: barColors,
           opacity: 0.9,
@@ -115,15 +120,15 @@ function MacGraph(props) {
           }
         },
         textposition: 'none',
-        customdata: data['energySaving'],
+        customdata: data['impact'],
         hovertemplate:
             "<b>%{text}</b><br><br>" +
-            "%{yaxis.title.text}: %{y:,}<br>" +
-            "%{xaxis.title.text}: %{customdata:,}<br>" +
+            "%{yaxis.title.text}: %{y:.0f}<br>" +
+            "%{xaxis.title.text}: %{customdata:.0f}<br>" +
             "<extra></extra>",
       }]}
       layout={layout}
-      useResizeHandler
+      useResizeHandlers
       style={{ width: '100%' }}
       config={{ displayModeBar: false }}
       onHover={(evt) => handleHover(evt)}
@@ -139,16 +144,16 @@ function MacGraph(props) {
       <Row>
         <Col md={3}>
           <HoverValue>
-            <HoverValueTitle>Marginal net cost</HoverValueTitle>
-            <HoverValueValue>{Number(data.netcost[hoverId]).toLocaleString()}</HoverValueValue>
-            <HoverValueUnit>{costUnit}/{energyUnit}</HoverValueUnit>
+            <HoverValueTitle>Efficiency</HoverValueTitle>
+            <HoverValueValue>{Math.round(Number(data.efficiency[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueUnit>{efficiencyUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
         <Col md={3}>
           <HoverValue>
-            <HoverValueTitle>Energy saving</HoverValueTitle>
-            <HoverValueValue>{Number(data.energySaving[hoverId]).toLocaleString()}</HoverValueValue>
-            <HoverValueUnit>{energyUnit}</HoverValueUnit>
+            <HoverValueTitle>Impact</HoverValueTitle>
+            <HoverValueValue>{Math.round(Number(data.impact[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueUnit>{impactUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
       </Row>
