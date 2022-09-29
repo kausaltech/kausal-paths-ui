@@ -2,7 +2,18 @@ import { gql } from '@apollo/client';
 
 const GET_ACTION_EFFICIENCY = gql`
   query GetActionEfficiency { 
+    instance {
+      actionGroups {
+        id
+        name
+        color
+        actions {
+          id
+        }
+      }
+    }
     actionEfficiencyPairs {
+      label
       efficiencyUnit {
         short
       }
@@ -26,6 +37,9 @@ const GET_ACTION_EFFICIENCY = gql`
         action {
           id
           name
+          group {
+            id
+          }
         }
         cumulativeImpact
         cumulativeEfficiency

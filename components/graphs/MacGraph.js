@@ -26,13 +26,17 @@ const ActionDescription = styled.div`
   }
 `;
 
-const HoverValue = styled.div``;
+const HoverValue = styled.div`
+
+`;
 
 const HoverValueTitle = styled.div`
+  line-height: 1;
+  margin-bottom: .5rem;
 `;
 
 const HoverValueValue = styled.span`
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   line-height: 1;
   margin-right: .5rem;
@@ -43,16 +47,16 @@ const HoverValueUnit = styled.span`
 
 function MacGraph(props) {
 
-  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actions, actionIds } = props;
+  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actions, actionIds, costUnit } = props;
   const theme = useTheme();
   const { i18n } = useTranslation();
-  const barColor = theme.graphColors.green070;
+
   const barHoverColor = theme.graphColors.green090;
 
-  const [barColors, setBarColors] = useState(data['efficiency'].map((bar) => barColor));
+  const [barColors, setBarColors] = useState(data.colors);
   const [hoverId, setHoverId] = useState(null);
 
-  //console.log("mac props", props);
+  // console.log("mac props", props);
   // TODO: Add sorting of data here
 
   let totalSaving = 0;
@@ -95,9 +99,9 @@ function MacGraph(props) {
   const handleHover = (evt) => {
     // console.log("HOVERED", evt);
     const hoveredIndex = evt.points[0].pointIndex;
-    const hoverColors = data['efficiency'].map((bar) =>  barColor);
-    hoverColors[hoveredIndex] = barHoverColor;
-    setBarColors(hoverColors);
+    //const hoverColors = data.colors;
+    //hoverColors[hoveredIndex] = "#333";
+    //setBarColors(hoverColors);
     setHoverId(hoveredIndex);
     return null;
   };
@@ -112,7 +116,7 @@ function MacGraph(props) {
         text: data['actions'],
         width: data['impact'], 
         marker: {
-          color: barColors,
+          color: data.colors,
           opacity: 0.9,
           line: {
             color: theme.themeColors.white,
@@ -138,22 +142,30 @@ function MacGraph(props) {
       <a href={`/actions/${actionIds[hoverId]}/`}>
         <h4>
           {data.actions[hoverId]}
+          {' '}
           <ArrowRight />
         </h4>
       </a>
       <Row>
-        <Col md={3}>
+        <Col md={3} className="d-flex align-items-end">
           <HoverValue>
-            <HoverValueTitle>Efficiency</HoverValueTitle>
-            <HoverValueValue>{Math.round(Number(data.efficiency[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
-            <HoverValueUnit>{efficiencyUnit}</HoverValueUnit>
-          </HoverValue>
-        </Col>
-        <Col md={3}>
-          <HoverValue>
-            <HoverValueTitle>Impact</HoverValueTitle>
+            <HoverValueTitle>{impactName}</HoverValueTitle>
             <HoverValueValue>{Math.round(Number(data.impact[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
             <HoverValueUnit>{impactUnit}</HoverValueUnit>
+          </HoverValue>
+        </Col>
+        <Col md={3} className="d-flex align-items-end">
+          <HoverValue>
+            <HoverValueTitle>Cost</HoverValueTitle>
+            <HoverValueValue>{Math.round(Number(data.cost[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueUnit>{costUnit}</HoverValueUnit>
+          </HoverValue>
+        </Col>
+        <Col md={3} className="d-flex align-items-end">
+          <HoverValue>
+            <HoverValueTitle>{efficiencyName}</HoverValueTitle>
+            <HoverValueValue>{Math.round(Number(data.efficiency[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueUnit>{efficiencyUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
       </Row>
