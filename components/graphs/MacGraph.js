@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
@@ -60,6 +60,11 @@ function MacGraph(props) {
 
   const [barColors, setBarColors] = useState(data.colors);
   const [hoverId, setHoverId] = useState(null);
+
+  useEffect(() => {
+    // Update the document title using the browser API
+    setHoverId(null);
+  }, [data]);
 
   // console.log("mac props", props);
   // TODO: Add sorting of data here
@@ -145,7 +150,7 @@ function MacGraph(props) {
     { hoverId !== null && 
     <ActionDescription>
       <a href={`/actions/${actionIds[hoverId]}/`}>
-        <HoverGroupTag color={data.colors[hoverId]}>{actionGroups.find((group) => group.id === data.groups[hoverId]).name}</HoverGroupTag>
+        <HoverGroupTag color={data.colors[hoverId]}>{actionGroups.find((group) => group.id === data.groups[hoverId])?.name}</HoverGroupTag>
         <h4>
           {data.actions[hoverId]}
           {' '}
