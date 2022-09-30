@@ -30,6 +30,11 @@ const HoverValue = styled.div`
 
 `;
 
+const HoverGroupTag = styled.span`
+  font-size: 80%;
+  color: ${(props) => props.color};
+`;
+
 const HoverValueTitle = styled.div`
   line-height: 1;
   margin-bottom: .5rem;
@@ -47,7 +52,7 @@ const HoverValueUnit = styled.span`
 
 function MacGraph(props) {
 
-  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actions, actionIds, costUnit } = props;
+  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actionIds, costUnit, actionGroups } = props;
   const theme = useTheme();
   const { i18n } = useTranslation();
 
@@ -140,6 +145,7 @@ function MacGraph(props) {
     { hoverId !== null && 
     <ActionDescription>
       <a href={`/actions/${actionIds[hoverId]}/`}>
+        <HoverGroupTag color={data.colors[hoverId]}>{actionGroups.find((group) => group.id === data.groups[hoverId]).name}</HoverGroupTag>
         <h4>
           {data.actions[hoverId]}
           {' '}

@@ -93,6 +93,7 @@ function MacPage(props) {
 
   const actionNames = actionData.map((action) => action.name);
   const actionColors = actionData.map((action) => action.color);
+  const actionGroups = actionData.map((action) => action.group);
   const netcosts = actionData.map((action) => action.cost);
   const impacts = actionData.map((action) => action.impact);
   const efficiencies = actionData.map((action) => action.efficiency);
@@ -101,6 +102,7 @@ function MacPage(props) {
   const macData = {
     actions: actionNames,
     colors: actionColors,
+    groups: actionGroups,
     cost: netcosts,
     efficiency: efficiencies,
     impact: impacts,
@@ -231,13 +233,13 @@ function MacPage(props) {
           <GraphCard>
             <MacGraph
               data={macData}
-              actions={data?.actions}
               impactName={`${impactName} impact`}
               impactUnit={impactUnit}
               efficiencyName={`${costName} efficiency`}
               efficiencyUnit={efficiencyUnit}
               actionIds={actionIds}
               costUnit={costUnit}
+              actionGroups={data.instance.actionGroups}
             />
           </GraphCard>
         </Col>
