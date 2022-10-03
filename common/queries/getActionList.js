@@ -2,6 +2,9 @@ import { gql } from '@apollo/client';
 
 const GET_ACTION_LIST = gql`
   query GetActionList {
+    actionEfficiencyPairs {
+      id
+    }
     actions {
       id
       name

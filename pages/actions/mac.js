@@ -75,6 +75,11 @@ function MacPage(props) {
     return <Layout><div>{ t('error-loading-data') }</div></Layout>;
   }
 
+  if (!data.actionEfficiencyPairs.length) {
+    // FIXME: Replace with a proper error component
+    return <Layout>{ t('page-not-found') }</Layout>
+  }
+
   // console.log(data);
 
   const actionData = data?.actionEfficiencyPairs[activeEfficiency].actions.map((action) => {

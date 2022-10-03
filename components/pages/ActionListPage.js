@@ -82,7 +82,9 @@ export default function ActionListPage(props) {
               {t('actions')}
               {' '}
             </h1>
-            <ActionsSubNav active="list"/>
+            { data.actionEfficiencyPairs.length && (
+              <ActionsSubNav active="list"/>
+            )}
             <ActiveScenario>
               {t('scenario')}
               :

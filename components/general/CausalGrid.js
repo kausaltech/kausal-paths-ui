@@ -8,6 +8,8 @@ import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/prepr
 import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
+import { useInstance } from 'common/instance';
+import { useSite } from 'context/site';
 
 const ActionPoint = styled.div`
   height: 1rem;
@@ -98,6 +100,7 @@ const ImpactFigures = styled.div`
 const CausalGrid = (props) => {
   const { nodes, yearRange, actionIsOff, actionId } = props;
   const theme = useContext(ThemeContext);
+  const site = useSite();
   const gridCanvas = useRef(null);
 
   const findOutputs = (parentIds, tree) => {
@@ -230,6 +233,7 @@ const CausalGrid = (props) => {
                       endYear={yearRange[1]}
                       color={lastNode.color}
                       isAction={lastNode.isAction}
+                      targetYear={site.instance.targetYear}
                       targetYearGoal={lastNode.targetYearGoal}
                       quantity={lastNode.quantity}
                     />
