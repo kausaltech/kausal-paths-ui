@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'next-i18next';
 import {
@@ -306,14 +306,15 @@ function GlobalNav(props) {
     siteTitle, ownerName, navItems, fullwidth, sticky,
   } = props;
 
-  const OrgLogo = () => {
+  const orgLogo = useMemo(() => {
     const url = formatUrl(theme.themeLogoUrl);
     return <SVG
+      className="org-logo"
       src={url}
       title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
       preserveAspectRatio="xMinYMid meet"
     />
-  };
+  }, [theme.themeLogoUrl, ownerName, siteTitle, t])
 
   if (sticky) {
     useScrollPosition(
@@ -337,7 +338,7 @@ function GlobalNav(props) {
       >
           <Link href="/" passHref>
             <HomeLink>
-              <OrgLogo className="org-logo" />
+              { orgLogo }
               { site.showNavTitle
                 ? <SiteTitle>{siteTitle}</SiteTitle>
                 : <SiteTitle>{'\u00A0'}</SiteTitle>}

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import Link from 'next/link';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
@@ -17,6 +16,7 @@ import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
 import NodeLinks from 'components/general/NodeLinks';
 import ContentLoader from 'components/common/ContentLoader';
+import { ActionLink } from 'common/urls';
 
 const HeaderSection = styled.div`
   padding: 1rem 0 1rem;
@@ -145,17 +145,17 @@ export default function NodePage() {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><ContentLoader /></Layout>;
+    return <ContentLoader />;
   }
   if (error) {
     logError(error, {query: GET_NODE_PAGE_CONTENT});
-    return <Layout><Container><h2 className="p-5">{t('error-loading-data')}</h2></Container></Layout>;
+    return <Container><h2 className="p-5">{t('error-loading-data')}</h2></Container>;
   }
 
   const { node } = data;
 
   return (
-    <Layout>
+    <>
       <Head>
         <title>
           {site.title}
@@ -178,13 +178,13 @@ export default function NodePage() {
                 </NodeDescription>
                 <div>
                 { node.isAction && (
-                  <Link href={`/actions/${node.id}`}>
+                  <ActionLink action={node}>
                     <a>
                       {t('action-impact')}
                       {' '}
                       <ArrowRight />
                     </a>
-                  </Link>
+                  </ActionLink>
                   )}
                   </div>
               { node.metric && (
@@ -228,6 +228,6 @@ export default function NodePage() {
       <SettingsPanel
         defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
       />
-    </Layout>
+    </>
   );
 }

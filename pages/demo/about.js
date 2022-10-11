@@ -7,7 +7,6 @@ import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';
 
-import Layout from 'components/Layout';
 import ContentLoader from 'components/common/ContentLoader';
 
 const MOCK_DATA = {
@@ -119,7 +118,7 @@ function AboutPage(props) {
   }
 
   return (
-  <Layout>
+  <>
     <HeaderSection>
       <Container>
       <Row>
@@ -153,7 +152,7 @@ function AboutPage(props) {
         </Col>
       </Row>
     </Container>
-  </Layout>
+  </>
   )
 }
 

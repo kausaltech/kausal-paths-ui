@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { ThemeProvider } from 'styled-components';
 import getConfig from 'next/config';
 import { appWithTranslation } from 'next-i18next';
+import * as Sentry from '@sentry/react';
 
 import { useApollo } from 'common/apollo';
 import { setBasePath } from 'common/urls';
@@ -14,6 +15,7 @@ import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
 import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 import InstanceContext, { GET_INSTANCE_CONTEXT } from 'common/instance';
 import SiteContext from 'context/site';
+import Layout from 'components/Layout';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
@@ -196,7 +198,11 @@ function PathsApp(props) {
       <ApolloProvider client={apolloClient}>
         <ThemeProvider theme={theme}>
           <ThemedGlobalStyles />
-          { component }
+            <Layout>
+              <Sentry.ErrorBoundary>
+                { component }
+              </Sentry.ErrorBoundary>
+            </Layout>
         </ThemeProvider>
       </ApolloProvider>
     </SiteContext.Provider>

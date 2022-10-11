@@ -1,7 +1,8 @@
-import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { Badge } from 'reactstrap';
+
+import { ActionLink } from 'common/urls';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
@@ -77,13 +78,13 @@ const ActionListCard = (props) => {
     >
       <DashCard>
         <CardHeader>
-          <Link href={`/actions/${action.id}`}>
+          <ActionLink action={action}>
             <a>
               <h5>
                 {action.name}
               </h5>
             </a>
-          </Link>
+          </ActionLink>
           { level === 'NATION' && <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory> }
         </CardHeader>
         <CardContent>

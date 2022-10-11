@@ -5,7 +5,6 @@ import Head from 'next/head';
 
 import GET_PAGE from 'common/queries/getPage';
 import ContentLoader from 'components/common/ContentLoader';
-import Layout from 'components/Layout';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import OutcomePage from 'components/pages/OutcomePage';
@@ -13,11 +12,9 @@ import ActionListPage from 'components/pages/ActionListPage';
 
 function Error({ message }) {
   return (
-    <Layout>
-      <Container>
-        <h2 className="p-5">{message}</h2>
-      </Container>
-    </Layout>
+    <Container>
+      <h2 className="p-5">{message}</h2>
+    </Container>
   );
 }
 
@@ -34,13 +31,13 @@ export default function Page({ path, headerExtra }) {
   const { t } = useTranslation();
 
   if (loading) {
-    return <Layout><ContentLoader /></Layout>;
+    return <ContentLoader />;
   }
   if (error) {
     logError(error, {query: GET_PAGE});
     return <Error message={t('error-loading-data')} />;
   }
-  const { page, activeScenario } = data;
+  const { page, activeScenario } = data;
   let pageContent;
   if (!page) {
     console.error(`No page found for path ${path}`);
@@ -56,7 +53,7 @@ export default function Page({ path, headerExtra }) {
     return <Error message={`${t('invalid-page-type')} : ${page.__typename}`} />;
   }
   return (
-    <Layout>
+    <>
       <Head>
         <title>
           {site.title}
@@ -68,6 +65,6 @@ export default function Page({ path, headerExtra }) {
       </Head>
       {headerExtra}
       {pageContent}
-    </Layout>
+    </>
   );
 }

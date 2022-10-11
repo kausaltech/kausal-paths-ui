@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
@@ -6,6 +5,7 @@ import { settingsVar } from 'common/cache';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
 import ImpactDisplay from './ImpactDisplay';
+import { NodeLink } from 'common/urls';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -84,7 +84,7 @@ const CausalCard = (props) => {
             { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
             { node.quantity === 'energy' && <Icon.BatteryCharging size={24} className="mb-3" /> }
             { node.quantity === 'mileage' && <Icon.Signpost size={24} className="mb-3" /> }
-            <Link href={`/node/${node.id}`}><a><h4>{node.name}</h4></a></Link>
+            <NodeLink node={node}><a><h4>{node.name}</h4></a></NodeLink>
           </CardHeader>
           <ImpactFigures>
             <ImpactDisplay

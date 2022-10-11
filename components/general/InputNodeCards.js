@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import styled from 'styled-components';
 import {ArrowUp} from 'react-bootstrap-icons';
+
+import { NodeLink } from 'common/urls';
 import DashCard from 'components/general/DashCard';
 
 const InputNodesWrapper = styled.div`
@@ -32,11 +33,11 @@ const InputNodeCards = (props) => {
       <NodeItem key={input.id}>
         <EffectIcon><ArrowUp size={32}/></EffectIcon>
         <DashCard>
-          <Link href={`/node/${input.id}`}>
+          <NodeLink node={input.id}>
             <a>
               <h5>{input.name}</h5>
             </a>
-          </Link>
+          </NodeLink>
         </DashCard>
       </NodeItem>
     ))}

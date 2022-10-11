@@ -2,6 +2,7 @@ import Link from 'next/link';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
 import { Container, Row, Col, ListGroup, ListGroupItem } from 'reactstrap';
+import { NodeLink } from 'common/urls';
 
 const InputNodes = styled.div`
   margin-bottom: 4rem;
@@ -53,11 +54,11 @@ const NodeLinks = (props) => {
                 { t('affected-by') }
               </ListGroupItem>
               { inputNodes.map((inputNode, index) => (
-                <Link key={inputNode.id} href={`/node/${inputNode.id}`}>
-                  <ListGroupItem tag="a" href=''>
+                <NodeLink key={inputNode.id} node={inputNode}>
+                  <ListGroupItem tag="a">
                     <span>{ inputNode.name }</span>
                   </ListGroupItem>
-                </Link>
+                </NodeLink>
               ))}
             </ListGroup>
           </InputNodes>
@@ -71,11 +72,11 @@ const NodeLinks = (props) => {
                 { t('has-effect-on') }
               </ListGroupItem>
               { outputNodes.map((outputNode, index) => (
-                <Link key={outputNode.id} href={`/node/${outputNode.id}`}>
-                  <ListGroupItem tag="a" href=''>
+                <NodeLink key={outputNode.id} node={outputNode}>
+                  <ListGroupItem tag="a">
                     <span>{ outputNode.name }</span>
                   </ListGroupItem>
-                </Link>
+                </NodeLink>
               ))}
             </ListGroup>
           </OutputNodes>

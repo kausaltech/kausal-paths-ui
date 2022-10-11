@@ -9,7 +9,6 @@ import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';
 import { GET_ACTION_EFFICIENCY } from 'common/queries/getActionEfficiency';
 
-import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import MacGraph from 'components/graphs/MacGraph';
 import ContentLoader from 'components/common/ContentLoader';
@@ -70,14 +69,14 @@ function MacPage(props) {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><ContentLoader /></Layout>;
+    return <ContentLoader />;
   } if (error) {
-    return <Layout><div>{ t('error-loading-data') }</div></Layout>;
+    return <div>{ t('error-loading-data') }</div>;
   }
 
   if (!data.actionEfficiencyPairs.length) {
     // FIXME: Replace with a proper error component
-    return <Layout>{ t('page-not-found') }</Layout>
+    return <p>{ t('page-not-found') }</p>
   }
 
   // console.log(data);
@@ -122,7 +121,7 @@ function MacPage(props) {
   const costUnit = data.actionEfficiencyPairs[activeEfficiency].costNode.unit.short; 
 
   return (
-  <Layout>
+  <>
     <HeaderSection>
       <Container>
         <PageHeader>
@@ -253,7 +252,7 @@ function MacPage(props) {
     <SettingsPanel
       defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
     />
-  </Layout>
+  </>
   )
 }
 

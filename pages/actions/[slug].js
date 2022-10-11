@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import { Container, Badge } from 'reactstrap';
 import styled from 'styled-components';
@@ -11,12 +10,12 @@ import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
-import Layout from 'components/Layout';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
 import ActionParameters from 'components/general/ActionParameters';
 import ContentLoader from 'components/common/ContentLoader';
+import { ActionListLink, NodeLink } from 'common/urls';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -84,11 +83,11 @@ export default function ActionPage() {
   }, [activeScenario]);
 
   if (loading) {
-    return <Layout><ContentLoader /></Layout>;
+    return <ContentLoader />;
   }
   if (error) {
     logError(error, {query: GET_ACTION_CONTENT});
-    return <Layout><Container><h2 className="p-5">{t('error-loading-data')}</h2></Container></Layout>;
+    return <Container><h2 className="p-5">{t('error-loading-data')}</h2></Container>;
   }
 
   const action = data.node;
@@ -97,7 +96,7 @@ export default function ActionPage() {
   // actionTree.filter((node) => node.inputNodes.find((input) => input.id === parentId));
 
   return (
-    <Layout>
+    <>
       <Head>
         <title>
           {site.title}
@@ -112,11 +111,11 @@ export default function ActionPage() {
           <PageHeader>
             <HeaderCard>
               <h1>
-                <Link href="/actions">
+                <ActionListLink>
                   <a>
                     { t('actions') }
                   </a>
-                </Link>
+                </ActionListLink>
                 {' '}
                 /
                 {' '}
@@ -129,7 +128,7 @@ export default function ActionPage() {
               </div>
               <ActionDescription>
                 <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
-                <Link href={`/node/${action.id}`}><a>{t('read-more')}</a></Link>
+                <NodeLink node={action}><a>{t('read-more')}</a></NodeLink>
                 <hr />
               <ActionParameters
                 parameters={action.parameters}
@@ -162,6 +161,6 @@ export default function ActionPage() {
       <SettingsPanel
         defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
       />
-    </Layout>
+    </>
   );
 }

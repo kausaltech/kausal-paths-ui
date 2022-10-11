@@ -53,7 +53,7 @@ const Layout = ({ children }) => {
     urlPath: page.urlPath,
     active: page == activePage,
   }));
-  
+
   return (
     <>
       <Head>

@@ -1,6 +1,5 @@
 import { useRef, useContext } from 'react';
-import _ from 'lodash';
-import Link from 'next/link';
+import { remove } from 'lodash';
 import { Container } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
@@ -10,6 +9,7 @@ import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import { useInstance } from 'common/instance';
 import { useSite } from 'context/site';
+import { NodeLink } from 'common/urls';
 
 const ActionPoint = styled.div`
   height: 1rem;
@@ -119,7 +119,7 @@ const CausalGrid = (props) => {
     );
     // remove higher duplicates from the grid
     grid.forEach((gridRow) => {
-      _.remove(gridRow, (item) => rowIds.find((rowId) => rowId === item.id));
+      remove(gridRow, (item) => rowIds.find((rowId) => rowId === item.id));
     });
 
     if (rowIds.length > 0) {
@@ -206,11 +206,11 @@ const CausalGrid = (props) => {
               <div>
                 <GoalCard>
                   <h2>
-                    <Link href={`/node/${lastNode.id}`}>
+                    <NodeLink node={lastNode}>
                       <a>
                         {lastNode.name}
                       </a>
-                    </Link>
+                    </NodeLink>
                   </h2>
                   <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.description }} />
                   <ImpactFigures>
