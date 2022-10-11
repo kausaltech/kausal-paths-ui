@@ -1,5 +1,4 @@
-
-import Link from 'next/link';
+import { ActionListLink } from 'common/urls';
 import styled, { useTheme } from 'styled-components';
 import { ButtonGroup, Button } from 'reactstrap';
 const ActionViewsNav = styled.div`
@@ -16,16 +15,16 @@ const ActionsSubNav = (props) => {
         className="my-2"
         size="sm"
       >
-        <Link href={`/actions`}>
-        <Button outline={active !== 'list'} tag="a">
-          List
-        </Button>
-        </Link>
-        <Link href={`/actions/mac`}>
-        <Button outline={active !== 'mac'} tag="a">
-          Cost effectiveness
-        </Button>
-        </Link>
+        <ActionListLink>
+          <Button outline={active !== 'list'} tag="a">
+            List
+          </Button>
+        </ActionListLink>
+        <ActionListLink subPage='mac'>
+          <Button outline={active !== 'mac'} tag="a">
+            Cost effectiveness
+          </Button>
+        </ActionListLink>
       </ButtonGroup>
     </ActionViewsNav>
   )

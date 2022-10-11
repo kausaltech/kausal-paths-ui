@@ -2,6 +2,8 @@ import { useContext } from 'react';
 import PropTypes, { number, exact, string, oneOfType, bool, array, object } from 'prop-types';
 import { ThemeContext } from 'styled-components';
 import { cloneDeep, merge } from 'lodash';
+import { formatUrl } from './urls';
+
 /* eslint-disable */
 const defaultTheme = require('public/static/themes/default/theme.json');
 
@@ -220,12 +222,14 @@ export function setTheme(newTheme) {
 
 export async function applyTheme(themeIdentifier) {
   let themeProps;
-  try {
-    const theme = await import(`public/static/themes/${themeIdentifier}/theme.json`);
-    themeProps = theme.default;
-  } catch (error) {
-    console.error(`Theme with identifier ${themeIdentifier} not found`);
-    console.error(error);
+  if (themeIdentifier) {
+    try {
+      const theme = await import(`public/static/themes/${themeIdentifier}/theme.json`);
+      themeProps = theme.default;
+    } catch (error) {
+      console.error(`Theme with identifier ${themeIdentifier} not found`);
+      console.error(error);
+    }
   }
   if (!themeProps) {
     themeProps = {};
@@ -234,7 +238,7 @@ export async function applyTheme(themeIdentifier) {
 }
 
 export function getThemeCSS(themeIdentifier) {
-  return `/static/themes/${themeIdentifier}/main.css`;
+  return formatUrl(`/static/themes/${themeIdentifier}/main.css`);
 }
 
 export default theme;

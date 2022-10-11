@@ -1,21 +1,24 @@
-import Document, { Html, Head, Main, NextScript } from 'next/document';
+import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/document';
 import * as Sentry from "@sentry/nextjs";
 import { ServerStyleSheet } from 'styled-components';
 import { getThemeCSS } from 'common/theme';
+import { setBasePath } from 'common/urls';
+import getConfig from 'next/config';
+
 
 class PlansDocument extends Document {
-  static async getInitialProps(ctx) {
+  static async getInitialProps(ctx: DocumentContext) {
     const sheet = new ServerStyleSheet();
     const originalRenderPage = ctx.renderPage;
     let themeProps;
-    let basePath;
+    const basePath = getConfig().publicRuntimeConfig.basePath;
 
+    setBasePath(basePath);
     const sentryTraceId = Sentry.getCurrentHub()?.getScope()?.getTransaction()?.toTraceparent();
     try {
       ctx.renderPage = () => originalRenderPage({
         enhanceApp: (App) => (props) => {
           themeProps = props.themeProps;
-          basePath = props.router.basePath;
           return sheet.collectStyles(<App {...props} />);
         },
       });

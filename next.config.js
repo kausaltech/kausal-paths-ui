@@ -77,8 +77,7 @@ const nextConfig = {
     }
     return cfg;
   },
-  webpack5: true,
-  swcMinify: false,
+  swcMinify: true,
   // basePath: process.env.BASE_PATH,
   i18n,
 }

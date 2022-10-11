@@ -306,13 +306,14 @@ function GlobalNav(props) {
     siteTitle, ownerName, navItems, fullwidth, sticky,
   } = props;
 
-  const OrgLogo = () => (
-    <SVG
-      src={formatUrl(theme.themeLogoUrl)}
+  const OrgLogo = () => {
+    const url = formatUrl(theme.themeLogoUrl);
+    return <SVG
+      src={url}
       title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
       preserveAspectRatio="xMinYMid meet"
     />
-  );
+  };
 
   if (sticky) {
     useScrollPosition(

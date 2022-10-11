@@ -15,11 +15,9 @@ import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
 import InstanceContext, { GET_INSTANCE_CONTEXT } from 'common/instance';
 import SiteContext from 'context/site';
 
-const { publicRuntimeConfig } = getConfig();
+let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
 require('../styles/default/main.scss');
-
-const basePath = publicRuntimeConfig.basePath ? publicRuntimeConfig.basePath : '';
 
 if (process.browser) {
   setBasePath();
@@ -132,7 +130,23 @@ const defaultSiteContext = {
     showNavTitle: true,
     showLangSelector: false,
     watchLink: null,
-  }
+  },
+  espoo: {
+    showYearSelector: true,
+    showScenarios: true,
+    showTargetBar: true,
+    split: true,
+    loginLink: false,
+    showBaseline: true,
+    showTarget: true,
+    useBaseYear: true,
+    showNavTitle: true,
+    showLangSelector: true,
+    watchLink: {
+      title: 'Ilmastovahti',
+      url: 'https://ilmastovahti.espoo.fi',
+    },
+  },
 }
 
 
@@ -140,7 +154,7 @@ function PathsApp(props) {
   const {
     Component, pageProps, siteContext, themeProps,
   } = props;
-  console.log("App Props", props);
+  //console.log("App Props", props);
   const { instance, scenarios, parameters } = siteContext;
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);
@@ -203,7 +217,7 @@ async function getSiteContext(req, locale) {
   } else {
     host = window.location.hostname;
   }
-
+  const { publicRuntimeConfig } = getConfig();
   // Instance is identified either by a hard-coded identifier or by the
   // request hostname.
   const siteContext = {
@@ -260,7 +274,6 @@ async function getI18nProps(ctx) {
 
 
 PathsApp.getInitialProps = async (appContext) => {
-  setBasePath();
   const { ctx } = appContext; 
   const { req, err } = ctx;
   const appProps = await App.getInitialProps(appContext);
@@ -283,6 +296,7 @@ PathsApp.getInitialProps = async (appContext) => {
     return ret;
   }
   // SSR
+  setBasePath();
   const i18nProps = await getI18nProps(ctx);
   const siteProps = await getSiteContext(req, ctx.locale);
   const pageProps = {

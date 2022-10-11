@@ -1,4 +1,3 @@
-import path from "path";
 import Koa from "koa";
 import Router from "@koa/router";
 import logger from "koa-logger";
@@ -6,7 +5,20 @@ import apollo from '@apollo/client';
 import 'dotenv/config'
 import next from "next";
 
+import { getCurrentURL } from './common/server.mjs';
+
+console.log('> 💡 Starting server');
+
 const { ApolloClient, HttpLink, InMemoryCache, gql, } = apollo;
+
+import * as sentryModule from '@sentry/nextjs';
+import './sentry.server.config.js';
+
+const Sentry = sentryModule.default;
+
+if (process.env.SENTRY_DSN) {
+  console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
+}
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== "production";
@@ -24,10 +36,12 @@ query GetInstanceConfig($hostname: String, $identifier: ID) @instance(identifier
   }
 }`;
 
+import { parse as parseUrl } from 'url'
+
 class PathsServer {
   constructor() {
     this.nextConfig = null;
-    this.app = next({ dev });
+    this.app = next({ dev, hostname: 'localhost', port: 3000 });
     this.nextHandleRequest = this.app.getRequestHandler();
     this.instancesByHostname = new Map();
   }
@@ -70,15 +84,16 @@ class PathsServer {
 
   setBasePath(basePath) {
     const srv = this.nextServer;
+
+    if (basePath && basePath.endsWith('/')) basePath.slice(0, -1);
     srv.nextConfig.basePath = basePath;
     srv.nextConfig.assetPrefix = basePath;
     srv.nextConfig.images.path = basePath + '/_next/image';
     srv.nextConfig.publicRuntimeConfig.basePath = basePath;
     srv.renderOpts.basePath = basePath;
     srv.renderOpts.canonicalBase = basePath;
-    srv.renderOpts.runtimeConfig.basePath = basePath;
+    //srv.renderOpts.runtimeConfig.basePath = basePath;
     srv.renderOpts.assetPrefix = basePath;
-    srv.router.basePath = basePath;
   }
 
   setLocale(defaultLocale, locales) {
@@ -88,10 +103,13 @@ class PathsServer {
     loc.splice(0, 0, defaultLocale);
     srv.nextConfig.i18n.defaultLocale = defaultLocale;
     srv.nextConfig.i18n.locales = loc;
-    srv.router.locales = loc;
-    srv.incrementalCache.locales = loc;
+    //srv.router.locales = loc;
+    //srv.incrementalCache.locales = loc;
   }
 
+  /**
+   * @param {Koa.Context} ctx 
+   */
   async handleRequest(ctx) {
     const instance = await this.getInstance(ctx);
     if (!instance) return;
@@ -99,6 +117,14 @@ class PathsServer {
     this.setBasePath(basePath);
     this.setLocale(instance.defaultLanguage, instance.supportedLanguages)
     this.nextServer.nextConfig.publicRuntimeConfig.instance = instance;
+    const currentURL = getCurrentURL(ctx.req);
+    if (basePath && !currentURL.path.startsWith(basePath)) {
+      ctx.status = 404;
+      ctx.body = 'Page not found';
+      return;
+    }
+    ctx.req.currentURL = getCurrentURL(ctx.req);
+    //const url = parseUrl(ctx.req.url);
     await this.nextHandleRequest(ctx.req, ctx.res);
     ctx.respond = false;
   }
@@ -118,6 +144,14 @@ class PathsServer {
       await next();
     });
     server.use(router.routes());
+    server.on('error', (err, ctx) => {
+      if (err.statusCode && err.statusCode === 404) return;
+      Sentry.withScope((scope) => {
+        scope.addEventProcessor((event) => Sentry.Handlers.parseRequest(event, ctx.request));
+        Sentry.captureException(err);
+      });
+      console.error(err);
+    });
     server.listen(port, () => {
       console.log(`> Ready on http://localhost:${port}`);
     });
