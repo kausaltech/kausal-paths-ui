@@ -2,7 +2,7 @@ import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/do
 import * as Sentry from "@sentry/nextjs";
 import { ServerStyleSheet } from 'styled-components';
 import { getThemeCSS } from 'common/theme';
-import { setBasePath } from 'common/urls';
+import { setBasePath } from 'common/links';
 import getConfig from 'next/config';
 
 

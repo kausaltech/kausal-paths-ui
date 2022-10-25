@@ -16,7 +16,7 @@ import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
 import NodeLinks from 'components/general/NodeLinks';
 import ContentLoader from 'components/common/ContentLoader';
-import { ActionLink } from 'common/urls';
+import { ActionLink } from 'common/links';
 
 const HeaderSection = styled.div`
   padding: 1rem 0 1rem;

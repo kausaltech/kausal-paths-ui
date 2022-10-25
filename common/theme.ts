@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PropTypes, { number, exact, string, oneOfType, bool, array, object } from 'prop-types';
 import { ThemeContext } from 'styled-components';
 import { cloneDeep, merge } from 'lodash';
-import { formatUrl } from './urls';
+import { formatUrl } from './links';
 
 /* eslint-disable */
 const defaultTheme = require('public/static/themes/default/theme.json');

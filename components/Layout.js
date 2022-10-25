@@ -7,7 +7,7 @@ import GlobalNav from 'components/common/GlobalNav';
 import { settingsVar } from 'common/cache';
 import SiteContext from 'context/site';
 import { useSite } from 'context/site';
-import ActionPage from 'pages/actions/[slug]';
+
 
 const PageContainer = styled.div`
   width: 100%;
@@ -23,7 +23,6 @@ const Layout = ({ children }) => {
   const router = useRouter();
   const { asPath:pathname } = router;
   const { iconBase, ogImage } = settingsVar();
-  const { t } = useTranslation();
   const demoSite = useContext(SiteContext);
   const site = useSite();
   const { menuPages } = site;

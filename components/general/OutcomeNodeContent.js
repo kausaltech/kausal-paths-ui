@@ -4,7 +4,7 @@ import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
-import { ActionLink, Link, NodeLink } from 'common/urls';
+import { ActionLink, Link, NodeLink } from 'common/links';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';

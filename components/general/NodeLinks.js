@@ -2,7 +2,7 @@ import Link from 'next/link';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
 import { Container, Row, Col, ListGroup, ListGroupItem } from 'reactstrap';
-import { NodeLink } from 'common/urls';
+import { NodeLink } from 'common/links';
 
 const InputNodes = styled.div`
   margin-bottom: 4rem;

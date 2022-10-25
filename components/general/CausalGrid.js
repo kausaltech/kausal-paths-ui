@@ -9,7 +9,7 @@ import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import { useInstance } from 'common/instance';
 import { useSite } from 'context/site';
-import { NodeLink } from 'common/urls';
+import { NodeLink } from 'common/links';
 
 const ActionPoint = styled.div`
   height: 1rem;

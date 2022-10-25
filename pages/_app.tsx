@@ -8,7 +8,7 @@ import { appWithTranslation } from 'next-i18next';
 import * as Sentry from '@sentry/react';
 
 import { useApollo } from 'common/apollo';
-import { setBasePath } from 'common/urls';
+import { setBasePath } from 'common/links';
 import theme, { setTheme, applyTheme } from 'common/theme';
 import { getI18n } from 'common/i18n';
 import ThemedGlobalStyles from 'common/ThemedGlobalStyles';

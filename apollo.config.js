@@ -1,10 +1,11 @@
 require('dotenv').config();
 
-JS = '*.{js,jsx,ts,tsx}'
+JS = '*.{js,jsx,ts,tsx,mjs}'
 
 module.exports = {
   client: {
     includes: [
+      `./*.mjs`,
       `./components/**/${JS}`,
       `./pages/**/${JS}`,
       `./common/**/${JS}`

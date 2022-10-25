@@ -15,7 +15,7 @@ import CausalGrid from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
 import ActionParameters from 'components/general/ActionParameters';
 import ContentLoader from 'components/common/ContentLoader';
-import { ActionListLink, NodeLink } from 'common/urls';
+import { ActionListLink, NodeLink } from 'common/links';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;

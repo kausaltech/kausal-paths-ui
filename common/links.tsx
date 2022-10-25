@@ -1,10 +1,9 @@
 import getConfig from 'next/config';
 import NextLink, { LinkProps } from 'next/link';
-import { useRouter } from 'next/router';
 import { getI18n } from 'common/i18n';
 
 
-let basePath;
+let basePath: string|undefined;
 
 function getLocalePrefix(forLocale?: string|false) {
   const i18n = getI18n();

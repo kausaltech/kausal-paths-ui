@@ -1,4 +1,4 @@
-import { ActionListLink } from 'common/urls';
+import { ActionListLink } from 'common/links';
 import styled, { useTheme } from 'styled-components';
 import { ButtonGroup, Button } from 'reactstrap';
 const ActionViewsNav = styled.div`
@@ -6,7 +6,6 @@ const ActionViewsNav = styled.div`
 `;
 
 const ActionsSubNav = (props) => {
-
   const { active } = props;
 
   return (

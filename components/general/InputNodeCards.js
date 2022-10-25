@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import {ArrowUp} from 'react-bootstrap-icons';
 
-import { NodeLink } from 'common/urls';
+import { NodeLink } from 'common/links';
 import DashCard from 'components/general/DashCard';
 
 const InputNodesWrapper = styled.div`

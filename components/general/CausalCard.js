@@ -5,7 +5,7 @@ import { settingsVar } from 'common/cache';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
 import ImpactDisplay from './ImpactDisplay';
-import { NodeLink } from 'common/urls';
+import { NodeLink } from 'common/links';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;

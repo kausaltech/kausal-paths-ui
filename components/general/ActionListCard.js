@@ -2,7 +2,7 @@ import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { Badge } from 'reactstrap';
 
-import { ActionLink } from 'common/urls';
+import { ActionLink } from 'common/links';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';

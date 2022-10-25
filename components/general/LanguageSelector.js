@@ -1,4 +1,4 @@
-import { Link } from 'common/urls';
+import { Link } from 'common/links';
 import { useRouter } from 'next/router';
 import { Globe2 } from 'react-bootstrap-icons';
 import styled from 'styled-components';
