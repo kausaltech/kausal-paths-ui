@@ -23,6 +23,11 @@ const WidgetWrapper = styled.div`
   .form-check-input {
     margin-top: .25rem;
     margin-right: 1rem;
+
+    &:checked {
+      background-color: ${(props) =>props.theme.brandDark};
+      border-color: ${(props) =>props.theme.brandDark};
+    }
   }
 `;
 
@@ -35,8 +40,8 @@ const RangeValue = styled.div`
 `;
 
 const Thumb = styled.div`
-  height: 24px;
-  width: 24px;
+  height: 20px;
+  width: 20px;
   border-radius: 16px;
   background-color: ${(props) => (props.dragged ? props.color : props.color)};
   color: white;

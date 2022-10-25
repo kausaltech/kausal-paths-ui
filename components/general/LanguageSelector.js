@@ -33,7 +33,7 @@ const Selector = styled(UncontrolledDropdown)`
     }
   }
 
-  svg.icon {
+  svg {
     fill: ${(props) => props.mobile === 'true' ? props.theme.themeColors.dark : props.theme.brandNavColor} !important;
   }
 `;
