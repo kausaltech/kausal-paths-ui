@@ -1,7 +1,7 @@
 import { Link } from 'common/links';
 import { useRouter } from 'next/router';
 import { Globe2 } from 'react-bootstrap-icons';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import {
   UncontrolledDropdown,
   DropdownToggle,
@@ -61,6 +61,7 @@ const languageNames = {
 const LanguageSelector = (props) => {
   const router = useRouter();
   const { mobile } = props;
+  const theme = useTheme();
 
   const { locales } = router
   if (locales?.length < 2) return (null);
@@ -72,7 +73,7 @@ const LanguageSelector = (props) => {
   return (
       <Selector nav inNavbar mobile={mobile.toString()} className={mobile && 'd-md-none'}>
         <DropdownToggle nav>
-          <Globe2 color={ mobile ? 'black' : 'white'} />
+          <Globe2 color={theme.neutralDark} />
           <CurrentLanguage mobile={mobile.toString()}>{ router.locale }</CurrentLanguage>
         </DropdownToggle>
         <StyledDropdownMenu end>
