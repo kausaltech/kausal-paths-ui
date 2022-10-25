@@ -149,6 +149,60 @@ const defaultSiteContext = {
       url: 'https://ilmastovahti.espoo.fi',
     },
   },
+  zuerich: {
+    theme: 'zurich',
+    showYearSelector: true,
+    showScenarios: true,
+    showTargetBar: true,
+    split: true,
+    loginLink: false,
+    showBaseline: true,
+    showTarget: true,
+    useBaseYear: true,
+    showNavTitle: true,
+    showLangSelector: true,
+    watchLink: null,
+    homeLink: [
+      {
+        id: 'hp-en',
+        lang: 'en',
+        title: 'Emissions',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-de',
+        lang: 'de',
+        title: 'Emissions',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-fi',
+        lang: 'fi',
+        title: 'Päästöt',
+        urlPath: '/',
+      },
+    ],
+    demoPages: [
+      {
+        id: 's-en-1',
+        lang: 'en',
+        title: 'About',
+        urlPath: '/demo/about'
+      },
+      {
+        id: 's-de-1',
+        lang: 'de',
+        title: 'Info',
+        urlPath: '/demo/about'
+      },
+      {
+        id: 's-fi-1',
+        lang: 'fi',
+        title: 'Tietoa palvelusta',
+        urlPath: '/demo/about'
+      },
+    ]
+  },
 }
 
 

@@ -14,6 +14,7 @@ const SiteContext = React.createContext({
     maximumHistoricalYear: 0,
     leadTitle: '',
     leadParagraph: '',
+    homeLink: undefined,
   },
   scenarios: [],
 });
