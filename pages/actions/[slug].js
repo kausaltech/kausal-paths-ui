@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Container, Badge } from 'reactstrap';
+import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
@@ -16,6 +16,7 @@ import NodePlot from 'components/general/NodePlot';
 import ActionParameters from 'components/general/ActionParameters';
 import ContentLoader from 'components/common/ContentLoader';
 import { ActionListLink, NodeLink } from 'common/links';
+import Badge from 'components/common/Badge';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -40,6 +41,7 @@ const ActionDescription = styled.div`
 `;
 
 const ActionCategory = styled.div`
+  margin-bottom: 1rem;
 `;
 
 const PageHeader = styled.div` 
@@ -123,7 +125,13 @@ export default function ActionPage() {
               </h1>
               <div>
               { action.decisionLevel === 'NATION' && (
-                <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory>
+                <ActionCategory>
+                  <Badge
+                    color="neutralLight"
+                  >
+                    { t('decision-national') }
+                  </Badge>
+                </ActionCategory>
               )}
               </div>
               <ActionDescription>

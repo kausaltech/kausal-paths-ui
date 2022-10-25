@@ -1,12 +1,11 @@
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
-import { Badge } from 'reactstrap';
-
 import { ActionLink } from 'common/links';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
+import Badge from 'components/common/Badge';
 
 const ActionItem = styled.li`
   margin-bottom: 1.5rem;
@@ -85,7 +84,15 @@ const ActionListCard = (props) => {
               </h5>
             </a>
           </ActionLink>
-          { level === 'NATION' && <ActionCategory><Badge>{ t('decision-national') }</Badge></ActionCategory> }
+          { level === 'NATION' && (
+            <ActionCategory>
+              <Badge
+                color="neutralLight"
+              >
+                { t('decision-national') }
+              </Badge>
+            </ActionCategory> 
+          )}
         </CardHeader>
         <CardContent>
           <ActionState>
