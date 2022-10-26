@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PropTypes, { number, exact, string, oneOfType, bool, array, object } from 'prop-types';
 import { ThemeContext } from 'styled-components';
 import { cloneDeep, merge } from 'lodash';
-import { formatUrl } from './links';
+import { formatStaticUrl } from './links';
 
 /* eslint-disable */
 const defaultTheme = require('public/static/themes/default/theme.json');
@@ -237,8 +237,8 @@ export async function applyTheme(themeIdentifier) {
   setTheme(themeProps);
 }
 
-export function getThemeCSS(themeIdentifier) {
-  return formatUrl(`/static/themes/${themeIdentifier}/main.css`);
+export function getThemeCSS(themeIdentifier: string) {
+  return formatStaticUrl(`/static/themes/${themeIdentifier}/main.css`);
 }
 
 export default theme;

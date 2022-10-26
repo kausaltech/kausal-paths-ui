@@ -11,7 +11,7 @@ import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { transparentize } from 'polished';
 import SiteContext from 'context/site';
-import { formatUrl, Link } from 'common/links';
+import { formatStaticUrl, Link } from 'common/links';
 import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
 
@@ -307,7 +307,7 @@ function GlobalNav(props) {
   } = props;
 
   const orgLogo = useMemo(() => {
-    const url = formatUrl(theme.themeLogoUrl);
+    const url = formatStaticUrl(theme.themeLogoUrl);
     return <SVG
       className="org-logo"
       src={url}

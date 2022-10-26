@@ -33,6 +33,14 @@ export function formatUrl(url: string, forLocale?: string|false) {
   return url;
 };
 
+export function formatStaticUrl(url: string) {
+  if (!url) return url;
+  if (url.startsWith('/')) {
+    let pathPrefix = basePath || '';
+    return `${pathPrefix}${url}`;
+  }
+}
+
 
 type OtherLinkProps = Omit<LinkProps, 'href' | 'as'>;
 
