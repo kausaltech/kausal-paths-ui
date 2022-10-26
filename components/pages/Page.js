@@ -7,6 +7,7 @@ import GET_PAGE from 'common/queries/getPage';
 import ContentLoader from 'components/common/ContentLoader';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
+import GraphQLError from 'components/common/GraphQLError';
 import OutcomePage from 'components/pages/OutcomePage';
 import ActionListPage from 'components/pages/ActionListPage';
 
@@ -35,7 +36,7 @@ export default function Page({ path, headerExtra }) {
   }
   if (error) {
     logError(error, {query: GET_PAGE});
-    return <Error message={t('error-loading-data')} />;
+    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
   const { page, activeScenario } = data;
   let pageContent;

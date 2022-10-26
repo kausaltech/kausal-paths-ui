@@ -1,13 +1,13 @@
 import { useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useQuery, useReactiveVar } from '@apollo/client';
-import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
+import { Container, Row, Col } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
-import Layout from 'components/Layout';
+import GraphQLError from 'components/common/GraphQLError';
 import ActionListCard from 'components/general/ActionListCard';
 import SettingsPanel from 'components/general/SettingsPanel';
 import FrontPageHeader from 'components/general/FrontPageHeader';
@@ -61,9 +61,9 @@ export default function ActionListPage(props) {
   }, [activeScenario]);
 
   if (loading) {
-    return <><ContentLoader /></>;
+    return <ContentLoader />;
   } if (error) {
-    return <><div>{ t('error-loading-data') }</div></>;
+    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
   return (

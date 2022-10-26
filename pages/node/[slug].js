@@ -10,7 +10,7 @@ import { ArrowRight } from 'react-bootstrap-icons';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
-import Layout from 'components/Layout';
+import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanel from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
@@ -146,10 +146,9 @@ export default function NodePage() {
 
   if (loading) {
     return <ContentLoader />;
-  }
-  if (error) {
+  } if (error) {
     logError(error, {query: GET_NODE_PAGE_CONTENT});
-    return <Container><h2 className="p-5">{t('error-loading-data')}</h2></Container>;
+    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
   const { node } = data;

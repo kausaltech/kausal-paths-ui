@@ -3,12 +3,13 @@ import { useQuery, useReactiveVar } from '@apollo/client';
 import styled, { useTheme } from 'styled-components';
 
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
-import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label } from 'reactstrap';
+import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label, Alert } from 'reactstrap';
 import { SortUp, SortDown } from 'react-bootstrap-icons';
 import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';
 import { GET_ACTION_EFFICIENCY } from 'common/queries/getActionEfficiency';
 
+import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanel from 'components/general/SettingsPanel';
 import MacGraph from 'components/graphs/MacGraph';
 import ContentLoader from 'components/common/ContentLoader';
@@ -71,12 +72,12 @@ function MacPage(props) {
   if (loading) {
     return <ContentLoader />;
   } if (error) {
-    return <div>{ t('error-loading-data') }</div>;
+    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
   if (!data.actionEfficiencyPairs.length) {
     // FIXME: Replace with a proper error component
-    return <p>{ t('page-not-found') }</p>
+    return <Alert>{ t('page-not-found') }</Alert>
   }
 
   // console.log(data);

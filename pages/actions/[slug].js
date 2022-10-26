@@ -10,6 +10,7 @@ import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
+import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
@@ -89,7 +90,7 @@ export default function ActionPage() {
   }
   if (error) {
     logError(error, {query: GET_ACTION_CONTENT});
-    return <Container><h2 className="p-5">{t('error-loading-data')}</h2></Container>;
+    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
   const action = data.node;
