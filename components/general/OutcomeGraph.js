@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import styled, { ThemeContext } from 'styled-components';
-import { lighten } from 'polished';
+import { tint } from 'polished';
 import { Spinner } from 'reactstrap';
 import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
@@ -138,7 +138,7 @@ const OutcomeGraph = (props) => {
       showlegend: false,
       type: 'scatter',
       fill: 'tonexty',
-      fillcolor: lighten(0.2, fillColor),
+      fillcolor: tint(0.3, fillColor),
       stackgroup: 'group3',
       line: {
         color: 'white',
@@ -160,7 +160,7 @@ const OutcomeGraph = (props) => {
         showlegend: false,
         type: 'scatter',
         fill: 'tonexty',
-        fillcolor: lighten(0.2, fillColor),
+        fillcolor: tint(0.3, fillColor),
         stackgroup: 'group2',
         line: {
           color: 'white',
@@ -207,7 +207,7 @@ const OutcomeGraph = (props) => {
       xaxis: 'x1',
       yaxis: 'y1',
       line: {
-        color: theme.graphColors.red070,
+        color: theme.graphColors.red090,
         width: 2,
         dash: 'dot',
       },
@@ -221,7 +221,7 @@ const OutcomeGraph = (props) => {
         yaxis: 'y1',
         name: `${t('target')} ${settingsVar().maxYear}`,
         line: {
-          color: theme.graphColors.red070,
+          color: theme.graphColors.red090,
           width: 2,
           dash: 'dot',
         },

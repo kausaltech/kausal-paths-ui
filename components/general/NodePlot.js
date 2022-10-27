@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
-import { lighten, transparentize } from 'polished';
+import { tint, transparentize } from 'polished';
 import styled, { ThemeContext } from 'styled-components';
 import { settingsVar } from 'common/cache';
 import { CloudArrowDown } from 'react-bootstrap-icons';
@@ -130,7 +130,7 @@ const NodePlot = (props) => {
     },
   );
 
-  const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : lighten(0.25, plotColor);
+  const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
   // Two-entry trace to join historical and scenario together
   if (historical?.x && forecast?.x) {
     const joinTrace = {
@@ -196,7 +196,7 @@ const NodePlot = (props) => {
         fillcolor: transparentize(0.85, scenarioPlotColor),
         line: { width: 0 },
         smoothing: true,
-        ...formatHover(t('plot-without-action'), lighten(0.45, scenarioPlotColor)),
+        ...formatHover(t('plot-without-action'), tint(0.45, scenarioPlotColor)),
       },
     );
   }
