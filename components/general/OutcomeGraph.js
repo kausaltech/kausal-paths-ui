@@ -49,6 +49,13 @@ const OutcomeGraph = (props) => {
     return out;
   }
 
+  // Move nodes with any negative values to the front
+  displayNodes?.sort((a, b) => {
+    if (a.metric?.forecastValues.find((val) => val.value < 0 )) return -1;
+    if (a.metric?.historicalValues.find((val) => val.value < 0 )) return -1;
+    return 0;
+  });
+
   const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
   const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
 
