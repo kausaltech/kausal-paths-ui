@@ -70,11 +70,18 @@ const LanguageSelector = (props) => {
     window.location.href = ev.target.href;
   };
 
+  const getLanguageCodeLabel = (lang) => {
+    if (lang.includes('-')) {
+      return lang.split('-')[0];
+    }
+    return lang;
+  }
+
   return (
       <Selector nav inNavbar mobile={mobile.toString()} className={mobile && 'd-md-none'}>
         <DropdownToggle nav>
           <Globe2 color={theme.neutralDark} />
-          <CurrentLanguage mobile={mobile.toString()}>{ router.locale }</CurrentLanguage>
+          <CurrentLanguage mobile={mobile.toString()}>{ getLanguageCodeLabel(router.locale) }</CurrentLanguage>
         </DropdownToggle>
         <StyledDropdownMenu end>
           { locales.map((locale) => (
