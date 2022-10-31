@@ -1,4 +1,4 @@
-const SUPPORTED_LANGUAGES = ['en', 'fi', 'sv'];
+const SUPPORTED_LANGUAGES = ['en', 'fi', 'sv', 'de'];
 
 module.exports = {
   i18n: {
@@ -8,6 +8,7 @@ module.exports = {
   },
   fallbackLng: {
     'en-AU': ['en'],
+    'de-CH': ['de'],
     'default': ['en'],
   },
   localePath: './public/locales',
