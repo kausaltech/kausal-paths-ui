@@ -25,12 +25,13 @@ const GridRowWrapper = styled.div`
   overflow-y: hidden;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 1rem;
 `;
 
 const GridRow = styled.div`
+  /* TODO: The width is not expanding properly beyond screen width */
   display: flex;
-  width: 100%;
+  justify-content: center;
+  padding: 1rem;
 `;
 
 const GridCol = styled.div`
