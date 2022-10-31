@@ -1,0 +1,10 @@
+{
+  "action-impact": "Massnahmenauswirkungen",
+  "action": "Massnahme",
+  "actions": "Massnahmen",
+  "actions-available": "Massnahmen in Szenario",
+  "actions-influencing-this": "Diesen Sektor beeinflussende Massnahmen",
+  "plot-action-impact": "Massnahmenauswirkungen",
+  "plot-without-action": "Ohne diese Massnahme",
+  "table-action-impact": "Auswirkung der Massnahme"
+}
