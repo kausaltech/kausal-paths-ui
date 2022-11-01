@@ -1,16 +1,25 @@
 import _ from 'lodash';
+import { getI18n } from './i18n';
+
+
 
 // Use Finnish style numeric display formatting
 export const beautifyValue = (x) => {
+  const i18n = getI18n();
+
   let out;
   if (!Number.isInteger(x)) {
     out = x.toFixed(x < 10 ? 1 : 0);
   } else {
     out = x;
   }
-  const s = out.toString();
-  const displayNumber = s.replace('.', ',');
-  return displayNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let s = out.toString();
+  if (i18n.language === 'fi') {
+    s = s.replace('.', ',');
+    s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  } else {
+  }
+  return s;
 };
 
 export const getInitialMetric = (node) => node.metric.historicalValues[0];

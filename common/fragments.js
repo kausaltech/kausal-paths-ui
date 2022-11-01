@@ -11,6 +11,7 @@ export const ALL_METRIC_FIELDS = gql`
     id
     unit {
       htmlShort
+      htmlLong
     }
     historicalValues {
       year

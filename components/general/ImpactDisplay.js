@@ -46,7 +46,7 @@ const ImpactDisplay = (props) => {
       <ImpactDisplayItem>
         <HighlightValue
           displayValue={`${cumulativePrefix}${beautifyValue(effectCumulative || 0)}`}
-          header={`${t('impact-total')} ${yearRange[0]} - ${yearRange[1]}`}
+          header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
           unit={unitCumulative}
           muted={muted}
         />

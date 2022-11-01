@@ -162,46 +162,6 @@ const defaultSiteContext = {
     showNavTitle: true,
     showLangSelector: true,
     watchLink: null,
-    homeLink: [
-      {
-        id: 'hp-en',
-        lang: 'en',
-        title: 'Emissions',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-de',
-        lang: 'de',
-        title: 'Emissions',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-fi',
-        lang: 'fi',
-        title: 'Päästöt',
-        urlPath: '/',
-      },
-    ],
-    demoPages: [
-      {
-        id: 's-en-1',
-        lang: 'en',
-        title: 'About',
-        urlPath: '/demo/about'
-      },
-      {
-        id: 's-de-1',
-        lang: 'de',
-        title: 'Info',
-        urlPath: '/demo/about'
-      },
-      {
-        id: 's-fi-1',
-        lang: 'fi',
-        title: 'Tietoa palvelusta',
-        urlPath: '/demo/about'
-      },
-    ]
   },
 }
 
@@ -210,7 +170,6 @@ function PathsApp(props) {
   const {
     Component, pageProps, siteContext, themeProps,
   } = props;
-  //console.log("App Props", props);
   const { instance, scenarios, parameters } = siteContext;
   const router = useRouter();
   const apolloClient = useApollo(pageProps.data, siteContext);
@@ -224,22 +183,26 @@ function PathsApp(props) {
     }
   }
 
-  useEffect(() => {
-    yearRangeVar([instance.referenceYear || 1990, instance.targetYear]);
+  if (!settingsVar()) {
     settingsVar({
       baseYear: instance.referenceYear || 1990,
       minYear: instance.minimumHistoricalYear || 2010,
       maxYear: instance.targetYear,
       latestMetricYear: instance.maximumHistoricalYear || 2018,
-      totalEmissions: 540,
-      emissionsTarget: 266,
       baselineName: scenarios.find((scenario) => scenario.id === 'baseline').name,
       iconBase: `${basePath}/static/themes/default/images/favicon`,
       ogImage: `${basePath}/static/themes/default/images/og-image-default.png`,
       parameters: parameters,
     });
+  }
+
+  if (!yearRangeVar().length) {
+    yearRangeVar([instance.referenceYear || 1990, instance.targetYear]);
+  }
+
+  if (!activeScenarioVar()) {
     activeScenarioVar(scenarios.find((scenario) => scenario.isActive));
-  }, []);
+  }
 
   if (process.browser) {
     setTheme(themeProps);

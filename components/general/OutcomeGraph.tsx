@@ -7,6 +7,8 @@ import { Spinner } from 'reactstrap';
 import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
 import SiteContext from 'context/site';
+import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import type { PlotParams } from 'react-plotly.js';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
@@ -20,25 +22,39 @@ const PlotLoader = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const OutcomeGraph = (props) => {
+type OutcomeGraphProps = {
+  node: OutcomeNodeFieldsFragment,
+  subNodes: OutcomeNodeFieldsFragment[],
+  color: string,
+  startYear: number,
+  endYear: number,
+}
+
+const OutcomeGraph = (props: OutcomeGraphProps) => {
   const { node, subNodes, color, startYear, endYear } = props;
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
-  const shapes = [];
-  const plotData = [];
+  const shapes: Plotly.Layout['shapes'] = [];
+  const plotData: Plotly.Data[] = [];
   const [loading, setLoading] = useState(true);
 
-  const baselineForecast = node.metric.baselineForecastValues && metricToPlot(node.metric, 'baselineForecastValues', startYear, endYear);
+  const metric = node.metric!;
+
+  const baselineForecast = metric.baselineForecastValues && metricToPlot(node.metric, 'baselineForecastValues', startYear, endYear);
   const targetYearGoal = node.targetYearGoal;
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
   const displayNodes = subNodes?.length > 1 ? subNodes : node && [node];
+  const shortUnit = metric.unit?.short;
+  const longUnit = metric.unit?.htmlLong;
+  const predLabel = t('pred');
+
   const formatHover = (name, color, isPred) => {
-    const predText = isPred ? ' <i> (enn.)</i>' : '';
+    const predText = isPred ? ` <i> (${predLabel})</i>` : '';
     const out = {
-      hovertemplate: `${name}<br />%{x}: <b>%{y:.3r} kt</b>${predText}<extra></extra>`,
+      hovertemplate: `${name}<br />%{x}: <b>%{y:.3r} ${shortUnit}</b>${predText}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
         font: {
@@ -50,7 +66,7 @@ const OutcomeGraph = (props) => {
   }
 
   // Move nodes with any negative values to the front
-  displayNodes?.sort((a, b) => {
+  displayNodes.sort((a, b) => {
     if (a.metric?.forecastValues.find((val) => val.value < 0 )) return -1;
     if (a.metric?.historicalValues.find((val) => val.value < 0 )) return -1;
     return 0;
@@ -59,15 +75,15 @@ const OutcomeGraph = (props) => {
   const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
   const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
 
-  displayNodes?.forEach((node, index) => {
+  displayNodes?.forEach((n, index) => {
     const historicalValues = [];
     let baseValue;
     const forecastValues = [];
     const historicalDates = [];
     const forecastDates = [];
-    const fillColor = node.color || color;
+    const fillColor = n.color || color;
 
-    node.metric.historicalValues.forEach((dataPoint) => {
+    n.metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year ===  settingsVar().baseYear) {
         baseValue = dataPoint.value;
         return;
@@ -89,21 +105,21 @@ const OutcomeGraph = (props) => {
     if (site.useBaseYear) {
       plotData.push(
         {
-          x: [ settingsVar().baseYear-1, settingsVar().baseYear],
+          x: [settingsVar().baseYear - 1, settingsVar().baseYear],
           y: [baseValue, baseValue],
-          name: node.name,
+          name: n.name,
           showlegend: false,
           type: 'scatter',
           fill: 'tonexty',
           line: {
             color: '#ffffff',
-            width: '0.75',
+            width: 0.75,
           },
           stackgroup: 'group2',
           fillcolor: fillColor,
           xaxis: 'x1',
           yaxis: 'y1',
-          ...formatHover(node.name, fillColor, false),
+          ...formatHover(n.name, fillColor, false),
         }
       );
     };
@@ -114,7 +130,7 @@ const OutcomeGraph = (props) => {
         y: historicalValues,
         xaxis: 'x2',
         yaxis: 'y1',
-        name: node.name,
+        name: n.name,
         showlegend: false,
         type: 'scatter',
         fill: 'tonexty',
@@ -123,20 +139,19 @@ const OutcomeGraph = (props) => {
         line: {
           color: '#ffffff',
           shape: 'spline',
-          width: '0.75',
+          width: 0.75,
         },
-        smoothing: true,
-        ...formatHover(node.name, fillColor, false),
+        ...formatHover(n.name, fillColor, false),
       }
     );
-    node.metric.forecastValues.forEach((dataPoint) => {
+    n.metric.forecastValues.forEach((dataPoint) => {
       if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
       forecastValues.push(dataPoint.value);
       forecastDates.push(dataPoint.year);
       }
     });
 
-    const joinData = {
+    const joinData: typeof plotData[0] = {
       y: [historicalValues[historicalValues.length-1], forecastValues[0]],
       x: [historicalDates[historicalDates.length-1], forecastDates[0]],
       xaxis: 'x2',
@@ -150,9 +165,8 @@ const OutcomeGraph = (props) => {
       line: {
         color: 'white',
         shape: 'spline',
-        width: '0.5',
+        width: 0.5,
       },
-      smoothing: true,
       hoverinfo: 'skip',
     };
     plotData.push(joinData);
@@ -163,7 +177,7 @@ const OutcomeGraph = (props) => {
         y: forecastValues,
         xaxis: 'x2',
         yaxis: 'y1',
-        name: `${node.name} (${t('pred')})`,
+        name: `${n.name} (${t('pred')})`,
         showlegend: false,
         type: 'scatter',
         fill: 'tonexty',
@@ -172,15 +186,14 @@ const OutcomeGraph = (props) => {
         line: {
           color: 'white',
           shape: 'spline',
-          width: '0.5',
+          width: 0.5,
         },
-        smoothing: true,
-        ...formatHover(node.name, fillColor, true),
+        ...formatHover(n.name, fillColor, true),
       }
     )
   });
 
-  if (baselineForecast && site.showBaseline) {
+  if (baselineForecast && site.showBaseline && site.instance.features.baselineVisibleInGraphs) {
     plotData.push(
       {
         x: baselineForecast.x,
@@ -193,16 +206,16 @@ const OutcomeGraph = (props) => {
         line: {
           color: theme.graphColors.grey060,
           shape: 'spline',
-          width: '2',
+          width: 2,
           dash: 'dash',
         },
         smoothing: true,
-        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030),
+        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030, false),
       },
     );
   }
 
-  if (targetYearGoal && site.showTarget) {
+  if (targetYearGoal != null && site.showTarget) {
     shapes.push({
       type: 'line',
       yref: 'y',
@@ -211,15 +224,13 @@ const OutcomeGraph = (props) => {
       y0: targetYearGoal,
       x1: endYear,
       y1: targetYearGoal,
-      xaxis: 'x1',
-      yaxis: 'y1',
       line: {
         color: theme.graphColors.red090,
         width: 2,
         dash: 'dot',
       },
     });
-    if(endYear === settingsVar().maxYear) {
+    if (endYear === settingsVar().maxYear) {
       plotData.push({
         x: [settingsVar().maxYear],
         y: [targetYearGoal],
@@ -236,7 +247,7 @@ const OutcomeGraph = (props) => {
     }
   }
 
-  const layout = {
+  const layout: PlotParams['layout'] = {
     height: 300,
     margin: {
       t: 24,
@@ -245,13 +256,14 @@ const OutcomeGraph = (props) => {
     },
     yaxis: {
       domain: [0, 1],
-      anchor: 'x1',
+      anchor: 'x',
       ticklen: 10,
+      title: longUnit || undefined,
       tickcolor: theme.graphColors.grey030,
     },
     xaxis: {
       domain: [0, 1],
-      anchor: 'y1',
+      anchor: 'y',
       nticks: 1,
       ticklen: 10,
       tickcolor: theme.graphColors.grey030,
@@ -281,20 +293,14 @@ const OutcomeGraph = (props) => {
 
   if (site.useBaseYear) {
     layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
-    layout.xaxis= {
+    layout.xaxis = {
       domain: [0, 0.03],
-      anchor: 'y1',
+      anchor: 'y',
       nticks: 1,
       ticklen: 10,
       tickcolor: theme.graphColors.grey030,
     };
-    layout.yaxis= {
-      domain: [0, 1],
-      anchor: 'x1',
-      ticklen: 10,
-      tickcolor: theme.graphColors.grey030,
-    };
-    layout.xaxis2= {
+    layout.xaxis2 = {
       domain: [0.066, 1],
       anchor: 'y',
       ticklen: 10,

@@ -16,6 +16,34 @@ export type Scalars = {
   UUID: any;
 };
 
+export type ActionEfficiency = {
+  __typename?: 'ActionEfficiency';
+  action?: Maybe<NodeType>;
+  costValues?: Maybe<Array<Maybe<YearlyValue>>>;
+  cumulativeCost?: Maybe<Scalars['Float']>;
+  cumulativeEfficiency?: Maybe<Scalars['Float']>;
+  cumulativeImpact?: Maybe<Scalars['Float']>;
+  impactValues?: Maybe<Array<Maybe<YearlyValue>>>;
+};
+
+export type ActionEfficiencyPairType = {
+  __typename?: 'ActionEfficiencyPairType';
+  actions?: Maybe<Array<Maybe<ActionEfficiency>>>;
+  costNode?: Maybe<NodeType>;
+  efficiencyUnit?: Maybe<UnitType>;
+  id?: Maybe<Scalars['ID']>;
+  impactNode?: Maybe<NodeType>;
+  label?: Maybe<Scalars['String']>;
+};
+
+export type ActionGroupType = {
+  __typename?: 'ActionGroupType';
+  actions?: Maybe<Array<Maybe<NodeType>>>;
+  color?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['ID']>;
+  name?: Maybe<Scalars['String']>;
+};
+
 export type ActionListPage = PageInterface & {
   __typename?: 'ActionListPage';
   aliasOf?: Maybe<Page>;
@@ -286,10 +314,10 @@ export type FloatBlock = StreamFieldInterface & {
 
 export type ForecastMetricType = {
   __typename?: 'ForecastMetricType';
-  baselineForecastValues?: Maybe<Array<Maybe<YearlyValue>>>;
+  baselineForecastValues?: Maybe<Array<YearlyValue>>;
   cumulativeForecastValue?: Maybe<Scalars['Float']>;
-  forecastValues?: Maybe<Array<Maybe<YearlyValue>>>;
-  historicalValues?: Maybe<Array<Maybe<YearlyValue>>>;
+  forecastValues: Array<YearlyValue>;
+  historicalValues?: Maybe<Array<YearlyValue>>;
   id?: Maybe<Scalars['ID']>;
   name?: Maybe<Scalars['String']>;
   outputNode?: Maybe<NodeType>;
@@ -382,6 +410,21 @@ export type ImageRenditionObjectType = {
   width: Scalars['Int'];
 };
 
+export type InstanceBasicConfiguration = {
+  __typename?: 'InstanceBasicConfiguration';
+  defaultLanguage: Scalars['String'];
+  hostname: InstanceHostname;
+  identifier: Scalars['String'];
+  isProtected: Scalars['Boolean'];
+  supportedLanguages: Array<Scalars['String']>;
+  themeIdentifier: Scalars['String'];
+};
+
+export type InstanceFeaturesType = {
+  __typename?: 'InstanceFeaturesType';
+  baselineVisibleInGraphs: Scalars['Boolean'];
+};
+
 export type InstanceHostname = {
   __typename?: 'InstanceHostname';
   basePath?: Maybe<Scalars['String']>;
@@ -390,8 +433,10 @@ export type InstanceHostname = {
 
 export type InstanceType = {
   __typename?: 'InstanceType';
+  actionGroups?: Maybe<Array<Maybe<ActionGroupType>>>;
   basePath?: Maybe<Scalars['String']>;
   defaultLanguage?: Maybe<Scalars['String']>;
+  features: InstanceFeaturesType;
   hostname?: Maybe<InstanceHostname>;
   id?: Maybe<Scalars['ID']>;
   leadParagraph?: Maybe<Scalars['String']>;
@@ -403,6 +448,7 @@ export type InstanceType = {
   referenceYear?: Maybe<Scalars['Int']>;
   supportedLanguages?: Maybe<Array<Maybe<Scalars['String']>>>;
   targetYear?: Maybe<Scalars['Int']>;
+  themeIdentifier?: Maybe<Scalars['String']>;
 };
 
 
@@ -549,23 +595,24 @@ export type NodeType = {
   color?: Maybe<Scalars['String']>;
   decisionLevel?: Maybe<DecisionLevel>;
   description?: Maybe<Scalars['String']>;
-  downstreamNodes?: Maybe<Array<Maybe<NodeType>>>;
-  id?: Maybe<Scalars['ID']>;
+  downstreamNodes: Array<NodeType>;
+  group?: Maybe<ActionGroupType>;
+  id: Scalars['ID'];
   impactMetric?: Maybe<ForecastMetricType>;
-  inputNodes?: Maybe<Array<Maybe<NodeType>>>;
-  isAction?: Maybe<Scalars['Boolean']>;
+  inputNodes: Array<NodeType>;
+  isAction: Scalars['Boolean'];
   metric?: Maybe<ForecastMetricType>;
-  name?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
   order?: Maybe<Scalars['Int']>;
-  outputMetrics?: Maybe<Array<Maybe<ForecastMetricType>>>;
-  outputNodes?: Maybe<Array<Maybe<NodeType>>>;
+  outputMetrics: Array<ForecastMetricType>;
+  outputNodes: Array<NodeType>;
   parameters?: Maybe<Array<Maybe<ParameterInterface>>>;
   quantity?: Maybe<Scalars['String']>;
   shortDescription?: Maybe<Scalars['String']>;
   targetYearGoal?: Maybe<Scalars['Float']>;
   unit?: Maybe<UnitType>;
-  upstreamActions?: Maybe<Array<Maybe<NodeType>>>;
-  upstreamNodes?: Maybe<Array<Maybe<NodeType>>>;
+  upstreamActions?: Maybe<Array<NodeType>>;
+  upstreamNodes: Array<NodeType>;
 };
 
 
@@ -575,6 +622,7 @@ export type NodeTypeImpactMetricArgs = {
 
 
 export type NodeTypeUpstreamNodesArgs = {
+  includeActions?: InputMaybe<Scalars['Boolean']>;
   sameQuantity?: InputMaybe<Scalars['Boolean']>;
   sameUnit?: InputMaybe<Scalars['Boolean']>;
 };
@@ -917,17 +965,24 @@ export type ParameterInterface = {
 
 export type Query = {
   __typename?: 'Query';
-  actions?: Maybe<Array<Maybe<NodeType>>>;
+  actionEfficiencyPairs: Array<ActionEfficiencyPairType>;
+  actions: Array<NodeType>;
   activeScenario?: Maybe<ScenarioType>;
-  instance?: Maybe<InstanceType>;
+  availableInstances: Array<InstanceBasicConfiguration>;
+  instance: InstanceType;
   node?: Maybe<NodeType>;
-  nodes?: Maybe<Array<Maybe<NodeType>>>;
+  nodes: Array<NodeType>;
   page?: Maybe<PageInterface>;
   pages?: Maybe<Array<Maybe<PageInterface>>>;
   parameter?: Maybe<ParameterInterface>;
   parameters?: Maybe<Array<Maybe<ParameterInterface>>>;
   scenario?: Maybe<ScenarioType>;
-  scenarios?: Maybe<Array<Maybe<ScenarioType>>>;
+  scenarios: Array<ScenarioType>;
+};
+
+
+export type QueryAvailableInstancesArgs = {
+  hostname?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1145,18 +1200,18 @@ export type YearlyValue = {
 
 export type AllMetricFieldsFragment = (
   { name?: string | null, id?: string | null, unit?: (
-    { htmlShort?: string | null }
+    { htmlShort?: string | null, htmlLong?: string | null }
     & { __typename?: 'UnitType' }
   ) | null, historicalValues?: Array<(
     { year?: number | null, value?: number | null }
     & { __typename?: 'YearlyValue' }
-  ) | null> | null, forecastValues?: Array<(
+  )> | null, forecastValues: Array<(
     { value?: number | null, year?: number | null }
     & { __typename?: 'YearlyValue' }
-  ) | null> | null, baselineForecastValues?: Array<(
+  )>, baselineForecastValues?: Array<(
     { year?: number | null, value?: number | null }
     & { __typename?: 'YearlyValue' }
-  ) | null> | null }
+  )> | null }
   & { __typename?: 'ForecastMetricType' }
 );
 
@@ -1167,18 +1222,18 @@ export type GetActionContentQueryVariables = Exact<{
 
 export type GetActionContentQuery = (
   { node?: (
-    { id?: string | null, name?: string | null, shortDescription?: string | null, description?: string | null, color?: string | null, decisionLevel?: DecisionLevel | null, targetYearGoal?: number | null, quantity?: string | null, isAction?: boolean | null, unit?: (
+    { id: string, name: string, shortDescription?: string | null, description?: string | null, color?: string | null, decisionLevel?: DecisionLevel | null, targetYearGoal?: number | null, quantity?: string | null, isAction: boolean, unit?: (
       { htmlShort?: string | null }
       & { __typename?: 'UnitType' }
-    ) | null, outputNodes?: Array<(
-      { id?: string | null }
+    ) | null, outputNodes: Array<(
+      { id: string }
       & { __typename?: 'NodeType' }
-    ) | null> | null, inputNodes?: Array<(
-      { id?: string | null }
+    )>, inputNodes: Array<(
+      { id: string }
       & { __typename?: 'NodeType' }
-    ) | null> | null, parameters?: Array<(
+    )>, parameters?: Array<(
       { id?: string | null, description?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
-        { id?: string | null }
+        { id: string }
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'BoolParameterType' }
@@ -1187,13 +1242,13 @@ export type GetActionContentQuery = (
         { htmlShort?: string | null }
         & { __typename?: 'UnitType' }
       ) | null, node?: (
-        { id?: string | null }
+        { id: string }
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'NumberParameterType' }
     ) | (
       { id?: string | null, description?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, stringValue?: string | null, stringDefaultValue?: string | null, node?: (
-        { id?: string | null }
+        { id: string }
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'StringParameterType' }
@@ -1204,54 +1259,54 @@ export type GetActionContentQuery = (
       ) | null, historicalValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, forecastValues?: Array<(
+      )> | null, forecastValues: Array<(
         { value?: number | null, year?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, baselineForecastValues?: Array<(
+      )>, baselineForecastValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null }
+      )> | null }
       & { __typename?: 'ForecastMetricType' }
-    ) | null, downstreamNodes?: Array<(
-      { id?: string | null, name?: string | null, shortDescription?: string | null, color?: string | null, targetYearGoal?: number | null, quantity?: string | null, isAction?: boolean | null, unit?: (
+    ) | null, downstreamNodes: Array<(
+      { id: string, name: string, shortDescription?: string | null, color?: string | null, targetYearGoal?: number | null, quantity?: string | null, isAction: boolean, unit?: (
         { htmlShort?: string | null }
         & { __typename?: 'UnitType' }
-      ) | null, inputNodes?: Array<(
-        { id?: string | null }
+      ) | null, inputNodes: Array<(
+        { id: string }
         & { __typename?: 'NodeType' }
-      ) | null> | null, outputNodes?: Array<(
-        { id?: string | null }
+      )>, outputNodes: Array<(
+        { id: string }
         & { __typename?: 'NodeType' }
-      ) | null> | null, impactMetric?: (
+      )>, impactMetric?: (
         { name?: string | null, id?: string | null, unit?: (
           { htmlShort?: string | null }
           & { __typename?: 'UnitType' }
         ) | null, historicalValues?: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null, forecastValues?: Array<(
+        )> | null, forecastValues: Array<(
           { value?: number | null, year?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null, baselineForecastValues?: Array<(
+        )>, baselineForecastValues?: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null }
+        )> | null }
         & { __typename?: 'ForecastMetricType' }
       ) | null, parameters?: Array<(
         { description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
-          { id?: string | null }
+          { id: string }
           & { __typename?: 'NodeType' }
         ) | null }
         & { __typename: 'BoolParameterType' }
       ) | (
         { minValue?: number | null, maxValue?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, numberValue?: number | null, numberDefaultValue?: number | null, node?: (
-          { id?: string | null }
+          { id: string }
           & { __typename?: 'NodeType' }
         ) | null }
         & { __typename: 'NumberParameterType' }
       ) | (
         { description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, stringValue?: string | null, stringDefaultValue?: string | null, node?: (
-          { id?: string | null }
+          { id: string }
           & { __typename?: 'NodeType' }
         ) | null }
         & { __typename: 'StringParameterType' }
@@ -1262,19 +1317,107 @@ export type GetActionContentQuery = (
         ) | null, historicalValues?: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null, forecastValues?: Array<(
+        )> | null, forecastValues: Array<(
           { value?: number | null, year?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null, baselineForecastValues?: Array<(
+        )>, baselineForecastValues?: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null }
+        )> | null }
         & { __typename?: 'ForecastMetricType' }
       ) | null }
       & { __typename?: 'NodeType' }
-    ) | null> | null }
+    )> }
     & { __typename?: 'NodeType' }
   ) | null }
+  & { __typename?: 'Query' }
+);
+
+export type GetActionEfficiencyQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetActionEfficiencyQuery = (
+  { instance: (
+    { actionGroups?: Array<(
+      { id?: string | null, name?: string | null, color?: string | null, actions?: Array<(
+        { id: string }
+        & { __typename?: 'NodeType' }
+      ) | null> | null }
+      & { __typename?: 'ActionGroupType' }
+    ) | null> | null }
+    & { __typename?: 'InstanceType' }
+  ), actionEfficiencyPairs: Array<(
+    { label?: string | null, efficiencyUnit?: (
+      { short?: string | null }
+      & { __typename?: 'UnitType' }
+    ) | null, costNode?: (
+      { id: string, name: string, shortDescription?: string | null, unit?: (
+        { short?: string | null }
+        & { __typename?: 'UnitType' }
+      ) | null }
+      & { __typename?: 'NodeType' }
+    ) | null, impactNode?: (
+      { id: string, name: string, shortDescription?: string | null, unit?: (
+        { short?: string | null }
+        & { __typename?: 'UnitType' }
+      ) | null }
+      & { __typename?: 'NodeType' }
+    ) | null, actions?: Array<(
+      { cumulativeImpact?: number | null, cumulativeEfficiency?: number | null, cumulativeCost?: number | null, action?: (
+        { id: string, name: string, group?: (
+          { id?: string | null }
+          & { __typename?: 'ActionGroupType' }
+        ) | null }
+        & { __typename?: 'NodeType' }
+      ) | null }
+      & { __typename?: 'ActionEfficiency' }
+    ) | null> | null }
+    & { __typename?: 'ActionEfficiencyPairType' }
+  )> }
+  & { __typename?: 'Query' }
+);
+
+export type GetActionImpactsQueryVariables = Exact<{
+  impact1: Scalars['ID'];
+  impact2: Scalars['ID'];
+}>;
+
+
+export type GetActionImpactsQuery = (
+  { energyNode?: (
+    { metric?: (
+      { id?: string | null, unit?: (
+        { short?: string | null }
+        & { __typename?: 'UnitType' }
+      ) | null, yearlyCumulativeUnit?: (
+        { short?: string | null }
+        & { __typename?: 'UnitType' }
+      ) | null }
+      & { __typename?: 'ForecastMetricType' }
+    ) | null }
+    & { __typename?: 'NodeType' }
+  ) | null, costNode?: (
+    { metric?: (
+      { id?: string | null, unit?: (
+        { short?: string | null }
+        & { __typename?: 'UnitType' }
+      ) | null, yearlyCumulativeUnit?: (
+        { short?: string | null }
+        & { __typename?: 'UnitType' }
+      ) | null }
+      & { __typename?: 'ForecastMetricType' }
+    ) | null }
+    & { __typename?: 'NodeType' }
+  ) | null, actions: Array<(
+    { name: string, id: string, energy?: (
+      { cumulativeForecastValue?: number | null }
+      & { __typename?: 'ForecastMetricType' }
+    ) | null, cost?: (
+      { cumulativeForecastValue?: number | null }
+      & { __typename?: 'ForecastMetricType' }
+    ) | null }
+    & { __typename?: 'NodeType' }
+  )> }
   & { __typename?: 'Query' }
 );
 
@@ -1282,13 +1425,16 @@ export type GetActionListQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetActionListQuery = (
-  { actions?: Array<(
-    { id?: string | null, name?: string | null, shortDescription?: string | null, color?: string | null, decisionLevel?: DecisionLevel | null, quantity?: string | null, unit?: (
+  { actionEfficiencyPairs: Array<(
+    { id?: string | null }
+    & { __typename?: 'ActionEfficiencyPairType' }
+  )>, actions: Array<(
+    { id: string, name: string, shortDescription?: string | null, color?: string | null, decisionLevel?: DecisionLevel | null, quantity?: string | null, unit?: (
       { htmlShort?: string | null }
       & { __typename?: 'UnitType' }
     ) | null, parameters?: Array<(
       { id?: string | null, description?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
-        { id?: string | null }
+        { id: string }
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'BoolParameterType' }
@@ -1297,23 +1443,23 @@ export type GetActionListQuery = (
         { htmlShort?: string | null }
         & { __typename?: 'UnitType' }
       ) | null, node?: (
-        { id?: string | null }
+        { id: string }
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'NumberParameterType' }
     ) | (
       { id?: string | null, description?: string | null, nodeRelativeId?: string | null, isCustomized?: boolean | null, stringValue?: string | null, stringDefaultValue?: string | null, node?: (
-        { id?: string | null }
+        { id: string }
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'StringParameterType' }
-    ) | null> | null, inputNodes?: Array<(
-      { id?: string | null }
+    ) | null> | null, inputNodes: Array<(
+      { id: string }
       & { __typename?: 'NodeType' }
-    ) | null> | null, outputNodes?: Array<(
-      { id?: string | null }
+    )>, outputNodes: Array<(
+      { id: string }
       & { __typename?: 'NodeType' }
-    ) | null> | null, impactMetric?: (
+    )>, impactMetric?: (
       { id?: string | null, unit?: (
         { htmlShort?: string | null }
         & { __typename?: 'UnitType' }
@@ -1323,49 +1469,49 @@ export type GetActionListQuery = (
       ) | null, historicalValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, forecastValues?: Array<(
+      )> | null, forecastValues: Array<(
         { value?: number | null, year?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null }
+      )> }
       & { __typename?: 'ForecastMetricType' }
     ) | null }
     & { __typename?: 'NodeType' }
-  ) | null> | null }
+  )> }
   & { __typename?: 'Query' }
 );
 
 export type OutcomeNodeFieldsFragment = (
-  { id?: string | null, name?: string | null, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
+  { id: string, name: string, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
     { id?: string | null, name?: string | null, unit?: (
-      { htmlShort?: string | null }
+      { short?: string | null, htmlShort?: string | null, htmlLong?: string | null }
       & { __typename?: 'UnitType' }
-    ) | null, forecastValues?: Array<(
+    ) | null, forecastValues: Array<(
       { year?: number | null, value?: number | null }
       & { __typename?: 'YearlyValue' }
-    ) | null> | null, baselineForecastValues?: Array<(
+    )>, baselineForecastValues?: Array<(
       { year?: number | null, value?: number | null }
       & { __typename?: 'YearlyValue' }
-    ) | null> | null, historicalValues?: Array<(
+    )> | null, historicalValues?: Array<(
       { year?: number | null, value?: number | null }
       & { __typename?: 'YearlyValue' }
-    ) | null> | null }
+    )> | null }
     & { __typename?: 'ForecastMetricType' }
   ) | null, unit?: (
-    { short?: string | null, htmlShort?: string | null }
+    { short?: string | null, htmlShort?: string | null, htmlLong?: string | null }
     & { __typename?: 'UnitType' }
-  ) | null, inputNodes?: Array<(
-    { id?: string | null, name?: string | null }
+  ) | null, inputNodes: Array<(
+    { id: string, name: string }
     & { __typename?: 'NodeType' }
-  ) | null> | null, outputNodes?: Array<(
-    { id?: string | null }
+  )>, outputNodes: Array<(
+    { id: string }
     & { __typename?: 'NodeType' }
-  ) | null> | null, upstreamActions?: Array<(
-    { id?: string | null, name?: string | null, parameters?: Array<(
+  )>, upstreamActions?: Array<(
+    { id: string, name: string, parameters?: Array<(
       { isCustomized?: boolean | null }
       & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' }
     ) | null> | null }
     & { __typename?: 'NodeType' }
-  ) | null> | null }
+  )> | null }
   & { __typename?: 'NodeType' }
 );
 
@@ -1386,70 +1532,70 @@ export type GetPageQuery = (
     & { __typename: 'NodePage' | 'Page' }
   ) | (
     { leadTitle: string, leadParagraph: string, id?: string | null, title: string, outcomeNode: (
-      { id?: string | null, name?: string | null, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, upstreamNodes?: Array<(
-        { id?: string | null, name?: string | null, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
+      { id: string, name: string, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, upstreamNodes: Array<(
+        { id: string, name: string, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
           { id?: string | null, name?: string | null, unit?: (
-            { htmlShort?: string | null }
+            { short?: string | null, htmlShort?: string | null, htmlLong?: string | null }
             & { __typename?: 'UnitType' }
-          ) | null, forecastValues?: Array<(
+          ) | null, forecastValues: Array<(
             { year?: number | null, value?: number | null }
             & { __typename?: 'YearlyValue' }
-          ) | null> | null, baselineForecastValues?: Array<(
+          )>, baselineForecastValues?: Array<(
             { year?: number | null, value?: number | null }
             & { __typename?: 'YearlyValue' }
-          ) | null> | null, historicalValues?: Array<(
+          )> | null, historicalValues?: Array<(
             { year?: number | null, value?: number | null }
             & { __typename?: 'YearlyValue' }
-          ) | null> | null }
+          )> | null }
           & { __typename?: 'ForecastMetricType' }
         ) | null, unit?: (
-          { short?: string | null, htmlShort?: string | null }
+          { short?: string | null, htmlShort?: string | null, htmlLong?: string | null }
           & { __typename?: 'UnitType' }
-        ) | null, inputNodes?: Array<(
-          { id?: string | null, name?: string | null }
+        ) | null, inputNodes: Array<(
+          { id: string, name: string }
           & { __typename?: 'NodeType' }
-        ) | null> | null, outputNodes?: Array<(
-          { id?: string | null }
+        )>, outputNodes: Array<(
+          { id: string }
           & { __typename?: 'NodeType' }
-        ) | null> | null, upstreamActions?: Array<(
-          { id?: string | null, name?: string | null, parameters?: Array<(
+        )>, upstreamActions?: Array<(
+          { id: string, name: string, parameters?: Array<(
             { isCustomized?: boolean | null }
             & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' }
           ) | null> | null }
           & { __typename?: 'NodeType' }
-        ) | null> | null }
+        )> | null }
         & { __typename?: 'NodeType' }
-      ) | null> | null, metric?: (
+      )>, metric?: (
         { id?: string | null, name?: string | null, unit?: (
-          { htmlShort?: string | null }
+          { short?: string | null, htmlShort?: string | null, htmlLong?: string | null }
           & { __typename?: 'UnitType' }
-        ) | null, forecastValues?: Array<(
+        ) | null, forecastValues: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null, baselineForecastValues?: Array<(
+        )>, baselineForecastValues?: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null, historicalValues?: Array<(
+        )> | null, historicalValues?: Array<(
           { year?: number | null, value?: number | null }
           & { __typename?: 'YearlyValue' }
-        ) | null> | null }
+        )> | null }
         & { __typename?: 'ForecastMetricType' }
       ) | null, unit?: (
-        { short?: string | null, htmlShort?: string | null }
+        { short?: string | null, htmlShort?: string | null, htmlLong?: string | null }
         & { __typename?: 'UnitType' }
-      ) | null, inputNodes?: Array<(
-        { id?: string | null, name?: string | null }
+      ) | null, inputNodes: Array<(
+        { id: string, name: string }
         & { __typename?: 'NodeType' }
-      ) | null> | null, outputNodes?: Array<(
-        { id?: string | null }
+      )>, outputNodes: Array<(
+        { id: string }
         & { __typename?: 'NodeType' }
-      ) | null> | null, upstreamActions?: Array<(
-        { id?: string | null, name?: string | null, parameters?: Array<(
+      )>, upstreamActions?: Array<(
+        { id: string, name: string, parameters?: Array<(
           { isCustomized?: boolean | null }
           & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' }
         ) | null> | null }
         & { __typename?: 'NodeType' }
-      ) | null> | null }
+      )> | null }
       & { __typename?: 'NodeType' }
     ) }
     & { __typename: 'OutcomePage' }
@@ -1457,14 +1603,40 @@ export type GetPageQuery = (
   & { __typename?: 'Query' }
 );
 
+export type GetParametersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetParametersQuery = (
+  { parameters?: Array<(
+    { id?: string | null, label?: string | null, description?: string | null, isCustomized?: boolean | null, isCustomizable?: boolean | null, boolDefault?: boolean | null, boolValue?: boolean | null, node?: (
+      { id: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename: 'BoolParameterType' }
+  ) | (
+    { minValue?: number | null, maxValue?: number | null, id?: string | null, label?: string | null, description?: string | null, isCustomized?: boolean | null, isCustomizable?: boolean | null, numberDefault?: number | null, numberValue?: number | null, node?: (
+      { id: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename: 'NumberParameterType' }
+  ) | (
+    { id?: string | null, label?: string | null, description?: string | null, isCustomized?: boolean | null, isCustomizable?: boolean | null, stringDefault?: string | null, stringValue?: string | null, node?: (
+      { id: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename: 'StringParameterType' }
+  ) | null> | null }
+  & { __typename?: 'Query' }
+);
+
 export type GetScenariosQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetScenariosQuery = (
-  { scenarios?: Array<(
+  { scenarios: Array<(
     { id?: string | null, name?: string | null, isActive?: boolean | null, isDefault?: boolean | null }
     & { __typename?: 'ScenarioType' }
-  ) | null> | null }
+  )> }
   & { __typename?: 'Query' }
 );
 
@@ -1472,20 +1644,63 @@ export type GetInstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetInstanceContextQuery = (
-  { instance?: (
-    { id?: string | null, name?: string | null, owner?: string | null, defaultLanguage?: string | null, supportedLanguages?: Array<string | null> | null, targetYear?: number | null, referenceYear?: number | null, minimumHistoricalYear?: number | null, maximumHistoricalYear?: number | null, leadTitle?: string | null, leadParagraph?: string | null }
+  { instance: (
+    { id?: string | null, name?: string | null, themeIdentifier?: string | null, owner?: string | null, defaultLanguage?: string | null, supportedLanguages?: Array<string | null> | null, targetYear?: number | null, referenceYear?: number | null, minimumHistoricalYear?: number | null, maximumHistoricalYear?: number | null, leadTitle?: string | null, leadParagraph?: string | null, features: (
+      { baselineVisibleInGraphs: boolean }
+      & { __typename?: 'InstanceFeaturesType' }
+    ) }
     & { __typename?: 'InstanceType' }
-  ) | null, scenarios?: Array<(
+  ), scenarios: Array<(
     { id?: string | null, isActive?: boolean | null, isDefault?: boolean | null, name?: string | null }
     & { __typename?: 'ScenarioType' }
-  ) | null> | null, menuPages?: Array<(
+  )>, menuPages?: Array<(
     { id?: string | null, title: string, urlPath: string, parent?: (
       { id?: string | null }
       & { __typename?: 'ActionListPage' | 'NodePage' | 'OutcomePage' | 'Page' }
     ) | null }
     & { __typename?: 'ActionListPage' | 'NodePage' | 'OutcomePage' | 'Page' }
+  ) | null> | null, parameters?: Array<(
+    { label?: string | null, description?: string | null, isCustomized?: boolean | null, isCustomizable?: boolean | null, id?: string | null, boolDefault?: boolean | null, boolValue?: boolean | null, node?: (
+      { id: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename: 'BoolParameterType' }
+  ) | (
+    { label?: string | null, description?: string | null, minValue?: number | null, maxValue?: number | null, isCustomized?: boolean | null, isCustomizable?: boolean | null, id?: string | null, numberDefault?: number | null, numberValue?: number | null, node?: (
+      { id: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename: 'NumberParameterType' }
+  ) | (
+    { label?: string | null, description?: string | null, isCustomized?: boolean | null, isCustomizable?: boolean | null, id?: string | null, stringDefault?: string | null, stringValue?: string | null, node?: (
+      { id: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename: 'StringParameterType' }
   ) | null> | null }
   & { __typename?: 'Query' }
+);
+
+export type SetGlobalParameterMutationVariables = Exact<{
+  parameterId: Scalars['ID'];
+  boolValue?: InputMaybe<Scalars['Boolean']>;
+  numberValue?: InputMaybe<Scalars['Float']>;
+  stringValue?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type SetGlobalParameterMutation = (
+  { setParameter?: (
+    { ok?: boolean | null, parameter?: (
+      { isCustomized?: boolean | null, isCustomizable?: boolean | null, boolValue?: boolean | null, boolDefaultValue?: boolean | null }
+      & { __typename?: 'BoolParameterType' }
+    ) | (
+      { isCustomized?: boolean | null, isCustomizable?: boolean | null }
+      & { __typename?: 'NumberParameterType' | 'StringParameterType' }
+    ) | null }
+    & { __typename?: 'SetParameterMutation' }
+  ) | null }
+  & { __typename?: 'Mutations' }
 );
 
 export type SetParameterMutationVariables = Exact<{
@@ -1533,17 +1748,20 @@ export type GetNetEmissionsQueryVariables = Exact<{
 
 export type GetNetEmissionsQuery = (
   { node?: (
-    { id?: string | null, name?: string | null, targetYearGoal?: number | null, metric?: (
+    { id: string, name: string, targetYearGoal?: number | null, unit?: (
+      { htmlShort?: string | null }
+      & { __typename?: 'UnitType' }
+    ) | null, metric?: (
       { id?: string | null, historicalValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, forecastValues?: Array<(
+      )> | null, forecastValues: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, baselineForecastValues?: Array<(
+      )>, baselineForecastValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null }
+      )> | null }
       & { __typename?: 'ForecastMetricType' }
     ) | null }
     & { __typename?: 'NodeType' }
@@ -1551,49 +1769,29 @@ export type GetNetEmissionsQuery = (
   & { __typename?: 'Query' }
 );
 
-export type GetInstanceQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetInstanceQuery = (
-  { instance?: (
-    { id?: string | null, name?: string | null, owner?: string | null, defaultLanguage?: string | null, supportedLanguages?: Array<string | null> | null, targetYear?: number | null, referenceYear?: number | null, minimumHistoricalYear?: number | null, maximumHistoricalYear?: number | null, leadTitle?: string | null, leadParagraph?: string | null }
-    & { __typename?: 'InstanceType' }
-  ) | null, scenarios?: Array<(
-    { id?: string | null, isActive?: boolean | null, isDefault?: boolean | null, name?: string | null }
-    & { __typename?: 'ScenarioType' }
-  ) | null> | null, menuPages?: Array<(
-    { id?: string | null, title: string, urlPath: string, parent?: (
-      { id?: string | null }
-      & { __typename?: 'ActionListPage' | 'NodePage' | 'OutcomePage' | 'Page' }
-    ) | null }
-    & { __typename?: 'ActionListPage' | 'NodePage' | 'OutcomePage' | 'Page' }
-  ) | null> | null }
-  & { __typename?: 'Query' }
-);
-
 export type GetNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetNodesQuery = (
-  { nodes?: Array<(
-    { id?: string | null, name?: string | null, color?: string | null, quantity?: string | null, isAction?: boolean | null, unit?: (
+  { nodes: Array<(
+    { id: string, name: string, color?: string | null, quantity?: string | null, isAction: boolean, unit?: (
       { htmlShort?: string | null }
       & { __typename?: 'UnitType' }
-    ) | null, inputNodes?: Array<(
-      { id?: string | null }
+    ) | null, inputNodes: Array<(
+      { id: string }
       & { __typename?: 'NodeType' }
-    ) | null> | null, outputNodes?: Array<(
-      { id?: string | null }
+    )>, outputNodes: Array<(
+      { id: string }
       & { __typename?: 'NodeType' }
-    ) | null> | null, metric?: (
+    )>, metric?: (
       { historicalValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null }
+      )> | null }
       & { __typename?: 'ForecastMetricType' }
     ) | null }
     & { __typename?: 'NodeType' }
-  ) | null> | null }
+  )> }
   & { __typename?: 'Query' }
 );
 
@@ -1604,7 +1802,7 @@ export type GetNodePageQueryVariables = Exact<{
 
 export type GetNodePageQuery = (
   { node?: (
-    { id?: string | null, name?: string | null, shortDescription?: string | null, description?: string | null, color?: string | null, targetYearGoal?: number | null, quantity?: string | null, isAction?: boolean | null, unit?: (
+    { id: string, name: string, shortDescription?: string | null, description?: string | null, color?: string | null, targetYearGoal?: number | null, quantity?: string | null, isAction: boolean, unit?: (
       { htmlShort?: string | null }
       & { __typename?: 'UnitType' }
     ) | null, metric?: (
@@ -1614,27 +1812,27 @@ export type GetNodePageQuery = (
       ) | null, historicalValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, forecastValues?: Array<(
+      )> | null, forecastValues: Array<(
         { value?: number | null, year?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, baselineForecastValues?: Array<(
+      )>, baselineForecastValues?: Array<(
         { year?: number | null, value?: number | null }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null }
+      )> | null }
       & { __typename?: 'ForecastMetricType' }
-    ) | null, inputNodes?: Array<(
-      { id?: string | null, name?: string | null, shortDescription?: string | null, color?: string | null, quantity?: string | null, isAction?: boolean | null, unit?: (
+    ) | null, inputNodes: Array<(
+      { id: string, name: string, shortDescription?: string | null, color?: string | null, quantity?: string | null, isAction: boolean, unit?: (
         { htmlShort?: string | null }
         & { __typename?: 'UnitType' }
       ) | null }
       & { __typename?: 'NodeType' }
-    ) | null> | null, outputNodes?: Array<(
-      { id?: string | null, name?: string | null, shortDescription?: string | null, color?: string | null, quantity?: string | null, isAction?: boolean | null, unit?: (
+    )>, outputNodes: Array<(
+      { id: string, name: string, shortDescription?: string | null, color?: string | null, quantity?: string | null, isAction: boolean, unit?: (
         { htmlShort?: string | null }
         & { __typename?: 'UnitType' }
       ) | null }
       & { __typename?: 'NodeType' }
-    ) | null> | null }
+    )> }
     & { __typename?: 'NodeType' }
   ) | null }
   & { __typename?: 'Query' }

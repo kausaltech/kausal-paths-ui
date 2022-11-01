@@ -4,7 +4,7 @@ import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
-import { ActionLink, Link, NodeLink } from 'common/links';
+import { ActionLink, Link, NodeLink } from 'common/links';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
@@ -66,7 +66,7 @@ const OutcomeNodeContent = (props) => {
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  const unit = node.unit.htmlShort;
+  const unit = node.unit.htmlLong || node.unit.htmlShort;
 
   return (
     <div>

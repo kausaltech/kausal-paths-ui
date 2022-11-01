@@ -1,6 +1,15 @@
+import { GetInstanceContextQuery } from 'common/__generated__/graphql';
 import React, { useContext } from 'react';
 
-const SiteContext = React.createContext({
+export type SiteContextType = {
+  title: string,
+  instance: GetInstanceContextQuery['instance'],
+  scenarios: GetInstanceContextQuery['scenarios'],
+  parameters: GetInstanceContextQuery['parameters'],
+};
+
+
+const SiteContext = React.createContext<SiteContextType>({
   title: '',
   instance: {
     id: '',

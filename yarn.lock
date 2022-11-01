@@ -5509,6 +5509,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/plotly.js@npm:*, @types/plotly.js@npm:^2.12.8":
+  version: 2.12.8
+  resolution: "@types/plotly.js@npm:2.12.8"
+  checksum: 2c43069c9e2815de2c9f74d160b1db0eafb9ba8592292b4843302feecdb7ff324850fbab688925d5b311d4d1c616f19a966dffc28e50b39032a3526aad532446
+  languageName: node
+  linkType: hard
+
 "@types/pretty-hrtime@npm:^1.0.0":
   version: 1.0.1
   resolution: "@types/pretty-hrtime@npm:1.0.1"
@@ -5527,6 +5534,16 @@ __metadata:
   version: 6.9.7
   resolution: "@types/qs@npm:6.9.7"
   checksum: 7fd6f9c25053e9b5bb6bc9f9f76c1d89e6c04f7707a7ba0e44cc01f17ef5284adb82f230f542c2d5557d69407c9a40f0f3515e8319afd14e1e16b5543ac6cdba
+  languageName: node
+  linkType: hard
+
+"@types/react-plotly.js@npm:^2.5.2":
+  version: 2.5.2
+  resolution: "@types/react-plotly.js@npm:2.5.2"
+  dependencies:
+    "@types/plotly.js": "*"
+    "@types/react": "*"
+  checksum: 0aa528801bc81e05d63aee7f51c05b389912937ad26cf7ca33c491d98b4099fbecf42b7958f409711529ad2b4758a24db9098e8212c9cfd39240c705b77dba31
   languageName: node
   linkType: hard
 
@@ -14541,7 +14558,9 @@ __metadata:
     "@storybook/addon-links": ^6.5.13
     "@storybook/react": ^6.5.13
     "@types/graphql": ^14.5.0
+    "@types/plotly.js": ^2.12.8
     "@types/react": ^18.0.24
+    "@types/react-plotly.js": ^2.5.2
     "@types/styled-components": ^5.1.26
     apollo: ^2.34.0
     babel-loader: ^9.0.1

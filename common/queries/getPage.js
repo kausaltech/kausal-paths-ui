@@ -11,7 +11,9 @@ const OUTCOME_NODE_FIELDS = gql`
       id
       name
       unit {
+        short
         htmlShort
+        htmlLong
       }
       forecastValues {
         year
@@ -30,6 +32,7 @@ const OUTCOME_NODE_FIELDS = gql`
     unit {
       short
       htmlShort
+      htmlLong
     }
     quantity
     shortDescription

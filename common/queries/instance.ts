@@ -16,6 +16,9 @@ query GetInstanceContext {
       maximumHistoricalYear
       leadTitle
       leadParagraph
+      features {
+        baselineVisibleInGraphs
+      }
     }
     scenarios {
       id
