@@ -83,14 +83,23 @@ const Segment = styled.div`
   }
 `;
 
+const BarSeparator = styled.div`  
+  display: inline-block;
+  position: relative;
+  height: 2rem;
+  width: 2px;
+  background-color: ${(props) => props.theme.graphColors.grey070};
+`;
+
 const OutcomeBar = (props) => {
   const { nodes, date, hovered, onHover, handleClick, activeNode, parentColor } = props;
   const { t } = useTranslation();
   const nodesTotal = getOutcomeTotal(nodes, date);
-
   // Let's get the outcome type from first node and use it with translate to give bar a title
   // TODO: get title from API
   const outcomeType = nodes[0].quantity;
+  const negativeNodes = nodes.filter((node) => getMetricValue(node, date) < 0);
+  const positiveNodes = nodes.filter((node) => getMetricValue(node, date) >= 0);
 
   return (
     <>
@@ -98,11 +107,26 @@ const OutcomeBar = (props) => {
         { `${t(outcomeType)} ${date}`}
       </BarHeader>
       <Bar color={parentColor}>
-        { nodes.map((node) => (
+        { positiveNodes.map((node) => (
           <Segment
             key={node.id}
             style={{
               width: `${(getMetricValue(node, date) / nodesTotal) * 100 || 0}%`,
+              backgroundColor: node.color || parentColor,
+              display: `${getMetricValue(node, date) ? '' : 'none'}`,
+            }}
+            className={`${hovered === node.id ? 'hovered' : ''} ${activeNode === node.id ? 'active' : ''}`}
+            onMouseEnter={() => onHover(node.id)}
+            onMouseLeave={() => onHover(undefined)}
+            onClick={() => handleClick(node.id)}
+          />
+        ))}
+        { negativeNodes?.length > 0 && <BarSeparator /> }
+        { negativeNodes.map((node) => (
+          <Segment
+            key={node.id}
+            style={{
+              width: `${(-getMetricValue(node, date) / nodesTotal) * 100 || 0}%`,
               backgroundColor: node.color || parentColor,
               display: `${getMetricValue(node, date) ? '' : 'none'}`,
             }}
