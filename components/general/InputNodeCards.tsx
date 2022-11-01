@@ -33,7 +33,7 @@ const InputNodeCards = (props) => {
       <NodeItem key={input.id}>
         <EffectIcon><ArrowUp size={32}/></EffectIcon>
         <DashCard>
-          <NodeLink node={input.id}>
+          <NodeLink node={input}>
             <a>
               <h5>{input.name}</h5>
             </a>

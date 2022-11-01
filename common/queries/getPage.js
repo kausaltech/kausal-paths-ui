@@ -65,7 +65,7 @@ query GetPage($path: String!) {
       leadParagraph
       outcomeNode {
         ...OutcomeNodeFields
-        upstreamNodes(sameQuantity: true, sameUnit: true) {
+        upstreamNodes(sameQuantity: true, sameUnit: true, includeActions: false) {
           ...OutcomeNodeFields
         }
       }
