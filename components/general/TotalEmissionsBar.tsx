@@ -6,6 +6,7 @@ import { Spinner } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
+import { GetNetEmissionsQuery } from 'common/__generated__/graphql';
 
 const GET_NET_EMISSIONS = gql`
 query GetNetEmissions($node: ID!) {
@@ -13,6 +14,9 @@ query GetNetEmissions($node: ID!) {
     id
     name
     targetYearGoal
+    unit {
+      htmlShort
+    }
     metric {
       id
       historicalValues {
@@ -41,7 +45,7 @@ const EmissionsBar = styled.div`
   height: 24px;
 `;
 
-const BarLabel = styled.div`
+const BarLabel = styled.div<{side?: 'top' | undefined}>`
   font-size: 0.75rem;
   text-align: left;
   white-space: nowrap;
@@ -63,7 +67,7 @@ const Unit = styled.span`
   font-size: 0.75rem;
 `;
 
-const EmissionBar = styled.div`
+const EmissionBar = styled.div<{barWidth: number, barColor: string}>`
   position: absolute;
   top: 0;
   right: 0;
@@ -98,7 +102,7 @@ const TotalEmissionsBar = (props) => {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery(GET_NET_EMISSIONS, {
+  const { loading, error, data, refetch } = useQuery<GetNetEmissionsQuery>(GET_NET_EMISSIONS, {
     variables: {
       node: 'net_emissions',
     },
@@ -110,12 +114,15 @@ const TotalEmissionsBar = (props) => {
 
   if (loading) return <span><Spinner size="sm" color="primary" /></span>;
   if (error) return <div>error!</div>;
+  if (!data || !data.node || !data.node.metric) return <div>no data</div>
+  const { node } = data;
+  const { metric } = node;
 
-  const unit = `kt${t('abbr-per-annum')}`;
-  const emissionsNow = data.node.metric.historicalValues[data.node.metric.historicalValues.length - 1].value;
-  const emissionsNowYear = data.node.metric.historicalValues[data.node.metric.historicalValues.length - 1].year;
-  const emissionsTotal = getMetricValue(data.node, yearRange[1]);
-  const emissionsTarget = data.node.targetYearGoal;
+  const unit = node.unit?.htmlShort;
+  const emissionsNow = metric.historicalValues[metric.historicalValues.length - 1].value;
+  const emissionsNowYear = metric.historicalValues[metric.historicalValues.length - 1].year;
+  const emissionsTotal = getMetricValue(node, yearRange[1]);
+  const emissionsTarget = node.targetYearGoal;
   const maxEmission = _.max([emissionsNow, emissionsTotal, emissionsTarget]);
   const emissionsTotalColor = emissionsTotal > emissionsTarget ? theme.graphColors.red050 : theme.graphColors.green070;
   const emissionsNowWidth = (emissionsNow / maxEmission) * 100;
