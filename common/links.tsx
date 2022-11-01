@@ -54,7 +54,7 @@ export function Link(props: OtherLinkProps & {href: string}) {
     as = undefined;
   }
   rest.locale = false;
-  return <NextLink href={href} as={as} {...rest} />;
+  return <NextLink legacyBehavior href={href} as={as} {...rest} />;
 }
 
 type FormattedLinkProps= {
@@ -93,7 +93,7 @@ export function NodeLink(props: NodeLinkProps) {
     },
     as: `/node/${node.id}`,
   }
-  return <NextLink {...getLinkProps(hrefProps, rest)} />
+  return <NextLink legacyBehavior {...getLinkProps(hrefProps, rest)} />
 }
 
 type ActionLinkProps = OtherLinkProps & {
@@ -113,7 +113,7 @@ export function ActionLink(props: ActionLinkProps) {
     },
     as: `/actions/${action.id}`,
   }
-  return <NextLink {...getLinkProps(hrefProps, rest)} />
+  return <NextLink legacyBehavior {...getLinkProps(hrefProps, rest)} />
 }
 
 type ActionListLinkProps = OtherLinkProps & {
@@ -129,5 +129,5 @@ export function ActionListLink(props: ActionListLinkProps) {
     as: pathname,
   };
   const linkProps = getLinkProps(hrefProps, rest);
-  return <NextLink passHref={true} {...linkProps} />
+  return <NextLink legacyBehavior passHref={true} {...linkProps} />
 }

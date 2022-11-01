@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.2
 
-FROM node:17.2.0-alpine3.14 as base
+FROM node:18.12.0-alpine3.16 as base
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -14,7 +14,7 @@ ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_AUTH_IDENT:+true}
 ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_ALWAYS_AUTH:-false}
 
 ENV YARN_CACHE_FOLDER /yarn-cache
-RUN yarn set version berry
+RUN yarn set version 3.2.4
 COPY yarn.lock package*.json ./
 COPY patches ./patches/
 RUN yarn config set nodeLinker 'node-modules'
