@@ -88,7 +88,7 @@ const LanguageSelector = (props) => {
             <DropdownItem key={locale} tag="div">
                 <Link locale={locale} href='/'>
                   <a onClick={handleLocaleChange}>
-                    {languageNames[locale]}
+                    {languageNames[getLanguageCodeLabel(locale)]}
                   </a>
                 </Link>
               </DropdownItem>

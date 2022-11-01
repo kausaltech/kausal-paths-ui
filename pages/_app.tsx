@@ -156,12 +156,52 @@ const defaultSiteContext = {
     showTargetBar: true,
     split: true,
     loginLink: false,
-    showBaseline: true,
+    showBaseline: false,
     showTarget: true,
     useBaseYear: true,
     showNavTitle: true,
     showLangSelector: true,
     watchLink: null,
+    homeLink: [
+      {
+        id: 'hp-en',
+        lang: 'en',
+        title: 'Emissions',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-de',
+        lang: 'de-CH',
+        title: 'Emissionen',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-fi',
+        lang: 'fi',
+        title: 'Päästöt',
+        urlPath: '/',
+      },
+    ],
+    demoPages: [
+      {
+        id: 's-en-1',
+        lang: 'en',
+        title: 'About',
+        urlPath: '/demo/about'
+      },
+      {
+        id: 's-de-1',
+        lang: 'de-CH',
+        title: 'Informationen',
+        urlPath: '/demo/about'
+      },
+      {
+        id: 's-fi-1',
+        lang: 'fi',
+        title: 'Tietoa palvelusta',
+        urlPath: '/demo/about'
+      },
+    ]
   },
 }
 

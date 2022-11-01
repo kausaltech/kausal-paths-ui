@@ -125,7 +125,7 @@ function AboutPage(props) {
         <Col lg={{ size: 8, offset: 2 }}>
         <PageHeader>
           <h1>
-            { CONTENT[locale].header }
+            { CONTENT[locale.slice(0, 2)].header }
           </h1>
         </PageHeader>
 </Col></Row>
@@ -134,17 +134,17 @@ function AboutPage(props) {
     <Container className="mb-5">
       <Row>
         <Col lg={{ size: 8, offset: 2 }}>
-          { locale==='en' &&
+          { locale.startsWith('en') &&
           <GraphCard>
             <p>Sunnydale Climate Scenario Tool is an open source state-of-the-art platform for assessing possible climate actions and their emissions, costs, health and other impacts. It is a scenario tool for developing and updating climate action plans and targets for key indicators. It works seamlessly with Sunnydale Climate Action Plan platform, which is designed for monitoring, managing, and communicating about the climate action plan.</p>
             <p>The platform consists of a public user interface (UI), which all the stakeholders can browse. You can see climate emissions and their trends of different sectors and subsectors. You can select between scenarios and compare the outcomes to the Sunnydale's targets. You can also adjust the selections themselves, thus creating new scenarios to be considered. All changes in the input values are recalculated instantly, so you can easily toggle between options and compare scenarios.</p>
           </GraphCard> }
-          { locale==='fi' &&
+          { locale.startsWith('fi') &&
           <GraphCard>
             <p>Sunnydale Climate Scenario Tool on avoimen lähdekoodin huippumoderni alusta mahdollisten ilmastotoimien ja niiden päästöjen, kustannusten, terveys- ja muiden vaikutusten arvioimiseen. Se on skenaariotyökalu ilmastotoimintasuunnitelmien ja avainindikaattoreiden tavoitteiden kehittämiseen ja päivittämiseen. Se toimii saumattomasti Sunnydale Climate Action Plan -alustan kanssa, joka on suunniteltu ilmastotoimintasuunnitelman seurantaan, hallintaan ja viestintään.</p>
             <p>Alusta koostuu julkisesta käyttöliittymästä (UI), jota kaikki sidosryhmät voivat selata. Näet ilmastopäästöt ja niiden trendit eri toimialoilla ja osa-alueilla. Voit valita skenaarioiden välillä ja verrata tuloksia Sunnydalen tavoitteisiin. Voit myös säätää itse valintoja ja luoda näin uusia skenaarioita harkittavaksi. Kaikki syöttöarvojen muutokset lasketaan uudelleen välittömästi, joten voit helposti vaihtaa vaihtoehtojen välillä ja verrata skenaarioita.</p>
           </GraphCard> }
-          { locale==='de' &&
+          { locale.startsWith('de') &&
           <GraphCard>
             <p>Das Sunnydale Climate Scenario Tool ist eine hochmoderne Open-Source-Plattform zur Bewertung möglicher Klimaschutzmaßnahmen und ihrer Emissionen, Kosten, Gesundheit und anderer Auswirkungen. Es ist ein Szenario-Tool zur Entwicklung und Aktualisierung von Klimaschutzplänen und Zielvorgaben für Schlüsselindikatoren. Es funktioniert nahtlos mit der Sunnydale Climate Action Plan-Plattform, die für die Überwachung, Verwaltung und Kommunikation des Klimaschutzplans konzipiert ist.</p>
             <p>Die Plattform besteht aus einer öffentlichen Benutzeroberfläche (UI), die alle Beteiligten durchsuchen können. Sie können die Klimaemissionen und deren Trends verschiedener Sektoren und Teilsektoren sehen. Sie können zwischen Szenarien wählen und die Ergebnisse mit den Zielen von Sunnydale vergleichen. Sie können auch die Auswahlen selbst anpassen und so neue zu berücksichtigende Szenarien erstellen. Alle Änderungen der Eingabewerte werden sofort neu berechnet, sodass Sie problemlos zwischen Optionen wechseln und Szenarien vergleichen können.</p>
