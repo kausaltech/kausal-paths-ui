@@ -1,7 +1,7 @@
 {
   "abbr-per-annum": "/a",
   "action-impact": "Maßnahmenauswirkungen",
-  "actions": "Maßnahme",
+  "action": "Maßnahme",
   "actions": "Maßnahmen",
   "actions-available": "Maßnahmen in Szenario",
   "actions-influencing-this": "Diesen Sektor beeinflussende Maßnahmen",
@@ -18,7 +18,7 @@
   "distribution": "Verteilung",
   "download-data": "CSV herunterladen",
   "emissions": "Emissionen",
-  "emissions-forecast": "Entwicklung der Treibhausgas-emissionen",
+  "emissions-forecast": "Entwicklung der Treibhausgasemissionen",
   "error-loading-data": "Fehler beim Laden der Daten",
   "forecast": "Prognose",
   "has-effect-on": "Wirkt auf",
