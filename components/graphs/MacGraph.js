@@ -50,6 +50,10 @@ const HoverValueValue = styled.span`
 const HoverValueUnit = styled.span`
 `;
 
+const formatNumber = (value, language) => {
+  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language)
+};
+
 function MacGraph(props) {
 
   const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actionIds, costUnit, actionGroups } = props;
@@ -66,7 +70,7 @@ function MacGraph(props) {
     setHoverId(null);
   }, [data]);
 
-  console.log("mac props", props);
+  // console.log("mac props", props);
   // TODO: Add sorting of data here
 
   let totalSaving = 0;
@@ -173,8 +177,8 @@ function MacGraph(props) {
         customdata: data['impact'],
         hovertemplate:
             "<b>%{text}</b><br><br>" +
-            "%{yaxis.title.text}: %{y:.0f}<br>" +
-            "%{xaxis.title.text}: %{customdata:.0f}<br>" +
+            "%{yaxis.title.text}: %{y:.3r}<br>" +
+            "%{xaxis.title.text}: %{customdata:.3r}<br>" +
             "<extra></extra>",
       }]}
       layout={layout}
@@ -197,21 +201,21 @@ function MacGraph(props) {
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
             <HoverValueTitle>{impactName}</HoverValueTitle>
-            <HoverValueValue>{Math.round(Number(data.impact[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueValue>{formatNumber(data.impact[hoverId], i18n.language)}</HoverValueValue>
             <HoverValueUnit>{impactUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
             <HoverValueTitle>Cost</HoverValueTitle>
-            <HoverValueValue>{Math.round(Number(data.cost[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
             <HoverValueUnit>{costUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
             <HoverValueTitle>{efficiencyName}</HoverValueTitle>
-            <HoverValueValue>{Math.round(Number(data.efficiency[hoverId])).toLocaleString(i18n.language)}</HoverValueValue>
+            <HoverValueValue>{formatNumber(data.efficiency[hoverId], i18n.language)}</HoverValueValue>
             <HoverValueUnit>{efficiencyUnit}</HoverValueUnit>
           </HoverValue>
         </Col>
