@@ -66,15 +66,50 @@ function MacGraph(props) {
     setHoverId(null);
   }, [data]);
 
-  // console.log("mac props", props);
+  console.log("mac props", props);
   // TODO: Add sorting of data here
 
   let totalSaving = 0;
+  let negativeSideWidth = 0;
   const xPlacement = data['impact'].map((bar) => {
-    totalSaving += bar;
-    return totalSaving - bar + (bar/2);
+    const barWidth = Math.abs(bar);
+    if (bar < 0) {
+      negativeSideWidth += barWidth;
+    } 
+    totalSaving += barWidth;
+    return totalSaving - barWidth + (barWidth/2);
   }  );
 
+  const negativeSide = negativeSideWidth > 0 ? [
+    {
+    type: 'rect',
+    // x-reference is assigned to the x-values
+    xref: 'x',
+    // y-reference is assigned to the plot paper [0,1]
+    yref: 'paper',
+    x0: 0,
+    y0: 0,
+    x1: negativeSideWidth,
+    y1: 1,
+    fillcolor: theme.graphColors.red030,
+    opacity: 0.2,
+    line: {
+        width: 0
+    }},
+    {
+      type: 'line',
+      xref: 'x',
+      yref: 'paper',
+      x0: negativeSideWidth,
+      y0: 0,
+      x1: negativeSideWidth,
+      y1: 1,
+      line: {
+        color: theme.graphColors.red030,
+        width: 1
+      }
+    }
+  ] : [];
   const layout = {
     barmode: 'relative',
     hoverlabel: { 
@@ -102,6 +137,7 @@ function MacGraph(props) {
       t: 10,
       pad: 0,
     },
+    shapes: negativeSide,
     paper_bgcolor: theme.themeColors.white,
     plot_bgcolor: theme.themeColors.white,
   };
