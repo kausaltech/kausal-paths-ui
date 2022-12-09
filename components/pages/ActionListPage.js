@@ -66,6 +66,7 @@ export default function ActionListPage(props) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
+  console.log('data', data);
   return (
     <>
       { (page.actionListLeadTitle?.length > 10 || page.actionListLeadParagraph?.length > 10) && (
