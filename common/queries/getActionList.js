@@ -2,107 +2,68 @@ import { gql } from '@apollo/client';
 
 const GET_ACTION_LIST = gql`
   query GetActionList {
-    instance {
-      actionGroups {
-        id
-        name
-        color
-        actions {
-          id
-        }
-      }
+    actionEfficiencyPairs {
+      id
     }
-    actionEfficiencyPairs { 
-      label
-      efficiencyUnit {
-        short
+    actions {
+      id
+      name
+      shortDescription
+      color
+      decisionLevel
+      unit {
+        htmlShort
       }
-      costNode {
+      parameters {
+        __typename
         id
-        name
-        shortDescription
-        unit {
-          short
-        }
-      }
-      impactNode {
-        id
-        name
-        shortDescription
-        unit {
-          short
-        }
-      }
-      actions {
-        action {
+        description
+        nodeRelativeId
+        node {
           id
-          name
-          shortDescription
-          color
-          decisionLevel
+        }
+        isCustomized
+        ... on NumberParameterType {
+          numberValue: value
+          numberDefaultValue: defaultValue
+          minValue
+          maxValue
           unit {
             htmlShort
           }
-          parameters {
-            __typename
-            id
-            description
-            nodeRelativeId
-            node {
-              id
-            }
-            isCustomized
-            ... on NumberParameterType {
-              numberValue: value
-              numberDefaultValue: defaultValue
-              minValue
-              maxValue
-              unit {
-                htmlShort
-              }
-            }
-            ... on BoolParameterType {
-              boolValue: value
-              boolDefaultValue: defaultValue
-            }
-            ... on StringParameterType {
-              stringValue: value
-              stringDefaultValue: defaultValue
-            }
-          }
-          quantity
-          inputNodes {
-            id
-          }
-          outputNodes {
-            id
-          }
-          impactMetric {
-            id
-            unit {
-              htmlShort
-            }
-            yearlyCumulativeUnit {
-              htmlShort
-            }
-            historicalValues {
-              year
-              value
-            }
-            forecastValues {
-              value
-              year
-            }
-          }
-          group {
-            id
-            name
-            color
-          }
         }
-        cumulativeImpact
-        cumulativeEfficiency
-        cumulativeCost
+        ... on BoolParameterType {
+          boolValue: value
+          boolDefaultValue: defaultValue
+        }
+        ... on StringParameterType {
+          stringValue: value
+          stringDefaultValue: defaultValue
+        }
+      }
+      quantity
+      inputNodes {
+        id
+      }
+      outputNodes {
+        id
+      }
+      impactMetric {
+        id
+        unit {
+          htmlShort
+        }
+        yearlyCumulativeUnit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
       }
     }
   }

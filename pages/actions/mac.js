@@ -52,6 +52,59 @@ const ActiveScenario = styled.div`
   vertical-align: middle;
 `;
 
+const MacView = (props) => {
+  const { actions, data } = props;
+
+  //const hasEfficiency = data.actionEfficiencyPairs.length > 1;
+  /*
+  const actionData = data?.actionEfficiencyPairs[activeEfficiency].actions.map((action) => {
+    return {
+      //groupId: action.action.group.id,
+      //color: data.instance.actionGroups.find((group) => group.id === action.action.group.id).color,
+      cost: action.cumulativeCost,
+      efficiency: action.cumulativeEfficiency,
+      impact: action.cumulativeImpact,
+      ...action.action
+    }
+  })
+  .sort((a,b) => a.impact < 0 ? -1 : b.impact < 0 ? 0 : ascending ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy])
+  .filter((action) => actionGroup === 'undefined' || actionGroup === action.group.id );
+  */
+  const actionIds = actions.map((action) => action.id);
+
+  const macData = {
+    actions: actions.map((action) => action.name),
+    colors: actions.map((action) => action.color || action.group.color),
+    groups: actions.map((action) => action.group.id),
+    cost: actions.map((action) => action.cost),
+    efficiency: actions.map((action) => action.efficiency),
+    impact: actions.map((action) => action.impact),
+  };
+
+  const efficiencyUnit = data.actionEfficiencyPairs[activeEfficiency].efficiencyUnit.short;
+
+  const impactName = data.actionEfficiencyPairs[activeEfficiency].impactNode.name; 
+  const impactUnit = data.actionEfficiencyPairs[activeEfficiency].impactNode.unit.short; 
+
+  const costName = data.actionEfficiencyPairs[activeEfficiency].costNode.name;
+  const costUnit = data.actionEfficiencyPairs[activeEfficiency].costNode.unit.short; 
+
+  return (
+    <GraphCard>
+      <MacGraph
+        data={macData}
+        impactName={`${impactName} impact`}
+        impactUnit={impactUnit}
+        efficiencyName={`${costName} efficiency`}
+        efficiencyUnit={efficiencyUnit}
+        actionIds={actionIds}
+        costUnit={costUnit}
+        actionGroups={data.instance.actionGroups}
+      />
+    </GraphCard>
+  )
+};
+
 function MacPage(props) {
   const { page, activeScenario: queryActiveScenario } = props;
   const { t } = useTranslation();
@@ -77,56 +130,38 @@ function MacPage(props) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
+  console.log("data", data);
+
+  const hasEfficiency = data.actionEfficiencyPairs.length > 1;
+
+  const sortActions = (a, b) => {
+    let aValue = a[sortBy];
+    let bValue = b[sortBy];
+  
+    switch (sortBy) {
+      case 'impact':
+        hasEfficiency ? aValue = a.cumulativeImpact : aValue = a.impactMetric.cumulativeForecastValue;
+        hasEfficiency ? bValue = b.cumulativeImpact : bValue = b.impactMetric.cumulativeForecastValue;
+        break;
+      case 'default':
+        return 0;
+    };
+
+    return hasEfficiency ?
+      a.cumulativeImpact < 0 ? -1 : b.cumulativeImpact < 0 ? 0 : ascending ? aValue - bValue : bValue - aValue
+      : ascending ? aValue - bValue : bValue - aValue;
+  }
+
+  const sortedActions = [...data.actions].sort(sortActions)
+    .filter((action) => actionGroup === 'undefined' || actionGroup === action.group.id );
+
+  /*
   if (!data.actionEfficiencyPairs.length) {
     // FIXME: Replace with a proper error component
     return <Alert>{ t('page-not-found') }</Alert>
   }
+  */
 
-  // console.log(data);
-
-  const actionData = data?.actionEfficiencyPairs[activeEfficiency].actions.map((action) => {
-    return {
-      //groupId: action.action.group.id,
-      //color: data.instance.actionGroups.find((group) => group.id === action.action.group.id).color,
-      cost: action.cumulativeCost,
-      efficiency: action.cumulativeEfficiency,
-      impact: action.cumulativeImpact,
-      ...action.action
-    }
-  })
-  .sort((a,b) => a.impact < 0 ? -1 : b.impact < 0 ? 0 : ascending ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy])
-  .filter((action) => actionGroup === 'undefined' || actionGroup === action.group.id );
-
-
-  //data.sort(function(x,y){ return x == first ? -1 : y == first ? 1 : 0; });
-
-
-  const actionNames = actionData.map((action) => action.name);
-  const actionColors = actionData.map((action) => action.color || action.group.color);
-  const actionGroups = actionData.map((action) => action.group.id);
-  const netcosts = actionData.map((action) => action.cost);
-  const impacts = actionData.map((action) => action.impact);
-  const efficiencies = actionData.map((action) => action.efficiency);
-  const actionIds = actionData.map((action) => action.id);
-
-  const macData = {
-    actions: actionNames,
-    colors: actionColors,
-    groups: actionGroups,
-    cost: netcosts,
-    efficiency: efficiencies,
-    impact: impacts,
-  };
-
-  const efficiencyUnit = data.actionEfficiencyPairs[activeEfficiency].efficiencyUnit.short;
-
-  const impactName = data.actionEfficiencyPairs[activeEfficiency].impactNode.name; 
-  const impactUnit = data.actionEfficiencyPairs[activeEfficiency].impactNode.unit.short; 
-
-  const costName = data.actionEfficiencyPairs[activeEfficiency].costNode.name;
-  const costUnit = data.actionEfficiencyPairs[activeEfficiency].costNode.unit.short; 
-
-  console.log("data", data);
   return (
   <>
     <HeaderSection>
@@ -144,65 +179,72 @@ function MacPage(props) {
           </ActiveScenario>
         </PageHeader>
         <SettingsForm className="text-light mt-4">
-        <ButtonGroup
-          className="my-2"
-          size="sm"
-        >
-          <Button
-            outline={listType !== 'list'}
-            onClick={() => setListType('list')}
+        { hasEfficiency && (
+          <ButtonGroup
+            className="my-2"
+            size="sm"
           >
-            List
-          </Button>
-          <Button
-            outline={listType !== 'mac'}
-            onClick={() => setListType('mac')}
-          >
-            Cost effectiveness
-          </Button>
-        </ButtonGroup>
+            <Button
+              outline={listType !== 'list'}
+              onClick={() => setListType('list')}
+            >
+              List
+            </Button>
+            <Button
+              outline={listType !== 'mac'}
+              onClick={() => setListType('mac')}
+            >
+              Cost effectiveness
+            </Button>
+          </ButtonGroup>
+        )}
         <Row>
-        <Col md={4} className="d-flex">
-          <FormGroup>
-            <Label for="impact">
-              Impact on
-            </Label>
-            <Input
-              id="impact"
-              name="select"
-              type="select"
-              onChange={(e) => setActiveEfficiency(e.target.value)}
-            >
-              { data.actionEfficiencyPairs.map((impactGroup, indx) =>(
-              <option value={indx} key={indx}>
-                { impactGroup.label }
-              </option>
-              ))}
-            </Input>
+        { hasEfficiency && (
+          <Col md={4} className="d-flex">
+            <FormGroup>
+              <Label for="impact">
+                Impact on
+              </Label>
+              <Input
+                id="impact"
+                name="select"
+                type="select"
+                onChange={(e) => setActiveEfficiency(e.target.value)}
+              >
+                { data.actionEfficiencyPairs.map((impactGroup, indx) =>(
+                <option value={indx} key={indx}>
+                  { impactGroup.label }
+                </option>
+                ))}
+              </Input>
+            
             </FormGroup>
-        </Col>
-        <Col md={4} className="d-flex">
-          <FormGroup>
-            <Label for="type">
-              Type
-            </Label>
-            <Input
-              id="type"
-              name="select"
-              type="select"
-              onChange={(e) => setActionGroup(e.target.value)}
-            >
-              <option value="undefined" default>
-                All
-              </option>
-              { data.instance.actionGroups.map((actionGroup, indx) =>(
-              <option value={actionGroup.id} key={actionGroup.id}>
-                { actionGroup.name }
-              </option>
-              ))}             
-            </Input>
-            </FormGroup>
-        </Col>
+          </Col>
+        )}
+        { data.instance.actionGroups.length > 1 && (
+          <Col md={4} className="d-flex">
+            <FormGroup>
+              <Label for="type">
+                Type
+              </Label>
+              <Input
+                id="type"
+                name="select"
+                type="select"
+                onChange={(e) => setActionGroup(e.target.value)}
+              >
+                <option value="undefined" default>
+                  All
+                </option>
+                { data.instance.actionGroups.map((actionGroup, indx) =>(
+                <option value={actionGroup.id} key={actionGroup.id}>
+                  { actionGroup.name }
+                </option>
+                ))}             
+              </Input>
+              </FormGroup>
+          </Col>
+        )}
         <Col md={4} className="d-flex">
           <div className="d-flex align-items-end me-3">
           <FormGroup>
@@ -215,15 +257,20 @@ function MacPage(props) {
               type="select"
               onChange={(e) =>setSortBy(e.target.value)}
             >
-              <option value="efficiency">
-                Efficiency
+              <option value="default">
+                Default
               </option>
+              { hasEfficiency && (
+                <option value="efficiency">
+                  Efficiency
+                </option> )}
               <option value="impact">
                 Impact
               </option>
-              <option value="cost">
-                Cost
-              </option>
+              { hasEfficiency && (
+                <option value="cost">
+                  Cost
+                </option> )}
             </Input>
             </FormGroup>
             </div>
@@ -254,7 +301,7 @@ function MacPage(props) {
       <Row>
         <Col>
           <span>
-            Showing {actionData.length} actions
+            Showing {sortedActions.length} actions
           </span>
         </Col>
       </Row>
@@ -266,24 +313,16 @@ function MacPage(props) {
         <Col>
           {listType === 'list' && (
             <ActionsList
-              actions={actionData}
+              actions={sortedActions}
               displayType="displayTypeYearly"
               yearRange={yearRange}
             />
           )}
           {listType === 'mac' && ( 
-            <GraphCard>
-              <MacGraph
-                data={macData}
-                impactName={`${impactName} impact`}
-                impactUnit={impactUnit}
-                efficiencyName={`${costName} efficiency`}
-                efficiencyUnit={efficiencyUnit}
-                actionIds={actionIds}
-                costUnit={costUnit}
-                actionGroups={data.instance.actionGroups}
-              />
-            </GraphCard>
+            <MacView
+              actions={sortedActions}
+              data={data}
+            />
           )}
         </Col>
       </Row>

@@ -12,6 +12,73 @@ const GET_ACTION_EFFICIENCY = gql`
         }
       }
     }
+    actions {
+      id
+      name
+      shortDescription
+      color
+      decisionLevel
+      unit {
+        htmlShort
+      }
+      parameters {
+        __typename
+        id
+        description
+        nodeRelativeId
+        node {
+          id
+        }
+        isCustomized
+        ... on NumberParameterType {
+          numberValue: value
+          numberDefaultValue: defaultValue
+          minValue
+          maxValue
+          unit {
+            htmlShort
+          }
+        }
+        ... on BoolParameterType {
+          boolValue: value
+          boolDefaultValue: defaultValue
+        }
+        ... on StringParameterType {
+          stringValue: value
+          stringDefaultValue: defaultValue
+        }
+      }
+      quantity
+      inputNodes {
+        id
+      }
+      outputNodes {
+        id
+      }
+      impactMetric {
+        id
+        unit {
+          htmlShort
+        }
+        cumulativeForecastValue
+        yearlyCumulativeUnit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+      }
+      group {
+        id
+        name
+        color
+      }
+    }
     actionEfficiencyPairs { 
       label
       efficiencyUnit {
@@ -42,33 +109,6 @@ const GET_ACTION_EFFICIENCY = gql`
           decisionLevel
           unit {
             htmlShort
-          }
-          parameters {
-            __typename
-            id
-            description
-            nodeRelativeId
-            node {
-              id
-            }
-            isCustomized
-            ... on NumberParameterType {
-              numberValue: value
-              numberDefaultValue: defaultValue
-              minValue
-              maxValue
-              unit {
-                htmlShort
-              }
-            }
-            ... on BoolParameterType {
-              boolValue: value
-              boolDefaultValue: defaultValue
-            }
-            ... on StringParameterType {
-              stringValue: value
-              stringDefaultValue: defaultValue
-            }
           }
           quantity
           inputNodes {
