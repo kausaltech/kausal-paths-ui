@@ -45,5 +45,16 @@
   "total-impact": "Total impact",
   "will_be_implemented": "Is implemented",
   "nav-menu-close": "Close navigation",
-  "front-page": "Front page"
+  "front-page": "Front page",
+  "actions-count": "Showing {{ count }} actions",
+  "actions-as-list": "List",
+  "actions-as-efficiency": "Efficiency",
+  "actions-impact-on": "Impact on",
+  "actions-group-type": "Type",
+  "action-groups-all": "All",
+  "actions-sort-by": "Sort by",
+  "actions-sort-default": "Default",
+  "actions-sort-efficiency": "Efficiency",
+  "actions-sort-impact": "Impact",
+  "actions-sort-cost": "Cost"
 }

@@ -2,8 +2,15 @@ import { gql } from '@apollo/client';
 
 const GET_ACTION_LIST = gql`
   query GetActionList {
-    actionEfficiencyPairs {
-      id
+    instance {
+      actionGroups {
+        id
+        name
+        color
+        actions {
+          id
+        }
+      }
     }
     actions {
       id
@@ -53,6 +60,7 @@ const GET_ACTION_LIST = gql`
         unit {
           htmlShort
         }
+        cumulativeForecastValue
         yearlyCumulativeUnit {
           htmlShort
         }
@@ -64,6 +72,46 @@ const GET_ACTION_LIST = gql`
           value
           year
         }
+      }
+      group {
+        id
+        name
+        color
+      }
+    }
+    actionEfficiencyPairs { 
+      label
+      efficiencyUnit {
+        short
+      }
+      costNode {
+        id
+        name
+        shortDescription
+        unit {
+          short
+        }
+      }
+      impactNode {
+        id
+        name
+        shortDescription
+        unit {
+          short
+        }
+      }
+      actions {
+        action {
+          id
+          group {
+            id
+            name
+            color
+          }
+        }
+        cumulativeImpact
+        cumulativeEfficiency
+        cumulativeCost
       }
     }
   }

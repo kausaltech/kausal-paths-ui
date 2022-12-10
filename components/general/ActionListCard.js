@@ -54,6 +54,11 @@ const ActionState = styled.div`
   justify-content: space-between;
 `;
 
+const GroupTag = styled.div`
+  font-size: 80%;
+  color: ${(props) => props.color};
+`;
+
 const ActionListCard = (props) => {
   const { action, displayType, displayYears, level } = props;
   const { t } = useTranslation();
@@ -79,6 +84,9 @@ const ActionListCard = (props) => {
         <CardHeader>
           <ActionLink action={action}>
             <a>
+              { action.group && (
+                <GroupTag color={action.group.color}>{action.group.name}</GroupTag>
+              )}
               <h5>
                 {action.name}
               </h5>

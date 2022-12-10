@@ -43,5 +43,16 @@
   "target-year": "Tavoitevuosi",
   "total-effect-until": "Kokonaisvaikutus",
   "total-impact": "Kokonaisvaikutus",
-  "will_be_implemented": "Toteutetaan"
+  "will_be_implemented": "Toteutetaan",
+  "actions-count": "Näytetään {{ count }} toimenpidettä",
+  "actions-as-list": "Listana",
+  "actions-as-efficiency": "Vaikuttavuus",
+  "actions-impact-on": "Näytä vaikutus",
+  "actions-group-type": "Tyyppi",
+  "action-groups-all": "Kaikki",
+  "actions-sort-by": "Järjestä",
+  "actions-sort-default": "Oletus",
+  "actions-sort-efficiency": "Kustannustehokkuus",
+  "actions-sort-impact": "Vaikuttavuus",
+  "actions-sort-cost": "Kustannus"
 }
