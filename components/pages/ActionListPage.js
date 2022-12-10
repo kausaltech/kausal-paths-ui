@@ -32,7 +32,7 @@ const SettingsForm = styled.form`
 `;
 
 const GraphCard = styled.div` 
-  margin: -8rem 0 3rem;
+  margin: 0 0 3rem;
   padding: 2rem;
   border-radius:  ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
@@ -48,6 +48,11 @@ const ActiveScenario = styled.div`
   font-size: 1rem;
   font-weight: 700;
   vertical-align: middle;
+`;
+
+const ActionCount = styled.div`
+  margin: -8rem 0 ${({ theme }) => theme.spaces.s100};
+  color: ${({ theme }) => theme.themeColors.white};
 `;
 
 const MacView = (props) => {
@@ -75,21 +80,23 @@ const MacView = (props) => {
   const costUnit = actionEfficiencyPairs.costNode.unit.short; 
 
   return (
-    <GraphCard>
-      <span>
+    <>
+      <ActionCount>
         {t('actions-count', { count: efficiencyActions.length})}
-      </span>
-      <MacGraph
-        data={macData}
-        impactName={`${impactName} impact`}
-        impactUnit={impactUnit}
-        efficiencyName={`${costName} efficiency`}
-        efficiencyUnit={efficiencyUnit}
-        actionIds={macData.ids}
-        costUnit={costUnit}
-        actionGroups={actionGroups}
-      />
-    </GraphCard>
+      </ActionCount>
+      <GraphCard>
+        <MacGraph
+          data={macData}
+          impactName={`${impactName} impact`}
+          impactUnit={impactUnit}
+          efficiencyName={`${costName} efficiency`}
+          efficiencyUnit={efficiencyUnit}
+          actionIds={macData.ids}
+          costUnit={costUnit}
+          actionGroups={actionGroups}
+        />
+      </GraphCard>
+    </>
   )
 };
 
@@ -292,11 +299,16 @@ function ActionListPage(props) {
       <Row>
         <Col>
           {listType === 'list' && (
-            <ActionsList
-              actions={sortedActions}
-              displayType="displayTypeYearly"
-              yearRange={yearRange}
-            />
+            <>
+              <ActionCount>
+                {t('actions-count', { count: sortedActions.length})}
+              </ActionCount>
+              <ActionsList
+                actions={sortedActions}
+                displayType="displayTypeYearly"
+                yearRange={yearRange}
+              />
+            </>
           )}
           {listType === 'mac' && ( 
             <MacView
