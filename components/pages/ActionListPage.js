@@ -10,7 +10,7 @@ import { GET_ACTION_LIST } from 'common/queries/getActionList';
 
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanel from 'components/general/SettingsPanel';
-import MacGraph from 'components/graphs/MacGraph';
+import ActionsMac from 'components/general/ActionsMac';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
 
@@ -31,14 +31,6 @@ const SettingsForm = styled.form`
   display: block;
 `;
 
-const GraphCard = styled.div` 
-  margin: 0 0 3rem;
-  padding: 2rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
-  background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
-`;
-
 const ActiveScenario = styled.div`
   clear: both;
   padding: .75rem;
@@ -55,50 +47,7 @@ const ActionCount = styled.div`
   color: ${({ theme }) => theme.themeColors.white};
 `;
 
-const MacView = (props) => {
-  const { actions, actionEfficiencyPairs, t, actionGroups } = props;
 
-  // Remove actions without efficiency data
-  const efficiencyActions = actions.filter((action) => action.cumulativeEfficiency);
-
-  const macData = {
-    ids: efficiencyActions.map((action) => action.id),
-    actions: efficiencyActions.map((action) => action.name),
-    colors: efficiencyActions.map((action) => action.color || action.group?.color),
-    groups: efficiencyActions.map((action) => action.group?.id),
-    cost: efficiencyActions.map((action) => action.cumulativeCost),
-    efficiency: efficiencyActions.map((action) => action.cumulativeEfficiency),
-    impact: efficiencyActions.map((action) => action.cumulativeImpact),
-  };
-
-  const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.short;
-
-  const impactName = actionEfficiencyPairs.impactNode.name; 
-  const impactUnit = actionEfficiencyPairs.impactNode.unit.short; 
-
-  const costName = actionEfficiencyPairs.costNode.name;
-  const costUnit = actionEfficiencyPairs.costNode.unit.short; 
-
-  return (
-    <>
-      <ActionCount>
-        {t('actions-count', { count: efficiencyActions.length})}
-      </ActionCount>
-      <GraphCard>
-        <MacGraph
-          data={macData}
-          impactName={`${impactName} impact`}
-          impactUnit={impactUnit}
-          efficiencyName={`${costName} efficiency`}
-          efficiencyUnit={efficiencyUnit}
-          actionIds={macData.ids}
-          costUnit={costUnit}
-          actionGroups={actionGroups}
-        />
-      </GraphCard>
-    </>
-  )
-};
 
 function ActionListPage(props) {
   const { t } = useTranslation();
@@ -121,7 +70,7 @@ function ActionListPage(props) {
   } if (error) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
-
+  
   const hasEfficiency = data.actionEfficiencyPairs.length > 1;
   // If we have action efficiency pairs, we augment the actions with the cumulative values
   const usableActions = data.actions.map(
@@ -133,29 +82,8 @@ function ActionListPage(props) {
           cumulativeCost: efficiencyAction ? efficiencyAction.cumulativeCost : undefined,
           cumulativeEfficiency: efficiencyAction ? efficiencyAction.cumulativeEfficiency : undefined,
         }
-      });
+      }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id );
   
-  const sortActions = (a, b) => {
-    let aValue = a[sortBy];
-    let bValue = b[sortBy];
-  
-    switch (sortBy) {
-      case 'impact':
-        hasEfficiency ? aValue = a.cumulativeImpact : aValue = a.impactMetric.cumulativeForecastValue;
-        hasEfficiency ? bValue = b.cumulativeImpact : bValue = b.impactMetric.cumulativeForecastValue;
-        break;
-      case 'default':
-        return 0;
-    };
-
-    return hasEfficiency ?
-      a.cumulativeImpact < 0 ? -1 : b.cumulativeImpact < 0 ? 0 : ascending ? aValue - bValue : bValue - aValue
-      : ascending ? aValue - bValue : bValue - aValue;
-  }
-
-  const sortedActions = [...usableActions].sort(sortActions)
-    .filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id );
-
   return (
   <>
     <HeaderSection>
@@ -251,18 +179,15 @@ function ActionListPage(props) {
               type="select"
               onChange={(e) =>setSortBy(e.target.value)}
             >
-              <option value="default">
-                {t('actions-sort-default')}
-              </option>
-              { hasEfficiency && (
-                <option value="efficiency">
-                  {t('actions-sort-efficiency')}
-                </option> )}
-              <option value="impact">
+              <option value="cumulativeImpact" default>
                 {t('actions-sort-impact')}
               </option>
               { hasEfficiency && (
-                <option value="cost">
+                <option value="cumulativeEfficiency">
+                  {t('actions-sort-efficiency')}
+                </option> )}
+              { hasEfficiency && (
+                <option value="cumulativeCost">
                   {t('actions-sort-cost')}
                 </option> )}
             </Input>
@@ -301,21 +226,25 @@ function ActionListPage(props) {
           {listType === 'list' && (
             <>
               <ActionCount>
-                {t('actions-count', { count: sortedActions.length})}
+                {t('actions-count', { count: usableActions.length})}
               </ActionCount>
               <ActionsList
-                actions={sortedActions}
+                actions={usableActions}
                 displayType="displayTypeYearly"
                 yearRange={yearRange}
+                sortBy={sortBy}
+                sortAscending={ascending}
               />
             </>
           )}
           {listType === 'mac' && ( 
-            <MacView
-              actions={sortedActions}
+            <ActionsMac
+              actions={usableActions}
               actionEfficiencyPairs={data.actionEfficiencyPairs[activeEfficiency]}
               t={t}
               actionGroups={data.instance.actionGroups}
+              sortBy={sortBy}
+              sortAscending={ascending}
             />
           )}
         </Col>

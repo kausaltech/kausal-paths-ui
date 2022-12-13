@@ -8,7 +8,7 @@ const ActionListList = styled.ul`
 `;
 
 const ActionsList = (props) => {
-  const { actions, displayType, yearRange } = props;
+  const { actions, displayType, yearRange, sortBy, sortAscending } = props;
 
   return (
     <ActionListList>
