@@ -6,6 +6,7 @@ import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import Badge from 'components/common/Badge';
+import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
 
 const ActionItem = styled.li`
   margin-bottom: 1.5rem;
@@ -63,17 +64,20 @@ const ActionListCard = (props) => {
   const { action, displayType, displayYears, level } = props;
   const { t } = useTranslation();
 
+  console.log('ActionListCard', action);
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
     (dataPoint) => dataPoint.year === displayYears[1],
   )?.value || 0;
 
-  const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]);
+  const actionEffectCumulative = action.impactMetric.cumulativeForecastValue;
   // const unitCumulative = 'kt CO<sub>2</sub>e';
   const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
 
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
+
+  const hasEfficiency = action.cumulativeEfficiency;
 
   return (
     <ActionItem
@@ -107,13 +111,28 @@ const ActionListCard = (props) => {
             <ActionParameters
               parameters={action.parameters}
             />
-            {action.impactMetric && (
+            {(action.impactMetric && !hasEfficiency) && (
               <ImpactDisplay
                 effectCumulative={actionEffectCumulative}
                 effectYearly={actionEffectYearly}
                 yearRange={displayYears}
                 unitCumulative={unitCumulative}
                 unitYearly={unitYearly}
+                muted={!isActive}
+              />
+            )}
+            { hasEfficiency && (
+              <EfficiencyDisplay
+                impactCumulative={action.cumulativeImpact}
+                impactCumulativeUnit={action.cumulativeImpactUnit}
+                impactCumulativeLabel={action.cumulativeImpactName}
+                costCumulative={action.cumulativeCost}
+                costCumulativeUnit={action.cumulativeCostUnit}
+                costCumulativeLabel={action.cumulativeCostName}
+                efficiencyCumulative={action.cumulativeEfficiency}
+                efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
+                efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
+                yearRange={displayYears}
                 muted={!isActive}
               />
             )}

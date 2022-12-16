@@ -23,6 +23,11 @@ export const beautifyValue = (x) => {
   return s;
 };
 
+// Use Format number to locale and round to 3 decimals
+export const formatNumber = (value, language) => {
+  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language)
+};
+
 export const getInitialMetric = (node) => node.metric.historicalValues[0];
 
 export const getMetricValue = (node, date) => (

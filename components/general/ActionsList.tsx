@@ -10,9 +10,18 @@ const ActionListList = styled.ul`
 const ActionsList = (props) => {
   const { actions, displayType, yearRange, sortBy, sortAscending } = props;
 
+  const sortActions = (a, b) => {
+    let aValue = a[sortBy];
+    let bValue = b[sortBy];
+
+    return sortAscending ? aValue - bValue : bValue - aValue;
+  }
+
+  const sortedActions = actions.sort(sortActions);
+
   return (
     <ActionListList>
-      { actions?.map((action) => (
+      { sortedActions?.map((action) => (
         <ActionListCard
           key={action.id}
           action={action}

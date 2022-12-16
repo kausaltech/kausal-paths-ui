@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import HighlightValue from 'components/general/HighlightValue';
-import { beautifyValue } from 'common/preprocess';
+import { formatNumber } from 'common/preprocess';
 import { useTranslation } from 'next-i18next';
 
 const ImpactDisplayWrapper = styled.div`
@@ -32,7 +32,7 @@ padding: .5rem;
 
 const ImpactDisplay = (props) => {
   const { effectCumulative, effectYearly, yearRange, unitCumulative, unitYearly, muted } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const cumulativePrefix = effectCumulative > 0 ? '+' : '';
   const yearlyPrefix = effectYearly > 0 ? '+' : '';
@@ -45,7 +45,7 @@ const ImpactDisplay = (props) => {
       { effectCumulative !== undefined && (
       <ImpactDisplayItem>
         <HighlightValue
-          displayValue={`${cumulativePrefix}${beautifyValue(effectCumulative || 0)}`}
+          displayValue={`${cumulativePrefix}${formatNumber(effectCumulative || 0, i18n.language)}`}
           header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
           unit={unitCumulative}
           muted={muted}
@@ -54,7 +54,7 @@ const ImpactDisplay = (props) => {
       )}
       <ImpactDisplayItem>
         <HighlightValue
-          displayValue={`${yearlyPrefix}${beautifyValue(effectYearly || 0)}`}
+          displayValue={`${yearlyPrefix}${formatNumber(effectYearly || 0, i18n.language)}`}
           header={`${t('impact-on-year')} ${yearRange[1]}`}
           unit={unitYearly}
           muted={muted}

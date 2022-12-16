@@ -71,16 +71,25 @@ function ActionListPage(props) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
   
-  const hasEfficiency = data.actionEfficiencyPairs.length > 1;
+  console.log("----------> actionListPage Props", data);
+  const hasEfficiency = data.actionEfficiencyPairs.length > 0;
   // If we have action efficiency pairs, we augment the actions with the cumulative values
+
   const usableActions = data.actions.map(
       (act) => {
         const efficiencyAction = hasEfficiency ? data.actionEfficiencyPairs[activeEfficiency].actions.find((a) => a.action.id === act.id) : null;
+        const efficiencyType = data.actionEfficiencyPairs[activeEfficiency];
         return {
           ...act,
           cumulativeImpact: efficiencyAction ? efficiencyAction.cumulativeImpact : undefined,
+          cumulativeImpactUnit: efficiencyType?.impactNode?.unit.short,
+          cumulativeImpactName: efficiencyType?.impactNode?.name,
           cumulativeCost: efficiencyAction ? efficiencyAction.cumulativeCost : undefined,
+          cumulativeCostUnit: efficiencyType?.costNode?.unit.short,
+          cumulativeCostName: efficiencyType?.costNode?.name,
           cumulativeEfficiency: efficiencyAction ? efficiencyAction.cumulativeEfficiency : undefined,
+          cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.short,
+          cumulativeEfficiencyName: efficiencyType?.label,
         }
       }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id );
   
@@ -179,13 +188,13 @@ function ActionListPage(props) {
               type="select"
               onChange={(e) =>setSortBy(e.target.value)}
             >
-              <option value="cumulativeImpact" default>
-                {t('actions-sort-impact')}
-              </option>
               { hasEfficiency && (
-                <option value="cumulativeEfficiency">
+                <option value="cumulativeEfficiency" default>
                   {t('actions-sort-efficiency')}
                 </option> )}
+              <option value="cumulativeImpact" default={!hasEfficiency}>
+                {t('actions-sort-impact')}
+              </option>
               { hasEfficiency && (
                 <option value="cumulativeCost">
                   {t('actions-sort-cost')}
