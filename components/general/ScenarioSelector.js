@@ -64,7 +64,7 @@ const ScenarioSelector = () => {
     );
   }
   if (error) {
-    console.log("Error", JSON.stringify(error));
+    //console.log("Error", JSON.stringify(error));
     return <div>{t('error-loading-data')}</div>;
   }
 

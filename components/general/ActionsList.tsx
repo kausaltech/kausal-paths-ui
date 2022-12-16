@@ -8,7 +8,7 @@ const ActionListList = styled.ul`
 `;
 
 const ActionsList = (props) => {
-  const { actions, displayType, yearRange, sortBy, sortAscending } = props;
+  const { actions, displayType, yearRange, sortBy, sortAscending, refetching } = props;
 
   const sortActions = (a, b) => {
     let aValue = a[sortBy];
@@ -28,6 +28,7 @@ const ActionsList = (props) => {
           displayType={displayType}
           displayYears={yearRange}
           level={action.decisionLevel}
+          refetching={refetching}
         />
       ))}
     </ActionListList>

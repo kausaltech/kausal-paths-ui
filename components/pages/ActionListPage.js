@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
 import styled from 'styled-components';
 
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
@@ -51,7 +51,9 @@ const ActionCount = styled.div`
 
 function ActionListPage(props) {
   const { t } = useTranslation();
-  const { loading, error, data, refetch } = useQuery(GET_ACTION_LIST);
+  const { loading, error, data, previousData, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
+    notifyOnNetworkStatusChange: true,
+  });
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
@@ -61,17 +63,16 @@ function ActionListPage(props) {
   const [activeEfficiency, setActiveEfficiency] = useState(0);
   const [actionGroup, setActionGroup] = useState('undefined');
 
-  useEffect(() => {
-    refetch();
-  }, [activeScenario]);
+  const refetching = (networkStatus === NetworkStatus.refetch);
 
-  if (loading) {
+  if (loading && !previousData) {
     return <ContentLoader />;
   } if (error) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
   
-  console.log("----------> actionListPage Props", data);
+  // console.log("----------> actionListPage Props", data);
+
   const hasEfficiency = data.actionEfficiencyPairs.length > 0;
   // If we have action efficiency pairs, we augment the actions with the cumulative values
 
@@ -243,6 +244,7 @@ function ActionListPage(props) {
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
+                refetching={refetching}
               />
             </>
           )}
@@ -254,6 +256,7 @@ function ActionListPage(props) {
               actionGroups={data.instance.actionGroups}
               sortBy={sortBy}
               sortAscending={ascending}
+              refetching={refetching}
             />
           )}
         </Col>

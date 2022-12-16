@@ -79,8 +79,10 @@ const GET_ACTION_LIST = gql`
         color
       }
     }
-    actionEfficiencyPairs { 
+    actionEfficiencyPairs {
+      id
       label
+      plotLimitEfficiency
       efficiencyUnit {
         short
       }
@@ -109,9 +111,15 @@ const GET_ACTION_LIST = gql`
             color
           }
         }
+        cumulativeCost
         cumulativeImpact
         cumulativeEfficiency
-        cumulativeCost
+        cumulativeCostUnit {
+          htmlShort
+        }
+        cumulativeImpactUnit {
+          htmlShort
+        }
       }
     }
   }

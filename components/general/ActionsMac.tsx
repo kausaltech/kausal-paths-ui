@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import MacGraph from 'components/graphs/MacGraph';
+import { Spinner } from 'reactstrap';
 
 const ActionCount = styled.div`
 margin: -8rem 0 ${({ theme }) => theme.spaces.s100};
@@ -10,12 +11,12 @@ const GraphCard = styled.div`
   margin: 0 0 3rem;
   padding: 2rem;
   border-radius:  ${(props) => props.theme.cardBorderRadius};
-  background-color: ${(props) => props.theme.themeColors.white};
+  background-color: ${(props) => props.disabled ? props.theme.themeColors.light : props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
 const ActionsMac = (props) => {
-  const { actions, actionEfficiencyPairs, t, actionGroups, sortBy, sortAscending } = props;
+  const { actions, actionEfficiencyPairs, t, actionGroups, sortBy, sortAscending, refetching } = props;
 
   // Remove actions without efficiency data
   const efficiencyActions = actions.filter((action) => action.cumulativeEfficiency);
@@ -52,7 +53,8 @@ const ActionsMac = (props) => {
       <ActionCount>
         {t('actions-count', { count: sortedActions.length})}
       </ActionCount>
-      <GraphCard>
+      <GraphCard disabled={refetching}>
+        { refetching && <span><Spinner color="primary" /></span> }
         <MacGraph
           data={macData}
           impactName={`${impactName} impact`}

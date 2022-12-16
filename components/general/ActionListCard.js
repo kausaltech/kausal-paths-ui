@@ -1,6 +1,7 @@
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { ActionLink } from 'common/links';
+import { Spinner } from 'reactstrap';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
@@ -61,10 +62,10 @@ const GroupTag = styled.div`
 `;
 
 const ActionListCard = (props) => {
-  const { action, displayType, displayYears, level } = props;
+  const { action, displayType, displayYears, level, refetching } = props;
   const { t } = useTranslation();
 
-  console.log('ActionListCard', action);
+  //console.log('ActionListCard', action);
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
@@ -75,7 +76,7 @@ const ActionListCard = (props) => {
   // const unitCumulative = 'kt CO<sub>2</sub>e';
   const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
 
-  const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
+  const isActive = !refetching && action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
 
   const hasEfficiency = action.cumulativeEfficiency;
 
@@ -96,15 +97,16 @@ const ActionListCard = (props) => {
               </h5>
             </a>
           </ActionLink>
-          { level === 'NATION' && (
-            <ActionCategory>
-              <Badge
-                color="neutralLight"
-              >
-                { t('decision-national') }
-              </Badge>
-            </ActionCategory> 
-          )}
+          <ActionCategory>
+            { level === 'NATION' && (
+                <Badge
+                  color="neutralLight"
+                >
+                  { t('decision-national') }
+                </Badge>
+            )}
+            { refetching && <span><Spinner size="sm" color="primary" /></span> }
+          </ActionCategory>
         </CardHeader>
         <CardContent>
           <ActionState>

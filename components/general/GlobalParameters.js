@@ -3,10 +3,10 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, CustomInput, Button, InputGroup, FormFeedback } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
-import { activeScenarioVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 import { GET_PARAMETERS } from 'common/queries/getParameters';
+import { GET_ACTION_LIST } from 'common/queries/getActionList';
 
 const GlobalParametersPanel = styled(Row)`
   .form-group {
@@ -44,10 +44,15 @@ const ParameterWidget = (props) => {
   const [invalid, setInvalid] = useState(false);
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
+    notifyOnNetworkStatusChange: true,
     refetchQueries: [
-      { query: GET_SCENARIOS },
-      { query: GET_PARAMETERS },
+      GET_SCENARIOS,
+      GET_PARAMETERS,
+      GET_ACTION_LIST,
     ],
+    onCompleted: (dat) => {
+      //console.log("set param---------", dat);
+    },
   });
 
   const isInvalid = (input) => {
@@ -65,12 +70,14 @@ const ParameterWidget = (props) => {
   };
 
   const handleUserSelection = (evt) => {
-    console.log("param event", evt)
+    //console.log("param event", evt)
     if(evt?.char==='Enter') {
-      console.log("enter", evt)
+      //console.log("enter", evt)
       const validity = isInvalid(evt);
       setInvalid(validity);
-      if (!validity) SetParameter({ variables: evt });
+      if (!validity) {
+        SetParameter({ variables: evt })
+      };
     }
   };
 
@@ -84,6 +91,7 @@ const ParameterWidget = (props) => {
           </Label>
           <InputGroup>
             <Input
+  
               invalid={invalid !== false}
               valid = {parameter.isCustomized}
               id={parameter.id}
