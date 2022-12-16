@@ -10,6 +10,7 @@ import Badge from 'components/common/Badge';
 import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
 
 const ActionItem = styled.li`
+  position: relative;
   margin-bottom: 1.5rem;
   color: ${(props) => (props.isActive ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050)};
 
@@ -21,6 +22,19 @@ const ActionItem = styled.li`
     background-color: ${(props) => (props.isActive ? props.theme.themeColors.white : props.theme.graphColors.grey005)};
     box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
   }
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255,255,255,0.4);
+  z-index: 1;
 `;
 
 const CardHeader = styled.div`
@@ -85,6 +99,7 @@ const ActionListCard = (props) => {
       key={action.id}
       isActive={isActive}
     >
+      { refetching && <LoadingOverlay><Spinner size="sm" color="primary" /></LoadingOverlay> }
       <DashCard>
         <CardHeader>
           <ActionLink action={action}>
@@ -105,7 +120,6 @@ const ActionListCard = (props) => {
                   { t('decision-national') }
                 </Badge>
             )}
-            { refetching && <span><Spinner size="sm" color="primary" /></span> }
           </ActionCategory>
         </CardHeader>
         <CardContent>

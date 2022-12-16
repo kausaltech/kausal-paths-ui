@@ -83,10 +83,10 @@ function ActionListPage(props) {
         return {
           ...act,
           cumulativeImpact: efficiencyAction ? efficiencyAction.cumulativeImpact : undefined,
-          cumulativeImpactUnit: efficiencyType?.impactNode?.unit.short,
+          cumulativeImpactUnit: efficiencyAction?.cumulativeImpactUnit?.htmlShort,
           cumulativeImpactName: efficiencyType?.impactNode?.name,
           cumulativeCost: efficiencyAction ? efficiencyAction.cumulativeCost : undefined,
-          cumulativeCostUnit: efficiencyType?.costNode?.unit.short,
+          cumulativeCostUnit: efficiencyAction?.cumulativeCostUnit.htmlShort,
           cumulativeCostName: efficiencyType?.costNode?.name,
           cumulativeEfficiency: efficiencyAction ? efficiencyAction.cumulativeEfficiency : undefined,
           cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.short,

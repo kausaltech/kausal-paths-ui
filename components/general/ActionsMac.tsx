@@ -7,19 +7,38 @@ margin: -8rem 0 ${({ theme }) => theme.spaces.s100};
 color: ${({ theme }) => theme.themeColors.white};
 `;
 
+const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255,255,255,0.4);
+  z-index: 1;
+`;
+
 const GraphCard = styled.div` 
+  position: relative;
   margin: 0 0 3rem;
   padding: 2rem;
   border-radius:  ${(props) => props.theme.cardBorderRadius};
-  background-color: ${(props) => props.disabled ? props.theme.themeColors.light : props.theme.themeColors.white};
+  background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
 const ActionsMac = (props) => {
   const { actions, actionEfficiencyPairs, t, actionGroups, sortBy, sortAscending, refetching } = props;
 
+  // if we have efficiency limit set, remove actions over that limit
+  const efficiencyLimit = actionEfficiencyPairs?.plotLimitEfficiency;
   // Remove actions without efficiency data
-  const efficiencyActions = actions.filter((action) => action.cumulativeEfficiency);
+  const efficiencyActions = actions
+    .filter((action) => action.cumulativeEfficiency)
+    .filter((action) => efficiencyLimit ? Math.abs(action.cumulativeEfficiency) <= efficiencyLimit : true);
+
   const sortActions = (a, b) => {
     let aValue = a[sortBy];
     let bValue = b[sortBy];
@@ -43,18 +62,18 @@ const ActionsMac = (props) => {
   const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.short;
 
   const impactName = actionEfficiencyPairs.impactNode.name; 
-  const impactUnit = actionEfficiencyPairs.impactNode.unit.short; 
+  const impactUnit = sortedActions[0]?.cumulativeImpactUnit; 
 
   const costName = actionEfficiencyPairs.costNode.name;
-  const costUnit = actionEfficiencyPairs.costNode.unit.short; 
+  const costUnit = sortedActions[0]?.cumulativeCostUnit;
 
   return (
     <>
       <ActionCount>
         {t('actions-count', { count: sortedActions.length})}
       </ActionCount>
-      <GraphCard disabled={refetching}>
-        { refetching && <span><Spinner color="primary" /></span> }
+      <GraphCard>
+        { refetching && <LoadingOverlay><Spinner color="primary" /></LoadingOverlay> }
         <MacGraph
           data={macData}
           impactName={`${impactName} impact`}
