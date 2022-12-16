@@ -59,7 +59,7 @@ function ActionListPage(props) {
 
   const [listType, setListType] = useState('list');
   const [ascending, setAscending] = useState(true);
-  const [sortBy, setSortBy] = useState('efficiency');
+  const [sortBy, setSortBy] = useState('cumulativeEfficiency');
   const [activeEfficiency, setActiveEfficiency] = useState(0);
   const [actionGroup, setActionGroup] = useState('undefined');
 
