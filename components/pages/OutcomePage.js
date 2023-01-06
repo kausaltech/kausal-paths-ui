@@ -45,13 +45,14 @@ const findVisibleNodes = (allNodes, lastNodeId, visibleNodes) => {
   // Using last active node Id, create an array of all visible nodes
   const lastNode = allNodes.get(lastNodeId);
   visibleNodes.unshift(lastNode);
-  if (lastNode.outputNodes?.length) {
+  if (lastNode?.outputNodes?.length) {
     findVisibleNodes(allNodes, lastNode.outputNodes[0].id, visibleNodes);
   }
   return visibleNodes;
 };
 
-export default function OutcomePage({ page, refetch, activeScenario: queryActiveScenario }) {
+export default function OutcomePage(props) {
+  const { page, refetch, activeScenario: queryActiveScenario } = props;
   const { t } = useTranslation();
   const theme = useTheme();
   const site = useSite();
@@ -80,7 +81,9 @@ export default function OutcomePage({ page, refetch, activeScenario: queryActive
   const { upstreamNodes } = outcomeNode;
   const allNodes = new Map(upstreamNodes.map((node) => [node.id, node]));
   allNodes.set(outcomeNode.id, outcomeNode);
-  const visibleNodes = findVisibleNodes(allNodes, lastActiveNodeId || outcomeNode.id, []);
+
+  // TODO: filtering out empty nodes, in some instances there are some -> investigate why
+  const visibleNodes = findVisibleNodes(allNodes, lastActiveNodeId || outcomeNode.id, []).filter((node) => node?.id);
 
   const outcomeType = visibleNodes[0].quantity;
 
