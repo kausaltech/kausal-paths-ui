@@ -76,9 +76,9 @@ const ActionsMac = (props) => {
         { refetching && <LoadingOverlay><Spinner color="primary" /></LoadingOverlay> }
         <MacGraph
           data={macData}
-          impactName={`${impactName} impact`}
+          impactName={`${impactName} ${t('mac-axis-impact')}`}
           impactUnit={impactUnit}
-          efficiencyName={`${costName} efficiency`}
+          efficiencyName={`${costName} ${t('efficiency')}`}
           efficiencyUnit={efficiencyUnit}
           actionIds={macData.ids}
           costUnit={costUnit}

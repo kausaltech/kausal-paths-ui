@@ -4,6 +4,7 @@ import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'reactstrap';
 import {ArrowRight} from 'react-bootstrap-icons';
+import { t } from 'i18next';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
@@ -207,7 +208,7 @@ function MacGraph(props) {
         </Col>
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
-            <HoverValueTitle>Cost</HoverValueTitle>
+            <HoverValueTitle>{t('actions-sort-cost')}</HoverValueTitle>
             <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
             <HoverValueUnit>{costUnit}</HoverValueUnit>
           </HoverValue>

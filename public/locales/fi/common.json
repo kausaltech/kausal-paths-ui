@@ -54,5 +54,7 @@
   "actions-sort-default": "Oletus",
   "actions-sort-efficiency": "Kustannustehokkuus",
   "actions-sort-impact": "Vaikuttavuus",
-  "actions-sort-cost": "Kustannus"
+  "actions-sort-cost": "Kustannus",
+  "mac-axis-impact": "vaikutus",
+  "efficiency": "kustannustehokkuus"
 }

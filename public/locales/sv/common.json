@@ -1,6 +1,6 @@
 {
   "abbr-per-annum": "/a",
-  "action-impact": "Action impact",
+  "action-impact": "Åtgärd påverkan",
   "action": "Åtgärd",
   "actions": "Åtgärder",
   "actions-available": "Åtgärder på scenariot",
@@ -43,5 +43,17 @@
   "target-year": "Målår",
   "total-effect-until": "Total impact",
   "total-impact": "Total påverkan",
-  "will_be_implemented": "Implementeras"
+  "will_be_implemented": "Implementeras",
+  "action-groups-all": "Alla",
+  "actions-sort-by": "Sortera på",
+  "actions-impact-on": "Typ av besparing",
+  "actions-group-type": "Åtgärdskategori",
+  "actions-sort-efficiency": "Kostnadseffektivitet",
+  "actions-sort-cost": "Kostnad",
+  "actions-as-list": "Lista av åtgärder",
+  "actions-count": "{{ count }} åtgärder",
+  "actions-sort-impact": "Påverkan",
+  "mac-axis-impact": "påverkan",
+  "efficiency": "kostnadseffektivitet",
+  "actions-as-efficiency": "Kostnadskurvor"
 }

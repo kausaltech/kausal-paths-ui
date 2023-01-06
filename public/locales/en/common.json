@@ -56,5 +56,7 @@
   "actions-sort-default": "Default",
   "actions-sort-efficiency": "Efficiency",
   "actions-sort-impact": "Impact",
-  "actions-sort-cost": "Cost"
+  "actions-sort-cost": "Cost",
+  "mac-axis-impact": "impact",
+  "efficiency": "cost effectiveness"
 }
