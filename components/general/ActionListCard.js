@@ -86,7 +86,9 @@ const ActionListCard = (props) => {
     (dataPoint) => dataPoint.year === displayYears[1],
   )?.value || 0;
 
-  const actionEffectCumulative = action.impactMetric.cumulativeForecastValue;
+  //const actionEffectCumulative = action.impactMetric.cumulativeForecastValue;
+  const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1]);
+  
   // const unitCumulative = 'kt CO<sub>2</sub>e';
   const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
 
