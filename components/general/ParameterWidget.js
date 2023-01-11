@@ -9,6 +9,7 @@ import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
+import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Button from 'components/common/Button';
 
 const RangeWrapper = styled.div`
@@ -85,7 +86,6 @@ const NumberWidget = (props) => {
       color="link"
       size="sm"
       outline
-      on
       onClick={() => setValues([defaultValue])}
     >
       <ArrowCounterclockwise />
@@ -193,7 +193,8 @@ const ParameterWidget = (props) => {
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     refetchQueries: [
-      { query: GET_SCENARIOS },
+      GET_SCENARIOS,
+      GET_ACTION_LIST,
     ],
     onCompleted: () => {
       activeScenarioVar({ ...activeScenario, stamp: Date.now() });

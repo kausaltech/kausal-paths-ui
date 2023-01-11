@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
+import { GET_ACTION_LIST } from 'common/queries/getActionList';
 
 const ACTIVATE_SCENARIO = gql` 
   mutation ActivateScenario($scenarioId: ID!) {
@@ -47,7 +48,8 @@ const ScenarioSelector = () => {
   });
   const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation(ACTIVATE_SCENARIO, {
     refetchQueries: [
-      { query: GET_SCENARIOS },
+      GET_SCENARIOS,
+      GET_ACTION_LIST,
     ],
   });
 
