@@ -83,8 +83,10 @@ const GET_ACTION_LIST = gql`
       id
       label
       plotLimitEfficiency
+      invertCost
+      invertImpact
       efficiencyUnit {
-        short
+        htmlShort
       }
       costNode {
         id
@@ -119,6 +121,14 @@ const GET_ACTION_LIST = gql`
         }
         cumulativeImpactUnit {
           htmlShort
+        }
+        costValues {
+          value
+          year
+        }
+        impactValues {
+          value
+          year
         }
       }
     }

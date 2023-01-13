@@ -59,7 +59,7 @@ const ActionsMac = (props) => {
     impact: sortedActions.map((action) => action.cumulativeImpact),
   };
 
-  const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.short;
+  const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.htmlShort;
 
   const impactName = actionEfficiencyPairs.impactNode.name; 
   const impactUnit = sortedActions[0]?.cumulativeImpactUnit; 
@@ -78,7 +78,7 @@ const ActionsMac = (props) => {
           data={macData}
           impactName={`${impactName} ${t('mac-axis-impact')}`}
           impactUnit={impactUnit}
-          efficiencyName={`${costName} ${t('efficiency')}`}
+          efficiencyName={`${costName}`}
           efficiencyUnit={efficiencyUnit}
           actionIds={macData.ids}
           costUnit={costUnit}

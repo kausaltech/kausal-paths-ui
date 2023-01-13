@@ -35,11 +35,11 @@ const EfficiencyDisplay = (props) => {
     impactCumulative, impactCumulativeUnit, impactCumulativeLabel,
     costCumulative, costCumulativeUnit, costCumulativeLabel,
     efficiencyCumulative, efficiencyCumulativeUnit, efficiencyCumulativeLabel,
-    yearRange, muted } = props;
+    efficiencyCap, yearRange, muted } = props;
   const { t, i18n } = useTranslation();
 
-  //const cumulativePrefix = effectCumulative > 0 ? '+' : '';
-  //const yearlyPrefix = effectYearly > 0 ? '+' : '';
+  const displayEfficiency = Math.abs(efficiencyCumulative) < efficiencyCap ? formatNumber(efficiencyCumulative || 0, i18n.language) : '-';
+  const displayImpact = Math.abs(efficiencyCumulative) < efficiencyCap ? formatNumber(impactCumulative || 0, i18n.language) : '0';
 
   return (
     <EfficiencyDisplayWrapper>
@@ -48,7 +48,7 @@ const EfficiencyDisplay = (props) => {
       </EfficiencyDisplayHeader>
       <EfficiencyDisplayItem>
         <HighlightValue
-          displayValue={`${formatNumber(impactCumulative || 0, i18n.language)}`}
+          displayValue={displayImpact}
           header={ impactCumulativeLabel }
           unit={ impactCumulativeUnit }
           muted={muted}
@@ -66,7 +66,7 @@ const EfficiencyDisplay = (props) => {
       </EfficiencyDisplayItem>
       <EfficiencyDisplayItem>
         <HighlightValue
-          displayValue={`${formatNumber(efficiencyCumulative || 0, i18n.language)}`}
+          displayValue={displayEfficiency}
           header={ t('efficiency') }
           unit={ efficiencyCumulativeUnit }
           muted={muted}

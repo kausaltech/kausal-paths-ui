@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
 import styled from 'styled-components';
-
+import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label, Alert } from 'reactstrap';
 import { SortUp, SortDown } from 'react-bootstrap-icons';
@@ -76,21 +76,35 @@ function ActionListPage(props) {
   const hasEfficiency = data.actionEfficiencyPairs.length > 0;
   // If we have action efficiency pairs, we augment the actions with the cumulative values
 
+  // summarizeYearlyValuesBetween(efficiencyAction?.impactValues, yearRange[0], yearRange[1])
   const usableActions = data.actions.map(
       (act) => {
         const efficiencyAction = hasEfficiency ? data.actionEfficiencyPairs[activeEfficiency].actions.find((a) => a.action.id === act.id) : null;
         const efficiencyType = data.actionEfficiencyPairs[activeEfficiency];
+        const cumulativeImpact = efficiencyAction 
+          ? (data.actionEfficiencyPairs[activeEfficiency].invertImpact ? -1 : 1) * summarizeYearlyValuesBetween(efficiencyAction?.impactValues, yearRange[0], yearRange[1])
+          : undefined;
+        const cumulativeCost = efficiencyAction
+          ? (data.actionEfficiencyPairs[activeEfficiency].invertCost ? -1 : 1) *summarizeYearlyValuesBetween(efficiencyAction?.costValues, yearRange[0], yearRange[1])
+          : undefined;
+        //const cumulativeImpact = efficiencyAction?.cumulativeImpact;
+        //const cumulativeCost = efficiencyAction?.cumulativeCost;
+        const cumulativeEfficiency = efficiencyAction
+          ? cumulativeCost/Math.abs(cumulativeImpact)
+          : undefined;
+
         return {
           ...act,
-          cumulativeImpact: efficiencyAction ? efficiencyAction.cumulativeImpact : undefined,
+          cumulativeImpact: efficiencyAction ? cumulativeImpact : undefined,
           cumulativeImpactUnit: efficiencyAction?.cumulativeImpactUnit?.htmlShort,
           cumulativeImpactName: efficiencyType?.impactNode?.name,
-          cumulativeCost: efficiencyAction ? efficiencyAction.cumulativeCost : undefined,
+          cumulativeCost: efficiencyAction ? cumulativeCost : undefined,
           cumulativeCostUnit: efficiencyAction?.cumulativeCostUnit.htmlShort,
           cumulativeCostName: efficiencyType?.costNode?.name,
-          cumulativeEfficiency: efficiencyAction ? efficiencyAction.cumulativeEfficiency : undefined,
-          cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.short,
+          cumulativeEfficiency: cumulativeEfficiency,
+          cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.htmlShort,
           cumulativeEfficiencyName: efficiencyType?.label,
+          efficiencyCap: efficiencyAction ? data?.actionEfficiencyPairs[activeEfficiency].plotLimitEfficiency : undefined,
         }
       }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id );
   

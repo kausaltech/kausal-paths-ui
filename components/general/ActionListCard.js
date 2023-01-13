@@ -150,6 +150,7 @@ const ActionListCard = (props) => {
                 efficiencyCumulative={action.cumulativeEfficiency}
                 efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
                 efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
+                efficiencyCap={action.efficiencyCap}
                 yearRange={displayYears}
                 muted={!isActive}
               />

@@ -51,10 +51,13 @@ export const summarizeYearlyValues = (yearlyValues) => _.sum(yearlyValues.map((v
 
 export const summarizeYearlyValuesBetween = (metric, startYear, endYear) => {
   const yearlyValues = [];
-  metric.historicalValues.forEach((dataPoint) => {
+  if (metric?.historicalValues) metric.historicalValues.forEach((dataPoint) => {
     if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
   });
-  metric.forecastValues.forEach((dataPoint) => {
+  if (metric?.forecastValues) metric.forecastValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
+  });
+  if (metric?.length) metric.forEach((dataPoint) => {
     if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
   });
   return summarizeYearlyValues(yearlyValues);
