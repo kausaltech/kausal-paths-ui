@@ -9,6 +9,7 @@ import { metricToPlot } from 'common/preprocess';
 import SiteContext from 'context/site';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import type { PlotParams } from 'react-plotly.js';
+import { useInstance } from 'common/instance';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
@@ -172,6 +173,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
+  const instance = useInstance();
   const shapes: Plotly.Layout['shapes'] = [];
   const plotData: Plotly.Data[] = [];
   const [loading, setLoading] = useState(true);
@@ -209,7 +211,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     plotData.push(...generatePlotFromNode(node, startYear, endYear, minForecastYear, color, site, t, 'neg', systemFont, predLabel, shortUnit));
   });
 
-  if (baselineForecast && site.showBaseline && site.instance.features.baselineVisibleInGraphs) {
+  if (baselineForecast && site.showBaseline && instance.features?.baselineVisibleInGraphs) {
     plotData.push(
       {
         x: baselineForecast.x,

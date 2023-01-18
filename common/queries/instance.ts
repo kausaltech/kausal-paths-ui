@@ -1,6 +1,16 @@
 import { gql } from '@apollo/client';
 
 
+export const scenarioFragment = gql`
+fragment ScenarioFragment on ScenarioType {
+  id
+  isActive
+  isDefault
+  name
+}
+`;
+
+
 const GET_INSTANCE_CONTEXT = gql`
 query GetInstanceContext {
     instance {
@@ -21,10 +31,7 @@ query GetInstanceContext {
       }
     }
     scenarios {
-      id
-      isActive
-      isDefault
-      name
+      ...ScenarioFragment
     }
     menuPages: pages(inMenu: true) {
       id
@@ -74,6 +81,7 @@ query GetInstanceContext {
       }
     }
 }
+${scenarioFragment}
 `;
 
 

@@ -6,10 +6,9 @@ import { getI18n } from 'common/i18n';
 let basePath: string|undefined;
 
 function getLocalePrefix(forLocale?: string|false) {
-  const i18n = getI18n();
-  const { publicRuntimeConfig } = getConfig();
+  const i18n = getI18n()!;
   const locale = forLocale || i18n.language;
-  const defaultLanguage = publicRuntimeConfig.instance.defaultLanguage;
+  const defaultLanguage = i18n.languages[0];
   if (locale == defaultLanguage) return '';
   return '/' + locale;
 }

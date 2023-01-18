@@ -1,32 +1,21 @@
 import { GetInstanceContextQuery } from 'common/__generated__/graphql';
 import React, { useContext } from 'react';
 
+export type SiteContextScenario = GetInstanceContextQuery['scenarios'][0];
+
 export type SiteContextType = {
   title: string,
-  instance: GetInstanceContextQuery['instance'],
-  scenarios: GetInstanceContextQuery['scenarios'],
+  apolloConfig: {
+    instanceHostname: string,
+    instanceIdentifier: string,
+  },
+  scenarios: SiteContextScenario[],
   parameters: GetInstanceContextQuery['parameters'],
+  menuPages: GetInstanceContextQuery['menuPages'],
 };
 
 
-const SiteContext = React.createContext<SiteContextType>({
-  title: '',
-  instance: {
-    id: '',
-    name: '',
-    owner: '',
-    defaultLanguage: '',
-    supportedLanguages: [],
-    targetYear: 0,
-    referenceYear: 0,
-    minimumHistoricalYear: 0,
-    maximumHistoricalYear: 0,
-    leadTitle: '',
-    leadParagraph: '',
-    homeLink: undefined,
-  },
-  scenarios: [],
-});
+const SiteContext = React.createContext<SiteContextType>(null!);
 
 export const useSite = () => {
   return useContext(SiteContext);

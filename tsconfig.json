@@ -19,7 +19,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "strictNullChecks": true,
-    "incremental": true
+    "incremental": true,
   },
   "include": [
     "next-env.d.ts",
@@ -27,6 +27,7 @@
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
+    "**/*.mjs",
   ],
   "exclude": [
     "node_modules"

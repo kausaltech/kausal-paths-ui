@@ -1,8 +1,7 @@
 // Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
 import { i18n } from 'next-i18next'
-import { useMemo } from 'react';
 import getConfig from 'next/config';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 import possibleTypes from 'common/__generated__/possible_types.json';
 
 
@@ -14,7 +13,7 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
       return {
         headers: {
           ...headers,
-          "accept-language": locale || i18n.language,
+          "accept-language": locale || i18n!.language,
         }
       }
     }
@@ -23,26 +22,56 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-const makeInstanceMiddleware = (opts) => {
+
+export type ApolloClientOpts = {
+  instanceHostname: string,
+  instanceIdentifier: string,
+  authorizationToken?: string | undefined,
+  forwardedFor?: string | string[] | null,
+  remoteAddress?: string | null,
+  currentURL?: {
+    baseURL: string,
+    path: string,
+  }
+};
+
+
+const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   /**
    * Middleware that sets HTTP headers for identifying the Paths instance.
    *
    * If identifier is set directly, use that, or fall back to request hostname.
    */
-  const { instanceHostname, instanceIdentifier } = opts;
+  const {
+    instanceHostname, instanceIdentifier, authorizationToken, currentURL,
+    forwardedFor, remoteAddress
+  } = opts;
   if (!instanceHostname && !instanceIdentifier) {
     throw new Error("Neither hostname or identifier set for the instance")
   }
 
   const middleware = new ApolloLink((operation, forward) => {
     operation.setContext(({ headers = {} }) => {
-      if (instanceIdentifier)
+      if (instanceIdentifier) {
         headers['x-paths-instance-identifier'] = instanceIdentifier;
-      else if (instanceHostname)
+      } else if (instanceHostname) {
         headers['x-paths-instance-hostname'] = instanceHostname;
+      }
+      if (authorizationToken) {
+        headers['authorization'] = `Bearer ${authorizationToken}`;
+      }
+      if (currentURL) {
+        const { baseURL, path } = currentURL;
+        headers['referer'] = baseURL + path;
+        const ff = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+        const addr = ff || remoteAddress;
+        if (addr) {
+          headers['x-forwarded-for'] = remoteAddress;
+        }
+      }
       return {
         headers
-      }
+      };
     });
 
     return forward(operation);
@@ -52,9 +81,11 @@ const makeInstanceMiddleware = (opts) => {
 }
 
 
-let apolloClient;
+export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
-function createApolloClient(opts) {
+let apolloClient: ApolloClientType | undefined;
+
+function createApolloClient(opts: ApolloClientOpts) {
   const ssrMode = typeof window === 'undefined';
   const uri = ssrMode ? serverRuntimeConfig.graphqlUrl : publicRuntimeConfig.graphqlUrl;
 
@@ -74,7 +105,7 @@ function createApolloClient(opts) {
   });
 }
 
-export function initializeApollo(initialState, opts) {
+export function initializeApollo(initialState: NormalizedCacheObject | null, opts: ApolloClientOpts) {
   const _apolloClient = apolloClient ?? createApolloClient(opts);
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
@@ -91,17 +122,4 @@ export function initializeApollo(initialState, opts) {
   // Create the Apollo Client once in the client
   if (!apolloClient) apolloClient = _apolloClient;
   return _apolloClient;
-}
-
-export function useApollo(initialState, siteContext) {
-  return initializeApollo(initialState, siteContext);
-  const { instanceIdentifier, instanceHostname } = siteContext;
-  const store = useMemo(
-    () => initializeApollo(initialState, {
-      instanceIdentifier,
-      instanceHostname
-    }),
-    [initialState, instanceIdentifier, instanceHostname]
-  );
-  return store;
 }
