@@ -55,7 +55,7 @@ const generatePlotFromNode = (
   const getPercentage = (dataPoint, parentMetric) => {
     const parentDataPoint = parentMetric.find((val) => val.year === dataPoint.year);
     const percentage = parentDataPoint ? ((dataPoint.value / parentDataPoint.value) * 100).toPrecision(3) : undefined;
-    return percentage ? `(${parseFloat(percentage).toLocaleString(language)}%)` : '';
+    return (percentage && parseFloat(percentage) < 100) ? `(${parseFloat(percentage).toLocaleString(language)}%)` : '';
   };
 
   n.metric.historicalValues.forEach((dataPoint) => {
