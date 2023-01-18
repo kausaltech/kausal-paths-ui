@@ -203,21 +203,21 @@ function MacGraph(props) {
           <HoverValue>
             <HoverValueTitle>{impactName}</HoverValueTitle>
             <HoverValueValue>{formatNumber(data.impact[hoverId], i18n.language)}</HoverValueValue>
-            <HoverValueUnit>{impactUnit}</HoverValueUnit>
+            <HoverValueUnit dangerouslySetInnerHTML={{__html: impactUnit}} />
           </HoverValue>
         </Col>
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
             <HoverValueTitle>{t('actions-sort-cost')}</HoverValueTitle>
             <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
-            <HoverValueUnit>{costUnit}</HoverValueUnit>
+            <HoverValueUnit dangerouslySetInnerHTML={{__html: costUnit}} />
           </HoverValue>
         </Col>
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
             <HoverValueTitle>{efficiencyName}</HoverValueTitle>
             <HoverValueValue>{formatNumber(data.efficiency[hoverId], i18n.language)}</HoverValueValue>
-            <HoverValueUnit>{efficiencyUnit}</HoverValueUnit>
+            <HoverValueUnit dangerouslySetInnerHTML={{__html: efficiencyUnit}} />
           </HoverValue>
         </Col>
       </Row>
