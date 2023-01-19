@@ -57,7 +57,7 @@ const formatNumber = (value, language) => {
 
 function MacGraph(props) {
 
-  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actionIds, costUnit, actionGroups } = props;
+  const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actionIds, costName, costUnit, actionGroups } = props;
   const theme = useTheme();
   const { i18n } = useTranslation();
 
@@ -208,7 +208,7 @@ function MacGraph(props) {
         </Col>
         <Col md={3} className="d-flex align-items-end">
           <HoverValue>
-            <HoverValueTitle>{t('actions-sort-cost')}</HoverValueTitle>
+            <HoverValueTitle>{costName}</HoverValueTitle>
             <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
             <HoverValueUnit dangerouslySetInnerHTML={{__html: costUnit}} />
           </HoverValue>

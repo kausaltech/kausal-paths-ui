@@ -31,7 +31,6 @@ const GraphCard = styled.div`
 
 const ActionsMac = (props) => {
   const { actions, actionEfficiencyPairs, t, actionGroups, sortBy, sortAscending, refetching } = props;
-
   // if we have efficiency limit set, remove actions over that limit
   const efficiencyLimit = actionEfficiencyPairs?.plotLimitEfficiency;
   // Remove actions without efficiency data
@@ -59,12 +58,14 @@ const ActionsMac = (props) => {
     impact: sortedActions.map((action) => action.cumulativeImpact),
   };
 
-  const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.htmlShort;
-
-  const impactName = actionEfficiencyPairs.impactNode.name; 
+  //const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.htmlShort;
+  const efficiencyName = sortedActions[0]?.cumulativeEfficiencyName; 
+  const efficiencyUnit = sortedActions[0]?.cumulativeEfficiencyUnit; 
+  
+  const impactName = sortedActions[0]?.cumulativeImpactName; 
   const impactUnit = sortedActions[0]?.cumulativeImpactUnit; 
 
-  const costName = actionEfficiencyPairs.costNode.name;
+  const costName = sortedActions[0]?.cumulativeCostName;
   const costUnit = sortedActions[0]?.cumulativeCostUnit;
 
   return (
@@ -76,11 +77,12 @@ const ActionsMac = (props) => {
         { refetching && <LoadingOverlay><Spinner color="primary" /></LoadingOverlay> }
         <MacGraph
           data={macData}
-          impactName={`${impactName} ${t('mac-axis-impact')}`}
+          impactName={impactName}
           impactUnit={impactUnit}
-          efficiencyName={`${costName}`}
+          efficiencyName={t('efficiency')}
           efficiencyUnit={efficiencyUnit}
           actionIds={macData.ids}
+          costName={costName}
           costUnit={costUnit}
           actionGroups={actionGroups}
         />
