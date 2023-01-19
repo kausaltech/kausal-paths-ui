@@ -132,6 +132,26 @@ const defaultSiteContext = {
     showNavTitle: true,
     showLangSelector: false,
     watchLink: null,
+    homeLink: [
+      {
+        id: 'hp-en',
+        lang: 'en',
+        title: 'Emissions',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-sv',
+        lang: 'sv',
+        title: 'Utsläpp',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-fi',
+        lang: 'fi',
+        title: 'Päästöt',
+        urlPath: '/',
+      },
+    ],
   },
   espoo: {
     showYearSelector: true,
