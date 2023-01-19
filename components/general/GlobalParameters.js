@@ -91,7 +91,6 @@ const ParameterWidget = (props) => {
           </Label>
           <InputGroup>
             <Input
-  
               invalid={invalid !== false}
               valid = {parameter.isCustomized}
               id={parameter.id}
@@ -101,6 +100,7 @@ const ParameterWidget = (props) => {
               type="text"
               bsSize="sm"
               onKeyPress={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: +e.target.value, char: e.key })}
+              onBlur={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: +e.target.value, char: 'Enter' })}
             />
             <FormFeedback tooltip>
               {invalid}

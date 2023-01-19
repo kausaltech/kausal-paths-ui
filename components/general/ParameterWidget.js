@@ -9,6 +9,7 @@ import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
+import { GET_PARAMETERS } from 'common/queries/getParameters';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import Button from 'components/common/Button';
 
@@ -194,6 +195,7 @@ const ParameterWidget = (props) => {
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     refetchQueries: [
       GET_SCENARIOS,
+      GET_PARAMETERS,
       GET_ACTION_LIST,
     ],
     onCompleted: () => {
