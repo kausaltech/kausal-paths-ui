@@ -115,7 +115,6 @@ const GET_ACTION_LIST = gql`
         }
         cumulativeCost
         cumulativeImpact
-        cumulativeEfficiency
         cumulativeCostUnit {
           htmlShort
         }
