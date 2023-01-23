@@ -1,5 +1,5 @@
-import { useContext, useState } from 'react';
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useEffect, useState } from 'react';
+import { gql, useMutation, useQuery, NetworkStatus } from '@apollo/client';
 import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, CustomInput, Button, InputGroup, FormFeedback } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
@@ -7,6 +7,7 @@ import ContentLoader from 'components/common/ContentLoader';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 import { GET_PARAMETERS } from 'common/queries/getParameters';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { number } from 'prop-types';
 
 const GlobalParametersPanel = styled(Row)`
   .form-group {
@@ -21,6 +22,10 @@ const GlobalParametersPanel = styled(Row)`
     overflow-wrap: break-word;
     max-width: 100%;
   }
+`;
+
+const StyledInput = styled(Input)`
+  background-color: ${(props) => props.customized ? props.theme.graphColors.blue010 : props.theme.themeColors.white};
 `;
 
 const SET_PARAMETER = gql`
@@ -39,10 +44,73 @@ const SET_PARAMETER = gql`
   }
 `;
 
-const ParameterWidget = (props) => {
-  const { parameterContent: parameter } = props;
-  const [invalid, setInvalid] = useState(false);
+const NumericParameter = (props) => {
+  const { 
+    id,
+    isCustomized,
+    refetching,
+    value,
+    invalid,
+    handleUserSelection,
+   } = props;
 
+  const [currentValue, setCurrentValue] = useState(value);
+
+  useEffect(() => {
+    setCurrentValue(value);
+  }, [value]);
+
+  const handleInput = (e) => {
+    setCurrentValue(e.target.value);
+    // Do a fake submit on every input to check validity
+    handleUserSelection({ type: 'NumberParameterType', parameterId: id, numberValue: +currentValue, char: undefined })
+    // Do a real submit if user leaves the field or presses enter
+    const okToSubmit = !invalid || e.type === 'blur' || e?.charCode === 13;
+    if (okToSubmit) {
+      handleUserSelection({ type: 'NumberParameterType', parameterId: id, numberValue: +currentValue, char: 'Enter' })
+    }
+  };
+
+  return (
+    <InputGroup>
+      <StyledInput
+        invalid={invalid !== false}
+        customized = {isCustomized}
+        id={id}
+        name={id}
+        placeholder={refetching ? '///' : currentValue}
+        value={refetching ? '///' : currentValue}
+        type="text"
+        bsSize="sm"
+        onChange={(e) => handleInput(e)}
+        onBlur={(e) => handleInput(e)}
+        onKeyPress={(e) => handleInput(e)}
+      />
+      <FormFeedback tooltip>
+        {invalid}
+      </FormFeedback>
+      { false && <Button size="sm" outline color="black" disabled={!parameter.isCustomized}><ArrowCounterclockwise /></Button> }
+    </InputGroup>
+  )
+};
+
+const ParameterWidget = (props) => {
+  const {
+  id,
+  type,
+  isCustomizable,
+  isCustomized,
+  label,
+  numberValue,
+  boolValue,
+  stringValue,
+  parameterContent: parameter,
+  refresh,
+  refetching } = props;
+  const [invalid, setInvalid] = useState(false);
+  const [parameterValue, setParameterValue] = useState(numberValue || boolValue || stringValue);
+  
+  //console.log("param", id, numberValue || stringValue || boolValue );
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     notifyOnNetworkStatusChange: true,
     refetchQueries: [
@@ -55,9 +123,18 @@ const ParameterWidget = (props) => {
     },
   });
 
+  useEffect(() => {
+    const validity = isInvalid({
+      type,
+      numberValue,
+      stringValue,
+      boolValue,
+    });
+    setInvalid(validity);
+  }, [numberValue, stringValue, boolValue]);
+
   const isInvalid = (input) => {
-    //console.log()
-    switch(parameter.__typename) {
+    switch(type) {
       case 'NumberParameterType':
         if (isNaN(input.numberValue)) return 'Please provide a number';
         if (input.numberValue >= parameter.minValue && input.numberValue <= parameter.maxValue) return false;
@@ -70,43 +147,46 @@ const ParameterWidget = (props) => {
   };
 
   const handleUserSelection = (evt) => {
-    //console.log("param event", evt)
+    // Don't send mutation if value is not valid
+    const validity = isInvalid(evt);
+    setInvalid(validity);
+    if (validity) return;
+
+    // Don't send mutation if value hasn't changed
+    switch(evt.type) {
+      case 'NumberParameterType':
+        if (evt.numberValue === numberValue) return;
+      break;
+      case 'StringParameterType':
+        if (evt.stringValue === stringValue) return;
+      break;
+      case 'BoolParameterType':
+        if (evt.boolValue === boolValue) return;
+      break;
+    }
+
+    // Send mutation if checks pass (and user presses enter)
     if(evt?.char==='Enter') {
-      //console.log("enter", evt)
-      const validity = isInvalid(evt);
-      setInvalid(validity);
-      if (!validity) {
-        SetParameter({ variables: evt })
-      };
+      SetParameter({ variables: evt })
     }
   };
 
-  switch(parameter.__typename) { 
+  switch(type) { 
     case 'NumberParameterType': return (
       <Col lg="2" md="3" sm="4" xs="6">
         <FormGroup className="position-relative">
-          <Label for={parameter.id}>
-            {parameter.label || parameter.id}
-            {parameter.isCustomized && <span> * </span>}
+          <Label for={id}>
+            {label || id}
+            { numberValue }
           </Label>
-          <InputGroup>
-            <Input
-              invalid={invalid !== false}
-              valid = {parameter.isCustomized}
-              id={parameter.id}
-              name={parameter.id}
-              placeholder={mutationLoading ? 'loading' : parameter.numberValue}
-              defaultValue={mutationLoading ? 'loading' : parameter.numberValue}
-              type="text"
-              bsSize="sm"
-              onKeyPress={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: +e.target.value, char: e.key })}
-              onBlur={(e) => handleUserSelection({ parameterId: parameter.id, numberValue: +e.target.value, char: 'Enter' })}
-            />
-            <FormFeedback tooltip>
-              {invalid}
-            </FormFeedback>
-            { false && <Button size="sm" outline color="black" disabled={!parameter.isCustomized}><ArrowCounterclockwise /></Button> }
-          </InputGroup>
+          <NumericParameter
+            id={id}
+            invalid={invalid}
+            isCustomized={isCustomized}
+            refetching={refetching}
+            value={numberValue}
+            handleUserSelection={handleUserSelection}
+          />
         </FormGroup>
       </Col>);
     case 'StringParameterType': return (
@@ -114,7 +194,6 @@ const ParameterWidget = (props) => {
           <FormGroup>
           <Label for={parameter.id}>
             {parameter.label || parameter.id}
-            {parameter.isCustomized && <span> * </span>}
           </Label>
           <Input
             id={parameter.id}
@@ -123,7 +202,7 @@ const ParameterWidget = (props) => {
             defaultValue={mutationLoading ? 'loading' : parameter.stringValue}
             type="text"
             bsSize="sm"
-            onKeyPress={(e) => handleUserSelection({ parameterId: parameter.id, stringValue: e.target.value, char: e.key })}
+            onKeyPress={(e) => handleUserSelection({ type: 'StringParameterType', parameterId: parameter.id, stringValue: e.target.value, char: e.key })}
           />
         </FormGroup>
       </Col>);
@@ -132,7 +211,6 @@ const ParameterWidget = (props) => {
       <FormGroup switch>
         <Label for={parameter.id}>
           {parameter.label || parameter.id}
-          {parameter.isCustomized && <span> * </span>}
         </Label>
         <Input
           type="switch"
@@ -140,7 +218,7 @@ const ParameterWidget = (props) => {
           id={parameter.id}
           name={parameter?.id || 'something'}
           checked={parameter.boolValue}
-          onChange={(e) => handleUserSelection({ parameterId: parameter.id, boolValue: !parameter.boolValue, char: 'Enter' })}
+          onChange={(e) => handleUserSelection({ type: 'BoolParameterType', parameterId: parameter.id, boolValue: !parameter.boolValue, char: 'Enter' })}
         />
         </FormGroup>
       </Col>);
@@ -149,25 +227,36 @@ const ParameterWidget = (props) => {
 }
 
 const GlobalParameters = (props) => {
-  //const { parameters } = props;
-  
-  //console.log("Global params", parameters);
+  const { loading, error, data, previousData, refetch, networkStatus } = useQuery(GET_PARAMETERS, {
+    notifyOnNetworkStatusChange: true,
+  });
 
-  const { loading, error, data, refetch } = useQuery(GET_PARAMETERS);
+  const refetching = (networkStatus === NetworkStatus.refetch);
 
-  if (loading) {
+  if (loading && !previousData) {
     return <><ContentLoader /></>;
   } if (error) {
     return <><div>{ t('error-loading-data') }</div></>;
   }
 
-  //console.log("parameters", data);
   const parameters = data.parameters;
-
   return (
     <GlobalParametersPanel>
       {parameters.map((param) => 
-        param.isCustomizable && <ParameterWidget parameterContent={param} key={param.id} refresh={refetch}/>
+        param.isCustomizable && <ParameterWidget
+          key={param.id}
+          id={param.id}
+          type={param.__typename}
+          isCustomizable={param.isCustomizable}
+          isCustomized={param.isCustomized}
+          label={param.label}
+          numberValue={param.numberValue}
+          boolValue={param.boolValue}
+          stringValue={param.stringValue}
+          parameterContent={param}
+          refresh={refetch}
+          refetching={refetching}
+          />
       )}
     </GlobalParametersPanel>
   )
