@@ -93,11 +93,12 @@ function ActionListPage(props) {
           ? cumulativeCost/Math.abs(cumulativeImpact)
           : undefined;
 
+        const reductionText = `(${t('reduction')})`;
         return {
           ...act,
           cumulativeImpact: efficiencyAction ? cumulativeImpact : undefined,
           cumulativeImpactUnit: efficiencyAction?.cumulativeImpactUnit?.htmlShort,
-          cumulativeImpactName: efficiencyType?.impactNode?.name,
+          cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${data.actionEfficiencyPairs[activeEfficiency].invertImpact ? reductionText : ''}`,
           cumulativeCost: efficiencyAction ? cumulativeCost : undefined,
           cumulativeCostUnit: efficiencyAction?.cumulativeCostUnit.htmlShort,
           cumulativeCostName: efficiencyType?.costNode?.name,

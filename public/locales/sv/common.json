@@ -54,6 +54,7 @@
   "actions-count": "{{ count }} åtgärder",
   "actions-sort-impact": "Påverkan",
   "mac-axis-impact": "påverkan",
-  "efficiency": "kostnadseffektivitet",
-  "actions-as-efficiency": "Kostnadskurvor"
+  "efficiency": "Kostnadseffektivitet",
+  "actions-as-efficiency": "Kostnadskurvor",
+  "reduction": "minskning"
 }

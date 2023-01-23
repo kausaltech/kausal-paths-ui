@@ -58,5 +58,6 @@
   "actions-sort-impact": "Impact",
   "actions-sort-cost": "Cost",
   "mac-axis-impact": "impact",
-  "efficiency": "cost effectiveness"
+  "efficiency": "Cost effectiveness",
+  "reduction": "reduction"
 }

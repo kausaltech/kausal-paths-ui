@@ -56,5 +56,6 @@
   "actions-sort-impact": "Vaikuttavuus",
   "actions-sort-cost": "Kustannus",
   "mac-axis-impact": "vaikutus",
-  "efficiency": "kustannustehokkuus"
+  "efficiency": "Kustannustehokkuus",
+  "reduction": "vähennys"
 }
