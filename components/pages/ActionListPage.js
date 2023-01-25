@@ -98,14 +98,14 @@ function ActionListPage(props) {
           ...act,
           cumulativeImpact: efficiencyAction ? cumulativeImpact : undefined,
           cumulativeImpactUnit: efficiencyAction?.cumulativeImpactUnit?.htmlShort,
-          cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${data.actionEfficiencyPairs[activeEfficiency].invertImpact ? reductionText : ''}`,
+          cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''}`,
           cumulativeCost: efficiencyAction ? cumulativeCost : undefined,
           cumulativeCostUnit: efficiencyAction?.cumulativeCostUnit.htmlShort,
           cumulativeCostName: efficiencyType?.costNode?.name,
           cumulativeEfficiency: cumulativeEfficiency,
           cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.htmlShort,
           cumulativeEfficiencyName: efficiencyType?.label,
-          efficiencyCap: efficiencyAction ? data?.actionEfficiencyPairs[activeEfficiency].plotLimitEfficiency : undefined,
+          efficiencyCap: efficiencyAction ? data?.actionEfficiencyPairs[activeEfficiency]?.plotLimitEfficiency : undefined,
         }
       }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id );
   
