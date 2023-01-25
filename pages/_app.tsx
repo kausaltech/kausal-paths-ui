@@ -315,9 +315,8 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     };
   } catch (error) {
     if (isApolloError(error)) {
-      const isProtected = error.graphQLErrors.find((err) => err.extensions.code == 'instance_protected');
+      const isProtected = error.graphQLErrors.find((err) => err.extensions?.code == 'instance_protected');
       console.log(error.graphQLErrors);
-      console.log(isProtected);
       if (isProtected) {
       }
     }
