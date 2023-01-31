@@ -74,12 +74,15 @@ function MacGraph(props) {
   // console.log("mac props", props);
   // TODO: Add sorting of data here
 
+  if (data.actions?.length < 1) return <div/>
+
   let totalSaving = 0;
   let negativeSideWidth = 0;
   const xPlacement = data['impact'].map((bar) => {
     const barWidth = Math.abs(bar);
     if (bar < 0) {
       negativeSideWidth += barWidth;
+      return -negativeSideWidth + barWidth - (barWidth/2);
     } 
     totalSaving += barWidth;
     return totalSaving - barWidth + (barWidth/2);
@@ -92,9 +95,9 @@ function MacGraph(props) {
     xref: 'x',
     // y-reference is assigned to the plot paper [0,1]
     yref: 'paper',
-    x0: 0,
+    x0: -negativeSideWidth,
     y0: 0,
-    x1: negativeSideWidth,
+    x1: 0,
     y1: 1,
     fillcolor: theme.graphColors.red030,
     opacity: 0.2,
@@ -105,9 +108,9 @@ function MacGraph(props) {
       type: 'line',
       xref: 'x',
       yref: 'paper',
-      x0: negativeSideWidth,
+      x0: 0,
       y0: 0,
-      x1: negativeSideWidth,
+      x1: 0,
       y1: 1,
       line: {
         color: theme.graphColors.red030,
@@ -132,13 +135,14 @@ function MacGraph(props) {
     xaxis: {
       ticksuffix: ` ${impactUnit}`,
       title: `${impactName} (${impactUnit})`,
+      showgrid: true,
 /*      title: "Energibesparing",*/
-      showticklabels: false,
+   /*   showticklabels: false, */
     },
     margin: {
       l: 50,
       r: 0,
-      b: 10,
+      b: 60,
       t: 10,
       pad: 0,
     },
