@@ -88,6 +88,12 @@ const GET_ACTION_LIST = gql`
       efficiencyUnit {
         htmlShort
       }
+      costUnit {
+        htmlShort
+      }
+      impactUnit {
+        htmlShort
+      }
       costNode {
         id
         name
@@ -112,14 +118,6 @@ const GET_ACTION_LIST = gql`
             name
             color
           }
-        }
-        cumulativeCost
-        cumulativeImpact
-        cumulativeCostUnit {
-          htmlShort
-        }
-        cumulativeImpactUnit {
-          htmlShort
         }
         costValues {
           value

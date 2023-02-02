@@ -47,10 +47,20 @@ const ActionCount = styled.div`
   color: ${({ theme }) => theme.themeColors.white};
 `;
 
+const HeaderCard = styled.div` 
+  margin: ${({ theme }) => theme.spaces.s200} 0;
+  padding: ${({ theme }) => theme.spaces.s100} ${({ theme }) => theme.spaces.s200};
+  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  background-color: ${(props) => props.theme.themeColors.white};
+`;
+
+const Description = styled.div`
+`;
 
 
 function ActionListPage(props) {
   const { t } = useTranslation();
+  const { page } = props;
   const { loading, error, data, previousData, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
     notifyOnNetworkStatusChange: true,
   });
@@ -70,8 +80,6 @@ function ActionListPage(props) {
   } if (error) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
-  
-  // console.log("----------> actionListPage Props", data);
 
   const hasEfficiency = data.actionEfficiencyPairs.length > 0;
   // If we have action efficiency pairs, we augment the actions with the cumulative values
@@ -97,10 +105,10 @@ function ActionListPage(props) {
         return {
           ...act,
           cumulativeImpact: efficiencyAction ? cumulativeImpact : undefined,
-          cumulativeImpactUnit: efficiencyAction?.cumulativeImpactUnit?.htmlShort,
+          cumulativeImpactUnit: efficiencyType?.impactUnit.htmlShort,
           cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''}`,
           cumulativeCost: efficiencyAction ? cumulativeCost : undefined,
-          cumulativeCostUnit: efficiencyAction?.cumulativeCostUnit.htmlShort,
+          cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
           cumulativeCostName: efficiencyType?.costNode?.name,
           cumulativeEfficiency: cumulativeEfficiency,
           cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.htmlShort,
@@ -118,13 +126,29 @@ function ActionListPage(props) {
             {t('actions')}
             {' '}
           </h1>
-          <ActiveScenario>
-            {t('scenario')}
-            :
-            {' '}
-            {activeScenario?.name}
-          </ActiveScenario>
         </PageHeader>
+        { (page.actionListLeadParagraph || page.actionListLeadTitle) && (
+          <Row>
+            <Col md={{ size: 10, offset: 1 }}>
+              <PageHeader>
+                <HeaderCard>
+                  <h2>
+                  { page.actionListLeadTitle }
+                  </h2>
+                  <Description dangerouslySetInnerHTML={{ __html: page.actionListLeadParagraph }} />
+                </HeaderCard>
+              </PageHeader>
+            </Col>
+          </Row>
+        )}
+      </Container>
+      <Container>
+        <ActiveScenario>
+          {t('scenario')}
+          :
+          {' '}
+          {activeScenario?.name}
+        </ActiveScenario>
         <SettingsForm className="text-light mt-4">
         { hasEfficiency && (
           <ButtonGroup
