@@ -119,6 +119,7 @@ const GET_ACTION_LIST = gql`
             color
           }
         }
+        efficiencyDivisor
         costValues {
           value
           year

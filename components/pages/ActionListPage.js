@@ -95,10 +95,11 @@ function ActionListPage(props) {
         const cumulativeCost = efficiencyAction
           ? (data.actionEfficiencyPairs[activeEfficiency].invertCost ? -1 : 1) *summarizeYearlyValuesBetween(efficiencyAction?.costValues, yearRange[0], yearRange[1])
           : undefined;
+        const efficiencyDivisor = efficiencyAction?.efficiencyDivisor;
         //const cumulativeImpact = efficiencyAction?.cumulativeImpact;
         //const cumulativeCost = efficiencyAction?.cumulativeCost;
         const cumulativeEfficiency = efficiencyAction
-          ? cumulativeCost/Math.abs(cumulativeImpact)
+          ? cumulativeCost/Math.abs(cumulativeImpact)/efficiencyDivisor
           : undefined;
 
         const reductionText = `(${t('reduction')})`;
