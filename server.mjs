@@ -111,18 +111,13 @@ class PathsServer {
    * @param {Koa.Context} ctx 
    */
   async handleRequest(ctx) {
-    const currentURL = getCurrentURL(ctx.req);
-    if (currentURL.path === '/health') {
-      ctx.status = 200;
-      ctx.body = 'OK';
-      return;
-    }
     const instance = await this.getInstance(ctx);
     if (!instance) return;
     const basePath = instance.hostname?.basePath || '';
     this.setBasePath(basePath);
     this.setLocale(instance.defaultLanguage, instance.supportedLanguages)
     this.nextServer.nextConfig.publicRuntimeConfig.instance = instance;
+    const currentURL = getCurrentURL(ctx.req);
     if (basePath && !currentURL.path.startsWith(basePath)) {
       ctx.status = 404;
       ctx.body = 'Page not found';

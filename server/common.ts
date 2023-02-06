@@ -166,7 +166,7 @@ export abstract class BaseServer {
 
   async handleRequest(req: BaseServerRequest, res: Response, next: NextFunction) {
     req.currentURL = this.getCurrentURL(req);
-    if (req.currentURL.path === '/health') {
+    if (req.currentURL.path === '/_health') {
       res.status(200).send('OK');
       return;
     }
