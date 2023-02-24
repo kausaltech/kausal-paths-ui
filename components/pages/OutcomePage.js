@@ -62,7 +62,7 @@ export default function OutcomePage(props) {
   const [lastActiveNodeId, setLastActiveNodeId] = useState(router.query.node || undefined);
 
   useEffect(() => {
-    if (activeScenario.id !== queryActiveScenario.id) {
+    if (activeScenario === null || activeScenario.id !== queryActiveScenario.id) {
       refetch();
     }
   }, [activeScenario]);
