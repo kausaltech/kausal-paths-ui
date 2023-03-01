@@ -11,6 +11,7 @@ type SettingsVarType = {
   minYear: number,
   maxYear: number,
   baseYear: number,
+  targetYear: number,
   latestMetricYear: number,
   parameters: SiteContextType['parameters'],
 }

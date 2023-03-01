@@ -223,7 +223,8 @@ function PathsApp(props: PathsAppProps) {
     settingsVar({
       baseYear: instance.referenceYear || 1990,
       minYear: instance.minimumHistoricalYear || 2010,
-      maxYear: instance.targetYear,
+      maxYear: instance.modelEndYear || instance.targetYear,
+      targetYear: instance.targetYear,
       latestMetricYear: instance.maximumHistoricalYear || 2018,
       baselineName: scenarios.find((scenario) => scenario.id === 'baseline')?.name,
       iconBase: `${basePath}/static/themes/default/images/favicon`,
@@ -233,7 +234,7 @@ function PathsApp(props: PathsAppProps) {
   }
 
   if (!yearRangeVar().length) {
-    yearRangeVar([instance.referenceYear || 1990, instance.targetYear]);
+    yearRangeVar([instance.referenceYear || 1990, instance.modelEndYear || instance.targetYear]);
   }
 
   /*

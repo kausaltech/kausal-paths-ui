@@ -1,6 +1,6 @@
 import { useRef, useContext } from 'react';
 import { remove } from 'lodash';
-import { Container } from 'reactstrap';
+import { Container, Alert } from 'reactstrap';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
 import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
@@ -102,6 +102,10 @@ const CausalGrid = (props) => {
   const theme = useContext(ThemeContext);
   const instance = useInstance();
   const gridCanvas = useRef(null);
+
+  if (nodes.length === 0) {
+    return <Container className="pt-5"><Alert color="warning">Action has no nodes</Alert></Container>
+  }
 
   const findOutputs = (parentIds, tree) => {
     const grid = tree?.length ? tree : [];

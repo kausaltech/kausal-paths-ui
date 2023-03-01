@@ -42,9 +42,10 @@ const ExtraSettingsSection = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const SettingsPanel = (props) => {
-  const { defaultYearRange } = props;
+const SettingsPanel = () => {
   const settings = useReactiveVar(settingsVar);
+  const defaultYearRange = [settings.minYear, settings.targetYear];
+
   const site = useContext(SiteContext);
   const [showExtras, setShowExtras] = useState(false);
   const hasGlobalParameters = settings?.parameters.find((param) => param.isCustomizable) !== undefined;

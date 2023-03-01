@@ -21,6 +21,7 @@ query GetInstanceContext {
       defaultLanguage
       supportedLanguages
       targetYear
+      modelEndYear
       referenceYear
       minimumHistoricalYear
       maximumHistoricalYear
