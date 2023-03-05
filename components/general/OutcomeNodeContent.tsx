@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { Button, ButtonGroup } from 'reactstrap';
 import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
@@ -68,6 +68,19 @@ const OutcomeNodeContent = (props) => {
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.unit.htmlLong || node.unit.htmlShort;
 
+  const outcomeGraph = useMemo(() => (
+    <OutcomeGraph
+      node={node}
+      subNodes={subNodes}
+      color={color}
+      startYear={startYear}
+      endYear={endYear}
+    />
+  ), [node, subNodes, color, startYear, endYear])
+
+  useEffect(() => console.log('node changed'), [node]);
+  useEffect(() => console.log('subNodes changed'), [subNodes]);
+  
   return (
     <div>
       <CardSetHeader>
@@ -100,16 +113,7 @@ const OutcomeNodeContent = (props) => {
         </CardSetSummary>
       </CardSetHeader>
       { activeTabId === 'graph' && (
-      <ContentWrapper>
-        <OutcomeGraph
-          node={node}
-          subNodes={subNodes}
-          color={color}
-          startYear={startYear}
-          endYear={endYear}
-          targetYear={settingsVar().maxYear}
-        />
-      </ContentWrapper>
+      <ContentWrapper>{outcomeGraph}</ContentWrapper>
       )}
       { activeTabId === 'info' && (
       <ContentWrapper>

@@ -13,21 +13,20 @@ query GetNetEmissions($node: ID!) {
   node(id: $node) {
     id
     name
-    targetYearGoal
-    unit {
-      htmlShort
+    goals {
+      year
+      value
     }
     metric {
       id
+      unit {
+        htmlShort
+      }
       historicalValues {
         year
         value
       }
       forecastValues {
-        year
-        value
-      }
-      baselineForecastValues {
         year
         value
       }
@@ -116,14 +115,16 @@ const TotalEmissionsBar = (props) => {
   if (error) return <div>error!</div>;
   if (!data || !data.node || !data.node.metric) return <div>no data</div>
   const { node } = data;
-  const { metric } = node;
+  const metric = node.metric!;
 
-  const unit = node.unit?.htmlShort;
+  const unit = metric.unit?.htmlShort;
   const emissionsNow = metric.historicalValues[metric.historicalValues.length - 1].value;
   const emissionsNowYear = metric.historicalValues[metric.historicalValues.length - 1].year;
-  const emissionsTotal = getMetricValue(node, yearRange[1]);
-  const emissionsTarget = node.targetYearGoal;
-  const maxEmission = _.max([emissionsNow, emissionsTotal, emissionsTarget]);
+  const lastGoal = [...node.goals].sort(g => g.year).slice(-1)[0];
+  const emissionsTotal = getMetricValue(node, yearRange[1])!;
+
+  const emissionsTarget = lastGoal.value;
+  const maxEmission = _.max([emissionsNow, emissionsTotal, emissionsTarget])!;
   const emissionsTotalColor = emissionsTotal > emissionsTarget ? theme.graphColors.red050 : theme.graphColors.green070;
   const emissionsNowWidth = (emissionsNow / maxEmission) * 100;
   const emissionsTotalWidth = (emissionsTotal / maxEmission) * 100;
@@ -147,7 +148,7 @@ const TotalEmissionsBar = (props) => {
       labelSide: 'top',
     },
     {
-      label: `${t('target')} ${targetYear}`,
+      label: `${t('target')} ${lastGoal.year}`,
       value: emissionsTarget,
       unit,
       barColor: theme.graphColors.green030,

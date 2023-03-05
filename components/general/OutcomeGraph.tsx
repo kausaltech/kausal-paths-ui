@@ -235,7 +235,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     plotData.push(...generatePlotFromNode(node, startYear, endYear, minForecastYear, color, site, t, i18n.language, 'neg', systemFont, predLabel, shortUnit, parentNode));
   });
 
-  if (baselineForecast && site.showBaseline && instance.features?.baselineVisibleInGraphs) {
+  if (baselineForecast && instance.features?.baselineVisibleInGraphs) {
     plotData.push(
       {
         x: baselineForecast.x,
@@ -258,7 +258,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     );
   }
 
-  if (targetYearGoal != null && site.showTarget) {
+  if (targetYearGoal != null) {
     shapes.push({
       type: 'line',
       yref: 'y',

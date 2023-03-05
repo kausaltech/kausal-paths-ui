@@ -1,26 +1,19 @@
 import _ from 'lodash';
+import numbro from 'numbro';
 import { getI18n } from './i18n';
 
 
-
 // Use Finnish style numeric display formatting
-export const beautifyValue = (x) => {
+export const beautifyValue = (x: number) => {
   const i18n = getI18n();
 
   if (!x) return x;
-  let out;
-  if (!Number.isInteger(x)) {
-    out = x.toFixed(x < 10 ? 1 : 0);
-  } else {
-    out = x;
+  let rounded = Math.abs(x) < 1 ? Number(x.toFixed(3)) : Number(x.toPrecision(3)); 
+  const format: numbro.Format = {
+    thousandSeparated: true,
   }
-  let s = out.toString();
-  if (i18n.language === 'fi') {
-    s = s.replace('.', ',');
-    s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  } else {
-  }
-  return s;
+  const formatted = numbro(rounded).format(format);
+  return formatted;
 };
 
 // Use Format number to locale and round to 3 decimals
@@ -30,12 +23,22 @@ export const formatNumber = (value, language) => {
 
 export const getInitialMetric = (node) => node.metric.historicalValues[0];
 
-export const getMetricValue = (node, date) => (
-  node.metric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value
-  ?? node.metric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
+type MetricValue = {
+  year: number,
+  value: number,
+}
+
+type NodeMetric = {
+  forecastValues: MetricValue[],
+  historicalValues: MetricValue[],
+}
+
+export const getMetricValue = (node: {metric: NodeMetric}, year: number) => (
+  node.metric.forecastValues.find((dataPoint) => dataPoint.year === year)?.value
+  ?? node.metric.historicalValues.find((dataPoint) => dataPoint.year === year)?.value
 );
 
-export const getImpactMetricValue = (node, date) => (
+export const getImpactMetricValue = (node: {impactMetric: NodeMetric}, date) => (
   node.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value
   ?? node.impactMetric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value
   ?? 0

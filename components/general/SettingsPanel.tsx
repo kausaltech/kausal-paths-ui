@@ -4,11 +4,12 @@ import styled from 'styled-components';
 import { Container, Row, Col, Button } from 'reactstrap';
 import { Sliders } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
-import SiteContext from 'context/site';
+import SiteContext, { useSite } from 'context/site';
 import { yearRangeVar, settingsVar } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
 import TotalEmissionsBar from './TotalEmissionsBar';
 import GlobalParameters from './GlobalParameters';
+import { useInstance } from 'common/instance';
 
 const FixedPanel = styled.div`
   position: fixed;
@@ -46,12 +47,13 @@ const SettingsPanel = () => {
   const settings = useReactiveVar(settingsVar);
   const defaultYearRange = [settings.minYear, settings.targetYear];
 
-  const site = useContext(SiteContext);
+  const site = useSite();
+  const instance = useInstance();
   const [showExtras, setShowExtras] = useState(false);
-  const hasGlobalParameters = settings?.parameters.find((param) => param.isCustomizable) !== undefined;
-
-  //console.log("settings panel props", props);
-  //console.log("app settings", settings);
+  const hasGlobalParameters = (
+    site.parameters.find((param) => param.isCustomizable) !== undefined ||
+    site.availableNormalizations.length > 0
+  );
 
   return (
     <FixedPanel expanded>
@@ -59,18 +61,18 @@ const SettingsPanel = () => {
       <Container>
         <Row>
           <Col md="4" sm="4" xs="8">
-            { site.showScenarios && (
+            { true && (
             <ScenarioSelector />
             )}
           </Col>
           <Col md="2" sm="3" xs="4">
-            {site.showYearSelector && (
+            {true && (
             <RangeSelector
               min={settings.minYear}
               max={settings.maxYear}
               initMin={defaultYearRange[0]}
               initMax={defaultYearRange[1]}
-              baseYear={ site.useBaseYear && settings.baseYear}
+              baseYear={instance.referenceYear ?? settings.baseYear}
               handleChange={yearRangeVar}
             />
             )}
@@ -84,8 +86,9 @@ const SettingsPanel = () => {
             </SettingsButton>
           }
           <Col md="6" sm="5" xs="12" className="mt-3 mt-sm-0">
-            { site.showTargetBar
-            && <TotalEmissionsBar /> }
+            { true && 
+              <TotalEmissionsBar />
+            }
           </Col>
         </Row>
         </Container>
@@ -93,7 +96,7 @@ const SettingsPanel = () => {
         { showExtras && (
           <ExtraSettingsSection>
             <Container>
-              <GlobalParameters parameters={settings?.parameters} />
+              <GlobalParameters parameters={site.parameters} />
             </Container>
           </ExtraSettingsSection>
         )}

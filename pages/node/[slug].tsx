@@ -17,6 +17,9 @@ import DashCard from 'components/general/DashCard';
 import NodeLinks from 'components/general/NodeLinks';
 import ContentLoader from 'components/common/ContentLoader';
 import { ActionLink } from 'common/links';
+import DimensionalNodePlot from 'components/general/DimensionalNodePlot';
+import { GetNodePageQuery } from 'common/__generated__/graphql';
+import ErrorMessage from 'components/common/ErrorMessage';
 
 const HeaderSection = styled.div`
   padding: 1rem 0 1rem;
@@ -121,8 +124,10 @@ query GetNodePage($node: ID!) {
       quantity
       isAction
     }
+    ...DimensionalNodeMetric
   }
 }
+${DimensionalNodePlot.fragment}
 `;
 
 export default function NodePage() {
@@ -132,7 +137,7 @@ export default function NodePage() {
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
+  const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
     },
@@ -146,12 +151,15 @@ export default function NodePage() {
 
   if (loading) {
     return <ContentLoader />;
-  } if (error) {
+  } if (error || !data) {
     logError(error, {query: GET_NODE_PAGE_CONTENT});
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
   const { node } = data;
+  if (!node) {
+    return <Container className="pt-5"><ErrorMessage message={t('page-not-found')} /></Container>
+  }
 
   return (
     <>
@@ -186,7 +194,16 @@ export default function NodePage() {
                   </ActionLink>
                   )}
                   </div>
-              { node.metric && (
+              { node.metricDim ? (
+                <ContentWrapper>
+                  <DimensionalNodePlot
+                    metric={node.metricDim}
+                    startYear={yearRange[0]}
+                    endYear={yearRange[1]}
+                    color={node.color}
+                  />
+                </ContentWrapper>
+              ) : (node.metric && (
               <ContentWrapper>
                 <NodePlot
                   metric={node.metric}
@@ -200,7 +217,7 @@ export default function NodePage() {
                   quantity={node.quantity}
                 />
               </ContentWrapper>
-              )}
+              ))}
             </HeaderCard>
           </PageHeader>
         </Container>

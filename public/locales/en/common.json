@@ -59,5 +59,7 @@
   "actions-sort-cost": "Cost",
   "mac-axis-impact": "impact",
   "efficiency": "Cost effectiveness",
-  "reduction": "reduction"
+  "reduction": "reduction",
+  "plot-choose-dimension": "Choose dimension",
+  "normalize-by": "Normalize by {{node}}"
 }

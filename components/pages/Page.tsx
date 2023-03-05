@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { ObservableQuery, useQuery } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { Container } from 'reactstrap';
 import Head from 'next/head';
@@ -10,18 +10,16 @@ import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
 import OutcomePage from 'components/pages/OutcomePage';
 import ActionListPage from 'components/pages/ActionListPage';
+import ErrorMessage from 'components/common/ErrorMessage';
+import { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
 
-function Error({ message }) {
-  return (
-    <Container>
-      <h2 className="p-5">{message}</h2>
-    </Container>
-  );
-}
+
+export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
+
 
 export default function Page({ path, headerExtra }) {
   const site = useSite();
-  const { loading, error, data, refetch } = useQuery(
+  const { loading, error, data, refetch } = useQuery<GetPageQuery, GetPageQueryVariables>(
     GET_PAGE,
     {
       variables: {
@@ -31,18 +29,18 @@ export default function Page({ path, headerExtra }) {
   );
   const { t } = useTranslation();
 
-  if (loading) {
-    return <ContentLoader />;
-  }
   if (error) {
     logError(error, {query: GET_PAGE});
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
+  if (loading || !data) {
+    return <ContentLoader />;
+  }
   const { page, activeScenario } = data;
-  let pageContent;
+  let pageContent: React.ReactNode;
   if (!page) {
     console.error(`No page found for path ${path}`);
-    return <Error message={t('page-not-found')} />;
+    return <ErrorMessage message={t('page-not-found')} />;
   }
   if (page.__typename === 'OutcomePage') {
     pageContent = <OutcomePage page={page} refetch={refetch} activeScenario={activeScenario} />
@@ -51,7 +49,7 @@ export default function Page({ path, headerExtra }) {
     pageContent = <ActionListPage page={page} refetch={refetch} activeScenario={activeScenario} />
   } else {
     console.error('Invalid page type: ', page.__typename);
-    return <Error message={`${t('invalid-page-type')} : ${page.__typename}`} />;
+    return <ErrorMessage message={`${t('invalid-page-type')} : ${page.__typename}`} />;
   }
   return (
     <>

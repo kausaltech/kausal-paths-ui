@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Container } from 'reactstrap';
 
@@ -10,6 +10,8 @@ import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
+import { GetPageQuery } from 'common/__generated__/graphql';
+import { PageRefetchCallback } from './Page';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 10rem; 
@@ -51,7 +53,13 @@ const findVisibleNodes = (allNodes, lastNodeId, visibleNodes) => {
   return visibleNodes;
 };
 
-export default function OutcomePage(props) {
+type OutcomePageProps = {
+  page: GetPageQuery['page'] & { __typename: 'OutcomePage'},
+  refetch: PageRefetchCallback,
+  activeScenario: GetPageQuery['activeScenario'],
+}
+
+export default function OutcomePage(props: OutcomePageProps) {
   const { page, refetch, activeScenario: queryActiveScenario } = props;
   const { t } = useTranslation();
   const theme = useTheme();
@@ -62,7 +70,7 @@ export default function OutcomePage(props) {
   const [lastActiveNodeId, setLastActiveNodeId] = useState(router.query.node || undefined);
 
   useEffect(() => {
-    if (activeScenario === null || activeScenario.id !== queryActiveScenario.id) {
+    if (activeScenario === null || activeScenario.id !== queryActiveScenario?.id) {
       refetch();
     }
   }, [activeScenario]);
@@ -79,7 +87,7 @@ export default function OutcomePage(props) {
 
   const { outcomeNode } = page;
   const { upstreamNodes } = outcomeNode;
-  const allNodes = new Map(upstreamNodes.map((node) => [node.id, node]));
+  const allNodes = useMemo(() => new Map(upstreamNodes.map((node) => [node.id, node])), [upstreamNodes]);
   allNodes.set(outcomeNode.id, outcomeNode);
 
   // TODO: filtering out empty nodes, in some instances there are some -> investigate why

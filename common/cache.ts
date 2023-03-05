@@ -13,7 +13,6 @@ type SettingsVarType = {
   baseYear: number,
   targetYear: number,
   latestMetricYear: number,
-  parameters: SiteContextType['parameters'],
 }
 
 export const settingsVar = makeVar<SettingsVarType>(null!);

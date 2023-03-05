@@ -55,7 +55,12 @@ const ActiveYearDisplay = styled.div`
   }
 `;
 
-const Thumb = styled.div`
+type ThumbProps = {
+  dragged: boolean,
+  color: string,
+}
+
+const Thumb = styled.div<ThumbProps>`
   height: 28px;
   width: 28px;
   border-radius: 14px;
@@ -65,12 +70,21 @@ const Thumb = styled.div`
   align-items: center;
 `;
 
-const RangeSelector = (props) => {
+type RangeSelectorProps = {
+  min: number,
+  max: number,
+  baseYear: number | null,
+  handleChange: (range: number[]) => void,
+  initMin: number,
+  initMax: number,
+};
+
+const RangeSelector = (props: RangeSelectorProps) => {
   const { min, max, baseYear, handleChange, initMin, initMax } = props;
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const [baseYearActive, setBaseYearActive] = useState(baseYear === initMin);
+  const [baseYearActive, setBaseYearActive] = useState(baseYear !== null ? baseYear === initMin : false);
   const [values, setValues] = useState(baseYearActive ? [initMax] : [initMin, initMax]);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const toggle = () => setPopoverOpen(!popoverOpen);
@@ -79,17 +93,17 @@ const RangeSelector = (props) => {
     handleChange([initMin, initMax]);
   }, [initMin, initMax]);
 
-  const handleSliderChange = (changedValues) => {
+  const handleSliderChange = (changedValues: number[]) => {
     setValues(changedValues);
-    const newRange = baseYearActive ? [baseYear, changedValues[0]] : [changedValues[0], changedValues[1]];
+    const newRange = baseYearActive ? [baseYear!, changedValues[0]] : [changedValues[0], changedValues[1]];
     handleChange(newRange);
   };
 
-  const handleBaseYear = (baseYearIsActive) => {
+  const handleBaseYear = (baseYearIsActive: boolean) => {
     if (baseYearIsActive) {
       setBaseYearActive(true);
       setValues([values[1]]);
-      handleChange([baseYear, values[1]]);
+      handleChange([baseYear!, values[1]]);
     } else {
       setBaseYearActive(false);
       setValues([min, values[0]]);

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { darken, transparentize } from 'polished';
 import { Button as BSButton } from 'reactstrap';
+import type { ButtonProps as BSButtonProps } from 'reactstrap';
+
 
 const StyledButton = styled(BSButton)`
   padding: ${(props) => props.theme.inputBtnPaddingY} ${(props) => props.theme.inputBtnPaddingX};
@@ -128,7 +130,7 @@ const StyledButton = styled(BSButton)`
   }
 `;
 
-const Button = React.forwardRef((props, ref) => {
+const Button = React.forwardRef<typeof StyledButton, BSButtonProps>((props, ref) => {
   const { children } = props;
 
   return (
@@ -137,13 +139,5 @@ const Button = React.forwardRef((props, ref) => {
     </StyledButton>
   );
 });
-
-Button.defaultProps = {
-  children: null,
-};
-
-Button.propTypes = {
-  children: PropTypes.node,
-};
 
 export default Button;

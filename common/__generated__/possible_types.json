@@ -9,7 +9,8 @@
     "ParameterInterface": [
       "BoolParameterType",
       "NumberParameterType",
-      "StringParameterType"
+      "StringParameterType",
+      "UnknownParameterType"
     ],
     "StreamFieldInterface": [
       "BlockQuoteBlock",

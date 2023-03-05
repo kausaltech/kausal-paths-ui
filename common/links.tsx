@@ -41,7 +41,9 @@ export function formatStaticUrl(url: string) {
 }
 
 
-type OtherLinkProps = Omit<LinkProps, 'href' | 'as'>;
+type OtherLinkProps = Omit<LinkProps, 'href' | 'as'> & {
+  children?: React.ReactNode;
+};
 
 export function Link(props: OtherLinkProps & {href: string}) {
   const { href, ...rest } = props;

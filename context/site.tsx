@@ -10,6 +10,7 @@ export type SiteContextType = {
     instanceIdentifier: string,
   },
   scenarios: SiteContextScenario[],
+  availableNormalizations: GetInstanceContextQuery['availableNormalizations'],
   parameters: GetInstanceContextQuery['parameters'],
   menuPages: GetInstanceContextQuery['menuPages'],
 };

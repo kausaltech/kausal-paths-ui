@@ -8,6 +8,7 @@ import { CloudArrowDown } from 'react-bootstrap-icons';
 import CsvDownload from 'react-json-to-csv';
 import { metricToPlot } from 'common/preprocess';
 import SiteContext from 'context/site';
+import { gql } from '@apollo/client';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
@@ -180,7 +181,9 @@ const NodePlot = (props) => {
     const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
 
     impact.y.forEach((dataPoint, index) => {
-      impact.y[index] -= impactMetric.forecastValues[index].value;
+      if (impactMetric.forecastValues.length > index) {
+        impact.y[index] -= impactMetric.forecastValues[index].value;
+      }
     });
 
     plotData.push(
@@ -251,7 +254,7 @@ const NodePlot = (props) => {
       },
     });
   }
-
+  const nrYears = endYear - startYear;
   const layout = {
     height: 300,
     margin: {
@@ -280,7 +283,7 @@ const NodePlot = (props) => {
       anchor: 'y2',
       ticklen: 10,
       type: 'date',
-      dtick: 'M12',
+      dtick: nrYears > 15 ? 'M24' : 'M12',
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,

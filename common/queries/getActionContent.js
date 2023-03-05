@@ -1,4 +1,6 @@
 import { gql } from '@apollo/client';
+import DimensionalFlow from 'components/graphs/DimensionalFlow';
+
 
 const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!) {
@@ -47,6 +49,9 @@ const GET_ACTION_CONTENT = gql`
           stringValue: value
           stringDefaultValue: defaultValue
         }
+      }
+      dimensionalFlow {
+        ...DimensionalPlot
       }
       metric {
         name
@@ -149,6 +154,7 @@ const GET_ACTION_CONTENT = gql`
       }
     }
   }
+  ${DimensionalFlow.fragment}
 `;
 
 export { GET_ACTION_CONTENT };

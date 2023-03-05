@@ -34,6 +34,11 @@ query GetInstanceContext {
     scenarios {
       ...ScenarioFragment
     }
+    availableNormalizations {
+      id
+      label
+      isActive
+    }
     menuPages: pages(inMenu: true) {
       id
       title
@@ -45,13 +50,13 @@ query GetInstanceContext {
     parameters {
       id
       __typename
+      isCustomizable
+      isCustomized
       ... on NumberParameterType {
         label
         description
         minValue
         maxValue
-        isCustomized
-        isCustomizable
         numberDefault:defaultValue
         numberValue: value
         node {
@@ -61,8 +66,6 @@ query GetInstanceContext {
       ... on BoolParameterType {
         label
         description
-        isCustomized
-        isCustomizable
         boolDefault: defaultValue
         boolValue: value
         node {
@@ -72,8 +75,6 @@ query GetInstanceContext {
       ... on StringParameterType {
         label
         description
-        isCustomized
-        isCustomizable
         stringDefault: defaultValue
         stringValue: value
         node {

@@ -43,5 +43,7 @@
   "target-year": "Zieljahr",
   "total-effect-until": "Gesamtauswirkungen",
   "total-impact": "Gesamtauswirkungen",
-  "will_be_implemented": "Wird umgesetzt"
+  "will_be_implemented": "Wird umgesetzt",
+  "plot-choose-dimension": "Dimension",
+  "normalize-by": "Pro {{node}} normalisieren"
 }

@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { gql, useMutation, useQuery, NetworkStatus } from '@apollo/client';
+import { gql, useMutation, useQuery, NetworkStatus, } from '@apollo/client';
+import type { ObservableQuery } from '@apollo/client';
 import styled from 'styled-components';
-import { Row, Col, FormGroup, Label, Input, CustomInput, Button, InputGroup, FormFeedback } from 'reactstrap';
+import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import ContentLoader from 'components/common/ContentLoader';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 import { GET_PARAMETERS } from 'common/queries/getParameters';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
-import { number } from 'prop-types';
+import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
+import { useTranslation } from 'react-i18next';
+import { useSite } from 'context/site';
+
 
 const GlobalParametersPanel = styled(Row)`
   .form-group {
@@ -24,7 +28,11 @@ const GlobalParametersPanel = styled(Row)`
   }
 `;
 
-const StyledInput = styled(Input)`
+type StyledInputProps = {
+  customized: boolean,
+}
+
+const StyledInput = styled(Input)<StyledInputProps>`
   background-color: ${(props) => props.customized ? props.theme.graphColors.blue010 : props.theme.themeColors.white};
 `;
 
@@ -94,30 +102,36 @@ const NumericParameter = (props) => {
   )
 };
 
-const ParameterWidget = (props) => {
+type ParameterWidgetProps = {
+  param: GetParametersQuery['parameters'][0],
+  refetching: boolean,
+  refetch: ObservableQuery['refetch'],
+}
+
+const REFETCH_QUERIES = [
+  GET_SCENARIOS,
+  GET_PARAMETERS,
+  GET_ACTION_LIST,
+];
+
+const ParameterWidget = (props: ParameterWidgetProps) => {
+  const { refetch, refetching, param } = props;
   const {
-  id,
-  type,
-  isCustomizable,
-  isCustomized,
-  label,
-  numberValue,
-  boolValue,
-  stringValue,
-  parameterContent: parameter,
-  refresh,
-  refetching } = props;
+    __typename,
+    id,
+    isCustomizable,
+    isCustomized,
+    label,
+    numberValue,
+    boolValue,
+    stringValue,
+  } = props.param;
   const [invalid, setInvalid] = useState(false);
   const [parameterValue, setParameterValue] = useState(numberValue || boolValue || stringValue);
   
-  //console.log("param", id, numberValue || stringValue || boolValue );
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     notifyOnNetworkStatusChange: true,
-    refetchQueries: [
-      GET_SCENARIOS,
-      GET_PARAMETERS,
-      GET_ACTION_LIST,
-    ],
+    refetchQueries: REFETCH_QUERIES,
     onCompleted: (dat) => {
       //console.log("set param---------", dat);
     },
@@ -125,7 +139,7 @@ const ParameterWidget = (props) => {
 
   useEffect(() => {
     const validity = isInvalid({
-      type,
+      __typename,
       numberValue,
       stringValue,
       boolValue,
@@ -134,11 +148,11 @@ const ParameterWidget = (props) => {
   }, [numberValue, stringValue, boolValue]);
 
   const isInvalid = (input) => {
-    switch(type) {
+    switch (__typename) {
       case 'NumberParameterType':
         if (isNaN(input.numberValue)) return 'Please provide a number';
-        if (input.numberValue >= parameter.minValue && input.numberValue <= parameter.maxValue) return false;
-        else return `Value must be between ${parameter.minValue} - ${parameter.maxValue}`;
+        if (input.numberValue >= param.minValue && input.numberValue <= param.maxValue) return false;
+        else return `Value must be between ${param.minValue} - ${param.maxValue}`;
       case 'StringParameterType':
         return false;
       case 'BoolParameterType':
@@ -171,7 +185,7 @@ const ParameterWidget = (props) => {
     }
   };
 
-  switch(type) { 
+  switch(param.__typename) { 
     case 'NumberParameterType': return (
       <Col lg="2" md="3" sm="4" xs="6">
         <FormGroup className="position-relative">
@@ -192,33 +206,33 @@ const ParameterWidget = (props) => {
     case 'StringParameterType': return (
       <Col lg="2" md="3" sm="4" xs="6">
           <FormGroup>
-          <Label for={parameter.id}>
-            {parameter.label || parameter.id}
+          <Label for={param.id}>
+            {param.label || param.id}
           </Label>
           <Input
-            id={parameter.id}
-            name={parameter.id}
-            placeholder={mutationLoading ? 'loading' : parameter.stringValue}
-            defaultValue={mutationLoading ? 'loading' : parameter.stringValue}
+            id={param.id!}
+            name={param.id!}
+            placeholder={mutationLoading ? 'loading' : param.stringValue!}
+            defaultValue={mutationLoading ? 'loading' : param.stringValue!}
             type="text"
             bsSize="sm"
-            onKeyPress={(e) => handleUserSelection({ type: 'StringParameterType', parameterId: parameter.id, stringValue: e.target.value, char: e.key })}
+            onKeyPress={(e) => handleUserSelection({ type: 'StringParameterType', parameterId: param.id, stringValue: e.target.value, char: e.key })}
           />
         </FormGroup>
       </Col>);
     case 'BoolParameterType': return (
       <Col lg="2" md="3" sm="4" xs="6">
       <FormGroup switch>
-        <Label for={parameter.id}>
-          {parameter.label || parameter.id}
+        <Label for={param.id}>
+          {param.label || param.id}
         </Label>
         <Input
           type="switch"
           role="switch"
-          id={parameter.id}
-          name={parameter?.id || 'something'}
-          checked={parameter.boolValue}
-          onChange={(e) => handleUserSelection({ type: 'BoolParameterType', parameterId: parameter.id, boolValue: !parameter.boolValue, char: 'Enter' })}
+          id={param.id!}
+          name={param.id!}
+          checked={param.boolValue!}
+          onChange={(e) => handleUserSelection({ type: 'BoolParameterType', parameterId: param.id, boolValue: !param.boolValue, char: 'Enter' })}
         />
         </FormGroup>
       </Col>);
@@ -226,35 +240,81 @@ const ParameterWidget = (props) => {
   };
 }
 
-const GlobalParameters = (props) => {
-  const { loading, error, data, previousData, refetch, networkStatus } = useQuery(GET_PARAMETERS, {
+
+const SET_NORMALIZATION_MUTATION = gql`
+  mutation SetNormalization($id: ID) {
+    setNormalizer(id: $id) {
+      ok
+    }
+  }
+`;
+
+type NormalizationWidgetProps = {
+  availableNormalizations: GetParametersQuery['availableNormalizations']
+}
+function NormalizationWidget(props: NormalizationWidgetProps) {
+  const { t } = useTranslation();
+  const { availableNormalizations } = props;
+  const [setNormalization, { data, loading, error }] =
+    useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(SET_NORMALIZATION_MUTATION, {
+      refetchQueries: REFETCH_QUERIES,
+    });
+
+  if (!availableNormalizations.length) return null;
+  const norm = availableNormalizations[0];
+  const label = t('normalize-by', { node: norm.label });
+  return (
+    <Col lg="2" md="3" sm="4" xs="6">
+      <FormGroup switch>
+        <Label for={norm.id}>
+          {label}
+        </Label>
+        <Input
+          type="switch"
+          role="switch"
+          id={norm.id}
+          name={norm.id}
+          checked={norm.isActive}
+          onChange={(e) => {
+            setNormalization({
+              variables: {
+                id: norm.isActive ? null : norm.id,
+              },
+            })
+          }}
+        />
+      </FormGroup>
+    </Col>
+  );
+}
+
+type GlobalParametersProps = {
+}
+
+const GlobalParameters = (props: GlobalParametersProps) => {
+  const { loading, error, data, previousData, refetch, networkStatus } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
   });
+  const { t } = useTranslation();
 
   const refetching = (networkStatus === NetworkStatus.refetch);
 
-  if (loading && !previousData) {
+  if ((loading && !previousData) || !data || !data.parameters) {
     return <><ContentLoader /></>;
   } if (error) {
     return <><div>{ t('error-loading-data') }</div></>;
   }
 
-  const parameters = data.parameters;
+  const { availableNormalizations, parameters } = data;
+
   return (
     <GlobalParametersPanel>
+      <NormalizationWidget availableNormalizations={availableNormalizations} />
       {parameters.map((param) => 
         param.isCustomizable && <ParameterWidget
           key={param.id}
-          id={param.id}
-          type={param.__typename}
-          isCustomizable={param.isCustomizable}
-          isCustomized={param.isCustomized}
-          label={param.label}
-          numberValue={param.numberValue}
-          boolValue={param.boolValue}
-          stringValue={param.stringValue}
-          parameterContent={param}
-          refresh={refetch}
+          param={param}
+          refetch={refetch}
           refetching={refetching}
           />
       )}

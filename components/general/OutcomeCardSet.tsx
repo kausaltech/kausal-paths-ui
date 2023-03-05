@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
 import { useSpring, animated, config } from 'react-spring';
@@ -8,7 +8,7 @@ import OutcomeNodeContent from 'components/general/OutcomeNodeContent';
 import OutcomeCard from './OutcomeCard';
 import InputNodeCards from './InputNodeCards';
 
-const CardSet = styled(animated.div)`
+const CardSet = styled(animated.div)<{color?: string}>`
   position: relative;
   padding: 0.5rem;
   margin-top: 1rem;
@@ -176,6 +176,7 @@ function orderByMetric(nodes) {
   });
 }
 
+
 const OutcomeCardSet = (props) => {
   const {
     nodeMap,
@@ -190,10 +191,16 @@ const OutcomeCardSet = (props) => {
 
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
   const { scrollTo } = useScrollTo(config.molasses);
-  // const [activeNodeId, setActiveNodeId] = useState(undefined);
   const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
-  const cardNodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
-  orderByMetric(cardNodes);
+  const cardNodes = useMemo(() => {
+    const nodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
+    orderByMetric(nodes);
+    return nodes;
+  }, [nodeMap])
+  const subNodes = useMemo(() => new Map(
+    cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)).filter((child) => !!child)])
+  ), [cardNodes]);
+  
   const inputNodes = rootNode.inputNodes?.filter((node) => !nodeMap.has(node.id));
   // If this is the last active scenario, scroll to view after render
 
@@ -256,7 +263,7 @@ const OutcomeCardSet = (props) => {
                 startYear={startYear}
                 endYear={endYear}
                 node={node}
-                subNodes={node.inputNodes.map((child) => nodeMap.get(child.id)).filter((child) => !!child)}
+                subNodes={subNodes.get(node.id)}
                 state={activeNodeId === undefined ? 'closed' : 'open'}
                 hovered={hoveredNodeId === node.id}
                 active={activeNodeId === node.id}

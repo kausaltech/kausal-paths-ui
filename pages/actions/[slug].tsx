@@ -18,6 +18,9 @@ import ActionParameters from 'components/general/ActionParameters';
 import ContentLoader from 'components/common/ContentLoader';
 import { ActionListLink, NodeLink } from 'common/links';
 import Badge from 'components/common/Badge';
+import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__generated__/graphql';
+import ErrorMessage from 'components/common/ErrorMessage';
+import DimensionalPlot from 'components/graphs/DimensionalFlow';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -74,10 +77,10 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const site = useSite();
 
-  const { loading, error, data, refetch } = useQuery(GET_ACTION_CONTENT, {
+  const { loading, error, data, refetch } = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
     fetchPolicy: 'no-cache',
     variables: {
-      node: slug,
+      node: slug as string,
     },
   });
 
@@ -92,11 +95,17 @@ export default function ActionPage() {
     logError(error, {query: GET_ACTION_CONTENT});
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
+  if (!data || !data.node) {
+    return <ErrorMessage message={t('page-not-found')} />;
+  }
 
   const action = data.node;
   const causalNodes = action.downstreamNodes;
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   // actionTree.filter((node) => node.inputNodes.find((input) => input.id === parentId));
+  const flowPlot = action.dimensionalFlow && (
+    <DimensionalPlot flow={action.dimensionalFlow} />
+  )
 
   return (
     <>
@@ -145,28 +154,30 @@ export default function ActionPage() {
                 </ActionDescription>
               { action.metric && (
               <ContentWrapper>
-                <NodePlot
-                  metric={action.metric}
-                  impactMetric={action.impactMetric}
-                  year="2021"
-                  startYear={yearRange[0]}
-                  endYear={yearRange[1]}
-                  color={action.color}
-                  isAction={action.isAction}
-                  targetYearGoal={action.targetYearGoal}
-                />
+                { flowPlot || (
+                  <NodePlot
+                    metric={action.metric}
+                    impactMetric={action.impactMetric}
+                    year="2021"
+                    startYear={yearRange[0]}
+                    endYear={yearRange[1]}
+                    color={action.color}
+                    isAction={action.isAction}
+                    targetYearGoal={action.targetYearGoal}
+                  />
+                )}
               </ContentWrapper>
               )}
             </HeaderCard>
           </PageHeader>
         </Container>
       </HeaderSection>
-      <CausalGrid
+      {/* <CausalGrid
         nodes={causalNodes}
         yearRange={yearRange}
         actionIsOff={!isActive}
         actionId={action.id}
-      />
+                /> */}
       <SettingsPanel
         defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
       />

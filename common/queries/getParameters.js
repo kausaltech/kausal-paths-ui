@@ -2,6 +2,11 @@ import { gql } from '@apollo/client';
 
 const GET_PARAMETERS = gql`
   query GetParameters {
+    availableNormalizations {
+      id
+      label
+      isActive
+    }
     parameters {
       id
       label

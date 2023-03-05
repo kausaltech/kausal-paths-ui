@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { ThemeProvider } from 'styled-components';
 import getConfig from 'next/config';
 
-import { appWithTranslation } from 'next-i18next';
+import { appWithTranslation, useTranslation } from 'next-i18next';
 import * as Sentry from '@sentry/react';
 
 import { ApolloClientType, initializeApollo } from 'common/apollo';
@@ -14,12 +14,13 @@ import { loadTheme } from 'common/theme';
 import { getI18n } from 'common/i18n';
 import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
 import { yearRangeVar, settingsVar, activeScenarioVar } from 'common/cache';
-import { GET_INSTANCE_CONTEXT, InstanceContextType } from 'common/instance';
+import InstanceContext, { GET_INSTANCE_CONTEXT, InstanceContextType } from 'common/instance';
 import SiteContext, { SiteContextType } from 'context/site';
 import Layout from 'components/Layout';
 import type { GetAvailableInstancesQuery, GetInstanceContextQuery, GetInstanceContextQueryVariables } from 'common/__generated__/graphql';
 import { Theme } from '@kausal/themes/types';
 import { scenarioFragment } from 'common/queries/instance';
+import numbro from 'numbro';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
@@ -31,8 +32,6 @@ if (process.browser) {
 
 const defaultSiteContext: {[key: string]: SiteContextType} = {
   sunnydale: {
-    showYearSelector: true,
-    showScenarios: true,
     showTargetBar: true,
     split: true,
     loginLink: false,
@@ -65,9 +64,7 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
   },
   tampere: {
     /** Should user be able to choose reference year and end year */
-    showYearSelector: true,
     /** Should user be able to select different scenarios */
-    showScenarios: true, 
     showTargetBar: true, // remove, replace with targetBarNodes?? instead
     split: true, // remove
     loginLink: false, // replace with instance.adminUrl
@@ -83,7 +80,6 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     // add instance.homeLinkTitle
   },
   ilmastoruoka: {
-    showYearSelector: true,
     showScenarios: true,
     showTargetBar: false,
     split: true,
@@ -96,8 +92,6 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     watchLink: null,
   },
   healthimpact: {
-    showYearSelector: true,
-    showScenarios: true,
     showTargetBar: false,
     split: true,
     loginLink: false,
@@ -109,8 +103,6 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     watchLink: null,
   },
   gronlogik: {
-    showYearSelector: true,
-    showScenarios: true,
     showTargetBar: false,
     split: true,
     loginLink: false,
@@ -142,8 +134,6 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     ],
   },
   espoo: {
-    showYearSelector: true,
-    showScenarios: true,
     showTargetBar: true,
     split: true,
     loginLink: false,
@@ -158,8 +148,6 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     },
   },
   zuerich: {
-    showYearSelector: true,
-    showScenarios: true,
     showTargetBar: true,
     split: true,
     loginLink: false,
@@ -184,10 +172,13 @@ function PathsApp(props: PathsAppProps) {
   const {
     Component, pageProps, siteContext, instanceContext, themeProps,
   } = props;
-  const { scenarios, parameters, } = siteContext;
+  const { scenarios, } = siteContext;
   const router = useRouter();
+  const { i18n } = useTranslation();
 
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
+
+  numbro.setLanguage(i18n.language, i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined);
 
   // NextJS messes up client router's defaultLocale in some instances.
   // Override it here.
@@ -199,6 +190,7 @@ function PathsApp(props: PathsAppProps) {
   }
 
   const instance = instanceContext;
+  console.log(instance);
 
   useEffect(() => {
     const fetchActiveScenario = async () => {
@@ -219,45 +211,41 @@ function PathsApp(props: PathsAppProps) {
     fetchActiveScenario().catch(err => console.error(err));
   }, [apolloClient]);
 
+  const baseYear = instance.referenceYear ?? 1990;
+
   if (!settingsVar()) {
     settingsVar({
-      baseYear: instance.referenceYear || 1990,
+      baseYear,
       minYear: instance.minimumHistoricalYear || 2010,
-      maxYear: instance.modelEndYear || instance.targetYear,
-      targetYear: instance.targetYear,
+      maxYear: instance.modelEndYear,
+      targetYear: instance.targetYear ?? instance.modelEndYear,
       latestMetricYear: instance.maximumHistoricalYear || 2018,
       baselineName: scenarios.find((scenario) => scenario.id === 'baseline')?.name,
       iconBase: `${basePath}/static/themes/default/images/favicon`,
       ogImage: `${basePath}/static/themes/default/images/og-image-default.png`,
-      parameters: parameters,
     });
   }
 
   if (!yearRangeVar().length) {
-    yearRangeVar([instance.referenceYear || 1990, instance.modelEndYear || instance.targetYear]);
+    yearRangeVar([baseYear, instance.targetYear ?? instance.modelEndYear]);
   }
-
-  /*
-  if (!activeScenarioVar()) {
-    console.log('setting active scenario');
-    activeScenarioVar(scenarios.find((scenario) => scenario.isActive));
-  }
-  */
 
   const component = <Component {...pageProps} />;
 
   return (
     <SiteContext.Provider value={siteContext}>
-      <ApolloProvider client={apolloClient}>
-        <ThemeProvider theme={themeProps}>
-          <ThemedGlobalStyles />
-            <Layout>
-              <Sentry.ErrorBoundary>
-                { component }
-              </Sentry.ErrorBoundary>
-            </Layout>
-        </ThemeProvider>
-      </ApolloProvider>
+      <InstanceContext.Provider value={instanceContext}>
+        <ApolloProvider client={apolloClient}>
+          <ThemeProvider theme={themeProps}>
+            <ThemedGlobalStyles />
+              <Layout>
+                <Sentry.ErrorBoundary>
+                  { component }
+                </Sentry.ErrorBoundary>
+              </Layout>
+          </ThemeProvider>
+        </ApolloProvider>
+      </InstanceContext.Provider>
     </SiteContext.Provider>
   );
 }
@@ -313,6 +301,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
       menuPages: data.menuPages,
       title: instance.name!,
       apolloConfig,
+      availableNormalizations: data.availableNormalizations,
     };
   } catch (error) {
     if (isApolloError(error)) {
@@ -335,7 +324,7 @@ async function getI18nProps(ctx: PathsPageContext) {
   const { serverSideTranslations } = require('next-i18next/serverSideTranslations');
   const nextI18nConfig = require('../next-i18next.config');
   const { publicRuntimeConfig } = getConfig();
-  let locale = ctx.locale || publicRuntimeConfig.locale || ctx.locales?.[0];
+  let locale: string = ctx.locale || publicRuntimeConfig.locale || ctx.locales?.[0];
   const i18n = getI18n();
 
   if (!locale) {
