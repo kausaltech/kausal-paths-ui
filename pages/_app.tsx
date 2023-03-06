@@ -190,7 +190,6 @@ function PathsApp(props: PathsAppProps) {
   }
 
   const instance = instanceContext;
-  console.log(instance);
 
   useEffect(() => {
     const fetchActiveScenario = async () => {
