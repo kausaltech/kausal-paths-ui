@@ -24,7 +24,7 @@ const config: CodegenConfig = {
     'common/__generated__/graphql.ts': {
       plugins: ['typescript', 'typescript-operations'],
       config: tsoConfig,
-    }
+    },
   },
 };
 

@@ -24,7 +24,7 @@ import numbro from 'numbro';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
-require('../styles/default/main.scss');
+require('../../styles/default/main.scss');
 
 if (process.browser) {
   setBasePath();
@@ -321,7 +321,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
 async function getI18nProps(ctx: PathsPageContext) {
   // SSR only
   const { serverSideTranslations } = require('next-i18next/serverSideTranslations');
-  const nextI18nConfig = require('../next-i18next.config');
+  const nextI18nConfig = require('../../next-i18next.config');
   const { publicRuntimeConfig } = getConfig();
   let locale: string = ctx.locale || publicRuntimeConfig.locale || ctx.locales?.[0];
   const i18n = getI18n();

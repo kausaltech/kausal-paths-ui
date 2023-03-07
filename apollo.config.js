@@ -5,10 +5,7 @@ JS = '*.{js,jsx,ts,tsx,mjs}'
 module.exports = {
   client: {
     includes: [
-      `./components/**/${JS}`,
-      `./pages/**/${JS}`,
-      `./common/**/${JS}`,
-      `./server/**/${JS}`,
+      `./src/**/${JS}`,
     ],
     service: {
       name: 'kausal-paths',

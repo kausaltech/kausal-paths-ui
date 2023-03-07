@@ -17,19 +17,33 @@ declare module 'styled-components' {
 
 export const themeProp = await makeThemePropType();
 
+
 export async function loadTheme(themeIdentifier: string) {
   let themeProps: Theme;
-
+  let readThemeFile;
+  if (!process.browser) {
+    const fs = require('fs');
+    const THEME_PATH = './public/static/themes';
+    readThemeFile = async (id: string) => {
+      const theme = fs.readFileSync(`${THEME_PATH}/${id}/theme.json`);
+      return JSON.parse(theme);
+    }
+  } else {
+    const THEME_PATH = '/public/static/themes';
+    readThemeFile = async (id: string) => {
+      const theme = await import(`${THEME_PATH}/${id}/theme.json`);
+      return theme.default;
+    }
+  }
   try {
-    const theme = await import(`public/static/themes/${themeIdentifier}/theme.json`);
-    themeProps = theme.default;
+    themeProps = readThemeFile(themeIdentifier);
+    return themeProps;
   } catch (error) {
     console.error(`Theme with identifier ${themeIdentifier} not found`);
     console.error(error);
-    const theme = await import(`public/static/themes/default/theme.json`);
-    themeProps = theme.default;
+    themeProps = readThemeFile('default');
+    return themeProps;
   }
-  return themeProps;
 }
 
 export function getThemeCSS(themeIdentifier: string) {

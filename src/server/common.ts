@@ -11,7 +11,7 @@ import next from "next";
 console.log('> 💡 Starting server');
 
 import * as Sentry from '@sentry/nextjs';
-import '../sentry.server.config.js';
+import '../../sentry.server.config.js';
 import { NextServer, RequestHandler } from "next/dist/server/next";
 import NextNodeServer from "next/dist/server/next-server";
 import { initializeIssuer, initializePassport, ServerAuth, ServerAuthIssuer } from "./auth";
