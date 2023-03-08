@@ -129,8 +129,9 @@ export abstract class BaseServer {
     loc.splice(0, 0, defaultLocale);
     srv.nextConfig.i18n.defaultLocale = defaultLocale;
     srv.nextConfig.i18n.locales = loc;
-    //srv.router.locales = loc;
-    //srv.incrementalCache.locales = loc;
+    srv.localeNormalizer.locales = loc;
+    srv.localeNormalizer.defaultLocale = defaultLocale
+    srv.localeNormalizer.lowerCase = loc.map(l => l.toLowerCase());
   }
 
   abstract getRequestContext(req: BaseServerRequest, res: BaseServerResponse): Promise<RequestContext | null>;

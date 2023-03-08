@@ -107,7 +107,7 @@ export function ActionLink(props: ActionLinkProps) {
   const { action, ...rest } = props;
   const hrefProps = {
     href: {
-      pathname: '/actions/[slug].js',
+      pathname: '/actions/[slug]',
       query: {
         slug: action.id,
       },
