@@ -1,47 +1,34 @@
-import { gql } from "@apollo/client";
+import { gql, useReactiveVar } from "@apollo/client";
+import { yearRangeVar } from "common/cache";
+import { genColorsFromTheme } from "common/colors";
 import type { DimensionalPlotFragment } from "common/__generated__/graphql";
-import { t } from "i18next";
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-
-
-const Plot = dynamic(() => import('components/graphs/Plot'),
-  { ssr: false });
+import { tint, transparentize } from "polished";
+import { useEffect, useMemo, } from "react";
+import { useTheme } from "styled-components";
+import type Plotly from "plotly.js";
 
 
 type DimensionalPlotProps = {
   flow: DimensionalPlotFragment,
 }
 
-function makeSliderSteps(flow: DimensionalPlotFragment) {
-  return flow.links.map((link, idx) => {
-    const ret: Partial<Plotly.SliderStep> = {
-      method: 'animate',
-      label: link.year.toString(),
-      args: [[link.year.toString()], {
-        mode: 'immediate',
-        transition: {duration: 100},
-        frame: {duration: 300, redraw: false},
-      }],
-    };
-    return ret;
-  });
+type Flow = DimensionalPlotFragment;
+
+type FlowNode = DimensionalPlotFragment['nodes'][0] & {
+  idx: number,
+  color: string,
+  linkColor?: string,
 }
 
-function *zip (...iterables){
-  let iterators = iterables.map(i => i[Symbol.iterator]() )
-  while (true) {
-      let results = iterators.map(iter => iter.next() )
-      if (results.some(res => res.done) ) return
-      else yield results.map(res => res.value )
-  }
-}
+type FlowLink = DimensionalPlotFragment['links'][0];
+
 
 type DataWithSankey = Plotly.Data & {
   link: {
     source: number[],
     target: number[],
     value: (number | null)[]
+    color: (string | null)[],
   },
   node: {
     pad: number,
@@ -51,99 +38,135 @@ type DataWithSankey = Plotly.Data & {
       width: number,
     },
     label: string[],
-  }
+    hovertemplate?: string,
+    color?: string[],
+  },
+  ids?: string[],
+  valueformat?: string,
 }
 
-type Node = DimensionalPlotFragment['nodes'][0];
-
-function makeFrame(links: DimensionalPlotFragment['links'][0], nodes: Node[], nodeMap: Map<string, number>) {
+function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<string, FlowNode>) {
+  const nodes = Array.from(nodeMap.values());
   const data: DataWithSankey = {
     type: 'sankey',
     orientation: 'h',
     link: {
-      source: links.sources.map(id => nodeMap.get(id)!),
-      target: links.targets.map(id => nodeMap.get(id)!),
-      value: links.values.map(val => val),
+      source: [],
+      target: [],
+      value: [],
+      color: [],
+      //label: [],
+      //hovertemplate: `%{label}<extra>%{value:,.3r} ${flow.unit.htmlLong}</extra>`,
     },
+    ids: [],
     node: {
+      hovertemplate: `%{label}<extra>%{value:,.3r} ${flow.unit.htmlLong}</extra>`,
       pad: 15,
       thickness: 30,
       line: {
         color: "black",
         width: 0.5
       },
-      label: nodes.map(node => node.label),
+      label: nodes.map(node => `${link.year}: ${node.label}`),
+      color: nodes.map(node => node.color),
     },
-    ids: Array.from(zip(links.sources, links.targets)).map(([s, t]) => `${s}/${t}`),
+    valueformat: `,.3r`,
   };
 
-  data.node.label.push('Heizöl start')
-  const hsidx = data.node.label.length - 1;
-  data.link.source.push(hsidx);
-  data.link.target.push(0);
-  const hstart = 1293;
-  data.link.value.push(hstart);
+  function newFlow(idPrefix: string, src: number, dest: number, val: number | null, color: string | undefined, custom: any) {
+    data.link.source.push(src);
+    data.link.target.push(dest);
+    data.link.value.push(val);
+    data.link.color.push(color ?? null);
+    data.ids!.push(`${idPrefix}-${src}-${dest}`);
+  }
 
-  data.link.source.push(hsidx);
-  data.link.target.push(0);
-  data.link.value.push(500);
+  link.sources.forEach((srcId, idx) => {
+    const src = nodeMap.get(srcId)!;
+    const target = nodeMap.get(link.targets[idx])!;
+    const value = link.values[idx];
+    newFlow('action', src.idx, target.idx, value, src.linkColor, {});
+  })
 
-  data.node.label.push('Heizöl remaining')
-  const heidx = data.node.label.length - 1;
-  data.link.source.push(0);
-  data.link.target.push(heidx);
-  data.link.value.push(223);
+  const impactSum = new Map<string, number>();
+  link.sources.forEach((id, idx) => {
+    const newVal = (impactSum.get(id) ?? 0) + (link.values[idx] ?? 0);
+    impactSum.set(id, newVal);
+  });
 
-  /*
-  data.link.source.push(hsidx);
-  data.link.target.push(0);
-  data.link.value.push(5);
-  */
-  data.node.label.push('Erdgas start')
-  const esidx = data.node.label.length - 1;
-  data.link.source.push(esidx);
-  data.link.target.push(1);
-  data.link.value.push(2858);
+  function newNode(node: FlowNode, label: string | null = null) {
+    const idx = data.node.label.length;
+    data.node.label.push(label ?? node.label);
+    data.node.color!.push(node.color);
+    return idx;
+  }
 
-  data.node.label.push('Erdgas remaining');
-  const eeidx = data.node.label.length - 1;
-  data.link.source.push(1);
-  data.link.target.push(eeidx);
-  data.link.value.push(250);
+  flow.sources.forEach((srcId, srcIdx) => {
+    const src = nodeMap.get(srcId)!;
+    const startIdx = newNode(src, `${start.year.toString()}: ${src.label}`);
+    const startVal = start.absoluteSourceValues[srcIdx];
 
-  /*
-  data.link.source.push(esidx);
-  data.link.target.push(1);
-  data.link.value.push(100);
-  */
-  console.log(data);
+    const remainingVal = link.absoluteSourceValues[srcIdx];
+    const remainingIdx = newNode(src, `${link.year.toString()}: ${src.label}`);
+
+    const impact = impactSum.get(srcId)!;
+    const remainingLinkColor = src.linkColor ? tint(0.5, src.linkColor) : undefined;
+    newFlow('start-remaining', startIdx, src.idx, remainingVal, remainingLinkColor, {});
+    newFlow('start-impact', startIdx, src.idx, impact, src.linkColor, {});
+    newFlow('start-other', startIdx, src.idx, startVal - impact - remainingVal, remainingLinkColor, {});
+
+    newFlow('action-remaining', src.idx, remainingIdx, remainingVal, remainingLinkColor, {});
+  });
+
   return data;
 }
 
+const usePlotlyBasic = process.browser && (await import('components/graphs/Plot')).usePlotlyBasic;
+
 export default function DimensionalFlow(props: DimensionalPlotProps) {
+  if (!usePlotlyBasic) return;
   const { flow } = props;
+  const theme = useTheme();
+  const [startYear, endYear] = useReactiveVar(yearRangeVar);
 
   useEffect(() => {
     console.log('flow changed');
   }, [flow])
 
-  const nodeMap = new Map(flow.nodes.map((node, idx) => [node.id, idx]));
-  const layout: Partial<Plotly.Layout> = {
-  };
-  const link = flow.links.find((link) => link.year == 2040)!;
-  const data = makeFrame(link, flow.nodes, nodeMap);
+  const data = useMemo(() => {
+    const year = Math.max(flow.links[0].year + 1, endYear);
+    const flowNodesWithoutColors = flow.nodes.filter(node => !node.color);
+    const colors = genColorsFromTheme(theme, flowNodesWithoutColors.length);
+    let colorIdx = 0;
+    const nodeMap = new Map(flow.nodes.map((node, idx) => {
+      const out: FlowNode = {
+        ...node,
+        idx,
+        color: node.color ?? colors[colorIdx++],
+      };
+      out.linkColor = transparentize(0.4, tint(0.5, out.color!));
+      return [out.id, out]
+    }));
+    const start = flow.links[0];
+    const current = flow.links.find((link) => link.year == year)!;
+    return [makeFrame(flow, start, current, nodeMap)];
+  }, [flow, endYear]);
 
+  const layout = useMemo(() => {
+    const out: Partial<Plotly.Layout> = {};
+    return out;
+  }, []);
+  const config = useMemo(() => {
+    const out: Partial<Plotly.Config> = {
+      displayModeBar: false,
+    };
+    return out;
+  }, []);
+
+  const ref = usePlotlyBasic({ data: data, layout, config });
   return (
-    <div>
-      <Plot
-        data={[data]}
-        layout={layout}
-        useResizeHandler
-        style={{ width: '100%' }}
-        config={{ displayModeBar: false }}
-      />
-    </div>
-  );
+    <div ref={ref} style={{ width: '100%' }} />
+  )
 }
 
 DimensionalFlow.fragment = gql`
@@ -155,12 +178,15 @@ DimensionalFlow.fragment = gql`
     nodes {
       id
       label
+      color
     }
+    sources
     links {
       year
       sources
       targets
       values
+      absoluteSourceValues
     }
   }
 `;
