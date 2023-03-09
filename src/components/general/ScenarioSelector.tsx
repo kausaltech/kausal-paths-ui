@@ -5,8 +5,7 @@ import styled from 'styled-components';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
 import { activeScenarioVar } from 'common/cache';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
-import { GET_PARAMETERS } from 'common/queries/getParameters';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { ActivateScenarioMutation, ActivateScenarioMutationVariables, GetScenariosQuery } from 'common/__generated__/graphql';
 
 const ACTIVATE_SCENARIO = gql` 
   mutation ActivateScenario($scenarioId: ID!) {
@@ -40,20 +39,16 @@ const ScenarioSelector = () => {
   const { t } = useTranslation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggle = () => setDropdownOpen((prevState) => !prevState);
-  // const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const { loading, error, data } = useQuery(GET_SCENARIOS, {
+  const { loading, error, data } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
     onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive)),
   });
-  const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation(ACTIVATE_SCENARIO, {
-    refetchQueries: [
-      GET_SCENARIOS,
-      GET_PARAMETERS,
-      GET_ACTION_LIST,
-    ],
-  });
+  const [activateScenario, { loading: mutationLoading, error: mutationError }] =
+    useMutation<ActivateScenarioMutation, ActivateScenarioMutationVariables>(ACTIVATE_SCENARIO, {
+      refetchQueries: 'active',
+    });
 
   if (loading) {
     return (
@@ -71,7 +66,6 @@ const ScenarioSelector = () => {
     //console.log("Error", JSON.stringify(error));
     return <div>{t('error-loading-data')}</div>;
   }
-
   const scenarios = data?.scenarios;
   const activeScenario = scenarios.find((scen) => scen.isActive);
 

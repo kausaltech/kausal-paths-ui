@@ -6,6 +6,7 @@ const OUTCOME_NODE_FIELDS = gql`
     name
     color
     order
+    shortName
     shortDescription
     metric {
       id

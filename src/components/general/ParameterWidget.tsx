@@ -193,13 +193,9 @@ const ParameterWidget = (props) => {
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
-    refetchQueries: [
-      GET_SCENARIOS,
-      GET_PARAMETERS,
-      GET_ACTION_LIST,
-    ],
+    refetchQueries: 'active',
     onCompleted: () => {
-      activeScenarioVar({ ...activeScenario, stamp: Date.now() });
+      activeScenarioVar({ ...activeScenario });
     },
   });
 

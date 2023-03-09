@@ -63,14 +63,13 @@ const nextConfig = {
     styledComponents: true
   },
   swcMinify: true,
-  experimental: {
-    modularizeImports: {
-      lodash: {
-        transform: 'lodash/{{member}}',
-      },
+  modularizeImports: {
+    lodash: {
+      transform: 'lodash/{{member}}',
     },
   },
-  webpack: (cfg, { isServer }) => {
+  webpack: (cfg, context) => {
+    const { isServer } = context;
     if (!isServer) {
       cfg.resolve.alias['next-i18next/serverSideTranslations'] = false;
       cfg.resolve.alias['./next-i18next.config'] = false;

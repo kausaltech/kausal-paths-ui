@@ -1,11 +1,11 @@
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
-import { settingsVar } from 'common/cache';
 import DashCard from 'components/general/DashCard';
 import NodePlot from 'components/general/NodePlot';
 import ImpactDisplay from './ImpactDisplay';
 import { NodeLink } from 'common/links';
+import { useSite } from 'context/site';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -65,9 +65,9 @@ const TextContent = styled.div`
 `;
 
 const CausalCard = (props) => {
-  const { node, index, startYear, endYear, noEffect } = props;
+  const { node, startYear, endYear, noEffect } = props;
   const { targetYearGoal } = node;
-  const { maxYear } = settingsVar();
+  const { maxYear } = useSite();
 
   const impactAtTargetYear = getImpactMetricValue(node, endYear);
   // TODO: use isACtivity when available, for now cumulate impact on emissions

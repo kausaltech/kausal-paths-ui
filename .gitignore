@@ -41,6 +41,7 @@ yarn-error.log
 /.yarnrc.yml
 /.env
 *~
+*.bak
 
 # Sentry
 .sentryclirc
@@ -49,3 +50,6 @@ yarn-error.log
 
 /public/static/themes/
 /dist/
+
+*.tsbuildinfo
+/Attic/

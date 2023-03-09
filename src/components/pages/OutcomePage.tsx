@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client';
 import { Container } from 'reactstrap';
 
-import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
+import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
 import SettingsPanel from 'components/general/SettingsPanel';
 import FrontPageHeader from 'components/general/FrontPageHeader';
@@ -139,7 +139,7 @@ export default function OutcomePage(props: OutcomePageProps) {
         </OutcomeSection>
       </Container>
       <SettingsPanel
-        defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
+        defaultYearRange={[site.minYear, site.maxYear]}
       />
     </>
   );

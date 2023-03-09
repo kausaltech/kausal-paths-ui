@@ -8,7 +8,7 @@ import { ActionLink, Link, NodeLink } from 'common/links';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
-import { settingsVar } from 'common/cache';
+import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const ContentWrapper = styled.div`
   padding: 1rem;
@@ -56,7 +56,15 @@ const ActionsListItem = styled.li`
   padding: 0;
 `;
 
-const OutcomeNodeContent = (props) => {
+type OutcomeNodeContentProps = {
+  node: OutcomeNodeFieldsFragment,
+  subNodes: OutcomeNodeFieldsFragment[],
+  color?: string | null,
+  startYear: number,
+  endYear: number,
+}
+
+const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
   const { node, subNodes, color, startYear, endYear } = props;
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
@@ -88,7 +96,7 @@ const OutcomeNodeContent = (props) => {
           <h4>
             <NodeLink node={node}>
               <a>
-                { node.name }
+                { node.shortName || node.name }
               </a>
             </NodeLink>
           </h4>

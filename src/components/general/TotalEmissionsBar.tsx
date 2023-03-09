@@ -4,7 +4,7 @@ import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
 import { Spinner } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
-import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
+import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
 import { GetNetEmissionsQuery } from 'common/__generated__/graphql';
 
@@ -97,7 +97,6 @@ const BarWithLabel = (props) => {
 const TotalEmissionsBar = (props) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const targetYear = settingsVar().maxYear;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 

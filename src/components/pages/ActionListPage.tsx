@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
-import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
+import { activeScenarioVar, yearRangeVar, } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label, Alert } from 'reactstrap';
 import { SortUp, SortDown } from 'react-bootstrap-icons';
 import { useTranslation } from 'next-i18next';
@@ -13,6 +13,7 @@ import SettingsPanel from 'components/general/SettingsPanel';
 import ActionsMac from 'components/general/ActionsMac';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
+import { useSite } from 'context/site';
 
 const HeaderSection = styled.div`
   padding: 4rem 0 10rem; 
@@ -61,11 +62,13 @@ const Description = styled.div`
 function ActionListPage(props) {
   const { t } = useTranslation();
   const { page } = props;
-  const { loading, error, data, previousData, refetch, networkStatus } = useQuery(GET_ACTION_LIST, {
+  const { loading, error, data, previousData, networkStatus } = useQuery(GET_ACTION_LIST, {
     notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'cache-first',
   });
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
+  const site = useSite();
 
   const [listType, setListType] = useState('list');
   const [ascending, setAscending] = useState(true);
@@ -303,7 +306,7 @@ function ActionListPage(props) {
       </Row>
     </Container>
     <SettingsPanel
-      defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
+      defaultYearRange={[site.latestMetricYear, site.maxYear]}
     />
   </>
   )

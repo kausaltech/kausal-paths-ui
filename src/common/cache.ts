@@ -1,8 +1,8 @@
-import { makeVar, InMemoryCache } from '@apollo/client';
-import { SiteContextType } from 'context/site';
+import { makeVar, } from '@apollo/client';
+import { SiteContextScenario, } from 'context/site';
 
-export const yearRangeVar = makeVar<Array<number>>([]);
-export const activeScenarioVar = makeVar<SiteContextType['scenarios'][0]>(null!);
+export const yearRangeVar = makeVar<[number, number]>(null!);
+export const activeScenarioVar = makeVar<SiteContextScenario>(null!);
 
 type SettingsVarType = {
   iconBase: string,

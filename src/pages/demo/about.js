@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import styled, { useTheme } from 'styled-components';
 
 import { useRouter } from 'next/router';
-import { activeScenarioVar, yearRangeVar, settingsVar } from 'common/cache';
+import { activeScenarioVar, yearRangeVar, } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
 import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';

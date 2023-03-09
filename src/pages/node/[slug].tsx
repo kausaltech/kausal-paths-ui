@@ -7,7 +7,7 @@ import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 import { ArrowRight } from 'react-bootstrap-icons';
 
-import { activeScenarioVar, settingsVar, yearRangeVar } from 'common/cache';
+import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
@@ -242,7 +242,7 @@ export default function NodePage() {
         />
       </Container>
       <SettingsPanel
-        defaultYearRange={[settingsVar().minYear, settingsVar().maxYear]}
+        defaultYearRange={[site.minYear, site.maxYear]}
       />
     </>
   );

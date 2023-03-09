@@ -9,6 +9,16 @@ export type SiteContextType = {
     instanceHostname: string,
     instanceIdentifier: string,
   },
+
+  iconBase: string,
+  ogImage: string,
+  baselineName: string | null | undefined,
+  minYear: number,
+  maxYear: number,
+  baseYear: number | null,
+  targetYear: number,
+  latestMetricYear: number,
+
   scenarios: SiteContextScenario[],
   availableNormalizations: GetInstanceContextQuery['availableNormalizations'],
   parameters: GetInstanceContextQuery['parameters'],

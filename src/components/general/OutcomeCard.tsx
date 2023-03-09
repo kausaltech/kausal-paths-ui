@@ -91,7 +91,7 @@ const OutcomeCard = (props) => {
             onMouseLeave={() => onHover(undefined)}
             onClick={() => handleClick(node.id)}
           >
-            <Name>{node.name}</Name>
+            <Name>{node.shortName || node.name}</Name>
           </CardAnchor>
         </Title>
       </Header>

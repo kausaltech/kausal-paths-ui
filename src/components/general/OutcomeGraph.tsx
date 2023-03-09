@@ -4,7 +4,6 @@ import { useTranslation } from 'next-i18next';
 import styled, { ThemeContext } from 'styled-components';
 import { tint } from 'polished';
 import { Spinner } from 'reactstrap';
-import { settingsVar } from 'common/cache';
 import { metricToPlot } from 'common/preprocess';
 import SiteContext from 'context/site';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
@@ -40,8 +39,8 @@ const formatHover = (name, color, isPred, systemFont, predLabel, shortUnit) => {
 }
 
 const generatePlotFromNode = (
-  n, startYear, endYear, minForecastYear, color, site, t, language, id, systemFont, predLabel, shortUnit, parentNode, lang
-  ) => {
+  n: OutcomeNodeFieldsFragment, startYear, endYear, minForecastYear, color, site, t, language, id, systemFont, predLabel, shortUnit, parentNode,
+) => {
   const plotData: Plotly.Data[] = [];
   const historicalValues = [];
   const parentHistoricalValues = [];
@@ -61,7 +60,7 @@ const generatePlotFromNode = (
 
   n.metric.historicalValues.forEach((dataPoint) => {
     // Do not include base year in historical values
-    if (dataPoint.year === settingsVar().baseYear) {
+    if (dataPoint.year === site.baseYear) {
       baseValue = dataPoint.value;
       parentBaseValue = getPercentage(dataPoint, parentNode.metric.historicalValues);
       return;
@@ -86,13 +85,13 @@ const generatePlotFromNode = (
     dateArray.push(dataPoint.year);
     parentValueArray.push(getPercentage(dataPoint, parentNode.metric.historicalValues));
   });
-  if (site.useBaseYear) {
+  if (site.baseYear && baseValue !== undefined) {
     plotData.push(
       {
-        x: [settingsVar().baseYear - 1, settingsVar().baseYear],
+        x: [site.baseYear - 1, site.baseYear],
         y: [baseValue, baseValue],
         customdata: [parentBaseValue, parentBaseValue],
-        name: n.name,
+        name: n.shortName || n.name,
         showlegend: false,
         type: 'scatter',
         fill: 'tonexty',
@@ -102,9 +101,9 @@ const generatePlotFromNode = (
         },
         stackgroup: `${id}group2`,
         fillcolor: fillColor,
-        xaxis: 'x1',
-        yaxis: 'y1',
-        ...formatHover(n.name, fillColor, false, systemFont, predLabel, shortUnit),
+        xaxis: 'x',
+        yaxis: 'y',
+        ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
       }
     );
   };
@@ -115,8 +114,8 @@ const generatePlotFromNode = (
       y: historicalValues,
       customdata: parentHistoricalValues,
       xaxis: 'x2',
-      yaxis: 'y1',
-      name: n.name,
+      yaxis: 'y',
+      name: n.shortName || n.name,
       showlegend: false,
       type: 'scatter',
       fill: 'tonexty',
@@ -127,7 +126,7 @@ const generatePlotFromNode = (
         shape: 'spline',
         width: 0.75,
       },
-      ...formatHover(n.name, fillColor, false, systemFont, predLabel, shortUnit),
+      ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
     }
   );
   n.metric.forecastValues.forEach((dataPoint) => {
@@ -143,7 +142,7 @@ const generatePlotFromNode = (
     x: [historicalDates[historicalDates.length-1], forecastDates[0]],
     customdata: [parentHistoricalValues[parentHistoricalValues.length-1], parentForecastValues[0]],
     xaxis: 'x2',
-    yaxis: 'y1',
+    yaxis: 'y',
     name: '',
     showlegend: false,
     type: 'scatter',
@@ -165,8 +164,8 @@ const generatePlotFromNode = (
       y: forecastValues,
       customdata: parentForecastValues,
       xaxis: 'x2',
-      yaxis: 'y1',
-      name: `${n.name} (${t('pred')})`,
+      yaxis: 'y',
+      name: `${n.shortName || n.name} (${t('pred')})`,
       showlegend: false,
       type: 'scatter',
       fill: 'tonexty',
@@ -177,7 +176,7 @@ const generatePlotFromNode = (
         shape: 'spline',
         width: 0.5,
       },
-      ...formatHover(n.name, fillColor, true, systemFont, predLabel, shortUnit),
+      ...formatHover(n.shortName || n.name, fillColor, true, systemFont, predLabel, shortUnit),
     }
   );
   
@@ -229,22 +228,26 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
 
   // generate separate stacks for positive and negative side
   positiveDisplayNodes?.forEach((node, index) => {
-    plotData.push(...generatePlotFromNode(node, startYear, endYear, minForecastYear, color, site, t, i18n.language, 'pos', systemFont, predLabel, shortUnit, parentNode));
+    const trace = generatePlotFromNode(
+      node, startYear, endYear, minForecastYear, color, site, t, i18n.language,
+      'pos', systemFont, predLabel, shortUnit, parentNode
+    );
+    if (trace) plotData.push(...trace);
   });
   negativeDisplayNodes?.forEach((node, index) => {
     plotData.push(...generatePlotFromNode(node, startYear, endYear, minForecastYear, color, site, t, i18n.language, 'neg', systemFont, predLabel, shortUnit, parentNode));
   });
 
-  if (baselineForecast && instance.features?.baselineVisibleInGraphs) {
+  if (baselineForecast && site.baselineName && instance.features?.baselineVisibleInGraphs) {
     plotData.push(
       {
         x: baselineForecast.x,
         y: baselineForecast.y,
         customdata: baselineForecast.y.map(() => ''),
         xaxis: 'x2',
-        yaxis: 'y1',
+        yaxis: 'y',
         mode: 'lines',
-        name: settingsVar().baselineName,
+        name: site.baselineName,
         type: 'scatter',
         line: {
           color: theme.graphColors.grey060,
@@ -252,8 +255,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
           width: 2,
           dash: 'dash',
         },
-        smoothing: true,
-        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030, false, systemFont, predLabel, shortUnit),
+        ...formatHover(site.baselineName, theme.graphColors.grey030, false, systemFont, predLabel, shortUnit),
       },
     );
   }
@@ -263,7 +265,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       type: 'line',
       yref: 'y',
       xref: 'x2',
-      x0: startYear ===  settingsVar().baseYear ? settingsVar().minYear : startYear,
+      x0: startYear ===  site.baseYear ? site.minYear : startYear,
       y0: targetYearGoal,
       x1: endYear,
       y1: targetYearGoal,
@@ -273,14 +275,14 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
         dash: 'dot',
       },
     });
-    if (endYear === settingsVar().maxYear) {
+    if (endYear === site.maxYear) {
       plotData.push({
-        x: [settingsVar().maxYear],
+        x: [site.maxYear],
         y: [targetYearGoal],
         type: 'scatter',
         xaxis: 'x2',
-        yaxis: 'y1',
-        name: `${t('target')} ${settingsVar().maxYear}`,
+        yaxis: 'y',
+        name: `${t('target')} ${site.maxYear}`,
         line: {
           color: theme.graphColors.red090,
           width: 2,
@@ -301,7 +303,9 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       domain: [0, 1],
       anchor: 'x',
       ticklen: 10,
-      title: longUnit || undefined,
+      title: {
+        text: longUnit || undefined,
+      },
       tickcolor: theme.graphColors.grey030,
     },
     xaxis: {
@@ -334,7 +338,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     shapes,
   }
 
-  if (site.useBaseYear) {
+  if (instance.features.baselineVisibleInGraphs) {
     layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
     layout.xaxis = {
       domain: [0, 0.03],
@@ -351,7 +355,6 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       tickcolor: theme.graphColors.grey030,
     };
   };
-
   return (
     <>
       { loading && (
@@ -361,6 +364,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
         )
       }
       <Plot
+        noValidate
         data={plotData}
         layout={layout}
         useResizeHandler

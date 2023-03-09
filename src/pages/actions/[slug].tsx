@@ -7,7 +7,7 @@ import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
-import { yearRangeVar, activeScenarioVar, settingsVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
@@ -172,14 +172,14 @@ export default function ActionPage() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      {/* <CausalGrid
+      { !flowPlot && <CausalGrid
         nodes={causalNodes}
         yearRange={yearRange}
         actionIsOff={!isActive}
         actionId={action.id}
-                /> */}
+      />}
       <SettingsPanel
-        defaultYearRange={[settingsVar().latestMetricYear, settingsVar().maxYear]}
+        defaultYearRange={[site.latestMetricYear, site.maxYear]}
       />
     </>
   );

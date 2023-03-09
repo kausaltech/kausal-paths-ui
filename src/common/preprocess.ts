@@ -66,10 +66,9 @@ export const summarizeYearlyValuesBetween = (metric, startYear, endYear) => {
   return summarizeYearlyValues(yearlyValues);
 };
 
-export const metricToPlot = (metric, segment, startYear, endYear) => {
-  const plot = { x: [], y: [] };
-  if (!metric) return [];
-  metric[segment].forEach((dataPoint) => {
+export const metricToPlot = (metric, segment: string, startYear: number, endYear: number) => {
+  const plot: {x: number[], y: number[]} = { x: [], y: [] };
+  (metric?.[segment] ?? []).forEach((dataPoint) => {
     if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
       plot.x.push(dataPoint.year);
       plot.y.push(dataPoint.value);

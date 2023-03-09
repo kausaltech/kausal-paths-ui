@@ -20,13 +20,13 @@ export const themeProp = await makeThemePropType();
 
 export async function loadTheme(themeIdentifier: string) {
   let themeProps: Theme;
-  let readThemeFile;
+  let readThemeFile: (id: string) => Promise<Theme>;
   if (!process.browser) {
     const fs = require('fs');
     const THEME_PATH = './public/static/themes';
     readThemeFile = async (id: string) => {
       const theme = fs.readFileSync(`${THEME_PATH}/${id}/theme.json`);
-      return JSON.parse(theme);
+      return JSON.parse(theme) as Theme;
     }
   } else {
     const THEME_PATH = '/public/static/themes';
@@ -36,12 +36,12 @@ export async function loadTheme(themeIdentifier: string) {
     }
   }
   try {
-    themeProps = readThemeFile(themeIdentifier);
+    themeProps = await readThemeFile(themeIdentifier);
     return themeProps;
   } catch (error) {
     console.error(`Theme with identifier ${themeIdentifier} not found`);
     console.error(error);
-    themeProps = readThemeFile('default');
+    themeProps = await readThemeFile('default');
     return themeProps;
   }
 }

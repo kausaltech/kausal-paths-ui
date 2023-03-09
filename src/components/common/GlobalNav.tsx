@@ -339,12 +339,10 @@ function GlobalNav(props) {
           <Link href="/" passHref>
             <HomeLink>
               { orgLogo }
-              { site.showNavTitle
-                ? <SiteTitle>{siteTitle}</SiteTitle>
-                : <SiteTitle>{'\u00A0'}</SiteTitle>}
+              <SiteTitle>{siteTitle}</SiteTitle>
             </HomeLink>
           </Link>
-          { site.loginLink && (
+          { false /* FIXME */ && (
             <Nav navbar className="ml-auto">
               <NavItem>
                 <NavLink>

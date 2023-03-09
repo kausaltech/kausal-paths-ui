@@ -84,14 +84,14 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'UnknownParameterType' }
     ) | null> | null, dimensionalFlow?: (
-      { id: string, unit: (
+      { id: string, sources: Array<string>, unit: (
         { htmlLong: string }
         & { __typename?: 'UnitType' }
       ), nodes: Array<(
-        { id: string, label: string }
+        { id: string, label: string, color?: string | null }
         & { __typename?: 'FlowNodeType' }
       )>, links: Array<(
-        { year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null> }
+        { year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null>, absoluteSourceValues: Array<number> }
         & { __typename?: 'FlowLinksType' }
       )> }
       & { __typename?: 'DimensionalFlowType' }
@@ -340,7 +340,7 @@ export type GetActionListQuery = (
 );
 
 export type OutcomeNodeFieldsFragment = (
-  { id: string, name: string, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
+  { id: string, name: string, color?: string | null, order?: number | null, shortName?: string | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
     { id?: string | null, name?: string | null, unit?: (
       { short: string, htmlShort: string, htmlLong: string }
       & { __typename?: 'UnitType' }
@@ -391,8 +391,8 @@ export type GetPageQuery = (
     & { __typename: 'NodePage' | 'Page' }
   ) | (
     { leadTitle: string, leadParagraph: string, id?: string | null, title: string, outcomeNode: (
-      { id: string, name: string, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, upstreamNodes: Array<(
-        { id: string, name: string, color?: string | null, order?: number | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
+      { id: string, name: string, color?: string | null, order?: number | null, shortName?: string | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, upstreamNodes: Array<(
+        { id: string, name: string, color?: string | null, order?: number | null, shortName?: string | null, shortDescription?: string | null, targetYearGoal?: number | null, quantity?: string | null, metric?: (
           { id?: string | null, name?: string | null, unit?: (
             { short: string, htmlShort: string, htmlLong: string }
             & { __typename?: 'UnitType' }
@@ -515,7 +515,7 @@ export type GetInstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetInstanceContextQuery = (
   { instance: (
-    { id: string, name: string, themeIdentifier?: string | null, owner?: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear?: number | null, modelEndYear: number, referenceYear?: number | null, minimumHistoricalYear?: number | null, maximumHistoricalYear?: number | null, leadTitle?: string | null, leadParagraph?: string | null, features: (
+    { id: string, name: string, themeIdentifier?: string | null, owner?: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear?: number | null, modelEndYear: number, referenceYear?: number | null, minimumHistoricalYear: number, maximumHistoricalYear?: number | null, leadTitle?: string | null, leadParagraph?: string | null, features: (
       { baselineVisibleInGraphs: boolean }
       & { __typename?: 'InstanceFeaturesType' }
     ) }
@@ -679,28 +679,17 @@ export type GetNetEmissionsQuery = (
 );
 
 export type DimensionalPlotFragment = (
-  { id: string, unit: (
+  { id: string, sources: Array<string>, unit: (
     { htmlLong: string }
     & { __typename?: 'UnitType' }
   ), nodes: Array<(
-    { id: string, label: string }
+    { id: string, label: string, color?: string | null }
     & { __typename?: 'FlowNodeType' }
   )>, links: Array<(
-    { year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null> }
+    { year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null>, absoluteSourceValues: Array<number> }
     & { __typename?: 'FlowLinksType' }
   )> }
   & { __typename?: 'DimensionalFlowType' }
-);
-
-export type GetActiveScenarioQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetActiveScenarioQuery = (
-  { activeScenario?: (
-    { id?: string | null, isActive?: boolean | null, isDefault?: boolean | null, name?: string | null }
-    & { __typename?: 'ScenarioType' }
-  ) | null }
-  & { __typename?: 'Query' }
 );
 
 export type GetNodesQueryVariables = Exact<{ [key: string]: never; }>;

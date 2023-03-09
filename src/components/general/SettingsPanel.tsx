@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { Container, Row, Col, Button } from 'reactstrap';
 import { Sliders } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
-import SiteContext, { useSite } from 'context/site';
-import { yearRangeVar, settingsVar } from 'common/cache';
+import { useSite } from 'context/site';
+import { yearRangeVar, } from 'common/cache';
 import ScenarioSelector from './ScenarioSelector';
 import TotalEmissionsBar from './TotalEmissionsBar';
 import GlobalParameters from './GlobalParameters';
@@ -43,11 +43,17 @@ const ExtraSettingsSection = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const SettingsPanel = () => {
-  const settings = useReactiveVar(settingsVar);
-  const defaultYearRange = [settings.minYear, settings.targetYear];
+type SettingsPanelProps = {
+  defaultYearRange?: number[],
+}
 
+const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
+  if (!(process.browser)) {
+    return null;
+  }
   const site = useSite();
+  const defaultYearRange = props.defaultYearRange ?? [site.minYear, site.targetYear];
+
   const instance = useInstance();
   const [showExtras, setShowExtras] = useState(false);
   const hasGlobalParameters = (
@@ -56,7 +62,7 @@ const SettingsPanel = () => {
   );
 
   return (
-    <FixedPanel expanded>
+    <FixedPanel>
       <MainSettingsSection>
       <Container>
         <Row>
@@ -68,11 +74,11 @@ const SettingsPanel = () => {
           <Col md="2" sm="3" xs="4">
             {true && (
             <RangeSelector
-              min={settings.minYear}
-              max={settings.maxYear}
+              min={site.minYear}
+              max={site.maxYear}
               initMin={defaultYearRange[0]}
               initMax={defaultYearRange[1]}
-              baseYear={instance.referenceYear ?? settings.baseYear}
+              baseYear={instance.referenceYear ?? site.baseYear}
               handleChange={yearRangeVar}
             />
             )}

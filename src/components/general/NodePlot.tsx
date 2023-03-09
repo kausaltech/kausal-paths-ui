@@ -3,11 +3,11 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { tint, transparentize } from 'polished';
 import styled, { ThemeContext } from 'styled-components';
-import { settingsVar } from 'common/cache';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import CsvDownload from 'react-json-to-csv';
 import { metricToPlot } from 'common/preprocess';
-import SiteContext from 'context/site';
+import SiteContext, { useSite } from 'context/site';
+import type Plotly from 'plotly.js';
 import { gql } from '@apollo/client';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -37,15 +37,15 @@ const NodePlot = (props) => {
 
   const { t } = useTranslation();
   const theme = useContext(ThemeContext);
-  const site = useContext(SiteContext);
+  const site = useSite();
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
   const plotColor = color || theme.graphColors.blue070;
-  const shapes = [];
-  const plotData = [];
+  const shapes: Partial<Plotly.Shape>[] = [];
+  const plotData: Partial<Plotly.PlotData>[] = [];
   const rangeMode = quantity === 'emissions' ? 'tozero' : 'normal';
 
-  const formatHover = (name, color) => {
+  const formatHover = (name: string, color: string) => {
     const out = {
       hovertemplate: `${name}<br />%{x|%Y}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
       hoverlabel: {
@@ -70,13 +70,14 @@ const NodePlot = (props) => {
 
   // create downloadable table
   const tableColumns = [
-    t('table-year'),
-    t('table-historical'),
-    t('table-scenario-forecast'),
-    settingsVar().baselineName,
-    t('table-action-impact'),
+    t('table-year')!,
+    t('table-historical')!,
+    t('table-scenario-forecast')!,
+    site.baselineName,
+    t('table-action-impact')!,
   ];
 
+  console.log(historical.x);
   const downloadableHistorical = historical.x.map((date, index) => (
     {
       [tableColumns[0]]: date,
@@ -122,7 +123,7 @@ const NodePlot = (props) => {
       line: {
         color: plotColor,
         shape: 'spline',
-        width: '3',
+        width: 3,
       },
       fillcolor: plotColor,
       smoothing: true,
@@ -134,7 +135,7 @@ const NodePlot = (props) => {
   const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
   // Two-entry trace to join historical and scenario together
   if (historical?.x && forecast?.x) {
-    const joinTrace = {
+    const joinTrace: Plotly.PlotData = {
       x: [historical.x[historical.x.length - 1], forecast.x[0]],
       y: [historical.y[historical.y.length - 1], forecast.y[0]],
       xaxis: 'x2',
@@ -144,7 +145,7 @@ const NodePlot = (props) => {
       type: 'scatter',
       line: {
         color: scenarioPlotColor,
-        width: '3',
+        width: 3,
         dash: 'dot',
       },
       mode: 'lines',
@@ -163,12 +164,12 @@ const NodePlot = (props) => {
       xaxis: 'x2',
       yaxis: 'y1',
       marker: { size: 8 },
-      name: t('plot-scenario'),
+      name: t('plot-scenario')!,
       type: 'scatter',
       line: {
         color: scenarioPlotColor,
         shape: 'spline',
-        width: '3',
+        width: 3,
       },
       smoothing: true,
       fillcolor: scenarioPlotColor,
@@ -193,18 +194,17 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
-        name: t('plot-action-impact'),
+        name: t('plot-action-impact')!,
         type: 'scatter',
         fill: 'tonexty',
         fillcolor: transparentize(0.85, scenarioPlotColor),
         line: { width: 0 },
-        smoothing: true,
         ...formatHover(t('plot-without-action'), tint(0.45, scenarioPlotColor)),
       },
     );
   }
 
-  if (!isAction && site.showBaseline) {
+  if (!isAction && site.baselineName) {
     plotData.push(
       {
         x: baselineForecast.x,
@@ -212,16 +212,15 @@ const NodePlot = (props) => {
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
-        name: settingsVar().baselineName,
+        name: site.baselineName!,
         type: 'scatter',
         line: {
           color: theme.graphColors.grey060,
           shape: 'spline',
-          width: '2',
+          width: 2,
           dash: 'dash',
         },
-        smoothing: true,
-        ...formatHover(settingsVar().baselineName, theme.graphColors.grey030),
+        ...formatHover(site.baselineName!, theme.graphColors.grey030),
       },
     );
   }
@@ -245,7 +244,7 @@ const NodePlot = (props) => {
       y: [targetYearGoal],
       type: 'scatter',
       xaxis: 'x2',
-      yaxis: 'y1',
+      yaxis: 'y',
       name: `${t('target')} ${targetYear}`,
       line: {
         color: theme.graphColors.red070,
@@ -255,7 +254,7 @@ const NodePlot = (props) => {
     });
   }
   const nrYears = endYear - startYear;
-  const layout = {
+  const layout: Partial<Plotly.Layout> = {
     height: 300,
     margin: {
       t: 24,
@@ -265,13 +264,13 @@ const NodePlot = (props) => {
     },
     xaxis: {
       domain: [0, 0.03],
-      anchor: 'y1',
+      anchor: 'y',
       nticks: 1,
       ticklen: 10,
     },
     yaxis: {
       domain: [0, 1],
-      anchor: 'x1',
+      anchor: 'x',
       ticklen: 10,
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
@@ -317,11 +316,12 @@ const NodePlot = (props) => {
         useResizeHandler
         style={{ width: '100%' }}
         config={{ displayModeBar: false }}
+        noValidate
       />
       <Tools>
         <CsvDownload 
           data={downloadableTable}
-          filename={`${metric.id}.csv`}
+          filename={`${metric?.id}.csv`}
           className="btn btn-link btn-sm"
         >
           <CloudArrowDown />

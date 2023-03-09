@@ -11,7 +11,7 @@
     "graphql-codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
-    "@apollo/client": "^3.7.10",
+    "@apollo/client": ">=3.8.0-alpha.8",
     "@babel/eslint-parser": "^7.19.1",
     "@kausal/themes": "^0.5.2",
     "@n8tb1t/use-scroll-position": "^2.0.3",

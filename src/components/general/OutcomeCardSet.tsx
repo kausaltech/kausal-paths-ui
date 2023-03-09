@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
 import { useSpring, animated, config } from 'react-spring';
@@ -7,6 +7,7 @@ import { getMetricValue, getOutcomeTotal } from 'common/preprocess';
 import OutcomeNodeContent from 'components/general/OutcomeNodeContent';
 import OutcomeCard from './OutcomeCard';
 import InputNodeCards from './InputNodeCards';
+import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const CardSet = styled(animated.div)<{color?: string}>`
   position: relative;
@@ -176,8 +177,18 @@ function orderByMetric(nodes) {
   });
 }
 
+type OutcomeCardSetProps = {
+  nodeMap: Map<string, OutcomeNodeFieldsFragment>,
+  rootNode: OutcomeNodeFieldsFragment,
+  parentColor: string,
+  startYear: number,
+  endYear: number,
+  activeNodeId: string,
+  lastActiveNodeId: string,
+  setLastActiveNodeId: (s: string) => void,
+}
 
-const OutcomeCardSet = (props) => {
+const OutcomeCardSet = (props: OutcomeCardSetProps) => {
   const {
     nodeMap,
     rootNode,
@@ -213,15 +224,15 @@ const OutcomeCardSet = (props) => {
     from: { opacity: 0 },
   });
 
-  const handleHover = (evt) => {
+  const handleHover = useCallback((evt) => {
     setHoveredNodeId(evt);
-  };
+  }, [setHoveredNodeId]);
 
-  const handleClick = (segmentId) => {
+  const handleClick = useCallback((segmentId) => {
     // if active node clicked, make its parent active node
     const newActiveNode = segmentId === activeNodeId ? rootNode.id : segmentId;
     setLastActiveNodeId(newActiveNode);
-  };
+  }, [activeNodeId, rootNode.id, setLastActiveNodeId]);
 
   // const nodesTotal = getMetricValue(rootNode.node, endYear);
   // const nodesBase = getMetricValue(rootNode.node, startYear);

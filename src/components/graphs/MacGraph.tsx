@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
@@ -56,7 +56,6 @@ const formatNumber = (value, language) => {
 };
 
 function MacGraph(props) {
-
   const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actionIds, costName, costUnit, actionGroups } = props;
   const theme = useTheme();
   const { i18n } = useTranslation();
@@ -88,7 +87,7 @@ function MacGraph(props) {
     return totalSaving - barWidth + (barWidth/2);
   }  );
 
-  const negativeSide = negativeSideWidth > 0 ? [
+  const negativeSide = useMemo(() => (negativeSideWidth > 0 ? [
     {
     type: 'rect',
     // x-reference is assigned to the x-values
@@ -117,8 +116,8 @@ function MacGraph(props) {
         width: 1
       }
     }
-  ] : [];
-  const layout = {
+  ] : []), [theme, negativeSideWidth]);
+  const layout = useMemo(() => ({
     barmode: 'relative',
     hoverlabel: { 
       bgcolor: theme.themeColors.white,
@@ -130,14 +129,11 @@ function MacGraph(props) {
     },
     yaxis: {
       title: `${efficiencyName} (${efficiencyUnit})`
-/*      title: "Marginalnetto-kostnad",*/
     },
     xaxis: {
       ticksuffix: ` ${impactUnit}`,
       title: `${impactName} (${impactUnit})`,
       showgrid: true,
-/*      title: "Energibesparing",*/
-   /*   showticklabels: false, */
     },
     margin: {
       l: 50,
@@ -149,9 +145,9 @@ function MacGraph(props) {
     shapes: negativeSide,
     paper_bgcolor: theme.themeColors.white,
     plot_bgcolor: theme.themeColors.white,
-  };
+  }), [theme, efficiencyName, efficiencyUnit, impactUnit, impactName, negativeSide]);
 
-  const handleHover = (evt) => {
+  const handleHover = useCallback((evt) => {
     // console.log("HOVERED", evt);
     const hoveredIndex = evt.points[0].pointIndex;
     //const hoverColors = data.colors;
@@ -159,10 +155,9 @@ function MacGraph(props) {
     //setBarColors(hoverColors);
     setHoverId(hoveredIndex);
     return null;
-  };
+  }, [setHoverId]);
 
-  return (
-  <GraphContainer>
+  const plot = useMemo(() => (
     <Plot
       data={[{
         type: 'bar',
@@ -192,6 +187,11 @@ function MacGraph(props) {
       config={{ displayModeBar: false }}
       onHover={(evt) => handleHover(evt)}
     />
+  ), [data, theme, layout, handleHover])
+
+  return (
+  <GraphContainer>
+    { plot }
     { hoverId !== null && 
     <ActionDescription>
       <a href={`/actions/${actionIds[hoverId]}/`}>
