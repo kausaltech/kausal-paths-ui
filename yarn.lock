@@ -5585,6 +5585,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cytoscape-dagre@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "@types/cytoscape-dagre@npm:2.3.0"
+  dependencies:
+    "@types/cytoscape": "*"
+  checksum: c7efab5f01dd8d8ee6a97c17462e663b007ce0b67ae8a32945a8c92189378430c4af0e2e8188761c2d0552f5cd6918a36ddea76e9e2593c6e20636bfa7731216
+  languageName: node
+  linkType: hard
+
+"@types/cytoscape@npm:*, @types/cytoscape@npm:^3.19.9":
+  version: 3.19.9
+  resolution: "@types/cytoscape@npm:3.19.9"
+  checksum: 773e7c73198a0dc9fe8fe708aca47af5e1fc47ba6e3138e37e3de23cd336441dd79d2a0215473c755a6bdd9842e3ed83e2e6d51abd128a34a5680fc10b3402b5
+  languageName: node
+  linkType: hard
+
 "@types/d3-format@npm:^3.0.1":
   version: 3.0.1
   resolution: "@types/d3-format@npm:3.0.1"
@@ -14520,6 +14536,8 @@ __metadata:
     "@types/chroma-js": ^2.4.0
     "@types/cookie-parser": ^1.4.3
     "@types/cookie-session": ^2.0.44
+    "@types/cytoscape": ^3.19.9
+    "@types/cytoscape-dagre": ^2.3.0
     "@types/d3-format": ^3.0.1
     "@types/express": ^4.17.17
     "@types/express-session": ^1.17.6

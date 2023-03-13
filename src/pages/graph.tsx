@@ -4,7 +4,7 @@ import CytoGraph from 'components/CytoGraph';
 import GraphQLError from 'components/common/GraphQLError';
 
 const GET_NODES = gql`
-query GetNodes {
+query GetCytoscapeNodes {
   nodes {
     id
     name

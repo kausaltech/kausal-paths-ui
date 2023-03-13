@@ -1,13 +1,12 @@
-import React from 'react';
-import PropTypes, { node } from 'prop-types';
-import {
-  Col, Container, Row, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem,
-} from 'reactstrap';
-import styled, { withTheme } from 'styled-components';
-import { withRouter } from 'next/router'
+import React, { useEffect, useRef } from 'react';
+import styled from 'styled-components';
+import { useRouter, } from 'next/router'
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
+import { getContrast, } from 'polished';
+import { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
+import { useTheme } from 'common/theme';
 
 cytoscape.use(dagre);
 cytoscapeNodeHtmlLabel(cytoscape);
@@ -52,40 +51,21 @@ function wordWrap(inputStr, maxWidth, newLineStr = '\n') {
   return res + str;
 }
 
-/* eslint-disable react/static-property-placement */
-class CytoGraph extends React.Component {
-  static propTypes = {
-    nodes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  };
+type CytoGraphProps = {
+  nodes: GetCytoscapeNodesQuery['nodes'],
+}
 
-  constructor(props) {
-    super(props);
-    this.visRef = React.createRef();
-  }
+export default function CytoGraph(props: CytoGraphProps) {
+  const { nodes } = props;
+  const router = useRouter();
+  const theme = useTheme();
+  const visRef = useRef<HTMLDivElement>(null);
 
-  componentDidMount() {
-    const { nodes } = this.props;
-
-    if (!nodes) {
-      return;
-    }
-    this.renderNetwork();
-  }
-
-  componentDidUpdate() {
-    const { nodes } = this.props;
-
-    if (!nodes) {
-      return;
-    }
-    this.renderNetwork();
-  }
-
-  renderNetwork() {
-    const visNode = this.visRef.current;
-    const { nodes, theme, router } = this.props;
+  useEffect(() => {
+    const visNode = visRef.current;
+    if (!visNode) return;
     const elements = [];
-
+  
     // Nodes
     nodes.forEach((node) => {
       function getBackgroundColor() {
@@ -118,11 +98,16 @@ class CytoGraph extends React.Component {
         };
         label += `\n${hist.year}: ${hist.value} ${hist.unit}`
       }
+      const bgColor = getBackgroundColor();
+      let textColor = '#000000';
+      const whiteContrast = getContrast(bgColor, textColor);
+      if (whiteContrast < 8) textColor = '#ffffff'
       const element = {
         group: 'nodes',
         data: {
           id: node.id,
-          backgroundColor: getBackgroundColor(),
+          backgroundColor: bgColor,
+          textColor,
           name: node.name,
           hist,
           label: label,
@@ -177,7 +162,8 @@ class CytoGraph extends React.Component {
           style: {
             shape: 'rectangle',
             'background-color': 'data(backgroundColor)',
-            color: '#000000',
+            //color: 'data(textColor)',
+            color: '#cccccc',
             width: 'label',
             height: 'label',
             'text-valign': 'center',
@@ -214,7 +200,6 @@ class CytoGraph extends React.Component {
       const nodeId = clickedNode.data('id');
       router.push(`/node/${nodeId}`);
     });
-    this.cy = cy;
     cy.nodeHtmlLabel([{
       query: 'node',
       valign: "center",
@@ -224,16 +209,12 @@ class CytoGraph extends React.Component {
       tpl: (data) => {
         const name = wordWrap(data.name, 30, '<br />');
         const histStr = data.hist ? `<br />${data.hist.year}: <em>${data.hist.value} ${data.hist.unit}</em>` : '';
-        return `<div><strong>${name}</strong>${histStr}</div>`;
+        return `<div style="color: ${data.textColor}"><strong>${name}</strong>${histStr}</div>`;
       }
     }])
-  }
+  }, [visRef, nodes, router]);
 
-  render() {
-    return (
-      <VisContainer ref={this.visRef} />
-    );
-  }
+  return (
+    <VisContainer ref={visRef} />
+  );
 }
-
-export default withRouter(withTheme(CytoGraph));
