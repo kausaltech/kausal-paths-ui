@@ -172,12 +172,12 @@ export default function ActionPage() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      { !flowPlot && <CausalGrid
+      <CausalGrid
         nodes={causalNodes}
         yearRange={yearRange}
         actionIsOff={!isActive}
         actionId={action.id}
-      />}
+      />
       <SettingsPanel
         defaultYearRange={[site.latestMetricYear, site.maxYear]}
       />
