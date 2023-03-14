@@ -56,7 +56,7 @@ export type GetActionContentQuery = (
     )>, inputNodes: Array<(
       { id: string }
       & { __typename?: 'NodeType' }
-    )>, parameters?: Array<(
+    )>, parameters: Array<(
       { id?: string | null, description?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
         { id: string }
         & { __typename?: 'NodeType' }
@@ -83,7 +83,7 @@ export type GetActionContentQuery = (
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'UnknownParameterType' }
-    ) | null> | null, dimensionalFlow?: (
+    )>, dimensionalFlow?: (
       { id: string, sources: Array<string>, unit: (
         { htmlLong: string }
         & { __typename?: 'UnitType' }
@@ -135,7 +135,7 @@ export type GetActionContentQuery = (
           & { __typename?: 'YearlyValue' }
         )> | null }
         & { __typename?: 'ForecastMetricType' }
-      ) | null, parameters?: Array<(
+      ) | null, parameters: Array<(
         { description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
           { id: string }
           & { __typename?: 'NodeType' }
@@ -159,7 +159,7 @@ export type GetActionContentQuery = (
           & { __typename?: 'NodeType' }
         ) | null }
         & { __typename: 'UnknownParameterType' }
-      ) | null> | null, metric?: (
+      )>, metric?: (
         { name?: string | null, id?: string | null, unit?: (
           { htmlShort: string }
           & { __typename?: 'UnitType' }
@@ -231,19 +231,19 @@ export type GetActionListQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetActionListQuery = (
   { instance: (
-    { actionGroups?: Array<(
-      { id?: string | null, name?: string | null, color?: string | null, actions?: Array<(
+    { actionGroups: Array<(
+      { id: string, name: string, color?: string | null, actions: Array<(
         { id: string }
         & { __typename?: 'NodeType' }
-      ) | null> | null }
+      )> }
       & { __typename?: 'ActionGroupType' }
-    )> | null }
+    )> }
     & { __typename?: 'InstanceType' }
   ), actions: Array<(
     { id: string, name: string, shortDescription?: string | null, color?: string | null, decisionLevel?: DecisionLevel | null, quantity?: string | null, unit?: (
       { htmlShort: string }
       & { __typename?: 'UnitType' }
-    ) | null, parameters?: Array<(
+    ) | null, parameters: Array<(
       { id?: string | null, description?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
         { id: string }
         & { __typename?: 'NodeType' }
@@ -270,7 +270,7 @@ export type GetActionListQuery = (
         & { __typename?: 'NodeType' }
       ) | null }
       & { __typename: 'UnknownParameterType' }
-    ) | null> | null, inputNodes: Array<(
+    )>, inputNodes: Array<(
       { id: string }
       & { __typename?: 'NodeType' }
     )>, outputNodes: Array<(
@@ -292,48 +292,48 @@ export type GetActionListQuery = (
       )> }
       & { __typename?: 'ForecastMetricType' }
     ) | null, group?: (
-      { id?: string | null, name?: string | null, color?: string | null }
+      { id: string, name: string, color?: string | null }
       & { __typename?: 'ActionGroupType' }
     ) | null }
     & { __typename?: 'NodeType' }
   )>, actionEfficiencyPairs: Array<(
-    { id?: string | null, label?: string | null, plotLimitEfficiency?: number | null, invertCost?: boolean | null, invertImpact?: boolean | null, efficiencyUnit?: (
+    { id: string, label: string, plotLimitEfficiency?: number | null, invertCost: boolean, invertImpact: boolean, efficiencyUnit: (
       { htmlShort: string }
       & { __typename?: 'UnitType' }
-    ) | null, costUnit?: (
+    ), costUnit: (
       { htmlShort: string }
       & { __typename?: 'UnitType' }
-    ) | null, impactUnit?: (
+    ), impactUnit: (
       { htmlShort: string }
       & { __typename?: 'UnitType' }
-    ) | null, costNode?: (
+    ), costNode: (
       { id: string, name: string, shortDescription?: string | null, unit?: (
         { short: string }
         & { __typename?: 'UnitType' }
       ) | null }
       & { __typename?: 'NodeType' }
-    ) | null, impactNode?: (
+    ), impactNode: (
       { id: string, name: string, shortDescription?: string | null, unit?: (
         { short: string }
         & { __typename?: 'UnitType' }
       ) | null }
       & { __typename?: 'NodeType' }
-    ) | null, actions?: Array<(
-      { efficiencyDivisor?: number | null, action?: (
+    ), actions: Array<(
+      { efficiencyDivisor?: number | null, action: (
         { id: string, group?: (
-          { id?: string | null, name?: string | null, color?: string | null }
+          { id: string, name: string, color?: string | null }
           & { __typename?: 'ActionGroupType' }
         ) | null }
         & { __typename?: 'NodeType' }
-      ) | null, costValues?: Array<(
+      ), costValues: Array<(
         { value: number, year: number }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null, impactValues?: Array<(
+      ) | null>, impactValues: Array<(
         { value: number, year: number }
         & { __typename?: 'YearlyValue' }
-      ) | null> | null }
+      ) | null> }
       & { __typename?: 'ActionEfficiency' }
-    ) | null> | null }
+    )> }
     & { __typename?: 'ActionEfficiencyPairType' }
   )> }
   & { __typename?: 'Query' }
@@ -365,10 +365,10 @@ export type OutcomeNodeFieldsFragment = (
     { id: string }
     & { __typename?: 'NodeType' }
   )>, upstreamActions?: Array<(
-    { id: string, name: string, parameters?: Array<(
+    { id: string, name: string, parameters: Array<(
       { isCustomized: boolean }
       & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
-    ) | null> | null }
+    )> }
     & { __typename?: 'NodeType' }
   )> | null }
   & { __typename?: 'NodeType' }
@@ -417,10 +417,10 @@ export type GetPageQuery = (
           { id: string }
           & { __typename?: 'NodeType' }
         )>, upstreamActions?: Array<(
-          { id: string, name: string, parameters?: Array<(
+          { id: string, name: string, parameters: Array<(
             { isCustomized: boolean }
             & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
-          ) | null> | null }
+          )> }
           & { __typename?: 'NodeType' }
         )> | null }
         & { __typename?: 'NodeType' }
@@ -449,10 +449,10 @@ export type GetPageQuery = (
         { id: string }
         & { __typename?: 'NodeType' }
       )>, upstreamActions?: Array<(
-        { id: string, name: string, parameters?: Array<(
+        { id: string, name: string, parameters: Array<(
           { isCustomized: boolean }
           & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
-        ) | null> | null }
+        )> }
         & { __typename?: 'NodeType' }
       )> | null }
       & { __typename?: 'NodeType' }
@@ -692,10 +692,10 @@ export type DimensionalPlotFragment = (
   & { __typename?: 'DimensionalFlowType' }
 );
 
-export type GetNodesQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetNodesQuery = (
+export type GetCytoscapeNodesQuery = (
   { nodes: Array<(
     { id: string, name: string, color?: string | null, quantity?: string | null, isAction: boolean, unit?: (
       { htmlShort: string }

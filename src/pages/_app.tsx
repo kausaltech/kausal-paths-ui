@@ -1,5 +1,4 @@
-import { gql, ApolloProvider, ApolloClient, isApolloError } from '@apollo/client';
-import { useEffect } from 'react';
+import { ApolloProvider, ApolloClient, isApolloError, SuspenseCache } from '@apollo/client';
 import App, { AppContext, AppProps } from "next/app";
 import router from 'next/router';
 import { ThemeProvider } from 'styled-components';
@@ -17,9 +16,8 @@ import { yearRangeVar, activeScenarioVar } from 'common/cache';
 import InstanceContext, { GET_INSTANCE_CONTEXT, InstanceContextType } from 'common/instance';
 import SiteContext, { SiteContextType } from 'context/site';
 import Layout from 'components/Layout';
-import { GetActiveScenarioQuery, GetAvailableInstancesQuery, GetInstanceContextQuery, GetInstanceContextQueryVariables } from 'common/__generated__/graphql';
+import { GetAvailableInstancesQuery, GetInstanceContextQuery, GetInstanceContextQueryVariables } from 'common/__generated__/graphql';
 import { Theme } from '@kausal/themes/types';
-import { scenarioFragment } from 'common/queries/instance';
 import numbro from 'numbro';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
@@ -144,12 +142,13 @@ function PathsApp(props: PathsAppProps) {
     yearRangeVar([siteContext.baseYear ?? instance.minimumHistoricalYear, instance.targetYear ?? instance.modelEndYear]);
   }
 
+  const suspenseCache = new SuspenseCache();
   const component = <Component {...pageProps} />;
 
   return (
     <SiteContext.Provider value={siteContext}>
       <InstanceContext.Provider value={instanceContext}>
-        <ApolloProvider client={apolloClient}>
+        <ApolloProvider client={apolloClient} suspenseCache={suspenseCache}>
           <ThemeProvider theme={themeProps}>
             <ThemedGlobalStyles />
               <Layout>

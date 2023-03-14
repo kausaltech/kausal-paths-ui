@@ -12,6 +12,7 @@ import OutcomePage from 'components/pages/OutcomePage';
 import ActionListPage from 'components/pages/ActionListPage';
 import ErrorMessage from 'components/common/ErrorMessage';
 import { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
+import { Suspense } from 'react';
 
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
@@ -63,7 +64,9 @@ export default function Page({ path, headerExtra }) {
         </title>
       </Head>
       {headerExtra}
-      {pageContent}
+      <Suspense fallback={<ContentLoader />}>
+        {pageContent}
+      </Suspense>
     </>
   );
 }

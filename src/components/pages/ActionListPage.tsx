@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useReactiveVar, NetworkStatus, useSuspenseQuery_experimental } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import { activeScenarioVar, yearRangeVar, } from 'common/cache';
@@ -14,6 +14,7 @@ import ActionsMac from 'components/general/ActionsMac';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
 import { useSite } from 'context/site';
+import { GetActionListQuery, GetActionListQueryVariables, GetPageQuery } from 'common/__generated__/graphql';
 
 const HeaderSection = styled.div`
   padding: 4rem 0 10rem; 
@@ -59,13 +60,35 @@ const Description = styled.div`
 `;
 
 
-function ActionListPage(props) {
+export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
+  cumulativeImpact?: number,
+  cumulativeImpactUnit?: string,
+  cumulativeImpactName?: string,
+  efficiencyDivisor?: number,
+  cumulativeEfficiency?: number,
+  cumulativeEfficiencyUnit?: string,
+  cumulativeEfficiencyName?: string
+  cumulativeCost?: number,
+  cumulativeCostUnit?: string,
+  cumulativeCostName?: string,
+  efficiencyCap?: number,
+};
+
+type ActionListPageProps = {
+  page: NonNullable<GetPageQuery['page']> & {
+    __typename: 'ActionListPage',
+  }
+}
+
+function ActionListPage(props: ActionListPageProps) {
   const { t } = useTranslation();
   const { page } = props;
-  const { loading, error, data, previousData, networkStatus } = useQuery(GET_ACTION_LIST, {
-    notifyOnNetworkStatusChange: true,
-    fetchPolicy: 'cache-first',
-  });
+  const { error, data, loading, networkStatus, previousData } = (
+    useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
+      fetchPolicy: 'cache-first',
+      notifyOnNetworkStatusChange: true,
+    })
+  );
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
   const site = useSite();
@@ -73,54 +96,50 @@ function ActionListPage(props) {
   const [listType, setListType] = useState('list');
   const [ascending, setAscending] = useState(true);
   const [sortBy, setSortBy] = useState('cumulativeEfficiency');
-  const [activeEfficiency, setActiveEfficiency] = useState(0);
+  const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState('undefined');
 
-  const refetching = (networkStatus === NetworkStatus.refetch);
+  const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
 
-  if (loading && !previousData) {
-    return <ContentLoader />;
-  } if (error) {
+  // If we have action efficiency pairs, we augment the actions with the cumulative values
+  const reductionText = `(${t('reduction')})`;
+  const usableActions: ActionWithEfficiency[] = useMemo(() => (data?.actions || []).map((act) => {
+    const out: ActionWithEfficiency = {
+      ...act,
+    };
+    const efficiencyType = data?.actionEfficiencyPairs[activeEfficiency];
+    const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
+    if (!efficiencyType || !efficiencyAction) return out;
+
+    out.cumulativeImpact = (efficiencyType.invertImpact ? -1 : 1) * summarizeYearlyValuesBetween(efficiencyAction.impactValues, yearRange[0], yearRange[1]);
+    out.cumulativeCost = (efficiencyType.invertCost ? -1 : 1) * summarizeYearlyValuesBetween(efficiencyAction.costValues, yearRange[0], yearRange[1]);
+    out.efficiencyDivisor = efficiencyAction.efficiencyDivisor ?? undefined;
+    if (out.efficiencyDivisor !== undefined)
+      out.cumulativeEfficiency = out.cumulativeCost/Math.abs(out.cumulativeImpact)/out.efficiencyDivisor;
+
+    const efficiencyProps: Partial<ActionWithEfficiency> = {
+      cumulativeImpactUnit: efficiencyType?.impactUnit.htmlShort,
+      cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''}`,
+      cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
+      cumulativeCostName: efficiencyType?.costNode?.name,
+      cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.htmlShort,
+      cumulativeEfficiencyName: efficiencyType?.label,
+      efficiencyCap: efficiencyType?.plotLimitEfficiency ?? undefined,
+    };
+    Object.assign(out, efficiencyProps);
+    return out;
+  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id), [data]);
+
+  const refetching = networkStatus === NetworkStatus.refetch;
+
+  if (error) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
-  const hasEfficiency = data.actionEfficiencyPairs.length > 0;
-  // If we have action efficiency pairs, we augment the actions with the cumulative values
+  if (loading && !previousData) {
+    return <ContentLoader />
+  }
 
-  // summarizeYearlyValuesBetween(efficiencyAction?.impactValues, yearRange[0], yearRange[1])
-  const usableActions = data.actions.map(
-      (act) => {
-        const efficiencyAction = hasEfficiency ? data.actionEfficiencyPairs[activeEfficiency].actions.find((a) => a.action.id === act.id) : null;
-        const efficiencyType = data.actionEfficiencyPairs[activeEfficiency];
-        const cumulativeImpact = efficiencyAction 
-          ? (data.actionEfficiencyPairs[activeEfficiency].invertImpact ? -1 : 1) * summarizeYearlyValuesBetween(efficiencyAction?.impactValues, yearRange[0], yearRange[1])
-          : undefined;
-        const cumulativeCost = efficiencyAction
-          ? (data.actionEfficiencyPairs[activeEfficiency].invertCost ? -1 : 1) *summarizeYearlyValuesBetween(efficiencyAction?.costValues, yearRange[0], yearRange[1])
-          : undefined;
-        const efficiencyDivisor = efficiencyAction?.efficiencyDivisor;
-        //const cumulativeImpact = efficiencyAction?.cumulativeImpact;
-        //const cumulativeCost = efficiencyAction?.cumulativeCost;
-        const cumulativeEfficiency = efficiencyAction
-          ? cumulativeCost/Math.abs(cumulativeImpact)/efficiencyDivisor
-          : undefined;
-
-        const reductionText = `(${t('reduction')})`;
-        return {
-          ...act,
-          cumulativeImpact: efficiencyAction ? cumulativeImpact : undefined,
-          cumulativeImpactUnit: efficiencyType?.impactUnit.htmlShort,
-          cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''}`,
-          cumulativeCost: efficiencyAction ? cumulativeCost : undefined,
-          cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
-          cumulativeCostName: efficiencyType?.costNode?.name,
-          cumulativeEfficiency: cumulativeEfficiency,
-          cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.htmlShort,
-          cumulativeEfficiencyName: efficiencyType?.label,
-          efficiencyCap: efficiencyAction ? data?.actionEfficiencyPairs[activeEfficiency]?.plotLimitEfficiency : undefined,
-        }
-      }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id );
-  
   return (
   <>
     <HeaderSection>
@@ -184,7 +203,7 @@ function ActionListPage(props) {
                 id="impact"
                 name="select"
                 type="select"
-                onChange={(e) => setActiveEfficiency(e.target.value)}
+                onChange={(e) => setActiveEfficiency(Number(e.target.value))}
               >
                 { data.actionEfficiencyPairs.map((impactGroup, indx) =>(
                 <option value={indx} key={indx}>

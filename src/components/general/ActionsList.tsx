@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import ActionListCard from 'components/general/ActionListCard';
+import { ActionWithEfficiency } from 'components/pages/ActionListPage';
+import { useMemo } from 'react';
 
 const ActionListList = styled.ul`
   margin: 0 0 2rem;
@@ -7,7 +9,16 @@ const ActionListList = styled.ul`
   list-style: none;
 `;
 
-const ActionsList = (props) => {
+type ActionsListProps = {
+  actions: ActionWithEfficiency[],
+  displayType: 'displayTypeYearly',
+  yearRange: [number, number],
+  sortBy: string,
+  sortAscending: boolean,
+  refetching: boolean,
+}
+
+const ActionsList = (props: ActionsListProps) => {
   const { actions, displayType, yearRange, sortBy, sortAscending, refetching } = props;
 
   const sortActions = (a, b) => {
@@ -17,7 +28,9 @@ const ActionsList = (props) => {
     return sortAscending ? aValue - bValue : bValue - aValue;
   }
 
-  const sortedActions = actions.sort(sortActions);
+  const sortedActions = useMemo(() => {
+    return [...actions].sort(sortActions);
+  }, [actions]);
 
   return (
     <ActionListList>
@@ -27,7 +40,6 @@ const ActionsList = (props) => {
           action={action}
           displayType={displayType}
           displayYears={yearRange}
-          level={action.decisionLevel}
           refetching={refetching}
         />
       ))}

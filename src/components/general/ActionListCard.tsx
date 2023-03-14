@@ -8,8 +8,9 @@ import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import Badge from 'components/common/Badge';
 import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
+import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 
-const ActionItem = styled.li`
+const ActionItem = styled.li<{isActive: boolean}>`
   position: relative;
   margin-bottom: 1.5rem;
   color: ${(props) => (props.isActive ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050)};
@@ -70,13 +71,20 @@ const ActionState = styled.div`
   justify-content: space-between;
 `;
 
-const GroupTag = styled.div`
+const GroupTag = styled.div<{color?: string}>`
   font-size: 80%;
   color: ${(props) => props.color};
 `;
 
-const ActionListCard = (props) => {
-  const { action, displayType, displayYears, level, refetching } = props;
+type ActionListCardProps = {
+  action: ActionWithEfficiency,
+  displayType: string,
+  displayYears: [number, number],
+  refetching: boolean,
+}
+
+const ActionListCard = (props: ActionListCardProps) => {
+  const { action, displayType, displayYears, refetching } = props;
   const { t } = useTranslation();
 
   //console.log('ActionListCard', action);
@@ -107,7 +115,7 @@ const ActionListCard = (props) => {
           <ActionLink action={action}>
             <a>
               { action.group && (
-                <GroupTag color={action.group.color}>{action.group.name}</GroupTag>
+                <GroupTag color={action.group.color ?? undefined}>{action.group.name}</GroupTag>
               )}
               <h5>
                 {action.name}
@@ -115,7 +123,7 @@ const ActionListCard = (props) => {
             </a>
           </ActionLink>
           <ActionCategory>
-            { level === 'NATION' && (
+            { action.decisionLevel === 'NATION' && (
                 <Badge
                   color="neutralLight"
                 >
