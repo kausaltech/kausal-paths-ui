@@ -40,7 +40,7 @@
     "i18next-http-backend": "^2.1.1",
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
-    "next": "^13.2.3",
+    "next": "^13.2.4",
     "next-i18next": "^13.2.2",
     "numbro": "^2.3.6",
     "openid-client": "^5.4.0",
