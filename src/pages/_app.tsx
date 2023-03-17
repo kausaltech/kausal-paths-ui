@@ -98,6 +98,20 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
   },
   zuerich: {
     watchLink: null,
+    homeLink: [
+      {
+        id: 'hp-en',
+        lang: 'en',
+        title: 'Emissions',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-de',
+        lang: 'de',
+        title: 'Emissionen',
+        urlPath: '/',
+      },
+    ],
   },
 }
 
