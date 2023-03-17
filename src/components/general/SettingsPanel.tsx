@@ -67,12 +67,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
       <MainSettingsSection>
       <Container>
         <Row>
-          <Col md="2" sm="4" xs="8">
+          <Col md="2" sm="4" xs="12">
             { true && (
             <ScenarioSelector />
             )}
           </Col>
-          <Col md="2" sm="3" xs="4">
+          <Col md="2" sm="4" xs="6">
             {true && (
             <RangeSelector
               min={site.minYear}
@@ -84,7 +84,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
             />
             )}
           </Col>
-          <Col md="2" sm="3" xs="4">
+          <Col md="2" sm="4" xs="6">
             {true && (
             <GoalSelector />
             )}
@@ -97,7 +97,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
               <Sliders />
             </SettingsButton>
           }
-          <Col md="6" sm="5" xs="12" className="mt-3 mt-sm-0">
+          <Col md="6" sm="12" className="mt-3 mt-sm-0">
             { true && 
               <TotalEmissionsBar />
             }
