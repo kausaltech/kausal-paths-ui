@@ -5,10 +5,11 @@ import { Container, Row, Col, Button } from 'reactstrap';
 import { Sliders } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import { useSite } from 'context/site';
-import { yearRangeVar, } from 'common/cache';
-import ScenarioSelector from './ScenarioSelector';
-import TotalEmissionsBar from './TotalEmissionsBar';
-import GlobalParameters from './GlobalParameters';
+import { yearRangeVar, } from 'common/cache'
+import GoalSelector from 'components/general/GoalSelector';
+import ScenarioSelector from 'components/general/ScenarioSelector';
+import TotalEmissionsBar from 'components/general/TotalEmissionsBar';
+import GlobalParameters from 'components/general/GlobalParameters';
 import { useInstance } from 'common/instance';
 
 const FixedPanel = styled.div`
@@ -66,7 +67,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
       <MainSettingsSection>
       <Container>
         <Row>
-          <Col md="4" sm="4" xs="8">
+          <Col md="2" sm="4" xs="8">
             { true && (
             <ScenarioSelector />
             )}
@@ -81,6 +82,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
               baseYear={instance.referenceYear ?? site.baseYear}
               handleChange={yearRangeVar}
             />
+            )}
+          </Col>
+          <Col md="2" sm="3" xs="4">
+            {true && (
+            <GoalSelector />
             )}
           </Col>
           { hasGlobalParameters &&

@@ -20,11 +20,10 @@ const ACTIVATE_SCENARIO = gql`
 `;
 
 const StyledDropdown = styled(Dropdown)` 
-  min-width: 200px;
+  //min-width: 200px;
 
   .btn {
     width: 100%;
-    padding: 1rem;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;

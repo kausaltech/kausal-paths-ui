@@ -61,5 +61,6 @@
   "efficiency": "Cost effectiveness",
   "reduction": "reduction",
   "plot-choose-dimension": "Choose dimension",
-  "normalize-by": "Normalize by {{node}}"
+  "normalize-by": "Normalize by {{node}}",
+  "change-target": "Change target"
 }
