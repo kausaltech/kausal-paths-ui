@@ -86,26 +86,25 @@ const generatePlotFromNode = (
     parentValueArray.push(getPercentage(dataPoint, parentNode.metric.historicalValues));
   });
   if (site.baseYear && baseValue !== undefined) {
-    plotData.push(
-      {
-        x: [site.baseYear - 1, site.baseYear],
-        y: [baseValue, baseValue],
-        customdata: [parentBaseValue, parentBaseValue],
-        name: n.shortName || n.name,
-        showlegend: false,
-        type: 'scatter',
-        fill: 'tonexty',
-        line: {
-          color: '#ffffff',
-          width: 0.75,
-        },
-        stackgroup: `${id}group2`,
-        fillcolor: fillColor,
-        xaxis: 'x',
-        yaxis: 'y',
-        ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
-      }
-    );
+    const baseYearTrace: Plotly.Data = {
+      x: [site.baseYear - 1, site.baseYear],
+      y: [baseValue, baseValue],
+      customdata: [parentBaseValue, parentBaseValue],
+      name: n.shortName || n.name,
+      showlegend: false,
+      type: 'scatter',
+      fill: 'tonexty',
+      line: {
+        color: '#ffffff',
+        width: 0.75,
+      },
+      stackgroup: `${id}group2`,
+      fillcolor: fillColor,
+      xaxis: 'x',
+      yaxis: 'y',
+      ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
+    };
+    plotData.push(baseYearTrace);
   };
 
   plotData.push(
@@ -275,9 +274,9 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
         dash: 'dot',
       },
     });
-    if (endYear === site.maxYear) {
+    if (endYear === site.targetYear) {
       plotData.push({
-        x: [site.maxYear],
+        x: [site.targetYear],
         y: [targetYearGoal],
         type: 'scatter',
         xaxis: 'x2',
@@ -338,7 +337,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     shapes,
   }
 
-  if (instance.features.baselineVisibleInGraphs) {
+  if (instance.features.baselineVisibleInGraphs || site.baseYear) {
     layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
     layout.xaxis = {
       domain: [0, 0.03],
