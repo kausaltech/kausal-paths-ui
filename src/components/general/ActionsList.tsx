@@ -21,16 +21,19 @@ type ActionsListProps = {
 const ActionsList = (props: ActionsListProps) => {
   const { actions, displayType, yearRange, sortBy, sortAscending, refetching } = props;
 
-  const sortActions = (a, b) => {
-    let aValue = a[sortBy];
-    let bValue = b[sortBy];
+  // possible sort: default, cumulativeImpact, cumulativeCost, cumulativeEfficiency
 
+  const sortActions = (a, b) => {
+    if (sortBy === 'default') return sortAscending ? 0 : -1;
+    // check if we are using efficiency
+    const aValue = a[sortBy] ? a[sortBy] : a.impactMetric?.cumulativeForecastValue;
+    const bValue = b[sortBy] ? b[sortBy] : b.impactMetric?.cumulativeForecastValue;
     return sortAscending ? aValue - bValue : bValue - aValue;
   }
 
   const sortedActions = useMemo(() => {
     return [...actions].sort(sortActions);
-  }, [actions]);
+  }, [actions, sortBy, sortAscending]);
 
   return (
     <ActionListList>

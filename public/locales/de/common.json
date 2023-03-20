@@ -45,5 +45,10 @@
   "total-impact": "Gesamtauswirkungen",
   "will_be_implemented": "Wird umgesetzt",
   "plot-choose-dimension": "Dimension",
-  "normalize-by": "Pro {{node}} normalisieren"
+  "normalize-by": "Pro {{node}} normalisieren",
+  "change-target": "Wechsle Ziel",
+  "actions-count": "{{ count }} maßnahmen",
+  "actions-sort-impact": "Auswirkung",
+  "actions-sort-by": "Sortieren nach",
+  "actions-sort-default": "Standard"
 }
