@@ -57,5 +57,6 @@
   "actions-sort-cost": "Kustannus",
   "mac-axis-impact": "vaikutus",
   "efficiency": "Kustannustehokkuus",
-  "reduction": "vähennys"
+  "reduction": "vähennys",
+  "change-target": "Vaihda tavoite"
 }

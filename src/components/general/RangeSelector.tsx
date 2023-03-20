@@ -15,10 +15,10 @@ const SectionWrapper = styled.div`
 const PopoverWrapper = styled.div`
   .btn {
     width: 100%;
-    padding: 1rem .5rem;
-    text-align: center;
+    text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    font-weight: 400;
   }
 `;
 
@@ -111,13 +111,15 @@ const RangeSelector = (props: RangeSelectorProps) => {
     }
   };
 
-  const isCustom = (baseYearActive ? initMin !== baseYear : initMin !== values[0]) || (baseYearActive ? initMax !== values[0] : initMax !== values[1]);
+  const isCustom =
+    (baseYearActive ? initMin !== baseYear : initMin !== values[0])
+    || (baseYearActive ? initMax !== values[0] : initMax !== values[1]);
 
   return (
     <PopoverWrapper>
       <ButtonLabel>{t('comparing-years')}</ButtonLabel>
       <Button id="Popover1" type="button" color={`${isCustom ? 'secondary' : 'light'}`}>
-        {`${baseYearActive ? baseYear : values[0]}–${baseYearActive ? values[0] : values[1]}`}
+        {`${baseYearActive ? baseYear : values[0]} – ${baseYearActive ? values[0] : values[1]}`}
       </Button>
       <Popover
         placement="bottom"

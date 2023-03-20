@@ -37,7 +37,6 @@ query GetNetEmissions($node: ID!) {
 
 const EmissionsBar = styled.div`
   position: relative;
-  background-color: ${(props) => props.theme.themeColors.white};
   margin: 24px 0;
   margin-left: auto;
   max-width: 500px;
@@ -51,37 +50,45 @@ const BarLabel = styled.div<{side?: 'top' | undefined}>`
   line-height: 1;
   z-index: 1001;
   position: absolute;
-  padding: ${(props) => (props.side === 'top' ? '0 5px 24px 5px' : '24px 5px 0 5px')};
-  bottom: ${(props) => (props.side === 'top' ? '0' : '-32px')};
-  left: -2px;
-  border-left: 2px solid ${(props) => props.theme.graphColors.grey070};
+  padding: ${(props) => (props.side === 'top' ? `0 5px ${12+(props.placement*7)}px 5px` : `${24-(props.placement*7)}px 5px 0 5px`)};
+  bottom: ${(props) => (props.side === 'top' ? '0' : 'auto')};
+  left: -1px;
+  border-left: 1px solid ${(props) => props.theme.graphColors.grey070};
+  font-weight: 700;
 `;
 
 const Value = styled.div`
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 400;
 `;
 
 const Unit = styled.span`
   font-size: 0.75rem;
 `;
 
-const EmissionBar = styled.div<{barWidth: number, barColor: string}>`
+const EmissionBar = styled.div<{barWidth: number, barColor: string, placement: number}>`
   position: absolute;
-  top: 0;
+  top: ${(props) => props.placement * 7}px;
   right: 0;
-  height: 24px;
+  height: 6px;
   width: ${(props) => props.barWidth}%;
   background-color: ${(props) => props.barColor};
-  border: 2px solid ${(props) => props.theme.themeColors.white};
+  border-right: 1px solid ${(props) => props.theme.graphColors.grey070};
 `;
 
 const BarWithLabel = (props) => {
-  const { label, value, unit, barWidth, barColor, labelSide } = props;
+  const { label, value, unit, barWidth, barColor, labelSide, placement } = props;
 
   return (
-    <EmissionBar barWidth={barWidth} barColor={barColor}>
-      <BarLabel side={labelSide}>
+    <EmissionBar
+      barWidth={barWidth}
+      barColor={barColor}
+      placement={placement}
+    >
+      <BarLabel
+        side={labelSide}
+        placement={placement}
+      >
         {label}
         <Value>
           { beautifyValue(value) }
@@ -124,7 +131,7 @@ const TotalEmissionsBar = (props) => {
 
   const emissionsTarget = lastGoal.value;
   const maxEmission = _.max([emissionsNow, emissionsTotal, emissionsTarget])!;
-  const emissionsTotalColor = emissionsTotal > emissionsTarget ? theme.graphColors.red050 : theme.graphColors.green070;
+  const emissionsTotalColor = emissionsTotal > emissionsTarget ? theme.graphColors.red050 : theme.graphColors.green050;
   const emissionsNowWidth = (emissionsNow / maxEmission) * 100;
   const emissionsTotalWidth = (emissionsTotal / maxEmission) * 100;
   const emissionsTargetWidth = (emissionsTarget / maxEmission) * 100;
@@ -150,7 +157,7 @@ const TotalEmissionsBar = (props) => {
       label: `${t('target')} ${lastGoal.year}`,
       value: emissionsTarget,
       unit,
-      barColor: theme.graphColors.green030,
+      barColor: theme.graphColors.green050,
       barWidth: emissionsTargetWidth,
       labelSide: undefined,
     },
@@ -159,10 +166,11 @@ const TotalEmissionsBar = (props) => {
   return (
     <div>
       <EmissionsBar>
-        { bars.map((bar) => (
+        { bars.map((bar, index) => (
           <BarWithLabel
             {...bar}
             key={bar.label}
+            placement={index}
           />
         ))}
       </EmissionsBar>

@@ -26,7 +26,7 @@ const Layout = ({ children }) => {
   // Add extra pages that are not available in the backend
   site.demoPages?.map((page) => router.locale === page.lang && menuItems.push(page));
   // Add home page link if defined in instance
-  site.homeLink?.map((page) => router.locale === page.lang && menuItems.unshift(page));
+  site.homeLink?.map((page) => router.locale?.slice(0, 2) === page.lang && menuItems.unshift(page));
 
   menuItems.forEach((page)=> {
     if (pathname === page.urlPath) {
