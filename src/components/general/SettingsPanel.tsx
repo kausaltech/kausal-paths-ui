@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { Container, Row, Col, Button } from 'reactstrap';
@@ -62,6 +62,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
     site.availableNormalizations.length > 0
   );
 
+  const setYearRange = useCallback((newRange: [number, number]) => {
+    yearRangeVar(newRange);
+  }, [yearRangeVar]);
+
   return (
     <FixedPanel>
       <MainSettingsSection>
@@ -80,12 +84,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
               initMin={defaultYearRange[0]}
               initMax={defaultYearRange[1]}
               baseYear={instance.referenceYear ?? site.baseYear}
-              handleChange={yearRangeVar}
+              handleChange={setYearRange}
             />
             )}
           </Col>
           <Col md="2" sm="4" xs="6">
-            {true && (
+            {false && (
             <GoalSelector />
             )}
           </Col>
