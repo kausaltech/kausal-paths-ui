@@ -232,11 +232,19 @@ class DimensionalMetric {
 function formatHover(name: string, color: string, unit: string, predLabel: string | null, fontFamily?: string) {
   const predText = predLabel ? ` <i>(${predLabel})</i>` : '';
   const out: Partial<Plotly.PlotData> = {
+    /*
     hovertemplate: `${name}<br />` +
                    `%{x|%Y}: <b>%{y:,.3r}</b> ` +
                    `${unit}` +
                    `${predText}` + 
                    `<extra></extra>`,
+    */
+    hovertemplate:
+      `${name}<br />` +
+      `<b>%{y:,.3r}</b> ` +
+      `${unit}` +
+      `${predText}` +
+      `<extra></extra>`,
     hoverlabel: {
       bgcolor: color,
       font: {
@@ -349,6 +357,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         x: [data.historicalYears[lastHist], data.forecastYears[0]],
         y: [cv.historicalValues[lastHist], cv.forecastValues[0]],
         hoverinfo: 'skip',
+        hovertemplate: undefined,
         showlegend: false,
         fillcolor: tint(0.3, color),
       });
@@ -419,6 +428,8 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       b: 48,
       l: 12,
     },
+    hovermode: 'x unified',
+    hoverdistance: 10,
     yaxis: {
       domain: [0, 1],
       anchor: 'x',
@@ -442,6 +453,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       range: [`${startYear - 1}-11-01`, `${endYear}-02-01`],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
+      hoverformat: '%Y',
     },
     autosize: true,
     font: {
