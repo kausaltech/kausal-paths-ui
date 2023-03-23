@@ -31,6 +31,32 @@ if (process.browser) {
 const defaultSiteContext: {[key: string]: SiteContextType} = {
   sunnydale: {
     watchLink: null,
+    homeLink: [
+      {
+        id: 'hp-en',
+        lang: 'en',
+        title: 'Emissions',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-sv',
+        lang: 'sv',
+        title: 'Utsläpp',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-fi',
+        lang: 'fi',
+        title: 'Päästöt',
+        urlPath: '/',
+      },
+      {
+        id: 'hp-de',
+        lang: 'de',
+        title: 'Emissionen',
+        urlPath: '/',
+      },
+    ],
     demoPages: [
       {
         id: 's-en-1',
@@ -109,6 +135,17 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
         id: 'hp-de',
         lang: 'de',
         title: 'Emissionen',
+        urlPath: '/',
+      },
+    ],
+  },
+  longmont: {
+    watchLink: null,
+    homeLink: [
+      {
+        id: 'hp-en',
+        lang: 'en',
+        title: 'Emissions',
         urlPath: '/',
       },
     ],
