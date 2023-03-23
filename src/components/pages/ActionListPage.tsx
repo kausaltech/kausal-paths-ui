@@ -131,7 +131,7 @@ function ActionListPage(props: ActionListPageProps) {
     };
     Object.assign(out, efficiencyProps);
     return out;
-  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id), [data]);
+  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id), [data, actionGroup, activeEfficiency]);
 
   const refetching = networkStatus === NetworkStatus.refetch;
 
