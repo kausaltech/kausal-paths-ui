@@ -44,25 +44,18 @@ type MetricRow = {
   dimCats: DimCats,
 }
 
-type MetricValues = {
+type MetricCategoryValues = {
+  category: MetricDimensionCategory,
   forecastValues: (number | null)[],
   historicalValues: (number | null)[],
-}
+  isNegative: boolean,
+};
 
-type MetricYears = {
+type MetricSlice = {
   historicalYears: number[],
   forecastYears: number[],
-}
-
-type MetricSliceEntry = MetricValues & {
-  category: MetricDimensionCategory,
+  categoryValues: MetricCategoryValues[],
 };
-
-type MetricSlice = MetricYears & {
-  catVals: MetricSliceEntry[],
-};
-
-type FlattenedMetric = MetricYears & MetricValues;
 
 type MetricCategoryChoice = {
   [dim: string]: string | undefined,
@@ -116,6 +109,14 @@ class DimensionalMetric {
     return parts.join(' / ');
   }
 
+  getGoalsForChoice(categoryChoice: MetricCategoryChoice | null | undefined) {
+    const selectedCategories = categoryChoice ? Object.values(categoryChoice) : [];
+    const catStr = JSON.stringify(selectedCategories.sort()); // JS 🤮
+    const goals = this.data.goals.find(g => JSON.stringify([...g.categories].sort()) == catStr);
+    if (!goals) return null;
+    return goals.values;
+  }
+
   flatten(categoryChoice: MetricCategoryChoice | undefined) {
     const byYear: Map<number, number> = new Map();
     this.rows.forEach(row => {
@@ -143,10 +144,16 @@ class DimensionalMetric {
     });
     const historicalYears = this.data.years.filter(year => this.data.forecastFrom ? year < this.data.forecastFrom : true);
     const forecastYears = this.data.years.filter(year => this.data.forecastFrom ? year >= this.data.forecastFrom : false);
-  
-    const out: FlattenedMetric = {
-      forecastValues,
-      historicalValues,
+    const out: MetricSlice = {
+      categoryValues: [{
+        forecastValues,
+        historicalValues,
+        category: {
+          id: this.data.id,
+          label: this.data.name,
+        },
+        isNegative: false,
+      }],
       historicalYears,
       forecastYears,
     };
@@ -156,10 +163,6 @@ class DimensionalMetric {
   sliceBy(dimensionId: string, sort: boolean = false, categoryChoice: MetricCategoryChoice | undefined) {
     const byYear: Map<number, Map<string, number>> = new Map();
 
-    if (categoryChoice) {
-      console.log('catchoice', categoryChoice);
-    }
-    let nrRows = 0;
     this.rows.forEach(row => {
       const { year } = row;
 
@@ -174,7 +177,6 @@ class DimensionalMetric {
           return;
         }
       }
-      nrRows++;
       const cat = row.dimCats[dimensionId];
       let val = catVals.get(cat);
       if (val === undefined) {
@@ -185,7 +187,7 @@ class DimensionalMetric {
       catVals.set(cat, val);
     })
     const dim = this.data.dimensions.find(dim => dim.id === dimensionId)!;
-    const catValues = dim.categories.map(cat => {
+    const categoryValues: MetricCategoryValues[] = dim.categories.map(cat => {
       const historicalValues: (number | null)[] = [];
       const forecastValues: (number | null)[] = [];
       this.data.years.forEach(year => {
@@ -196,16 +198,18 @@ class DimensionalMetric {
           historicalValues.push(val);
         }
       });
+      const isNegative = (cat.order !== null && cat.order !== undefined) ? cat.order < 0 : false;
       return {
         category: cat,
         forecastValues,
         historicalValues,
+        isNegative,
       };
     });
     const historicalYears = this.data.years.filter(year => this.data.forecastFrom ? year < this.data.forecastFrom : true);
     const forecastYears = this.data.years.filter(year => this.data.forecastFrom ? year >= this.data.forecastFrom : false);
-    if (catValues.every(cv => cv.category.order != null)) {
-      catValues.sort((a, b) => (a.category.order! - b.category.order!));
+    if (categoryValues.every(cv => cv.category.order != null)) {
+      categoryValues.sort((a, b) => (a.category.order! - b.category.order!));
     } else {
       if (sort) {
         let idx = historicalYears.length - 1;
@@ -215,12 +219,12 @@ class DimensionalMetric {
           key = 'forecastValues';
         }
         if (idx >= 0) {
-          catValues.sort((a, b) => (b[key][idx] - a[key][idx]));
+          categoryValues.sort((a, b) => (b[key][idx] - a[key][idx]));
         }
       }
     }
     const out: MetricSlice = {
-      catVals: catValues,
+      categoryValues,
       historicalYears,
       forecastYears,
     };
@@ -240,7 +244,7 @@ function formatHover(name: string, color: string, unit: string, predLabel: strin
                    `<extra></extra>`,
     */
     hovertemplate:
-      `${name}<br />` +
+      `${name}: ` +
       `<b>%{y:,.3r}</b> ` +
       `${unit}` +
       `${predText}` +
@@ -285,11 +289,11 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   const sliceableDims = metric.dimensions.filter(dim => !sliceConfig.categories[dim.id]);
   const slicedDim = metric.dimensions.find(dim => dim.id === sliceConfig.dimensionId);
 
-  let data: FlattenedMetric | MetricSlice;
+  let slice: MetricSlice;
   if (slicedDim) {
-    data = cube.sliceBy(slicedDim.id, true, sliceConfig.categories);
+    slice = cube.sliceBy(slicedDim.id, true, sliceConfig.categories);
   } else {
-    data = cube.flatten(sliceConfig.categories);
+    slice = cube.flatten(sliceConfig.categories);
   }
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
@@ -316,17 +320,19 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   };
 
   let colors: string[];
-  if ('catVals' in data) {
-    colors = genColorsFromTheme(theme, data.catVals.length);
+  const nrCats = slice.categoryValues.length;
+  if (nrCats > 1) {
+    colors = genColorsFromTheme(theme, slice.categoryValues.length);
   } else {
     colors = [defaultColor]
   }
-  const hasHistorical = data.historicalYears.length > 0;
-  const hasForecast = data.forecastYears.length > 0;
+  const hasHistorical = slice.historicalYears.length > 0;
+  const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
   const unit = metric.unit.htmlShort;
 
-  const genTraces = ((cv: MetricSliceEntry, idx: number) => {
+  const genTraces = ((cv: MetricCategoryValues, idx: number) => {
+    const stackGroup = cv.isNegative ? 'neg' : 'pos';
     const color = cv.category.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
       name: cv.category.label,
@@ -342,22 +348,21 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     if (hasHistorical) {
       plotData.push({ 
         ...traceConfig,
-        x: data.historicalYears,
+        x: slice.historicalYears,
         y: cv.historicalValues,
-        ...filledStyles('hist'),
+        ...filledStyles(`${stackGroup}-hist`),
         ...formatHover(cv.category.label, color, unit, null, theme.fontFamily),
       })
     }
     if (hasHistorical && hasForecast) {
-      const lastHist = data.historicalYears.length - 1;
+      const lastHist = slice.historicalYears.length - 1;
       // Short trace to join historical and forecast series together
       plotData.push({
         ...traceConfig,
-        ...filledStyles('join'),
-        x: [data.historicalYears[lastHist], data.forecastYears[0]],
+        ...filledStyles(`${stackGroup}-join`),
+        x: [slice.historicalYears[lastHist], slice.forecastYears[0]],
         y: [cv.historicalValues[lastHist], cv.forecastValues[0]],
         hoverinfo: 'skip',
-        hovertemplate: undefined,
         showlegend: false,
         fillcolor: tint(0.3, color),
       });
@@ -365,9 +370,9 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     if (hasForecast) {
       plotData.push({
         ...traceConfig,
-        ...filledStyles('forecast'),
+        ...filledStyles(`${stackGroup}-forecast`),
         ...formatHover(cv.category.label, color, unit, predLabel, theme.fontFamily),
-        x: data.forecastYears,
+        x: slice.forecastYears,
         y: cv.forecastValues,
         showlegend: false,
         fillcolor: tint(0.3, color),
@@ -375,18 +380,26 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     }
   });
 
-  if ('catVals' in data) {
-    data.catVals.map((cv, idx) => genTraces(cv, idx));
-  } else {
-    genTraces({
-      forecastValues: data.forecastValues,
-      historicalValues: data.historicalValues,
-      category: {
-        id: metric.id,
-        label: metric.name,
-        color: defaultColor,
-      }
-    }, 0);
+  slice.categoryValues.forEach((cv, idx) => genTraces(cv, idx));
+
+  const goals = cube.getGoalsForChoice(sliceConfig.categories);
+  if (goals) {
+    const name = t('target');
+    plotData.push({
+      type: 'scatter',
+      name,
+      line: {
+        color: theme.graphColors.red070,
+        width: 2,
+        dash: 'dot',
+      },
+      marker: {
+        size: 8,
+      },
+      x: goals.map(v => v.year),
+      y: goals.map(v => v.value),
+      hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
+    })
   }
 
   /*
@@ -449,7 +462,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       domain: [0.075, 1],
       ticklen: 10,
       type: 'date',
-      dtick: nrYears > 15 ? 'M24' : 'M12',
+      dtick: nrYears > 30 ? 'M60' : (nrYears > 15 ? 'M24' : 'M12'),
       range: [`${startYear - 1}-11-01`, `${endYear}-02-01`],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
@@ -562,6 +575,13 @@ DimensionalNodePlot.fragment = gql`
           label
           color
           order
+        }
+      }
+      goals {
+        categories
+        values {
+          year
+          value
         }
       }
       unit {

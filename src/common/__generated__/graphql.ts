@@ -370,7 +370,28 @@ export type OutcomeNodeFieldsFragment = (
       & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
     )> }
     & { __typename?: 'NodeType' }
-  )> | null }
+  )> | null, metricDim?: (
+    { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+      { id: string, label: string, categories: Array<(
+        { id: string, label: string, color?: string | null, order?: number | null }
+        & { __typename?: 'MetricDimensionCategoryType' }
+      )> }
+      & { __typename?: 'MetricDimensionType' }
+    )>, goals: Array<(
+      { categories: Array<string>, values: Array<(
+        { year: number, value: number }
+        & { __typename?: 'MetricYearlyGoalType' }
+      )> }
+      & { __typename?: 'DimensionalMetricGoalEntry' }
+    )>, unit: (
+      { htmlShort: string }
+      & { __typename?: 'UnitType' }
+    ), normalizedBy?: (
+      { id: string, name: string }
+      & { __typename?: 'NodeType' }
+    ) | null }
+    & { __typename?: 'DimensionalMetricType' }
+  ) | null }
   & { __typename?: 'NodeType' }
 );
 
@@ -422,7 +443,28 @@ export type GetPageQuery = (
             & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
           )> }
           & { __typename?: 'NodeType' }
-        )> | null }
+        )> | null, metricDim?: (
+          { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+            { id: string, label: string, categories: Array<(
+              { id: string, label: string, color?: string | null, order?: number | null }
+              & { __typename?: 'MetricDimensionCategoryType' }
+            )> }
+            & { __typename?: 'MetricDimensionType' }
+          )>, goals: Array<(
+            { categories: Array<string>, values: Array<(
+              { year: number, value: number }
+              & { __typename?: 'MetricYearlyGoalType' }
+            )> }
+            & { __typename?: 'DimensionalMetricGoalEntry' }
+          )>, unit: (
+            { htmlShort: string }
+            & { __typename?: 'UnitType' }
+          ), normalizedBy?: (
+            { id: string, name: string }
+            & { __typename?: 'NodeType' }
+          ) | null }
+          & { __typename?: 'DimensionalMetricType' }
+        ) | null }
         & { __typename?: 'NodeType' }
       )>, metric?: (
         { id?: string | null, name?: string | null, unit?: (
@@ -454,7 +496,28 @@ export type GetPageQuery = (
           & { __typename?: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
         )> }
         & { __typename?: 'NodeType' }
-      )> | null }
+      )> | null, metricDim?: (
+        { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string, label: string, categories: Array<(
+            { id: string, label: string, color?: string | null, order?: number | null }
+            & { __typename?: 'MetricDimensionCategoryType' }
+          )> }
+          & { __typename?: 'MetricDimensionType' }
+        )>, goals: Array<(
+          { categories: Array<string>, values: Array<(
+            { year: number, value: number }
+            & { __typename?: 'MetricYearlyGoalType' }
+          )> }
+          & { __typename?: 'DimensionalMetricGoalEntry' }
+        )>, unit: (
+          { htmlShort: string }
+          & { __typename?: 'UnitType' }
+        ), normalizedBy?: (
+          { id: string, name: string }
+          & { __typename?: 'NodeType' }
+        ) | null }
+        & { __typename?: 'DimensionalMetricType' }
+      ) | null }
       & { __typename?: 'NodeType' }
     ) }
     & { __typename: 'OutcomePage' }
@@ -562,9 +625,15 @@ export type DimensionalNodeMetricFragment = (
     { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
       { id: string, label: string, categories: Array<(
         { id: string, label: string, color?: string | null, order?: number | null }
-        & { __typename?: 'DimensionCategoryType' }
+        & { __typename?: 'MetricDimensionCategoryType' }
       )> }
-      & { __typename?: 'DimensionType' }
+      & { __typename?: 'MetricDimensionType' }
+    )>, goals: Array<(
+      { categories: Array<string>, values: Array<(
+        { year: number, value: number }
+        & { __typename?: 'MetricYearlyGoalType' }
+      )> }
+      & { __typename?: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string }
       & { __typename?: 'UnitType' }
@@ -759,9 +828,15 @@ export type GetNodePageQuery = (
       { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
         { id: string, label: string, categories: Array<(
           { id: string, label: string, color?: string | null, order?: number | null }
-          & { __typename?: 'DimensionCategoryType' }
+          & { __typename?: 'MetricDimensionCategoryType' }
         )> }
-        & { __typename?: 'DimensionType' }
+        & { __typename?: 'MetricDimensionType' }
+      )>, goals: Array<(
+        { categories: Array<string>, values: Array<(
+          { year: number, value: number }
+          & { __typename?: 'MetricYearlyGoalType' }
+        )> }
+        & { __typename?: 'DimensionalMetricGoalEntry' }
       )>, unit: (
         { htmlShort: string }
         & { __typename?: 'UnitType' }
