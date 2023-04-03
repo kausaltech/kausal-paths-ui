@@ -58,7 +58,8 @@ class PathsServer extends BaseServer {
       // FIXME: Support for multiple instances per hostname
       const numInstances = data.availableInstances.length;
       if (!numInstances) {
-        throw new Error("No instances found with the given hostname")
+        console.log(`No instances found with the given hostname "${encodeURIComponent(hostname)}".`);
+        return null;
       }
       if (numInstances != 1) {
         throw new Error(`Invalid number of available instances: ${numInstances}`);

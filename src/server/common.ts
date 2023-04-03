@@ -172,7 +172,10 @@ export abstract class BaseServer {
       return;
     }
     const ctx = await this.getRequestContext(req, res);
-    if (!ctx) return;
+    if (!ctx) {
+      res.status(404).send('Page not found');
+      return;
+    }
 
     const {
       basePath,
