@@ -94,7 +94,10 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     watchLink: null,
   },
   gronlogik: {
-    watchLink: null,
+    watchLink: {
+      title: 'Sunnydale Climate Watch',
+      url: 'https://sunnydale.test.kausal.tech/climate',
+    },
     homeLink: [
       {
         id: 'hp-en',
@@ -140,7 +143,10 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
     ],
   },
   longmont: {
-    watchLink: null,
+    watchLink: {
+      title: 'Longmont Indicators',
+      url: 'https://longmont-indicators.test.kausal.tech',
+    },
     homeLink: [
       {
         id: 'hp-en',
