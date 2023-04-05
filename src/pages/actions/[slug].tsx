@@ -10,6 +10,7 @@ import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
+import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
@@ -21,6 +22,8 @@ import Badge from 'components/common/Badge';
 import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
+import SubActions from 'components/general/SubActions';
+import ImpactDisplay from 'components/general/ImpactDisplay';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -45,6 +48,12 @@ const ActionDescription = styled.div`
 `;
 
 const ActionCategory = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const ActionMetrics = styled.div`
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 1rem;
 `;
 
@@ -101,11 +110,44 @@ export default function ActionPage() {
 
   const action = data.node;
   const causalNodes = action.downstreamNodes;
+  const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
+  const actionEffectYearly = action.impactMetric.forecastValues.find(
+    (dataPoint) => dataPoint.year === yearRange[1],
+  )?.value || 0;
+
+  const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, yearRange[0], yearRange[1]);
+  const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
-  // actionTree.filter((node) => node.inputNodes.find((input) => input.id === parentId));
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />
   )
+
+  const fakeSubActions = [
+    {
+      id: '1',
+      name: 'Endenergieverbrauch Fossiler Brennstoff',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: true,
+      parameters: action.parameters
+    },
+    {
+      id: '2',
+      name: 'Endenergieverbrauch Biobrennstoff',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: true,
+      parameters: action.parameters
+    },
+    {
+      id: '3',
+      name: 'Endenergieverbrauch Fernwärme',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: false,
+      parameters: action.parameters
+    },
+  ];
 
   return (
     <>
@@ -148,10 +190,20 @@ export default function ActionPage() {
                 <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
                 <NodeLink node={action}><a>{t('read-more')}</a></NodeLink>
                 <hr />
-              <ActionParameters
-                parameters={action.parameters}
-              />
-                </ActionDescription>
+                <ActionMetrics>
+                  <ActionParameters
+                    parameters={action.parameters}
+                  />
+                  <ImpactDisplay
+                    effectCumulative={actionEffectCumulative}
+                    effectYearly={actionEffectYearly}
+                    yearRange={yearRange}
+                    unitCumulative={unitCumulative}
+                    unitYearly={unitYearly}
+                    muted={!isActive}
+                  />
+                </ActionMetrics>
+              </ActionDescription>
               { action.metric && (
               <ContentWrapper>
                 { flowPlot || (
@@ -168,6 +220,9 @@ export default function ActionPage() {
                 )}
               </ContentWrapper>
               )}
+              <SubActions
+                actions={fakeSubActions}
+              />
             </HeaderCard>
           </PageHeader>
         </Container>

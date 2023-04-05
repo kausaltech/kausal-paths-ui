@@ -53,6 +53,24 @@ const GET_ACTION_CONTENT = gql`
       dimensionalFlow {
         ...DimensionalPlot
       }
+      impactMetric {
+        id
+        unit {
+          htmlShort
+        }
+        cumulativeForecastValue
+        yearlyCumulativeUnit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+      }
       metric {
         name
         id
