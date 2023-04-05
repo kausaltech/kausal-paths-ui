@@ -64,8 +64,17 @@ const TextContent = styled.div`
   padding: .5rem .5rem 0;
 `;
 
-const CausalCard = (props) => {
-  const { node, startYear, endYear, noEffect } = props;
+type CausalCardProps = {
+  node,
+  startYear: number,
+  endYear: number,
+  noEffect: boolean,
+  compact: boolean,
+}
+
+
+const CausalCard = (props: CausalCardProps) => {
+  const { node, startYear, endYear, noEffect, compact } = props;
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
 
@@ -96,19 +105,20 @@ const CausalCard = (props) => {
               muted={noEffect}
             />
           </ImpactFigures>
-          <ContentWrapper>
-            <NodePlot
-              metric={node.metric}
-              impactMetric={node.impactMetric}
-              startYear={startYear}
-              endYear={endYear}
-              color={node.color}
-              isAction={node.isAction}
-              targetYearGoal={targetYearGoal}
-              targetYear={maxYear}
-              quantity={node.quantity}
-            />
-          </ContentWrapper>
+          {!compact && (
+            <ContentWrapper>
+              <NodePlot
+                metric={node.metric}
+                impactMetric={node.impactMetric}
+                startYear={startYear}
+                endYear={endYear}
+                color={node.color}
+                isAction={node.isAction}
+                targetYearGoal={targetYearGoal}
+                targetYear={maxYear}
+                quantity={node.quantity}
+              />
+            </ContentWrapper> )}
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
         </DashCard>
       </NodeCard>
