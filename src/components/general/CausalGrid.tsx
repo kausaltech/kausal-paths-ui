@@ -21,21 +21,44 @@ const GridSesction = styled.div`
 
 const GridRowWrapper = styled.div`
   width: auto;
-  overflow-y: hidden;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  margin: 6rem 0;
 `;
 
 const GridRow = styled.div`
-  /* TODO: The width is not expanding properly beyond screen width */
+  position: relative;
   display: flex;
-  justify-content: center;
-  padding: 1rem;
+  /* TODO: We either alignt the elements left or lose the left items behind margin  */
+  //justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow-x: scroll;
+  overscroll-behavior-x: none;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 50%;
+
+  &::-webkit-scrollbar:horizontal {
+  height: 0;
+    width: 0;
+    display: none;
+  }
+
+  &::-webkit-scrollbar-thumb:horizontal {
+    display: none;
+  }
 `;
 
 const GridCol = styled.div`
-  flex: 0 1 640px;
-  margin: 3rem .5rem;
+  flex: 0 1 480px;
+  scroll-snap-align: center;
+  margin: 0 .5rem;
+
+  &:first-child {
+    margin-left: 2rem;
+  }
+
+  &:last-child {
+    margin-right: 2rem;
+  }
 `;
 
 const GoalSection = styled.div`
@@ -169,8 +192,8 @@ const CausalGrid = (props) => {
         </ArcherElement>
         {causalGridNodes?.map((row, rowIndex) => (
 
-          <GridRowWrapper onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
-            <GridRow>
+          <GridRowWrapper>
+            <GridRow onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
               {row.map((col, colindex) => (
                 <GridCol key={col.id}>
                   <ArcherElement
@@ -188,7 +211,7 @@ const CausalGrid = (props) => {
                     <div>
                       <CausalCard
                         node={col}
-                        index={colindex + 1}
+                        compact
                         startYear={yearRange[0]}
                         endYear={yearRange[1]}
                         noEffect={actionIsOff}
