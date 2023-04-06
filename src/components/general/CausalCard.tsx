@@ -103,6 +103,7 @@ const CausalCard = (props: CausalCardProps) => {
               unitCumulative={node.unit?.htmlShort}
               unitYearly={node.unit?.htmlShort}
               muted={noEffect}
+              size="sm"
             />
           </ImpactFigures>
           {!compact && (

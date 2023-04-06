@@ -13,6 +13,9 @@ const Parameters = styled.div`
 const ActionParameters = (props) => {
   const { parameters } = props;
 
+  if (!parameters) {
+    return null;
+  }
   // Separate mandatory on/off parameter with standard id
   const actionParameterSwitch = parameters.find((param) => param.id === `${param.node.id}.enabled`);
   const actionOtherParameters = parameters.filter((param) => param.id !== actionParameterSwitch?.id);
