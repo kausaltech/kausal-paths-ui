@@ -10,7 +10,7 @@ border: 1px solid ${(props) => props.theme.graphColors.grey030};
 border-radius:  calc(${(props) => props.theme.cardBorderRadius}/2);
 `;
 
-const ImpactDisplayHeader = styled.div`
+const ImpactDisplayHeader = styled.div<{muted?: boolean}>`
 flex: 0 0 100%;
 padding: 0.5rem;
 border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
@@ -30,11 +30,20 @@ padding: .5rem;
 }
 `;
 
-const ImpactDisplay = (props) => {
+type ImpactDisplayProps = {
+  effectCumulative: number | undefined,
+  effectYearly: number,
+  yearRange: [number, number],
+  unitCumulative: string | undefined,
+  unitYearly: string | undefined,
+  muted: boolean | undefined,
+}
+
+const ImpactDisplay = (props: ImpactDisplayProps) => {
   const { effectCumulative, effectYearly, yearRange, unitCumulative, unitYearly, muted } = props;
   const { t, i18n } = useTranslation();
 
-  const cumulativePrefix = effectCumulative > 0 ? '+' : '';
+  const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
   const yearlyPrefix = effectYearly > 0 ? '+' : '';
 
   return (
