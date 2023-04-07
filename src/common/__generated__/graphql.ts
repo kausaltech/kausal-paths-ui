@@ -133,7 +133,10 @@ export type GetActionContentQuery = (
         )>, baselineForecastValues?: Array<(
           { year: number, value: number }
           & { __typename?: 'YearlyValue' }
-        )> | null }
+        )> | null, yearlyCumulativeUnit?: (
+          { htmlShort: string }
+          & { __typename?: 'UnitType' }
+        ) | null }
         & { __typename?: 'ForecastMetricType' }
       ) | null, parameters: Array<(
         { description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, boolValue?: boolean | null, boolDefaultValue?: boolean | null, node?: (
@@ -379,7 +382,7 @@ export type OutcomeNodeFieldsFragment = (
       & { __typename?: 'MetricDimensionType' }
     )>, goals: Array<(
       { categories: Array<string>, values: Array<(
-        { year: number, value: number }
+        { year: number, value: number, isInterpolated: boolean }
         & { __typename?: 'MetricYearlyGoalType' }
       )> }
       & { __typename?: 'DimensionalMetricGoalEntry' }
@@ -452,7 +455,7 @@ export type GetPageQuery = (
             & { __typename?: 'MetricDimensionType' }
           )>, goals: Array<(
             { categories: Array<string>, values: Array<(
-              { year: number, value: number }
+              { year: number, value: number, isInterpolated: boolean }
               & { __typename?: 'MetricYearlyGoalType' }
             )> }
             & { __typename?: 'DimensionalMetricGoalEntry' }
@@ -505,7 +508,7 @@ export type GetPageQuery = (
           & { __typename?: 'MetricDimensionType' }
         )>, goals: Array<(
           { categories: Array<string>, values: Array<(
-            { year: number, value: number }
+            { year: number, value: number, isInterpolated: boolean }
             & { __typename?: 'MetricYearlyGoalType' }
           )> }
           & { __typename?: 'DimensionalMetricGoalEntry' }
@@ -630,7 +633,7 @@ export type DimensionalNodeMetricFragment = (
       & { __typename?: 'MetricDimensionType' }
     )>, goals: Array<(
       { categories: Array<string>, values: Array<(
-        { year: number, value: number }
+        { year: number, value: number, isInterpolated: boolean }
         & { __typename?: 'MetricYearlyGoalType' }
       )> }
       & { __typename?: 'DimensionalMetricGoalEntry' }
@@ -833,7 +836,7 @@ export type GetNodePageQuery = (
         & { __typename?: 'MetricDimensionType' }
       )>, goals: Array<(
         { categories: Array<string>, values: Array<(
-          { year: number, value: number }
+          { year: number, value: number, isInterpolated: boolean }
           & { __typename?: 'MetricYearlyGoalType' }
         )> }
         & { __typename?: 'DimensionalMetricGoalEntry' }

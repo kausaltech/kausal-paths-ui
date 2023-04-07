@@ -9,6 +9,7 @@ import { metricToPlot } from 'common/preprocess';
 import SiteContext, { useSite } from 'context/site';
 import type Plotly from 'plotly.js';
 import { gql } from '@apollo/client';
+import type { CausalGridNode } from './CausalGrid';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
@@ -21,7 +22,20 @@ const Tools = styled.div`
   }
 `;
 
-const NodePlot = (props) => {
+type NodePlotProps = {
+  metric: CausalGridNode['metric'],
+  impactMetric: CausalGridNode['impactMetric'],
+  startYear: number,
+  endYear: number,
+  color: string | null | undefined,
+  isAction?: boolean,
+  targetYearGoal?: number,
+  targetYear?: number,
+  filled?: boolean,
+  quantity: string,
+}
+
+const NodePlot = (props: NodePlotProps) => {
   const {
     metric,
     impactMetric,
@@ -47,7 +61,7 @@ const NodePlot = (props) => {
 
   const formatHover = (name: string, color: string) => {
     const out = {
-      hovertemplate: `${name}<br />%{x|%Y}: <b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
+      hovertemplate: `${name}<br /><b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
       hoverlabel: {
         bgcolor: color,
         font: {
@@ -118,8 +132,9 @@ const NodePlot = (props) => {
       xaxis: 'x2',
       yaxis: 'y1',
       marker: { size: 8 },
-      name: t('plot-actualized'),
+      name: t('plot-actualized')!,
       type: 'scatter',
+      mode: historical.x.length > 8 ? 'lines' : 'lines+markers',
       line: {
         color: plotColor,
         shape: 'spline',
@@ -164,6 +179,7 @@ const NodePlot = (props) => {
       xaxis: 'x2',
       yaxis: 'y1',
       marker: { size: 8 },
+      mode: forecast.x.length > 8 ? 'lines' : 'lines+markers',
       name: t('plot-scenario')!,
       type: 'scatter',
       line: {
@@ -286,11 +302,13 @@ const NodePlot = (props) => {
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
+      hoverformat: '<b>%Y</b>',
     },
     yaxis2: {
       domain: [0, 1],
       anchor: 'x2',
     },
+    hovermode: 'x unified',
     autosize: true,
     font: {
       family: systemFont,

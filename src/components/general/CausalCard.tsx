@@ -6,6 +6,7 @@ import NodePlot from 'components/general/NodePlot';
 import ImpactDisplay from './ImpactDisplay';
 import { NodeLink } from 'common/links';
 import { useSite } from 'context/site';
+import { CausalGridNode } from './CausalGrid';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -64,7 +65,14 @@ const TextContent = styled.div`
   padding: .5rem .5rem 0;
 `;
 
-const CausalCard = (props) => {
+type CausalCardProps = {
+  node: CausalGridNode,
+  startYear: number,
+  endYear: number,
+  noEffect: boolean,  
+}
+
+const CausalCard = (props: CausalCardProps) => {
   const { node, startYear, endYear, noEffect } = props;
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
@@ -91,8 +99,8 @@ const CausalCard = (props) => {
               effectCumulative={cumulativeImpact}
               effectYearly={impactAtTargetYear}
               yearRange={[startYear, endYear]}
-              unitCumulative={node.unit?.htmlShort}
-              unitYearly={node.unit?.htmlShort}
+              unitCumulative={node.impactMetric!.yearlyCumulativeUnit?.htmlShort}
+              unitYearly={node.impactMetric!.unit?.htmlShort}
               muted={noEffect}
             />
           </ImpactFigures>
