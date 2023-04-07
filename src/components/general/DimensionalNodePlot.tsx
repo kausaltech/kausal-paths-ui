@@ -582,6 +582,7 @@ DimensionalNodePlot.fragment = gql`
         values {
           year
           value
+          isInterpolated
         }
       }
       unit {
