@@ -152,12 +152,12 @@ const OutcomeBar = (props) => {
 
 const DEFAULT_NODE_ORDER = 100;
 
-function orderByMetric(nodes) {
-  function getLastValue(node) {
+function orderByMetric(nodes: OutcomeNodeFieldsFragment[]) {
+  function getLastValue(node: OutcomeNodeFieldsFragment) {
     const { metric } = node;
+    if (!metric) return 0;
     const lastValue = metric.historicalValues[metric.historicalValues.length - 1]?.value;
-    if (lastValue == undefined)
-      return 0;
+    if (lastValue == undefined) return 0;
     return lastValue;
   }
   nodes.sort((a, b) => {
@@ -183,8 +183,8 @@ type OutcomeCardSetProps = {
   parentColor: string,
   startYear: number,
   endYear: number,
-  activeNodeId: string,
-  lastActiveNodeId: string,
+  activeNodeId: string | undefined,
+  lastActiveNodeId: string | undefined,
   setLastActiveNodeId: (s: string) => void,
 }
 
@@ -202,19 +202,22 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
 
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
   const { scrollTo } = useScrollTo(config.molasses);
-  const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
-  const cardNodes = useMemo(() => {
-    const nodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
-    orderByMetric(nodes);
-    return nodes;
-  }, [nodeMap])
-  const subNodes = useMemo(() => new Map(
-    cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)).filter((child) => !!child)])
-  ), [cardNodes]);
-  
-  const inputNodes = rootNode.inputNodes?.filter((node) => !nodeMap.has(node.id));
-  // If this is the last active scenario, scroll to view after render
+  const { cardNodes, subNodeMap } = useMemo(() => {
+    const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
+    const cardNodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
+    orderByMetric(cardNodes);
+    const subNodeMap = new Map(
+      cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)).filter((child) => !!child)])
+    );
+    return {
+      cardNodes,
+      subNodeMap,
+    };
+  }, [nodeMap]);
 
+  const inputNodes = rootNode.inputNodes.filter((node) => !nodeMap.has(node.id));
+
+  // If this is the last active scenario, scroll to view after render
   useEffect(() => {
     if (lastActiveNodeId === rootNode.id) scrollTo(document.querySelector(`#${lastActiveNodeId}`), -150);
   }, []);
@@ -233,10 +236,6 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
     const newActiveNode = segmentId === activeNodeId ? rootNode.id : segmentId;
     setLastActiveNodeId(newActiveNode);
   }, [activeNodeId, rootNode.id, setLastActiveNodeId]);
-
-  // const nodesTotal = getMetricValue(rootNode.node, endYear);
-  // const nodesBase = getMetricValue(rootNode.node, startYear);
-  // const emissionsChange = getMetricChange(nodesBase, nodesTotal);
 
   return (
     <>
@@ -274,7 +273,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
                 startYear={startYear}
                 endYear={endYear}
                 node={node}
-                subNodes={subNodes.get(node.id)}
+                subNodes={subNodeMap.get(node.id)}
                 state={activeNodeId === undefined ? 'closed' : 'open'}
                 hovered={hoveredNodeId === node.id}
                 active={activeNodeId === node.id}
