@@ -178,9 +178,7 @@ export default function ActionPage() {
         actionIsOff={!isActive}
         actionId={action.id}
       />
-      <SettingsPanel
-        defaultYearRange={[site.latestMetricYear, site.maxYear]}
-      />
+      <SettingsPanel />
     </>
   );
 }

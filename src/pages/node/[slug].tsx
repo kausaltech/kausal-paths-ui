@@ -241,9 +241,7 @@ export default function NodePage() {
           inputNodes={node.inputNodes}
         />
       </Container>
-      <SettingsPanel
-        defaultYearRange={[site.minYear, site.maxYear]}
-      />
+      <SettingsPanel />
     </>
   );
 }

@@ -131,13 +131,13 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
       {
         id: 'hp-en',
         lang: 'en',
-        title: 'Emissions',
+        title: 'Greenhouse gas emissions',
         urlPath: '/',
       },
       {
         id: 'hp-de',
         lang: 'de',
-        title: 'Emissionen',
+        title: 'Treibhausgasemissionen',
         urlPath: '/',
       },
     ],
@@ -196,7 +196,11 @@ function PathsApp(props: PathsAppProps) {
   }
 
   if (!yearRangeVar()) {
-    yearRangeVar([siteContext.baseYear ?? instance.minimumHistoricalYear, instance.targetYear ?? instance.modelEndYear]);
+    const yearRange: [number, number] = [
+      instance.minimumHistoricalYear ?? siteContext.baseYear ?? 2010,
+      siteContext.targetYear
+    ];
+    yearRangeVar(yearRange);
   }
 
   const suspenseCache = new SuspenseCache();

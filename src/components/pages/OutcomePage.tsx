@@ -10,8 +10,9 @@ import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
-import { GetPageQuery } from 'common/__generated__/graphql';
+import { GetPageQuery, OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import { PageRefetchCallback } from './Page';
+import { ParsedUrlQuery } from 'querystring';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 10rem; 
@@ -43,11 +44,13 @@ const ActiveScenario = styled.span`
   vertical-align: middle;
 `;
 
-const findVisibleNodes = (allNodes, lastNodeId, visibleNodes) => {
+type OutcomeNode = OutcomeNodeFieldsFragment;
+
+const findVisibleNodes = (allNodes: Map<string, OutcomeNode>, lastNodeId: string, visibleNodes: OutcomeNode[]) => {
   // Using last active node Id, create an array of all visible nodes
-  const lastNode = allNodes.get(lastNodeId);
+  const lastNode = allNodes.get(lastNodeId)!;
   visibleNodes.unshift(lastNode);
-  if (lastNode?.outputNodes?.length) {
+  if (lastNode.outputNodes?.length) {
     findVisibleNodes(allNodes, lastNode.outputNodes[0].id, visibleNodes);
   }
   return visibleNodes;
@@ -67,7 +70,8 @@ export default function OutcomePage(props: OutcomePageProps) {
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const router = useRouter();
-  const [lastActiveNodeId, setLastActiveNodeId] = useState(router.query.node || undefined);
+  const queryNodeId = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+  const [lastActiveNodeId, setLastActiveNodeId] = useState<string|undefined>(queryNodeId);
 
   useEffect(() => {
     if (activeScenario === null || activeScenario.id !== queryActiveScenario?.id) {
@@ -77,9 +81,10 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   useEffect(() => {
     if (router.query?.node === lastActiveNodeId) return;
-    const query = {}
-    if (lastActiveNodeId)
+    const query: ParsedUrlQuery = {}
+    if (lastActiveNodeId) {
       query.node = lastActiveNodeId;
+    }
     router.replace({
       query,
     }, undefined, { shallow: true });
@@ -90,8 +95,9 @@ export default function OutcomePage(props: OutcomePageProps) {
   const allNodes = useMemo(() => new Map(upstreamNodes.map((node) => [node.id, node])), [upstreamNodes]);
   allNodes.set(outcomeNode.id, outcomeNode);
 
+  const activeNodeId = (lastActiveNodeId && allNodes.has(lastActiveNodeId)) ? lastActiveNodeId : outcomeNode.id;
   // TODO: filtering out empty nodes, in some instances there are some -> investigate why
-  const visibleNodes = findVisibleNodes(allNodes, lastActiveNodeId || outcomeNode.id, []).filter((node) => node?.id);
+  const visibleNodes = findVisibleNodes(allNodes, activeNodeId, []).filter((node) => node?.id);
 
   const outcomeType = visibleNodes[0].quantity;
 
@@ -127,7 +133,6 @@ export default function OutcomePage(props: OutcomePageProps) {
               key={node.id}
               nodeMap={allNodes}
               rootNode={node}
-              date={yearRange[1]}
               startYear={yearRange[0]}
               endYear={yearRange[1]}
               parentColor="#666"
@@ -138,9 +143,7 @@ export default function OutcomePage(props: OutcomePageProps) {
           ))}
         </OutcomeSection>
       </Container>
-      <SettingsPanel
-        defaultYearRange={[site.minYear, site.maxYear]}
-      />
+      <SettingsPanel />
     </>
   );
 }
