@@ -1,15 +1,16 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { tint, transparentize } from 'polished';
 import styled, { ThemeContext } from 'styled-components';
-import { gql } from '@apollo/client';
+import { gql, useReactiveVar } from '@apollo/client';
 
 import { genColors, genColorsFromTheme } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import { Col, FormGroup, Input, Label, Row } from 'reactstrap';
 import SelectDropdown from 'components/common/SelectDropdown';
+import { activeGoalVar } from 'common/cache';
 
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -55,6 +56,7 @@ type MetricSlice = {
   historicalYears: number[],
   forecastYears: number[],
   categoryValues: MetricCategoryValues[],
+  totalValues: MetricCategoryValues | null,
 };
 
 type MetricCategoryChoice = {
@@ -156,8 +158,13 @@ class DimensionalMetric {
       }],
       historicalYears,
       forecastYears,
+      totalValues: null,
     };
     return out;
+  }
+
+  private isForecastYear(year: number) {
+    return this.data.forecastFrom && year >= this.data.forecastFrom;
   }
 
   sliceBy(dimensionId: string, sort: boolean = false, categoryChoice: MetricCategoryChoice | undefined) {
@@ -187,16 +194,38 @@ class DimensionalMetric {
       catVals.set(cat, val);
     })
     const dim = this.data.dimensions.find(dim => dim.id === dimensionId)!;
-    const categoryValues: MetricCategoryValues[] = dim.categories.map(cat => {
+    const totalValues: MetricCategoryValues = {
+      category: {
+        id: 'total',
+        label: 'total',
+        color: '#777777',
+      },
+      forecastValues: this.data.years.filter(year => this.isForecastYear(year)).map(year => null),
+      historicalValues: this.data.years.filter(year => !this.isForecastYear(year)).map(year => null),
+      isNegative: false,
+    };
+    let categoryValues: MetricCategoryValues[] = dim.categories.map(cat => {
       const historicalValues: (number | null)[] = [];
       const forecastValues: (number | null)[] = [];
-      this.data.years.forEach(year => {
+      this.data.years.forEach((year, yearIdx) => {
         let val: number | null = byYear.get(year)!.get(cat.id) ?? null;
-        if (this.data.forecastFrom && year >= this.data.forecastFrom) {
+        if (this.isForecastYear(year)) {
           forecastValues.push(val);
         } else {
           historicalValues.push(val);
         }
+      });
+      historicalValues.forEach((val, idx) => {
+        if (val === null) return;
+        let oldVal = totalValues.historicalValues[idx];
+        oldVal = (oldVal ?? 0) + val;
+        totalValues.historicalValues[idx] = oldVal;
+      });
+      forecastValues.forEach((val, idx) => {
+        if (val === null) return;
+        let oldVal = totalValues.forecastValues[idx];
+        oldVal = (oldVal ?? 0) + val;
+        totalValues.forecastValues[idx] = oldVal;
       });
       const isNegative = (cat.order !== null && cat.order !== undefined) ? cat.order < 0 : false;
       return {
@@ -206,27 +235,24 @@ class DimensionalMetric {
         isNegative,
       };
     });
-    const historicalYears = this.data.years.filter(year => this.data.forecastFrom ? year < this.data.forecastFrom : true);
-    const forecastYears = this.data.years.filter(year => this.data.forecastFrom ? year >= this.data.forecastFrom : false);
-    if (categoryValues.every(cv => cv.category.order != null)) {
-      categoryValues.sort((a, b) => (a.category.order! - b.category.order!));
-    } else {
-      if (sort) {
-        let idx = historicalYears.length - 1;
-        let key = 'historicalValues';
-        if (idx < 0) {
-          idx = forecastYears.length - 1;
-          key = 'forecastValues';
-        }
-        if (idx >= 0) {
-          categoryValues.sort((a, b) => (b[key][idx] - a[key][idx]));
-        }
+    const historicalYears = this.data.years.filter(year => !this.isForecastYear(year));
+    const forecastYears = this.data.years.filter(year => this.isForecastYear(year));
+    const ordered = categoryValues.filter(cv => cv.category.order != null).sort((a, b) => (a.category.order! - b.category.order!));
+    const unordered = categoryValues.filter(cv => cv.category.order == null);
+    if (sort) {
+      let idx = historicalYears.length - 1;
+      let key = 'historicalValues';
+      if (idx < 0) {
+        idx = forecastYears.length - 1;
+        key = 'forecastValues';
       }
+      unordered.sort((a, b) => (b[key][idx] - a[key][idx]));
     }
     const out: MetricSlice = {
-      categoryValues,
+      categoryValues: [...ordered, ...unordered],
       historicalYears,
       forecastYears,
+      totalValues,
     };
     return out;
   }
@@ -234,7 +260,7 @@ class DimensionalMetric {
 
 
 function formatHover(name: string, color: string, unit: string, predLabel: string | null, fontFamily?: string) {
-  const predText = predLabel ? ` <i>(${predLabel})</i>` : '';
+  //const predText = predLabel ? ` <i>(${predLabel})</i>` : '';
   const out: Partial<Plotly.PlotData> = {
     /*
     hovertemplate: `${name}<br />` +
@@ -247,7 +273,7 @@ function formatHover(name: string, color: string, unit: string, predLabel: strin
       `${name}: ` +
       `<b>%{y:,.3r}</b> ` +
       `${unit}` +
-      `${predText}` +
+      //`${predText}` +
       `<extra></extra>`,
     hoverlabel: {
       bgcolor: color,
@@ -266,6 +292,7 @@ type SliceConfig = {
 
 
 type DimensionalNodePlotProps = {
+  node: { id: string },
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>,
   startYear: number,
   endYear: number,
@@ -275,6 +302,7 @@ type DimensionalNodePlotProps = {
 
 function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   const {
+    node,
     metric,
     startYear,
     endYear,
@@ -282,9 +310,35 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   } = props;
 
   const { t } = useTranslation();
-
+  const activeGoal = useReactiveVar(activeGoalVar);
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({dimensionId: metric.dimensions[0]?.id, categories: {}});
+
+  const metricDims = new Map(metric.dimensions.map(dim => [dim.originalId, dim]));
+  let defaultSelection = {};
+  let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
+  let goalAffectsPlot = false
+  if (activeGoal) {
+    const matchingDims = activeGoal.dimensions.filter(gdim => metricDims.has(gdim.dimension));
+    matchingDims.forEach(gdim => {
+      const metricDim = metricDims.get(gdim.dimension)!;
+      const catMatch = metricDim.categories.find(cat => cat.originalId === gdim.category);
+      if (catMatch) {
+        defaultSelection[metricDim.id] = catMatch.id;
+      }
+    })
+    if (defaultSliceDim && Object.hasOwn(defaultSelection, defaultSliceDim)) {
+      defaultSliceDim = metric.dimensions.find(dim => !defaultSelection[dim.id])?.id;
+    }
+    goalAffectsPlot = true;
+  }
+  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({dimensionId: defaultSliceDim, categories: defaultSelection});
+
+  useEffect(() => {
+    if (!goalAffectsPlot) return;
+    if (sliceConfig.dimensionId != defaultSliceDim || sliceConfig.categories != defaultSelection) {
+      setSliceConfig({dimensionId: defaultSliceDim, categories: defaultSelection});
+    }
+  }, [activeGoal])
 
   const sliceableDims = metric.dimensions.filter(dim => !sliceConfig.categories[dim.id]);
   const slicedDim = metric.dimensions.find(dim => dim.id === sliceConfig.dimensionId);
@@ -402,36 +456,23 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     })
   }
 
-  /*
-  if (targetYearGoal) {
-    shapes.push({
-      type: 'line',
-      yref: 'y',
-      x0: Date.parse(`Nov 1, ${startYear - 1}`),
-      y0: targetYearGoal,
-      x1: Date.parse(`Feb 1, ${endYear}`),
-      y1: targetYearGoal,
-      line: {
-        color: theme.graphColors.red070,
-        width: 2,
-        dash: 'dot',
-      },
-    });
+  if (metric.stackable && slice.totalValues) {
+    const label = t('plot-total')!;
     plotData.push({
-      x: [endYear],
-      y: [targetYearGoal],
       type: 'scatter',
-      xaxis: 'x2',
-      yaxis: 'y1',
-      name: `${t('target')} ${targetYear}`,
+      name: label,
+      mode: 'lines',
       line: {
-        color: theme.graphColors.red070,
-        width: 2,
-        dash: 'dot',
+        color: theme.graphColors.grey080,
+        width: 0,
       },
-    });
+      x: [...slice.historicalYears, ...slice.forecastYears],
+      y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
+      ...formatHover(label, theme.graphColors.grey080, unit, null, theme.fontFamily),
+      showlegend: false,
+    })
   }
-  */
+
   const nrYears = endYear - startYear;
   const layout: Partial<Plotly.Layout> = {
     height: 300,
@@ -545,6 +586,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         useResizeHandler
         style={{ width: '100%' }}
         config={{ displayModeBar: false }}
+        noValidate
       />
       { /*
       <Tools>
@@ -570,8 +612,10 @@ DimensionalNodePlot.fragment = gql`
       dimensions {
         id
         label
+        originalId
         categories {
           id
+          originalId
           label
           color
           order
@@ -582,6 +626,7 @@ DimensionalNodePlot.fragment = gql`
         values {
           year
           value
+          isInterpolated
         }
       }
       unit {

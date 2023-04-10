@@ -5,6 +5,7 @@ import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
 
 
 export type InstanceContextType = GetInstanceContextQuery['instance'];
+export type InstanceGoal = InstanceContextType['goals'][0];
 
 const InstanceContext = createContext<InstanceContextType>(null!);
 

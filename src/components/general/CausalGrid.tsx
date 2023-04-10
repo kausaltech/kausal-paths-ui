@@ -9,6 +9,7 @@ import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import { useInstance } from 'common/instance';
 import { NodeLink } from 'common/links';
+import { GetActionContentQuery } from 'common/__generated__/graphql';
 
 const ActionPoint = styled.div`
   height: 1rem;
@@ -120,7 +121,16 @@ const ImpactFigures = styled.div`
   }
 `;
 
-const CausalGrid = (props) => {
+export type CausalGridNode = NonNullable<GetActionContentQuery['node']>['downstreamNodes'][0];
+
+type CausalGridProps = {
+  nodes: CausalGridNode[],
+  yearRange: [number, number],
+  actionIsOff: boolean,
+  actionId: string,
+}
+
+const CausalGrid = (props: CausalGridProps) => {
   const { nodes, yearRange, actionIsOff, actionId } = props;
   const theme = useContext(ThemeContext);
   const instance = useInstance();
@@ -130,7 +140,7 @@ const CausalGrid = (props) => {
     return <Container className="pt-5"><Alert color="warning">Action has no nodes</Alert></Container>
   }
 
-  const findOutputs = (parentIds, tree) => {
+  const findOutputs = (parentIds: string[], tree: CausalGridNode[]) => {
     const grid = tree?.length ? tree : [];
     // return all nodes that input to given node ids
     const inputs = nodes.filter(
@@ -158,7 +168,7 @@ const CausalGrid = (props) => {
   };
 
   // Build the grid from bottom up
-  const lastNode = nodes.find((node) => node.outputNodes.length === 0);
+  const lastNode = nodes.find((node) => node.outputNodes.length === 0)!;
   const causalGridNodes = findOutputs([lastNode.id], []);
 
   const impactAtTargetYear = getImpactMetricValue(lastNode, yearRange[1]);
@@ -239,14 +249,14 @@ const CausalGrid = (props) => {
                       </a>
                     </NodeLink>
                   </h2>
-                  <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.description }} />
+                  {lastNode.shortDescription && <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.shortDescription }} />}
                   <ImpactFigures>
                     <ImpactDisplay
                       effectCumulative={cumulativeImpact || undefined}
                       effectYearly={impactAtTargetYear}
                       yearRange={yearRange}
-                      unitCumulative={lastNode.unit?.htmlShort}
-                      unitYearly={lastNode.unit?.htmlShort}
+                      unitCumulative={lastNode.impactMetric?.unit?.htmlShort}
+                      unitYearly={lastNode.impactMetric?.unit?.htmlShort}
                       muted={actionIsOff}
                     />
                   </ImpactFigures>

@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import HighlightValue from 'components/general/HighlightValue';
 import { formatNumber } from 'common/preprocess';
 import { useTranslation } from 'next-i18next';
+import { useInstance } from 'common/instance';
 
 const ImpactDisplayWrapper = styled.div`
   display: flex;
@@ -31,13 +32,13 @@ const ImpactDisplayItem = styled.div`
 `;
 
 type ImpactDisplayProps = {
-  effectCumulative: string | number,
-  effectYearly: string | number,
+  effectCumulative: number | undefined,
+  effectYearly: number,
   yearRange: [number, number],
-  unitCumulative?: string,
-  unitYearly?: string,
-  muted?: boolean,
-  size?: string,
+  unitCumulative: string | undefined,
+  unitYearly: string | undefined,
+  muted?: boolean | undefined,
+  size?: 'sm' | 'md' | 'lg',
 } & typeof ImpactDisplayDefaultProps;
 
 const ImpactDisplayDefaultProps = {
@@ -49,15 +50,17 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
   const { effectCumulative, effectYearly, yearRange, unitCumulative, unitYearly, muted, size } = props;
   const { t, i18n } = useTranslation();
 
-    const cumulativePrefix = effectCumulative > 0 ? '+' : '';
-    const yearlyPrefix = effectYearly > 0 ? '+' : '';
+  const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
+  const yearlyPrefix = effectYearly > 0 ? '+' : '';
+
+  const instance = useInstance();
 
   return (
     <ImpactDisplayWrapper>
       <ImpactDisplayHeader muted={muted}>
         { t('impact') }
       </ImpactDisplayHeader>
-      { effectCumulative !== undefined && (
+      { effectCumulative !== undefined && instance.features.showAccumulatedEffects && (
       <ImpactDisplayItem>
         <HighlightValue
           displayValue={`${cumulativePrefix}${formatNumber(effectCumulative || 0, i18n.language)}`}

@@ -29,6 +29,19 @@ query GetInstanceContext {
       leadParagraph
       features {
         baselineVisibleInGraphs
+        showAccumulatedEffects
+      }
+      goals {
+        id
+        label
+        default
+        outcomeNode {
+          id
+        }
+        dimensions {
+          dimension
+          category
+        }
       }
     }
     scenarios {

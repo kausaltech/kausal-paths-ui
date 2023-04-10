@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
+import { InstanceGoal, useInstance } from 'common/instance';
+import { activeGoalVar } from 'common/cache';
 
 const StyledDropdown = styled(Dropdown)` 
   //min-width: 200px;
@@ -24,29 +26,28 @@ const GoalSelector = () => {
   const { t } = useTranslation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggle = () => setDropdownOpen((prevState) => !prevState);
+  const instance = useInstance();
+  const activeGoal = useReactiveVar(activeGoalVar);
 
-  const goals = [
-    { id: '1', name: 'Total emissions' },
-    { id: '2', name: 'Indirect emissions' },
-    { id: '3', name: 'Direct emissions' },
-  ];
-
-  const activeGoal = goals[0];
+  const selectGoal = useCallback((goal: InstanceGoal) => {
+    activeGoalVar(goal)
+  }, [activeGoalVar])
 
   return (
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
       <DropdownLabel>{t('Target')}</DropdownLabel>
       <DropdownToggle color="light">
-        <span>{activeGoal.name}</span>
+        <span>{activeGoal?.label}</span>
       </DropdownToggle>
       <DropdownMenu>
         <DropdownItem header>{ t('change-target') }</DropdownItem>
-        { goals?.map((goal) => (
+        { instance.goals.map((goal) => (
           <DropdownItem
             key={goal.id}
-            active={goal.id === activeGoal.id}
+            active={goal.id === activeGoal?.id}
+            onClick={() => selectGoal(goal)}
           >
-            { goal.name }
+            { goal.label }
           </DropdownItem>
         ))}
       </DropdownMenu>

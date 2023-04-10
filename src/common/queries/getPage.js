@@ -1,4 +1,6 @@
 import { gql } from '@apollo/client';
+import DimensionalNodePlot from 'components/general/DimensionalNodePlot';
+
 
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on NodeType {
@@ -51,7 +53,9 @@ const OUTCOME_NODE_FIELDS = gql`
         isCustomized
       }
     }
+    ...DimensionalNodeMetric
   }
+${DimensionalNodePlot.fragment}
 `;
 
 const GET_PAGE = gql`

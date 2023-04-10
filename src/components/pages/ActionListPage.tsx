@@ -330,9 +330,7 @@ function ActionListPage(props: ActionListPageProps) {
         </Col>
       </Row>
     </Container>
-    <SettingsPanel
-      defaultYearRange={[site.latestMetricYear, site.maxYear]}
-    />
+    <SettingsPanel />
   </>
   )
 }

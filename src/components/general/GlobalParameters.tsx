@@ -11,6 +11,7 @@ import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
 import { useTranslation } from 'react-i18next';
 import { useSite } from 'context/site';
+import { GET_INSTANCE_GOAL_OUTCOME } from './GoalOutcomeBar';
 
 
 const GlobalParametersPanel = styled(Row)`
@@ -108,12 +109,6 @@ type ParameterWidgetProps = {
   refetch: ObservableQuery['refetch'],
 }
 
-const REFETCH_QUERIES = [
-  GET_SCENARIOS,
-  GET_PARAMETERS,
-  GET_ACTION_LIST,
-];
-
 const ParameterWidget = (props: ParameterWidgetProps) => {
   const { refetch, refetching, param } = props;
   const {
@@ -131,7 +126,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   
   const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
     notifyOnNetworkStatusChange: true,
-    refetchQueries: REFETCH_QUERIES,
+    refetchQueries: 'all',
     onCompleted: (dat) => {
       //console.log("set param---------", dat);
     },
@@ -257,7 +252,7 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
   const { availableNormalizations } = props;
   const [setNormalization, { data, loading, error }] =
     useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(SET_NORMALIZATION_MUTATION, {
-      refetchQueries: REFETCH_QUERIES,
+      refetchQueries: 'active',
     });
 
   if (!availableNormalizations.length) return null;

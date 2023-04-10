@@ -12,7 +12,7 @@ import { setBasePath } from 'common/links';
 import { loadTheme } from 'common/theme';
 import { getI18n } from 'common/i18n';
 import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
-import { yearRangeVar, activeScenarioVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import InstanceContext, { GET_INSTANCE_CONTEXT, InstanceContextType } from 'common/instance';
 import SiteContext, { SiteContextType } from 'context/site';
 import Layout from 'components/Layout';
@@ -131,13 +131,13 @@ const defaultSiteContext: {[key: string]: SiteContextType} = {
       {
         id: 'hp-en',
         lang: 'en',
-        title: 'Emissions',
+        title: 'Greenhouse gas emissions',
         urlPath: '/',
       },
       {
         id: 'hp-de',
         lang: 'de',
-        title: 'Emissionen',
+        title: 'Treibhausgasemissionen',
         urlPath: '/',
       },
     ],
@@ -190,13 +190,23 @@ function PathsApp(props: PathsAppProps) {
 
   const instance = instanceContext;
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
+  const goals = instance.goals
+
+  if (!activeGoalVar()) {
+    const defaultGoal = goals.length > 1 ? goals.find(goal => goal.default) : goals[0];
+    activeGoalVar(defaultGoal ?? null);
+  }
 
   if (!activeScenarioVar()) {
     activeScenarioVar(activeScenario);
   }
 
   if (!yearRangeVar()) {
-    yearRangeVar([siteContext.baseYear ?? instance.minimumHistoricalYear, instance.targetYear ?? instance.modelEndYear]);
+    const yearRange: [number, number] = [
+      instance.minimumHistoricalYear ?? siteContext.baseYear ?? 2010,
+      siteContext.targetYear
+    ];
+    yearRangeVar(yearRange);
   }
 
   const suspenseCache = new SuspenseCache();

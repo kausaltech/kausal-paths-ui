@@ -123,6 +123,9 @@ const GET_ACTION_CONTENT = gql`
             year
             value
           }
+          yearlyCumulativeUnit {
+            htmlShort
+          }
         }
         quantity
         isAction

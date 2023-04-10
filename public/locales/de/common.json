@@ -32,6 +32,7 @@
   "plot-measured": "Gemessen",
   "plot-scenario": "Gewähltes Szenario",
   "plot-without-action": "Ohne diese Maßnahme",
+  "plot-total": "Total",
   "pred": "vsl.",
   "read-more": "Details",
   "scenario": "Szenario",
@@ -47,8 +48,9 @@
   "plot-choose-dimension": "Dimension",
   "normalize-by": "Pro {{node}} normalisieren",
   "change-target": "Wechsle Ziel",
-  "actions-count": "{{ count }} maßnahmen",
+  "actions-count": "{{ count }} Maßnahmen",
   "actions-sort-impact": "Auswirkung",
   "actions-sort-by": "Sortieren nach",
-  "actions-sort-default": "Standard"
+  "actions-sort-default": "Standard",
+  "action-groups-all": "Alle"
 }
