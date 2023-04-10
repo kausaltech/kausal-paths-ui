@@ -62,5 +62,6 @@
   "reduction": "reduction",
   "plot-choose-dimension": "Choose dimension",
   "normalize-by": "Normalize by {{node}}",
-  "change-target": "Change target"
+  "change-target": "Change target",
+  "plot-total": "Total"
 }

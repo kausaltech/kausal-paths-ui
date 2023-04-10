@@ -4,31 +4,24 @@ import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
 import { Spinner } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
-import { activeScenarioVar, yearRangeVar } from 'common/cache';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
-import { GetNetEmissionsQuery } from 'common/__generated__/graphql';
+import { GetInstanceGoalOutcomeQuery, GetInstanceGoalOutcomeQueryVariables, GetNetEmissionsQuery } from 'common/__generated__/graphql';
 
-const GET_NET_EMISSIONS = gql`
-query GetNetEmissions($node: ID!) {
-  node(id: $node) {
+export const GET_INSTANCE_GOAL_OUTCOME = gql`
+query GetInstanceGoalOutcome($goal: ID!) {
+  instance {
     id
-    name
-    goals {
-      year
-      value
-    }
-    metric {
-      id
+    goals(id: $goal) {
+      values {
+        year
+        goal
+        actual
+        isForecast
+        isInterpolated
+      }
       unit {
         htmlShort
-      }
-      historicalValues {
-        year
-        value
-      }
-      forecastValues {
-        year
-        value
       }
     }
   }
@@ -101,15 +94,18 @@ const BarWithLabel = (props) => {
   );
 };
 
-const TotalEmissionsBar = (props) => {
+const GoalOutcomeBar: React.FC<{}> = (props) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
+  const activeGoal = useReactiveVar(activeGoalVar);
 
-  const { loading, error, data, refetch } = useQuery<GetNetEmissionsQuery>(GET_NET_EMISSIONS, {
+  if (!activeGoal) return null;
+
+  const { loading, error, data, refetch } = useQuery<GetInstanceGoalOutcomeQuery, GetInstanceGoalOutcomeQueryVariables>(GET_INSTANCE_GOAL_OUTCOME, {
     variables: {
-      node: 'net_emissions',
+      goal: activeGoal.id,
     },
   });
 
@@ -119,46 +115,48 @@ const TotalEmissionsBar = (props) => {
 
   if (loading) return <span><Spinner size="sm" color="primary" /></span>;
   if (error) return <div>error!</div>;
-  if (!data || !data.node || !data.node.metric) return <div>no data</div>
-  const { node } = data;
-  const metric = node.metric!;
+  if (!data || !data.instance.goals.length) return <div>no data</div>
 
-  const unit = metric.unit?.htmlShort;
-  const emissionsNow = metric.historicalValues[metric.historicalValues.length - 1].value;
-  const emissionsNowYear = metric.historicalValues[metric.historicalValues.length - 1].year;
-  const lastGoal = [...node.goals].sort(g => g.year).slice(-1)[0];
-  const emissionsTotal = getMetricValue(node, yearRange[1])!;
+  const goal = data.instance.goals[0];
+  console.log(goal);
+  const valuesByYear = new Map(goal.values.map(goal => [goal.year, goal]));
+  const unit = goal.unit.htmlShort;
+  const historical = goal.values.filter(val => !val.isForecast);
+  const goalValues = goal.values.filter(val => val.goal !== null);
+  const outcomeNow = historical[historical.length - 1];
+  //const comparisonGoal = goalValues.filter(v => v.year >= yearRange[1])[0] || goalValues[goalValues.length - 1];
+  const comparisonGoal = goalValues[goalValues.length - 1];
+  const comparisonActual = valuesByYear.get(yearRange[1])!;
 
-  const emissionsTarget = lastGoal.value;
-  const maxEmission = _.max([emissionsNow, emissionsTotal, emissionsTarget])!;
-  const emissionsTotalColor = emissionsTotal > emissionsTarget ? theme.graphColors.red050 : theme.graphColors.green050;
-  const emissionsNowWidth = (emissionsNow / maxEmission) * 100;
-  const emissionsTotalWidth = (emissionsTotal / maxEmission) * 100;
-  const emissionsTargetWidth = (emissionsTarget / maxEmission) * 100;
+  const maxOutcome = _.max([outcomeNow.actual, comparisonActual.actual, comparisonGoal.goal])!;
+  const outcomeColor = comparisonActual.actual! > comparisonGoal.goal! ? theme.graphColors.red050 : theme.graphColors.green050;
+  const outcomeNowWidth = (outcomeNow.actual! / maxOutcome) * 100;
+  const outcomeTotalWidth = (comparisonActual.actual! / maxOutcome) * 100;
+  const outcomeTargetWidth = (comparisonGoal.goal! / maxOutcome) * 100;
 
   const bars = _.sortBy([
     {
-      label: `${t('emissions')} ${emissionsNowYear}`,
-      value: emissionsNow,
+      label: `${t('emissions')} ${outcomeNow.year}`,
+      value: outcomeNow.actual!,
       unit,
       barColor: theme.graphColors.grey030,
-      barWidth: emissionsNowWidth,
+      barWidth: outcomeNowWidth,
       labelSide: undefined,
     },
     {
-      label: `${t('scenario')} ${yearRange[1]}`,
-      value: emissionsTotal,
+      label: `${t('scenario')} ${comparisonActual.year}`,
+      value: comparisonActual.actual!,
       unit,
-      barColor: emissionsTotalColor,
-      barWidth: emissionsTotalWidth,
+      barColor: outcomeColor,
+      barWidth: outcomeTotalWidth,
       labelSide: 'top',
     },
     {
-      label: `${t('target')} ${lastGoal.year}`,
-      value: emissionsTarget,
+      label: `${t('target')} ${comparisonGoal.year}`,
+      value: comparisonGoal.goal!,
       unit,
       barColor: theme.graphColors.green050,
-      barWidth: emissionsTargetWidth,
+      barWidth: outcomeTargetWidth,
       labelSide: undefined,
     },
   ], [(bar) => -bar.value]);
@@ -178,4 +176,4 @@ const TotalEmissionsBar = (props) => {
   );
 };
 
-export default TotalEmissionsBar;
+export default GoalOutcomeBar;

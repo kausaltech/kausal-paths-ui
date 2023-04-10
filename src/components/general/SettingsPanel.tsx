@@ -8,7 +8,7 @@ import { useSite } from 'context/site';
 import { yearRangeVar, } from 'common/cache'
 import GoalSelector from 'components/general/GoalSelector';
 import ScenarioSelector from 'components/general/ScenarioSelector';
-import TotalEmissionsBar from 'components/general/TotalEmissionsBar';
+import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
 import GlobalParameters from 'components/general/GlobalParameters';
 import { useInstance } from 'common/instance';
 
@@ -61,6 +61,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
     site.parameters.find((param) => param.isCustomizable) !== undefined ||
     site.availableNormalizations.length > 0
   );
+  const nrGoals = instance.goals.length;
 
   const setYearRange = useCallback((newRange: [number, number]) => {
     yearRangeVar(newRange);
@@ -89,8 +90,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
             )}
           </Col>
           <Col md="2" sm="4" xs="6">
-            {false && (
-            <GoalSelector />
+            { nrGoals > 1 && (
+              <GoalSelector />
             )}
           </Col>
           { hasGlobalParameters &&
@@ -103,7 +104,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
           }
           <Col md="6" sm="12" className="mt-3 mt-sm-0">
             { true && 
-              <TotalEmissionsBar />
+              <GoalOutcomeBar />
             }
           </Col>
         </Row>

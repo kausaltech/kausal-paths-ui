@@ -58,5 +58,6 @@
   "mac-axis-impact": "vaikutus",
   "efficiency": "Kustannustehokkuus",
   "reduction": "vähennys",
-  "change-target": "Vaihda tavoite"
+  "change-target": "Vaihda tavoite",
+  "plot-total": "Yhteensä"
 }

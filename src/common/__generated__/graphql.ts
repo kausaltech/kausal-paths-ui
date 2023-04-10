@@ -375,8 +375,8 @@ export type OutcomeNodeFieldsFragment = (
     & { __typename?: 'NodeType' }
   )> | null, metricDim?: (
     { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-      { id: string, label: string, categories: Array<(
-        { id: string, label: string, color?: string | null, order?: number | null }
+      { id: string, label: string, originalId?: string | null, categories: Array<(
+        { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
         & { __typename?: 'MetricDimensionCategoryType' }
       )> }
       & { __typename?: 'MetricDimensionType' }
@@ -448,8 +448,8 @@ export type GetPageQuery = (
           & { __typename?: 'NodeType' }
         )> | null, metricDim?: (
           { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-            { id: string, label: string, categories: Array<(
-              { id: string, label: string, color?: string | null, order?: number | null }
+            { id: string, label: string, originalId?: string | null, categories: Array<(
+              { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
               & { __typename?: 'MetricDimensionCategoryType' }
             )> }
             & { __typename?: 'MetricDimensionType' }
@@ -501,8 +501,8 @@ export type GetPageQuery = (
         & { __typename?: 'NodeType' }
       )> | null, metricDim?: (
         { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-          { id: string, label: string, categories: Array<(
-            { id: string, label: string, color?: string | null, order?: number | null }
+          { id: string, label: string, originalId?: string | null, categories: Array<(
+            { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
             & { __typename?: 'MetricDimensionCategoryType' }
           )> }
           & { __typename?: 'MetricDimensionType' }
@@ -582,9 +582,18 @@ export type GetInstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetInstanceContextQuery = (
   { instance: (
     { id: string, name: string, themeIdentifier?: string | null, owner?: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear?: number | null, modelEndYear: number, referenceYear?: number | null, minimumHistoricalYear: number, maximumHistoricalYear?: number | null, leadTitle?: string | null, leadParagraph?: string | null, features: (
-      { baselineVisibleInGraphs: boolean }
+      { baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean }
       & { __typename?: 'InstanceFeaturesType' }
-    ) }
+    ), goals: Array<(
+      { id: string, label?: string | null, default: boolean, outcomeNode: (
+        { id: string }
+        & { __typename?: 'NodeType' }
+      ), dimensions: Array<(
+        { dimension: string, category: string }
+        & { __typename?: 'InstanceGoalDimension' }
+      )> }
+      & { __typename?: 'InstanceGoalEntry' }
+    )> }
     & { __typename?: 'InstanceType' }
   ), scenarios: Array<(
     { id?: string | null, isActive?: boolean | null, isDefault?: boolean | null, name?: string | null }
@@ -626,8 +635,8 @@ export type GetInstanceContextQuery = (
 export type DimensionalNodeMetricFragment = (
   { metricDim?: (
     { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-      { id: string, label: string, categories: Array<(
-        { id: string, label: string, color?: string | null, order?: number | null }
+      { id: string, label: string, originalId?: string | null, categories: Array<(
+        { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
         & { __typename?: 'MetricDimensionCategoryType' }
       )> }
       & { __typename?: 'MetricDimensionType' }
@@ -684,6 +693,28 @@ export type SetNormalizationMutation = (
   & { __typename?: 'Mutations' }
 );
 
+export type GetInstanceGoalOutcomeQueryVariables = Exact<{
+  goal: Scalars['ID'];
+}>;
+
+
+export type GetInstanceGoalOutcomeQuery = (
+  { instance: (
+    { id: string, goals: Array<(
+      { values: Array<(
+        { year: number, goal?: number | null, actual?: number | null, isForecast: boolean, isInterpolated?: boolean | null }
+        & { __typename?: 'InstanceYearlyGoalType' }
+      )>, unit: (
+        { htmlShort: string }
+        & { __typename?: 'UnitType' }
+      ) }
+      & { __typename?: 'InstanceGoalEntry' }
+    )> }
+    & { __typename?: 'InstanceType' }
+  ) }
+  & { __typename?: 'Query' }
+);
+
 export type SetParameterMutationVariables = Exact<{
   parameterId: Scalars['ID'];
   boolValue?: InputMaybe<Scalars['Boolean']>;
@@ -720,34 +751,6 @@ export type ActivateScenarioMutation = (
     & { __typename?: 'ActivateScenarioMutation' }
   ) | null }
   & { __typename?: 'Mutations' }
-);
-
-export type GetNetEmissionsQueryVariables = Exact<{
-  node: Scalars['ID'];
-}>;
-
-
-export type GetNetEmissionsQuery = (
-  { node?: (
-    { id: string, name: string, goals: Array<(
-      { year: number, value: number }
-      & { __typename?: 'NodeGoal' }
-    )>, metric?: (
-      { id?: string | null, unit?: (
-        { htmlShort: string }
-        & { __typename?: 'UnitType' }
-      ) | null, historicalValues: Array<(
-        { year: number, value: number }
-        & { __typename?: 'YearlyValue' }
-      )>, forecastValues: Array<(
-        { year: number, value: number }
-        & { __typename?: 'YearlyValue' }
-      )> }
-      & { __typename?: 'ForecastMetricType' }
-    ) | null }
-    & { __typename?: 'NodeType' }
-  ) | null }
-  & { __typename?: 'Query' }
 );
 
 export type DimensionalPlotFragment = (
@@ -829,8 +832,8 @@ export type GetNodePageQuery = (
       & { __typename?: 'NodeType' }
     )>, metricDim?: (
       { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-        { id: string, label: string, categories: Array<(
-          { id: string, label: string, color?: string | null, order?: number | null }
+        { id: string, label: string, originalId?: string | null, categories: Array<(
+          { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
           & { __typename?: 'MetricDimensionCategoryType' }
         )> }
         & { __typename?: 'MetricDimensionType' }
