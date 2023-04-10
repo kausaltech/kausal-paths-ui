@@ -74,7 +74,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  const unit = node.unit.htmlLong || node.unit.htmlShort;
+  const unit = node.metric?.unit?.htmlLong || node.metric?.unit?.htmlShort;
 
   const outcomeGraph = useMemo(() => (
     <OutcomeGraph
