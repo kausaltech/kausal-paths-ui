@@ -187,7 +187,7 @@ class DimensionalMetric {
       catVals.set(cat, val);
     })
     const dim = this.data.dimensions.find(dim => dim.id === dimensionId)!;
-    const categoryValues: MetricCategoryValues[] = dim.categories.map(cat => {
+    let categoryValues: MetricCategoryValues[] = dim.categories.map(cat => {
       const historicalValues: (number | null)[] = [];
       const forecastValues: (number | null)[] = [];
       this.data.years.forEach(year => {
@@ -208,23 +208,19 @@ class DimensionalMetric {
     });
     const historicalYears = this.data.years.filter(year => this.data.forecastFrom ? year < this.data.forecastFrom : true);
     const forecastYears = this.data.years.filter(year => this.data.forecastFrom ? year >= this.data.forecastFrom : false);
-    if (categoryValues.every(cv => cv.category.order != null)) {
-      categoryValues.sort((a, b) => (a.category.order! - b.category.order!));
-    } else {
-      if (sort) {
-        let idx = historicalYears.length - 1;
-        let key = 'historicalValues';
-        if (idx < 0) {
-          idx = forecastYears.length - 1;
-          key = 'forecastValues';
-        }
-        if (idx >= 0) {
-          categoryValues.sort((a, b) => (b[key][idx] - a[key][idx]));
-        }
+    const ordered = categoryValues.filter(cv => cv.category.order != null).sort((a, b) => (a.category.order! - b.category.order!));
+    const unordered = categoryValues.filter(cv => cv.category.order == null);
+    if (sort) {
+      let idx = historicalYears.length - 1;
+      let key = 'historicalValues';
+      if (idx < 0) {
+        idx = forecastYears.length - 1;
+        key = 'forecastValues';
       }
+      unordered.sort((a, b) => (b[key][idx] - a[key][idx]));
     }
     const out: MetricSlice = {
-      categoryValues,
+      categoryValues: [...ordered, ...unordered],
       historicalYears,
       forecastYears,
     };
