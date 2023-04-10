@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
+import { useInstance } from 'common/instance';
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
@@ -24,6 +25,7 @@ import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import SubActions from 'components/general/SubActions';
 import ImpactDisplay from 'components/general/ImpactDisplay';
+import * as Icon from 'react-bootstrap-icons';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -67,6 +69,20 @@ const PageHeader = styled.div`
   }
 `;
 
+const Trigger = styled.div`
+  display: flex;
+`;
+
+const TriggerButton = styled.button`
+  border: 0;
+  background-color: ${(props) => props.theme.themeColors.white};
+  font-size: 1.5rem;
+
+  &:hover {
+    background-color: ${(props) => props.theme.graphColors.grey005};
+  }
+`;
+
 const ContentWrapper = styled.div`
   padding: 1rem;
   margin: .5rem 0;
@@ -85,6 +101,7 @@ export default function ActionPage() {
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const site = useSite();
+  const instance = useInstance();
 
   const { loading, error, data, refetch } = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
     fetchPolicy: 'no-cache',
@@ -110,6 +127,7 @@ export default function ActionPage() {
 
   const action = data.node;
   const causalNodes = action.downstreamNodes;
+  const lastNode = causalNodes.find((node) => node.outputNodes.length === 0);
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
     (dataPoint) => dataPoint.year === yearRange[1],
@@ -124,7 +142,7 @@ export default function ActionPage() {
 
   const fakeSubActions = [
     {
-      id: '1',
+      id: 'building_heat_demand',
       name: 'Endenergieverbrauch Fossiler Brennstoff',
       description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
       active: true,
@@ -132,7 +150,7 @@ export default function ActionPage() {
       parameters: action.parameters
     },
     {
-      id: '2',
+      id: 'building_heat_consumption_historical',
       name: 'Endenergieverbrauch Biobrennstoff',
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
       active: true,
@@ -140,7 +158,7 @@ export default function ActionPage() {
       parameters: action.parameters
     },
     {
-      id: '3',
+      id: 'building_energy_retrofit',
       name: 'Endenergieverbrauch Fernwärme',
       description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
       active: true,
@@ -194,32 +212,46 @@ export default function ActionPage() {
                   <ActionParameters
                     parameters={action.parameters}
                   />
+                  {lastNode && (
+                  <NodePlot
+                    metric={lastNode.metric}
+                    impactMetric={lastNode.impactMetric}
+                    year="2021"
+                    startYear={yearRange[0]}
+                    endYear={yearRange[1]}
+                    color={lastNode.color}
+                    isAction={lastNode.isAction}
+                    targetYear={instance.targetYear}
+                    targetYearGoal={lastNode.targetYearGoal}
+                    quantity={lastNode.quantity}
+                    compact={true}
+                  /> )}
                   <ImpactDisplay
-                    effectCumulative={actionEffectCumulative}
+                    effectCumulative={undefined}
                     effectYearly={actionEffectYearly}
                     yearRange={yearRange}
-                    unitCumulative={unitCumulative}
+                    unitCumulative={undefined}
                     unitYearly={unitYearly}
                     muted={!isActive}
                   />
                 </ActionMetrics>
-              </ActionDescription>
-              { action.metric && (
-              <ContentWrapper>
-                { flowPlot || (
-                  <NodePlot
-                    metric={action.metric}
-                    impactMetric={action.impactMetric}
-                    year="2021"
-                    startYear={yearRange[0]}
-                    endYear={yearRange[1]}
-                    color={action.color}
-                    isAction={action.isAction}
-                    targetYearGoal={action.targetYearGoal}
-                  />
+
+                { action.metric && (
+                  flowPlot || (
+                    <NodePlot
+                      metric={action.metric}
+                      impactMetric={action.impactMetric}
+                      year="2021"
+                      startYear={yearRange[0]}
+                      endYear={yearRange[1]}
+                      color={action.color}
+                      isAction={action.isAction}
+                      targetYearGoal={action.targetYearGoal}
+                    />
+                  )
                 )}
-              </ContentWrapper>
-              )}
+              </ActionDescription>
+              
               <SubActions
                 actions={fakeSubActions}
               />

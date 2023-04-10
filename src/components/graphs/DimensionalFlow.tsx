@@ -163,7 +163,11 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
     return out;
   }, []);
 
-  const ref = usePlotlyBasic({ data: data, layout, config });
+  const ref = usePlotlyBasic({ data: data, layout, config  });
+
+  // TODO: How to have useResizeHandler work with usePlotlyBasic?
+  // The resulting graph is not responsive with this implementation.
+
   return (
     <div ref={ref} style={{ width: '100%' }} />
   )

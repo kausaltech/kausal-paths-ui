@@ -20,8 +20,25 @@ const Tools = styled.div`
     text-decoration: none;
   }
 `;
+type NodePlotProps = {
+  metric: any;
+  impactMetric: any;
+  startYear: number;
+  endYear: number;
+  color?: string;
+  isAction?: boolean;
+  targetYearGoal?: number;
+  targetYear?: number;
+  filled?: boolean;
+  quantity?: string;
+  compact?: boolean;
+} & typeof NodePlotDefaultProps;
 
-const NodePlot = (props) => {
+const NodePlotDefaultProps = {
+  compact: false,
+};
+
+const NodePlot = (props: NodePlotProps) => {
   const {
     metric,
     impactMetric,
@@ -33,6 +50,7 @@ const NodePlot = (props) => {
     targetYear,
     filled,
     quantity,
+    compact,
   } = props;
 
   const { t } = useTranslation();
@@ -77,7 +95,7 @@ const NodePlot = (props) => {
     t('table-action-impact')!,
   ];
 
-  console.log(historical.x);
+  // console.log(historical.x);
   const downloadableHistorical = historical.x.map((date, index) => (
     {
       [tableColumns[0]]: date,
@@ -255,7 +273,7 @@ const NodePlot = (props) => {
   }
   const nrYears = endYear - startYear;
   const layout: Partial<Plotly.Layout> = {
-    height: 300,
+    height: compact ? 200 : 300,
     margin: {
       t: 24,
       r: 24,
@@ -282,7 +300,8 @@ const NodePlot = (props) => {
       anchor: 'y2',
       ticklen: 10,
       type: 'date',
-      dtick: nrYears > 15 ? 'M24' : 'M12',
+      nticks: compact ? 10 : 20,
+      // dtick: nrYears > 15 ? 'M24' : 'M12',
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
@@ -296,7 +315,7 @@ const NodePlot = (props) => {
       family: systemFont,
     },
     paper_bgcolor: 'rgba(0,0,0,0)',
-    showlegend: true,
+    showlegend: compact ? false : true,
     legend: {
       orientation: 'h',
       yanchor: 'top',
@@ -318,6 +337,7 @@ const NodePlot = (props) => {
         config={{ displayModeBar: false }}
         noValidate
       />
+      { !compact && (
       <Tools>
         <CsvDownload 
           data={downloadableTable}
@@ -327,9 +347,11 @@ const NodePlot = (props) => {
           <CloudArrowDown />
           { ` ${t('download-data')}` }
         </CsvDownload>
-      </Tools>
+      </Tools> )}
     </>
   );
 };
+
+NodePlot.defaultProps = NodePlotDefaultProps;
 
 export default NodePlot;

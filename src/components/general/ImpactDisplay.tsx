@@ -34,8 +34,8 @@ type ImpactDisplayProps = {
   effectCumulative: string | number,
   effectYearly: string | number,
   yearRange: [number, number],
-  unitCumulative: string,
-  unitYearly: string,
+  unitCumulative?: string,
+  unitYearly?: string,
   muted?: boolean,
   size?: string,
 } & typeof ImpactDisplayDefaultProps;
@@ -49,8 +49,8 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
   const { effectCumulative, effectYearly, yearRange, unitCumulative, unitYearly, muted, size } = props;
   const { t, i18n } = useTranslation();
 
-  const cumulativePrefix = effectCumulative > 0 ? '+' : '';
-  const yearlyPrefix = effectYearly > 0 ? '+' : '';
+    const cumulativePrefix = effectCumulative > 0 ? '+' : '';
+    const yearlyPrefix = effectYearly > 0 ? '+' : '';
 
   return (
     <ImpactDisplayWrapper>

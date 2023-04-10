@@ -211,7 +211,7 @@ const CausalGrid = (props) => {
                     <div>
                       <CausalCard
                         node={col}
-                        compact
+                        compact={false}
                         startYear={yearRange[0]}
                         endYear={yearRange[1]}
                         noEffect={actionIsOff}

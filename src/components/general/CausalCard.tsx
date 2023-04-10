@@ -118,6 +118,7 @@ const CausalCard = (props: CausalCardProps) => {
                 targetYearGoal={targetYearGoal}
                 targetYear={maxYear}
                 quantity={node.quantity}
+                compact
               />
             </ContentWrapper> )}
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
