@@ -11,6 +11,9 @@ const GET_ACTION_CONTENT = gql`
       dimensionalFlow {
         ...DimensionalPlot
       }
+      downstreamNodes {
+        ...CausalGridNode
+      }
     }
   }
   ${DimensionalFlow.fragment}
