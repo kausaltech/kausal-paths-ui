@@ -8,7 +8,7 @@ import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
-import { yearRangeVar, activeScenarioVar, } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
@@ -90,6 +90,7 @@ export default function ActionPage() {
   const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
+  const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
   const instance = useInstance();
 
@@ -212,6 +213,7 @@ export default function ActionPage() {
                       unitCumulative={undefined}
                       unitYearly={unitYearly}
                       muted={!isActive}
+                      impactName={activeGoal?.label || undefined }
                     >
                       {lastNode && (
                       <NodePlot

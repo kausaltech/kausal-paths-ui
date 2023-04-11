@@ -49,6 +49,7 @@ type ImpactDisplayProps = {
   unitYearly: string | undefined,
   muted?: boolean | undefined,
   size?: 'sm' | 'md' | 'lg',
+  impactName?: string,
   children?: React.ReactNode,
 } & typeof ImpactDisplayDefaultProps;
 
@@ -61,7 +62,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
   const {
     effectCumulative, effectYearly,
     yearRange, unitCumulative, unitYearly,
-    muted, size, children } = props;
+    muted, size, impactName, children } = props;
   const { t, i18n } = useTranslation();
 
   const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
@@ -73,6 +74,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
     <ImpactDisplayWrapper>
       <ImpactDisplayHeader muted={muted}>
         { t('impact') }
+        { impactName && ` (${impactName})`}
       </ImpactDisplayHeader>
       { effectCumulative !== undefined && instance.features.showAccumulatedEffects && (
       <ImpactDisplayItem>
