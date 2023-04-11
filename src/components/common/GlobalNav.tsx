@@ -334,7 +334,7 @@ function GlobalNav(props) {
         expand="md"
         id="branding-navigation-bar"
         aria-label={siteTitle}
-        container
+        container="lg"
       >
           <Link href="/" passHref>
             <HomeLink>

@@ -146,7 +146,7 @@ function ActionListPage(props: ActionListPageProps) {
   return (
   <>
     <HeaderSection>
-      <Container>
+      <Container fluid="lg">
         <PageHeader>
           <h1>
             {t('actions')}
@@ -168,7 +168,7 @@ function ActionListPage(props: ActionListPageProps) {
           </Row>
         )}
       </Container>
-      <Container>
+      <Container fluid="lg">
         <ActiveScenario>
           {t('scenario')}
           :
@@ -298,7 +298,7 @@ function ActionListPage(props: ActionListPageProps) {
       </SettingsForm>
       </Container>
     </HeaderSection>
-    <Container className="mb-5">
+    <Container fluid="lg" className="mb-5">
       <Row>
         <Col>
           {listType === 'list' && (

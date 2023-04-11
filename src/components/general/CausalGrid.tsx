@@ -235,7 +235,7 @@ const CausalGrid = (props: CausalGridProps) => {
         ))}
       </GridSesction>
       <GoalSection>
-        <Container>
+        <Container fluid="lg">
           <PageHeader>
             <ArcherElement
               id={lastNode.id}

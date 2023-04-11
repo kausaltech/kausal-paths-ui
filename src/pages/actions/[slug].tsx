@@ -179,7 +179,7 @@ export default function ActionPage() {
         </title>
       </Head>
       <HeaderSection>
-        <Container>
+        <Container fluid="lg">
           <PageHeader>
             <HeaderCard>
               <h1>

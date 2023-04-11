@@ -70,7 +70,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
   return (
     <FixedPanel>
       <MainSettingsSection>
-      <Container>
+      <Container fluid="lg">
         <Row>
           <Col md="2" sm="4" xs="12">
             { true && (
@@ -112,7 +112,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
         </MainSettingsSection>
         { showExtras && (
           <ExtraSettingsSection>
-            <Container>
+            <Container fluid="lg">
               <GlobalParameters parameters={site.parameters} />
             </Container>
           </ExtraSettingsSection>

@@ -31,7 +31,7 @@ const FrontPageHeader = (props) => {
 
   return (
     <HeaderSection backgroundColor={backgroundColor}>
-      <Container>
+      <Container fluid="lg">
         <Row>
           <Col md={{ size: 10, offset: 1 }}>
             <PageHeader>
