@@ -135,33 +135,6 @@ export default function ActionPage() {
     <DimensionalPlot flow={action.dimensionalFlow} />
   )
 
-  const fakeSubActions = [
-    {
-      id: 'building_heat_demand',
-      name: 'Endenergieverbrauch Fossiler Brennstoff',
-      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: true,
-      parameters: action.parameters
-    },
-    {
-      id: 'building_heat_consumption_historical',
-      name: 'Endenergieverbrauch Biobrennstoff',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: true,
-      parameters: action.parameters
-    },
-    {
-      id: 'building_energy_retrofit',
-      name: 'Endenergieverbrauch Fernwärme',
-      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: false,
-      parameters: action.parameters
-    },
-  ];
-
   return (
     <>
       <Head>
@@ -252,10 +225,6 @@ export default function ActionPage() {
                   )
                 )}
               </ActionDescription>
-              
-              <SubActions
-                actions={fakeSubActions}
-              />
             </HeaderCard>
           </PageHeader>
         </Container>
