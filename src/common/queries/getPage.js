@@ -10,7 +10,7 @@ const OUTCOME_NODE_FIELDS = gql`
     order
     shortName
     shortDescription
-    metric {
+    metric(goalId: $goal) {
       id
       name
       unit {
@@ -32,6 +32,10 @@ const OUTCOME_NODE_FIELDS = gql`
       }
     }
     targetYearGoal
+    goals(activeGoal: $goal) {
+      year
+      value
+    }
     unit {
       short
       htmlShort
@@ -60,7 +64,7 @@ ${DimensionalNodePlot.fragment}
 
 const GET_PAGE = gql`
 ${OUTCOME_NODE_FIELDS}
-query GetPage($path: String!) {
+query GetPage($path: String!, $goal: ID) {
   activeScenario {
     id
   }

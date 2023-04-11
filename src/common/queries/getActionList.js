@@ -1,8 +1,9 @@
 import { gql } from '@apollo/client';
 
 const GET_ACTION_LIST = gql`
-  query GetActionList {
+  query GetActionList($goal: ID) {
     instance {
+      id
       actionGroups {
         id
         name
@@ -55,7 +56,7 @@ const GET_ACTION_LIST = gql`
       outputNodes {
         id
       }
-      impactMetric {
+      impactMetric(goalId: $goal) {
         id
         unit {
           htmlShort

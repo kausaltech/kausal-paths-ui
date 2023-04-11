@@ -127,11 +127,11 @@ type CausalGridProps = {
   nodes: CausalGridNode[],
   yearRange: [number, number],
   actionIsOff: boolean,
-  actionId: string,
+  action: NonNullable<GetActionContentQuery['node']>,
 }
 
 const CausalGrid = (props: CausalGridProps) => {
-  const { nodes, yearRange, actionIsOff, actionId } = props;
+  const { nodes, yearRange, actionIsOff, action } = props;
   const theme = useContext(ThemeContext);
   const instance = useInstance();
   const gridCanvas = useRef(null);
@@ -140,16 +140,30 @@ const CausalGrid = (props: CausalGridProps) => {
     return <Container className="pt-5"><Alert color="warning">Action has no nodes</Alert></Container>
   }
 
+  const parentMap = new Map<string, CausalGridNode[]>();
+  [action, ...nodes].forEach(node => {
+    node.outputNodes.forEach(output => {
+      const old = parentMap.get(output.id) || [];
+      parentMap.set(output.id, [...old, node]);
+    })
+  });
+  const filteredNodes = nodes.filter(node => {
+    // Remove some nodes from the causal pathways (for now)
+    if (action.dimensionalFlow && node.quantity !== 'emissions') {
+      node.outputNodes.map(output => {
+        const p = parentMap.get(output.id)!;
+        p.splice(p.indexOf(node), 1);
+        parentMap.set(output.id, [...p, ...(parentMap.get(node.id) || [])])
+      });
+      return false;
+    }
+    return true;
+  });
+
   const findOutputs = (parentIds: string[], tree: CausalGridNode[]) => {
     const grid = tree?.length ? tree : [];
     // return all nodes that input to given node ids
-    const inputs = nodes.filter(
-      (node) => node.outputNodes.find(
-        (input) => parentIds.find(
-          (parentId) => parentId === input.id,
-        ),
-      ),
-    );
+    const inputs = Array.from(new Set(parentIds.flatMap(id => parentMap.get(id) || []))).filter(node => node.id !== action.id);
     // create grid row of ids
     const rowIds = inputs.map(
       (outputNode) => outputNode.id,
@@ -168,16 +182,15 @@ const CausalGrid = (props: CausalGridProps) => {
   };
 
   // Build the grid from bottom up
-  const lastNode = nodes.find((node) => node.outputNodes.length === 0)!;
+  const lastNode = filteredNodes.find((node) => node.outputNodes.length === 0)!;
   const causalGridNodes = findOutputs([lastNode.id], []);
-
   const impactAtTargetYear = getImpactMetricValue(lastNode, yearRange[1]);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact = lastNode.quantity === 'emissions'
     ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1]) : undefined;
 
   // find nodes that the action affects directly
-  const actionOutputNodes = nodes.filter((node) => node.inputNodes.find((inputNode) => inputNode.id === actionId));
+  const actionOutputNodes = filteredNodes.filter((node) => parentMap.get(node.id)!.find((inputNode) => inputNode.id === action.id));
 
   return (
     <ArcherContainer
@@ -201,9 +214,8 @@ const CausalGrid = (props: CausalGridProps) => {
           <ActionPoint />
         </ArcherElement>
         {causalGridNodes?.map((row, rowIndex) => (
-
-          <GridRowWrapper>
-            <GridRow onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
+          <GridRowWrapper onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
+            <GridRow>
               {row.map((col, colindex) => (
                 <GridCol key={col.id}>
                   <ArcherElement

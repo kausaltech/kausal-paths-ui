@@ -1,14 +1,18 @@
 import _ from 'lodash';
 import numbro from 'numbro';
-import { getI18n } from './i18n';
 
+let nrSignificantDigits = 3;
+
+export function setSignificantDigits(nr: number) {
+  nrSignificantDigits = nr;
+}
 
 // Use Finnish style numeric display formatting
-export const beautifyValue = (x: number) => {
-  const i18n = getI18n();
+export const beautifyValue = (x: number, significantDigits?: number) => {
+  if (!significantDigits) significantDigits = nrSignificantDigits;
 
   if (!x) return x;
-  let rounded = Math.abs(x) < 1 ? Number(x.toFixed(3)) : Number(x.toPrecision(3)); 
+  let rounded = Math.abs(x) < 1 ? Number(x.toFixed(significantDigits)) : Number(x.toPrecision(significantDigits)); 
   const format: numbro.Format = {
     thousandSeparated: true,
   }
@@ -18,7 +22,7 @@ export const beautifyValue = (x: number) => {
 
 // Use Format number to locale and round to 3 decimals
 export const formatNumber = (value, language) => {
-  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language)
+  return parseFloat(Number(value).toPrecision(nrSignificantDigits)).toLocaleString(language)
 };
 
 export const getInitialMetric = (node) => node.metric.historicalValues[0];

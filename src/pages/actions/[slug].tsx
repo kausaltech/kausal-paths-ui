@@ -8,7 +8,7 @@ import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
-import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, activeGoalVar, } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
@@ -94,18 +94,22 @@ export default function ActionPage() {
   const site = useSite();
   const instance = useInstance();
 
-  const { loading, error, data, refetch } = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
-    fetchPolicy: 'no-cache',
+  const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
+    fetchPolicy: 'cache-and-network',
     variables: {
       node: slug as string,
+      goal: activeGoal?.id,
     },
   });
+  const { loading, error, previousData, refetch } = queryResp;
+
+  const data = queryResp.data ?? previousData;
 
   useEffect(() => {
     refetch();
   }, [activeScenario]);
 
-  if (loading) {
+  if (!data) {
     return <ContentLoader />;
   }
   if (error) {
@@ -260,7 +264,7 @@ export default function ActionPage() {
         nodes={causalNodes}
         yearRange={yearRange}
         actionIsOff={!isActive}
-        actionId={action.id}
+        action={action}
       />
       <SettingsPanel />
     </>

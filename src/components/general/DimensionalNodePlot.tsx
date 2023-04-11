@@ -234,7 +234,11 @@ class DimensionalMetric {
         historicalValues,
         isNegative,
       };
+    }).filter(cv => {
+      const hasVals = [...cv.historicalValues, ...cv.forecastValues].find(val => val !== null && val != 0);
+      return hasVals !== undefined;
     });
+
     const historicalYears = this.data.years.filter(year => !this.isForecastYear(year));
     const forecastYears = this.data.years.filter(year => this.isForecastYear(year));
     const ordered = categoryValues.filter(cv => cv.category.order != null).sort((a, b) => (a.category.order! - b.category.order!));
