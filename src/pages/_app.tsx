@@ -19,6 +19,7 @@ import Layout from 'components/Layout';
 import { GetAvailableInstancesQuery, GetInstanceContextQuery, GetInstanceContextQueryVariables } from 'common/__generated__/graphql';
 import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
+import { setSignificantDigits } from 'common/preprocess';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
@@ -189,6 +190,8 @@ function PathsApp(props: PathsAppProps) {
   }
 
   const instance = instanceContext;
+  setSignificantDigits(instance.features.showSignificantDigits);
+
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
   const goals = instance.goals
 

@@ -30,6 +30,7 @@ query GetInstanceContext {
       features {
         baselineVisibleInGraphs
         showAccumulatedEffects
+        showSignificantDigits
       }
       goals {
         id
