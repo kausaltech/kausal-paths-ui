@@ -2,6 +2,7 @@ import { useTranslation } from 'next-i18next';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
+import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const Header = styled.div`
   display: flex;
@@ -64,7 +65,21 @@ const MainUnit = styled.div`
   font-size: 0.6rem;
 `;
 
-const OutcomeCard = (props) => {
+type OutcomeCardProps = {
+  node: OutcomeNodeFieldsFragment,
+  startYear: number,
+  endYear: number,
+  //subNodes: OutcomeNodeFieldsFragment[],
+  state: 'open' | 'closed',
+  hovered: boolean,
+  active: boolean,
+  onHover: (evt) => void,
+  handleClick: (segmentId: string) => void,
+  color: string,
+
+}
+
+const OutcomeCard = (props: OutcomeCardProps) => {
   const { node, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
   const { t } = useTranslation();
@@ -73,7 +88,7 @@ const OutcomeCard = (props) => {
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  const unit = node.unit.htmlShort;
+  const unit = node.metric?.unit?.htmlShort;
   // If there is no outcome  value for active year, do not display card set
   if (goalOutcomeValue === undefined) return null;
 
@@ -99,11 +114,13 @@ const OutcomeCard = (props) => {
         <div />
         <MainValue>
           {beautifyValue(goalOutcomeValue)}
-          <MainUnit dangerouslySetInnerHTML={{ __html: unit }} />
-          <Status>
-            {change > 0 && <span>+</span>}
-            {change ? <span>{`${change}%`}</span> : <span>-</span>}
-          </Status>
+          <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
+          { change && (
+            <Status>
+              {change > 0 && <span>+</span>}
+              {change ? <span>{`${change}%`}</span> : <span>-</span>}
+            </Status>
+          )}
         </MainValue>
       </Body>
     </DashCard>

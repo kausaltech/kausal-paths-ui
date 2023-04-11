@@ -208,8 +208,8 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
     orderByMetric(cardNodes);
-    const subNodeMap = new Map(
-      cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)).filter((child) => !!child)])
+    const subNodeMap = new Map<string, OutcomeNodeFieldsFragment[]>(
+      cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)!).filter((child) => !!child)])
     );
     return {
       cardNodes,
@@ -275,7 +275,6 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
                 startYear={startYear}
                 endYear={endYear}
                 node={node}
-                subNodes={subNodeMap.get(node.id)}
                 state={activeNodeId === undefined ? 'closed' : 'open'}
                 hovered={hoveredNodeId === node.id}
                 active={activeNodeId === node.id}
