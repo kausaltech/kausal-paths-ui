@@ -197,6 +197,8 @@ export default function NodePage() {
               { node.metricDim ? (
                 <ContentWrapper>
                   <DimensionalNodePlot
+                    key={node.id}
+                    node={node}
                     metric={node.metricDim}
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
