@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useReactiveVar, NetworkStatus, useSuspenseQuery_experimental } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
-import { activeScenarioVar, yearRangeVar, } from 'common/cache';
+import { activeGoalVar, activeScenarioVar, yearRangeVar, } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label, Alert } from 'reactstrap';
 import { SortUp, SortDown } from 'react-bootstrap-icons';
 import { useTranslation } from 'next-i18next';
@@ -83,12 +83,17 @@ type ActionListPageProps = {
 function ActionListPage(props: ActionListPageProps) {
   const { t } = useTranslation();
   const { page } = props;
-  const { error, data, loading, networkStatus, previousData } = (
+  const activeGoal = useReactiveVar(activeGoalVar);
+  const queryResp = (
     useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
-      fetchPolicy: 'cache-first',
+      variables: {
+        goal: activeGoal?.id,
+      },
+      fetchPolicy: 'cache-and-network',
       notifyOnNetworkStatusChange: true,
     })
   );
+  const { error, loading, networkStatus, previousData } = queryResp;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
   const site = useSite();
@@ -99,6 +104,7 @@ function ActionListPage(props: ActionListPageProps) {
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState('undefined');
 
+  const data = queryResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
   // TODO: set default sort by efficiency if we have efficiency data
   // Maybe this needs a useEffect hook?
@@ -139,7 +145,7 @@ function ActionListPage(props: ActionListPageProps) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
 
-  if (loading && !previousData) {
+  if (!data) {
     return <ContentLoader />
   }
 

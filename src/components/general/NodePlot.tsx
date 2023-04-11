@@ -72,6 +72,8 @@ const NodePlot = (props: NodePlotProps) => {
     return out;
   };
 
+  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length) return null;
+
   const hasImpact = impactMetric?.forecastValues.length
     && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
@@ -91,7 +93,6 @@ const NodePlot = (props: NodePlotProps) => {
     t('table-action-impact')!,
   ];
 
-  console.log(historical.x);
   const downloadableHistorical = historical.x.map((date, index) => (
     {
       [tableColumns[0]]: date,

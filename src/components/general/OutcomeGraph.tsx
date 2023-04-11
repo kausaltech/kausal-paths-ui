@@ -22,12 +22,19 @@ const PlotLoader = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const formatHover = (name, color, isPred, systemFont, predLabel, shortUnit) => {
-  const predText = isPred ? ` <i> (${predLabel})</i>` : '';
+
+/* This is naughty, but it will be removed later anyway. */
+let instanceNrDigits = 3;
+
+const formatHover = (name, color, isPred, systemFont, predLabel, unit) => {
+  const predText = (isPred && predLabel) ? ` <i> (${predLabel})</i>` : '';
   const out = {
-    hovertemplate:  `${name}<br />` +
-                    `%{x}: <b>%{y:.3r} ${shortUnit}</b>${predText}<br />` +
-                    `<b>%{customdata}</b><extra></extra>`,
+    hovertemplate:
+      `${name}: ` +
+      `<b>%{y:,.${instanceNrDigits}r} ${unit}</b> ` +
+      `<b>%{customdata}</b>` +
+      `${predText}` +
+      `<extra></extra>`,
     hoverlabel: {
       bgcolor: color,
       font: {
@@ -196,6 +203,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
   const instance = useInstance();
+  instanceNrDigits = instance.features.showSignificantDigits;
   const shapes: Plotly.Layout['shapes'] = [];
   const plotData: Plotly.Data[] = [];
   const [loading, setLoading] = useState(true);
@@ -203,6 +211,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   const metric = parentNode.metric!;
 
   const baselineForecast = metric.baselineForecastValues && metricToPlot(parentNode.metric, 'baselineForecastValues', startYear, endYear);
+  const goals = parentNode.goals;
   const targetYearGoal = parentNode.targetYearGoal;
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
@@ -258,30 +267,50 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       },
     );
   }
-
-  if (targetYearGoal != null) {
+  const goalsWithinRange = goals.filter(goal => (goal.year >= startYear) && (goal.year <= endYear));
+  if (goalsWithinRange.length >= 2) {
+    const name = t('target')!;
+    plotData.push({
+      name,
+      type: 'scatter',
+      xaxis: 'x2',
+      yaxis: 'y',
+      line: {
+        color: theme.graphColors.red090,
+        width: 2,
+        dash: 'dot',
+      },
+      marker: {
+        size: 8,
+      },
+      x: goalsWithinRange.map(v => v.year),
+      y: goalsWithinRange.map(v => v.value),
+      hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${shortUnit}</b><extra></extra>`,
+    })
+  } else if (goals.length) {
+    const goal = goals[goals.length - 1];
     shapes.push({
       type: 'line',
       yref: 'y',
       xref: 'x2',
-      x0: startYear ===  site.baseYear ? site.minYear : startYear,
-      y0: targetYearGoal,
-      x1: endYear,
-      y1: targetYearGoal,
+      x0: startYear === site.baseYear ? site.minYear : startYear,
+      y0: goal.value,
+      x1: goal.year > endYear ? endYear : goal.year,
+      y1: goal.value,
       line: {
         color: theme.graphColors.red090,
         width: 2,
         dash: 'dot',
       },
     });
-    if (endYear === site.targetYear) {
+    if (endYear === goal.year) {
       plotData.push({
-        x: [site.targetYear],
-        y: [targetYearGoal],
+        x: [goal.year],
+        y: [goal.value],
         type: 'scatter',
         xaxis: 'x2',
         yaxis: 'y',
-        name: `${t('target')} ${site.maxYear}`,
+        name: `${t('target')} ${goal.year}`,
         line: {
           color: theme.graphColors.red090,
           width: 2,
@@ -298,6 +327,8 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       r: 48,
       b: 48,
     },
+    hovermode: 'x unified',
+    hoverdistance: 10,
     yaxis: {
       domain: [0, 1],
       anchor: 'x',
@@ -313,6 +344,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       nticks: 1,
       ticklen: 10,
       tickcolor: theme.graphColors.grey030,
+      hoverformat: '%Y',
     },
     xaxis2: {
       domain: [0, 1],

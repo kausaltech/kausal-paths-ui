@@ -118,7 +118,6 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
   if (!data || !data.instance.goals.length) return <div>no data</div>
 
   const goal = data.instance.goals[0];
-  console.log(goal);
   const valuesByYear = new Map(goal.values.map(goal => [goal.year, goal]));
   const unit = goal.unit.htmlShort;
   const historical = goal.values.filter(val => !val.isForecast);

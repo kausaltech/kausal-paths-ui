@@ -3,161 +3,115 @@ import DimensionalFlow from 'components/graphs/DimensionalFlow';
 
 
 const GET_ACTION_CONTENT = gql`
-  query GetActionContent($node: ID!) {
+  query GetActionContent($node: ID!, $goal: ID) {
     node(id: $node) {
-      id
-      name
-      shortDescription
+      ...CausalGridNode
       description
-      color
       decisionLevel
-      targetYearGoal
-      unit {
-        htmlShort
-      }
-      quantity
-      isAction
-      outputNodes{
-        id
-      }
-      inputNodes{
-        id
-      }
-      parameters {
-        __typename
-        id
-        description
-        nodeRelativeId
-        node {
-          id
-        }
-        isCustomized
-        ... on NumberParameterType {
-          numberValue: value
-          numberDefaultValue: defaultValue
-          minValue
-          maxValue
-          unit {
-            htmlShort
-          }
-        }
-        ... on BoolParameterType {
-          boolValue: value
-          boolDefaultValue: defaultValue
-        }
-        ... on StringParameterType {
-          stringValue: value
-          stringDefaultValue: defaultValue
-        }
-      }
       dimensionalFlow {
         ...DimensionalPlot
       }
-      metric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
-      }
       downstreamNodes {
-        id
-        name
-        shortDescription
-        color
-        targetYearGoal
-        unit {
-          htmlShort
-        }
-        inputNodes{
-          id
-        }
-        outputNodes{
-          id
-        }
-        impactMetric {
-          name
-          id
-          unit {
-            htmlShort
-          }
-          historicalValues {
-            year
-            value
-          }
-          forecastValues {
-            value
-            year
-          }
-          baselineForecastValues {
-            year
-            value
-          }
-          yearlyCumulativeUnit {
-            htmlShort
-          }
-        }
-        quantity
-        isAction
-        parameters {
-          __typename
-          description
-          id
-          nodeRelativeId
-          node {
-            id
-          }
-          isCustomized
-          ... on NumberParameterType {
-            numberValue: value
-            numberDefaultValue: defaultValue
-            minValue
-            maxValue
-          }
-          ... on BoolParameterType {
-            boolValue: value
-            boolDefaultValue: defaultValue
-          }
-          ... on StringParameterType {
-            stringValue: value
-            stringDefaultValue: defaultValue
-          }
-        }
-        metric {
-          name
-          id
-          unit {
-            htmlShort
-          }
-          historicalValues {
-            year
-            value
-          }
-          forecastValues {
-            value
-            year
-          }
-          baselineForecastValues {
-            year
-            value
-          }
-        }
+        ...CausalGridNode
       }
     }
   }
   ${DimensionalFlow.fragment}
+  fragment CausalGridNode on NodeType {
+    id
+    name
+    shortDescription
+    color
+    targetYearGoal
+    unit {
+      htmlShort
+    }
+    inputNodes{
+      id
+    }
+    outputNodes{
+      id
+    }
+    impactMetric(goalId: $goal) {
+      name
+      id
+      unit {
+        htmlShort
+      }
+      historicalValues {
+        year
+        value
+      }
+      forecastValues {
+        value
+        year
+      }
+      baselineForecastValues {
+        year
+        value
+      }
+      yearlyCumulativeUnit {
+        htmlShort
+      }
+    }
+    metricDim {
+      dimensions {
+        id
+        categories {
+          id
+        }
+      }
+      stackable
+    }
+    quantity
+    isAction
+    parameters {
+      __typename
+      description
+      id
+      nodeRelativeId
+      node {
+        id
+      }
+      isCustomized
+      ... on NumberParameterType {
+        numberValue: value
+        numberDefaultValue: defaultValue
+        minValue
+        maxValue
+        unit {
+          htmlShort
+        }
+      }
+      ... on BoolParameterType {
+        boolValue: value
+        boolDefaultValue: defaultValue
+      }
+      ... on StringParameterType {
+        stringValue: value
+        stringDefaultValue: defaultValue
+      }
+    }
+    metric(goalId: $goal) {
+      name
+      id
+      unit {
+        htmlShort
+      }
+      historicalValues {
+        year
+        value
+      }
+      forecastValues {
+        value
+        year
+      }
+      baselineForecastValues {
+        year
+        value
+      }
+    }
+  }
 `;
 
 export { GET_ACTION_CONTENT };

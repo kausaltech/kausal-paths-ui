@@ -1,4 +1,4 @@
-import { ObservableQuery, useQuery } from '@apollo/client';
+import { ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { Container } from 'reactstrap';
 import Head from 'next/head';
@@ -13,6 +13,7 @@ import ActionListPage from 'components/pages/ActionListPage';
 import ErrorMessage from 'components/common/ErrorMessage';
 import { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
 import { Suspense } from 'react';
+import { activeGoalVar } from 'common/cache';
 
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
@@ -20,21 +21,26 @@ export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
 export default function Page({ path, headerExtra }) {
   const site = useSite();
-  const { loading, error, data, refetch } = useQuery<GetPageQuery, GetPageQueryVariables>(
+  const activeGoal = useReactiveVar(activeGoalVar);
+  const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(
     GET_PAGE,
     {
       variables: {
-        path
-      }
+        path,
+        goal: activeGoal?.id,
+      },
+      fetchPolicy: 'cache-and-network',
     }
   );
+  const { loading, error, previousData, refetch } = queryResp;
+  const data = queryResp.data ?? previousData;
   const { t } = useTranslation();
 
   if (error) {
     logError(error, {query: GET_PAGE});
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
-  if (loading || !data) {
+  if (!data) {
     return <ContentLoader />;
   }
   const { page, activeScenario } = data;
