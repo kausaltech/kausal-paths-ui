@@ -378,7 +378,7 @@ function GlobalNav(props) {
         expand="md"
         fixed={navIsFixed ? 'top' : ''}
         id="global-navigation-bar"
-        container
+        container="lg"
       >
           <Collapse isOpen={isOpen} navbar>
             <Nav navbar className="me-auto">

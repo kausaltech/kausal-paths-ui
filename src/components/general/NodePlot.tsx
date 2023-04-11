@@ -14,6 +14,11 @@ import type { CausalGridNode } from './CausalGrid';
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
 
+const PlotWrapper = styled.div<{ compact?: boolean }>`
+  margin: 0 auto;
+  max-width: ${(props) => props.compact ? '480px' : '100%'};
+`;
+
 const Tools = styled.div`
   padding: 0 1rem .5rem;
   text-align: right;
@@ -338,7 +343,7 @@ const NodePlot = (props: NodePlotProps) => {
   };
 
   return (
-    <>
+    <PlotWrapper compact={compact}>
       <Plot
         data={plotData}
         layout={layout}
@@ -358,7 +363,7 @@ const NodePlot = (props: NodePlotProps) => {
           { ` ${t('download-data')}` }
         </CsvDownload>
       </Tools> )}
-    </>
+    </PlotWrapper>
   );
 };
 

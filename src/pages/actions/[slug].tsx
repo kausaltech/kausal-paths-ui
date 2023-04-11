@@ -57,6 +57,11 @@ const ActionMetrics = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
+  flex-direction: column;
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    flex-direction: row;
+  }
 `;
 
 const PageHeader = styled.div` 
@@ -69,29 +74,14 @@ const PageHeader = styled.div`
   }
 `;
 
-const Trigger = styled.div`
-  display: flex;
+const MetricsParameters = styled.div`
+  flex: 2 1 auto;
+  margin-bottom: 1rem;
 `;
 
-const TriggerButton = styled.button`
-  border: 0;
-  background-color: ${(props) => props.theme.themeColors.white};
-  font-size: 1.5rem;
-
-  &:hover {
-    background-color: ${(props) => props.theme.graphColors.grey005};
-  }
-`;
-
-const ContentWrapper = styled.div`
-  padding: 1rem;
-  margin: .5rem 0;
-  background-color: ${(props) => props.theme.graphColors.grey005};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
-
-  .x2sstick text, .xtick text {
-    text-anchor: end !important;
-  }
+const MetricsImpact = styled.div`
+  flex: 3 1 auto;
+  margin-bottom: 1rem;
 `;
 
 export default function ActionPage() {
@@ -209,31 +199,36 @@ export default function ActionPage() {
                 <NodeLink node={action}><a>{t('read-more')}</a></NodeLink>
                 <hr />
                 <ActionMetrics>
-                  <ActionParameters
-                    parameters={action.parameters}
-                  />
-                  {lastNode && (
-                  <NodePlot
-                    metric={lastNode.metric}
-                    impactMetric={lastNode.impactMetric}
-                    year="2021"
-                    startYear={yearRange[0]}
-                    endYear={yearRange[1]}
-                    color={lastNode.color}
-                    isAction={lastNode.isAction}
-                    targetYear={instance.targetYear}
-                    targetYearGoal={lastNode.targetYearGoal}
-                    quantity={lastNode.quantity}
-                    compact={true}
-                  /> )}
-                  <ImpactDisplay
-                    effectCumulative={undefined}
-                    effectYearly={actionEffectYearly}
-                    yearRange={yearRange}
-                    unitCumulative={undefined}
-                    unitYearly={unitYearly}
-                    muted={!isActive}
-                  />
+                  <MetricsParameters>
+                    <ActionParameters
+                      parameters={action.parameters}
+                    />
+                  </MetricsParameters>
+                  <MetricsImpact>
+                    <ImpactDisplay
+                      effectCumulative={undefined}
+                      effectYearly={actionEffectYearly}
+                      yearRange={yearRange}
+                      unitCumulative={undefined}
+                      unitYearly={unitYearly}
+                      muted={!isActive}
+                    >
+                      {lastNode && (
+                      <NodePlot
+                        metric={lastNode.metric}
+                        impactMetric={lastNode.impactMetric}
+                        year="2021"
+                        startYear={yearRange[0]}
+                        endYear={yearRange[1]}
+                        color={lastNode.color}
+                        isAction={lastNode.isAction}
+                        targetYear={instance.targetYear}
+                        targetYearGoal={lastNode.targetYearGoal}
+                        quantity={lastNode.quantity}
+                        compact={true}
+                      /> )}
+                    </ImpactDisplay>
+                  </MetricsImpact>
                 </ActionMetrics>
 
                 { action.metric && (

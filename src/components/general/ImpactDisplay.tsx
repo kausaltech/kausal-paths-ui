@@ -26,6 +26,16 @@ const ImpactDisplayItem = styled.div`
   text-align: left;
   padding: .5rem;
 
+  &:not(:nth-child(2)) {
+    border-left: 1px solid ${(props) => props.theme.graphColors.grey030};
+  }
+`;
+
+const ImpactDisplayChildren = styled.div`
+  flex: 3 1 auto;
+  text-align: left;
+  padding: 0 .5rem;
+
 &:not(:nth-child(2)) {
   border-left: 1px solid ${(props) => props.theme.graphColors.grey030};
 }
@@ -39,6 +49,7 @@ type ImpactDisplayProps = {
   unitYearly: string | undefined,
   muted?: boolean | undefined,
   size?: 'sm' | 'md' | 'lg',
+  children?: React.ReactNode,
 } & typeof ImpactDisplayDefaultProps;
 
 const ImpactDisplayDefaultProps = {
@@ -47,7 +58,10 @@ const ImpactDisplayDefaultProps = {
 };
 
 const ImpactDisplay = (props: ImpactDisplayProps) => {
-  const { effectCumulative, effectYearly, yearRange, unitCumulative, unitYearly, muted, size } = props;
+  const {
+    effectCumulative, effectYearly,
+    yearRange, unitCumulative, unitYearly,
+    muted, size, children } = props;
   const { t, i18n } = useTranslation();
 
   const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
@@ -80,6 +94,11 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
           size={size}
         />
       </ImpactDisplayItem>
+      { children && (
+        <ImpactDisplayChildren>
+          { children }
+        </ImpactDisplayChildren>
+      )}
     </ImpactDisplayWrapper>
   );
 };
