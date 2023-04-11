@@ -257,7 +257,7 @@ const NodePlot = (props: NodePlotProps) => {
     );
   }
 
-  if (targetYearGoal) {
+  if (!compact && targetYearGoal) {
     shapes.push({
       type: 'line',
       yref: 'y',
@@ -326,6 +326,9 @@ const NodePlot = (props: NodePlotProps) => {
       anchor: 'x2',
     },
     hovermode: 'x unified',
+    hoverlabel: {
+      bgcolor: 'white',
+    },
     autosize: true,
     font: {
       family: systemFont,
