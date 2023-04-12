@@ -32,7 +32,7 @@ const GridRow = styled.div`
   //justify-content: center;
   flex-wrap: nowrap;
   white-space: nowrap;
-  overflow-x: scroll;
+  overflow-x: auto;
   overscroll-behavior-x: none;
   scroll-snap-type: x mandatory;
   scroll-padding: 50%;

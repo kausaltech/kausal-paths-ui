@@ -23,7 +23,6 @@ import Badge from 'components/common/Badge';
 import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
-import SubActions from 'components/general/SubActions';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import * as Icon from 'react-bootstrap-icons';
 
