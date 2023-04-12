@@ -356,7 +356,6 @@ const NodePlot = (props: NodePlotProps) => {
         config={{ displayModeBar: false }}
         noValidate
       />
-      { !compact && (
       <Tools>
         <CsvDownload 
           data={downloadableTable}
@@ -366,7 +365,7 @@ const NodePlot = (props: NodePlotProps) => {
           <CloudArrowDown />
           { ` ${t('download-data')}` }
         </CsvDownload>
-      </Tools> )}
+      </Tools>
     </PlotWrapper>
   );
 };
