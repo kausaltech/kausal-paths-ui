@@ -51,6 +51,7 @@ const findVisibleNodes = (allNodes: Map<string, OutcomeNode>, lastNodeId: string
   const lastNode = allNodes.get(lastNodeId)!;
   visibleNodes.unshift(lastNode);
   if (lastNode.outputNodes?.length) {
+    if (!allNodes.has(lastNode.outputNodes[0].id)) return visibleNodes;
     findVisibleNodes(allNodes, lastNode.outputNodes[0].id, visibleNodes);
   }
   return visibleNodes;
