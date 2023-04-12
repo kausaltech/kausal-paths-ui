@@ -14,6 +14,11 @@ import type { CausalGridNode } from './CausalGrid';
 const Plot = dynamic(() => import('components/graphs/Plot'),
   { ssr: false });
 
+const PlotWrapper = styled.div<{ compact?: boolean }>`
+  margin: 0 auto;
+  max-width: ${(props) => props.compact ? '480px' : '100%'};
+`;
+
 const Tools = styled.div`
   padding: 0 1rem .5rem;
   text-align: right;
@@ -33,7 +38,16 @@ type NodePlotProps = {
   targetYear?: number,
   filled?: boolean,
   quantity: string,
-}
+  compact?: boolean;
+} & typeof NodePlotDefaultProps;
+
+const NodePlotDefaultProps = {
+  compact: false,
+  filled: false,
+  isAction: false,
+  targetYearGoal: undefined,
+  targetYear: undefined,
+};
 
 const NodePlot = (props: NodePlotProps) => {
   const {
@@ -47,6 +61,7 @@ const NodePlot = (props: NodePlotProps) => {
     targetYear,
     filled,
     quantity,
+    compact,
   } = props;
 
   const { t } = useTranslation();
@@ -242,7 +257,7 @@ const NodePlot = (props: NodePlotProps) => {
     );
   }
 
-  if (targetYearGoal) {
+  if (!compact && targetYearGoal) {
     shapes.push({
       type: 'line',
       yref: 'y',
@@ -272,7 +287,7 @@ const NodePlot = (props: NodePlotProps) => {
   }
   const nrYears = endYear - startYear;
   const layout: Partial<Plotly.Layout> = {
-    height: 300,
+    height: compact ? 200 : 300,
     margin: {
       t: 24,
       r: 24,
@@ -299,7 +314,8 @@ const NodePlot = (props: NodePlotProps) => {
       anchor: 'y2',
       ticklen: 10,
       type: 'date',
-      dtick: nrYears > 15 ? 'M24' : 'M12',
+      nticks: compact ? 10 : 20,
+      // dtick: nrYears > 15 ? 'M24' : 'M12',
       range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
@@ -310,12 +326,15 @@ const NodePlot = (props: NodePlotProps) => {
       anchor: 'x2',
     },
     hovermode: 'x unified',
+    hoverlabel: {
+      bgcolor: 'white',
+    },
     autosize: true,
     font: {
       family: systemFont,
     },
     paper_bgcolor: 'rgba(0,0,0,0)',
-    showlegend: true,
+    showlegend: compact ? false : true,
     legend: {
       orientation: 'h',
       yanchor: 'top',
@@ -328,7 +347,7 @@ const NodePlot = (props: NodePlotProps) => {
   };
 
   return (
-    <>
+    <PlotWrapper compact={compact}>
       <Plot
         data={plotData}
         layout={layout}
@@ -347,8 +366,10 @@ const NodePlot = (props: NodePlotProps) => {
           { ` ${t('download-data')}` }
         </CsvDownload>
       </Tools>
-    </>
+    </PlotWrapper>
   );
 };
+
+NodePlot.defaultProps = NodePlotDefaultProps;
 
 export default NodePlot;

@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
+import { useInstance } from 'common/instance';
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
@@ -10,6 +11,7 @@ import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, activeGoalVar, } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
+import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanel from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
@@ -21,6 +23,8 @@ import Badge from 'components/common/Badge';
 import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
+import ImpactDisplay from 'components/general/ImpactDisplay';
+import * as Icon from 'react-bootstrap-icons';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -48,6 +52,17 @@ const ActionCategory = styled.div`
   margin-bottom: 1rem;
 `;
 
+const ActionMetrics = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-direction: column;
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    flex-direction: row;
+  }
+`;
+
 const PageHeader = styled.div` 
   margin-bottom: 2rem;
 
@@ -58,15 +73,14 @@ const PageHeader = styled.div`
   }
 `;
 
-const ContentWrapper = styled.div`
-  padding: 1rem;
-  margin: .5rem 0;
-  background-color: ${(props) => props.theme.graphColors.grey005};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+const MetricsParameters = styled.div`
+  flex: 2 1 auto;
+  margin-bottom: 1rem;
+`;
 
-  .x2sstick text, .xtick text {
-    text-anchor: end !important;
-  }
+const MetricsImpact = styled.div`
+  flex: 3 1 auto;
+  margin-bottom: 1rem;
 `;
 
 export default function ActionPage() {
@@ -77,6 +91,7 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
+  const instance = useInstance();
 
   const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
     fetchPolicy: 'cache-and-network',
@@ -106,8 +121,15 @@ export default function ActionPage() {
 
   const action = data.node;
   const causalNodes = action.downstreamNodes;
+  const lastNode = causalNodes.find((node) => node.outputNodes.length === 0);
+  const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
+  const actionEffectYearly = action.impactMetric.forecastValues.find(
+    (dataPoint) => dataPoint.year === yearRange[1],
+  )?.value || 0;
+
+  const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, yearRange[0], yearRange[1]);
+  const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
-  // actionTree.filter((node) => node.inputNodes.find((input) => input.id === parentId));
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />
   )
@@ -124,7 +146,7 @@ export default function ActionPage() {
         </title>
       </Head>
       <HeaderSection>
-        <Container>
+        <Container fluid="lg">
           <PageHeader>
             <HeaderCard>
               <h1>
@@ -153,26 +175,55 @@ export default function ActionPage() {
                 <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
                 <NodeLink node={action}><a>{t('read-more')}</a></NodeLink>
                 <hr />
-              <ActionParameters
-                parameters={action.parameters}
-              />
-                </ActionDescription>
-              { action.metric && (
-              <ContentWrapper>
-                { flowPlot || (
-                  <NodePlot
-                    metric={action.metric}
-                    impactMetric={action.impactMetric}
-                    year="2021"
-                    startYear={yearRange[0]}
-                    endYear={yearRange[1]}
-                    color={action.color}
-                    isAction={action.isAction}
-                    targetYearGoal={action.targetYearGoal}
-                  />
+                <ActionMetrics>
+                  <MetricsParameters>
+                    <ActionParameters
+                      parameters={action.parameters}
+                    />
+                  </MetricsParameters>
+                  <MetricsImpact>
+                    <ImpactDisplay
+                      effectCumulative={undefined}
+                      effectYearly={actionEffectYearly}
+                      yearRange={yearRange}
+                      unitCumulative={undefined}
+                      unitYearly={unitYearly}
+                      muted={!isActive}
+                      impactName={activeGoal?.label || undefined }
+                    >
+                      {lastNode && (
+                      <NodePlot
+                        metric={lastNode.metric}
+                        impactMetric={lastNode.impactMetric}
+                        year="2021"
+                        startYear={yearRange[0]}
+                        endYear={yearRange[1]}
+                        color={lastNode.color}
+                        isAction={lastNode.isAction}
+                        targetYear={instance.targetYear}
+                        targetYearGoal={lastNode.targetYearGoal}
+                        quantity={lastNode.quantity}
+                        compact={true}
+                      /> )}
+                    </ImpactDisplay>
+                  </MetricsImpact>
+                </ActionMetrics>
+
+                { action.metric && (
+                  flowPlot || (
+                    <NodePlot
+                      metric={action.metric}
+                      impactMetric={action.impactMetric}
+                      year="2021"
+                      startYear={yearRange[0]}
+                      endYear={yearRange[1]}
+                      color={action.color}
+                      isAction={action.isAction}
+                      targetYearGoal={action.targetYearGoal}
+                    />
+                  )
                 )}
-              </ContentWrapper>
-              )}
+              </ActionDescription>
             </HeaderCard>
           </PageHeader>
         </Container>

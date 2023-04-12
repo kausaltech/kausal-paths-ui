@@ -44,7 +44,7 @@ const NodeLinks = (props) => {
   const { inputNodes, outputNodes } = props;
   const { t } = useTranslation();
   return (
-    <Container>
+    <Container fluid="lg">
       <Row>
         <Col md={{ size: 5 }}>
           { inputNodes.length > 0 && (

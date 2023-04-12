@@ -173,7 +173,7 @@ export default function NodePage() {
         </title>
       </Head>
       <HeaderSection color={node.color}>
-        <Container>
+        <Container fluid="lg">
           <PageHeader>
             <HeaderCard>
               <div>{ node.isAction && <span>{t('action')}</span> }</div>
@@ -226,7 +226,7 @@ export default function NodePage() {
       </HeaderSection>
       { node.description && (
       <NodeBodyText>
-        <Container>
+        <Container fluid="lg">
           <Row>
             <Col lg={{ size: 10, offset: 1 }}>
               <DashCard>
@@ -237,7 +237,7 @@ export default function NodePage() {
         </Container>
       </NodeBodyText>
       )}
-      <Container>
+      <Container fluid="lg">
         <NodeLinks
           outputNodes={node.outputNodes}
           inputNodes={node.inputNodes}

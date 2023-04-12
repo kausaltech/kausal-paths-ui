@@ -126,6 +126,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
         isOpen={popoverOpen}
         target="Popover1"
         toggle={toggle}
+        trigger="legacy"
       >
         <PopoverBody>
           <SectionWrapper>

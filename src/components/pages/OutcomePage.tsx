@@ -112,7 +112,7 @@ export default function OutcomePage(props: OutcomePageProps) {
         />
       )}
       <HeaderSection>
-        <Container>
+        <Container fluid="lg">
           <PageHeader>
             <h1>
               {t(`${outcomeType}-forecast`)}
@@ -127,7 +127,7 @@ export default function OutcomePage(props: OutcomePageProps) {
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container>
+      <Container fluid="lg">
         <OutcomeSection>
           { visibleNodes.map((node, index) => (
             <OutcomeCardSet

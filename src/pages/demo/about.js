@@ -120,7 +120,7 @@ function AboutPage(props) {
   return (
   <>
     <HeaderSection>
-      <Container>
+      <Container fluid="lg">
       <Row>
         <Col lg={{ size: 8, offset: 2 }}>
         <PageHeader>
@@ -131,7 +131,7 @@ function AboutPage(props) {
 </Col></Row>
       </Container>
     </HeaderSection>
-    <Container className="mb-5">
+    <Container fluid="lg" className="mb-5">
       <Row>
         <Col lg={{ size: 8, offset: 2 }}>
           { locale.startsWith('en') &&

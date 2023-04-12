@@ -69,11 +69,13 @@ type CausalCardProps = {
   node: CausalGridNode,
   startYear: number,
   endYear: number,
-  noEffect: boolean,  
+  noEffect: boolean,
+  compact: boolean,
 }
 
+
 const CausalCard = (props: CausalCardProps) => {
-  const { node, startYear, endYear, noEffect } = props;
+  const { node, startYear, endYear, noEffect, compact } = props;
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
 
@@ -102,21 +104,24 @@ const CausalCard = (props: CausalCardProps) => {
               unitCumulative={node.impactMetric!.yearlyCumulativeUnit?.htmlShort}
               unitYearly={node.impactMetric!.unit?.htmlShort}
               muted={noEffect}
+              size="sm"
             />
           </ImpactFigures>
-          <ContentWrapper>
-            <NodePlot
-              metric={node.metric}
-              impactMetric={node.impactMetric}
-              startYear={startYear}
-              endYear={endYear}
-              color={node.color}
-              isAction={node.isAction}
-              targetYearGoal={targetYearGoal}
-              targetYear={maxYear}
-              quantity={node.quantity}
-            />
-          </ContentWrapper>
+          {!compact && (
+            <ContentWrapper>
+              <NodePlot
+                metric={node.metric}
+                impactMetric={node.impactMetric}
+                startYear={startYear}
+                endYear={endYear}
+                color={node.color}
+                isAction={node.isAction}
+                targetYearGoal={targetYearGoal}
+                targetYear={maxYear}
+                quantity={node.quantity}
+                compact
+              />
+            </ContentWrapper> )}
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
         </DashCard>
       </NodeCard>

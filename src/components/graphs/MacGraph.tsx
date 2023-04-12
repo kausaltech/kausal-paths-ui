@@ -182,7 +182,7 @@ function MacGraph(props) {
             "<extra></extra>",
       }]}
       layout={layout}
-      useResizeHandlers
+      useResizeHandler
       style={{ width: '100%' }}
       config={{ displayModeBar: false }}
       onHover={(evt) => handleHover(evt)}
