@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
@@ -82,6 +83,12 @@ type OutcomeCardProps = {
 const OutcomeCard = (props: OutcomeCardProps) => {
   const { node, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
 
+  const cardRef = useRef(null);
+  useEffect(() => {
+    if (active && cardRef.current) cardRef.current.scrollIntoView({ inline: "center"});
+  }, [active]);
+
+  //console.log(state);
   const { t } = useTranslation();
   const baseOutcomeValue = getMetricValue(node, startYear);
   const goalOutcomeValue = getMetricValue(node, endYear);
@@ -98,6 +105,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       hovered={hovered}
       active={active}
       color={color}
+      refProp={cardRef}
     >
       <Header className={state}>
         <Title color={color}>
@@ -110,6 +118,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
           </CardAnchor>
         </Title>
       </Header>
+      { !active && (
       <Body>
         <div />
         <MainValue>
@@ -123,6 +132,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
           )}
         </MainValue>
       </Body>
+      )}
     </DashCard>
   );
 };

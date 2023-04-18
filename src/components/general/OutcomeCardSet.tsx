@@ -11,31 +11,31 @@ import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const CardSet = styled(animated.div)<{color?: string}>`
   position: relative;
-  padding: 0.5rem;
+  padding-bottom: 150px;
   margin-top: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
-  border: 2px solid ${(props) => props.color || props.theme.themeColors.white};
+  // border-radius:  ${(props) => props.theme.cardBorderRadius};
+  // border: 2px solid ${(props) => props.color || props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
 const CardDeck = styled.div`
+  position: absolute;
   display: flex;
-  overflow: scroll;
-  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: visible;
+  height: 166px;
+  z-index: 1;
+  scroll-behavior: smooth;
 `;
 
 const CardContainer = styled.div`
-  position: relative;
+  //position: relative;
   flex: 0 0 175px;
   margin: 0 .25rem 0;
 
   &:first-child {
     margin-left: 0;
-  }
-
-  .card {
-    height: 100%;
   }
 `;
 
@@ -255,7 +255,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
             endYear={endYear}
           />
         </ContentArea>
-        { cardNodes.length > 1 && (
+        { false && (
         <>
           <OutcomeBar
             nodes={cardNodes}
