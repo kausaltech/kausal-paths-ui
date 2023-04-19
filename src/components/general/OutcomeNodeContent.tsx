@@ -109,13 +109,13 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
           <HighlightValue
             className="figure"
             displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}%` : '-'}
-            header={`${startYear}–${endYear}`}
+            header={`Change<br/>${startYear}–${endYear}`}
             unit=""
           />
           <HighlightValue
             className="figure"
             displayValue={beautifyValue(nodesTotal)}
-            header={`${endYear}`}
+            header={`Total<br/>${endYear}`}
             unit={unit}
           />
         </CardSetSummary>

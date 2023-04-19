@@ -9,9 +9,9 @@ import OutcomeCard from './OutcomeCard';
 import InputNodeCards from './InputNodeCards';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
-const CardSet = styled(animated.div)<{color?: string}>`
+const CardSet = styled(animated.div)<{color?: string, hasChildren?: boolean}>`
   position: relative;
-  padding-bottom: 150px;
+  padding-bottom: ${(props) => props.hasChildren ? '150px' : '1rem'};
   margin-top: 1rem;
   background-color: ${(props) => props.theme.themeColors.white};
   // border-radius:  ${(props) => props.theme.cardBorderRadius};
@@ -24,6 +24,9 @@ const CardDeck = styled.div`
   display: flex;
   overflow-x: auto;
   overflow-y: visible;
+  width: 100%;
+  bottom: -1rem;
+  padding: 0 .5rem;
   height: 166px;
   z-index: 1;
   scroll-behavior: smooth;
@@ -218,7 +221,8 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
   }, [nodeMap]);
 
   const inputNodes = rootNode.inputNodes.filter((node) => !nodeMap.has(node.id));
-
+  // Hide outcome bar. TODO: make this configurable
+  const showOutcomeBar = false;
   // If this is the last active scenario, scroll to view after render
   useEffect(() => {
     if (lastActiveNodeId === rootNode.id) scrollTo(document.querySelector(`#${lastActiveNodeId}`), -150);
@@ -245,6 +249,8 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
         id={rootNode.id}
         style={fadeIn}
         color={rootNode.color}
+        hasChildren={cardNodes.length > 0}
+        hasInputNodes={inputNodes.length > 0}
       >
         <ContentArea>
           <OutcomeNodeContent
@@ -255,7 +261,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
             endYear={endYear}
           />
         </ContentArea>
-        { false && (
+        { showOutcomeBar && (
         <>
           <OutcomeBar
             nodes={cardNodes}
@@ -285,7 +291,6 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
             </CardContainer>
           ))}
         </CardDeck>
-        { inputNodes.length > 0 ? <InputNodeCards nodes={inputNodes} /> : ''}
       </CardSet>
     </>
   );

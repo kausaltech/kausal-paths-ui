@@ -56,13 +56,20 @@ const Body = styled.div`
 `;
 
 const MainValue = styled.div`
-  text-align: right;
+  text-align: left;
   font-size: 1.5rem;
   line-height: 1.2;
   font-weight: 700;
 `;
 
-const MainUnit = styled.div`
+const Label = styled.div`
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: ${(props) => props.theme.graphColors.grey050};
+`;
+
+const MainUnit = styled.span`
+  margin-left: 0.25rem;
   font-size: 0.6rem;
 `;
 
@@ -90,7 +97,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
 
   //console.log(state);
   const { t } = useTranslation();
-  const baseOutcomeValue = getMetricValue(node, startYear);
+  const baseOutcomeValue = getMetricValue(node, startYear) || 0;
   const goalOutcomeValue = getMetricValue(node, endYear);
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
 
@@ -122,10 +129,12 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       <Body>
         <div />
         <MainValue>
+          <Label>Total {endYear}</Label>
           {beautifyValue(goalOutcomeValue)}
           <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
           { change && (
             <Status>
+              <Label>Change {startYear} - {endYear}:</Label>
               {change > 0 && <span>+</span>}
               {change ? <span>{`${change}%`}</span> : <span>-</span>}
             </Status>
