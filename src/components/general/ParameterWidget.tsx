@@ -69,7 +69,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
-  const { id, initialValue, defaultValue, min, max, isCustomized, handleChange, loading, description, unit } = props;
+  const { id, initialValue, defaultValue, min, max, isCustomized, handleChange, loading, description, unit, step } = props;
   const theme = useTheme();
   const [values, setValues] = useState([initialValue]);
 
@@ -81,17 +81,17 @@ const NumberWidget = (props) => {
     handleChange({ parameterId: id, numberValue: newValues[0] });
   };
 
-  const Reset = () => defaultValue && (
+  const Reset = () => defaultValue !== null ? (
     <Button
       id="reset-button"
       color="link"
       size="sm"
       outline
-      onClick={() => setValues([defaultValue])}
+      onClick={() => handleChange({ parameterId: id, numberValue: defaultValue })}
     >
       <ArrowCounterclockwise />
     </Button>
-  );
+  ) : null;
 
   return (
     <WidgetWrapper>
@@ -101,7 +101,7 @@ const NumberWidget = (props) => {
       <RangeWrapper>
         <Range
           key="Base"
-          step={1}
+          step={step ?? 1}
           min={min}
           max={max}
           values={values}
@@ -151,7 +151,7 @@ const NumberWidget = (props) => {
         />
         <RangeValue>
           {`${(values[0]).toFixed(0)} ${unit?.htmlShort || ''}`}
-          {isCustomized && <Reset />}
+          {isCustomized ? <Reset /> : null}
         </RangeValue>
       </RangeWrapper>
     </WidgetWrapper>
@@ -204,7 +204,6 @@ const ParameterWidget = (props) => {
   };
 
   let widget = <div>Parameter type missing</div>;
-
   switch (parameterType) {
     case 'NumberParameterType':
       widget = (
@@ -219,6 +218,7 @@ const ParameterWidget = (props) => {
           isCustomized={parameter.isCustomized}
           description={parameter.description}
           unit={parameter.unit}
+          step={parameter.step}
         />
       );
       break;

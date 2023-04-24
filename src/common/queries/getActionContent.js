@@ -82,6 +82,7 @@ const GET_ACTION_CONTENT = gql`
         unit {
           htmlShort
         }
+        step
       }
       ... on BoolParameterType {
         boolValue: value
