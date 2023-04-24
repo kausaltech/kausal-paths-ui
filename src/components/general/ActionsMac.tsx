@@ -24,7 +24,7 @@ const GraphCard = styled.div`
   position: relative;
   margin: 0 0 3rem;
   padding: 2rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius:  0;
   background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;

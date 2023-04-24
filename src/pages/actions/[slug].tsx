@@ -35,7 +35,7 @@ const HeaderSection = styled.div`
 const HeaderCard = styled.div` 
   margin: 1rem 0 -8rem;
   padding: 1.5rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
@@ -43,7 +43,7 @@ const HeaderCard = styled.div`
 const ActionDescription = styled.div`
   margin-bottom: 2rem;
   padding: 1rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: 0;
   font-size: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey010};
 `;

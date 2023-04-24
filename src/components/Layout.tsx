@@ -7,7 +7,7 @@ import { useSite } from 'context/site';
 
 const PageContainer = styled.div`
   width: 100%;
-  background-color: ${(props) => props.theme.graphColors.grey020};
+  background-color: ${(props) => props.theme.graphColors.grey030};
   padding-bottom: 10rem;
 
   .popover {

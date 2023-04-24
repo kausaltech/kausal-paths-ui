@@ -36,7 +36,7 @@ const SettingsForm = styled.form`
 const ActiveScenario = styled.div`
   clear: both;
   padding: .75rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: 0;
   background-color: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
   font-size: 1rem;
@@ -52,7 +52,7 @@ const ActionCount = styled.div`
 const HeaderCard = styled.div` 
   margin: ${({ theme }) => theme.spaces.s200} 0;
   padding: ${({ theme }) => theme.spaces.s100} ${({ theme }) => theme.spaces.s200};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import { Button, ButtonGroup } from 'reactstrap';
+import { Button, ButtonGroup, Nav, NavItem, NavLink,  } from 'reactstrap';
 import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
@@ -12,12 +12,31 @@ import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const ContentWrapper = styled.div`
   padding: 1rem;
-  margin: .5rem 0;
-  background-color: ${(props) => props.theme.graphColors.grey005};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  background-color: white;
+  border-radius: 0;
+  border: 1px solid ${(props) => props.theme.graphColors.grey010};
+  border-top: 0;
 
   .x2sstick text, .xtick text {
     text-anchor: end !important;
+  }
+`;
+
+const CardContent = styled.div`
+  //background-color: white;
+  //padding: 0.5rem;
+
+  .nav-pills {
+    //margin-bottom: 0.5rem;
+  }
+
+  .nav-pills .nav-link {
+    padding: 0.2rem 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  .nav-pills .nav-link.active {
+    background-color: ${(props) => props.theme.graphColors.grey050};
   }
 `;
 
@@ -34,10 +53,21 @@ const TabText = styled.div`
 const CardSetHeader = styled.div`
   display: flex;
   justify-content: space-between;
+  margin-bottom: 0.5rem;
 
   a {
     color: ${(props) => props.theme.themeColors.dark};
   }
+`;
+
+const CardSetDescription = styled.div`
+  margin-bottom: 1rem;
+  `;
+
+const CardSetDescriptionDetails = styled.div`
+  font-size: 0.9rem;
+  line-height: 1.2;
+  color: ${(props) => props.theme.graphColors.grey050};
 `;
 
 const CardSetSummary = styled.div`
@@ -88,38 +118,55 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
 
   useEffect(() => console.log('node changed'), [node]);
   useEffect(() => console.log('subNodes changed'), [subNodes]);
-  
+  const lastMeasuredYear = 2020;
   return (
     <div>
       <CardSetHeader>
         <div>
-          <h4>
-            <NodeLink node={node}>
-              <a>
-                { node.shortName || node.name }
-              </a>
-            </NodeLink>
-          </h4>
-          <ButtonGroup>
-            <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}><BarChartFill /></TabButton>
-            <TabButton color="light" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}><InfoSquare /></TabButton>
-          </ButtonGroup>
+          <CardSetDescription> 
+            <h4>
+              <NodeLink node={node}>
+                <a>
+                  { node.shortName || node.name }
+                </a>
+              </NodeLink>
+            </h4>
+            <CardSetDescriptionDetails>
+                Recorded: {startYear}–{lastMeasuredYear}
+                {` | `}
+                Custom scenario: {lastMeasuredYear}–{endYear}
+            </CardSetDescriptionDetails>
+          </CardSetDescription>
         </div>
         <CardSetSummary>
           <HighlightValue
             className="figure"
-            displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}%` : '-'}
-            header={`Change<br/>${startYear}–${endYear}`}
-            unit=""
+            displayValue={beautifyValue(nodesTotal)}
+            header={`Total ${endYear}`}
+            unit={unit}
           />
           <HighlightValue
             className="figure"
-            displayValue={beautifyValue(nodesTotal)}
-            header={`Total<br/>${endYear}`}
-            unit={unit}
+            displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}` : '-'}
+            header={`Change ${startYear}–${endYear}`}
+            unit="%"
           />
         </CardSetSummary>
       </CardSetHeader>
+      <CardContent>
+      <Nav tabs>
+      <NavItem>
+        <NavLink href="#" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}>
+          <BarChartFill /> Progress
+        </NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink href="#" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}>
+          <InfoSquare /> Details
+        </NavLink>
+      </NavItem>
+    </Nav>
+
       { activeTabId === 'graph' && (
       <ContentWrapper>{outcomeGraph}</ContentWrapper>
       )}
@@ -155,7 +202,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
         </TabText>
       </ContentWrapper>
       )}
-
+          </CardContent>
     </div>
   );
 };

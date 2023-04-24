@@ -18,7 +18,7 @@ const GraphContainer = styled.div`
 const ActionDescription = styled.div`
   margin-bottom: 2rem;
   padding: 1rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: 0;
   font-size: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey010};
 

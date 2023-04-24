@@ -36,7 +36,7 @@ const OutcomeSection = styled.div`
 const ActiveScenario = styled.span`
   display: inline-block;
   padding: .5rem;
-  border-radius: calc(${(props) => props.theme.cardBorderRadius}/2);
+  border-radius: 0;
   background-color: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
   font-size: 1.2rem;

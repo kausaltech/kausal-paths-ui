@@ -41,7 +41,7 @@ const Name = styled.h2`
 
 const Status = styled.div`
   margin-top: .5rem;
-  text-align: right;
+  //text-align: right;
   white-space: nowrap;
   font-size: 1rem;
   font-weight: 700;
@@ -57,13 +57,13 @@ const Body = styled.div`
 
 const MainValue = styled.div`
   text-align: left;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   line-height: 1.2;
   font-weight: 700;
 `;
 
 const Label = styled.div`
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: ${(props) => props.theme.graphColors.grey050};
 `;
@@ -127,7 +127,6 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       </Header>
       { !active && (
       <Body>
-        <div />
         <MainValue>
           <Label>Total {endYear}</Label>
           {beautifyValue(goalOutcomeValue)}

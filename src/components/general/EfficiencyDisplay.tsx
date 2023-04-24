@@ -7,7 +7,7 @@ const EfficiencyDisplayWrapper = styled.div`
 display: flex;
 flex-wrap: wrap;
 border: 1px solid ${(props) => props.theme.graphColors.grey030};
-border-radius:  calc(${(props) => props.theme.cardBorderRadius}/2);
+border-radius: 0;
 `;
 
 const EfficiencyDisplayHeader = styled.div`

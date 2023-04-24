@@ -1,14 +1,15 @@
 import styled from 'styled-components';
 
 const TotalValue = styled.div`
-  text-align: right;
+  //text-align: right;
   line-height: 1.2;
   font-weight: 700;
   font-size: ${(props) => (props.size === 'sm' ? '1.25' : '1.5')}rem;
   color: ${(props) => (props.muted ? props.theme.graphColors.grey050 : props.theme.graphColors.grey090)};
 `;
 
-const TotalUnit = styled.div`
+const TotalUnit = styled.span`
+  margin-left: 0.25rem;
   font-size: ${(props) => (props.size === 'sm' ? '0.6' : '0.75')}rem;
 `;
 

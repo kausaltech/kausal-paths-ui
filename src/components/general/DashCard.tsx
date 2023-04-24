@@ -8,8 +8,8 @@ const CardWithState = styled.div`
   //border: 2px solid transparent;
   border: 0;
   border-top: 4px solid ${(props) => props.color};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
-  height: 140px;
+  border-radius: 0;
+  height: 170px;
 
   .card-body {
     display: flex;
@@ -20,7 +20,7 @@ const CardWithState = styled.div`
 
   &.open, &.root {
     color: ${(props) => props.theme.graphColors.grey050};
-    background-color: ${(props) => props.theme.graphColors.grey000};
+    background-color: white;
     
     h2 {
       color: ${(props) => props.theme.graphColors.grey050};
@@ -29,28 +29,42 @@ const CardWithState = styled.div`
 
   &.inactive, &.closed {
     color: ${(props) => props.theme.graphColors.grey090};
-    background-color: ${(props) => props.theme.graphColors.grey000};
+    background-color: white;
 
     h2 {
       color: ${(props) => props.theme.graphColors.grey090};
     }
   }
 
-  &.hovered {
+  &.open.hovered {
     color: ${(props) => props.theme.graphColors.grey090};
     //border-color: ${(props) => props.color};
     
     h2 {
       color: ${(props) => props.theme.graphColors.grey070};
     }
+
+    &::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 36px;
+      background-color: white;
+      bottom: -36px;
+      left: 0;
+    }
+  }
+
+  &.active.hovered:after {
+    display: none;
   }
 
   &.active.open, &.root {
     position: relative;
     color: ${(props) => props.theme.graphColors.grey090};
-    background-color: ${(props) => props.theme.themeColors.white};
+    background-color: ${(props) => props.theme.graphColors.grey005};
     // border-radius: ${(props) => props.theme.cardBorderRadius} ${(props) => props.theme.cardBorderRadius} 0 0;
-    height: 166px;
+    height: 206px;
     box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
   
     h2 {

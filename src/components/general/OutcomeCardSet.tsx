@@ -11,9 +11,9 @@ import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const CardSet = styled(animated.div)<{color?: string, hasChildren?: boolean}>`
   position: relative;
-  padding-bottom: ${(props) => props.hasChildren ? '150px' : '1rem'};
+  padding-bottom: ${(props) => props.hasChildren ? '190px' : '1rem'};
   margin-top: 1rem;
-  background-color: ${(props) => props.theme.themeColors.white};
+  background-color: ${(props) => props.theme.graphColors.grey005};
   // border-radius:  ${(props) => props.theme.cardBorderRadius};
   // border: 2px solid ${(props) => props.color || props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
@@ -27,7 +27,7 @@ const CardDeck = styled.div`
   width: 100%;
   bottom: -1rem;
   padding: 0 .5rem;
-  height: 166px;
+  height: 206px;
   z-index: 1;
   scroll-behavior: smooth;
 `;

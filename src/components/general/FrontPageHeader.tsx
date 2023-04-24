@@ -19,7 +19,7 @@ const PageHeader = styled.div`
 const HeaderCard = styled.div` 
   margin: 3rem 0;
   padding: 2rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 
