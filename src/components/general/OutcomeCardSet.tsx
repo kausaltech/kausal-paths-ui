@@ -9,9 +9,9 @@ import OutcomeCard from './OutcomeCard';
 import InputNodeCards from './InputNodeCards';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
-const CardSet = styled(animated.div)<{color?: string, hasChildren?: boolean}>`
+const CardSet = styled(animated.div)<{color?: string, haschildren?: boolean}>`
   position: relative;
-  padding-bottom: ${(props) => props.hasChildren ? '190px' : '1rem'};
+  padding-bottom: ${(props) => props.haschildren ? '190px' : '1rem'};
   margin-top: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
   // border-radius:  ${(props) => props.theme.cardBorderRadius};
@@ -249,7 +249,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
         id={rootNode.id}
         style={fadeIn}
         color={rootNode.color}
-        hasChildren={cardNodes.length > 0}
+        haschildren={cardNodes.length > 0}
         hasInputNodes={inputNodes.length > 0}
       >
         <ContentArea>

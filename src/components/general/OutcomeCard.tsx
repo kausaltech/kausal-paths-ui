@@ -4,6 +4,7 @@ import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import PopoverTip from 'components/common/PopoverTip';
 
 const Header = styled.div`
   display: flex;
@@ -17,6 +18,10 @@ const Header = styled.div`
 const Title = styled.div`
   // border-left: 6px solid ${(props) => props.color};
   // padding-left: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
 `;
 
 const CardAnchor = styled.a`
@@ -128,7 +133,9 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       { !active && (
       <Body>
         <MainValue>
-          <Label>Total {endYear}</Label>
+          <Label>
+            Total {endYear}
+          </Label>
           {beautifyValue(goalOutcomeValue)}
           <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
           { change && (
