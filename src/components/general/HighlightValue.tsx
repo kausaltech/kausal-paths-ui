@@ -12,8 +12,16 @@ const TotalValue = styled.div`
   color: ${(props) => (props.muted ? props.theme.graphColors.grey050 : props.theme.graphColors.grey090)};
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    //background-color: rgba(0, 0, 0, 0.05);
+    color: ${(props) => props.theme.graphColors.grey090};
     cursor: pointer;
+
+    > div {
+      color: ${(props) => props.theme.graphColors.grey090};
+    }
+    svg {
+      fill: ${(props) => props.theme.graphColors.grey090};
+    }
   }
 `;
 

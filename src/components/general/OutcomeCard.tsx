@@ -97,7 +97,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
 
   const cardRef = useRef(null);
   useEffect(() => {
-    if (active && cardRef.current) cardRef.current.scrollIntoView({ inline: "center"});
+    if (active && cardRef.current) cardRef.current.scrollIntoView({ inline: "center", behavior: 'smooth', block: 'nearest' });
   }, [active]);
 
   //console.log(state);

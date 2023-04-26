@@ -19,14 +19,16 @@ const CardSet = styled(animated.div)<{color?: string, haschildren?: boolean}>`
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
+const SubNodes = styled.div`
+  padding: .5rem;
+`
 const CardDeck = styled.div`
   position: absolute;
   display: flex;
   overflow-x: auto;
   overflow-y: visible;
-  width: 100%;
+  width: calc(100% - 1rem);
   bottom: -1rem;
-  padding: 0 .5rem;
   height: 206px;
   z-index: 1;
   scroll-behavior: smooth;
@@ -224,10 +226,11 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
   // Hide outcome bar. TODO: make this configurable
   const showOutcomeBar = false;
   // If this is the last active scenario, scroll to view after render
+  /*
   useEffect(() => {
     if (lastActiveNodeId === rootNode.id) scrollTo(document.querySelector(`#${lastActiveNodeId}`), -150);
   }, []);
-
+  */
   const fadeIn = useSpring({
     to: { opacity: 1 },
     from: { opacity: 0 },
@@ -250,7 +253,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
         style={fadeIn}
         color={rootNode.color}
         haschildren={cardNodes.length > 0}
-        hasInputNodes={inputNodes.length > 0}
+        hasinputnodes={inputNodes.length > 0}
       >
         <ContentArea>
           <OutcomeNodeContent
@@ -274,23 +277,28 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
           />
         </>
         )}
-        <CardDeck>
-          { cardNodes.map((node, indx) => (
-            <CardContainer key={node.id}>
-              <OutcomeCard
-                startYear={startYear}
-                endYear={endYear}
-                node={node}
-                state={activeNodeId === undefined ? 'closed' : 'open'}
-                hovered={hoveredNodeId === node.id}
-                active={activeNodeId === node.id}
-                onHover={handleHover}
-                handleClick={handleClick}
-                color={node.color || parentColor}
-              />
-            </CardContainer>
-          ))}
-        </CardDeck>
+        { cardNodes.length > 0 && (
+        <SubNodes>
+          <BarHeader>{`${cardNodes.length} Subsectors`}</BarHeader>
+          <CardDeck>
+            { cardNodes.map((node, indx) => (
+              <CardContainer key={node.id}>
+                <OutcomeCard
+                  startYear={startYear}
+                  endYear={endYear}
+                  node={node}
+                  state={activeNodeId === undefined ? 'closed' : 'open'}
+                  hovered={hoveredNodeId === node.id}
+                  active={activeNodeId === node.id}
+                  onHover={handleHover}
+                  handleClick={handleClick}
+                  color={node.color || parentColor}
+                />
+              </CardContainer>
+            ))}
+          </CardDeck>
+        </SubNodes>
+        )}
       </CardSet>
     </>
   );

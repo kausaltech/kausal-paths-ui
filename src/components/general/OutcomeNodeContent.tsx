@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { Button, ButtonGroup, Nav, NavItem, NavLink,  } from 'reactstrap';
-import { BarChartFill, InfoSquare } from 'react-bootstrap-icons';
+import { 
+  BarChartFill as GraphIcon,
+  Table as TableIcon,
+  InfoSquare as DetailsIcon } from 'react-bootstrap-icons';
 import styled from 'styled-components';
 
 import { ActionLink, Link, NodeLink } from 'common/links';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
+import DataTable from './DataTable';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 
 const ContentWrapper = styled.div`
+  min-height: 300px;
   padding: 1rem;
   background-color: white;
   border-radius: 0;
@@ -154,15 +159,30 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
         </CardSetSummary>
       </CardSetHeader>
       <CardContent>
-      <Nav tabs>
+      <Nav tabs className="justify-content-start">
       <NavItem>
-        <NavLink href="#" onClick={() => setActiveTabId(activeTabId === 'graph' ? undefined : 'graph')} active={activeTabId === 'graph'}>
-          <BarChartFill /> Progress
+        <NavLink
+          href="#"
+          onClick={() => setActiveTabId('graph')}
+          active={activeTabId === 'graph'}
+        >
+          Graph
         </NavLink>
       </NavItem>
       <NavItem>
-        <NavLink href="#" onClick={() => setActiveTabId(activeTabId === 'info' ? undefined : 'info')} active={activeTabId === 'info'}>
-          <InfoSquare /> Details
+        <NavLink
+          href="#" onClick={() => setActiveTabId('table')}
+          active={activeTabId === 'table'}
+        >
+          Table
+        </NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink
+          href="#" onClick={() => setActiveTabId('info')}
+          active={activeTabId === 'info'}
+        >
+          Details
         </NavLink>
       </NavItem>
     </Nav>
@@ -202,7 +222,18 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
         </TabText>
       </ContentWrapper>
       )}
-          </CardContent>
+      { activeTabId === 'table' && (
+        <ContentWrapper>
+          <DataTable
+            node={node}
+            subNodes={subNodes}
+            color={color}
+            startYear={startYear}
+            endYear={endYear}
+          />  
+        </ContentWrapper>
+      )}
+      </CardContent>
     </div>
   );
 };
