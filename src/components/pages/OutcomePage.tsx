@@ -4,7 +4,7 @@ import { Container } from 'reactstrap';
 
 import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
-import SettingsPanel from 'components/general/SettingsPanel';
+import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import FrontPageHeader from 'components/general/FrontPageHeader';
 import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
@@ -144,7 +144,7 @@ export default function OutcomePage(props: OutcomePageProps) {
           ))}
         </OutcomeSection>
       </Container>
-      <SettingsPanel />
+      <SettingsPanelFull />
     </>
   );
 }

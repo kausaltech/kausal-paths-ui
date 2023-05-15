@@ -30,8 +30,7 @@ query GetInstanceGoalOutcome($goal: ID!) {
 
 const EmissionsBar = styled.div`
   position: relative;
-  margin: 24px 0;
-  margin-left: auto;
+  margin: 48px 0;
   max-width: 500px;
   height: 24px;
 `;

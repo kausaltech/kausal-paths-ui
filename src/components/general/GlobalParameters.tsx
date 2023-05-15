@@ -304,7 +304,6 @@ const GlobalParameters = (props: GlobalParametersProps) => {
 
   return (
     <GlobalParametersPanel>
-      <NormalizationWidget availableNormalizations={availableNormalizations} />
       {parameters.map((param) => 
         param.isCustomizable && <ParameterWidget
           key={param.id}
