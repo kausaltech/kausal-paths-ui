@@ -24,6 +24,8 @@ import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import ImpactDisplay from 'components/general/ImpactDisplay';
+import SubActions from 'components/general/SubActions';
+
 import * as Icon from 'react-bootstrap-icons';
 
 const HeaderSection = styled.div`
@@ -118,7 +120,6 @@ export default function ActionPage() {
   if (!data || !data.node) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
-
   const action = data.node;
   const causalNodes = action.downstreamNodes;
   const lastNode = causalNodes.find((node) => node.outputNodes.length === 0);
@@ -132,7 +133,34 @@ export default function ActionPage() {
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />
-  )
+  );
+
+  const fakeSubActions = [
+    {
+      id: 'building_heat_demand',
+      name: 'Endenergieverbrauch Fossiler Brennstoff',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: true,
+      parameters: action.parameters
+    },
+    {
+      id: 'building_heat_consumption_historical',
+      name: 'Endenergieverbrauch Biobrennstoff',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: true,
+      parameters: action.parameters
+    },
+    {
+      id: 'building_energy_retrofit',
+      name: 'Endenergieverbrauch Fernwärme',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: false,
+      parameters: action.parameters
+    },
+  ];
 
   return (
     <>
@@ -224,6 +252,9 @@ export default function ActionPage() {
                   )
                 )}
               </ActionDescription>
+              <SubActions
+                actions={fakeSubActions}
+              />
             </HeaderCard>
           </PageHeader>
         </Container>
