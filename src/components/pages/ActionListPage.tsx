@@ -137,7 +137,8 @@ function ActionListPage(props: ActionListPageProps) {
     };
     Object.assign(out, efficiencyProps);
     return out;
-  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id), [data, actionGroup, activeEfficiency]);
+  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id),
+  [data, actionGroup, activeEfficiency, yearRange]);
 
   const refetching = networkStatus === NetworkStatus.refetch;
 
