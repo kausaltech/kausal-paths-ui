@@ -59,5 +59,6 @@
   "efficiency": "Kustannustehokkuus",
   "reduction": "vähennys",
   "change-target": "Vaihda tavoite",
-  "plot-total": "Yhteensä"
+  "plot-total": "Yhteensä",
+  "accumulated-between": "yhteensä välillä"
 }

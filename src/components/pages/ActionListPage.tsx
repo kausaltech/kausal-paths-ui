@@ -119,7 +119,7 @@ function ActionListPage(props: ActionListPageProps) {
 
 
   // If we have action efficiency pairs, we augment the actions with the cumulative values
-  const reductionText = `(${t('reduction')})`;
+  const reductionText = `(${t('reduction')}, ${t('accumulated-between')} ${yearRange[0]}-${yearRange[1]})`;
   const usableActions: ActionWithEfficiency[] = useMemo(() => (data?.actions || []).map((act) => {
     const out: ActionWithEfficiency = {
       ...act,

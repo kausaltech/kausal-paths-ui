@@ -58,5 +58,6 @@
   "actions-as-efficiency": "Kostnadskurvor",
   "reduction": "minskning",
   "change-target": "Ändra mål",
-  "actions-sort-default": "Standard"
+  "actions-sort-default": "Standard",
+  "accumulated-between": "ackumulerad över"
 }

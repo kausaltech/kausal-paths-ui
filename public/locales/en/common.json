@@ -63,5 +63,6 @@
   "plot-choose-dimension": "Choose dimension",
   "normalize-by": "Normalize by {{node}}",
   "change-target": "Change target",
-  "plot-total": "Total"
+  "plot-total": "Total",
+  "accumulated-between": "accumulated between"
 }
