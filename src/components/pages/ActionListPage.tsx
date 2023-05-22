@@ -106,9 +106,17 @@ function ActionListPage(props: ActionListPageProps) {
 
   const data = queryResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
-  // TODO: set default sort by efficiency if we have efficiency data
-  // Maybe this needs a useEffect hook?
-  // if (hasEfficiency) setSortBy('cumulativeEfficiency');
+
+  // Different default view if we have action efficiency pairs
+  useEffect(() => {
+    if(loading === false && data){
+        if (hasEfficiency) {
+          setListType('mac');
+          setSortBy('cumulativeEfficiency');
+        }
+    }
+  }, [loading, data])
+
 
   // If we have action efficiency pairs, we augment the actions with the cumulative values
   const reductionText = `(${t('reduction')})`;
@@ -261,11 +269,11 @@ function ActionListPage(props: ActionListPageProps) {
               type="select"
               onChange={(e) =>setSortBy(e.target.value)}
             >
-              <option value="default">
+              <option value="default" selected={!hasEfficiency}>
                 {t('actions-sort-default')}
               </option>
               { hasEfficiency && (
-                <option value="cumulativeEfficiency">
+                <option value="cumulativeEfficiency" selected>
                   {t('actions-sort-efficiency')}
                 </option> )}
               <option value="cumulativeImpact">
