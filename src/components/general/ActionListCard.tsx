@@ -87,7 +87,7 @@ const ActionListCard = (props: ActionListCardProps) => {
   const { action, displayType, displayYears, refetching } = props;
   const { t } = useTranslation();
 
-  //console.log('ActionListCard', action);
+  // console.log('ActionListCard', action);
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
@@ -102,7 +102,7 @@ const ActionListCard = (props: ActionListCardProps) => {
 
   const isActive = !refetching && action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
 
-  const hasEfficiency = action.cumulativeEfficiency;
+  const hasEfficiency = 'cumulativeEfficiency' in action;
 
   return (
     <ActionItem
