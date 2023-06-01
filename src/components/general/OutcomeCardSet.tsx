@@ -34,16 +34,6 @@ const CardDeck = styled.div`
   scroll-behavior: smooth;
 `;
 
-const CardContainer = styled.div`
-  //position: relative;
-  flex: 0 0 175px;
-  margin: 0 .25rem 0;
-
-  &:first-child {
-    margin-left: 0;
-  }
-`;
-
 const ContentArea = styled.div`
   padding: .5rem;
 `;
@@ -211,7 +201,9 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
   const { scrollTo } = useScrollTo(config.molasses);
   const { cardNodes, subNodeMap } = useMemo(() => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
-    const cardNodes = [...nodeMap.values()].filter((node) => inputNodeIds.indexOf(node.id) >= 0);
+    const cardNodes = [...nodeMap.values()].filter(
+      (node) => (inputNodeIds.indexOf(node.id) >= 0) && (getMetricValue(node, endYear) !== undefined)
+    );
     orderByMetric(cardNodes);
     const subNodeMap = new Map<string, OutcomeNodeFieldsFragment[]>(
       cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)!).filter((child) => !!child)])
@@ -246,6 +238,10 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
     setLastActiveNodeId(newActiveNode);
   }, [activeNodeId, rootNode.id, setLastActiveNodeId]);
 
+  const negativeNodesTotal = getOutcomeTotal(cardNodes.filter((node) => getMetricValue(node, endYear) < 0), endYear);
+  const positiveNodesTotal = getOutcomeTotal(cardNodes.filter((node) => getMetricValue(node, endYear) >= 0), endYear);
+
+  // console.log("card nodes" , cardNodes);
   return (
     <>
       <CardSet
@@ -279,10 +275,9 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
         )}
         { cardNodes.length > 0 && (
         <SubNodes>
-          <BarHeader>{`${cardNodes.length} Subsectors`}</BarHeader>
+          <BarHeader>{`${cardNodes.length} Subsectors`} ({endYear})</BarHeader>
           <CardDeck>
             { cardNodes.map((node, indx) => (
-              <CardContainer key={node.id}>
                 <OutcomeCard
                   startYear={startYear}
                   endYear={endYear}
@@ -293,8 +288,10 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
                   onHover={handleHover}
                   handleClick={handleClick}
                   color={node.color || parentColor}
+                  total={positiveNodesTotal - negativeNodesTotal}
+                  positiveTotal={positiveNodesTotal}
+                  negativeTotal={negativeNodesTotal}
                 />
-              </CardContainer>
             ))}
           </CardDeck>
         </SubNodes>

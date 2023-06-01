@@ -6,6 +6,16 @@ import { beautifyValue, getMetricChange, getMetricValue } from 'common/preproces
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import PopoverTip from 'components/common/PopoverTip';
 
+const CardContainer = styled.div`
+  //position: relative;
+  flex: 0 0 175px;
+  margin: 0 .25rem 0;
+
+  &:first-child {
+    margin-left: 0;
+  }
+`;
+
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
@@ -78,6 +88,35 @@ const MainUnit = styled.span`
   font-size: 0.6rem;
 `;
 
+const ProportionBarBar = styled.div`
+  position: absolute;
+  // bottom: ${(props) => props.size > 0 ? props.offset * 100 : 0}%;
+  bottom: ${(props) => props.size > 0 ? '0' : 'auto'}%;
+  //bottom: 0;
+  top: ${(props) => props.size > 0 ? 'auto' : '0'}%;
+  left: 0;
+  height: ${(props) => Math.abs(props.size) * 100}%;
+  width: 14px;
+  background-color: ${(props) => props.color};
+`;
+
+const ProportionBarContainer = styled.div`
+  position: absolute;
+  height: 170px;
+  bottom: ${(props) => props.active ? '36px' : '0'};
+  left: 0;
+  width: 12px;
+  // border-right: 1px solid ${(props) => props.theme.graphColors.grey010};
+`;
+
+const ProportionBar = ({ size, color, active, offset }) => {
+  return (
+    <ProportionBarContainer active={active}>
+      <ProportionBarBar size={size} color={color} active={active} offset={offset}/>
+    </ProportionBarContainer>
+  );
+};
+
 type OutcomeCardProps = {
   node: OutcomeNodeFieldsFragment,
   startYear: number,
@@ -93,7 +132,12 @@ type OutcomeCardProps = {
 }
 
 const OutcomeCard = (props: OutcomeCardProps) => {
-  const { node, state, hovered, onHover, handleClick, active, color, startYear, endYear } = props;
+  const {
+    node,
+    state, hovered, onHover, handleClick, active,
+    color, startYear, endYear,
+    total, positiveTotal, negativeTotal,
+  } = props;
 
   const cardRef = useRef(null);
   useEffect(() => {
@@ -112,43 +156,51 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   if (goalOutcomeValue === undefined) return null;
 
   return (
-    <DashCard
-      state={state}
-      hovered={hovered}
-      active={active}
-      color={color}
-      refProp={cardRef}
-    >
-      <Header className={state}>
-        <Title color={color}>
-          <CardAnchor
-            onMouseEnter={() => onHover(node.id)}
-            onMouseLeave={() => onHover(undefined)}
-            onClick={() => handleClick(node.id)}
-          >
-            <Name>{node.shortName || node.name}</Name>
-          </CardAnchor>
-        </Title>
-      </Header>
-      { !active && (
-      <Body>
-        <MainValue>
-          <Label>
-            Total {endYear}
-          </Label>
-          {beautifyValue(goalOutcomeValue)}
-          <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
-          { change && (
-            <Status>
-              <Label>Change {startYear} - {endYear}:</Label>
-              {change > 0 && <span>+</span>}
-              {change ? <span>{`${change}%`}</span> : <span>-</span>}
-            </Status>
-          )}
-        </MainValue>
-      </Body>
-      )}
-    </DashCard>
+    <CardContainer key={node.id}>
+      <DashCard
+        state={state}
+        hovered={hovered}
+        active={active}
+        color={color}
+        refProp={cardRef}
+      >
+        <ProportionBar
+          size={goalOutcomeValue/total}
+          color={color}
+          active={active}
+          offset={negativeTotal < 0 ? Math.abs(negativeTotal/total) : 0}
+        />
+        <Header className={state}>
+          <Title color={color}>
+            <CardAnchor
+              onMouseEnter={() => onHover(node.id)}
+              onMouseLeave={() => onHover(undefined)}
+              onClick={() => handleClick(node.id)}
+            >
+              <Name>{node.shortName || node.name}</Name>
+            </CardAnchor>
+          </Title>
+        </Header>
+        { true && (
+        <Body>
+          <MainValue>
+            <Label>
+              Total {endYear}
+            </Label>
+            {beautifyValue(goalOutcomeValue)}
+            <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
+            { change && (
+              <Status>
+                <Label>Change {startYear} - {endYear}:</Label>
+                {change > 0 && <span>+</span>}
+                {change ? <span>{`${change}%`}</span> : <span>-</span>}
+              </Status>
+            )}
+          </MainValue>
+        </Body>
+        )}
+      </DashCard>
+    </CardContainer>
   );
 };
 

@@ -7,7 +7,7 @@ const CardWithState = styled.div`
   position: relative;
   //border: 2px solid transparent;
   border: 0;
-  border-top: 4px solid ${(props) => props.color};
+  //border-top: 4px solid ${(props) => props.color};
   border-radius: 0;
   height: 170px;
 
@@ -15,7 +15,7 @@ const CardWithState = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: .5rem;
+    padding: .5rem .5rem .5rem 1.5rem;
   }
 
   &.open, &.root {
@@ -65,6 +65,7 @@ const CardWithState = styled.div`
     background-color: ${(props) => props.theme.graphColors.grey005};
     // border-radius: ${(props) => props.theme.cardBorderRadius} ${(props) => props.theme.cardBorderRadius} 0 0;
     height: 206px;
+    padding-bottom: 36px;
     box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
   
     h2 {

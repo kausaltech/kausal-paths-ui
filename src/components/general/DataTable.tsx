@@ -9,7 +9,7 @@ const TableWrapper = Styled.div`
   overflow-y: visible;
   width: calc(100% - 1rem);
   bottom: -1rem;
-  height: 206px;
+  max-height: 100%;
   z-index: 1;
   scroll-behavior: smooth;
   font-size: 70%;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import { Button, ButtonGroup, Nav, NavItem, NavLink,  } from 'reactstrap';
+import { Button, ButtonGroup, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import { 
   BarChartFill as GraphIcon,
   Table as TableIcon,
@@ -12,10 +12,17 @@ import { getMetricValue, beautifyValue, getMetricChange } from 'common/preproces
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
 import DataTable from './DataTable';
+import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+
+const DisplayTab = styled(NavItem)`
+  font-size: 0.9rem;
+`;
 
 const ContentWrapper = styled.div`
   min-height: 300px;
+  max-height: 400px;
+  overflow-y: auto;
   padding: 1rem;
   background-color: white;
   border-radius: 0;
@@ -83,13 +90,7 @@ const CardSetSummary = styled.div`
   }
 `;
 
-const ActionsList = styled.ul`
-  font-size: 0.9rem;
-`;
 
-const ActionsListItem = styled.li`
-  padding: 0;
-`;
 
 type OutcomeNodeContentProps = {
   node: OutcomeNodeFieldsFragment,
@@ -159,67 +160,43 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
         </CardSetSummary>
       </CardSetHeader>
       <CardContent>
-      <Nav tabs className="justify-content-start">
-      <NavItem>
+      <Nav tabs className="justify-content-end">
+      <DisplayTab>
         <NavLink
           href="#"
           onClick={() => setActiveTabId('graph')}
           active={activeTabId === 'graph'}
         >
-          Graph
+          <GraphIcon /> Graph
         </NavLink>
-      </NavItem>
-      <NavItem>
+      </DisplayTab>
+      <DisplayTab>
         <NavLink
           href="#" onClick={() => setActiveTabId('table')}
           active={activeTabId === 'table'}
         >
-          Table
+          <TableIcon /> Table
         </NavLink>
-      </NavItem>
-      <NavItem>
+      </DisplayTab>
+      <DisplayTab>
         <NavLink
           href="#" onClick={() => setActiveTabId('info')}
           active={activeTabId === 'info'}
         >
-          Details
+          <DetailsIcon />  Details
         </NavLink>
-      </NavItem>
+      </DisplayTab>
     </Nav>
-
+    <TabContent activeTab={ activeTabId}>
       { activeTabId === 'graph' && (
       <ContentWrapper>{outcomeGraph}</ContentWrapper>
       )}
       { activeTabId === 'info' && (
       <ContentWrapper>
-        <TabText>
-          {node.shortDescription && (
-          <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
-          )}
-          <p>
-            <NodeLink node={node}>
-              <a>
-                {t('read-more')}
-              </a>
-            </NodeLink>
-          </p>
-          { node.upstreamActions.length > 0 && (
-          <h5>
-            { t('actions-influencing-this') }
-          </h5>
-          )}
-          <ActionsList>
-            { node.upstreamActions.map((action) => (
-              <ActionsListItem key={action.id}>
-                <ActionLink action={action}>
-                  <a>
-                    {action.name}
-                  </a>
-                </ActionLink>
-              </ActionsListItem>
-            ))}
-          </ActionsList>
-        </TabText>
+        <OutcomeNodeDetails
+          node={node}
+          t={t}
+        />
       </ContentWrapper>
       )}
       { activeTabId === 'table' && (
@@ -233,6 +210,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
           />  
         </ContentWrapper>
       )}
+      </TabContent>
       </CardContent>
     </div>
   );

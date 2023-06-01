@@ -53,8 +53,25 @@ const OUTCOME_NODE_FIELDS = gql`
     upstreamActions {
       id
       name
+      shortName
+      shortDescription
       parameters {
+        __typename
+        id
+        nodeRelativeId
+        node {
+          id
+        }
         isCustomized
+        ... on BoolParameterType {
+          boolValue: value
+          boolDefaultValue: defaultValue
+        }
+      }
+      group {
+        id
+        name
+        color
       }
     }
     ...DimensionalNodeMetric
