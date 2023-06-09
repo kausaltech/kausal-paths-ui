@@ -14,16 +14,20 @@ const ActionItem = styled.li<{isActive: boolean}>`
   position: relative;
   margin-bottom: 1.5rem;
   color: ${(props) => (props.isActive ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050)};
+  height: 100%;
 
   h5 {
     color: ${(props) => (props.isActive ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050)};
   }
-
-  .card {
-    background-color: ${(props) => (props.isActive ? props.theme.themeColors.white : props.theme.graphColors.grey005)};
-    box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
-  }
 `;
+
+const ActionCard = styled.div`
+  padding: 1rem;
+  background-color: ${(props) => (props.isActive ? props.theme.themeColors.white : props.theme.graphColors.grey005)};
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  border-left: 6px solid ${(props) => props.color !== 'undefined' ? props.color : props.theme.graphColors.grey090};
+`;
+
 
 const LoadingOverlay = styled.div`
   position: absolute;
@@ -64,6 +68,7 @@ const CardContent = styled.div`
 
 const CardDetails = styled.div`
   max-width: 720px;
+  font-size: 80%;
 `;
 
 const ActionState = styled.div`
@@ -110,7 +115,9 @@ const ActionListCard = (props: ActionListCardProps) => {
       isActive={isActive}
     >
       { refetching && <LoadingOverlay><Spinner size="sm" color="primary" /></LoadingOverlay> }
-      <DashCard>
+      <ActionCard
+        color={action.group?.color ?? 'undefined'}
+      >
         <CardHeader>
           <ActionLink action={action}>
             <a>
@@ -172,7 +179,7 @@ const ActionListCard = (props: ActionListCardProps) => {
             </div>
           </CardDetails>
         </CardContent>
-      </DashCard>
+      </ActionCard>
     </ActionItem>
   );
 };

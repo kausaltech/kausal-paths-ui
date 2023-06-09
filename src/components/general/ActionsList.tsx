@@ -4,9 +4,27 @@ import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 import { useMemo } from 'react';
 
 const ActionListList = styled.ul`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  align-content: stretch;
+
   margin: 0 0 2rem;
   padding: 0;
   list-style: none;
+
+  > li {
+    display: block;
+    flex: 0 1 30%;
+    margin: 1rem;
+  }
+`;
+
+const ActionListCategory = styled.div`
+  padding: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey005};
 `;
 
 type ActionsListProps = {
@@ -23,6 +41,7 @@ const ActionsList = (props: ActionsListProps) => {
 
   // possible sort: default, cumulativeImpact, cumulativeCost, cumulativeEfficiency
 
+  // console.log("action list", actions);
   const sortActions = (a, b) => {
     if (sortBy === 'default') return sortAscending ? 0 : -1;
     // check if we are using efficiency
@@ -35,18 +54,38 @@ const ActionsList = (props: ActionsListProps) => {
     return [...actions].sort(sortActions);
   }, [actions, sortBy, sortAscending]);
 
+  const actionGroups = useMemo(() => {
+    const groups = new Set();
+    actions.forEach((action) => {
+      if (action.group) groups.add(action.group.name);
+    });
+    return [...groups];
+  }, [actions]);
+
+  // console.log("action groups", actionGroups);
   return (
-    <ActionListList>
-      { sortedActions?.map((action) => (
-        <ActionListCard
-          key={action.id}
-          action={action}
-          displayType={displayType}
-          displayYears={yearRange}
-          refetching={refetching}
-        />
+    <div>
+      { actionGroups?.map((group) => (
+        <div>
+        <ActionListCategory>
+          <h3>{ group }</h3>
+        </ActionListCategory>
+        <ActionListList>
+      
+        { sortedActions?.map((action) => (
+          action.group?.name === group &&
+          <ActionListCard
+            key={action.id}
+            action={action}
+            displayType={displayType}
+            displayYears={yearRange}
+            refetching={refetching}
+          />
+        ))}
+      </ActionListList>
+      </div>
       ))}
-    </ActionListList>
+    </div>
   )
 };
 

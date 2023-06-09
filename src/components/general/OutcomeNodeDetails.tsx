@@ -48,7 +48,7 @@ const ActionListItem = (props) => {
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   const color = action.group?.color || "#000000";
 
-  console.log("ActionListItem", props, isActive)
+  // console.log("ActionListItem", props, isActive)
   return (
     <ActionsListCard
       active={isActive}
@@ -66,7 +66,7 @@ const ActionListItem = (props) => {
 
 const OutcomeNodeDetails = (props) => {
   const { node, t } = props;
-  console.log("OutcomeNodeDetails", props)
+  //console.log("OutcomeNodeDetails", props)
 
   const actions = useMemo(() => {
     const upstreamActions = [].concat(node.upstreamActions);
