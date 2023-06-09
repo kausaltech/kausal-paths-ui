@@ -2,10 +2,10 @@ import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { Container, Row, Col, Button } from 'reactstrap';
-import { Sliders, ChevronBarExpand, ChevronBarContract, ChevronBarDown } from 'react-bootstrap-icons';
+import { Sliders, ChevronBarExpand, ChevronBarContract, ChevronBarDown, XLg } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import { useSite } from 'context/site';
-import { yearRangeVar, } from 'common/cache'
+import { yearRangeVar } from 'common/cache';
 import GoalSelector from 'components/general/GoalSelector';
 import ScenarioSelector from 'components/general/ScenarioSelector';
 import NormalizationWidget from './NormalizationWidget';
@@ -13,6 +13,8 @@ import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
 import GlobalParameters from 'components/general/GlobalParameters';
 import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
+import CompleteSettings from './CompleteSettings';
+import MediumSettings from './MediumSettings';
 
 const FixedPanel = styled.div`
   position: fixed;
@@ -31,7 +33,7 @@ const FixedPanel = styled.div`
   }
 
   &.panel-md {
-    height: 10rem;
+    height: 8rem;
   }
 
   &.panel-lg {
@@ -74,7 +76,7 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   }
   const site = useSite();
   const instance = useInstance();
-  console.log("Site", "Instance", site, instance);
+  // console.log("Site", "Instance", site, instance);
 
   // Handle panel states
   const MODE = {
@@ -82,17 +84,14 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
     MD: 'md', 
     LG: 'lg',
   };
-  const [mode, setMode] = useState(MODE.SM);
-  const hasGlobalParameters = (
-    site.parameters.find((param) => param.isCustomizable) !== undefined ||
-    site.availableNormalizations.length > 0
-  );
+  const [mode, setMode] = useState(MODE.MD);
+
   const handleToggle = (e) => {
     e.preventDefault();
     if (mode === MODE.LG) {
       setMode(MODE.MD); 
     } else if (mode === MODE.MD) {
-      setMode(MODE.SM);
+      setMode(MODE.LG); // Make SM mobile only
     } else {
       setMode(MODE.LG);
     }   
@@ -113,16 +112,16 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   // Target
   const nrGoals = instance.goals.length;
 
-  console.log(props);
+  // console.log(props);
   return (
     <FixedPanel className={`panel-${mode}`}>
       <PanelToggle
         onClick={(e) => handleToggle(e)}
         color="white"
       > 
-        { mode === MODE.SM && <ChevronBarExpand />}
-        { mode === MODE.MD && <ChevronBarContract />}
-        { mode === MODE.LG && <ChevronBarDown />}
+        { mode === MODE.SM && <Sliders />}
+        { mode === MODE.MD && <Sliders />}
+        { mode === MODE.LG && <XLg />}
       </PanelToggle>
       <PanelContent>
       <Container fluid="lg">
@@ -141,62 +140,12 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
             </Col>
           </Row>
         </>)}
-        { mode === MODE.MD && (<>
-          <Row>
-            <Col md="2" sm="4" xs="12">
-              { true && (
-              <ScenarioSelector />
-              )}
-            </Col>
-            <Col md="2" sm="4" xs="6">
-              {true && (
-              <RangeSelector
-                min={site.minYear}
-                max={site.maxYear}
-                initMin={defaultYearRange[0]}
-                initMax={defaultYearRange[1]}
-                baseYear={instance.referenceYear ?? site.baseYear}
-                handleChange={setYearRange}
-              />
-              )}
-            </Col>
-            <Col md="2" sm="4" xs="6">
-              { nrGoals > 1 && (
-                <GoalSelector />
-              )}
-            </Col>
-            <Col md="6" sm="12" className="mt-3 mt-sm-0">
-              { true && 
-                <GoalOutcomeBar />
-              }
-            </Col>
-          </Row>
-        </>)}
-        { mode === MODE.LG && (<>
-          <h4>Display</h4>
-          <h5>{t('comparing-years')}</h5>
-          <RangeSelector
-              min={site.minYear}
-              max={site.maxYear}
-              initMin={defaultYearRange[0]}
-              initMax={defaultYearRange[1]}
-              baseYear={instance.referenceYear ?? site.baseYear}
-              handleChange={setYearRange}
-            />
-          <h5>Normalization</h5>
-          { availableNormalizations.length > 0 && <NormalizationWidget availableNormalizations={availableNormalizations} />}
-          <h5>Target</h5>
-          { nrGoals > 1 && (
-              <GoalSelector />
-            )}
-          <h4>Scenario: Selected Scenario</h4>
-          <h5>Select scenario</h5>
-          <h5>Actions</h5>
-          <h5>Global settings</h5>
-          <GlobalParameters parameters={site.parameters} />
-          <h4>Outcome</h4>
-          <GoalOutcomeBar />
-        </>)}
+        { mode === MODE.MD && (
+          <MediumSettings />
+        )}
+        { mode === MODE.LG && (
+          <CompleteSettings />
+        )}
         
       </Container>
       </PanelContent>

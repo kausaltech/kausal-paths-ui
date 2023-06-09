@@ -1,30 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Range, getTrackBackground } from 'react-range';
-import { ButtonToggle, Popover, PopoverBody } from 'reactstrap';
+import { ButtonToggle } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled, { useTheme } from 'styled-components';
 import { useTranslation } from 'next-i18next';
-import Button from 'components/common/Button';
 
 const SectionWrapper = styled.div`
   display: flex;
   min-width: 320px;
   padding: .75rem 0;
-`;
-
-const PopoverWrapper = styled.div`
-  .btn {
-    width: 100%;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    font-weight: 400;
-  }
-`;
-
-const ButtonLabel = styled.div`
-  white-space: nowrap;
-  font-size: 0.8rem;
 `;
 
 const RangeWrapper = styled.div`
@@ -86,8 +70,6 @@ const RangeSelector = (props: RangeSelectorProps) => {
   const theme = useTheme();
   const [baseYearActive, setBaseYearActive] = useState(baseYear !== null ? baseYear === initMin : false);
   const [values, setValues] = useState(baseYearActive ? [initMax] : [initMin, initMax]);
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const toggle = () => setPopoverOpen(!popoverOpen);
 
   useEffect(() => {
     handleChange([initMin, initMax]);
@@ -111,24 +93,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
     }
   };
 
-  const isCustom =
-    (baseYearActive ? initMin !== baseYear : initMin !== values[0])
-    || (baseYearActive ? initMax !== values[0] : initMax !== values[1]);
-
   return (
-    <PopoverWrapper>
-      <ButtonLabel>{t('comparing-years')}</ButtonLabel>
-      <Button id="Popover1" type="button" color={`${isCustom ? 'secondary' : 'light'}`}>
-        {`${baseYearActive ? baseYear : values[0]} – ${baseYearActive ? values[0] : values[1]}`}
-      </Button>
-      <Popover
-        placement="bottom"
-        isOpen={popoverOpen}
-        target="Popover1"
-        toggle={toggle}
-        trigger="legacy"
-      >
-        <PopoverBody>
           <SectionWrapper>
             <ActiveYearDisplay>
               <YearDescription>{t('comparison-year')}</YearDescription>
@@ -269,9 +234,6 @@ const RangeSelector = (props: RangeSelectorProps) => {
               <ActiveYear>{ baseYearActive ? values[0] : values[1] }</ActiveYear>
             </ActiveYearDisplay>
           </SectionWrapper>
-        </PopoverBody>
-      </Popover>
-    </PopoverWrapper>
   );
 };
 
