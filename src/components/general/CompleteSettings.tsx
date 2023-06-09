@@ -124,19 +124,7 @@ const CompleteSettings = (props) => {
       </UncontrolledCollapse>
       </SettingsSection>
       <SettingsSection>
-      <AccordionHeader
-        color="primary"
-        id="outcome-toggler"
-      >
-        Outcome
-      </AccordionHeader>
-      <UncontrolledCollapse toggler="#outcome-toggler" defaultOpen>
-      <Card>
-          <CardBody>
-            <GoalOutcomeBar />
-          </CardBody>
-        </Card>
-      </UncontrolledCollapse>     
+        <GoalOutcomeBar />
       </SettingsSection>     
     </div>
   );

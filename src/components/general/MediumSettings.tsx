@@ -97,7 +97,7 @@ const MediumSettings = (props) => {
             </Col>
             <Col md="6" sm="12" className="mt-3 mt-sm-0">
               { true && 
-                <GoalOutcomeBar />
+                <GoalOutcomeBar compact />
               }
             </Col>
           </Row>

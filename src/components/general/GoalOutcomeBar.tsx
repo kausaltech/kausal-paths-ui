@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
-import { Spinner } from 'reactstrap';
+import { Spinner, Card, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
@@ -26,6 +26,23 @@ query GetInstanceGoalOutcome($goal: ID!) {
     }
   }
 }
+`;
+
+const AccordionHeader = styled(Button)`
+  width: 100%;
+  text-align: left;
+  border-radius: 0;
+  border: none;
+  background-color: ${(props) => props.theme.graphColors.grey000};
+  color: ${(props) => props.theme.graphColors.grey090};
+  box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
+  border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
+`;
+
+const AccordionContent = styled(UncontrolledCollapse)`
+  background-color: ${(props) => props.theme.graphColors.grey020};
+  padding: 1rem;
+  overflow-y: auto;
 `;
 
 const EmissionsBar = styled.div`
@@ -103,6 +120,7 @@ const BarWithLabel = (props) => {
 };
 
 const GoalOutcomeBar: React.FC<{}> = (props) => {
+  const { compact } = props;
   const { t } = useTranslation();
   const theme = useTheme();
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -171,20 +189,53 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
     },
   ], [(bar) => -bar.value]);
 
+  const missingFromTarget = comparisonActual.actual! - comparisonGoal.goal!;
+  const successText = missingFromTarget > 0 ? 'we are missing' : 'we are exceeding';
+  const verbalizeOutcome =
+    `On year ${comparisonActual.year} ${successText} ${beautifyValue(missingFromTarget)} ${unit} from year ${comparisonGoal.year} target ${beautifyValue(comparisonGoal.goal)} ${unit}`;
+  
   return (
-    <div>
-      <EmissionsBar>
-        { bars.map((bar, index) => (
-          <BarWithLabel
-            {...bar}
-            key={bar.label}
-            placement={index}
-            zeroOffset={zeroOffset}
-          />
-        ))}
-      </EmissionsBar>
-    </div>
-  );
+    <>
+    { compact ? (
+      <div>
+        <EmissionsBar>
+          { bars.map((bar, index) => (
+            <BarWithLabel
+              {...bar}
+              key={bar.label}
+              placement={index}
+              zeroOffset={zeroOffset}
+            />
+          ))}
+        </EmissionsBar>
+      </div>
+    ) : (
+      <>
+        <AccordionHeader
+          color="primary"
+          id="outcome-toggler"
+        >
+          Outcome: {verbalizeOutcome}
+        </AccordionHeader>
+        <UncontrolledCollapse toggler="#outcome-toggler" defaultOpen>
+        <Card>
+            <CardBody>
+            <EmissionsBar>
+              { bars.map((bar, index) => (
+                <BarWithLabel
+                  {...bar}
+                  key={bar.label}
+                  placement={index}
+                  zeroOffset={zeroOffset}
+                />
+              ))}
+            </EmissionsBar>
+            </CardBody>
+          </Card>
+        </UncontrolledCollapse>
+    </>
+  )}
+  </>);
 };
 
 export default GoalOutcomeBar;
