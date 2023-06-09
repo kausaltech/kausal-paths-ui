@@ -29,7 +29,7 @@ const GridRow = styled.div`
   position: relative;
   display: flex;
   /* TODO: We either alignt the elements left or lose the left items behind margin  */
-  //justify-content: center;
+  justify-content: center;
   flex-wrap: nowrap;
   white-space: nowrap;
   overflow-x: auto;
@@ -190,7 +190,7 @@ const CausalGrid = (props: CausalGridProps) => {
     ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1]) : undefined;
 
   // find nodes that the action affects directly
-  const actionOutputNodes = filteredNodes.filter((node) => parentMap.get(node.id)!.find((inputNode) => inputNode.id === action.id));
+  const actionOutputNodes = filteredNodes.filter((node) => parentMap.get(node.id) && parentMap.get(node.id)!.find((inputNode) => inputNode.id === action.id));
 
   return (
     <ArcherContainer
@@ -201,7 +201,8 @@ const CausalGrid = (props: CausalGridProps) => {
     >
       <GridSesction>
         <ArcherElement
-          relations={actionOutputNodes.map((node) => (
+          relations={
+            actionOutputNodes.length > 0 ? actionOutputNodes.map((node) => (
             { targetId: node.id,
               targetAnchor: 'top',
               sourceAnchor: 'bottom',
@@ -209,7 +210,13 @@ const CausalGrid = (props: CausalGridProps) => {
                 style: { strokeDasharray: '5,5' },
               },
             }
-          ))}
+          )) : [{ targetId: lastNode.id,
+            targetAnchor: 'top',
+            sourceAnchor: 'bottom',
+            style: {
+              style: { strokeDasharray: '5,5' },
+            },
+          }]}
         >
           <ActionPoint />
         </ArcherElement>

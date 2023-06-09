@@ -23,6 +23,11 @@ const GET_ACTION_CONTENT = gql`
     shortDescription
     color
     targetYearGoal
+    group {
+      id
+      name
+      color
+    }
     unit {
       htmlShort
     }

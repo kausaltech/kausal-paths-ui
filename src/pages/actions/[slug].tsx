@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
@@ -13,7 +13,7 @@ import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanelFull from 'components/general/SettingsPanel';
+import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import CausalGrid from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
 import ActionParameters from 'components/general/ActionParameters';
@@ -25,6 +25,7 @@ import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import * as Icon from 'react-bootstrap-icons';
+import SubActions from 'components/general/SubActions';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -92,6 +93,7 @@ export default function ActionPage() {
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
   const instance = useInstance();
+  const [activeSubAction, setActiveSubAction] = useState(undefined);
 
   const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
     fetchPolicy: 'cache-and-network',
@@ -120,8 +122,56 @@ export default function ActionPage() {
   }
 
   const action = data.node;
-  const causalNodes = action.downstreamNodes;
-  const lastNode = causalNodes.find((node) => node.outputNodes.length === 0);
+
+  // Check here if action has subactions
+  const subActions = [
+    {
+      id: 'replacement_of_heating_networks',
+      name: 'Heizungsersatz durch thermische Netze',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: true,
+      parameters: action.parameters
+    },
+    {
+      id: 'district_heat_decarbonisation',
+      name: 'Dekarbonisierung thermische Netze',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: true,
+      parameters: action.parameters
+    },
+    {
+      id: 'natural_gas_network_decarbonisation',
+      name: 'Dekarbonisierung Gasversorgung',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: false,
+      parameters: action.parameters
+    },
+    {
+      id: 'replacement_of_heat_pumps',
+      name: 'Heizungsersatz durch Wärmepumpen',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: false,
+      parameters: action.parameters
+    },
+    {
+      id: 'replacement_of_other_systems',
+      name: 'Heizungsersatz durch übrige Systeme',
+      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
+      active: true,
+      isEnabled: false,
+      parameters: action.parameters
+    },
+  ];
+
+  // show causal nodes only for selected subaction
+  //const causalNodes = action.downstreamNodes;
+  const lastNode = action.downstreamNodes.find((node) => node.outputNodes.length === 0);
+  const causalNodes = activeSubAction ? action.downstreamNodes : [lastNode];
+
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
     (dataPoint) => dataPoint.year === yearRange[1],
@@ -132,7 +182,7 @@ export default function ActionPage() {
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />
-  )
+  );
 
   return (
     <>
@@ -157,6 +207,13 @@ export default function ActionPage() {
                 </ActionListLink>
                 {' '}
                 /
+                { action.group && (
+                  <>
+                  {action.group.name}
+                  {' '}
+                  /
+                  </>
+                )}
                 {' '}
                 {action.name}
               </h1>
@@ -224,16 +281,23 @@ export default function ActionPage() {
                   )
                 )}
               </ActionDescription>
+              <SubActions
+                actions={subActions}
+                activeSubAction={activeSubAction}
+                setActiveSubAction={setActiveSubAction}
+              />
             </HeaderCard>
           </PageHeader>
         </Container>
       </HeaderSection>
-      <CausalGrid
-        nodes={causalNodes}
-        yearRange={yearRange}
-        actionIsOff={!isActive}
-        action={action}
-      />
+      { causalNodes.length > 0 && (
+        <CausalGrid
+          nodes={causalNodes}
+          yearRange={yearRange}
+          actionIsOff={!isActive}
+          action={action}
+        />
+      )}
       <SettingsPanelFull />
     </>
   );

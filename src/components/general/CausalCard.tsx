@@ -1,7 +1,8 @@
+import React, { useState } from 'react';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
-import DashCard from 'components/general/DashCard';
+import { Card, CardBody, CardFooter, Collapse } from 'reactstrap';
 import NodePlot from 'components/general/NodePlot';
 import ImpactDisplay from './ImpactDisplay';
 import { NodeLink } from 'common/links';
@@ -15,6 +16,9 @@ const ActionLinks = styled.div`
 const NodeCard = styled.div`
   margin-bottom: 1rem;
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  max-width: 400px;
+  padding: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey005};
 
   &.action .card {
     background-color: ${(props) => props.theme.graphColors.grey000};
@@ -33,6 +37,11 @@ const CardHeader = styled.div`
 
   svg {
     margin-right: 0.5rem;
+  }
+
+  h4 {
+    word-wrap: break-word;
+    text-wrap: wrap;
   }
 `;
 
@@ -79,6 +88,7 @@ const CausalCard = (props: CausalCardProps) => {
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
 
+  const [isOpen, setIsOpen] = useState(false);
   const impactAtTargetYear = getImpactMetricValue(node, endYear);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact = node.quantity === 'emissions'
@@ -87,7 +97,6 @@ const CausalCard = (props: CausalCardProps) => {
   return (
     <ActionLinks>
       <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
-        <DashCard>
           <CardHeader>
             { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
             { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
@@ -96,6 +105,10 @@ const CausalCard = (props: CausalCardProps) => {
             { node.quantity === 'mileage' && <Icon.Signpost size={24} className="mb-3" /> }
             <NodeLink node={node}><a><h4>{node.name}</h4></a></NodeLink>
           </CardHeader>
+          <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
+            more
+          </button>
+          <Collapse isOpen={isOpen}>
           <ImpactFigures>
             <ImpactDisplay
               effectCumulative={cumulativeImpact}
@@ -123,7 +136,7 @@ const CausalCard = (props: CausalCardProps) => {
               />
             </ContentWrapper> )}
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
-        </DashCard>
+          </Collapse>
       </NodeCard>
     </ActionLinks>
   );

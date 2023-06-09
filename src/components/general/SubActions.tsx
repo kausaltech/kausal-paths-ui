@@ -1,36 +1,30 @@
 import { useState } from 'react';
 import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
-import { NodeLink } from 'common/links';
+import ImpactDisplay from './ImpactDisplay';
 import ActionParameters from './ActionParameters';
 
 const ActionTabs = styled.div`
   display: flex;
 `;
 
-const ActionTab = styled.button<{isEnabled: boolean}>`
+const ActionTab = styled.button<{isActive : boolean, isEnabled: boolean}>`
   display: inline-flex;
   align-items: flex-start;
-  justify-content: space-between;
   flex-direction: column;
   flex: 1 1 90px;
   margin-right: 5px;
   border: 1px solid ${(props) => props.theme.graphColors.grey020};
-  border-top: 2px solid
-              ${(props) => props.theme.graphColors.blue070 };
+  border-top: 1px solid
+              ${(props) => props.isActive ? props.theme.graphColors.blue070 : props.theme.graphColors.grey020};
   border-bottom: 1px solid
-    ${(props) => props.theme.graphColors.grey000 };
+    ${(props) => props.isActive ? props.theme.graphColors.grey000 : props.theme.graphColors.grey010};
   padding: .5rem;
   text-align: left;
-  background-color: ${(props) => props.theme.graphColors.grey000 };
-  color: ${(props) => props.isEnabled ? props.theme.themeColors.dark : props.theme.graphColors.grey050};
+  background-color: ${(props) => props.isActive ? props.theme.graphColors.grey000 : props.theme.graphColors.grey010};
 
   &:last-child {
     margin-right: 0;
-  }
-
-  &:hover {
-    border-top: 2px solid ${(props) => props.theme.graphColors.blue070};
   }
 `;
 
@@ -43,15 +37,10 @@ const TabTitle = styled.div`
   display: flex;
   font-weight: 700;
   line-height: 1.2;
-  margin-bottom: 1rem;
 
   div {
     margin-right: 6px;
   }
-`;
-
-const TabImpact = styled.div`
-  align-self: flex-end;
 `;
 
 const ActionContentCard = styled.div`
@@ -72,13 +61,8 @@ const ActionContent = (props: any) => {
   // console.log("action", action)
   return (
     <ActionContentCard>
-      <ActionMetrics>
-        <ActionParameters
-          parameters={action.parameters}
-        />
-      </ActionMetrics>
       <p>
-        {action.description}
+        {action?.description}
       </p>
     </ActionContentCard>
   );
@@ -89,31 +73,40 @@ type SubActionsProps = {
 }
 
 const SubActions = (props: SubActionsProps) => {
-  const { actions } = props;
+  const { actions, activeSubAction, setActiveSubAction } = props;
+  const [activeTab, setActiveTab] = useState("null");
+
+  const handleClick = (id: string) => {
+    if (activeTab === id) {
+      setActiveTab("null");
+      setActiveSubAction(undefined);
+    } else {
+      setActiveTab(id);
+      setActiveSubAction(id);
+    };
+  };
 
   return (
     <div className="mt-4">
-      <h3>Subactions</h3>
+      <h3>Ziele und Massnahmen</h3>
       <ActionTabs>
       {actions.map((action: any) => (
         <ActionTab
           key={action.id}
+          onClick={()=>handleClick(action.id)}
+          isActive={action.id === activeTab}
           isEnabled={action.isEnabled}
         >
-          <div>
-            <TabType>Subaction</TabType>
-            <TabTitle>
-              <div>
-                { action.isEnabled ? <Icon.CheckCircleFill color="green" /> : <Icon.XCircleFill color="grey" />}
-              </div>
-              <NodeLink node={{id: action.id}}><a>
-                { action.name }
-              </a></NodeLink>
-            </TabTitle>
-          </div>
+          <TabTitle>
+            <div>
+              { action.name }
+            </div>
+          </TabTitle>
         </ActionTab>
       ))}
       </ActionTabs>
+      { activeTab !== "null" &&
+      <ActionContent action={actions.find((action) => action.id === activeTab)} /> }
     </div>
     
   );

@@ -9,7 +9,7 @@ import { useTranslation } from 'next-i18next';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 
 import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanelFull from 'components/general/SettingsPanel';
+import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import ActionsMac from 'components/general/ActionsMac';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';

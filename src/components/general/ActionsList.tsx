@@ -41,7 +41,7 @@ const ActionsList = (props: ActionsListProps) => {
 
   // possible sort: default, cumulativeImpact, cumulativeCost, cumulativeEfficiency
 
-  // console.log("action list", actions);
+  //console.log("action list", actions);
   const sortActions = (a, b) => {
     if (sortBy === 'default') return sortAscending ? 0 : -1;
     // check if we are using efficiency
@@ -54,6 +54,7 @@ const ActionsList = (props: ActionsListProps) => {
     return [...actions].sort(sortActions);
   }, [actions, sortBy, sortAscending]);
 
+  // Group actions by group
   const actionGroups = useMemo(() => {
     const groups = new Set();
     actions.forEach((action) => {
@@ -71,7 +72,6 @@ const ActionsList = (props: ActionsListProps) => {
           <h3>{ group }</h3>
         </ActionListCategory>
         <ActionListList>
-      
         { sortedActions?.map((action) => (
           action.group?.name === group &&
           <ActionListCard
@@ -85,6 +85,20 @@ const ActionsList = (props: ActionsListProps) => {
       </ActionListList>
       </div>
       ))}
+      { actionGroups.length < 1 && (
+        <ActionListList>
+          { sortedActions?.map((action) => (
+            !action.group &&
+            <ActionListCard
+              key={action.id}
+              action={action}
+              displayType={displayType}
+              displayYears={yearRange}
+              refetching={refetching}
+            />
+          ))}
+        </ActionListList>
+      )}
     </div>
   )
 };
