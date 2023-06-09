@@ -3,6 +3,7 @@ import * as Icon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import ImpactDisplay from './ImpactDisplay';
 import ActionParameters from './ActionParameters';
+import WatchActionCard from './WatchActionCard';
 
 const ActionTabs = styled.div`
   display: flex;
@@ -56,14 +57,44 @@ const ActionMetrics = styled.div`
   margin-bottom: 1rem;
 `;
 
+const WatchActionList = styled.div`
+  display: flex;
+`;
+
 const ActionContent = (props: any) => {
   const { action } = props;
   // console.log("action", action)
+
+  const watchActions = [
+    {
+      id: "1",
+      name: "Energie",
+      description: "Energieverbrauch reduzieren",
+      link: "https://www.google.com",
+      image: "https://picsum.photos/200/300",
+    },
+    {
+      id: "2",
+      name: "Mobilität",
+      description: "Mobilität optimieren",
+      link: "https://www.google.com",
+      image: "https://picsum.photos/200/300",
+    },
+  ];
+
   return (
     <ActionContentCard>
       <p>
         {action?.description}
       </p>
+      <WatchActionList>
+        {watchActions.map((watchAction: any) => (
+          <WatchActionCard
+            key={watchAction.id}
+            action={watchAction}
+          />
+        ))}
+      </WatchActionList>
     </ActionContentCard>
   );
 };

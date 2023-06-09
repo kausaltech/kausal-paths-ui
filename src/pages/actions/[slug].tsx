@@ -238,6 +238,7 @@ export default function ActionPage() {
                       parameters={action.parameters}
                     />
                   </MetricsParameters>
+                  { false && (
                   <MetricsImpact>
                     <ImpactDisplay
                       effectCumulative={undefined}
@@ -264,6 +265,7 @@ export default function ActionPage() {
                       /> )}
                     </ImpactDisplay>
                   </MetricsImpact>
+                  )}
                 </ActionMetrics>
 
                 { action.metric && (
