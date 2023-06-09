@@ -9,7 +9,7 @@ import { useTranslation } from 'next-i18next';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 
 import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanel from 'components/general/SettingsPanel';
+import SettingsPanelFull from 'components/general/SettingsPanel';
 import ActionsMac from 'components/general/ActionsMac';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
@@ -336,7 +336,7 @@ function ActionListPage(props: ActionListPageProps) {
         </Col>
       </Row>
     </Container>
-    <SettingsPanel />
+    <SettingsPanelFull />
   </>
   )
 }

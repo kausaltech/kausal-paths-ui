@@ -13,7 +13,7 @@ import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanel from 'components/general/SettingsPanel';
+import SettingsPanelFull from 'components/general/SettingsPanel';
 import CausalGrid from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
 import ActionParameters from 'components/general/ActionParameters';
@@ -234,7 +234,7 @@ export default function ActionPage() {
         actionIsOff={!isActive}
         action={action}
       />
-      <SettingsPanel />
+      <SettingsPanelFull />
     </>
   );
 }

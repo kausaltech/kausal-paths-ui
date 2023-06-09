@@ -11,7 +11,7 @@ import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanel from 'components/general/SettingsPanel';
+import SettingsPanelFull from 'components/general/SettingsPanel';
 import NodePlot from 'components/general/NodePlot';
 import DashCard from 'components/general/DashCard';
 import NodeLinks from 'components/general/NodeLinks';
@@ -243,7 +243,7 @@ export default function NodePage() {
           inputNodes={node.inputNodes}
         />
       </Container>
-      <SettingsPanel />
+      <SettingsPanelFull />
     </>
   );
 }
