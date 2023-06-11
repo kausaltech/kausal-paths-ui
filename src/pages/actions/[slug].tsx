@@ -35,7 +35,7 @@ const HeaderSection = styled.div`
 
 const HeaderCard = styled.div` 
   margin: 1rem 0 -8rem;
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 2.5rem;
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
@@ -62,6 +62,10 @@ const ActionMetrics = styled.div`
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     flex-direction: row;
   }
+`;
+
+const ActionGraphHeader = styled.h4`
+  text-transform: capitalize;
 `;
 
 const PageHeader = styled.div` 
@@ -122,7 +126,6 @@ export default function ActionPage() {
   }
 
   const action = data.node;
-
   // Check here if action has subactions
   const subActions = [
     {
@@ -168,9 +171,9 @@ export default function ActionPage() {
   ];
 
   // show causal nodes only for selected subaction
-  //const causalNodes = action.downstreamNodes;
+  const causalNodes = action.downstreamNodes;
   const lastNode = action.downstreamNodes.find((node) => node.outputNodes.length === 0);
-  const causalNodes = activeSubAction ? action.downstreamNodes : [lastNode];
+  //const causalNodes = activeSubAction ? action.downstreamNodes : [lastNode];
 
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly = action.impactMetric.forecastValues.find(
@@ -230,7 +233,6 @@ export default function ActionPage() {
               </div>
               <ActionDescription>
                 <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
-                <NodeLink node={action}><a>{t('read-more')}</a></NodeLink>
                 <hr />
                 <ActionMetrics>
                   <MetricsParameters>
@@ -267,7 +269,7 @@ export default function ActionPage() {
                   </MetricsImpact>
                   )}
                 </ActionMetrics>
-
+                { action.metric && <ActionGraphHeader>{action.quantity} (<span dangerouslySetInnerHTML={{__html: action.unit?.htmlShort}} />) </ActionGraphHeader>}
                 { action.metric && (
                   flowPlot || (
                     <NodePlot

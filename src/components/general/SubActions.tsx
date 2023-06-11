@@ -20,7 +20,7 @@ const ActionTab = styled.button<{isActive : boolean, isEnabled: boolean}>`
               ${(props) => props.isActive ? props.theme.graphColors.blue070 : props.theme.graphColors.grey020};
   border-bottom: 1px solid
     ${(props) => props.isActive ? props.theme.graphColors.grey000 : props.theme.graphColors.grey010};
-  padding: .5rem;
+  padding: 0.75rem 0.75rem 1.25rem 0.75rem;
   text-align: left;
   background-color: ${(props) => props.isActive ? props.theme.graphColors.grey000 : props.theme.graphColors.grey010};
 
@@ -68,17 +68,17 @@ const ActionContent = (props: any) => {
   const watchActions = [
     {
       id: "1",
-      name: "Energie",
+      name: "Restwertentschädigung und Förderprogramm für den Heizungsersatz",
       description: "Energieverbrauch reduzieren",
-      link: "https://www.google.com",
-      image: "https://picsum.photos/200/300",
+      link: "https://draft-cap.watch-test.kausal.tech/actions/44",
+      image: "https://picsum.photos/300/300",
     },
     {
       id: "2",
-      name: "Mobilität",
+      name: "Informationsangebot über Energis",
       description: "Mobilität optimieren",
-      link: "https://www.google.com",
-      image: "https://picsum.photos/200/300",
+      link: "https://draft-cap.watch-test.kausal.tech/actions/43",
+      image: "https://picsum.photos/300/300",
     },
   ];
 
@@ -87,6 +87,7 @@ const ActionContent = (props: any) => {
       <p>
         {action?.description}
       </p>
+      <h5>How do we make this happen?</h5>
       <WatchActionList>
         {watchActions.map((watchAction: any) => (
           <WatchActionCard

@@ -32,16 +32,31 @@ const NodeCard = styled.div`
 
 const CardHeader = styled.div`
   display: flex;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid ${(props) => props.theme.graphColors.grey020};
+  position: relative;
 
   svg {
-    margin-right: 0.5rem;
+    display: block;
+    flex: 0 0 24px;
+    margin-right: 1rem;
+    width: 24px;
+    height: 24px;
   }
 
   h4 {
     word-wrap: break-word;
     text-wrap: wrap;
+  }
+
+  button {
+    display: flex;
+    flex: 1 1 100%;
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    background-color: transparent;
+    text-decoration: none;
   }
 `;
 
@@ -82,12 +97,41 @@ type CausalCardProps = {
   compact: boolean,
 }
 
+const NodeIcon = (props) => {
+  const { node } = props;
+  const nodeType = node.isAction ? 'action' : node.quantity;
+
+  switch (nodeType) {
+    case 'emission_factor':
+      return <Icon.ClipboardX size={24} className="mb-3" />;
+    case 'emissions':
+    case 'building_emissions':
+    case 'building_heat_emissions':
+      return <Icon.CloudHaze size={24} className="mb-3" />;
+    case 'energy':
+    case 'energy_factor':
+    case 'energy_per_area':
+      return <Icon.LightningChargeFill size={24} className="mb-3" />;
+    case 'mileage':
+      return <Icon.Signpost size={24} className="mb-3" />;
+    case 'per_capita':
+      return <Icon.People size={24} className="mb-3" />;
+    case 'floor_area':
+      return <Icon.Buildings size={24} className="mb-3" />;
+    case 'action':
+      return <Icon.Journals size={24} className="mb-3" />;
+    default:
+      return <Icon.Diamond size={24} className="mb-3" />;
+  }
+}
+
 
 const CausalCard = (props: CausalCardProps) => {
   const { node, startYear, endYear, noEffect, compact } = props;
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
 
+  console.log('node', node);
   const [isOpen, setIsOpen] = useState(false);
   const impactAtTargetYear = getImpactMetricValue(node, endYear);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
@@ -98,16 +142,14 @@ const CausalCard = (props: CausalCardProps) => {
     <ActionLinks>
       <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
           <CardHeader>
-            { node.isAction && <Icon.Journals size={24} className="mb-3" /> }
-            { node.quantity === 'emission_factor' && <Icon.ClipboardX size={24} className="mb-3" /> }
-            { node.quantity === 'emissions' && <Icon.CloudFog size={24} className="mb-3" /> }
-            { node.quantity === 'energy' && <Icon.BatteryCharging size={24} className="mb-3" /> }
-            { node.quantity === 'mileage' && <Icon.Signpost size={24} className="mb-3" /> }
-            <NodeLink node={node}><a><h4>{node.name}</h4></a></NodeLink>
+            <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
+              <NodeIcon node={node} />
+              <h4>{node.name}</h4>
+              { isOpen
+                ? <Icon.ChevronDown size={24} className="ml-auto" />  
+                : <Icon.ChevronRight size={24} className="ml-auto" /> }
+            </button>
           </CardHeader>
-          <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
-            more
-          </button>
           <Collapse isOpen={isOpen}>
           <ImpactFigures>
             <ImpactDisplay
@@ -136,6 +178,7 @@ const CausalCard = (props: CausalCardProps) => {
               />
             </ContentWrapper> )}
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
+          <NodeLink node={node}><a>{node.name}</a></NodeLink>
           </Collapse>
       </NodeCard>
     </ActionLinks>

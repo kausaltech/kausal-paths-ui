@@ -1,6 +1,7 @@
-import { useRef, useContext } from 'react';
+import { useRef, useContext, useState } from 'react';
 import { remove } from 'lodash';
 import { Container, Alert } from 'reactstrap';
+import * as Icon from 'react-bootstrap-icons';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
 import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
@@ -11,12 +12,24 @@ import { useInstance } from 'common/instance';
 import { NodeLink } from 'common/links';
 import { GetActionContentQuery } from 'common/__generated__/graphql';
 
-const ActionPoint = styled.div`
-  height: 1rem;
-  margin-bottom: 3rem;
+const ActionPoint = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  border-radius: 1.5rem;
+  border: none;
+  margin: 0 auto;
+  padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+  background-color: ${(props) => props.theme.graphColors.grey005};
+  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+
+  svg {
+    margin-right: 1rem;
+  }
 `;
 
-const GridSesction = styled.div`
+const GridSection = styled.div`
   width: 100%;
 `;
 
@@ -136,18 +149,23 @@ const CausalGrid = (props: CausalGridProps) => {
   const instance = useInstance();
   const gridCanvas = useRef(null);
 
+  const [gridOpen, setGridOpen] = useState(false);
+
   if (nodes.length === 0) {
     return <Container className="pt-5"><Alert color="warning">Action has no nodes</Alert></Container>
   }
 
+  const lastNode = nodes.find((node) => node.outputNodes.length === 0)!;
+  const visibleNodes = gridOpen ? nodes : [lastNode];
+
   const parentMap = new Map<string, CausalGridNode[]>();
-  [action, ...nodes].forEach(node => {
+  [action, ...visibleNodes].forEach(node => {
     node.outputNodes.forEach(output => {
       const old = parentMap.get(output.id) || [];
       parentMap.set(output.id, [...old, node]);
     })
   });
-  const filteredNodes = nodes.filter(node => {
+  const filteredNodes = visibleNodes.filter(node => {
     // Remove some nodes from the causal pathways (for now)
     if (action.dimensionalFlow && node.quantity !== 'emissions') {
       node.outputNodes.map(output => {
@@ -182,7 +200,6 @@ const CausalGrid = (props: CausalGridProps) => {
   };
 
   // Build the grid from bottom up
-  const lastNode = filteredNodes.find((node) => node.outputNodes.length === 0)!;
   const causalGridNodes = findOutputs([lastNode.id], []);
   const impactAtTargetYear = getImpactMetricValue(lastNode, yearRange[1]);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
@@ -199,7 +216,7 @@ const CausalGrid = (props: CausalGridProps) => {
       endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
       ref={gridCanvas}
     >
-      <GridSesction>
+      <GridSection>
         <ArcherElement
           relations={
             actionOutputNodes.length > 0 ? actionOutputNodes.map((node) => (
@@ -218,7 +235,17 @@ const CausalGrid = (props: CausalGridProps) => {
             },
           }]}
         >
-          <ActionPoint />
+          <ActionPoint onClick={() => setGridOpen(!gridOpen)}>
+            { gridOpen ? (
+              <>
+                <Icon.DashCircle size={24} />
+                Hide calculation
+              </> ): (
+              <>
+                <Icon.PlusCircle size={24} />
+                Show calculation
+              </>)}
+          </ActionPoint>
         </ArcherElement>
         {causalGridNodes?.map((row, rowIndex) => (
           <GridRowWrapper onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
@@ -252,7 +279,7 @@ const CausalGrid = (props: CausalGridProps) => {
             </GridRow>
           </GridRowWrapper>
         ))}
-      </GridSesction>
+      </GridSection>
       <GoalSection>
         <Container fluid="lg">
           <PageHeader>

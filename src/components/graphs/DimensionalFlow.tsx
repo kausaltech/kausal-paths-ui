@@ -153,7 +153,15 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
   }, [flow, endYear]);
 
   const layout = useMemo(() => {
-    const out: Partial<Plotly.Layout> = {};
+    const out: Partial<Plotly.Layout> = {
+      height: 300,
+      margin: {
+        t: 24,
+        r: 24,
+        b: 24,
+        l: 24,
+      },
+    };
     return out;
   }, []);
   const config = useMemo(() => {

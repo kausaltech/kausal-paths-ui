@@ -1,14 +1,17 @@
 import styled from 'styled-components';
+import * as Icon from 'react-bootstrap-icons';
 
 const ActionCard = styled.div`
   display: flex;
-  background-color: ${(props) => props.theme.graphColors.grey000};
+  flex: 0 0 320px;
+  margin-right: 1rem;
+  background-color: ${(props) => props.theme.graphColors.grey020};
   border-radius: 0;
   margin-bottom: 1rem;
 `;
 
 const ActionCardImage = styled.div`
-  flex: 1 1 60px;
+  flex: 0 0 100px;
   position: relative;
   background-color: ${(props) => props.theme.graphColors.grey005};
 
@@ -16,13 +19,26 @@ const ActionCardImage = styled.div`
     position: absolute;
     width: 100%;
     height: 100%;
+    object-fit: cover;
   }
 `;
 
 const ActionCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   padding: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey000};
+`;
+
+const ActionCardLink = styled.div`
+  display: flex;
+  flex: 3 0 auto;
+  align-self: flex-end;
+
+  a {
+    display: inline-block;
+    align-self: flex-end;
+  }
 `;
 
 const WatchActionCard = (props: any) => {
@@ -36,6 +52,9 @@ const WatchActionCard = (props: any) => {
       <ActionCardContent>
         <h5>{action?.name}</h5>
         <p>{action?.description}</p>
+        <ActionCardLink>
+          <a href={action?.link}>Read more <Icon.ArrowRightCircleFill /></a>
+        </ActionCardLink>
       </ActionCardContent>
     </ActionCard>
   );

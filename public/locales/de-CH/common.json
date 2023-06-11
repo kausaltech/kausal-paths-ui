@@ -1,7 +1,7 @@
 {
   "action-impact": "Massnahmenauswirkungen",
-  "action": "Massnahme",
-  "actions": "Massnahmen",
+  "action": "Massnahmenpaket",
+  "actions": "Massnahmenpakete",
   "actions-available": "Massnahmen in Szenario",
   "actions-influencing-this": "Diesen Sektor beeinflussende Massnahmen",
   "plot-action-impact": "Massnahmenauswirkungen",
@@ -9,5 +9,5 @@
   "table-action-impact": "Auswirkung der Massnahme",
   "plot-total": "Total",
   "actions-group-type": "Handlungsfeld",
-  "actions-count": "{{ count }} Massnahmen"
+  "actions-count": "{{ count }} Massnahmenpakete"
 }
