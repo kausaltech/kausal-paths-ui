@@ -6,7 +6,7 @@ const Parameters = styled.div`
   flex-wrap: wrap;
 
   & > div {
-    margin-right: 1.5rem;
+    // margin-right: 1.5rem;
   }
 `;
 

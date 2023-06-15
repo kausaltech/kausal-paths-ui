@@ -5,12 +5,8 @@ import { useMemo } from 'react';
 
 const ActionListList = styled.ul`
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: flex-start;
-  align-content: stretch;
-
+  flex-flow: row wrap;
+  gap: 1rem;
   margin: 0 0 2rem;
   padding: 0;
   list-style: none;
@@ -18,12 +14,16 @@ const ActionListList = styled.ul`
   > li {
     display: block;
     flex: 0 1 30%;
-    margin: 1rem;
+
+    > div {
+      height: 100%;
+    }
   }
 `;
 
 const ActionListCategory = styled.div`
   padding: 1rem;
+  margin-bottom: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
 `;
 
@@ -39,7 +39,7 @@ type ActionsListProps = {
 const ActionsList = (props: ActionsListProps) => {
   const { actions, displayType, yearRange, sortBy, sortAscending, refetching } = props;
 
-  // possible sort: default, cumulativeImpact, cumulativeCost, cumulativeEfficiency
+  // possible sort: default, impact, cumulativeImpact, cumulativeCost, cumulativeEfficiency
 
   //console.log("action list", actions);
   const sortActions = (a, b) => {

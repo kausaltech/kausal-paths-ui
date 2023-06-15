@@ -11,6 +11,7 @@ import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import ActionsMac from 'components/general/ActionsMac';
+import ActionsComparison from 'components/general/ActionsComparison';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
 import { useSite } from 'context/site';
@@ -182,7 +183,6 @@ function ActionListPage(props: ActionListPageProps) {
           {activeScenario?.name}
         </ActiveScenario>
         <SettingsForm className="text-light mt-4">
-        { hasEfficiency && (
           <ButtonGroup
             className="my-2"
             size="sm"
@@ -193,14 +193,20 @@ function ActionListPage(props: ActionListPageProps) {
             >
               {t('actions-as-list')}
             </Button>
+            { hasEfficiency ? (
             <Button
               outline={listType !== 'mac'}
               onClick={() => setListType('mac')}
             >
               {t('actions-as-efficiency')}
-            </Button>
+            </Button> ) : (
+            <Button
+              outline={listType !== 'comparison'}
+              onClick={() => setListType('comparison')}
+            >
+              {t('actions-as-comparison')}
+            </Button> ) }
           </ButtonGroup>
-        )}
         <Row>
         { hasEfficiency && (
           <Col md={4} className="d-flex">
@@ -268,6 +274,9 @@ function ActionListPage(props: ActionListPageProps) {
                   {t('actions-sort-efficiency')}
                 </option> )}
               <option value="cumulativeImpact">
+                {t('actions-sort-cumulative-impact')}
+              </option>
+              <option value="impact">
                 {t('actions-sort-impact')}
               </option>
               { hasEfficiency && (
@@ -331,6 +340,17 @@ function ActionListPage(props: ActionListPageProps) {
               sortBy={sortBy}
               sortAscending={ascending}
               refetching={refetching}
+            />
+          )}
+          {listType === 'comparison' && ( 
+            <ActionsComparison
+              actions={usableActions}
+              t={t}
+              actionGroups={data.instance.actionGroups}
+              sortBy={sortBy}
+              sortAscending={ascending}
+              refetching={refetching}
+              displayYears={yearRange}
             />
           )}
         </Col>

@@ -58,6 +58,7 @@ const GET_ACTION_LIST = gql`
       }
       impactMetric(goalId: $goal) {
         id
+        name
         unit {
           htmlShort
         }

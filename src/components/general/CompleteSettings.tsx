@@ -79,7 +79,8 @@ const CompleteSettings = (props) => {
       <Card>
       <CardBody>
           <DisplaySettings>
-            <div>
+            <Row>
+            <Col md="5">
             <h5>{t('comparing-years')}</h5>
             <RangeSelector
                 min={site.minYear}
@@ -89,17 +90,18 @@ const CompleteSettings = (props) => {
                 baseYear={instance.referenceYear ?? site.baseYear}
                 handleChange={setYearRange}
               />
-            </div>
-            <div>
+            </Col>
+            <Col md="3">
             <h5>Normalization</h5>
             { availableNormalizations.length > 0 && <NormalizationWidget availableNormalizations={availableNormalizations} />}
-            </div>
-            <div>
+            </Col>
+            <Col md="4">
             <h5>Target</h5>
             { nrGoals > 1 && (
                 <GoalSelector />
               )}
-            </div>
+            </Col>
+            </Row>
           </DisplaySettings>
           </CardBody>
         </Card>

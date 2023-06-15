@@ -67,7 +67,7 @@ const MediumSettings = (props) => {
               <PopoverWrapper>
               <ButtonLabel>{t('comparing-years')}</ButtonLabel>
               <Button id="Popover1" type="button" color="light">
-                {`${yearRangeVar[0]} – ${yearRangeVar[1]}`}
+                {`${yearRange[0]} – ${yearRange[1]}`}
               </Button>
               <Popover
                 placement="bottom"

@@ -33,6 +33,8 @@ const NodeCard = styled.div`
 const CardHeader = styled.div`
   display: flex;
   position: relative;
+  margin-bottom: ${(props) => props.isOpen ? '1rem' : '0'};
+  border-bottom: ${(props) => props.isOpen ? `1px solid ${props.theme.graphColors.grey030}` : 'none'};
 
   svg {
     display: block;
@@ -89,6 +91,10 @@ const TextContent = styled.div`
   padding: .5rem .5rem 0;
 `;
 
+const MoreLink = styled.div`
+  text-align: right;
+`;
+
 type CausalCardProps = {
   node: CausalGridNode,
   startYear: number,
@@ -141,7 +147,7 @@ const CausalCard = (props: CausalCardProps) => {
   return (
     <ActionLinks>
       <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
-          <CardHeader>
+          <CardHeader isOpen={isOpen}>
             <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
               <NodeIcon node={node} />
               <h4>{node.name}</h4>
@@ -178,7 +184,9 @@ const CausalCard = (props: CausalCardProps) => {
               />
             </ContentWrapper> )}
           { node.shortDescription && <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} /> }
-          <NodeLink node={node}><a>{node.name}</a></NodeLink>
+          <MoreLink>
+            <NodeLink node={node}><a>See full details <Icon.ArrowRight /></a></NodeLink>
+          </MoreLink>
           </Collapse>
       </NodeCard>
     </ActionLinks>

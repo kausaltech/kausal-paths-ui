@@ -3,7 +3,7 @@ import * as Icon from 'react-bootstrap-icons';
 
 const ActionCard = styled.div`
   display: flex;
-  flex: 0 0 320px;
+  flex: 0 0 380px;
   margin-right: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey020};
   border-radius: 0;
@@ -11,7 +11,7 @@ const ActionCard = styled.div`
 `;
 
 const ActionCardImage = styled.div`
-  flex: 0 0 100px;
+  flex: 0 0 150px;
   position: relative;
   background-color: ${(props) => props.theme.graphColors.grey005};
 
@@ -28,6 +28,12 @@ const ActionCardContent = styled.div`
   flex-direction: column;
   flex: 1 1 auto;
   padding: 1rem;
+
+  p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
 `;
 
 const ActionCardLink = styled.div`

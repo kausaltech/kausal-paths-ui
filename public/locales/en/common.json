@@ -63,5 +63,7 @@
   "plot-choose-dimension": "Choose dimension",
   "normalize-by": "Normalize by {{node}}",
   "change-target": "Change target",
-  "plot-total": "Total"
+  "plot-total": "Total",
+  "actions-as-comparison": "Compare",
+  "actions-sort-cumulative-impact": "Cumulative impact"
 }

@@ -51,6 +51,10 @@ const ActionContentCard = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey000};
 `;
 
+const ActionDescription = styled.div`
+  margin-bottom: 1rem;
+`;
+
 const ActionMetrics = styled.div`
   display: flex;
   justify-content: space-between;
@@ -69,24 +73,24 @@ const ActionContent = (props: any) => {
     {
       id: "1",
       name: "Restwertentschädigung und Förderprogramm für den Heizungsersatz",
-      description: "Energieverbrauch reduzieren",
+      description: "Die Stadt unterstützt den Heizungsersatz durch die Förderprogramme Heizungsersatz und Restwertentschädigung",
       link: "https://draft-cap.watch-test.kausal.tech/actions/44",
-      image: "https://picsum.photos/300/300",
+      image: "https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg",
     },
     {
       id: "2",
       name: "Informationsangebot über Energis",
-      description: "Mobilität optimieren",
+      description: "Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung",
       link: "https://draft-cap.watch-test.kausal.tech/actions/43",
-      image: "https://picsum.photos/300/300",
+      image: "https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg",
     },
   ];
 
   return (
     <ActionContentCard>
-      <p>
+      <ActionDescription>
         {action?.description}
-      </p>
+      </ActionDescription>
       <h5>How do we make this happen?</h5>
       <WatchActionList>
         {watchActions.map((watchAction: any) => (

@@ -52,5 +52,7 @@
   "actions-sort-impact": "Auswirkung",
   "actions-sort-by": "Sortieren nach",
   "actions-sort-default": "Standard",
-  "action-groups-all": "Alle"
+  "action-groups-all": "Alle",
+  "actions-as-list": "List",
+  "actions-sort-cumulative-impact": "Cumulative impact"
 }

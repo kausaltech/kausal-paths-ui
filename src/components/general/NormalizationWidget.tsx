@@ -1,9 +1,18 @@
 import { gql, useMutation, useQuery, NetworkStatus, } from '@apollo/client';
-
+import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
 
 import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
 import { useTranslation } from 'react-i18next';
+
+const SwitchWrapper = styled.div`
+  max-width: 160px;
+  .form-label {
+    margin-bottom: 0;
+    line-height: 1;
+    font-size: 0.8rem;
+  }
+`;
 
 const SET_NORMALIZATION_MUTATION = gql`
   mutation SetNormalization($id: ID) {
@@ -29,7 +38,7 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
   const norm = availableNormalizations[0];
   const label = t('normalize-by', { node: norm.label });
   return (
-    <Col lg="2" md="3" sm="4" xs="6">
+      <SwitchWrapper>
       <FormGroup switch>
         <Label for={norm.id}>
           {label}
@@ -49,7 +58,7 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
           }}
         />
       </FormGroup>
-    </Col>
+      </SwitchWrapper>
   );
 }
 

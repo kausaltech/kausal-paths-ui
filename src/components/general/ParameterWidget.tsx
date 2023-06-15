@@ -23,13 +23,15 @@ const WidgetWrapper = styled.div`
   font-size: 0.8rem;
 
   .form-check-input {
-    margin-top: .25rem;
-    margin-right: 1rem;
-
     &:checked {
       background-color: ${(props) =>props.theme.brandDark};
       border-color: ${(props) =>props.theme.brandDark};
     }
+  }
+
+  .form-check-label {
+    margin-left: 0.5rem;
+    line-height: 1;
   }
 `;
 

@@ -9,5 +9,6 @@
   "table-action-impact": "Auswirkung der Massnahme",
   "plot-total": "Total",
   "actions-group-type": "Handlungsfeld",
-  "actions-count": "{{ count }} Massnahmenpakete"
+  "actions-count": "{{ count }} Massnahmenpakete",
+  "actions-as-comparison": "Compare"
 }
