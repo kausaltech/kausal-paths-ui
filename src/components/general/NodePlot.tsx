@@ -288,7 +288,12 @@ const NodePlot = (props: NodePlotProps) => {
   const nrYears = endYear - startYear;
   const layout: Partial<Plotly.Layout> = {
     height: compact ? 200 : 300,
-    margin: {
+    margin: compact ? {
+      t: 24,
+      r: 0,
+      b: 0,
+      l: 42,
+    } :{
       t: 24,
       r: 24,
       b: 48,

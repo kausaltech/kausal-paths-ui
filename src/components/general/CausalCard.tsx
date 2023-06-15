@@ -63,8 +63,6 @@ const CardHeader = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  padding: 0 1rem;
-  margin: .5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
   border-radius: 0;
 
