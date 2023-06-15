@@ -146,10 +146,10 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               </NodeLink>
             </h4>
             <CardSetDescriptionDetails>
-                 { startYear < lastMeasuredYear && <ScenarioBadge color="neutralDark" type="recorded">{startYear}—{lastMeasuredYear} Recorded</ScenarioBadge>}
+                 { startYear < lastMeasuredYear && <ScenarioBadge type="recorded">{startYear}—{lastMeasuredYear} Recorded</ScenarioBadge>}
                  {' '}
                  { firstForecastYear < endYear && (
-                  <ScenarioBadge color="neutralLight" type="activeScenario">
+                  <ScenarioBadge type="activeScenario">
                     {Math.max(startYear, firstForecastYear)}—{endYear} Predicted: { activeScenario || 'Current'}
                   </ScenarioBadge> )}
             </CardSetDescriptionDetails>

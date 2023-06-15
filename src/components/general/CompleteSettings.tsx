@@ -1,15 +1,16 @@
 import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import { Container, Row, Col, Button, UncontrolledCollapse, Card, CardBody } from 'reactstrap';
-import { Sliders, ChevronBarExpand, ChevronBarContract, ChevronBarDown } from 'react-bootstrap-icons';
+import { Container, Row, Col, Button, UncontrolledCollapse, CardBody } from 'reactstrap';
+import * as Icon from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import { useSite } from 'context/site';
-import { yearRangeVar, } from 'common/cache'
+import { yearRangeVar, activeScenarioVar } from 'common/cache'
 import GoalSelector from 'components/general/GoalSelector';
 import ScenarioSelector from 'components/general/ScenarioSelector';
 import NormalizationWidget from './NormalizationWidget';
 import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
+import ScenarioBadge from 'components/common/ScenarioBadge';
 import GlobalParameters from 'components/general/GlobalParameters';
 import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
@@ -23,10 +24,14 @@ const SettingsSection = styled.div`
 `;
 
 const AccordionHeader = styled(Button)`
+  display: flex;
   width: 100%;
   text-align: left;
   border-radius: 0;
-  border: none;
+  border-bottom: 2px solid ${(props) => props.theme.graphColors.grey050};
+  border-top: none;
+  border-left: none;
+  border-right: none;
   background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
   box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
@@ -39,17 +44,21 @@ const AccordionContent = styled(UncontrolledCollapse)`
   overflow-y: auto;
 `;
 
+const Card = styled.div`
+  background-color: ${(props) => props.theme.graphColors.grey000};
+  padding: 1rem;
+`;
+
 const CompleteSettings = (props) => {
   if (!(process.browser)) {
     return null;
   }
   const site = useSite();
   const instance = useInstance();
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const hasGlobalParameters = (
-    site.parameters.find((param) => param.isCustomizable) !== undefined ||
-    site.availableNormalizations.length > 0
-  );
+  const hasGlobalParameters = site.parameters.find((param) => param.isCustomizable) !== undefined;
+  const hasNormalizations = site.availableNormalizations.length > 0;
 
   // State of display settings
   // Year range
@@ -73,7 +82,7 @@ const CompleteSettings = (props) => {
         color="primary"
         id="display-toggler"
       >
-        Display
+        <h4>Display</h4>
       </AccordionHeader>
       <UncontrolledCollapse toggler="#display-toggler" defaultOpen>
       <Card>
@@ -91,16 +100,18 @@ const CompleteSettings = (props) => {
                 handleChange={setYearRange}
               />
             </Col>
+            { hasNormalizations && (
             <Col md="3">
-            <h5>Normalization</h5>
-            { availableNormalizations.length > 0 && <NormalizationWidget availableNormalizations={availableNormalizations} />}
+              <h5>Normalization</h5>
+              <NormalizationWidget availableNormalizations={availableNormalizations} />
             </Col>
+            )}
+            { nrGoals > 1 && (
             <Col md="4">
             <h5>Target</h5>
-            { nrGoals > 1 && (
                 <GoalSelector />
-              )}
             </Col>
+            )}
             </Row>
           </DisplaySettings>
           </CardBody>
@@ -112,15 +123,25 @@ const CompleteSettings = (props) => {
         color="primary"
         id="scenario-toggler"
       >
-        Scenario: Selected Scenario
+        <h4>
+          Scenario
+          {' '}
+          <ScenarioBadge type="activeScenario">
+            { activeScenario.name || 'Current'}
+          </ScenarioBadge>
+        </h4>
       </AccordionHeader>
       <UncontrolledCollapse toggler="#scenario-toggler" defaultOpen>
       <Card>
           <CardBody>
             <h5>Select scenario</h5>
             <h5>Actions</h5>
-            <h5>Global settings</h5>
-            <GlobalParameters parameters={site.parameters} />
+            { hasGlobalParameters && (
+              <>
+                <h5>Global settings</h5>
+                <GlobalParameters parameters={site.parameters} />
+              </>
+            )}
           </CardBody>
         </Card>
       </UncontrolledCollapse>

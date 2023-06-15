@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
-import { Spinner, Card, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
+import { Spinner, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
@@ -29,6 +29,8 @@ query GetInstanceGoalOutcome($goal: ID!) {
 `;
 
 const AccordionHeader = styled(Button)`
+  display: flex;
+  gap: 0.5rem;
   width: 100%;
   text-align: left;
   border-radius: 0;
@@ -90,6 +92,11 @@ const EmissionBar = styled.div<{barWidth: number, barColor: string, placement: n
                 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
   border-left: ${(props) => props.barWidth < 0
                 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
+`;
+
+const Card = styled.div`
+  background-color: ${(props) => props.theme.graphColors.grey000};
+  padding: 1rem;
 `;
 
 const BarWithLabel = (props) => {
@@ -215,7 +222,8 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
           color="primary"
           id="outcome-toggler"
         >
-          Outcome: {verbalizeOutcome}
+          <h4>Scenario outcome</h4>
+          <div>{verbalizeOutcome}</div>
         </AccordionHeader>
         <UncontrolledCollapse toggler="#outcome-toggler" defaultOpen>
         <Card>
