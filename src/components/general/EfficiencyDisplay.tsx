@@ -6,14 +6,14 @@ import { formatNumber } from 'common/preprocess';
 const EfficiencyDisplayWrapper = styled.div`
 display: flex;
 flex-wrap: wrap;
-border: 1px solid ${(props) => props.theme.graphColors.grey030};
+
 border-radius: 0;
 `;
 
 const EfficiencyDisplayHeader = styled.div`
 flex: 0 0 100%;
 padding: 0.5rem;
-border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
+border: 1px solid ${(props) => props.theme.graphColors.grey030};
 line-height: 1;
 font-size: 0.75rem;
 font-weight: 700;
@@ -24,10 +24,8 @@ const EfficiencyDisplayItem = styled.div`
 flex: 1 1 90px;
 text-align: left;
 padding: .5rem;
-
-&:not(:nth-child(2)) {
-  border-left: 1px solid ${(props) => props.theme.graphColors.grey030};
-}
+border: 1px solid ${(props) => props.theme.graphColors.grey030};
+border-top: 0;
 `;
 
 const EfficiencyDisplay = (props) => {

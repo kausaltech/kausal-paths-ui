@@ -42,17 +42,12 @@ const LoadingOverlay = styled.div`
 `;
 
 const CardHeader = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
   margin-bottom: 1rem;
   border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
 `;
 
 const ActionCategory = styled.div`
-  flex: 1;
   margin-bottom: .5rem;
-  text-align: right;
 `;
 
 const TextContent = styled.div`
@@ -62,7 +57,6 @@ const TextContent = styled.div`
 const CardContent = styled.div`
   display: flex;
   flex-direction: column;
-  padding: .5rem;
 `;
 
 const CardDetails = styled.div`
@@ -72,12 +66,13 @@ const CardDetails = styled.div`
 
 const ActionState = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
 `;
 
 const GroupTag = styled.div<{color?: string}>`
   font-size: 80%;
-  color: ${(props) => props.color};
+  color: ${(props) => props.theme.themeColors.dark};
 `;
 
 type ActionListCardProps = {

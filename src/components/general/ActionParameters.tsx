@@ -3,10 +3,11 @@ import ParameterWidget from 'components/general/ParameterWidget';
 
 const Parameters = styled.div`
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
 
   & > div {
-    // margin-right: 1.5rem;
+    margin-bottom: .5rem;
   }
 `;
 
