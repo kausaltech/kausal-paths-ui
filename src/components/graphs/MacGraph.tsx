@@ -127,6 +127,8 @@ function MacGraph(props) {
         color: theme.graphColors.grey090,
       }
     },
+    hovermode: 'x unified',
+    hoverdistance: 10,
     yaxis: {
       title: `${efficiencyName} (${efficiencyUnit})`
     },

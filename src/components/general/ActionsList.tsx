@@ -7,13 +7,13 @@ const ActionListList = styled.ul`
   display: flex;
   flex-flow: row wrap;
   gap: 1rem;
-  margin: 0 0 2rem;
+  margin: 2rem 0;
   padding: 0;
   list-style: none;
 
   > li {
     display: block;
-    flex: 0 1 30%;
+    flex: 0 1 32.5%;
 
     > div {
       height: 100%;

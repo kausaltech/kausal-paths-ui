@@ -3,7 +3,7 @@ import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
 import { Spinner } from 'reactstrap';
 
 const ActionCount = styled.div`
-margin: -8rem 0 ${({ theme }) => theme.spaces.s100};
+margin: 0 0 ${({ theme }) => theme.spaces.s100};
 color: ${({ theme }) => theme.themeColors.white};
 `;
 
@@ -65,9 +65,6 @@ const ActionsComparison = (props) => {
 
   return (
     <>
-      <ActionCount>
-        {t('actions-count', { count: sortedActions.length})}
-      </ActionCount>
       <GraphCard>
         { refetching && <LoadingOverlay><Spinner color="primary" /></LoadingOverlay> }
         <ActionComparisonGraph

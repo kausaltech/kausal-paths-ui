@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useReactiveVar, NetworkStatus, useSuspenseQuery_experimental } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
-import { activeGoalVar, activeScenarioVar, yearRangeVar, } from 'common/cache';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label, Alert } from 'reactstrap';
-import { SortUp, SortDown } from 'react-bootstrap-icons';
+import { SortUp, SortDown, Grid3x2GapFill, BarChartLineFill } from 'react-bootstrap-icons';
 import { useTranslation } from 'next-i18next';
 import { GET_ACTION_LIST } from 'common/queries/getActionList';
 
@@ -16,9 +16,10 @@ import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
 import { useSite } from 'context/site';
 import { GetActionListQuery, GetActionListQueryVariables, GetPageQuery } from 'common/__generated__/graphql';
+import ScenarioBadge from 'components/common/ScenarioBadge';
 
 const HeaderSection = styled.div`
-  padding: 4rem 0 10rem; 
+  padding: 4rem 0 2rem;
   background-color: ${(props) => props.theme.graphColors.blue070};
 `;
 
@@ -32,22 +33,19 @@ const PageHeader = styled.div`
 
 const SettingsForm = styled.form`
   display: block;
-`;
-
-const ActiveScenario = styled.div`
-  clear: both;
-  padding: .75rem;
-  border-radius: 0;
-  background-color: ${(props) => props.theme.brandDark};
-  color: ${(props) => props.theme.themeColors.white};
-  font-size: 1rem;
-  font-weight: 700;
-  vertical-align: middle;
+  margin: 1.5rem 0;
+  padding: .5rem 0;
+  border-top: 1px solid ${(props) => props.theme.graphColors.blue030};
+  border-bottom: 1px solid ${(props) => props.theme.graphColors.blue030};
 `;
 
 const ActionCount = styled.div`
-  margin: -8rem 0 ${({ theme }) => theme.spaces.s100};
+  margin: ${({ theme }) => theme.spaces.s100} 0;
   color: ${({ theme }) => theme.themeColors.white};
+
+  span {
+    margin-left: 1rem;
+  }
 `;
 
 const HeaderCard = styled.div` 
@@ -60,6 +58,33 @@ const HeaderCard = styled.div`
 const Description = styled.div`
 `;
 
+const ActionsViewTabs = styled.div`
+  background-color: ${(props) => props.theme.graphColors.blue070};
+  margin-bottom: ${(props) => props.theme.spaces.s400};
+`;
+
+const Tab = styled.button`
+  background: ${(props) => props.theme.graphColors.blue070};
+  color: ${(props) => props.theme.themeColors.white};
+  display: inline-block;
+  border: none;
+  margin: 0;
+  padding: ${(props) => `${props.theme.spaces.s050} ${props.theme.spaces.s150} ${props.theme.spaces.s100}`};
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+
+  &:hover, &:focus {
+    color: ${(props) => props.theme.brandLight};
+  }
+  &.active {
+    color: ${(props) => props.theme.graphColors.blue070};
+    background: ${(props) => props.theme.graphColors.grey030};
+    &:hover {
+      color: ${(props) => props.theme.themeColors.black};
+    }
+  }
+`;
 
 export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
   cumulativeImpact?: number,
@@ -157,8 +182,8 @@ function ActionListPage(props: ActionListPageProps) {
         <PageHeader>
           <h1>
             {t('actions')}
-            {' '}
           </h1>
+          
         </PageHeader>
         { (page.actionListLeadParagraph || page.actionListLeadTitle) && (
           <Row>
@@ -176,37 +201,7 @@ function ActionListPage(props: ActionListPageProps) {
         )}
       </Container>
       <Container fluid="lg">
-        <ActiveScenario>
-          {t('scenario')}
-          :
-          {' '}
-          {activeScenario?.name}
-        </ActiveScenario>
         <SettingsForm className="text-light mt-4">
-          <ButtonGroup
-            className="my-2"
-            size="sm"
-          >
-            <Button
-              outline={listType !== 'list'}
-              onClick={() => setListType('list')}
-            >
-              {t('actions-as-list')}
-            </Button>
-            { hasEfficiency ? (
-            <Button
-              outline={listType !== 'mac'}
-              onClick={() => setListType('mac')}
-            >
-              {t('actions-as-efficiency')}
-            </Button> ) : (
-            <Button
-              outline={listType !== 'comparison'}
-              onClick={() => setListType('comparison')}
-            >
-              {t('actions-as-comparison')}
-            </Button> ) }
-          </ButtonGroup>
         <Row>
         { hasEfficiency && (
           <Col md={4} className="d-flex">
@@ -311,25 +306,69 @@ function ActionListPage(props: ActionListPageProps) {
         </Col>
       </Row>
       </SettingsForm>
+      <ActionCount>
+        {t('actions-count', { count: usableActions.length})}
+        <ScenarioBadge type="activeScenario">
+          {t('scenario')}
+          :
+          {' '}
+          {activeScenario?.name}
+        </ScenarioBadge>
+      </ActionCount>
       </Container>
     </HeaderSection>
+    <ActionsViewTabs>
+        <Container>
+          <div role="tablist">
+            <Tab
+              className={`nav-link ${listType === 'list' ? 'active' : ''}`}
+              onClick={() => setListType('list')}
+              role="tab"
+              tabIndex={0}
+              aria-selected={listType === 'list'}
+              aria-controls="list-view"
+              id="list-tab"
+            >
+              <Grid3x2GapFill /> { t('actions-as-list') }
+            </Tab>
+            { hasEfficiency ? (
+              <Tab
+                className={`nav-link ${listType === 'mac' ? 'active' : ''}`}
+                onClick={() => setListType('mac')}
+                role="tab"
+                tabIndex={0}
+                aria-selected={listType === 'mac'}
+                aria-controls="list-view"
+                id="list-tab"
+              >
+              <BarChartLineFill /> {t('actions-as-efficiency')}
+            </Tab> ) : (
+            <Tab
+            className={`nav-link ${listType === 'comparison' ? 'active' : ''}`}
+            onClick={() => setListType('comparison')}
+            role="tab"
+            tabIndex={0}
+            aria-selected={listType === 'comparison'}
+            aria-controls="list-view"
+            id="list-tab"
+          >
+          <BarChartLineFill /> {t('actions-as-comparison')}
+        </Tab>) }
+          </div>
+        </Container>
+      </ActionsViewTabs>
     <Container fluid="lg" className="mb-5">
       <Row>
         <Col>
           {listType === 'list' && (
-            <>
-              <ActionCount>
-                {t('actions-count', { count: usableActions.length})}
-              </ActionCount>
-              <ActionsList
-                actions={usableActions}
-                displayType="displayTypeYearly"
-                yearRange={yearRange}
-                sortBy={sortBy}
-                sortAscending={ascending}
-                refetching={refetching}
-              />
-            </>
+            <ActionsList
+              actions={usableActions}
+              displayType="displayTypeYearly"
+              yearRange={yearRange}
+              sortBy={sortBy}
+              sortAscending={ascending}
+              refetching={refetching}
+            />
           )}
           {listType === 'mac' && ( 
             <ActionsMac
