@@ -149,6 +149,9 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   const baseOutcomeValue = getMetricValue(node, startYear) || 0;
   const goalOutcomeValue = getMetricValue(node, endYear);
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
+  const lastMeasuredYear = node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
+  const firstForecastYear = node?.metric.forecastValues[0].year;
+  const isForecast = endYear > lastMeasuredYear;
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.metric?.unit?.htmlShort;
@@ -185,13 +188,13 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         <Body>
           <MainValue>
             <Label>
-              Total {endYear}
+              { isForecast ? 'Predicted' : 'Recorded'} {endYear}
             </Label>
             {beautifyValue(goalOutcomeValue)}
             <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
             { change && (
               <Status>
-                <Label>Change {startYear} - {endYear}:</Label>
+                <Label>Change {startYear} - {endYear}</Label>
                 {change > 0 && <span>+</span>}
                 {change ? <span>{`${change}%`}</span> : <span>-</span>}
               </Status>

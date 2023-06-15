@@ -14,6 +14,8 @@ import OutcomeGraph from 'components/general/OutcomeGraph';
 import DataTable from './DataTable';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import ScenarioBadge from 'components/common/ScenarioBadge';
+import { last } from 'lodash';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
@@ -74,7 +76,10 @@ const CardSetHeader = styled.div`
 
 const CardSetDescription = styled.div`
   margin-bottom: 1rem;
-  `;
+  h4 {
+    margin-bottom: 1rem;
+  }
+`;
 
 const CardSetDescriptionDetails = styled.div`
   font-size: 0.9rem;
@@ -101,12 +106,15 @@ type OutcomeNodeContentProps = {
 }
 
 const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
-  const { node, subNodes, color, startYear, endYear } = props;
+  const { node, subNodes, color, startYear, endYear, activeScenario } = props;
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
 
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
+  const lastMeasuredYear = node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
+  const firstForecastYear = node?.metric.forecastValues[0].year;
+  const isForecast = endYear > lastMeasuredYear;
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
@@ -122,9 +130,9 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
     />
   ), [node, subNodes, color, startYear, endYear])
 
-  useEffect(() => console.log('node changed'), [node]);
-  useEffect(() => console.log('subNodes changed'), [subNodes]);
-  const lastMeasuredYear = 2020;
+  // useEffect(() => console.log('node changed'), [node]);
+  // useEffect(() => console.log('subNodes changed'), [subNodes]);
+
   return (
     <div>
       <CardSetHeader>
@@ -138,9 +146,12 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               </NodeLink>
             </h4>
             <CardSetDescriptionDetails>
-                Recorded: {startYear}–{lastMeasuredYear}
-                {` | `}
-                Custom scenario: {lastMeasuredYear}–{endYear}
+                 { startYear < lastMeasuredYear && <ScenarioBadge color="neutralDark" type="recorded">{startYear}—{lastMeasuredYear} Recorded</ScenarioBadge>}
+                 {' '}
+                 { firstForecastYear < endYear && (
+                  <ScenarioBadge color="neutralLight" type="activeScenario">
+                    {Math.max(startYear, firstForecastYear)}—{endYear} Predicted: { activeScenario || 'Current'}
+                  </ScenarioBadge> )}
             </CardSetDescriptionDetails>
           </CardSetDescription>
         </div>
@@ -148,7 +159,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
           <HighlightValue
             className="figure"
             displayValue={beautifyValue(nodesTotal)}
-            header={`Total ${endYear}`}
+            header={`${ isForecast ? 'Predicted' : 'Recorded'} ${endYear}`}
             unit={unit}
           />
           <HighlightValue

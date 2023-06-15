@@ -21,7 +21,6 @@ const HeaderSection = styled.div`
 `;
 
 const PageHeader = styled.div` 
-  margin: 1rem 0 2rem;
 
   h1 {
     font-size: 2rem;
@@ -31,17 +30,6 @@ const PageHeader = styled.div`
 
 const OutcomeSection = styled.div`
   margin-top: -10rem;
-`;
-
-const ActiveScenario = styled.span`
-  display: inline-block;
-  padding: .5rem;
-  border-radius: 0;
-  background-color: ${(props) => props.theme.brandDark};
-  color: ${(props) => props.theme.themeColors.white};
-  font-size: 1.2rem;
-  font-weight: 700;
-  vertical-align: middle;
 `;
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
@@ -116,19 +104,12 @@ export default function OutcomePage(props: OutcomePageProps) {
           <PageHeader>
             <h1>
               {t(`${outcomeType}-forecast`)}
-              {' '}
-              <ActiveScenario>
-                {t('scenario')}
-                :
-                {' '}
-                {activeScenario?.name}
-              </ActiveScenario>
             </h1>
           </PageHeader>
         </Container>
       </HeaderSection>
       <Container fluid="lg">
-        <OutcomeSection>
+        <OutcomeSection>¨
           { visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
@@ -136,6 +117,7 @@ export default function OutcomePage(props: OutcomePageProps) {
               rootNode={node}
               startYear={yearRange[0]}
               endYear={yearRange[1]}
+              activeScenario={activeScenario?.name}
               parentColor="#666"
               activeNodeId={index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined}
               lastActiveNodeId={lastActiveNodeId}

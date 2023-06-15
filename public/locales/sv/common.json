@@ -4,7 +4,7 @@
   "action": "Åtgärd",
   "actions": "Åtgärder",
   "actions-available": "Åtgärder på scenariot",
-  "actions-influencing-this": "Åtgärder som påverkar denna sektor",
+  "actions-influencing-this": "Åtgärder som påverkar {{sector}}",
   "affected-by": "Detta påverkas",
   "change-scenario": "Ändra scenario",
   "comparing-years": "Jämföra år",

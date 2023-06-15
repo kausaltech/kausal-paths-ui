@@ -7,7 +7,7 @@ const HeaderSection = styled.div`
 `;
 
 const PageHeader = styled.div` 
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 
   h1 {
     font-size: 2rem;
@@ -17,7 +17,7 @@ const PageHeader = styled.div`
 `;
 
 const HeaderCard = styled.div` 
-  margin: 3rem 0;
+  margin: 2rem 0;
   padding: 2rem;
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};

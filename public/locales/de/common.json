@@ -4,7 +4,7 @@
   "action": "Maßnahme",
   "actions": "Maßnahmen",
   "actions-available": "Maßnahmen in Szenario",
-  "actions-influencing-this": "Diesen Sektor beeinflussende Maßnahmen",
+  "actions-influencing-this": "{{sector}} beeinflussende Maßnahmen",
   "affected-by": "Beeinflusst von",
   "change-scenario": "Wechsle Szenario",
   "comparing-years": "Jahresvergleich",

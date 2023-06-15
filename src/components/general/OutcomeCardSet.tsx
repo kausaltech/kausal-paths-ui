@@ -180,6 +180,7 @@ type OutcomeCardSetProps = {
   parentColor: string,
   startYear: number,
   endYear: number,
+  activeScenario: string | undefined,
   activeNodeId: string | undefined,
   lastActiveNodeId: string | undefined,
   setLastActiveNodeId: (s: string) => void,
@@ -192,6 +193,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
     parentColor,
     startYear,
     endYear,
+    activeScenario,
     activeNodeId,
     lastActiveNodeId,
     setLastActiveNodeId,
@@ -258,6 +260,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
             color={parentColor}
             startYear={startYear}
             endYear={endYear}
+            activeScenario={activeScenario}
           />
         </ContentArea>
         { showOutcomeBar && (
@@ -275,7 +278,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
         )}
         { cardNodes.length > 0 && (
         <SubNodes>
-          <BarHeader>{`${cardNodes.length} Subsectors`} ({endYear})</BarHeader>
+          <BarHeader>Subsectors</BarHeader>
           <CardDeck>
             { cardNodes.map((node, indx) => (
                 <OutcomeCard

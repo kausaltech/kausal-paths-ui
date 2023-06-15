@@ -81,7 +81,7 @@ const OutcomeNodeDetails = (props) => {
     )}
     { actions.length > 0 && (
     <h5>
-      { t('actions-influencing-this') } ({actions.length})
+      { t('actions-influencing-this', {sector: node.name}) } ({actions.length})
     </h5>
     )}
     <ActionsList>

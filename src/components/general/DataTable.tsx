@@ -16,10 +16,11 @@ const TableWrapper = Styled.div`
 `;
 
 const DataTable = (props) => {
-  const { node, subNodes, color, startYear, endYear } = props;
+  const { node, subNodes } = props;
   // console.log(props);
   return (
     <TableWrapper>
+      <h5>{ node.name }</h5>
       <Table bordered size="sm" responsive>
         <thead>
           <tr>

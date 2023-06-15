@@ -4,7 +4,7 @@
   "action": "Action",
   "actions": "Actions",
   "actions-available": "Actions on scenario",
-  "actions-influencing-this": "Actions influencing this sector",
+  "actions-influencing-this": "Actions influencing {{sector}}",
   "affected-by": "Affected by",
   "change-scenario": "Change scenario",
   "comparing-years": "Comparing years",

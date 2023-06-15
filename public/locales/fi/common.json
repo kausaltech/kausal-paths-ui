@@ -4,7 +4,7 @@
   "action": "Toimenpide",
   "actions": "Toimet",
   "actions-available": "Toimet skenaariossa",
-  "actions-influencing-this": "Tähän vaikuttavat toimenpiteet",
+  "actions-influencing-this": "{{sector}} -sektoriin vaikuttavat toimenpiteet",
   "affected-by": "Tähän vaikuttaa",
   "change-scenario": "Vaihda skenaariota",
   "comparing-years": "Vertaillaan vuosia",
