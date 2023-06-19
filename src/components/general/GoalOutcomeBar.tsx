@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
+import * as Icon from 'react-bootstrap-icons';
 import { Spinner, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
@@ -30,15 +31,23 @@ query GetInstanceGoalOutcome($goal: ID!) {
 
 const AccordionHeader = styled(Button)`
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
   width: 100%;
   text-align: left;
   border-radius: 0;
-  border: none;
+  //border-bottom: 2px solid ${(props) => props.theme.graphColors.grey050};
+  border-top: none;
+  border-left: none;
+  border-right: none;
   background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
-  box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
-  border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
+  //box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
+  //border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
+
+  &:hover, &:active, &:focus {
+    background-color: ${(props) => props.theme.graphColors.grey000};
+    color: ${(props) => props.theme.graphColors.grey090};
+  }
 `;
 
 const AccordionContent = styled(UncontrolledCollapse)`
@@ -49,7 +58,7 @@ const AccordionContent = styled(UncontrolledCollapse)`
 
 const EmissionsBar = styled.div`
   position: relative;
-  margin: 48px 0;
+  margin: 2.5rem 0;
   max-width: 500px;
   height: 24px;
 `;
@@ -222,8 +231,11 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
           color="primary"
           id="outcome-toggler"
         >
+          <div>
           <h4>Scenario outcome</h4>
           <div>{verbalizeOutcome}</div>
+          </div>
+          <Icon.ChevronDown size={24} />
         </AccordionHeader>
         <UncontrolledCollapse toggler="#outcome-toggler" defaultOpen>
         <Card>

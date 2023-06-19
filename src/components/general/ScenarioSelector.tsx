@@ -20,7 +20,7 @@ const ACTIVATE_SCENARIO = gql`
 `;
 
 const StyledDropdown = styled(Dropdown)` 
-  //min-width: 200px;
+  max-width: 320px;
 
   .btn {
     width: 100%;

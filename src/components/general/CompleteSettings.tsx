@@ -12,30 +12,54 @@ import NormalizationWidget from './NormalizationWidget';
 import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import GlobalParameters from 'components/general/GlobalParameters';
+import ActionsSummary from './ActionsSummary';
 import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
 
+const SettingsHeader = styled.div`
+  padding: 1rem 0;
+  background-color: ${(props) => props.theme.graphColors.grey020};
+`;
+
+const SettingsContent = styled.div`
+  width: 100%;
+  height: 100%;
+  padding: 2rem 0 6rem;
+  background-color: ${(props) => props.theme.graphColors.grey020};
+  overflow-y: scroll;
+`;
+
 const DisplaySettings = styled.div`
-  display: flex;
+
 `;
 
 const SettingsSection = styled.div`
   margin-bottom: 1rem;
 `;
 
+const Widget = styled.div`
+  margin-bottom: 2rem;
+`;
+
 const AccordionHeader = styled(Button)`
   display: flex;
+  justify-content: space-between;
   width: 100%;
   text-align: left;
   border-radius: 0;
-  border-bottom: 2px solid ${(props) => props.theme.graphColors.grey050};
+  //border-bottom: 2px solid ${(props) => props.theme.graphColors.grey050};
   border-top: none;
   border-left: none;
   border-right: none;
   background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
-  box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
-  border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
+  //box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
+  //border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
+
+  &:hover, &:active, &:focus {
+    background-color: ${(props) => props.theme.graphColors.grey000};
+    color: ${(props) => props.theme.graphColors.grey090};
+  }
 `;
 
 const AccordionContent = styled(UncontrolledCollapse)`
@@ -75,14 +99,21 @@ const CompleteSettings = (props) => {
   // Normalization
   const availableNormalizations = site.availableNormalizations;
   return (
-    <div>
-      <h3>Settings</h3>
+    <>
+    <SettingsHeader>
+      <Container fluid="lg">
+        <h2>All settings</h2>
+      </Container>
+    </SettingsHeader>
+    <SettingsContent>
+      <Container fluid="lg">
       <SettingsSection>
       <AccordionHeader
         color="primary"
         id="display-toggler"
       >
         <h4>Display</h4>
+        <Icon.ChevronDown size={24} />
       </AccordionHeader>
       <UncontrolledCollapse toggler="#display-toggler" defaultOpen>
       <Card>
@@ -124,32 +155,45 @@ const CompleteSettings = (props) => {
         id="scenario-toggler"
       >
         <h4>
-          Scenario
+          Edit {t('scenario')}
           {' '}
           <ScenarioBadge type="activeScenario">
             { activeScenario.name || 'Current'}
           </ScenarioBadge>
         </h4>
+        <Icon.ChevronDown size={24} />
       </AccordionHeader>
       <UncontrolledCollapse toggler="#scenario-toggler" defaultOpen>
       <Card>
           <CardBody>
-            <h5>Select scenario</h5>
-            <h5>Actions</h5>
+            <Widget>
+            <h5>{t('change-scenario')}</h5>
+            <ScenarioSelector />
+            </Widget>
+            <Widget>
+            <h5>{t('actions')}</h5>
+            <ActionsSummary
+              activeScenario={activeScenario}
+            />
+            </Widget>
+            <Widget>
             { hasGlobalParameters && (
               <>
                 <h5>Global settings</h5>
                 <GlobalParameters parameters={site.parameters} />
               </>
             )}
+            </Widget>
           </CardBody>
         </Card>
       </UncontrolledCollapse>
       </SettingsSection>
       <SettingsSection>
         <GoalOutcomeBar />
-      </SettingsSection>     
-    </div>
+      </SettingsSection>
+      </Container>   
+    </SettingsContent>
+    </>
   );
 
 }

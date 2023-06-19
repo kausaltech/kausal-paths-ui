@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { Range, getTrackBackground } from 'react-range';
-import { Row, Col, ButtonToggle, Popover, PopoverBody } from 'reactstrap';
+import { Row, Col, Container, Popover, PopoverBody } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled, { useTheme } from 'styled-components';
 import { useTranslation } from 'next-i18next';
@@ -13,6 +13,10 @@ import Button from 'components/common/Button';
 import RangeSelector from 'components/general/RangeSelector';
 import GoalSelector from 'components/general/GoalSelector';
 import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
+
+const PanelContent = styled.div`
+  padding: .5rem;
+`;
 
 const PopoverWrapper = styled.div`
   .btn {
@@ -55,53 +59,55 @@ const MediumSettings = (props) => {
   // Normalization
   const availableNormalizations = site.availableNormalizations;
   return (
-<>
-          <Row>
-            <Col md="2" sm="4" xs="12">
-              { true && (
-              <ScenarioSelector />
-              )}
-            </Col>
-            <Col md="2" sm="4" xs="6">
-              {true && (
-              <PopoverWrapper>
-              <ButtonLabel>{t('comparing-years')}</ButtonLabel>
-              <Button id="Popover1" type="button" color="light">
-                {`${yearRange[0]} – ${yearRange[1]}`}
-              </Button>
-              <Popover
-                placement="bottom"
-                isOpen={popoverOpen}
-                target="Popover1"
-                toggle={toggle}
-                trigger="legacy"
-              >
-                  <PopoverBody>
-                  <RangeSelector
-                    min={site.minYear}
-                    max={site.maxYear}
-                    initMin={defaultYearRange[0]}
-                    initMax={defaultYearRange[1]}
-                    baseYear={instance.referenceYear ?? site.baseYear}
-                    handleChange={setYearRange}
-                  />
-                  </PopoverBody>
-                </Popover>
-              </PopoverWrapper>
-              )}
-            </Col>
-            <Col md="2" sm="4" xs="6">
-              { nrGoals > 1 && (
-                <GoalSelector />
-              )}
-            </Col>
-            <Col md="6" sm="12" className="mt-3 mt-sm-0">
-              { true && 
-                <GoalOutcomeBar compact />
-              }
-            </Col>
-          </Row>
-        </>
+    <Container fluid="lg">
+      <PanelContent>
+      <Row>
+        <Col md="2" sm="4" xs="12">
+          { true && (
+          <ScenarioSelector />
+          )}
+        </Col>
+        <Col md="2" sm="4" xs="6">
+          {true && (
+          <PopoverWrapper>
+          <ButtonLabel>{t('comparing-years')}</ButtonLabel>
+          <Button id="Popover1" type="button" color="light">
+            {`${yearRange[0]} – ${yearRange[1]}`}
+          </Button>
+          <Popover
+            placement="bottom"
+            isOpen={popoverOpen}
+            target="Popover1"
+            toggle={toggle}
+            trigger="legacy"
+          >
+              <PopoverBody>
+              <RangeSelector
+                min={site.minYear}
+                max={site.maxYear}
+                initMin={defaultYearRange[0]}
+                initMax={defaultYearRange[1]}
+                baseYear={instance.referenceYear ?? site.baseYear}
+                handleChange={setYearRange}
+              />
+              </PopoverBody>
+            </Popover>
+          </PopoverWrapper>
+          )}
+        </Col>
+        <Col md="2" sm="4" xs="6">
+          { nrGoals > 1 && (
+            <GoalSelector />
+          )}
+        </Col>
+        <Col md="6" sm="12" className="text-right">
+          { true && 
+            <GoalOutcomeBar compact />
+          }
+        </Col>
+      </Row>
+      </PanelContent>
+    </Container>
   );
 
 }

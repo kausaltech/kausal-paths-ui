@@ -1,16 +1,11 @@
 import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import { Container, Row, Col, Button } from 'reactstrap';
-import { Sliders, ChevronBarExpand, ChevronBarContract, ChevronBarDown, XLg } from 'react-bootstrap-icons';
-import RangeSelector from 'components/general/RangeSelector';
+import { transparentize } from 'polished';
+import { Row, Col, Button } from 'reactstrap';
+import { Sliders, XLg } from 'react-bootstrap-icons';
 import { useSite } from 'context/site';
 import { yearRangeVar } from 'common/cache';
-import GoalSelector from 'components/general/GoalSelector';
-import ScenarioSelector from 'components/general/ScenarioSelector';
-import NormalizationWidget from './NormalizationWidget';
-import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
-import GlobalParameters from 'components/general/GlobalParameters';
 import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
 import CompleteSettings from './CompleteSettings';
@@ -22,48 +17,51 @@ const FixedPanel = styled.div`
   left: 0;
   bottom: 0;
   width: 100%;
-  // background-color: ${(props) => props.theme.graphColors.grey070};
+  background-color: ${(props) => props.theme.graphColors.grey000};
   color: ${(props) => props.theme.graphColors.grey090};
   box-shadow: 0 0 4px 4px rgba(20,20,20,0.05);
   transition: height .25s;
-  border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
+  //border-top: 2px solid ${(props) => props.theme.graphColors.grey050};
 
   &.panel-sm {
     height: 4rem;
   }
 
   &.panel-md {
-    height: 8rem;
+    height: 7rem;
   }
 
   &.panel-lg {
     height: 95%;
-  }
 
+    &::before {
+      content: '';
+      position: fixed;
+      z-index: -50;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: ${(props) => transparentize(0.15, props.theme.graphColors.grey090)};
+    }
+  }
 `;
 
 const PanelToggle = styled(Button)`
   position: absolute;
+  background-color: ${(props) => props.theme.themeColors.white} !important;
+  z-index: 25;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 1rem;
+  border-radius: 50%;
   padding: 0;
-  top: 3px;
-  right: 3px;
+  top: 6px;
+  right: 6px;
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
-`;
 
-const PanelContent = styled.div`
-  background-color: ${(props) => props.theme.graphColors.grey020};
-  padding: 1rem;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-`;
-
-const ExtraSettingsSection = styled.div`
-  padding: 1rem 0 2rem;
-  background-color: ${(props) => props.theme.graphColors.grey020};
+  &:hover {
+    background-color: ${(props) => props.theme.graphColors.grey030};
+  }
 `;
 
 type SettingsPanelFullProps = {
@@ -117,14 +115,11 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
     <FixedPanel className={`panel-${mode}`}>
       <PanelToggle
         onClick={(e) => handleToggle(e)}
-        color="white"
       > 
         { mode === MODE.SM && <Sliders />}
         { mode === MODE.MD && <Sliders />}
         { mode === MODE.LG && <XLg />}
       </PanelToggle>
-      <PanelContent>
-      <Container fluid="lg">
         { mode === MODE.SM && (<>
           <Row>
             <Col sm="3">
@@ -146,9 +141,6 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
         { mode === MODE.LG && (
           <CompleteSettings />
         )}
-        
-      </Container>
-      </PanelContent>
     </FixedPanel>
   );
 };
