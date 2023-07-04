@@ -59,21 +59,21 @@ type RangeSelectorProps = {
   max: number,
   referenceYear: number | null,
   handleChange: (range: number[]) => void,
-  initMin: number,
-  initMax: number,
+  defaultMin: number,
+  defaultMax: number,
 };
 
 const RangeSelector = (props: RangeSelectorProps) => {
-  const { min, max, referenceYear, handleChange, initMin, initMax } = props;
+  const { min, max, referenceYear, handleChange, defaultMin, defaultMax } = props;
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const [referenceYearActive, setReferenceYearActive] = useState(referenceYear !== null ? referenceYear === initMin : false);
-  const [values, setValues] = useState(referenceYearActive ? [initMax] : [initMin, initMax]);
+  const [referenceYearActive, setReferenceYearActive] = useState(referenceYear !== null ? referenceYear === defaultMin : false);
+  const [values, setValues] = useState(referenceYearActive ? [defaultMax] : [defaultMin, defaultMax]);
 
   useEffect(() => {
-    handleChange([initMin, initMax]);
-  }, [initMin, initMax]);
+    handleChange([defaultMin, defaultMax]);
+  }, [defaultMin, defaultMax]);
 
   const handleSliderChange = (changedValues: number[]) => {
     setValues(changedValues);

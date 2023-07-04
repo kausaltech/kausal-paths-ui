@@ -44,16 +44,11 @@ const ExtraSettingsSection = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-type SettingsPanelProps = {
-  defaultYearRange?: number[],
-}
-
 const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
   if (!(process.browser)) {
     return null;
   }
   const site = useSite();
-  const defaultYearRange = props.defaultYearRange ?? [site.minYear, site.targetYear];
 
   const instance = useInstance();
   const [showExtras, setShowExtras] = useState(false);
@@ -82,8 +77,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
             <RangeSelector
               min={site.minYear}
               max={site.maxYear}
-              initMin={defaultYearRange[0]}
-              initMax={defaultYearRange[1]}
+              defaultMin={yearRange[0]}
+              defaultMax={yearRange[1]}
               referenceYear={instance.referenceYear ?? site.referenceYear}
               handleChange={setYearRange}
             />

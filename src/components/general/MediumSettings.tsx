@@ -46,7 +46,6 @@ const MediumSettings = (props) => {
 
   // State of display settings
   // Year range
-  const defaultYearRange = props.defaultYearRange ?? [site.minYear, site.targetYear];
   const yearRange = useReactiveVar(yearRangeVar);
   const setYearRange = useCallback((newRange: [number, number]) => {
     yearRangeVar(newRange);
@@ -85,8 +84,8 @@ const MediumSettings = (props) => {
               <RangeSelector
                 min={site.minYear}
                 max={site.maxYear}
-                initMin={defaultYearRange[0]}
-                initMax={defaultYearRange[1]}
+                defaultMin={yearRange[0]}
+                defaultMax={yearRange[1]}
                 referenceYear={instance.referenceYear ?? site.referenceYear}
                 handleChange={setYearRange}
               />

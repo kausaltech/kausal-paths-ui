@@ -64,10 +64,6 @@ const PanelToggle = styled(Button)`
   }
 `;
 
-type SettingsPanelFullProps = {
-  defaultYearRange?: number[],
-}
-
 const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   if (!(process.browser)) {
     return null;
@@ -97,7 +93,6 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
 
   // State of display settings
   // Year range
-  const defaultYearRange = props.defaultYearRange ?? [site.minYear, site.targetYear];
   const yearRange = useReactiveVar(yearRangeVar);
   const setYearRange = useCallback((newRange: [number, number]) => {
     yearRangeVar(newRange);
