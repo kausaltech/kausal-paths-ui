@@ -4,6 +4,7 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import styled from 'styled-components';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
 import { activeScenarioVar } from 'common/cache';
+import { useInstance } from 'common/instance';
 import { GET_SCENARIOS } from 'common/queries/getScenarios';
 import { ActivateScenarioMutation, ActivateScenarioMutationVariables, GetScenariosQuery } from 'common/__generated__/graphql';
 
@@ -36,6 +37,7 @@ const DropdownLabel = styled.div`
 
 const ScenarioSelector = () => {
   const { t } = useTranslation();
+  const instance = useInstance();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggle = () => setDropdownOpen((prevState) => !prevState);
 
@@ -65,7 +67,9 @@ const ScenarioSelector = () => {
     //console.log("Error", JSON.stringify(error));
     return <div>{t('error-loading-data')}</div>;
   }
-  const scenarios = data?.scenarios;
+
+  const hideBaseScenario = instance.features?.baselineVisibleInGraphs === false;
+  const scenarios = data?.scenarios.filter((scen) => hideBaseScenario ? scen.id !== 'baseline' : true) ?? [];
   const activeScenario = scenarios.find((scen) => scen.isActive);
 
   return (

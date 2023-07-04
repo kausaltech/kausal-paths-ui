@@ -8,7 +8,7 @@ import CsvDownload from 'react-json-to-csv';
 import { metricToPlot } from 'common/preprocess';
 import SiteContext, { useSite } from 'context/site';
 import type Plotly from 'plotly.js';
-import { gql } from '@apollo/client';
+import { useInstance } from 'common/instance';
 import type { CausalGridNode } from './CausalGrid';
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -65,6 +65,7 @@ const NodePlot = (props: NodePlotProps) => {
   } = props;
 
   const { t } = useTranslation();
+  const instance = useInstance();
   const theme = useContext(ThemeContext);
   const site = useSite();
 
@@ -236,7 +237,7 @@ const NodePlot = (props: NodePlotProps) => {
     );
   }
 
-  if (!isAction && site.baselineName) {
+  if (!isAction && site.baselineName && instance.features.baselineVisibleInGraphs) {
     plotData.push(
       {
         x: baselineForecast.x,
