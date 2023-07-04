@@ -156,10 +156,6 @@ const CompleteSettings = (props) => {
       >
         <h4>
           Edit {t('scenario')}
-          {' '}
-          <ScenarioBadge type="activeScenario">
-            { activeScenario.name || 'Current'}
-          </ScenarioBadge>
         </h4>
         <Icon.ChevronDown size={24} />
       </AccordionHeader>

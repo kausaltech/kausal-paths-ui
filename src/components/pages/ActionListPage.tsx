@@ -126,7 +126,7 @@ function ActionListPage(props: ActionListPageProps) {
 
   const [listType, setListType] = useState('list');
   const [ascending, setAscending] = useState(true);
-  const [sortBy, setSortBy] = useState('default');
+  const [sortBy, setSortBy] = useState('impact'); 
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState('undefined');
 
@@ -270,21 +270,21 @@ function ActionListPage(props: ActionListPageProps) {
               type="select"
               onChange={(e) =>setSortBy(e.target.value)}
             >
-              <option value="default" selected={!hasEfficiency}>
+              <option value="default" selected={sortBy === 'default'}>
                 {t('actions-sort-default')}
               </option>
               { hasEfficiency && (
-                <option value="cumulativeEfficiency" selected>
+                <option value="cumulativeEfficiency" selected={sortBy === 'cumulativeEfficiency'}>
                   {t('actions-sort-efficiency')}
                 </option> )}
-              <option value="cumulativeImpact">
+              <option value="cumulativeImpact" selected={sortBy === 'cumulativeImpact'}>
                 {t('actions-sort-cumulative-impact')}
               </option>
-              <option value="impact">
+              <option value="impact" selected={sortBy === 'impact'}>
                 {t('actions-sort-impact')}
               </option>
               { hasEfficiency && (
-                <option value="cumulativeCost">
+                <option value="cumulativeCost" selected={sortBy === 'cumulativeCost'}>
                   {t('actions-sort-cost')}
                 </option> )}
             </Input>

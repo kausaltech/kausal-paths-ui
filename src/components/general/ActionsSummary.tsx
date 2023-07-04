@@ -14,26 +14,26 @@ const GlobalParametersPanel = styled.div`
   overflow-y: auto;
   padding: 2rem 0;
   background-color: ${(props) => props.theme.themeColors.white};
+  border-top: 1px solid ${(props) => props.theme.graphColors.grey050};
+  border-bottom: 1px solid ${(props) => props.theme.graphColors.grey050};
 `;
 
 const ActionsList = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
+  flex-flow: row wrap;
+  gap: .5rem 1rem;
 `;
 
 const ActionsListItem = styled.div`
   flex: 1 1 320px;
-  min-height: 3rem;
 `;
 
 const ActionCard = styled.div<{active: boolean, groupColor: string}>`
   position: relative;
   flex: 1 1 320px;
   min-height: 3rem;
-  padding: 0.25rem 0.5rem;
-  margin: 0.5rem;
+  height: 100%;
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
   border: 1px solid ${(props) => props.theme.graphColors.grey010};
   border-left: 4px solid ${(props) => props.groupColor};
   border-radius: 0.25rem;
@@ -171,7 +171,7 @@ const ActionListCard = (props) => {
       active={isActive}
       groupColor={action.group?.color}
     >
-      <small>{action.group.name}</small>
+      <small>{action.group?.name}</small>
       <h5>{ action.name }</h5>
       { actionParameterSwitch && (
         <ParameterWidget
