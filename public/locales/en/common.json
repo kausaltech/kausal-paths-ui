@@ -65,5 +65,6 @@
   "change-target": "Change target",
   "plot-total": "Total",
   "actions-as-comparison": "Compare",
-  "actions-sort-cumulative-impact": "Cumulative impact"
+  "actions-sort-cumulative-impact": "Cumulative impact",
+  "accumulated-between": "accumulated between"
 }

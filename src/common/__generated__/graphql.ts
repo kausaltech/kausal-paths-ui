@@ -16,7 +16,6 @@ export type Scalars = {
   UUID: any;
 };
 
-/** An enumeration. */
 export enum DecisionLevel {
   Eu = 'EU',
   Municipality = 'MUNICIPALITY',
@@ -104,7 +103,7 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'BoolParameterType' }
       ) | (
-        { minValue?: number | null, maxValue?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, numberValue?: number | null, numberDefaultValue?: number | null, unit?: (
+        { minValue?: number | null, maxValue?: number | null, step?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, numberValue?: number | null, numberDefaultValue?: number | null, unit?: (
           { htmlShort: string }
           & { __typename?: 'UnitType' }
         ) | null, node?: (
@@ -184,7 +183,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'BoolParameterType' }
     ) | (
-      { minValue?: number | null, maxValue?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, numberValue?: number | null, numberDefaultValue?: number | null, unit?: (
+      { minValue?: number | null, maxValue?: number | null, step?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, numberValue?: number | null, numberDefaultValue?: number | null, unit?: (
         { htmlShort: string }
         & { __typename?: 'UnitType' }
       ) | null, node?: (
@@ -269,7 +268,7 @@ export type CausalGridNodeFragment = (
     ) | null }
     & { __typename: 'BoolParameterType' }
   ) | (
-    { minValue?: number | null, maxValue?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, numberValue?: number | null, numberDefaultValue?: number | null, unit?: (
+    { minValue?: number | null, maxValue?: number | null, step?: number | null, description?: string | null, id?: string | null, nodeRelativeId?: string | null, isCustomized: boolean, numberValue?: number | null, numberDefaultValue?: number | null, unit?: (
       { htmlShort: string }
       & { __typename?: 'UnitType' }
     ) | null, node?: (

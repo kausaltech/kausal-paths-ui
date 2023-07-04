@@ -61,5 +61,6 @@
   "change-target": "Vaihda tavoite",
   "plot-total": "Yhteensä",
   "actions-as-comparison": "Vertailu",
-  "actions-sort-cumulative-impact": "Kumulatiivinen vaikutus"
+  "actions-sort-cumulative-impact": "Kumulatiivinen vaikutus",
+  "accumulated-between": "yhteensä välillä"
 }

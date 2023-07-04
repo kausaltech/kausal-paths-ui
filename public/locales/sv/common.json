@@ -60,5 +60,6 @@
   "change-target": "Ändra mål",
   "actions-sort-default": "Standard",
   "actions-as-comparison": "Compare",
-  "actions-sort-cumulative-impact": "Cumulative impact"
+  "actions-sort-cumulative-impact": "Cumulative impact",
+  "accumulated-between": "ackumulerad över"
 }

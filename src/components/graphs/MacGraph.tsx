@@ -51,6 +51,14 @@ const HoverValueValue = styled.span`
 const HoverValueUnit = styled.span`
 `;
 
+const EmptyPlot = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 450px;
+  margin: 0 0 2rem;
+`;
+
 const formatNumber = (value, language) => {
   return parseFloat(Number(value).toPrecision(3)).toLocaleString(language)
 };
@@ -58,7 +66,7 @@ const formatNumber = (value, language) => {
 function MacGraph(props) {
   const { data, impactUnit, impactName, efficiencyUnit, efficiencyName, actionIds, costName, costUnit, actionGroups } = props;
   const theme = useTheme();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const barHoverColor = theme.graphColors.green090;
 
@@ -73,7 +81,7 @@ function MacGraph(props) {
   // console.log("mac props", props);
   // TODO: Add sorting of data here
 
-  if (data.actions?.length < 1) return <div/>
+  const isEmpty = data.actions?.length < 1;
 
   let totalSaving = 0;
   let negativeSideWidth = 0;
@@ -117,6 +125,7 @@ function MacGraph(props) {
       }
     }
   ] : []), [theme, negativeSideWidth]);
+
   const layout = useMemo(() => ({
     barmode: 'relative',
     hoverlabel: { 
@@ -130,11 +139,15 @@ function MacGraph(props) {
     hovermode: 'x unified',
     hoverdistance: 10,
     yaxis: {
-      title: `${efficiencyName} (${efficiencyUnit})`
+      title: {
+        text: `${efficiencyName} (${efficiencyUnit})`,
+      },
     },
     xaxis: {
       ticksuffix: ` ${impactUnit}`,
-      title: `${impactName} (${impactUnit})`,
+      title: {
+        text: `${impactName} (${impactUnit})`,
+      },
       showgrid: true,
     },
     margin: {
@@ -159,7 +172,11 @@ function MacGraph(props) {
     return null;
   }, [setHoverId]);
 
-  const plot = useMemo(() => (
+  const plot = useMemo(() => isEmpty ? (
+    <EmptyPlot>
+      <h4>{t('actions-count', { count: 0 })}</h4>
+    </EmptyPlot>
+    ) : (
     <Plot
       data={[{
         type: 'bar',

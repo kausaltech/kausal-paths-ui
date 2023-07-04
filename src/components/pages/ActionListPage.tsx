@@ -132,12 +132,20 @@ function ActionListPage(props: ActionListPageProps) {
 
   const data = queryResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
-  // TODO: set default sort by efficiency if we have efficiency data
-  // Maybe this needs a useEffect hook?
-  // if (hasEfficiency) setSortBy('cumulativeEfficiency');
+
+  // Different default view if we have action efficiency pairs
+  useEffect(() => {
+    if(loading === false && data){
+        if (hasEfficiency) {
+          setListType('mac');
+          setSortBy('cumulativeEfficiency');
+        }
+    }
+  }, [loading, data])
+
 
   // If we have action efficiency pairs, we augment the actions with the cumulative values
-  const reductionText = `(${t('reduction')})`;
+  const reductionText = `(${t('reduction')}, ${t('accumulated-between')} ${yearRange[0]}-${yearRange[1]})`;
   const usableActions: ActionWithEfficiency[] = useMemo(() => (data?.actions || []).map((act) => {
     const out: ActionWithEfficiency = {
       ...act,
@@ -163,7 +171,8 @@ function ActionListPage(props: ActionListPageProps) {
     };
     Object.assign(out, efficiencyProps);
     return out;
-  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id), [data, actionGroup, activeEfficiency]);
+  }).filter((action) => actionGroup === 'undefined' || actionGroup === action.group?.id),
+  [data, actionGroup, activeEfficiency, yearRange]);
 
   const refetching = networkStatus === NetworkStatus.refetch;
 
@@ -261,11 +270,11 @@ function ActionListPage(props: ActionListPageProps) {
               type="select"
               onChange={(e) =>setSortBy(e.target.value)}
             >
-              <option value="default">
+              <option value="default" selected={!hasEfficiency}>
                 {t('actions-sort-default')}
               </option>
               { hasEfficiency && (
-                <option value="cumulativeEfficiency">
+                <option value="cumulativeEfficiency" selected>
                   {t('actions-sort-efficiency')}
                 </option> )}
               <option value="cumulativeImpact">
