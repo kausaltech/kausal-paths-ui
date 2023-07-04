@@ -127,7 +127,7 @@ export default function ActionPage() {
 
   const action = data.node;
   // Check here if action has subactions
-  const subActions = [
+  const subActions = instance.id === "zuerich" ? [
     {
       id: 'replacement_of_heating_networks',
       name: 'Heizungsersatz durch thermische Netze',
@@ -168,7 +168,7 @@ export default function ActionPage() {
       isEnabled: false,
       parameters: action.parameters
     },
-  ];
+  ] : [];
 
   // show causal nodes only for selected subaction
   const causalNodes = action.downstreamNodes;
@@ -285,11 +285,13 @@ export default function ActionPage() {
                   )
                 )}
               </ActionDescription>
-              <SubActions
-                actions={subActions}
-                activeSubAction={activeSubAction}
-                setActiveSubAction={setActiveSubAction}
-              />
+              { subActions.length > 0 && (
+                <SubActions
+                  actions={subActions}
+                  activeSubAction={activeSubAction}
+                  setActiveSubAction={setActiveSubAction}
+                />
+              )}
             </HeaderCard>
           </PageHeader>
         </Container>
