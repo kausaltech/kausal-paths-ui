@@ -16,8 +16,11 @@ const TableWrapper = Styled.div`
 `;
 
 const DataTable = (props) => {
-  const { node, subNodes } = props;
-  // console.log(props);
+  const { node, subNodes, startYear, endYear } = props;
+
+  const historicalValues = node.metric.historicalValues.filter((value) => value.year >= startYear && value.year <= endYear);
+  const forecastValues = node.metric.forecastValues.filter((value) => value.year >= startYear && value.year <= endYear);
+
   return (
     <TableWrapper>
       <h5>{ node.name }</h5>
@@ -34,7 +37,7 @@ const DataTable = (props) => {
           </tr>
         </thead>
         <tbody>
-          { node.metric.historicalValues.map((metric) => (
+          { historicalValues.map((metric) => (
             <tr key={metric.year}>
               <td>{metric.year}</td>
               <td>Historical</td>
@@ -47,7 +50,7 @@ const DataTable = (props) => {
               <td dangerouslySetInnerHTML={{ __html: node.metric?.unit?.htmlShort }} />
             </tr>
           ))}
-          { node.metric.forecastValues.map((metric) => (
+          { forecastValues.map((metric) => (
             <tr key={metric.year}>
               <td>{metric.year}</td>
               <td>Forecast</td>
