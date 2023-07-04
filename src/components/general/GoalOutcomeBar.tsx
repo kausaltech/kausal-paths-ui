@@ -8,6 +8,7 @@ import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
 import { GetInstanceGoalOutcomeQuery, GetInstanceGoalOutcomeQueryVariables, GetNetEmissionsQuery } from 'common/__generated__/graphql';
+import { useInstance } from 'common/instance';
 
 export const GET_INSTANCE_GOAL_OUTCOME = gql`
 query GetInstanceGoalOutcome($goal: ID!) {
@@ -81,8 +82,12 @@ const BarLabel = styled.div<{side?: 'top' | undefined, negative: boolean}>`
   font-weight: 700;
 `;
 
+const Label = styled.div`
+  background-color: ${(props) => props.theme.graphColors.grey000};
+`;
+
 const Value = styled.div`
-  font-size: 0.9rem;
+  background-color: ${(props) => props.theme.graphColors.grey000};
   font-weight: 400;
 `;
 
@@ -123,7 +128,7 @@ const BarWithLabel = (props) => {
         placement={placement}
         negative={barWidth < 0}
       >
-        {label}
+        <Label>{label}</Label>
         <Value>
           { beautifyValue(value) }
           {' '}
@@ -165,8 +170,9 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
   const historical = goal.values.filter(val => !val.isForecast);
   const goalValues = goal.values.filter(val => val.goal !== null);
   const outcomeNow = historical[historical.length - 1];
-  //const comparisonGoal = goalValues.filter(v => v.year >= yearRange[1])[0] || goalValues[goalValues.length - 1];
-  const comparisonGoal = goalValues[goalValues.length - 1];
+  // Use the closest goal value to the end of the year range
+  const comparisonGoal = goalValues.filter(v => v.year >= yearRange[1])[0] || goalValues[goalValues.length - 1];
+  // const comparisonGoal = goalValues[goalValues.length - 1];
   const comparisonActual = valuesByYear.get(yearRange[1])!;
 
   const maxOutcome = _.max([outcomeNow.actual, comparisonActual.actual, comparisonGoal.goal])!;
