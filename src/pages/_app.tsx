@@ -206,7 +206,7 @@ function PathsApp(props: PathsAppProps) {
 
   if (!yearRangeVar()) {
     const yearRange: [number, number] = [
-      instance.minimumHistoricalYear ?? siteContext.baseYear ?? 2010,
+      instance.minimumHistoricalYear ?? siteContext.referenceYear ?? 2010,
       siteContext.targetYear
     ];
     yearRangeVar(yearRange);
@@ -287,7 +287,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
       title: instance.name!,
       apolloConfig,
       availableNormalizations: data.availableNormalizations,
-      baseYear: instance.referenceYear ?? null,
+      referenceYear: instance.referenceYear ?? null,
       minYear: instance.minimumHistoricalYear,
       maxYear: instance.modelEndYear,
       targetYear: instance.targetYear ?? instance.modelEndYear,

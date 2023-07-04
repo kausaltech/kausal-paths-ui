@@ -15,7 +15,7 @@ export type SiteContextType = {
   baselineName: string | null | undefined,
   minYear: number,
   maxYear: number,
-  baseYear: number | null,
+  referenceYear: number | null,
   targetYear: number,
   latestMetricYear: number,
 

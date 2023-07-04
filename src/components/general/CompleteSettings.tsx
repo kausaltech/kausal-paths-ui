@@ -127,7 +127,7 @@ const CompleteSettings = (props) => {
                 max={site.maxYear}
                 initMin={defaultYearRange[0]}
                 initMax={defaultYearRange[1]}
-                baseYear={instance.referenceYear ?? site.baseYear}
+                referenceYear={instance.referenceYear ?? site.referenceYear}
                 handleChange={setYearRange}
               />
             </Col>

@@ -12,7 +12,7 @@ type SettingsVarType = {
   baselineName: string | null | undefined,
   minYear: number,
   maxYear: number,
-  baseYear: number,
+  referenceYear: number,
   targetYear: number,
   latestMetricYear: number,
 }

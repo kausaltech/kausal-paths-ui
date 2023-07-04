@@ -67,7 +67,7 @@ const generatePlotFromNode = (
 
   n.metric.historicalValues.forEach((dataPoint) => {
     // Do not include base year in historical values
-    if (dataPoint.year === site.baseYear) {
+    if (dataPoint.year === site.referenceYear) {
       baseValue = dataPoint.value;
       parentBaseValue = getPercentage(dataPoint, parentNode.metric.historicalValues);
       return;
@@ -92,9 +92,9 @@ const generatePlotFromNode = (
     dateArray.push(dataPoint.year);
     parentValueArray.push(getPercentage(dataPoint, parentNode.metric.historicalValues));
   });
-  if (site.baseYear && baseValue !== undefined) {
-    const baseYearTrace: Plotly.Data = {
-      x: [site.baseYear - 1, site.baseYear],
+  if (site.referenceYear && baseValue !== undefined) {
+    const referenceYearTrace: Plotly.Data = {
+      x: [site.referenceYear - 1, site.referenceYear],
       y: [baseValue, baseValue],
       customdata: [parentBaseValue, parentBaseValue],
       name: n.shortName || n.name,
@@ -111,7 +111,7 @@ const generatePlotFromNode = (
       yaxis: 'y',
       ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
     };
-    plotData.push(baseYearTrace);
+    plotData.push(referenceYearTrace);
   };
 
   plotData.push(
@@ -293,7 +293,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       type: 'line',
       yref: 'y',
       xref: 'x2',
-      x0: startYear === site.baseYear ? site.minYear : startYear,
+      x0: startYear === site.referenceYear ? site.minYear : startYear,
       y0: goal.value,
       x1: goal.year > endYear ? endYear : goal.year,
       y1: goal.value,
@@ -369,7 +369,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     shapes,
   }
 
-  if (instance.features.baselineVisibleInGraphs || site.baseYear) {
+  if (instance.features.baselineVisibleInGraphs || site.referenceYear) {
     layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
     layout.xaxis = {
       domain: [0, 0.03],

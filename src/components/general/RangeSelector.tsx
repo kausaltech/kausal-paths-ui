@@ -57,19 +57,19 @@ const Thumb = styled.div<ThumbProps>`
 type RangeSelectorProps = {
   min: number,
   max: number,
-  baseYear: number | null,
+  referenceYear: number | null,
   handleChange: (range: number[]) => void,
   initMin: number,
   initMax: number,
 };
 
 const RangeSelector = (props: RangeSelectorProps) => {
-  const { min, max, baseYear, handleChange, initMin, initMax } = props;
+  const { min, max, referenceYear, handleChange, initMin, initMax } = props;
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const [baseYearActive, setBaseYearActive] = useState(baseYear !== null ? baseYear === initMin : false);
-  const [values, setValues] = useState(baseYearActive ? [initMax] : [initMin, initMax]);
+  const [referenceYearActive, setReferenceYearActive] = useState(referenceYear !== null ? referenceYear === initMin : false);
+  const [values, setValues] = useState(referenceYearActive ? [initMax] : [initMin, initMax]);
 
   useEffect(() => {
     handleChange([initMin, initMax]);
@@ -77,17 +77,17 @@ const RangeSelector = (props: RangeSelectorProps) => {
 
   const handleSliderChange = (changedValues: number[]) => {
     setValues(changedValues);
-    const newRange = baseYearActive ? [baseYear!, changedValues[0]] : [changedValues[0], changedValues[1]];
+    const newRange = referenceYearActive ? [referenceYear!, changedValues[0]] : [changedValues[0], changedValues[1]];
     handleChange(newRange);
   };
 
-  const handleBaseYear = (baseYearIsActive: boolean) => {
-    if (baseYearIsActive) {
-      setBaseYearActive(true);
+  const handleReferenceYear = (referenceYearIsActive: boolean) => {
+    if (referenceYearIsActive) {
+      setReferenceYearActive(true);
       setValues([values[1]]);
-      handleChange([baseYear!, values[1]]);
+      handleChange([referenceYear!, values[1]]);
     } else {
-      setBaseYearActive(false);
+      setReferenceYearActive(false);
       setValues([min, values[0]]);
       handleChange([min, values[0]]);
     }
@@ -97,16 +97,16 @@ const RangeSelector = (props: RangeSelectorProps) => {
           <SectionWrapper>
             <ActiveYearDisplay>
               <YearDescription>{t('comparison-year')}</YearDescription>
-              <ActiveYear>{ baseYearActive ? baseYear : values[0] }</ActiveYear>
-              { baseYear && (
+              <ActiveYear>{ referenceYearActive ? referenceYear : values[0] }</ActiveYear>
+              { referenceYear && (
               <ButtonToggle
                 color="link"
                 size="sm"
                 outline
-                active={baseYearActive}
-                onClick={() => handleBaseYear(!baseYearActive)}
+                active={referenceYearActive}
+                onClick={() => handleReferenceYear(!referenceYearActive)}
               >
-                { baseYearActive ? (
+                { referenceYearActive ? (
                   <span>
                     <Icon.PenFill />
                     {` ${t('edit')}`}
@@ -115,16 +115,16 @@ const RangeSelector = (props: RangeSelectorProps) => {
                   <span>
                     <Icon.ArrowCounterclockwise />
                     {' '}
-                    { baseYear }
+                    { referenceYear }
                   </span>
                 )}
               </ButtonToggle>
               )}
             </ActiveYearDisplay>
-            { baseYearActive ? (
+            { referenceYearActive ? (
               <RangeWrapper>
                 <Range
-                  key="Base"
+                  key="Reference"
                   step={1}
                   min={min}
                   max={max}
@@ -177,7 +177,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
             ) : (
               <RangeWrapper>
                 <Range
-                  key="noBase"
+                  key="noReference"
                   step={1}
                   min={min}
                   max={max}
@@ -231,7 +231,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
             )}
             <ActiveYearDisplay>
               <YearDescription>{t('target-year')}</YearDescription>
-              <ActiveYear>{ baseYearActive ? values[0] : values[1] }</ActiveYear>
+              <ActiveYear>{ referenceYearActive ? values[0] : values[1] }</ActiveYear>
             </ActiveYearDisplay>
           </SectionWrapper>
   );
