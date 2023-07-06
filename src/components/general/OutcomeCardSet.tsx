@@ -282,6 +282,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
           <CardDeck>
             { cardNodes.map((node, indx) => (
                 <OutcomeCard
+                  key={node.id}
                   startYear={startYear}
                   endYear={endYear}
                   node={node}

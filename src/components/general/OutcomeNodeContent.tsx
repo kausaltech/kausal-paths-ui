@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { Button, ButtonGroup, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
-import { 
-  BarChartFill as GraphIcon,
+import {
+  PieChartFill as AreaIcon,
+  GraphDown as GraphIcon,
   Table as TableIcon,
   InfoSquare as DetailsIcon } from 'react-bootstrap-icons';
 import styled from 'styled-components';
@@ -11,11 +12,13 @@ import { ActionLink, Link, NodeLink } from 'common/links';
 import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
+import IcicleGraph from 'components/general/IcicleGraph';
 import DataTable from './DataTable';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import { last } from 'lodash';
+import { useInstance } from 'common/instance';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
@@ -109,7 +112,8 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
   const { node, subNodes, color, startYear, endYear, activeScenario } = props;
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
-
+  const instance = useInstance();
+  const showDistribution = instance.id === "zuerich" && subNodes.length > 1;
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
   const lastMeasuredYear = node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
@@ -122,6 +126,16 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
 
   const outcomeGraph = useMemo(() => (
     <OutcomeGraph
+      node={node}
+      subNodes={subNodes}
+      color={color}
+      startYear={startYear}
+      endYear={endYear}
+    />
+  ), [node, subNodes, color, startYear, endYear])
+
+  const icicleGraph = useMemo(() => (
+    <IcicleGraph
       node={node}
       subNodes={subNodes}
       color={color}
@@ -146,11 +160,11 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               </NodeLink>
             </h4>
             <CardSetDescriptionDetails>
-                 { startYear < lastMeasuredYear && <ScenarioBadge type="recorded">{startYear}—{lastMeasuredYear} Recorded</ScenarioBadge>}
+                 { startYear < lastMeasuredYear && <ScenarioBadge type="forecast">{startYear}—{lastMeasuredYear} {t('table-historical')}</ScenarioBadge>}
                  {' '}
                  { firstForecastYear < endYear && (
                   <ScenarioBadge type="activeScenario">
-                    {Math.max(startYear, firstForecastYear)}—{endYear} Predicted: { activeScenario || 'Current'}
+                    {Math.max(startYear, firstForecastYear)}—{endYear} {t('table-scenario-forecast')} { activeScenario || 'Current'}
                   </ScenarioBadge> )}
             </CardSetDescriptionDetails>
           </CardSetDescription>
@@ -159,46 +173,61 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
           <HighlightValue
             className="figure"
             displayValue={beautifyValue(nodesTotal)}
-            header={`${ isForecast ? 'Predicted' : 'Recorded'} ${endYear}`}
+            header={`${ isForecast ? t('table-scenario-forecast') : t('table-historical')} ${endYear}`}
             unit={unit}
           />
           <HighlightValue
             className="figure"
             displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}` : '-'}
-            header={`Change ${startYear}–${endYear}`}
+            header={`${t('change-over-time')} ${startYear}–${endYear}`}
             unit="%"
           />
         </CardSetSummary>
       </CardSetHeader>
       <CardContent>
       <Nav tabs className="justify-content-end">
-      <DisplayTab>
-        <NavLink
-          href="#"
-          onClick={() => setActiveTabId('graph')}
-          active={activeTabId === 'graph'}
-        >
-          <GraphIcon /> Graph
-        </NavLink>
-      </DisplayTab>
-      <DisplayTab>
-        <NavLink
-          href="#" onClick={() => setActiveTabId('table')}
-          active={activeTabId === 'table'}
-        >
-          <TableIcon /> Table
-        </NavLink>
-      </DisplayTab>
-      <DisplayTab>
-        <NavLink
-          href="#" onClick={() => setActiveTabId('info')}
-          active={activeTabId === 'info'}
-        >
-          <DetailsIcon />  Details
-        </NavLink>
-      </DisplayTab>
-    </Nav>
+        { showDistribution && (
+          <DisplayTab>
+            <NavLink
+              href="#"
+              onClick={() => setActiveTabId('year')}
+              active={activeTabId === 'year'}
+              disabled={subNodes.length < 2}
+            >
+              <AreaIcon /> {t('distribution')}
+            </NavLink>
+          </DisplayTab>
+        )}
+        <DisplayTab>
+          <NavLink
+            href="#"
+            onClick={() => setActiveTabId('graph')}
+            active={activeTabId === 'graph'}
+          >
+            <GraphIcon /> {t('time-series')}
+          </NavLink>
+        </DisplayTab>
+        <DisplayTab>
+          <NavLink
+            href="#" onClick={() => setActiveTabId('table')}
+            active={activeTabId === 'table'}
+          >
+            <TableIcon /> {t('table')}
+          </NavLink>
+        </DisplayTab>
+        <DisplayTab>
+          <NavLink
+            href="#" onClick={() => setActiveTabId('info')}
+            active={activeTabId === 'info'}
+          >
+            <DetailsIcon />  {t('details')}
+          </NavLink>
+        </DisplayTab>
+      </Nav>
     <TabContent activeTab={ activeTabId}>
+      { activeTabId === 'year' && (
+        <ContentWrapper>{icicleGraph}</ContentWrapper>
+      )}
       { activeTabId === 'graph' && (
       <ContentWrapper>{outcomeGraph}</ContentWrapper>
       )}

@@ -61,5 +61,9 @@
   "actions-sort-default": "Standard",
   "actions-as-comparison": "Compare",
   "actions-sort-cumulative-impact": "Cumulative impact",
-  "accumulated-between": "ackumulerad över"
+  "accumulated-between": "ackumulerad över",
+  "change-over-time": "Förändring",
+  "time-series": "Tidsföljder",
+  "table": "Tabell",
+  "details": "Mer detaljer"
 }

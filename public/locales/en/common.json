@@ -66,5 +66,9 @@
   "plot-total": "Total",
   "actions-as-comparison": "Compare",
   "actions-sort-cumulative-impact": "Cumulative impact",
-  "accumulated-between": "accumulated between"
+  "accumulated-between": "accumulated between",
+  "change-over-time": "Change",
+  "time-series": "Timeseries",
+  "table": "Table",
+  "details": "Details"
 }

@@ -23,7 +23,7 @@ const DataTable = (props) => {
 
   return (
     <TableWrapper>
-      <h5>{ node.name }</h5>
+      <h5>{ node.name } ({startYear} - {endYear})</h5>
       <Table bordered size="sm" responsive>
         <thead>
           <tr>

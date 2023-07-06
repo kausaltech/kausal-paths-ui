@@ -6,7 +6,7 @@ import { readableColor } from 'polished';
 
 const StyledBadge = styled.span`
   background-color: white !important;
-  border-left: 24px solid ${(props) => props.color} !important;
+  // border-left: 24px solid ${(props) => props.color} !important;
   color: ${(props) => props.theme.themeColors.black };
   border-radius: ${(props) => props.theme.badgeBorderRadius};
   padding: .25rem .5rem;
@@ -35,7 +35,7 @@ const StyledBadge = styled.span`
 
 const getBadgeColor = (theme, type, color) => {
   switch (type) {
-    case 'recorded':
+    case 'forecast':
       return theme.graphColors.grey060;
     case 'activeScenario':
       return theme.graphColors.grey030;

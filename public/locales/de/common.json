@@ -54,5 +54,9 @@
   "actions-sort-default": "Standard",
   "action-groups-all": "Alle",
   "actions-as-list": "List",
-  "actions-sort-cumulative-impact": "Cumulative impact"
+  "actions-sort-cumulative-impact": "Cumulative impact",
+  "change-over-time": "Veränderung",
+  "time-series": "Zeitreihe",
+  "details": "Details",
+  "table": "Tabelle"
 }

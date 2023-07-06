@@ -188,13 +188,13 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         <Body>
           <MainValue>
             <Label>
-              { isForecast ? 'Predicted' : 'Recorded'} {endYear}
+              { isForecast ? t('table-scenario-forecast') : t('table-historical')} {endYear}
             </Label>
             {beautifyValue(goalOutcomeValue)}
             <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
             { change && (
               <Status>
-                <Label>Change {startYear} - {endYear}</Label>
+                <Label>{t('change-over-time') } {startYear} - {endYear}</Label>
                 {change > 0 && <span>+</span>}
                 {change ? <span>{`${change}%`}</span> : <span>-</span>}
               </Status>

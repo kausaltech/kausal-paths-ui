@@ -62,5 +62,9 @@
   "plot-total": "Yhteensä",
   "actions-as-comparison": "Vertailu",
   "actions-sort-cumulative-impact": "Kumulatiivinen vaikutus",
-  "accumulated-between": "yhteensä välillä"
+  "accumulated-between": "yhteensä välillä",
+  "change-over-time": "Muutos",
+  "time-series": "Aikasarja",
+  "table": "Taulukko",
+  "details": "Tarkemmat tiedot"
 }
