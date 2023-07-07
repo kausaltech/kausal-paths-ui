@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
 
 import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
+import { GET_PARAMETERS } from 'common/queries/getParameters';
 import { useTranslation } from 'react-i18next';
 
 const SwitchWrapper = styled.div`
@@ -28,13 +29,25 @@ type NormalizationWidgetProps = {
 
 function NormalizationWidget(props: NormalizationWidgetProps) {
   const { t } = useTranslation();
-  const { availableNormalizations } = props;
-  const [setNormalization, { data, loading, error }] =
+
+  const { loading, error, data, previousData, refetch, networkStatus } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const [setNormalization, { data: mutationData, loading: mutationLoading, error: mutationError }] =
     useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(SET_NORMALIZATION_MUTATION, {
       refetchQueries: 'active',
     });
 
+  if ((loading && !previousData) || !data || !data.parameters) {
+    return <>-</>;
+  } if (error) {
+    return <><div>{ t('error-loading-data') }</div></>;
+  }
+
+  const { availableNormalizations } = data;
   if (!availableNormalizations.length) return null;
+
   const norm = availableNormalizations[0];
   const label = t('normalize-by', { node: norm.label });
   return (
@@ -44,6 +57,7 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
           {label}
         </Label>
         <Input
+          disabled={mutationLoading}
           type="switch"
           role="switch"
           id={norm.id}

@@ -5,13 +5,9 @@ import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import ContentLoader from 'components/common/ContentLoader';
-import { GET_SCENARIOS } from 'common/queries/getScenarios';
 import { GET_PARAMETERS } from 'common/queries/getParameters';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
 import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
 import { useTranslation } from 'react-i18next';
-import { useSite } from 'context/site';
-import { GET_INSTANCE_GOAL_OUTCOME } from './GoalOutcomeBar';
 
 
 const GlobalParametersPanel = styled(Row)`
