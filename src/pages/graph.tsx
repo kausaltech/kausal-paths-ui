@@ -10,7 +10,6 @@ query GetCytoscapeNodes {
     name
     color
     quantity
-    isAction
     unit {
       htmlShort
     }
@@ -24,6 +23,18 @@ query GetCytoscapeNodes {
       historicalValues(latest: 1) {
         year
         value
+      }
+    }
+    ... on ActionNode {
+      parentAction {
+        id
+      }
+      subactions {
+        id
+      }
+      group {
+        id
+        color
       }
     }
   }

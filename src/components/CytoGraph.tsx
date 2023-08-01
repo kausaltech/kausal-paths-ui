@@ -1,19 +1,22 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useRouter, } from 'next/router'
-import cytoscape from 'cytoscape';
-import dagre from 'cytoscape-dagre';
+import chroma from 'chroma-js';
+import cytoscape, { EdgeDefinition, ElementDefinition, NodeDefinition } from 'cytoscape';
+import dagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
 import { getContrast, } from 'polished';
 import { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
 import { useTheme } from 'common/theme';
+import SelectDropdown from './common/SelectDropdown';
+import { useTranslation } from 'common/i18n';
 
 cytoscape.use(dagre);
 cytoscapeNodeHtmlLabel(cytoscape);
 
 const VisContainer = styled.div`
   width: 100%;
-  height: 1000px;
+  height: 100vh;
   background-color: #f6f6f6;
   margin: 0;
 `;
@@ -51,12 +54,41 @@ function wordWrap(inputStr, maxWidth, newLineStr = '\n') {
   return res + str;
 }
 
+
+type NodeSelectorProps = {
+  nodes: CytoGraphProps['nodes'],
+  selectedNode: string,
+  setSelectedNode: React.Dispatch<React.SetStateAction<string>>,
+}
+
+function NodeSelector(props: NodeSelectorProps) {
+  const { nodes, selectedNode, setSelectedNode } = props;
+  const options = nodes.map(node => ({
+    id: node.id,
+    label: node.name,
+  }));
+  const { t } = useTranslation();
+  return (
+    <SelectDropdown
+      id="dimension"
+      //label={t('choose-node')!}
+      onChange={val => setSelectedNode(val ? val.id : '')}
+      options={options}
+      value={selectedNode ? (options.find(o => o.id === selectedNode) || null) : null}
+      isMulti={false}
+      isClearable={true}
+    />
+  );
+}
+
+
 type CytoGraphProps = {
   nodes: GetCytoscapeNodesQuery['nodes'],
 }
 
 export default function CytoGraph(props: CytoGraphProps) {
   const { nodes } = props;
+  const [selectedNode, setSelectedNode] = useState('');
   const router = useRouter();
   const theme = useTheme();
   const visRef = useRef<HTMLDivElement>(null);
@@ -64,12 +96,16 @@ export default function CytoGraph(props: CytoGraphProps) {
   useEffect(() => {
     const visNode = visRef.current;
     if (!visNode) return;
-    const elements = [];
-  
+    const elements: ElementDefinition[] = [];
+
     // Nodes
     nodes.forEach((node) => {
       function getBackgroundColor() {
-        if (node.isAction) {
+        if (node.__typename == 'ActionNode') {
+          if (node.group?.color) {
+            const actionColor = chroma(node.group.color).brighten().hex();
+            return actionColor;
+          }
           return '#00ff00';
         }
         if (node.quantity == 'emissions') {
@@ -94,7 +130,7 @@ export default function CytoGraph(props: CytoGraphProps) {
         hist = {
           year: latestHistorical.year,
           value: val < 0 ? val.toPrecision(3) : val.toFixed(0),
-          unit: node.unit.htmlShort,
+          unit: node.unit?.htmlShort,
         };
         label += `\n${hist.year}: ${hist.value} ${hist.unit}`
       }
@@ -102,7 +138,8 @@ export default function CytoGraph(props: CytoGraphProps) {
       let textColor = '#000000';
       const whiteContrast = getContrast(bgColor, textColor);
       if (whiteContrast < 8) textColor = '#ffffff'
-      const element = {
+
+      const element: NodeDefinition = {
         group: 'nodes',
         data: {
           id: node.id,
@@ -111,6 +148,7 @@ export default function CytoGraph(props: CytoGraphProps) {
           name: node.name,
           hist,
           label: label,
+          type: node.__typename == 'ActionNode' ? 'action': 'node',
         },
       };
       elements.push(element);
@@ -119,7 +157,7 @@ export default function CytoGraph(props: CytoGraphProps) {
     // Edges
     nodes.forEach((node) => {
       node.outputNodes.forEach((target) => {
-        const element = {
+        const edge: EdgeDefinition = {
           group: 'edges',
           data: {
             source: node.id,
@@ -128,22 +166,75 @@ export default function CytoGraph(props: CytoGraphProps) {
             color: 'teal',
           },
         };
-        elements.push(element);
+        elements.push(edge);
       });
+      if (node.__typename == 'ActionNode') {
+        if (node.subactions.length) {
+          console.log(node);
+          console.log(node.subactions);
+        }
+        node.subactions.forEach(sub => {
+          const edge: EdgeDefinition = {
+            group: 'edges',
+            data: {
+              source: node.id,
+              target: sub.id,
+              label: '',
+              color: 'teal',
+              type: 'parent',
+            },
+          };
+          elements.push(edge);
+        })
+      }
     });
 
-    const cyLayoutOptions = {
+    const cyLayoutOptions: DagreLayoutOptions = {
       name: 'dagre',
-      ranker: 'longest-path',
-      edgeWeight: 1,
+      ranker: 'tight-tree',
+      edgeWeight: edge => (edge.data('type') === 'parent' ? 5 : 1),
       nodeDimensionsIncludeLabels: true,
       animate: false,
-      animateDuration: 2000,
-      zoom: 0.5,
-      pan: { x: 0, y: 0 },
+      rankDir: 'TB',
+      animationDuration: 2000,
     };
 
-    const cy = cytoscape({
+    const edgeStyle: cytoscape.Css.Edge = {
+      label: 'data(label)',
+      'target-text-offset': 1,
+      'target-arrow-shape': 'triangle',
+      'target-arrow-color': 'data(color)',
+      'arrow-scale': 2,
+      'line-color': 'data(color)',
+      'text-outline-width': 3,
+      'text-outline-color': 'data(color)',
+      color: '#ffffff',
+      'curve-style': 'bezier',
+      'font-size': '18px',
+      'font-weight': theme.fontWeightBold,
+      width: 2,
+    };
+
+    const nodeStyle: cytoscape.Css.Node =  {
+      shape: 'rectangle',
+      'background-color': 'data(backgroundColor)',
+      //color: 'data(textColor)',
+      color: '#cccccc',
+      width: 'label',
+      height: 'label',
+      'text-valign': 'center',
+      padding: '24px',
+      label: 'data(label)',
+      'text-opacity': 0,
+      'text-wrap': 'wrap',
+      'text-outline-width': 0,
+      'font-weight': theme.fontWeightNormal,
+      'border-width': (node) => (node.data('type') === 'action' ? '2px' : '0px'),
+      'border-color': '#000000',
+      'border-style': 'dashed',
+    };
+
+    const cy: cytoscape.Core = cytoscape({
       container: visNode,
       elements,
       layout: cyLayoutOptions,
@@ -159,42 +250,27 @@ export default function CytoGraph(props: CytoGraphProps) {
         },
         {
           selector: 'node',
-          style: {
-            shape: 'rectangle',
-            'background-color': 'data(backgroundColor)',
-            //color: 'data(textColor)',
-            color: '#cccccc',
-            width: 'label',
-            height: 'label',
-            'text-valign': 'center',
-            padding: '24px',
-            label: 'data(label)',
-            'text-opacity': 0,
-            'text-wrap': 'wrap',
-            'text-outline-width': 0,
-            'font-weight': theme.fontWeightNormal,
-          },
+          style: nodeStyle,
         },
         {
           selector: 'edge',
-          style: {
-            label: 'data(label)',
-            'target-text-offset': 1,
-            'target-arrow-shape': 'triangle',
-            'target-arrow-color': 'data(color)',
-            'arrow-scale': 2,
-            'line-color': 'data(color)',
-            'text-outline-width': 3,
-            'text-outline-color': 'data(color)',
-            color: '#ffffff',
-            'curve-style': 'bezier',
-            'font-size': '18px',
-            'font-weight': theme.fontWeightBold,
-            width: 2,
-          },
+          style: edgeStyle,
         },
       ],
     });
+
+    if (selectedNode) {
+      const node = cy.getElementById(selectedNode);
+      const keepNodes = node.predecessors().union(node.successors()).add(node);
+      const removeNodes = cy.nodes().difference(keepNodes);
+      removeNodes.remove();
+      cy.layout(cyLayoutOptions).run();
+      cy.center(node);
+    } else {
+      cy.layout(cyLayoutOptions).run();
+      cy.center();
+    }
+
     cy.nodes().on('click', (e) => {
       const clickedNode = e.target;
       const nodeId = clickedNode.data('id');
@@ -212,9 +288,12 @@ export default function CytoGraph(props: CytoGraphProps) {
         return `<div style="color: ${data.textColor}"><strong>${name}</strong>${histStr}</div>`;
       }
     }])
-  }, [visRef, nodes, router]);
+  }, [visRef, nodes, router, selectedNode]);
 
   return (
-    <VisContainer ref={visRef} />
+    <>
+      <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+      <VisContainer ref={visRef} />
+    </>
   );
 }
