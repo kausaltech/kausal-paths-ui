@@ -24,7 +24,7 @@ import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import ImpactDisplay from 'components/general/ImpactDisplay';
-import * as Icon from 'react-bootstrap-icons';
+import { ArrowRight } from 'react-bootstrap-icons';
 import SubActions from 'components/general/SubActions';
 
 const HeaderSection = styled.div`
@@ -124,7 +124,6 @@ export default function ActionPage() {
   if (!data || !data.action) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
-
   const action = data.action;
   const subActions = action.subactions;
   /*
@@ -210,15 +209,8 @@ export default function ActionPage() {
                 </ActionListLink>
                 {' '}
                 /
-                { action.group && (
-                  <>
-                  {action.group.name}
-                  {' '}
-                  /
-                  </>
-                )}
-                {' '}
-                {action.name}
+                { action.group && ` ${action.group.name} /`}
+                {` ${action.name}`}
               </h1>
               <div>
               { action.decisionLevel === 'NATION' && (
@@ -233,6 +225,13 @@ export default function ActionPage() {
               </div>
               <ActionDescription>
                 <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
+                <NodeLink node={action}>
+                  <a>
+                    {t('read-more')}
+                    {' '}
+                    <ArrowRight />
+                  </a>
+                </NodeLink>
                 <hr />
                 <ActionMetrics>
                   <MetricsParameters>
