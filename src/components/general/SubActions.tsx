@@ -67,9 +67,12 @@ const WatchActionList = styled.div`
   display: flex;
 `;
 
-const ActionContent = (props: any) => {
+type ActionContentProps = {
+  action: SubActionCardFragment,
+}
+
+const ActionContent = (props: ActionContentProps) => {
   const { action } = props;
-  // console.log("action", action)
 
   const watchActions = [
     {
@@ -91,7 +94,9 @@ const ActionContent = (props: any) => {
   return (
     <ActionContentCard>
       <ActionDescription>
-        {action?.description}
+        { (action.shortDescription || action.description) ? (
+          <div dangerouslySetInnerHTML={{ __html: action.shortDescription || action.description }} />
+        ) : null }
       </ActionDescription>
       <h5>How do we make this happen?</h5>
       <WatchActionList>
