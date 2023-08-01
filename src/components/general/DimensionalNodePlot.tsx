@@ -4,11 +4,12 @@ import { useTranslation } from 'next-i18next';
 import { tint, transparentize } from 'polished';
 import styled, { ThemeContext } from 'styled-components';
 import { gql, useReactiveVar } from '@apollo/client';
-
+import CsvDownload from 'react-json-to-csv';
 import { genColors, genColorsFromTheme } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import { Col, FormGroup, Input, Label, Row } from 'reactstrap';
+import GraphAsTable from 'components/graphs/GraphAsTable';
 import SelectDropdown from 'components/common/SelectDropdown';
 import { activeGoalVar } from 'common/cache';
 
@@ -592,18 +593,26 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         config={{ displayModeBar: false }}
         noValidate
       />
-      { /*
+      <GraphAsTable
+        specification={{ unit: unit }}
+        timeResolution="YEAR"
+        data={plotData}
+        goalTraces={[]}
+        title="Test"
+        language="de"
+        t={t}
+      />
+
       <Tools>
         <CsvDownload 
-          data={downloadableTable}
+          data={plotData}
           filename={`${metric.id}.csv`}
           className="btn btn-link btn-sm"
         >
-          <CloudArrowDown />
           { ` ${t('download-data')}` }
         </CsvDownload>
       </Tools>
-    */ }
+
     </>
   );
 };
