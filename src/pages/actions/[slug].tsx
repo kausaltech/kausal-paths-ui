@@ -121,14 +121,14 @@ export default function ActionPage() {
     logError(error, {query: GET_ACTION_CONTENT});
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
-  if (!data || !data.node) {
+  if (!data || !data.action) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
 
-  const action = data.node;
-  // Check here if action has subactions
-  const subActions = instance.id === "zuerich" ? [
-    {
+  const action = data.action;
+  const subActions = action.subactions;
+  /*
+  {
       id: 'replacement_of_heating_networks',
       name: 'Heizungsersatz durch thermische Netze',
       description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
@@ -169,7 +169,7 @@ export default function ActionPage() {
       parameters: action.parameters
     },
   ] : [];
-
+  */
   // show causal nodes only for selected subaction
   const causalNodes = action.downstreamNodes;
   const lastNode = action.downstreamNodes.find((node) => node.outputNodes.length === 0);
@@ -259,7 +259,7 @@ export default function ActionPage() {
                         startYear={yearRange[0]}
                         endYear={yearRange[1]}
                         color={lastNode.color}
-                        isAction={lastNode.isAction}
+                        isAction={lastNode.__typename === 'ActionNode'}
                         targetYear={instance.targetYear}
                         targetYearGoal={lastNode.targetYearGoal}
                         quantity={lastNode.quantity}
@@ -279,7 +279,7 @@ export default function ActionPage() {
                       startYear={yearRange[0]}
                       endYear={yearRange[1]}
                       color={action.color}
-                      isAction={action.isAction}
+                      isAction={action.__typename === 'ActionNode'}
                       targetYearGoal={action.targetYearGoal}
                     />
                   )

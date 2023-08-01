@@ -609,7 +609,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
 };
 
 DimensionalNodePlot.fragment = gql`
-  fragment DimensionalNodeMetric on NodeType {
+  fragment DimensionalNodeMetric on NodeInterface {
     metricDim {
       id
       name

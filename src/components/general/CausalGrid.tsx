@@ -134,13 +134,13 @@ const ImpactFigures = styled.div`
   }
 `;
 
-export type CausalGridNode = NonNullable<GetActionContentQuery['node']>['downstreamNodes'][0];
+export type CausalGridNode = NonNullable<GetActionContentQuery['action']>['downstreamNodes'][0];
 
 type CausalGridProps = {
   nodes: CausalGridNode[],
   yearRange: [number, number],
   actionIsOff: boolean,
-  action: NonNullable<GetActionContentQuery['node']>,
+  action: NonNullable<GetActionContentQuery['action']>,
 }
 
 const CausalGrid = (props: CausalGridProps) => {
@@ -315,7 +315,7 @@ const CausalGrid = (props: CausalGridProps) => {
                       startYear={yearRange[0]}
                       endYear={yearRange[1]}
                       color={lastNode.color}
-                      isAction={lastNode.isAction}
+                      isAction={lastNode.__typename === 'ActionNode'}
                       targetYear={instance.targetYear}
                       targetYearGoal={lastNode.targetYearGoal}
                       quantity={lastNode.quantity}

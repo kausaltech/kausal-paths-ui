@@ -1,33 +1,29 @@
 import { gql } from '@apollo/client';
 import DimensionalFlow from 'components/graphs/DimensionalFlow';
-
+import { SUBACTIONS_FRAGMENT } from 'components/general/SubActions';
 
 const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!, $goal: ID) {
-    node(id: $node) {
+    action(id: $node) {
       ...CausalGridNode
       description
-      decisionLevel
       dimensionalFlow {
         ...DimensionalPlot
       }
       downstreamNodes {
         ...CausalGridNode
       }
+      decisionLevel
     }
   }
   ${DimensionalFlow.fragment}
-  fragment CausalGridNode on NodeType {
+  ${SUBACTIONS_FRAGMENT}
+  fragment CausalGridNode on NodeInterface {
     id
     name
     shortDescription
     color
     targetYearGoal
-    group {
-      id
-      name
-      color
-    }
     unit {
       htmlShort
     }
@@ -36,6 +32,16 @@ const GET_ACTION_CONTENT = gql`
     }
     outputNodes{
       id
+    }
+    ... on ActionNode {
+      group {
+        id
+        name
+        color
+      }
+      subactions {
+        ...SubActionCard
+      }
     }
     impactMetric(goalId: $goal) {
       name
@@ -69,7 +75,6 @@ const GET_ACTION_CONTENT = gql`
       stackable
     }
     quantity
-    isAction
     parameters {
       __typename
       description

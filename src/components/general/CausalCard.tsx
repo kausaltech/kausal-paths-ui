@@ -144,7 +144,7 @@ const CausalCard = (props: CausalCardProps) => {
 
   return (
     <ActionLinks>
-      <NodeCard className={`${node.isAction && 'action'} ${node.quantity}`}>
+      <NodeCard className={`${node.__typename === 'ActionNode' && 'action'} ${node.quantity}`}>
           <CardHeader isOpen={isOpen}>
             <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
               <NodeIcon node={node} />

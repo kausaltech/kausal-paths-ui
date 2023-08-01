@@ -13,7 +13,7 @@ const GET_ACTION_LIST = gql`
         }
       }
     }
-    actions {
+    actions(onlyRoot: true) {
       id
       name
       shortDescription

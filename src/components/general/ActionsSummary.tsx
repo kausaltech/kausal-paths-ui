@@ -76,7 +76,7 @@ type StyledInputProps = {
 }
 
 const SET_PARAMETER = gql`
-  mutation SetGlobalParameter($parameterId: ID!, $boolValue: Boolean, $numberValue: Float, $stringValue: String) {
+  mutation SetGlobalParameterFromActionSummary($parameterId: ID!, $boolValue: Boolean, $numberValue: Float, $stringValue: String) {
     setParameter(id: $parameterId, boolValue: $boolValue, numberValue: $numberValue, stringValue: $stringValue) {
       ok
       parameter {

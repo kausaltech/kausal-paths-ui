@@ -3,7 +3,7 @@ import DimensionalNodePlot from 'components/general/DimensionalNodePlot';
 
 
 const OUTCOME_NODE_FIELDS = gql`
-  fragment OutcomeNodeFields on NodeType {
+  fragment OutcomeNodeFields on Node {
     id
     name
     color
