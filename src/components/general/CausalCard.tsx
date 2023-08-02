@@ -19,14 +19,11 @@ const NodeCard = styled.div`
   max-width: 400px;
   padding: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
+  white-space: normal;
 
-  &.action .card {
+  &.type-action .card {
     background-color: ${(props) => props.theme.graphColors.grey000};
     border: ${(props) => props.theme.graphColors.grey030} 2px solid;
-  }
-
-  &.emissions .card {
-
   }
 `;
 
@@ -135,7 +132,7 @@ const CausalCard = (props: CausalCardProps) => {
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
 
-  console.log('node', node);
+  //console.log('node', node);
   const [isOpen, setIsOpen] = useState(false);
   const impactAtTargetYear = getImpactMetricValue(node, endYear);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
@@ -144,7 +141,7 @@ const CausalCard = (props: CausalCardProps) => {
 
   return (
     <ActionLinks>
-      <NodeCard className={`${node.__typename === 'ActionNode' && 'action'} ${node.quantity}`}>
+      <NodeCard className={`${node.__typename === 'ActionNode' && 'action'} type-${node.quantity}`}>
           <CardHeader isOpen={isOpen}>
             <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
               <NodeIcon node={node} />
