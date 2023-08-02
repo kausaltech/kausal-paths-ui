@@ -18,8 +18,10 @@ const TableWrapper = Styled.div`
 const DataTable = (props) => {
   const { node, subNodes, startYear, endYear } = props;
 
-  const historicalValues = node.metric.historicalValues.filter((value) => value.year >= startYear && value.year <= endYear);
-  const forecastValues = node.metric.forecastValues.filter((value) => value.year >= startYear && value.year <= endYear);
+  const totalHistoricalValues = node.metric.historicalValues.filter((value) => value.year >= startYear && value.year <= endYear);
+  const totalForecastValues = node.metric.forecastValues.filter((value) => value.year >= startYear && value.year <= endYear);
+
+  const hasTotalValues = totalHistoricalValues.some((val) => val.value !== null) || totalForecastValues.some((val) => val.value !== null);
 
   return (
     <TableWrapper>
@@ -32,13 +34,13 @@ const DataTable = (props) => {
             { subNodes?.map((subNode) => (
               <th key={subNode.id}>{subNode.name}</th>
             ))}
-            <th>{node.metric.name}</th>
+            { hasTotalValues && <th>{node.metric.name}</th>}
             <th>Unit</th>
           </tr>
         </thead>
         <tbody>
-          { historicalValues.map((metric) => (
-            <tr key={metric.year}>
+          { totalHistoricalValues.map((metric) => (
+            <tr key={`h-${metric.year}`}>
               <td>{metric.year}</td>
               <td>Historical</td>
               { subNodes?.map((subNode) => (
@@ -46,12 +48,12 @@ const DataTable = (props) => {
                   { subNode.metric.historicalValues.find((value) => value.year === metric.year) ? subNode.metric.historicalValues.find((value) => value.year === metric.year).value : '-'}
                 </td>
               ))}
-              <td>{metric.value}</td>
+              { hasTotalValues && <td>{metric.value}</td> }
               <td dangerouslySetInnerHTML={{ __html: node.metric?.unit?.htmlShort }} />
             </tr>
           ))}
-          { forecastValues.map((metric) => (
-            <tr key={metric.year}>
+          { totalForecastValues.map((metric) => (
+            <tr key={`f-${metric.year}`}>
               <td>{metric.year}</td>
               <td>Forecast</td>
               { subNodes?.map((subNode) => (
@@ -59,7 +61,7 @@ const DataTable = (props) => {
                   { subNode.metric.forecastValues.find((value) => value.year === metric.year) ? subNode.metric.forecastValues.find((value) => value.year === metric.year).value : '-'}
                 </td>
               ))}
-              <td>{metric.value}</td>
+              { hasTotalValues && <td>{metric.value}</td> }
               <td dangerouslySetInnerHTML={{ __html: node.metric?.unit?.htmlShort }} />
             </tr>
           ))}
