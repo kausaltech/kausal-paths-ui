@@ -8,8 +8,12 @@ import CsvDownload from 'react-json-to-csv';
 import { genColors, genColorsFromTheme } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
-import { Col, FormGroup, Input, Label, Row } from 'reactstrap';
-import GraphAsTable from 'components/graphs/GraphAsTable';
+import { Col, Nav, NavItem, NavLink, TabContent, Row } from 'reactstrap';
+import {
+  GraphDown as GraphIcon,
+  Table as TableIcon,
+ } from 'react-bootstrap-icons';
+import DataTable from 'components/general/DataTable';
 import SelectDropdown from 'components/common/SelectDropdown';
 import { activeGoalVar } from 'common/cache';
 
@@ -23,6 +27,10 @@ const Tools = styled.div`
   .btn-link {
     text-decoration: none;
   }
+`;
+
+const DisplayTab = styled(NavItem)`
+  font-size: 0.9rem;
 `;
 
 type CatValue = number | null;
@@ -316,6 +324,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
 
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
+  const [activeTabId, setActiveTabId] = useState('graph');
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
 
   const metricDims = new Map(metric.dimensions.map(dim => [dim.originalId, dim]));
@@ -582,32 +591,149 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     </Row>
   ) : null;
 
+  // recreate nodes for repurposing outcome page DataTable
+  const selectedCategories = metric.dimensions.map(dim => sliceConfig.categories[dim.id]);
+
+  const selectedCategoryNames = selectedCategories.map((catId) => {
+    if (catId === undefined) return null;
+    let catName = '';
+    metric.dimensions?.length && metric.dimensions.forEach(dim => {
+      const cat = dim?.categories.find(cat => cat.id === catId);
+      if (cat) catName = cat.label;
+    })
+    return catName;
+  });
+  const selectedCategoryDisplay = selectedCategoryNames.filter(name => name !== null).join(', ');
+
+  const tableNode = {
+    metric: {
+      historicalValues: slice.historicalYears.map((year, idx) => ({
+        year,
+        value: slice.totalValues?.historicalValues[idx] ?? null,
+      })),
+      forecastValues: slice.forecastYears.map((year, idx) => ({
+        year,
+        value: slice.totalValues?.forecastValues[idx] ?? null,
+      })),
+      name: `${slice.totalValues?.category.label ?? metric.name}${selectedCategoryDisplay ? `: ${selectedCategoryDisplay}` : ''}`,
+      unit: metric.unit,
+      years: [...slice.historicalYears, ...slice.forecastYears],
+    },
+    name: `${metric.name}${selectedCategoryDisplay ? `: ${selectedCategoryDisplay}` : ''}`,
+    id: metric.id,
+  };
+
+  const tableSubNodes = slice.categoryValues.map(cv => {
+    const historicalValues = slice.historicalYears.map((year, idx) => ({
+      year,
+      value: cv.historicalValues[idx],
+    }));
+    const forecastValues = slice.forecastYears.map((year, idx) => ({
+      year,
+      value: cv.forecastValues[idx],
+    }));
+    const metric = {
+      historicalValues,
+      forecastValues,
+      name: cv.category.label,
+      unit: tableNode.metric.unit,
+      years: [...slice.historicalYears, ...slice.forecastYears],
+    };
+    return {
+      metric,
+      name: cv.category.label,
+      id: cv.category.id,
+    };
+  });
+
+  // Create JSON for react-json-to-csv
+  const tableHistoricalRows = tableNode.metric.historicalValues.map((row) => {
+    const subSectorColumns = {};
+    tableSubNodes && tableSubNodes.forEach((subNode) => {
+      const subNodeRow = subNode.metric.historicalValues.find((value) => value.year === row.year);
+      subSectorColumns[subNode.id] = subNodeRow ? subNodeRow.value : '-';
+    });
+    subSectorColumns['total'] = tableNode.metric.historicalValues.find((value) => value.year === row.year)?.value || '-';
+    return {
+      year: row.year,
+      type: 'Historical',
+      ...subSectorColumns,
+    };
+  });
+  
+    const tableForecastRows = tableNode.metric.forecastValues.map((row) => {
+      const subSectorColumns = {};
+      tableSubNodes && tableSubNodes.forEach((subNode) => {
+        const subNodeRow = subNode.metric.forecastValues.find((value) => value.year === row.year);
+        subSectorColumns[subNode.id] = subNodeRow ? subNodeRow.value : '-';
+      });
+      subSectorColumns['total'] = tableNode.metric.forecastValues.find((value) => value.year === row.year)?.value || '-';
+      return {
+        year: row.year,
+        type: 'Forecast',
+        ...subSectorColumns,
+      };
+    });
+
+    const tableHeaders = [
+      "Year",
+      "Type",
+      ...tableSubNodes.map((subNode) => subNode.name),
+      "Total",
+    ];
+
   return (
     <>
       {controls}
-      <Plot
-        data={plotData}
-        layout={layout}
-        useResizeHandler
-        style={{ width: '100%' }}
-        config={{ displayModeBar: false }}
-        noValidate
-      />
-      <GraphAsTable
-        specification={{ unit: unit }}
-        timeResolution="YEAR"
-        data={plotData}
-        goalTraces={[]}
-        title="Test"
-        language="de"
-        t={t}
-      />
+      <Nav tabs className="justify-content-end">
+        <DisplayTab>
+          <NavLink
+            href="#"
+            onClick={() => setActiveTabId('graph')}
+            active={activeTabId === 'graph'}
+          >
+            <GraphIcon /> {t('time-series')}
+          </NavLink>
+        </DisplayTab>
+        <DisplayTab>
+          <NavLink
+            href="#" onClick={() => setActiveTabId('table')}
+            active={activeTabId === 'table'}
+          >
+            <TableIcon /> {t('table')}
+          </NavLink>
+        </DisplayTab>
+      </Nav>
+      <TabContent activeTab={ activeTabId} className='mt-3'>
+
+      { activeTabId === 'graph' && (
+        <Plot
+          data={plotData}
+          layout={layout}
+          useResizeHandler
+          style={{ width: '100%' }}
+          config={{ displayModeBar: false }}
+          noValidate
+        />
+      )}
+      { activeTabId === 'table' && (
+        <div>
+          <DataTable
+            node={tableNode}
+            subNodes={tableSubNodes}
+            startYear={startYear}
+            endYear={endYear}
+          />
+        </div>
+      )}
+      </TabContent>
 
       <Tools>
         <CsvDownload 
-          data={plotData}
+          data={tableHistoricalRows.concat(tableForecastRows)}
           filename={`${metric.id}.csv`}
           className="btn btn-link btn-sm"
+          headers={tableHeaders}
         >
           { ` ${t('download-data')}` }
         </CsvDownload>
