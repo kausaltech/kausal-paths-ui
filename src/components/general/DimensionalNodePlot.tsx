@@ -1,17 +1,22 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
-import { tint, transparentize } from 'polished';
+import { tint, } from 'polished';
 import styled, { ThemeContext } from 'styled-components';
 import { gql, useReactiveVar } from '@apollo/client';
 import CsvDownload from 'react-json-to-csv';
 import { genColors, genColorsFromTheme } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
-import { Col, Nav, NavItem, NavLink, TabContent, Row } from 'reactstrap';
+import {
+  Col, Nav, NavItem, NavLink, TabContent, Row,
+  UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import {
   GraphDown as GraphIcon,
   Table as TableIcon,
+  CloudArrowDown as DowloadIcon,
+  FiletypeCsv as CsvIcon,
+  FiletypeXls as XlsIcon,
  } from 'react-bootstrap-icons';
 import DataTable from 'components/general/DataTable';
 import SelectDropdown from 'components/common/SelectDropdown';
@@ -61,7 +66,7 @@ type MetricCategoryValues = {
   isNegative: boolean,
 };
 
-type MetricSlice = {
+type MetricSliceInput = {
   historicalYears: number[],
   forecastYears: number[],
   categoryValues: MetricCategoryValues[],
@@ -71,6 +76,29 @@ type MetricSlice = {
 type MetricCategoryChoice = {
   [dim: string]: string | undefined,
 };
+
+
+class MetricSlice {
+  historicalYears: number[];
+  forecastYears: number[];
+  categoryValues: MetricCategoryValues[];
+  totalValues: MetricCategoryValues | null;
+
+  constructor(input: MetricSliceInput) {
+    ['historicalYears', 'forecastYears', 'categoryValues', 'totalValues'].forEach(key => {
+      this[key] = input[key];
+    })
+  }
+
+  createTable() {
+    //const cats = this.categoryValues.map(cv => cv.category.label);
+    const header = ['Category', ...this.historicalYears, ...this.forecastYears];
+    const rows = this.categoryValues.map(cv => {
+      return [cv.category.label, ...cv.historicalValues, ...cv.forecastValues];
+    });
+    return { header, rows, hasTotals: this.totalValues !== null };
+  }
+}
 
 
 class DimensionalMetric {
@@ -155,7 +183,7 @@ class DimensionalMetric {
     });
     const historicalYears = this.data.years.filter(year => this.data.forecastFrom ? year < this.data.forecastFrom : true);
     const forecastYears = this.data.years.filter(year => this.data.forecastFrom ? year >= this.data.forecastFrom : false);
-    const out: MetricSlice = {
+    const out: MetricSliceInput = {
       categoryValues: [{
         forecastValues,
         historicalValues,
@@ -169,7 +197,7 @@ class DimensionalMetric {
       forecastYears,
       totalValues: null,
     };
-    return out;
+    return new MetricSlice(out);
   }
 
   private isForecastYear(year: number) {
@@ -261,13 +289,13 @@ class DimensionalMetric {
       }
       unordered.sort((a, b) => (b[key][idx] - a[key][idx]));
     }
-    const out: MetricSlice = {
+    const out: MetricSliceInput = {
       categoryValues: [...ordered, ...unordered],
       historicalYears,
       forecastYears,
       totalValues,
     };
-    return out;
+    return new MetricSlice(out);
   }
 }
 
@@ -542,7 +570,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     shapes,
   };
 
-  let controls = metric.dimensions.length > 1 ? (
+  let controls = metric.dimensions.length > 1 ? (<>
     <Row>
     { metric.dimensions.length > 1 && (
       <Col md={3} className="d-flex" key="dimension">
@@ -589,7 +617,45 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       );
     })}
     </Row>
-  ) : null;
+  </>) : null;
+
+  const downloadData = async () => {
+    console.log('create table');
+    const ExcelJS = await import('exceljs');
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Results');
+    const table = slice.createTable();
+    const tbl = ws.addTable({
+      name: 'ResultsTable',
+      ref: 'A1',
+      headerRow: true,
+      totalsRow: table.hasTotals,
+      style: {
+        showRowStripes: true,
+      },
+      columns: table.header.map((label, idx) => {
+        return {
+          name: label.toString(),
+          filterButton: idx == 0,
+          totalsRowFunction: (table.hasTotals && idx > 0) ? 'sum' : 'none',
+        };
+      }),
+      rows: table.rows,
+    });
+    const hdrRow = ws.getRow(1);
+    hdrRow.font = {
+      bold: true,
+    };
+    const hdrCol = ws.getColumn(1);
+    hdrCol.width = 32;
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "results.xlsx";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
 
   // recreate nodes for repurposing outcome page DataTable
   const selectedCategories = metric.dimensions.map(dim => sliceConfig.categories[dim.id]);
@@ -729,16 +795,26 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       </TabContent>
 
       <Tools>
-        <CsvDownload 
-          data={tableHistoricalRows.concat(tableForecastRows)}
-          filename={`${metric.id}.csv`}
-          className="btn btn-link btn-sm"
-          headers={tableHeaders}
-        >
-          { ` ${t('download-data')}` }
-        </CsvDownload>
+        <UncontrolledDropdown size="sm">
+          <DropdownToggle caret color="link"><DowloadIcon />{ ` ${t('download-data')}` }</DropdownToggle>
+          <DropdownMenu>
+            <CsvDownload 
+              data={tableHistoricalRows.concat(tableForecastRows)}
+              filename={`${metric.id}.csv`}
+              headers={tableHeaders}
+              className="dropdown-item"
+              type="button"
+              tabIndex={0}
+              role="menuitem"
+            >
+              <CsvIcon /> CSV
+            </CsvDownload>
+            <DropdownItem onClick={async (ev) => await downloadData()}>
+              <XlsIcon /> XLS
+            </DropdownItem>
+          </DropdownMenu>
+        </UncontrolledDropdown>
       </Tools>
-
     </>
   );
 };

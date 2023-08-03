@@ -369,7 +369,7 @@ const NodePlot = (props: NodePlotProps) => {
           className="btn btn-link btn-sm"
         >
           <CloudArrowDown />
-          { ` ${t('download-data')}` }
+          { ` ${t('download-data')} (.csv)` }
         </CsvDownload>
       </Tools>
     </PlotWrapper>
