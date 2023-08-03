@@ -39,7 +39,6 @@ const PageHeader = styled.div`
 
 const NodeDescription = styled.div`
   margin-bottom: 1rem;
-  font-size: 1.25rem;
   max-width: 720px;
 `;
 
