@@ -320,6 +320,44 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     }
   }
 
+// Add a total figure on hover if there are multiple subnodes
+if (subNodes?.length > 1) {
+  const totalYears = [];
+  const totalValues = [];
+
+  parentNode.metric.historicalValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
+      totalYears.push(dataPoint.year);
+      totalValues.push(dataPoint.value);
+    }
+  });
+  parentNode.metric.forecastValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
+      totalYears.push(dataPoint.year);
+      totalValues.push(dataPoint.value);
+    }
+  });
+
+  console.log(totalYears, totalValues);
+
+  plotData.push({
+    type: 'scatter',
+    name: t('plot-total')!,
+    mode: 'lines',
+    line: {
+      color: theme.graphColors.grey080,
+      width: 0,
+    },
+    x: totalYears,
+    y: totalValues,
+    customdata: totalValues.map(() => ''),
+    xaxis: 'x2',
+    yaxis: 'y',
+    ...formatHover(t('plot-total')!, theme.graphColors.grey080, false, systemFont, predLabel, shortUnit),
+    showlegend: false,
+  });
+}
+
   const layout: PlotParams['layout'] = {
     height: 300,
     margin: {
