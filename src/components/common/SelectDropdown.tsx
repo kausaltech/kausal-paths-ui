@@ -14,7 +14,7 @@ const Label = styled(BSLabel)`
 `;
 
 
-function getSelectStyles<Option extends SelectDropdownOption>(
+function getSelectStyles<Option extends SelectDropdownOption, IsMulti extends boolean>(
   theme: Theme,
   multi: boolean,
   size: string = ""
@@ -24,7 +24,7 @@ function getSelectStyles<Option extends SelectDropdownOption>(
     `calc((${theme.inputLineHeight}*${theme.fontSizeBase}) +`
     + ` (${theme.inputPaddingY}*2) + (${theme.inputBorderWidth}*2))`;
 
-  const styles: SelectDropdownProps<Option>["styles"] = {
+  const styles: SelectDropdownProps<Option, IsMulti>["styles"] = {
     control: (provided, { isDisabled, isFocused }) => ({
       ...provided,
       backgroundColor: `var(--bs-select${isDisabled ? "-disabled" : ""}-bg)`,
@@ -108,7 +108,7 @@ function getSelectStyles<Option extends SelectDropdownOption>(
   return styles;
 }
 
-function DropdownIndicator(props: DropdownIndicatorProps) {
+function DropdownIndicator<Option, IsMulti extends boolean>(props: DropdownIndicatorProps<Option, IsMulti>) {
   return (
     <components.DropdownIndicator {...props}>
       <span></span>
@@ -152,19 +152,22 @@ const ValueContainer = (props: ValueContainerProps) => {
   </components.ValueContainer>;
 };
 
-const MultiValue = (props: MultiValueProps) => {
+function MultiValue<Option extends SelectDropdownOption>(props: MultiValueProps<Option>) {
   const { data, ...rest } = props;
   const newData = {
     id: '__combined__',
     label: props.getValue()[0].label,
-    indent: Math.min(...props.getValue().map(v => v.indent))};
-  return <components.SingleValue data={newData} {...rest}></components.SingleValue>;
+    indent: Math.min(...props.getValue().map(v => v.indent ?? 0))
+  };
+  return <components.SingleValue data={newData} {...rest} />;
 }
 
-const getCustomComponents = (isMulti: boolean) => Object.assign(
-  { DropdownIndicator, },
-  isMulti ? { ValueContainer, MultiValue } : {}
-);
+function getCustomComponents<Option extends SelectDropdownOption, IsMulti extends boolean>(isMulti: IsMulti) {
+  return Object.assign(
+    { DropdownIndicator, },
+    isMulti ? { ValueContainer, MultiValue } : {}
+  )
+}
 
 export interface SelectDropdownOption {
   id: string,
@@ -172,19 +175,18 @@ export interface SelectDropdownOption {
   indent?: number,
 }
 
-type SelectDropdownProps<Option extends SelectDropdownOption> = Parameters<typeof Select<Option>>[0] & {
+type SelectDropdownProps<Option extends SelectDropdownOption, IsMulti extends boolean> =
+  Parameters<typeof Select<Option, IsMulti>>[0] & {
   id: string,
   label?: string,
   size?: string,
   helpText?: string,
   invert?: boolean,
-  isMulti: boolean,
-  value: SelectDropdownOption[]|SelectDropdownOption|null,
-  onChange: (option:SelectDropdownOption[]|SelectDropdownOption|null)=>void
+  isMulti: IsMulti,
 };
 
 function SelectDropdown<Option extends SelectDropdownOption, IsMulti extends boolean = false>(
-    props: SelectDropdownProps<Option>
+  props: SelectDropdownProps<Option, IsMulti>
 ) {
   const { size, id, label, value, onChange, helpText, invert, isMulti, ...rest } = props;
   const theme = useTheme();
@@ -205,7 +207,7 @@ function SelectDropdown<Option extends SelectDropdownOption, IsMulti extends boo
       )}
       <Select<SelectDropdownOption, IsMulti>
         isMulti={isMulti}
-        components={getCustomComponents(isMulti)}
+        components={getCustomComponents<Option, IsMulti>(isMulti)}
         theme={getSelectTheme}
         value={value}
         styles={styles}
