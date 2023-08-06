@@ -216,7 +216,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
 
   const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
-  const displayNodes = subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
+  const displayNodes = (subNodes?.length > 1 ? subNodes : parentNode && [parentNode]).map(node => ({...node}));
   const shortUnit = metric.unit?.short;
   const longUnit = metric.unit?.htmlLong;
   const predLabel = t('pred');
@@ -337,8 +337,6 @@ if (subNodes?.length > 1) {
       totalValues.push(dataPoint.value);
     }
   });
-
-  console.log(totalYears, totalValues);
 
   plotData.push({
     type: 'scatter',

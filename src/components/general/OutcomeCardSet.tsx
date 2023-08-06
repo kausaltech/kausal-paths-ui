@@ -8,6 +8,8 @@ import OutcomeNodeContent from 'components/general/OutcomeNodeContent';
 import OutcomeCard from './OutcomeCard';
 import InputNodeCards from './InputNodeCards';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import chroma from 'chroma-js';
+import { setUniqueColors } from 'common/colors';
 
 const CardSet = styled(animated.div)<{color?: string, haschildren?: boolean}>`
   position: relative;
@@ -174,6 +176,7 @@ function orderByMetric(nodes: OutcomeNodeFieldsFragment[]) {
   });
 }
 
+
 type OutcomeCardSetProps = {
   nodeMap: Map<string, OutcomeNodeFieldsFragment>,
   rootNode: OutcomeNodeFieldsFragment,
@@ -205,8 +208,9 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()].filter(
       (node) => (inputNodeIds.indexOf(node.id) >= 0) && (getMetricValue(node, endYear) !== undefined)
-    );
+    ).map(node => ({...node}));
     orderByMetric(cardNodes);
+    setUniqueColors(cardNodes);
     const subNodeMap = new Map<string, OutcomeNodeFieldsFragment[]>(
       cardNodes.map(cn => [cn.id, cn.inputNodes.map((child) => nodeMap.get(child.id)!).filter((child) => !!child)])
     );

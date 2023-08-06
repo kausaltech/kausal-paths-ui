@@ -709,8 +709,11 @@ export type OutcomeNodeFieldsFragment = (
   )> | null, metricDim?: (
     { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
       { id: string, label: string, originalId?: string | null, categories: Array<(
-        { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
+        { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null, group?: string | null }
         & { __typename?: 'MetricDimensionCategoryType' }
+      )>, groups: Array<(
+        { id: string, originalId: string, label: string, color?: string | null, order?: number | null }
+        & { __typename?: 'MetricDimensionCategoryGroupType' }
       )> }
       & { __typename?: 'MetricDimensionType' }
     )>, goals: Array<(
@@ -720,7 +723,7 @@ export type OutcomeNodeFieldsFragment = (
       )> }
       & { __typename?: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string }
+      { htmlShort: string, short: string }
       & { __typename?: 'UnitType' }
     ), normalizedBy?: (
       { id: string, name: string }
@@ -798,8 +801,11 @@ export type GetPageQuery = (
         )> | null, metricDim?: (
           { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
             { id: string, label: string, originalId?: string | null, categories: Array<(
-              { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
+              { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null, group?: string | null }
               & { __typename?: 'MetricDimensionCategoryType' }
+            )>, groups: Array<(
+              { id: string, originalId: string, label: string, color?: string | null, order?: number | null }
+              & { __typename?: 'MetricDimensionCategoryGroupType' }
             )> }
             & { __typename?: 'MetricDimensionType' }
           )>, goals: Array<(
@@ -809,7 +815,7 @@ export type GetPageQuery = (
             )> }
             & { __typename?: 'DimensionalMetricGoalEntry' }
           )>, unit: (
-            { htmlShort: string }
+            { htmlShort: string, short: string }
             & { __typename?: 'UnitType' }
           ), normalizedBy?: (
             { id: string, name: string }
@@ -866,8 +872,11 @@ export type GetPageQuery = (
       )> | null, metricDim?: (
         { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
           { id: string, label: string, originalId?: string | null, categories: Array<(
-            { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
+            { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null, group?: string | null }
             & { __typename?: 'MetricDimensionCategoryType' }
+          )>, groups: Array<(
+            { id: string, originalId: string, label: string, color?: string | null, order?: number | null }
+            & { __typename?: 'MetricDimensionCategoryGroupType' }
           )> }
           & { __typename?: 'MetricDimensionType' }
         )>, goals: Array<(
@@ -877,7 +886,7 @@ export type GetPageQuery = (
           )> }
           & { __typename?: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string }
+          { htmlShort: string, short: string }
           & { __typename?: 'UnitType' }
         ), normalizedBy?: (
           { id: string, name: string }
@@ -953,7 +962,7 @@ export type GetInstanceContextQuery = (
         { id: string }
         & { __typename?: 'Node' }
       ), dimensions: Array<(
-        { dimension: string, category: string }
+        { dimension: string, categories: Array<string>, groups: Array<string> }
         & { __typename?: 'InstanceGoalDimension' }
       )> }
       & { __typename?: 'InstanceGoalEntry' }
@@ -1022,8 +1031,11 @@ export type DimensionalNodeMetricFragment = (
   { metricDim?: (
     { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
       { id: string, label: string, originalId?: string | null, categories: Array<(
-        { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
+        { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null, group?: string | null }
         & { __typename?: 'MetricDimensionCategoryType' }
+      )>, groups: Array<(
+        { id: string, originalId: string, label: string, color?: string | null, order?: number | null }
+        & { __typename?: 'MetricDimensionCategoryGroupType' }
       )> }
       & { __typename?: 'MetricDimensionType' }
     )>, goals: Array<(
@@ -1033,7 +1045,7 @@ export type DimensionalNodeMetricFragment = (
       )> }
       & { __typename?: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string }
+      { htmlShort: string, short: string }
       & { __typename?: 'UnitType' }
     ), normalizedBy?: (
       { id: string, name: string }
@@ -1267,8 +1279,11 @@ export type GetNodePageQuery = (
     )>, metricDim?: (
       { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
         { id: string, label: string, originalId?: string | null, categories: Array<(
-          { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null }
+          { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null, group?: string | null }
           & { __typename?: 'MetricDimensionCategoryType' }
+        )>, groups: Array<(
+          { id: string, originalId: string, label: string, color?: string | null, order?: number | null }
+          & { __typename?: 'MetricDimensionCategoryGroupType' }
         )> }
         & { __typename?: 'MetricDimensionType' }
       )>, goals: Array<(
@@ -1278,7 +1293,7 @@ export type GetNodePageQuery = (
         )> }
         & { __typename?: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string }
+        { htmlShort: string, short: string }
         & { __typename?: 'UnitType' }
       ), normalizedBy?: (
         { id: string, name: string }
