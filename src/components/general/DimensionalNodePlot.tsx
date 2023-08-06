@@ -21,6 +21,8 @@ import {
 import DataTable from 'components/general/DataTable';
 import SelectDropdown from 'components/common/SelectDropdown';
 import { activeGoalVar } from 'common/cache';
+import { InstanceGoal } from 'common/instance';
+import { Font, Style } from 'exceljs';
 
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -46,11 +48,18 @@ type DimValues = {
 
 type Metric = DimensionalNodePlotProps['metric'];
 
-type MetricDimension = Metric['dimensions'][0];
+type MetricDimensionInput = Metric['dimensions'][0];
+type MetricDimension = Omit<MetricDimensionInput, 'groups'> & {
+  groupsById: Map<string, MetricCategoryGroup>,
+  groups: MetricCategoryGroup[],
+};
 type MetricDimensionCategory = MetricDimension['categories'][0];
+type MetricCategoryGroup = MetricDimensionInput['groups'][0] & {
+  categories: MetricDimensionCategory[],
+};
 
 type DimCats = {
-  [key: string]: string,
+  [key: string]: MetricDimensionCategory,
 }
 
 type MetricRow = {
@@ -60,10 +69,19 @@ type MetricRow = {
 }
 
 type MetricCategoryValues = {
-  category: MetricDimensionCategory,
+  category: MetricDimensionCategory | MetricCategoryGroup,
   forecastValues: (number | null)[],
   historicalValues: (number | null)[],
   isNegative: boolean,
+};
+
+type CatDimChoice = {
+  groups: string[] | null,
+  categories: string[],
+};
+
+type MetricCategoryChoice = {
+  [dim: string]: CatDimChoice | undefined,
 };
 
 type MetricSliceInput = {
@@ -71,10 +89,8 @@ type MetricSliceInput = {
   forecastYears: number[],
   categoryValues: MetricCategoryValues[],
   totalValues: MetricCategoryValues | null,
-};
-
-type MetricCategoryChoice = {
-  [dim: string]: string | undefined,
+  dimensionLabel: string,
+  unit: string,
 };
 
 
@@ -83,32 +99,49 @@ class MetricSlice {
   forecastYears: number[];
   categoryValues: MetricCategoryValues[];
   totalValues: MetricCategoryValues | null;
+  dimensionLabel: string;
+  unit: string;
 
   constructor(input: MetricSliceInput) {
-    ['historicalYears', 'forecastYears', 'categoryValues', 'totalValues'].forEach(key => {
+    ['historicalYears', 'forecastYears', 'categoryValues', 'totalValues', 'dimensionLabel', 'unit'].forEach(key => {
       this[key] = input[key];
     })
   }
 
   createTable() {
     //const cats = this.categoryValues.map(cv => cv.category.label);
-    const header = ['Category', ...this.historicalYears, ...this.forecastYears];
+    const header = [this.dimensionLabel, ...this.historicalYears, ...this.forecastYears];
     const rows = this.categoryValues.map(cv => {
       return [cv.category.label, ...cv.historicalValues, ...cv.forecastValues];
     });
-    return { header, rows, hasTotals: this.totalValues !== null };
+    const forecastFromColumn = 1 + this.historicalYears.length;
+    return { header, rows, hasTotals: this.totalValues !== null, forecastFromColumn };
   }
 }
 
 
 class DimensionalMetric {
-  private readonly data: DimensionalNodePlotProps['metric'];
+  private readonly data: Metric;
   private readonly rows: MetricRow[];
-  valuesByDim: Map<string, DimValues>
+  valuesByDim: Map<string, DimValues>;
+  dimensions: MetricDimension[];
+  dimsById: Map<string, MetricDimension>;
 
-  constructor(data: DimensionalNodePlotProps['metric']) {
+  constructor(data: Metric) {
     this.data = data;
-    this.rows = this.createRows([], data.dimensions, {});
+    this.dimensions = data.dimensions.map(dimIn => {
+      const groups = dimIn.groups.map(grpIn => ({
+        ...grpIn,
+        categories: dimIn.categories.filter(cat => cat.group === grpIn.id),
+      }));
+      const dim = {
+        ...dimIn,
+        groupsById: new Map(groups.map(grp => [grp.id, grp])),
+        groups: groups,
+      };
+      return dim;
+    });
+    this.rows = this.createRows([], this.dimensions, {});
   }
 
   private createRows(rows: MetricRow[], dimsLeft: MetricDimension[], dimPath: DimCats) {
@@ -129,7 +162,7 @@ class DimensionalMetric {
       dim.categories.forEach(cat => {
         const path = {
           ...dimPath,
-          [dim.id]: cat.id,
+          [dim.id]: cat,
         };
         this.createRows(rows, dimsLeft.slice(1), path);
       });
@@ -137,6 +170,7 @@ class DimensionalMetric {
     return rows;
   }
 
+  /*
   getLabelForChoice(categoryChoice: MetricCategoryChoice) {
     const parts: string[] = [];
     Object.entries(categoryChoice).forEach(([dimId, catId]) => {
@@ -147,6 +181,7 @@ class DimensionalMetric {
     });
     return parts.join(' / ');
   }
+  */
 
   getGoalsForChoice(categoryChoice: MetricCategoryChoice | null | undefined) {
     const selectedCategories = categoryChoice ? Object.values(categoryChoice) : [];
@@ -156,14 +191,112 @@ class DimensionalMetric {
     return goals.values;
   }
 
+  getOptionsForDimension(dimId: string, config: MetricCategoryChoice) {
+    const dim = this.data.dimensions.find(dim => dim.id === dimId)!;
+    const choice = config[dimId];
+    let opts: {id: string, label: string, selected: boolean}[];
+
+    if (dim.groups.length) {
+      const selected = choice?.groups || [];
+      opts = dim.groups.map(grp => ({
+        id: grp.id,
+        label: grp.label,
+        selected: selected.some(grpId => grp.id === grpId),
+      }));
+    } else {
+      const selected = choice?.categories || [];
+      opts = dim.categories.map(cat => ({
+        id: cat.id,
+        label: cat.label,
+        selected: selected.some(catId => cat.id === catId),
+      }))
+    }
+    return opts;
+  }
+
+  private choiceToCats(dim: MetricDimension, old: MetricCategoryChoice, newChoice: readonly {id: string}[]) {
+    const out = {
+      ...old,
+      [dim.id]: undefined,
+    }
+    if (!newChoice.length) return out;
+
+    const ids = newChoice.map(ch => ch.id);
+    let val: CatDimChoice;
+    if (dim.groups.length) {
+      const groups = ids.map(id => dim.groupsById.get(id)!);
+      const cats = groups.map(grp => grp.categories).flat();
+      val = {
+        groups: groups.map(grp => grp.id),
+        categories: cats.map(cat => cat.id),
+      }
+    } else {
+      val = {
+        groups: null,
+        categories: ids,
+      }
+    }
+    out[dim.id] = val;
+    return out;
+  }
+
+  getSliceableDims(selection: SliceConfig) {
+    return this.dimensions.filter(dim => !selection.categories[dim.id]);
+  }
+
+  updateChoice(dim: MetricDimension, old: SliceConfig, newChoice: readonly {id: string}[]) {
+    let dimensionId = old.dimensionId;
+    let sliceableDims = this.getSliceableDims(old);
+    if (dimensionId === dim.id) {
+      dimensionId = sliceableDims.find(sd => sd.id !== dim.id)?.id;
+      if (!dimensionId && dim.groups.length) {
+        dimensionId = dim.id;
+      }
+    }
+    const val = {
+      categories: this.choiceToCats(dim, old.categories, newChoice),
+      dimensionId,
+    };
+    if (!dimensionId) {
+      sliceableDims = this.getSliceableDims(val);
+      if (sliceableDims.length) val.dimensionId = sliceableDims[0].id
+    }
+    return val;
+  }
+
+  getChoicesForGoal(activeGoal: InstanceGoal) {
+    const metricDims = new Map(this.dimensions.map(dim => [dim.originalId, dim]));
+    const matchingDims = activeGoal.dimensions.filter(gdim => metricDims.has(gdim.dimension));
+    const choice: MetricCategoryChoice = {};
+    matchingDims.forEach(gdim => {
+      const metricDim = metricDims.get(gdim.dimension)!;
+      let out: CatDimChoice | undefined;
+      if (gdim.groups) {
+        const grpMap: Map<string, MetricCategoryGroup> = new Map(metricDim.groups.map(grp => [grp.originalId, grp]));
+        const groupMatches = gdim.groups.filter(grpId => grpMap.has(grpId)).map(grpId => grpMap.get(grpId)!);
+        const catMatches = groupMatches.map(grp => grp.categories).flat();
+        out = {
+          groups: groupMatches.map(grp => grp.id),
+          categories: catMatches.map(cat => cat.id),
+        }
+      } else {
+        const catMatches = metricDim.categories.filter(cat => gdim.categories.some(goalCat => goalCat === cat.originalId));
+        out = {
+          groups: null,
+          categories: catMatches.map(cat => cat.id),
+        };
+      }
+      if (out) choice[metricDim.id] = out;
+    })
+    return choice;
+  }
+
   flatten(categoryChoice: MetricCategoryChoice | undefined) {
     const byYear: Map<number, number> = new Map();
     this.rows.forEach(row => {
       const { year } = row;
       if (categoryChoice) {
-        if (!Object.entries(categoryChoice).every(([dimId, choice]) => choice ? row.dimCats[dimId] == choice : true)) {
-          return;
-        }
+        if (!this.rowMatchesChoice(row, categoryChoice)) return;
       }
       let val = byYear.get(year) ?? 0;
       const rowVal = row.value;
@@ -196,6 +329,8 @@ class DimensionalMetric {
       historicalYears,
       forecastYears,
       totalValues: null,
+      dimensionLabel: this.data.name,
+      unit: this.data.unit.short,
     };
     return new MetricSlice(out);
   }
@@ -204,8 +339,31 @@ class DimensionalMetric {
     return this.data.forecastFrom && year >= this.data.forecastFrom;
   }
 
-  sliceBy(dimensionId: string, sort: boolean = false, categoryChoice: MetricCategoryChoice | undefined) {
+  private rowMatchesChoice(row: MetricRow, categoryChoice: MetricCategoryChoice) {
+    const noMatch = Object.entries(categoryChoice).some(([dimId, choice]) => {
+      if (!choice) return false;
+      if (!choice.categories.length) return false;
+      if (!choice.categories.includes(row.dimCats[dimId].id)) return true;
+      return false;
+    });
+    return !noMatch;
+  }
+
+  sliceBy(
+    dimensionId: string, sort: boolean = false,
+    categoryChoice: MetricCategoryChoice | undefined, useGroups: boolean = true
+  ) {
     const byYear: Map<number, Map<string, number>> = new Map();
+    const dim = this.dimensions.find(dim => dim.id === dimensionId)!;
+
+    if (dim.groups.length) {
+      if (categoryChoice?.[dim.id]) {
+        useGroups = false;
+      }
+    } else {
+      useGroups = false;
+    }
+    console.log('use groups', useGroups);
 
     this.rows.forEach(row => {
       const { year } = row;
@@ -217,20 +375,20 @@ class DimensionalMetric {
       }
       // Process only those rows that match the category choices
       if (categoryChoice) {
-        if (!Object.entries(categoryChoice).every(([dimId, choice]) => choice ? row.dimCats[dimId] == choice : true)) {
-          return;
-        }
+        if (!this.rowMatchesChoice(row, categoryChoice)) return;
       }
       const cat = row.dimCats[dimensionId];
-      let val = catVals.get(cat);
+      const rowId = useGroups ? cat.group! : cat.id;
+      let val = catVals.get(rowId);
       if (val === undefined) {
         val = 0;
       }
       const rowVal = row.value;
+      // FIXME: What if metric can't be summed?
       if (rowVal !== null) val += rowVal;
-      catVals.set(cat, val);
+
+      catVals.set(rowId, val);
     })
-    const dim = this.data.dimensions.find(dim => dim.id === dimensionId)!;
     const totalValues: MetricCategoryValues = {
       category: {
         id: 'total',
@@ -241,7 +399,8 @@ class DimensionalMetric {
       historicalValues: this.data.years.filter(year => !this.isForecastYear(year)).map(year => null),
       isNegative: false,
     };
-    let categoryValues: MetricCategoryValues[] = dim.categories.map(cat => {
+    const groupsOrCats = useGroups ? dim.groups : dim.categories;
+    let categoryValues: MetricCategoryValues[] = groupsOrCats.map((cat: MetricCategoryGroup | MetricDimensionCategory) => {
       const historicalValues: (number | null)[] = [];
       const forecastValues: (number | null)[] = [];
       this.data.years.forEach((year, yearIdx) => {
@@ -294,6 +453,8 @@ class DimensionalMetric {
       historicalYears,
       forecastYears,
       totalValues,
+      dimensionLabel: dim.label,
+      unit: this.data.unit.short,
     };
     return new MetricSlice(out);
   }
@@ -355,35 +516,30 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   const [activeTabId, setActiveTabId] = useState('graph');
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
 
-  const metricDims = new Map(metric.dimensions.map(dim => [dim.originalId, dim]));
-  let defaultSelection = {};
+  let defaultChoice = {};
   let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
+
   let goalAffectsPlot = false
   if (activeGoal) {
-    const matchingDims = activeGoal.dimensions.filter(gdim => metricDims.has(gdim.dimension));
-    matchingDims.forEach(gdim => {
-      const metricDim = metricDims.get(gdim.dimension)!;
-      const catMatch = metricDim.categories.find(cat => cat.originalId === gdim.category);
-      if (catMatch) {
-        defaultSelection[metricDim.id] = catMatch.id;
-      }
-    })
-    if (defaultSliceDim && Object.hasOwn(defaultSelection, defaultSliceDim)) {
-      defaultSliceDim = metric.dimensions.find(dim => !defaultSelection[dim.id])?.id;
+    defaultChoice = cube.getChoicesForGoal(activeGoal);
+    if (defaultSliceDim && Object.hasOwn(defaultChoice, defaultSliceDim)) {
+      defaultSliceDim = metric.dimensions.find(dim => !defaultChoice[dim.id])?.id;
+      goalAffectsPlot = true;
     }
-    goalAffectsPlot = true;
   }
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({dimensionId: defaultSliceDim, categories: defaultSelection});
+
+  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({dimensionId: defaultSliceDim, categories: defaultChoice});
+  console.log('sliceConfig', sliceConfig);
 
   useEffect(() => {
     if (!goalAffectsPlot) return;
-    if (sliceConfig.dimensionId != defaultSliceDim || sliceConfig.categories != defaultSelection) {
-      setSliceConfig({dimensionId: defaultSliceDim, categories: defaultSelection});
+    if (sliceConfig.dimensionId != defaultSliceDim || sliceConfig.categories != defaultChoice) {
+      setSliceConfig({dimensionId: defaultSliceDim, categories: defaultChoice});
     }
   }, [activeGoal])
 
-  const sliceableDims = metric.dimensions.filter(dim => !sliceConfig.categories[dim.id]);
-  const slicedDim = metric.dimensions.find(dim => dim.id === sliceConfig.dimensionId);
+  const sliceableDims = cube.dimensions.filter(dim => !sliceConfig.categories[dim.id]);
+  const slicedDim = cube.dimensions.find(dim => dim.id === sliceConfig.dimensionId);
 
   let slice: MetricSlice;
   if (slicedDim) {
@@ -570,7 +726,9 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     shapes,
   };
 
-  let controls = metric.dimensions.length > 1 ? (<>
+  const hasGroups = cube.dimensions.some(dim => dim.groups.length);
+
+  let controls = (metric.dimensions.length > 1 || hasGroups) ? (<>
     <Row>
     { metric.dimensions.length > 1 && (
       <Col md={3} className="d-flex" key="dimension">
@@ -585,31 +743,20 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         />
       </Col>
     )}
-    { metric.dimensions.map(dim => {
-      //if (dim.id == sliceDimension) return null;
+    { cube.dimensions.map(dim => {
+      const options = cube.getOptionsForDimension(dim.id, sliceConfig.categories);
       return (
         <Col md={4} className="d-flex" key={dim.id}>
           <SelectDropdown
             id={`dim-${dim.id}`}
             label={dim.label}
-            options={dim.categories}
-            value={dim.categories.find(cat => sliceConfig.categories[dim.id] === cat.id) || null}
-            isMulti={false}
+            options={options}
+            value={options.filter(opt => opt.selected)}
+            isMulti={true}
             isClearable={true}
-            onChange={(newValue) => {
+            onChange={(newValues) => {
               setSliceConfig(old => {
-                let dimensionId = old.dimensionId;
-                if (dimensionId === dim.id) {
-                  dimensionId = sliceableDims.find(sd => sd.id !== dim.id)?.id;
-                }
-                const val = {
-                  categories: {
-                    ...old.categories,
-                    [dim.id]: newValue?.id || undefined,
-                  },
-                  dimensionId,
-                };
-                return val;
+                return cube.updateChoice(dim, old, newValues);
               })
             }}
           />
@@ -620,18 +767,20 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   </>) : null;
 
   const downloadData = async () => {
-    console.log('create table');
     const ExcelJS = await import('exceljs');
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet('Results');
-    const table = slice.createTable();
-    const tbl = ws.addTable({
+    const sliceForTable = slicedDim ? cube.sliceBy(slicedDim.id, false, sliceConfig.categories, false) : slice;
+
+    const table = sliceForTable.createTable();
+    const tb = ws.addTable({
       name: 'ResultsTable',
-      ref: 'A1',
+      ref: 'A2',
       headerRow: true,
       totalsRow: table.hasTotals,
       style: {
         showRowStripes: true,
+        theme: 'TableStyleLight1',
       },
       columns: table.header.map((label, idx) => {
         return {
@@ -642,12 +791,50 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       }),
       rows: table.rows,
     });
-    const hdrRow = ws.getRow(1);
+    tb.commit();
+    const fontConfig: Partial<Font> = {
+      name: 'Calibri',
+    }
+    const firstRow = ws.getRow(1);
+    if (table.header[0] !== metric.name) {
+      firstRow.getCell(1).value = metric.name;
+    }
+
+    firstRow.getCell(2).value = slice.unit;
+    firstRow.font = {...fontConfig};
+
+    const hdrRow = ws.getRow(2);
     hdrRow.font = {
+      ...fontConfig,
       bold: true,
     };
+    ws.views.push({
+      state: 'frozen',
+      ySplit: 2,
+      xSplit: 1,
+    });
+
     const hdrCol = ws.getColumn(1);
     hdrCol.width = 32;
+    ws.columns.forEach((col, idx) => {
+      const style: Partial<Style> = {
+        font: {...fontConfig},
+      };
+      if (idx == table.forecastFromColumn) {
+        style.border = {
+          left: {
+            style: 'mediumDashed',
+            color: {
+              argb: '#000000',
+            }
+          }
+        }
+      }
+      if (idx >= table.forecastFromColumn) {
+        style.font!.italic = true;
+      }
+      col.style = style;
+    });
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     const link = document.createElement('a');
@@ -659,7 +846,6 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
 
   // recreate nodes for repurposing outcome page DataTable
   const selectedCategories = metric.dimensions.map(dim => sliceConfig.categories[dim.id]);
-
   const selectedCategoryNames = selectedCategories.map((catId) => {
     if (catId === undefined) return null;
     let catName = '';
@@ -798,6 +984,9 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         <UncontrolledDropdown size="sm">
           <DropdownToggle caret color="link"><DowloadIcon />{ ` ${t('download-data')}` }</DropdownToggle>
           <DropdownMenu>
+            <DropdownItem onClick={async (ev) => await downloadData()}>
+              <XlsIcon /> XLS
+            </DropdownItem>
             <CsvDownload 
               data={tableHistoricalRows.concat(tableForecastRows)}
               filename={`${metric.id}.csv`}
@@ -809,9 +998,6 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
             >
               <CsvIcon /> CSV
             </CsvDownload>
-            <DropdownItem onClick={async (ev) => await downloadData()}>
-              <XlsIcon /> XLS
-            </DropdownItem>
           </DropdownMenu>
         </UncontrolledDropdown>
       </Tools>
@@ -834,6 +1020,14 @@ DimensionalNodePlot.fragment = gql`
           label
           color
           order
+          group
+        }
+        groups {
+          id
+          originalId
+          label
+          color
+          order
         }
       }
       goals {
@@ -846,6 +1040,7 @@ DimensionalNodePlot.fragment = gql`
       }
       unit {
         htmlShort
+        short
       }
       stackable
       normalizedBy {

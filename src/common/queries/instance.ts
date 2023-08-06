@@ -41,7 +41,8 @@ query GetInstanceContext {
         }
         dimensions {
           dimension
-          category
+          categories
+          groups
         }
       }
     }
