@@ -212,13 +212,12 @@ function PathsApp(props: PathsAppProps) {
     yearRangeVar(yearRange);
   }
 
-  const suspenseCache = new SuspenseCache();
   const component = <Component {...pageProps} />;
 
   return (
     <SiteContext.Provider value={siteContext}>
       <InstanceContext.Provider value={instanceContext}>
-        <ApolloProvider client={apolloClient} suspenseCache={suspenseCache}>
+        <ApolloProvider client={apolloClient}>
           <ThemeProvider theme={themeProps}>
             <ThemedGlobalStyles />
               <Layout>
