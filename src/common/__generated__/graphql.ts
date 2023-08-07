@@ -717,7 +717,7 @@ export type OutcomeNodeFieldsFragment = (
       )> }
       & { __typename?: 'MetricDimensionType' }
     )>, goals: Array<(
-      { categories: Array<string>, values: Array<(
+      { categories: Array<string>, groups: Array<string>, values: Array<(
         { year: number, value: number, isInterpolated: boolean }
         & { __typename?: 'MetricYearlyGoalType' }
       )> }
@@ -809,7 +809,7 @@ export type GetPageQuery = (
             )> }
             & { __typename?: 'MetricDimensionType' }
           )>, goals: Array<(
-            { categories: Array<string>, values: Array<(
+            { categories: Array<string>, groups: Array<string>, values: Array<(
               { year: number, value: number, isInterpolated: boolean }
               & { __typename?: 'MetricYearlyGoalType' }
             )> }
@@ -880,7 +880,7 @@ export type GetPageQuery = (
           )> }
           & { __typename?: 'MetricDimensionType' }
         )>, goals: Array<(
-          { categories: Array<string>, values: Array<(
+          { categories: Array<string>, groups: Array<string>, values: Array<(
             { year: number, value: number, isInterpolated: boolean }
             & { __typename?: 'MetricYearlyGoalType' }
           )> }
@@ -1039,7 +1039,7 @@ export type DimensionalNodeMetricFragment = (
       )> }
       & { __typename?: 'MetricDimensionType' }
     )>, goals: Array<(
-      { categories: Array<string>, values: Array<(
+      { categories: Array<string>, groups: Array<string>, values: Array<(
         { year: number, value: number, isInterpolated: boolean }
         & { __typename?: 'MetricYearlyGoalType' }
       )> }
@@ -1186,6 +1186,32 @@ export type DimensionalPlotFragment = (
   & { __typename?: 'DimensionalFlowType' }
 );
 
+export type DimensionalMetricFragment = (
+  { id: string, name: string, stackable: boolean, forecastFrom?: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+    { id: string, label: string, originalId?: string | null, categories: Array<(
+      { id: string, originalId?: string | null, label: string, color?: string | null, order?: number | null, group?: string | null }
+      & { __typename?: 'MetricDimensionCategoryType' }
+    )>, groups: Array<(
+      { id: string, originalId: string, label: string, color?: string | null, order?: number | null }
+      & { __typename?: 'MetricDimensionCategoryGroupType' }
+    )> }
+    & { __typename?: 'MetricDimensionType' }
+  )>, goals: Array<(
+    { categories: Array<string>, groups: Array<string>, values: Array<(
+      { year: number, value: number, isInterpolated: boolean }
+      & { __typename?: 'MetricYearlyGoalType' }
+    )> }
+    & { __typename?: 'DimensionalMetricGoalEntry' }
+  )>, unit: (
+    { htmlShort: string, short: string }
+    & { __typename?: 'UnitType' }
+  ), normalizedBy?: (
+    { id: string, name: string }
+    & { __typename?: 'Node' }
+  ) | null }
+  & { __typename?: 'DimensionalMetricType' }
+);
+
 export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1287,7 +1313,7 @@ export type GetNodePageQuery = (
         )> }
         & { __typename?: 'MetricDimensionType' }
       )>, goals: Array<(
-        { categories: Array<string>, values: Array<(
+        { categories: Array<string>, groups: Array<string>, values: Array<(
           { year: number, value: number, isInterpolated: boolean }
           & { __typename?: 'MetricYearlyGoalType' }
         )> }
