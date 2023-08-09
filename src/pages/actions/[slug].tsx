@@ -65,7 +65,6 @@ const ActionMetrics = styled.div`
 `;
 
 const ActionGraphHeader = styled.h4`
-  text-transform: capitalize;
 `;
 
 const PageHeader = styled.div` 
