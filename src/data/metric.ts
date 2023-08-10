@@ -1,4 +1,6 @@
 import { Font, Style } from 'exceljs';
+import dayjs from 'dayjs';
+import slugify from 'slugify';
 
 import { DimensionalMetricFragment, DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import { InstanceGoal } from 'common/instance';
@@ -494,7 +496,17 @@ export class DimensionalMetric {
     };
     return new MetricSlice(out);
   }
-  
+
+  private createFilename() {
+    const metricName = slugify(this.data.name, {
+      remove: /[*+~.()'"!:@]/g,
+      strict: true,
+      lower: true,
+      replacement: '_',
+    });
+    const ts = dayjs().format('YYYY-MM-DD_HHmm');
+    return `${metricName}_${ts}`;
+  }
 
   async downloadData(config: SliceConfig, format: 'xlsx' | 'csv') {
     let slice: MetricSlice;
@@ -504,6 +516,7 @@ export class DimensionalMetric {
       slice = this.flatten(config.categories);
     }
 
+    const filename = this.createFilename();
     const table = slice.createTable();
     const rows = table.rows.map(row => table.header.map(hdr => row[hdr.key]));
     const header = table.header.map(hdr => hdr.label);
@@ -523,7 +536,7 @@ export class DimensionalMetric {
 
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = 'results.csv';
+      link.download = `${filename}.csv`;
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
@@ -600,7 +613,7 @@ export class DimensionalMetric {
     const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = "results.xlsx";
+    link.download = `${filename}.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   };
