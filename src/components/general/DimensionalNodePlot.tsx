@@ -19,6 +19,7 @@ import {
 import SelectDropdown from 'components/common/SelectDropdown';
 import { activeGoalVar } from 'common/cache';
 import { DimensionalMetric, MetricCategoryValues, MetricSlice, SliceConfig } from 'data/metric';
+import { useTheme } from 'common/theme';
 
 
 const Plot = dynamic(() => import('components/graphs/Plot'),
@@ -77,14 +78,17 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   const {
     metric,
     startYear,
-    endYear,
     color,
   } = props;
+  let { endYear } = props;
 
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
   const [activeTabId, setActiveTabId] = useState('graph');
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
+
+  const lastMetricYear = metric.years.slice(-1)[0];
+  if (lastMetricYear && endYear > lastMetricYear) endYear = lastMetricYear;
 
   let defaultChoice = {};
   let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
@@ -99,7 +103,6 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   }
 
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>({dimensionId: defaultSliceDim, categories: defaultChoice});
-  console.log('sliceConfig', sliceConfig);
 
   useEffect(() => {
     if (!goalAffectsPlot) return;
@@ -117,7 +120,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   } else {
     slice = cube.flatten(sliceConfig.categories);
   }
-  const theme = useContext(ThemeContext);
+  const theme = useTheme();
   const site = useContext(SiteContext);
 
   const defaultColor = color || theme.graphColors.blue070;
