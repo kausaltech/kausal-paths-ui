@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { Input } from 'reactstrap';
 import { activeGoalVar, activeScenarioVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { GET_ACTION_LIST } from 'queries/getActionList';
 import { GetActionListQuery, GetActionListQueryVariables } from 'common/__generated__/graphql';
 
 import { useTranslation } from 'react-i18next';

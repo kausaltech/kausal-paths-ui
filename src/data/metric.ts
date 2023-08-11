@@ -219,12 +219,8 @@ export class DimensionalMetric {
     } else {
       selectedCategories = []
     }
-    console.log(selectedCategories);
     const catStr = JSON.stringify(selectedCategories.sort()); // JS 🤮
     const goals = this.data.goals.find(g => JSON.stringify([...g.categories].sort()) == catStr);
-    console.log(this.data.goals);
-    console.log('goals for', categoryChoice);
-    console.log(goals);
     if (!goals) return null;
     return goals.values;
   }
@@ -401,7 +397,6 @@ export class DimensionalMetric {
     } else {
       useGroups = false;
     }
-    console.log('use groups', useGroups);
 
     this.rows.forEach(row => {
       const { year } = row;

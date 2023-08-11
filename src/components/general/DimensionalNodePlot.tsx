@@ -2,8 +2,8 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { tint, } from 'polished';
-import styled, { ThemeContext } from 'styled-components';
-import { gql, useReactiveVar } from '@apollo/client';
+import styled from 'styled-components';
+import { useReactiveVar } from '@apollo/client';
 import { genColorsFromTheme } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
@@ -74,7 +74,7 @@ type DimensionalNodePlotProps = {
 }
 
 
-function DimensionalNodePlot(props: DimensionalNodePlotProps) {
+export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   const {
     metric,
     startYear,
@@ -139,6 +139,7 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         width: 1,
         dash: 'solid',
         shape: 'spline',
+        smoothing: 1.0,
       },
     }
     return out;
@@ -403,14 +404,3 @@ function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     </>
   );
 };
-
-DimensionalNodePlot.fragment = gql`
-  fragment DimensionalNodeMetric on NodeInterface {
-    metricDim {
-      ...DimensionalMetric
-    }
-  }
-  ${DimensionalMetric.fragment}
-`;
-
-export default DimensionalNodePlot;

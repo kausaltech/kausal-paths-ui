@@ -7,7 +7,7 @@ import { useInstance } from 'common/instance';
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
-import { GET_ACTION_CONTENT } from 'common/queries/getActionContent';
+import { GET_ACTION_CONTENT } from 'queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, activeGoalVar, } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';

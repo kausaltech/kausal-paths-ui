@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
-import { Container, Row, Col, ListGroup, ListGroupItem } from 'reactstrap';
+import { Container, Row, Col, ListGroup, } from 'reactstrap';
 import { NodeLink } from 'common/links';
+import React from 'react';
 
 const InputNodes = styled.div`
   margin-bottom: 4rem;
@@ -39,6 +39,29 @@ const OutputNodes = styled.div`
     margin-right: 1rem;
   }
 `;
+
+type ListGroupItemProps = React.PropsWithChildren & (
+  ({tag: 'a'  } & React.JSX.IntrinsicElements['a']) |
+  ({tag: 'h5' } & React.JSX.IntrinsicElements['h5'])
+);
+
+
+function ListGroupItemInner(
+  props: ListGroupItemProps, ref: React.ForwardedRef<any>
+) {
+  const className = 'list-group-item';
+  if (props.tag === 'a') {
+    const { tag, ...rest } = props;;
+    rest.className = className;
+    return <a ref={ref} {...rest} />
+  } else {
+    const { tag, ...rest } = props;;
+    rest.className = className;
+    return <h5 ref={ref} {...rest} />
+  }
+};
+
+const ListGroupItem = React.forwardRef(ListGroupItemInner);
 
 const NodeLinks = (props) => {
   const { inputNodes, outputNodes } = props;

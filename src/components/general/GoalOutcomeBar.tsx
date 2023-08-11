@@ -64,20 +64,20 @@ const EmissionsBar = styled.div`
   height: 24px;
 `;
 
-const BarLabel = styled.div<{side?: 'top' | undefined, negative: boolean}>`
+const BarLabel = styled.div<{$side?: 'top' | undefined, $negative: boolean, $placement: number}>`
   font-size: 0.75rem;
-  text-align: ${(props) => (props.negative ? 'right' : 'left')};
+  text-align: ${(props) => (props.$negative ? 'right' : 'left')};
   white-space: nowrap;
   line-height: 1;
-  z-index: 1001 + ${(props) => props.placement};
+  z-index: 1001 + ${(props) => props.$placement};
   position: absolute;
-  padding: ${(props) => (props.side === 'top' ? `0 5px ${12+(props.placement*7)}px 5px` : `${24-(props.placement*7)}px 5px 0 5px`)};
-  bottom: ${(props) => (props.side === 'top' ? '0' : 'auto')};
-  left: ${(props) => (props.negative ? 'auto' : '-1px')};
-  right: ${(props) => (props.negative ? '-1px' : 'auto')};
-  border-left: ${(props) => !props.negative
+  padding: ${(props) => (props.$side === 'top' ? `0 5px ${12+(props.$placement*7)}px 5px` : `${24-(props.$placement*7)}px 5px 0 5px`)};
+  bottom: ${(props) => (props.$side === 'top' ? '0' : 'auto')};
+  left: ${(props) => (props.$negative ? 'auto' : '-1px')};
+  right: ${(props) => (props.$negative ? '-1px' : 'auto')};
+  border-left: ${(props) => !props.$negative
                 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
-  border-right: ${(props) => props.negative
+  border-right: ${(props) => props.$negative
                 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
   font-weight: 700;
 `;
@@ -95,16 +95,16 @@ const Unit = styled.span`
   font-size: 0.75rem;
 `;
 
-const EmissionBar = styled.div<{barWidth: number, barColor: string, placement: number, zeroOffset: number}>`
+const EmissionBar = styled.div<{$barWidth: number, $barColor: string, $placement: number, $zeroOffset: number}>`
   position: absolute;
-  top: ${(props) => props.placement * 7}px;
-  right: ${(props) => props.barWidth < 0 ? 0 : `${Math.abs(props.zeroOffset)}%`};
+  top: ${(props) => props.$placement * 7}px;
+  right: ${(props) => props.$barWidth < 0 ? 0 : `${Math.abs(props.$zeroOffset)}%`};
   height: 6px;
-  width: ${(props) => Math.abs(props.barWidth)}%;
-  background-color: ${(props) => props.barColor};
-  border-right: ${(props) => props.barWidth > 0
+  width: ${(props) => Math.abs(props.$barWidth)}%;
+  background-color: ${(props) => props.$barColor};
+  border-right: ${(props) => props.$barWidth > 0
                 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
-  border-left: ${(props) => props.barWidth < 0
+  border-left: ${(props) => props.$barWidth < 0
                 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
 `;
 
@@ -118,15 +118,15 @@ const BarWithLabel = (props) => {
 
   return (
     <EmissionBar
-      barWidth={barWidth}
-      barColor={barColor}
-      placement={placement}
-      zeroOffset={zeroOffset}
+      $barWidth={barWidth}
+      $barColor={barColor}
+      $placement={placement}
+      $zeroOffset={zeroOffset}
     >
       <BarLabel
-        side={labelSide}
-        placement={placement}
-        negative={barWidth < 0}
+        $side={labelSide}
+        $placement={placement}
+        $negative={barWidth < 0}
       >
         <Label>{label}</Label>
         <Value>

@@ -106,6 +106,7 @@ type OutcomeNodeContentProps = {
   color?: string | null,
   startYear: number,
   endYear: number,
+  activeScenario: string,
 }
 
 const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {

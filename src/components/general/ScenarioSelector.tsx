@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
 import { activeScenarioVar } from 'common/cache';
 import { useInstance } from 'common/instance';
-import { GET_SCENARIOS } from 'common/queries/getScenarios';
+import { GET_SCENARIOS } from 'queries/getScenarios';
 import { ActivateScenarioMutation, ActivateScenarioMutationVariables, GetScenariosQuery } from 'common/__generated__/graphql';
 
 const ACTIVATE_SCENARIO = gql` 

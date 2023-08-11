@@ -8,9 +8,9 @@ import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
-import { GET_SCENARIOS } from 'common/queries/getScenarios';
-import { GET_PARAMETERS } from 'common/queries/getParameters';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { GET_SCENARIOS } from 'queries/getScenarios';
+import { GET_PARAMETERS } from 'queries/getParameters';
+import { GET_ACTION_LIST } from 'queries/getActionList';
 import Button from 'components/common/Button';
 
 const RangeWrapper = styled.div`

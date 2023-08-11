@@ -11,13 +11,13 @@ import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import chroma from 'chroma-js';
 import { setUniqueColors } from 'common/colors';
 
-const CardSet = styled(animated.div)<{color?: string, haschildren?: boolean}>`
+const CardSet = styled(animated.div)<{$color?: string, $haschildren?: boolean}>`
   position: relative;
-  padding-bottom: ${(props) => props.haschildren ? '190px' : '1rem'};
+  padding-bottom: ${(props) => props.$haschildren ? '190px' : '1rem'};
   margin-top: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
   // border-radius:  ${(props) => props.theme.cardBorderRadius};
-  // border: 2px solid ${(props) => props.color || props.theme.themeColors.white};
+  // border: 2px solid ${(props) => props.$color || props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
 `;
 
@@ -183,7 +183,7 @@ type OutcomeCardSetProps = {
   parentColor: string,
   startYear: number,
   endYear: number,
-  activeScenario: string | undefined,
+  activeScenario: string,
   activeNodeId: string | undefined,
   lastActiveNodeId: string | undefined,
   setLastActiveNodeId: (s: string) => void,
@@ -253,9 +253,8 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
       <CardSet
         id={rootNode.id}
         style={fadeIn}
-        color={rootNode.color}
-        haschildren={cardNodes.length > 0}
-        hasinputnodes={inputNodes.length > 0}
+        $color={rootNode.color!}
+        $haschildren={cardNodes.length > 0}
       >
         <ContentArea>
           <OutcomeNodeContent

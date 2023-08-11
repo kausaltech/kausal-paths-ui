@@ -4,9 +4,9 @@ import styled, { useTheme } from 'styled-components';
 import { Badge as BSSBadge } from 'reactstrap';
 import { readableColor } from 'polished';
 
-const StyledBadge = styled.span`
+const StyledBadge = styled.span<{$color: string, $isLink?: boolean}>`
   background-color: white !important;
-  // border-left: 24px solid ${(props) => props.color} !important;
+  // border-left: 24px solid ${(props) => props.$color} !important;
   color: ${(props) => props.theme.themeColors.black };
   border-radius: ${(props) => props.theme.badgeBorderRadius};
   padding: .25rem .5rem;
@@ -19,7 +19,7 @@ const StyledBadge = styled.span`
   text-align: left;
 
   &:hover {
-    background-color:  ${(props) => props.isLink && darken(0.05, props.theme[props.color])} !important;
+    background-color:  ${(props) => props.$isLink && darken(0.05, props.theme[props.$color])} !important;
   }
 
   &.lg {
@@ -54,8 +54,8 @@ const ScenarioBadge = (props) => {
   return (
     <StyledBadge
       className={size}
-      color={getBadgeColor(theme, type, color)}
-      isLink={isLink}
+      $color={getBadgeColor(theme, type, color)}
+      $isLink={isLink}
     >
       { children }
     </StyledBadge>

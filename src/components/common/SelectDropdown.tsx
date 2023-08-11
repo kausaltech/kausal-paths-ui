@@ -1,5 +1,8 @@
-import React from "react";
-import Select, { components, DropdownIndicatorProps, MultiValueProps, Theme as SelectTheme, ValueContainerProps } from "react-select";
+import React, { ReactNode } from "react";
+import Select, {
+  components, DropdownIndicatorProps, MultiValueProps, Theme as SelectTheme,
+  ValueContainerProps as SelectValueContainerProps, GroupBase, SelectComponentsConfig
+} from "react-select";
 import styled from 'styled-components';
 import type { Theme } from '@kausal/themes/types';
 import Highlighter from "react-highlight-words";
@@ -14,7 +17,9 @@ const Label = styled(BSLabel)`
 `;
 
 
-function getSelectStyles<Option extends SelectDropdownOption, IsMulti extends boolean>(
+function getSelectStyles<
+  Option extends SelectDropdownOption, IsMulti extends boolean, Group extends GroupBase<Option>
+>(
   theme: Theme,
   multi: boolean,
   size: string = ""
@@ -24,7 +29,7 @@ function getSelectStyles<Option extends SelectDropdownOption, IsMulti extends bo
     `calc((${theme.inputLineHeight}*${theme.fontSizeBase}) +`
     + ` (${theme.inputPaddingY}*2) + (${theme.inputBorderWidth}*2))`;
 
-  const styles: SelectDropdownProps<Option, IsMulti>["styles"] = {
+  const styles: NonNullable<SelectDropdownProps<Option, IsMulti, Group>["styles"]> = {
     control: (provided, { isDisabled, isFocused }) => ({
       ...provided,
       backgroundColor: `var(--bs-select${isDisabled ? "-disabled" : ""}-bg)`,
@@ -76,7 +81,7 @@ function getSelectStyles<Option extends SelectDropdownOption, IsMulti extends bo
           ? theme.graphColors.grey020
           : isFocused
           ? theme.graphColors.grey005
-          : theme.graphColors.white,
+          : theme.themeColors.white,
         margin: 0,
         //marginLeft: `${indent ?? 0}rem`,
       };
@@ -108,13 +113,13 @@ function getSelectStyles<Option extends SelectDropdownOption, IsMulti extends bo
   return styles;
 }
 
-function DropdownIndicator<Option, IsMulti extends boolean>(props: DropdownIndicatorProps<Option, IsMulti>) {
+const DropdownIndicator: typeof components.DropdownIndicator = (props) => {
   return (
     <components.DropdownIndicator {...props}>
       <span></span>
     </components.DropdownIndicator>
   );
-}
+};
 
 function getSelectTheme(theme: SelectTheme) {
   const ret: SelectTheme = {
@@ -139,34 +144,46 @@ const Counter = ({count}: {count: number}) => (
   <CountContainer> + {count}</CountContainer>
 )
 
-const ValueContainer = (props: ValueContainerProps) => {
+function ValueContainer<
+  Option extends SelectDropdownOption, IsMulti extends boolean, Group extends GroupBase<Option>
+>(props: SelectValueContainerProps<Option, IsMulti, Group>) {
   const { children, ...rest } = props;
-  const [firstChild, ...remainingChildren] = children;
-  const realChildren = ((firstChild?.length ?? 0) > 1) ? [
-    firstChild[0],
-    <Counter count={firstChild.length - 1}/>,
-    ...remainingChildren
-  ] : children;
+  let realChildren = children;
+  if (Array.isArray(children)) {
+    const [firstChild, ...remainingChildren] = children;
+    if (Array.isArray(firstChild) && firstChild.length > 0) {
+      realChildren = [
+        firstChild[0],
+        <Counter key='counter' count={firstChild.length - 1}/>,
+        ...remainingChildren
+      ];
+    }
+  }
   return <components.ValueContainer {...rest} >
     {realChildren}
   </components.ValueContainer>;
 };
 
-function MultiValue<Option extends SelectDropdownOption>(props: MultiValueProps<Option>) {
+function MultiValue<
+  Option extends SelectDropdownOption, IsMulti extends boolean, Group extends GroupBase<Option>
+>(props: MultiValueProps<Option, IsMulti, Group>) {
   const { data, ...rest } = props;
   const newData = {
     id: '__combined__',
     label: props.getValue()[0].label,
     indent: Math.min(...props.getValue().map(v => v.indent ?? 0))
-  };
+  } as Option;
   return <components.SingleValue data={newData} {...rest} />;
 }
 
-function getCustomComponents<Option extends SelectDropdownOption, IsMulti extends boolean>(isMulti: IsMulti) {
-  return Object.assign(
+function getCustomComponents<
+  Option extends SelectDropdownOption, IsMulti extends boolean, Group extends GroupBase<Option>
+>(isMulti: IsMulti) {
+  const ret: SelectComponentsConfig<Option, IsMulti, Group> = Object.assign(
     { DropdownIndicator, },
     isMulti ? { ValueContainer, MultiValue } : {}
-  )
+  );
+  return ret;
 }
 
 export interface SelectDropdownOption {
@@ -175,8 +192,10 @@ export interface SelectDropdownOption {
   indent?: number,
 }
 
-type SelectDropdownProps<Option extends SelectDropdownOption, IsMulti extends boolean> =
-  Parameters<typeof Select<Option, IsMulti>>[0] & {
+type SelectDropdownProps<
+  Option extends SelectDropdownOption, IsMulti extends boolean, Group extends GroupBase<Option>,
+> =
+  Parameters<typeof Select<Option, IsMulti, Group>>[0] & {
   id: string,
   label?: string,
   size?: string,
@@ -185,12 +204,14 @@ type SelectDropdownProps<Option extends SelectDropdownOption, IsMulti extends bo
   isMulti: IsMulti,
 };
 
-function SelectDropdown<Option extends SelectDropdownOption, IsMulti extends boolean = false>(
-  props: SelectDropdownProps<Option, IsMulti>
-) {
+function SelectDropdown<
+  Option extends SelectDropdownOption,
+  IsMulti extends boolean = false,
+  Group extends GroupBase<Option> = GroupBase<Option>
+>(props: SelectDropdownProps<Option, IsMulti, Group>) {
   const { size, id, label, value, onChange, helpText, invert, isMulti, ...rest } = props;
   const theme = useTheme();
-  const styles = getSelectStyles(theme, props.isMulti === true, size);
+  const styles = getSelectStyles<Option, IsMulti, Group>(theme, props.isMulti === true, size);
   return (
     <FormGroup>
       { label && (
@@ -205,9 +226,9 @@ function SelectDropdown<Option extends SelectDropdownOption, IsMulti extends boo
           )}
         </Label>
       )}
-      <Select<SelectDropdownOption, IsMulti>
+      <Select
         isMulti={isMulti}
-        components={getCustomComponents<Option, IsMulti>(isMulti)}
+        components={getCustomComponents<Option, IsMulti, Group>(isMulti)}
         theme={getSelectTheme}
         value={value}
         styles={styles}

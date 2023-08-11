@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import ContentLoader from 'components/common/ContentLoader';
-import { GET_PARAMETERS } from 'common/queries/getParameters';
+import { GET_PARAMETERS } from 'queries/getParameters';
 import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
 import { useTranslation } from 'react-i18next';
 

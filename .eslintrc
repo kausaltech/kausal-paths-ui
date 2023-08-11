@@ -1,12 +1,6 @@
 {
-  "parser": "babel-eslint",
-  "env": {
-      "browser": true,
-      "node": true,
-      "es6": true
-  },
   "plugins": [
-    "react"
+    "styled-components-a11y"
   ],
   "settings": {
     "import/resolver": {
@@ -19,12 +13,13 @@
   "ignorePatterns": ["node_modules/**"],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "max-len": [1, 120, 2, {"ignoreComments": true}],
+    "max-len": [1, 140, 2, {"ignoreComments": true}],
     "curly": ["off"],
     "object-curly-newline": ["off"],
     "react/prop-types": [2],
-    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
   },
-  "extends": ["eslint:recommended", "plugin:react/recommended", "airbnb"]
+  "extends": [
+    "next/core-web-vitals", "plugin:styled-components-a11y/recommended", "prettier"
+  ]
 }

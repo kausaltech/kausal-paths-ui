@@ -6,7 +6,7 @@ import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { Container, Row, Col, ButtonGroup, Button, FormGroup, Input, Label, Alert } from 'reactstrap';
 import { SortUp, SortDown, Grid3x2GapFill, BarChartLineFill } from 'react-bootstrap-icons';
 import { useTranslation } from 'next-i18next';
-import { GET_ACTION_LIST } from 'common/queries/getActionList';
+import { GET_ACTION_LIST } from 'queries/getActionList';
 
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';

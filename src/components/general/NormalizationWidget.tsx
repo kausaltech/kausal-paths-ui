@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
 
 import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
-import { GET_PARAMETERS } from 'common/queries/getParameters';
+import { GET_PARAMETERS } from 'queries/getParameters';
 import { useTranslation } from 'react-i18next';
 
 const SwitchWrapper = styled.div`

@@ -3,7 +3,7 @@ import { useTranslation } from 'next-i18next';
 import { Container } from 'reactstrap';
 import Head from 'next/head';
 
-import GET_PAGE from 'common/queries/getPage';
+import GET_PAGE from 'queries/getPage';
 import ContentLoader from 'components/common/ContentLoader';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';

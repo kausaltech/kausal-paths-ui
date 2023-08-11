@@ -10,7 +10,7 @@ import {
 } from 'reactstrap';
 
 
-const Selector = styled(UncontrolledDropdown)`
+const Selector = styled(UncontrolledDropdown)<{$mobile: boolean}>`
   a {
     height: 100%;
     display: flex;
@@ -34,17 +34,17 @@ const Selector = styled(UncontrolledDropdown)`
   }
 
   svg {
-    fill: ${(props) => props.mobile === 'true' ? props.theme.themeColors.dark : props.theme.brandNavColor} !important;
+    fill: ${(props) => props.$mobile ? props.theme.themeColors.dark : props.theme.brandNavColor} !important;
   }
 `;
 
-const CurrentLanguage = styled.span`
+const CurrentLanguage = styled.span<{$mobile: boolean}>`
   display: inline-block;
   width: 1.5rem;
   margin: 0 .5rem;
   text-transform: uppercase;
   font-size: 90%;
-  color: ${(props) => props.mobile === 'true' ? props.theme.themeColors.dark : props.theme.brandNavColor};
+  color: ${(props) => props.$mobile ? props.theme.themeColors.dark : props.theme.brandNavColor};
 `;
 
 const StyledDropdownMenu = styled(DropdownMenu)`
@@ -58,13 +58,12 @@ const languageNames = {
   sv: 'Svenska',
 };
 
-const LanguageSelector = (props) => {
+function LanguageSelector({ mobile }: { mobile: boolean }) {
   const router = useRouter();
-  const { mobile } = props;
   const theme = useTheme();
 
   const { locales } = router
-  if (locales?.length < 2) return (null);
+  if (!locales || locales.length < 2) return (null);
   const handleLocaleChange = (ev) => {
     ev.preventDefault();
     window.location.href = ev.target.href;
@@ -78,10 +77,10 @@ const LanguageSelector = (props) => {
   }
 
   return (
-      <Selector nav inNavbar mobile={mobile.toString()} className={mobile && 'd-md-none'}>
+      <Selector nav inNavbar $mobile={mobile} className={mobile && 'd-md-none'}>
         <DropdownToggle nav>
           <Globe2 color={theme.neutralDark} />
-          <CurrentLanguage mobile={mobile.toString()}>{ getLanguageCodeLabel(router.locale) }</CurrentLanguage>
+          <CurrentLanguage $mobile={mobile}>{ getLanguageCodeLabel(router.locale) }</CurrentLanguage>
         </DropdownToggle>
         <StyledDropdownMenu end>
           { locales.map((locale) => (

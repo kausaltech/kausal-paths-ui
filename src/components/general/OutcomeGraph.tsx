@@ -14,6 +14,8 @@ const Plot = dynamic(() => import('components/graphs/Plot'),
     { ssr: false });
 
 
+const smoothingFactor = 0.8;
+
 const PlotLoader = styled.div`
   height: 300px;
   display: flex;
@@ -130,6 +132,7 @@ const generatePlotFromNode = (
       line: {
         color: '#ffffff',
         shape: 'spline',
+        smoothing: smoothingFactor,
         width: 0.75,
       },
       ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
@@ -158,6 +161,7 @@ const generatePlotFromNode = (
     line: {
       color: 'white',
       shape: 'spline',
+      smoothing: smoothingFactor,
       width: 0.5,
     },
     hoverinfo: 'skip',
@@ -180,6 +184,7 @@ const generatePlotFromNode = (
       line: {
         color: 'white',
         shape: 'spline',
+        smoothing: smoothingFactor,
         width: 0.5,
       },
       ...formatHover(n.shortName || n.name, fillColor, true, systemFont, predLabel, shortUnit),
@@ -260,6 +265,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
         line: {
           color: theme.graphColors.grey060,
           shape: 'spline',
+          smoothing: smoothingFactor,
           width: 2,
           dash: 'dash',
         },

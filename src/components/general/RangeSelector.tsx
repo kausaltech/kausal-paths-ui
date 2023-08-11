@@ -40,7 +40,7 @@ const ActiveYearDisplay = styled.div`
 `;
 
 type ThumbProps = {
-  dragged: boolean,
+  $dragged: boolean,
   color: string,
 }
 
@@ -48,7 +48,7 @@ const Thumb = styled.div<ThumbProps>`
   height: 28px;
   width: 28px;
   border-radius: 14px;
-  background-color: ${(props) => (props.dragged ? props.color : props.color)};
+  background-color: ${(props) => (props.$dragged ? props.color : props.color)};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -163,7 +163,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
                   renderThumb={({ props, isDragged, index }) => (
                     <Thumb
                       {...props}
-                      dragged={isDragged}
+                      $dragged={isDragged}
                       style={{
                         ...props.style,
                       }}
@@ -217,7 +217,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
                   renderThumb={({ props, isDragged, index }) => (
                     <Thumb
                       {...props}
-                      dragged={isDragged}
+                      $dragged={isDragged}
                       style={{
                         ...props.style,
                       }}

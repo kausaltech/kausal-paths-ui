@@ -20,6 +20,8 @@ import { ActionLink } from 'common/links';
 import DimensionalNodePlot from 'components/general/DimensionalNodePlot';
 import { GetNodePageQuery } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
+import dimensionalNodePlotFragment from 'queries/dimensionalNodePlot';
+
 
 const HeaderSection = styled.div`
   padding: 1rem 0 1rem;
@@ -126,7 +128,7 @@ query GetNodePage($node: ID!) {
     ...DimensionalNodeMetric
   }
 }
-${DimensionalNodePlot.fragment}
+${dimensionalNodePlotFragment}
 `;
 
 export default function NodePage() {
@@ -145,8 +147,9 @@ export default function NodePage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   useEffect(() => {
+    if (!activeScenario?.id) return;
     refetch();
-  }, [activeScenario]);
+  }, [activeScenario?.id, refetch]);
 
   if (loading) {
     return <ContentLoader />;
