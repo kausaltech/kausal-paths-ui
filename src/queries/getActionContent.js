@@ -14,10 +14,22 @@ const GET_ACTION_CONTENT = gql`
         ...CausalGridNode
       }
       decisionLevel
+      subactions {
+        id
+        name
+        description
+        shortDescription
+        isEnabled
+        parameters {
+          id
+        }
+        downstreamNodes {
+          ...CausalGridNode
+        }
+      }
     }
   }
   ${DimensionalFlow.fragment}
-  ${SUBACTIONS_FRAGMENT}
   fragment CausalGridNode on NodeInterface {
     id
     name
@@ -38,9 +50,6 @@ const GET_ACTION_CONTENT = gql`
         id
         name
         color
-      }
-      subactions {
-        ...SubActionCard
       }
     }
     impactMetric(goalId: $goal) {

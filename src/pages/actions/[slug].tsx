@@ -11,7 +11,6 @@ import { GET_ACTION_CONTENT } from 'queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, activeGoalVar, } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
-import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import CausalGrid from 'components/general/CausalGrid';
@@ -123,63 +122,16 @@ export default function ActionPage() {
   if (!data || !data.action) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
+
   const action = data.action;
   const subActions = action.subactions;
-  /*
-  {
-      id: 'replacement_of_heating_networks',
-      name: 'Heizungsersatz durch thermische Netze',
-      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: true,
-      parameters: action.parameters
-    },
-    {
-      id: 'district_heat_decarbonisation',
-      name: 'Dekarbonisierung thermische Netze',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: true,
-      parameters: action.parameters
-    },
-    {
-      id: 'natural_gas_network_decarbonisation',
-      name: 'Dekarbonisierung Gasversorgung',
-      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: false,
-      parameters: action.parameters
-    },
-    {
-      id: 'replacement_of_heat_pumps',
-      name: 'Heizungsersatz durch Wärmepumpen',
-      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: false,
-      parameters: action.parameters
-    },
-    {
-      id: 'replacement_of_other_systems',
-      name: 'Heizungsersatz durch übrige Systeme',
-      description: 'Sed euismod, nunc vel tincidunt luctus, nunc nisl aliquam nisl, vel aliquam nunc nisl vel nisl.',
-      active: true,
-      isEnabled: false,
-      parameters: action.parameters
-    },
-  ] : [];
-  */
+
   // show causal nodes only for selected subaction
-  const causalNodes = action.downstreamNodes;
+  const causalNodes = activeSubAction === undefined ?
+    action.downstreamNodes
+    : action.subactions.find((subAction) => subAction.id === activeSubAction)?.downstreamNodes;
   const lastNode = action.downstreamNodes.find((node) => node.outputNodes.length === 0);
-  //const causalNodes = activeSubAction ? action.downstreamNodes : [lastNode];
 
-  const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
-  const actionEffectYearly = action.impactMetric.forecastValues.find(
-    (dataPoint) => dataPoint.year === yearRange[1],
-  )?.value || 0;
-
-  const actionEffectCumulative = summarizeYearlyValuesBetween(action.impactMetric, yearRange[0], yearRange[1]);
-  const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />

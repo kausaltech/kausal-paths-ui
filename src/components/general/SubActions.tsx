@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import * as Icon from 'react-bootstrap-icons';
+
 import styled from 'styled-components';
-import ImpactDisplay from './ImpactDisplay';
-import ActionParameters from './ActionParameters';
+
 import WatchActionCard from './WatchActionCard';
-import { gql } from '@apollo/client';
 import { SubActionCardFragment } from 'common/__generated__/graphql';
 
 const ActionTabs = styled.div`
@@ -154,18 +152,5 @@ const SubActions = (props: SubActionsProps) => {
     
   );
 };
-
-export const SUBACTIONS_FRAGMENT = gql`
-  fragment SubActionCard on ActionNode {
-    id
-    name
-    description
-    shortDescription
-    isEnabled
-    parameters {
-      id
-    }
-  }
-`;
 
 export default SubActions;
