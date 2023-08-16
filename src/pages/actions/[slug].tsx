@@ -3,7 +3,6 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { useInstance } from 'common/instance';
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
@@ -94,7 +93,6 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
-  const instance = useInstance();
   const [activeSubAction, setActiveSubAction] = useState(undefined);
 
   const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
@@ -126,16 +124,40 @@ export default function ActionPage() {
   const action = data.action;
   const subActions = action.subactions;
 
-  // show causal nodes only for selected subaction
-  const causalNodes = activeSubAction === undefined ?
-    action.downstreamNodes
-    : action.subactions.find((subAction) => subAction.id === activeSubAction)?.downstreamNodes;
-  const lastNode = action.downstreamNodes.find((node) => node.outputNodes.length === 0);
-
+  // style differently if not active 
   const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
+
+  // use flowplot if action has dimensional flow
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />
   );
+
+  // if action is simple, has just one output node and no subactions, use first downstream node for graph
+  const outputNodes = action.downstreamNodes.filter((node) => node.inputNodes.find((inputNode) => inputNode.id === action.id));
+  const actionVizNode = (outputNodes.length === 1 && action.subactions.length === 0) ? outputNodes[0] : action;
+  console.log('outputNodes', outputNodes, actionVizNode)
+  const actionPlot = action.metric ? (
+    flowPlot || (
+      <>
+        <ActionGraphHeader>
+          Impact: {actionVizNode.name} (<span dangerouslySetInnerHTML={{__html: actionVizNode.unit?.htmlShort}} />)
+        </ActionGraphHeader>
+        <NodePlot
+          metric={actionVizNode.metric}
+          impactMetric={actionVizNode.impactMetric}
+          startYear={yearRange[0]}
+          endYear={yearRange[1]}
+          color={action.color}
+          isAction={action.__typename === 'ActionNode'}
+          targetYearGoal={action.targetYearGoal}
+        />
+      </>
+    )) : undefined;
+
+    // show causal nodes only for selected subaction, filter out node used for visualisation
+    const causalNodes = activeSubAction === undefined ?
+    action.downstreamNodes.filter((node) => node.id !== actionVizNode.id)
+    : action.subactions.find((subAction) => subAction.id === activeSubAction)?.downstreamNodes;
 
   return (
     <>
@@ -191,24 +213,7 @@ export default function ActionPage() {
                     />
                   </MetricsParameters>
                 </ActionMetrics>
-                { action.metric && (
-                  <ActionGraphHeader>
-                    {action.quantity} (<span dangerouslySetInnerHTML={{__html: action.unit?.htmlShort}} />)
-                  </ActionGraphHeader> )}
-                { action.metric && (
-                  flowPlot || (
-                    <NodePlot
-                      metric={action.metric}
-                      impactMetric={action.impactMetric}
-                      year="2021"
-                      startYear={yearRange[0]}
-                      endYear={yearRange[1]}
-                      color={action.color}
-                      isAction={action.__typename === 'ActionNode'}
-                      targetYearGoal={action.targetYearGoal}
-                    />
-                  )
-                )}
+                { actionPlot }
               </ActionDescription>
               { subActions.length > 0 && (
                 <SubActions
