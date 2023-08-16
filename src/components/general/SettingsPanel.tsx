@@ -2,7 +2,7 @@ import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { Container, Row, Col, Button } from 'reactstrap';
-import { Sliders } from 'react-bootstrap-icons';
+import { Gear as SettingsIcon } from 'react-bootstrap-icons';
 import RangeSelector from 'components/general/RangeSelector';
 import { useSite } from 'context/site';
 import { yearRangeVar, } from 'common/cache'
@@ -94,7 +94,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = (props) => {
               onClick={(e) => setShowExtras(!showExtras)}
               color="white"
             > 
-              <Sliders />
+              <SettingsIcon />
             </SettingsButton>
           }
           <Col md="6" sm="12" className="mt-3 mt-sm-0">

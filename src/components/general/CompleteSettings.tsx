@@ -18,7 +18,11 @@ import { useTranslation } from 'next-i18next';
 
 const SettingsHeader = styled.div`
   padding: 1rem 0;
-  background-color: ${(props) => props.theme.graphColors.grey020};
+  background-color: ${(props) => props.theme.graphColors.grey010};
+
+  h2 {
+    font-size: ${(props) => props.theme.fontSizeLg};
+  }
 `;
 
 const SettingsContent = styled.div`
@@ -101,7 +105,7 @@ const CompleteSettings = (props) => {
     <>
     <SettingsHeader>
       <Container fluid="lg">
-        <h2>All settings</h2>
+        <h2><Icon.Gear /> All settings</h2>
       </Container>
     </SettingsHeader>
     <SettingsContent>

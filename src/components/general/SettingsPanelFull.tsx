@@ -3,7 +3,7 @@ import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { transparentize } from 'polished';
 import { Row, Col, Button } from 'reactstrap';
-import { Sliders, XLg } from 'react-bootstrap-icons';
+import { Gear as SettingsIcon, XLg } from 'react-bootstrap-icons';
 import { useSite } from 'context/site';
 import { yearRangeVar } from 'common/cache';
 import { useInstance } from 'common/instance';
@@ -111,8 +111,8 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
       <PanelToggle
         onClick={(e) => handleToggle(e)}
       > 
-        { mode === MODE.SM && <Sliders />}
-        { mode === MODE.MD && <Sliders />}
+        { mode === MODE.SM && <SettingsIcon />}
+        { mode === MODE.MD && <SettingsIcon />}
         { mode === MODE.LG && <XLg />}
       </PanelToggle>
         { mode === MODE.SM && (<>

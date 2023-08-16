@@ -228,6 +228,8 @@ const ActionsSummary = (props) => {
             </ActionsListItem>
           );
         })}
+        <ActionsListItem />
+        <ActionsListItem />
       </ActionsList>
     </GlobalParametersPanel>
   )
