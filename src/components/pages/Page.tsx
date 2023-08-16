@@ -14,10 +14,17 @@ import ErrorMessage from 'components/common/ErrorMessage';
 import { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
 import { Suspense } from 'react';
 import { activeGoalVar } from 'common/cache';
-
+import Footer from 'components/common/Footer';
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
+const PageLoader = () => {
+  return (
+    <div className="loader-wrapper" style={{height: '100vh'}}>
+      <ContentLoader />
+    </div>
+  );
+}
 
 export default function Page({ path, headerExtra }) {
   const site = useSite();
@@ -41,7 +48,7 @@ export default function Page({ path, headerExtra }) {
     return <Container className="pt-5"><GraphQLError errors={error} /></Container>
   }
   if (!data) {
-    return <ContentLoader />;
+    return <PageLoader />;
   }
   const { page, activeScenario } = data;
   let pageContent: React.ReactNode;
@@ -70,7 +77,7 @@ export default function Page({ path, headerExtra }) {
         </title>
       </Head>
       {headerExtra}
-      <Suspense fallback={<ContentLoader />}>
+      <Suspense fallback={<PageLoader />}>
         {pageContent}
       </Suspense>
     </>

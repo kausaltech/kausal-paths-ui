@@ -3,12 +3,12 @@ import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
 import { useSite } from 'context/site';
-
+import Footer from 'components/common/Footer';
 
 const PageContainer = styled.div`
   width: 100%;
   background-color: ${(props) => props.theme.graphColors.grey030};
-  padding-bottom: 10rem;
+  padding-bottom: 5rem;
 
   .popover {
     max-width: 480px;
@@ -76,6 +76,7 @@ const Layout = ({ children }) => {
           {children}
         </main>
       </PageContainer>
+      <Footer />
     </>
   );
 };

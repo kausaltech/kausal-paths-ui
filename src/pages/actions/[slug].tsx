@@ -114,7 +114,7 @@ export default function ActionPage() {
   }, [activeScenario]);
 
   if (!data) {
-    return <ContentLoader />;
+    return <div style={{ height: '100hv'}}><ContentLoader /></div>;
   }
   if (error) {
     logError(error, {query: GET_ACTION_CONTENT});
@@ -238,36 +238,11 @@ export default function ActionPage() {
                       parameters={action.parameters}
                     />
                   </MetricsParameters>
-                  { false && (
-                  <MetricsImpact>
-                    <ImpactDisplay
-                      effectCumulative={undefined}
-                      effectYearly={actionEffectYearly}
-                      yearRange={yearRange}
-                      unitCumulative={undefined}
-                      unitYearly={unitYearly}
-                      muted={!isActive}
-                      impactName={activeGoal?.label || undefined }
-                    >
-                      {lastNode && (
-                      <NodePlot
-                        metric={lastNode.metric}
-                        impactMetric={lastNode.impactMetric}
-                        year="2021"
-                        startYear={yearRange[0]}
-                        endYear={yearRange[1]}
-                        color={lastNode.color}
-                        isAction={lastNode.__typename === 'ActionNode'}
-                        targetYear={instance.targetYear}
-                        targetYearGoal={lastNode.targetYearGoal}
-                        quantity={lastNode.quantity}
-                        compact={true}
-                      /> )}
-                    </ImpactDisplay>
-                  </MetricsImpact>
-                  )}
                 </ActionMetrics>
-                { action.metric && <ActionGraphHeader>{action.quantity} (<span dangerouslySetInnerHTML={{__html: action.unit?.htmlShort}} />) </ActionGraphHeader>}
+                { action.metric && (
+                  <ActionGraphHeader>
+                    {action.quantity} (<span dangerouslySetInnerHTML={{__html: action.unit?.htmlShort}} />)
+                  </ActionGraphHeader> )}
                 { action.metric && (
                   flowPlot || (
                     <NodePlot
