@@ -134,8 +134,8 @@ export default function ActionPage() {
 
   // if action is simple, has just one output node and no subactions, use first downstream node for graph
   const outputNodes = action.downstreamNodes.filter((node) => node.inputNodes.find((inputNode) => inputNode.id === action.id));
-  const actionVizNode = (outputNodes.length === 1 && action.subactions.length === 0) ? outputNodes[0] : action;
-  console.log('outputNodes', outputNodes, actionVizNode)
+  const actionVizNode = (outputNodes.length === 1 && action.subactions.length === 0 && outputNodes[0].metric) ? outputNodes[0] : action;
+
   const actionPlot = action.metric ? (
     flowPlot || (
       <>
