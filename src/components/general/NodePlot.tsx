@@ -11,16 +11,15 @@ import type Plotly from 'plotly.js';
 import { useInstance } from 'common/instance';
 import type { CausalGridNode } from './CausalGrid';
 
-const Plot = dynamic(() => import('components/graphs/Plot'),
-  { ssr: false });
+const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
 const PlotWrapper = styled.div<{ compact?: boolean }>`
   margin: 0 auto;
-  max-width: ${(props) => props.compact ? '480px' : '100%'};
+  max-width: ${(props) => (props.compact ? '480px' : '100%')};
 `;
 
 const Tools = styled.div`
-  padding: 0 1rem .5rem;
+  padding: 0 1rem 0.5rem;
   text-align: right;
   .btn-link {
     text-decoration: none;
@@ -28,16 +27,16 @@ const Tools = styled.div`
 `;
 
 type NodePlotProps = {
-  metric: CausalGridNode['metric'],
-  impactMetric: CausalGridNode['impactMetric'],
-  startYear: number,
-  endYear: number,
-  color: string | null | undefined,
-  isAction?: boolean,
-  targetYearGoal?: number,
-  targetYear?: number,
-  filled?: boolean,
-  quantity: string,
+  metric: CausalGridNode['metric'];
+  impactMetric: CausalGridNode['impactMetric'];
+  startYear: number;
+  endYear: number;
+  color: string | null | undefined;
+  isAction?: boolean;
+  targetYearGoal?: number;
+  targetYear?: number;
+  filled?: boolean;
+  quantity: string;
   compact?: boolean;
 } & typeof NodePlotDefaultProps;
 
@@ -69,7 +68,8 @@ const NodePlot = (props: NodePlotProps) => {
   const theme = useContext(ThemeContext);
   const site = useSite();
 
-  const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
+  const systemFont =
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
   const plotColor = color || theme.graphColors.blue070;
   const shapes: Partial<Plotly.Shape>[] = [];
   const plotData: Partial<Plotly.PlotData>[] = [];
@@ -88,17 +88,33 @@ const NodePlot = (props: NodePlotProps) => {
     return out;
   };
 
-  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length) return null;
+  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length)
+    return null;
 
-  const hasImpact = impactMetric?.forecastValues.length
-    && impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
+  const hasImpact =
+    impactMetric?.forecastValues.length &&
+    impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
-  const baselineForecast = metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
+  const baselineForecast = metricToPlot(
+    metric,
+    'baselineForecastValues',
+    startYear,
+    endYear
+  );
 
-  const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
+  const historical = metricToPlot(
+    metric,
+    'historicalValues',
+    startYear,
+    endYear
+  );
   const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
-  const impactHistorical = hasImpact && metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
-  const impactForecast = hasImpact && metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
+  const impactHistorical =
+    hasImpact &&
+    metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
+  const impactForecast =
+    hasImpact &&
+    metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
 
   // create downloadable table
   const tableColumns = [
@@ -109,62 +125,59 @@ const NodePlot = (props: NodePlotProps) => {
     t('table-action-impact')!,
   ];
 
-  const downloadableHistorical = historical.x.map((date, index) => (
-    {
-      [tableColumns[0]]: date,
-      [tableColumns[1]]: historical.y[index],
-      [tableColumns[2]]: '',
-      [tableColumns[3]]: '',
-      [tableColumns[4]]: hasImpact ? impactHistorical.y[index] : '',
-    }
-  ));
+  const downloadableHistorical = historical.x.map((date, index) => ({
+    [tableColumns[0]]: date,
+    [tableColumns[1]]: historical.y[index],
+    [tableColumns[2]]: '',
+    [tableColumns[3]]: '',
+    [tableColumns[4]]: hasImpact ? impactHistorical.y[index] : '',
+  }));
 
-  const downloadableForecast = forecast.x.map((date, index) => (
-    {
-      [tableColumns[0]]: date,
-      [tableColumns[1]]: '',
-      [tableColumns[2]]: forecast.y[index],
-      [tableColumns[3]]: baselineForecast.y[index],
-      [tableColumns[4]]: hasImpact ? impactForecast.y[index] : '',
-    }
-  ));
+  const downloadableForecast = forecast.x.map((date, index) => ({
+    [tableColumns[0]]: date,
+    [tableColumns[1]]: '',
+    [tableColumns[2]]: forecast.y[index],
+    [tableColumns[3]]: baselineForecast.y[index],
+    [tableColumns[4]]: hasImpact ? impactForecast.y[index] : '',
+  }));
 
   const downloadableTable = downloadableHistorical.concat(downloadableForecast);
 
-  const filledStyles = filled ? {
-    fill: 'tozeroy',
-    marker: { opacity: 0 },
+  const filledStyles = filled
+    ? {
+        fill: 'tozeroy',
+        marker: { opacity: 0 },
+        line: {
+          color: 'white',
+          width: '1',
+          dash: 'solid',
+          shape: 'spline',
+        },
+      }
+    : {};
+
+  plotData.push({
+    x: historical.x,
+    y: historical.y,
+    xaxis: 'x2',
+    yaxis: 'y1',
+    marker: { size: 8 },
+    name: t('plot-actualized')!,
+    type: 'scatter',
+    mode: historical.x.length > 8 ? 'lines' : 'lines+markers',
     line: {
-      color: 'white',
-      width: '1',
-      dash: 'solid',
+      color: plotColor,
       shape: 'spline',
+      width: 3,
     },
-  } : {};
+    fillcolor: plotColor,
+    smoothing: true,
+    ...filledStyles,
+    ...formatHover(t('plot-actualized'), plotColor),
+  });
 
-  plotData.push(
-    {
-      x: historical.x,
-      y: historical.y,
-      xaxis: 'x2',
-      yaxis: 'y1',
-      marker: { size: 8 },
-      name: t('plot-actualized')!,
-      type: 'scatter',
-      mode: historical.x.length > 8 ? 'lines' : 'lines+markers',
-      line: {
-        color: plotColor,
-        shape: 'spline',
-        width: 3,
-      },
-      fillcolor: plotColor,
-      smoothing: true,
-      ...filledStyles,
-      ...formatHover(t('plot-actualized'), plotColor),
-    },
-  );
-
-  const scenarioPlotColor = hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
+  const scenarioPlotColor =
+    hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
   // Two-entry trace to join historical and scenario together
   if (historical?.x && forecast?.x) {
     const joinTrace: Plotly.PlotData = {
@@ -189,27 +202,25 @@ const NodePlot = (props: NodePlotProps) => {
     plotData.push(joinTrace);
   }
 
-  plotData.push(
-    {
-      x: forecast.x,
-      y: forecast.y,
-      xaxis: 'x2',
-      yaxis: 'y1',
-      marker: { size: 8 },
-      mode: forecast.x.length > 8 ? 'lines' : 'lines+markers',
-      name: t('plot-scenario')!,
-      type: 'scatter',
-      line: {
-        color: scenarioPlotColor,
-        shape: 'spline',
-        width: 3,
-      },
-      smoothing: true,
-      fillcolor: scenarioPlotColor,
-      ...filledStyles,
-      ...formatHover(t('plot-scenario', scenarioPlotColor)),
+  plotData.push({
+    x: forecast.x,
+    y: forecast.y,
+    xaxis: 'x2',
+    yaxis: 'y1',
+    marker: { size: 8 },
+    mode: forecast.x.length > 8 ? 'lines' : 'lines+markers',
+    name: t('plot-scenario')!,
+    type: 'scatter',
+    line: {
+      color: scenarioPlotColor,
+      shape: 'spline',
+      width: 3,
     },
-  );
+    smoothing: true,
+    fillcolor: scenarioPlotColor,
+    ...filledStyles,
+    ...formatHover(t('plot-scenario', scenarioPlotColor)),
+  });
 
   if (hasImpact) {
     const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
@@ -218,48 +229,49 @@ const NodePlot = (props: NodePlotProps) => {
       isAction && !historical.x.length
         ? new Array(impact.y.length).fill(0)
         : impact.y.map((dataPoint, index) => {
-      if (impactMetric.forecastValues.length > index) {
+            if (impactMetric.forecastValues.length > index) {
               return dataPoint - impactMetric.forecastValues[index].value;
-      }
+            }
 
             return dataPoint;
-    });
+          });
 
     plotData.push({
-        x: impact.x,
+      x: impact.x,
       y: withoutActionY,
-        xaxis: 'x2',
-        yaxis: 'y1',
-        mode: 'lines',
-        name: t('plot-action-impact')!,
-        type: 'scatter',
-        fill: 'tonexty',
-        fillcolor: transparentize(0.85, scenarioPlotColor),
-        line: { width: 0 },
-        ...formatHover(t('plot-without-action'), tint(0.45, scenarioPlotColor)),
-      },
-    );
+      xaxis: 'x2',
+      yaxis: 'y1',
+      mode: 'lines',
+      name: t('plot-action-impact')!,
+      type: 'scatter',
+      fill: 'tonexty',
+      fillcolor: transparentize(0.85, scenarioPlotColor),
+      line: { width: 0 },
+      ...formatHover(t('plot-without-action'), tint(0.45, scenarioPlotColor)),
+    });
   }
 
-  if (!isAction && site.baselineName && instance.features.baselineVisibleInGraphs) {
-    plotData.push(
-      {
-        x: baselineForecast.x,
-        y: baselineForecast.y,
-        xaxis: 'x2',
-        yaxis: 'y1',
-        mode: 'lines',
-        name: site.baselineName!,
-        type: 'scatter',
-        line: {
-          color: theme.graphColors.grey060,
-          shape: 'spline',
-          width: 2,
-          dash: 'dash',
-        },
-        ...formatHover(site.baselineName!, theme.graphColors.grey030),
+  if (
+    !isAction &&
+    site.baselineName &&
+    instance.features.baselineVisibleInGraphs
+  ) {
+    plotData.push({
+      x: baselineForecast.x,
+      y: baselineForecast.y,
+      xaxis: 'x2',
+      yaxis: 'y1',
+      mode: 'lines',
+      name: site.baselineName!,
+      type: 'scatter',
+      line: {
+        color: theme.graphColors.grey060,
+        shape: 'spline',
+        width: 2,
+        dash: 'dash',
       },
-    );
+      ...formatHover(site.baselineName!, theme.graphColors.grey030),
+    });
   }
 
   if (!compact && targetYearGoal) {
@@ -293,17 +305,19 @@ const NodePlot = (props: NodePlotProps) => {
   const nrYears = endYear - startYear;
   const layout: Partial<Plotly.Layout> = {
     height: compact ? 200 : 300,
-    margin: compact ? {
-      t: 24,
-      r: 0,
-      b: 0,
-      l: 42,
-    } :{
-      t: 24,
-      r: 24,
-      b: 48,
-      l: 12,
-    },
+    margin: compact
+      ? {
+          t: 24,
+          r: 0,
+          b: 0,
+          l: 42,
+        }
+      : {
+          t: 24,
+          r: 24,
+          b: 48,
+          l: 12,
+        },
     xaxis: {
       domain: [0, 0.03],
       anchor: 'y',
@@ -326,7 +340,10 @@ const NodePlot = (props: NodePlotProps) => {
       type: 'date',
       nticks: compact ? 10 : 20,
       // dtick: nrYears > 15 ? 'M24' : 'M12',
-      range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
+      range: [
+        Date.parse(`Nov 1, ${startYear - 1}`),
+        Date.parse(`Feb 1, ${endYear}`),
+      ],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       hoverformat: '<b>%Y</b>',
@@ -367,13 +384,13 @@ const NodePlot = (props: NodePlotProps) => {
         noValidate
       />
       <Tools>
-        <CsvDownload 
+        <CsvDownload
           data={downloadableTable}
           filename={`${metric?.id}.csv`}
           className="btn btn-link btn-sm"
         >
           <CloudArrowDown />
-          { ` ${t('download-data')} (.csv)` }
+          {` ${t('download-data')} (.csv)`}
         </CsvDownload>
       </Tools>
     </PlotWrapper>
