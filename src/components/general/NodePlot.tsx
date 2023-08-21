@@ -214,16 +214,20 @@ const NodePlot = (props: NodePlotProps) => {
   if (hasImpact) {
     const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
 
-    impact.y.forEach((dataPoint, index) => {
+    const withoutActionY =
+      isAction && !historical.x.length
+        ? new Array(impact.y.length).fill(0)
+        : impact.y.map((dataPoint, index) => {
       if (impactMetric.forecastValues.length > index) {
-        impact.y[index] -= impactMetric.forecastValues[index].value;
+              return dataPoint - impactMetric.forecastValues[index].value;
       }
+
+            return dataPoint;
     });
 
-    plotData.push(
-      {
+    plotData.push({
         x: impact.x,
-        y: impact.y,
+      y: withoutActionY,
         xaxis: 'x2',
         yaxis: 'y1',
         mode: 'lines',
