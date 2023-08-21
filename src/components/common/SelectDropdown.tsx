@@ -209,11 +209,11 @@ function SelectDropdown<
   IsMulti extends boolean = false,
   Group extends GroupBase<Option> = GroupBase<Option>
 >(props: SelectDropdownProps<Option, IsMulti, Group>) {
-  const { size, id, label, value, onChange, helpText, invert, isMulti, ...rest } = props;
+  const { size, id, label, value, onChange, helpText, invert, isMulti, className, ...rest } = props;
   const theme = useTheme();
   const styles = getSelectStyles<Option, IsMulti, Group>(theme, props.isMulti === true, size);
   return (
-    <FormGroup>
+    <FormGroup className={className}>
       { label && (
         <Label for={id}>
           { label }

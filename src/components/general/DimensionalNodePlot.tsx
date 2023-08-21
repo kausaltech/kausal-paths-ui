@@ -308,6 +308,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       <Col md={3} className="d-flex" key="dimension">
         <SelectDropdown
           id="dimension"
+          className='flex-grow-1'
           label={t('plot-choose-dimension')!}
           onChange={val => setSliceConfig(old => ({...old, dimensionId: val?.id || undefined}))}
           options={sliceableDims}
@@ -323,6 +324,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         <Col md={4} className="d-flex" key={dim.id}>
           <SelectDropdown
             id={`dim-${dim.id}`}
+            className='flex-grow-1'
             label={dim.label}
             options={options}
             value={options.filter(opt => opt.selected)}
