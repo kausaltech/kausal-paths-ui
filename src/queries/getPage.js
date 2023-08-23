@@ -1,7 +1,6 @@
 import { gql } from '@apollo/client';
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
 
-
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on Node {
     id
@@ -76,35 +75,39 @@ const OUTCOME_NODE_FIELDS = gql`
     }
     ...DimensionalNodeMetric
   }
-${dimensionalNodePlotFragment}
+  ${dimensionalNodePlotFragment}
 `;
 
 const GET_PAGE = gql`
-${OUTCOME_NODE_FIELDS}
-query GetPage($path: String!, $goal: ID) {
-  activeScenario {
-    id
-  }
-  page(path: $path) {
-    id
-    __typename
-    title
-    ... on OutcomePage {
-      leadTitle
-      leadParagraph
-      outcomeNode {
-        ...OutcomeNodeFields
-        upstreamNodes(sameQuantity: true, sameUnit: true, includeActions: false) {
+  ${OUTCOME_NODE_FIELDS}
+  query GetPage($path: String!, $goal: ID) {
+    activeScenario {
+      id
+    }
+    page(path: $path) {
+      id
+      __typename
+      title
+      ... on OutcomePage {
+        leadTitle
+        leadParagraph
+        outcomeNode {
           ...OutcomeNodeFields
+          upstreamNodes(
+            sameQuantity: true
+            sameUnit: true
+            includeActions: false
+          ) {
+            ...OutcomeNodeFields
+          }
         }
       }
-    }
-    ... on ActionListPage {
-      actionListLeadTitle: leadTitle
-      actionListLeadParagraph: leadParagraph
+      ... on ActionListPage {
+        actionListLeadTitle: leadTitle
+        actionListLeadParagraph: leadParagraph
+      }
     }
   }
-}
 `;
 
 export default GET_PAGE;

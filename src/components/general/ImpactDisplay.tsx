@@ -18,13 +18,16 @@ const ImpactDisplayHeader = styled.div`
   line-height: 1;
   font-size: 0.75rem;
   font-weight: 700;
-  color: ${(props) => (props.muted ? props.theme.graphColors.grey050 : props.theme.graphColors.grey090)};
+  color: ${(props) =>
+    props.muted
+      ? props.theme.graphColors.grey050
+      : props.theme.graphColors.grey090};
 `;
 
 const ImpactDisplayItem = styled.div`
   flex: 1 1 90px;
   text-align: left;
-  padding: .5rem;
+  padding: 0.5rem;
 
   &:not(:nth-child(2)) {
     border-left: 1px solid ${(props) => props.theme.graphColors.grey030};
@@ -34,23 +37,23 @@ const ImpactDisplayItem = styled.div`
 const ImpactDisplayChildren = styled.div`
   flex: 3 1 auto;
   text-align: left;
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
 
-&:not(:nth-child(2)) {
-  border-left: 1px solid ${(props) => props.theme.graphColors.grey030};
-}
+  &:not(:nth-child(2)) {
+    border-left: 1px solid ${(props) => props.theme.graphColors.grey030};
+  }
 `;
 
 type ImpactDisplayProps = {
-  effectCumulative: number | undefined,
-  effectYearly: number,
-  yearRange: [number, number],
-  unitCumulative: string | undefined,
-  unitYearly: string | undefined,
-  muted?: boolean | undefined,
-  size?: 'sm' | 'md' | 'lg',
-  impactName?: string,
-  children?: React.ReactNode,
+  effectCumulative: number | undefined;
+  effectYearly: number;
+  yearRange: [number, number];
+  unitCumulative: string | undefined;
+  unitYearly: string | undefined;
+  muted?: boolean | undefined;
+  size?: 'sm' | 'md' | 'lg';
+  impactName?: string;
+  children?: React.ReactNode;
 } & typeof ImpactDisplayDefaultProps;
 
 const ImpactDisplayDefaultProps = {
@@ -60,12 +63,20 @@ const ImpactDisplayDefaultProps = {
 
 const ImpactDisplay = (props: ImpactDisplayProps) => {
   const {
-    effectCumulative, effectYearly,
-    yearRange, unitCumulative, unitYearly,
-    muted, size, impactName, children } = props;
+    effectCumulative,
+    effectYearly,
+    yearRange,
+    unitCumulative,
+    unitYearly,
+    muted,
+    size,
+    impactName,
+    children,
+  } = props;
   const { t, i18n } = useTranslation();
 
-  const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
+  const cumulativePrefix =
+    effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
   const yearlyPrefix = effectYearly > 0 ? '+' : '';
 
   const instance = useInstance();
@@ -73,34 +84,37 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
   return (
     <ImpactDisplayWrapper>
       <ImpactDisplayHeader muted={muted}>
-        { t('impact') }
-        { impactName && ` (${impactName})`}
+        {t('impact')}
+        {impactName && ` (${impactName})`}
       </ImpactDisplayHeader>
-      { effectCumulative !== undefined && instance.features.showAccumulatedEffects && (
+      {effectCumulative !== undefined &&
+        instance.features.showAccumulatedEffects && (
+          <ImpactDisplayItem>
+            <HighlightValue
+              displayValue={`${cumulativePrefix}${formatNumber(
+                effectCumulative || 0,
+                i18n.language
+              )}`}
+              header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
+              unit={unitCumulative}
+              muted={muted}
+              size={size}
+            />
+          </ImpactDisplayItem>
+        )}
       <ImpactDisplayItem>
         <HighlightValue
-          displayValue={`${cumulativePrefix}${formatNumber(effectCumulative || 0, i18n.language)}`}
-          header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
-          unit={unitCumulative}
-          muted={muted}
-          size={size}
-        />
-      </ImpactDisplayItem>
-      )}
-      <ImpactDisplayItem>
-        <HighlightValue
-          displayValue={`${yearlyPrefix}${formatNumber(effectYearly || 0, i18n.language)}`}
+          displayValue={`${yearlyPrefix}${formatNumber(
+            effectYearly || 0,
+            i18n.language
+          )}`}
           header={`${t('impact-on-year')} ${yearRange[1]}`}
           unit={unitYearly}
           muted={muted}
           size={size}
         />
       </ImpactDisplayItem>
-      { children && (
-        <ImpactDisplayChildren>
-          { children }
-        </ImpactDisplayChildren>
-      )}
+      {children && <ImpactDisplayChildren>{children}</ImpactDisplayChildren>}
     </ImpactDisplayWrapper>
   );
 };

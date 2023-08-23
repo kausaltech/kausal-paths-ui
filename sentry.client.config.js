@@ -3,12 +3,14 @@ import getConfig from 'next/config';
 
 const { publicRuntimeConfig } = getConfig();
 
-const SENTRY_DSN = (
-  publicRuntimeConfig?.sentryDsn || process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
-);
-const DEPLOYMENT_TYPE = (
-  publicRuntimeConfig?.deploymentType || process.env.DEPLOYMENT_TYPE || 'development'
-);
+const SENTRY_DSN =
+  publicRuntimeConfig?.sentryDsn ||
+  process.env.SENTRY_DSN ||
+  process.env.NEXT_PUBLIC_SENTRY_DSN;
+const DEPLOYMENT_TYPE =
+  publicRuntimeConfig?.deploymentType ||
+  process.env.DEPLOYMENT_TYPE ||
+  'development';
 
 Sentry.init({
   dsn: SENTRY_DSN,

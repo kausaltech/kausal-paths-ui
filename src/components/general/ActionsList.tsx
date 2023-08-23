@@ -28,16 +28,17 @@ const ActionListCategory = styled.div`
 `;
 
 type ActionsListProps = {
-  actions: ActionWithEfficiency[],
-  displayType: 'displayTypeYearly',
-  yearRange: [number, number],
-  sortBy: string,
-  sortAscending: boolean,
-  refetching: boolean,
-}
+  actions: ActionWithEfficiency[];
+  displayType: 'displayTypeYearly';
+  yearRange: [number, number];
+  sortBy: string;
+  sortAscending: boolean;
+  refetching: boolean;
+};
 
 const ActionsList = (props: ActionsListProps) => {
-  const { actions, displayType, yearRange, sortBy, sortAscending, refetching } = props;
+  const { actions, displayType, yearRange, sortBy, sortAscending, refetching } =
+    props;
 
   // possible sort: default, impact, cumulativeImpact, cumulativeCost, cumulativeEfficiency
 
@@ -45,10 +46,14 @@ const ActionsList = (props: ActionsListProps) => {
   const sortActions = (a, b) => {
     if (sortBy === 'default') return sortAscending ? 0 : -1;
     // check if we are using efficiency
-    const aValue = a[sortBy] ? a[sortBy] : a.impactMetric?.cumulativeForecastValue;
-    const bValue = b[sortBy] ? b[sortBy] : b.impactMetric?.cumulativeForecastValue;
+    const aValue = a[sortBy]
+      ? a[sortBy]
+      : a.impactMetric?.cumulativeForecastValue;
+    const bValue = b[sortBy]
+      ? b[sortBy]
+      : b.impactMetric?.cumulativeForecastValue;
     return sortAscending ? aValue - bValue : bValue - aValue;
-  }
+  };
 
   const sortedActions = useMemo(() => {
     return [...actions].sort(sortActions);
@@ -66,41 +71,45 @@ const ActionsList = (props: ActionsListProps) => {
   // console.log("action groups", actionGroups);
   return (
     <div>
-      { actionGroups?.map((group) => (
+      {actionGroups?.map((group) => (
         <div>
-        <ActionListCategory>
-          <h3>{ group }</h3>
-        </ActionListCategory>
-        <ActionListList>
-        { sortedActions?.map((action) => (
-          action.group?.name === group &&
-          <ActionListCard
-            key={action.id}
-            action={action}
-            displayType={displayType}
-            displayYears={yearRange}
-            refetching={refetching}
-          />
-        ))}
-      </ActionListList>
-      </div>
+          <ActionListCategory>
+            <h3>{group}</h3>
+          </ActionListCategory>
+          <ActionListList>
+            {sortedActions?.map(
+              (action) =>
+                action.group?.name === group && (
+                  <ActionListCard
+                    key={action.id}
+                    action={action}
+                    displayType={displayType}
+                    displayYears={yearRange}
+                    refetching={refetching}
+                  />
+                )
+            )}
+          </ActionListList>
+        </div>
       ))}
-      { actionGroups.length < 1 && (
+      {actionGroups.length < 1 && (
         <ActionListList>
-          { sortedActions?.map((action) => (
-            !action.group &&
-            <ActionListCard
-              key={action.id}
-              action={action}
-              displayType={displayType}
-              displayYears={yearRange}
-              refetching={refetching}
-            />
-          ))}
+          {sortedActions?.map(
+            (action) =>
+              !action.group && (
+                <ActionListCard
+                  key={action.id}
+                  action={action}
+                  displayType={displayType}
+                  displayYears={yearRange}
+                  refetching={refetching}
+                />
+              )
+          )}
         </ActionListList>
       )}
     </div>
-  )
+  );
 };
 
 export default ActionsList;

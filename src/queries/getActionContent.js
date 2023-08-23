@@ -39,10 +39,10 @@ const GET_ACTION_CONTENT = gql`
     unit {
       htmlShort
     }
-    inputNodes{
+    inputNodes {
       id
     }
-    outputNodes{
+    outputNodes {
       id
     }
     ... on ActionNode {

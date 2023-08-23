@@ -7,7 +7,7 @@ import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'queries/getActionContent';
-import { yearRangeVar, activeScenarioVar, activeGoalVar, } from 'common/cache';
+import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import { useSite } from 'context/site';
 import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
@@ -18,7 +18,10 @@ import ActionParameters from 'components/general/ActionParameters';
 import ContentLoader from 'components/common/ContentLoader';
 import { ActionListLink, NodeLink } from 'common/links';
 import Badge from 'components/common/Badge';
-import { GetActionContentQuery, GetActionContentQueryVariables } from 'common/__generated__/graphql';
+import {
+  GetActionContentQuery,
+  GetActionContentQueryVariables,
+} from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import ImpactDisplay from 'components/general/ImpactDisplay';
@@ -31,12 +34,12 @@ const HeaderSection = styled.div`
   background-color: ${(props) => props.theme.graphColors.blue070};
 `;
 
-const HeaderCard = styled.div` 
+const HeaderCard = styled.div`
   margin: 1rem 0 -8rem;
   padding: 1.5rem 1.5rem 2.5rem;
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
 const ActionDescription = styled.div`
@@ -62,10 +65,9 @@ const ActionMetrics = styled.div`
   }
 `;
 
-const ActionGraphHeader = styled.h4`
-`;
+const ActionGraphHeader = styled.h4``;
 
-const PageHeader = styled.div` 
+const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
@@ -95,7 +97,10 @@ export default function ActionPage() {
   const site = useSite();
   const [activeSubAction, setActiveSubAction] = useState(undefined);
 
-  const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(GET_ACTION_CONTENT, {
+  const queryResp = useQuery<
+    GetActionContentQuery,
+    GetActionContentQueryVariables
+  >(GET_ACTION_CONTENT, {
     fetchPolicy: 'cache-and-network',
     variables: {
       node: slug as string,
@@ -111,11 +116,19 @@ export default function ActionPage() {
   }, [activeScenario]);
 
   if (!data) {
-    return <div style={{ height: '100hv'}}><ContentLoader /></div>;
+    return (
+      <div style={{ height: '100hv' }}>
+        <ContentLoader />
+      </div>
+    );
   }
   if (error) {
-    logError(error, {query: GET_ACTION_CONTENT});
-    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
+    logError(error, { query: GET_ACTION_CONTENT });
+    return (
+      <Container className="pt-5">
+        <GraphQLError errors={error} />
+      </Container>
+    );
   }
   if (!data || !data.action) {
     return <ErrorMessage message={t('page-not-found')} />;
@@ -124,8 +137,10 @@ export default function ActionPage() {
   const action = data.action;
   const subActions = action.subactions;
 
-  // style differently if not active 
-  const isActive = action.parameters.find((param) => param.id == `${param.node.id}.enabled`)?.boolValue;
+  // style differently if not active
+  const isActive = action.parameters.find(
+    (param) => param.id == `${param.node.id}.enabled`
+  )?.boolValue;
 
   // use flowplot if action has dimensional flow
   const flowPlot = action.dimensionalFlow && (
@@ -133,41 +148,53 @@ export default function ActionPage() {
   );
 
   // if action is simple, has just one output node and no subactions, use first downstream node for graph
-  const outputNodes = action.downstreamNodes.filter((node) => node.inputNodes.find((inputNode) => inputNode.id === action.id));
-  const actionVizNode = (outputNodes.length === 1 && action.subactions.length === 0 && outputNodes[0].metric) ? outputNodes[0] : action;
+  const outputNodes = action.downstreamNodes.filter((node) =>
+    node.inputNodes.find((inputNode) => inputNode.id === action.id)
+  );
+  const actionVizNode =
+    outputNodes.length === 1 &&
+    action.subactions.length === 0 &&
+    outputNodes[0].metric
+      ? outputNodes[0]
+      : action;
 
-  const actionPlot = action.metric ? (
-    flowPlot || (
-      <>
-        <ActionGraphHeader>
-          Impact: {actionVizNode.name} (<span dangerouslySetInnerHTML={{__html: actionVizNode.unit?.htmlShort}} />)
-        </ActionGraphHeader>
-        <NodePlot
-          metric={actionVizNode.metric}
-          impactMetric={actionVizNode.impactMetric}
-          startYear={yearRange[0]}
-          endYear={yearRange[1]}
-          color={action.color}
-          isAction={action.__typename === 'ActionNode'}
-          targetYearGoal={action.targetYearGoal}
-        />
-      </>
-    )) : undefined;
+  const actionPlot = action.metric
+    ? flowPlot || (
+        <>
+          <ActionGraphHeader>
+            Impact: {actionVizNode.name} (
+            <span
+              dangerouslySetInnerHTML={{
+                __html: actionVizNode.unit?.htmlShort,
+              }}
+            />
+            )
+          </ActionGraphHeader>
+          <NodePlot
+            metric={actionVizNode.metric}
+            impactMetric={actionVizNode.impactMetric}
+            startYear={yearRange[0]}
+            endYear={yearRange[1]}
+            color={action.color}
+            isAction={action.__typename === 'ActionNode'}
+            targetYearGoal={action.targetYearGoal}
+          />
+        </>
+      )
+    : undefined;
 
-    // show causal nodes only for selected subaction, filter out node used for visualisation
-    const causalNodes = activeSubAction === undefined ?
-    action.downstreamNodes.filter((node) => node.id !== actionVizNode.id)
-    : action.subactions.find((subAction) => subAction.id === activeSubAction)?.downstreamNodes;
+  // show causal nodes only for selected subaction, filter out node used for visualisation
+  const causalNodes =
+    activeSubAction === undefined
+      ? action.downstreamNodes.filter((node) => node.id !== actionVizNode.id)
+      : action.subactions.find((subAction) => subAction.id === activeSubAction)
+          ?.downstreamNodes;
 
   return (
     <>
       <Head>
         <title>
-          {site.title}
-          {' '}
-          |
-          {' '}
-          {action.name}
+          {site.title} | {action.name}
         </title>
       </Head>
       <HeaderSection>
@@ -176,46 +203,36 @@ export default function ActionPage() {
             <HeaderCard>
               <h1>
                 <ActionListLink>
-                  <a>
-                    { t('actions') }
-                  </a>
-                </ActionListLink>
-                {' '}
-                /
-                { action.group && ` ${action.group.name} /`}
+                  <a>{t('actions')}</a>
+                </ActionListLink>{' '}
+                /{action.group && ` ${action.group.name} /`}
                 {` ${action.name}`}
               </h1>
               <div>
-              { action.decisionLevel === 'NATION' && (
-                <ActionCategory>
-                  <Badge
-                    color="neutralLight"
-                  >
-                    { t('decision-national') }
-                  </Badge>
-                </ActionCategory>
-              )}
+                {action.decisionLevel === 'NATION' && (
+                  <ActionCategory>
+                    <Badge color="neutralLight">{t('decision-national')}</Badge>
+                  </ActionCategory>
+                )}
               </div>
               <ActionDescription>
-                <div dangerouslySetInnerHTML={{ __html: action.shortDescription }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: action.shortDescription }}
+                />
                 <NodeLink node={action}>
                   <a>
-                    {t('read-more')}
-                    {' '}
-                    <ArrowRight />
+                    {t('read-more')} <ArrowRight />
                   </a>
                 </NodeLink>
                 <hr />
                 <ActionMetrics>
                   <MetricsParameters>
-                    <ActionParameters
-                      parameters={action.parameters}
-                    />
+                    <ActionParameters parameters={action.parameters} />
                   </MetricsParameters>
                 </ActionMetrics>
-                { actionPlot }
+                {actionPlot}
               </ActionDescription>
-              { subActions.length > 0 && (
+              {subActions.length > 0 && (
                 <SubActions
                   actions={subActions}
                   activeSubAction={activeSubAction}
@@ -226,7 +243,7 @@ export default function ActionPage() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      { causalNodes.length > 0 && (
+      {causalNodes.length > 0 && (
         <CausalGrid
           nodes={causalNodes}
           yearRange={yearRange}

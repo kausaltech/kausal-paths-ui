@@ -8,7 +8,8 @@
     "start": "cross-env NODE_ENV=production node dist/src/server/server.js",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "graphql-codegen": "graphql-codegen --config codegen.ts"
+    "graphql-codegen": "graphql-codegen --config codegen.ts",
+    "prettier:fix": "prettier ./ --write"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0-rc.2",

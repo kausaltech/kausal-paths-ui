@@ -1,20 +1,27 @@
-const path = require('path')
+const path = require('path');
 const webpack = require('webpack');
 const { withSentryConfig } = require('@sentry/nextjs');
 const { secrets } = require('docker-secret');
 const { i18n, SUPPORTED_LANGUAGES } = require('./next-i18next.config');
 
-const DEFAULT_GRAPHQL_API_URL = process.env.DEFAULT_GRAPHQL_API_URL || 'https://api.paths.kausal.tech/v1/graphql/';
+const DEFAULT_GRAPHQL_API_URL =
+  process.env.DEFAULT_GRAPHQL_API_URL ||
+  'https://api.paths.kausal.tech/v1/graphql/';
 const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
 
-const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
+const sentryAuthToken =
+  secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
 
 function initializeThemes() {
   const destPath = path.join(__dirname, 'public', 'static', 'themes');
-  const { generateThemeSymlinks: generateThemeSymlinksPublic } = require('@kausal/themes/setup.cjs');
+  const {
+    generateThemeSymlinks: generateThemeSymlinksPublic,
+  } = require('@kausal/themes/setup.cjs');
   generateThemeSymlinksPublic(destPath, { verbose: false });
   try {
-    const { generateThemeSymlinks: generateThemeSymlinksPrivate } = require('@kausal/themes-private/setup.cjs');
+    const {
+      generateThemeSymlinks: generateThemeSymlinksPrivate,
+    } = require('@kausal/themes-private/setup.cjs');
     generateThemeSymlinksPrivate(destPath, { verbose: false });
   } catch (error) {
     console.error(error);
@@ -22,7 +29,6 @@ function initializeThemes() {
 }
 
 initializeThemes();
-
 
 /**
  * @type {import('next').NextConfig}
@@ -60,7 +66,7 @@ const nextConfig = {
   productionBrowserSourceMaps: true,
   compiler: {
     // Enables the styled-components SWC transform
-    styledComponents: true
+    styledComponents: true,
   },
   swcMinify: true,
   modularizeImports: {
@@ -76,17 +82,19 @@ const nextConfig = {
       cfg.resolve.alias['v8'] = false;
       cfg.resolve.symlinks = true;
     }
-    cfg.plugins.push(new webpack.DefinePlugin({
-      __SENTRY_DEBUG__: false,
-    }))
-    cfg.experiments = {...cfg.experiments, topLevelAwait: true}
+    cfg.plugins.push(
+      new webpack.DefinePlugin({
+        __SENTRY_DEBUG__: false,
+      })
+    );
+    cfg.experiments = { ...cfg.experiments, topLevelAwait: true };
     return cfg;
   },
   swcMinify: true,
   reactStrictMode: true,
   // basePath: process.env.BASE_PATH,
   i18n,
-}
+};
 
 const sentryWebpackPluginOptions = {
   silent: true, // Suppresses all logs

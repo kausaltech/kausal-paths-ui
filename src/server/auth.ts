@@ -1,17 +1,31 @@
 import { Express } from 'express';
-import { Issuer, Strategy, Client, TokenSet, StrategyOptions } from 'openid-client';
+import {
+  Issuer,
+  Strategy,
+  Client,
+  TokenSet,
+  StrategyOptions,
+} from 'openid-client';
 import { parse } from 'url';
-import type { BaseServer, BaseServerRequest, BaseServerResponse } from 'server/common';
+import type {
+  BaseServer,
+  BaseServerRequest,
+  BaseServerResponse,
+} from 'server/common';
 import { NextFunction } from 'express';
-import { Authenticator } from "passport";
-
+import { Authenticator } from 'passport';
 
 export class ServerAuth {
   id: string;
   server: BaseServer;
   client: Client;
 
-  constructor(server: BaseServer, req: BaseServerRequest, id: string, issuer: Issuer) {
+  constructor(
+    server: BaseServer,
+    req: BaseServerRequest,
+    id: string,
+    issuer: Issuer
+  ) {
     this.server = server;
     this.id = id;
 
@@ -28,22 +42,25 @@ export class ServerAuth {
     const opts: StrategyOptions = {
       client,
       params: {
-        scope: "openid profile",
+        scope: 'openid profile',
       },
     };
     const strategy = new Strategy(opts, this.verifyCallback.bind(this));
     server.passport.use(id, strategy);
   }
 
-  handleRequest(req: BaseServerRequest, res: BaseServerResponse, normalizedPath: string, next: NextFunction) {
+  handleRequest(
+    req: BaseServerRequest,
+    res: BaseServerResponse,
+    normalizedPath: string,
+    next: NextFunction
+  ) {
     if (normalizedPath === '/auth') {
       this.server.passport.authenticate(this.id)(req, res, next);
     } else if (normalizedPath === '/auth/callback') {
-      const failurePath = (
-        req.instanceIsProtected ?
-          this.server.getPrefixedPath(req, '/auth/failed', false) :
-          this.server.getPrefixedPath(req, '/', true)
-      );
+      const failurePath = req.instanceIsProtected
+        ? this.server.getPrefixedPath(req, '/auth/failed', false)
+        : this.server.getPrefixedPath(req, '/', true);
 
       this.server.passport.authenticate(this.id, {
         successRedirect: this.server.getPrefixedPath(req, '/', true),
@@ -54,15 +71,15 @@ export class ServerAuth {
         if (err) return next(err);
         const logoutPath = req.instanceIsProtected ? '/' : '/auth/protected';
         res.redirect(this.server.getPrefixedPath(req, logoutPath));
-      })
+      });
     } else if (normalizedPath === '/auth/protected') {
       // FIXME
-      res.status(200).send("Instance is protected");
+      res.status(200).send('Instance is protected');
     } else if (normalizedPath === '/auth/failed') {
       // FIXME
-      res.status(403).send("Authentication failed");
+      res.status(403).send('Authentication failed');
     } else {
-      res.status(404).send("Page not found");
+      res.status(404).send('Page not found');
     }
   }
 
@@ -79,11 +96,15 @@ export type ServerAuthIssuer = Issuer;
 
 export async function initializeIssuer(apiUrl: string) {
   if (!process.env.OIDC_CLIENT_ID || !process.env.OIDC_SECRET) {
-    console.log("🚫 OIDC environment variables not set, disabling OIDC support");
+    console.log(
+      '🚫 OIDC environment variables not set, disabling OIDC support'
+    );
     return null;
   }
   const url = parse(apiUrl);
-  const wkUrl = `${url.protocol}//${url.hostname}${url.port ? ':' + url.port : ''}/.well-known/openid-configuration/`;
+  const wkUrl = `${url.protocol}//${url.hostname}${
+    url.port ? ':' + url.port : ''
+  }/.well-known/openid-configuration/`;
   console.log(`🔒 Retrieving OpenID Connect Issuer metadata: ${wkUrl}`);
   const issuer = await Issuer.discover(wkUrl);
   return issuer;
@@ -93,10 +114,10 @@ export function initializePassport(app: Express) {
   const passport = new Authenticator();
   app.use(passport.initialize());
   app.use(passport.session());
-  passport.serializeUser(function(user, done) {
+  passport.serializeUser(function (user, done) {
     done(null, user);
   });
-  passport.deserializeUser(function(user, done) {
+  passport.deserializeUser(function (user, done) {
     // @ts-ignore
     done(null, user);
   });

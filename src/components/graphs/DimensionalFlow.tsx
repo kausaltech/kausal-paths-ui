@@ -1,51 +1,54 @@
-import { gql, useReactiveVar } from "@apollo/client";
-import { yearRangeVar } from "common/cache";
-import { genColorsFromTheme } from "common/colors";
-import type { DimensionalPlotFragment } from "common/__generated__/graphql";
-import { tint, transparentize } from "polished";
-import { useEffect, useMemo, } from "react";
-import { useTheme } from "styled-components";
-import type Plotly from "plotly.js";
-
+import { gql, useReactiveVar } from '@apollo/client';
+import { yearRangeVar } from 'common/cache';
+import { genColorsFromTheme } from 'common/colors';
+import type { DimensionalPlotFragment } from 'common/__generated__/graphql';
+import { tint, transparentize } from 'polished';
+import { useEffect, useMemo } from 'react';
+import { useTheme } from 'styled-components';
+import type Plotly from 'plotly.js';
 
 type DimensionalPlotProps = {
-  flow: DimensionalPlotFragment,
-}
+  flow: DimensionalPlotFragment;
+};
 
 type Flow = DimensionalPlotFragment;
 
 type FlowNode = DimensionalPlotFragment['nodes'][0] & {
-  idx: number,
-  color: string,
-  linkColor?: string,
-}
+  idx: number;
+  color: string;
+  linkColor?: string;
+};
 
 type FlowLink = DimensionalPlotFragment['links'][0];
 
-
 type DataWithSankey = Plotly.Data & {
   link: {
-    source: number[],
-    target: number[],
-    value: (number | null)[]
-    color: (string | null)[],
-  },
+    source: number[];
+    target: number[];
+    value: (number | null)[];
+    color: (string | null)[];
+  };
   node: {
-    pad: number,
-    thickness: number,
+    pad: number;
+    thickness: number;
     line: {
-      color: string,
-      width: number,
-    },
-    label: string[],
-    hovertemplate?: string,
-    color?: string[],
-  },
-  ids?: string[],
-  valueformat?: string,
-}
+      color: string;
+      width: number;
+    };
+    label: string[];
+    hovertemplate?: string;
+    color?: string[];
+  };
+  ids?: string[];
+  valueformat?: string;
+};
 
-function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<string, FlowNode>) {
+function makeFrame(
+  flow: Flow,
+  start: FlowLink,
+  link: FlowLink,
+  nodeMap: Map<string, FlowNode>
+) {
   const nodes = Array.from(nodeMap.values());
   const data: DataWithSankey = {
     type: 'sankey',
@@ -64,16 +67,23 @@ function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<str
       pad: 15,
       thickness: 30,
       line: {
-        color: "black",
-        width: 0.5
+        color: 'black',
+        width: 0.5,
       },
-      label: nodes.map(node => `${link.year}: ${node.label}`),
-      color: nodes.map(node => node.color),
+      label: nodes.map((node) => `${link.year}: ${node.label}`),
+      color: nodes.map((node) => node.color),
     },
     valueformat: `,.3r`,
   };
 
-  function newFlow(idPrefix: string, src: number, dest: number, val: number | null, color: string | undefined, custom: any) {
+  function newFlow(
+    idPrefix: string,
+    src: number,
+    dest: number,
+    val: number | null,
+    color: string | undefined,
+    custom: any
+  ) {
     data.link.source.push(src);
     data.link.target.push(dest);
     data.link.value.push(val);
@@ -86,7 +96,7 @@ function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<str
     const target = nodeMap.get(link.targets[idx])!;
     const value = link.values[idx];
     newFlow('action', src.idx, target.idx, value, src.linkColor, {});
-  })
+  });
 
   const impactSum = new Map<string, number>();
   link.sources.forEach((id, idx) => {
@@ -110,18 +120,42 @@ function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<str
     const remainingIdx = newNode(src, `${link.year.toString()}: ${src.label}`);
 
     const impact = impactSum.get(srcId)!;
-    const remainingLinkColor = src.linkColor ? tint(0.5, src.linkColor) : undefined;
-    newFlow('start-remaining', startIdx, src.idx, remainingVal, remainingLinkColor, {});
+    const remainingLinkColor = src.linkColor
+      ? tint(0.5, src.linkColor)
+      : undefined;
+    newFlow(
+      'start-remaining',
+      startIdx,
+      src.idx,
+      remainingVal,
+      remainingLinkColor,
+      {}
+    );
     newFlow('start-impact', startIdx, src.idx, impact, src.linkColor, {});
-    newFlow('start-other', startIdx, src.idx, startVal - impact - remainingVal, remainingLinkColor, {});
+    newFlow(
+      'start-other',
+      startIdx,
+      src.idx,
+      startVal - impact - remainingVal,
+      remainingLinkColor,
+      {}
+    );
 
-    newFlow('action-remaining', src.idx, remainingIdx, remainingVal, remainingLinkColor, {});
+    newFlow(
+      'action-remaining',
+      src.idx,
+      remainingIdx,
+      remainingVal,
+      remainingLinkColor,
+      {}
+    );
   });
 
   return data;
 }
 
-const usePlotlyBasic = process.browser && (await import('components/graphs/Plot')).usePlotlyBasic;
+const usePlotlyBasic =
+  process.browser && (await import('components/graphs/Plot')).usePlotlyBasic;
 
 export default function DimensionalFlow(props: DimensionalPlotProps) {
   if (!usePlotlyBasic) return;
@@ -131,22 +165,24 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
 
   useEffect(() => {
     console.log('flow changed');
-  }, [flow])
+  }, [flow]);
 
   const data = useMemo(() => {
     const year = Math.max(flow.links[0].year + 1, endYear);
-    const flowNodesWithoutColors = flow.nodes.filter(node => !node.color);
+    const flowNodesWithoutColors = flow.nodes.filter((node) => !node.color);
     const colors = genColorsFromTheme(theme, flowNodesWithoutColors.length);
     let colorIdx = 0;
-    const nodeMap = new Map(flow.nodes.map((node, idx) => {
-      const out: FlowNode = {
-        ...node,
-        idx,
-        color: node.color ?? colors[colorIdx++],
-      };
-      out.linkColor = transparentize(0.4, tint(0.5, out.color!));
-      return [out.id, out]
-    }));
+    const nodeMap = new Map(
+      flow.nodes.map((node, idx) => {
+        const out: FlowNode = {
+          ...node,
+          idx,
+          color: node.color ?? colors[colorIdx++],
+        };
+        out.linkColor = transparentize(0.4, tint(0.5, out.color!));
+        return [out.id, out];
+      })
+    );
     const start = flow.links[0];
     const current = flow.links.find((link) => link.year == year)!;
     return [makeFrame(flow, start, current, nodeMap)];
@@ -171,14 +207,12 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
     return out;
   }, []);
 
-  const ref = usePlotlyBasic({ data: data, layout, config  });
+  const ref = usePlotlyBasic({ data: data, layout, config });
 
   // TODO: How to have useResizeHandler work with usePlotlyBasic?
   // The resulting graph is not responsive with this implementation.
 
-  return (
-    <div ref={ref} style={{ width: '100%' }} />
-  )
+  return <div ref={ref} style={{ width: '100%' }} />;
 }
 
 DimensionalFlow.fragment = gql`

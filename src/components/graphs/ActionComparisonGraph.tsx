@@ -3,11 +3,10 @@ import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'reactstrap';
-import {ArrowRight} from 'react-bootstrap-icons';
+import { ArrowRight } from 'react-bootstrap-icons';
 import { t } from 'i18next';
 
-const Plot = dynamic(() => import('components/graphs/Plot'),
-  { ssr: false });
+const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
 const GraphContainer = styled.div`
   .js-plotly-plot {
@@ -28,9 +27,7 @@ const ActionDescription = styled.div`
   }
 `;
 
-const HoverValue = styled.div`
-
-`;
+const HoverValue = styled.div``;
 
 const HoverGroupTag = styled.span`
   font-size: 80%;
@@ -38,31 +35,28 @@ const HoverGroupTag = styled.span`
 
 const HoverValueTitle = styled.div`
   line-height: 1;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 `;
 
 const HoverValueValue = styled.span`
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1;
-  margin-right: .5rem;
+  margin-right: 0.5rem;
 `;
 
-const HoverValueUnit = styled.span`
-`;
+const HoverValueUnit = styled.span``;
 
 const formatNumber = (value, language) => {
-  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language)
+  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language);
 };
 
 function ActionComparisonGraph(props) {
-  const { data,
-    impactUnit, impactName,
-    actionIds, actionGroups } = props;
+  const { data, impactUnit, impactName, actionIds, actionGroups } = props;
   const theme = useTheme();
   const { i18n } = useTranslation();
 
-  console.log("comparison graph props", props);
+  console.log('comparison graph props', props);
   const barHoverColor = theme.graphColors.green090;
 
   const [barColors, setBarColors] = useState(data.colors);
@@ -76,107 +70,123 @@ function ActionComparisonGraph(props) {
   // console.log("mac props", props);
   // TODO: Add sorting of data here
 
-  if (data.actions?.length < 1) return <div/>
+  if (data.actions?.length < 1) return <div />;
 
-  const layout = useMemo(() => ({
-    height: 300,
-    barmode: 'relative',
-    hoverlabel: { 
-      bgcolor: theme.themeColors.white,
-      bordercolor: theme.graphColors.grey030,
-      font: {
-        family: theme.fontFamily,
-        color: theme.graphColors.grey090,
-      }
-    },
-    hovermode: 'x unified',
-    hoverdistance: 10,
-    yaxis: {
-      title: `${impactName} (${impactUnit})`
-    },
-    xaxis: {
-      title: `Action`,
-      showgrid: true,
-      showticklabels: false,
-    },
-    margin: {
-      l: 50,
-      r: 0,
-      b: 60,
-      t: 10,
-      pad: 0,
-    },
-    paper_bgcolor: theme.themeColors.white,
-    plot_bgcolor: theme.themeColors.white,
-  }), [theme, impactUnit, impactName]);
-
-  const handleHover = useCallback((evt) => {
-    // console.log("HOVERED", evt);
-    const hoveredIndex = evt.points[0].pointIndex;
-    //const hoverColors = data.colors;
-    //hoverColors[hoveredIndex] = "#333";
-    //setBarColors(hoverColors);
-    setHoverId(hoveredIndex);
-    return null;
-  }, [setHoverId]);
-
-  const plot = useMemo(() => (
-    <Plot
-      data={[{
-        type: 'bar',
-        x: data['actions'],
-        y: data['impact'],
-        text: data['actions'],
-        marker: {
-          color: data.colors,
-          opacity: 0.9,
-          line: {
-            color: theme.themeColors.white,
-            width: 2
-          }
+  const layout = useMemo(
+    () => ({
+      height: 300,
+      barmode: 'relative',
+      hoverlabel: {
+        bgcolor: theme.themeColors.white,
+        bordercolor: theme.graphColors.grey030,
+        font: {
+          family: theme.fontFamily,
+          color: theme.graphColors.grey090,
         },
-        textposition: 'none',
-        customdata: data['impact'],
-        hovertemplate: "%{yaxis.title.text}: %{y:.3r}<br>",
-      }]}
-      layout={layout}
-      useResizeHandler
-      style={{ width: '100%' }}
-      config={{ displayModeBar: false }}
-      onHover={(evt) => handleHover(evt)}
-    />
-  ), [data, theme, layout, handleHover])
+      },
+      hovermode: 'x unified',
+      hoverdistance: 10,
+      yaxis: {
+        title: `${impactName} (${impactUnit})`,
+      },
+      xaxis: {
+        title: `Action`,
+        showgrid: true,
+        showticklabels: false,
+      },
+      margin: {
+        l: 50,
+        r: 0,
+        b: 60,
+        t: 10,
+        pad: 0,
+      },
+      paper_bgcolor: theme.themeColors.white,
+      plot_bgcolor: theme.themeColors.white,
+    }),
+    [theme, impactUnit, impactName]
+  );
+
+  const handleHover = useCallback(
+    (evt) => {
+      // console.log("HOVERED", evt);
+      const hoveredIndex = evt.points[0].pointIndex;
+      //const hoverColors = data.colors;
+      //hoverColors[hoveredIndex] = "#333";
+      //setBarColors(hoverColors);
+      setHoverId(hoveredIndex);
+      return null;
+    },
+    [setHoverId]
+  );
+
+  const plot = useMemo(
+    () => (
+      <Plot
+        data={[
+          {
+            type: 'bar',
+            x: data['actions'],
+            y: data['impact'],
+            text: data['actions'],
+            marker: {
+              color: data.colors,
+              opacity: 0.9,
+              line: {
+                color: theme.themeColors.white,
+                width: 2,
+              },
+            },
+            textposition: 'none',
+            customdata: data['impact'],
+            hovertemplate: '%{yaxis.title.text}: %{y:.3r}<br>',
+          },
+        ]}
+        layout={layout}
+        useResizeHandler
+        style={{ width: '100%' }}
+        config={{ displayModeBar: false }}
+        onHover={(evt) => handleHover(evt)}
+      />
+    ),
+    [data, theme, layout, handleHover]
+  );
 
   return (
-  <GraphContainer>
-    { plot }
-    { hoverId !== null && 
-    <ActionDescription color={data.colors[hoverId]}>
-      <a href={`/actions/${actionIds[hoverId]}/`}>
-        <HoverGroupTag color={data.colors[hoverId]}>{actionGroups.find((group) => group.id === data.groups[hoverId])?.name}</HoverGroupTag>
-        <h4>
-          {data.actions[hoverId]}
-          {' '}
-          <ArrowRight />
-        </h4>
-      </a>
-      <Row>
-        <Col md={3} className="d-flex align-items-end">
-          <HoverValue>
-            <HoverValueTitle>{impactName}</HoverValueTitle>
-            <HoverValueValue>{formatNumber(data.impact[hoverId], i18n.language)}</HoverValueValue>
-            <HoverValueUnit dangerouslySetInnerHTML={{__html: impactUnit}} />
-          </HoverValue>
-        </Col>
-        <Col md={3} className="d-flex align-items-end">
-        </Col>
-        <Col md={3} className="d-flex align-items-end">
-        </Col>
-      </Row>
-    </ActionDescription>
-  }
-  </GraphContainer>
-  )
+    <GraphContainer>
+      {plot}
+      {hoverId !== null && (
+        <ActionDescription color={data.colors[hoverId]}>
+          <a href={`/actions/${actionIds[hoverId]}/`}>
+            <HoverGroupTag color={data.colors[hoverId]}>
+              {
+                actionGroups.find((group) => group.id === data.groups[hoverId])
+                  ?.name
+              }
+            </HoverGroupTag>
+            <h4>
+              {data.actions[hoverId]} <ArrowRight />
+            </h4>
+          </a>
+          <Row>
+            <Col md={3} className="d-flex align-items-end">
+              <HoverValue>
+                <HoverValueTitle>{impactName}</HoverValueTitle>
+                <HoverValueValue>
+                  {formatNumber(data.impact[hoverId], i18n.language)}
+                </HoverValueValue>
+                <HoverValueUnit
+                  dangerouslySetInnerHTML={{ __html: impactUnit }}
+                />
+              </HoverValue>
+            </Col>
+            <Col md={3} className="d-flex align-items-end"></Col>
+            <Col md={3} className="d-flex align-items-end"></Col>
+          </Row>
+        </ActionDescription>
+      )}
+    </GraphContainer>
+  );
 }
 
 export default ActionComparisonGraph;

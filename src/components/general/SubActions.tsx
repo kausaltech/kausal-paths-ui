@@ -9,7 +9,7 @@ const ActionTabs = styled.div`
   display: flex;
 `;
 
-const ActionTab = styled.button<{isActive : boolean, isEnabled: boolean}>`
+const ActionTab = styled.button<{ isActive: boolean; isEnabled: boolean }>`
   display: inline-flex;
   align-items: flex-start;
   flex-direction: column;
@@ -17,12 +17,21 @@ const ActionTab = styled.button<{isActive : boolean, isEnabled: boolean}>`
   margin-right: 5px;
   border: 1px solid ${(props) => props.theme.graphColors.grey020};
   border-top: 1px solid
-              ${(props) => props.isActive ? props.theme.graphColors.blue070 : props.theme.graphColors.grey020};
+    ${(props) =>
+      props.isActive
+        ? props.theme.graphColors.blue070
+        : props.theme.graphColors.grey020};
   border-bottom: 1px solid
-    ${(props) => props.isActive ? props.theme.graphColors.grey000 : props.theme.graphColors.grey010};
+    ${(props) =>
+      props.isActive
+        ? props.theme.graphColors.grey000
+        : props.theme.graphColors.grey010};
   padding: 0.75rem 0.75rem 1.25rem 0.75rem;
   text-align: left;
-  background-color: ${(props) => props.isActive ? props.theme.graphColors.grey000 : props.theme.graphColors.grey010};
+  background-color: ${(props) =>
+    props.isActive
+      ? props.theme.graphColors.grey000
+      : props.theme.graphColors.grey010};
 
   &:last-child {
     margin-right: 0;
@@ -66,43 +75,48 @@ const WatchActionList = styled.div`
 `;
 
 type ActionContentProps = {
-  action: SubActionCardFragment,
-}
+  action: SubActionCardFragment;
+};
 
 const ActionContent = (props: ActionContentProps) => {
   const { action } = props;
 
   const watchActions = [
     {
-      id: "1",
-      name: "Restwertentschädigung und Förderprogramm für den Heizungsersatz",
-      description: "Die Stadt unterstützt den Heizungsersatz durch die Förderprogramme Heizungsersatz und Restwertentschädigung",
-      link: "https://draft-cap.watch-test.kausal.tech/actions/44",
-      image: "https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg",
+      id: '1',
+      name: 'Restwertentschädigung und Förderprogramm für den Heizungsersatz',
+      description:
+        'Die Stadt unterstützt den Heizungsersatz durch die Förderprogramme Heizungsersatz und Restwertentschädigung',
+      link: 'https://draft-cap.watch-test.kausal.tech/actions/44',
+      image:
+        'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
     },
     {
-      id: "2",
-      name: "Informationsangebot über Energis",
-      description: "Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung",
-      link: "https://draft-cap.watch-test.kausal.tech/actions/43",
-      image: "https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg",
+      id: '2',
+      name: 'Informationsangebot über Energis',
+      description:
+        'Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung',
+      link: 'https://draft-cap.watch-test.kausal.tech/actions/43',
+      image:
+        'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
     },
   ];
 
   return (
     <ActionContentCard>
       <ActionDescription>
-        { (action.shortDescription || action.description) ? (
-          <div dangerouslySetInnerHTML={{ __html: action.shortDescription || action.description }} />
-        ) : null }
+        {action.shortDescription || action.description ? (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: action.shortDescription || action.description,
+            }}
+          />
+        ) : null}
       </ActionDescription>
       <h5>How do we make this happen?</h5>
       <WatchActionList>
         {watchActions.map((watchAction: any) => (
-          <WatchActionCard
-            key={watchAction.id}
-            action={watchAction}
-          />
+          <WatchActionCard key={watchAction.id} action={watchAction} />
         ))}
       </WatchActionList>
     </ActionContentCard>
@@ -111,45 +125,45 @@ const ActionContent = (props: ActionContentProps) => {
 
 type SubActionsProps = {
   actions: SubActionCardFragment[];
-}
+};
 
 const SubActions = (props: SubActionsProps) => {
   const { actions, activeSubAction, setActiveSubAction } = props;
-  const [activeTab, setActiveTab] = useState("null");
+  const [activeTab, setActiveTab] = useState('null');
 
   const handleClick = (id: string) => {
     if (activeTab === id) {
-      setActiveTab("null");
+      setActiveTab('null');
       setActiveSubAction(undefined);
     } else {
       setActiveTab(id);
       setActiveSubAction(id);
-    };
+    }
   };
 
   return (
     <div className="mt-4">
       <h3>Ziele und Massnahmen</h3>
       <ActionTabs>
-      {actions.map((action: any) => (
-        <ActionTab
-          key={action.id}
-          onClick={()=>handleClick(action.id)}
-          isActive={action.id === activeTab}
-          isEnabled={action.isEnabled}
-        >
-          <TabTitle>
-            <div>
-              { action.name }
-            </div>
-          </TabTitle>
-        </ActionTab>
-      ))}
+        {actions.map((action: any) => (
+          <ActionTab
+            key={action.id}
+            onClick={() => handleClick(action.id)}
+            isActive={action.id === activeTab}
+            isEnabled={action.isEnabled}
+          >
+            <TabTitle>
+              <div>{action.name}</div>
+            </TabTitle>
+          </ActionTab>
+        ))}
       </ActionTabs>
-      { activeTab !== "null" &&
-      <ActionContent action={actions.find((action) => action.id === activeTab)} /> }
+      {activeTab !== 'null' && (
+        <ActionContent
+          action={actions.find((action) => action.id === activeTab)}
+        />
+      )}
     </div>
-    
   );
 };
 

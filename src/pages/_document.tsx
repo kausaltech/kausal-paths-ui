@@ -1,10 +1,15 @@
-import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/document';
-import * as Sentry from "@sentry/nextjs";
+import Document, {
+  Html,
+  Head,
+  Main,
+  NextScript,
+  DocumentContext,
+} from 'next/document';
+import * as Sentry from '@sentry/nextjs';
 import { ServerStyleSheet } from 'styled-components';
 import { getThemeCSS } from 'common/theme';
 import { setBasePath } from 'common/links';
 import getConfig from 'next/config';
-
 
 class PlansDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
@@ -14,14 +19,18 @@ class PlansDocument extends Document {
     const basePath = getConfig().publicRuntimeConfig.basePath;
 
     setBasePath(basePath);
-    const sentryTraceId = Sentry.getCurrentHub()?.getScope()?.getTransaction()?.toTraceparent();
+    const sentryTraceId = Sentry.getCurrentHub()
+      ?.getScope()
+      ?.getTransaction()
+      ?.toTraceparent();
     try {
-      ctx.renderPage = () => originalRenderPage({
-        enhanceApp: (App) => (props) => {
-          themeProps = props.themeProps;
-          return sheet.collectStyles(<App {...props} />);
-        },
-      });
+      ctx.renderPage = () =>
+        originalRenderPage({
+          enhanceApp: (App) => (props) => {
+            themeProps = props.themeProps;
+            return sheet.collectStyles(<App {...props} />);
+          },
+        });
       const initialProps = await Document.getInitialProps(ctx);
       return {
         ...initialProps,
@@ -30,7 +39,11 @@ class PlansDocument extends Document {
             {initialProps.styles}
             {sheet.getStyleElement()}
             {themeProps && (
-              <link rel="stylesheet" type="text/css" href={getThemeCSS(themeProps.name)} />
+              <link
+                rel="stylesheet"
+                type="text/css"
+                href={getThemeCSS(themeProps.name)}
+              />
             )}
             {false && sentryTraceId && (
               <meta name="sentry-trace" content={sentryTraceId} />
@@ -48,9 +61,7 @@ class PlansDocument extends Document {
     let serverError;
 
     if (!nextData) {
-      serverError = (
-        <h1>Internal Server Error</h1>
-      );
+      serverError = <h1>Internal Server Error</h1>;
     }
 
     return (

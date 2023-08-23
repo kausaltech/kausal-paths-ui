@@ -17,7 +17,7 @@ const GET_PARAMETERS = gql`
       ... on NumberParameterType {
         minValue
         maxValue
-        numberDefault:defaultValue
+        numberDefault: defaultValue
         numberValue: value
         node {
           id

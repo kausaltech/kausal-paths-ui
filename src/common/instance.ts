@@ -3,7 +3,6 @@ import getConfig from 'next/config';
 import GET_INSTANCE_CONTEXT from '../queries/instance';
 import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
 
-
 export type InstanceContextType = GetInstanceContextQuery['instance'];
 export type InstanceGoal = InstanceContextType['goals'][0];
 

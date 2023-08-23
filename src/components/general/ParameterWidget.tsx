@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
-import {
-  Input as BSCustomInput,
-} from 'reactstrap';
+import { Input as BSCustomInput } from 'reactstrap';
 import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
@@ -24,8 +22,8 @@ const WidgetWrapper = styled.div`
 
   .form-check-input {
     &:checked {
-      background-color: ${(props) =>props.theme.brandDark};
-      border-color: ${(props) =>props.theme.brandDark};
+      background-color: ${(props) => props.theme.brandDark};
+      border-color: ${(props) => props.theme.brandDark};
     }
   }
 
@@ -52,26 +50,48 @@ const Thumb = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0px 2px 6px #AAA;
+  box-shadow: 0px 2px 6px #aaa;
 `;
 
 const SET_PARAMETER = gql`
-  mutation SetParameter($parameterId: ID!, $boolValue: Boolean, $numberValue: Float, $stringValue: String) {
-    setParameter(id: $parameterId, boolValue: $boolValue, numberValue: $numberValue, stringValue: $stringValue) {
+  mutation SetParameter(
+    $parameterId: ID!
+    $boolValue: Boolean
+    $numberValue: Float
+    $stringValue: String
+  ) {
+    setParameter(
+      id: $parameterId
+      boolValue: $boolValue
+      numberValue: $numberValue
+      stringValue: $stringValue
+    ) {
       ok
       parameter {
         isCustomized
         ... on BoolParameterType {
-        boolValue: value
-        boolDefaultValue: defaultValue
-      }
+          boolValue: value
+          boolDefaultValue: defaultValue
+        }
       }
     }
   }
 `;
 
 const NumberWidget = (props) => {
-  const { id, initialValue, defaultValue, min, max, isCustomized, handleChange, loading, description, unit, step } = props;
+  const {
+    id,
+    initialValue,
+    defaultValue,
+    min,
+    max,
+    isCustomized,
+    handleChange,
+    loading,
+    description,
+    unit,
+    step,
+  } = props;
   const theme = useTheme();
   const [values, setValues] = useState([initialValue]);
 
@@ -83,23 +103,24 @@ const NumberWidget = (props) => {
     handleChange({ parameterId: id, numberValue: newValues[0] });
   };
 
-  const Reset = () => defaultValue !== null ? (
-    <Button
-      id="reset-button"
-      color="link"
-      size="sm"
-      outline
-      onClick={() => handleChange({ parameterId: id, numberValue: defaultValue })}
-    >
-      <ArrowCounterclockwise />
-    </Button>
-  ) : null;
+  const Reset = () =>
+    defaultValue !== null ? (
+      <Button
+        id="reset-button"
+        color="link"
+        size="sm"
+        outline
+        onClick={() =>
+          handleChange({ parameterId: id, numberValue: defaultValue })
+        }
+      >
+        <ArrowCounterclockwise />
+      </Button>
+    ) : null;
 
   return (
     <WidgetWrapper>
-      <div>
-        { description }
-      </div>
+      <div>{description}</div>
       <RangeWrapper>
         <Range
           key="Base"
@@ -152,7 +173,7 @@ const NumberWidget = (props) => {
           )}
         />
         <RangeValue>
-          {`${(values[0]).toFixed(0)} ${unit?.htmlShort || ''}`}
+          {`${values[0].toFixed(0)} ${unit?.htmlShort || ''}`}
           {isCustomized ? <Reset /> : null}
         </RangeValue>
       </RangeWrapper>
@@ -161,7 +182,8 @@ const NumberWidget = (props) => {
 };
 
 const BoolWidget = (props) => {
-  const { id, toggled, handleChange, loading, isCustomized, description } = props;
+  const { id, toggled, handleChange, loading, isCustomized, description } =
+    props;
   const { t } = useTranslation();
 
   const label = description || t('will_be_implemented');
@@ -171,18 +193,15 @@ const BoolWidget = (props) => {
       <input
         className="form-check-input"
         type="checkbox"
-        role="switch" 
+        role="switch"
         id={id}
         name={id}
         checked={toggled}
         onChange={() => handleChange({ parameterId: id, boolValue: !toggled })}
         disabled={loading}
-        style={{transform: 'scale(1.5)'}}
+        style={{ transform: 'scale(1.5)' }}
       />
-      <label
-        className="form-check-label"
-        htmlFor={id}
-      >
+      <label className="form-check-label" htmlFor={id}>
         {label}
         {isCustomized ? '*' : ''}
       </label>
@@ -194,12 +213,13 @@ const ParameterWidget = (props) => {
   const { parameter, parameterType } = props;
   const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(SET_PARAMETER, {
-    refetchQueries: 'active',
-    onCompleted: () => {
-      activeScenarioVar({ ...activeScenario });
-    },
-  });
+  const [SetParameter, { loading: mutationLoading, error: mutationError }] =
+    useMutation(SET_PARAMETER, {
+      refetchQueries: 'active',
+      onCompleted: () => {
+        activeScenarioVar({ ...activeScenario });
+      },
+    });
 
   const handleUserSelection = (evt) => {
     SetParameter({ variables: evt });
@@ -224,20 +244,23 @@ const ParameterWidget = (props) => {
         />
       );
       break;
-    case 'StringParameterType': widget = <div>String</div>;
+    case 'StringParameterType':
+      widget = <div>String</div>;
       break;
-    case 'BoolParameterType': widget = (
-      <BoolWidget
-        id={parameter.id}
-        toggled={parameter.boolValue}
-        handleChange={handleUserSelection}
-        loading={mutationLoading}
-        isCustomized={parameter.isCustomized}
-        description={parameter.description}
-      />
-    );
+    case 'BoolParameterType':
+      widget = (
+        <BoolWidget
+          id={parameter.id}
+          toggled={parameter.boolValue}
+          handleChange={handleUserSelection}
+          loading={mutationLoading}
+          isCustomized={parameter.isCustomized}
+          description={parameter.description}
+        />
+      );
       break;
-    default: return widget;
+    default:
+      return widget;
   }
   return widget;
 };

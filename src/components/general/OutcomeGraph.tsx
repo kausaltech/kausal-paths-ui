@@ -10,9 +10,7 @@ import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import type { PlotParams } from 'react-plotly.js';
 import { useInstance } from 'common/instance';
 
-const Plot = dynamic(() => import('components/graphs/Plot'),
-    { ssr: false });
-
+const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
 const smoothingFactor = 0.8;
 
@@ -24,12 +22,11 @@ const PlotLoader = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-
 /* This is naughty, but it will be removed later anyway. */
 let instanceNrDigits = 3;
 
 const formatHover = (name, color, isPred, systemFont, predLabel, unit) => {
-  const predText = (isPred && predLabel) ? ` <i> (${predLabel})</i>` : '';
+  const predText = isPred && predLabel ? ` <i> (${predLabel})</i>` : '';
   const out = {
     hovertemplate:
       `${name}: ` +
@@ -41,14 +38,26 @@ const formatHover = (name, color, isPred, systemFont, predLabel, unit) => {
       bgcolor: color,
       font: {
         family: systemFont,
-      }
-    }
+      },
+    },
   };
   return out;
-}
+};
 
 const generatePlotFromNode = (
-  n: OutcomeNodeFieldsFragment, startYear, endYear, minForecastYear, color, site, t, language, id, systemFont, predLabel, shortUnit, parentNode,
+  n: OutcomeNodeFieldsFragment,
+  startYear,
+  endYear,
+  minForecastYear,
+  color,
+  site,
+  t,
+  language,
+  id,
+  systemFont,
+  predLabel,
+  shortUnit,
+  parentNode
 ) => {
   const plotData: Plotly.Data[] = [];
   const historicalValues = [];
@@ -62,21 +71,29 @@ const generatePlotFromNode = (
   const fillColor = n.color || color;
 
   const getPercentage = (dataPoint, parentMetric) => {
-    const parentDataPoint = parentMetric.find((val) => val.year === dataPoint.year);
-    const percentage = parentDataPoint ? ((dataPoint.value / parentDataPoint.value) * 100).toPrecision(3) : undefined;
-    return (percentage && parseFloat(percentage) < 100) ? `(${parseFloat(percentage).toLocaleString(language)}%)` : '';
+    const parentDataPoint = parentMetric.find(
+      (val) => val.year === dataPoint.year
+    );
+    const percentage = parentDataPoint
+      ? ((dataPoint.value / parentDataPoint.value) * 100).toPrecision(3)
+      : undefined;
+    return percentage && parseFloat(percentage) < 100
+      ? `(${parseFloat(percentage).toLocaleString(language)}%)`
+      : '';
   };
 
   n.metric.historicalValues.forEach((dataPoint) => {
     // Do not include base year in historical values
     if (dataPoint.year === site.referenceYear) {
       baseValue = dataPoint.value;
-      parentBaseValue = getPercentage(dataPoint, parentNode.metric.historicalValues);
+      parentBaseValue = getPercentage(
+        dataPoint,
+        parentNode.metric.historicalValues
+      );
       return;
     }
     // Filter out years outside user selected range
-    if (dataPoint.year > endYear || dataPoint.year < startYear)
-      return;
+    if (dataPoint.year > endYear || dataPoint.year < startYear) return;
     // Generate historical values and dates
     let valueArray;
     let dateArray;
@@ -92,7 +109,9 @@ const generatePlotFromNode = (
     }
     valueArray.push(dataPoint.value);
     dateArray.push(dataPoint.year);
-    parentValueArray.push(getPercentage(dataPoint, parentNode.metric.historicalValues));
+    parentValueArray.push(
+      getPercentage(dataPoint, parentNode.metric.historicalValues)
+    );
   });
   if (site.referenceYear && baseValue !== undefined) {
     const referenceYearTrace: Plotly.Data = {
@@ -111,45 +130,62 @@ const generatePlotFromNode = (
       fillcolor: fillColor,
       xaxis: 'x',
       yaxis: 'y',
-      ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
+      ...formatHover(
+        n.shortName || n.name,
+        fillColor,
+        false,
+        systemFont,
+        predLabel,
+        shortUnit
+      ),
     };
     plotData.push(referenceYearTrace);
-  };
+  }
 
-  plotData.push(
-    {
-      x: historicalDates,
-      y: historicalValues,
-      customdata: parentHistoricalValues,
-      xaxis: 'x2',
-      yaxis: 'y',
-      name: n.shortName || n.name,
-      showlegend: false,
-      type: 'scatter',
-      fill: 'tonexty',
-      fillcolor: fillColor,
-      stackgroup: `${id}group1`,
-      line: {
-        color: '#ffffff',
-        shape: 'spline',
-        smoothing: smoothingFactor,
-        width: 0.75,
-      },
-      ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
-    }
-  );
+  plotData.push({
+    x: historicalDates,
+    y: historicalValues,
+    customdata: parentHistoricalValues,
+    xaxis: 'x2',
+    yaxis: 'y',
+    name: n.shortName || n.name,
+    showlegend: false,
+    type: 'scatter',
+    fill: 'tonexty',
+    fillcolor: fillColor,
+    stackgroup: `${id}group1`,
+    line: {
+      color: '#ffffff',
+      shape: 'spline',
+      smoothing: smoothingFactor,
+      width: 0.75,
+    },
+    ...formatHover(
+      n.shortName || n.name,
+      fillColor,
+      false,
+      systemFont,
+      predLabel,
+      shortUnit
+    ),
+  });
   n.metric.forecastValues.forEach((dataPoint) => {
-    if(dataPoint.year <= endYear && dataPoint.year >= startYear) {
-    forecastValues.push(dataPoint.value);
-    forecastDates.push(dataPoint.year);
-    parentForecastValues.push(getPercentage(dataPoint, parentNode.metric.forecastValues));
+    if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
+      forecastValues.push(dataPoint.value);
+      forecastDates.push(dataPoint.year);
+      parentForecastValues.push(
+        getPercentage(dataPoint, parentNode.metric.forecastValues)
+      );
     }
   });
 
-  const joinData: typeof plotData[0] = {
-    y: [historicalValues[historicalValues.length-1], forecastValues[0]],
-    x: [historicalDates[historicalDates.length-1], forecastDates[0]],
-    customdata: [parentHistoricalValues[parentHistoricalValues.length-1], parentForecastValues[0]],
+  const joinData: (typeof plotData)[0] = {
+    y: [historicalValues[historicalValues.length - 1], forecastValues[0]],
+    x: [historicalDates[historicalDates.length - 1], forecastDates[0]],
+    customdata: [
+      parentHistoricalValues[parentHistoricalValues.length - 1],
+      parentForecastValues[0],
+    ],
     xaxis: 'x2',
     yaxis: 'y',
     name: '',
@@ -168,43 +204,48 @@ const generatePlotFromNode = (
   };
   plotData.push(joinData);
 
-  plotData.push(
-    {
-      x: forecastDates,
-      y: forecastValues,
-      customdata: parentForecastValues,
-      xaxis: 'x2',
-      yaxis: 'y',
-      name: `${n.shortName || n.name} (${t('pred')})`,
-      showlegend: false,
-      type: 'scatter',
-      fill: 'tonexty',
-      fillcolor: tint(0.3, fillColor),
-      stackgroup: `${id}group2`,
-      line: {
-        color: 'white',
-        shape: 'spline',
-        smoothing: smoothingFactor,
-        width: 0.5,
-      },
-      ...formatHover(n.shortName || n.name, fillColor, true, systemFont, predLabel, shortUnit),
-    }
-  );
-  
+  plotData.push({
+    x: forecastDates,
+    y: forecastValues,
+    customdata: parentForecastValues,
+    xaxis: 'x2',
+    yaxis: 'y',
+    name: `${n.shortName || n.name} (${t('pred')})`,
+    showlegend: false,
+    type: 'scatter',
+    fill: 'tonexty',
+    fillcolor: tint(0.3, fillColor),
+    stackgroup: `${id}group2`,
+    line: {
+      color: 'white',
+      shape: 'spline',
+      smoothing: smoothingFactor,
+      width: 0.5,
+    },
+    ...formatHover(
+      n.shortName || n.name,
+      fillColor,
+      true,
+      systemFont,
+      predLabel,
+      shortUnit
+    ),
+  });
+
   return plotData;
-}
+};
 
 type OutcomeGraphProps = {
-  node: OutcomeNodeFieldsFragment,
-  subNodes: OutcomeNodeFieldsFragment[],
-  color: string,
-  startYear: number,
-  endYear: number,
-}
+  node: OutcomeNodeFieldsFragment;
+  subNodes: OutcomeNodeFieldsFragment[];
+  color: string;
+  startYear: number;
+  endYear: number;
+};
 
 const OutcomeGraph = (props: OutcomeGraphProps) => {
   const { node: parentNode, subNodes, color, startYear, endYear } = props;
-  const { t, i18n  } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useContext(ThemeContext);
   const site = useContext(SiteContext);
   const instance = useInstance();
@@ -215,65 +256,117 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
 
   const metric = parentNode.metric!;
 
-  const baselineForecast = metric.baselineForecastValues && metricToPlot(parentNode.metric, 'baselineForecastValues', startYear, endYear);
+  const baselineForecast =
+    metric.baselineForecastValues &&
+    metricToPlot(
+      parentNode.metric,
+      'baselineForecastValues',
+      startYear,
+      endYear
+    );
   const goals = parentNode.goals;
   const targetYearGoal = parentNode.targetYearGoal;
 
-  const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
+  const systemFont =
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
-  const displayNodes = (subNodes?.length > 1 ? subNodes : parentNode && [parentNode]).map(node => ({...node}));
+  const displayNodes = (
+    subNodes?.length > 1 ? subNodes : parentNode && [parentNode]
+  ).map((node) => ({ ...node }));
   const shortUnit = metric.unit?.short;
   const longUnit = metric.unit?.htmlLong;
   const predLabel = t('pred');
 
   // Find the lowes forecast year
-  const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
+  const forecastYears = displayNodes.map(
+    (node) => node.metric.forecastValues[0]?.year
+  );
   const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
 
   // Split nodes to pos and neg
-  const hasNegativeValues = ((node) => {
-    if (node.metric?.forecastValues.find((val) => val.value < 0 )) return true;
-    if (node.metric?.historicalValues.find((val) => val.value < 0 )) return true;
+  const hasNegativeValues = (node) => {
+    if (node.metric?.forecastValues.find((val) => val.value < 0)) return true;
+    if (node.metric?.historicalValues.find((val) => val.value < 0)) return true;
     return false;
-  });
+  };
   const negativeDisplayNodes = displayNodes?.filter(hasNegativeValues);
-  const positiveDisplayNodes = displayNodes?.filter((node) => !hasNegativeValues(node));
+  const positiveDisplayNodes = displayNodes?.filter(
+    (node) => !hasNegativeValues(node)
+  );
 
   // generate separate stacks for positive and negative side
   positiveDisplayNodes?.forEach((node, index) => {
     const trace = generatePlotFromNode(
-      node, startYear, endYear, minForecastYear, color, site, t, i18n.language,
-      'pos', systemFont, predLabel, shortUnit, parentNode
+      node,
+      startYear,
+      endYear,
+      minForecastYear,
+      color,
+      site,
+      t,
+      i18n.language,
+      'pos',
+      systemFont,
+      predLabel,
+      shortUnit,
+      parentNode
     );
     if (trace) plotData.push(...trace);
   });
   negativeDisplayNodes?.forEach((node, index) => {
-    plotData.push(...generatePlotFromNode(node, startYear, endYear, minForecastYear, color, site, t, i18n.language, 'neg', systemFont, predLabel, shortUnit, parentNode));
+    plotData.push(
+      ...generatePlotFromNode(
+        node,
+        startYear,
+        endYear,
+        minForecastYear,
+        color,
+        site,
+        t,
+        i18n.language,
+        'neg',
+        systemFont,
+        predLabel,
+        shortUnit,
+        parentNode
+      )
+    );
   });
 
-  if (baselineForecast && site.baselineName && instance.features?.baselineVisibleInGraphs) {
-    plotData.push(
-      {
-        x: baselineForecast.x,
-        y: baselineForecast.y,
-        customdata: baselineForecast.y.map(() => ''),
-        xaxis: 'x2',
-        yaxis: 'y',
-        mode: 'lines',
-        name: site.baselineName,
-        type: 'scatter',
-        line: {
-          color: theme.graphColors.grey060,
-          shape: 'spline',
-          smoothing: smoothingFactor,
-          width: 2,
-          dash: 'dash',
-        },
-        ...formatHover(site.baselineName, theme.graphColors.grey030, false, systemFont, predLabel, shortUnit),
+  if (
+    baselineForecast &&
+    site.baselineName &&
+    instance.features?.baselineVisibleInGraphs
+  ) {
+    plotData.push({
+      x: baselineForecast.x,
+      y: baselineForecast.y,
+      customdata: baselineForecast.y.map(() => ''),
+      xaxis: 'x2',
+      yaxis: 'y',
+      mode: 'lines',
+      name: site.baselineName,
+      type: 'scatter',
+      line: {
+        color: theme.graphColors.grey060,
+        shape: 'spline',
+        smoothing: smoothingFactor,
+        width: 2,
+        dash: 'dash',
       },
-    );
+      ...formatHover(
+        site.baselineName,
+        theme.graphColors.grey030,
+        false,
+        systemFont,
+        predLabel,
+        shortUnit
+      ),
+    });
   }
-  const goalsWithinRange = goals.filter(goal => (goal.year >= startYear) && (goal.year <= endYear));
+  const goalsWithinRange = goals.filter(
+    (goal) => goal.year >= startYear && goal.year <= endYear
+  );
   if (goalsWithinRange.length >= 2) {
     const name = t('target')!;
     plotData.push({
@@ -289,10 +382,10 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       marker: {
         size: 8,
       },
-      x: goalsWithinRange.map(v => v.year),
-      y: goalsWithinRange.map(v => v.value),
+      x: goalsWithinRange.map((v) => v.year),
+      y: goalsWithinRange.map((v) => v.value),
       hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${shortUnit}</b><extra></extra>`,
-    })
+    });
   } else if (goals.length) {
     const goal = goals[goals.length - 1];
     shapes.push({
@@ -326,41 +419,48 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     }
   }
 
-// Add a total figure on hover if there are multiple subnodes
-if (subNodes?.length > 1) {
-  const totalYears = [];
-  const totalValues = [];
+  // Add a total figure on hover if there are multiple subnodes
+  if (subNodes?.length > 1) {
+    const totalYears = [];
+    const totalValues = [];
 
-  parentNode.metric.historicalValues.forEach((dataPoint) => {
-    if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
-      totalYears.push(dataPoint.year);
-      totalValues.push(dataPoint.value);
-    }
-  });
-  parentNode.metric.forecastValues.forEach((dataPoint) => {
-    if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
-      totalYears.push(dataPoint.year);
-      totalValues.push(dataPoint.value);
-    }
-  });
+    parentNode.metric.historicalValues.forEach((dataPoint) => {
+      if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
+        totalYears.push(dataPoint.year);
+        totalValues.push(dataPoint.value);
+      }
+    });
+    parentNode.metric.forecastValues.forEach((dataPoint) => {
+      if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
+        totalYears.push(dataPoint.year);
+        totalValues.push(dataPoint.value);
+      }
+    });
 
-  plotData.push({
-    type: 'scatter',
-    name: t('plot-total')!,
-    mode: 'lines',
-    line: {
-      color: theme.graphColors.grey080,
-      width: 0,
-    },
-    x: totalYears,
-    y: totalValues,
-    customdata: totalValues.map(() => ''),
-    xaxis: 'x2',
-    yaxis: 'y',
-    ...formatHover(t('plot-total')!, theme.graphColors.grey080, false, systemFont, predLabel, shortUnit),
-    showlegend: false,
-  });
-}
+    plotData.push({
+      type: 'scatter',
+      name: t('plot-total')!,
+      mode: 'lines',
+      line: {
+        color: theme.graphColors.grey080,
+        width: 0,
+      },
+      x: totalYears,
+      y: totalValues,
+      customdata: totalValues.map(() => ''),
+      xaxis: 'x2',
+      yaxis: 'y',
+      ...formatHover(
+        t('plot-total')!,
+        theme.graphColors.grey080,
+        false,
+        systemFont,
+        predLabel,
+        shortUnit
+      ),
+      showlegend: false,
+    });
+  }
 
   const layout: PlotParams['layout'] = {
     height: 300,
@@ -409,10 +509,10 @@ if (subNodes?.length > 1) {
       x: 1,
     },
     shapes,
-  }
+  };
 
   if (instance.features.baselineVisibleInGraphs || site.referenceYear) {
-    layout.grid = {rows: 1, columns: 2, pattern: 'independent'};
+    layout.grid = { rows: 1, columns: 2, pattern: 'independent' };
     layout.xaxis = {
       domain: [0, 0.03],
       anchor: 'y',
@@ -427,26 +527,25 @@ if (subNodes?.length > 1) {
       tickformat: 'd',
       tickcolor: theme.graphColors.grey030,
     };
-  };
+  }
   return (
     <>
-      { loading && (
+      {loading && (
         <PlotLoader>
           <Spinner color="dark" />
         </PlotLoader>
-        )
-      }
+      )}
       <Plot
         noValidate
         data={plotData}
         layout={layout}
         useResizeHandler
-        style={{width: '100%'}}
-        config={{displayModeBar: false}}
+        style={{ width: '100%' }}
+        config={{ displayModeBar: false }}
         onInitialized={() => setLoading(false)}
       />
     </>
-  )
-}
+  );
+};
 
 export default OutcomeGraph;

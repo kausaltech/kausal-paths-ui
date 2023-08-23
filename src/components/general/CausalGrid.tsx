@@ -4,7 +4,10 @@ import { Container, Alert } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
-import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
+import {
+  summarizeYearlyValuesBetween,
+  getImpactMetricValue,
+} from 'common/preprocess';
 import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
@@ -22,7 +25,7 @@ const ActionPoint = styled.button`
   margin: 0 auto;
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
-  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 
   svg {
     margin-right: 1rem;
@@ -51,7 +54,7 @@ const GridRow = styled.div`
   scroll-padding: 50%;
 
   &::-webkit-scrollbar:horizontal {
-  height: 0;
+    height: 0;
     width: 0;
     display: none;
   }
@@ -64,7 +67,7 @@ const GridRow = styled.div`
 const GridCol = styled.div`
   flex: 0 1 480px;
   scroll-snap-align: center;
-  margin: 0 .5rem;
+  margin: 0 0.5rem;
 
   &:first-child {
     margin-left: 2rem;
@@ -82,12 +85,12 @@ const GoalSection = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey070};
 `;
 
-const GoalCard = styled.div` 
+const GoalCard = styled.div`
   margin: -8rem 0 3rem;
   padding: 2rem;
-  border-radius:  0;
+  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
 const ActionDescription = styled.div`
@@ -95,7 +98,7 @@ const ActionDescription = styled.div`
   font-size: 1.15rem;
 `;
 
-const PageHeader = styled.div` 
+const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   a {
@@ -111,11 +114,12 @@ const PageHeader = styled.div`
 
 const ContentWrapper = styled.div`
   padding: 1rem;
-  margin: .5rem 0;
+  margin: 0.5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
   border-radius: 0;
 
-  .x2sstick text, .xtick text {
+  .x2sstick text,
+  .xtick text {
     text-anchor: end !important;
   }
 `;
@@ -125,7 +129,8 @@ const ImpactFigures = styled.div`
   width: 100%;
   justify-content: flex-end;
 
-  .figure-left, .figure-right {
+  .figure-left,
+  .figure-right {
     flex: 1 1 50%;
   }
 
@@ -134,14 +139,16 @@ const ImpactFigures = styled.div`
   }
 `;
 
-export type CausalGridNode = NonNullable<GetActionContentQuery['action']>['downstreamNodes'][0];
+export type CausalGridNode = NonNullable<
+  GetActionContentQuery['action']
+>['downstreamNodes'][0];
 
 type CausalGridProps = {
-  nodes: CausalGridNode[],
-  yearRange: [number, number],
-  actionIsOff: boolean,
-  action: NonNullable<GetActionContentQuery['action']>,
-}
+  nodes: CausalGridNode[];
+  yearRange: [number, number];
+  actionIsOff: boolean;
+  action: NonNullable<GetActionContentQuery['action']>;
+};
 
 const CausalGrid = (props: CausalGridProps) => {
   const { nodes, yearRange, actionIsOff, action } = props;
@@ -152,26 +159,30 @@ const CausalGrid = (props: CausalGridProps) => {
   const [gridOpen, setGridOpen] = useState(false);
 
   if (nodes.length === 0) {
-    return <Container className="pt-5"><Alert color="warning">Action has no nodes</Alert></Container>
+    return (
+      <Container className="pt-5">
+        <Alert color="warning">Action has no nodes</Alert>
+      </Container>
+    );
   }
 
   const lastNode = nodes.find((node) => node.outputNodes.length === 0)!;
   const visibleNodes = gridOpen ? nodes : [lastNode];
 
   const parentMap = new Map<string, CausalGridNode[]>();
-  [action, ...visibleNodes].forEach(node => {
-    node.outputNodes.forEach(output => {
+  [action, ...visibleNodes].forEach((node) => {
+    node.outputNodes.forEach((output) => {
       const old = parentMap.get(output.id) || [];
       parentMap.set(output.id, [...old, node]);
-    })
+    });
   });
-  const filteredNodes = visibleNodes.filter(node => {
+  const filteredNodes = visibleNodes.filter((node) => {
     // Remove some nodes from the causal pathways (for now)
     if (action.dimensionalFlow && node.quantity !== 'emissions') {
-      node.outputNodes.map(output => {
+      node.outputNodes.map((output) => {
         const p = parentMap.get(output.id)!;
         p.splice(p.indexOf(node), 1);
-        parentMap.set(output.id, [...p, ...(parentMap.get(node.id) || [])])
+        parentMap.set(output.id, [...p, ...(parentMap.get(node.id) || [])]);
       });
       return false;
     }
@@ -181,11 +192,11 @@ const CausalGrid = (props: CausalGridProps) => {
   const findOutputs = (parentIds: string[], tree: CausalGridNode[]) => {
     const grid = tree?.length ? tree : [];
     // return all nodes that input to given node ids
-    const inputs = Array.from(new Set(parentIds.flatMap(id => parentMap.get(id) || []))).filter(node => node.id !== action.id);
+    const inputs = Array.from(
+      new Set(parentIds.flatMap((id) => parentMap.get(id) || []))
+    ).filter((node) => node.id !== action.id);
     // create grid row of ids
-    const rowIds = inputs.map(
-      (outputNode) => outputNode.id,
-    );
+    const rowIds = inputs.map((outputNode) => outputNode.id);
     // remove higher duplicates from the grid
     grid.forEach((gridRow) => {
       remove(gridRow, (item) => rowIds.find((rowId) => rowId === item.id));
@@ -203,11 +214,21 @@ const CausalGrid = (props: CausalGridProps) => {
   const causalGridNodes = findOutputs([lastNode.id], []);
   const impactAtTargetYear = getImpactMetricValue(lastNode, yearRange[1]);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
-  const cumulativeImpact = lastNode.quantity === 'emissions'
-    ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1]) : undefined;
+  const cumulativeImpact =
+    lastNode.quantity === 'emissions'
+      ? summarizeYearlyValuesBetween(
+          lastNode.impactMetric,
+          yearRange[0],
+          yearRange[1]
+        )
+      : undefined;
 
   // find nodes that the action affects directly
-  const actionOutputNodes = filteredNodes.filter((node) => parentMap.get(node.id) && parentMap.get(node.id)!.find((inputNode) => inputNode.id === action.id));
+  const actionOutputNodes = filteredNodes.filter(
+    (node) =>
+      parentMap.get(node.id) &&
+      parentMap.get(node.id)!.find((inputNode) => inputNode.id === action.id)
+  );
 
   return (
     <ArcherContainer
@@ -219,50 +240,59 @@ const CausalGrid = (props: CausalGridProps) => {
       <GridSection>
         <ArcherElement
           relations={
-            actionOutputNodes.length > 0 ? actionOutputNodes.map((node) => (
-            { targetId: node.id,
-              targetAnchor: 'top',
-              sourceAnchor: 'bottom',
-              style: {
-                style: { strokeDasharray: '5,5' },
-              },
-            }
-          )) : [{ targetId: lastNode.id,
-            targetAnchor: 'top',
-            sourceAnchor: 'bottom',
-            style: {
-              style: { strokeDasharray: '5,5' },
-            },
-          }]}
+            actionOutputNodes.length > 0
+              ? actionOutputNodes.map((node) => ({
+                  targetId: node.id,
+                  targetAnchor: 'top',
+                  sourceAnchor: 'bottom',
+                  style: {
+                    style: { strokeDasharray: '5,5' },
+                  },
+                }))
+              : [
+                  {
+                    targetId: lastNode.id,
+                    targetAnchor: 'top',
+                    sourceAnchor: 'bottom',
+                    style: {
+                      style: { strokeDasharray: '5,5' },
+                    },
+                  },
+                ]
+          }
         >
           <ActionPoint onClick={() => setGridOpen(!gridOpen)}>
-            { gridOpen ? (
+            {gridOpen ? (
               <>
                 <Icon.DashCircle size={24} />
                 Hide calculation
-              </> ): (
+              </>
+            ) : (
               <>
                 <Icon.PlusCircle size={24} />
                 Show calculation
-              </>)}
+              </>
+            )}
           </ActionPoint>
         </ArcherElement>
         {causalGridNodes?.map((row, rowIndex) => (
-          <GridRowWrapper onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
+          <GridRowWrapper
+            onScroll={() => gridCanvas.current.refreshScreen()}
+            key={rowIndex}
+          >
             <GridRow>
               {row.map((col, colindex) => (
                 <GridCol key={col.id}>
                   <ArcherElement
                     id={col.id}
-                    relations={col.outputNodes.map((node) => (
-                      { targetId: node.id,
-                        targetAnchor: 'top',
-                        sourceAnchor: 'bottom',
-                        style: {
-                          style: { strokeDasharray: '5,5' },
-                        },
-                      }
-                    ))}
+                    relations={col.outputNodes.map((node) => ({
+                      targetId: node.id,
+                      targetAnchor: 'top',
+                      sourceAnchor: 'bottom',
+                      style: {
+                        style: { strokeDasharray: '5,5' },
+                      },
+                    }))}
                   >
                     <div>
                       <CausalCard
@@ -283,19 +313,21 @@ const CausalGrid = (props: CausalGridProps) => {
       <GoalSection>
         <Container fluid="lg">
           <PageHeader>
-            <ArcherElement
-              id={lastNode.id}
-            >
+            <ArcherElement id={lastNode.id}>
               <div>
                 <GoalCard>
                   <h2>
                     <NodeLink node={lastNode}>
-                      <a>
-                        {lastNode.name}
-                      </a>
+                      <a>{lastNode.name}</a>
                     </NodeLink>
                   </h2>
-                  {lastNode.shortDescription && <ActionDescription dangerouslySetInnerHTML={{ __html: lastNode.shortDescription }} />}
+                  {lastNode.shortDescription && (
+                    <ActionDescription
+                      dangerouslySetInnerHTML={{
+                        __html: lastNode.shortDescription,
+                      }}
+                    />
+                  )}
                   <ImpactFigures>
                     <ImpactDisplay
                       effectCumulative={cumulativeImpact || undefined}
@@ -306,21 +338,21 @@ const CausalGrid = (props: CausalGridProps) => {
                       muted={actionIsOff}
                     />
                   </ImpactFigures>
-                  { lastNode.metric && (
-                  <ContentWrapper>
-                    <NodePlot
-                      metric={lastNode.metric}
-                      impactMetric={lastNode.impactMetric}
-                      year="2021"
-                      startYear={yearRange[0]}
-                      endYear={yearRange[1]}
-                      color={lastNode.color}
-                      isAction={lastNode.__typename === 'ActionNode'}
-                      targetYear={instance.targetYear}
-                      targetYearGoal={lastNode.targetYearGoal}
-                      quantity={lastNode.quantity}
-                    />
-                  </ContentWrapper>
+                  {lastNode.metric && (
+                    <ContentWrapper>
+                      <NodePlot
+                        metric={lastNode.metric}
+                        impactMetric={lastNode.impactMetric}
+                        year="2021"
+                        startYear={yearRange[0]}
+                        endYear={yearRange[1]}
+                        color={lastNode.color}
+                        isAction={lastNode.__typename === 'ActionNode'}
+                        targetYear={instance.targetYear}
+                        targetYearGoal={lastNode.targetYearGoal}
+                        quantity={lastNode.quantity}
+                      />
+                    </ContentWrapper>
                   )}
                 </GoalCard>
               </div>

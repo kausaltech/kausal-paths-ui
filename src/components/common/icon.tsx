@@ -5,18 +5,13 @@ import { ThemeContext } from 'styled-components';
 
 function Icon(props) {
   const theme = useContext(ThemeContext);
-  const {
-    name,
-    color,
-    width,
-    height,
-    className,
-    ...rest
-  } = props;
+  const { name, color, width, height, className, ...rest } = props;
 
   /* Find the correct icon file from static folder for now */
   /* TODO: Get themed icon url from API */
-  const iconFileName = name.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
+  const iconFileName = name
+    .replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2')
+    .toLowerCase();
   const icon = `${theme.iconsUrl}/${iconFileName}.svg`;
 
   return (

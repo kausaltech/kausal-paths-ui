@@ -3,8 +3,8 @@ import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
 import { Spinner } from 'reactstrap';
 
 const ActionCount = styled.div`
-margin: 0 0 ${({ theme }) => theme.spaces.s100};
-color: ${({ theme }) => theme.themeColors.white};
+  margin: 0 0 ${({ theme }) => theme.spaces.s100};
+  color: ${({ theme }) => theme.themeColors.white};
 `;
 
 const LoadingOverlay = styled.div`
@@ -16,21 +16,29 @@ const LoadingOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(255,255,255,0.4);
+  background-color: rgba(255, 255, 255, 0.4);
   z-index: 1;
 `;
 
-const GraphCard = styled.div` 
+const GraphCard = styled.div`
   position: relative;
   margin: 0 0 3rem;
   padding: 2rem;
-  border-radius:  0;
+  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
 const ActionsComparison = (props) => {
-  const { actions, t, actionGroups, sortBy, sortAscending, refetching, displayYears } = props;
+  const {
+    actions,
+    t,
+    actionGroups,
+    sortBy,
+    sortAscending,
+    refetching,
+    displayYears,
+  } = props;
   // if we have efficiency limit set, remove actions over that limit
 
   console.log('ActionsComparison props', props);
@@ -38,17 +46,19 @@ const ActionsComparison = (props) => {
   const actionsWithImpact = actions.map((action) => {
     return {
       ...action,
-      impact: action.impactMetric.forecastValues.find(
-        (dataPoint) => dataPoint.year === displayYears[1],
-      )?.value || 0,
-    }});
-  
+      impact:
+        action.impactMetric.forecastValues.find(
+          (dataPoint) => dataPoint.year === displayYears[1]
+        )?.value || 0,
+    };
+  });
+
   const sortActions = (a, b) => {
     let aValue = a[sortBy];
     let bValue = b[sortBy];
 
-    return sortAscending ? aValue - bValue : bValue - aValue
-  }
+    return sortAscending ? aValue - bValue : bValue - aValue;
+  };
 
   const sortedActions = [...actionsWithImpact].sort(sortActions);
 
@@ -60,13 +70,17 @@ const ActionsComparison = (props) => {
     impact: sortedActions.map((action) => action.impact),
   };
 
-  const impactName = `${sortedActions[0]?.impactMetric.name} ${displayYears[1]}`; 
+  const impactName = `${sortedActions[0]?.impactMetric.name} ${displayYears[1]}`;
   const impactUnit = sortedActions[0]?.impactMetric.unit.htmlShort;
 
   return (
     <>
       <GraphCard>
-        { refetching && <LoadingOverlay><Spinner color="primary" /></LoadingOverlay> }
+        {refetching && (
+          <LoadingOverlay>
+            <Spinner color="primary" />
+          </LoadingOverlay>
+        )}
         <ActionComparisonGraph
           data={macData}
           impactName={impactName}
@@ -76,7 +90,7 @@ const ActionsComparison = (props) => {
         />
       </GraphCard>
     </>
-  )
+  );
 };
 
 export default ActionsComparison;

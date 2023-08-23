@@ -1,18 +1,16 @@
 import { gql } from '@apollo/client';
 
-
 export const scenarioFragment = gql`
-fragment ScenarioFragment on ScenarioType {
-  id
-  isActive
-  isDefault
-  name
-}
+  fragment ScenarioFragment on ScenarioType {
+    id
+    isActive
+    isDefault
+    name
+  }
 `;
 
-
 const GET_INSTANCE_CONTEXT = gql`
-query GetInstanceContext {
+  query GetInstanceContext {
     instance {
       id
       name
@@ -72,7 +70,7 @@ query GetInstanceContext {
         description
         minValue
         maxValue
-        numberDefault:defaultValue
+        numberDefault: defaultValue
         numberValue: value
         node {
           id
@@ -97,9 +95,8 @@ query GetInstanceContext {
         }
       }
     }
-}
-${scenarioFragment}
+  }
+  ${scenarioFragment}
 `;
-
 
 export default GET_INSTANCE_CONTEXT;

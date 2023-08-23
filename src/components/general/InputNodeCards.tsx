@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import {ArrowUp} from 'react-bootstrap-icons';
+import { ArrowUp } from 'react-bootstrap-icons';
 
 import { NodeLink } from 'common/links';
 import DashCard from 'components/general/DashCard';
@@ -29,20 +29,22 @@ const InputNodeCards = (props) => {
 
   return (
     <InputNodesWrapper>
-    {nodes.map((input) => (
-      <NodeItem key={input.id}>
-        <EffectIcon><ArrowUp size={32}/></EffectIcon>
-        <DashCard>
-          <NodeLink node={input}>
-            <a>
-              <h5>{input.name}</h5>
-            </a>
-          </NodeLink>
-        </DashCard>
-      </NodeItem>
-    ))}
-  </InputNodesWrapper>
+      {nodes.map((input) => (
+        <NodeItem key={input.id}>
+          <EffectIcon>
+            <ArrowUp size={32} />
+          </EffectIcon>
+          <DashCard>
+            <NodeLink node={input}>
+              <a>
+                <h5>{input.name}</h5>
+              </a>
+            </NodeLink>
+          </DashCard>
+        </NodeItem>
+      ))}
+    </InputNodesWrapper>
   );
-}
+};
 
 export default InputNodeCards;

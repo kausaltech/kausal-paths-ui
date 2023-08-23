@@ -8,19 +8,18 @@ import de from 'plotly.js-locales/de';
 import de_ch from 'plotly.js-locales/de-ch';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-
 const locales = {
   fi,
   sv,
   de,
-  "de-CH": de_ch,
-}
+  'de-CH': de_ch,
+};
 
 const PlotlyPlot = createPlotlyComponent(Plotly);
 
 type PlotProps = PlotParams & {
-  noValidate?: boolean,
-}
+  noValidate?: boolean;
+};
 
 const Plot = (props: PlotProps) => {
   const { data } = props;
@@ -59,13 +58,18 @@ const Plot = (props: PlotProps) => {
 };
 
 type UsePlotlyArgs = {
-  data: Plotly.Data[],
-  layout?: Partial<Plotly.Layout>,
-  config?: Partial<Plotly.Config>,
-  noValidate?: boolean,
+  data: Plotly.Data[];
+  layout?: Partial<Plotly.Layout>;
+  config?: Partial<Plotly.Config>;
+  noValidate?: boolean;
 };
 
-export function usePlotlyBasic({ data, layout, config, noValidate }: UsePlotlyArgs) {
+export function usePlotlyBasic({
+  data,
+  layout,
+  config,
+  noValidate,
+}: UsePlotlyArgs) {
   const ref = useRef<HTMLDivElement>(null);
 
   if (!noValidate) {
@@ -81,17 +85,17 @@ export function usePlotlyBasic({ data, layout, config, noValidate }: UsePlotlyAr
     if (current) {
       Plotly.react(current, data, layout, config);
     }
-  }, [ref, data, layout, config])
+  }, [ref, data, layout, config]);
 
   useEffect(() => {
     return () => {
       const { current } = ref;
       if (current) {
         console.log('purge');
-        Plotly.purge(current)
+        Plotly.purge(current);
       }
-    }
-  }, [ref])
+    };
+  }, [ref]);
   return ref;
 }
 

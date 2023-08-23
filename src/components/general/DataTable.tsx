@@ -19,55 +19,89 @@ const TableWrapper = Styled.div`
 const DataTable = (props) => {
   const { node, subNodes, startYear, endYear } = props;
   const { t, i18n } = useTranslation();
-  const totalHistoricalValues = node.metric.historicalValues.filter((value) => value.year >= startYear && value.year <= endYear);
-  const totalForecastValues = node.metric.forecastValues.filter((value) => value.year >= startYear && value.year <= endYear);
+  const totalHistoricalValues = node.metric.historicalValues.filter(
+    (value) => value.year >= startYear && value.year <= endYear
+  );
+  const totalForecastValues = node.metric.forecastValues.filter(
+    (value) => value.year >= startYear && value.year <= endYear
+  );
 
-  const hasTotalValues = totalHistoricalValues.some((val) => val.value !== null) || totalForecastValues.some((val) => val.value !== null);
+  const hasTotalValues =
+    totalHistoricalValues.some((val) => val.value !== null) ||
+    totalForecastValues.some((val) => val.value !== null);
 
   return (
     <TableWrapper>
-      <h5>{ node.name } ({startYear} - {endYear})</h5>
+      <h5>
+        {node.name} ({startYear} - {endYear})
+      </h5>
       <Table bordered size="sm" responsive>
         <thead>
           <tr>
             <th>Year</th>
             <th>Type</th>
-            { subNodes?.map((subNode) => (
+            {subNodes?.map((subNode) => (
               <th key={subNode.id}>{subNode.name}</th>
             ))}
-            { hasTotalValues && <th>{node.metric.name}</th>}
+            {hasTotalValues && <th>{node.metric.name}</th>}
             <th>Unit</th>
           </tr>
         </thead>
         <tbody>
-          { totalHistoricalValues.map((metric) => (
+          {totalHistoricalValues.map((metric) => (
             <tr key={`h-${metric.year}`}>
               <td>{metric.year}</td>
               <td>{t('table-historical')}</td>
-              { subNodes?.map((subNode) => (
+              {subNodes?.map((subNode) => (
                 <td key={`${subNode.id}-${metric.year}`}>
-                  { subNode.metric.historicalValues.find((value) => value.year === metric.year)
-                    ? formatNumber(subNode.metric.historicalValues.find((value) => value.year === metric.year).value, i18n.language)
+                  {subNode.metric.historicalValues.find(
+                    (value) => value.year === metric.year
+                  )
+                    ? formatNumber(
+                        subNode.metric.historicalValues.find(
+                          (value) => value.year === metric.year
+                        ).value,
+                        i18n.language
+                      )
                     : '-'}
                 </td>
               ))}
-              { hasTotalValues && <td>{formatNumber(metric.value, i18n.language)}</td> }
-              <td dangerouslySetInnerHTML={{ __html: node.metric?.unit?.htmlShort }} />
+              {hasTotalValues && (
+                <td>{formatNumber(metric.value, i18n.language)}</td>
+              )}
+              <td
+                dangerouslySetInnerHTML={{
+                  __html: node.metric?.unit?.htmlShort,
+                }}
+              />
             </tr>
           ))}
-          { totalForecastValues.map((metric) => (
+          {totalForecastValues.map((metric) => (
             <tr key={`f-${metric.year}`}>
               <td>{metric.year}</td>
               <td>{t('table-scenario-forecast')}</td>
-              { subNodes?.map((subNode) => (
+              {subNodes?.map((subNode) => (
                 <td key={`${subNode.id}-${metric.year}`}>
-                  { subNode.metric.forecastValues.find((value) => value.year === metric.year)
-                  ? formatNumber(subNode.metric.forecastValues.find((value) => value.year === metric.year).value, i18n.language)
-                  : '-'}
+                  {subNode.metric.forecastValues.find(
+                    (value) => value.year === metric.year
+                  )
+                    ? formatNumber(
+                        subNode.metric.forecastValues.find(
+                          (value) => value.year === metric.year
+                        ).value,
+                        i18n.language
+                      )
+                    : '-'}
                 </td>
               ))}
-              { hasTotalValues && <td>{formatNumber(metric.value, i18n.language)}</td> }
-              <td dangerouslySetInnerHTML={{ __html: node.metric?.unit?.htmlShort }} />
+              {hasTotalValues && (
+                <td>{formatNumber(metric.value, i18n.language)}</td>
+              )}
+              <td
+                dangerouslySetInnerHTML={{
+                  __html: node.metric?.unit?.htmlShort,
+                }}
+              />
             </tr>
           ))}
         </tbody>
