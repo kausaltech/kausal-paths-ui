@@ -19,10 +19,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
    ```yml
    npmScopes:
-   kausal:
-     npmAlwaysAuth: true
-     npmAuthIdent: <SECRET>
-     npmRegistryServer: 'https://npm.kausal.tech'
+     kausal:
+       npmAlwaysAuth: true
+       npmAuthIdent: <SECRET>
+       npmRegistryServer: 'https://npm.kausal.tech'
    ```
 
 3. Configure yarn to install dependencies as regular `node_modules`
