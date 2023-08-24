@@ -3,7 +3,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ## Requirements
 
 - Node 18
-- yarn 3.2.4
+- yarn v3
 
 ## Getting Started
 
@@ -31,10 +31,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
    yarn config set nodeLinker 'node-modules'
    ```
 
-4. To run local development against the staging backend, create an `.env` file with the following env variable
+4. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
 
    ```
-   DEFAULT_GRAPHQL_API_URL=https://paths-api.staging.kausal.tech/v1/graphql/
+   DEFAULT_GRAPHQL_API_URL=
    ```
 
 ### Running the local dev server
