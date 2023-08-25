@@ -9,7 +9,8 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "graphql-codegen": "graphql-codegen --config codegen.ts",
-    "prettier:fix": "prettier ./ --write"
+    "prettier:fix": "prettier ./ --write",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0-rc.2",
