@@ -37,17 +37,17 @@ const ActionsListItem = styled.div`
   flex: 1 1 320px;
 `;
 
-const ActionCard = styled.div<{ active: boolean; groupColor: string }>`
+const ActionCard = styled.div<{ $isActive: boolean; $groupColor: string }>`
   position: relative;
   flex: 1 1 320px;
   min-height: 3rem;
   height: 100%;
   padding: 0.25rem 0.5rem 0.25rem 1rem;
   border: 1px solid ${(props) => props.theme.graphColors.grey010};
-  border-left: 4px solid ${(props) => props.groupColor};
+  border-left: 4px solid ${(props) => props.$groupColor};
   border-radius: 0.25rem;
   background-color: ${(props) =>
-    props.active
+    props.$isActive
       ? props.theme.themeColors.white
       : props.theme.graphColors.grey010};
 
@@ -65,7 +65,7 @@ const ActionCard = styled.div<{ active: boolean; groupColor: string }>`
   a,
   a > h6 {
     color: ${(props) =>
-      props.active
+      props.$isActive
         ? props.theme.graphColors.grey090
         : props.theme.graphColors.grey050};
   }
@@ -195,7 +195,7 @@ const ActionListCard = (props) => {
   );
 
   return (
-    <ActionCard active={isActive} groupColor={action.group?.color}>
+    <ActionCard $isActive={isActive} $groupColor={action.group?.color}>
       <small>{action.group?.name}</small>
       <h5>{action.name}</h5>
       {actionParameterSwitch && (
