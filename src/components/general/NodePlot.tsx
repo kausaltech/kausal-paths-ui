@@ -225,16 +225,18 @@ const NodePlot = (props: NodePlotProps) => {
   if (hasImpact) {
     const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
 
-    const withoutActionY =
-      isAction && !historical.x.length
-        ? new Array(impact.y.length).fill(0)
-        : impact.y.map((dataPoint, index) => {
-            if (impactMetric.forecastValues.length > index) {
-              return dataPoint - impactMetric.forecastValues[index].value;
-            }
+    const withoutActionY = isAction
+      ? // An action's visualised impact without this action applied is always the value of the most recent actualised datapoint or zero
+        new Array(impact.y.length).fill(
+          historical.y.length ? historical.y[historical.y.length - 1] : 0
+        )
+      : impact.y.map((dataPoint, index) => {
+          if (impactMetric.forecastValues.length > index) {
+            return dataPoint - impactMetric.forecastValues[index].value;
+          }
 
-            return dataPoint;
-          });
+          return dataPoint;
+        });
 
     plotData.push({
       x: impact.x,
