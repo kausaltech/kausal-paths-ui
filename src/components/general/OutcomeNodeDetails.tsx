@@ -17,14 +17,14 @@ const ActionGroup = styled.p`
   font-size: 0.8rem;
 `;
 
-const ActionsListCard = styled.li<{ active: boolean; groupColor: string }>`
+const ActionsListCard = styled.li<{ active: boolean; $groupColor: string }>`
   position: relative;
   flex: 1 1 320px;
   min-height: 3rem;
   padding: 0.25rem 0.5rem;
   margin: 0.5rem;
   border: 1px solid ${(props) => props.theme.graphColors.grey010};
-  border-left: 4px solid ${(props) => props.groupColor};
+  border-left: 4px solid ${(props) => props.$groupColor};
   border-radius: 0.25rem;
 
   &:hover {
@@ -56,7 +56,7 @@ const ActionListItem = (props) => {
 
   // console.log("ActionListItem", props, isActive)
   return (
-    <ActionsListCard active={isActive} groupColor={color}>
+    <ActionsListCard active={isActive} $groupColor={color}>
       <ActionLink action={action}>
         <a>
           {action.group && <ActionGroup>{action.group.name}</ActionGroup>}

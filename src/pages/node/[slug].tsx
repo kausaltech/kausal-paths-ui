@@ -22,11 +22,11 @@ import { GetNodePageQuery } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import dimensionalNodePlotFragment from 'queries/dimensionalNodePlot';
 
-const HeaderSection = styled.div`
+const HeaderSection = styled.div<{ $color?: string }>`
   padding: 1rem 0 1rem;
   margin-bottom: 7rem;
   background-color: ${(props) =>
-    props.color || props.theme.graphColors.grey070};
+    props.$color || props.theme.graphColors.grey070};
 `;
 
 const PageHeader = styled.div`
@@ -183,17 +183,19 @@ export default function NodePage() {
           {site.title} | {node.name}
         </title>
       </Head>
-      <HeaderSection color={node.color}>
+      <HeaderSection $color={node.color || undefined}>
         <Container fluid="lg">
           <PageHeader>
             <HeaderCard>
               <div>{node.isAction && <span>{t('action')}</span>}</div>
               <h1>{node.name}</h1>
-              <NodeDescription>
-                <div
-                  dangerouslySetInnerHTML={{ __html: node.shortDescription }}
-                />
-              </NodeDescription>
+              {node.shortDescription && (
+                <NodeDescription>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: node.shortDescription }}
+                  />
+                </NodeDescription>
+              )}
               <div>
                 {node.isAction && (
                   <ActionLink action={node}>

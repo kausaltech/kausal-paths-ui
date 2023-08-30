@@ -60,8 +60,8 @@ const ActionsList = (props: ActionsListProps) => {
   }, [actions, sortBy, sortAscending]);
 
   // Group actions by group
-  const actionGroups = useMemo(() => {
-    const groups = new Set();
+  const actionGroups = useMemo<string[]>(() => {
+    const groups = new Set<string>();
     actions.forEach((action) => {
       if (action.group) groups.add(action.group.name);
     });
@@ -72,7 +72,7 @@ const ActionsList = (props: ActionsListProps) => {
   return (
     <div>
       {actionGroups?.map((group) => (
-        <div>
+        <div key={group}>
           <ActionListCategory>
             <h3>{group}</h3>
           </ActionListCategory>
