@@ -12,7 +12,7 @@ module.exports = {
   fallbackLng: {
     'en-AU': ['en'],
     'de-CH': ['de'],
-    'default': ['en'],
+    default: ['en'],
   },
   localePath: './public/locales',
   localeExtension: 'json',

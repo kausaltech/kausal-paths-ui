@@ -6,11 +6,15 @@ import { readableColor } from 'polished';
 
 const StyledBadge = styled(BSSBadge)`
   background-color: ${(props) => props.theme[props.color]} !important;
-  color: ${
-    (props) => readableColor(props.theme[props.color], props.theme.themeColors.black, props.theme.themeColors.white)
-  };
+  color: ${(props) =>
+    readableColor(
+      props.theme[props.color],
+      props.theme.themeColors.black,
+      props.theme.themeColors.white
+    )};
   border-radius: ${(props) => props.theme.badgeBorderRadius};
-  padding: ${(props) => props.theme.badgePaddingY} ${(props) => props.theme.badgePaddingX};
+  padding: ${(props) => props.theme.badgePaddingY}
+    ${(props) => props.theme.badgePaddingX};
   font-weight: ${(props) => props.theme.badgeFontWeight};
   max-width: 100%;
   word-break: break-all;
@@ -20,7 +24,8 @@ const StyledBadge = styled(BSSBadge)`
   text-align: left;
 
   &:hover {
-    background-color:  ${(props) => props.isLink && darken(0.05, props.theme[props.color])} !important;
+    background-color: ${(props) =>
+      props.isLink && darken(0.05, props.theme[props.color])} !important;
   }
 
   &.lg {
@@ -38,12 +43,8 @@ const Badge = (props) => {
   const { children, size, color, isLink } = props;
 
   return (
-    <StyledBadge
-      className={size}
-      color={color}
-      isLink={isLink}
-    >
-      { children }
+    <StyledBadge className={size} color={color} isLink={isLink}>
+      {children}
     </StyledBadge>
   );
 };

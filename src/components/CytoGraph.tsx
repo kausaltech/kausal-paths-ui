@@ -1,11 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useRouter, } from 'next/router'
+import { useRouter } from 'next/router';
 import chroma from 'chroma-js';
-import cytoscape, { EdgeDefinition, ElementDefinition, NodeDefinition } from 'cytoscape';
+import cytoscape, {
+  EdgeDefinition,
+  ElementDefinition,
+  NodeDefinition,
+} from 'cytoscape';
 import dagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
-import { getContrast, } from 'polished';
+import { getContrast } from 'polished';
 import { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
 import { useTheme } from 'common/theme';
 import SelectDropdown from './common/SelectDropdown';
@@ -54,16 +58,15 @@ function wordWrap(inputStr, maxWidth, newLineStr = '\n') {
   return res + str;
 }
 
-
 type NodeSelectorProps = {
-  nodes: CytoGraphProps['nodes'],
-  selectedNode: string,
-  setSelectedNode: React.Dispatch<React.SetStateAction<string>>,
-}
+  nodes: CytoGraphProps['nodes'];
+  selectedNode: string;
+  setSelectedNode: React.Dispatch<React.SetStateAction<string>>;
+};
 
 function NodeSelector(props: NodeSelectorProps) {
   const { nodes, selectedNode, setSelectedNode } = props;
-  const options = nodes.map(node => ({
+  const options = nodes.map((node) => ({
     id: node.id,
     label: node.name,
   }));
@@ -72,19 +75,20 @@ function NodeSelector(props: NodeSelectorProps) {
     <SelectDropdown
       id="dimension"
       //label={t('choose-node')!}
-      onChange={val => setSelectedNode(val ? val.id : '')}
+      onChange={(val) => setSelectedNode(val ? val.id : '')}
       options={options}
-      value={selectedNode ? (options.find(o => o.id === selectedNode) || null) : null}
+      value={
+        selectedNode ? options.find((o) => o.id === selectedNode) || null : null
+      }
       isMulti={false}
       isClearable={true}
     />
   );
 }
 
-
 type CytoGraphProps = {
-  nodes: GetCytoscapeNodesQuery['nodes'],
-}
+  nodes: GetCytoscapeNodesQuery['nodes'];
+};
 
 export default function CytoGraph(props: CytoGraphProps) {
   const { nodes } = props;
@@ -132,12 +136,12 @@ export default function CytoGraph(props: CytoGraphProps) {
           value: val < 0 ? val.toPrecision(3) : val.toFixed(0),
           unit: node.unit?.htmlShort,
         };
-        label += `\n${hist.year}: ${hist.value} ${hist.unit}`
+        label += `\n${hist.year}: ${hist.value} ${hist.unit}`;
       }
       const bgColor = getBackgroundColor();
       let textColor = '#000000';
       const whiteContrast = getContrast(bgColor, textColor);
-      if (whiteContrast < 8) textColor = '#ffffff'
+      if (whiteContrast < 8) textColor = '#ffffff';
 
       const element: NodeDefinition = {
         group: 'nodes',
@@ -148,7 +152,7 @@ export default function CytoGraph(props: CytoGraphProps) {
           name: node.name,
           hist,
           label: label,
-          type: node.__typename == 'ActionNode' ? 'action': 'node',
+          type: node.__typename == 'ActionNode' ? 'action' : 'node',
         },
       };
       elements.push(element);
@@ -173,7 +177,7 @@ export default function CytoGraph(props: CytoGraphProps) {
           console.log(node);
           console.log(node.subactions);
         }
-        node.subactions.forEach(sub => {
+        node.subactions.forEach((sub) => {
           const edge: EdgeDefinition = {
             group: 'edges',
             data: {
@@ -185,14 +189,14 @@ export default function CytoGraph(props: CytoGraphProps) {
             },
           };
           elements.push(edge);
-        })
+        });
       }
     });
 
     const cyLayoutOptions: DagreLayoutOptions = {
       name: 'dagre',
       ranker: 'tight-tree',
-      edgeWeight: edge => (edge.data('type') === 'parent' ? 5 : 1),
+      edgeWeight: (edge) => (edge.data('type') === 'parent' ? 5 : 1),
       nodeDimensionsIncludeLabels: true,
       animate: false,
       rankDir: 'TB',
@@ -215,7 +219,7 @@ export default function CytoGraph(props: CytoGraphProps) {
       width: 2,
     };
 
-    const nodeStyle: cytoscape.Css.Node =  {
+    const nodeStyle: cytoscape.Css.Node = {
       shape: 'rectangle',
       'background-color': 'data(backgroundColor)',
       //color: 'data(textColor)',
@@ -229,7 +233,8 @@ export default function CytoGraph(props: CytoGraphProps) {
       'text-wrap': 'wrap',
       'text-outline-width': 0,
       'font-weight': theme.fontWeightNormal,
-      'border-width': (node) => (node.data('type') === 'action' ? '2px' : '0px'),
+      'border-width': (node) =>
+        node.data('type') === 'action' ? '2px' : '0px',
       'border-color': '#000000',
       'border-style': 'dashed',
     };
@@ -241,7 +246,8 @@ export default function CytoGraph(props: CytoGraphProps) {
       zoomingEnabled: true,
       maxZoom: 2,
       minZoom: 0.1,
-      style: [ // the stylesheet for the graph
+      style: [
+        // the stylesheet for the graph
         {
           selector: '*',
           style: {
@@ -276,23 +282,31 @@ export default function CytoGraph(props: CytoGraphProps) {
       const nodeId = clickedNode.data('id');
       router.push(`/node/${nodeId}`);
     });
-    cy.nodeHtmlLabel([{
-      query: 'node',
-      valign: "center",
-      halign: "center",
-      valignBox: "center",
-      halignBox: "center",
-      tpl: (data) => {
-        const name = wordWrap(data.name, 30, '<br />');
-        const histStr = data.hist ? `<br />${data.hist.year}: <em>${data.hist.value} ${data.hist.unit}</em>` : '';
-        return `<div style="color: ${data.textColor}"><strong>${name}</strong>${histStr}</div>`;
-      }
-    }])
+    cy.nodeHtmlLabel([
+      {
+        query: 'node',
+        valign: 'center',
+        halign: 'center',
+        valignBox: 'center',
+        halignBox: 'center',
+        tpl: (data) => {
+          const name = wordWrap(data.name, 30, '<br />');
+          const histStr = data.hist
+            ? `<br />${data.hist.year}: <em>${data.hist.value} ${data.hist.unit}</em>`
+            : '';
+          return `<div style="color: ${data.textColor}"><strong>${name}</strong>${histStr}</div>`;
+        },
+      },
+    ]);
   }, [visRef, nodes, router, selectedNode]);
 
   return (
     <>
-      <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+      <NodeSelector
+        nodes={nodes}
+        selectedNode={selectedNode}
+        setSelectedNode={setSelectedNode}
+      />
       <VisContainer ref={visRef} />
     </>
   );

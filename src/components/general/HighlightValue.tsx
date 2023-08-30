@@ -5,11 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'reactstrap';
 
 const TotalValue = styled.div`
-  padding: .5rem;
+  padding: 0.5rem;
   line-height: 1.2;
   font-weight: 700;
   font-size: ${(props) => (props.size === 'sm' ? '1.25' : '1.5')}rem;
-  color: ${(props) => (props.muted ? props.theme.graphColors.grey050 : props.theme.graphColors.grey090)};
+  color: ${(props) =>
+    props.muted
+      ? props.theme.graphColors.grey050
+      : props.theme.graphColors.grey090};
 
   &:hover {
     //background-color: rgba(0, 0, 0, 0.05);
@@ -40,22 +43,17 @@ const HighlightValue = (props) => {
   const { displayValue, header, unit, className, size, muted } = props;
 
   const { t } = useTranslation();
-  const id = `tt-${displayValue}`.replace(/\W/g,'_');
+  const id = `tt-${displayValue}`.replace(/\W/g, '_');
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const toggle = () => setTooltipOpen(!tooltipOpen);
 
   return (
-    <TotalValue
-      className={className}
-      size={size}
-      muted={muted}
-      id={id}
-    >
+    <TotalValue className={className} size={size} muted={muted} id={id}>
       <YearRange size={size}>
         <span dangerouslySetInnerHTML={{ __html: header }} />
         <InfoIcon className="ms-1" />
       </YearRange>
-      { displayValue }
+      {displayValue}
       <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} size={size} />
       <Tooltip
         target={id}

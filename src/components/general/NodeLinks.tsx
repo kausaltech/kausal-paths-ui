@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
-import { Container, Row, Col, ListGroup, } from 'reactstrap';
+import { Container, Row, Col, ListGroup } from 'reactstrap';
 import { NodeLink } from 'common/links';
 import React from 'react';
 
 const InputNodes = styled.div`
   margin-bottom: 4rem;
-  padding: .5rem;
+  padding: 0.5rem;
   border-radius: 0;
   font-size: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
@@ -24,7 +24,7 @@ const InputNodes = styled.div`
 const OutputNodes = styled.div`
   margin-bottom: 4rem;
   text-align: right;
-  padding: .5rem;
+  padding: 0.5rem;
   border-radius: 0;
   font-size: 1rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
@@ -40,26 +40,27 @@ const OutputNodes = styled.div`
   }
 `;
 
-type ListGroupItemProps = React.PropsWithChildren & (
-  ({tag: 'a'  } & React.JSX.IntrinsicElements['a']) |
-  ({tag: 'h5' } & React.JSX.IntrinsicElements['h5'])
-);
-
+type ListGroupItemProps = React.PropsWithChildren &
+  (
+    | ({ tag: 'a' } & React.JSX.IntrinsicElements['a'])
+    | ({ tag: 'h5' } & React.JSX.IntrinsicElements['h5'])
+  );
 
 function ListGroupItemInner(
-  props: ListGroupItemProps, ref: React.ForwardedRef<any>
+  props: ListGroupItemProps,
+  ref: React.ForwardedRef<any>
 ) {
   const className = 'list-group-item';
   if (props.tag === 'a') {
-    const { tag, ...rest } = props;;
+    const { tag, ...rest } = props;
     rest.className = className;
-    return <a ref={ref} {...rest} />
+    return <a ref={ref} {...rest} />;
   } else {
-    const { tag, ...rest } = props;;
+    const { tag, ...rest } = props;
     rest.className = className;
-    return <h5 ref={ref} {...rest} />
+    return <h5 ref={ref} {...rest} />;
   }
-};
+}
 
 const ListGroupItem = React.forwardRef(ListGroupItemInner);
 
@@ -70,39 +71,35 @@ const NodeLinks = (props) => {
     <Container fluid="lg">
       <Row>
         <Col md={{ size: 5 }}>
-          { inputNodes.length > 0 && (
-          <InputNodes>
-            <ListGroup>
-              <ListGroupItem tag="h5">
-                { t('affected-by') }
-              </ListGroupItem>
-              { inputNodes.map((inputNode, index) => (
-                <NodeLink key={inputNode.id} node={inputNode}>
-                  <ListGroupItem tag="a">
-                    <span>{ inputNode.name }</span>
-                  </ListGroupItem>
-                </NodeLink>
-              ))}
-            </ListGroup>
-          </InputNodes>
+          {inputNodes.length > 0 && (
+            <InputNodes>
+              <ListGroup>
+                <ListGroupItem tag="h5">{t('affected-by')}</ListGroupItem>
+                {inputNodes.map((inputNode, index) => (
+                  <NodeLink key={inputNode.id} node={inputNode}>
+                    <ListGroupItem tag="a">
+                      <span>{inputNode.name}</span>
+                    </ListGroupItem>
+                  </NodeLink>
+                ))}
+              </ListGroup>
+            </InputNodes>
           )}
         </Col>
         <Col md={{ size: 5, offset: 2 }}>
-          { outputNodes.length > 0 && (
-          <OutputNodes>
-            <ListGroup>
-              <ListGroupItem tag="h5">
-                { t('has-effect-on') }
-              </ListGroupItem>
-              { outputNodes.map((outputNode, index) => (
-                <NodeLink key={outputNode.id} node={outputNode}>
-                  <ListGroupItem tag="a">
-                    <span>{ outputNode.name }</span>
-                  </ListGroupItem>
-                </NodeLink>
-              ))}
-            </ListGroup>
-          </OutputNodes>
+          {outputNodes.length > 0 && (
+            <OutputNodes>
+              <ListGroup>
+                <ListGroupItem tag="h5">{t('has-effect-on')}</ListGroupItem>
+                {outputNodes.map((outputNode, index) => (
+                  <NodeLink key={outputNode.id} node={outputNode}>
+                    <ListGroupItem tag="a">
+                      <span>{outputNode.name}</span>
+                    </ListGroupItem>
+                  </NodeLink>
+                ))}
+              </ListGroup>
+            </OutputNodes>
           )}
         </Col>
       </Row>

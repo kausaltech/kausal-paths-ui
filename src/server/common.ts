@@ -1,20 +1,31 @@
-import express, { NextFunction, Request, Response } from "express";
-import cookieSession from "cookie-session";
-import morgan from "morgan";
-import type { Authenticator } from "passport";
-import asyncHandler from "express-async-handler";
-import originalUrl from "original-url";
-import { ApolloClient, NormalizedCacheObject, HttpLink, InMemoryCache, gql } from '@apollo/client';
-import 'dotenv/config'
-import next from "next";
+import express, { NextFunction, Request, Response } from 'express';
+import cookieSession from 'cookie-session';
+import morgan from 'morgan';
+import type { Authenticator } from 'passport';
+import asyncHandler from 'express-async-handler';
+import originalUrl from 'original-url';
+import {
+  ApolloClient,
+  NormalizedCacheObject,
+  HttpLink,
+  InMemoryCache,
+  gql,
+} from '@apollo/client';
+import 'dotenv/config';
+import next from 'next';
 
 console.log('> 💡 Starting server');
 
 import * as Sentry from '@sentry/nextjs';
 import '../../sentry.server.config.js';
-import { NextServer, RequestHandler } from "next/dist/server/next";
-import NextNodeServer from "next/dist/server/next-server";
-import { initializeIssuer, initializePassport, ServerAuth, ServerAuthIssuer } from "./auth";
+import { NextServer, RequestHandler } from 'next/dist/server/next';
+import NextNodeServer from 'next/dist/server/next-server';
+import {
+  initializeIssuer,
+  initializePassport,
+  ServerAuth,
+  ServerAuthIssuer,
+} from './auth';
 
 if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
@@ -22,50 +33,48 @@ if (process.env.SENTRY_DSN) {
 
 export const deploymentType = process.env.DEPLOYMENT_TYPE || 'development';
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const dev = process.env.NODE_ENV !== "production";
+const dev = process.env.NODE_ENV !== 'production';
 
 if (!process.env.SESSION_SECRET && deploymentType !== 'development') {
-  console.warn("SESSION_SECRET not set, using unsafe default");
+  console.warn('SESSION_SECRET not set, using unsafe default');
 }
 const sessionSecret = process.env.SESSION_SECRET || 'secretsecret';
 
-
 export type BaseServerRequest = Request & {
   currentURL: {
-    baseURL: string,
-    path: string,
-    hostname: string,
-  },
-  nextBasePath: string,
-  nextDefaultLanguage: string,
-  nextSupportedLanguages: Array<string>,
-  nextCurrentLanguage: string,
-  instanceIsProtected: boolean,
-}
+    baseURL: string;
+    path: string;
+    hostname: string;
+  };
+  nextBasePath: string;
+  nextDefaultLanguage: string;
+  nextSupportedLanguages: Array<string>;
+  nextCurrentLanguage: string;
+  instanceIsProtected: boolean;
+};
 
 export type RequestContext = {
-  basePath: string,
-  defaultLanguage: string,
-  supportedLanguages: Array<string>,
-  isProtected: boolean,
+  basePath: string;
+  defaultLanguage: string;
+  supportedLanguages: Array<string>;
+  isProtected: boolean;
   other: {
-    [key: string]: any,
-  },
+    [key: string]: any;
+  };
 };
 
 export type BaseServerResponse = Response;
-
 
 export abstract class BaseServer {
   name: string;
   nextConfig: any;
   nextApp: NextServer;
   nextServer: NextNodeServer;
-  nextHandleRequest: RequestHandler
+  nextHandleRequest: RequestHandler;
   apolloClient: ApolloClient<NormalizedCacheObject>;
   passport: Authenticator;
   authIssuer: ServerAuthIssuer | null;
-  Sentry: typeof Sentry
+  Sentry: typeof Sentry;
   dev: boolean;
 
   constructor() {
@@ -122,7 +131,11 @@ export abstract class BaseServer {
     req.nextBasePath = basePath;
   }
 
-  setLocale(req: BaseServerRequest, defaultLocale: string, locales: Array<string>) {
+  setLocale(
+    req: BaseServerRequest,
+    defaultLocale: string,
+    locales: Array<string>
+  ) {
     const srv: any = this.nextServer;
     // Insert defaultLocale as the first element in locale list
     const loc = locales.filter((lang) => lang !== defaultLocale);
@@ -130,12 +143,18 @@ export abstract class BaseServer {
     srv.nextConfig.i18n.defaultLocale = defaultLocale;
     srv.nextConfig.i18n.locales = loc;
     srv.localeNormalizer.locales = loc;
-    srv.localeNormalizer.defaultLocale = defaultLocale
-    srv.localeNormalizer.lowerCase = loc.map(l => l.toLowerCase());
+    srv.localeNormalizer.defaultLocale = defaultLocale;
+    srv.localeNormalizer.lowerCase = loc.map((l) => l.toLowerCase());
   }
 
-  abstract getRequestContext(req: BaseServerRequest, res: BaseServerResponse): Promise<RequestContext | null>;
-  abstract getRequestAuth(req: BaseServerRequest, res: BaseServerResponse): ServerAuth | null;
+  abstract getRequestContext(
+    req: BaseServerRequest,
+    res: BaseServerResponse
+  ): Promise<RequestContext | null>;
+  abstract getRequestAuth(
+    req: BaseServerRequest,
+    res: BaseServerResponse
+  ): ServerAuth | null;
 
   processPath(req: BaseServerRequest) {
     const basePath = req.nextBasePath || '/';
@@ -150,8 +169,10 @@ export abstract class BaseServer {
     req.nextCurrentLanguage = req.nextDefaultLanguage;
     // Strip the language prefix for multilingual sites
     if (req.nextSupportedLanguages.length > 1) {
-      const prefixedLocales = req.nextSupportedLanguages.filter(lang => lang != req.nextDefaultLanguage);
-      const localeMatch = prefixedLocales.find(lang => parts[0] === lang);
+      const prefixedLocales = req.nextSupportedLanguages.filter(
+        (lang) => lang != req.nextDefaultLanguage
+      );
+      const localeMatch = prefixedLocales.find((lang) => parts[0] === lang);
       if (localeMatch) {
         req.nextCurrentLanguage = localeMatch;
         parts.shift();
@@ -160,12 +181,23 @@ export abstract class BaseServer {
     return '/' + parts.join('/');
   }
 
-  getPrefixedPath(req: BaseServerRequest, path: string, includeLocale: boolean = true) {
-    const localePrefix = req.nextCurrentLanguage === req.nextDefaultLanguage ? '' : `/${req.nextCurrentLanguage}`;
+  getPrefixedPath(
+    req: BaseServerRequest,
+    path: string,
+    includeLocale: boolean = true
+  ) {
+    const localePrefix =
+      req.nextCurrentLanguage === req.nextDefaultLanguage
+        ? ''
+        : `/${req.nextCurrentLanguage}`;
     return `${req.nextBasePath}${includeLocale ? localePrefix : ''}${path}`;
   }
 
-  async handleRequest(req: BaseServerRequest, res: Response, next: NextFunction) {
+  async handleRequest(
+    req: BaseServerRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     req.currentURL = this.getCurrentURL(req);
     if (req.currentURL.path === '/_health') {
       res.status(200).send('OK');
@@ -177,17 +209,12 @@ export abstract class BaseServer {
       return;
     }
 
-    const {
-      basePath,
-      defaultLanguage,
-      supportedLanguages,
-      isProtected,
-    } = ctx;
+    const { basePath, defaultLanguage, supportedLanguages, isProtected } = ctx;
     req.nextBasePath = basePath;
     req.nextDefaultLanguage = defaultLanguage;
     req.nextSupportedLanguages = supportedLanguages;
     req.instanceIsProtected = isProtected;
-    Object.assign(req, ctx.other)
+    Object.assign(req, ctx.other);
 
     const normalizedPath = this.processPath(req);
     if (!normalizedPath) {
@@ -196,14 +223,14 @@ export abstract class BaseServer {
     }
     if (normalizedPath.match(/^\/auth(\/|$)/)) {
       if (!this.authIssuer) {
-        console.warn("Authentication request, but no auth issuer configured");
-        res.status(404).send("Auth requests not possible");
+        console.warn('Authentication request, but no auth issuer configured');
+        res.status(404).send('Auth requests not possible');
         return;
       }
       const auth = this.getRequestAuth(req, res);
       if (!auth) {
-        console.warn("Authentication request, but no auth client available");
-        res.status(404).send("Auth requests not possible");
+        console.warn('Authentication request, but no auth client available');
+        res.status(404).send('Auth requests not possible');
         return;
       }
       auth.handleRequest(req, res, normalizedPath, next);
@@ -211,16 +238,16 @@ export abstract class BaseServer {
     }
 
     this.setBasePath(req, basePath);
-    this.setLocale(req, defaultLanguage, supportedLanguages)
+    this.setLocale(req, defaultLanguage, supportedLanguages);
 
     await this.nextHandleRequest(req, res);
   }
 
   async init() {
-    console.log("> ⚙️ Preparing NextJS");
+    console.log('> ⚙️ Preparing NextJS');
     await this.nextApp.prepare();
 
-    this.nextConfig = (await import("next/config.js")).default();
+    this.nextConfig = (await import('next/config.js')).default();
     const apiUrl = this.nextConfig.serverRuntimeConfig.graphqlUrl;
     const app = express();
 
@@ -266,9 +293,9 @@ export abstract class BaseServer {
 
     // @ts-ignore
     this.passport = initializePassport(app);
-    app.use(morgan(dev ? "dev" : "combined"));
+    app.use(morgan(dev ? 'dev' : 'combined'));
 
-    app.all("*", asyncHandler(this.handleRequest.bind(this)));
+    app.all('*', asyncHandler(this.handleRequest.bind(this)));
 
     app.use(Sentry.Handlers.errorHandler());
     app.listen(port, () => {

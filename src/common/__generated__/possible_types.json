@@ -1,15 +1,7 @@
 {
   "possibleTypes": {
-    "NodeInterface": [
-      "ActionNode",
-      "Node"
-    ],
-    "PageInterface": [
-      "ActionListPage",
-      "NodePage",
-      "OutcomePage",
-      "Page"
-    ],
+    "NodeInterface": ["ActionNode", "Node"],
+    "PageInterface": ["ActionListPage", "NodePage", "OutcomePage", "Page"],
     "ParameterInterface": [
       "BoolParameterType",
       "NumberParameterType",

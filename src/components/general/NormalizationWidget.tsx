@@ -1,8 +1,21 @@
-import { gql, useMutation, useQuery, NetworkStatus, } from '@apollo/client';
+import { gql, useMutation, useQuery, NetworkStatus } from '@apollo/client';
 import styled from 'styled-components';
-import { Row, Col, FormGroup, Label, Input, Button, InputGroup, FormFeedback } from 'reactstrap';
+import {
+  Row,
+  Col,
+  FormGroup,
+  Label,
+  Input,
+  Button,
+  InputGroup,
+  FormFeedback,
+} from 'reactstrap';
 
-import { GetParametersQuery, SetNormalizationMutation, SetNormalizationMutationVariables } from 'common/__generated__/graphql';
+import {
+  GetParametersQuery,
+  SetNormalizationMutation,
+  SetNormalizationMutationVariables,
+} from 'common/__generated__/graphql';
 import { GET_PARAMETERS } from 'queries/getParameters';
 import { useTranslation } from 'react-i18next';
 
@@ -24,25 +37,36 @@ const SET_NORMALIZATION_MUTATION = gql`
 `;
 
 type NormalizationWidgetProps = {
-  availableNormalizations: GetParametersQuery['availableNormalizations']
-}
+  availableNormalizations: GetParametersQuery['availableNormalizations'];
+};
 
 function NormalizationWidget(props: NormalizationWidgetProps) {
   const { t } = useTranslation();
 
-  const { loading, error, data, previousData, refetch, networkStatus } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
-    notifyOnNetworkStatusChange: true,
-  });
-
-  const [setNormalization, { data: mutationData, loading: mutationLoading, error: mutationError }] =
-    useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(SET_NORMALIZATION_MUTATION, {
-      refetchQueries: 'active',
+  const { loading, error, data, previousData, refetch, networkStatus } =
+    useQuery<GetParametersQuery>(GET_PARAMETERS, {
+      notifyOnNetworkStatusChange: true,
     });
+
+  const [
+    setNormalization,
+    { data: mutationData, loading: mutationLoading, error: mutationError },
+  ] = useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(
+    SET_NORMALIZATION_MUTATION,
+    {
+      refetchQueries: 'active',
+    }
+  );
 
   if ((loading && !previousData) || !data || !data.parameters) {
     return <>-</>;
-  } if (error) {
-    return <><div>{ t('error-loading-data') }</div></>;
+  }
+  if (error) {
+    return (
+      <>
+        <div>{t('error-loading-data')}</div>
+      </>
+    );
   }
 
   const { availableNormalizations } = data;
@@ -51,11 +75,9 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
   const norm = availableNormalizations[0];
   const label = t('normalize-by', { node: norm.label });
   return (
-      <SwitchWrapper>
+    <SwitchWrapper>
       <FormGroup switch>
-        <Label for={norm.id}>
-          {label}
-        </Label>
+        <Label for={norm.id}>{label}</Label>
         <Input
           disabled={mutationLoading}
           type="switch"
@@ -68,11 +90,11 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
               variables: {
                 id: norm.isActive ? null : norm.id,
               },
-            })
+            });
           }}
         />
       </FormGroup>
-      </SwitchWrapper>
+    </SwitchWrapper>
   );
 }
 

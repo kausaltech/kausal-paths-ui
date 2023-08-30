@@ -11,8 +11,7 @@ import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import type { PlotParams } from 'react-plotly.js';
 import { useInstance } from 'common/instance';
 
-const Plot = dynamic(() => import('components/graphs/Plot'),
-    { ssr: false });
+const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
 const PlotWrapper = styled.div`
   text-align: center;
@@ -33,29 +32,44 @@ const makeTrace = (parentNode, childNodes, year, i18n, unit, theme) => {
     maximumSignificantDigits: 3,
   });
   const cats = childNodes.map((cat) => {
-    const displayValue = cat.metric.historicalValues.find((v) => v.year === year)?.value || cat.metric.forecastValues.find((v) => v.year === year)?.value || 0;
+    const displayValue =
+      cat.metric.historicalValues.find((v) => v.year === year)?.value ||
+      cat.metric.forecastValues.find((v) => v.year === year)?.value ||
+      0;
     return {
-     ...cat,
-     name: cat.shortName || cat.name,
-     value: displayValue,
-     parent: displayValue > 0 ? parentNode.id : "",
-    }});
+      ...cat,
+      name: cat.shortName || cat.name,
+      value: displayValue,
+      parent: displayValue > 0 ? parentNode.id : '',
+    };
+  });
 
   cats.push({
     name: `${parentNode.shortName || parentNode.name} ${year}`,
     id: parentNode.id,
-    value: cats.reduce((acc, cat) => cat.value > 0 ? acc + cat.value : acc, 0),
-    parent: "",
+    value: cats.reduce(
+      (acc, cat) => (cat.value > 0 ? acc + cat.value : acc),
+      0
+    ),
+    parent: '',
     color: theme.graphColors.grey010,
   });
 
   cats.forEach((cat) => {
-    cat.content = cat.value > 0 ? `${numberFormat.format(cat.value/cats[cats.length-1].value*100)}%<br>${numberFormat.format(cat.value)} ${unit}` : `${numberFormat.format(cat.value)} ${unit}`;
+    cat.content =
+      cat.value > 0
+        ? `${numberFormat.format(
+            (cat.value / cats[cats.length - 1].value) * 100
+          )}%<br>${numberFormat.format(cat.value)} ${unit}`
+        : `${numberFormat.format(cat.value)} ${unit}`;
   });
 
-  const segmentBgColors = cats.map((cat) => cat.color || theme.graphColors.grey050);
-  const segmentTextColors = segmentBgColors.map((segment) => (
-    segment ? readableColor(segment, '#000000', '#ffffff') : null));
+  const segmentBgColors = cats.map(
+    (cat) => cat.color || theme.graphColors.grey050
+  );
+  const segmentTextColors = segmentBgColors.map((segment) =>
+    segment ? readableColor(segment, '#000000', '#ffffff') : null
+  );
 
   const trace = {
     type: 'treemap',
@@ -77,9 +91,10 @@ const makeTrace = (parentNode, childNodes, year, i18n, unit, theme) => {
       side: 'top',
     },
     textfont: {
-      family: "-apple-system, -apple-system, BlinkMacSystemFont, 'Segoe UI', "
-      + "Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', "
-      + 'sans-serif, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif',
+      family:
+        "-apple-system, -apple-system, BlinkMacSystemFont, 'Segoe UI', " +
+        "Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', " +
+        'sans-serif, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif',
       color: segmentTextColors,
       size: 13,
     },
@@ -89,19 +104,19 @@ const makeTrace = (parentNode, childNodes, year, i18n, unit, theme) => {
   };
 
   return trace;
-}
+};
 
 type IcicleGraphProps = {
-  node: OutcomeNodeFieldsFragment,
-  subNodes: OutcomeNodeFieldsFragment[],
-  color: string,
-  startYear: number,
-  endYear: number,
-}
+  node: OutcomeNodeFieldsFragment;
+  subNodes: OutcomeNodeFieldsFragment[];
+  color: string;
+  startYear: number;
+  endYear: number;
+};
 
 const IcicleGraph = (props: IcicleGraphProps) => {
   const { node: parentNode, subNodes, color, startYear, endYear } = props;
-  const { t, i18n  } = useTranslation();
+  const { t, i18n } = useTranslation();
   const site = useContext(SiteContext);
   const instance = useInstance();
   const theme = useTheme();
@@ -111,26 +126,39 @@ const IcicleGraph = (props: IcicleGraphProps) => {
 
   const metric = parentNode.metric!;
 
-  const systemFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
+  const systemFont =
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
-  const displayNodes = subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
+  const displayNodes =
+    subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
   const shortUnit = metric.unit?.short;
   const longUnit = metric.unit?.htmlLong;
   const predLabel = t('pred');
 
   // Find the lowes forecast year
-  const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
+  const forecastYears = displayNodes.map(
+    (node) => node.metric.forecastValues[0]?.year
+  );
   const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
 
   // Split nodes to pos and neg
-  const hasNegativeValues = ((node) => {
-    if (node.metric?.forecastValues.find((val) => val.value < 0 )) return true;
-    if (node.metric?.historicalValues.find((val) => val.value < 0 )) return true;
+  const hasNegativeValues = (node) => {
+    if (node.metric?.forecastValues.find((val) => val.value < 0)) return true;
+    if (node.metric?.historicalValues.find((val) => val.value < 0)) return true;
     return false;
-  });
+  };
   const negativeDisplayNodes = displayNodes?.filter(hasNegativeValues);
-  const positiveDisplayNodes = displayNodes?.filter((node) => !hasNegativeValues(node));
-  const icicleTrace = makeTrace(parentNode, displayNodes, endYear, i18n, shortUnit, theme);
+  const positiveDisplayNodes = displayNodes?.filter(
+    (node) => !hasNegativeValues(node)
+  );
+  const icicleTrace = makeTrace(
+    parentNode,
+    displayNodes,
+    endYear,
+    i18n,
+    shortUnit,
+    theme
+  );
 
   const layout: PlotParams['layout'] = {
     showlegend: false,
@@ -142,22 +170,21 @@ const IcicleGraph = (props: IcicleGraphProps) => {
 
   return (
     <PlotWrapper>
-      { loading && (
+      {loading && (
         <PlotLoader>
           <Spinner color="dark" />
         </PlotLoader>
-        )
-      }
+      )}
       <Plot
         noValidate
         data={[icicleTrace]}
         layout={layout}
         useResizeHandler
-        config={{displayModeBar: false}}
+        config={{ displayModeBar: false }}
         onInitialized={() => setLoading(false)}
       />
     </PlotWrapper>
-  )
-}
+  );
+};
 
 export default IcicleGraph;

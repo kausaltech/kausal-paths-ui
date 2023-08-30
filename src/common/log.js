@@ -1,4 +1,4 @@
-import { ApolloError } from "@apollo/client";
+import { ApolloError } from '@apollo/client';
 
 export function logError(error, context) {
   console.error(error.message);

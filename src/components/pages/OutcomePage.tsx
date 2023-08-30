@@ -10,18 +10,24 @@ import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
-import { GetPageQuery, OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import {
+  GetPageQuery,
+  OutcomeNodeFieldsFragment,
+} from 'common/__generated__/graphql';
 import { PageRefetchCallback } from './Page';
 import { ParsedUrlQuery } from 'querystring';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 10rem; 
+  padding: 3rem 0 10rem;
   background: ${(props) => props.theme.brandDark};
-  background: linear-gradient(180deg, ${(props) => props.theme.brandDark} 0%, ${(props) => props.theme.brandDark} 100%);
+  background: linear-gradient(
+    180deg,
+    ${(props) => props.theme.brandDark} 0%,
+    ${(props) => props.theme.brandDark} 100%
+  );
 `;
 
-const PageHeader = styled.div` 
-
+const PageHeader = styled.div`
   h1 {
     font-size: 2rem;
     color: ${(props) => props.theme.themeColors.white};
@@ -34,7 +40,11 @@ const OutcomeSection = styled.div`
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
 
-const findVisibleNodes = (allNodes: Map<string, OutcomeNode>, lastNodeId: string, visibleNodes: OutcomeNode[]) => {
+const findVisibleNodes = (
+  allNodes: Map<string, OutcomeNode>,
+  lastNodeId: string,
+  visibleNodes: OutcomeNode[]
+) => {
   // Using last active node Id, create an array of all visible nodes
   const lastNode = allNodes.get(lastNodeId)!;
   visibleNodes.unshift(lastNode);
@@ -46,10 +56,10 @@ const findVisibleNodes = (allNodes: Map<string, OutcomeNode>, lastNodeId: string
 };
 
 type OutcomePageProps = {
-  page: GetPageQuery['page'] & { __typename: 'OutcomePage'},
-  refetch: PageRefetchCallback,
-  activeScenario: GetPageQuery['activeScenario'],
-}
+  page: GetPageQuery['page'] & { __typename: 'OutcomePage' };
+  refetch: PageRefetchCallback;
+  activeScenario: GetPageQuery['activeScenario'];
+};
 
 export default function OutcomePage(props: OutcomePageProps) {
   const { page, refetch, activeScenario: queryActiveScenario } = props;
@@ -59,40 +69,59 @@ export default function OutcomePage(props: OutcomePageProps) {
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const router = useRouter();
-  const queryNodeId = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
-  const [lastActiveNodeId, setLastActiveNodeId] = useState<string|undefined>(queryNodeId);
+  const queryNodeId = Array.isArray(router.query.node)
+    ? router.query.node[0]
+    : router.query.node;
+  const [lastActiveNodeId, setLastActiveNodeId] = useState<string | undefined>(
+    queryNodeId
+  );
 
   useEffect(() => {
-    if (activeScenario === null || activeScenario.id !== queryActiveScenario?.id) {
+    if (
+      activeScenario === null ||
+      activeScenario.id !== queryActiveScenario?.id
+    ) {
       refetch();
     }
   }, [activeScenario]);
 
   useEffect(() => {
     if (router.query?.node === lastActiveNodeId) return;
-    const query: ParsedUrlQuery = {}
+    const query: ParsedUrlQuery = {};
     if (lastActiveNodeId) {
       query.node = lastActiveNodeId;
     }
-    router.replace({
-      query,
-    }, undefined, { shallow: true });
+    router.replace(
+      {
+        query,
+      },
+      undefined,
+      { shallow: true }
+    );
   }, [lastActiveNodeId]);
 
   const { outcomeNode } = page;
   const { upstreamNodes } = outcomeNode;
-  const allNodes = useMemo(() => new Map(upstreamNodes.map((node) => [node.id, node])), [upstreamNodes]);
+  const allNodes = useMemo(
+    () => new Map(upstreamNodes.map((node) => [node.id, node])),
+    [upstreamNodes]
+  );
   allNodes.set(outcomeNode.id, outcomeNode);
 
-  const activeNodeId = (lastActiveNodeId && allNodes.has(lastActiveNodeId)) ? lastActiveNodeId : outcomeNode.id;
+  const activeNodeId =
+    lastActiveNodeId && allNodes.has(lastActiveNodeId)
+      ? lastActiveNodeId
+      : outcomeNode.id;
   // TODO: filtering out empty nodes, in some instances there are some -> investigate why
-  const visibleNodes = findVisibleNodes(allNodes, activeNodeId, []).filter((node) => node?.id);
+  const visibleNodes = findVisibleNodes(allNodes, activeNodeId, []).filter(
+    (node) => node?.id
+  );
 
   const outcomeType = visibleNodes[0].quantity;
 
   return (
-    <> 
-      { (page.leadTitle || page.leadParagraph) && (
+    <>
+      {(page.leadTitle || page.leadParagraph) && (
         <FrontPageHeader
           leadTitle={page?.leadTitle}
           leadParagraph={page?.leadParagraph}
@@ -102,15 +131,14 @@ export default function OutcomePage(props: OutcomePageProps) {
       <HeaderSection>
         <Container fluid="lg">
           <PageHeader>
-            <h1>
-              {t(`${outcomeType}-forecast`)}
-            </h1>
+            <h1>{t(`${outcomeType}-forecast`)}</h1>
           </PageHeader>
         </Container>
       </HeaderSection>
       <Container fluid="lg">
-        <OutcomeSection>¨
-          { visibleNodes.map((node, index) => (
+        <OutcomeSection>
+          ¨
+          {visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
               nodeMap={allNodes}
@@ -119,7 +147,11 @@ export default function OutcomePage(props: OutcomePageProps) {
               endYear={yearRange[1]}
               activeScenario={activeScenario?.name}
               parentColor="#666"
-              activeNodeId={index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined}
+              activeNodeId={
+                index < visibleNodes.length - 1
+                  ? visibleNodes[index + 1].id
+                  : undefined
+              }
               lastActiveNodeId={lastActiveNodeId}
               setLastActiveNodeId={setLastActiveNodeId}
             />

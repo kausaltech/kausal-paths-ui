@@ -1,32 +1,44 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
-import { tint, } from 'polished';
+import { tint } from 'polished';
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { genColorsFromTheme } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import {
-  Col, Nav, NavItem, NavLink, TabContent, Row,
-  UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+  Col,
+  Nav,
+  NavItem,
+  NavLink,
+  TabContent,
+  Row,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+} from 'reactstrap';
 import {
   GraphDown as GraphIcon,
   CloudArrowDown as DowloadIcon,
   FiletypeCsv as CsvIcon,
   FiletypeXls as XlsIcon,
- } from 'react-bootstrap-icons';
+} from 'react-bootstrap-icons';
 import SelectDropdown from 'components/common/SelectDropdown';
 import { activeGoalVar } from 'common/cache';
-import { DimensionalMetric, MetricCategoryValues, MetricSlice, SliceConfig } from 'data/metric';
+import {
+  DimensionalMetric,
+  MetricCategoryValues,
+  MetricSlice,
+  SliceConfig,
+} from 'data/metric';
 import { useTheme } from 'common/theme';
 
-
-const Plot = dynamic(() => import('components/graphs/Plot'),
-  { ssr: false });
+const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
 const Tools = styled.div`
-  padding: 0 1rem .5rem;
+  padding: 0 1rem 0.5rem;
   text-align: right;
   .btn-link {
     text-decoration: none;
@@ -37,8 +49,13 @@ const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
 `;
 
-
-function formatHover(name: string, color: string, unit: string, predLabel: string | null, fontFamily?: string) {
+function formatHover(
+  name: string,
+  color: string,
+  unit: string,
+  predLabel: string | null,
+  fontFamily?: string
+) {
   //const predText = predLabel ? ` <i>(${predLabel})</i>` : '';
   const out: Partial<Plotly.PlotData> = {
     /*
@@ -62,24 +79,18 @@ function formatHover(name: string, color: string, unit: string, predLabel: strin
     },
   };
   return out;
-};
-
-
-type DimensionalNodePlotProps = {
-  node: { id: string },
-  metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>,
-  startYear: number,
-  endYear: number,
-  color?: string | null,
 }
 
+type DimensionalNodePlotProps = {
+  node: { id: string };
+  metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
+  startYear: number;
+  endYear: number;
+  color?: string | null;
+};
 
 export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
-  const {
-    metric,
-    startYear,
-    color,
-  } = props;
+  const { metric, startYear, color } = props;
   let { endYear } = props;
 
   const { t } = useTranslation();
@@ -93,26 +104,40 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   let defaultChoice = {};
   let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
 
-  let goalAffectsPlot = false
+  let goalAffectsPlot = false;
   if (activeGoal) {
     defaultChoice = cube.getChoicesForGoal(activeGoal);
     if (defaultSliceDim && Object.hasOwn(defaultChoice, defaultSliceDim)) {
-      defaultSliceDim = metric.dimensions.find(dim => !defaultChoice[dim.id])?.id;
+      defaultSliceDim = metric.dimensions.find((dim) => !defaultChoice[dim.id])
+        ?.id;
       goalAffectsPlot = true;
     }
   }
 
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({dimensionId: defaultSliceDim, categories: defaultChoice});
+  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({
+    dimensionId: defaultSliceDim,
+    categories: defaultChoice,
+  });
 
   useEffect(() => {
     if (!goalAffectsPlot) return;
-    if (sliceConfig.dimensionId != defaultSliceDim || sliceConfig.categories != defaultChoice) {
-      setSliceConfig({dimensionId: defaultSliceDim, categories: defaultChoice});
+    if (
+      sliceConfig.dimensionId != defaultSliceDim ||
+      sliceConfig.categories != defaultChoice
+    ) {
+      setSliceConfig({
+        dimensionId: defaultSliceDim,
+        categories: defaultChoice,
+      });
     }
-  }, [activeGoal])
+  }, [activeGoal]);
 
-  const sliceableDims = cube.dimensions.filter(dim => !sliceConfig.categories[dim.id]);
-  const slicedDim = cube.dimensions.find(dim => dim.id === sliceConfig.dimensionId);
+  const sliceableDims = cube.dimensions.filter(
+    (dim) => !sliceConfig.categories[dim.id]
+  );
+  const slicedDim = cube.dimensions.find(
+    (dim) => dim.id === sliceConfig.dimensionId
+  );
 
   let slice: MetricSlice;
   if (slicedDim) {
@@ -141,7 +166,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         shape: 'spline',
         smoothing: 1.0,
       },
-    }
+    };
     return out;
   };
 
@@ -150,14 +175,14 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   if (nrCats > 1) {
     colors = genColorsFromTheme(theme, slice.categoryValues.length);
   } else {
-    colors = [defaultColor]
+    colors = [defaultColor];
   }
   const hasHistorical = slice.historicalYears.length > 0;
   const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
   const unit = metric.unit.htmlShort;
 
-  const genTraces = ((cv: MetricCategoryValues, idx: number) => {
+  const genTraces = (cv: MetricCategoryValues, idx: number) => {
     const stackGroup = cv.isNegative ? 'neg' : 'pos';
     const color = cv.category.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
@@ -172,13 +197,13 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     };
 
     if (hasHistorical) {
-      plotData.push({ 
+      plotData.push({
         ...traceConfig,
         x: slice.historicalYears,
         y: cv.historicalValues,
         ...filledStyles(`${stackGroup}-hist`),
         ...formatHover(cv.category.label, color, unit, null, theme.fontFamily),
-      })
+      });
     }
     if (hasHistorical && hasForecast) {
       const lastHist = slice.historicalYears.length - 1;
@@ -192,19 +217,25 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         showlegend: false,
         fillcolor: tint(0.3, color),
       });
-    };
+    }
     if (hasForecast) {
       plotData.push({
         ...traceConfig,
         ...filledStyles(`${stackGroup}-forecast`),
-        ...formatHover(cv.category.label, color, unit, predLabel, theme.fontFamily),
+        ...formatHover(
+          cv.category.label,
+          color,
+          unit,
+          predLabel,
+          theme.fontFamily
+        ),
         x: slice.forecastYears,
         y: cv.forecastValues,
         showlegend: false,
         fillcolor: tint(0.3, color),
-      })
+      });
     }
-  });
+  };
 
   slice.categoryValues.forEach((cv, idx) => genTraces(cv, idx));
 
@@ -222,10 +253,10 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       marker: {
         size: 8,
       },
-      x: goals.map(v => v.year),
-      y: goals.map(v => v.value),
+      x: goals.map((v) => v.year),
+      y: goals.map((v) => v.value),
       hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
-    })
+    });
   }
 
   if (metric.stackable && slice.totalValues) {
@@ -239,10 +270,19 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         width: 0,
       },
       x: [...slice.historicalYears, ...slice.forecastYears],
-      y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
-      ...formatHover(label, theme.graphColors.grey080, unit, null, theme.fontFamily),
+      y: [
+        ...slice.totalValues.historicalValues,
+        ...slice.totalValues.forecastValues,
+      ],
+      ...formatHover(
+        label,
+        theme.graphColors.grey080,
+        unit,
+        null,
+        theme.fontFamily
+      ),
       showlegend: false,
-    })
+    });
   }
 
   const nrYears = endYear - startYear;
@@ -275,7 +315,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       domain: [0.075, 1],
       ticklen: 10,
       type: 'date',
-      dtick: nrYears > 30 ? 'M60' : (nrYears > 15 ? 'M24' : 'M12'),
+      dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
       range: [`${startYear - 1}-11-01`, `${endYear}-02-01`],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
@@ -300,47 +340,62 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     shapes,
   };
 
-  const hasGroups = cube.dimensions.some(dim => dim.groups.length);
+  const hasGroups = cube.dimensions.some((dim) => dim.groups.length);
 
-  let controls = (metric.dimensions.length > 1 || hasGroups) ? (<>
-    <Row>
-    { metric.dimensions.length > 1 && (
-      <Col md={3} className="d-flex" key="dimension">
-        <SelectDropdown
-          id="dimension"
-          className='flex-grow-1'
-          label={t('plot-choose-dimension')!}
-          onChange={val => setSliceConfig(old => ({...old, dimensionId: val?.id || undefined}))}
-          options={sliceableDims}
-          value={sliceableDims.find(dim => sliceConfig.dimensionId === dim.id) || null}
-          isMulti={false}
-          isClearable={false}
-        />
-      </Col>
-    )}
-    { cube.dimensions.map(dim => {
-      const options = cube.getOptionsForDimension(dim.id, sliceConfig.categories);
-      return (
-        <Col md={4} className="d-flex" key={dim.id}>
-          <SelectDropdown
-            id={`dim-${dim.id}`}
-            className='flex-grow-1'
-            label={dim.label}
-            options={options}
-            value={options.filter(opt => opt.selected)}
-            isMulti={true}
-            isClearable={true}
-            onChange={(newValues) => {
-              setSliceConfig(old => {
-                return cube.updateChoice(dim, old, newValues);
-              })
-            }}
-          />
-        </Col>
-      );
-    })}
-    </Row>
-  </>) : null;
+  let controls =
+    metric.dimensions.length > 1 || hasGroups ? (
+      <>
+        <Row>
+          {metric.dimensions.length > 1 && (
+            <Col md={3} className="d-flex" key="dimension">
+              <SelectDropdown
+                id="dimension"
+                className="flex-grow-1"
+                label={t('plot-choose-dimension')!}
+                onChange={(val) =>
+                  setSliceConfig((old) => ({
+                    ...old,
+                    dimensionId: val?.id || undefined,
+                  }))
+                }
+                options={sliceableDims}
+                value={
+                  sliceableDims.find(
+                    (dim) => sliceConfig.dimensionId === dim.id
+                  ) || null
+                }
+                isMulti={false}
+                isClearable={false}
+              />
+            </Col>
+          )}
+          {cube.dimensions.map((dim) => {
+            const options = cube.getOptionsForDimension(
+              dim.id,
+              sliceConfig.categories
+            );
+            return (
+              <Col md={4} className="d-flex" key={dim.id}>
+                <SelectDropdown
+                  id={`dim-${dim.id}`}
+                  className="flex-grow-1"
+                  label={dim.label}
+                  options={options}
+                  value={options.filter((opt) => opt.selected)}
+                  isMulti={true}
+                  isClearable={true}
+                  onChange={(newValues) => {
+                    setSliceConfig((old) => {
+                      return cube.updateChoice(dim, old, newValues);
+                    });
+                  }}
+                />
+              </Col>
+            );
+          })}
+        </Row>
+      </>
+    ) : null;
 
   return (
     <>
@@ -355,7 +410,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
             <GraphIcon /> {t('time-series')}
           </NavLink>
         </DisplayTab>
-        { /*
+        {/*
         <DisplayTab>
           <NavLink
             href="#" onClick={() => setActiveTabId('table')}
@@ -364,21 +419,20 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
             <TableIcon /> {t('table')}
           </NavLink>
         </DisplayTab>
-        */ }
+        */}
       </Nav>
-      <TabContent activeTab={ activeTabId} className='mt-3'>
-
-      { activeTabId === 'graph' && (
-        <Plot
-          data={plotData}
-          layout={layout}
-          useResizeHandler
-          style={{ width: '100%' }}
-          config={{ displayModeBar: false }}
-          noValidate
-        />
-      )}
-      { /* activeTabId === 'table' && (
+      <TabContent activeTab={activeTabId} className="mt-3">
+        {activeTabId === 'graph' && (
+          <Plot
+            data={plotData}
+            layout={layout}
+            useResizeHandler
+            style={{ width: '100%' }}
+            config={{ displayModeBar: false }}
+            noValidate
+          />
+        )}
+        {/* activeTabId === 'table' && (
         <div>
           <DataTable
             node={tableNode}
@@ -392,12 +446,23 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
 
       <Tools>
         <UncontrolledDropdown size="sm">
-          <DropdownToggle caret color="link"><DowloadIcon />{ ` ${t('download-data')}` }</DropdownToggle>
+          <DropdownToggle caret color="link">
+            <DowloadIcon />
+            {` ${t('download-data')}`}
+          </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'xlsx')}>
+            <DropdownItem
+              onClick={async (ev) =>
+                await cube.downloadData(sliceConfig, 'xlsx')
+              }
+            >
               <XlsIcon /> XLS
             </DropdownItem>
-            <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'csv')}>
+            <DropdownItem
+              onClick={async (ev) =>
+                await cube.downloadData(sliceConfig, 'csv')
+              }
+            >
               <CsvIcon /> CSV
             </DropdownItem>
           </DropdownMenu>
@@ -405,4 +470,4 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       </Tools>
     </>
   );
-};
+}

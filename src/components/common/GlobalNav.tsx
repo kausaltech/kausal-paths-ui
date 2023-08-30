@@ -2,8 +2,15 @@ import React, { useState, useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'next-i18next';
 import {
-  Collapse, Container, Navbar, Nav, NavItem,
-  UncontrolledDropdown, DropdownToggle, DropdownItem, DropdownMenu,
+  Collapse,
+  Container,
+  Navbar,
+  Nav,
+  NavItem,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownItem,
+  DropdownMenu,
 } from 'reactstrap';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
@@ -20,7 +27,8 @@ const TopNav = styled(Navbar)`
   background-color: ${(props) => props.theme.brandNavBackground};
   border-bottom: 1px solid ${(props) => props.theme.themeColors.light};
 
-  .nav-item a, .nav-item a:hover {
+  .nav-item a,
+  .nav-item a:hover {
     color: ${(props) => props.theme.brandNavColor};
   }
 
@@ -28,7 +36,10 @@ const TopNav = styled(Navbar)`
     text-align: left;
   }
 
-  a.dropdown-item, a.dropdown-item:hover, .dropdown-item a, .dropdown-item a:hover {
+  a.dropdown-item,
+  a.dropdown-item:hover,
+  .dropdown-item a,
+  .dropdown-item a:hover {
     color: ${(props) => props.theme.themeColors.dark};
     text-align: left;
     text-decoration: none;
@@ -38,7 +49,7 @@ const TopNav = styled(Navbar)`
 const BotNav = styled(Navbar)`
   background-color: ${(props) => props.theme.themeColors.white};
   padding: 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
 
   &.show {
     padding: 0 0 ${(props) => props.theme.spaces.s150} 0;
@@ -71,7 +82,8 @@ const BotNav = styled(Navbar)`
 const SiteTitle = styled.div`
   font-size: 1.25rem;
   line-height: 1.666rem;
-  padding: ${(props) => props.theme.spaces.s150} 0 ${(props) => props.theme.spaces.s150};
+  padding: ${(props) => props.theme.spaces.s150} 0
+    ${(props) => props.theme.spaces.s150};
 `;
 
 const HomeLink = styled.a`
@@ -89,59 +101,60 @@ const HomeLink = styled.a`
   }
 
   svg {
-      display: block;
-      max-width: 6em;
-      height: ${(props) => props.theme.spaces.s200};
-      margin: ${(props) => props.theme.spaces.s050}
-              ${(props) => props.theme.spaces.s150}
-              ${(props) => props.theme.spaces.s050}
-              0;
+    display: block;
+    max-width: 6em;
+    height: ${(props) => props.theme.spaces.s200};
+    margin: ${(props) => props.theme.spaces.s050}
+      ${(props) => props.theme.spaces.s150}
+      ${(props) => props.theme.spaces.s050} 0;
   }
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     svg {
-    max-width: 10em;
-    height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
-    margin: ${(props) => props.theme.spaces.s050}
-          ${(props) => props.theme.spaces.s150}
+      max-width: 10em;
+      height: calc(
+        ${(props) => props.theme.spaces.s200} +
           ${(props) => props.theme.spaces.s050}
-          0;
+      );
+      margin: ${(props) => props.theme.spaces.s050}
+        ${(props) => props.theme.spaces.s150}
+        ${(props) => props.theme.spaces.s050} 0;
     }
   }
 `;
 
 const EmptyLogo = styled.div`
-      width: 0;
-      height: ${(props) => props.theme.spaces.s200};
-      margin: ${(props) => props.theme.spaces.s050}
-              0
-              ${(props) => props.theme.spaces.s050}
-              0;
+  width: 0;
+  height: ${(props) => props.theme.spaces.s200};
+  margin: ${(props) => props.theme.spaces.s050} 0
+    ${(props) => props.theme.spaces.s050} 0;
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     width: 0;
-    height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
-    margin: ${(props) => props.theme.spaces.s050}
-          0
-          ${(props) => props.theme.spaces.s050}
-          0;
+    height: calc(
+      ${(props) => props.theme.spaces.s200} +
+        ${(props) => props.theme.spaces.s050}
+    );
+    margin: ${(props) => props.theme.spaces.s050} 0
+      ${(props) => props.theme.spaces.s050} 0;
   }
 `;
 
 const NavLink = styled.div`
   a {
     display: block;
-    margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
+    margin: 0 0 ${(props) => props.theme.spaces.s050}
+      ${(props) => props.theme.spaces.s100};
     color: ${(props) => props.theme.neutralDark};
 
     &:hover {
-        text-decoration: none;
-        color: ${(props) => props.theme.neutralDark};
+      text-decoration: none;
+      color: ${(props) => props.theme.neutralDark};
 
-        .highlighter {
-          border-bottom: 5px solid ${(props) => props.theme.brandDark};
-        }
+      .highlighter {
+        border-bottom: 5px solid ${(props) => props.theme.brandDark};
       }
+    }
 
     @media (min-width: ${(props) => props.theme.breakpointMd}) {
       align-self: flex-end;
@@ -152,7 +165,8 @@ const NavLink = styled.div`
 
 const NavHighlighter = styled.span`
   display: inline-block;
-  padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) => props.theme.spaces.s050} - 5px);
+  padding: ${(props) => props.theme.spaces.s050} 0
+    calc(${(props) => props.theme.spaces.s050} - 5px);
   border-bottom: 5px solid transparent;
   transition: border 200ms;
 
@@ -161,14 +175,16 @@ const NavHighlighter = styled.span`
   }
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
-    padding: ${(props) => props.theme.spaces.s150} 0 calc(${(props) => props.theme.spaces.s150} - 5px);
+    padding: ${(props) => props.theme.spaces.s150} 0
+      calc(${(props) => props.theme.spaces.s150} - 5px);
   }
 `;
 
 const StyledDropdownToggle = styled(DropdownToggle)`
   display: block;
   padding: 0;
-  margin: 0 0 ${(props) => props.theme.spaces.s100} ${(props) => props.theme.spaces.s100};
+  margin: 0 0 ${(props) => props.theme.spaces.s100}
+    ${(props) => props.theme.spaces.s100};
   color: ${(props) => props.theme.neutralDark};
 
   &:hover {
@@ -204,7 +220,8 @@ const StyledDropdown = styled(UncontrolledDropdown)`
 
     .highlighter {
       display: inline-block;
-      padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) => props.theme.spaces.s050} - 5px);
+      padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) =>
+        props.theme.spaces.s050} - 5px);
     }
 
     &:hover {
@@ -219,7 +236,8 @@ const StyledDropdown = styled(UncontrolledDropdown)`
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
-      box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)}};
+      box-shadow: 3px 3px 6px 2px ${(props) =>
+        transparentize(0.85, props.theme.themeColors.black)}};
     }
 
     .dropdown-item {
@@ -251,31 +269,25 @@ const NavbarToggler = styled.button`
 function DropdownList(props) {
   const { parentName, items, active } = props;
   return (
-    <StyledDropdown
-      nav
-      inNavbar
-      className={active && 'active'}
-    >
-      <StyledDropdownToggle
-        nav
-        caret
-      >
+    <StyledDropdown nav inNavbar className={active && 'active'}>
+      <StyledDropdownToggle nav caret>
         <NavHighlighter className={`highlighter ${active && 'active'}`}>
-          { parentName }
+          {parentName}
         </NavHighlighter>
       </StyledDropdownToggle>
       <DropdownMenu direction="left">
-        { items && items.map((child) => (
-          <DropdownItem key={child.id}>
-            <NavLink>
-              <Link href={child.urlPath}>
-                <NavHighlighter className="highlighter">
-                  {child.name}
-                </NavHighlighter>
-              </Link>
-            </NavLink>
-          </DropdownItem>
-        ))}
+        {items &&
+          items.map((child) => (
+            <DropdownItem key={child.id}>
+              <NavLink>
+                <Link href={child.urlPath}>
+                  <NavHighlighter className="highlighter">
+                    {child.name}
+                  </NavHighlighter>
+                </Link>
+              </NavLink>
+            </DropdownItem>
+          ))}
       </DropdownMenu>
     </StyledDropdown>
   );
@@ -287,12 +299,14 @@ DropdownList.defaultProps = {
 
 DropdownList.propTypes = {
   parentName: PropTypes.string.isRequired,
-  items: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    slug: PropTypes.string,
-    children: PropTypes.node,
-  })).isRequired,
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      slug: PropTypes.string,
+      children: PropTypes.node,
+    })
+  ).isRequired,
   active: PropTypes.bool,
 };
 
@@ -302,19 +316,19 @@ function GlobalNav(props) {
   const theme = useTheme();
   const [navIsFixed, setnavIsFixed] = useState(false);
   const [isOpen, toggleOpen] = useState(false);
-  const {
-    siteTitle, ownerName, navItems, fullwidth, sticky,
-  } = props;
+  const { siteTitle, ownerName, navItems, fullwidth, sticky } = props;
 
   const orgLogo = useMemo(() => {
     const url = formatStaticUrl(theme.themeLogoUrl);
-    return <SVG
-      className="org-logo"
-      src={url}
-      title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
-      preserveAspectRatio="xMinYMid meet"
-    />
-  }, [theme.themeLogoUrl, ownerName, siteTitle, t])
+    return (
+      <SVG
+        className="org-logo"
+        src={url}
+        title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
+        preserveAspectRatio="xMinYMid meet"
+      />
+    );
+  }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
   if (sticky) {
     useScrollPosition(
@@ -325,7 +339,7 @@ function GlobalNav(props) {
       [navIsFixed],
       null,
       false,
-      300,
+      300
     );
   }
   return (
@@ -336,43 +350,44 @@ function GlobalNav(props) {
         aria-label={siteTitle}
         container="lg"
       >
-          <Link href="/" passHref>
-            <HomeLink>
-              { orgLogo }
-              <SiteTitle>{siteTitle}</SiteTitle>
-            </HomeLink>
-          </Link>
-          { false /* FIXME */ && (
-            <Nav navbar className="ml-auto">
-              <NavItem>
-                <NavLink>
-                  <Link href="#admin">
-                    <a>
-                      <NavHighlighter className="highlighter">
-                        <Icon.Person size={20} color={theme.brandNavColor} />
-                        {' '}
-                        Log in
-                      </NavHighlighter>
-                    </a>
-                  </Link>
-                </NavLink>
-              </NavItem>
-            </Nav>
-          )}
-          <Nav navbar className="ml-auto d-none d-md-flex">
-            <LanguageSelector mobile={false} />
+        <Link href="/" passHref>
+          <HomeLink>
+            {orgLogo}
+            <SiteTitle>{siteTitle}</SiteTitle>
+          </HomeLink>
+        </Link>
+        {false /* FIXME */ && (
+          <Nav navbar className="ml-auto">
+            <NavItem>
+              <NavLink>
+                <Link href="#admin">
+                  <a>
+                    <NavHighlighter className="highlighter">
+                      <Icon.Person size={20} color={theme.brandNavColor} /> Log
+                      in
+                    </NavHighlighter>
+                  </a>
+                </Link>
+              </NavLink>
+            </NavItem>
           </Nav>
-          <NavbarToggler
-            onClick={() => toggleOpen(!isOpen)}
-            aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
-            aria-controls="global-navigation-bar"
-            aria-expanded={isOpen}
-            type="button"
-          >
-            { isOpen
-              ? <Icon.XLg color={theme.brandNavColor} />
-              : <Icon.List color={theme.brandNavColor} /> }
-          </NavbarToggler>
+        )}
+        <Nav navbar className="ml-auto d-none d-md-flex">
+          <LanguageSelector mobile={false} />
+        </Nav>
+        <NavbarToggler
+          onClick={() => toggleOpen(!isOpen)}
+          aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
+          aria-controls="global-navigation-bar"
+          aria-expanded={isOpen}
+          type="button"
+        >
+          {isOpen ? (
+            <Icon.XLg color={theme.brandNavColor} />
+          ) : (
+            <Icon.List color={theme.brandNavColor} />
+          )}
+        </NavbarToggler>
       </TopNav>
       <BotNav
         expand="md"
@@ -380,52 +395,54 @@ function GlobalNav(props) {
         id="global-navigation-bar"
         container="lg"
       >
-          <Collapse isOpen={isOpen} navbar>
-            <Nav navbar className="me-auto">
-              { navItems && navItems.map((page) => (
-                page.children
-                  ? (
-                    <NavDropdown
-                      items={page.children}
-                      active={page.active}
-                      key={page.slug}
-                    >
-                      {page.name}
-                    </NavDropdown>
-                  ) : (
-                    <NavItem key={page.slug} active={page.active}>
-                      <NavLink>
-                        <Link href={page.urlPath}>
-                          <a>
-                            <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
-                              {page.name}
-                            </NavHighlighter>
-                          </a>
-                        </Link>
-                      </NavLink>
-                    </NavItem>
-                  )
-              ))}
+        <Collapse isOpen={isOpen} navbar>
+          <Nav navbar className="me-auto">
+            {navItems &&
+              navItems.map((page) =>
+                page.children ? (
+                  <NavDropdown
+                    items={page.children}
+                    active={page.active}
+                    key={page.slug}
+                  >
+                    {page.name}
+                  </NavDropdown>
+                ) : (
+                  <NavItem key={page.slug} active={page.active}>
+                    <NavLink>
+                      <Link href={page.urlPath}>
+                        <a>
+                          <NavHighlighter
+                            className={`highlighter ${page.active && 'active'}`}
+                          >
+                            {page.name}
+                          </NavHighlighter>
+                        </a>
+                      </Link>
+                    </NavLink>
+                  </NavItem>
+                )
+              )}
+          </Nav>
+          <Nav navbar className="d-md-none">
+            <LanguageSelector mobile />
+          </Nav>
+          {site.watchLink ? (
+            <Nav navbar>
+              <NavItem>
+                <NavLink>
+                  <Link href={site.watchLink.url}>
+                    <a>
+                      <NavHighlighter className="highlighter">
+                        {site.watchLink.title}
+                      </NavHighlighter>
+                    </a>
+                  </Link>
+                </NavLink>
+              </NavItem>
             </Nav>
-            <Nav navbar className="d-md-none">
-              <LanguageSelector mobile />
-            </Nav>            
-            { site.watchLink ? (
-              <Nav navbar>
-                <NavItem>
-                  <NavLink>
-                    <Link href={ site.watchLink.url }>
-                      <a>
-                        <NavHighlighter className="highlighter">
-                          { site.watchLink.title }
-                        </NavHighlighter>
-                      </a>
-                    </Link>
-                  </NavLink>
-                </NavItem>
-              </Nav>
-            ) : null }
-          </Collapse>
+          ) : null}
+        </Collapse>
       </BotNav>
     </div>
   );
@@ -440,12 +457,14 @@ GlobalNav.defaultProps = {
 GlobalNav.propTypes = {
   siteTitle: PropTypes.string.isRequired,
   ownerName: PropTypes.string,
-  navItems: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    slug: PropTypes.string,
-    children: PropTypes.arrayOf(PropTypes.shape),
-  })).isRequired,
+  navItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      slug: PropTypes.string,
+      children: PropTypes.arrayOf(PropTypes.shape),
+    })
+  ).isRequired,
   fullwidth: PropTypes.bool,
   sticky: PropTypes.bool,
 };

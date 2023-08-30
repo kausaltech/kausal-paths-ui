@@ -1,6 +1,4 @@
-import {
-  CardBody,
-} from 'reactstrap';
+import { CardBody } from 'reactstrap';
 import styled from 'styled-components';
 
 const CardWithState = styled.div`
@@ -15,19 +13,21 @@ const CardWithState = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: .5rem .5rem .5rem 1.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
   }
 
-  &.open, &.root {
+  &.open,
+  &.root {
     color: ${(props) => props.theme.graphColors.grey050};
     background-color: white;
-    
+
     h2 {
       color: ${(props) => props.theme.graphColors.grey050};
     }
   }
 
-  &.inactive, &.closed {
+  &.inactive,
+  &.closed {
     color: ${(props) => props.theme.graphColors.grey090};
     background-color: white;
 
@@ -39,7 +39,7 @@ const CardWithState = styled.div`
   &.open.hovered {
     color: ${(props) => props.theme.graphColors.grey090};
     //border-color: ${(props) => props.color};
-    
+
     h2 {
       color: ${(props) => props.theme.graphColors.grey070};
     }
@@ -59,15 +59,17 @@ const CardWithState = styled.div`
     display: none;
   }
 
-  &.active.open, &.root {
+  &.active.open,
+  &.root {
     position: relative;
     color: ${(props) => props.theme.graphColors.grey090};
     background-color: ${(props) => props.theme.graphColors.grey005};
-    // border-radius: ${(props) => props.theme.cardBorderRadius} ${(props) => props.theme.cardBorderRadius} 0 0;
+    // border-radius: ${(props) => props.theme.cardBorderRadius} ${(props) =>
+      props.theme.cardBorderRadius} 0 0;
     height: 206px;
     padding-bottom: 36px;
-    box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
-  
+    box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+
     h2 {
       color: ${(props) => props.theme.graphColors.grey090};
     }
@@ -79,13 +81,13 @@ const DashCard = (props) => {
 
   return (
     <CardWithState
-      className={`card ${state} ${hovered ? 'hovered' : ''}  ${active ? 'active' : ''}`}
+      className={`card ${state} ${hovered ? 'hovered' : ''}  ${
+        active ? 'active' : ''
+      }`}
       color={color}
       ref={refProp}
     >
-      <CardBody>
-        { children }
-      </CardBody>
+      <CardBody>{children}</CardBody>
     </CardWithState>
   );
 };

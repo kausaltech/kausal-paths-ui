@@ -1,9 +1,14 @@
 // Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
-import { i18n } from 'next-i18next'
+import { i18n } from 'next-i18next';
 import getConfig from 'next/config';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  NormalizedCacheObject,
+} from '@apollo/client';
 import possibleTypes from 'common/__generated__/possible_types.json';
-
 
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
@@ -13,28 +18,26 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
       return {
         headers: {
           ...headers,
-          "accept-language": locale || i18n!.language,
-        }
-      }
+          'accept-language': locale || i18n!.language,
+        },
+      };
     }
   });
 
   return forward(operation);
 });
 
-
 export type ApolloClientOpts = {
-  instanceHostname: string,
-  instanceIdentifier: string,
-  authorizationToken?: string | undefined,
-  forwardedFor?: string | string[] | null,
-  remoteAddress?: string | null,
+  instanceHostname: string;
+  instanceIdentifier: string;
+  authorizationToken?: string | undefined;
+  forwardedFor?: string | string[] | null;
+  remoteAddress?: string | null;
   currentURL?: {
-    baseURL: string,
-    path: string,
-  }
+    baseURL: string;
+    path: string;
+  };
 };
-
 
 const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   /**
@@ -43,11 +46,15 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
    * If identifier is set directly, use that, or fall back to request hostname.
    */
   const {
-    instanceHostname, instanceIdentifier, authorizationToken, currentURL,
-    forwardedFor, remoteAddress
+    instanceHostname,
+    instanceIdentifier,
+    authorizationToken,
+    currentURL,
+    forwardedFor,
+    remoteAddress,
   } = opts;
   if (!instanceHostname && !instanceIdentifier) {
-    throw new Error("Neither hostname or identifier set for the instance")
+    throw new Error('Neither hostname or identifier set for the instance');
   }
 
   const middleware = new ApolloLink((operation, forward) => {
@@ -70,7 +77,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         }
       }
       return {
-        headers
+        headers,
       };
     });
 
@@ -78,8 +85,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   });
 
   return middleware;
-}
-
+};
 
 export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
@@ -87,7 +93,9 @@ let apolloClient: ApolloClientType | undefined;
 
 function createApolloClient(opts: ApolloClientOpts) {
   const ssrMode = typeof window === 'undefined';
-  const uri = ssrMode ? serverRuntimeConfig.graphqlUrl : publicRuntimeConfig.graphqlUrl;
+  const uri = ssrMode
+    ? serverRuntimeConfig.graphqlUrl
+    : publicRuntimeConfig.graphqlUrl;
 
   const httpLink = new HttpLink({
     uri,
@@ -97,7 +105,9 @@ function createApolloClient(opts: ApolloClientOpts) {
   return new ApolloClient({
     ssrMode,
     link: ApolloLink.from([
-      localeMiddleware, makeInstanceMiddleware(opts), httpLink
+      localeMiddleware,
+      makeInstanceMiddleware(opts),
+      httpLink,
     ]),
     cache: new InMemoryCache({
       possibleTypes: possibleTypes.possibleTypes,
@@ -105,7 +115,10 @@ function createApolloClient(opts: ApolloClientOpts) {
   });
 }
 
-export function initializeApollo(initialState: NormalizedCacheObject | null, opts: ApolloClientOpts) {
+export function initializeApollo(
+  initialState: NormalizedCacheObject | null,
+  opts: ApolloClientOpts
+) {
   const _apolloClient = apolloClient ?? createApolloClient(opts);
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state

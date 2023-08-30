@@ -1,6 +1,5 @@
 import { Container } from 'reactstrap';
 
-
 export default function ErrorMessage({ message }) {
   return (
     <Container>

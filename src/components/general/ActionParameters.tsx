@@ -7,7 +7,7 @@ const Parameters = styled.div`
   flex-wrap: wrap;
 
   & > div {
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 `;
 
@@ -18,25 +18,30 @@ const ActionParameters = (props) => {
     return null;
   }
   // Separate mandatory on/off parameter with standard id
-  const actionParameterSwitch = parameters.find((param) => param.id === `${param.node.id}.enabled`);
-  const actionOtherParameters = parameters.filter((param) => param.id !== actionParameterSwitch?.id);
+  const actionParameterSwitch = parameters.find(
+    (param) => param.id === `${param.node.id}.enabled`
+  );
+  const actionOtherParameters = parameters.filter(
+    (param) => param.id !== actionParameterSwitch?.id
+  );
 
   return (
     <Parameters>
-      { actionParameterSwitch && (
+      {actionParameterSwitch && (
         <ParameterWidget
           key={actionParameterSwitch.id}
           parameter={actionParameterSwitch}
           parameterType={actionParameterSwitch.__typename}
         />
       )}
-      { actionParameterSwitch.boolValue && actionOtherParameters?.map((parameter) => (
-        <ParameterWidget
-          key={parameter.id}
-          parameter={parameter}
-          parameterType={parameter.__typename}
-        />
-      ))}
+      {actionParameterSwitch.boolValue &&
+        actionOtherParameters?.map((parameter) => (
+          <ParameterWidget
+            key={parameter.id}
+            parameter={parameter}
+            parameterType={parameter.__typename}
+          />
+        ))}
     </Parameters>
   );
 };

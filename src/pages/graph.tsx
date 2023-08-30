@@ -4,41 +4,41 @@ import CytoGraph from 'components/CytoGraph';
 import GraphQLError from 'components/common/GraphQLError';
 
 const GET_NODES = gql`
-query GetCytoscapeNodes {
-  nodes {
-    id
-    name
-    color
-    quantity
-    unit {
-      htmlShort
-    }
-    inputNodes {
+  query GetCytoscapeNodes {
+    nodes {
       id
-    }
-    outputNodes {
-      id
-    }
-    metric {
-      historicalValues(latest: 1) {
-        year
-        value
+      name
+      color
+      quantity
+      unit {
+        htmlShort
       }
-    }
-    ... on ActionNode {
-      parentAction {
+      inputNodes {
         id
       }
-      subactions {
+      outputNodes {
         id
       }
-      group {
-        id
-        color
+      metric {
+        historicalValues(latest: 1) {
+          year
+          value
+        }
+      }
+      ... on ActionNode {
+        parentAction {
+          id
+        }
+        subactions {
+          id
+        }
+        group {
+          id
+          color
+        }
       }
     }
   }
-}
 `;
 
 export default function Graph() {
@@ -46,8 +46,9 @@ export default function Graph() {
 
   if (loading) {
     return <Spinner style={{ width: '3rem', height: '3rem' }} />;
-  } if (error) {
-    return <GraphQLError errors={error} />
+  }
+  if (error) {
+    return <GraphQLError errors={error} />;
   }
 
   const { nodes } = data;

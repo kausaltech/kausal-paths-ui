@@ -59,7 +59,9 @@ const WatchActionCard = (props: any) => {
         <h5>{action?.name}</h5>
         <p>{action?.description}</p>
         <ActionCardLink>
-          <a href={action?.link}>Read more <Icon.ArrowRightCircleFill /></a>
+          <a href={action?.link}>
+            Read more <Icon.ArrowRightCircleFill />
+          </a>
         </ActionCardLink>
       </ActionCardContent>
     </ActionCard>

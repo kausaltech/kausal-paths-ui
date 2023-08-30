@@ -4,12 +4,12 @@ import styled, { useTheme } from 'styled-components';
 import { Badge as BSSBadge } from 'reactstrap';
 import { readableColor } from 'polished';
 
-const StyledBadge = styled.span<{$color: string, $isLink?: boolean}>`
+const StyledBadge = styled.span<{ $color: string; $isLink?: boolean }>`
   background-color: white !important;
   // border-left: 24px solid ${(props) => props.$color} !important;
-  color: ${(props) => props.theme.themeColors.black };
+  color: ${(props) => props.theme.themeColors.black};
   border-radius: ${(props) => props.theme.badgeBorderRadius};
-  padding: .25rem .5rem;
+  padding: 0.25rem 0.5rem;
   font-weight: ${(props) => props.theme.badgeFontWeight};
   max-width: 100%;
   word-break: break-all;
@@ -19,7 +19,8 @@ const StyledBadge = styled.span<{$color: string, $isLink?: boolean}>`
   text-align: left;
 
   &:hover {
-    background-color:  ${(props) => props.$isLink && darken(0.05, props.theme[props.$color])} !important;
+    background-color: ${(props) =>
+      props.$isLink && darken(0.05, props.theme[props.$color])} !important;
   }
 
   &.lg {
@@ -50,14 +51,13 @@ const ScenarioBadge = (props) => {
   const { children, size, color, isLink, type } = props;
   const theme = useTheme();
 
-
   return (
     <StyledBadge
       className={size}
       $color={getBadgeColor(theme, type, color)}
       $isLink={isLink}
     >
-      { children }
+      {children}
     </StyledBadge>
   );
 };

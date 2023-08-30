@@ -11,7 +11,10 @@ import GraphQLError from 'components/common/GraphQLError';
 import OutcomePage from 'components/pages/OutcomePage';
 import ActionListPage from 'components/pages/ActionListPage';
 import ErrorMessage from 'components/common/ErrorMessage';
-import { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
+import {
+  GetPageQuery,
+  GetPageQueryVariables,
+} from 'common/__generated__/graphql';
 import { Suspense } from 'react';
 import { activeGoalVar } from 'common/cache';
 import Footer from 'components/common/Footer';
@@ -20,32 +23,33 @@ export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
 const PageLoader = () => {
   return (
-    <div className="loader-wrapper" style={{height: '100vh'}}>
+    <div className="loader-wrapper" style={{ height: '100vh' }}>
       <ContentLoader />
     </div>
   );
-}
+};
 
 export default function Page({ path, headerExtra }) {
   const site = useSite();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(
-    GET_PAGE,
-    {
-      variables: {
-        path,
-        goal: activeGoal?.id,
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
+    variables: {
+      path,
+      goal: activeGoal?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
   const { loading, error, previousData, refetch } = queryResp;
   const data = queryResp.data ?? previousData;
   const { t } = useTranslation();
 
   if (error) {
-    logError(error, {query: GET_PAGE});
-    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
+    logError(error, { query: GET_PAGE });
+    return (
+      <Container className="pt-5">
+        <GraphQLError errors={error} />
+      </Container>
+    );
   }
   if (!data) {
     return <PageLoader />;
@@ -57,29 +61,38 @@ export default function Page({ path, headerExtra }) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
   if (page.__typename === 'OutcomePage') {
-    pageContent = <OutcomePage page={page} refetch={refetch} activeScenario={activeScenario} />
-  }
-  else if (page.__typename === 'ActionListPage') {
-    pageContent = <ActionListPage page={page} refetch={refetch} activeScenario={activeScenario} />
-  } else {
+    pageContent = (
+      <OutcomePage
+        page={page}
+        refetch={refetch}
+        activeScenario={activeScenario}
+      />
+    );
+  } else if (page.__typename === 'ActionListPage') {
+    pageContent = (
+      <ActionListPage
+        page={page}
+        refetch={refetch}
+        activeScenario={activeScenario}
+      />
+    );
+  } else {
     console.error('Invalid page type: ', page.__typename);
-    return <ErrorMessage message={`${t('invalid-page-type')} : ${page.__typename}`} />;
+    return (
+      <ErrorMessage
+        message={`${t('invalid-page-type')} : ${page.__typename}`}
+      />
+    );
   }
   return (
     <>
       <Head>
         <title>
-          {site.title}
-          {' '}
-          |
-          {' '}
-          {page.title}
+          {site.title} | {page.title}
         </title>
       </Head>
       {headerExtra}
-      <Suspense fallback={<PageLoader />}>
-        {pageContent}
-      </Suspense>
+      <Suspense fallback={<PageLoader />}>{pageContent}</Suspense>
     </>
   );
 }

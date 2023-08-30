@@ -16,37 +16,54 @@ const LoadingOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(255,255,255,0.4);
+  background-color: rgba(255, 255, 255, 0.4);
   z-index: 1;
 `;
 
-const GraphCard = styled.div` 
+const GraphCard = styled.div`
   position: relative;
   margin: 0 0 3rem;
   padding: 2rem;
-  border-radius:  0;
+  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33,33,33,0.15);
+  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
 const ActionsMac = (props) => {
-  const { actions, actionEfficiencyPairs, t, actionGroups, sortBy, sortAscending, refetching } = props;
+  const {
+    actions,
+    actionEfficiencyPairs,
+    t,
+    actionGroups,
+    sortBy,
+    sortAscending,
+    refetching,
+  } = props;
   // if we have efficiency limit set, remove actions over that limit
   const efficiencyLimit = actionEfficiencyPairs?.plotLimitEfficiency;
   // Remove actions without efficiency data
   const efficiencyActions = actions
     .filter((action) => action.cumulativeEfficiency)
-    .filter((action) => efficiencyLimit ? Math.abs(action.cumulativeEfficiency) <= efficiencyLimit : true);
+    .filter((action) =>
+      efficiencyLimit
+        ? Math.abs(action.cumulativeEfficiency) <= efficiencyLimit
+        : true
+    );
 
   const sortActions = (a, b) => {
     let aValue = a[sortBy];
     let bValue = b[sortBy];
 
-    return a.cumulativeImpact < 0 ? -1 : b.cumulativeImpact < 0 ? 0 : sortAscending ? aValue - bValue : bValue - aValue
-  }
+    return a.cumulativeImpact < 0
+      ? -1
+      : b.cumulativeImpact < 0
+      ? 0
+      : sortAscending
+      ? aValue - bValue
+      : bValue - aValue;
+  };
 
   const sortedActions = [...efficiencyActions].sort(sortActions);
-
 
   const macData = {
     ids: sortedActions.map((action) => action.id),
@@ -59,11 +76,11 @@ const ActionsMac = (props) => {
   };
 
   //const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.htmlShort;
-  const efficiencyName = sortedActions[0]?.cumulativeEfficiencyName; 
-  const efficiencyUnit = sortedActions[0]?.cumulativeEfficiencyUnit; 
-  
-  const impactName = sortedActions[0]?.cumulativeImpactName; 
-  const impactUnit = sortedActions[0]?.cumulativeImpactUnit; 
+  const efficiencyName = sortedActions[0]?.cumulativeEfficiencyName;
+  const efficiencyUnit = sortedActions[0]?.cumulativeEfficiencyUnit;
+
+  const impactName = sortedActions[0]?.cumulativeImpactName;
+  const impactUnit = sortedActions[0]?.cumulativeImpactUnit;
 
   const costName = sortedActions[0]?.cumulativeCostName;
   const costUnit = sortedActions[0]?.cumulativeCostUnit;
@@ -74,7 +91,11 @@ const ActionsMac = (props) => {
         {t('actions-count', { count: sortedActions.length})}
       </ActionCount> */}
       <GraphCard>
-        { refetching && <LoadingOverlay><Spinner color="primary" /></LoadingOverlay> }
+        {refetching && (
+          <LoadingOverlay>
+            <Spinner color="primary" />
+          </LoadingOverlay>
+        )}
         <MacGraph
           data={macData}
           impactName={impactName}
@@ -88,7 +109,7 @@ const ActionsMac = (props) => {
         />
       </GraphCard>
     </>
-  )
+  );
 };
 
 export default ActionsMac;

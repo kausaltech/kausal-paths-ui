@@ -22,14 +22,14 @@ import { GetNodePageQuery } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import dimensionalNodePlotFragment from 'queries/dimensionalNodePlot';
 
-
-const HeaderSection = styled.div`
+const HeaderSection = styled.div<{ $color?: string }>`
   padding: 1rem 0 1rem;
   margin-bottom: 7rem;
-  background-color: ${(props) => props.color || props.theme.graphColors.grey070};
+  background-color: ${(props) =>
+    props.$color || props.theme.graphColors.grey070};
 `;
 
-const PageHeader = styled.div` 
+const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
@@ -44,10 +44,10 @@ const NodeDescription = styled.div`
   max-width: 720px;
 `;
 
-const HeaderCard = styled.div` 
+const HeaderCard = styled.div`
   margin: 3rem 0 -8rem;
   padding: 2rem;
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 
@@ -57,11 +57,12 @@ const NodeBodyText = styled.div`
 
 const ContentWrapper = styled.div`
   padding: 1.5rem;
-  margin: .5rem 0;
+  margin: 0.5rem 0;
   background-color: ${(props) => props.theme.graphColors.grey005};
-  border-radius:  ${(props) => props.theme.cardBorderRadius};
+  border-radius: ${(props) => props.theme.cardBorderRadius};
 
-  .x2sstick text, .xtick text {
+  .x2sstick text,
+  .xtick text {
     text-anchor: end !important;
   }
 `;
@@ -71,64 +72,64 @@ const BodyText = styled.div`
 `;
 
 const GET_NODE_PAGE_CONTENT = gql`
-query GetNodePage($node: ID!) {
-  node(id: $node) {
-    id
-    name
-    shortDescription
-    description
-    color
-    targetYearGoal
-    unit {
-      htmlShort
-    }
-    quantity
-    isAction
-    metric {
-      name
-      id
-      unit {
-        htmlShort
-      }
-      historicalValues {
-        year
-        value
-      }
-      forecastValues {
-        value
-        year
-      }
-      baselineForecastValues {
-        year
-        value
-      }
-    }
-    inputNodes {
+  query GetNodePage($node: ID!) {
+    node(id: $node) {
       id
       name
       shortDescription
+      description
       color
+      targetYearGoal
       unit {
         htmlShort
       }
       quantity
       isAction
-    }
-    outputNodes {
-      id
-      name
-      shortDescription
-      color
-      unit {
-        htmlShort
+      metric {
+        name
+        id
+        unit {
+          htmlShort
+        }
+        historicalValues {
+          year
+          value
+        }
+        forecastValues {
+          value
+          year
+        }
+        baselineForecastValues {
+          year
+          value
+        }
       }
-      quantity
-      isAction
+      inputNodes {
+        id
+        name
+        shortDescription
+        color
+        unit {
+          htmlShort
+        }
+        quantity
+        isAction
+      }
+      outputNodes {
+        id
+        name
+        shortDescription
+        color
+        unit {
+          htmlShort
+        }
+        quantity
+        isAction
+      }
+      ...DimensionalNodeMetric
     }
-    ...DimensionalNodeMetric
   }
-}
-${dimensionalNodePlotFragment}
+  ${dimensionalNodePlotFragment}
 `;
 
 export default function NodePage() {
@@ -138,11 +139,14 @@ export default function NodePage() {
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(GET_NODE_PAGE_CONTENT, {
-    variables: {
-      node: slug,
-    },
-  });
+  const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(
+    GET_NODE_PAGE_CONTENT,
+    {
+      variables: {
+        node: slug,
+      },
+    }
+  );
 
   const activeScenario = useReactiveVar(activeScenarioVar);
 
@@ -153,50 +157,55 @@ export default function NodePage() {
 
   if (loading) {
     return <ContentLoader />;
-  } if (error || !data) {
-    logError(error, {query: GET_NODE_PAGE_CONTENT});
-    return <Container className="pt-5"><GraphQLError errors={error} /></Container>
+  }
+  if (error || !data) {
+    logError(error, { query: GET_NODE_PAGE_CONTENT });
+    return (
+      <Container className="pt-5">
+        <GraphQLError errors={error} />
+      </Container>
+    );
   }
 
   const { node } = data;
   if (!node) {
-    return <Container className="pt-5"><ErrorMessage message={t('page-not-found')} /></Container>
+    return (
+      <Container className="pt-5">
+        <ErrorMessage message={t('page-not-found')} />
+      </Container>
+    );
   }
 
   return (
     <>
       <Head>
         <title>
-          {site.title}
-          {' '}
-          |
-          {' '}
-          {node.name}
+          {site.title} | {node.name}
         </title>
       </Head>
-      <HeaderSection color={node.color}>
+      <HeaderSection $color={node.color || undefined}>
         <Container fluid="lg">
           <PageHeader>
             <HeaderCard>
-              <div>{ node.isAction && <span>{t('action')}</span> }</div>
-              <h1>
-                {node.name}
-              </h1>
+              <div>{node.isAction && <span>{t('action')}</span>}</div>
+              <h1>{node.name}</h1>
+              {node.shortDescription && (
                 <NodeDescription>
-                  <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
+                  <div
+                    dangerouslySetInnerHTML={{ __html: node.shortDescription }}
+                  />
                 </NodeDescription>
-                <div>
-                { node.isAction && (
+              )}
+              <div>
+                {node.isAction && (
                   <ActionLink action={node}>
                     <a>
-                      {t('action-impact')}
-                      {' '}
-                      <ArrowRight />
+                      {t('action-impact')} <ArrowRight />
                     </a>
                   </ActionLink>
-                  )}
-                  </div>
-              { node.metricDim ? (
+                )}
+              </div>
+              {node.metricDim ? (
                 <ContentWrapper>
                   <DimensionalNodePlot
                     key={node.id}
@@ -207,37 +216,41 @@ export default function NodePage() {
                     color={node.color}
                   />
                 </ContentWrapper>
-              ) : (node.metric && (
-              <ContentWrapper>
-                <NodePlot
-                  metric={node.metric}
-                  impactMetric={node.impactMetric}
-                  year="2021"
-                  startYear={yearRange[0]}
-                  endYear={yearRange[1]}
-                  color={node.color}
-                  isAction={node.isAction}
-                  targetYearGoal={node.targetYearGoal}
-                  quantity={node.quantity}
-                />
-              </ContentWrapper>
-              ))}
+              ) : (
+                node.metric && (
+                  <ContentWrapper>
+                    <NodePlot
+                      metric={node.metric}
+                      impactMetric={node.impactMetric}
+                      year="2021"
+                      startYear={yearRange[0]}
+                      endYear={yearRange[1]}
+                      color={node.color}
+                      isAction={node.isAction}
+                      targetYearGoal={node.targetYearGoal}
+                      quantity={node.quantity}
+                    />
+                  </ContentWrapper>
+                )
+              )}
             </HeaderCard>
           </PageHeader>
         </Container>
       </HeaderSection>
-      { node.description && (
-      <NodeBodyText>
-        <Container fluid="lg">
-          <Row>
-            <Col lg={{ size: 10, offset: 1 }}>
-              <DashCard>
-                <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
-              </DashCard>
-            </Col>
-          </Row>
-        </Container>
-      </NodeBodyText>
+      {node.description && (
+        <NodeBodyText>
+          <Container fluid="lg">
+            <Row>
+              <Col lg={{ size: 10, offset: 1 }}>
+                <DashCard>
+                  <BodyText
+                    dangerouslySetInnerHTML={{ __html: node.description }}
+                  />
+                </DashCard>
+              </Col>
+            </Row>
+          </Container>
+        </NodeBodyText>
       )}
       <Container fluid="lg">
         <NodeLinks
