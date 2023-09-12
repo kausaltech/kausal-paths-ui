@@ -75,11 +75,15 @@ const Layout = ({ children }) => {
           <meta property="og:image" key="head-og-image" content={ogImage} />
         )}
       </Head>
-      <GlobalNav
-        siteTitle={site.title}
-        ownerName={site.owner}
-        navItems={navItems}
-      />
+      <stzh-header>
+        <stzh-metanav slot="nav">
+          <stzh-link href="#contact">Contact</stzh-link>
+          <stzh-link href="#media">Media</stzh-link>
+          <stzh-link href="#jobs">Jobs</stzh-link>
+        </stzh-metanav>
+        <img src="media/logo/stzh-default.svg" alt="Logo City Zürich, go to homepage" slot="logo" />
+        <stzh-langnav language-active="/en" languages="[{&quot;text&quot;:&quot;Deutsch&quot;,&quot;value&quot;:&quot;/de&quot;},{&quot;text&quot;:&quot;English&quot;,&quot;value&quot;:&quot;/en&quot;}]" slot="langnav"></stzh-langnav>
+      </stzh-header>
       <PageContainer>
         <main className="main">{children}</main>
       </PageContainer>

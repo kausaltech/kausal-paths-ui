@@ -1,3 +1,4 @@
+import React, { useLayoutEffect } from 'react';
 import {
   ApolloProvider,
   ApolloClient,
@@ -25,13 +26,15 @@ import InstanceContext, {
 import SiteContext, { SiteContextType } from 'context/site';
 import Layout from 'components/Layout';
 import {
-  GetAvailableInstancesQuery,
+  GetAvailableInstancesQuery, 
   GetInstanceContextQuery,
   GetInstanceContextQueryVariables,
 } from 'common/__generated__/graphql';
 import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
 import { setSignificantDigits } from 'common/preprocess';
+// import { defineCustomElements } from '@duetds/components/lib/loader';
+import { defineCustomElements } from '@oiz/stzh-components/loader';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
@@ -187,6 +190,10 @@ function PathsApp(props: PathsAppProps) {
   //useEffect(() => console.log('translation changed', i18n), [i18n]);
   console.log('app render');
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
+
+  useLayoutEffect(() => {
+      defineCustomElements(window)
+  }, [])
 
   numbro.setLanguage(
     i18n.language,

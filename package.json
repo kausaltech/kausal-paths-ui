@@ -15,8 +15,10 @@
   "dependencies": {
     "@apollo/client": "^3.8.0-rc.2",
     "@babel/eslint-parser": "^7.22.9",
+    "@duetds/components": "^7.0.3",
     "@kausal/themes": "^0.5.3",
     "@n8tb1t/use-scroll-position": "^2.0.3",
+    "@oiz/stzh-components": "^2.9.0-alpha",
     "@sentry/nextjs": "^7.61.1",
     "@types/cookie-session": "^2.0.44",
     "@types/passport": "^1.0.12",
@@ -121,6 +123,6 @@
   },
   "packageManager": "yarn@3.2.4",
   "optionalDependencies": {
-    "@kausal/themes-private": "^0.2.53"
+    "@kausal/themes-private": "^0.2.61"
   }
 }
