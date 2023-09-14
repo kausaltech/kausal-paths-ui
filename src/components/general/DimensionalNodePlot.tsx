@@ -164,7 +164,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         width: 1,
         dash: 'solid',
         shape: 'spline',
-        smoothing: 1.0,
+        smoothing: 0.8,
       },
     };
     return out;
