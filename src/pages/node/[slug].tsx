@@ -5,7 +5,7 @@ import { useTranslation } from 'next-i18next';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
-import { ArrowRight } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 
 import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
@@ -200,7 +200,7 @@ export default function NodePage() {
                 {node.isAction && (
                   <ActionLink action={node}>
                     <a>
-                      {t('action-impact')} <ArrowRight />
+                      {t('action-impact')} <Icon name="arrowRight" />
                     </a>
                   </ActionLink>
                 )}

@@ -19,12 +19,7 @@ import {
   Label,
   Alert,
 } from 'reactstrap';
-import {
-  SortUp,
-  SortDown,
-  Grid3x2GapFill,
-  BarChartLineFill,
-} from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import { useTranslation } from 'next-i18next';
 import { GET_ACTION_LIST } from 'queries/getActionList';
 
@@ -366,7 +361,7 @@ function ActionListPage(props: ActionListPageProps) {
                         onClick={(e) => setAscending(true)}
                         active={ascending === true}
                       >
-                        <SortDown />
+                        <Icon name="arrowDown" />
                       </Button>
                       <Button
                         color="white"
@@ -374,7 +369,7 @@ function ActionListPage(props: ActionListPageProps) {
                         onClick={(e) => setAscending(false)}
                         active={ascending === false}
                       >
-                        <SortUp />
+                        <Icon name="arrowUp" />
                       </Button>
                     </ButtonGroup>
                   </FormGroup>
@@ -402,7 +397,7 @@ function ActionListPage(props: ActionListPageProps) {
               aria-controls="list-view"
               id="list-tab"
             >
-              <Grid3x2GapFill /> {t('actions-as-list')}
+              <Icon name="bars" /> {t('actions-as-list')}
             </Tab>
             {hasEfficiency ? (
               <Tab
@@ -414,7 +409,7 @@ function ActionListPage(props: ActionListPageProps) {
                 aria-controls="list-view"
                 id="list-tab"
               >
-                <BarChartLineFill /> {t('actions-as-efficiency')}
+                <Icon name="chartLine" /> {t('actions-as-efficiency')}
               </Tab>
             ) : (
               <Tab
@@ -428,7 +423,7 @@ function ActionListPage(props: ActionListPageProps) {
                 aria-controls="list-view"
                 id="list-tab"
               >
-                <BarChartLineFill /> {t('actions-as-comparison')}
+                <Icon name="chartLine" /> {t('actions-as-comparison')}
               </Tab>
             )}
           </div>

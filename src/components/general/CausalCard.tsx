@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import styled from 'styled-components';
 import {
   summarizeYearlyValuesBetween,
@@ -158,9 +158,19 @@ const CausalCard = (props: CausalCardProps) => {
             <NodeIcon node={node} />
             <h4>{node.name}</h4>
             {isOpen ? (
-              <Icon.ChevronDown size={24} className="ml-auto" />
+              <Icon
+                name="angleDown"
+                width="24px"
+                height="24px"
+                className="ml-auto"
+              />
             ) : (
-              <Icon.ChevronRight size={24} className="ml-auto" />
+              <Icon
+                name="angleRight"
+                width="24px"
+                height="24px"
+                className="ml-auto"
+              />
             )}
           </button>
         </CardHeader>

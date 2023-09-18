@@ -3,8 +3,23 @@ import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
 import { useSite } from 'context/site';
+import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import Footer from 'components/common/Footer';
+import { CombinedIconSymbols } from 'components/common/icon';
+import dynamic from 'next/dynamic';
 
+/*
+const GlobalNav = dynamic(
+  () => {
+    return isLiveBlog
+      ? import("components/common/GlobalNav")
+      : import("../components/TestTwo");
+  },
+  {
+    suspense: true,
+  }
+);
+*/
 const PageContainer = styled.div`
   width: 100%;
   background-color: ${(props) => props.theme.graphColors.grey030};
@@ -75,15 +90,8 @@ const Layout = ({ children }) => {
           <meta property="og:image" key="head-og-image" content={ogImage} />
         )}
       </Head>
-      <stzh-header>
-        <stzh-metanav slot="nav">
-          <stzh-link href="#contact">Contact</stzh-link>
-          <stzh-link href="#media">Media</stzh-link>
-          <stzh-link href="#jobs">Jobs</stzh-link>
-        </stzh-metanav>
-        <img src="media/logo/stzh-default.svg" alt="Logo City Zürich, go to homepage" slot="logo" />
-        <stzh-langnav language-active="/en" languages="[{&quot;text&quot;:&quot;Deutsch&quot;,&quot;value&quot;:&quot;/de&quot;},{&quot;text&quot;:&quot;English&quot;,&quot;value&quot;:&quot;/en&quot;}]" slot="langnav"></stzh-langnav>
-      </stzh-header>
+      <CombinedIconSymbols />
+      <GlobalNav navItems={navItems} />
       <PageContainer>
         <main className="main">{children}</main>
       </PageContainer>

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { ArrowUp } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 
 import { NodeLink } from 'common/links';
 import DashCard from 'components/general/DashCard';
@@ -32,7 +32,7 @@ const InputNodeCards = (props) => {
       {nodes.map((input) => (
         <NodeItem key={input.id}>
           <EffectIcon>
-            <ArrowUp size={32} />
+            <Icon name="arrowUp" width="32px" height="32px" />
           </EffectIcon>
           <DashCard>
             <NodeLink node={input}>

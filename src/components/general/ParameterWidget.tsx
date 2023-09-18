@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { Input as BSCustomInput } from 'reactstrap';
-import { ArrowCounterclockwise } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
@@ -114,7 +114,7 @@ const NumberWidget = (props) => {
           handleChange({ parameterId: id, numberValue: defaultValue })
         }
       >
-        <ArrowCounterclockwise />
+        <Icon name="version" />
       </Button>
     ) : null;
 

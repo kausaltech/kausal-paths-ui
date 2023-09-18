@@ -3,7 +3,7 @@ import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'reactstrap';
-import { ArrowRight } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import { t } from 'i18next';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
@@ -165,7 +165,7 @@ function ActionComparisonGraph(props) {
               }
             </HoverGroupTag>
             <h4>
-              {data.actions[hoverId]} <ArrowRight />
+              {data.actions[hoverId]} <Icon name="arrowRight" />
             </h4>
           </a>
           <Row>

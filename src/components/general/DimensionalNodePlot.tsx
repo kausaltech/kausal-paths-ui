@@ -19,12 +19,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from 'reactstrap';
-import {
-  GraphDown as GraphIcon,
-  CloudArrowDown as DowloadIcon,
-  FiletypeCsv as CsvIcon,
-  FiletypeXls as XlsIcon,
-} from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import SelectDropdown from 'components/common/SelectDropdown';
 import { activeGoalVar } from 'common/cache';
 import {
@@ -407,7 +402,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
             onClick={() => setActiveTabId('graph')}
             active={activeTabId === 'graph'}
           >
-            <GraphIcon /> {t('time-series')}
+            <Icon name="chartLine" /> {t('time-series')}
           </NavLink>
         </DisplayTab>
         {/*
@@ -447,7 +442,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       <Tools>
         <UncontrolledDropdown size="sm">
           <DropdownToggle caret color="link">
-            <DowloadIcon />
+            <Icon name="download" />
             {` ${t('download-data')}`}
           </DropdownToggle>
           <DropdownMenu>
@@ -456,14 +451,14 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
                 await cube.downloadData(sliceConfig, 'xlsx')
               }
             >
-              <XlsIcon /> XLS
+              <Icon name="file" /> XLS
             </DropdownItem>
             <DropdownItem
               onClick={async (ev) =>
                 await cube.downloadData(sliceConfig, 'csv')
               }
             >
-              <CsvIcon /> CSV
+              <Icon name="file" /> CSV
             </DropdownItem>
           </DropdownMenu>
         </UncontrolledDropdown>

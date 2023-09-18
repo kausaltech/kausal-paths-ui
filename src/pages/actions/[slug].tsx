@@ -25,7 +25,7 @@ import {
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import ImpactDisplay from 'components/general/ImpactDisplay';
-import { ArrowRight } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import SubActions from 'components/general/SubActions';
 
 const HeaderSection = styled.div`
@@ -221,7 +221,7 @@ export default function ActionPage() {
                 />
                 <NodeLink node={action}>
                   <a>
-                    {t('read-more')} <ArrowRight />
+                    {t('read-more')} <Icon name="arrowRight" />
                   </a>
                 </NodeLink>
                 <hr />
