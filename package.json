@@ -10,7 +10,8 @@
     "build-storybook": "build-storybook",
     "graphql-codegen": "graphql-codegen --config codegen.ts",
     "prettier:fix": "prettier ./ --write",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "husky install"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0-rc.2",
@@ -115,6 +116,8 @@
     "eslint-plugin-react": "^7.33.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-styled-components-a11y": "^2.1.31",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.1",
     "sass": "^1.64.2",
@@ -123,6 +126,9 @@
   },
   "packageManager": "yarn@3.2.4",
   "optionalDependencies": {
-    "@kausal/themes-private": "^0.2.61"
+    "@kausal/themes-private": "^0.2.53"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,json,scss,css,md}": "prettier --write"
   }
 }
