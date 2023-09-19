@@ -38,10 +38,21 @@ const Tools = styled.div`
   .btn-link {
     text-decoration: none;
   }
+  .icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    vertical-align: -0.2rem;
+  }
 `;
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
+  .icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    margin-right: 0.25rem;
+    vertical-align: -0.2rem;
+  }
 `;
 
 function formatHover(

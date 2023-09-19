@@ -4531,17 +4531,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kausal/themes-private@npm:^0.2.61":
-  version: 0.2.61
-  resolution: "@kausal/themes-private@npm:0.2.61"
-  checksum: 8a44b5f0939470093bc9cf3c211baf06548a01d5c28c954ec2023ca1a93c0d596d13ede9b26002e00a10c92073379dc8749373e2ce3fb77079bf261f07334552
+"@kausal/themes-private@npm:^0.2.63":
+  version: 0.2.63
+  resolution: "@kausal/themes-private@npm:0.2.63"
+  checksum: c8f0ae03d5c5fe8025de8410661f871616d8b1311f5d7cd3c1533f7e11069dc207aa0337696d499e3254c449b359444c772688c57d52ed25b369280400806872
   languageName: node
   linkType: hard
 
-"@kausal/themes@npm:^0.5.3":
-  version: 0.5.3
-  resolution: "@kausal/themes@npm:0.5.3"
-  checksum: c8a5458fd98171fce466a4490a36b19123ec0ff8745be8da2af3df36c4c5b2dd76f723a7f5b5912c7078f2e14439b8b43cebeaa215848caa7dbfca43d4763b8e
+"@kausal/themes@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "@kausal/themes@npm:0.6.2"
+  checksum: 416177e8056be6d270251f67db556a6ed897574938fdc86e161f06c84da9de75c2d2ae2df221a562116454a4927bd19de75e8a6247f92a842dbd357613f0d3bb
   languageName: node
   linkType: hard
 
@@ -13883,8 +13883,8 @@ __metadata:
     "@graphql-codegen/typescript": ^4.0.1
     "@graphql-codegen/typescript-operations": ^4.0.1
     "@graphql-codegen/typescript-react-apollo": ^3.3.7
-    "@kausal/themes": ^0.5.3
-    "@kausal/themes-private": ^0.2.61
+    "@kausal/themes": ^0.6.2
+    "@kausal/themes-private": ^0.2.63
     "@n8tb1t/use-scroll-position": ^2.0.3
     "@oiz/stzh-components": ^2.9.0-alpha
     "@sentry/cli": ^2.20.4
@@ -14674,6 +14674,13 @@ __metadata:
   version: 1.1.2
   resolution: "methods@npm:1.1.2"
   checksum: 0917ff4041fa8e2f2fda5425a955fe16ca411591fbd123c0d722fcf02b73971ed6f764d85f0a6f547ce49ee0221ce2c19a5fa692157931cecb422984f1dcd13a
+  languageName: node
+  linkType: hard
+
+"mgrs@npm:1.0.0":
+  version: 1.0.0
+  resolution: "mgrs@npm:1.0.0"
+  checksum: 98b9fa3caff9986868344567996f8dcc833f939c2e140507a00e2ce9a96ef7eaeb81933a749222a2b7bcbc1a4bb6ada6120dda3a5b6af6d72ae332d8990956b9
   languageName: node
   linkType: hard
 

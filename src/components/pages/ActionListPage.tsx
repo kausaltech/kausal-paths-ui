@@ -67,6 +67,17 @@ const ActionCount = styled.div`
   }
 `;
 
+const SortButtons = styled(ButtonGroup)`
+  button {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+
+  .icon {
+    vertical-align: middle;
+  }
+`;
+
 const HeaderCard = styled.div`
   margin: ${({ theme }) => theme.spaces.s200} 0;
   padding: ${({ theme }) => theme.spaces.s100}
@@ -104,6 +115,12 @@ const Tab = styled.button`
     &:hover {
       color: ${(props) => props.theme.themeColors.black};
     }
+  }
+
+  .icon {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    vertical-align: middle;
   }
 `;
 
@@ -354,14 +371,18 @@ function ActionListPage(props: ActionListPageProps) {
                 </div>
                 <div className="d-flex align-items-end">
                   <FormGroup>
-                    <ButtonGroup>
+                    <SortButtons>
                       <Button
                         color="white"
                         outline
                         onClick={(e) => setAscending(true)}
                         active={ascending === true}
                       >
-                        <Icon name="arrowDown" />
+                        <Icon
+                          name="arrowUpWideShort"
+                          width="1.5rem"
+                          height="1.5rem"
+                        />
                       </Button>
                       <Button
                         color="white"
@@ -369,9 +390,13 @@ function ActionListPage(props: ActionListPageProps) {
                         onClick={(e) => setAscending(false)}
                         active={ascending === false}
                       >
-                        <Icon name="arrowUp" />
+                        <Icon
+                          name="arrowDownShortWide"
+                          width="1.5rem"
+                          height="1.5rem"
+                        />
                       </Button>
-                    </ButtonGroup>
+                    </SortButtons>
                   </FormGroup>
                 </div>
               </Col>
@@ -397,7 +422,7 @@ function ActionListPage(props: ActionListPageProps) {
               aria-controls="list-view"
               id="list-tab"
             >
-              <Icon name="bars" /> {t('actions-as-list')}
+              <Icon name="grid" /> {t('actions-as-list')}
             </Tab>
             {hasEfficiency ? (
               <Tab
@@ -409,7 +434,7 @@ function ActionListPage(props: ActionListPageProps) {
                 aria-controls="list-view"
                 id="list-tab"
               >
-                <Icon name="chartLine" /> {t('actions-as-efficiency')}
+                <Icon name="chartColumn" /> {t('actions-as-efficiency')}
               </Tab>
             ) : (
               <Tab
@@ -423,7 +448,7 @@ function ActionListPage(props: ActionListPageProps) {
                 aria-controls="list-view"
                 id="list-tab"
               >
-                <Icon name="chartLine" /> {t('actions-as-comparison')}
+                <Icon name="chartColumn" /> {t('actions-as-comparison')}
               </Tab>
             )}
           </div>

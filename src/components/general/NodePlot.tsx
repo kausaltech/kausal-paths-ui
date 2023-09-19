@@ -24,6 +24,11 @@ const Tools = styled.div`
   .btn-link {
     text-decoration: none;
   }
+  .icon {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    vertical-align: middle;
+  }
 `;
 
 type NodePlotProps = {

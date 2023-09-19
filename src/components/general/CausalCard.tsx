@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon from 'components/common/icon';
+import * as BSIcon from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import {
   summarizeYearlyValuesBetween,
@@ -110,25 +111,33 @@ const NodeIcon = (props) => {
 
   switch (nodeType) {
     case 'emission_factor':
-      return <Icon.ClipboardX size={24} className="mb-3" />;
+      // ClipboardX
+      return <BSIcon.ClipboardX size={24} className="mb-3" />;
     case 'emissions':
     case 'building_emissions':
     case 'building_heat_emissions':
-      return <Icon.CloudHaze size={24} className="mb-3" />;
+      //
+      return <BSIcon.CloudHaze size={24} className="mb-3" />;
     case 'energy':
     case 'energy_factor':
     case 'energy_per_area':
-      return <Icon.LightningChargeFill size={24} className="mb-3" />;
+      // LightningChargeFill
+      return <BSIcon.LightningChargeFill size={24} className="mb-3" />;
     case 'mileage':
-      return <Icon.Signpost size={24} className="mb-3" />;
+      // Signpost
+      return <BSIcon.Signpost size={24} className="mb-3" />;
     case 'per_capita':
-      return <Icon.People size={24} className="mb-3" />;
+      // People
+      return <BSIcon.People size={24} className="mb-3" />;
     case 'floor_area':
-      return <Icon.Buildings size={24} className="mb-3" />;
+      // Building
+      return <BSIcon.Buildings size={24} className="mb-3" />;
     case 'action':
-      return <Icon.Journals size={24} className="mb-3" />;
+      // Journals
+      return <BSIcon.Journals size={24} className="mb-3" />;
     default:
-      return <Icon.Diamond size={24} className="mb-3" />;
+      // Diamond
+      return <BSIcon.Diamond size={24} className="mb-3" />;
   }
 };
 
@@ -212,7 +221,7 @@ const CausalCard = (props: CausalCardProps) => {
           <MoreLink>
             <NodeLink node={node}>
               <a>
-                See full details <Icon.ArrowRight />
+                See full details <BSIcon.ArrowRight />
               </a>
             </NodeLink>
           </MoreLink>
