@@ -228,11 +228,7 @@ const ActionsSummary = (props) => {
   const refetching = networkStatus === NetworkStatus.refetch;
 
   if (loading && !previousData) {
-    return (
-      <>
-        <ContentLoader />
-      </>
-    );
+    return <ContentLoader />;
   }
   if (error) {
     return (

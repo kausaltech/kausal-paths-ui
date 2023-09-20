@@ -3,20 +3,27 @@ import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
 import ZurichGlobalNav from 'components/zurich/GlobalNav';
+import ZurichSiteFooter from 'components/zurich/ZurichSiteFooter';
+import Footer from 'components/common/Footer';
 import { useSite } from 'context/site';
 import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
-import Footer from 'components/common/Footer';
 import { CombinedIconSymbols } from 'components/common/icon';
 import { useTheme } from 'common/theme';
 
 const PageContainer = styled.div`
   width: 100%;
+  min-height: calc(100vh - 20rem);
   background-color: ${(props) => props.theme.graphColors.grey030};
-  padding-bottom: 5rem;
+  padding-bottom: ${(props) => props.theme.spaces.s400};
 
   .popover {
     max-width: 480px;
   }
+`;
+
+const FooterContainer = styled.footer`
+  background-color: ${(props) => props.theme.themeColors.black};
+  padding-bottom: 7rem;
 `;
 
 const Layout = ({ children }) => {
@@ -61,6 +68,7 @@ const Layout = ({ children }) => {
 
   // FIXME: Temporary hack for Zurich demo
   const NavComponent = theme.name === 'zurich' ? ZurichGlobalNav : GlobalNav;
+  const FooterComponent = theme.name === 'zurich' ? ZurichSiteFooter : Footer;
 
   return (
     <>
@@ -92,7 +100,9 @@ const Layout = ({ children }) => {
       <PageContainer>
         <main className="main">{children}</main>
       </PageContainer>
-      <Footer />
+      <FooterContainer>
+        <FooterComponent />
+      </FooterContainer>
     </>
   );
 };

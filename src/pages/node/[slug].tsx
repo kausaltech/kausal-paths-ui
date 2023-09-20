@@ -156,7 +156,7 @@ export default function NodePage() {
   }, [activeScenario?.id, refetch]);
 
   if (loading) {
-    return <ContentLoader />;
+    return <ContentLoader fullPage />;
   }
   if (error || !data) {
     logError(error, { query: GET_NODE_PAGE_CONTENT });

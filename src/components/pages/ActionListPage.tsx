@@ -255,7 +255,7 @@ function ActionListPage(props: ActionListPageProps) {
   }
 
   if (!data) {
-    return <ContentLoader />;
+    return <ContentLoader fullPage />;
   }
 
   return (

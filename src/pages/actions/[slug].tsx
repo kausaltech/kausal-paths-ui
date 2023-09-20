@@ -116,11 +116,7 @@ export default function ActionPage() {
   }, [activeScenario]);
 
   if (!data) {
-    return (
-      <div style={{ height: '100hv' }}>
-        <ContentLoader />
-      </div>
-    );
+    return <ContentLoader fullPage />;
   }
   if (error) {
     logError(error, { query: GET_ACTION_CONTENT });
