@@ -2,24 +2,13 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
+import ZurichGlobalNav from 'components/zurich/GlobalNav';
 import { useSite } from 'context/site';
 import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import Footer from 'components/common/Footer';
 import { CombinedIconSymbols } from 'components/common/icon';
-import dynamic from 'next/dynamic';
+import { useTheme } from 'common/theme';
 
-/*
-const GlobalNav = dynamic(
-  () => {
-    return isLiveBlog
-      ? import("components/common/GlobalNav")
-      : import("../components/TestTwo");
-  },
-  {
-    suspense: true,
-  }
-);
-*/
 const PageContainer = styled.div`
   width: 100%;
   background-color: ${(props) => props.theme.graphColors.grey030};
@@ -32,6 +21,7 @@ const PageContainer = styled.div`
 
 const Layout = ({ children }) => {
   const router = useRouter();
+  const theme = useTheme();
   const { asPath: pathname } = router;
   const site = useSite();
   const { menuPages, iconBase, ogImage } = site;
@@ -69,6 +59,9 @@ const Layout = ({ children }) => {
     active: page == activePage,
   }));
 
+  // FIXME: Temporary hack for Zurich demo
+  const NavComponent = theme.name === 'zurich' ? ZurichGlobalNav : GlobalNav;
+
   return (
     <>
       <Head>
@@ -91,7 +84,11 @@ const Layout = ({ children }) => {
         )}
       </Head>
       <CombinedIconSymbols />
-      <GlobalNav navItems={navItems} />
+      <NavComponent
+        siteTitle={site.title}
+        ownerName={site.owner}
+        navItems={navItems}
+      />
       <PageContainer>
         <main className="main">{children}</main>
       </PageContainer>
