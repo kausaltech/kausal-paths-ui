@@ -12,7 +12,7 @@ import {
   DropdownItem,
   DropdownMenu,
 } from 'reactstrap';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
@@ -363,8 +363,8 @@ function GlobalNav(props) {
                 <Link href="#admin">
                   <a>
                     <NavHighlighter className="highlighter">
-                      <Icon.Person size={20} color={theme.brandNavColor} /> Log
-                      in
+                      <Icon name="user" size={20} color={theme.brandNavColor} />{' '}
+                      Log in
                     </NavHighlighter>
                   </a>
                 </Link>
@@ -383,9 +383,9 @@ function GlobalNav(props) {
           type="button"
         >
           {isOpen ? (
-            <Icon.XLg color={theme.brandNavColor} />
+            <Icon name="times" color={theme.brandNavColor} />
           ) : (
-            <Icon.List color={theme.brandNavColor} />
+            <Icon name="bars" color={theme.brandNavColor} />
           )}
         </NavbarToggler>
       </TopNav>

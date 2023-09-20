@@ -9,12 +9,8 @@ import {
   TabContent,
   TabPane,
 } from 'reactstrap';
-import {
-  PieChartFill as AreaIcon,
-  GraphDown as GraphIcon,
-  Table as TableIcon,
-  InfoSquare as DetailsIcon,
-} from 'react-bootstrap-icons';
+
+import Icon from 'components/common/icon';
 import styled from 'styled-components';
 
 import { ActionLink, Link, NodeLink } from 'common/links';
@@ -35,6 +31,13 @@ import { useInstance } from 'common/instance';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
+
+  .icon {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    margin-right: 0.2rem;
+    vertical-align: middle;
+  }
 `;
 
 const ContentWrapper = styled.div`
@@ -223,7 +226,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
                 active={activeTabId === 'year'}
                 disabled={subNodes.length < 2}
               >
-                <AreaIcon /> {t('distribution')}
+                <Icon name="chartTreeMap" /> {t('distribution')}
               </NavLink>
             </DisplayTab>
           )}
@@ -233,7 +236,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               onClick={() => setActiveTabId('graph')}
               active={activeTabId === 'graph'}
             >
-              <GraphIcon /> {t('time-series')}
+              <Icon name="chartArea" /> {t('time-series')}
             </NavLink>
           </DisplayTab>
           <DisplayTab>
@@ -242,7 +245,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               onClick={() => setActiveTabId('table')}
               active={activeTabId === 'table'}
             >
-              <TableIcon /> {t('table')}
+              <Icon name="table" /> {t('table')}
             </NavLink>
           </DisplayTab>
           <DisplayTab>
@@ -251,7 +254,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               onClick={() => setActiveTabId('info')}
               active={activeTabId === 'info'}
             >
-              <DetailsIcon /> {t('details')}
+              <Icon name="circleInfo" /> {t('details')}
             </NavLink>
           </DisplayTab>
         </Nav>

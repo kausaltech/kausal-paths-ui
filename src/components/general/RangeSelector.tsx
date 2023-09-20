@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle } from 'reactstrap';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import styled, { useTheme } from 'styled-components';
 import { useTranslation } from 'next-i18next';
 
@@ -117,12 +117,12 @@ const RangeSelector = (props: RangeSelectorProps) => {
           >
             {referenceYearActive ? (
               <span>
-                <Icon.PenFill />
+                <Icon name="pencil" />
                 {` ${t('edit')}`}
               </span>
             ) : (
               <span>
-                <Icon.ArrowCounterclockwise /> {referenceYear}
+                <Icon name="version" /> {referenceYear}
               </span>
             )}
           </ButtonToggle>
@@ -176,7 +176,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
                 }}
                 color={theme.brandDark}
               >
-                <Icon.CaretLeftFill color="#eee" />
+                <Icon name="caretLeft" color="#eee" />
               </Thumb>
             )}
           />
@@ -235,9 +235,9 @@ const RangeSelector = (props: RangeSelectorProps) => {
                 color={theme.brandDark}
               >
                 {index === 0 ? (
-                  <Icon.CaretRightFill color={theme.graphColors.grey000} />
+                  <Icon name="caretRight" color={theme.graphColors.grey000} />
                 ) : (
-                  <Icon.CaretLeftFill color={theme.graphColors.grey010} />
+                  <Icon name="caretLeft" color={theme.graphColors.grey000} />
                 )}
               </Thumb>
             )}

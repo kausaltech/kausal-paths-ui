@@ -22,11 +22,7 @@ import Footer from 'components/common/Footer';
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
 const PageLoader = () => {
-  return (
-    <div className="loader-wrapper" style={{ height: '100vh' }}>
-      <ContentLoader />
-    </div>
-  );
+  return <ContentLoader fullPage />;
 };
 
 export default function Page({ path, headerExtra }) {

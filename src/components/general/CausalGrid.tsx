@@ -1,7 +1,7 @@
 import { useRef, useContext, useState } from 'react';
 import { remove } from 'lodash';
 import { Container, Alert } from 'reactstrap';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
 import {
@@ -264,12 +264,12 @@ const CausalGrid = (props: CausalGridProps) => {
           <ActionPoint onClick={() => setGridOpen(!gridOpen)}>
             {gridOpen ? (
               <>
-                <Icon.DashCircle size={24} />
+                <Icon name="dash-circle" height="1.5rem" width="1.5rem" />
                 Hide calculation
               </>
             ) : (
               <>
-                <Icon.PlusCircle size={24} />
+                <Icon name="plus-circle" height="1.5rem" width="1.5rem" />
                 Show calculation
               </>
             )}

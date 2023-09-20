@@ -4,7 +4,7 @@ import styled, { useTheme } from 'styled-components';
 import { formatStaticUrl } from 'common/links';
 
 const FooterContainer = styled.footer`
-  height: 24rem;
+  height: 10rem;
   padding-bottom: 10rem;
   background-color: ${(props) => props.theme.footerBackgroundColor};
 `;

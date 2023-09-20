@@ -2,7 +2,6 @@ import { useCallback, useContext, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { Range, getTrackBackground } from 'react-range';
 import { Row, Col, Container, Popover, PopoverBody } from 'reactstrap';
-import * as Icon from 'react-bootstrap-icons';
 import styled, { useTheme } from 'styled-components';
 import { useTranslation } from 'next-i18next';
 import { useSite } from 'context/site';

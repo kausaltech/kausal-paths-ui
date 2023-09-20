@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 
 const ActionCard = styled.div`
   display: flex;
@@ -60,7 +60,7 @@ const WatchActionCard = (props: any) => {
         <p>{action?.description}</p>
         <ActionCardLink>
           <a href={action?.link}>
-            Read more <Icon.ArrowRightCircleFill />
+            Read more <Icon name="arrowRight" />
           </a>
         </ActionCardLink>
       </ActionCardContent>

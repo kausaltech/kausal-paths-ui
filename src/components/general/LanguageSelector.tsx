@@ -1,6 +1,6 @@
 import { Link } from 'common/links';
 import { useRouter } from 'next/router';
-import { Globe2 } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import styled, { useTheme } from 'styled-components';
 import {
   UncontrolledDropdown,
@@ -83,7 +83,7 @@ function LanguageSelector({ mobile }: { mobile: boolean }) {
   return (
     <Selector nav inNavbar $mobile={mobile} className={mobile && 'd-md-none'}>
       <DropdownToggle nav>
-        <Globe2 color={theme.neutralDark} />
+        <Icon name="globe" color={theme.neutralDark} />
         <CurrentLanguage $mobile={mobile}>
           {getLanguageCodeLabel(router.locale)}
         </CurrentLanguage>

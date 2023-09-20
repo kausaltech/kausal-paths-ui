@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import { tint, transparentize } from 'polished';
 import styled, { ThemeContext } from 'styled-components';
-import { CloudArrowDown } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import CsvDownload from 'react-json-to-csv';
 import { metricToPlot } from 'common/preprocess';
 import SiteContext, { useSite } from 'context/site';
@@ -23,6 +23,11 @@ const Tools = styled.div`
   text-align: right;
   .btn-link {
     text-decoration: none;
+  }
+  .icon {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    vertical-align: middle;
   }
 `;
 
@@ -391,7 +396,7 @@ const NodePlot = (props: NodePlotProps) => {
           filename={`${metric?.id}.csv`}
           className="btn btn-link btn-sm"
         >
-          <CloudArrowDown />
+          <Icon name="download" />
           {` ${t('download-data')} (.csv)`}
         </CsvDownload>
       </Tools>

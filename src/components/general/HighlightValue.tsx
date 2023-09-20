@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { InfoCircleFill as InfoIcon } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
-import { Tooltip } from 'reactstrap';
 
 const TotalValue = styled.div`
   padding: 0.5rem;
@@ -51,19 +49,9 @@ const HighlightValue = (props) => {
     <TotalValue className={className} size={size} muted={muted} id={id}>
       <YearRange size={size}>
         <span dangerouslySetInnerHTML={{ __html: header }} />
-        <InfoIcon className="ms-1" />
       </YearRange>
       {displayValue}
       <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} size={size} />
-      <Tooltip
-        target={id}
-        placement="top"
-        isOpen={tooltipOpen}
-        autohide={false}
-        toggle={toggle}
-      >
-        Total yearly emissions on year X
-      </Tooltip>
     </TotalValue>
   );
 };

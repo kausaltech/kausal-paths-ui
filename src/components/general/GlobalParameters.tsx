@@ -12,7 +12,7 @@ import {
   InputGroup,
   FormFeedback,
 } from 'reactstrap';
-import { ArrowCounterclockwise } from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import ContentLoader from 'components/common/ContentLoader';
 import { GET_PARAMETERS } from 'queries/getParameters';
 import {
@@ -128,7 +128,7 @@ const NumericParameter = (props) => {
           color="black"
           disabled={!parameter.isCustomized}
         >
-          <ArrowCounterclockwise />
+          <Icon name="version" />
         </Button>
       )}
     </InputGroup>

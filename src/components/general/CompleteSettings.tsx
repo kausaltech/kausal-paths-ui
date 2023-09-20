@@ -9,7 +9,7 @@ import {
   UncontrolledCollapse,
   CardBody,
 } from 'reactstrap';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import RangeSelector from 'components/general/RangeSelector';
 import { useSite } from 'context/site';
 import { yearRangeVar, activeScenarioVar } from 'common/cache';
@@ -116,9 +116,7 @@ const CompleteSettings = (props) => {
     <>
       <SettingsHeader>
         <Container fluid="lg">
-          <h2>
-            <Icon.Gear /> All settings
-          </h2>
+          <h2>All settings</h2>
         </Container>
       </SettingsHeader>
       <SettingsContent>
@@ -126,7 +124,7 @@ const CompleteSettings = (props) => {
           <SettingsSection>
             <AccordionHeader color="primary" id="display-toggler">
               <h4>Display</h4>
-              <Icon.ChevronDown size={24} />
+              <Icon name="angleDown" width="24px" height="24px" />
             </AccordionHeader>
             <UncontrolledCollapse toggler="#display-toggler" defaultOpen>
               <Card>
@@ -169,7 +167,7 @@ const CompleteSettings = (props) => {
           <SettingsSection>
             <AccordionHeader color="primary" id="scenario-toggler">
               <h4>Edit {t('scenario')}</h4>
-              <Icon.ChevronDown size={24} />
+              <Icon name="angleDown" width="24px" height="24px" />
             </AccordionHeader>
             <UncontrolledCollapse toggler="#scenario-toggler" defaultOpen>
               <Card>

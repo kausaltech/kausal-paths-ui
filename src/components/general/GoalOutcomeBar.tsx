@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
-import * as Icon from 'react-bootstrap-icons';
+import Icon from 'components/common/icon';
 import { Spinner, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
 import { beautifyValue, getMetricValue } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
@@ -296,7 +296,7 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
               <h4>Scenario outcome</h4>
               <div>{verbalizeOutcome}</div>
             </div>
-            <Icon.ChevronDown size={24} />
+            <Icon name="angleDown" width="24px" height="24px" />
           </AccordionHeader>
           <UncontrolledCollapse toggler="#outcome-toggler" defaultOpen>
             <Card>

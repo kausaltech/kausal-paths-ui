@@ -137,7 +137,6 @@ export default function OutcomePage(props: OutcomePageProps) {
       </HeaderSection>
       <Container fluid="lg">
         <OutcomeSection>
-          ¨
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
