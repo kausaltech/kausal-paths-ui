@@ -33,19 +33,10 @@ import {
 import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
 import { setSignificantDigits } from 'common/preprocess';
-//import { defineCustomElements } from '@duetds/components/lib/loader';
-import {
-  applyPolyfills,
-  defineCustomElements,
-} from '@oiz/stzh-components/loader';
 
 let basePath = getConfig().publicRuntimeConfig.basePath || '';
 
 require('../../styles/default/main.scss');
-
-applyPolyfills().then(() => {
-  defineCustomElements();
-});
 
 if (process.browser) {
   setBasePath();
