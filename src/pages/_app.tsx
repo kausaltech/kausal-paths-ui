@@ -45,32 +45,6 @@ if (process.browser) {
 const defaultSiteContext: { [key: string]: SiteContextType } = {
   sunnydale: {
     watchLink: null,
-    homeLink: [
-      {
-        id: 'hp-en',
-        lang: 'en',
-        title: 'Emissions',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-sv',
-        lang: 'sv',
-        title: 'Utsläpp',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-fi',
-        lang: 'fi',
-        title: 'Päästöt',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-de',
-        lang: 'de',
-        title: 'Emissionen',
-        urlPath: '/',
-      },
-    ],
     demoPages: [
       {
         id: 's-en-1',
@@ -99,7 +73,6 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
       title: 'Ilmastovahti',
       url: 'https://ilmastovahti.tampere.fi',
     }, // remove, replace with instance.externalLinks[0]
-    // add instance.homeLinkTitle
   },
   ilmastoruoka: {
     watchLink: null,
@@ -112,26 +85,6 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
       title: 'Sunnydale Climate Watch',
       url: 'https://sunnydale.test.kausal.tech/climate',
     },
-    homeLink: [
-      {
-        id: 'hp-en',
-        lang: 'en',
-        title: 'Emissions',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-sv',
-        lang: 'sv',
-        title: 'Utsläpp',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-fi',
-        lang: 'fi',
-        title: 'Päästöt',
-        urlPath: '/',
-      },
-    ],
   },
   espoo: {
     watchLink: {
@@ -141,34 +94,12 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   },
   zuerich: {
     watchLink: null,
-    homeLink: [
-      {
-        id: 'hp-en',
-        lang: 'en',
-        title: 'Greenhouse gas emissions',
-        urlPath: '/',
-      },
-      {
-        id: 'hp-de',
-        lang: 'de',
-        title: 'Treibhausgasemissionen',
-        urlPath: '/',
-      },
-    ],
   },
   longmont: {
     watchLink: {
       title: 'Longmont Indicators',
       url: 'https://longmont-indicators.test.kausal.tech',
     },
-    homeLink: [
-      {
-        id: 'hp-en',
-        lang: 'en',
-        title: 'Emissions',
-        urlPath: '/',
-      },
-    ],
   },
 };
 

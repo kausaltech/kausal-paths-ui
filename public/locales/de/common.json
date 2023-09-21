@@ -21,6 +21,7 @@
   "emissions-forecast": "Entwicklung der Treibhausgasemissionen",
   "error-loading-data": "Fehler beim Laden der Daten",
   "forecast": "Prognose",
+  "front-page": "Titelseite",
   "has-effect-on": "Wirkt auf",
   "impact": "Auswirkung",
   "impact-on-year": "Im Jahr",
@@ -58,5 +59,6 @@
   "change-over-time": "Veränderung",
   "time-series": "Zeitreihe",
   "details": "Details",
-  "table": "Tabelle"
+  "table": "Tabelle",
+  "nav-menu-close": " Navigation schließen"
 }
