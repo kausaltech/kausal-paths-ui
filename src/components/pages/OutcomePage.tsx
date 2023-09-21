@@ -9,6 +9,7 @@ import FrontPageHeader from 'components/general/FrontPageHeader';
 import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
+import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
 import {
   GetPageQuery,
@@ -66,6 +67,7 @@ export default function OutcomePage(props: OutcomePageProps) {
   const { t } = useTranslation();
   const theme = useTheme();
   const site = useSite();
+  const instance = useInstance();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const router = useRouter();
@@ -119,12 +121,15 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   const outcomeType = visibleNodes[0].quantity;
 
+  const pageLeadTitle = page.leadTitle || instance.leadTitle;
+  const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
+
   return (
     <>
-      {(page.leadTitle || page.leadParagraph) && (
+      {(pageLeadTitle || pageLeadParagraph) && (
         <FrontPageHeader
-          leadTitle={page?.leadTitle}
-          leadParagraph={page?.leadParagraph}
+          leadTitle={pageLeadTitle}
+          leadParagraph={pageLeadParagraph}
           backgroundColor={theme.brandDark}
         />
       )}
