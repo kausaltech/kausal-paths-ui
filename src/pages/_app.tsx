@@ -98,7 +98,7 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   longmont: {
     watchLink: {
       title: 'Longmont Indicators',
-      url: 'https://longmont-indicators.test.kausal.tech',
+      url: 'https://indicators.longmontcolorado.gov',
     },
   },
 };
