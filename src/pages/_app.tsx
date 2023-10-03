@@ -101,6 +101,18 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
       url: 'https://indicators.longmontcolorado.gov',
     },
   },
+  saskatoon: {
+    watchLink: {
+      title: "Saskatoon's Low Emissions Community Plan",
+      url: 'https://saskatoon-lec.watch-test.kausal.tech/',
+    },
+  },
+  surrey: {
+    watchLink: {
+      title: "Surrey's Climate Action Tracker",
+      url: 'https://surrey-ccas.watch-test.kausal.tech/',
+    },
+  },
 };
 
 type PathsAppProps = AppProps & {
