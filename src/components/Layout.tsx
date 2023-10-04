@@ -2,7 +2,6 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
-import ZurichSiteFooter from 'components/zurich/ZurichSiteFooter';
 import Footer from 'components/common/Footer';
 import { useSite } from 'context/site';
 import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
@@ -29,7 +28,6 @@ const FooterContainer = styled.footer`
 
 const Layout = ({ children }) => {
   const router = useRouter();
-  const theme = useTheme();
   const { asPath: pathname } = router;
   const site = useSite();
   const { menuPages, iconBase, ogImage } = site;
@@ -63,7 +61,7 @@ const Layout = ({ children }) => {
   }));
 
   const NavComponent = useCustomComponent('GlobalNav', GlobalNav);
-  const FooterComponent = theme.name === 'zurich' ? ZurichSiteFooter : Footer;
+  const FooterComponent = useCustomComponent('Footer', Footer);
 
   return (
     <>

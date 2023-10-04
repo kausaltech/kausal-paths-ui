@@ -3,7 +3,7 @@ import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import SiteContext from 'context/site';
 
-const ZurichSiteFooter = (props) => {
+const Footer = (props) => {
   const { t } = useTranslation();
   const site = useContext(SiteContext);
   const theme = useTheme();
@@ -114,4 +114,4 @@ const ZurichSiteFooter = (props) => {
   );
 };
 
-export default ZurichSiteFooter;
+export default Footer;
