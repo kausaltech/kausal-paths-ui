@@ -180,7 +180,6 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
   const lastMeasuredYear =
     node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
-  const firstForecastYear = node?.metric.forecastValues[0].year;
   const isForecast = endYear > lastMeasuredYear;
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
