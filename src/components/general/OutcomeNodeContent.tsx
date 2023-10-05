@@ -134,7 +134,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
   const nodesBase = getMetricValue(node, startYear);
   const lastMeasuredYear =
     node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
-  const firstForecastYear = node?.metric.forecastValues[0].year;
+  const firstForecastYear = node?.metric?.forecastValues[0]?.year;
   const isForecast = endYear > lastMeasuredYear;
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
 
@@ -186,12 +186,13 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
                   {startYear}—{lastMeasuredYear} {t('table-historical')}
                 </ScenarioBadge>
               )}{' '}
-              {firstForecastYear < endYear && (
-                <ScenarioBadge type="activeScenario">
-                  {Math.max(startYear, firstForecastYear)}—{endYear}{' '}
-                  {t('table-scenario-forecast')} {activeScenario || 'Current'}
-                </ScenarioBadge>
-              )}
+              {typeof firstForecastYear === 'number' &&
+                firstForecastYear < endYear && (
+                  <ScenarioBadge type="activeScenario">
+                    {Math.max(startYear, firstForecastYear)}—{endYear}{' '}
+                    {t('table-scenario-forecast')} {activeScenario || 'Current'}
+                  </ScenarioBadge>
+                )}
             </CardSetDescriptionDetails>
           </CardSetDescription>
         </div>
