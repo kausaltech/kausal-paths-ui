@@ -4,17 +4,24 @@ import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 import { useMemo } from 'react';
 
 const ActionListList = styled.ul`
-  display: flex;
-  flex-flow: row wrap;
+  display: inline-flex;
+  flex-wrap: wrap;
   gap: 1rem;
-  margin: 2rem auto;
+  margin: 2rem -1rem 2rem 0;
   padding: 0;
   list-style: none;
 
   > li {
     display: block;
-    flex: 0 1 30%;
+    flex: 0 1 100%;
 
+    @media (min-width: ${(props) => props.theme.breakpointSm}) {
+      flex: 0 1 calc(50% - 1em);
+    }
+
+    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+      flex: 0 1 calc(33% - 1em);
+    }
     > div {
       height: 100%;
     }

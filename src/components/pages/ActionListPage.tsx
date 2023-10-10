@@ -403,10 +403,10 @@ function ActionListPage(props: ActionListPageProps) {
             </Row>
           </SettingsForm>
           <ActionCount>
-            {t('actions-count', { count: usableActions.length })}
             <ScenarioBadge type="activeScenario">
               {t('scenario')}: {activeScenario?.name}
             </ScenarioBadge>
+            <div>{t('actions-count', { count: usableActions.length })}</div>
           </ActionCount>
         </Container>
       </HeaderSection>

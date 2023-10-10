@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { ActionLink } from 'common/links';
 import { Spinner } from 'reactstrap';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
-import DashCard from 'components/general/DashCard';
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import Badge from 'components/common/Badge';
