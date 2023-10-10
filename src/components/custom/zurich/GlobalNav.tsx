@@ -14,7 +14,6 @@ import {
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
-import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { transparentize } from 'polished';
 import SiteContext from 'context/site';
 import { formatStaticUrl, Link } from 'common/links';
@@ -225,6 +224,12 @@ const SecondaryNavWrapper = styled.div`
   background-color: var(--stzh-color-white);
 `;
 
+const StyledHeaderMain = styled.div`
+  &.header__main {
+    z-index: 1;
+  }
+`;
+
 function DropdownList(props) {
   const { parentName, items, active } = props;
   return (
@@ -273,9 +278,8 @@ function GlobalNav(props) {
   const { t } = useTranslation();
   const site = useContext(SiteContext);
   const theme = useTheme();
-  const [navIsFixed, setnavIsFixed] = useState(false);
   const [isOpen, toggleOpen] = useState(false);
-  const { siteTitle, ownerName, navItems, fullwidth, sticky } = props;
+  const { siteTitle, ownerName, navItems, sticky } = props;
 
   const orgLogo = useMemo(() => {
     const url = formatStaticUrl(theme.themeLogoUrl);
@@ -289,23 +293,10 @@ function GlobalNav(props) {
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
-  if (sticky) {
-    useScrollPosition(
-      ({ prevPos, currPos }) => {
-        const goingUp = currPos.y > prevPos.y && currPos.y < -70;
-        if (goingUp !== navIsFixed) setnavIsFixed(goingUp);
-      },
-      [navIsFixed],
-      null,
-      false,
-      300
-    );
-  }
-
   return (
     <div className="header header--has-appnav">
       <div className="header__inner">
-        <div className="header__main">
+        <StyledHeaderMain className="header__main">
           <div className="header__logobar" id="branding-navigation-bar">
             <div className="header__logobar-logo">
               <Link href="/" passHref>
@@ -326,12 +317,11 @@ function GlobalNav(props) {
               )}
             </NavbarToggler>
           </div>
-        </div>
+        </StyledHeaderMain>
 
         <SecondaryNavWrapper>
           <SecondaryNav
             expand="md"
-            fixed={navIsFixed ? 'top' : ''}
             id="global-navigation-bar"
             className="header__appnav-inner"
             container={false}
