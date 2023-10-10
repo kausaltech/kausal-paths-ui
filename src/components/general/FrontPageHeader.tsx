@@ -12,7 +12,7 @@ const PageHeader = styled.div`
 
 const HeaderCard = styled.div`
   margin: ${(props) => props.theme.spaces.s100} 0;
-  padding: ${(props) => props.theme.spaces.s200};
+  padding: ${(props) => props.theme.spaces.s100};
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
 
@@ -23,6 +23,7 @@ const HeaderCard = styled.div`
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     margin: ${(props) => props.theme.spaces.s200} 0;
+    padding: ${(props) => props.theme.spaces.s200};
 
     h1 {
       max-width: 600px;

@@ -1,17 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled, { useTheme } from 'styled-components';
-import { Badge as BSSBadge } from 'reactstrap';
-import { readableColor } from 'polished';
 
-const StyledBadge = styled.span<{ $color: string; $isLink?: boolean }>`
+const StyledBadge = styled.div<{ $color: string; $isLink?: boolean }>`
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
   background-color: white !important;
   // border-left: 24px solid ${(props) => props.$color} !important;
   color: ${(props) => props.theme.themeColors.black};
   border-radius: ${(props) => props.theme.badgeBorderRadius};
-  padding: 0.25rem 0.5rem;
   font-weight: ${(props) => props.theme.badgeFontWeight};
-  max-width: 100%;
   word-break: break-all;
   word-break: break-word;
   hyphens: manual;

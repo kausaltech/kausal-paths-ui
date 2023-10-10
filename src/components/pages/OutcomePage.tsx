@@ -19,23 +19,26 @@ import { PageRefetchCallback } from './Page';
 import { ParsedUrlQuery } from 'querystring';
 
 const HeaderSection = styled.div`
-  padding: 3rem 0 10rem;
+  /* extra padding to accommodate content overlap */
+  padding: ${(props) => props.theme.spaces.s100} 0 10rem;
   background: ${(props) => props.theme.brandDark};
-  background: linear-gradient(
-    180deg,
-    ${(props) => props.theme.brandDark} 0%,
-    ${(props) => props.theme.brandDark} 100%
-  );
 `;
 
 const PageHeader = styled.div`
   h1 {
-    font-size: 2rem;
+    font-size: ${(props) => props.theme.fontSizeLg};
     color: ${(props) => props.theme.themeColors.white};
+  }
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    h1 {
+      font-size: ${(props) => props.theme.fontSizeXl};
+    }
   }
 `;
 
 const OutcomeSection = styled.div`
+  /* pull content to overlap the header section */
   margin-top: -10rem;
 `;
 

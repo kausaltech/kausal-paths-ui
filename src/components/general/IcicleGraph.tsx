@@ -180,7 +180,7 @@ const IcicleGraph = (props: IcicleGraphProps) => {
         data={[icicleTrace]}
         layout={layout}
         useResizeHandler
-        config={{ displayModeBar: false }}
+        config={{ displayModeBar: false, responsive: true }}
         onInitialized={() => setLoading(false)}
       />
     </PlotWrapper>

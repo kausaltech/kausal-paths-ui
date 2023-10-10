@@ -26,7 +26,6 @@ import DataTable from './DataTable';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
-import { last } from 'lodash';
 import { useInstance } from 'common/instance';
 
 const DisplayTab = styled(NavItem)`
@@ -74,23 +73,25 @@ const CardContent = styled.div`
   }
 `;
 
-const TabButton = styled(Button)`
-  padding-top: 0.2rem;
-  padding-bottom: 0.4rem;
-`;
-
-const TabText = styled.div`
-  max-width: 640px;
-  margin: 1rem 0;
+const TabNavigation = styled(Nav)`
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  width: 100%;
+  border-bottom: 0;
 `;
 
 const CardSetHeader = styled.div`
   display: flex;
   justify-content: space-between;
+  flex-direction: column;
   margin-bottom: 0.5rem;
 
   a {
     color: ${(props) => props.theme.themeColors.dark};
+  }
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    flex-direction: row;
   }
 `;
 
@@ -109,7 +110,9 @@ const CardSetDescriptionDetails = styled.div`
 
 const CardSetSummary = styled.div`
   display: flex;
-
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-bottom: ${(props) => props.theme.spaces.s100};
   .figure {
     margin-left: 1rem;
   }
@@ -218,7 +221,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
         </CardSetSummary>
       </CardSetHeader>
       <CardContent>
-        <Nav tabs className="justify-content-end">
+        <TabNavigation tabs className="justify-content-end">
           {showDistribution && (
             <DisplayTab>
               <NavLink
@@ -258,7 +261,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
               <Icon name="circleInfo" /> {t('details')}
             </NavLink>
           </DisplayTab>
-        </Nav>
+        </TabNavigation>
         <TabContent activeTab={activeTabId}>
           {activeTabId === 'year' && (
             <ContentWrapper>{icicleGraph}</ContentWrapper>
