@@ -14,7 +14,8 @@ import GoalSelector from 'components/general/GoalSelector';
 import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
 
 const PanelContent = styled.div`
-  padding: 0.5rem;
+  padding: ${({ theme }) =>
+    `${theme.spaces.s150} ${theme.spaces.s050} ${theme.spaces.s050}`};
 `;
 
 const PopoverWrapper = styled.div`
