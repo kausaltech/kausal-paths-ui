@@ -28,7 +28,11 @@ const FixedPanel = styled.div`
   }
 
   &.panel-md {
-    height: auto;
+    height: 7.5rem;
+
+    @media (max-width: ${(props) => props.theme.breakpointMd}) {
+      height: 6rem;
+    }
   }
 
   &.panel-lg {
