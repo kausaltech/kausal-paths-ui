@@ -1,11 +1,12 @@
-#syntax=docker/dockerfile:1.2
+#syntax=docker/dockerfile:1
 
-FROM node:18.12.0-alpine3.16 as base
+FROM node:20-alpine as base
 
 RUN mkdir -p /app
 WORKDIR /app
 
 RUN apk --no-cache add git
+RUN corepack enable
 
 ARG YARN_NPM_REGISTRY_SERVER
 ARG YARN_NPM_AUTH_IDENT
@@ -14,9 +15,9 @@ ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_AUTH_IDENT:+true}
 ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_ALWAYS_AUTH:-false}
 
 ENV YARN_CACHE_FOLDER /yarn-cache
-RUN yarn set version 3.2.4
 COPY yarn.lock package*.json ./
 COPY patches ./patches/
+
 RUN yarn config set nodeLinker 'node-modules'
 RUN yarn config set logFilters --json '[{"code": "YN0013", "level": "discard"}]'
 RUN --mount=type=cache,target=/yarn-cache yarn install --immutable
