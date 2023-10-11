@@ -1,5 +1,14 @@
 {
-  "plugins": ["styled-components-a11y"],
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:styled-components-a11y/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "ignorePatterns": "**/__generated__/*",
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "root": true,
   "settings": {
     "import/resolver": {
       "node": {
@@ -8,18 +17,13 @@
       }
     }
   },
-  "ignorePatterns": ["node_modules/**"],
   "rules": {
     "react/react-in-jsx-scope": "off",
     "max-len": [1, 140, 2, { "ignoreComments": true }],
     "curly": ["off"],
     "object-curly-newline": ["off"],
     "react/prop-types": [2],
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
-  },
-  "extends": [
-    "next/core-web-vitals",
-    "plugin:styled-components-a11y/recommended",
-    "prettier"
-  ]
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "prettier/prettier": "warn"
+  }
 }

@@ -11,7 +11,8 @@
     "graphql-codegen": "graphql-codegen --config codegen.ts",
     "prettier:fix": "prettier ./ --write",
     "typecheck": "tsc --noEmit",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "lint": "next lint"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0-rc.2",
@@ -21,6 +22,7 @@
     "@sentry/nextjs": "^7.61.1",
     "@types/cookie-session": "^2.0.44",
     "@types/passport": "^1.0.12",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
     "bootstrap": "^5.3.1",
     "bootstrap-icons": "^1.10.5",
     "chalk": "^5.3.0",
@@ -111,6 +113,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.28.0",
     "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.33.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-styled-components-a11y": "^2.1.31",
