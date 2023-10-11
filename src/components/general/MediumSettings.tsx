@@ -32,6 +32,30 @@ const ButtonLabel = styled.div`
   font-size: 0.8rem;
 `;
 
+const StyledRow = styled(Row)`
+  --bs-gutter-x: ${({ theme }) => theme.spaces.s100};
+
+  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+    --bs-gutter-x: ${({ theme }) => theme.spaces.s050};
+  }
+`;
+
+const StyledDropdownCol = styled(Col)`
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+
+  > div {
+    width: 100%;
+  }
+`;
+
+const StyledOutcomeCol = styled(Col)`
+  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+    display: none;
+  }
+`;
+
 const MediumSettings = (props) => {
   if (!process.browser) {
     return null;
@@ -55,53 +79,55 @@ const MediumSettings = (props) => {
 
   // Target
   const nrGoals = instance.goals.length;
+  const hasMultipleGoals = nrGoals > 1;
+  const dropdownColProps = hasMultipleGoals
+    ? { xs: 4, md: 2 }
+    : { xs: 6, md: 3 };
 
   // Normalization
   const availableNormalizations = site.availableNormalizations;
   return (
     <Container fluid="lg">
       <PanelContent>
-        <Row>
-          <Col md="2" sm="4" xs="12">
-            {true && <ScenarioSelector />}
-          </Col>
-          <Col md="2" sm="4" xs="6">
-            {true && (
-              <PopoverWrapper>
-                <ButtonLabel>{t('comparing-years')}</ButtonLabel>
-                <Button id="Popover1" type="button" color="light">
-                  {`${yearRange[0]} – ${yearRange[1]}`}
-                </Button>
-                <Popover
-                  placement="bottom"
-                  isOpen={popoverOpen}
-                  target="Popover1"
-                  toggle={toggle}
-                  trigger="legacy"
-                >
-                  <PopoverBody>
-                    <RangeSelector
-                      min={site.minYear}
-                      max={site.maxYear}
-                      defaultMin={yearRange[0]}
-                      defaultMax={yearRange[1]}
-                      referenceYear={
-                        instance.referenceYear ?? site.referenceYear
-                      }
-                      handleChange={setYearRange}
-                    />
-                  </PopoverBody>
-                </Popover>
-              </PopoverWrapper>
-            )}
-          </Col>
-          <Col md="2" sm="4" xs="6">
-            {nrGoals > 1 && <GoalSelector />}
-          </Col>
-          <Col md="6" sm="12" className="text-right">
+        <StyledRow>
+          <StyledDropdownCol {...dropdownColProps}>
+            <ScenarioSelector />
+          </StyledDropdownCol>
+          <StyledDropdownCol {...dropdownColProps}>
+            <PopoverWrapper>
+              <ButtonLabel>{t('comparing-years')}</ButtonLabel>
+              <Button id="Popover1" type="button" color="light">
+                {`${yearRange[0]} – ${yearRange[1]}`}
+              </Button>
+              <Popover
+                placement="bottom"
+                isOpen={popoverOpen}
+                target="Popover1"
+                toggle={toggle}
+                trigger="legacy"
+              >
+                <PopoverBody>
+                  <RangeSelector
+                    min={site.minYear}
+                    max={site.maxYear}
+                    defaultMin={yearRange[0]}
+                    defaultMax={yearRange[1]}
+                    referenceYear={instance.referenceYear ?? site.referenceYear}
+                    handleChange={setYearRange}
+                  />
+                </PopoverBody>
+              </Popover>
+            </PopoverWrapper>
+          </StyledDropdownCol>
+          {hasMultipleGoals && (
+            <StyledDropdownCol {...dropdownColProps}>
+              <GoalSelector />
+            </StyledDropdownCol>
+          )}
+          <StyledOutcomeCol className="text-right">
             {true && <GoalOutcomeBar compact />}
-          </Col>
-        </Row>
+          </StyledOutcomeCol>
+        </StyledRow>
       </PanelContent>
     </Container>
   );

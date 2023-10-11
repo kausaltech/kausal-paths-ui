@@ -43,7 +43,7 @@ const GoalSelector = () => {
 
   return (
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
-      <DropdownLabel>{t('Target')}</DropdownLabel>
+      <DropdownLabel>{t('target')}</DropdownLabel>
       <DropdownToggle color="light">
         <span>{activeGoal?.label}</span>
       </DropdownToggle>

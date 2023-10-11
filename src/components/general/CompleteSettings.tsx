@@ -166,7 +166,7 @@ const CompleteSettings = (props) => {
           </SettingsSection>
           <SettingsSection>
             <AccordionHeader color="primary" id="scenario-toggler">
-              <h4>Edit {t('scenario')}</h4>
+              <h4>{t('edit-scenario')}</h4>
               <Icon name="angleDown" width="24px" height="24px" />
             </AccordionHeader>
             <UncontrolledCollapse toggler="#scenario-toggler" defaultOpen>
