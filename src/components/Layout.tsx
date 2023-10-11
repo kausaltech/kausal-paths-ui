@@ -29,9 +29,14 @@ const FooterContainer = styled.footer`
 const Layout = ({ children }) => {
   const router = useRouter();
   const { asPath: pathname } = router;
+  const theme = useTheme();
   const site = useSite();
-  const { menuPages, iconBase, ogImage } = site;
+  const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
   let activePage;
+
+  const iconBase = theme.name
+    ? `/static/themes/${theme.name}/images/favicon`
+    : fallbackIconBase;
 
   const menuItems = [...menuPages];
   // Add extra pages that are not available in the backend
