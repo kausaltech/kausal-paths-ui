@@ -9,23 +9,13 @@ import Badge from 'components/common/Badge';
 import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
 import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 
-const ActionItem = styled.li<{ isActive: boolean }>`
+const ActionItem = styled.div<{ isActive: boolean; color?: string }>`
   position: relative;
   margin-bottom: 0.5rem;
   color: ${(props) =>
     props.isActive
       ? props.theme.graphColors.grey090
       : props.theme.graphColors.grey050};
-
-  h5 {
-    color: ${(props) =>
-      props.isActive
-        ? props.theme.graphColors.grey090
-        : props.theme.graphColors.grey050};
-  }
-`;
-
-const ActionCard = styled.div`
   padding: 1rem;
   background-color: ${(props) =>
     props.isActive
@@ -36,7 +26,14 @@ const ActionCard = styled.div`
     ${(props) =>
       props.color !== 'undefined'
         ? props.color
-        : props.theme.graphColors.grey070};
+        : props.theme.graphColors.grey090};
+
+  h5 {
+    color: ${(props) =>
+      props.isActive
+        ? props.theme.graphColors.grey090
+        : props.theme.graphColors.grey050};
+  }
 `;
 
 const LoadingOverlay = styled.div`
@@ -72,6 +69,7 @@ const CardContent = styled.div`
 
 const CardDetails = styled.div`
   max-width: 720px;
+  margin: ${(props) => props.theme.spaces.s100} auto 0 auto;
   font-size: 80%;
 `;
 
@@ -97,7 +95,7 @@ const ActionListCard = (props: ActionListCardProps) => {
   const { action, displayType, displayYears, refetching } = props;
   const { t } = useTranslation();
 
-  // console.log('ActionListCard', action);
+  console.log('ActionListCard', action);
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly =
@@ -122,72 +120,77 @@ const ActionListCard = (props: ActionListCardProps) => {
 
   const hasEfficiency = 'cumulativeEfficiency' in action;
 
+  /* Remove html formatting and clip description to max length */
+  const originalLength = action?.shortDescription?.length ?? 0;
+  const removeHtml = /(<([^>]+)>)/gi;
+  let clippedDescription = action?.shortDescription
+    ? action.shortDescription.replace(removeHtml, '').slice(0, 120)
+    : '';
+  if (originalLength > clippedDescription.length) {
+    clippedDescription += '...';
+  }
+
   return (
-    <ActionItem key={action.id} isActive={isActive}>
+    <ActionItem
+      key={action.id}
+      isActive={isActive}
+      color={action.group?.color ?? 'undefined'}
+    >
       {refetching && (
         <LoadingOverlay>
           <Spinner size="sm" color="primary" />
         </LoadingOverlay>
       )}
-      <ActionCard color={action.group?.color ?? 'undefined'}>
-        <CardHeader>
-          <ActionLink action={action}>
-            <a>
-              {action.group && (
-                <GroupTag color={action.group.color ?? undefined}>
-                  {action.group.name}
-                </GroupTag>
-              )}
-              <h5>{action.name}</h5>
-            </a>
-          </ActionLink>
-          <ActionCategory>
-            {action.decisionLevel === 'NATION' && (
-              <Badge color="neutralLight">{t('decision-national')}</Badge>
+
+      <CardHeader>
+        <ActionLink action={action}>
+          <a>
+            {action.group && (
+              <GroupTag color={action.group.color ?? undefined}>
+                {action.group.name}
+              </GroupTag>
             )}
-          </ActionCategory>
-        </CardHeader>
-        <CardContent>
-          <ActionState>
-            <ActionParameters parameters={action.parameters} />
-            {action.impactMetric && !hasEfficiency && (
-              <ImpactDisplay
-                effectCumulative={actionEffectCumulative}
-                effectYearly={actionEffectYearly}
-                yearRange={displayYears}
-                unitCumulative={unitCumulative}
-                unitYearly={unitYearly}
-                muted={!isActive}
-              />
-            )}
-            {hasEfficiency && (
-              <EfficiencyDisplay
-                impactCumulative={action.cumulativeImpact}
-                impactCumulativeUnit={action.cumulativeImpactUnit}
-                impactCumulativeLabel={action.cumulativeImpactName}
-                costCumulative={action.cumulativeCost}
-                costCumulativeUnit={action.cumulativeCostUnit}
-                costCumulativeLabel={action.cumulativeCostName}
-                efficiencyCumulative={action.cumulativeEfficiency}
-                efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
-                efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
-                efficiencyCap={action.efficiencyCap}
-                yearRange={displayYears}
-                muted={!isActive}
-              />
-            )}
-          </ActionState>
-          <CardDetails>
-            <div>
-              {action.shortDescription && (
-                <TextContent
-                  dangerouslySetInnerHTML={{ __html: action.shortDescription }}
-                />
-              )}
-            </div>
-          </CardDetails>
-        </CardContent>
-      </ActionCard>
+            <h5>{action.name}</h5>
+          </a>
+        </ActionLink>
+        <ActionCategory>
+          {action.decisionLevel === 'NATION' && (
+            <Badge color="neutralLight">{t('decision-national')}</Badge>
+          )}
+        </ActionCategory>
+      </CardHeader>
+      <CardContent>
+        <ActionState>
+          <ActionParameters parameters={action.parameters} />
+          {action.impactMetric && !hasEfficiency && (
+            <ImpactDisplay
+              effectCumulative={actionEffectCumulative}
+              effectYearly={actionEffectYearly}
+              yearRange={displayYears}
+              unitCumulative={unitCumulative}
+              unitYearly={unitYearly}
+              muted={!isActive}
+            />
+          )}
+          {hasEfficiency && (
+            <EfficiencyDisplay
+              impactCumulative={action.cumulativeImpact}
+              impactCumulativeUnit={action.cumulativeImpactUnit}
+              impactCumulativeLabel={action.cumulativeImpactName}
+              costCumulative={action.cumulativeCost}
+              costCumulativeUnit={action.cumulativeCostUnit}
+              costCumulativeLabel={action.cumulativeCostName}
+              efficiencyCumulative={action.cumulativeEfficiency}
+              efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
+              efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
+              efficiencyCap={action.efficiencyCap}
+              yearRange={displayYears}
+              muted={!isActive}
+            />
+          )}
+        </ActionState>
+        <CardDetails>{clippedDescription}</CardDetails>
+      </CardContent>
     </ActionItem>
   );
 };
