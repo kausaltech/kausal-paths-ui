@@ -293,7 +293,7 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
         <>
           <AccordionHeader color="primary" id="outcome-toggler">
             <div>
-              <h4>Scenario outcome</h4>
+              <h4>{t('scenario-outcome')}</h4>
               <div>{verbalizeOutcome}</div>
             </div>
             <Icon name="angleDown" width="24px" height="24px" />

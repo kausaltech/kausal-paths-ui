@@ -28,7 +28,11 @@ const FixedPanel = styled.div`
   }
 
   &.panel-md {
-    height: 7rem;
+    height: 7.5rem;
+
+    @media (max-width: ${(props) => props.theme.breakpointMd}) {
+      height: 6rem;
+    }
   }
 
   &.panel-lg {
@@ -48,22 +52,35 @@ const FixedPanel = styled.div`
   }
 `;
 
-const PanelToggle = styled(Button)`
+const StyledSettingsButton = styled(Button)`
   position: absolute;
   background-color: ${(props) => props.theme.themeColors.white} !important;
   z-index: 25;
-  width: 2.5rem;
   height: 2.5rem;
-  border-radius: 50%;
-  padding: 0;
-  top: 6px;
+  border-radius: 1.25rem;
+  padding: ${({ theme }) => `0 ${theme.spaces.s050}`};
+  top: -1.5rem;
   right: 6px;
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background-color: ${(props) => props.theme.graphColors.grey030};
   }
 `;
+
+const StyledButtonLabel = styled.span`
+  margin-left: ${({ theme }) => theme.spaces.s050};
+  font-size: ${({ theme }) => theme.fontSizeSm};
+`;
+
+// Handle panel states
+const MODE = {
+  MD: 'md',
+  LG: 'lg',
+};
 
 const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   if (!process.browser) {
@@ -73,12 +90,6 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   const instance = useInstance();
   // console.log("Site", "Instance", site, instance);
 
-  // Handle panel states
-  const MODE = {
-    SM: 'sm',
-    MD: 'md',
-    LG: 'lg',
-  };
   const [mode, setMode] = useState(MODE.MD);
 
   const handleToggle = (e) => {
@@ -112,22 +123,20 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   // console.log(props);
   return (
     <FixedPanel className={`panel-${mode}`}>
-      <PanelToggle onClick={(e) => handleToggle(e)}>
-        {mode === MODE.SM && <Icon name="gear" />}
-        {mode === MODE.MD && <Icon name="gear" />}
-        {mode === MODE.LG && <Icon name="gear" />}
-      </PanelToggle>
-      {mode === MODE.SM && (
-        <>
-          <Row>
-            <Col sm="3">{t('scenario')}</Col>
-            <Col sm="3">
-              {t('comparing-years')}({yearRange[0]} - {yearRange[1]})
-            </Col>
-            <Col sm="3">{nrGoals > 1 && <>{t('Target')}</>}</Col>
-          </Row>
-        </>
-      )}
+      <StyledSettingsButton onClick={(e) => handleToggle(e)}>
+        {mode === MODE.MD && (
+          <>
+            <Icon name="gear" />{' '}
+            <StyledButtonLabel>{t('settings-expand')}</StyledButtonLabel>
+          </>
+        )}
+        {mode === MODE.LG && (
+          <>
+            <Icon name="angle-down" />{' '}
+            <StyledButtonLabel>{t('settings-collapse')}</StyledButtonLabel>
+          </>
+        )}
+      </StyledSettingsButton>
       {mode === MODE.MD && <MediumSettings />}
       {mode === MODE.LG && <CompleteSettings />}
     </FixedPanel>
