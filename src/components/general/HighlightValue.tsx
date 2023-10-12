@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const TotalValue = styled.div<{ muted?: boolean; size?: string }>`
-  padding: 0.5rem;
+  padding: 0;
   line-height: 1.2;
   font-weight: 700;
   font-size: ${(props) => (props.size === 'sm' ? '1.25' : '1.5')}rem;
