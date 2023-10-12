@@ -464,13 +464,12 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
 
   const layout: PlotParams['layout'] = {
     height: 300,
-    margin: {
-      t: 24,
-      r: 48,
-      b: 48,
-    },
     hovermode: 'x unified',
     hoverdistance: 10,
+    margin: {
+      r: 20,
+      t: 10,
+    },
     yaxis: {
       domain: [0, 1],
       anchor: 'x',
@@ -487,6 +486,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       ticklen: 10,
       tickcolor: theme.graphColors.grey030,
       hoverformat: '%Y',
+      automargin: true,
     },
     xaxis2: {
       domain: [0, 1],
@@ -494,6 +494,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       ticklen: 10,
       tickformat: 'd',
       tickcolor: theme.graphColors.grey030,
+      automargin: true,
     },
     autosize: true,
     font: {
@@ -540,7 +541,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
         data={plotData}
         layout={layout}
         useResizeHandler
-        style={{ width: '100%' }}
+        style={{ minWidth: '600px', width: '100%' }}
         config={{ displayModeBar: false }}
         onInitialized={() => setLoading(false)}
       />

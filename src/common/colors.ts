@@ -115,7 +115,7 @@ export function setUniqueColors(nodes: { color: undefined | null | string }[]) {
   );
   nodes.forEach((node) => {
     if (!node.color) return;
-    console.log(`${node.color} -> ${colors[node.color][0]}`);
+    // console.log(`${node.color} -> ${colors[node.color][0]}`);
     const color = colors[node.color].shift();
     node.color = color!;
   });

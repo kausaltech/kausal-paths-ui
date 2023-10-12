@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useTranslation } from 'react-i18next';
 
-const TotalValue = styled.div`
-  padding: 0.5rem;
+const TotalValue = styled.div<{ muted?: boolean; size?: string }>`
+  padding: 0;
   line-height: 1.2;
   font-weight: 700;
   font-size: ${(props) => (props.size === 'sm' ? '1.25' : '1.5')}rem;
@@ -13,7 +12,6 @@ const TotalValue = styled.div`
       : props.theme.graphColors.grey090};
 
   &:hover {
-    //background-color: rgba(0, 0, 0, 0.05);
     color: ${(props) => props.theme.graphColors.grey090};
     cursor: pointer;
 
@@ -26,21 +24,29 @@ const TotalValue = styled.div`
   }
 `;
 
-const TotalUnit = styled.span`
+const TotalUnit = styled.span<{ size?: string }>`
   margin-left: 0.25rem;
   font-size: ${(props) => (props.size === 'sm' ? '0.6' : '0.75')}rem;
 `;
 
-const YearRange = styled.div`
+const YearRange = styled.div<{ size?: string }>`
   display: flex;
   font-size: ${(props) => (props.size === 'sm' ? '0.6' : '0.75')}rem;
-  color: ${(props) => props.theme.graphColors.grey050};
+  color: ${(props) => props.theme.graphColors.grey070};
 `;
 
-const HighlightValue = (props) => {
+type HighlightValueProps = {
+  displayValue: string;
+  header: string;
+  unit: string;
+  className?: string;
+  size?: string;
+  muted?: boolean;
+};
+
+const HighlightValue = (props: HighlightValueProps) => {
   const { displayValue, header, unit, className, size, muted } = props;
 
-  const { t } = useTranslation();
   const id = `tt-${displayValue}`.replace(/\W/g, '_');
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const toggle = () => setTooltipOpen(!tooltipOpen);

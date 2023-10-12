@@ -6,13 +6,12 @@ import { formatNumber } from 'common/preprocess';
 const EfficiencyDisplayWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
-
   border-radius: 0;
 `;
 
-const EfficiencyDisplayHeader = styled.div`
+const EfficiencyDisplayHeader = styled.div<{ muted?: boolean }>`
   flex: 0 0 100%;
-  padding: 0.5rem;
+  padding: ${(props) => props.theme.spaces.s050};
   border: 1px solid ${(props) => props.theme.graphColors.grey030};
   line-height: 1;
   font-size: 0.75rem;
@@ -26,12 +25,27 @@ const EfficiencyDisplayHeader = styled.div`
 const EfficiencyDisplayItem = styled.div`
   flex: 1 1 90px;
   text-align: left;
-  padding: 0.5rem;
+  padding: ${(props) => props.theme.spaces.s050};
   border: 1px solid ${(props) => props.theme.graphColors.grey030};
   border-top: 0;
 `;
 
-const EfficiencyDisplay = (props) => {
+type EfficiencyDisplayProps = {
+  impactCumulative: number;
+  impactCumulativeUnit: string;
+  impactCumulativeLabel: string;
+  costCumulative: number;
+  costCumulativeUnit: string;
+  costCumulativeLabel: string;
+  efficiencyCumulative: number;
+  efficiencyCumulativeUnit: string;
+  efficiencyCumulativeLabel: string;
+  efficiencyCap: number;
+  yearRange: [number, number];
+  muted?: boolean;
+};
+
+const EfficiencyDisplay = (props: EfficiencyDisplayProps) => {
   const {
     impactCumulative,
     impactCumulativeUnit,

@@ -45,6 +45,7 @@ const Plot = (props: PlotProps) => {
     separators = ".'";
   }
 
+  config.responsive = true;
   if (!props.noValidate) {
     // @ts-ignore
     const ret = Plotly.validate(data, layout);

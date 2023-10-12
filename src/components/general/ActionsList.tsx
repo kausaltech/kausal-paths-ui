@@ -1,30 +1,29 @@
 import styled from 'styled-components';
+import { Row, Col } from 'reactstrap';
 import ActionListCard from 'components/general/ActionListCard';
 import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 import { useMemo } from 'react';
 
-const ActionListList = styled.ul`
-  display: flex;
-  flex-flow: row wrap;
-  gap: 1rem;
-  margin: 2rem auto;
-  padding: 0;
+const ActionListList = styled(Row)`
   list-style: none;
+  padding: 0;
+`;
 
-  > li {
-    display: block;
-    flex: 0 1 30%;
-
-    > div {
-      height: 100%;
-    }
+const ActionListItem = styled(Col)`
+  margin-bottom: ${(props) => props.theme.spaces.s200};
+  > div {
+    height: 100%;
   }
 `;
 
 const ActionListCategory = styled.div`
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  padding: ${(props) => props.theme.spaces.s100};
+  margin-bottom: ${(props) => props.theme.spaces.s200};
+  background-color: ${(props) => props.theme.graphColors.grey000};
+
+  h3 {
+    margin: 0;
+  }
 `;
 
 type ActionsListProps = {
@@ -76,17 +75,18 @@ const ActionsList = (props: ActionsListProps) => {
           <ActionListCategory>
             <h3>{group}</h3>
           </ActionListCategory>
-          <ActionListList>
+          <ActionListList tag="ul">
             {sortedActions?.map(
               (action) =>
                 action.group?.name === group && (
-                  <ActionListCard
-                    key={action.id}
-                    action={action}
-                    displayType={displayType}
-                    displayYears={yearRange}
-                    refetching={refetching}
-                  />
+                  <ActionListItem tag="li" key={action.id} sm={6} md={4} xl={3}>
+                    <ActionListCard
+                      action={action}
+                      displayType={displayType}
+                      displayYears={yearRange}
+                      refetching={refetching}
+                    />
+                  </ActionListItem>
                 )
             )}
           </ActionListList>

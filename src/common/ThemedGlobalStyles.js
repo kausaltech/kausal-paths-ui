@@ -44,6 +44,12 @@ const GlobalStyle = createGlobalStyle`
     font-weight: ${(props) => props.theme.headingsFontWeight};
     line-height: ${(props) => props.theme.lineHeightMd};
     color: ${(props) => props.theme.headingsColor};
+    hyphens: auto;
+  
+  // Allow hyphenation only on small screens
+    @media (min-width: ${(props) => props.theme.breakpointSm}) {
+      hyphens: none;
+    }
   }
 
   h1 {
