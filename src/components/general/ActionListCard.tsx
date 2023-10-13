@@ -9,18 +9,14 @@ import Badge from 'components/common/Badge';
 import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
 import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 
-const ActionItem = styled.div<{ isActive: boolean; color?: string }>`
+const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
   position: relative;
   margin-bottom: 0.5rem;
-  color: ${(props) =>
-    props.isActive
-      ? props.theme.graphColors.grey090
-      : props.theme.graphColors.grey050};
+  color: ${({ $isActive, theme }) =>
+    $isActive ? theme.textColor.secondary : theme.textColor.tertiary};
   padding: 1rem;
-  background-color: ${(props) =>
-    props.isActive
-      ? props.theme.themeColors.white
-      : props.theme.graphColors.grey005};
+  background-color: ${({ $isActive, theme }) =>
+    $isActive ? theme.cardBackground.primary : theme.cardBackground.secondary};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
   border-left: 6px solid
     ${(props) =>
@@ -29,10 +25,8 @@ const ActionItem = styled.div<{ isActive: boolean; color?: string }>`
         : props.theme.graphColors.grey090};
 
   h5 {
-    color: ${(props) =>
-      props.isActive
-        ? props.theme.graphColors.grey090
-        : props.theme.graphColors.grey050};
+    color: ${({ $isActive, theme }) =>
+      $isActive ? theme.textColor.secondary : theme.textColor.tertiary};
   }
 `;
 
@@ -133,7 +127,7 @@ const ActionListCard = (props: ActionListCardProps) => {
   return (
     <ActionItem
       key={action.id}
-      isActive={isActive}
+      $isActive={isActive}
       color={action.group?.color ?? 'undefined'}
     >
       {refetching && (
