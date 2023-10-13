@@ -115,7 +115,7 @@ const PageHeader = styled.div`
 const ContentWrapper = styled.div`
   padding: 1rem;
   margin: 0.5rem 0;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   border-radius: 0;
 
   .x2sstick text,

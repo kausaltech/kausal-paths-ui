@@ -9,7 +9,7 @@ const InputNodes = styled.div`
   padding: 0.5rem;
   border-radius: 0;
   font-size: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
 
   .list-group-item {
     display: flex;
@@ -27,7 +27,7 @@ const OutputNodes = styled.div`
   padding: 0.5rem;
   border-radius: 0;
   font-size: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   .list-group-item {
     display: flex;
     flex-direction: row-reverse;
