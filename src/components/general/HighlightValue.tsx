@@ -30,7 +30,7 @@ const TotalUnit = styled.span<{ $size?: string }>`
 const YearRange = styled.div<{ $size?: string }>`
   display: flex;
   font-size: ${({ $size }) => ($size === 'sm' ? '0.6' : '0.75')}rem;
-  color: ${({ theme }) => theme.textColor.tertiary};
+  color: ${({ theme }) => theme.textColor.secondary};
 `;
 
 type HighlightValueProps = {
