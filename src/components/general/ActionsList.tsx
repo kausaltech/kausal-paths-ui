@@ -19,7 +19,7 @@ const ActionListItem = styled(Col)`
 const ActionListCategory = styled.div`
   padding: ${(props) => props.theme.spaces.s100};
   margin-bottom: ${(props) => props.theme.spaces.s200};
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
+  background-color: ${({ theme }) => theme.cardBackground.primary};
 
   h3 {
     margin: 0;

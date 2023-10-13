@@ -26,7 +26,7 @@ const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
 
   h5 {
     color: ${({ $isActive, theme }) =>
-      $isActive ? theme.textColor.secondary : theme.textColor.tertiary};
+      $isActive ? theme.textColor.primary : theme.textColor.tertiary};
   }
 `;
 
