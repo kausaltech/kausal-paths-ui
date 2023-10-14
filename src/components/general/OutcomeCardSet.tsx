@@ -1,14 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
-import { useSpring, animated, config } from 'react-spring';
+import { useSpring, animated, config } from '@react-spring/web';
 import useScrollTo from 'react-spring-scroll-to-hook';
 import { getMetricValue, getOutcomeTotal } from 'common/preprocess';
 import OutcomeNodeContent from 'components/general/OutcomeNodeContent';
 import OutcomeCard from './OutcomeCard';
-import InputNodeCards from './InputNodeCards';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import chroma from 'chroma-js';
 import { setUniqueColors } from 'common/colors';
 
 const CardSet = styled(animated.div)<{

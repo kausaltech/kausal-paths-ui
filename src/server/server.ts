@@ -5,14 +5,14 @@ import {
   BaseServerResponse,
   deploymentType,
   RequestContext,
-} from './common';
-import { gql } from '@apollo/client';
+} from './common.js';
+import { gql } from '@apollo/client/index.js';
 
 import type {
   GetAvailableInstancesQuery,
   GetAvailableInstancesQueryVariables,
-} from 'common/__generated__/graphql';
-import { ServerAuth } from './auth';
+} from 'common/__generated__/graphql.js';
+import { ServerAuth } from './auth.js';
 
 const GET_AVAILABLE_INSTANCES = gql`
   query GetAvailableInstances($hostname: String!) {

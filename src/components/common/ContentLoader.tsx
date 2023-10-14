@@ -25,7 +25,7 @@ const ContentLoader = ({ fullPage = false }: ContentLoaderProps) => {
   const [displayMessage, setDisplayMessage] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(setDisplayMessage(true), 250);
+    const timer = setTimeout(() => setDisplayMessage(true), 250);
 
     return () => clearTimeout(timer);
   }, []);

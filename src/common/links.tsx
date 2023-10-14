@@ -37,6 +37,7 @@ export function formatStaticUrl(url: string) {
     let pathPrefix = basePath || '';
     return `${pathPrefix}${url}`;
   }
+  return url;
 }
 
 type OtherLinkProps = Omit<LinkProps, 'href' | 'as'> & {

@@ -66,10 +66,6 @@ const Layout = ({ children }) => {
     : fallbackIconBase;
 
   const menuItems = [...menuPages];
-  // Add extra pages that are not available in the backend
-  site.demoPages?.map(
-    (page) => router.locale === page.lang && menuItems.push(page)
-  );
 
   menuItems.forEach((page) => {
     if (pathname === page.urlPath) {

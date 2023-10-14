@@ -8,6 +8,7 @@ jobs:
       DOCKER_IMAGE: docker.kausal.tech/paths-ui
       DOCKER_BUILDKIT: 1
       BUILDKIT_PROGRESS: plain
+      DEPLOYMENT_TYPE: ''  # will be populated in a step below
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -20,8 +21,8 @@ jobs:
       - name: Building Docker base container
         run: |
           docker build \
-            --build-arg YARN_NPM_REGISTRY_SERVER=${{ secrets.NPM_REGISTRY_SERVER }} \
-            --build-arg YARN_NPM_AUTH_IDENT=${{ secrets.NPM_AUTH_IDENT }} \
+            --build-arg NPM_REGISTRY_SERVER=${{ secrets.NPM_REGISTRY_SERVER }} \
+            --build-arg NPM_TOKEN=${{ secrets.WATCH_NPM_TOKEN }} \
             --tag kausal-paths-ui/base \
             --target base .
 

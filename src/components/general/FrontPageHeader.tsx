@@ -1,9 +1,9 @@
 import { Container } from 'reactstrap';
 import styled from 'styled-components';
 
-const HeaderSection = styled.div<{ backgroundColor?: string }>`
+const HeaderSection = styled.div<{ $backgroundColor?: string }>`
   padding: 0.5rem 0 1rem;
-  background: ${(props) => props.backgroundColor || props.theme.brandDark};
+  background: ${(props) => props.$backgroundColor || props.theme.brandDark};
 `;
 
 const PageHeader = styled.div`
@@ -51,7 +51,7 @@ const FrontPageHeader = (props: FrontPageHeaderProps) => {
   const { leadTitle, leadParagraph, backgroundColor } = props;
 
   return (
-    <HeaderSection backgroundColor={backgroundColor}>
+    <HeaderSection $backgroundColor={backgroundColor}>
       <Container fluid="lg">
         <PageHeader>
           <HeaderCard>

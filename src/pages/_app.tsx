@@ -1,17 +1,12 @@
-import React, { useLayoutEffect } from 'react';
-import {
-  ApolloProvider,
-  ApolloClient,
-  isApolloError,
-  SuspenseCache,
-} from '@apollo/client';
+import React from 'react';
+import { ApolloProvider, ApolloClient, isApolloError } from '@apollo/client';
 import App, { AppContext, AppProps } from 'next/app';
 import router from 'next/router';
 import { ThemeProvider } from 'styled-components';
 import getConfig from 'next/config';
 
 import { appWithTranslation, useTranslation } from 'next-i18next';
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@sentry/nextjs';
 
 import { ApolloClientType, initializeApollo } from 'common/apollo';
 import { setBasePath } from 'common/links';
@@ -34,7 +29,7 @@ import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
 import { setSignificantDigits } from 'common/preprocess';
 
-let basePath = getConfig().publicRuntimeConfig.basePath || '';
+const basePath = getConfig().publicRuntimeConfig.basePath || '';
 
 require('../../styles/default/main.scss');
 
@@ -115,7 +110,7 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   },
 };
 
-type PathsAppProps = AppProps & {
+export type PathsAppProps = AppProps & {
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
   themeProps: Theme;
@@ -125,10 +120,8 @@ type PathsAppProps = AppProps & {
 function PathsApp(props: PathsAppProps) {
   const { Component, pageProps, siteContext, instanceContext, themeProps } =
     props;
-  const { scenarios } = siteContext;
-  //useEffect(() => console.log('router changed', router), [router]);
+
   const { i18n } = useTranslation();
-  //useEffect(() => console.log('translation changed', i18n), [i18n]);
   console.log('app render');
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
@@ -139,7 +132,7 @@ function PathsApp(props: PathsAppProps) {
 
   // NextJS messes up client router's defaultLocale in some instances.
   // Override it here.
-  if (process.browser) {
+  if (typeof window !== 'undefined') {
     const defaultLocale = window.__NEXT_DATA__.defaultLocale;
     if (router.defaultLocale !== defaultLocale) {
       router.defaultLocale = defaultLocale;
@@ -198,7 +191,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
   // First determine the hostname for the request which we might need
   // for loading the instance that is related to it.
   let host: string;
-  const { req, res } = ctx;
+  const { req } = ctx;
   if (req) {
     host = req.currentURL.hostname;
   } else {
@@ -220,7 +213,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     remoteAddress: req.socket.remoteAddress,
     currentURL: req.currentURL,
   };
-  const apolloClient: ApolloClient<{}> = initializeApollo(null, {
+  const apolloClient: ApolloClient<object> = initializeApollo(null, {
     ...apolloConfig,
     ...apolloConfigServer,
   });
@@ -281,12 +274,12 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
 
 async function getI18nProps(ctx: PathsPageContext) {
   // SSR only
-  const {
-    serverSideTranslations,
-  } = require('next-i18next/serverSideTranslations');
-  const nextI18nConfig = require('../../next-i18next.config');
+  const { serverSideTranslations } = await import(
+    'next-i18next/serverSideTranslations'
+  );
+  const nextI18nConfig = (await import('../../next-i18next.config')).default;
   const { publicRuntimeConfig } = getConfig();
-  let locale: string =
+  const locale: string =
     ctx.locale || publicRuntimeConfig.locale || ctx.locales?.[0];
   const i18n = getI18n();
 
@@ -300,8 +293,8 @@ async function getI18nProps(ctx: PathsPageContext) {
     ...nextI18nConfig,
     i18n: {
       ...nextI18nConfig.i18n,
-      defaultLocale: ctx.defaultLocale,
-      locales: ctx.locales,
+      defaultLocale: ctx.defaultLocale!,
+      locales: ctx.locales!,
     },
   };
   const i18nConfig = await serverSideTranslations(locale, ['common'], conf);
@@ -373,4 +366,6 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
   };
 };
 
-export default appWithTranslation(PathsApp);
+const PathsAppWithTranslation = appWithTranslation(PathsApp);
+
+export default PathsAppWithTranslation;

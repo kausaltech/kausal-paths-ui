@@ -3,10 +3,16 @@
   "compilerOptions": {
     "module": "NodeNext",
     "outDir": "dist",
-    "lib": ["ES2022"],
-    "target": "ES2022",
+    "target": "ES2020",
     "isolatedModules": false,
-    "noEmit": false
+    "noEmit": false,
+    "inlineSourceMap": true,
+    "esModuleInterop": false,
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": ["src/server/*.ts"]
 }

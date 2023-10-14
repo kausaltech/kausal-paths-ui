@@ -9,23 +9,23 @@ import {
   NormalizedCacheObject,
   HttpLink,
   InMemoryCache,
-  gql,
-} from '@apollo/client';
+} from '@apollo/client/index.js';
 import 'dotenv/config';
-import next from 'next';
+
+import next from 'next/dist/server/next.js';
 
 console.log('> 💡 Starting server');
 
-import * as Sentry from '@sentry/nextjs';
+import Sentry from '@sentry/nextjs';
 import '../../sentry.server.config.js';
-import { NextServer, RequestHandler } from 'next/dist/server/next';
-import NextNodeServer from 'next/dist/server/next-server';
+import { NextServer, RequestHandler } from 'next/dist/server/next.js';
+import * as NextNodeServer from 'next/dist/server/next-server.js';
 import {
   initializeIssuer,
   initializePassport,
   ServerAuth,
   ServerAuthIssuer,
-} from './auth';
+} from './auth.js';
 
 if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
@@ -69,7 +69,7 @@ export abstract class BaseServer {
   name: string;
   nextConfig: any;
   nextApp: NextServer;
-  nextServer: NextNodeServer;
+  nextServer: NextNodeServer.default;
   nextHandleRequest: RequestHandler;
   apolloClient: ApolloClient<NormalizedCacheObject>;
   passport: Authenticator;
@@ -79,6 +79,7 @@ export abstract class BaseServer {
 
   constructor() {
     this.nextConfig = null;
+    // @ts-ignore 2349
     this.nextApp = next({ dev, hostname: 'localhost', port: 3000 });
     this.nextHandleRequest = this.nextApp.getRequestHandler();
     this.Sentry = Sentry;
@@ -247,7 +248,7 @@ export abstract class BaseServer {
     console.log('> ⚙️ Preparing NextJS');
     await this.nextApp.prepare();
 
-    this.nextConfig = (await import('next/config.js')).default();
+    this.nextConfig = (await import('next/config.js')).default.default();
     const apiUrl = this.nextConfig.serverRuntimeConfig.graphqlUrl;
     const app = express();
 
@@ -260,7 +261,7 @@ export abstract class BaseServer {
       this.authIssuer = null;
     }
 
-    // @ts-ignore
+    // @ts-expect-error 2341
     this.nextServer = await this.nextApp.getServer();
 
     app.use(Sentry.Handlers.requestHandler());

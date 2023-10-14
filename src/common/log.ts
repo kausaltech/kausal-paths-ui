@@ -1,6 +1,6 @@
-import { ApolloError } from '@apollo/client';
+import { ApolloError, DocumentNode } from '@apollo/client';
 
-export function logError(error, context) {
+export function logError(error: Error, context?: { query: DocumentNode }) {
   console.error(error.message);
   if (error instanceof ApolloError) {
     const { clientErrors, graphQLErrors, networkError } = error;
@@ -11,7 +11,8 @@ export function logError(error, context) {
       console.log('GraphQL errors', graphQLErrors);
     }
     if (networkError) {
-      const { message, result } = networkError;
+      const message = networkError.message;
+      const result = 'result' in networkError ? networkError.result : null;
       console.log(`Network error: ${message}`);
       if (result?.errors?.length) {
         result.errors.forEach((err) => console.log(err));

@@ -11,7 +11,7 @@ import type {
   BaseServer,
   BaseServerRequest,
   BaseServerResponse,
-} from 'server/common';
+} from 'server/common.js';
 import { NextFunction } from 'express';
 import { Authenticator } from 'passport';
 

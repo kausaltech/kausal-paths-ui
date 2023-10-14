@@ -1,13 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 
-import { useRouter } from 'next/router';
-import { activeScenarioVar, yearRangeVar } from 'common/cache';
-import { Container, Row, Col, ButtonGroup, Button } from 'reactstrap';
-import { useTranslation } from 'next-i18next';
-import { useSite } from 'context/site';
-
-import ContentLoader from 'components/common/ContentLoader';
+import { useRouter } from 'next/router.js';
+import { Container, Row, Col } from 'reactstrap';
 
 const MOCK_DATA = {
   actions: [
@@ -71,10 +65,6 @@ const ActiveScenario = styled.div`
 `;
 
 function AboutPage(props) {
-  const { page, activeScenario: queryActiveScenario } = props;
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const site = useSite();
   const router = useRouter();
   const { locale } = router;
 
@@ -89,7 +79,6 @@ function AboutPage(props) {
       header: 'Über das Szenario-Tool',
     },
   };
-
   return (
     <>
       <HeaderSection>

@@ -7,7 +7,7 @@
   ],
   "ignorePatterns": "**/__generated__/*",
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "import"],
   "root": true,
   "settings": {
     "import/resolver": {
@@ -24,6 +24,7 @@
     "object-curly-newline": ["off"],
     "react/prop-types": [2],
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
-    "prettier/prettier": "warn"
+    "prettier/prettier": "warn",
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 }

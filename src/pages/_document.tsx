@@ -10,12 +10,13 @@ import { ServerStyleSheet } from 'styled-components';
 import { getThemeCSS } from 'common/theme';
 import { setBasePath } from 'common/links';
 import getConfig from 'next/config';
+import type { PathsAppProps } from './_app';
 
 class PlansDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const sheet = new ServerStyleSheet();
     const originalRenderPage = ctx.renderPage;
-    let themeProps;
+    let themeProps: PathsAppProps['themeProps'] | undefined;
     const basePath = getConfig().publicRuntimeConfig.basePath;
 
     setBasePath(basePath);
@@ -26,7 +27,7 @@ class PlansDocument extends Document {
     try {
       ctx.renderPage = () =>
         originalRenderPage({
-          enhanceApp: (App) => (props) => {
+          enhanceApp: (App) => (props: PathsAppProps) => {
             themeProps = props.themeProps;
             return sheet.collectStyles(<App {...props} />);
           },

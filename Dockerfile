@@ -1,26 +1,27 @@
 #syntax=docker/dockerfile:1
 
-FROM node:20-alpine as base
+FROM node:18-alpine as base
 
 RUN mkdir -p /app
 WORKDIR /app
 
 RUN apk --no-cache add git
-RUN corepack enable
+RUN corepack enable npm
 
-ARG YARN_NPM_REGISTRY_SERVER
-ARG YARN_NPM_AUTH_IDENT
+ARG NPM_REGISTRY_SERVER
+ARG NPM_TOKEN
 
-ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_AUTH_IDENT:+true}
-ENV YARN_NPM_ALWAYS_AUTH=${YARN_NPM_ALWAYS_AUTH:-false}
+ENV NPM_CONFIG_CACHE /npm-cache
+COPY package*.json docker/ ./
+# COPY patches ./patches/
 
-ENV YARN_CACHE_FOLDER /yarn-cache
-COPY yarn.lock package*.json ./
-COPY patches ./patches/
+RUN \
+  if [ ! -z "${NPM_REGISTRY_SERVER}" ] ; then \
+    echo "@kausal:registry=${NPM_REGISTRY_SERVER}" >> $HOME/.npmrc ; \
+    echo "$(echo ${NPM_REGISTRY_SERVER} | sed -e 's/https://')/"':_authToken="${NPM_TOKEN}"' >> $HOME/.npmrc ; \
+  fi
 
-RUN yarn config set nodeLinker 'node-modules'
-RUN yarn config set logFilters --json '[{"code": "YN0013", "level": "discard"}]'
-RUN --mount=type=cache,target=/yarn-cache yarn install --immutable
+RUN --mount=type=cache,target=/npm-cache npm ci
 
 COPY . .
 
@@ -35,10 +36,10 @@ ARG GIT_REPO
 ARG GIT_REV
 
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    yarn build
+  npm run build
 
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    docker/sentry-set-release-commits.sh
+  docker/sentry-set-release-commits.sh
 
 COPY ./docker/entrypoint.sh /entrypoint.sh
 EXPOSE 3000

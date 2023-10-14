@@ -1,8 +1,15 @@
-const path = require('path');
-const webpack = require('webpack');
-const { withSentryConfig } = require('@sentry/nextjs');
-const { secrets } = require('docker-secret');
-const { i18n, SUPPORTED_LANGUAGES } = require('./next-i18next.config');
+import path from 'path';
+import * as url from 'url';
+import { createRequire } from 'module';
+import webpack from 'webpack';
+import { withSentryConfig } from '@sentry/nextjs';
+import { secrets } from 'docker-secret';
+import i18nConfig from './next-i18next.config.js';
+
+const { i18n, SUPPORTED_LANGUAGES } = i18nConfig;
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const require = createRequire(import.meta.url);
 
 const DEFAULT_GRAPHQL_API_URL =
   process.env.DEFAULT_GRAPHQL_API_URL ||
@@ -92,6 +99,10 @@ const nextConfig = {
   },
   swcMinify: true,
   reactStrictMode: true,
+  experimental: {
+    esmExternals: 'loose',
+    runtime: 'nodejs',
+  },
   // basePath: process.env.BASE_PATH,
   i18n,
 };
@@ -103,4 +114,4 @@ const sentryWebpackPluginOptions = {
 
 // Make sure adding Sentry options is the last code to run before exporting, to
 // ensure that your source maps include changes from all other Webpack plugins
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
