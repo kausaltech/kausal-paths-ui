@@ -158,7 +158,7 @@ export default function ActionPage() {
     ? flowPlot || (
         <>
           <ActionGraphHeader>
-            Impact: {actionVizNode.name} (
+            {t('impact')}: {actionVizNode.name} (
             <span
               dangerouslySetInnerHTML={{
                 __html: actionVizNode.unit?.htmlShort,

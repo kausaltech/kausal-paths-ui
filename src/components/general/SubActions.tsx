@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 import WatchActionCard from './WatchActionCard';
 import { SubActionCardFragment } from 'common/__generated__/graphql';
+import { useTranslation } from 'common/i18n';
 
 const ActionTabs = styled.div`
   display: flex;
@@ -81,6 +82,8 @@ type ActionContentProps = {
 const ActionContent = (props: ActionContentProps) => {
   const { action } = props;
 
+  const { t } = useTranslation();
+
   const watchActions = [
     {
       id: '1',
@@ -113,7 +116,7 @@ const ActionContent = (props: ActionContentProps) => {
           />
         ) : null}
       </ActionDescription>
-      <h5>How do we make this happen?</h5>
+      <h5>{t('watch-action-list-title')}</h5>
       <WatchActionList>
         {watchActions.map((watchAction: any) => (
           <WatchActionCard key={watchAction.id} action={watchAction} />

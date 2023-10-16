@@ -116,14 +116,14 @@ const CompleteSettings = (props) => {
     <>
       <SettingsHeader>
         <Container fluid="lg">
-          <h2>All settings</h2>
+          <h2>{t('all-settings')}</h2>
         </Container>
       </SettingsHeader>
       <SettingsContent>
         <Container fluid="lg">
           <SettingsSection>
             <AccordionHeader color="primary" id="display-toggler">
-              <h4>Display</h4>
+              <h4>{t('display')}</h4>
               <Icon name="angleDown" width="24px" height="24px" />
             </AccordionHeader>
             <UncontrolledCollapse toggler="#display-toggler" defaultOpen>
@@ -146,7 +146,7 @@ const CompleteSettings = (props) => {
                       </Col>
                       {hasNormalizations && (
                         <Col md="3">
-                          <h5>Normalization</h5>
+                          <h5>{t('normalization')}</h5>
                           <NormalizationWidget
                             availableNormalizations={availableNormalizations}
                           />
@@ -154,7 +154,7 @@ const CompleteSettings = (props) => {
                       )}
                       {nrGoals > 1 && (
                         <Col md="4">
-                          <h5>Target</h5>
+                          <h5>{t('target-climate')}</h5>
                           <GoalSelector />
                         </Col>
                       )}
@@ -166,7 +166,7 @@ const CompleteSettings = (props) => {
           </SettingsSection>
           <SettingsSection>
             <AccordionHeader color="primary" id="scenario-toggler">
-              <h4>{t('edit-scenario')}</h4>
+              <h4>{t('scenario')}</h4>
               <Icon name="angleDown" width="24px" height="24px" />
             </AccordionHeader>
             <UncontrolledCollapse toggler="#scenario-toggler" defaultOpen>

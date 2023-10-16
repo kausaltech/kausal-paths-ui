@@ -249,7 +249,9 @@ const ActionsSummary = (props) => {
   return (
     <GlobalParametersPanel>
       <p>
-        {activeActions.length}/{actions.length} active {t('actions')}
+        {t('active-actions', {
+          count: `${activeActions.length}/${actions.length}`,
+        })}
       </p>
       <ActionsList>
         {actions.map((action) => {

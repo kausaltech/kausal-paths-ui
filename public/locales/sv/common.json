@@ -69,5 +69,6 @@
   "change-over-time": "Förändring",
   "time-series": "Tidsföljder",
   "table": "Tabell",
-  "details": "Mer detaljer"
+  "details": "Mer detaljer",
+  "active-actions": "{{count}} aktiva åtgärder"
 }

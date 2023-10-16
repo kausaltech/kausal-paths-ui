@@ -12,6 +12,7 @@ import ImpactDisplay from './ImpactDisplay';
 import { NodeLink } from 'common/links';
 import { useSite } from 'context/site';
 import { CausalGridNode } from './CausalGrid';
+import { useTranslation } from 'common/i18n';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -145,6 +146,7 @@ const CausalCard = (props: CausalCardProps) => {
   const { node, startYear, endYear, noEffect, compact } = props;
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
+  const { t } = useTranslation();
 
   //console.log('node', node);
   const [isOpen, setIsOpen] = useState(false);
@@ -221,7 +223,7 @@ const CausalCard = (props: CausalCardProps) => {
           <MoreLink>
             <NodeLink node={node}>
               <a>
-                See full details <BSIcon.ArrowRight />
+                {t('details')} <BSIcon.ArrowRight />
               </a>
             </NodeLink>
           </MoreLink>

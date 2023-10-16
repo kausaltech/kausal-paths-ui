@@ -3,12 +3,14 @@
   "action": "Massnahmenpaket",
   "actions": "Massnahmenpakete",
   "actions-available": "Massnahmen in Szenario",
-  "actions-influencing-this": "{{sector}} beeinflussende Massnahmen",
+  "actions-influencing-this": "Für die Abschätzung der zukünftigen {{sector}} berücksichtigte Massnahmenpakete",
   "plot-action-impact": "Massnahmenauswirkungen",
   "plot-without-action": "Ohne diese Massnahme",
   "table-action-impact": "Auswirkung der Massnahme",
   "plot-total": "Total",
   "actions-group-type": "Handlungsfeld",
   "actions-count": "{{ count }} Massnahmenpakete",
-  "actions-as-comparison": "Compare"
+  "actions-as-comparison": "Vergleich Auswirkung",
+  "active-actions": "{{count}} aktive Massnahmenpakete",
+  "watch-action-list-title": "Massnahmen"
 }

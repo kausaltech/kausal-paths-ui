@@ -70,5 +70,6 @@
   "change-over-time": "Muutos",
   "time-series": "Aikasarja",
   "table": "Taulukko",
-  "details": "Tarkemmat tiedot"
+  "details": "Tarkemmat tiedot",
+  "active-actions": "{{count}} aktiivista toimenpidettä"
 }
