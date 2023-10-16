@@ -4509,17 +4509,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kausal/themes-private@npm:^0.2.64":
-  version: 0.2.64
-  resolution: "@kausal/themes-private@npm:0.2.64"
-  checksum: 22b3c5eae8eaa69eb1186df1c7a90595fd649c899d81cb6355baf35e9b9fe86d98e58fbc9a431f29086b781e5792ae6f462520b6cbce06adc84cdba0da3b0d37
+"@kausal/themes-private@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@kausal/themes-private@npm:0.3.1"
+  checksum: 97c5142362b5de3de09a3ea26da1512063c041dfd64e8b8b480ee1c23d82c5612956761fe03befe3ea2f35ac1a7490ccb91011a8a7d4130a6f1f313a577c8aed
   languageName: node
   linkType: hard
 
-"@kausal/themes@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "@kausal/themes@npm:0.6.2"
-  checksum: 416177e8056be6d270251f67db556a6ed897574938fdc86e161f06c84da9de75c2d2ae2df221a562116454a4927bd19de75e8a6247f92a842dbd357613f0d3bb
+"@kausal/themes@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "@kausal/themes@npm:0.7.0"
+  checksum: 572e8cda465723322eb86b4496a1ecb43c68a10981a45b34ef323c04b4b4311fdebab8139c9e37f7467ebfbde4f84c2d644b7784ac88717c97ca51802e118dde
   languageName: node
   linkType: hard
 
@@ -13556,8 +13556,8 @@ __metadata:
     "@graphql-codegen/typescript": ^4.0.1
     "@graphql-codegen/typescript-operations": ^4.0.1
     "@graphql-codegen/typescript-react-apollo": ^3.3.7
-    "@kausal/themes": ^0.6.2
-    "@kausal/themes-private": ^0.2.64
+    "@kausal/themes": ^0.7.0
+    "@kausal/themes-private": ^0.3.1
     "@n8tb1t/use-scroll-position": ^2.0.3
     "@sentry/cli": ^2.20.4
     "@sentry/nextjs": ^7.61.1
