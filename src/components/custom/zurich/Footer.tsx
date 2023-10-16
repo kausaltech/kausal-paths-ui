@@ -34,7 +34,7 @@ const Footer = (props) => {
                   badge-position="icon"
                 >
                   <a
-                    href="https://www.stadt-zuerich.ch/legal-notice"
+                    href="https://www.stadt-zuerich.ch/portal/de/index/footer/rechtliche_hinweise.html"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
                     s-object-id="Legal notice"
@@ -43,7 +43,7 @@ const Footer = (props) => {
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
                       <div className="stzh-link__text sc-stzh-link">
                         <div className="sc-stzh-link sc-stzh-link-s">
-                          Legal notice
+                          Rechtliche Hinweise
                         </div>
                       </div>
                     </div>
@@ -62,7 +62,7 @@ const Footer = (props) => {
                   badge-position="icon"
                 >
                   <a
-                    href="https://www.stadt-zuerich.ch/imprint"
+                    href="https://www.stadt-zuerich.ch/portal/de/index/footer/impressum.html"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
                     s-object-id="Imprint"
@@ -71,7 +71,7 @@ const Footer = (props) => {
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
                       <div className="stzh-link__text sc-stzh-link">
                         <div className="sc-stzh-link sc-stzh-link-s">
-                          Imprint
+                          Impressum
                         </div>
                       </div>
                     </div>
@@ -90,7 +90,7 @@ const Footer = (props) => {
                   badge-position="icon"
                 >
                   <a
-                    href="https://www.stadt-zuerich.ch/accessibility"
+                    href="https://www.stadt-zuerich.ch/portal/de/index/footer/barrierefreiheit.html"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
                     s-object-id="Accessibility"
@@ -99,7 +99,7 @@ const Footer = (props) => {
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
                       <div className="stzh-link__text sc-stzh-link">
                         <div className="sc-stzh-link sc-stzh-link-s">
-                          Accessibility
+                          Barrierefreiheit
                         </div>
                       </div>
                     </div>
