@@ -3,6 +3,14 @@ import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import SiteContext from 'context/site';
 
+const StyledFooter = styled.footer`
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    &.stzh-footer {
+      padding-bottom: var(--stzh-space-xxxlarge);
+    }
+  }
+`;
+
 const Footer = (props) => {
   const { t } = useTranslation();
   const site = useContext(SiteContext);
@@ -12,7 +20,7 @@ const Footer = (props) => {
 
   return (
     <stzh-footer variant="egov" className="hydrated">
-      <footer className="stzh-footer">
+      <StyledFooter className="stzh-footer">
         <div className="stzh-footer__wrapper">
           <div className="stzh-footer__social-link"></div>
           <div className="stzh-footer__logo"></div>
@@ -109,7 +117,7 @@ const Footer = (props) => {
             </div>
           </div>
         </div>
-      </footer>
+      </StyledFooter>
     </stzh-footer>
   );
 };
