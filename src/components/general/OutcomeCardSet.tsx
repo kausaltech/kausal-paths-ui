@@ -18,7 +18,7 @@ const CardSet = styled(animated.div)<{
   position: relative;
   padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
   margin-top: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   // border-radius:  ${(props) => props.theme.cardBorderRadius};
   // border: 2px solid ${(props) =>
     props.$color || props.theme.themeColors.white};

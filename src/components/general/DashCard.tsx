@@ -18,30 +18,30 @@ const CardWithState = styled.div`
 
   &.open,
   &.root {
-    color: ${(props) => props.theme.graphColors.grey050};
+    color: ${({ theme }) => theme.textColor.tertiary};
     background-color: white;
 
     h2 {
-      color: ${(props) => props.theme.graphColors.grey050};
+      color: ${({ theme }) => theme.textColor.tertiary};
     }
   }
 
   &.inactive,
   &.closed {
-    color: ${(props) => props.theme.graphColors.grey090};
+    color: ${({ theme }) => theme.textColor.secondary};
     background-color: white;
 
     h2 {
-      color: ${(props) => props.theme.graphColors.grey090};
+      color: ${({ theme }) => theme.textColor.secondary};
     }
   }
 
   &.open.hovered {
-    color: ${(props) => props.theme.graphColors.grey090};
+    color: ${({ theme }) => theme.textColor.secondary};
     //border-color: ${(props) => props.color};
 
     h2 {
-      color: ${(props) => props.theme.graphColors.grey070};
+      color: ${({ theme }) => theme.textColor.secondary};
     }
 
     &::after {
@@ -62,8 +62,8 @@ const CardWithState = styled.div`
   &.active.open,
   &.root {
     position: relative;
-    color: ${(props) => props.theme.graphColors.grey090};
-    background-color: ${(props) => props.theme.graphColors.grey005};
+    color: ${({ theme }) => theme.textColor.secondary};
+    background-color: ${({ theme }) => theme.cardBackground.secondary};
     // border-radius: ${(props) => props.theme.cardBorderRadius} ${(props) =>
       props.theme.cardBorderRadius} 0 0;
     height: 206px;
@@ -71,7 +71,7 @@ const CardWithState = styled.div`
     box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 
     h2 {
-      color: ${(props) => props.theme.graphColors.grey090};
+      color: ${({ theme }) => theme.textColor.secondary};
     }
   }
 `;

@@ -11,17 +11,15 @@ const ImpactDisplayWrapper = styled.div`
   border-radius: 0;
 `;
 
-const ImpactDisplayHeader = styled.div`
+const ImpactDisplayHeader = styled.div<{ $muted: boolean }>`
   flex: 0 0 100%;
   padding: 0.5rem;
   border-bottom: 1px solid ${(props) => props.theme.graphColors.grey030};
   line-height: 1;
   font-size: 0.75rem;
   font-weight: 700;
-  color: ${(props) =>
-    props.muted
-      ? props.theme.graphColors.grey050
-      : props.theme.graphColors.grey090};
+  color: ${({ theme, $muted }) =>
+    $muted ? theme.textColor.tertiary : theme.textColor.secondary};
 `;
 
 const ImpactDisplayItem = styled.div`
@@ -83,7 +81,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
 
   return (
     <ImpactDisplayWrapper>
-      <ImpactDisplayHeader muted={muted}>
+      <ImpactDisplayHeader $muted={muted}>
         {t('impact')}
         {impactName && ` (${impactName})`}
       </ImpactDisplayHeader>

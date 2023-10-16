@@ -1,38 +1,36 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-const TotalValue = styled.div<{ muted?: boolean; size?: string }>`
+const TotalValue = styled.div<{ $size?: string; $muted?: boolean }>`
   padding: 0;
   line-height: 1.2;
   font-weight: 700;
-  font-size: ${(props) => (props.size === 'sm' ? '1.25' : '1.5')}rem;
-  color: ${(props) =>
-    props.muted
-      ? props.theme.graphColors.grey050
-      : props.theme.graphColors.grey090};
+  font-size: ${({ $size }) => ($size === 'sm' ? '1.25' : '1.5')}rem;
+  color: ${({ $muted, theme }) =>
+    $muted ? theme.textColor.tertiary : theme.textColor.secondary};
 
   &:hover {
-    color: ${(props) => props.theme.graphColors.grey090};
-    cursor: pointer;
+    color: ${({ theme }) => theme.textColor.secondary};
 
     > div {
-      color: ${(props) => props.theme.graphColors.grey090};
+      color: ${({ theme }) => theme.textColor.secondary};
     }
+
     svg {
-      fill: ${(props) => props.theme.graphColors.grey090};
+      fill: ${({ theme }) => theme.textColor.secondary};
     }
   }
 `;
 
-const TotalUnit = styled.span<{ size?: string }>`
+const TotalUnit = styled.span<{ $size?: string }>`
   margin-left: 0.25rem;
-  font-size: ${(props) => (props.size === 'sm' ? '0.6' : '0.75')}rem;
+  font-size: ${({ $size }) => ($size === 'sm' ? '0.6' : '0.75')}rem;
 `;
 
-const YearRange = styled.div<{ size?: string }>`
+const YearRange = styled.div<{ $size?: string }>`
   display: flex;
-  font-size: ${(props) => (props.size === 'sm' ? '0.6' : '0.75')}rem;
-  color: ${(props) => props.theme.graphColors.grey070};
+  font-size: ${({ $size }) => ($size === 'sm' ? '0.6' : '0.75')}rem;
+  color: ${({ theme }) => theme.textColor.secondary};
 `;
 
 type HighlightValueProps = {
@@ -52,12 +50,12 @@ const HighlightValue = (props: HighlightValueProps) => {
   const toggle = () => setTooltipOpen(!tooltipOpen);
 
   return (
-    <TotalValue className={className} size={size} muted={muted} id={id}>
-      <YearRange size={size}>
+    <TotalValue className={className} $size={size} $muted={muted} id={id}>
+      <YearRange $size={size}>
         <span dangerouslySetInnerHTML={{ __html: header }} />
       </YearRange>
       {displayValue}
-      <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} size={size} />
+      <TotalUnit dangerouslySetInnerHTML={{ __html: unit }} $size={size} />
     </TotalValue>
   );
 };

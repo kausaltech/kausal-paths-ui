@@ -22,7 +22,7 @@ const NodeCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
   max-width: 400px;
   padding: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   white-space: normal;
 
   &.type-action .card {
@@ -65,7 +65,7 @@ const CardHeader = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   border-radius: 0;
 
   .x2sstick text,

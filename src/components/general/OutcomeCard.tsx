@@ -60,11 +60,10 @@ const Name = styled.h2`
 
 const Status = styled.div`
   margin-top: 0.5rem;
-  //text-align: right;
   white-space: nowrap;
   font-size: 1rem;
   font-weight: 700;
-  color: ${(props) => props.theme.graphColors.grey050};
+  color: ${({ theme }) => theme.textColor.tertiary};
 `;
 
 const Body = styled.div`
@@ -81,10 +80,11 @@ const MainValue = styled.div`
   font-weight: 700;
 `;
 
-const Label = styled.div`
+const Label = styled.div<{ $active?: boolean }>`
   font-size: 0.7rem;
   font-weight: 700;
-  color: ${(props) => props.theme.graphColors.grey050};
+  color: ${({ theme, $active }) =>
+    $active ? theme.textColor.primary : theme.textColor.tertiary};
 `;
 
 const MainUnit = styled.span`
@@ -110,7 +110,6 @@ const ProportionBarContainer = styled.div<{ $active: boolean }>`
   bottom: ${(props) => (props.$active ? '36px' : '0')};
   left: 0;
   width: 12px;
-  // border-right: 1px solid ${(props) => props.theme.graphColors.grey010};
 `;
 
 const ProportionBar = ({
@@ -216,7 +215,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         {true && (
           <Body>
             <MainValue>
-              <Label>
+              <Label $active={active}>
                 {isForecast
                   ? t('table-scenario-forecast')
                   : t('table-historical')}{' '}

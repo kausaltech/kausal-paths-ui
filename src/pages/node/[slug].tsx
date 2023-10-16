@@ -58,7 +58,7 @@ const NodeBodyText = styled.div`
 const ContentWrapper = styled.div`
   padding: 1.5rem;
   margin: 0.5rem 0;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   border-radius: ${(props) => props.theme.cardBorderRadius};
 
   .x2sstick text,

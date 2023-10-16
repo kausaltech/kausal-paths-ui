@@ -13,7 +13,7 @@ const ActionCard = styled.div`
 const ActionCardImage = styled.div`
   flex: 0 0 150px;
   position: relative;
-  background-color: ${(props) => props.theme.graphColors.grey005};
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
 
   img {
     position: absolute;
