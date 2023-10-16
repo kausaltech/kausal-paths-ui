@@ -246,6 +246,9 @@ function ActionListPage(props: ActionListPageProps) {
 
   const refetching = networkStatus === NetworkStatus.refetch;
 
+  // TODO: Get this from the query when backend supports it
+  const showActionComparisonTab = true;
+
   if (error) {
     return (
       <Container className="pt-5">
@@ -437,19 +440,21 @@ function ActionListPage(props: ActionListPageProps) {
                 <Icon name="chartColumn" /> {t('actions-as-efficiency')}
               </Tab>
             ) : (
-              <Tab
-                className={`nav-link ${
-                  listType === 'comparison' ? 'active' : ''
-                }`}
-                onClick={() => setListType('comparison')}
-                role="tab"
-                tabIndex={0}
-                aria-selected={listType === 'comparison'}
-                aria-controls="list-view"
-                id="list-tab"
-              >
-                <Icon name="chartColumn" /> {t('actions-as-comparison')}
-              </Tab>
+              showActionComparisonTab && (
+                <Tab
+                  className={`nav-link ${
+                    listType === 'comparison' ? 'active' : ''
+                  }`}
+                  onClick={() => setListType('comparison')}
+                  role="tab"
+                  tabIndex={0}
+                  aria-selected={listType === 'comparison'}
+                  aria-controls="list-view"
+                  id="list-tab"
+                >
+                  <Icon name="chartColumn" /> {t('actions-as-comparison')}
+                </Tab>
+              )
             )}
           </div>
         </Container>
