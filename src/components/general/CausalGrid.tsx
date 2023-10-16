@@ -23,7 +23,7 @@ const ActionPoint = styled.button`
   height: 3rem;
   border-radius: 1.5rem;
   border: none;
-  margin: 0 auto;
+  margin: -1rem auto 0;
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);

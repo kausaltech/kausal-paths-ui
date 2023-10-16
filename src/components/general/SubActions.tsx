@@ -8,9 +8,14 @@ import { useTranslation } from 'common/i18n';
 
 const ActionTabs = styled.div`
   display: flex;
+  max-width: 100%;
+  overflow-x: auto;
 `;
 
-const ActionTab = styled.button<{ isActive: boolean; isEnabled: boolean }>`
+const ActionTab = styled.button<{
+  isActive: boolean;
+  isEnabled: boolean;
+}>`
   display: inline-flex;
   align-items: flex-start;
   flex-direction: column;
@@ -29,19 +34,29 @@ const ActionTab = styled.button<{ isActive: boolean; isEnabled: boolean }>`
         : props.theme.graphColors.grey010};
   padding: 0.75rem 0.75rem 1.25rem 0.75rem;
   text-align: left;
-  background-color: ${(props) =>
-    props.isActive
-      ? props.theme.graphColors.grey000
-      : props.theme.graphColors.grey010};
+  background-color: ${({ theme, isActive }) =>
+    isActive ? theme.cardBackground.primary : theme.cardBackground.secondary};
 
   &:last-child {
     margin-right: 0;
   }
+
+  &:hover {
+    background-color: ${({ theme }) => theme.cardBackground.primary};
+    border-top: 1px solid ${({ theme }) => theme.graphColors.blue070};
+  }
 `;
 
-const TabType = styled.div`
-  font-size: 0.8rem;
-  color: ${(props) => props.theme.graphColors.grey050};
+const DisabledActionTab = styled.button`
+  display: inline-flex;
+  align-items: flex-start;
+  flex-direction: column;
+  flex: 1 1 90px;
+  margin-right: 5px;
+  padding: 0.75rem 0.75rem 1.25rem 0.75rem;
+  text-align: left;
+  border: 0;
+  color: ${({ theme }) => theme.textColor.primary};
 `;
 
 const TabTitle = styled.div`
@@ -55,25 +70,28 @@ const TabTitle = styled.div`
 `;
 
 const ActionContentCard = styled.div`
+  margin-top: -1px;
   border: 1px solid ${(props) => props.theme.graphColors.grey020};
-  border-top: none;
   padding: 2rem 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey000};
+  background-color: ${({ theme }) => theme.cardBackground.primary};
 `;
 
 const ActionDescription = styled.div`
   margin-bottom: 1rem;
 `;
 
-const ActionMetrics = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+const SubActionsContainer = styled.div`
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
+  padding: ${({ theme }) => theme.spaces.s100};
 `;
 
 const WatchActionList = styled.div`
   display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
 `;
+
+const GhostCard = styled.div``;
 
 type ActionContentProps = {
   action: SubActionCardFragment;
@@ -81,29 +99,41 @@ type ActionContentProps = {
 
 const ActionContent = (props: ActionContentProps) => {
   const { action } = props;
-
   const { t } = useTranslation();
 
-  const watchActions = [
-    {
-      id: '1',
-      name: 'Restwertentschädigung und Förderprogramm für den Heizungsersatz',
-      description:
-        'Die Stadt unterstützt den Heizungsersatz durch die Förderprogramme Heizungsersatz und Restwertentschädigung',
-      link: 'https://draft-cap.watch-test.kausal.tech/actions/44',
-      image:
-        'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
-    },
-    {
-      id: '2',
-      name: 'Informationsangebot über Energis',
-      description:
-        'Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung',
-      link: 'https://draft-cap.watch-test.kausal.tech/actions/43',
-      image:
-        'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
-    },
-  ];
+  // Create test subsubaction data for one particular action
+  // TODO: Get this data from the API
+  const watchActions =
+    action.id === 'fossil_fuel_heater_to_district_heat'
+      ? [
+          {
+            id: '1',
+            name: 'Restwertentschädigung und Förderprogramm für den Heizungsersatz',
+            description:
+              'Die Stadt unterstützt den Heizungsersatz durch die Förderprogramme Heizungsersatz und Restwertentschädigung',
+            link: '',
+            image:
+              'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
+          },
+          {
+            id: '2',
+            name: 'Informationsangebot über Energis',
+            description:
+              'Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung',
+            link: 'https://draft-cap.watch-test.kausal.tech/actions/43',
+            image:
+              'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
+          },
+          {
+            id: '3',
+            name: 'Informationsangebot über Energis',
+            description:
+              'Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung',
+            link: 'https://draft-cap.watch-test.kausal.tech/actions/43',
+            image: '',
+          },
+        ]
+      : [];
 
   return (
     <ActionContentCard>
@@ -116,12 +146,18 @@ const ActionContent = (props: ActionContentProps) => {
           />
         ) : null}
       </ActionDescription>
-      <h5>{t('watch-action-list-title')}</h5>
-      <WatchActionList>
-        {watchActions.map((watchAction: any) => (
-          <WatchActionCard key={watchAction.id} action={watchAction} />
-        ))}
-      </WatchActionList>
+      {watchActions.length > 0 && (
+        <>
+          <h5>{t('watch-action-list-title')}</h5>
+          <WatchActionList>
+            {watchActions.map((watchAction: any) => (
+              <WatchActionCard key={watchAction.id} action={watchAction} />
+            ))}
+            <WatchActionCard />
+            <WatchActionCard />
+          </WatchActionList>
+        </>
+      )}
     </ActionContentCard>
   );
 };
@@ -145,28 +181,38 @@ const SubActions = (props: SubActionsProps) => {
   };
 
   return (
-    <div className="mt-4">
+    <SubActionsContainer>
       <h3>Ziele und Massnahmen</h3>
       <ActionTabs>
-        {actions.map((action: any) => (
-          <ActionTab
-            key={action.id}
-            onClick={() => handleClick(action.id)}
-            isActive={action.id === activeTab}
-            isEnabled={action.isEnabled}
-          >
-            <TabTitle>
-              <div>{action.name}</div>
-            </TabTitle>
-          </ActionTab>
-        ))}
+        {actions.map((action: any) =>
+          action.shortDescription ||
+          action.description ||
+          action.downstreamNodes.length > 0 ? (
+            <ActionTab
+              key={action.id}
+              onClick={() => handleClick(action.id)}
+              isActive={action.id === activeTab}
+              isEnabled={action.isEnabled}
+            >
+              <TabTitle>
+                <div>{action.name}</div>
+              </TabTitle>
+            </ActionTab>
+          ) : (
+            <DisabledActionTab disabled>
+              <TabTitle>
+                <div>{action.name}</div>
+              </TabTitle>
+            </DisabledActionTab>
+          )
+        )}
       </ActionTabs>
       {activeTab !== 'null' && (
         <ActionContent
           action={actions.find((action) => action.id === activeTab)}
         />
       )}
-    </div>
+    </SubActionsContainer>
   );
 };
 
