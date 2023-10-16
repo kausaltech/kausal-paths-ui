@@ -241,7 +241,7 @@ export default function ActionPage() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container>
+      <Container fluid="lg">
         <ActionPlotCard>{actionPlot}</ActionPlotCard>
       </Container>
       {subActions.length > 0 && (

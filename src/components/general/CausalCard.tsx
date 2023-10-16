@@ -6,13 +6,13 @@ import {
   summarizeYearlyValuesBetween,
   getImpactMetricValue,
 } from 'common/preprocess';
-import { Card, CardBody, CardFooter, Collapse } from 'reactstrap';
+import { Collapse } from 'reactstrap';
+import { useTranslation } from 'common/i18n';
 import NodePlot from 'components/general/NodePlot';
 import ImpactDisplay from './ImpactDisplay';
 import { NodeLink } from 'common/links';
 import { useSite } from 'context/site';
 import { CausalGridNode } from './CausalGrid';
-import { useTranslation } from 'common/i18n';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -21,8 +21,8 @@ const ActionLinks = styled.div`
 const NodeCard = styled.div`
   margin-bottom: 1rem;
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
-  max-width: 400px;
-  padding: 1rem;
+  width: 100%;
+  padding: 0.5rem;
   background-color: ${({ theme }) => theme.cardBackground.secondary};
   white-space: normal;
 
@@ -33,45 +33,79 @@ const NodeCard = styled.div`
 `;
 
 const CardHeader = styled.div`
-  display: flex;
-  position: relative;
-  margin-bottom: ${(props) => (props.isOpen ? '1rem' : '0')};
-  border-bottom: ${(props) =>
-    props.isOpen ? `1px solid ${props.theme.graphColors.grey030}` : 'none'};
-
-  svg {
-    display: block;
-    flex: 0 0 24px;
-    margin-right: 1rem;
-    width: 24px;
-    height: 24px;
-  }
-
-  h4 {
-    word-wrap: break-word;
-    text-wrap: wrap;
-  }
-
   button {
     display: flex;
-    flex: 1 1 100%;
-    top: 0;
-    left: 0;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-height: 4.5rem;
     padding: 0;
     margin: 0;
     text-align: left;
     background-color: transparent;
     text-decoration: none;
+    transition: all 1s;
+
+    &:hover {
+      color: ${(props) => props.theme.graphColors.blue070};
+      .caret {
+        fill: ${(props) => props.theme.graphColors.blue070};
+      }
+    }
+  }
+
+  .node-type {
+    display: none;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    margin-right: 1rem;
+    fill: ${(props) => props.theme.graphColors.grey050};
+
+    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+      display: block;
+    }
+  }
+
+  .caret {
+    display: block;
+    flex: 0 0 24px;
+    margin-left: 1rem;
+    width: 24px;
+    height: 24px;
+    fill: ${(props) => props.theme.graphColors.grey050};
+  }
+
+  h4 {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: ${(props) => props.theme.fontSizeBase};
+    hyphens: none;
+
+    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+      font-size: ${(props) => props.theme.fontSizeMd};
+    }
   }
 `;
 
-const ContentWrapper = styled.div`
+const CardContent = styled.div`
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: ${({ theme }) => `1px solid ${theme.graphColors.grey030}`};
+`;
+
+const PlotWrapper = styled.div`
+  display: none;
   background-color: ${({ theme }) => theme.cardBackground.secondary};
   border-radius: 0;
 
   .x2sstick text,
   .xtick text {
     text-anchor: end !important;
+  }
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    display: block;
   }
 `;
 
@@ -95,6 +129,7 @@ const TextContent = styled.div`
 `;
 
 const MoreLink = styled.div`
+  margin-top: 1rem;
   text-align: right;
 `;
 
@@ -113,32 +148,32 @@ const NodeIcon = (props) => {
   switch (nodeType) {
     case 'emission_factor':
       // ClipboardX
-      return <BSIcon.ClipboardX size={24} className="mb-3" />;
+      return <BSIcon.ClipboardX size={24} className="node-type" />;
     case 'emissions':
     case 'building_emissions':
     case 'building_heat_emissions':
       //
-      return <BSIcon.CloudHaze size={24} className="mb-3" />;
+      return <BSIcon.CloudHaze size={24} className="node-type" />;
     case 'energy':
     case 'energy_factor':
     case 'energy_per_area':
       // LightningChargeFill
-      return <BSIcon.LightningChargeFill size={24} className="mb-3" />;
+      return <BSIcon.LightningChargeFill size={24} className="node-type" />;
     case 'mileage':
       // Signpost
-      return <BSIcon.Signpost size={24} className="mb-3" />;
+      return <BSIcon.Signpost size={24} className="node-type" />;
     case 'per_capita':
       // People
-      return <BSIcon.People size={24} className="mb-3" />;
+      return <BSIcon.People size={24} className="node-type" />;
     case 'floor_area':
       // Building
-      return <BSIcon.Buildings size={24} className="mb-3" />;
+      return <BSIcon.Buildings size={24} className="node-type" />;
     case 'action':
       // Journals
-      return <BSIcon.Journals size={24} className="mb-3" />;
+      return <BSIcon.Journals size={24} className="node-type" />;
     default:
       // Diamond
-      return <BSIcon.Diamond size={24} className="mb-3" />;
+      return <BSIcon.Diamond size={24} className="node-type" />;
   }
 };
 
@@ -148,7 +183,7 @@ const CausalCard = (props: CausalCardProps) => {
   const { maxYear } = useSite();
   const { t } = useTranslation();
 
-  //console.log('node', node);
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const impactAtTargetYear = getImpactMetricValue(node, endYear);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
@@ -173,60 +208,62 @@ const CausalCard = (props: CausalCardProps) => {
                 name="angleDown"
                 width="24px"
                 height="24px"
-                className="ml-auto"
+                className="caret ml-auto"
               />
             ) : (
               <Icon
                 name="angleRight"
                 width="24px"
                 height="24px"
-                className="ml-auto"
+                className="caret ml-auto"
               />
             )}
           </button>
         </CardHeader>
         <Collapse isOpen={isOpen}>
-          <ImpactFigures>
-            <ImpactDisplay
-              effectCumulative={cumulativeImpact}
-              effectYearly={impactAtTargetYear}
-              yearRange={[startYear, endYear]}
-              unitCumulative={
-                node.impactMetric!.yearlyCumulativeUnit?.htmlShort
-              }
-              unitYearly={node.impactMetric!.unit?.htmlShort}
-              muted={noEffect}
-              size="sm"
-            />
-          </ImpactFigures>
-          {!compact && (
-            <ContentWrapper>
-              <NodePlot
-                metric={node.metric}
-                impactMetric={node.impactMetric}
-                startYear={startYear}
-                endYear={endYear}
-                color={node.color}
-                isAction={node.isAction}
-                targetYearGoal={targetYearGoal}
-                targetYear={maxYear}
-                quantity={node.quantity}
-                compact
+          <CardContent>
+            <ImpactFigures>
+              <ImpactDisplay
+                effectCumulative={cumulativeImpact}
+                effectYearly={impactAtTargetYear}
+                yearRange={[startYear, endYear]}
+                unitCumulative={
+                  node.impactMetric!.yearlyCumulativeUnit?.htmlShort
+                }
+                unitYearly={node.impactMetric!.unit?.htmlShort}
+                muted={noEffect}
+                size="sm"
               />
-            </ContentWrapper>
-          )}
-          {node.shortDescription && (
-            <TextContent
-              dangerouslySetInnerHTML={{ __html: node.shortDescription }}
-            />
-          )}
-          <MoreLink>
-            <NodeLink node={node}>
-              <a>
-                {t('details')} <BSIcon.ArrowRight />
-              </a>
-            </NodeLink>
-          </MoreLink>
+            </ImpactFigures>
+            {!compact && (
+              <PlotWrapper>
+                <NodePlot
+                  metric={node.metric}
+                  impactMetric={node.impactMetric}
+                  startYear={startYear}
+                  endYear={endYear}
+                  color={node.color}
+                  isAction={node.isAction}
+                  targetYearGoal={targetYearGoal}
+                  targetYear={maxYear}
+                  quantity={node.quantity}
+                  compact
+                />
+              </PlotWrapper>
+            )}
+            {node.shortDescription && (
+              <TextContent
+                dangerouslySetInnerHTML={{ __html: node.shortDescription }}
+              />
+            )}
+            <MoreLink>
+              <NodeLink node={node} className="node-type-icon">
+                <a>
+                  {t('details')} <BSIcon.ArrowRight />
+                </a>
+              </NodeLink>
+            </MoreLink>
+          </CardContent>
         </Collapse>
       </NodeCard>
     </ActionLinks>

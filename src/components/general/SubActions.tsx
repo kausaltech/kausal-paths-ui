@@ -77,6 +77,7 @@ const ActionContentCard = styled.div`
 `;
 
 const ActionDescription = styled.div`
+  max-width: ${({ theme }) => theme.breakpointSm};
   margin-bottom: 1rem;
 `;
 
@@ -90,8 +91,6 @@ const WatchActionList = styled.div`
   max-width: 100%;
   flex-wrap: wrap;
 `;
-
-const GhostCard = styled.div``;
 
 type ActionContentProps = {
   action: SubActionCardFragment;
