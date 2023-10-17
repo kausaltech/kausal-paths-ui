@@ -197,8 +197,12 @@ const CausalCard = (props: CausalCardProps) => {
           node.quantity
         }`}
       >
-        <CardHeader isOpen={isOpen}>
-          <button className="btn btn-link" onClick={() => setIsOpen(!isOpen)}>
+        <CardHeader>
+          <button
+            className="btn btn-link"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-controls={`card-content-${node.id}`}
+          >
             <NodeIcon node={node} />
             <h4>{node.name}</h4>
             {isOpen ? (
@@ -218,7 +222,11 @@ const CausalCard = (props: CausalCardProps) => {
             )}
           </button>
         </CardHeader>
-        <Collapse isOpen={isOpen}>
+        <Collapse
+          isOpen={isOpen}
+          id={`card-content-${node.id}`}
+          aria-hidden={!isOpen}
+        >
           <CardContent>
             <ImpactFigures>
               <ImpactDisplay
@@ -257,7 +265,7 @@ const CausalCard = (props: CausalCardProps) => {
             <MoreLink>
               <NodeLink node={node} className="node-type-icon">
                 <a>
-                  {t('details')} <BSIcon.ArrowRight />
+                  {t('details')} <Icon name="arrow-right" />
                 </a>
               </NodeLink>
             </MoreLink>
