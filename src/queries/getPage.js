@@ -106,6 +106,16 @@ const GET_PAGE = gql`
         actionListLeadTitle: leadTitle
         actionListLeadParagraph: leadParagraph
       }
+      ... on StaticPage {
+        body {
+          id
+          __typename
+          ... on RichTextBlock {
+            value
+            rawValue
+          }
+        }
+      }
     }
   }
 `;

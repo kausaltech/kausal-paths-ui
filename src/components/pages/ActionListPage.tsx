@@ -1,10 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import {
-  useQuery,
-  useReactiveVar,
-  NetworkStatus,
-  useSuspenseQuery_experimental,
-} from '@apollo/client';
+import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
@@ -17,7 +12,6 @@ import {
   FormGroup,
   Input,
   Label,
-  Alert,
 } from 'reactstrap';
 import Icon from 'components/common/icon';
 import { useTranslation } from 'next-i18next';
@@ -36,6 +30,7 @@ import {
   GetPageQuery,
 } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
+import type { PageRefetchCallback } from './Page';
 
 const HeaderSection = styled.div`
   padding: 4rem 0 2rem;
@@ -142,6 +137,7 @@ type ActionListPageProps = {
   page: NonNullable<GetPageQuery['page']> & {
     __typename: 'ActionListPage';
   };
+  refetch: PageRefetchCallback;
 };
 
 function ActionListPage(props: ActionListPageProps) {

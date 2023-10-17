@@ -10,6 +10,7 @@ import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
 import OutcomePage from 'components/pages/OutcomePage';
 import ActionListPage from 'components/pages/ActionListPage';
+import StaticPage from 'components/pages/StaticPage';
 import ErrorMessage from 'components/common/ErrorMessage';
 import {
   GetPageQuery,
@@ -24,7 +25,12 @@ const PageLoader = () => {
   return <ContentLoader fullPage />;
 };
 
-export default function Page({ path, headerExtra }) {
+type PageProps = {
+  path: string;
+  headerExtra: JSX.Element;
+};
+
+export default function Page({ path, headerExtra }: PageProps) {
   const site = useSite();
   const activeGoal = useReactiveVar(activeGoalVar);
   const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
@@ -71,12 +77,18 @@ export default function Page({ path, headerExtra }) {
         activeScenario={activeScenario}
       />
     );
+  } else if (page.__typename === 'StaticPage') {
+    pageContent = (
+      <StaticPage
+        page={page}
+        refetch={refetch}
+        activeScenario={activeScenario}
+      />
+    );
   } else {
     console.error('Invalid page type: ', page.__typename);
     return (
-      <ErrorMessage
-        message={`${t('invalid-page-type')} : ${page.__typename}`}
-      />
+      <ErrorMessage message={`${t('invalid-page-type')}: ${page.__typename}`} />
     );
   }
   return (

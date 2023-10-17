@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-JS = '*.{js,jsx,ts,tsx,mjs}';
+const JS = '*.{js,jsx,ts,tsx,mjs}';
 
 module.exports = {
   client: {

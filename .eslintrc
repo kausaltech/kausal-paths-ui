@@ -5,7 +5,7 @@
     "plugin:styled-components-a11y/recommended",
     "plugin:prettier/recommended"
   ],
-  "ignorePatterns": "**/__generated__/*",
+  "ignorePatterns": "**/__generated__/**",
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "import"],
   "root": true,
