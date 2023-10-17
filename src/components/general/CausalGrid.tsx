@@ -14,6 +14,7 @@ import ImpactDisplay from 'components/general/ImpactDisplay';
 import { useInstance } from 'common/instance';
 import { NodeLink } from 'common/links';
 import { GetActionContentQuery } from 'common/__generated__/graphql';
+import { useTranslation } from 'common/i18n';
 
 const ActionPoint = styled.button`
   display: flex;
@@ -158,6 +159,8 @@ const CausalGrid = (props: CausalGridProps) => {
 
   const [gridOpen, setGridOpen] = useState(false);
 
+  const { t } = useTranslation();
+
   if (nodes.length === 0) {
     return (
       <Container className="pt-5">
@@ -265,12 +268,12 @@ const CausalGrid = (props: CausalGridProps) => {
             {gridOpen ? (
               <>
                 <Icon name="dash-circle" height="1.5rem" width="1.5rem" />
-                Hide calculation
+                {t('hide-calculation')}
               </>
             ) : (
               <>
                 <Icon name="plus-circle" height="1.5rem" width="1.5rem" />
-                Show calculation
+                {t('show-calculation')}
               </>
             )}
           </ActionPoint>
