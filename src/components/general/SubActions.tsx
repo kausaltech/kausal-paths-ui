@@ -173,6 +173,8 @@ const ActionContent = (props: ActionContentProps) => {
 
 type SubActionsProps = {
   actions: SubActionCardFragment[];
+  activeSubAction?: string;
+  setActiveSubAction: (subAction?: string) => void;
 };
 
 const SubActions = (props: SubActionsProps) => {
@@ -191,7 +193,6 @@ const SubActions = (props: SubActionsProps) => {
 
   return (
     <SubActionsContainer>
-      {/* TODO: Get this data from the API */}
       <SubactionsHeader id="subactions">Ziele und Massnahmen</SubactionsHeader>
       <ActionTabs role="tablist" aria-labelledby="subactions">
         {actions.map((action: any) =>
@@ -203,7 +204,7 @@ const SubActions = (props: SubActionsProps) => {
               aria-selected={action.id === activeTab}
               aria-controls={`action-content-${action.id}`}
               id={`action-tab-${action.id}`}
-              tabIndex={action.id === activeTab ? 0 : -1}
+              tabIndex={0}
               key={action.id}
               onClick={() => handleClick(action.id)}
               $isActive={action.id === activeTab}
