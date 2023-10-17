@@ -13,9 +13,9 @@ import type { CausalGridNode } from './CausalGrid';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
-const PlotWrapper = styled.div<{ compact?: boolean }>`
+const PlotWrapper = styled.div<{ $compact?: boolean }>`
   margin: 0 auto;
-  max-width: ${(props) => (props.compact ? '480px' : '100%')};
+  max-width: ${(props) => (props.$compact ? '480px' : '100%')};
   overflow-x: auto;
 `;
 
@@ -383,7 +383,7 @@ const NodePlot = (props: NodePlotProps) => {
 
   return (
     <>
-      <PlotWrapper compact={compact}>
+      <PlotWrapper $compact={compact}>
         <Plot
           data={plotData}
           layout={layout}
