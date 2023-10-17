@@ -148,6 +148,12 @@ export default function OutcomePage(props: OutcomePageProps) {
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
+              // Hacky solution to support different sub node titles depending on level
+              subNodesTitle={
+                index === 0
+                  ? t('outcome-sub-nodes')
+                  : t('outcome-sub-nodes-secondary')
+              }
               nodeMap={allNodes}
               rootNode={node}
               startYear={yearRange[0]}

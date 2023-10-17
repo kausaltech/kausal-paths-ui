@@ -12,5 +12,7 @@
   "actions-count": "{{ count }} Massnahmenpakete",
   "actions-as-comparison": "Vergleich Auswirkung",
   "active-actions": "{{count}} aktive Massnahmenpakete",
-  "watch-action-list-title": "Massnahmen"
+  "watch-action-list-title": "Massnahmen",
+  "outcome-sub-nodes": "Bereiche",
+  "outcome-sub-nodes-secondary": "Emissionsquellen"
 }

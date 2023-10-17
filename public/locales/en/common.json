@@ -85,5 +85,7 @@
   "show-calculation": "Show calculation",
   "sort-ascending": "Sort Ascending",
   "sort-descending": "Sort Descending",
-  "skip-to-main-content": "Skip to main content"
+  "skip-to-main-content": "Skip to main content",
+  "outcome-sub-nodes": "Subsectors",
+  "outcome-sub-nodes-secondary": "Subsectors"
 }
