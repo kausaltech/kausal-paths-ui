@@ -17,8 +17,8 @@ const ActionTabs = styled.div`
 `;
 
 const ActionTab = styled.button<{
-  $isactive: boolean;
-  $isenabled: boolean;
+  $isActive: boolean;
+  $isEnabled: boolean;
 }>`
   display: inline-flex;
   align-items: flex-start;
@@ -28,18 +28,18 @@ const ActionTab = styled.button<{
   border: 1px solid ${(props) => props.theme.graphColors.grey020};
   border-top: 1px solid
     ${(props) =>
-      props.$isactive
+      props.$isActive
         ? props.theme.graphColors.blue070
         : props.theme.graphColors.grey020};
   border-bottom: 1px solid
     ${(props) =>
-      props.$isactive
+      props.$isActive
         ? props.theme.graphColors.grey000
         : props.theme.graphColors.grey010};
   padding: 0.75rem 0.75rem 1.25rem 0.75rem;
   text-align: left;
-  background-color: ${({ theme, $isactive }) =>
-    $isactive ? theme.cardBackground.primary : theme.cardBackground.secondary};
+  background-color: ${({ theme, $isActive }) =>
+    $isActive ? theme.cardBackground.primary : theme.cardBackground.secondary};
 
   &:last-child {
     margin-right: 0;
@@ -206,8 +206,8 @@ const SubActions = (props: SubActionsProps) => {
               tabIndex={action.id === activeTab ? 0 : -1}
               key={action.id}
               onClick={() => handleClick(action.id)}
-              $isactive={action.id === activeTab}
-              $isenabled={action.isEnabled}
+              $isActive={action.id === activeTab}
+              $isEnabled={action.isEnabled}
             >
               <TabTitle>
                 <div>{action.name}</div>
