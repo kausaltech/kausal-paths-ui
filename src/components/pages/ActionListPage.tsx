@@ -377,6 +377,7 @@ function ActionListPage(props: ActionListPageProps) {
                         outline
                         onClick={(e) => setAscending(true)}
                         active={ascending === true}
+                        aria-label={t('sort-ascending')}
                       >
                         <Icon
                           name="arrowUpWideShort"
@@ -389,6 +390,7 @@ function ActionListPage(props: ActionListPageProps) {
                         outline
                         onClick={(e) => setAscending(false)}
                         active={ascending === false}
+                        aria-label={t('sort-descending')}
                       >
                         <Icon
                           name="arrowDownShortWide"
@@ -431,7 +433,7 @@ function ActionListPage(props: ActionListPageProps) {
                 role="tab"
                 tabIndex={0}
                 aria-selected={listType === 'mac'}
-                aria-controls="list-view"
+                aria-controls="efficiency-view"
                 id="list-tab"
               >
                 <Icon name="chartColumn" /> {t('actions-as-efficiency')}
@@ -445,7 +447,7 @@ function ActionListPage(props: ActionListPageProps) {
                 role="tab"
                 tabIndex={0}
                 aria-selected={listType === 'comparison'}
-                aria-controls="list-view"
+                aria-controls="comparison-view"
                 id="list-tab"
               >
                 <Icon name="chartColumn" /> {t('actions-as-comparison')}
@@ -459,6 +461,7 @@ function ActionListPage(props: ActionListPageProps) {
           <Col>
             {listType === 'list' && (
               <ActionsList
+                id="list-view"
                 actions={usableActions}
                 displayType="displayTypeYearly"
                 yearRange={yearRange}
@@ -469,6 +472,7 @@ function ActionListPage(props: ActionListPageProps) {
             )}
             {listType === 'mac' && (
               <ActionsMac
+                id="efficiency-view"
                 actions={usableActions}
                 actionEfficiencyPairs={
                   data.actionEfficiencyPairs[activeEfficiency]
@@ -482,8 +486,8 @@ function ActionListPage(props: ActionListPageProps) {
             )}
             {listType === 'comparison' && (
               <ActionsComparison
+                id="comparison-view"
                 actions={usableActions}
-                t={t}
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy}
                 sortAscending={ascending}

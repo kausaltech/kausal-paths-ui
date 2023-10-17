@@ -27,6 +27,7 @@ const ActionListCategory = styled.div`
 `;
 
 type ActionsListProps = {
+  id?: string;
   actions: ActionWithEfficiency[];
   displayType: 'displayTypeYearly';
   yearRange: [number, number];
@@ -35,10 +36,15 @@ type ActionsListProps = {
   refetching: boolean;
 };
 
-const ActionsList = (props: ActionsListProps) => {
-  const { actions, displayType, yearRange, sortBy, sortAscending, refetching } =
-    props;
-
+const ActionsList = ({
+  id,
+  actions,
+  displayType,
+  yearRange,
+  sortBy,
+  sortAscending,
+  refetching,
+}: ActionsListProps) => {
   // possible sort: default, impact, cumulativeImpact, cumulativeCost, cumulativeEfficiency
 
   //console.log("action list", actions);
@@ -69,7 +75,7 @@ const ActionsList = (props: ActionsListProps) => {
 
   // console.log("action groups", actionGroups);
   return (
-    <div>
+    <div id={id}>
       {actionGroups?.map((group) => (
         <div key={group}>
           <ActionListCategory>

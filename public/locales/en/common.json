@@ -83,5 +83,7 @@
   "watch-action-list-title": "How do we make this happen?",
   "hide-calculation": "Hide calculation",
   "show-calculation": "Show calculation",
+  "sort-ascending": "Sort Ascending",
+  "sort-descending": "Sort Descending",
   "skip-to-main-content": "Skip to main content"
 }
