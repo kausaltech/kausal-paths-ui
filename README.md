@@ -1,37 +1,38 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Requirements
-
-- Node 18
-- yarn v3
-
 ## Getting Started
 
 ### Initial setup
 
-1. Set the yarn version
+1. Install nvm if you don't have it yet.
+2. Activate the right node version
 
    ```bash
-   yarn set version 3.2.4
+   nvm use
    ```
 
-2. To get Kausal themes from the private registry when installing dependencies, create a `.yarnrc.yml` file with the following contents. Ask a teammate for the value of `npmAuthIdent`.
+3. Make sure the npm version is controlled with corepack:
 
-   ```yml
-   npmScopes:
-     kausal:
-       npmAlwaysAuth: true
-       npmAuthIdent: <SECRET>
-       npmRegistryServer: 'https://npm.kausal.tech'
-   ```
+```bash
+corepack enable npm
+```
 
-3. Configure yarn to install dependencies as regular `node_modules`
+3. If you need access to the Kausal private themes, login to https://npm.kausal.tech
+   using your Google credentials and copy-paste the line with `npm config set ...` from
+   the settings dialog. Ensure the `@kausal` scope is associated with that registry by
+   running:
 
-   ```
-   yarn config set nodeLinker 'node-modules'
-   ```
+```bash
+echo '@kausal:registry=https://npm.kausal.tech/' >> ~/.npmrc
+```
 
-4. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+4. Install dependencies:
+
+```bash
+npm i
+```
+
+5. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
 
    ```
    DEFAULT_GRAPHQL_API_URL=
@@ -39,23 +40,17 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ### Running the local dev server
 
-First, install the Node packages:
+Start the development server with:
 
 ```bash
-yarn install
-```
-
-Then you can start the development server:
-
-```bash
-yarn dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Development
 
-If you want to run the UI against your own backend, configure it in `.env.local`:
+If you want to run the UI against your own backend, configure it in `.env`:
 
 ```
 DEFAULT_GRAPHQL_API_URL=http://localhost:8000/v1/graphql/
