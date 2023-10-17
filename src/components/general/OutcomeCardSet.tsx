@@ -201,21 +201,21 @@ type OutcomeCardSetProps = {
   activeNodeId: string | undefined;
   lastActiveNodeId: string | undefined;
   setLastActiveNodeId: (s: string) => void;
+  subNodesTitle: string;
 };
 
-const OutcomeCardSet = (props: OutcomeCardSetProps) => {
-  const {
-    nodeMap,
-    rootNode,
-    parentColor,
-    startYear,
-    endYear,
-    activeScenario,
-    activeNodeId,
-    lastActiveNodeId,
-    setLastActiveNodeId,
-  } = props;
-
+const OutcomeCardSet = ({
+  nodeMap,
+  rootNode,
+  parentColor,
+  startYear,
+  endYear,
+  activeScenario,
+  activeNodeId,
+  lastActiveNodeId,
+  setLastActiveNodeId,
+  subNodesTitle,
+}: OutcomeCardSetProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
   const { scrollTo } = useScrollTo(config.molasses);
   const { cardNodes, subNodeMap } = useMemo(() => {
@@ -319,7 +319,7 @@ const OutcomeCardSet = (props: OutcomeCardSetProps) => {
         )}
         {cardNodes.length > 0 && (
           <SubNodes>
-            <BarHeader>Subsectors</BarHeader>
+            <BarHeader>{subNodesTitle}</BarHeader>
             <CardDeck>
               {cardNodes.map((node, indx) => (
                 <OutcomeCard

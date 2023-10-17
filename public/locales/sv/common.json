@@ -73,5 +73,7 @@
   "active-actions": "{{count}} aktiva åtgärder",
   "sort-ascending": "Sortera stigande",
   "sort-descending": "Sortera fallande",
-  "skip-to-main-content": "Hoppa till huvudinnehållet"
+  "skip-to-main-content": "Hoppa till huvudinnehållet",
+  "outcome-sub-nodes": "Delbranscher",
+  "outcome-sub-nodes-secondary": "Delbranscher"
 }

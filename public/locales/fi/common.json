@@ -74,5 +74,7 @@
   "active-actions": "{{count}} aktiivista toimenpidettä",
   "sort-ascending": "Lajittele nousevassa järjestyksessä",
   "sort-descending": "Lajittele laskevassa järjestyksessä",
-  "skip-to-main-content": "Siirry pääsisältöön"
+  "skip-to-main-content": "Siirry pääsisältöön",
+  "outcome-sub-nodes": "Alasektorit",
+  "outcome-sub-nodes-secondary": "Alasektorit"
 }
