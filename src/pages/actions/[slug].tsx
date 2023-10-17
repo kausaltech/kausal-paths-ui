@@ -42,6 +42,25 @@ const HeaderCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
+const Breadcrumb = styled.nav`
+  margin-bottom: ${({ theme }) => theme.spaces.s050};
+  font-weight: ${({ theme }) => theme.fontWeightBold};
+  ol {
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    display: inline-block;
+    color: ${(props) => props.theme.themeColors.dark};
+
+    &::after {
+      content: '/';
+      margin: 0 0.25rem;
+    }
+  }
+`;
+
 const ActionDescription = styled.div`
   max-width: ${({ theme }) => theme.breakpointSm};
 `;
@@ -73,14 +92,16 @@ const ActionPlotCard = styled.div`
   background-color: ${({ theme }) => theme.cardBackground.secondary};
 `;
 
-const ActionGraphHeader = styled.h4``;
+const ActionGraphHeader = styled.h2`
+  font-size: ${({ theme }) => theme.fontSizeLg};
+`;
 
 const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
     margin-bottom: 2rem;
-    font-size: 1.5rem;
+    font-size: ${({ theme }) => theme.fontSizeXl};
     color: ${(props) => props.theme.themeColors.dark};
   }
 `;
@@ -200,13 +221,19 @@ export default function ActionPage() {
         <Container fluid="lg">
           <PageHeader>
             <HeaderCard>
-              <h1>
-                <ActionListLink>
-                  <a>{t('actions')}</a>
-                </ActionListLink>{' '}
-                /{action.group && ` ${action.group.name} /`}
-                {` ${action.name}`}
-              </h1>
+              <Breadcrumb aria-label="breadcrumb">
+                <ol className="breadcrumb">
+                  <li className="breadcrumb-item">
+                    <ActionListLink>
+                      <a>{t('actions')}</a>
+                    </ActionListLink>
+                  </li>
+                  {action.group && (
+                    <li className="breadcrumb-item">{action.group.name}</li>
+                  )}
+                </ol>
+              </Breadcrumb>
+              <h1>{` ${action.name}`}</h1>
               <div>
                 {action.decisionLevel === 'NATION' && (
                   <ActionCategory>

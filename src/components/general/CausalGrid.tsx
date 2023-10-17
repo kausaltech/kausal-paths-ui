@@ -224,6 +224,9 @@ const CausalGrid = (props: CausalGridProps) => {
       parentMap.get(node.id)!.find((inputNode) => inputNode.id === action.id)
   );
 
+  // We use this to filter out outputnodes that are not visible when drawing the arrows
+  const visibleNodesIds = causalGridNodes.flat().map((node) => node.id);
+
   return (
     <ArcherContainer
       strokeColor={theme.graphColors.grey060}
@@ -255,7 +258,11 @@ const CausalGrid = (props: CausalGridProps) => {
                 ]
           }
         >
-          <ActionPoint onClick={() => setGridOpen(!gridOpen)}>
+          <ActionPoint
+            onClick={() => setGridOpen(!gridOpen)}
+            aria-expanded={gridOpen}
+            aria-controls="causal-grid"
+          >
             {gridOpen ? (
               <>
                 <Icon name="dash-circle" height="1.5rem" width="1.5rem" />
@@ -269,51 +276,53 @@ const CausalGrid = (props: CausalGridProps) => {
             )}
           </ActionPoint>
         </ArcherElement>
-        {causalGridNodes?.map((row, rowIndex) => (
-          <GridRowWrapper
-            onScroll={() => gridCanvas.current.refreshScreen()}
-            key={rowIndex}
-          >
-            <GridRow>
-              {row.map((col, colindex) => (
-                <GridCol key={col.id}>
-                  <ArcherElement
-                    id={col.id}
-                    relations={col.outputNodes.map((node) => ({
-                      targetId: node.id,
-                      targetAnchor: 'top',
-                      sourceAnchor: 'bottom',
-                      style: {
-                        style: { strokeDasharray: '5,5' },
-                      },
-                    }))}
-                  >
-                    <div>
-                      <CausalCard
-                        node={col}
-                        compact={false}
-                        startYear={yearRange[0]}
-                        endYear={yearRange[1]}
-                        noEffect={actionIsOff}
-                      />
-                    </div>
-                  </ArcherElement>
-                </GridCol>
-              ))}
-            </GridRow>
-          </GridRowWrapper>
-        ))}
+        <div id="causal-grid" aria-hidden={!gridOpen}>
+          {causalGridNodes?.map((row, rowIndex) => (
+            <GridRowWrapper
+              onScroll={() => gridCanvas.current.refreshScreen()}
+              key={rowIndex}
+            >
+              <GridRow>
+                {row.map((col, colindex) => (
+                  <GridCol key={col.id}>
+                    <ArcherElement
+                      id={col.id}
+                      relations={col.outputNodes
+                        .filter((outnode) =>
+                          visibleNodesIds.includes(outnode.id)
+                        )
+                        .map((node) => ({
+                          targetId: node.id,
+                          targetAnchor: 'top',
+                          sourceAnchor: 'bottom',
+                          style: {
+                            style: { strokeDasharray: '5,5' },
+                          },
+                        }))}
+                    >
+                      <div>
+                        <CausalCard
+                          node={col}
+                          compact={false}
+                          startYear={yearRange[0]}
+                          endYear={yearRange[1]}
+                          noEffect={actionIsOff}
+                        />
+                      </div>
+                    </ArcherElement>
+                  </GridCol>
+                ))}
+              </GridRow>
+            </GridRowWrapper>
+          ))}
+        </div>
       </GridSection>
       <GoalSection>
         <Container fluid="lg">
           <ArcherElement id={lastNode.id}>
             <div>
               <GoalCard>
-                <h2>
-                  <NodeLink node={lastNode}>
-                    <a>{lastNode.name}</a>
-                  </NodeLink>
-                </h2>
+                <h2>{lastNode.name}</h2>
                 {lastNode.shortDescription && (
                   <ActionDescription
                     dangerouslySetInnerHTML={{
@@ -321,6 +330,11 @@ const CausalGrid = (props: CausalGridProps) => {
                     }}
                   />
                 )}
+                <NodeLink node={lastNode}>
+                  <a>
+                    {t('details')} <Icon name="arrow-right" />
+                  </a>
+                </NodeLink>
                 <ImpactFigures>
                   <ImpactDisplay
                     effectCumulative={cumulativeImpact || undefined}

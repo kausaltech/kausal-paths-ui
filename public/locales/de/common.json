@@ -67,6 +67,7 @@
   "time-series": "Zeitreihe",
   "details": "Details",
   "table": "Tabelle",
+  "nav-menu-open": " Navigation öffnen",
   "nav-menu-close": " Navigation schließen",
   "target-climate": "Klimaschutzziel",
   "active-actions": "{{count}} aktive Maßnahmen",

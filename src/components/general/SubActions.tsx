@@ -6,6 +6,10 @@ import WatchActionCard from './WatchActionCard';
 import { SubActionCardFragment } from 'common/__generated__/graphql';
 import { useTranslation } from 'common/i18n';
 
+const SubactionsHeader = styled.h2`
+  font-size: ${({ theme }) => theme.fontSizeLg};
+`;
+
 const ActionTabs = styled.div`
   display: flex;
   max-width: 100%;
@@ -13,8 +17,8 @@ const ActionTabs = styled.div`
 `;
 
 const ActionTab = styled.button<{
-  isActive: boolean;
-  isEnabled: boolean;
+  $isActive: boolean;
+  $isEnabled: boolean;
 }>`
   display: inline-flex;
   align-items: flex-start;
@@ -24,18 +28,18 @@ const ActionTab = styled.button<{
   border: 1px solid ${(props) => props.theme.graphColors.grey020};
   border-top: 1px solid
     ${(props) =>
-      props.isActive
+      props.$isActive
         ? props.theme.graphColors.blue070
         : props.theme.graphColors.grey020};
   border-bottom: 1px solid
     ${(props) =>
-      props.isActive
+      props.$isActive
         ? props.theme.graphColors.grey000
         : props.theme.graphColors.grey010};
   padding: 0.75rem 0.75rem 1.25rem 0.75rem;
   text-align: left;
-  background-color: ${({ theme, isActive }) =>
-    isActive ? theme.cardBackground.primary : theme.cardBackground.secondary};
+  background-color: ${({ theme, $isActive }) =>
+    $isActive ? theme.cardBackground.primary : theme.cardBackground.secondary};
 
   &:last-child {
     margin-right: 0;
@@ -59,8 +63,9 @@ const DisabledActionTab = styled.button`
   color: ${({ theme }) => theme.textColor.primary};
 `;
 
-const TabTitle = styled.div`
+const TabTitle = styled.h3`
   display: flex;
+  font-size: ${({ theme }) => theme.fontSizeBase};
   font-weight: 700;
   line-height: 1.2;
 
@@ -135,7 +140,12 @@ const ActionContent = (props: ActionContentProps) => {
       : [];
 
   return (
-    <ActionContentCard>
+    <ActionContentCard
+      id={`action-content-${action.id}`}
+      role="tabpanel"
+      tabIndex={0}
+      aria-labelledby={`action-tab-${action.id}`}
+    >
       <ActionDescription>
         {action.shortDescription || action.description ? (
           <div
@@ -181,17 +191,23 @@ const SubActions = (props: SubActionsProps) => {
 
   return (
     <SubActionsContainer>
-      <h3>Ziele und Massnahmen</h3>
-      <ActionTabs>
+      {/* TODO: Get this data from the API */}
+      <SubactionsHeader id="subactions">Ziele und Massnahmen</SubactionsHeader>
+      <ActionTabs role="tablist" aria-labelledby="subactions">
         {actions.map((action: any) =>
           action.shortDescription ||
           action.description ||
           action.downstreamNodes.length > 0 ? (
             <ActionTab
+              role="tab"
+              aria-selected={action.id === activeTab}
+              aria-controls={`action-content-${action.id}`}
+              id={`action-tab-${action.id}`}
+              tabIndex={action.id === activeTab ? 0 : -1}
               key={action.id}
               onClick={() => handleClick(action.id)}
-              isActive={action.id === activeTab}
-              isEnabled={action.isEnabled}
+              $isActive={action.id === activeTab}
+              $isEnabled={action.isEnabled}
             >
               <TabTitle>
                 <div>{action.name}</div>
