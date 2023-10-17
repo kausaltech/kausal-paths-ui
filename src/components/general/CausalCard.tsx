@@ -182,8 +182,6 @@ const CausalCard = (props: CausalCardProps) => {
   const { targetYearGoal } = node;
   const { maxYear } = useSite();
   const { t } = useTranslation();
-
-  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const impactAtTargetYear = getImpactMetricValue(node, endYear);
   // TODO: use isACtivity when available, for now cumulate impact on emissions
