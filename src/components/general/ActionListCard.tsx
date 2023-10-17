@@ -8,6 +8,7 @@ import ImpactDisplay from 'components/general/ImpactDisplay';
 import Badge from 'components/common/Badge';
 import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
 import { ActionWithEfficiency } from 'components/pages/ActionListPage';
+import Icon from 'components/common/icon';
 
 const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
   position: relative;
@@ -24,7 +25,8 @@ const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
         ? props.color
         : props.theme.graphColors.grey090};
 
-  h5 {
+  h5,
+  a {
     color: ${({ $isActive, theme }) =>
       $isActive ? theme.textColor.primary : theme.textColor.tertiary};
   }
@@ -78,6 +80,28 @@ const GroupTag = styled.div<{ color?: string }>`
   color: ${(props) => props.theme.themeColors.dark};
 `;
 
+const StyledIconWrapper = styled.div`
+  font-size: 0;
+  transition: transform 0.1s;
+`;
+
+const StyledActionLink = styled.a`
+  display: flex;
+  gap: ${({ theme }) => theme.spaces.s050};
+  align-items: center;
+  justify-content: space-between;
+
+  &:hover {
+    ${StyledIconWrapper} {
+      transform: translateX(4px);
+    }
+  }
+`;
+
+const StyledActionTitle = styled.h5`
+  margin-bottom: 0;
+`;
+
 type ActionListCardProps = {
   action: ActionWithEfficiency;
   displayType: string;
@@ -89,7 +113,6 @@ const ActionListCard = (props: ActionListCardProps) => {
   const { action, displayType, displayYears, refetching } = props;
   const { t } = useTranslation();
 
-  console.log('ActionListCard', action);
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
   const actionEffectYearly =
@@ -137,15 +160,18 @@ const ActionListCard = (props: ActionListCardProps) => {
       )}
 
       <CardHeader>
+        {action.group && (
+          <GroupTag color={action.group.color ?? undefined}>
+            {action.group.name}
+          </GroupTag>
+        )}
         <ActionLink action={action}>
-          <a>
-            {action.group && (
-              <GroupTag color={action.group.color ?? undefined}>
-                {action.group.name}
-              </GroupTag>
-            )}
-            <h5>{action.name}</h5>
-          </a>
+          <StyledActionLink>
+            <StyledActionTitle>{action.name}</StyledActionTitle>
+            <StyledIconWrapper>
+              <Icon width="20px" height="20px" name="arrowRight" />
+            </StyledIconWrapper>
+          </StyledActionLink>
         </ActionLink>
         <ActionCategory>
           {action.decisionLevel === 'NATION' && (
