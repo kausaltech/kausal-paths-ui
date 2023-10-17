@@ -9,18 +9,37 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
   [SubKey in K]: Maybe<T[SubKey]>;
 };
+export type MakeEmpty<
+  T extends { [key: string]: unknown },
+  K extends keyof T,
+> = { [_ in K]?: never };
+export type Incremental<T> =
+  | T
+  | {
+      [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never;
+    };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  DateTime: any;
-  JSONString: any;
-  PositiveInt: any;
-  UUID: any;
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
+  DateTime: { input: any; output: any };
+  JSONString: { input: any; output: any };
+  PositiveInt: { input: any; output: any };
+  UUID: { input: any; output: any };
 };
+
+/** An enumeration. */
+export enum ActionSortOrder {
+  /** Cumulative impact */
+  CumImpact = 'CUM_IMPACT',
+  /** Impact */
+  Impact = 'IMPACT',
+  /** Standard */
+  Standard = 'STANDARD',
+}
 
 /** An enumeration. */
 export enum DecisionLevel {
@@ -46,9 +65,449 @@ export type AllMetricFieldsFragment = {
   > | null;
 } & { __typename?: 'ForecastMetricType' };
 
+export type SetGlobalParameterFromActionSummaryMutationVariables = Exact<{
+  parameterId: Scalars['ID']['input'];
+  boolValue?: InputMaybe<Scalars['Boolean']['input']>;
+  numberValue?: InputMaybe<Scalars['Float']['input']>;
+  stringValue?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type SetGlobalParameterFromActionSummaryMutation = {
+  setParameter?:
+    | ({
+        ok?: boolean | null;
+        parameter?:
+          | ({
+              isCustomized: boolean;
+              isCustomizable: boolean;
+              boolValue?: boolean | null;
+              boolDefaultValue?: boolean | null;
+            } & { __typename?: 'BoolParameterType' })
+          | ({ isCustomized: boolean; isCustomizable: boolean } & {
+              __typename?:
+                | 'NumberParameterType'
+                | 'StringParameterType'
+                | 'UnknownParameterType';
+            })
+          | null;
+      } & { __typename?: 'SetParameterMutation' })
+    | null;
+} & { __typename?: 'Mutations' };
+
+export type SetGlobalParameterMutationVariables = Exact<{
+  parameterId: Scalars['ID']['input'];
+  boolValue?: InputMaybe<Scalars['Boolean']['input']>;
+  numberValue?: InputMaybe<Scalars['Float']['input']>;
+  stringValue?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type SetGlobalParameterMutation = {
+  setParameter?:
+    | ({
+        ok?: boolean | null;
+        parameter?:
+          | ({
+              isCustomized: boolean;
+              isCustomizable: boolean;
+              boolValue?: boolean | null;
+              boolDefaultValue?: boolean | null;
+            } & { __typename?: 'BoolParameterType' })
+          | ({ isCustomized: boolean; isCustomizable: boolean } & {
+              __typename?:
+                | 'NumberParameterType'
+                | 'StringParameterType'
+                | 'UnknownParameterType';
+            })
+          | null;
+      } & { __typename?: 'SetParameterMutation' })
+    | null;
+} & { __typename?: 'Mutations' };
+
+export type SetNormalizationMutationVariables = Exact<{
+  id?: InputMaybe<Scalars['ID']['input']>;
+}>;
+
+export type SetNormalizationMutation = {
+  setNormalizer?:
+    | ({ ok: boolean } & { __typename?: 'SetNormalizerMutation' })
+    | null;
+} & { __typename?: 'Mutations' };
+
+export type GetInstanceGoalOutcomeQueryVariables = Exact<{
+  goal: Scalars['ID']['input'];
+}>;
+
+export type GetInstanceGoalOutcomeQuery = {
+  instance: {
+    id: string;
+    goals: Array<
+      {
+        values: Array<
+          {
+            year: number;
+            goal?: number | null;
+            actual?: number | null;
+            isForecast: boolean;
+            isInterpolated?: boolean | null;
+          } & { __typename?: 'InstanceYearlyGoalType' }
+        >;
+        unit: { htmlShort: string } & { __typename?: 'UnitType' };
+      } & { __typename?: 'InstanceGoalEntry' }
+    >;
+  } & { __typename?: 'InstanceType' };
+} & { __typename?: 'Query' };
+
+export type SetNormalizationFromWidgetMutationVariables = Exact<{
+  id?: InputMaybe<Scalars['ID']['input']>;
+}>;
+
+export type SetNormalizationFromWidgetMutation = {
+  setNormalizer?:
+    | ({ ok: boolean } & { __typename?: 'SetNormalizerMutation' })
+    | null;
+} & { __typename?: 'Mutations' };
+
+export type SetParameterMutationVariables = Exact<{
+  parameterId: Scalars['ID']['input'];
+  boolValue?: InputMaybe<Scalars['Boolean']['input']>;
+  numberValue?: InputMaybe<Scalars['Float']['input']>;
+  stringValue?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type SetParameterMutation = {
+  setParameter?:
+    | ({
+        ok?: boolean | null;
+        parameter?:
+          | ({
+              isCustomized: boolean;
+              boolValue?: boolean | null;
+              boolDefaultValue?: boolean | null;
+            } & { __typename?: 'BoolParameterType' })
+          | ({ isCustomized: boolean } & {
+              __typename?:
+                | 'NumberParameterType'
+                | 'StringParameterType'
+                | 'UnknownParameterType';
+            })
+          | null;
+      } & { __typename?: 'SetParameterMutation' })
+    | null;
+} & { __typename?: 'Mutations' };
+
+export type ActivateScenarioMutationVariables = Exact<{
+  scenarioId: Scalars['ID']['input'];
+}>;
+
+export type ActivateScenarioMutation = {
+  activateScenario?:
+    | ({
+        ok?: boolean | null;
+        activeScenario?:
+          | ({ id?: string | null; name?: string | null } & {
+              __typename?: 'ScenarioType';
+            })
+          | null;
+      } & { __typename?: 'ActivateScenarioMutation' })
+    | null;
+} & { __typename?: 'Mutations' };
+
+export type DimensionalPlotFragment = {
+  id: string;
+  sources: Array<string>;
+  unit: { htmlLong: string } & { __typename?: 'UnitType' };
+  nodes: Array<
+    { id: string; label: string; color?: string | null } & {
+      __typename?: 'FlowNodeType';
+    }
+  >;
+  links: Array<
+    {
+      year: number;
+      sources: Array<string>;
+      targets: Array<string>;
+      values: Array<number | null>;
+      absoluteSourceValues: Array<number>;
+    } & { __typename?: 'FlowLinksType' }
+  >;
+} & { __typename?: 'DimensionalFlowType' };
+
+export type DimensionalMetricFragment = {
+  id: string;
+  name: string;
+  stackable: boolean;
+  forecastFrom?: number | null;
+  years: Array<number>;
+  values: Array<number | null>;
+  dimensions: Array<
+    {
+      id: string;
+      label: string;
+      originalId?: string | null;
+      categories: Array<
+        {
+          id: string;
+          originalId?: string | null;
+          label: string;
+          color?: string | null;
+          order?: number | null;
+          group?: string | null;
+        } & { __typename?: 'MetricDimensionCategoryType' }
+      >;
+      groups: Array<
+        {
+          id: string;
+          originalId: string;
+          label: string;
+          color?: string | null;
+          order?: number | null;
+        } & { __typename?: 'MetricDimensionCategoryGroupType' }
+      >;
+    } & { __typename?: 'MetricDimensionType' }
+  >;
+  goals: Array<
+    {
+      categories: Array<string>;
+      groups: Array<string>;
+      values: Array<
+        { year: number; value: number; isInterpolated: boolean } & {
+          __typename?: 'MetricYearlyGoalType';
+        }
+      >;
+    } & { __typename?: 'DimensionalMetricGoalEntry' }
+  >;
+  unit: { htmlShort: string; short: string } & { __typename?: 'UnitType' };
+  normalizedBy?:
+    | ({ id: string; name: string } & { __typename?: 'Node' })
+    | null;
+} & { __typename?: 'DimensionalMetricType' };
+
+export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetCytoscapeNodesQuery = {
+  nodes: Array<
+    | ({
+        id: string;
+        name: string;
+        color?: string | null;
+        quantity?: string | null;
+        parentAction?: ({ id: string } & { __typename?: 'ActionNode' }) | null;
+        subactions: Array<{ id: string } & { __typename?: 'ActionNode' }>;
+        group?:
+          | ({ id: string; color?: string | null } & {
+              __typename?: 'ActionGroupType';
+            })
+          | null;
+        unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
+        inputNodes: Array<
+          { id: string } & { __typename?: 'ActionNode' | 'Node' }
+        >;
+        outputNodes: Array<
+          { id: string } & { __typename?: 'ActionNode' | 'Node' }
+        >;
+        metric?:
+          | ({
+              historicalValues: Array<
+                { year: number; value: number } & { __typename?: 'YearlyValue' }
+              >;
+            } & { __typename?: 'ForecastMetricType' })
+          | null;
+      } & { __typename?: 'ActionNode' })
+    | ({
+        id: string;
+        name: string;
+        color?: string | null;
+        quantity?: string | null;
+        unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
+        inputNodes: Array<
+          { id: string } & { __typename?: 'ActionNode' | 'Node' }
+        >;
+        outputNodes: Array<
+          { id: string } & { __typename?: 'ActionNode' | 'Node' }
+        >;
+        metric?:
+          | ({
+              historicalValues: Array<
+                { year: number; value: number } & { __typename?: 'YearlyValue' }
+              >;
+            } & { __typename?: 'ForecastMetricType' })
+          | null;
+      } & { __typename?: 'Node' })
+  >;
+} & { __typename?: 'Query' };
+
+export type GetNodePageQueryVariables = Exact<{
+  node: Scalars['ID']['input'];
+}>;
+
+export type GetNodePageQuery = {
+  node?:
+    | ({
+        id: string;
+        name: string;
+        shortDescription?: string | null;
+        description?: string | null;
+        color?: string | null;
+        targetYearGoal?: number | null;
+        quantity?: string | null;
+        isAction: boolean;
+        unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
+        metric?:
+          | ({
+              name?: string | null;
+              id?: string | null;
+              unit?:
+                | ({ htmlShort: string } & { __typename?: 'UnitType' })
+                | null;
+              historicalValues: Array<
+                { year: number; value: number } & { __typename?: 'YearlyValue' }
+              >;
+              forecastValues: Array<
+                { value: number; year: number } & { __typename?: 'YearlyValue' }
+              >;
+              baselineForecastValues?: Array<
+                { year: number; value: number } & { __typename?: 'YearlyValue' }
+              > | null;
+            } & { __typename?: 'ForecastMetricType' })
+          | null;
+        inputNodes: Array<
+          {
+            id: string;
+            name: string;
+            shortDescription?: string | null;
+            color?: string | null;
+            quantity?: string | null;
+            isAction: boolean;
+            unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
+          } & { __typename?: 'ActionNode' | 'Node' }
+        >;
+        outputNodes: Array<
+          {
+            id: string;
+            name: string;
+            shortDescription?: string | null;
+            color?: string | null;
+            quantity?: string | null;
+            isAction: boolean;
+            unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
+          } & { __typename?: 'ActionNode' | 'Node' }
+        >;
+        metricDim?:
+          | ({
+              id: string;
+              name: string;
+              stackable: boolean;
+              forecastFrom?: number | null;
+              years: Array<number>;
+              values: Array<number | null>;
+              dimensions: Array<
+                {
+                  id: string;
+                  label: string;
+                  originalId?: string | null;
+                  categories: Array<
+                    {
+                      id: string;
+                      originalId?: string | null;
+                      label: string;
+                      color?: string | null;
+                      order?: number | null;
+                      group?: string | null;
+                    } & { __typename?: 'MetricDimensionCategoryType' }
+                  >;
+                  groups: Array<
+                    {
+                      id: string;
+                      originalId: string;
+                      label: string;
+                      color?: string | null;
+                      order?: number | null;
+                    } & { __typename?: 'MetricDimensionCategoryGroupType' }
+                  >;
+                } & { __typename?: 'MetricDimensionType' }
+              >;
+              goals: Array<
+                {
+                  categories: Array<string>;
+                  groups: Array<string>;
+                  values: Array<
+                    { year: number; value: number; isInterpolated: boolean } & {
+                      __typename?: 'MetricYearlyGoalType';
+                    }
+                  >;
+                } & { __typename?: 'DimensionalMetricGoalEntry' }
+              >;
+              unit: { htmlShort: string; short: string } & {
+                __typename?: 'UnitType';
+              };
+              normalizedBy?:
+                | ({ id: string; name: string } & { __typename?: 'Node' })
+                | null;
+            } & { __typename?: 'DimensionalMetricType' })
+          | null;
+      } & { __typename?: 'ActionNode' | 'Node' })
+    | null;
+} & { __typename?: 'Query' };
+
+export type DimensionalNodeMetricFragment = {
+  metricDim?:
+    | ({
+        id: string;
+        name: string;
+        stackable: boolean;
+        forecastFrom?: number | null;
+        years: Array<number>;
+        values: Array<number | null>;
+        dimensions: Array<
+          {
+            id: string;
+            label: string;
+            originalId?: string | null;
+            categories: Array<
+              {
+                id: string;
+                originalId?: string | null;
+                label: string;
+                color?: string | null;
+                order?: number | null;
+                group?: string | null;
+              } & { __typename?: 'MetricDimensionCategoryType' }
+            >;
+            groups: Array<
+              {
+                id: string;
+                originalId: string;
+                label: string;
+                color?: string | null;
+                order?: number | null;
+              } & { __typename?: 'MetricDimensionCategoryGroupType' }
+            >;
+          } & { __typename?: 'MetricDimensionType' }
+        >;
+        goals: Array<
+          {
+            categories: Array<string>;
+            groups: Array<string>;
+            values: Array<
+              { year: number; value: number; isInterpolated: boolean } & {
+                __typename?: 'MetricYearlyGoalType';
+              }
+            >;
+          } & { __typename?: 'DimensionalMetricGoalEntry' }
+        >;
+        unit: { htmlShort: string; short: string } & {
+          __typename?: 'UnitType';
+        };
+        normalizedBy?:
+          | ({ id: string; name: string } & { __typename?: 'Node' })
+          | null;
+      } & { __typename?: 'DimensionalMetricType' })
+    | null;
+} & { __typename?: 'ActionNode' | 'Node' };
+
 export type GetActionContentQueryVariables = Exact<{
-  node: Scalars['ID'];
-  goal?: InputMaybe<Scalars['ID']>;
+  node: Scalars['ID']['input'];
+  goal?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 export type GetActionContentQuery = {
@@ -96,24 +555,6 @@ export type GetActionContentQuery = {
                     __typename?: 'ActionGroupType';
                   })
                 | null;
-              subactions: Array<
-                {
-                  id: string;
-                  name: string;
-                  description?: string | null;
-                  shortDescription?: string | null;
-                  isEnabled: boolean;
-                  parameters: Array<
-                    { id?: string | null } & {
-                      __typename?:
-                        | 'BoolParameterType'
-                        | 'NumberParameterType'
-                        | 'StringParameterType'
-                        | 'UnknownParameterType';
-                    }
-                  >;
-                } & { __typename?: 'ActionNode' }
-              >;
               unit?:
                 | ({ htmlShort: string } & { __typename?: 'UnitType' })
                 | null;
@@ -390,11 +831,6 @@ export type GetActionContentQuery = {
                 | null;
             } & { __typename?: 'Node' })
         >;
-        group?:
-          | ({ id: string; name: string; color?: string | null } & {
-              __typename?: 'ActionGroupType';
-            })
-          | null;
         subactions: Array<
           {
             id: string;
@@ -411,8 +847,318 @@ export type GetActionContentQuery = {
                   | 'UnknownParameterType';
               }
             >;
+            downstreamNodes: Array<
+              | ({
+                  id: string;
+                  name: string;
+                  shortDescription?: string | null;
+                  color?: string | null;
+                  targetYearGoal?: number | null;
+                  quantity?: string | null;
+                  group?:
+                    | ({ id: string; name: string; color?: string | null } & {
+                        __typename?: 'ActionGroupType';
+                      })
+                    | null;
+                  unit?:
+                    | ({ htmlShort: string } & { __typename?: 'UnitType' })
+                    | null;
+                  inputNodes: Array<
+                    { id: string } & { __typename?: 'ActionNode' | 'Node' }
+                  >;
+                  outputNodes: Array<
+                    { id: string } & { __typename?: 'ActionNode' | 'Node' }
+                  >;
+                  impactMetric?:
+                    | ({
+                        name?: string | null;
+                        id?: string | null;
+                        unit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                        historicalValues: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        forecastValues: Array<
+                          { value: number; year: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        baselineForecastValues?: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        > | null;
+                        yearlyCumulativeUnit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                      } & { __typename?: 'ForecastMetricType' })
+                    | null;
+                  metricDim?:
+                    | ({
+                        stackable: boolean;
+                        dimensions: Array<
+                          {
+                            id: string;
+                            categories: Array<
+                              { id: string } & {
+                                __typename?: 'MetricDimensionCategoryType';
+                              }
+                            >;
+                          } & { __typename?: 'MetricDimensionType' }
+                        >;
+                      } & { __typename?: 'DimensionalMetricType' })
+                    | null;
+                  parameters: Array<
+                    | ({
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        boolValue?: boolean | null;
+                        boolDefaultValue?: boolean | null;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'BoolParameterType' })
+                    | ({
+                        minValue?: number | null;
+                        maxValue?: number | null;
+                        step?: number | null;
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        numberValue?: number | null;
+                        numberDefaultValue?: number | null;
+                        unit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'NumberParameterType' })
+                    | ({
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        stringValue?: string | null;
+                        stringDefaultValue?: string | null;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'StringParameterType' })
+                    | ({
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'UnknownParameterType' })
+                  >;
+                  metric?:
+                    | ({
+                        name?: string | null;
+                        id?: string | null;
+                        unit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                        historicalValues: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        forecastValues: Array<
+                          { value: number; year: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        baselineForecastValues?: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        > | null;
+                      } & { __typename?: 'ForecastMetricType' })
+                    | null;
+                } & { __typename?: 'ActionNode' })
+              | ({
+                  id: string;
+                  name: string;
+                  shortDescription?: string | null;
+                  color?: string | null;
+                  targetYearGoal?: number | null;
+                  quantity?: string | null;
+                  unit?:
+                    | ({ htmlShort: string } & { __typename?: 'UnitType' })
+                    | null;
+                  inputNodes: Array<
+                    { id: string } & { __typename?: 'ActionNode' | 'Node' }
+                  >;
+                  outputNodes: Array<
+                    { id: string } & { __typename?: 'ActionNode' | 'Node' }
+                  >;
+                  impactMetric?:
+                    | ({
+                        name?: string | null;
+                        id?: string | null;
+                        unit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                        historicalValues: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        forecastValues: Array<
+                          { value: number; year: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        baselineForecastValues?: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        > | null;
+                        yearlyCumulativeUnit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                      } & { __typename?: 'ForecastMetricType' })
+                    | null;
+                  metricDim?:
+                    | ({
+                        stackable: boolean;
+                        dimensions: Array<
+                          {
+                            id: string;
+                            categories: Array<
+                              { id: string } & {
+                                __typename?: 'MetricDimensionCategoryType';
+                              }
+                            >;
+                          } & { __typename?: 'MetricDimensionType' }
+                        >;
+                      } & { __typename?: 'DimensionalMetricType' })
+                    | null;
+                  parameters: Array<
+                    | ({
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        boolValue?: boolean | null;
+                        boolDefaultValue?: boolean | null;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'BoolParameterType' })
+                    | ({
+                        minValue?: number | null;
+                        maxValue?: number | null;
+                        step?: number | null;
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        numberValue?: number | null;
+                        numberDefaultValue?: number | null;
+                        unit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'NumberParameterType' })
+                    | ({
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        stringValue?: string | null;
+                        stringDefaultValue?: string | null;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'StringParameterType' })
+                    | ({
+                        description?: string | null;
+                        id?: string | null;
+                        nodeRelativeId?: string | null;
+                        isCustomized: boolean;
+                        node?:
+                          | ({ id: string } & {
+                              __typename?: 'ActionNode' | 'Node';
+                            })
+                          | null;
+                      } & { __typename: 'UnknownParameterType' })
+                  >;
+                  metric?:
+                    | ({
+                        name?: string | null;
+                        id?: string | null;
+                        unit?:
+                          | ({ htmlShort: string } & {
+                              __typename?: 'UnitType';
+                            })
+                          | null;
+                        historicalValues: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        forecastValues: Array<
+                          { value: number; year: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        >;
+                        baselineForecastValues?: Array<
+                          { year: number; value: number } & {
+                            __typename?: 'YearlyValue';
+                          }
+                        > | null;
+                      } & { __typename?: 'ForecastMetricType' })
+                    | null;
+                } & { __typename?: 'Node' })
+            >;
           } & { __typename?: 'ActionNode' }
         >;
+        group?:
+          | ({ id: string; name: string; color?: string | null } & {
+              __typename?: 'ActionGroupType';
+            })
+          | null;
         unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
         inputNodes: Array<
           { id: string } & { __typename?: 'ActionNode' | 'Node' }
@@ -540,24 +1286,6 @@ type CausalGridNode_ActionNode_Fragment = {
         __typename?: 'ActionGroupType';
       })
     | null;
-  subactions: Array<
-    {
-      id: string;
-      name: string;
-      description?: string | null;
-      shortDescription?: string | null;
-      isEnabled: boolean;
-      parameters: Array<
-        { id?: string | null } & {
-          __typename?:
-            | 'BoolParameterType'
-            | 'NumberParameterType'
-            | 'StringParameterType'
-            | 'UnknownParameterType';
-        }
-      >;
-    } & { __typename?: 'ActionNode' }
-  >;
   unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
   inputNodes: Array<{ id: string } & { __typename?: 'ActionNode' | 'Node' }>;
   outputNodes: Array<{ id: string } & { __typename?: 'ActionNode' | 'Node' }>;
@@ -756,8 +1484,8 @@ export type CausalGridNodeFragment =
   | CausalGridNode_Node_Fragment;
 
 export type GetActionImpactsQueryVariables = Exact<{
-  impact1: Scalars['ID'];
-  impact2: Scalars['ID'];
+  impact1: Scalars['ID']['input'];
+  impact2: Scalars['ID']['input'];
 }>;
 
 export type GetActionImpactsQuery = {
@@ -806,7 +1534,7 @@ export type GetActionImpactsQuery = {
 } & { __typename?: 'Query' };
 
 export type GetActionListQueryVariables = Exact<{
-  goal?: InputMaybe<Scalars['ID']>;
+  goal?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 export type GetActionListQuery = {
@@ -1087,8 +1815,8 @@ export type OutcomeNodeFieldsFragment = {
 } & { __typename?: 'Node' };
 
 export type GetPageQueryVariables = Exact<{
-  path: Scalars['String'];
-  goal?: InputMaybe<Scalars['ID']>;
+  path: Scalars['String']['input'];
+  goal?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 export type GetPageQuery = {
@@ -1103,7 +1831,7 @@ export type GetPageQuery = {
         actionListLeadParagraph?: string | null;
       } & { __typename: 'ActionListPage' })
     | ({ id?: string | null; title: string } & {
-        __typename: 'NodePage' | 'Page';
+        __typename: 'InstanceRootPage' | 'Page';
       })
     | ({
         leadTitle: string;
@@ -1418,6 +2146,46 @@ export type GetPageQuery = {
             | null;
         } & { __typename?: 'Node' };
       } & { __typename: 'OutcomePage' })
+    | ({
+        id?: string | null;
+        title: string;
+        body?: Array<
+          | ({ id?: string | null } & {
+              __typename:
+                | 'BlockQuoteBlock'
+                | 'BooleanBlock'
+                | 'CharBlock'
+                | 'ChoiceBlock'
+                | 'DateBlock'
+                | 'DateTimeBlock'
+                | 'DecimalBlock'
+                | 'DocumentChooserBlock'
+                | 'EmailBlock'
+                | 'EmbedBlock'
+                | 'FloatBlock'
+                | 'ImageChooserBlock'
+                | 'IntegerBlock'
+                | 'ListBlock'
+                | 'PageChooserBlock'
+                | 'RawHTMLBlock'
+                | 'RegexBlock'
+                | 'StaticBlock'
+                | 'StreamBlock'
+                | 'StreamFieldBlock';
+            })
+          | ({ id?: string | null } & {
+              __typename:
+                | 'StructBlock'
+                | 'TextBlock'
+                | 'TimeBlock'
+                | 'URLBlock';
+            })
+          | ({ value: string; id?: string | null } & {
+              __typename: 'RichTextBlock';
+            })
+          | null
+        > | null;
+      } & { __typename: 'StaticPage' })
     | null;
 } & { __typename?: 'Query' };
 
@@ -1550,10 +2318,22 @@ export type GetInstanceContextQuery = {
       urlPath: string;
       parent?:
         | ({ id?: string | null } & {
-            __typename?: 'ActionListPage' | 'NodePage' | 'OutcomePage' | 'Page';
+            __typename?:
+              | 'ActionListPage'
+              | 'InstanceRootPage'
+              | 'OutcomePage'
+              | 'Page'
+              | 'StaticPage';
           })
         | null;
-    } & { __typename?: 'ActionListPage' | 'NodePage' | 'OutcomePage' | 'Page' }
+    } & {
+      __typename?:
+        | 'ActionListPage'
+        | 'InstanceRootPage'
+        | 'OutcomePage'
+        | 'Page'
+        | 'StaticPage';
+    }
   >;
   parameters: Array<
     | ({
@@ -1596,465 +2376,8 @@ export type GetInstanceContextQuery = {
   >;
 } & { __typename?: 'Query' };
 
-export type SetGlobalParameterFromActionSummaryMutationVariables = Exact<{
-  parameterId: Scalars['ID'];
-  boolValue?: InputMaybe<Scalars['Boolean']>;
-  numberValue?: InputMaybe<Scalars['Float']>;
-  stringValue?: InputMaybe<Scalars['String']>;
-}>;
-
-export type SetGlobalParameterFromActionSummaryMutation = {
-  setParameter?:
-    | ({
-        ok?: boolean | null;
-        parameter?:
-          | ({
-              isCustomized: boolean;
-              isCustomizable: boolean;
-              boolValue?: boolean | null;
-              boolDefaultValue?: boolean | null;
-            } & { __typename?: 'BoolParameterType' })
-          | ({ isCustomized: boolean; isCustomizable: boolean } & {
-              __typename?:
-                | 'NumberParameterType'
-                | 'StringParameterType'
-                | 'UnknownParameterType';
-            })
-          | null;
-      } & { __typename?: 'SetParameterMutation' })
-    | null;
-} & { __typename?: 'Mutations' };
-
-export type DimensionalNodeMetricFragment = {
-  metricDim?:
-    | ({
-        id: string;
-        name: string;
-        stackable: boolean;
-        forecastFrom?: number | null;
-        years: Array<number>;
-        values: Array<number | null>;
-        dimensions: Array<
-          {
-            id: string;
-            label: string;
-            originalId?: string | null;
-            categories: Array<
-              {
-                id: string;
-                originalId?: string | null;
-                label: string;
-                color?: string | null;
-                order?: number | null;
-                group?: string | null;
-              } & { __typename?: 'MetricDimensionCategoryType' }
-            >;
-            groups: Array<
-              {
-                id: string;
-                originalId: string;
-                label: string;
-                color?: string | null;
-                order?: number | null;
-              } & { __typename?: 'MetricDimensionCategoryGroupType' }
-            >;
-          } & { __typename?: 'MetricDimensionType' }
-        >;
-        goals: Array<
-          {
-            categories: Array<string>;
-            groups: Array<string>;
-            values: Array<
-              { year: number; value: number; isInterpolated: boolean } & {
-                __typename?: 'MetricYearlyGoalType';
-              }
-            >;
-          } & { __typename?: 'DimensionalMetricGoalEntry' }
-        >;
-        unit: { htmlShort: string; short: string } & {
-          __typename?: 'UnitType';
-        };
-        normalizedBy?:
-          | ({ id: string; name: string } & { __typename?: 'Node' })
-          | null;
-      } & { __typename?: 'DimensionalMetricType' })
-    | null;
-} & { __typename?: 'ActionNode' | 'Node' };
-
-export type SetGlobalParameterMutationVariables = Exact<{
-  parameterId: Scalars['ID'];
-  boolValue?: InputMaybe<Scalars['Boolean']>;
-  numberValue?: InputMaybe<Scalars['Float']>;
-  stringValue?: InputMaybe<Scalars['String']>;
-}>;
-
-export type SetGlobalParameterMutation = {
-  setParameter?:
-    | ({
-        ok?: boolean | null;
-        parameter?:
-          | ({
-              isCustomized: boolean;
-              isCustomizable: boolean;
-              boolValue?: boolean | null;
-              boolDefaultValue?: boolean | null;
-            } & { __typename?: 'BoolParameterType' })
-          | ({ isCustomized: boolean; isCustomizable: boolean } & {
-              __typename?:
-                | 'NumberParameterType'
-                | 'StringParameterType'
-                | 'UnknownParameterType';
-            })
-          | null;
-      } & { __typename?: 'SetParameterMutation' })
-    | null;
-} & { __typename?: 'Mutations' };
-
-export type SetNormalizationMutationVariables = Exact<{
-  id?: InputMaybe<Scalars['ID']>;
-}>;
-
-export type SetNormalizationMutation = {
-  setNormalizer?:
-    | ({ ok: boolean } & { __typename?: 'SetNormalizerMutation' })
-    | null;
-} & { __typename?: 'Mutations' };
-
-export type GetInstanceGoalOutcomeQueryVariables = Exact<{
-  goal: Scalars['ID'];
-}>;
-
-export type GetInstanceGoalOutcomeQuery = {
-  instance: {
-    id: string;
-    goals: Array<
-      {
-        values: Array<
-          {
-            year: number;
-            goal?: number | null;
-            actual?: number | null;
-            isForecast: boolean;
-            isInterpolated?: boolean | null;
-          } & { __typename?: 'InstanceYearlyGoalType' }
-        >;
-        unit: { htmlShort: string } & { __typename?: 'UnitType' };
-      } & { __typename?: 'InstanceGoalEntry' }
-    >;
-  } & { __typename?: 'InstanceType' };
-} & { __typename?: 'Query' };
-
-export type SetNormalizationFromWidgetMutationVariables = Exact<{
-  id?: InputMaybe<Scalars['ID']>;
-}>;
-
-export type SetNormalizationFromWidgetMutation = {
-  setNormalizer?:
-    | ({ ok: boolean } & { __typename?: 'SetNormalizerMutation' })
-    | null;
-} & { __typename?: 'Mutations' };
-
-export type SetParameterMutationVariables = Exact<{
-  parameterId: Scalars['ID'];
-  boolValue?: InputMaybe<Scalars['Boolean']>;
-  numberValue?: InputMaybe<Scalars['Float']>;
-  stringValue?: InputMaybe<Scalars['String']>;
-}>;
-
-export type SetParameterMutation = {
-  setParameter?:
-    | ({
-        ok?: boolean | null;
-        parameter?:
-          | ({
-              isCustomized: boolean;
-              boolValue?: boolean | null;
-              boolDefaultValue?: boolean | null;
-            } & { __typename?: 'BoolParameterType' })
-          | ({ isCustomized: boolean } & {
-              __typename?:
-                | 'NumberParameterType'
-                | 'StringParameterType'
-                | 'UnknownParameterType';
-            })
-          | null;
-      } & { __typename?: 'SetParameterMutation' })
-    | null;
-} & { __typename?: 'Mutations' };
-
-export type ActivateScenarioMutationVariables = Exact<{
-  scenarioId: Scalars['ID'];
-}>;
-
-export type ActivateScenarioMutation = {
-  activateScenario?:
-    | ({
-        ok?: boolean | null;
-        activeScenario?:
-          | ({ id?: string | null; name?: string | null } & {
-              __typename?: 'ScenarioType';
-            })
-          | null;
-      } & { __typename?: 'ActivateScenarioMutation' })
-    | null;
-} & { __typename?: 'Mutations' };
-
-export type SubActionCardFragment = {
-  id: string;
-  name: string;
-  description?: string | null;
-  shortDescription?: string | null;
-  isEnabled: boolean;
-  parameters: Array<
-    { id?: string | null } & {
-      __typename?:
-        | 'BoolParameterType'
-        | 'NumberParameterType'
-        | 'StringParameterType'
-        | 'UnknownParameterType';
-    }
-  >;
-} & { __typename?: 'ActionNode' };
-
-export type DimensionalPlotFragment = {
-  id: string;
-  sources: Array<string>;
-  unit: { htmlLong: string } & { __typename?: 'UnitType' };
-  nodes: Array<
-    { id: string; label: string; color?: string | null } & {
-      __typename?: 'FlowNodeType';
-    }
-  >;
-  links: Array<
-    {
-      year: number;
-      sources: Array<string>;
-      targets: Array<string>;
-      values: Array<number | null>;
-      absoluteSourceValues: Array<number>;
-    } & { __typename?: 'FlowLinksType' }
-  >;
-} & { __typename?: 'DimensionalFlowType' };
-
-export type DimensionalMetricFragment = {
-  id: string;
-  name: string;
-  stackable: boolean;
-  forecastFrom?: number | null;
-  years: Array<number>;
-  values: Array<number | null>;
-  dimensions: Array<
-    {
-      id: string;
-      label: string;
-      originalId?: string | null;
-      categories: Array<
-        {
-          id: string;
-          originalId?: string | null;
-          label: string;
-          color?: string | null;
-          order?: number | null;
-          group?: string | null;
-        } & { __typename?: 'MetricDimensionCategoryType' }
-      >;
-      groups: Array<
-        {
-          id: string;
-          originalId: string;
-          label: string;
-          color?: string | null;
-          order?: number | null;
-        } & { __typename?: 'MetricDimensionCategoryGroupType' }
-      >;
-    } & { __typename?: 'MetricDimensionType' }
-  >;
-  goals: Array<
-    {
-      categories: Array<string>;
-      groups: Array<string>;
-      values: Array<
-        { year: number; value: number; isInterpolated: boolean } & {
-          __typename?: 'MetricYearlyGoalType';
-        }
-      >;
-    } & { __typename?: 'DimensionalMetricGoalEntry' }
-  >;
-  unit: { htmlShort: string; short: string } & { __typename?: 'UnitType' };
-  normalizedBy?:
-    | ({ id: string; name: string } & { __typename?: 'Node' })
-    | null;
-} & { __typename?: 'DimensionalMetricType' };
-
-export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never }>;
-
-export type GetCytoscapeNodesQuery = {
-  nodes: Array<
-    | ({
-        id: string;
-        name: string;
-        color?: string | null;
-        quantity?: string | null;
-        parentAction?: ({ id: string } & { __typename?: 'ActionNode' }) | null;
-        subactions: Array<{ id: string } & { __typename?: 'ActionNode' }>;
-        group?:
-          | ({ id: string; color?: string | null } & {
-              __typename?: 'ActionGroupType';
-            })
-          | null;
-        unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
-        inputNodes: Array<
-          { id: string } & { __typename?: 'ActionNode' | 'Node' }
-        >;
-        outputNodes: Array<
-          { id: string } & { __typename?: 'ActionNode' | 'Node' }
-        >;
-        metric?:
-          | ({
-              historicalValues: Array<
-                { year: number; value: number } & { __typename?: 'YearlyValue' }
-              >;
-            } & { __typename?: 'ForecastMetricType' })
-          | null;
-      } & { __typename?: 'ActionNode' })
-    | ({
-        id: string;
-        name: string;
-        color?: string | null;
-        quantity?: string | null;
-        unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
-        inputNodes: Array<
-          { id: string } & { __typename?: 'ActionNode' | 'Node' }
-        >;
-        outputNodes: Array<
-          { id: string } & { __typename?: 'ActionNode' | 'Node' }
-        >;
-        metric?:
-          | ({
-              historicalValues: Array<
-                { year: number; value: number } & { __typename?: 'YearlyValue' }
-              >;
-            } & { __typename?: 'ForecastMetricType' })
-          | null;
-      } & { __typename?: 'Node' })
-  >;
-} & { __typename?: 'Query' };
-
-export type GetNodePageQueryVariables = Exact<{
-  node: Scalars['ID'];
-}>;
-
-export type GetNodePageQuery = {
-  node?:
-    | ({
-        id: string;
-        name: string;
-        shortDescription?: string | null;
-        description?: string | null;
-        color?: string | null;
-        targetYearGoal?: number | null;
-        quantity?: string | null;
-        isAction: boolean;
-        unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
-        metric?:
-          | ({
-              name?: string | null;
-              id?: string | null;
-              unit?:
-                | ({ htmlShort: string } & { __typename?: 'UnitType' })
-                | null;
-              historicalValues: Array<
-                { year: number; value: number } & { __typename?: 'YearlyValue' }
-              >;
-              forecastValues: Array<
-                { value: number; year: number } & { __typename?: 'YearlyValue' }
-              >;
-              baselineForecastValues?: Array<
-                { year: number; value: number } & { __typename?: 'YearlyValue' }
-              > | null;
-            } & { __typename?: 'ForecastMetricType' })
-          | null;
-        inputNodes: Array<
-          {
-            id: string;
-            name: string;
-            shortDescription?: string | null;
-            color?: string | null;
-            quantity?: string | null;
-            isAction: boolean;
-            unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
-          } & { __typename?: 'ActionNode' | 'Node' }
-        >;
-        outputNodes: Array<
-          {
-            id: string;
-            name: string;
-            shortDescription?: string | null;
-            color?: string | null;
-            quantity?: string | null;
-            isAction: boolean;
-            unit?: ({ htmlShort: string } & { __typename?: 'UnitType' }) | null;
-          } & { __typename?: 'ActionNode' | 'Node' }
-        >;
-        metricDim?:
-          | ({
-              id: string;
-              name: string;
-              stackable: boolean;
-              forecastFrom?: number | null;
-              years: Array<number>;
-              values: Array<number | null>;
-              dimensions: Array<
-                {
-                  id: string;
-                  label: string;
-                  originalId?: string | null;
-                  categories: Array<
-                    {
-                      id: string;
-                      originalId?: string | null;
-                      label: string;
-                      color?: string | null;
-                      order?: number | null;
-                      group?: string | null;
-                    } & { __typename?: 'MetricDimensionCategoryType' }
-                  >;
-                  groups: Array<
-                    {
-                      id: string;
-                      originalId: string;
-                      label: string;
-                      color?: string | null;
-                      order?: number | null;
-                    } & { __typename?: 'MetricDimensionCategoryGroupType' }
-                  >;
-                } & { __typename?: 'MetricDimensionType' }
-              >;
-              goals: Array<
-                {
-                  categories: Array<string>;
-                  groups: Array<string>;
-                  values: Array<
-                    { year: number; value: number; isInterpolated: boolean } & {
-                      __typename?: 'MetricYearlyGoalType';
-                    }
-                  >;
-                } & { __typename?: 'DimensionalMetricGoalEntry' }
-              >;
-              unit: { htmlShort: string; short: string } & {
-                __typename?: 'UnitType';
-              };
-              normalizedBy?:
-                | ({ id: string; name: string } & { __typename?: 'Node' })
-                | null;
-            } & { __typename?: 'DimensionalMetricType' })
-          | null;
-      } & { __typename?: 'ActionNode' | 'Node' })
-    | null;
-} & { __typename?: 'Query' };
-
 export type GetAvailableInstancesQueryVariables = Exact<{
-  hostname: Scalars['String'];
+  hostname: Scalars['String']['input'];
 }>;
 
 export type GetAvailableInstancesQuery = {
