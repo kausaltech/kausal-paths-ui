@@ -72,5 +72,6 @@
   "details": "Mer detaljer",
   "active-actions": "{{count}} aktiva åtgärder",
   "sort-ascending": "Sortera stigande",
-  "sort-descending": "Sortera fallande"
+  "sort-descending": "Sortera fallande",
+  "skip-to-main-content": "Hoppa till huvudinnehållet"
 }

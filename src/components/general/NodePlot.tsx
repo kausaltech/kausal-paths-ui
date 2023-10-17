@@ -16,10 +16,11 @@ const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 const PlotWrapper = styled.div<{ compact?: boolean }>`
   margin: 0 auto;
   max-width: ${(props) => (props.compact ? '480px' : '100%')};
+  overflow-x: auto;
 `;
 
 const Tools = styled.div`
-  padding: 0 1rem 0.5rem;
+  padding: 0 0 0.5rem;
   text-align: right;
   .btn-link {
     text-decoration: none;
@@ -381,26 +382,30 @@ const NodePlot = (props: NodePlotProps) => {
   };
 
   return (
-    <PlotWrapper compact={compact}>
-      <Plot
-        data={plotData}
-        layout={layout}
-        useResizeHandler
-        style={{ width: '100%' }}
-        config={{ displayModeBar: false }}
-        noValidate
-      />
-      <Tools>
-        <CsvDownload
-          data={downloadableTable}
-          filename={`${metric?.id}.csv`}
-          className="btn btn-link btn-sm"
-        >
-          <Icon name="download" />
-          {` ${t('download-data')} (.csv)`}
-        </CsvDownload>
-      </Tools>
-    </PlotWrapper>
+    <>
+      <PlotWrapper compact={compact}>
+        <Plot
+          data={plotData}
+          layout={layout}
+          useResizeHandler
+          style={{ minWidth: compact ? '320px' : '600px', width: '100%' }}
+          config={{ displayModeBar: false }}
+          noValidate
+        />
+      </PlotWrapper>
+      {!compact && (
+        <Tools>
+          <CsvDownload
+            data={downloadableTable}
+            filename={`${metric?.id}.csv`}
+            className="btn btn-link btn-sm"
+          >
+            <Icon name="download" />
+            {` ${t('download-data')} (.csv)`}
+          </CsvDownload>
+        </Tools>
+      )}
+    </>
   );
 };
 

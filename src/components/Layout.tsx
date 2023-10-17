@@ -9,6 +9,7 @@ import { CombinedIconSymbols } from 'components/common/icon';
 import { useTheme } from 'common/theme';
 import dynamic from 'next/dynamic';
 import { useCustomComponent } from './custom';
+import { useTranslation } from 'common/i18n';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -26,11 +27,37 @@ const FooterContainer = styled.footer`
   padding-bottom: 7rem;
 `;
 
+const StyledSkipToContent = styled.a`
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: ${({ theme }) => theme.spaces.s050};
+  background-color: ${({ theme }) => theme.brandDark};
+  border: ${({ theme }) =>
+    `${theme.btnBorderWidth} solid ${theme.themeColors.light}`};
+  border-radius: ${({ theme }) => theme.btnBorderRadius};
+  color: ${({ theme }) => theme.themeColors.light};
+  opacity: 0;
+
+  &:focus,
+  &:visited {
+    color: ${({ theme }) => theme.themeColors.light};
+  }
+
+  &:focus {
+    left: 50%;
+    top: ${({ theme }) => theme.spaces.s050};
+    transform: translateX(-50%);
+    opacity: 1;
+  }
+`;
+
 const Layout = ({ children }) => {
   const router = useRouter();
   const { asPath: pathname } = router;
   const theme = useTheme();
   const site = useSite();
+  const { t } = useTranslation();
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
   let activePage;
 
@@ -90,13 +117,18 @@ const Layout = ({ children }) => {
         )}
       </Head>
       <CombinedIconSymbols />
+      <StyledSkipToContent href="#main">
+        {t('skip-to-main-content')}
+      </StyledSkipToContent>
       <NavComponent
         siteTitle={site.title}
         ownerName={site.owner}
         navItems={navItems}
       />
       <PageContainer>
-        <main className="main">{children}</main>
+        <main className="main" id="main">
+          {children}
+        </main>
       </PageContainer>
       <FooterContainer>
         <FooterComponent />

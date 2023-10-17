@@ -26,7 +26,7 @@ const HeaderCard = styled.div`
     padding: ${(props) => props.theme.spaces.s200};
 
     h1 {
-      max-width: 600px;
+      max-width: ${({ theme }) => theme.breakpointSm};
       margin: 0 0 ${(props) => props.theme.spaces.s200};
       font-size: ${(props) => props.theme.fontSizeXl};
     }
@@ -34,7 +34,7 @@ const HeaderCard = styled.div`
 `;
 
 const Description = styled.div`
-  max-width: 600px;
+  max-width: ${({ theme }) => theme.breakpointSm};
 
   p:last-child {
     margin-bottom: 0;

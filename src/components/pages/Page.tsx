@@ -42,7 +42,7 @@ export default function Page({ path, headerExtra }) {
   if (error) {
     logError(error, { query: GET_PAGE });
     return (
-      <Container className="pt-5">
+      <Container fluid="lg" className="pt-5">
         <GraphQLError errors={error} />
       </Container>
     );

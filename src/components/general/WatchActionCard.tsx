@@ -3,11 +3,17 @@ import Icon from 'components/common/icon';
 
 const ActionCard = styled.div`
   display: flex;
-  flex: 0 0 380px;
+  flex-direction: column;
+  flex: 1 1 380px;
   margin-right: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey020};
-  border-radius: 0;
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
   margin-bottom: 1rem;
+`;
+
+const GhostCard = styled.div`
+  display: flex;
+  flex: 1 1 380px;
+  margin-right: 1rem;
 `;
 
 const ActionCardImage = styled.div`
@@ -50,19 +56,25 @@ const ActionCardLink = styled.div`
 const WatchActionCard = (props: any) => {
   const { action } = props;
 
+  if (!action) return <GhostCard />;
+
   return (
     <ActionCard>
-      <ActionCardImage>
-        <img src={action?.image} alt={action?.name} />
-      </ActionCardImage>
+      {action?.image && (
+        <ActionCardImage>
+          <img src={action?.image} alt={action?.name} />
+        </ActionCardImage>
+      )}
       <ActionCardContent>
         <h5>{action?.name}</h5>
         <p>{action?.description}</p>
-        <ActionCardLink>
-          <a href={action?.link}>
-            Read more <Icon name="arrowRight" />
-          </a>
-        </ActionCardLink>
+        {action?.link && (
+          <ActionCardLink>
+            <a href={action?.link}>
+              Read more <Icon name="arrowRight" />
+            </a>
+          </ActionCardLink>
+        )}
       </ActionCardContent>
     </ActionCard>
   );

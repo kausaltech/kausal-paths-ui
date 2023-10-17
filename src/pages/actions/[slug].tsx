@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Container } from 'reactstrap';
+import { Container, Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'queries/getActionContent';
@@ -43,11 +43,7 @@ const HeaderCard = styled.div`
 `;
 
 const ActionDescription = styled.div`
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border-radius: 0;
-  font-size: 1rem;
-  background-color: ${(props) => props.theme.graphColors.grey010};
+  max-width: ${({ theme }) => theme.breakpointSm};
 `;
 
 const ActionCategory = styled.div`
@@ -58,11 +54,23 @@ const ActionMetrics = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
+  padding-top: 1rem;
   flex-direction: column;
+  border-top: 1px solid ${(props) => props.theme.graphColors.grey020};
+  border-bottom: 1px solid ${(props) => props.theme.graphColors.grey020};
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
-    flex-direction: row;
+    height: 100%;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 1px solid ${(props) => props.theme.graphColors.grey020};
+    padding-left: 1rem;
   }
+`;
+
+const ActionPlotCard = styled.div`
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
 `;
 
 const ActionGraphHeader = styled.h4``;
@@ -79,11 +87,6 @@ const PageHeader = styled.div`
 
 const MetricsParameters = styled.div`
   flex: 2 1 auto;
-  margin-bottom: 1rem;
-`;
-
-const MetricsImpact = styled.div`
-  flex: 3 1 auto;
   margin-bottom: 1rem;
 `;
 
@@ -211,34 +214,45 @@ export default function ActionPage() {
                   </ActionCategory>
                 )}
               </div>
-              <ActionDescription>
-                <div
-                  dangerouslySetInnerHTML={{ __html: action.shortDescription }}
-                />
-                <NodeLink node={action}>
-                  <a>
-                    {t('read-more')} <Icon name="arrowRight" />
-                  </a>
-                </NodeLink>
-                <hr />
-                <ActionMetrics>
-                  <MetricsParameters>
-                    <ActionParameters parameters={action.parameters} />
-                  </MetricsParameters>
-                </ActionMetrics>
-                {actionPlot}
-              </ActionDescription>
-              {subActions.length > 0 && (
-                <SubActions
-                  actions={subActions}
-                  activeSubAction={activeSubAction}
-                  setActiveSubAction={setActiveSubAction}
-                />
-              )}
+              <Row>
+                <Col xs={12} md={7} className="mb-4">
+                  <ActionDescription>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: action.shortDescription,
+                      }}
+                    />
+                    <NodeLink node={action}>
+                      <a>
+                        {t('read-more')} <Icon name="arrowRight" />
+                      </a>
+                    </NodeLink>
+                  </ActionDescription>
+                </Col>
+                <Col xs={12} md={5} className="mb-md-4">
+                  <ActionMetrics>
+                    <MetricsParameters>
+                      <ActionParameters parameters={action.parameters} />
+                    </MetricsParameters>
+                  </ActionMetrics>
+                </Col>
+              </Row>
             </HeaderCard>
           </PageHeader>
         </Container>
       </HeaderSection>
+      <Container fluid="lg">
+        <ActionPlotCard>{actionPlot}</ActionPlotCard>
+      </Container>
+      {subActions.length > 0 && (
+        <Container fluid="lg">
+          <SubActions
+            actions={subActions}
+            activeSubAction={activeSubAction}
+            setActiveSubAction={setActiveSubAction}
+          />
+        </Container>
+      )}
       {causalNodes.length > 0 && (
         <CausalGrid
           nodes={causalNodes}

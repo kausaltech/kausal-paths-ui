@@ -73,5 +73,6 @@
   "details": "Tarkemmat tiedot",
   "active-actions": "{{count}} aktiivista toimenpidettä",
   "sort-ascending": "Lajittele nousevassa järjestyksessä",
-  "sort-descending": "Lajittele laskevassa järjestyksessä"
+  "sort-descending": "Lajittele laskevassa järjestyksessä",
+  "skip-to-main-content": "Siirry pääsisältöön"
 }
