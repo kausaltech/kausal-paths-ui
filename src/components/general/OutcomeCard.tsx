@@ -8,12 +8,11 @@ import {
   getMetricValue,
 } from 'common/preprocess';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import PopoverTip from 'components/common/PopoverTip';
 
-const CardContainer = styled.div`
-  //position: relative;
+const StyledTab = styled.div`
   flex: 0 0 175px;
   margin: 0 0.25rem 0;
+  cursor: pointer;
 
   &:first-child {
     margin-left: 0;
@@ -36,21 +35,6 @@ const Title = styled.div`
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-`;
-
-const CardAnchor = styled.a`
-  &:hover {
-    text-decoration: none;
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    cursor: pointer;
-  }
 `;
 
 const Name = styled.h2`
@@ -186,8 +170,27 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   // If there is no outcome  value for active year, do not display card set
   if (goalOutcomeValue === undefined) return null;
 
+  const handleClickTab = () => handleClick(node.id);
+
+  const handleKeyDownOnTab = (e: React.KeyboardEvent) => {
+    if (e.code === 'Enter' || e.code === 'Space') {
+      e.preventDefault();
+      handleClick(node.id);
+    }
+  };
+
   return (
-    <CardContainer key={node.id}>
+    <StyledTab
+      key={node.id}
+      role="tab"
+      tabIndex={0}
+      onMouseEnter={() => onHover(node.id)}
+      onMouseLeave={() => onHover(undefined)}
+      onClick={handleClickTab}
+      onKeyDown={handleKeyDownOnTab}
+      aria-selected={active}
+      aria-controls={`tabpanel-${node.id}`}
+    >
       <DashCard
         state={state}
         hovered={hovered}
@@ -203,13 +206,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         />
         <Header className={state}>
           <Title color={color}>
-            <CardAnchor
-              onMouseEnter={() => onHover(node.id)}
-              onMouseLeave={() => onHover(undefined)}
-              onClick={() => handleClick(node.id)}
-            >
-              <Name>{node.shortName || node.name}</Name>
-            </CardAnchor>
+            <Name>{node.shortName || node.name}</Name>
           </Title>
         </Header>
         {true && (
@@ -236,7 +233,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
           </Body>
         )}
       </DashCard>
-    </CardContainer>
+    </StyledTab>
   );
 };
 

@@ -3,7 +3,7 @@ import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import SiteContext from 'context/site';
 
-const StyledFooter = styled.footer`
+const StyledFooter = styled.div`
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     &.stzh-footer {
       padding-bottom: var(--stzh-space-xxxlarge);

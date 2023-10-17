@@ -3,7 +3,7 @@ import SVG from 'react-inlinesvg';
 import styled, { useTheme } from 'styled-components';
 import { formatStaticUrl } from 'common/links';
 
-const FooterContainer = styled.footer`
+const FooterContainer = styled.div`
   height: 10rem;
   padding-bottom: 10rem;
   background-color: ${(props) => props.theme.footerBackgroundColor};

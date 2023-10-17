@@ -127,8 +127,14 @@ type OutcomeNodeContentProps = {
   activeScenario: string;
 };
 
-const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
-  const { node, subNodes, color, startYear, endYear, activeScenario } = props;
+const OutcomeNodeContent = ({
+  node,
+  subNodes,
+  color,
+  startYear,
+  endYear,
+  activeScenario,
+}: OutcomeNodeContentProps) => {
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
   const instance = useInstance();
@@ -174,7 +180,7 @@ const OutcomeNodeContent = (props: OutcomeNodeContentProps) => {
   // useEffect(() => console.log('subNodes changed'), [subNodes]);
 
   return (
-    <div>
+    <div role="tabpanel" id={`tabpanel-${node.id}`}>
       <CardSetHeader>
         <div>
           <CardSetDescription>
