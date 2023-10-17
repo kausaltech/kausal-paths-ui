@@ -18,9 +18,9 @@ corepack enable npm
 ```
 
 3. If you need access to the Kausal private themes, login to https://npm.kausal.tech
-   using your Google credentials and copy-paste the line with `npm config set ...` from
-   the settings dialog. Ensure the `@kausal` scope is associated with that registry by
-   running:
+   using your Google credentials, copy the line with `npm config set ...` from
+   the settings dialog, and execute it in your shell. Ensure the `@kausal` scope
+   is associated with that registry by running:
 
 ```bash
 echo '@kausal:registry=https://npm.kausal.tech/' >> ~/.npmrc
