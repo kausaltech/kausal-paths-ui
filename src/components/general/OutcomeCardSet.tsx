@@ -320,7 +320,7 @@ const OutcomeCardSet = ({
         {cardNodes.length > 0 && (
           <SubNodes>
             <BarHeader>{subNodesTitle}</BarHeader>
-            <CardDeck>
+            <CardDeck role="tablist">
               {cardNodes.map((node, indx) => (
                 <OutcomeCard
                   key={node.id}
