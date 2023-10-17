@@ -29,16 +29,16 @@ const GraphCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
-const ActionsMac = (props) => {
-  const {
-    actions,
-    actionEfficiencyPairs,
-    t,
-    actionGroups,
-    sortBy,
-    sortAscending,
-    refetching,
-  } = props;
+const ActionsMac = ({
+  id,
+  actions,
+  actionEfficiencyPairs,
+  t,
+  actionGroups,
+  sortBy,
+  sortAscending,
+  refetching,
+}) => {
   // if we have efficiency limit set, remove actions over that limit
   const efficiencyLimit = actionEfficiencyPairs?.plotLimitEfficiency;
   // Remove actions without efficiency data
@@ -90,7 +90,7 @@ const ActionsMac = (props) => {
       {/* <ActionCount>
         {t('actions-count', { count: sortedActions.length})}
       </ActionCount> */}
-      <GraphCard>
+      <GraphCard id={id}>
         {refetching && (
           <LoadingOverlay>
             <Spinner color="primary" />

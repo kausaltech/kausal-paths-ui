@@ -29,19 +29,16 @@ const GraphCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
-const ActionsComparison = (props) => {
-  const {
-    actions,
-    t,
-    actionGroups,
-    sortBy,
-    sortAscending,
-    refetching,
-    displayYears,
-  } = props;
+const ActionsComparison = ({
+  actions,
+  id,
+  actionGroups,
+  sortBy,
+  sortAscending,
+  refetching,
+  displayYears,
+}) => {
   // if we have efficiency limit set, remove actions over that limit
-
-  console.log('ActionsComparison props', props);
 
   const actionsWithImpact = actions.map((action) => {
     return {
@@ -75,7 +72,7 @@ const ActionsComparison = (props) => {
 
   return (
     <>
-      <GraphCard>
+      <GraphCard id={id}>
         {refetching && (
           <LoadingOverlay>
             <Spinner color="primary" />
