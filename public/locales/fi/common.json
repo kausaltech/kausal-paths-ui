@@ -76,5 +76,11 @@
   "sort-descending": "Lajittele laskevassa järjestyksessä",
   "skip-to-main-content": "Siirry pääsisältöön",
   "outcome-sub-nodes": "Alasektorit",
-  "outcome-sub-nodes-secondary": "Alasektorit"
+  "outcome-sub-nodes-secondary": "Alasektorit",
+  "all-settings": "Kaikki asetukset",
+  "display": "Näytetään",
+  "hide-calculation": "Näytä laskenta",
+  "show-calculation": "Näytä laskenta",
+  "table-unit": "Yksikkö",
+  "table-measure-type": "Tyyppi"
 }

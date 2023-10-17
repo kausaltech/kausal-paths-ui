@@ -14,5 +14,6 @@
   "active-actions": "{{count}} aktive Massnahmenpakete",
   "watch-action-list-title": "Massnahmen",
   "outcome-sub-nodes": "Bereiche",
-  "outcome-sub-nodes-secondary": "Emissionsquellen"
+  "outcome-sub-nodes-secondary": "Emissionsquellen",
+  "table-unit": "Masseinheit"
 }

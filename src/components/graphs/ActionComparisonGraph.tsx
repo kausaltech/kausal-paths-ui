@@ -54,7 +54,7 @@ const formatNumber = (value, language) => {
 function ActionComparisonGraph(props) {
   const { data, impactUnit, impactName, actionIds, actionGroups } = props;
   const theme = useTheme();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   console.log('comparison graph props', props);
   const barHoverColor = theme.graphColors.green090;
@@ -90,7 +90,7 @@ function ActionComparisonGraph(props) {
         title: `${impactName} (${impactUnit})`,
       },
       xaxis: {
-        title: `Action`,
+        title: t('actions'),
         showgrid: true,
         showticklabels: false,
       },
