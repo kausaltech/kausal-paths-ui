@@ -70,5 +70,6 @@
   "time-series": "Tidsföljder",
   "table": "Tabell",
   "details": "Mer detaljer",
-  "active-actions": "{{count}} aktiva åtgärder"
+  "active-actions": "{{count}} aktiva åtgärder",
+  "skip-to-main-content": "Hoppa till huvudinnehållet"
 }

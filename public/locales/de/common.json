@@ -71,5 +71,6 @@
   "target-climate": "Klimaschutzziel",
   "active-actions": "{{count}} aktive Maßnahmen",
   "hide-calculation": "Berechnung verbergen",
-  "show-calculation": "Berechnungsweg einblenden"
+  "show-calculation": "Berechnungsweg einblenden",
+  "skip-to-main-content": "Zum Hauptinhalt springen"
 }
