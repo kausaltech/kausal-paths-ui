@@ -377,6 +377,7 @@ function ActionListPage(props: ActionListPageProps) {
                         outline
                         onClick={(e) => setAscending(true)}
                         active={ascending === true}
+                        aria-label={t('sort-ascending')}
                       >
                         <Icon
                           name="arrowUpWideShort"
@@ -389,6 +390,7 @@ function ActionListPage(props: ActionListPageProps) {
                         outline
                         onClick={(e) => setAscending(false)}
                         active={ascending === false}
+                        aria-label={t('sort-descending')}
                       >
                         <Icon
                           name="arrowDownShortWide"

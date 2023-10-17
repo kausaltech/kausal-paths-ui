@@ -82,5 +82,7 @@
   "active-actions": "{{count}} active actions",
   "watch-action-list-title": "How do we make this happen?",
   "hide-calculation": "Hide calculation",
-  "show-calculation": "Show calculation"
+  "show-calculation": "Show calculation",
+  "sort-ascending": "Sort Ascending",
+  "sort-descending": "Sort Descending"
 }
