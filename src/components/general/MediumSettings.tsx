@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { Range, getTrackBackground } from 'react-range';
 import { Row, Col, Container, Popover, PopoverBody } from 'reactstrap';
@@ -57,16 +57,16 @@ const StyledOutcomeCol = styled(Col)`
   }
 `;
 
-const MediumSettings = (props) => {
-  if (!process.browser) {
-    return null;
-  }
-  const site = useSite();
-  const instance = useInstance();
-
+const YearRangeSelector = (props) => {
+  const { minYear, maxYear, referenceYear } = props;
+  const inputReference = useRef(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const toggle = () => setPopoverOpen(!popoverOpen);
 
+  // Focus on this when visible
+  useEffect(() => {
+    inputReference?.current?.focus();
+  }, []);
   // State of display settings
   // Year range
   const yearRange = useReactiveVar(yearRangeVar);
@@ -78,6 +78,50 @@ const MediumSettings = (props) => {
   );
   const { t } = useTranslation();
 
+  return (
+    <PopoverWrapper>
+      <ButtonLabel>{t('comparing-years')}</ButtonLabel>
+      <Button
+        id="rangeSelector"
+        type="button"
+        color="light"
+        aria-expanded={popoverOpen}
+        aria-haspopup="dialog"
+      >
+        {`${yearRange[0]} – ${yearRange[1]}`}
+      </Button>
+      <Popover
+        placement="bottom"
+        isOpen={popoverOpen}
+        target="rangeSelector"
+        toggle={toggle}
+        trigger="legacy"
+        role="dialog"
+        aria-modal="true"
+      >
+        <PopoverBody role="dialog">
+          <RangeSelector
+            min={minYear}
+            max={maxYear}
+            defaultMin={yearRange[0]}
+            defaultMax={yearRange[1]}
+            referenceYear={referenceYear}
+            handleChange={setYearRange}
+            ref={inputReference}
+          />
+        </PopoverBody>
+      </Popover>
+    </PopoverWrapper>
+  );
+};
+
+const MediumSettings = (props) => {
+  if (!process.browser) {
+    return null;
+  }
+  const site = useSite();
+  const instance = useInstance();
+
   // Target
   const nrGoals = instance.goals.length;
   const hasMultipleGoals = nrGoals > 1;
@@ -85,8 +129,6 @@ const MediumSettings = (props) => {
     ? { xs: 4, md: 2 }
     : { xs: 6, md: 3 };
 
-  // Normalization
-  const availableNormalizations = site.availableNormalizations;
   return (
     <Container fluid="lg">
       <PanelContent>
@@ -95,30 +137,11 @@ const MediumSettings = (props) => {
             <ScenarioSelector />
           </StyledDropdownCol>
           <StyledDropdownCol {...dropdownColProps}>
-            <PopoverWrapper>
-              <ButtonLabel>{t('comparing-years')}</ButtonLabel>
-              <Button id="Popover1" type="button" color="light">
-                {`${yearRange[0]} – ${yearRange[1]}`}
-              </Button>
-              <Popover
-                placement="bottom"
-                isOpen={popoverOpen}
-                target="Popover1"
-                toggle={toggle}
-                trigger="legacy"
-              >
-                <PopoverBody>
-                  <RangeSelector
-                    min={site.minYear}
-                    max={site.maxYear}
-                    defaultMin={yearRange[0]}
-                    defaultMax={yearRange[1]}
-                    referenceYear={instance.referenceYear ?? site.referenceYear}
-                    handleChange={setYearRange}
-                  />
-                </PopoverBody>
-              </Popover>
-            </PopoverWrapper>
+            <YearRangeSelector
+              minYear={site.minYear}
+              maxYear={site.maxYear}
+              referenceYear={instance.referenceYear ?? site.referenceYear}
+            />
           </StyledDropdownCol>
           {hasMultipleGoals && (
             <StyledDropdownCol {...dropdownColProps}>

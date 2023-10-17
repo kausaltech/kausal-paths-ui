@@ -68,15 +68,9 @@ const AccordionHeader = styled(Button)`
   &:hover,
   &:active,
   &:focus {
-    background-color: ${(props) => props.theme.graphColors.grey000};
-    color: ${(props) => props.theme.graphColors.grey090};
+    background-color: ${(props) => props.theme.graphColors.grey010} !important;
+    color: ${(props) => props.theme.graphColors.grey090} !important;
   }
-`;
-
-const AccordionContent = styled(UncontrolledCollapse)`
-  background-color: ${(props) => props.theme.graphColors.grey020};
-  padding: 1rem;
-  overflow-y: auto;
 `;
 
 const Card = styled.div`
@@ -166,7 +160,9 @@ const CompleteSettings = (props) => {
           </SettingsSection>
           <SettingsSection>
             <AccordionHeader color="primary" id="scenario-toggler">
-              <h4>{t('scenario')}</h4>
+              <h4>
+                {t('scenario')}: {activeScenario.name}
+              </h4>
               <Icon name="angleDown" width="24px" height="24px" />
             </AccordionHeader>
             <UncontrolledCollapse toggler="#scenario-toggler" defaultOpen>

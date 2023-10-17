@@ -52,6 +52,16 @@ const Thumb = styled.div<ThumbProps>`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
+  }
+`;
+
+const StyledButtonToggle = styled(ButtonToggle)`
+  &:focus {
+    box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
+  }
 `;
 
 type RangeSelectorProps = {
@@ -108,7 +118,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
           {referenceYearActive ? referenceYear : values[0]}
         </ActiveYear>
         {referenceYear && (
-          <ButtonToggle
+          <StyledButtonToggle
             color="link"
             size="sm"
             outline
@@ -125,7 +135,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
                 <Icon name="version" /> {referenceYear}
               </span>
             )}
-          </ButtonToggle>
+          </StyledButtonToggle>
         )}
       </ActiveYearDisplay>
       {referenceYearActive ? (

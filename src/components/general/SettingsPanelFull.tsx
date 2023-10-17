@@ -11,7 +11,7 @@ import { useTranslation } from 'next-i18next';
 import CompleteSettings from './CompleteSettings';
 import MediumSettings from './MediumSettings';
 
-const FixedPanel = styled.div`
+const FixedPanel = styled.aside`
   position: fixed;
   z-index: 255;
   left: 0;
@@ -122,7 +122,7 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
 
   // console.log(props);
   return (
-    <FixedPanel className={`panel-${mode}`}>
+    <FixedPanel className={`panel-${mode}`} aria-label={t('all-settings')}>
       <StyledSettingsButton onClick={(e) => handleToggle(e)}>
         {mode === MODE.MD && (
           <>
