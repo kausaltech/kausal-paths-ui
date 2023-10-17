@@ -23,7 +23,7 @@ const ActionPoint = styled.button`
   height: 3rem;
   border-radius: 1.5rem;
   border: none;
-  margin: 0 auto;
+  margin: -1rem auto 0;
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
@@ -40,19 +40,21 @@ const GridSection = styled.div`
 const GridRowWrapper = styled.div`
   width: auto;
   margin: 6rem 0;
-`;
-
-const GridRow = styled.div`
-  position: relative;
-  display: flex;
-  /* TODO: We either alignt the elements left or lose the left items behind margin  */
-  justify-content: center;
-  flex-wrap: nowrap;
-  white-space: nowrap;
   overflow-x: auto;
   overscroll-behavior-x: none;
   scroll-snap-type: x mandatory;
   scroll-padding: 50%;
+  text-align: center;
+`;
+
+const GridRow = styled.div`
+  width: fit-content;
+  position: relative;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 
   &::-webkit-scrollbar:horizontal {
     height: 0;
@@ -66,7 +68,7 @@ const GridRow = styled.div`
 `;
 
 const GridCol = styled.div`
-  flex: 0 1 480px;
+  flex: 1 1 320px;
   scroll-snap-align: center;
   margin: 0 0.5rem;
 
@@ -87,24 +89,11 @@ const GoalSection = styled.div`
 `;
 
 const GoalCard = styled.div`
-  margin: -8rem 0 3rem;
-  padding: 2rem;
+  margin: -8rem 0 0;
+  padding: ${({ theme }) => theme.spaces.s100};
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
-`;
-
-const ActionDescription = styled.div`
-  margin-bottom: 2rem;
-  font-size: 1.15rem;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 2rem;
-
-  a {
-    color: ${(props) => props.theme.themeColors.dark};
-  }
 
   h2 {
     margin-bottom: 2rem;
@@ -113,11 +102,13 @@ const PageHeader = styled.div`
   }
 `;
 
-const ContentWrapper = styled.div`
+const ActionDescription = styled.div`
+  max-width: ${({ theme }) => theme.breakpointSm};
+`;
+
+const NodePlotCard = styled.div`
   padding: 1rem;
-  margin: 0.5rem 0;
   background-color: ${({ theme }) => theme.cardBackground.secondary};
-  border-radius: 0;
 
   .x2sstick text,
   .xtick text {
@@ -163,7 +154,7 @@ const CausalGrid = (props: CausalGridProps) => {
 
   if (nodes.length === 0) {
     return (
-      <Container className="pt-5">
+      <Container fluid="lg" className="pt-5">
         <Alert color="warning">Action has no nodes</Alert>
       </Container>
     );
@@ -315,52 +306,52 @@ const CausalGrid = (props: CausalGridProps) => {
       </GridSection>
       <GoalSection>
         <Container fluid="lg">
-          <PageHeader>
-            <ArcherElement id={lastNode.id}>
-              <div>
-                <GoalCard>
-                  <h2>
-                    <NodeLink node={lastNode}>
-                      <a>{lastNode.name}</a>
-                    </NodeLink>
-                  </h2>
-                  {lastNode.shortDescription && (
-                    <ActionDescription
-                      dangerouslySetInnerHTML={{
-                        __html: lastNode.shortDescription,
-                      }}
-                    />
-                  )}
-                  <ImpactFigures>
-                    <ImpactDisplay
-                      effectCumulative={cumulativeImpact || undefined}
-                      effectYearly={impactAtTargetYear}
-                      yearRange={yearRange}
-                      unitCumulative={lastNode.impactMetric?.unit?.htmlShort}
-                      unitYearly={lastNode.impactMetric?.unit?.htmlShort}
-                      muted={actionIsOff}
-                    />
-                  </ImpactFigures>
-                  {lastNode.metric && (
-                    <ContentWrapper>
-                      <NodePlot
-                        metric={lastNode.metric}
-                        impactMetric={lastNode.impactMetric}
-                        year="2021"
-                        startYear={yearRange[0]}
-                        endYear={yearRange[1]}
-                        color={lastNode.color}
-                        isAction={lastNode.__typename === 'ActionNode'}
-                        targetYear={instance.targetYear}
-                        targetYearGoal={lastNode.targetYearGoal}
-                        quantity={lastNode.quantity}
-                      />
-                    </ContentWrapper>
-                  )}
-                </GoalCard>
-              </div>
-            </ArcherElement>
-          </PageHeader>
+          <ArcherElement id={lastNode.id}>
+            <div>
+              <GoalCard>
+                <h2>
+                  <NodeLink node={lastNode}>
+                    <a>{lastNode.name}</a>
+                  </NodeLink>
+                </h2>
+                {lastNode.shortDescription && (
+                  <ActionDescription
+                    dangerouslySetInnerHTML={{
+                      __html: lastNode.shortDescription,
+                    }}
+                  />
+                )}
+                <ImpactFigures>
+                  <ImpactDisplay
+                    effectCumulative={cumulativeImpact || undefined}
+                    effectYearly={impactAtTargetYear}
+                    yearRange={yearRange}
+                    unitCumulative={lastNode.impactMetric?.unit?.htmlShort}
+                    unitYearly={lastNode.impactMetric?.unit?.htmlShort}
+                    muted={actionIsOff}
+                  />
+                </ImpactFigures>
+              </GoalCard>
+            </div>
+          </ArcherElement>
+        </Container>
+        <Container fluid="lg">
+          {lastNode.metric && (
+            <NodePlotCard>
+              <NodePlot
+                metric={lastNode.metric}
+                impactMetric={lastNode.impactMetric}
+                year="2021"
+                startYear={yearRange[0]}
+                endYear={yearRange[1]}
+                color={lastNode.color}
+                isAction={lastNode.__typename === 'ActionNode'}
+                targetYear={instance.targetYear}
+                targetYearGoal={lastNode.targetYearGoal}
+                quantity={lastNode.quantity}
+              />
+            </NodePlotCard>
+          )}
         </Container>
       </GoalSection>
     </ArcherContainer>

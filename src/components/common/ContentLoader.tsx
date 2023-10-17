@@ -4,10 +4,8 @@ import { Spinner } from 'reactstrap';
 
 import { useTranslation } from 'next-i18next';
 
-const Loader = styled.div<{ fullPage?: boolean }>`
+const Loader = styled.div`
   display: flex;
-  height: ${(props) =>
-    props.fullPage ? `calc(100vh - 24rem)` : props.theme.spaces.s400};
   justify-content: center;
   align-items: center;
 `;
@@ -37,7 +35,7 @@ const ContentLoader = ({ fullPage = false }: ContentLoaderProps) => {
   }
 
   return (
-    <Loader fullPage={fullPage}>
+    <Loader style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}>
       <StyledSpinner type="grow" className="mx-1" />
       <StyledSpinner type="grow" className="mx-1" />
       <StyledSpinner type="grow" className="mx-1" />
