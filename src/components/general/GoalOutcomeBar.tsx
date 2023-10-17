@@ -10,9 +10,7 @@ import { useTranslation } from 'next-i18next';
 import {
   GetInstanceGoalOutcomeQuery,
   GetInstanceGoalOutcomeQueryVariables,
-  GetNetEmissionsQuery,
 } from 'common/__generated__/graphql';
-import { useInstance } from 'common/instance';
 
 export const GET_INSTANCE_GOAL_OUTCOME = gql`
   query GetInstanceGoalOutcome($goal: ID!) {
@@ -52,20 +50,19 @@ const AccordionHeader = styled(Button)`
   &:hover,
   &:active,
   &:focus {
-    background-color: ${(props) => props.theme.graphColors.grey000};
-    color: ${(props) => props.theme.graphColors.grey090};
+    background-color: ${(props) => props.theme.graphColors.grey010} !important;
+    color: ${(props) => props.theme.graphColors.grey090} !important;
   }
 `;
 
-const AccordionContent = styled(UncontrolledCollapse)`
-  background-color: ${(props) => props.theme.graphColors.grey020};
-  padding: 1rem;
-  overflow-y: auto;
+const OutcomeText = styled.div`
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  line-height: ${({ theme }) => theme.lineHeightMd};
 `;
 
 const EmissionsBar = styled.div`
   position: relative;
-  margin: 2.5rem 0;
+  margin: 2.5rem auto;
   max-width: 500px;
   height: 24px;
 `;
@@ -74,9 +71,10 @@ const BarLabel = styled.div<{
   $side?: 'top' | undefined;
   $negative: boolean;
   $placement: number;
+  $small?: boolean;
 }>`
   font-size: 0.75rem;
-  text-align: ${(props) => (props.$negative ? 'right' : 'left')};
+  text-align: ${(props) => (props.$small ? 'right' : 'left')};
   white-space: nowrap;
   line-height: 1;
   z-index: 1001 + ${(props) => props.$placement};
@@ -86,12 +84,13 @@ const BarLabel = styled.div<{
       ? `0 5px ${12 + props.$placement * 7}px 5px`
       : `${24 - props.$placement * 7}px 5px 0 5px`};
   bottom: ${(props) => (props.$side === 'top' ? '0' : 'auto')};
-  left: ${(props) => (props.$negative ? 'auto' : '-1px')};
-  right: ${(props) => (props.$negative ? '-1px' : 'auto')};
+  left: ${(props) => (props.$negative || props.$small ? 'auto' : '-1px')};
+  right: ${(props) =>
+    props.$small ? (props.$negative ? '-1px' : '100%') : 'auto'};
   border-left: ${(props) =>
-    !props.$negative ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
+    !props.$small ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
   border-right: ${(props) =>
-    props.$negative ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
+    props.$small ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
   font-weight: 700;
 `;
 
@@ -159,6 +158,7 @@ const BarWithLabel = (props) => {
         $side={labelSide}
         $placement={placement}
         $negative={barWidth < 0}
+        $small={barWidth < 20}
       >
         <Label>{label}</Label>
         <Value>
@@ -170,7 +170,40 @@ const BarWithLabel = (props) => {
   );
 };
 
-const GoalOutcomeBar: React.FC<{}> = (props) => {
+const OutcomeAsText = (
+  isForecast,
+  scenarioName,
+  goalType,
+  selectedYear,
+  selectedYearDifference,
+  selectedYearValue,
+  nearestGoalYear,
+  nearestGoalValue,
+  t
+) => {
+  if (isForecast)
+    return t('outcome-bar-summary-forecast', {
+      scenarioName,
+      goalType,
+      selectedYear,
+      selectedYearValue,
+      nearestGoalYear,
+      nearestGoalValue,
+    });
+  return t('outcome-bar-summary-historical', {
+    goalType,
+    selectedYear,
+    selectedYearDifference,
+    nearestGoalYear,
+    nearestGoalValue,
+  });
+};
+
+type GoalOutcomeBarProps = {
+  compact?: boolean;
+};
+
+const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
   const { compact } = props;
   const { t } = useTranslation();
   const theme = useTheme();
@@ -203,6 +236,8 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
   if (!data || !data.instance.goals.length) return <div>no data</div>;
 
   const goal = data.instance.goals[0];
+  const firstForecastYear = goal.values.find((val) => val.isForecast)?.year;
+  const isForecast = yearRange[1] >= firstForecastYear!;
   const valuesByYear = new Map(goal.values.map((goal) => [goal.year, goal]));
   const unit = goal.unit.htmlShort;
   const historical = goal.values.filter((val) => !val.isForecast);
@@ -246,7 +281,9 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
         labelSide: undefined,
       },
       {
-        label: `${t('scenario')} ${comparisonActual.year}`,
+        label: `${
+          isForecast ? t('scenario-outcome') : t('historical-outcome')
+        } ${comparisonActual.year}`,
         value: comparisonActual.actual!,
         unit,
         barColor: outcomeColor,
@@ -266,19 +303,24 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
   );
 
   const missingFromTarget = comparisonActual.actual! - comparisonGoal.goal!;
-  const successText =
-    missingFromTarget > 0 ? 'we are missing' : 'we are exceeding';
-  const verbalizeOutcome = `On year ${
-    comparisonActual.year
-  } ${successText} ${beautifyValue(missingFromTarget)} ${unit} from year ${
-    comparisonGoal.year
-  } target ${beautifyValue(comparisonGoal.goal)} ${unit}`;
+
+  const verbalizedOutcome = OutcomeAsText(
+    isForecast,
+    activeScenario.name,
+    activeGoal.label,
+    yearRange[1],
+    `${beautifyValue(missingFromTarget)} ${unit}`,
+    `${beautifyValue(comparisonActual.actual)} ${unit}`,
+    comparisonGoal.year,
+    `${beautifyValue(comparisonGoal.goal)} ${unit}`,
+    t
+  );
 
   return (
     <>
       {compact ? (
         <div>
-          <EmissionsBar>
+          <EmissionsBar aria-live="polite">
             {bars.map((bar, index) => (
               <BarWithLabel
                 {...bar}
@@ -291,26 +333,34 @@ const GoalOutcomeBar: React.FC<{}> = (props) => {
         </div>
       ) : (
         <>
-          <AccordionHeader color="primary" id="outcome-toggler">
+          <AccordionHeader
+            color="primary"
+            id="outcome-toggler"
+            className="settings-section-header"
+          >
             <div>
-              <h4>{t('scenario-outcome')}</h4>
-              <div>{verbalizeOutcome}</div>
+              <h4>
+                {isForecast ? t('scenario-outcome') : t('historical-outcome')}
+              </h4>
+              <OutcomeText>{verbalizedOutcome}</OutcomeText>
             </div>
             <Icon name="angleDown" width="24px" height="24px" />
           </AccordionHeader>
           <UncontrolledCollapse toggler="#outcome-toggler" defaultOpen>
             <Card>
               <CardBody>
-                <EmissionsBar>
-                  {bars.map((bar, index) => (
-                    <BarWithLabel
-                      {...bar}
-                      key={bar.label}
-                      placement={index}
-                      zeroOffset={zeroOffset}
-                    />
-                  ))}
-                </EmissionsBar>
+                <div>
+                  <EmissionsBar>
+                    {bars.map((bar, index) => (
+                      <BarWithLabel
+                        {...bar}
+                        key={bar.label}
+                        placement={index}
+                        zeroOffset={zeroOffset}
+                      />
+                    ))}
+                  </EmissionsBar>
+                </div>
               </CardBody>
             </Card>
           </UncontrolledCollapse>
