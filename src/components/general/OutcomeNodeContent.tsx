@@ -228,48 +228,79 @@ const OutcomeNodeContent = ({
         </CardSetSummary>
       </CardSetHeader>
       <CardContent>
-        <TabNavigation tabs className="justify-content-end">
+        <TabNavigation
+          tabs
+          className="justify-content-end"
+          role="tablist"
+          aria-label={t('outcome-tabs-label')}
+        >
           {showDistribution && (
-            <DisplayTab>
+            <DisplayTab role="presentation">
               <NavLink
                 href="#"
                 onClick={() => setActiveTabId('year')}
                 active={activeTabId === 'year'}
                 disabled={subNodes.length < 2}
+                role="tab"
+                aria-selected={activeTabId === 'year'}
+                aria-controls={`${node.id}-panel-year`}
+                id={`${node.id}-tab-year`}
+                tabIndex={0}
               >
                 <Icon name="chartTreeMap" /> {t('distribution')}
               </NavLink>
             </DisplayTab>
           )}
-          <DisplayTab>
+          <DisplayTab role="presentation">
             <NavLink
               href="#"
               onClick={() => setActiveTabId('graph')}
               active={activeTabId === 'graph'}
+              role="tab"
+              aria-selected={activeTabId === 'graph'}
+              aria-controls={`${node.id}-panel-graph`}
+              id={`${node.id}-tab-graph`}
+              tabIndex={0}
             >
               <Icon name="chartArea" /> {t('time-series')}
             </NavLink>
           </DisplayTab>
-          <DisplayTab>
+          <DisplayTab role="presentation">
             <NavLink
               href="#"
               onClick={() => setActiveTabId('table')}
               active={activeTabId === 'table'}
+              role="tab"
+              aria-selected={activeTabId === 'table'}
+              aria-controls={`${node.id}-panel-table`}
+              id={`${node.id}-tab-table`}
+              tabIndex={0}
             >
               <Icon name="table" /> {t('table')}
             </NavLink>
           </DisplayTab>
-          <DisplayTab>
+          <DisplayTab role="presentation">
             <NavLink
               href="#"
               onClick={() => setActiveTabId('info')}
               active={activeTabId === 'info'}
+              role="tab"
+              aria-selected={activeTabId === 'info'}
+              aria-controls={`${node.id}-panel-info`}
+              id={`${node.id}-tab-info`}
+              tabIndex={0}
             >
               <Icon name="circleInfo" /> {t('details')}
             </NavLink>
           </DisplayTab>
         </TabNavigation>
-        <TabContent activeTab={activeTabId}>
+        <TabContent
+          activeTab={activeTabId}
+          id={`${node.id}-panel-${activeTabId}}`}
+          role="tabpanel"
+          tabIndex={0}
+          aria-labelledby={`${node.id}-tab-${activeTabId}}`}
+        >
           {activeTabId === 'year' && (
             <ContentWrapper>{icicleGraph}</ContentWrapper>
           )}
