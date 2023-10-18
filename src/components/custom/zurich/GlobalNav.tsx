@@ -19,6 +19,8 @@ import SiteContext from 'context/site';
 import { formatStaticUrl, Link } from 'common/links';
 import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
+import Script from 'next/script';
+import { isProduction } from 'utils/environment';
 
 const SecondaryNav = styled(Navbar)`
   padding: 0;
@@ -294,101 +296,110 @@ function GlobalNav(props) {
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
   return (
-    <div className="header header--has-appnav">
-      <div className="header__inner">
-        <StyledHeaderMain className="header__main">
-          <div className="header__logobar" id="branding-navigation-bar">
-            <div className="header__logobar-logo">
-              <Link href="/" passHref>
-                <HomeLink className="header__logo-link">{orgLogo}</HomeLink>
-              </Link>
-            </div>
-            <NavbarToggler
-              onClick={() => toggleOpen(!isOpen)}
-              aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
-              aria-controls="global-navigation-bar"
-              aria-expanded={isOpen}
-              type="button"
-            >
-              {isOpen ? (
-                <Icon.XLg color={theme.themeColors.white} />
-              ) : (
-                <Icon.List color={theme.themeColors.white} />
-              )}
-            </NavbarToggler>
-          </div>
-        </StyledHeaderMain>
+    <>
+      {isProduction && (
+        <Script
+          src="https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js"
+          strategy="afterInteractive"
+        />
+      )}
 
-        <SecondaryNavWrapper>
-          <SecondaryNav
-            expand="md"
-            id="global-navigation-bar"
-            className="header__appnav-inner"
-            container={false}
-          >
-            <StyledCollapse isOpen={isOpen} navbar>
-              <Nav
-                navbar
-                className="stzh-appnav__items sc-stzh-appnav sc-stzh-appnav-s me-auto"
+      <div className="header header--has-appnav">
+        <div className="header__inner">
+          <StyledHeaderMain className="header__main">
+            <div className="header__logobar" id="branding-navigation-bar">
+              <div className="header__logobar-logo">
+                <Link href="/" passHref>
+                  <HomeLink className="header__logo-link">{orgLogo}</HomeLink>
+                </Link>
+              </div>
+              <NavbarToggler
+                onClick={() => toggleOpen(!isOpen)}
+                aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
+                aria-controls="global-navigation-bar"
+                aria-expanded={isOpen}
+                type="button"
               >
-                {navItems &&
-                  navItems.map((page) =>
-                    page.children ? (
-                      <NavDropdown
-                        className="sc-stzh-link-h sc-stzh-link-s"
-                        items={page.children}
-                        active={page.active}
-                        key={page.slug}
-                      >
-                        {page.name}
-                      </NavDropdown>
-                    ) : (
-                      <NavItem
-                        className="sc-stzh-link-h sc-stzh-link-s"
-                        key={page.slug}
-                        active={page.active}
-                      >
-                        <NavLink>
-                          <Link href={page.urlPath}>
-                            <a>
-                              <NavHighlighter
-                                className={`highlighter ${
-                                  page.active && 'active'
-                                }`}
-                              >
-                                {page.name}
-                              </NavHighlighter>
-                            </a>
-                          </Link>
-                        </NavLink>
-                      </NavItem>
-                    )
-                  )}
-              </Nav>
-              <Nav navbar className="d-md-none">
-                <LanguageSelector mobile />
-              </Nav>
-              {site.watchLink ? (
-                <Nav navbar>
-                  <NavItem>
-                    <NavLink>
-                      <Link href={site.watchLink.url}>
-                        <a>
-                          <NavHighlighter className="highlighter">
-                            {site.watchLink.title}
-                          </NavHighlighter>
-                        </a>
-                      </Link>
-                    </NavLink>
-                  </NavItem>
+                {isOpen ? (
+                  <Icon.XLg color={theme.themeColors.white} />
+                ) : (
+                  <Icon.List color={theme.themeColors.white} />
+                )}
+              </NavbarToggler>
+            </div>
+          </StyledHeaderMain>
+
+          <SecondaryNavWrapper>
+            <SecondaryNav
+              expand="md"
+              id="global-navigation-bar"
+              className="header__appnav-inner"
+              container={false}
+            >
+              <StyledCollapse isOpen={isOpen} navbar>
+                <Nav
+                  navbar
+                  className="stzh-appnav__items sc-stzh-appnav sc-stzh-appnav-s me-auto"
+                >
+                  {navItems &&
+                    navItems.map((page) =>
+                      page.children ? (
+                        <NavDropdown
+                          className="sc-stzh-link-h sc-stzh-link-s"
+                          items={page.children}
+                          active={page.active}
+                          key={page.slug}
+                        >
+                          {page.name}
+                        </NavDropdown>
+                      ) : (
+                        <NavItem
+                          className="sc-stzh-link-h sc-stzh-link-s"
+                          key={page.slug}
+                          active={page.active}
+                        >
+                          <NavLink>
+                            <Link href={page.urlPath}>
+                              <a>
+                                <NavHighlighter
+                                  className={`highlighter ${
+                                    page.active && 'active'
+                                  }`}
+                                >
+                                  {page.name}
+                                </NavHighlighter>
+                              </a>
+                            </Link>
+                          </NavLink>
+                        </NavItem>
+                      )
+                    )}
                 </Nav>
-              ) : null}
-            </StyledCollapse>
-            <SiteTitle>{siteTitle}</SiteTitle>
-          </SecondaryNav>
-        </SecondaryNavWrapper>
+                <Nav navbar className="d-md-none">
+                  <LanguageSelector mobile />
+                </Nav>
+                {site.watchLink ? (
+                  <Nav navbar>
+                    <NavItem>
+                      <NavLink>
+                        <Link href={site.watchLink.url}>
+                          <a>
+                            <NavHighlighter className="highlighter">
+                              {site.watchLink.title}
+                            </NavHighlighter>
+                          </a>
+                        </Link>
+                      </NavLink>
+                    </NavItem>
+                  </Nav>
+                ) : null}
+              </StyledCollapse>
+              <SiteTitle>{siteTitle}</SiteTitle>
+            </SecondaryNav>
+          </SecondaryNavWrapper>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
