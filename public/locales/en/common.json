@@ -88,5 +88,7 @@
   "sort-descending": "Sort Descending",
   "skip-to-main-content": "Skip to main content",
   "outcome-sub-nodes": "Subsectors",
-  "outcome-sub-nodes-secondary": "Subsectors"
+  "outcome-sub-nodes-secondary": "Subsectors",
+  "table-measure-type": "Type",
+  "table-unit": "Unit"
 }

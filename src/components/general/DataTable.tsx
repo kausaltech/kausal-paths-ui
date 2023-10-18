@@ -38,13 +38,13 @@ const DataTable = (props) => {
       <Table bordered size="sm" responsive>
         <thead>
           <tr>
-            <th>Year</th>
-            <th>Type</th>
+            <th>{t('table-year')}</th>
+            <th>{t('table-measure-type')}</th>
             {subNodes?.map((subNode) => (
               <th key={subNode.id}>{subNode.name}</th>
             ))}
             {hasTotalValues && <th>{node.metric.name}</th>}
-            <th>Unit</th>
+            <th>{t('table-unit')}</th>
           </tr>
         </thead>
         <tbody>
