@@ -35,7 +35,10 @@ const ContentLoader = ({ fullPage = false }: ContentLoaderProps) => {
   }
 
   return (
-    <Loader style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}>
+    <Loader
+      aria-busy="true"
+      style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}
+    >
       <StyledSpinner type="grow" className="mx-1" />
       <StyledSpinner type="grow" className="mx-1" />
       <StyledSpinner type="grow" className="mx-1" />

@@ -48,6 +48,43 @@ export enum DecisionLevel {
   Nation = 'NATION',
 }
 
+export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
+  instance: Scalars['ID']['input'];
+}>;
+
+export type PlaywrightGetInstanceBasicsQuery = {
+  instance: {
+    id: string;
+    defaultLanguage: string;
+    supportedLanguages: Array<string>;
+  } & { __typename?: 'InstanceType' };
+} & { __typename?: 'Query' };
+
+export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
+  instance: Scalars['ID']['input'];
+  locale: Scalars['String']['input'];
+}>;
+
+export type PlaywrightGetInstanceInfoQuery = {
+  instance: {
+    id: string;
+    name: string;
+    defaultLanguage: string;
+    supportedLanguages: Array<string>;
+  } & { __typename?: 'InstanceType' };
+  pages: Array<
+    { urlPath: string; title: string; showInMenus: boolean } & {
+      __typename?:
+        | 'ActionListPage'
+        | 'InstanceRootPage'
+        | 'OutcomePage'
+        | 'Page'
+        | 'StaticPage';
+    }
+  >;
+  actions: Array<{ id: string } & { __typename?: 'ActionNode' }>;
+} & { __typename?: 'Query' };
+
 export type AllMetricFieldsFragment = {
   name?: string | null;
   id?: string | null;
@@ -2180,7 +2217,7 @@ export type GetPageQuery = {
                 | 'TimeBlock'
                 | 'URLBlock';
             })
-          | ({ value: string; id?: string | null } & {
+          | ({ value: string; rawValue: string; id?: string | null } & {
               __typename: 'RichTextBlock';
             })
           | null
