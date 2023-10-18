@@ -122,7 +122,6 @@ function PathsApp(props: PathsAppProps) {
     props;
 
   const { i18n } = useTranslation();
-  console.log('app render');
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
   numbro.setLanguage(

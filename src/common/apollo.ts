@@ -9,6 +9,7 @@ import {
   NormalizedCacheObject,
 } from '@apollo/client';
 import possibleTypes from 'common/__generated__/possible_types.json';
+import { DirectiveNode, Kind } from 'graphql';
 
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
@@ -39,6 +40,26 @@ export type ApolloClientOpts = {
   };
 };
 
+function createDirective(name: string, args: { name: string; val: string }[]) {
+  const out: DirectiveNode = {
+    kind: Kind.DIRECTIVE,
+    name: {
+      kind: Kind.NAME,
+      value: name,
+    },
+    arguments: args.map((arg) => ({
+      kind: Kind.ARGUMENT,
+      name: { kind: Kind.NAME, value: arg.name },
+      value: {
+        kind: Kind.STRING,
+        value: arg.val,
+        block: false,
+      },
+    })),
+  };
+  return out;
+}
+
 const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   /**
    * Middleware that sets HTTP headers for identifying the Paths instance.
@@ -58,6 +79,29 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   }
 
   const middleware = new ApolloLink((operation, forward) => {
+    operation.query = {
+      ...operation.query,
+      definitions: operation.query.definitions.map((def) => {
+        if (def.kind !== Kind.OPERATION_DEFINITION) return def;
+        const directives: DirectiveNode[] = [...(def.directives || [])];
+        if (i18n && i18n.language) {
+          directives.push(
+            createDirective('locale', [{ name: 'lang', val: i18n.language }])
+          );
+        }
+        directives.push(
+          createDirective('instance', [
+            { name: 'identifier', val: instanceIdentifier },
+            { name: 'hostname', val: instanceHostname },
+          ])
+        );
+        return {
+          ...def,
+          directives,
+        };
+      }),
+    };
+
     operation.setContext(({ headers = {} }) => {
       if (instanceIdentifier) {
         headers['x-paths-instance-identifier'] = instanceIdentifier;

@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cookieSession from 'cookie-session';
-import morgan from 'morgan';
+
 import type { Authenticator } from 'passport';
 import asyncHandler from 'express-async-handler';
 import originalUrl from 'original-url';
@@ -26,6 +26,7 @@ import {
   ServerAuth,
   ServerAuthIssuer,
 } from './auth.js';
+import { logRequest } from './log.js';
 
 if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
@@ -264,6 +265,7 @@ export abstract class BaseServer {
     // @ts-expect-error 2341
     this.nextServer = await this.nextApp.getServer();
 
+    app.use(logRequest);
     app.use(Sentry.Handlers.requestHandler());
     app.use(
       cookieSession({
@@ -294,7 +296,6 @@ export abstract class BaseServer {
 
     // @ts-ignore
     this.passport = initializePassport(app);
-    app.use(morgan(dev ? 'dev' : 'combined'));
 
     app.all('*', asyncHandler(this.handleRequest.bind(this)));
 
