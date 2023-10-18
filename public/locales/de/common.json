@@ -81,5 +81,6 @@
   "outcome-sub-nodes-secondary": "Untersektoren",
   "table-unit": "Maßeinheit",
   "outcome-bar-summary-historical": "Die Summe der {{goalType}} im Jahr {{selectedYear}} war um {{selectedYearDifference}} höher als im Jahr {{nearestGoalYear}} ({{nearestGoalValue}}).",
-  "outcome-bar-summary-forecast": "Mit dem gewählten Szenario {{scenarioName}} wird das Ziel von {{nearestGoalValue}} a im Jahr {{nearestGoalYear}} erreicht. Die Summe der {{goalType}} im Jahr {{selectedYear}} beträgt {{selectedYearValue}}."
+  "outcome-bar-summary-forecast": "Mit dem gewählten Szenario {{scenarioName}} wird das Ziel von {{nearestGoalValue}} a im Jahr {{nearestGoalYear}} erreicht. Die Summe der {{goalType}} im Jahr {{selectedYear}} beträgt {{selectedYearValue}}.",
+  "outcome-tabs-label": "Anzeigeoptionen"
 }
