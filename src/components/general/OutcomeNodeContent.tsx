@@ -142,7 +142,8 @@ const OutcomeNodeContent = ({
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
   const lastMeasuredYear =
-    node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
+    node?.metric?.historicalValues[node.metric.historicalValues.length - 1]
+      ?.year;
   const firstForecastYear = node?.metric?.forecastValues[0]?.year;
   const isForecast = endYear > lastMeasuredYear;
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);

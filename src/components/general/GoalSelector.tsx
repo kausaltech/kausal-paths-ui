@@ -20,6 +20,10 @@ const StyledDropdown = styled(Dropdown)`
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+
+    &:focus {
+      box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
+    }
   }
 `;
 
