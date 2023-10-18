@@ -10,6 +10,7 @@ export type SiteContextType = {
     instanceIdentifier: string;
   };
 
+  deploymentType: 'production' | 'testing' | 'development';
   iconBase: string;
   ogImage: string;
   baselineName: string | null | undefined;

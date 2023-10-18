@@ -197,6 +197,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     host = window.location.hostname;
   }
   const { instanceConfig } = req;
+  const { publicRuntimeConfig } = getConfig();
 
   const { isProtected } = instanceConfig;
 
@@ -249,6 +250,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
         ?.name,
       iconBase: `${basePath}/static/themes/default/images/favicon`,
       ogImage: `${basePath}/static/themes/default/images/og-image-default.png`,
+      deploymentType: publicRuntimeConfig.deploymentType,
     };
   } catch (error) {
     if (isApolloError(error)) {

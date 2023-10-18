@@ -49,6 +49,7 @@ const nextConfig = {
     basePath: process.env.BASE_PATH,
     instanceIdentifier: INSTANCE_IDENTIFIER,
     sentryDsn: process.env.SENTRY_DSN,
+    deploymentType: process.env.DEPLOYMENT_TYPE || 'development',
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
