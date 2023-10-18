@@ -21,6 +21,8 @@ import NavDropdown from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
 import Script from 'next/script';
 import { isProduction } from 'utils/environment';
+import { deploymentType } from 'server/common';
+import Head from 'next/head';
 
 const SecondaryNav = styled(Navbar)`
   padding: 0;
@@ -295,14 +297,17 @@ function GlobalNav(props) {
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
+  const analyticsUrl =
+    site.deploymentType === 'production'
+      ? 'https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js'
+      : 'https://www.integ.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-92ad5f87cc3b-staging.min.js';
   return (
     <>
-      {isProduction && (
-        <Script
-          src="https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js"
-          strategy="afterInteractive"
-        />
-      )}
+      {site.deploymentType !== 'development' ? (
+        <Head>
+          <script key="zuerich-analytics" src={analyticsUrl} async />
+        </Head>
+      ) : null}
 
       <div className="header header--has-appnav">
         <div className="header__inner">
