@@ -170,7 +170,7 @@ const BarWithLabel = (props) => {
   );
 };
 
-const OutcomeAsText = (
+const outcomeAsText = (
   isForecast,
   scenarioName,
   goalType,
@@ -304,7 +304,7 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
 
   const missingFromTarget = comparisonActual.actual! - comparisonGoal.goal!;
 
-  const verbalizedOutcome = OutcomeAsText(
+  const verbalizedOutcome = outcomeAsText(
     isForecast,
     activeScenario.name,
     activeGoal.label,
