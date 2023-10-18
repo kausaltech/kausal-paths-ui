@@ -1,21 +1,14 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
-import { tint, readableColor } from 'polished';
+import { readableColor } from 'polished';
 
 import { Spinner } from 'reactstrap';
-import { metricToPlot } from 'common/preprocess';
-import SiteContext from 'context/site';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import type { PlotParams } from 'react-plotly.js';
-import { useInstance } from 'common/instance';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
-
-const PlotWrapper = styled.div`
-  text-align: center;
-`;
 
 const PlotLoader = styled.div`
   height: 350px;
@@ -109,48 +102,22 @@ const makeTrace = (parentNode, childNodes, year, i18n, unit, theme) => {
 type IcicleGraphProps = {
   node: OutcomeNodeFieldsFragment;
   subNodes: OutcomeNodeFieldsFragment[];
-  color: string;
-  startYear: number;
   endYear: number;
 };
 
 const IcicleGraph = (props: IcicleGraphProps) => {
-  const { node: parentNode, subNodes, color, startYear, endYear } = props;
-  const { t, i18n } = useTranslation();
-  const site = useContext(SiteContext);
-  const instance = useInstance();
+  const { node: parentNode, subNodes, endYear } = props;
+  const { i18n } = useTranslation();
   const theme = useTheme();
-  const instanceNrDigits = instance.features.showSignificantDigits || 2;
 
   const [loading, setLoading] = useState(true);
 
   const metric = parentNode.metric!;
 
-  const systemFont =
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
-
   const displayNodes =
     subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
   const shortUnit = metric.unit?.short;
-  const longUnit = metric.unit?.htmlLong;
-  const predLabel = t('pred');
 
-  // Find the lowes forecast year
-  const forecastYears = displayNodes.map(
-    (node) => node.metric.forecastValues[0]?.year
-  );
-  const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
-
-  // Split nodes to pos and neg
-  const hasNegativeValues = (node) => {
-    if (node.metric?.forecastValues.find((val) => val.value < 0)) return true;
-    if (node.metric?.historicalValues.find((val) => val.value < 0)) return true;
-    return false;
-  };
-  const negativeDisplayNodes = displayNodes?.filter(hasNegativeValues);
-  const positiveDisplayNodes = displayNodes?.filter(
-    (node) => !hasNegativeValues(node)
-  );
   const icicleTrace = makeTrace(
     parentNode,
     displayNodes,
@@ -169,7 +136,7 @@ const IcicleGraph = (props: IcicleGraphProps) => {
   };
 
   return (
-    <PlotWrapper>
+    <div>
       {loading && (
         <PlotLoader>
           <Spinner color="dark" />
@@ -182,8 +149,9 @@ const IcicleGraph = (props: IcicleGraphProps) => {
         useResizeHandler
         config={{ displayModeBar: false, responsive: true }}
         onInitialized={() => setLoading(false)}
+        style={{ minWidth: '300px', maxWidth: '800px', margin: '0 auto' }}
       />
-    </PlotWrapper>
+    </div>
   );
 };
 
