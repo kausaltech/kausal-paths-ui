@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Row, Col } from 'reactstrap';
+import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import ActionListCard from 'components/general/ActionListCard';
 import { ActionWithEfficiency, SortActionsConfig } from 'types/actions.types';
 import { useMemo } from 'react';
@@ -28,10 +29,15 @@ const ActionListCategory = styled.div`
 
 const getValueForSorting = (
   action: ActionWithEfficiency,
-  sortBy: SortActionsConfig
+  sortBy: SortActionsConfig,
+  yearRange: [number, number]
 ): number => {
   if (sortBy.key === 'CUM_IMPACT') {
-    return action.impactMetric?.cumulativeForecastValue ?? 0;
+    return summarizeYearlyValuesBetween(
+      action.impactMetric,
+      yearRange[0],
+      yearRange[1]
+    );
   }
 
   if (sortBy.sortKey) {
@@ -72,8 +78,8 @@ const ActionsList = ({
       return sortAscending ? 0 : -1;
     }
 
-    const aValue = getValueForSorting(a, sortBy);
-    const bValue = getValueForSorting(b, sortBy);
+    const aValue = getValueForSorting(a, sortBy, yearRange);
+    const bValue = getValueForSorting(b, sortBy, yearRange);
 
     return sortAscending ? aValue - bValue : bValue - aValue;
   };
