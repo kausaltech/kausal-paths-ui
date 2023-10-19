@@ -1863,6 +1863,7 @@ export type GetPageQuery = {
   page?:
     | ({
         showOnlyMunicipalActions?: boolean | null;
+        defaultSortOrder: ActionSortOrder;
         id?: string | null;
         title: string;
         actionListLeadTitle?: string | null;
