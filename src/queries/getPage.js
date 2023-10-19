@@ -105,6 +105,7 @@ const GET_PAGE = gql`
       ... on ActionListPage {
         actionListLeadTitle: leadTitle
         actionListLeadParagraph: leadParagraph
+        showOnlyMunicipalActions
       }
       ... on StaticPage {
         body {
