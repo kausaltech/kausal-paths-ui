@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Row, Col } from 'reactstrap';
 import ActionListCard from 'components/general/ActionListCard';
-import { ActionWithEfficiency } from 'components/pages/ActionListPage';
+import { ActionWithEfficiency, SortActionsConfig } from 'types/actions.types';
 import { useMemo } from 'react';
 
 const ActionListList = styled(Row)`
@@ -26,12 +26,31 @@ const ActionListCategory = styled.div`
   }
 `;
 
+const getValueForSorting = (
+  action: ActionWithEfficiency,
+  sortBy: SortActionsConfig
+): number => {
+  if (sortBy.key === 'CUM_IMPACT') {
+    return action.impactMetric?.cumulativeForecastValue ?? 0;
+  }
+
+  if (sortBy.sortKey) {
+    const sortValue = action[sortBy.sortKey];
+
+    if (typeof sortValue === 'number') {
+      return sortValue;
+    }
+  }
+
+  return 0;
+};
+
 type ActionsListProps = {
   id?: string;
   actions: ActionWithEfficiency[];
   displayType: 'displayTypeYearly';
   yearRange: [number, number];
-  sortBy: string;
+  sortBy: SortActionsConfig;
   sortAscending: boolean;
   refetching: boolean;
 };
@@ -49,14 +68,13 @@ const ActionsList = ({
 
   //console.log("action list", actions);
   const sortActions = (a, b) => {
-    if (sortBy === 'default') return sortAscending ? 0 : -1;
-    // check if we are using efficiency
-    const aValue = a[sortBy]
-      ? a[sortBy]
-      : a.impactMetric?.cumulativeForecastValue;
-    const bValue = b[sortBy]
-      ? b[sortBy]
-      : b.impactMetric?.cumulativeForecastValue;
+    if (sortBy.key === 'STANDARD') {
+      return sortAscending ? 0 : -1;
+    }
+
+    const aValue = getValueForSorting(a, sortBy);
+    const bValue = getValueForSorting(b, sortBy);
+
     return sortAscending ? aValue - bValue : bValue - aValue;
   };
 
@@ -73,7 +91,6 @@ const ActionsList = ({
     return [...groups];
   }, [actions]);
 
-  // console.log("action groups", actionGroups);
   return (
     <div id={id}>
       {actionGroups?.map((group) => (
