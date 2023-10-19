@@ -1,19 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import {
-  Button,
-  ButtonGroup,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
-  TabPane,
-} from 'reactstrap';
+import { Nav, NavItem, NavLink, TabContent } from 'reactstrap';
 
 import Icon from 'components/common/icon';
 import styled from 'styled-components';
 
-import { ActionLink, Link, NodeLink } from 'common/links';
+import { NodeLink } from 'common/links';
 import {
   getMetricValue,
   beautifyValue,
@@ -75,7 +67,6 @@ const CardContent = styled.div`
 
 const TabNavigation = styled(Nav)`
   flex-wrap: nowrap;
-  overflow-x: auto;
   width: 100%;
   border-bottom: 0;
 `;
@@ -147,8 +138,6 @@ const OutcomeNodeContent = ({
   const firstForecastYear = node?.metric?.forecastValues[0]?.year;
   const isForecast = endYear > lastMeasuredYear;
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
-
-  // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.metric?.unit?.htmlLong || node.metric?.unit?.htmlShort;
 
   const outcomeGraph = useMemo(
@@ -177,9 +166,6 @@ const OutcomeNodeContent = ({
     [node, subNodes, color, startYear, endYear]
   );
 
-  // useEffect(() => console.log('node changed'), [node]);
-  // useEffect(() => console.log('subNodes changed'), [subNodes]);
-
   return (
     <div role="tabpanel" id={`tabpanel-${node.id}`}>
       <CardSetHeader>
@@ -207,14 +193,18 @@ const OutcomeNodeContent = ({
           </CardSetDescription>
         </div>
         <CardSetSummary>
-          <HighlightValue
-            className="figure"
-            displayValue={beautifyValue(nodesTotal)}
-            header={`${
-              isForecast ? t('table-scenario-forecast') : t('table-historical')
-            } ${endYear}`}
-            unit={unit}
-          />
+          {nodesTotal && (
+            <HighlightValue
+              className="figure"
+              displayValue={'' + beautifyValue(nodesTotal)}
+              header={`${
+                isForecast
+                  ? t('table-scenario-forecast')
+                  : t('table-historical')
+              } ${endYear}`}
+              unit={unit || ''}
+            />
+          )}
           <HighlightValue
             className="figure"
             displayValue={
@@ -228,48 +218,79 @@ const OutcomeNodeContent = ({
         </CardSetSummary>
       </CardSetHeader>
       <CardContent>
-        <TabNavigation tabs className="justify-content-end">
+        <TabNavigation
+          tabs
+          className="justify-content-end"
+          role="tablist"
+          aria-label={t('outcome-tabs-label')}
+        >
           {showDistribution && (
-            <DisplayTab>
+            <DisplayTab role="presentation">
               <NavLink
                 href="#"
                 onClick={() => setActiveTabId('year')}
                 active={activeTabId === 'year'}
                 disabled={subNodes.length < 2}
+                role="tab"
+                aria-selected={activeTabId === 'year'}
+                aria-controls={`${node.id}-panel-year`}
+                id={`${node.id}-tab-year`}
+                tabIndex={0}
               >
                 <Icon name="chartTreeMap" /> {t('distribution')}
               </NavLink>
             </DisplayTab>
           )}
-          <DisplayTab>
+          <DisplayTab role="presentation">
             <NavLink
               href="#"
               onClick={() => setActiveTabId('graph')}
               active={activeTabId === 'graph'}
+              role="tab"
+              aria-selected={activeTabId === 'graph'}
+              aria-controls={`${node.id}-panel-graph`}
+              id={`${node.id}-tab-graph`}
+              tabIndex={0}
             >
               <Icon name="chartArea" /> {t('time-series')}
             </NavLink>
           </DisplayTab>
-          <DisplayTab>
+          <DisplayTab role="presentation">
             <NavLink
               href="#"
               onClick={() => setActiveTabId('table')}
               active={activeTabId === 'table'}
+              role="tab"
+              aria-selected={activeTabId === 'table'}
+              aria-controls={`${node.id}-panel-table`}
+              id={`${node.id}-tab-table`}
+              tabIndex={0}
             >
               <Icon name="table" /> {t('table')}
             </NavLink>
           </DisplayTab>
-          <DisplayTab>
+          <DisplayTab role="presentation">
             <NavLink
               href="#"
               onClick={() => setActiveTabId('info')}
               active={activeTabId === 'info'}
+              role="tab"
+              aria-selected={activeTabId === 'info'}
+              aria-controls={`${node.id}-panel-info`}
+              id={`${node.id}-tab-info`}
+              tabIndex={0}
             >
               <Icon name="circleInfo" /> {t('details')}
             </NavLink>
           </DisplayTab>
         </TabNavigation>
-        <TabContent activeTab={activeTabId}>
+        <TabContent
+          activeTab={activeTabId}
+          id={`${node.id}-panel-${activeTabId}`}
+          role="tabpanel"
+          tabIndex={0}
+          aria-labelledby={`${node.id}-tab-${activeTabId}}`}
+        >
           {activeTabId === 'year' && (
             <ContentWrapper>{icicleGraph}</ContentWrapper>
           )}
