@@ -49,6 +49,9 @@ export function logRequest(
 ) {
   req._startTime = new Date();
   req._startBytes = req.socket.bytesWritten;
+  if (req.path.startsWith('/__nextjs_original-stack-frame')) {
+    return next();
+  }
   const end = res.end;
   res.end = function (...args: any[]) {
     res.responseTime = new Date().getTime() - req._startTime.getTime();

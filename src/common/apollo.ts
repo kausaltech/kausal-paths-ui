@@ -1,19 +1,14 @@
-// Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
-import { i18n } from 'next-i18next';
-import getConfig from 'next/config';
 import {
-  ApolloClient,
   ApolloLink,
   HttpLink,
-  InMemoryCache,
-  NormalizedCacheObject,
+  type ApolloClient,
+  type NormalizedCacheObject,
 } from '@apollo/client';
-import possibleTypes from 'common/__generated__/possible_types.json';
+
 import { DirectiveNode, Kind } from 'graphql';
 
-const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
-
 const localeMiddleware = new ApolloLink((operation, forward) => {
+  /*
   operation.setContext(({ headers = {}, locale }) => {
     if (locale || (i18n && i18n.language)) {
       return {
@@ -24,11 +19,12 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
       };
     }
   });
-
+  */
   return forward(operation);
 });
 
 export type ApolloClientOpts = {
+  apiUri: string;
   instanceHostname: string;
   instanceIdentifier: string;
   authorizationToken?: string | undefined;
@@ -84,11 +80,13 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
       definitions: operation.query.definitions.map((def) => {
         if (def.kind !== Kind.OPERATION_DEFINITION) return def;
         const directives: DirectiveNode[] = [...(def.directives || [])];
+        /*
         if (i18n && i18n.language) {
           directives.push(
             createDirective('locale', [{ name: 'lang', val: i18n.language }])
           );
         }
+        */
         directives.push(
           createDirective('instance', [
             { name: 'identifier', val: instanceIdentifier },
@@ -101,7 +99,6 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         };
       }),
     };
-
     operation.setContext(({ headers = {} }) => {
       if (instanceIdentifier) {
         headers['x-paths-instance-identifier'] = instanceIdentifier;
@@ -120,6 +117,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
           headers['x-forwarded-for'] = remoteAddress;
         }
       }
+      console.log(headers);
       return {
         headers,
       };
@@ -133,50 +131,31 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
 
 export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
-let apolloClient: ApolloClientType | undefined;
-
-function createApolloClient(opts: ApolloClientOpts) {
-  const ssrMode = typeof window === 'undefined';
-  const uri = ssrMode
-    ? serverRuntimeConfig.graphqlUrl
-    : publicRuntimeConfig.graphqlUrl;
-
+export function createApolloLink(opts: ApolloClientOpts) {
+  const uri = opts.apiUri;
+  console.log('uri is', uri);
   const httpLink = new HttpLink({
     uri,
     credentials: 'include',
   });
 
+  return ApolloLink.from([
+    //localeMiddleware,
+    makeInstanceMiddleware(opts),
+    httpLink,
+  ]);
+}
+
+/*
+function createApolloClient(opts: ApolloClientOpts) {
+  const ssrMode = typeof window === 'undefined';
+
   return new ApolloClient({
     ssrMode,
-    link: ApolloLink.from([
-      localeMiddleware,
-      makeInstanceMiddleware(opts),
-      httpLink,
-    ]),
+    link: createApolloLink(opts),
     cache: new InMemoryCache({
       possibleTypes: possibleTypes.possibleTypes,
     }),
   });
 }
-
-export function initializeApollo(
-  initialState: NormalizedCacheObject | null,
-  opts: ApolloClientOpts
-) {
-  const _apolloClient = apolloClient ?? createApolloClient(opts);
-
-  // If your page has Next.js data fetching methods that use Apollo Client, the initial state
-  // gets hydrated here
-  if (initialState) {
-    // Get existing cache, loaded during client side data fetching
-    const existingCache = _apolloClient.extract();
-    // Restore the cache using the data passed from getStaticProps/getServerSideProps
-    // combined with the existing cached data
-    _apolloClient.cache.restore({ ...existingCache, ...initialState });
-  }
-  // For SSG and SSR always create a new Apollo Client
-  if (typeof window === 'undefined') return _apolloClient;
-  // Create the Apollo Client once in the client
-  if (!apolloClient) apolloClient = _apolloClient;
-  return _apolloClient;
-}
+*/

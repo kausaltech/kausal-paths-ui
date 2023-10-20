@@ -117,6 +117,7 @@ class PathsServer extends BaseServer {
       other: {
         instanceConfig: instance,
       },
+      identifier: instance.identifier,
     };
     return ctx;
   }

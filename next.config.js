@@ -2,6 +2,7 @@ import path from 'path';
 import * as url from 'url';
 import { createRequire } from 'module';
 import webpack from 'webpack';
+import withNextIntl from 'next-intl/plugin';
 import { withSentryConfig } from '@sentry/nextjs';
 import { secrets } from 'docker-secret';
 import i18nConfig from './next-i18next.config.js';
@@ -15,6 +16,11 @@ const DEFAULT_GRAPHQL_API_URL =
   process.env.DEFAULT_GRAPHQL_API_URL ||
   'https://api.paths.kausal.tech/v1/graphql/';
 const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
+
+let CDN_URL = process.env.CDN_URL ?? undefined;
+if (CDN_URL === undefined && process.env.NODE_ENV === 'development') {
+  CDN_URL = 'http://cdn.localhost:3000';
+}
 
 const sentryAuthToken =
   secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
@@ -49,8 +55,10 @@ const nextConfig = {
     basePath: process.env.BASE_PATH,
     instanceIdentifier: INSTANCE_IDENTIFIER,
     sentryDsn: process.env.SENTRY_DSN,
+    cdnUrl: CDN_URL || '',
     deploymentType: process.env.DEPLOYMENT_TYPE || 'development',
   },
+  assetPrefix: CDN_URL,
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
@@ -60,15 +68,9 @@ const nextConfig = {
     disableClientWebpackPlugin: !sentryAuthToken,
   },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
   productionBrowserSourceMaps: true,
@@ -77,6 +79,7 @@ const nextConfig = {
     styledComponents: true,
   },
   swcMinify: true,
+  reactStrictMode: true,
   modularizeImports: {
     lodash: {
       transform: 'lodash/{{member}}',
@@ -102,10 +105,7 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     esmExternals: 'loose',
-    runtime: 'nodejs',
   },
-  // basePath: process.env.BASE_PATH,
-  i18n,
 };
 
 const sentryWebpackPluginOptions = {
@@ -113,6 +113,9 @@ const sentryWebpackPluginOptions = {
   authToken: sentryAuthToken,
 };
 
+const withSentry = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+const withIntl = withNextIntl()(withSentry);
+
 // Make sure adding Sentry options is the last code to run before exporting, to
 // ensure that your source maps include changes from all other Webpack plugins
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default withIntl;

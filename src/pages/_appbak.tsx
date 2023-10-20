@@ -132,10 +132,15 @@ function PathsApp(props: PathsAppProps) {
   // NextJS messes up client router's defaultLocale in some instances.
   // Override it here.
   if (typeof window !== 'undefined') {
+    console.log('router default', router.defaultLocale);
+    console.log(window.__NEXT_DATA__);
     const defaultLocale = window.__NEXT_DATA__.defaultLocale;
+    console.log('incoming', defaultLocale);
+    /*
     if (router.defaultLocale !== defaultLocale) {
       router.defaultLocale = defaultLocale;
     }
+    */
   }
 
   const instance = instanceContext;
@@ -273,15 +278,15 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
   };
 }
 
-async function getI18nProps(ctx: PathsPageContext) {
+async function getI18nProps(appContext: PathsAppContext) {
   // SSR only
   const { serverSideTranslations } = await import(
     'next-i18next/serverSideTranslations'
   );
+  const { ctx, router } = appContext;
+  const { headers } = ctx.req;
   const nextI18nConfig = (await import('../../next-i18next.config')).default;
-  const { publicRuntimeConfig } = getConfig();
-  const locale: string =
-    ctx.locale || publicRuntimeConfig.locale || ctx.locales?.[0];
+  const locale = router.locale;
   const i18n = getI18n();
 
   if (!locale) {
@@ -294,8 +299,11 @@ async function getI18nProps(ctx: PathsPageContext) {
     ...nextI18nConfig,
     i18n: {
       ...nextI18nConfig.i18n,
-      defaultLocale: ctx.defaultLocale!,
-      locales: ctx.locales!,
+      defaultLocale: router.defaultLocale,
+      locales: [
+        headers['x-default-locale']!,
+        ...(headers['x-other-locales'] as string).split(','),
+      ],
     },
   };
   const i18nConfig = await serverSideTranslations(locale, ['common'], conf);
@@ -348,7 +356,7 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
 
   // SSR
   setBasePath();
-  const i18nProps = await getI18nProps(ctx);
+  const i18nProps = await getI18nProps(appContext);
   const siteProps = await getSiteContext(ctx, ctx.locale!);
   const appProps = await App.getInitialProps(appContext);
   const pageProps = {

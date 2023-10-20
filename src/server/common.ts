@@ -59,6 +59,7 @@ export type RequestContext = {
   defaultLanguage: string;
   supportedLanguages: Array<string>;
   isProtected: boolean;
+  identifier: string;
   other: {
     [key: string]: any;
   };
@@ -122,13 +123,13 @@ export abstract class BaseServer {
 
     if (basePath && basePath.endsWith('/')) basePath.slice(0, -1);
     srv.nextConfig.basePath = basePath;
-    srv.nextConfig.assetPrefix = basePath;
     srv.nextConfig.images.path = basePath + '/_next/image';
     srv.nextConfig.publicRuntimeConfig.basePath = basePath;
     srv.renderOpts.basePath = basePath;
     srv.renderOpts.canonicalBase = basePath;
     //srv.renderOpts.runtimeConfig.basePath = basePath;
     srv.renderOpts.assetPrefix = basePath;
+    srv.nextConfig.assetPrefix = basePath;
 
     req.nextBasePath = basePath;
   }
@@ -163,6 +164,9 @@ export abstract class BaseServer {
     const requestPath = req.currentURL.path || '/';
     const path = requestPath.slice(basePath.length);
     const parts = path.split('/');
+    if (parts.length && !parts[0].length) {
+      parts.shift();
+    }
 
     if (!requestPath.startsWith(basePath)) {
       return null;
@@ -205,13 +209,34 @@ export abstract class BaseServer {
       res.status(200).send('OK');
       return;
     }
+    const srv = this.nextServer as any;
+    const isAssetUrl =
+      srv.nextConfig.assetPrefix &&
+      req.currentURL.baseURL.startsWith(srv.nextConfig.assetPrefix);
+    if (
+      isAssetUrl ||
+      req.currentURL.path.startsWith('/__nextjs_original-stack-frame')
+    ) {
+      res.appendHeader('Access-Control-Allow-Origin', '*');
+      await this.nextHandleRequest(req, res);
+      return;
+    }
     const ctx = await this.getRequestContext(req, res);
     if (!ctx) {
       res.status(404).send('Page not found');
       return;
     }
 
-    const { basePath, defaultLanguage, supportedLanguages, isProtected } = ctx;
+    const { defaultLanguage, supportedLanguages, isProtected } = ctx;
+
+    let basePath = ctx.basePath;
+    /*
+    this.setBasePath(req, basePath);
+    srv.renderOpts.assetPrefix = basePath;
+    srv.nextConfig.assetPrefix = basePath;
+    srv.setAssetPrefix(basePath);
+    */
+
     req.nextBasePath = basePath;
     req.nextDefaultLanguage = defaultLanguage;
     req.nextSupportedLanguages = supportedLanguages;
@@ -239,8 +264,15 @@ export abstract class BaseServer {
       return;
     }
 
-    this.setBasePath(req, basePath);
-    this.setLocale(req, defaultLanguage, supportedLanguages);
+    req.headers['x-default-locale'] = defaultLanguage;
+    req.headers['x-other-locales'] = supportedLanguages
+      .filter((lang) => lang != defaultLanguage)
+      .join(',');
+    req.headers['x-current-locale'] = req.nextCurrentLanguage;
+    req.headers['x-normalized-path'] = normalizedPath;
+    req.headers['x-instance-identifier'] = ctx.identifier;
+    //this.setBasePath(req, basePath);
+    //this.setLocale(req, defaultLanguage, supportedLanguages);
 
     await this.nextHandleRequest(req, res);
   }
@@ -298,7 +330,7 @@ export abstract class BaseServer {
     this.passport = initializePassport(app);
 
     app.all('*', asyncHandler(this.handleRequest.bind(this)));
-
+    app.use((req, res, next, err) => {});
     app.use(Sentry.Handlers.errorHandler());
     app.listen(port, () => {
       console.log(`> ✅ Ready on http://localhost:${port}`);

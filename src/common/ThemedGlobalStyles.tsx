@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { createGlobalStyle, withTheme } from 'styled-components';
-import { themeProp } from 'common/theme';
+'use client';
+
+import React, { PropsWithChildren } from 'react';
+import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -204,7 +204,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-function ThemedGlobalStyles({ theme, children }) {
+function ThemedGlobalStyles({ children }: PropsWithChildren) {
   return (
     <>
       <GlobalStyle />
@@ -213,13 +213,4 @@ function ThemedGlobalStyles({ theme, children }) {
   );
 }
 
-ThemedGlobalStyles.defaultProps = {
-  children: '',
-};
-
-ThemedGlobalStyles.propTypes = {
-  theme: themeProp.isRequired,
-  children: PropTypes.node,
-};
-
-export default withTheme(React.memo(ThemedGlobalStyles));
+export default ThemedGlobalStyles;

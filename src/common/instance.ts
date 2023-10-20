@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, createContext } from 'react';
 import getConfig from 'next/config';
 import GET_INSTANCE_CONTEXT from '../queries/instance';

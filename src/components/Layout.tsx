@@ -1,15 +1,15 @@
+'use client';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import GlobalNav from 'components/common/GlobalNav';
 import Footer from 'components/common/Footer';
 import { useSite } from 'context/site';
-import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import { CombinedIconSymbols } from 'components/common/icon';
 import { useTheme } from 'common/theme';
-import dynamic from 'next/dynamic';
 import { useCustomComponent } from './custom';
 import { useTranslation } from 'common/i18n';
+import { usePathname } from 'next/navigation';
+import { PropsWithChildren } from 'react';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -52,9 +52,8 @@ const StyledSkipToContent = styled.a`
   }
 `;
 
-const Layout = ({ children }) => {
-  const router = useRouter();
-  const { asPath: pathname } = router;
+const Layout = ({ children }: PropsWithChildren) => {
+  const pathname = usePathname();
   const theme = useTheme();
   const site = useSite();
   const { t } = useTranslation();

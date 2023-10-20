@@ -16,7 +16,12 @@
     "jsx": "preserve",
     "strictNullChecks": true,
     "incremental": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -24,7 +29,8 @@
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "**/*.mjs"
+    "**/*.mjs",
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

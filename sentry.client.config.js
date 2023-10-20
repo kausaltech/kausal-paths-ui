@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/nextjs';
-import getConfig from 'next/config';
+//import getConfig from 'next/config';
 
-const { publicRuntimeConfig } = getConfig();
+//const { publicRuntimeConfig } = getConfig();
+const publicRuntimeConfig = {};
 
 const SENTRY_DSN =
   publicRuntimeConfig?.sentryDsn ||

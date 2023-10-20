@@ -1,5 +1,7 @@
-import { GetInstanceContextQuery } from 'common/__generated__/graphql';
-import React, { useContext } from 'react';
+'use client';
+
+import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
+import React, { PropsWithChildren, useContext } from 'react';
 
 export type SiteContextScenario = GetInstanceContextQuery['scenarios'][0];
 
@@ -31,5 +33,13 @@ const SiteContext = React.createContext<SiteContextType>(null!);
 export const useSite = () => {
   return useContext(SiteContext);
 };
+
+type OwnProps = PropsWithChildren & {
+  value: SiteContextType;
+};
+
+export function SiteContextProvider({ children, value }: OwnProps) {
+  return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;
+}
 
 export default SiteContext;
