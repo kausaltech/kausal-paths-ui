@@ -163,7 +163,9 @@ function ActionListPage(props: ActionListPageProps) {
   const [ascending, setAscending] = useState(true);
   const [sortBy, setSortBy] = useState('impact');
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
-  const [actionGroup, setActionGroup] = useState('undefined');
+  const [actionGroup, setActionGroup] = useState<'ALL_ACTIONS' | string>(
+    'ALL_ACTIONS'
+  );
 
   const data = queryResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
@@ -178,14 +180,21 @@ function ActionListPage(props: ActionListPageProps) {
     }
   }, [loading, data]);
 
-  // If we have action efficiency pairs, we augment the actions with the cumulative values
-  const reductionText = `(${t('reduction')}, ${t('accumulated-between')} ${
-    yearRange[0]
-  }-${yearRange[1]})`;
+  const filteredActions = (data?.actions || []).filter(
+    (action) =>
+      !page.showOnlyMunicipalActions ||
+      (page.showOnlyMunicipalActions && action.decisionLevel === 'MUNICIPALITY')
+  );
+
   const usableActions: ActionWithEfficiency[] = useMemo(
     () =>
-      (data?.actions || [])
+      filteredActions
         .map((act) => {
+          // If we have action efficiency pairs, we augment the actions with the cumulative values
+          const reductionText = `(${t('reduction')}, ${t(
+            'accumulated-between'
+          )} ${yearRange[0]}-${yearRange[1]})`;
+
           const out: ActionWithEfficiency = {
             ...act,
           };
@@ -235,9 +244,17 @@ function ActionListPage(props: ActionListPageProps) {
         })
         .filter(
           (action) =>
-            actionGroup === 'undefined' || actionGroup === action.group?.id
+            actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id
         ),
     [data, actionGroup, activeEfficiency, yearRange]
+  );
+
+  const actionGroups = filteredActions.reduce(
+    (groups: NonNullable<ActionWithEfficiency['group']>[], action) =>
+      !action.group || groups.find((group) => group.id === action.group?.id)
+        ? groups
+        : [...groups, action.group],
+    []
   );
 
   const refetching = networkStatus === NetworkStatus.refetch;
@@ -302,7 +319,7 @@ function ActionListPage(props: ActionListPageProps) {
                   </FormGroup>
                 </Col>
               )}
-              {data.instance.actionGroups.length > 1 && (
+              {actionGroups.length > 1 && (
                 <Col md={4} className="d-flex">
                   <FormGroup>
                     <Label for="type">{t('actions-group-type')}</Label>
@@ -312,10 +329,10 @@ function ActionListPage(props: ActionListPageProps) {
                       type="select"
                       onChange={(e) => setActionGroup(e.target.value)}
                     >
-                      <option value="undefined" default>
+                      <option value="ALL_ACTIONS">
                         {t('action-groups-all')}
                       </option>
-                      {data.instance.actionGroups.map((actionGroup, indx) => (
+                      {actionGroups.map((actionGroup) => (
                         <option value={actionGroup.id} key={actionGroup.id}>
                           {actionGroup.name}
                         </option>

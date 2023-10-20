@@ -74,7 +74,7 @@ export type PlaywrightGetInstanceInfoQuery = {
   } & { __typename?: 'InstanceType' };
   pages: Array<
     { urlPath: string; title: string; showInMenus: boolean } & {
-      __typename?:
+      __typename:
         | 'ActionListPage'
         | 'InstanceRootPage'
         | 'OutcomePage'
@@ -1862,6 +1862,8 @@ export type GetPageQuery = {
     | null;
   page?:
     | ({
+        showOnlyMunicipalActions?: boolean | null;
+        defaultSortOrder: ActionSortOrder;
         id?: string | null;
         title: string;
         actionListLeadTitle?: string | null;
