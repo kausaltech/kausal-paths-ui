@@ -1,11 +1,7 @@
 import styled from 'styled-components';
+import { SortActionsConfig } from 'types/actions.types';
 import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
 import { Spinner } from 'reactstrap';
-
-const ActionCount = styled.div`
-  margin: 0 0 ${({ theme }) => theme.spaces.s100};
-  color: ${({ theme }) => theme.themeColors.white};
-`;
 
 const LoadingOverlay = styled.div`
   position: absolute;
@@ -29,15 +25,27 @@ const GraphCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
+type Props = {
+  sortBy?: SortActionsConfig['sortKey'];
+
+  // TODO: Type props
+  actions;
+  id;
+  actionGroups;
+  sortAscending;
+  refetching;
+  displayYears;
+};
+
 const ActionsComparison = ({
   actions,
   id,
   actionGroups,
-  sortBy,
+  sortBy = 'cumulativeImpact',
   sortAscending,
   refetching,
   displayYears,
-}) => {
+}: Props) => {
   // if we have efficiency limit set, remove actions over that limit
 
   const actionsWithImpact = actions.map((action) => {
@@ -51,8 +59,8 @@ const ActionsComparison = ({
   });
 
   const sortActions = (a, b) => {
-    let aValue = a[sortBy];
-    let bValue = b[sortBy];
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
 
     return sortAscending ? aValue - bValue : bValue - aValue;
   };

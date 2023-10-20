@@ -115,10 +115,6 @@ const ActionListCard = (props: ActionListCardProps) => {
 
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
-  const actionEffectYearly =
-    action.impactMetric.forecastValues.find(
-      (dataPoint) => dataPoint.year === displayYears[1]
-    )?.value || 0;
 
   //const actionEffectCumulative = action.impactMetric.cumulativeForecastValue;
   const actionEffectCumulative = summarizeYearlyValuesBetween(
@@ -185,7 +181,7 @@ const ActionListCard = (props: ActionListCardProps) => {
           {action.impactMetric && !hasEfficiency && (
             <ImpactDisplay
               effectCumulative={actionEffectCumulative}
-              effectYearly={actionEffectYearly}
+              effectYearly={action.impactOnTargetYear}
               yearRange={displayYears}
               unitCumulative={unitCumulative}
               unitYearly={unitYearly}

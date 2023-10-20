@@ -23,7 +23,6 @@ import ActionsMac from 'components/general/ActionsMac';
 import ActionsComparison from 'components/general/ActionsComparison';
 import ContentLoader from 'components/common/ContentLoader';
 import ActionsList from 'components/general/ActionsList';
-import { useSite } from 'context/site';
 import {
   GetActionListQuery,
   GetActionListQueryVariables,
@@ -31,6 +30,13 @@ import {
 } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import type { PageRefetchCallback } from './Page';
+import {
+  ActionWithEfficiency,
+  SortActionsBy,
+  SortActionsConfig,
+} from 'types/actions.types';
+import { TFunction } from 'i18next';
+import { useInstance } from 'common/instance';
 
 const HeaderSection = styled.div`
   padding: 4rem 0 2rem;
@@ -81,8 +87,6 @@ const HeaderCard = styled.div`
   background-color: ${(props) => props.theme.themeColors.white};
 `;
 
-const Description = styled.div``;
-
 const ActionsViewTabs = styled.div`
   background-color: ${(props) => props.theme.graphColors.blue070};
   margin-bottom: ${(props) => props.theme.spaces.s400};
@@ -119,19 +123,38 @@ const Tab = styled.button`
   }
 `;
 
-export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
-  cumulativeImpact?: number;
-  cumulativeImpactUnit?: string;
-  cumulativeImpactName?: string;
-  efficiencyDivisor?: number;
-  cumulativeEfficiency?: number;
-  cumulativeEfficiencyUnit?: string;
-  cumulativeEfficiencyName?: string;
-  cumulativeCost?: number;
-  cumulativeCostUnit?: string;
-  cumulativeCostName?: string;
-  efficiencyCap?: number;
-};
+const getSortOptions = (
+  t: TFunction,
+  hasEfficiency: boolean,
+  showAccumulatedEffects: boolean
+): SortActionsConfig[] => [
+  {
+    key: 'STANDARD',
+    label: t('actions-sort-default'),
+  },
+  {
+    isHidden: !hasEfficiency,
+    key: 'CUM_EFFICIENCY',
+    label: t('actions-sort-efficiency'),
+    sortKey: 'cumulativeEfficiency',
+  },
+  {
+    isHidden: !showAccumulatedEffects,
+    key: 'CUM_IMPACT',
+    label: t('actions-sort-cumulative-impact'),
+  },
+  {
+    key: 'IMPACT',
+    label: t('actions-sort-impact'),
+    sortKey: 'impactOnTargetYear',
+  },
+  {
+    isHidden: !hasEfficiency,
+    key: 'CUM_COST',
+    label: t('actions-sort-cost'),
+    sortKey: 'cumulativeCost',
+  },
+];
 
 type ActionListPageProps = {
   page: NonNullable<GetPageQuery['page']> & {
@@ -140,9 +163,9 @@ type ActionListPageProps = {
   refetch: PageRefetchCallback;
 };
 
-function ActionListPage(props: ActionListPageProps) {
+function ActionListPage({ page }: ActionListPageProps) {
   const { t } = useTranslation();
-  const { page } = props;
+  const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
   const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
     GET_ACTION_LIST,
@@ -157,28 +180,38 @@ function ActionListPage(props: ActionListPageProps) {
   const { error, loading, networkStatus, previousData } = queryResp;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
-  const site = useSite();
+
+  const data = queryResp.data ?? previousData;
+  const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
+
+  const sortOptions = getSortOptions(
+    t,
+    hasEfficiency,
+    !!instance.features.showAccumulatedEffects
+  );
 
   const [listType, setListType] = useState('list');
   const [ascending, setAscending] = useState(true);
-  const [sortBy, setSortBy] = useState('impact');
+  const [sortBy, setSortBy] = useState<SortActionsConfig>(
+    sortOptions.find(
+      (sortOption) => sortOption.key === page.defaultSortOrder
+    ) ?? sortOptions[0]
+  );
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState<'ALL_ACTIONS' | string>(
     'ALL_ACTIONS'
   );
 
-  const data = queryResp.data ?? previousData;
-  const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
-
   // Different default view if we have action efficiency pairs
   useEffect(() => {
-    if (loading === false && data) {
-      if (hasEfficiency) {
-        setListType('mac');
-        setSortBy('cumulativeEfficiency');
-      }
+    if (loading === false && data && hasEfficiency) {
+      setListType('mac');
+      setSortBy(
+        sortOptions.find((option) => option.key === 'CUM_EFFICIENCY') ??
+          sortOptions[0]
+      );
     }
-  }, [loading, data]);
+  }, [loading, data, hasEfficiency]);
 
   const filteredActions = (data?.actions || []).filter(
     (action) =>
@@ -197,11 +230,19 @@ function ActionListPage(props: ActionListPageProps) {
 
           const out: ActionWithEfficiency = {
             ...act,
+            impactOnTargetYear:
+              [
+                ...(act.impactMetric?.historicalValues ?? []),
+                ...(act.impactMetric?.forecastValues ?? []),
+              ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ??
+              0,
           };
+
           const efficiencyType = data?.actionEfficiencyPairs[activeEfficiency];
           const efficiencyAction = efficiencyType?.actions.find(
             (a) => a.action.id === act.id
           );
+
           if (!efficiencyType || !efficiencyAction) return out;
 
           out.cumulativeImpact =
@@ -257,6 +298,12 @@ function ActionListPage(props: ActionListPageProps) {
     []
   );
 
+  const handleChangeSort = (sortBy: SortActionsBy) => {
+    const selectedSorter = sortOptions.find((option) => option.key === sortBy);
+
+    setSortBy(selectedSorter ?? sortOptions[0]);
+  };
+
   const refetching = networkStatus === NetworkStatus.refetch;
 
   if (error) {
@@ -284,11 +331,13 @@ function ActionListPage(props: ActionListPageProps) {
                 <PageHeader>
                   <HeaderCard>
                     <h2>{page.actionListLeadTitle}</h2>
-                    <Description
-                      dangerouslySetInnerHTML={{
-                        __html: page.actionListLeadParagraph,
-                      }}
-                    />
+                    {!!page.actionListLeadParagraph && (
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: page.actionListLeadParagraph,
+                        }}
+                      />
+                    )}
                   </HeaderCard>
                 </PageHeader>
               </Col>
@@ -349,35 +398,21 @@ function ActionListPage(props: ActionListPageProps) {
                       id="sort"
                       name="select"
                       type="select"
-                      onChange={(e) => setSortBy(e.target.value)}
+                      onChange={(e) =>
+                        handleChangeSort(e.target.value as SortActionsBy)
+                      }
                     >
-                      <option value="default" selected={sortBy === 'default'}>
-                        {t('actions-sort-default')}
-                      </option>
-                      {hasEfficiency && (
-                        <option
-                          value="cumulativeEfficiency"
-                          selected={sortBy === 'cumulativeEfficiency'}
-                        >
-                          {t('actions-sort-efficiency')}
-                        </option>
-                      )}
-                      <option
-                        value="cumulativeImpact"
-                        selected={sortBy === 'cumulativeImpact'}
-                      >
-                        {t('actions-sort-cumulative-impact')}
-                      </option>
-                      <option value="impact" selected={sortBy === 'impact'}>
-                        {t('actions-sort-impact')}
-                      </option>
-                      {hasEfficiency && (
-                        <option
-                          value="cumulativeCost"
-                          selected={sortBy === 'cumulativeCost'}
-                        >
-                          {t('actions-sort-cost')}
-                        </option>
+                      {sortOptions.map(
+                        (sortOption) =>
+                          !sortOption.isHidden && (
+                            <option
+                              key={sortOption.key}
+                              value={sortOption.key}
+                              selected={sortBy.key === sortOption.key}
+                            >
+                              {sortOption.label}
+                            </option>
+                          )
                       )}
                     </Input>
                   </FormGroup>
@@ -492,7 +527,7 @@ function ActionListPage(props: ActionListPageProps) {
                 }
                 t={t}
                 actionGroups={data.instance.actionGroups}
-                sortBy={sortBy}
+                sortBy={sortBy.sortKey}
                 sortAscending={ascending}
                 refetching={refetching}
               />
@@ -502,7 +537,7 @@ function ActionListPage(props: ActionListPageProps) {
                 id="comparison-view"
                 actions={usableActions}
                 actionGroups={data.instance.actionGroups}
-                sortBy={sortBy}
+                sortBy={sortBy.sortKey}
                 sortAscending={ascending}
                 refetching={refetching}
                 displayYears={yearRange}

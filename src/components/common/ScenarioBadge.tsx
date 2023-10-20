@@ -73,6 +73,7 @@ ScenarioBadge.propTypes = {
   children: PropTypes.node,
   size: PropTypes.string,
   color: PropTypes.string,
+  type: PropTypes.string,
   isLink: PropTypes.bool,
 };
 
