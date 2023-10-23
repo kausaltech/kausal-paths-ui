@@ -74,7 +74,7 @@
   "time-series": "Aikasarja",
   "table": "Taulukko",
   "details": "Tarkemmat tiedot",
-  "active-actions": "{{count}} aktiivista toimenpidettä",
+  "active-actions": "{{count}}/{{total}} aktiivista toimenpidettä",
   "sort-ascending": "Lajittele nousevassa järjestyksessä",
   "sort-descending": "Lajittele laskevassa järjestyksessä",
   "skip-to-main-content": "Siirry pääsisältöön",

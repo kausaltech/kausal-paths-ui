@@ -81,7 +81,7 @@
   "table": "Table",
   "details": "Details",
   "target-climate": "Target",
-  "active-actions": "{{count}} active actions",
+  "active-actions": "{{count}}/{{total, number}} active actions",
   "watch-action-list-title": "How do we make this happen?",
   "hide-calculation": "Hide calculation",
   "show-calculation": "Show calculation",

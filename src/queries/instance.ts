@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
 
 export const scenarioFragment = gql`
   fragment ScenarioFragment on ScenarioType {
@@ -61,42 +62,11 @@ const GET_INSTANCE_CONTEXT = gql`
       }
     }
     parameters {
-      id
-      __typename
-      isCustomizable
-      isCustomized
-      ... on NumberParameterType {
-        label
-        description
-        minValue
-        maxValue
-        numberDefault: defaultValue
-        numberValue: value
-        node {
-          id
-        }
-      }
-      ... on BoolParameterType {
-        label
-        description
-        boolDefault: defaultValue
-        boolValue: value
-        node {
-          id
-        }
-      }
-      ... on StringParameterType {
-        label
-        description
-        stringDefault: defaultValue
-        stringValue: value
-        node {
-          id
-        }
-      }
+      ...ActionParameter
     }
   }
   ${scenarioFragment}
+  ${ACTION_PARAMETER_FRAGMENT}
 `;
 
 export default GET_INSTANCE_CONTEXT;

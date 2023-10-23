@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
 
 const GET_PARAMETERS = gql`
   query GetParameters {
@@ -8,37 +9,10 @@ const GET_PARAMETERS = gql`
       isActive
     }
     parameters {
-      id
-      label
-      description
-      isCustomized
-      isCustomizable
-      __typename
-      ... on NumberParameterType {
-        minValue
-        maxValue
-        numberDefault: defaultValue
-        numberValue: value
-        node {
-          id
-        }
-      }
-      ... on BoolParameterType {
-        boolDefault: defaultValue
-        boolValue: value
-        node {
-          id
-        }
-      }
-      ... on StringParameterType {
-        stringDefault: defaultValue
-        stringValue: value
-        node {
-          id
-        }
-      }
+      ...ActionParameter
     }
   }
+  ${ACTION_PARAMETER_FRAGMENT}
 `;
 
 export { GET_PARAMETERS };

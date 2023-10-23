@@ -71,7 +71,7 @@
   "nav-menu-open": " Navigation öffnen",
   "nav-menu-close": " Navigation schließen",
   "target-climate": "Klimaschutzziel",
-  "active-actions": "{{count}} aktive Maßnahmen",
+  "active-actions": "{{count}}/{{total}} aktive Maßnahmen",
   "hide-calculation": "Berechnung verbergen",
   "show-calculation": "Berechnungsweg einblenden",
   "sort-ascending": "Aufsteigend sortieren",
