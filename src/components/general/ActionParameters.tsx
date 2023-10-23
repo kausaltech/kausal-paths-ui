@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import ParameterWidget from 'components/general/ParameterWidget';
+import { gql } from '@apollo/client';
+import { ActionParameterFragment } from 'common/__generated__/graphql';
 
 const Parameters = styled.div`
   display: flex;
@@ -11,7 +13,41 @@ const Parameters = styled.div`
   }
 `;
 
-const ActionParameters = (props) => {
+export const ACTION_PARAMETER_FRAGMENT = gql`
+  fragment ActionParameter on ParameterInterface {
+    __typename
+    id
+    description
+    nodeRelativeId
+    node {
+      id
+    }
+    isCustomized
+    isCustomizable
+    ... on NumberParameterType {
+      numberValue: value
+      numberDefaultValue: defaultValue
+      minValue
+      maxValue
+      unit {
+        htmlShort
+      }
+      step
+    }
+    ... on BoolParameterType {
+      boolValue: value
+      boolDefaultValue: defaultValue
+    }
+    ... on StringParameterType {
+      stringValue: value
+      stringDefaultValue: defaultValue
+    }
+  }
+`;
+
+type ActionParameterType = ActionParameterFragment;
+
+const ActionParameters = (props: { parameters: ActionParameterType[] }) => {
   const { parameters } = props;
 
   if (!parameters) {
@@ -19,11 +55,12 @@ const ActionParameters = (props) => {
   }
   // Separate mandatory on/off parameter with standard id
   const actionParameterSwitch = parameters.find(
-    (param) => param.id === `${param.node.id}.enabled`
-  );
+    (param) => param.node && param.id === `${param.node.id}.enabled`
+  ) as (ActionParameterType & { __typename: 'BoolParameterType' }) | null;
   const actionOtherParameters = parameters.filter(
     (param) => param.id !== actionParameterSwitch?.id
   );
+  const actionEnabled = actionParameterSwitch?.boolValue;
 
   return (
     <Parameters>
@@ -31,16 +68,11 @@ const ActionParameters = (props) => {
         <ParameterWidget
           key={actionParameterSwitch.id}
           parameter={actionParameterSwitch}
-          parameterType={actionParameterSwitch.__typename}
         />
       )}
-      {actionParameterSwitch.boolValue &&
+      {actionEnabled &&
         actionOtherParameters?.map((parameter) => (
-          <ParameterWidget
-            key={parameter.id}
-            parameter={parameter}
-            parameterType={parameter.__typename}
-          />
+          <ParameterWidget key={parameter.id} parameter={parameter} />
         ))}
     </Parameters>
   );

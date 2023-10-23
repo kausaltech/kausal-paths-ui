@@ -1,6 +1,9 @@
 {
   "possibleTypes": {
-    "NodeInterface": ["ActionNode", "Node"],
+    "NodeInterface": [
+      "ActionNode",
+      "Node"
+    ],
     "PageInterface": [
       "ActionListPage",
       "InstanceRootPage",

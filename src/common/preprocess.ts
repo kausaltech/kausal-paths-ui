@@ -105,3 +105,21 @@ export const metricToPlot = (
   });
   return plot;
 };
+
+export interface ActionEnabledParam {
+  node?: object | null;
+  nodeRelativeId: string | null;
+  __typename: string;
+}
+
+export function findActionEnabledParam<ParamType extends ActionEnabledParam>(
+  params: ParamType[]
+) {
+  const param = params.find((param) => {
+    if (!param.node) return false;
+    if (param.nodeRelativeId !== 'enabled') return false;
+    return true;
+  }) as (ParamType & { __typename: 'BoolParameterType' }) | undefined;
+  if (!param) return null;
+  return param;
+}

@@ -1,13 +1,15 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
-import apolloConfig from './apollo.config';
+import apolloConfig from './apollo.config.cjs';
 
 const tsoConfig: TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig = {
   arrayInputCoercion: false,
   mergeFragmentTypes: true,
   onlyOperationTypes: true,
   preResolveTypes: true,
+  avoidOptionals: true,
+  nonOptionalTypename: true,
 };
 
 const config: CodegenConfig = {
