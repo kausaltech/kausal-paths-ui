@@ -142,12 +142,12 @@ const StyledButton = styled(BSButton)`
   }
 `;
 
-const Button = React.forwardRef<typeof StyledButton, BSButtonProps>(
-  (props, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, BSButtonProps>(
+  function Button(props, ref) {
     const { children } = props;
 
     return (
-      <StyledButton ref={ref} {...props}>
+      <StyledButton innerRef={ref} {...props}>
         {children}
       </StyledButton>
     );

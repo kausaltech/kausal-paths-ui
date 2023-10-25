@@ -67,6 +67,7 @@
     "react-inline-svg": "^1.1.0",
     "react-inlinesvg": "^3.0.3",
     "react-is": "^18.2.0",
+    "react-joyride": "^2.6.2",
     "react-json-to-csv": "^1.2.0",
     "react-medium-image-zoom": "^5.1.8",
     "react-plotly.js": "^2.6.0",

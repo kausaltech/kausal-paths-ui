@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { Container } from 'reactstrap';
+import Joyride, { Step } from 'react-joyride';
 
 import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import FrontPageHeader from 'components/general/FrontPageHeader';
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
 import { useSite } from 'context/site';
 import { useInstance } from 'common/instance';
@@ -17,6 +18,7 @@ import {
 } from 'common/__generated__/graphql';
 import { PageRefetchCallback } from './Page';
 import { ParsedUrlQuery } from 'querystring';
+import { ProductTour } from 'components/general/ProductTour';
 
 const HeaderSection = styled.div`
   /* extra padding to accommodate content overlap */
@@ -129,6 +131,7 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   return (
     <>
+      <ProductTour page={page} />
       {(pageLeadTitle || pageLeadParagraph) && (
         <FrontPageHeader
           leadTitle={pageLeadTitle}

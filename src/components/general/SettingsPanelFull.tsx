@@ -122,8 +122,15 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
 
   // console.log(props);
   return (
-    <FixedPanel className={`panel-${mode}`} aria-label={t('all-settings')}>
-      <StyledSettingsButton onClick={(e) => handleToggle(e)}>
+    <FixedPanel
+      id="settings-panel"
+      className={`panel-${mode}`}
+      aria-label={t('all-settings')}
+    >
+      <StyledSettingsButton
+        id="settings-panel-button"
+        onClick={(e) => handleToggle(e)}
+      >
         {mode === MODE.MD && (
           <>
             <Icon name="gear" />{' '}
