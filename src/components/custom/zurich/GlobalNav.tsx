@@ -81,7 +81,7 @@ const HomeLink = styled.a`
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     svg {
-      width: 180px;
+      width: 242px;
       margin: ${(props) => props.theme.spaces.s050}
         ${(props) => props.theme.spaces.s150}
         ${(props) => props.theme.spaces.s050} 0;
