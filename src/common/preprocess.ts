@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { range } from 'lodash';
 import numbro from 'numbro';
 
 let nrSignificantDigits = 3;
@@ -12,7 +12,7 @@ export const beautifyValue = (x: number, significantDigits?: number) => {
   if (!significantDigits) significantDigits = nrSignificantDigits;
 
   if (!x) return x;
-  let rounded =
+  const rounded =
     Math.abs(x) < 1
       ? Number(x.toFixed(significantDigits))
       : Number(x.toPrecision(significantDigits));
@@ -104,4 +104,18 @@ export const metricToPlot = (
     }
   });
   return plot;
+};
+
+type getRangeType = (values: number[]) => [number, number];
+
+export const getRange: getRangeType = (values) => {
+  // Try to guess a clean range for the y-axis
+  const minValue: number = _.min(values) ?? 0;
+  const maxValue: number = _.max(values) ?? 0;
+  const rangeSize = maxValue - minValue;
+  const rangeDigits = Math.floor(Math.log10(rangeSize));
+  const precision = rangeSize < 10 ? -rangeDigits : -rangeDigits + 1;
+  const min = minValue < 0 ? -_.ceil(Math.abs(minValue), precision) : 0;
+  const max = _.ceil(maxValue, precision);
+  return [min, max];
 };
