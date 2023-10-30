@@ -53,7 +53,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 If you want to run the UI against your own backend, configure it in `.env`:
 
 ```
-DEFAULT_GRAPHQL_API_URL=http://localhost:8000/v1/graphql/
+DEFAULT_GRAPHQL_API_URL=http://127.0.0.1:8000/v1/graphql/
 ```
 
 ## Sentry
