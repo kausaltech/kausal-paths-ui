@@ -13,7 +13,7 @@ import {
 } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import OutcomeGraph from 'components/general/OutcomeGraph';
-import IcicleGraph from 'components/general/IcicleGraph';
+import BarGraph from 'components/general/BarGraph';
 import DataTable from './DataTable';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
@@ -153,9 +153,9 @@ const OutcomeNodeContent = ({
     [node, subNodes, color, startYear, endYear]
   );
 
-  const icicleGraph = useMemo(
+  const singleYearGraph = useMemo(
     () => (
-      <IcicleGraph
+      <BarGraph
         node={node}
         subNodes={subNodes}
         color={color}
@@ -292,7 +292,7 @@ const OutcomeNodeContent = ({
           aria-labelledby={`${node.id}-tab-${activeTabId}}`}
         >
           {activeTabId === 'year' && (
-            <ContentWrapper>{icicleGraph}</ContentWrapper>
+            <ContentWrapper>{singleYearGraph}</ContentWrapper>
           )}
           {activeTabId === 'graph' && (
             <ContentWrapper>{outcomeGraph}</ContentWrapper>
