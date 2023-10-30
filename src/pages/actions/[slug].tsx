@@ -3,7 +3,9 @@ import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
+import { useTheme } from 'common/theme';
 import { Container, Row, Col } from 'reactstrap';
+
 import styled from 'styled-components';
 
 import { GET_ACTION_CONTENT } from 'queries/getActionContent';
@@ -120,6 +122,7 @@ export default function ActionPage() {
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
   const [activeSubAction, setActiveSubAction] = useState(undefined);
+  const theme = useTheme();
 
   const queryResp = useQuery<
     GetActionContentQuery,
@@ -280,7 +283,7 @@ export default function ActionPage() {
           />
         </Container>
       )}
-      {causalNodes.length > 0 && (
+      {causalNodes.length > 0 && !theme.settings.hideActionGrid && (
         <CausalGrid
           nodes={causalNodes}
           yearRange={yearRange}
