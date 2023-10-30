@@ -376,11 +376,11 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       yaxis: 'y',
       line: {
         color: theme.graphColors.red090,
-        width: 2,
+        width: 1,
         dash: 'dot',
       },
       marker: {
-        size: 8,
+        size: 6,
       },
       x: goalsWithinRange.map((v) => v.year),
       y: goalsWithinRange.map((v) => v.value),
