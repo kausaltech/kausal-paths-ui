@@ -1,80 +1,45 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 
-const StyledBadge = styled.div<{ $color: string; $isLink?: boolean }>`
+const StyledBadge = styled.div`
   display: inline-block;
   max-width: 100%;
   padding: 0.25rem 0.5rem;
   margin-bottom: 0.5rem;
   background-color: white !important;
-  // border-left: 24px solid ${(props) => props.$color} !important;
-  color: ${(props) => props.theme.themeColors.black};
-  border-radius: ${(props) => props.theme.badgeBorderRadius};
-  font-weight: ${(props) => props.theme.badgeFontWeight};
+  font-size: ${(props) => props.theme.fontSizeSm};
+  color: ${(props) => props.theme.graphColors.grey070};
   word-break: break-all;
   word-break: break-word;
   hyphens: manual;
   white-space: normal;
   text-align: left;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.$isLink && darken(0.05, props.theme[props.$color])} !important;
-  }
-
-  &.lg {
-    font-size: ${(props) => props.theme.fontSizeMd};
-  }
-  &.md {
-    font-size: ${(props) => props.theme.fontSizeBase};
-  }
-  &.sm {
-    font-size: ${(props) => props.theme.fontSizeSm};
-  }
 `;
 
-const getBadgeColor = (theme, type, color) => {
-  switch (type) {
-    case 'forecast':
-      return theme.graphColors.grey060;
-    case 'activeScenario':
-      return theme.graphColors.grey030;
-    case 'scenario':
-      return theme.graphColors.grey020;
-    default:
-      return theme[color];
-  }
+const BadgeYears = styled.span`
+  font-weight: ${(props) => props.theme.fontWeightBold};
+  color: ${(props) => props.theme.themeColors.black};
+  margin-bottom: 0.5rem;
+`;
+
+type ScenarioBadgeProps = {
+  children?: React.ReactNode;
+  type?: string;
+  startYear?: number;
+  endYear?: number;
 };
 
-const ScenarioBadge = (props) => {
-  const { children, size, color, isLink, type } = props;
-  const theme = useTheme();
+const ScenarioBadge = (props: ScenarioBadgeProps) => {
+  const { children, startYear, endYear } = props;
 
   return (
-    <StyledBadge
-      className={size}
-      $color={getBadgeColor(theme, type, color)}
-      $isLink={isLink}
-    >
+    <StyledBadge>
+      {startYear && endYear && (
+        <BadgeYears>{`${startYear} - ${endYear}`}: </BadgeYears>
+      )}
       {children}
     </StyledBadge>
   );
-};
-
-ScenarioBadge.defaultProps = {
-  children: null,
-  size: 'sm',
-  color: 'brandDark',
-  isLink: false,
-};
-
-ScenarioBadge.propTypes = {
-  children: PropTypes.node,
-  size: PropTypes.string,
-  color: PropTypes.string,
-  type: PropTypes.string,
-  isLink: PropTypes.bool,
 };
 
 export default ScenarioBadge;

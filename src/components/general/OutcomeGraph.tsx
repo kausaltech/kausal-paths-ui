@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next';
 import styled, { ThemeContext } from 'styled-components';
 import { tint } from 'polished';
 import { Spinner } from 'reactstrap';
-import { metricToPlot } from 'common/preprocess';
+import { metricToPlot, getRange } from 'common/preprocess';
 import SiteContext from 'context/site';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import type { PlotParams } from 'react-plotly.js';
@@ -65,7 +65,7 @@ const generatePlotFromNode = (
   let baseValue;
   let parentBaseValue;
   const forecastValues = [];
-  let parentForecastValues = [];
+  const parentForecastValues = [];
   const historicalDates = [];
   const forecastDates = [];
   const fillColor = n.color || color;
@@ -376,11 +376,11 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       yaxis: 'y',
       line: {
         color: theme.graphColors.red090,
-        width: 2,
+        width: 1,
         dash: 'dot',
       },
       marker: {
-        size: 8,
+        size: 6,
       },
       x: goalsWithinRange.map((v) => v.year),
       y: goalsWithinRange.map((v) => v.value),
@@ -419,24 +419,24 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     }
   }
 
+  const totalYears = [];
+  const totalValues = [];
+
+  parentNode.metric.historicalValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
+      totalYears.push(dataPoint.year);
+      totalValues.push(dataPoint.value);
+    }
+  });
+  parentNode.metric.forecastValues.forEach((dataPoint) => {
+    if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
+      totalYears.push(dataPoint.year);
+      totalValues.push(dataPoint.value);
+    }
+  });
+
   // Add a total figure on hover if there are multiple subnodes
   if (subNodes?.length > 1) {
-    const totalYears = [];
-    const totalValues = [];
-
-    parentNode.metric.historicalValues.forEach((dataPoint) => {
-      if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
-        totalYears.push(dataPoint.year);
-        totalValues.push(dataPoint.value);
-      }
-    });
-    parentNode.metric.forecastValues.forEach((dataPoint) => {
-      if (dataPoint.year >= startYear && dataPoint.year <= endYear) {
-        totalYears.push(dataPoint.year);
-        totalValues.push(dataPoint.value);
-      }
-    });
-
     plotData.push({
       type: 'scatter',
       name: t('plot-total')!,
@@ -461,22 +461,35 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       showlegend: false,
     });
   }
-
   const layout: PlotParams['layout'] = {
     height: 300,
     hovermode: 'x unified',
     hoverdistance: 10,
     margin: {
       r: 20,
-      t: 10,
+      t: 30,
     },
+    annotations: [
+      {
+        xref: 'paper',
+        yref: 'paper',
+        yshift: 10,
+        x: 0,
+        xanchor: 'left',
+        y: 1,
+        yanchor: 'bottom',
+        text: longUnit || undefined,
+        font: {
+          size: 14,
+        },
+        showarrow: false,
+      },
+    ],
     yaxis: {
       domain: [0, 1],
+      range: getRange(totalValues),
       anchor: 'x',
       ticklen: 10,
-      title: {
-        text: longUnit || undefined,
-      },
       tickcolor: theme.graphColors.grey030,
     },
     xaxis: {

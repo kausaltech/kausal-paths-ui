@@ -87,9 +87,9 @@ const CardSetHeader = styled.div`
 `;
 
 const CardSetDescription = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: ${({ theme }) => theme.spaces.s100};
   h4 {
-    margin-bottom: 1rem;
+    margin-bottom: ${({ theme }) => theme.spaces.s050};
   }
 `;
 
@@ -178,15 +178,18 @@ const OutcomeNodeContent = ({
             </h4>
             <CardSetDescriptionDetails>
               {startYear < lastMeasuredYear && (
-                <ScenarioBadge type="forecast">
-                  {startYear}—{lastMeasuredYear} {t('table-historical')}
+                <ScenarioBadge startYear={startYear} endYear={lastMeasuredYear}>
+                  {t('table-historical')}
                 </ScenarioBadge>
               )}{' '}
               {typeof firstForecastYear === 'number' &&
                 firstForecastYear < endYear && (
-                  <ScenarioBadge type="activeScenario">
-                    {Math.max(startYear, firstForecastYear)}—{endYear}{' '}
-                    {t('table-scenario-forecast')} {activeScenario || 'Current'}
+                  <ScenarioBadge
+                    startYear={Math.max(startYear, firstForecastYear)}
+                    endYear={endYear}
+                  >
+                    {t('table-scenario-forecast')}
+                    {activeScenario && ` (${activeScenario})`}
                   </ScenarioBadge>
                 )}
             </CardSetDescriptionDetails>
