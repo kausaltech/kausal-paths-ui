@@ -18,7 +18,7 @@ const PlotLoader = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const makeTrace = (parentNode, childNodes, year, theme) => {
+const makeTrace = (parentNode, childNodes, year, theme, t) => {
   const cats = childNodes.map((cat) => {
     const displayValue =
       cat.metric.historicalValues.find((v) => v.year === year)?.value ||
@@ -32,30 +32,49 @@ const makeTrace = (parentNode, childNodes, year, theme) => {
     };
   });
 
-  /*
-  cats.push({
-    name: `${parentNode.shortName || parentNode.name} ${year}`,
-    id: parentNode.id,
-    value: cats.reduce(
-      (acc, cat) => (cat.value > 0 ? acc + cat.value : acc),
-      0
-    ),
-    parent: '',
-    color: theme.graphColors.grey010,
+  let posCount = 0;
+  let negCount = 0;
+  let posTotal = 0;
+  //let negTotal = 0;
+
+  cats.forEach((cat) => {
+    if (cat.value > 0) {
+      posCount++;
+      posTotal += cat.value;
+    }
+    if (cat.value < 0) {
+      negCount++;
+      negTotal += cat.value;
+    }
   });
-  */
-  const posTraces = [];
-  const negTraces = [];
+
+  const hasOnlyOneNegativeSector = negCount === 1;
+  const hasPositiveSectors = posCount > 0;
+
+  // If there is only one negative sector we can use it as a group label
+  // If all sectors are negative we can use the parent node as a group label
+  // Otherwise we have to use generic label for negative group
+  const negGroupName = hasOnlyOneNegativeSector
+    ? cats.find((cat) => cat.value < 0).name
+    : hasPositiveSectors
+    ? t('negative')
+    : parentNode.shortName || parentNode.name;
+
+  const posTraces: PlotParams['data'] = [];
+  const negTraces: PlotParams['data'] = [];
 
   cats.forEach((cat) => {
     if (cat.value < 0) {
       negTraces.push({
-        x: ['negative emissions'],
+        x: [negGroupName],
         y: [cat.value],
         base: [-cat.value],
         name: cat.shortName || cat.name,
-        width: [0.25],
         type: 'bar',
+        text: cat.name,
+        textposition: 'outside',
+        texttemplate: '%{text}<br>%{y}',
+        width: 0.5,
         marker: {
           color: cat.color || theme.graphColors.grey050,
         },
@@ -63,17 +82,28 @@ const makeTrace = (parentNode, childNodes, year, theme) => {
     }
     if (cat.value > 0) {
       posTraces.push({
-        x: ['emissions'],
+        x: [parentNode.shortName || parentNode.name],
         y: [cat.value],
         name: cat.shortName || cat.name,
-        width: [0.25],
         type: 'bar',
+        meta: [
+          cat.value / posTotal >= 0.01
+            ? Math.round((cat.value / posTotal) * 100)
+            : '<1',
+        ],
+        text: cat.name,
+        textposition: 'outside',
+        insidetextanchor: 'start',
+        texttemplate: '%{meta[0]}%',
+        textangle: 0,
+        width: 0.5,
         marker: {
           color: cat.color || theme.graphColors.grey050,
         },
       });
     }
   });
+
   return posTraces.concat(negTraces);
 };
 
@@ -85,7 +115,7 @@ type BarGraphProps = {
 
 const BarGraph = (props: BarGraphProps) => {
   const { node: parentNode, subNodes, endYear } = props;
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
 
   const [loading, setLoading] = useState(true);
@@ -96,17 +126,17 @@ const BarGraph = (props: BarGraphProps) => {
     subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
   const shortUnit = metric.unit?.short;
 
-  const barTraces = makeTrace(parentNode, displayNodes, endYear, theme);
+  const barTraces = makeTrace(parentNode, displayNodes, endYear, theme, t);
 
   const allValues = barTraces.map((trace) => Math.abs(trace.y[0]));
   const range = getRange(allValues);
 
   const layout: PlotParams['layout'] = {
-    paper_bgcolor: 'rgba(0,0,0,0)',
     height: 350,
     hovermode: false,
     barmode: 'stack',
     annotations: [
+      // Places y-axis title on top of the y-axis
       {
         xref: 'paper',
         yref: 'paper',
@@ -123,16 +153,18 @@ const BarGraph = (props: BarGraphProps) => {
       },
     ],
     yaxis: {
-      domain: [0, 1],
-      anchor: 'x',
-      tickcolor: theme.graphColors.grey030,
       range: range,
     },
     xaxis: {
-      domain: [0, 1],
-      anchor: 'y',
-      tickcolor: theme.graphColors.grey030,
-      automargin: true,
+      type: 'category',
+    },
+    showlegend: true,
+    legend: {
+      orientation: 'h',
+      yanchor: 'top',
+      y: -0.2,
+      xanchor: 'left',
+      x: 0,
     },
   };
 
@@ -144,13 +176,12 @@ const BarGraph = (props: BarGraphProps) => {
         </PlotLoader>
       )}
       <Plot
-        noValidate
         data={barTraces}
         layout={layout}
         useResizeHandler
-        config={{ displayModeBar: false, responsive: true }}
+        config={{ displayModeBar: false, responsive: true, staticPlot: true }}
         onInitialized={() => setLoading(false)}
-        style={{ minWidth: '300px', maxWidth: '800px', margin: '0 auto' }}
+        style={{ minWidth: '300px', maxWidth: '600px', margin: '0 auto' }}
       />
     </div>
   );
