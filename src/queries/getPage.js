@@ -49,7 +49,7 @@ const OUTCOME_NODE_FIELDS = gql`
     outputNodes {
       id
     }
-    upstreamActions {
+    upstreamActions(onlyRoot: true, decisionLevel: MUNICIPALITY) {
       id
       name
       shortName
