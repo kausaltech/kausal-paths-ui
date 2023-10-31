@@ -8,7 +8,7 @@
   "plot-without-action": "Ohne diese Massnahme",
   "table-action-impact": "Auswirkung der Massnahme",
   "plot-total": "Total",
-  "actions-group-type": "Handlungsfeld",
+  "actions-group-type": "Bereich",
   "actions-count": "{{ count }} Massnahmenpakete",
   "actions-as-comparison": "Vergleich Auswirkung",
   "active-actions": "{{count}} aktive Massnahmenpakete",
