@@ -17,6 +17,7 @@ export const ACTION_PARAMETER_FRAGMENT = gql`
   fragment ActionParameter on ParameterInterface {
     __typename
     id
+    label
     description
     nodeRelativeId
     node {

@@ -195,11 +195,11 @@ type BoolWidgetProps = {
 
 export const BoolWidget = (props: BoolWidgetProps) => {
   const { parameter, handleChange, loading, WidgetWrapper } = props;
-  const { id, boolValue, isCustomized, isCustomizable, description } =
-    parameter;
+  const { id, boolValue, isCustomized, isCustomizable } = parameter;
   const { t } = useTranslation();
 
-  const label = description || t('will_be_implemented');
+  const label =
+    parameter.label || parameter.description || t('will_be_implemented');
 
   return (
     <WidgetWrapper className="form-check form-switch">

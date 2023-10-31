@@ -86,7 +86,7 @@ export type AllMetricFieldsFragment = (
 );
 
 type ActionParameter_BoolParameterType_Fragment = (
-  { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+  { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
     { id: string }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
@@ -94,7 +94,7 @@ type ActionParameter_BoolParameterType_Fragment = (
 );
 
 type ActionParameter_NumberParameterType_Fragment = (
-  { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+  { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
     { htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, node: (
@@ -105,7 +105,7 @@ type ActionParameter_NumberParameterType_Fragment = (
 );
 
 type ActionParameter_StringParameterType_Fragment = (
-  { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+  { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
     { id: string }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
@@ -113,7 +113,7 @@ type ActionParameter_StringParameterType_Fragment = (
 );
 
 type ActionParameter_UnknownParameterType_Fragment = (
-  { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+  { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
     { id: string }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
@@ -502,13 +502,13 @@ export type GetActionContentQuery = (
         )> }
         & { __typename: 'DimensionalMetricType' }
       ) | null, parameters: Array<(
-        { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'BoolParameterType' }
       ) | (
-        { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+        { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
           { htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, node: (
@@ -517,13 +517,13 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'NumberParameterType' }
       ) | (
-        { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'StringParameterType' }
       ) | (
-        { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
@@ -583,13 +583,13 @@ export type GetActionContentQuery = (
         )> }
         & { __typename: 'DimensionalMetricType' }
       ) | null, parameters: Array<(
-        { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'BoolParameterType' }
       ) | (
-        { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+        { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
           { htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, node: (
@@ -598,13 +598,13 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'NumberParameterType' }
       ) | (
-        { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'StringParameterType' }
       ) | (
-        { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
@@ -671,13 +671,13 @@ export type GetActionContentQuery = (
           )> }
           & { __typename: 'DimensionalMetricType' }
         ) | null, parameters: Array<(
-          { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+          { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
           ) | null }
           & { __typename: 'BoolParameterType' }
         ) | (
-          { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+          { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
             { htmlShort: string }
             & { __typename: 'UnitType' }
           ) | null, node: (
@@ -686,13 +686,13 @@ export type GetActionContentQuery = (
           ) | null }
           & { __typename: 'NumberParameterType' }
         ) | (
-          { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+          { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
           ) | null }
           & { __typename: 'StringParameterType' }
         ) | (
-          { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+          { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
           ) | null }
@@ -752,13 +752,13 @@ export type GetActionContentQuery = (
           )> }
           & { __typename: 'DimensionalMetricType' }
         ) | null, parameters: Array<(
-          { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+          { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
           ) | null }
           & { __typename: 'BoolParameterType' }
         ) | (
-          { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+          { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
             { htmlShort: string }
             & { __typename: 'UnitType' }
           ) | null, node: (
@@ -767,13 +767,13 @@ export type GetActionContentQuery = (
           ) | null }
           & { __typename: 'NumberParameterType' }
         ) | (
-          { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+          { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
           ) | null }
           & { __typename: 'StringParameterType' }
         ) | (
-          { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+          { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
           ) | null }
@@ -837,13 +837,13 @@ export type GetActionContentQuery = (
       )> }
       & { __typename: 'DimensionalMetricType' }
     ) | null, parameters: Array<(
-      { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+      { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
       & { __typename: 'BoolParameterType' }
     ) | (
-      { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+      { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, node: (
@@ -852,13 +852,13 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'NumberParameterType' }
     ) | (
-      { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+      { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
       & { __typename: 'StringParameterType' }
     ) | (
-      { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+      { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
@@ -925,13 +925,13 @@ type CausalGridNode_ActionNode_Fragment = (
     )> }
     & { __typename: 'DimensionalMetricType' }
   ) | null, parameters: Array<(
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'BoolParameterType' }
   ) | (
-    { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+    { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
@@ -940,13 +940,13 @@ type CausalGridNode_ActionNode_Fragment = (
     ) | null }
     & { __typename: 'NumberParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'StringParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
@@ -1008,13 +1008,13 @@ type CausalGridNode_Node_Fragment = (
     )> }
     & { __typename: 'DimensionalMetricType' }
   ) | null, parameters: Array<(
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'BoolParameterType' }
   ) | (
-    { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+    { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
@@ -1023,13 +1023,13 @@ type CausalGridNode_Node_Fragment = (
     ) | null }
     & { __typename: 'NumberParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'StringParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
@@ -1119,13 +1119,13 @@ export type GetActionListQuery = (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, parameters: Array<(
-      { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+      { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
       & { __typename: 'BoolParameterType' }
     ) | (
-      { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+      { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, node: (
@@ -1134,13 +1134,13 @@ export type GetActionListQuery = (
       ) | null }
       & { __typename: 'NumberParameterType' }
     ) | (
-      { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+      { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
       & { __typename: 'StringParameterType' }
     ) | (
-      { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+      { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
@@ -1475,13 +1475,13 @@ export type GetParametersQuery = (
     { id: string, label: string, isActive: boolean }
     & { __typename: 'NormalizationType' }
   )>, parameters: Array<(
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'BoolParameterType' }
   ) | (
-    { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+    { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
@@ -1490,13 +1490,13 @@ export type GetParametersQuery = (
     ) | null }
     & { __typename: 'NumberParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'StringParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
@@ -1553,13 +1553,13 @@ export type GetInstanceContextQuery = (
     ) | null }
     & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
   )>, parameters: Array<(
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'BoolParameterType' }
   ) | (
-    { minValue: number | null, maxValue: number | null, step: number | null, id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+    { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
@@ -1568,13 +1568,13 @@ export type GetInstanceContextQuery = (
     ) | null }
     & { __typename: 'NumberParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'StringParameterType' }
   ) | (
-    { id: string, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+    { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
