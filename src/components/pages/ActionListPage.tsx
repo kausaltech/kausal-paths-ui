@@ -68,6 +68,10 @@ const ActionCount = styled.div`
   }
 `;
 
+const StyledFormGroup = styled(FormGroup)`
+  width: 100%;
+`;
+
 const SortButtons = styled(ButtonGroup)`
   button {
     padding-top: 0.4rem;
@@ -370,7 +374,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               )}
               {actionGroups.length > 1 && (
                 <Col md={4} className="d-flex">
-                  <FormGroup>
+                  <StyledFormGroup>
                     <Label for="type">{t('actions-group-type')}</Label>
                     <Input
                       id="type"
@@ -387,7 +391,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                         </option>
                       ))}
                     </Input>
-                  </FormGroup>
+                  </StyledFormGroup>
                 </Col>
               )}
               <Col md={4} className="d-flex">
