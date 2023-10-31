@@ -35,7 +35,7 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
   let posCount = 0;
   let negCount = 0;
   let posTotal = 0;
-  //let negTotal = 0;
+  let negTotal = 0;
 
   cats.forEach((cat) => {
     if (cat.value > 0) {
