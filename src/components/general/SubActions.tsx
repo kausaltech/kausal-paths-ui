@@ -101,43 +101,58 @@ type ActionContentProps = {
   action: SubActionCardFragment;
 };
 
+const TEMP_WATCH_ACTIONS = {
+  fossil_fuel_heater_to_district_heat: [
+    'Kommunale Energieplanung',
+    'Abstimmung zwischen Siedlungs- und Energieplanung',
+    'Ausbau der thermischen Netze',
+    'Ausbau 3. Verbrennungslinie KVA Hagenholz',
+    'Stilllegung Gasverteilnetz',
+    'Förderprogramm Heizungsersatz und Restwertentschädigung',
+    'Förderung erneuerbare Energien (Heizungsersatz)',
+    'Energieberatung',
+    'Informationsplattformen: EnerGIS und Energieplattform',
+    'Heizungsersatz bei städtischen Liegenschaften',
+  ],
+  district_heat_decarbonisation: [
+    'Dekarbonisierung der thermischen Netze',
+    'Ausbau 3. Verbrennungslinie KVA Hagenholz',
+    'Erneuerbares Gas',
+  ],
+  fossil_fuel_heater_to_heat_pumps: [
+    'Kommunale Energieplanung',
+    'Abstimmung zwischen Siedlungs- und Energieplanung',
+    'Förderprogramm Heizungsersatz und Restwertentschädigung',
+    'Förderung erneuerbare Energien (Heizungsersatz)',
+    'Energieberatung',
+    'Informationsplattformen: EnerGIS und Energieplattform',
+    'Heizungsersatz bei städtischen Liegenschaften',
+    'Stilllegung Gasverteilnetz',
+  ],
+  fossil_fuel_heater_to_other: [
+    'Kommunale Energieplanung',
+    'Abstimmung zwischen Siedlungs- und Energieplanung',
+    'Förderprogramm Heizungsersatz und Restwertentschädigung',
+    'Förderung erneuerbare Energien (Heizungsersatz)',
+    'Energieberatung',
+    'Informationsplattformen: EnerGIS und Energieplattform',
+    'Heizungsersatz bei städtischen Liegenschaften',
+    'Stilllegung Gasverteilnetz',
+  ],
+  natural_gas_network_decarbonisation: [
+    'Erneuerbares Gas',
+    'Stilllegung Gasverteilnetz',
+  ],
+  other_building_fuel_to_biogas: ['Erneuerbares Gas'],
+};
+
 const ActionContent = (props: ActionContentProps) => {
   const { action } = props;
   const { t } = useTranslation();
 
   // Create test subsubaction data for one particular action
   // TODO: Get this data from the API
-  const watchActions =
-    action.id === 'fossil_fuel_heater_to_district_heat'
-      ? [
-          {
-            id: '1',
-            name: 'Restwertentschädigung und Förderprogramm für den Heizungsersatz',
-            description:
-              'Die Stadt unterstützt den Heizungsersatz durch die Förderprogramme Heizungsersatz und Restwertentschädigung',
-            link: '',
-            image:
-              'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
-          },
-          {
-            id: '2',
-            name: 'Informationsangebot über Energis',
-            description:
-              'Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung',
-            link: 'https://draft-cap.watch-test.kausal.tech/actions/43',
-            image:
-              'https://api.watch.kausal.tech/media/images/geran-de-klerk-qzgN45hseN0-un.2e16d0ba.fill-1600x600-c50_MMrreyB.jpg',
-          },
-          {
-            id: '3',
-            name: 'Informationsangebot über Energis',
-            description:
-              'Die Stadt stellt im Energis online relevante Informationen zum Heizungsersatz zur Verfügung',
-            link: 'https://draft-cap.watch-test.kausal.tech/actions/43',
-            image: '',
-          },
-        ]
-      : [];
+  const watchActions = TEMP_WATCH_ACTIONS[action.id] ?? [];
 
   return (
     <ActionContentCard
@@ -159,8 +174,8 @@ const ActionContent = (props: ActionContentProps) => {
         <>
           <h5>{t('watch-action-list-title')}</h5>
           <WatchActionList>
-            {watchActions.map((watchAction: any) => (
-              <WatchActionCard key={watchAction.id} action={watchAction} />
+            {watchActions.map((watchAction, i) => (
+              <WatchActionCard key={i} action={{ name: watchAction }} />
             ))}
             <WatchActionCard />
             <WatchActionCard />
