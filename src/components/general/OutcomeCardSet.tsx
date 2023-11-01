@@ -304,6 +304,7 @@ const OutcomeCardSet = ({
             startYear={startYear}
             endYear={endYear}
             activeScenario={activeScenario}
+            refetching={refetching}
           />
         </ContentArea>
         {showOutcomeBar && (
