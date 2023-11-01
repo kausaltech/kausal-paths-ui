@@ -1,14 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { Container } from 'reactstrap';
 
 import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import OutcomeCardSet from 'components/general/OutcomeCardSet';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
-import FrontPageHeader from 'components/general/FrontPageHeader';
-import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/router';
-import { useSite } from 'context/site';
 import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
 import {
@@ -17,30 +13,8 @@ import {
 } from 'common/__generated__/graphql';
 import { PageRefetchCallback } from './Page';
 import { ParsedUrlQuery } from 'querystring';
-
-const HeaderSection = styled.div`
-  /* extra padding to accommodate content overlap */
-  padding: ${(props) => props.theme.spaces.s100} 0 10rem;
-  background: ${(props) => props.theme.brandDark};
-`;
-
-const PageHeader = styled.div`
-  h1 {
-    font-size: ${(props) => props.theme.fontSizeLg};
-    color: ${(props) => props.theme.themeColors.white};
-  }
-
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
-    h1 {
-      font-size: ${(props) => props.theme.fontSizeXl};
-    }
-  }
-`;
-
-const OutcomeSection = styled.div`
-  /* pull content to overlap the header section */
-  margin-top: -10rem;
-`;
+import { PageHero } from 'components/common/PageHero';
+import { TFunction } from 'i18next';
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
 
@@ -59,6 +33,17 @@ const findVisibleNodes = (
   return visibleNodes;
 };
 
+const getTitle = (t: TFunction, outcomeType: string | null) => {
+  switch (outcomeType) {
+    case 'emissions':
+      return t('emissions-forecast');
+    case 'disease_burden':
+      return t('disease_burden-forecast');
+    default:
+      return t('forecast');
+  }
+};
+
 type OutcomePageProps = {
   page: GetPageQuery['page'] & { __typename: 'OutcomePage' };
   refetch: PageRefetchCallback;
@@ -68,8 +53,6 @@ type OutcomePageProps = {
 export default function OutcomePage(props: OutcomePageProps) {
   const { page, refetch, activeScenario: queryActiveScenario } = props;
   const { t } = useTranslation();
-  const theme = useTheme();
-  const site = useSite();
   const instance = useInstance();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -129,22 +112,13 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   return (
     <>
-      {(pageLeadTitle || pageLeadParagraph) && (
-        <FrontPageHeader
-          leadTitle={pageLeadTitle}
-          leadParagraph={pageLeadParagraph}
-          backgroundColor={theme.brandDark}
-        />
-      )}
-      <HeaderSection>
-        <Container fluid="lg">
-          <PageHeader>
-            <h1>{t(`${outcomeType}-forecast`)}</h1>
-          </PageHeader>
-        </Container>
-      </HeaderSection>
-      <Container fluid="lg">
-        <OutcomeSection>
+      <PageHero
+        title={getTitle(t, outcomeType)}
+        leadTitle={pageLeadTitle ?? undefined}
+        leadDescription={pageLeadParagraph ?? undefined}
+        overlap
+      >
+        <>
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
@@ -169,8 +143,8 @@ export default function OutcomePage(props: OutcomePageProps) {
               setLastActiveNodeId={setLastActiveNodeId}
             />
           ))}
-        </OutcomeSection>
-      </Container>
+        </>
+      </PageHero>
       <SettingsPanelFull />
     </>
   );

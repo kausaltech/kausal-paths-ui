@@ -37,19 +37,7 @@ import {
 } from 'types/actions.types';
 import { TFunction } from 'i18next';
 import { useInstance } from 'common/instance';
-
-const HeaderSection = styled.div`
-  padding: 4rem 0 2rem;
-  background-color: ${(props) => props.theme.graphColors.blue070};
-`;
-
-const PageHeader = styled.div`
-  h1 {
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    color: ${(props) => props.theme.themeColors.white};
-  }
-`;
+import { PageHero } from 'components/common/PageHero';
 
 const SettingsForm = styled.form`
   display: block;
@@ -60,7 +48,7 @@ const SettingsForm = styled.form`
 `;
 
 const ActionCount = styled.div`
-  margin: ${({ theme }) => theme.spaces.s100} 0;
+  padding: ${({ theme }) => theme.spaces.s100} 0;
   color: ${({ theme }) => theme.themeColors.white};
 
   span {
@@ -83,21 +71,13 @@ const SortButtons = styled(ButtonGroup)`
   }
 `;
 
-const HeaderCard = styled.div`
-  margin: ${({ theme }) => theme.spaces.s200} 0;
-  padding: ${({ theme }) => theme.spaces.s100}
-    ${({ theme }) => theme.spaces.s200};
-  border-radius: 0;
-  background-color: ${(props) => props.theme.themeColors.white};
-`;
-
 const ActionsViewTabs = styled.div`
-  background-color: ${(props) => props.theme.graphColors.blue070};
+  background-color: ${(props) => props.theme.brandDark};
   margin-bottom: ${(props) => props.theme.spaces.s400};
 `;
 
 const Tab = styled.button`
-  background: ${(props) => props.theme.graphColors.blue070};
+  background: ${(props) => props.theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
   display: inline-block;
   border: none;
@@ -324,148 +304,127 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   return (
     <>
-      <HeaderSection>
-        <Container fluid="lg">
-          <PageHeader>
-            <h1>{t('actions')}</h1>
-          </PageHeader>
-          {(page.actionListLeadParagraph || page.actionListLeadTitle) && (
-            <Row>
-              <Col md={{ size: 10, offset: 1 }}>
-                <PageHeader>
-                  <HeaderCard>
-                    <h2>{page.actionListLeadTitle}</h2>
-                    {!!page.actionListLeadParagraph && (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: page.actionListLeadParagraph,
-                        }}
-                      />
-                    )}
-                  </HeaderCard>
-                </PageHeader>
-              </Col>
-            </Row>
-          )}
-        </Container>
-        <Container fluid="lg">
-          <SettingsForm className="text-light mt-4">
-            <Row>
-              {hasEfficiency && (
-                <Col md={4} className="d-flex">
-                  <FormGroup>
-                    <Label for="impact">{t('actions-impact-on')}</Label>
-                    <Input
-                      id="impact"
-                      name="select"
-                      type="select"
-                      onChange={(e) =>
-                        setActiveEfficiency(Number(e.target.value))
-                      }
-                    >
-                      {data.actionEfficiencyPairs.map((impactGroup, indx) => (
-                        <option value={indx} key={indx}>
-                          {impactGroup.label}
-                        </option>
-                      ))}
-                    </Input>
-                  </FormGroup>
-                </Col>
-              )}
-              {actionGroups.length > 1 && (
-                <Col md={4} className="d-flex">
-                  <StyledFormGroup>
-                    <Label for="type">{t('actions-group-type')}</Label>
-                    <Input
-                      id="type"
-                      name="select"
-                      type="select"
-                      onChange={(e) => setActionGroup(e.target.value)}
-                    >
-                      <option value="ALL_ACTIONS">
-                        {t('action-groups-all')}
-                      </option>
-                      {actionGroups.map((actionGroup) => (
-                        <option value={actionGroup.id} key={actionGroup.id}>
-                          {actionGroup.name}
-                        </option>
-                      ))}
-                    </Input>
-                  </StyledFormGroup>
-                </Col>
-              )}
+      <PageHero
+        title={t('actions')}
+        leadTitle={page.actionListLeadTitle ?? undefined}
+        leadDescription={page.actionListLeadParagraph ?? undefined}
+      >
+        <SettingsForm className="text-light mt-4">
+          <Row>
+            {hasEfficiency && (
               <Col md={4} className="d-flex">
-                <div className="d-flex align-items-end me-3">
-                  <FormGroup>
-                    <Label for="sort">{t('actions-sort-by')}</Label>
-                    <Input
-                      id="sort"
-                      name="select"
-                      type="select"
-                      onChange={(e) =>
-                        handleChangeSort(e.target.value as SortActionsBy)
-                      }
-                    >
-                      {sortOptions.map(
-                        (sortOption) =>
-                          !sortOption.isHidden && (
-                            <option
-                              key={sortOption.key}
-                              value={sortOption.key}
-                              selected={sortBy.key === sortOption.key}
-                            >
-                              {sortOption.label}
-                            </option>
-                          )
-                      )}
-                    </Input>
-                  </FormGroup>
-                </div>
-                <div className="d-flex align-items-end">
-                  <FormGroup>
-                    <SortButtons>
-                      <Button
-                        color="white"
-                        outline
-                        onClick={(e) => setAscending(true)}
-                        active={ascending === true}
-                        aria-label={t('sort-ascending')}
-                      >
-                        <Icon
-                          name="arrowUpWideShort"
-                          width="1.5rem"
-                          height="1.5rem"
-                        />
-                      </Button>
-                      <Button
-                        color="white"
-                        outline
-                        onClick={(e) => setAscending(false)}
-                        active={ascending === false}
-                        aria-label={t('sort-descending')}
-                      >
-                        <Icon
-                          name="arrowDownShortWide"
-                          width="1.5rem"
-                          height="1.5rem"
-                        />
-                      </Button>
-                    </SortButtons>
-                  </FormGroup>
-                </div>
+                <StyledFormGroup>
+                  <Label for="impact">{t('actions-impact-on')}</Label>
+                  <Input
+                    id="impact"
+                    name="select"
+                    type="select"
+                    onChange={(e) =>
+                      setActiveEfficiency(Number(e.target.value))
+                    }
+                  >
+                    {data.actionEfficiencyPairs.map((impactGroup, indx) => (
+                      <option value={indx} key={indx}>
+                        {impactGroup.label}
+                      </option>
+                    ))}
+                  </Input>
+                </StyledFormGroup>
               </Col>
-            </Row>
-          </SettingsForm>
-          <ActionCount>
-            <ScenarioBadge>
-              {t('scenario')}: {activeScenario?.name}
-            </ScenarioBadge>
-            <div>{t('actions-count', { count: usableActions.length })}</div>
-          </ActionCount>
-        </Container>
-      </HeaderSection>
+            )}
+            {actionGroups.length > 1 && (
+              <Col md={4} className="d-flex">
+                <StyledFormGroup>
+                  <Label for="type">{t('actions-group-type')}</Label>
+                  <Input
+                    id="type"
+                    name="select"
+                    type="select"
+                    onChange={(e) => setActionGroup(e.target.value)}
+                  >
+                    <option value="ALL_ACTIONS">
+                      {t('action-groups-all')}
+                    </option>
+                    {actionGroups.map((actionGroup) => (
+                      <option value={actionGroup.id} key={actionGroup.id}>
+                        {actionGroup.name}
+                      </option>
+                    ))}
+                  </Input>
+                </StyledFormGroup>
+              </Col>
+            )}
+            <Col md={4} className="d-flex">
+              <div className="d-flex align-items-end me-3">
+                <FormGroup>
+                  <Label for="sort">{t('actions-sort-by')}</Label>
+                  <Input
+                    id="sort"
+                    name="select"
+                    type="select"
+                    onChange={(e) =>
+                      handleChangeSort(e.target.value as SortActionsBy)
+                    }
+                  >
+                    {sortOptions.map(
+                      (sortOption) =>
+                        !sortOption.isHidden && (
+                          <option
+                            key={sortOption.key}
+                            value={sortOption.key}
+                            selected={sortBy.key === sortOption.key}
+                          >
+                            {sortOption.label}
+                          </option>
+                        )
+                    )}
+                  </Input>
+                </FormGroup>
+              </div>
+              <div className="d-flex align-items-end">
+                <FormGroup>
+                  <SortButtons>
+                    <Button
+                      color="white"
+                      outline
+                      onClick={(e) => setAscending(true)}
+                      active={ascending === true}
+                      aria-label={t('sort-ascending')}
+                    >
+                      <Icon
+                        name="arrowUpWideShort"
+                        width="1.5rem"
+                        height="1.5rem"
+                      />
+                    </Button>
+                    <Button
+                      color="white"
+                      outline
+                      onClick={(e) => setAscending(false)}
+                      active={ascending === false}
+                      aria-label={t('sort-descending')}
+                    >
+                      <Icon
+                        name="arrowDownShortWide"
+                        width="1.5rem"
+                        height="1.5rem"
+                      />
+                    </Button>
+                  </SortButtons>
+                </FormGroup>
+              </div>
+            </Col>
+          </Row>
+        </SettingsForm>
+        <ActionCount>
+          <ScenarioBadge>
+            {t('scenario')}: {activeScenario?.name}
+          </ScenarioBadge>
+          <div>{t('actions-count', { count: usableActions.length })}</div>
+        </ActionCount>
+      </PageHero>
       <ActionsViewTabs>
-        <Container>
+        <Container fluid="lg">
           <div role="tablist">
             <Tab
               className={`nav-link ${listType === 'list' ? 'active' : ''}`}
