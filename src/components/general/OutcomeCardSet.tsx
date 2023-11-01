@@ -202,6 +202,7 @@ type OutcomeCardSetProps = {
   lastActiveNodeId: string | undefined;
   setLastActiveNodeId: (s: string) => void;
   subNodesTitle: string;
+  refetching: boolean;
 };
 
 const OutcomeCardSet = ({
@@ -215,6 +216,7 @@ const OutcomeCardSet = ({
   lastActiveNodeId,
   setLastActiveNodeId,
   subNodesTitle,
+  refetching,
 }: OutcomeCardSetProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
   const { scrollTo } = useScrollTo(config.molasses);
@@ -336,6 +338,7 @@ const OutcomeCardSet = ({
                   total={positiveNodesTotal - negativeNodesTotal}
                   positiveTotal={positiveNodesTotal}
                   negativeTotal={negativeNodesTotal}
+                  refetching={refetching}
                 />
               ))}
             </CardDeck>

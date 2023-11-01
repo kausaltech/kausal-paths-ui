@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
+import { Spinner } from 'reactstrap';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import {
@@ -8,6 +9,7 @@ import {
   getMetricValue,
 } from 'common/preprocess';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import { LoadingOverlay } from 'components/general/ActionListCard';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
@@ -128,6 +130,7 @@ type OutcomeCardProps = {
   total: number;
   positiveTotal: number;
   negativeTotal: number;
+  refetching: boolean;
 };
 
 const OutcomeCard = (props: OutcomeCardProps) => {
@@ -144,6 +147,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
     total,
     positiveTotal,
     negativeTotal,
+    refetching,
   } = props;
 
   const cardRef = useRef<HTMLDivElement>(null);
@@ -198,6 +202,12 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         color={color}
         refProp={cardRef}
       >
+        {refetching && (
+          <LoadingOverlay>
+            <Spinner size="sm" color="primary" />
+          </LoadingOverlay>
+        )}
+
         <ProportionBar
           size={goalOutcomeValue / total}
           color={color}

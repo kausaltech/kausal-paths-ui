@@ -48,10 +48,16 @@ type OutcomePageProps = {
   page: GetPageQuery['page'] & { __typename: 'OutcomePage' };
   refetch: PageRefetchCallback;
   activeScenario: GetPageQuery['activeScenario'];
+  refetching: boolean;
 };
 
 export default function OutcomePage(props: OutcomePageProps) {
-  const { page, refetch, activeScenario: queryActiveScenario } = props;
+  const {
+    page,
+    refetch,
+    activeScenario: queryActiveScenario,
+    refetching,
+  } = props;
   const { t } = useTranslation();
   const instance = useInstance();
   const yearRange = useReactiveVar(yearRangeVar);
@@ -141,6 +147,7 @@ export default function OutcomePage(props: OutcomePageProps) {
               }
               lastActiveNodeId={lastActiveNodeId}
               setLastActiveNodeId={setLastActiveNodeId}
+              refetching={refetching}
             />
           ))}
         </>

@@ -35,7 +35,7 @@ const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
   }
 `;
 
-const LoadingOverlay = styled.div`
+export const LoadingOverlay = styled.div`
   position: absolute;
   top: 0;
   left: 0;
