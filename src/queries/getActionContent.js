@@ -1,6 +1,7 @@
 import { gql } from '@apollo/client';
 import DimensionalFlow from 'components/graphs/DimensionalFlow';
 import { SUBACTIONS_FRAGMENT } from 'components/general/SubActions';
+import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
 
 const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!, $goal: ID) {
@@ -85,32 +86,7 @@ const GET_ACTION_CONTENT = gql`
     }
     quantity
     parameters {
-      __typename
-      description
-      id
-      nodeRelativeId
-      node {
-        id
-      }
-      isCustomized
-      ... on NumberParameterType {
-        numberValue: value
-        numberDefaultValue: defaultValue
-        minValue
-        maxValue
-        unit {
-          htmlShort
-        }
-        step
-      }
-      ... on BoolParameterType {
-        boolValue: value
-        boolDefaultValue: defaultValue
-      }
-      ... on StringParameterType {
-        stringValue: value
-        stringDefaultValue: defaultValue
-      }
+      ...ActionParameter
     }
     metric(goalId: $goal) {
       name
@@ -132,6 +108,7 @@ const GET_ACTION_CONTENT = gql`
       }
     }
   }
+  ${ACTION_PARAMETER_FRAGMENT}
 `;
 
 export { GET_ACTION_CONTENT };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   gql,
   useMutation,
@@ -6,7 +6,7 @@ import {
   NetworkStatus,
   useReactiveVar,
 } from '@apollo/client';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { Input } from 'reactstrap';
 import { activeGoalVar, activeScenarioVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
@@ -17,6 +17,8 @@ import {
 } from 'common/__generated__/graphql';
 
 import { useTranslation } from 'react-i18next';
+import ParameterWidget, { BoolWidget } from './ParameterWidget';
+import { findActionEnabledParam } from 'common/preprocess';
 
 const GlobalParametersPanel = styled.div`
   max-height: 400px;
@@ -87,10 +89,6 @@ const WidgetWrapper = styled.div`
   }
 `;
 
-type StyledInputProps = {
-  customized: boolean;
-};
-
 const SET_PARAMETER = gql`
   mutation SetGlobalParameterFromActionSummary(
     $parameterId: ID!
@@ -117,106 +115,45 @@ const SET_PARAMETER = gql`
   }
 `;
 
-const BoolWidget = (props) => {
-  const { id, toggled, handleChange, loading, isCustomized, description } =
-    props;
-  const { t } = useTranslation();
-
-  const label = description || t('will_be_implemented');
-
-  return (
-    <WidgetWrapper className="form-check form-switch">
-      <input
-        className="form-check-input"
-        type="checkbox"
-        role="switch"
-        id={id}
-        name={id}
-        checked={toggled}
-        onChange={() => handleChange({ parameterId: id, boolValue: !toggled })}
-        disabled={loading}
-        style={{ transform: 'scale(1.5)' }}
-      />
-      <label className="form-check-label" htmlFor={id}>
-        {label}
-        {isCustomized ? '*' : ''}
-      </label>
-    </WidgetWrapper>
-  );
+type ActionListCardProps = {
+  action: ActionsSummaryAction;
+  refetching: boolean;
 };
 
-const ParameterWidget = (props) => {
-  const { refetch, refetching, param } = props;
-  const { __typename, numberValue, boolValue, stringValue } = props.param;
-  const [parameterValue, setParameterValue] = useState(
-    numberValue || boolValue || stringValue
-  );
-
-  const activeScenario = useReactiveVar(activeScenarioVar);
-
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] =
-    useMutation(SET_PARAMETER, {
-      refetchQueries: 'active',
-      onCompleted: () => {
-        activeScenarioVar({ ...activeScenario });
-      },
-    });
-
-  const handleUserSelection = (evt) => {
-    SetParameter({ variables: evt });
-  };
-
-  switch (param.__typename) {
-    case 'BoolParameterType':
-      return (
-        <BoolWidget
-          id={param.id}
-          toggled={param.boolValue}
-          handleChange={handleUserSelection}
-          loading={mutationLoading}
-          isCustomized={param.isCustomized}
-          description={param.description}
-        />
-      );
-    default:
-      return null;
-  }
-};
-
-const ActionListCard = (props) => {
+const ActionListCard = (props: ActionListCardProps) => {
   const { action, refetching } = props;
-  const isActive =
-    !refetching &&
-    action.parameters.find((param) => param.id == `${param.node.id}.enabled`)
-      ?.boolValue;
-
-  const actionParameterSwitch = action.parameters.find(
-    (param) => param.id === `${param.node.id}.enabled`
-  );
+  const actionParameterSwitch = findActionEnabledParam(action.parameters);
+  const isActive = !refetching && (actionParameterSwitch?.boolValue ?? false);
+  const theme = useTheme();
 
   return (
-    <ActionCard $isActive={isActive} $groupColor={action.group?.color}>
+    <ActionCard
+      $isActive={isActive}
+      $groupColor={action.group?.color ?? theme.actionColor}
+    >
       <small>{action.group?.name}</small>
       <h5>{action.name}</h5>
       {actionParameterSwitch && (
         <ParameterWidget
           key={actionParameterSwitch.id}
-          param={actionParameterSwitch}
-          parameterType={actionParameterSwitch?.__typename}
+          parameter={actionParameterSwitch}
+          WidgetWrapper={WidgetWrapper}
         />
       )}
     </ActionCard>
   );
 };
 
-const ActionsSummary = (props) => {
+type ActionsSummaryAction = GetActionListQuery['actions'][0];
+
+const ActionsSummary = () => {
   const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
   const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
     GET_ACTION_LIST,
     {
       variables: {
-        goal: activeGoal?.id,
+        goal: activeGoal?.id ?? null,
       },
       fetchPolicy: 'cache-and-network',
       notifyOnNetworkStatusChange: true,
@@ -238,19 +175,22 @@ const ActionsSummary = (props) => {
     );
   }
 
-  const { actions } = data;
-
+  const { actions } = data!;
   const activeActions = actions.filter((action) => {
-    return action.parameters.find(
-      (param) => param.id === `${param.node.id}.enabled`
-    ).boolValue;
+    const { parameters } = action;
+    const enabledParam = parameters.find(
+      (param) => param.node && param.id === `${param.node.id}.enabled`
+    ) as ((typeof parameters)[0] & { __typename: 'BoolParameterType' }) | null;
+    if (!enabledParam) return false;
+    return enabledParam.boolValue;
   });
 
   return (
     <GlobalParametersPanel>
       <p>
         {t('active-actions', {
-          count: `${activeActions.length}/${actions.length}`,
+          count: activeActions.length,
+          total: actions.length,
         })}
       </p>
       <ActionsList>

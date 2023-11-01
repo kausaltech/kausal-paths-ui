@@ -10,6 +10,11 @@ import { GET_SCENARIOS } from 'queries/getScenarios';
 import { GET_PARAMETERS } from 'queries/getParameters';
 import { GET_ACTION_LIST } from 'queries/getActionList';
 import Button from 'components/common/Button';
+import {
+  ActionParameterFragment,
+  SetParameterMutation,
+  SetParameterMutationVariables,
+} from 'common/__generated__/graphql';
 
 const RangeWrapper = styled.div`
   display: flex;
@@ -41,11 +46,11 @@ const RangeValue = styled.div`
   line-height: 3;
 `;
 
-const Thumb = styled.div`
+const Thumb = styled.div<{ $dragged: boolean }>`
   height: 20px;
   width: 20px;
   border-radius: 16px;
-  background-color: ${(props) => (props.dragged ? props.color : props.color)};
+  background-color: ${(props) => (props.$dragged ? props.color : props.color)};
   color: white;
   display: flex;
   justify-content: center;
@@ -164,7 +169,7 @@ const NumberWidget = (props) => {
           renderThumb={({ props, isDragged }) => (
             <Thumb
               {...props}
-              dragged={isDragged}
+              $dragged={isDragged}
               style={{
                 ...props.style,
               }}
@@ -181,12 +186,20 @@ const NumberWidget = (props) => {
   );
 };
 
-const BoolWidget = (props) => {
-  const { id, toggled, handleChange, loading, isCustomized, description } =
-    props;
+type BoolWidgetProps = {
+  parameter: ActionParameterFragment & { __typename: 'BoolParameterType' };
+  handleChange: (opts: { parameterId: string; boolValue: boolean }) => void;
+  loading: boolean;
+  WidgetWrapper: typeof WidgetWrapper;
+};
+
+export const BoolWidget = (props: BoolWidgetProps) => {
+  const { parameter, handleChange, loading, WidgetWrapper } = props;
+  const { id, boolValue, isCustomized, isCustomizable } = parameter;
   const { t } = useTranslation();
 
-  const label = description || t('will_be_implemented');
+  const label =
+    parameter.label || parameter.description || t('will_be_implemented');
 
   return (
     <WidgetWrapper className="form-check form-switch">
@@ -194,14 +207,16 @@ const BoolWidget = (props) => {
         className="form-check-input"
         type="checkbox"
         role="switch"
-        id={id}
-        name={id}
-        checked={toggled}
-        onChange={() => handleChange({ parameterId: id, boolValue: !toggled })}
-        disabled={loading}
+        id={id!}
+        name={id!}
+        checked={boolValue!}
+        onChange={() =>
+          handleChange({ parameterId: id!, boolValue: !boolValue })
+        }
+        disabled={!isCustomizable || loading}
         style={{ transform: 'scale(1.5)' }}
       />
-      <label className="form-check-label" htmlFor={id}>
+      <label className="form-check-label" htmlFor={id!}>
         {label}
         {isCustomized ? '*' : ''}
       </label>
@@ -209,26 +224,33 @@ const BoolWidget = (props) => {
   );
 };
 
-const ParameterWidget = (props) => {
-  const { parameter, parameterType } = props;
+type ParameterWidgetProps = {
+  parameter: ActionParameterFragment;
+  WidgetWrapper?: typeof WidgetWrapper;
+};
+
+const ParameterWidget = (props: ParameterWidgetProps) => {
+  const { parameter } = props;
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   const [SetParameter, { loading: mutationLoading, error: mutationError }] =
-    useMutation(SET_PARAMETER, {
-      refetchQueries: 'active',
-      onCompleted: () => {
-        activeScenarioVar({ ...activeScenario });
-      },
-    });
+    useMutation<SetParameterMutation, SetParameterMutationVariables>(
+      SET_PARAMETER,
+      {
+        refetchQueries: 'active',
+        onCompleted: () => {
+          activeScenarioVar({ ...activeScenario });
+        },
+      }
+    );
 
   const handleUserSelection = (evt) => {
     SetParameter({ variables: evt });
   };
 
-  let widget = <div>Parameter type missing</div>;
-  switch (parameterType) {
+  switch (parameter.__typename) {
     case 'NumberParameterType':
-      widget = (
+      return (
         <NumberWidget
           id={parameter.id}
           initialValue={parameter.numberValue}
@@ -243,26 +265,23 @@ const ParameterWidget = (props) => {
           step={parameter.step}
         />
       );
-      break;
+
     case 'StringParameterType':
-      widget = <div>String</div>;
-      break;
+      return <div>String</div>;
+
     case 'BoolParameterType':
-      widget = (
+      return (
         <BoolWidget
-          id={parameter.id}
-          toggled={parameter.boolValue}
+          parameter={parameter}
           handleChange={handleUserSelection}
           loading={mutationLoading}
-          isCustomized={parameter.isCustomized}
-          description={parameter.description}
+          WidgetWrapper={props.WidgetWrapper ?? WidgetWrapper}
         />
       );
-      break;
+
     default:
-      return widget;
+      return null;
   }
-  return widget;
 };
 
 export default ParameterWidget;

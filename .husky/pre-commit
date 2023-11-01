@@ -1,13 +1,23 @@
-#!/bin/sh
+#!/usr/bin/env sh
+
 [ -n "$CI" ] && exit 0
 
-# This loads nvm.sh, sets the correct PATH before running hook, and ensures the project version of Node
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-if [[ -f ".nvmrc" ]]; then
-  nvm use
+# Check that the active node version matches what is in
+# the project's .nvmrc
+
+if [ -z "$husky_skip_init" ]; then
+  ACTIVE_NODE_VER=$(node -v | sed -e 's/^v//')
+  REQUIRED_NODE_VER=$(cat .nvmrc | sed -e 's/^v//')
+
+  if ! (echo $ACTIVE_NODE_VER | grep -q "^$REQUIRED_NODE_VER"); then
+    echo "❌ node version mismatch"
+    echo "   active node version: ${ACTIVE_NODE_VER}"
+    echo "   project requires: ${REQUIRED_NODE_VER}"
+    echo "Did you forget to run \"nvm use\"?"
+    exit 1
+  fi
 fi
 
-. "$(dirname "$0")/_/husky.sh"
+. "$(dirname -- "$0")/_/husky.sh"
 
-npx lint-staged
+npx --no lint-staged

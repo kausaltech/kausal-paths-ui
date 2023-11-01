@@ -2,7 +2,10 @@ import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { ActionLink } from 'common/links';
 import { Spinner } from 'reactstrap';
-import { summarizeYearlyValuesBetween } from 'common/preprocess';
+import {
+  findActionEnabledParam,
+  summarizeYearlyValuesBetween,
+} from 'common/preprocess';
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import Badge from 'components/common/Badge';
@@ -126,10 +129,8 @@ const ActionListCard = (props: ActionListCardProps) => {
   // const unitCumulative = 'kt CO<sub>2</sub>e';
   const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
 
-  const isActive =
-    !refetching &&
-    action.parameters.find((param) => param.id == `${param.node.id}.enabled`)
-      ?.boolValue;
+  const enabledParam = findActionEnabledParam(action.parameters);
+  const isActive = !refetching && (enabledParam?.boolValue ?? false);
 
   const hasEfficiency = 'cumulativeEfficiency' in action;
 
@@ -154,7 +155,6 @@ const ActionListCard = (props: ActionListCardProps) => {
           <Spinner size="sm" color="primary" />
         </LoadingOverlay>
       )}
-
       <CardHeader>
         {action.group && (
           <GroupTag color={action.group.color ?? undefined}>
