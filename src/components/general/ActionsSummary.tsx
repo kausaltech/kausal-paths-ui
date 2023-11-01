@@ -175,7 +175,9 @@ const ActionsSummary = () => {
     );
   }
 
-  const { actions } = data!;
+  const actions = (data?.actions ?? []).filter(
+    (action) => action.decisionLevel === 'MUNICIPALITY'
+  );
   const activeActions = actions.filter((action) => {
     const { parameters } = action;
     const enabledParam = parameters.find(
