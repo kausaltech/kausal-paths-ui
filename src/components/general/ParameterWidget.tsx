@@ -248,10 +248,9 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
     SetParameter({ variables: evt });
   };
 
-  let widget = <div>Parameter type missing</div>;
   switch (parameter.__typename) {
     case 'NumberParameterType':
-      widget = (
+      return (
         <NumberWidget
           id={parameter.id}
           initialValue={parameter.numberValue}
@@ -266,12 +265,12 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           step={parameter.step}
         />
       );
-      break;
+
     case 'StringParameterType':
-      widget = <div>String</div>;
-      break;
+      return <div>String</div>;
+
     case 'BoolParameterType':
-      widget = (
+      return (
         <BoolWidget
           parameter={parameter}
           handleChange={handleUserSelection}
@@ -279,11 +278,10 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           WidgetWrapper={props.WidgetWrapper ?? WidgetWrapper}
         />
       );
-      break;
+
     default:
-      return widget;
+      return null;
   }
-  return widget;
 };
 
 export default ParameterWidget;
