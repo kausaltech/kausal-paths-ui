@@ -2,7 +2,6 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
-import { getRange } from 'common/preprocess';
 
 import { Spinner } from 'reactstrap';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
@@ -71,9 +70,6 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
         base: [-cat.value],
         name: cat.shortName || cat.name,
         type: 'bar',
-        text: cat.name,
-        textposition: 'outside',
-        texttemplate: '%{text}<br>%{y}',
         width: 0.5,
         marker: {
           color: cat.color || theme.graphColors.grey050,
@@ -91,9 +87,7 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
             ? Math.round((cat.value / posTotal) * 100)
             : '<1',
         ],
-        text: cat.name,
         textposition: 'outside',
-        insidetextanchor: 'start',
         texttemplate: '%{meta[0]}%',
         textangle: 0,
         width: 0.5,
@@ -105,6 +99,22 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
   });
 
   return posTraces.concat(negTraces);
+};
+
+const getLargestTotal = (traces) => {
+  let posTotal = 0;
+  let negTotal = 0;
+  traces.forEach((trace) => {
+    if (trace.y[0] > 0) {
+      posTotal += trace.y[0];
+    }
+    if (trace.y[0] < 0) {
+      negTotal += trace.y[0];
+    }
+  });
+  const maxTotal =
+    Math.abs(negTotal) > posTotal ? Math.abs(negTotal) : posTotal;
+  return maxTotal;
 };
 
 type BarGraphProps = {
@@ -128,8 +138,9 @@ const BarGraph = (props: BarGraphProps) => {
 
   const barTraces = makeTrace(parentNode, displayNodes, endYear, theme, t);
 
-  const allValues = barTraces.map((trace) => Math.abs(trace.y[0]));
-  const range = getRange(allValues);
+  // Add some buffer to y-axis range to accommodate % labels
+  const maxHeight = getLargestTotal(barTraces);
+  const range = [0, maxHeight * 1.2];
 
   const layout: PlotParams['layout'] = {
     height: 350,
