@@ -1,26 +1,11 @@
 import styled from 'styled-components';
 
 import type { GetPageQuery } from 'common/__generated__/graphql';
-import { useTranslation } from 'common/i18n';
 import type { PageRefetchCallback } from './Page';
-import { Col, Container, Row } from 'reactstrap';
 import RichText from 'components/common/RichText';
+import { PageHero } from 'components/common/PageHero';
 
-const HeaderSection = styled.div`
-  padding: 4rem 0 10rem;
-  background-color: ${(props) => props.theme.graphColors.blue070};
-`;
-
-const PageHeader = styled.div`
-  h1 {
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    color: ${(props) => props.theme.themeColors.white};
-  }
-`;
-
-const GraphCard = styled.div`
-  margin: -8rem 0 3rem;
+const BodyCard = styled.div`
   padding: 2rem;
   border-radius: ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
@@ -34,38 +19,18 @@ type StaticPageProps = {
   refetch: PageRefetchCallback;
 };
 
-function StaticPage(props: StaticPageProps) {
-  const { page } = props;
-  console.log(page);
+function StaticPage({ page }: StaticPageProps) {
   return (
-    <>
-      <HeaderSection>
-        <Container fluid="lg">
-          <Row>
-            <Col lg={{ size: 8, offset: 2 }}>
-              <PageHeader>
-                <h1>{page.title}</h1>
-              </PageHeader>
-            </Col>
-          </Row>
-        </Container>
-      </HeaderSection>
-      <Container fluid="lg" className="mb-5">
-        <Row>
-          <Col lg={{ size: 8, offset: 2 }}>
-            <GraphCard>
-              {page!.body!.map((block) => {
-                console.log(block);
-                if (block?.__typename == 'RichTextBlock') {
-                  return <RichText key={block.id} html={block.value} />;
-                }
-                return null;
-              })}
-            </GraphCard>
-          </Col>
-        </Row>
-      </Container>
-    </>
+    <PageHero title={page.title} overlap>
+      <BodyCard>
+        {(page?.body ?? []).map((block) => {
+          if (block?.__typename == 'RichTextBlock') {
+            return <RichText key={block.id} html={block.value} />;
+          }
+          return null;
+        })}
+      </BodyCard>
+    </PageHero>
   );
 }
 

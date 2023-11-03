@@ -15,12 +15,12 @@ const CardSet = styled(animated.div)<{
 }>`
   position: relative;
   padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
-  margin-top: 1rem;
   background-color: ${({ theme }) => theme.cardBackground.secondary};
-  // border-radius:  ${(props) => props.theme.cardBorderRadius};
-  // border: 2px solid ${(props) =>
-    props.$color || props.theme.themeColors.white};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+
+  &:not(:first-child) {
+    margin-top: 1rem;
+  }
 `;
 
 const SubNodes = styled.div`
