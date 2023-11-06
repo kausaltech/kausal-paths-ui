@@ -274,7 +274,7 @@ export default function ActionPage() {
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container fluid="lg">
+      <Container fluid="lg" style={{ position: 'relative' }}>
         {refetching && <Loader />}
         <ActionPlotCard>{actionPlot}</ActionPlotCard>
       </Container>
