@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
-import { Spinner } from 'reactstrap';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import {
@@ -9,7 +8,7 @@ import {
   getMetricValue,
 } from 'common/preprocess';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import { LoadingOverlay } from 'components/general/ActionListCard';
+import Loader from 'components/common/Loader';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
@@ -202,11 +201,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         color={color}
         refProp={cardRef}
       >
-        {refetching && (
-          <LoadingOverlay>
-            <Spinner size="sm" color="primary" />
-          </LoadingOverlay>
-        )}
+        {refetching && <Loader />}
 
         <ProportionBar
           size={goalOutcomeValue / total}

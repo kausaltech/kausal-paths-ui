@@ -1,20 +1,7 @@
 import styled from 'styled-components';
 import { SortActionsConfig } from 'types/actions.types';
 import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
-import { Spinner } from 'reactstrap';
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.4);
-  z-index: 1;
-`;
+import Loader from 'components/common/Loader';
 
 const GraphCard = styled.div`
   position: relative;
@@ -81,11 +68,7 @@ const ActionsComparison = ({
   return (
     <>
       <GraphCard id={id}>
-        {refetching && (
-          <LoadingOverlay>
-            <Spinner color="primary" />
-          </LoadingOverlay>
-        )}
+        {refetching && <Loader />}
         <ActionComparisonGraph
           data={macData}
           impactName={impactName}
