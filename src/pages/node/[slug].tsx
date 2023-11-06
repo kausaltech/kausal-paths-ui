@@ -3,9 +3,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { Container, Row, Col } from 'reactstrap';
+import { Container, Row, Col, CardBody } from 'reactstrap';
 import styled from 'styled-components';
 import Icon from 'components/common/icon';
+import { Card } from 'components/common/Card';
 
 import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
@@ -13,7 +14,6 @@ import { logError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import NodePlot from 'components/general/NodePlot';
-import DashCard from 'components/general/DashCard';
 import NodeLinks from 'components/general/NodeLinks';
 import ContentLoader from 'components/common/ContentLoader';
 import { ActionLink } from 'common/links';
@@ -242,11 +242,13 @@ export default function NodePage() {
           <Container fluid="lg">
             <Row>
               <Col lg={{ size: 10, offset: 1 }}>
-                <DashCard>
-                  <BodyText
-                    dangerouslySetInnerHTML={{ __html: node.description }}
-                  />
-                </DashCard>
+                <Card>
+                  <CardBody>
+                    <BodyText
+                      dangerouslySetInnerHTML={{ __html: node.description }}
+                    />
+                  </CardBody>
+                </Card>
               </Col>
             </Row>
           </Container>
