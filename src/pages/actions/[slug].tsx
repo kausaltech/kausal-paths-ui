@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import Head from 'next/head';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { useTheme } from 'common/theme';
@@ -29,6 +29,7 @@ import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import Icon from 'components/common/icon';
 import SubActions from 'components/general/SubActions';
+import Loader from 'components/common/Loader';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -134,7 +135,9 @@ export default function ActionPage() {
       goal: activeGoal?.id,
     },
   });
-  const { loading, error, previousData, refetch } = queryResp;
+
+  const { loading, error, previousData, refetch, networkStatus } = queryResp;
+  const refetching = networkStatus === NetworkStatus.refetch;
 
   const data = queryResp.data ?? previousData;
 
@@ -272,6 +275,7 @@ export default function ActionPage() {
         </Container>
       </HeaderSection>
       <Container fluid="lg">
+        {refetching && <Loader />}
         <ActionPlotCard>{actionPlot}</ActionPlotCard>
       </Container>
       {subActions.length > 0 && (
