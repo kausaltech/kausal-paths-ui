@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
@@ -158,10 +158,9 @@ function ActionListPage({ page }: ActionListPageProps) {
         goal: activeGoal?.id,
       },
       fetchPolicy: 'cache-and-network',
-      notifyOnNetworkStatusChange: true,
     }
   );
-  const { error, loading, networkStatus, previousData } = queryResp;
+  const { error, loading, previousData } = queryResp;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
@@ -287,8 +286,6 @@ function ActionListPage({ page }: ActionListPageProps) {
 
     setSortBy(selectedSorter ?? sortOptions[0]);
   };
-
-  const refetching = networkStatus === NetworkStatus.refetch;
 
   if (error) {
     return (
@@ -478,7 +475,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
-                refetching={refetching}
+                refetching={loading}
               />
             )}
             {listType === 'mac' && (
@@ -492,7 +489,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}
                 sortAscending={ascending}
-                refetching={refetching}
+                refetching={loading}
               />
             )}
             {listType === 'comparison' && (
@@ -502,7 +499,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}
                 sortAscending={ascending}
-                refetching={refetching}
+                refetching={loading}
                 displayYears={yearRange}
               />
             )}
