@@ -9,10 +9,6 @@ import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import {
   Col,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
   Row,
   UncontrolledDropdown,
   DropdownToggle,
@@ -29,6 +25,7 @@ import {
   SliceConfig,
 } from 'data/metric';
 import { useTheme } from 'common/theme';
+import { useInstance } from 'common/instance';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -41,16 +38,6 @@ const Tools = styled.div`
   .icon {
     width: 1.25rem !important;
     height: 1.25rem !important;
-    vertical-align: -0.2rem;
-  }
-`;
-
-const DisplayTab = styled(NavItem)`
-  font-size: 0.9rem;
-  .icon {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    margin-right: 0.25rem;
     vertical-align: -0.2rem;
   }
 `;
@@ -87,30 +74,40 @@ function formatHover(
   return out;
 }
 
+type BaselineForecast = { year: number; value: number };
+
+type PlotData = { x: number[]; y: number[] };
+
 type DimensionalNodePlotProps = {
   node: { id: string };
+  baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   startYear: number;
   endYear: number;
   color?: string | null;
+  withControls?: boolean;
 };
 
-export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
-  const { metric, startYear, color } = props;
-  let { endYear } = props;
-
+export default function DimensionalNodePlot({
+  metric,
+  startYear,
+  color,
+  withControls = true,
+  endYear,
+  baselineForecast,
+}: DimensionalNodePlotProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const [activeTabId, setActiveTabId] = useState('graph');
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
 
   const lastMetricYear = metric.years.slice(-1)[0];
-  if (lastMetricYear && endYear > lastMetricYear) endYear = lastMetricYear;
+  const usableEndYear =
+    lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
 
   let defaultChoice = {};
   let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
-
   let goalAffectsPlot = false;
+
   if (activeGoal) {
     defaultChoice = cube.getChoicesForGoal(activeGoal);
     if (defaultSliceDim && Object.hasOwn(defaultChoice, defaultSliceDim)) {
@@ -153,9 +150,10 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   }
   const theme = useTheme();
   const site = useContext(SiteContext);
+  const instance = useInstance();
 
   const defaultColor = color || theme.graphColors.blue070;
-  const shapes = [];
+  const shapes: Plotly.Layout['shapes'] = [];
   const plotData: Partial<Plotly.PlotData>[] = [];
   const rangeMode = metric.stackable ? 'tozero' : 'normal';
   const filled = metric.stackable;
@@ -246,22 +244,99 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   slice.categoryValues.forEach((cv, idx) => genTraces(cv, idx));
 
   const goals = cube.getGoalsForChoice(sliceConfig.categories);
+
   if (goals) {
-    const name = t('target');
+    const lineConfig: Partial<Plotly.ShapeLine> = {
+      color: theme.graphColors.red090,
+      width: 2,
+      dash: 'dot',
+    };
+
+    if (goals.length === 1) {
+      const goal = goals[goals.length - 1];
+
+      plotData.push({
+        showlegend: false,
+        hoverinfo: 'skip',
+        x: [
+          startYear === site.referenceYear ? site.minYear : startYear,
+          goal.year > usableEndYear ? usableEndYear : goal.year,
+        ],
+        y: [goal.value, goal.value],
+        mode: 'lines',
+        line: lineConfig,
+      });
+
+      if (usableEndYear === goal.year) {
+        plotData.push({
+          x: [goal.year],
+          y: [goal.value],
+          xaxis: 'x',
+          yaxis: 'y',
+          type: 'scatter',
+          name: `${t('target')} ${goal.year}`,
+          line: lineConfig,
+        });
+      }
+    } else if (goals?.length) {
+      const name = t('target');
+
+      plotData.push({
+        type: 'scatter',
+        name,
+        marker: {
+          size: 6,
+        },
+        x: goals.map((v) => v.year),
+        y: goals.map((v) => v.value),
+        hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
+        line: lineConfig,
+      });
+    }
+  }
+
+  if (
+    baselineForecast &&
+    site.baselineName &&
+    instance.features?.baselineVisibleInGraphs
+  ) {
+    const reduceForecastToPlot = (forecasts: PlotData, forecast) =>
+      forecast.year >= startYear && forecast.year <= usableEndYear
+        ? {
+            x: [...forecasts.x, forecast.year],
+            y: [...forecasts.y, forecast.value],
+          }
+        : forecasts;
+
+    const baselinePlot = baselineForecast.reduce(reduceForecastToPlot, {
+      x: [],
+      y: [],
+    });
+
+    console.log('baselinePlot', baselinePlot);
+
     plotData.push({
+      x: baselinePlot.x,
+      y: baselinePlot.y,
+      // customdata: baselineForecast.y.map(() => ''),
+      // xaxis: 'x2',
+      // yaxis: 'y',
+      mode: 'lines',
+      name: site.baselineName,
       type: 'scatter',
-      name,
       line: {
-        color: theme.graphColors.red070,
+        color: theme.graphColors.grey060,
+        shape: 'spline',
+        smoothing: 0.8,
         width: 2,
-        dash: 'dot',
+        dash: 'dash',
       },
-      marker: {
-        size: 8,
-      },
-      x: goals.map((v) => v.year),
-      y: goals.map((v) => v.value),
-      hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
+      ...formatHover(
+        site.baselineName,
+        theme.graphColors.grey030,
+        unit,
+        predLabel
+      ),
     });
   }
 
@@ -291,7 +366,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     });
   }
 
-  const nrYears = endYear - startYear;
+  const nrYears = usableEndYear - startYear;
   const layout: Partial<Plotly.Layout> = {
     height: 300,
     margin: {
@@ -308,7 +383,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       ticklen: 10,
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
-      tickformat: ',',
+      tickformat: 'd',
       title: {
         font: {
           family: theme.fontFamily,
@@ -322,7 +397,7 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
       ticklen: 10,
       type: 'date',
       dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
-      range: [`${startYear - 1}-11-01`, `${endYear}-02-01`],
+      range: [`${startYear - 1}-11-01`, `${usableEndYear}-02-01`],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       hoverformat: '%Y',
@@ -348,8 +423,8 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
 
   const hasGroups = cube.dimensions.some((dim) => dim.groups.length);
 
-  let controls =
-    metric.dimensions.length > 1 || hasGroups ? (
+  const controls =
+    withControls && (metric.dimensions.length > 1 || hasGroups) ? (
       <>
         <Row>
           {metric.dimensions.length > 1 && (
@@ -406,49 +481,17 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   return (
     <>
       {controls}
-      <Nav tabs className="justify-content-end">
-        <DisplayTab>
-          <NavLink
-            href="#"
-            onClick={() => setActiveTabId('graph')}
-            active={activeTabId === 'graph'}
-          >
-            <Icon name="chartLine" /> {t('time-series')}
-          </NavLink>
-        </DisplayTab>
-        {/*
-        <DisplayTab>
-          <NavLink
-            href="#" onClick={() => setActiveTabId('table')}
-            active={activeTabId === 'table'}
-          >
-            <TableIcon /> {t('table')}
-          </NavLink>
-        </DisplayTab>
-        */}
-      </Nav>
-      <TabContent activeTab={activeTabId} className="mt-3">
-        {activeTabId === 'graph' && (
-          <Plot
-            data={plotData}
-            layout={layout}
-            useResizeHandler
-            style={{ width: '100%' }}
-            config={{ displayModeBar: false }}
-            noValidate
-          />
-        )}
-        {/* activeTabId === 'table' && (
-        <div>
-          <DataTable
-            node={tableNode}
-            subNodes={tableSubNodes}
-            startYear={startYear}
-            endYear={endYear}
-          />
-        </div>
-      ) */}
-      </TabContent>
+
+      <div className="mt-3">
+        <Plot
+          data={plotData}
+          layout={layout}
+          useResizeHandler
+          style={{ width: '100%' }}
+          config={{ displayModeBar: false }}
+          noValidate
+        />
+      </div>
 
       <Tools>
         <UncontrolledDropdown size="sm">
