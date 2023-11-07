@@ -1,4 +1,9 @@
-import { ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import {
+  ObservableQuery,
+  useQuery,
+  useReactiveVar,
+  NetworkStatus,
+} from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { Container } from 'reactstrap';
 import Head from 'next/head';
@@ -39,8 +44,10 @@ export default function Page({ path, headerExtra }: PageProps) {
       goal: activeGoal?.id,
     },
     fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
   });
   const { loading, error, previousData, refetch } = queryResp;
+
   const data = queryResp.data ?? previousData;
   const { t } = useTranslation();
 
@@ -67,6 +74,7 @@ export default function Page({ path, headerExtra }: PageProps) {
         page={page}
         refetch={refetch}
         activeScenario={activeScenario}
+        refetching={loading}
       />
     );
   } else if (page.__typename === 'ActionListPage') {

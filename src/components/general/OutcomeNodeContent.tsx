@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { Nav, NavItem, NavLink, TabContent } from 'reactstrap';
-
 import Icon from 'components/common/icon';
 import styled from 'styled-components';
+import Loader from 'components/common/Loader';
 
 import { NodeLink } from 'common/links';
 import {
@@ -116,6 +116,7 @@ type OutcomeNodeContentProps = {
   startYear: number;
   endYear: number;
   activeScenario: string;
+  refetching: boolean;
 };
 
 const OutcomeNodeContent = ({
@@ -125,6 +126,7 @@ const OutcomeNodeContent = ({
   startYear,
   endYear,
   activeScenario,
+  refetching,
 }: OutcomeNodeContentProps) => {
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState('graph');
@@ -287,6 +289,9 @@ const OutcomeNodeContent = ({
             </NavLink>
           </DisplayTab>
         </TabNavigation>
+
+        {refetching && <Loader />}
+
         <TabContent
           activeTab={activeTabId}
           id={`${node.id}-panel-${activeTabId}`}

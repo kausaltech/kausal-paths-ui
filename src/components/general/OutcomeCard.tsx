@@ -8,6 +8,7 @@ import {
   getMetricValue,
 } from 'common/preprocess';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import Loader from 'components/common/Loader';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
@@ -128,6 +129,7 @@ type OutcomeCardProps = {
   total: number;
   positiveTotal: number;
   negativeTotal: number;
+  refetching: boolean;
 };
 
 const OutcomeCard = (props: OutcomeCardProps) => {
@@ -144,6 +146,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
     total,
     positiveTotal,
     negativeTotal,
+    refetching,
   } = props;
 
   const cardRef = useRef<HTMLDivElement>(null);
@@ -198,6 +201,8 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         color={color}
         refProp={cardRef}
       >
+        {refetching && <Loader />}
+
         <ProportionBar
           size={goalOutcomeValue / total}
           color={color}

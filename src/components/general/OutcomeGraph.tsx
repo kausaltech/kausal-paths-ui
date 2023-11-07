@@ -15,6 +15,8 @@ const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 const smoothingFactor = 0.8;
 
 const PlotLoader = styled.div`
+  position: relative;
+  z-index: 1;
   height: 300px;
   display: flex;
   align-items: center;

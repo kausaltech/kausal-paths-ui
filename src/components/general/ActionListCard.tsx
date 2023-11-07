@@ -1,17 +1,18 @@
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { ActionLink } from 'common/links';
-import { Spinner } from 'reactstrap';
 import {
   findActionEnabledParam,
   summarizeYearlyValuesBetween,
 } from 'common/preprocess';
+
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import Badge from 'components/common/Badge';
 import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
 import { ActionWithEfficiency } from 'components/pages/ActionListPage';
 import Icon from 'components/common/icon';
+import Loader from 'components/common/Loader';
 
 const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
   position: relative;
@@ -33,19 +34,6 @@ const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
     color: ${({ $isActive, theme }) =>
       $isActive ? theme.textColor.primary : theme.textColor.tertiary};
   }
-`;
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.4);
-  z-index: 1;
 `;
 
 const CardHeader = styled.div`
@@ -150,11 +138,7 @@ const ActionListCard = (props: ActionListCardProps) => {
       $isActive={isActive}
       color={action.group?.color ?? 'undefined'}
     >
-      {refetching && (
-        <LoadingOverlay>
-          <Spinner size="sm" color="primary" />
-        </LoadingOverlay>
-      )}
+      {refetching && <Loader />}
       <CardHeader>
         {action.group && (
           <GroupTag color={action.group.color ?? undefined}>

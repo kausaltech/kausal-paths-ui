@@ -1,23 +1,10 @@
 import styled from 'styled-components';
 import MacGraph from 'components/graphs/MacGraph';
-import { Spinner } from 'reactstrap';
+import Loader from 'components/common/Loader';
 
 const ActionCount = styled.div`
   margin: 0 0 ${({ theme }) => theme.spaces.s100};
   color: ${({ theme }) => theme.themeColors.dark};
-`;
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.4);
-  z-index: 1;
 `;
 
 const GraphCard = styled.div`
@@ -51,8 +38,8 @@ const ActionsMac = ({
     );
 
   const sortActions = (a, b) => {
-    let aValue = a[sortBy];
-    let bValue = b[sortBy];
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
 
     return a.cumulativeImpact < 0
       ? -1
@@ -91,11 +78,7 @@ const ActionsMac = ({
         {t('actions-count', { count: sortedActions.length})}
       </ActionCount> */}
       <GraphCard id={id}>
-        {refetching && (
-          <LoadingOverlay>
-            <Spinner color="primary" />
-          </LoadingOverlay>
-        )}
+        {refetching && <Loader />}
         <MacGraph
           data={macData}
           impactName={impactName}
