@@ -10,6 +10,9 @@ import { useTheme } from 'common/theme';
 import dynamic from 'next/dynamic';
 import { useCustomComponent } from './custom';
 import { useTranslation } from 'common/i18n';
+import IntroModal from './common/IntroModal';
+import { useInstance } from 'common/instance';
+import RichText from 'components/common/RichText';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -91,6 +94,9 @@ const Layout = ({ children }) => {
   const NavComponent = useCustomComponent('GlobalNav', GlobalNav);
   const FooterComponent = useCustomComponent('Footer', Footer);
 
+  const instance = useInstance();
+  const introModalEnabled = instance.id === 'zuerich';
+
   return (
     <>
       <Head>
@@ -129,6 +135,22 @@ const Layout = ({ children }) => {
       <FooterContainer>
         <FooterComponent />
       </FooterContainer>
+      {introModalEnabled && (
+        <IntroModal>
+          <RichText
+            key={123}
+            html={
+              '<iframe ' +
+              'width="100%" ' +
+              'style="aspect-ratio: 16 / 9" ' +
+              'src="https://www.youtube.com/embed/MIdk7wCIdzY?autoplay=1" ' +
+              'title="Intro Video" ' +
+              'allowFullScreen>' +
+              '</iframe>'
+            }
+          />
+        </IntroModal>
+      )}
     </>
   );
 };
