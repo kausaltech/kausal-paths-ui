@@ -136,8 +136,7 @@ export default function ActionPage() {
     },
   });
 
-  const { loading, error, previousData, refetch, networkStatus } = queryResp;
-  const refetching = networkStatus === NetworkStatus.refetch;
+  const { loading, error, previousData, refetch } = queryResp;
 
   const data = queryResp.data ?? previousData;
 
@@ -275,7 +274,7 @@ export default function ActionPage() {
         </Container>
       </HeaderSection>
       <Container fluid="lg" style={{ position: 'relative' }}>
-        {refetching && <Loader />}
+        {loading && <Loader />}
         <ActionPlotCard>{actionPlot}</ActionPlotCard>
       </Container>
       {subActions.length > 0 && (

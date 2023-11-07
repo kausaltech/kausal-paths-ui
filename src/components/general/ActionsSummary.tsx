@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
+
 import {
   gql,
   useMutation,
@@ -6,8 +7,7 @@ import {
   NetworkStatus,
   useReactiveVar,
 } from '@apollo/client';
-import styled, { useTheme } from 'styled-components';
-import { Input } from 'reactstrap';
+import styled from 'styled-components';
 import { activeGoalVar, activeScenarioVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
 import { GET_ACTION_LIST } from 'queries/getActionList';

@@ -46,10 +46,10 @@ export default function Page({ path, headerExtra }: PageProps) {
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
   });
-  const { loading, error, previousData, refetch, networkStatus } = queryResp;
+  const { loading, error, previousData, refetch } = queryResp;
+
   const data = queryResp.data ?? previousData;
   const { t } = useTranslation();
-  const refetching = networkStatus === NetworkStatus.refetch;
 
   if (error) {
     logError(error, { query: GET_PAGE });
@@ -74,7 +74,7 @@ export default function Page({ path, headerExtra }: PageProps) {
         page={page}
         refetch={refetch}
         activeScenario={activeScenario}
-        refetching={refetching}
+        refetching={loading}
       />
     );
   } else if (page.__typename === 'ActionListPage') {
