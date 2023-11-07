@@ -3,9 +3,7 @@ import styled from 'styled-components';
 
 const CardWithState = styled.div`
   position: relative;
-  //border: 2px solid transparent;
   border: 0;
-  //border-top: 4px solid ${(props) => props.color};
   border-radius: 0;
   height: 170px;
 
