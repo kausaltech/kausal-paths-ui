@@ -159,10 +159,16 @@ function ValueContainer<
   let realChildren = children;
   if (Array.isArray(children)) {
     const [firstChild, ...remainingChildren] = children;
+    /**
+     * For multi-selections, we only show the first selection as
+     * a label and the other selections just as "+ <n>".
+     */
     if (Array.isArray(firstChild) && firstChild.length > 0) {
       realChildren = [
         firstChild[0],
-        <Counter key="counter" count={firstChild.length - 1} />,
+        firstChild.length > 1 ? (
+          <Counter key="counter" count={firstChild.length - 1} />
+        ) : null,
         ...remainingChildren,
       ];
     }
