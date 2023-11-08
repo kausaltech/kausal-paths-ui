@@ -1,14 +1,6 @@
-import { useState } from 'react';
-
-import {
-  gql,
-  useMutation,
-  useQuery,
-  NetworkStatus,
-  useReactiveVar,
-} from '@apollo/client';
+import { gql, useQuery, NetworkStatus, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
-import { activeGoalVar, activeScenarioVar } from 'common/cache';
+import { activeGoalVar } from 'common/cache';
 import ContentLoader from 'components/common/ContentLoader';
 import { GET_ACTION_LIST } from 'queries/getActionList';
 import {
@@ -17,8 +9,9 @@ import {
 } from 'common/__generated__/graphql';
 
 import { useTranslation } from 'react-i18next';
-import ParameterWidget, { BoolWidget } from './ParameterWidget';
+import ParameterWidget from './ParameterWidget';
 import { findActionEnabledParam } from 'common/preprocess';
+import { useTheme } from 'common/theme';
 
 const GlobalParametersPanel = styled.div`
   max-height: 400px;
