@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
-import { genColorsFromTheme } from 'common/colors';
+import { genColorsFromTheme, setUniqueColors } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import {
@@ -25,7 +25,8 @@ import {
   SliceConfig,
 } from 'data/metric';
 import { useTheme } from 'common/theme';
-import { useInstance } from 'common/instance';
+import { InstanceGoal, useInstance } from 'common/instance';
+import { isEqual } from 'lodash';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -78,6 +79,47 @@ type BaselineForecast = { year: number; value: number };
 
 type PlotData = { x: number[]; y: number[] };
 
+function getDefaultSliceConfig(
+  cube: DimensionalMetric,
+  activeGoal: InstanceGoal | null
+) {
+  /**
+   * By default, we group by the first dimension `metric` has, whatever it is.
+   * @todo Is there a better way to select the default?
+   *
+   * If the currently selected goal has category selections for this metric,
+   * we might choose another dimension.
+   *
+   * NOTE: This is just the default -- the actually active filtering and
+   * grouping is controlled by the `sliceConfig` state below.
+   */
+  const defaultConfig: SliceConfig = {
+    dimensionId: cube.dimensions[0]?.id,
+    categories: {},
+  };
+
+  if (!activeGoal) return defaultConfig;
+
+  const cubeDefault = cube.getChoicesForGoal(activeGoal);
+  if (!cubeDefault) return defaultConfig;
+  defaultConfig.categories = cubeDefault;
+  /**
+   * Check if our default dimension to slice by is affected by the
+   * goal-based default filters. If so, we should choose another
+   * dimension.
+   */
+  if (
+    defaultConfig.dimensionId &&
+    cubeDefault.hasOwnProperty(defaultConfig.dimensionId)
+  ) {
+    const firstPossible = cube.dimensions.find(
+      (dim) => !cubeDefault.hasOwnProperty(dim.id)
+    );
+    defaultConfig.dimensionId = firstPossible?.id;
+  }
+  return defaultConfig;
+}
+
 type DimensionalNodePlotProps = {
   node: { id: string };
   baselineForecast?: BaselineForecast[];
@@ -104,36 +146,20 @@ export default function DimensionalNodePlot({
   const usableEndYear =
     lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
 
-  let defaultChoice = {};
-  let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
-  let goalAffectsPlot = false;
-
-  if (activeGoal) {
-    defaultChoice = cube.getChoicesForGoal(activeGoal);
-    if (defaultSliceDim && Object.hasOwn(defaultChoice, defaultSliceDim)) {
-      defaultSliceDim = metric.dimensions.find((dim) => !defaultChoice[dim.id])
-        ?.id;
-      goalAffectsPlot = true;
-    }
-  }
-
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({
-    dimensionId: defaultSliceDim,
-    categories: defaultChoice,
-  });
+  const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
+  const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
 
   useEffect(() => {
-    if (!goalAffectsPlot) return;
-    if (
-      sliceConfig.dimensionId != defaultSliceDim ||
-      sliceConfig.categories != defaultChoice
-    ) {
-      setSliceConfig({
-        dimensionId: defaultSliceDim,
-        categories: defaultChoice,
-      });
-    }
-  }, [activeGoal]);
+    /**
+     * If the active goal changes, we will reset the grouping + filtering
+     * to be compatible with the new choices (if the new goal has common
+     * dimensions with our metric).
+     */
+    if (!activeGoal) return;
+    const newDefault = getDefaultSliceConfig(cube, activeGoal);
+    if (!newDefault || isEqual(sliceConfig, newDefault)) return;
+    setSliceConfig(newDefault);
+  }, [activeGoal, cube]);
 
   const sliceableDims = cube.dimensions.filter(
     (dim) => !sliceConfig.categories[dim.id]
@@ -177,18 +203,45 @@ export default function DimensionalNodePlot({
   let colors: string[];
   const nrCats = slice.categoryValues.length;
   if (nrCats > 1) {
-    colors = genColorsFromTheme(theme, slice.categoryValues.length);
+    // If we were asked to use a specific color, we generate the color scheme around it.
+    if (color) {
+      setUniqueColors(
+        slice.categoryValues,
+        (cv) => cv.color,
+        (cv, color) => {
+          cv.color = color;
+        },
+        defaultColor
+      );
+    } else {
+      colors = genColorsFromTheme(theme, slice.categoryValues.length);
+    }
   } else {
     colors = [defaultColor];
   }
   const hasHistorical = slice.historicalYears.length > 0;
   const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
+
+  let longUnit = metric.unit.htmlShort;
+  // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
+  // the backend gets proper support for unit specifiers.
+  if (
+    cube.hasDimension('emission_scope') &&
+    !cube.hasDimension('greenhouse_gases')
+  ) {
+    if (metric.unit.short === 't/Einw./a') {
+      longUnit = 't CO<sub>2</sub>eq ∕ Einw. ∕ a';
+    } else if (metric.unit.short === 'kt/a') {
+      longUnit = 'kt CO<sub>2</sub>eq∕a';
+    }
+  }
+
   const unit = metric.unit.htmlShort;
 
   const genTraces = (cv: MetricCategoryValues, idx: number) => {
     const stackGroup = cv.isNegative ? 'neg' : 'pos';
-    const color = cv.category.color || colors[idx];
+    const color = cv.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
       name: cv.category.label,
       type: 'scatter',
@@ -388,7 +441,7 @@ export default function DimensionalNodePlot({
         font: {
           family: theme.fontFamily,
         },
-        text: metric.unit?.htmlShort || undefined,
+        text: longUnit || undefined,
       },
       rangemode: rangeMode,
     },
