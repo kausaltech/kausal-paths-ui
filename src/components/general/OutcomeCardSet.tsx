@@ -300,7 +300,7 @@ const OutcomeCardSet = ({
           <OutcomeNodeContent
             node={rootNode}
             subNodes={cardNodes}
-            color={parentColor}
+            color={rootNode.color || parentColor}
             startYear={startYear}
             endYear={endYear}
             activeScenario={activeScenario}
