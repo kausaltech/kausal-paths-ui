@@ -370,6 +370,7 @@ export default function DimensionalNodePlot({
         marker: {
           size: 6,
         },
+        cliponaxis: false,
         x: goals.map((v) => v.year),
         y: goals.map((v) => v.value),
         hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
@@ -424,6 +425,7 @@ export default function DimensionalNodePlot({
   if (metric.stackable && slice.totalValues) {
     const label = t('plot-total')!;
     plotData.push({
+      xaxis: 'x2',
       type: 'scatter',
       name: label,
       mode: 'lines',
