@@ -154,7 +154,8 @@ const OutcomeNodeContent = ({
           color={color}
           withControls={false}
           baselineForecast={node.metric?.baselineForecastValues ?? undefined}
-          hideReferenceYear={false}
+          withReferenceYear
+          withTools={false}
         />
         <OutcomeGraph
           node={node}

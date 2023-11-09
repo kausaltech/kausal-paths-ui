@@ -122,7 +122,7 @@ function getDefaultSliceConfig(
 }
 
 type DimensionalNodePlotProps = {
-  hideReferenceYear?: boolean;
+  withReferenceYear?: boolean;
   node: { id: string };
   baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
@@ -130,14 +130,16 @@ type DimensionalNodePlotProps = {
   endYear: number;
   color?: string | null;
   withControls?: boolean;
+  withTools?: boolean;
 };
 
 export default function DimensionalNodePlot({
-  hideReferenceYear = true,
+  withReferenceYear = false,
   metric,
   startYear,
   color,
   withControls = true,
+  withTools = true,
   endYear,
   baselineForecast,
 }: DimensionalNodePlotProps) {
@@ -223,7 +225,7 @@ export default function DimensionalNodePlot({
     colors = [defaultColor];
   }
 
-  const showReferenceYear = !hideReferenceYear && !!site.referenceYear;
+  const showReferenceYear = withReferenceYear && !!site.referenceYear;
   const hasHistorical = slice.historicalYears.length > 0;
   const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
@@ -615,30 +617,32 @@ export default function DimensionalNodePlot({
         />
       </div>
 
-      <Tools>
-        <UncontrolledDropdown size="sm">
-          <DropdownToggle caret color="link">
-            <Icon name="download" />
-            {` ${t('download-data')}`}
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem
-              onClick={async (ev) =>
-                await cube.downloadData(sliceConfig, 'xlsx')
-              }
-            >
-              <Icon name="file" /> XLS
-            </DropdownItem>
-            <DropdownItem
-              onClick={async (ev) =>
-                await cube.downloadData(sliceConfig, 'csv')
-              }
-            >
-              <Icon name="file" /> CSV
-            </DropdownItem>
-          </DropdownMenu>
-        </UncontrolledDropdown>
-      </Tools>
+      {withTools && (
+        <Tools>
+          <UncontrolledDropdown size="sm">
+            <DropdownToggle caret color="link">
+              <Icon name="download" />
+              {` ${t('download-data')}`}
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem
+                onClick={async (ev) =>
+                  await cube.downloadData(sliceConfig, 'xlsx')
+                }
+              >
+                <Icon name="file" /> XLS
+              </DropdownItem>
+              <DropdownItem
+                onClick={async (ev) =>
+                  await cube.downloadData(sliceConfig, 'csv')
+                }
+              >
+                <Icon name="file" /> CSV
+              </DropdownItem>
+            </DropdownMenu>
+          </UncontrolledDropdown>
+        </Tools>
+      )}
     </>
   );
 }
