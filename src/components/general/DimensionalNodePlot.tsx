@@ -28,6 +28,7 @@ import { useTheme } from 'common/theme';
 import { InstanceGoal, useInstance } from 'common/instance';
 import { isEqual } from 'lodash';
 import { LayoutAxis } from 'plotly.js';
+import { getRange } from 'common/preprocess';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -120,6 +121,18 @@ function getDefaultSliceConfig(
   }
   return defaultConfig;
 }
+
+const getRangeFromSlice = (slice: MetricSlice) =>
+  getRange(
+    [
+      ...(slice.totalValues?.historicalValues ?? []),
+      ...(slice.totalValues?.forecastValues ?? []),
+      ...(slice.categoryValues ?? []).flatMap((value) => [
+        ...value.forecastValues,
+        ...value.historicalValues,
+      ]),
+    ].filter((value): value is number => typeof value === 'number')
+  );
 
 type DimensionalNodePlotProps = {
   withReferenceYear?: boolean;
@@ -510,6 +523,10 @@ export default function DimensionalNodePlot({
       tickcolor: theme.graphColors.grey030,
       tickformat: 'd',
       rangemode: rangeMode,
+      range:
+        metric.stackable && slice.totalValues
+          ? getRangeFromSlice(slice)
+          : undefined,
     },
     xaxis: showReferenceYear
       ? {
