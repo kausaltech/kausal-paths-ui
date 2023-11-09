@@ -39,7 +39,8 @@ const StyledInput = styled(Input)`
 const StyledContainer = styled.div`
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 1rem;
   align-items: center;
 `;
 
@@ -63,7 +64,7 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
 
   useEffect(() => {
     const showModal = localStorage.getItem('show-intro-modal');
-    if (showModal === null || showModal === 'true') {
+    if (showModal === null || JSON.parse(showModal) === true) {
       setEnabled(true);
     } else {
       setEnabled(false);
