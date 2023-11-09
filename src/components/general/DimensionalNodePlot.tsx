@@ -27,6 +27,7 @@ import {
 import { useTheme } from 'common/theme';
 import { InstanceGoal, useInstance } from 'common/instance';
 import { isEqual } from 'lodash';
+import { LayoutAxis } from 'plotly.js';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -121,6 +122,7 @@ function getDefaultSliceConfig(
 }
 
 type DimensionalNodePlotProps = {
+  hideReferenceYear?: boolean;
   node: { id: string };
   baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
@@ -131,6 +133,7 @@ type DimensionalNodePlotProps = {
 };
 
 export default function DimensionalNodePlot({
+  hideReferenceYear = true,
   metric,
   startYear,
   color,
@@ -219,6 +222,8 @@ export default function DimensionalNodePlot({
   } else {
     colors = [defaultColor];
   }
+
+  const showReferenceYear = !hideReferenceYear && !!site.referenceYear;
   const hasHistorical = slice.historicalYears.length > 0;
   const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
@@ -245,6 +250,7 @@ export default function DimensionalNodePlot({
     const traceConfig: Partial<Plotly.PlotData> = {
       name: cv.category.label,
       type: 'scatter',
+      xaxis: 'x2',
       line: {
         color,
         shape: 'spline',
@@ -292,6 +298,27 @@ export default function DimensionalNodePlot({
         fillcolor: tint(0.3, color),
       });
     }
+
+    if (showReferenceYear) {
+      const referenceYearIndex = slice.historicalYears.findIndex(
+        (year) => year === site.referenceYear
+      );
+      const referenceYearData = cv.historicalValues[referenceYearIndex];
+
+      if (typeof referenceYearData === 'undefined') {
+        return;
+      }
+
+      plotData.push({
+        x: [site.referenceYear - 1, site.referenceYear],
+        y: [referenceYearData, referenceYearData],
+        ...traceConfig,
+        ...filledStyles(`${stackGroup}-hist`),
+        ...formatHover(cv.category.label, color, unit, null, theme.fontFamily),
+        xaxis: 'x',
+        showlegend: false,
+      });
+    }
   };
 
   slice.categoryValues.forEach((cv, idx) => genTraces(cv, idx));
@@ -309,6 +336,7 @@ export default function DimensionalNodePlot({
       const goal = goals[goals.length - 1];
 
       plotData.push({
+        xaxis: 'x2',
         showlegend: false,
         hoverinfo: 'skip',
         x: [
@@ -322,10 +350,9 @@ export default function DimensionalNodePlot({
 
       if (usableEndYear === goal.year) {
         plotData.push({
+          xaxis: 'x2',
           x: [goal.year],
           y: [goal.value],
-          xaxis: 'x',
-          yaxis: 'y',
           type: 'scatter',
           name: `${t('target')} ${goal.year}`,
           line: lineConfig,
@@ -335,6 +362,7 @@ export default function DimensionalNodePlot({
       const name = t('target');
 
       plotData.push({
+        xaxis: 'x2',
         type: 'scatter',
         name,
         marker: {
@@ -366,13 +394,11 @@ export default function DimensionalNodePlot({
       y: [],
     });
 
-    console.log('baselinePlot', baselinePlot);
-
     plotData.push({
       x: baselinePlot.x,
       y: baselinePlot.y,
       // customdata: baselineForecast.y.map(() => ''),
-      // xaxis: 'x2',
+      xaxis: 'x2',
       // yaxis: 'y',
       mode: 'lines',
       name: site.baselineName,
@@ -420,16 +446,37 @@ export default function DimensionalNodePlot({
   }
 
   const nrYears = usableEndYear - startYear;
+
+  const commonXAxisConfig: Partial<LayoutAxis> = {
+    domain: [0.075, 1],
+    ticklen: 10,
+    type: 'date',
+    gridcolor: theme.graphColors.grey005,
+    tickcolor: theme.graphColors.grey030,
+    hoverformat: '%Y',
+    automargin: true,
+    dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
+  };
+
+  const mainXAxisConfig: Partial<LayoutAxis> = {
+    ...commonXAxisConfig,
+    range: [`${startYear - 1}-11-01`, `${usableEndYear}-02-01`],
+  };
+
+  const referenceXAxisConfig: Partial<LayoutAxis> = {
+    ...commonXAxisConfig,
+    visible: false,
+  };
+
   const layout: Partial<Plotly.Layout> = {
     height: 300,
     margin: {
       t: 24,
       r: 24,
       b: 48,
-      l: 12,
+      // l: 24,
     },
     hovermode: 'x unified',
-    hoverdistance: 10,
     yaxis: {
       domain: [0, 1],
       anchor: 'x',
@@ -445,16 +492,23 @@ export default function DimensionalNodePlot({
       },
       rangemode: rangeMode,
     },
-    xaxis: {
-      domain: [0.075, 1],
-      ticklen: 10,
-      type: 'date',
-      dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
-      range: [`${startYear - 1}-11-01`, `${usableEndYear}-02-01`],
-      gridcolor: theme.graphColors.grey005,
-      tickcolor: theme.graphColors.grey030,
-      hoverformat: '%Y',
-    },
+    xaxis: showReferenceYear
+      ? {
+          ...referenceXAxisConfig,
+          visible: true,
+          domain: [0, 0.03],
+          range: [
+            `${site.referenceYear - 1}-01-01`,
+            `${site.referenceYear}-01-01`,
+          ],
+        }
+      : referenceXAxisConfig,
+    xaxis2: showReferenceYear
+      ? {
+          ...mainXAxisConfig,
+          domain: [0.066, 1],
+        }
+      : mainXAxisConfig,
     autosize: true,
     font: {
       family: theme.fontFamily,
