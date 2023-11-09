@@ -138,16 +138,10 @@ const Layout = ({ children }) => {
       {introModalEnabled && (
         <IntroModal>
           <RichText
-            key={123}
-            html={
-              '<iframe ' +
-              'width="100%" ' +
-              'style="aspect-ratio: 16 / 9" ' +
-              'src="https://www.youtube.com/embed/MIdk7wCIdzY?autoplay=1" ' +
-              'title="Intro Video" ' +
-              'allowFullScreen>' +
-              '</iframe>'
-            }
+            html={`<iframe width="100%" style="aspect-ratio: 16 / 9"
+                src="https://www.youtube.com/embed/MIdk7wCIdzY?autoplay=1"
+                title="Intro Video" allowFullScreen>
+              </iframe>`}
           />
         </IntroModal>
       )}

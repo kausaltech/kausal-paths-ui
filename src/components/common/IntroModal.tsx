@@ -1,5 +1,6 @@
 import { truncate } from 'lodash';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'next-i18next';
 import {
   Button,
   Modal,
@@ -23,9 +24,10 @@ const StyledButton = styled(Button)`
 `;
 
 const StyledLabel = styled(Label)`
-&:hover {
+  &:hover {
     color: ${(props) => props.theme.inputBtnFocusColor};
     cursor: pointer;
+  }
 `;
 
 const StyledInput = styled(Input)`
@@ -56,6 +58,7 @@ interface IntroModalProps {
 }
 
 const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
+  const { t } = useTranslation();
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -67,7 +70,7 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
     }
   }, []);
 
-  const handleDisableCheckbox = (e) => {
+  const handleChangeCheckbox = (e) => {
     localStorage.setItem(
       'intro-modal-enabled',
       JSON.stringify(!e.target.checked)
@@ -87,11 +90,11 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
           <StyledContainer>
             <FormGroup check>
               <StyledLabel check>
-                <StyledInput type="checkbox" onChange={handleDisableCheckbox} />
-                Nicht mehr anzeigen
+                <StyledInput type="checkbox" onChange={handleChangeCheckbox} />
+                {t('do-not-show-again')}
               </StyledLabel>
             </FormGroup>
-            <StyledButton onClick={toggle}>Schliessen</StyledButton>
+            <StyledButton onClick={toggle}>{t('close')}</StyledButton>
           </StyledContainer>
         </StyledModalFooter>
       </Modal>

@@ -82,5 +82,7 @@
   "table-unit": "Maßeinheit",
   "outcome-bar-summary-historical": "Die Summe der {{goalType}} im Jahr {{selectedYear}} war um {{selectedYearDifference}} höher als im Jahr {{nearestGoalYear}} ({{nearestGoalValue}}).",
   "outcome-bar-summary-forecast": "Mit dem gewählten Szenario {{scenarioName}} wird das Ziel von {{nearestGoalValue}} a im Jahr {{nearestGoalYear}} erreicht. Die Summe der {{goalType}} im Jahr {{selectedYear}} beträgt {{selectedYearValue}}.",
-  "outcome-tabs-label": "Anzeigeoptionen"
+  "outcome-tabs-label": "Anzeigeoptionen",
+  "do-not-show-again": "Nicht mehr anzeigen",
+  "close": "Schliessen"
 }
