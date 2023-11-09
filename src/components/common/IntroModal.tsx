@@ -1,4 +1,3 @@
-import { truncate } from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import {
@@ -59,25 +58,26 @@ interface IntroModalProps {
 
 const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
   const { t } = useTranslation();
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
+  const [isChecked, setIsChecked] = useState(true);
 
   useEffect(() => {
-    const storedValue = localStorage.getItem('intro-modal-enabled');
-    if (storedValue != null && JSON.parse(storedValue) === false) {
-      setEnabled(false);
-    } else {
+    const showModal = localStorage.getItem('show-intro-modal');
+    if (showModal === null || showModal === 'true') {
       setEnabled(true);
+    } else {
+      setEnabled(false);
     }
   }, []);
 
-  const handleChangeCheckbox = (e) => {
-    localStorage.setItem(
-      'intro-modal-enabled',
-      JSON.stringify(!e.target.checked)
-    );
+  const toggle = () => {
+    localStorage.setItem('show-intro-modal', JSON.stringify(!isChecked));
+    setEnabled(false);
   };
 
-  const toggle = () => setEnabled(!enabled);
+  const handleChangeCheckbox = (e) => {
+    setIsChecked(e.target.checked);
+  };
 
   return (
     <div>
@@ -90,7 +90,11 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
           <StyledContainer>
             <FormGroup check>
               <StyledLabel check>
-                <StyledInput type="checkbox" onChange={handleChangeCheckbox} />
+                <StyledInput
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={handleChangeCheckbox}
+                />
                 {t('do-not-show-again')}
               </StyledLabel>
             </FormGroup>
