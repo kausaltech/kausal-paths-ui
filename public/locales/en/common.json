@@ -94,5 +94,7 @@
   "table-unit": "Unit",
   "outcome-bar-summary-historical": "{{goalType}} in year {{selectedYear}} was {{selectedYearDifference}} different than the goal in year {{nearestGoalYear}} ({{nearestGoalValue}}).",
   "outcome-bar-summary-forecast": "With the chosen scenario of {{scenarioName}} the forecast of {{goalType}} in {{selectedYear}} is {{selectedYearValue}}. Target for the year {{nearestGoalYear}} is {{nearestGoalValue}}.",
-  "outcome-tabs-label": "Display options"
+  "outcome-tabs-label": "Display options",
+  "tco2-e-inhabitant": "t CO<sub>2</sub>eq/inhabitant/a",
+  "ktco2-e": "kt CO<sub>2</sub>eq/a"
 }

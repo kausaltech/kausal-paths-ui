@@ -236,9 +236,9 @@ export default function DimensionalNodePlot({
     !cube.hasDimension('greenhouse_gases')
   ) {
     if (metric.unit.short === 't/Einw./a') {
-      longUnit = 't CO<sub>2</sub>eq ∕ Einw. ∕ a';
+      longUnit = t('tco2-e-inhabitant');
     } else if (metric.unit.short === 'kt/a') {
-      longUnit = 'kt CO<sub>2</sub>eq∕a';
+      longUnit = t('ktco2-e');
     }
   }
 
@@ -448,7 +448,7 @@ export default function DimensionalNodePlot({
   const nrYears = usableEndYear - startYear;
 
   const commonXAxisConfig: Partial<LayoutAxis> = {
-    domain: [0.075, 1],
+    domain: [0, 1],
     ticklen: 10,
     type: 'date',
     gridcolor: theme.graphColors.grey005,
@@ -460,7 +460,7 @@ export default function DimensionalNodePlot({
 
   const mainXAxisConfig: Partial<LayoutAxis> = {
     ...commonXAxisConfig,
-    range: [`${startYear - 1}-11-01`, `${usableEndYear}-02-01`],
+    range: [`${startYear - 1}-12-31`, `${usableEndYear}-02-01`],
   };
 
   const referenceXAxisConfig: Partial<LayoutAxis> = {
@@ -471,12 +471,33 @@ export default function DimensionalNodePlot({
   const layout: Partial<Plotly.Layout> = {
     height: 300,
     margin: {
-      t: 24,
+      t: 32,
       r: 24,
       b: 48,
-      // l: 24,
+      l: 48,
     },
     hovermode: 'x unified',
+    annotations: [
+      // Custom horizontal y axis label
+      {
+        ...(longUnit
+          ? {
+              xref: 'paper',
+              yref: 'paper',
+              yshift: 10,
+              x: 0,
+              xanchor: 'left',
+              y: 1,
+              yanchor: 'bottom',
+              text: longUnit || undefined,
+              font: {
+                size: 14,
+              },
+              showarrow: false,
+            }
+          : undefined),
+      },
+    ],
     yaxis: {
       domain: [0, 1],
       anchor: 'x',
@@ -484,12 +505,6 @@ export default function DimensionalNodePlot({
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       tickformat: 'd',
-      title: {
-        font: {
-          family: theme.fontFamily,
-        },
-        text: longUnit || undefined,
-      },
       rangemode: rangeMode,
     },
     xaxis: showReferenceYear
