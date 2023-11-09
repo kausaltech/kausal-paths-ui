@@ -145,26 +145,17 @@ const OutcomeNodeContent = ({
 
   const outcomeGraph = useMemo(
     () => (
-      <>
-        <DimensionalNodePlot
-          node={node}
-          metric={node.metricDim!}
-          startYear={startYear}
-          endYear={endYear}
-          color={color}
-          withControls={false}
-          baselineForecast={node.metric?.baselineForecastValues ?? undefined}
-          withReferenceYear
-          withTools={false}
-        />
-        <OutcomeGraph
-          node={node}
-          subNodes={subNodes}
-          color={color}
-          startYear={startYear}
-          endYear={endYear}
-        />
-      </>
+      <DimensionalNodePlot
+        node={node}
+        metric={node.metricDim!}
+        startYear={startYear}
+        endYear={endYear}
+        color={color}
+        withControls={false}
+        baselineForecast={node.metric?.baselineForecastValues ?? undefined}
+        withReferenceYear
+        withTools={false}
+      />
     ),
     [node, subNodes, color, startYear, endYear]
   );
