@@ -108,6 +108,8 @@ const NumberWidget = (props) => {
     handleChange({ parameterId: id, numberValue: newValues[0] });
   };
 
+  if (!min || !max) return null;
+
   const Reset = () =>
     defaultValue !== null ? (
       <Button
