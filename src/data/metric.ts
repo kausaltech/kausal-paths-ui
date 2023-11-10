@@ -2,10 +2,7 @@ import { Font, Style } from 'exceljs';
 import dayjs from 'dayjs';
 import slugify from 'slugify';
 
-import {
-  DimensionalMetricFragment,
-  DimensionalNodeMetricFragment,
-} from 'common/__generated__/graphql';
+import { DimensionalMetricFragment } from 'common/__generated__/graphql';
 import { InstanceGoal } from 'common/instance';
 import { DocumentNode, gql } from '@apollo/client';
 
@@ -37,11 +34,17 @@ type MetricRow = {
   dimCats: DimCats;
 };
 
+type CatOrGroup = MetricDimensionCategory | MetricCategoryGroup;
+
+export type MetricCategory = Partial<CatOrGroup> &
+  Pick<CatOrGroup, 'id' | 'label' | 'color' | 'order'>;
+
 export type MetricCategoryValues = {
-  category: MetricDimensionCategory | MetricCategoryGroup;
+  category: Readonly<MetricCategory>;
   forecastValues: (number | null)[];
   historicalValues: (number | null)[];
   isNegative: boolean;
+  color: string | null;
 };
 
 type CatDimChoice = {
@@ -53,8 +56,13 @@ type MetricCategoryChoice = {
   [dim: string]: CatDimChoice | undefined;
 };
 
+/**
+ *
+ */
 export type SliceConfig = {
+  /** The dimension to group/slice by (or `undefined` if we should just sum everything) */
   dimensionId: string | undefined;
+  /** Filters for categories (or `{}` if no filtering should be done) */
   categories: MetricCategoryChoice;
 };
 
@@ -222,6 +230,15 @@ export class DimensionalMetric {
     return rows;
   }
 
+  /**
+   * Checks if the cube has a matching dimension.
+   *
+   * @param originalDimId The non-prefixed (canonical) id for the dimension
+   */
+  hasDimension(originalDimId: string) {
+    return !!this.dimensions.find((dim) => dim.originalId == originalDimId);
+  }
+
   /*
   getLabelForChoice(categoryChoice: MetricCategoryChoice) {
     const parts: string[] = [];
@@ -333,6 +350,13 @@ export class DimensionalMetric {
     return val;
   }
 
+  /**
+   * Get the default dimension slicing config when a goal is selected
+   *
+   * @param activeGoal - The currently selected goal
+   * @returns An object describing the _default_ category selections
+   *   or `null` if the current goal does not have an effect on this cube.
+   */
   getChoicesForGoal(activeGoal: InstanceGoal) {
     const metricDims = new Map(
       this.dimensions.map((dim) => [dim.originalId, dim])
@@ -340,6 +364,9 @@ export class DimensionalMetric {
     const matchingDims = activeGoal.dimensions.filter((gdim) =>
       metricDims.has(gdim.dimension)
     );
+
+    if (!matchingDims.length) return null;
+
     const choice: MetricCategoryChoice = {};
     matchingDims.forEach((gdim) => {
       const metricDim = metricDims.get(gdim.dimension)!;
@@ -386,7 +413,7 @@ export class DimensionalMetric {
     const historicalValues: (number | null)[] = [];
     const forecastValues: (number | null)[] = [];
     this.data.years.forEach((year) => {
-      let val: number | null = byYear.get(year) ?? null;
+      const val: number | null = byYear.get(year) ?? null;
       if (this.data.forecastFrom && year >= this.data.forecastFrom) {
         forecastValues.push(val);
       } else {
@@ -407,8 +434,11 @@ export class DimensionalMetric {
           category: {
             id: this.data.id,
             label: this.data.name,
+            color: null,
+            order: null,
           },
           isNegative: false,
+          color: null,
         },
       ],
       historicalYears,
@@ -478,11 +508,14 @@ export class DimensionalMetric {
 
       catVals.set(rowId, val);
     });
+    // FIXME: Should we get this from the theme?
+    const totalColor = '#777777';
     const totalValues: MetricCategoryValues = {
       category: {
         id: 'total',
         label: 'total',
-        color: '#777777',
+        color: totalColor,
+        order: null,
       },
       forecastValues: this.data.years
         .filter((year) => this.isForecastYear(year))
@@ -491,14 +524,15 @@ export class DimensionalMetric {
         .filter((year) => !this.isForecastYear(year))
         .map((year) => null),
       isNegative: false,
+      color: totalColor,
     };
     const groupsOrCats = useGroups ? dim.groups : dim.categories;
-    let categoryValues: MetricCategoryValues[] = groupsOrCats
+    const categoryValues: MetricCategoryValues[] = groupsOrCats
       .map((cat: MetricCategoryGroup | MetricDimensionCategory) => {
         const historicalValues: (number | null)[] = [];
         const forecastValues: (number | null)[] = [];
-        this.data.years.forEach((year, yearIdx) => {
-          let val: number | null = byYear.get(year)!.get(cat.id) ?? null;
+        this.data.years.forEach((year) => {
+          const val: number | null = byYear.get(year)!.get(cat.id) ?? null;
           if (this.isForecastYear(year)) {
             forecastValues.push(val);
           } else {
@@ -524,6 +558,7 @@ export class DimensionalMetric {
           forecastValues,
           historicalValues,
           isNegative,
+          color: cat.color,
         };
       })
       .filter((cv) => {

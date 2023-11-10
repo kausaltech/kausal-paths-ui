@@ -88,14 +88,22 @@ export function genColorsFromTheme(theme: DefaultTheme, numColors: number) {
   return genColors(colors, numColors);
 }
 
-export function setUniqueColors(nodes: { color: undefined | null | string }[]) {
+export function setUniqueColors<T>(
+  objs: T[],
+  getColor: (obj: T) => string | undefined | null,
+  setColor: (obj: T, color: string) => void,
+  defaultColor: string | null = null
+) {
   const colorCount: { [c: string]: number } = {};
-  nodes.forEach((node) => {
-    if (!node.color) return;
-
-    const color = node.color.toLowerCase();
+  if (defaultColor) defaultColor = defaultColor.toLowerCase();
+  objs.forEach((obj) => {
+    let color = getColor(obj)?.toLowerCase();
+    if (!color) {
+      if (!defaultColor) return;
+      color = defaultColor;
+    }
     colorCount[color] = (colorCount[color] ?? 0) + 1;
-    node.color = color;
+    setColor(obj, color);
   });
   const colors = Object.fromEntries(
     Object.entries(colorCount).map(([color, count]) => {
@@ -113,11 +121,11 @@ export function setUniqueColors(nodes: { color: undefined | null | string }[]) {
       return [color, scale];
     })
   );
-  nodes.forEach((node) => {
-    if (!node.color) return;
+  objs.forEach((obj) => {
+    const oldColor = getColor(obj);
+    if (!oldColor) return;
     // console.log(`${node.color} -> ${colors[node.color][0]}`);
-    const color = colors[node.color].shift();
-    node.color = color!;
+    const color = colors[oldColor].shift();
+    setColor(obj, color!);
   });
-  return nodes;
 }

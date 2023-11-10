@@ -19,6 +19,7 @@ import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import { useInstance } from 'common/instance';
+import DimensionalNodePlot from './DimensionalNodePlot';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
@@ -33,7 +34,7 @@ const DisplayTab = styled(NavItem)`
 
 const ContentWrapper = styled.div`
   min-height: 300px;
-  max-height: 400px;
+  max-height: 1000px;
   overflow-y: auto;
   padding: 1rem;
   background-color: white;
@@ -144,12 +145,16 @@ const OutcomeNodeContent = ({
 
   const outcomeGraph = useMemo(
     () => (
-      <OutcomeGraph
+      <DimensionalNodePlot
         node={node}
-        subNodes={subNodes}
-        color={color}
+        metric={node.metricDim!}
         startYear={startYear}
         endYear={endYear}
+        color={color}
+        withControls={false}
+        baselineForecast={node.metric?.baselineForecastValues ?? undefined}
+        withReferenceYear
+        withTools={false}
       />
     ),
     [node, subNodes, color, startYear, endYear]

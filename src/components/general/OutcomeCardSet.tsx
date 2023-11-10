@@ -230,7 +230,13 @@ const OutcomeCardSet = ({
       )
       .map((node) => ({ ...node }));
     orderByMetric(cardNodes);
-    setUniqueColors(cardNodes);
+    setUniqueColors(
+      cardNodes,
+      (node) => node.color,
+      (node, color) => {
+        node.color = color;
+      }
+    );
     const subNodeMap = new Map<string, OutcomeNodeFieldsFragment[]>(
       cardNodes.map((cn) => [
         cn.id,
@@ -300,7 +306,7 @@ const OutcomeCardSet = ({
           <OutcomeNodeContent
             node={rootNode}
             subNodes={cardNodes}
-            color={parentColor}
+            color={rootNode.color || parentColor}
             startYear={startYear}
             endYear={endYear}
             activeScenario={activeScenario}

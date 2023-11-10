@@ -2,6 +2,7 @@ import { gql } from '@apollo/client';
 import DimensionalFlow from 'components/graphs/DimensionalFlow';
 import { SUBACTIONS_FRAGMENT } from 'components/general/SubActions';
 import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
+import { DimensionalMetric } from 'data/metric';
 
 const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!, $goal: ID) {
@@ -76,13 +77,7 @@ const GET_ACTION_CONTENT = gql`
       }
     }
     metricDim {
-      dimensions {
-        id
-        categories {
-          id
-        }
-      }
-      stackable
+      ...DimensionalMetric
     }
     quantity
     parameters {
@@ -108,6 +103,7 @@ const GET_ACTION_CONTENT = gql`
       }
     }
   }
+  ${DimensionalMetric.fragment}
   ${ACTION_PARAMETER_FRAGMENT}
 `;
 

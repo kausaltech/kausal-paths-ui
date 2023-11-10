@@ -4,15 +4,11 @@ import { useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
-import { genColorsFromTheme } from 'common/colors';
+import { genColorsFromTheme, setUniqueColors } from 'common/colors';
 import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import {
   Col,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
   Row,
   UncontrolledDropdown,
   DropdownToggle,
@@ -29,6 +25,10 @@ import {
   SliceConfig,
 } from 'data/metric';
 import { useTheme } from 'common/theme';
+import { InstanceGoal, useInstance } from 'common/instance';
+import { isEqual } from 'lodash';
+import { LayoutAxis } from 'plotly.js';
+import { getRange } from 'common/preprocess';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -41,16 +41,6 @@ const Tools = styled.div`
   .icon {
     width: 1.25rem !important;
     height: 1.25rem !important;
-    vertical-align: -0.2rem;
-  }
-`;
-
-const DisplayTab = styled(NavItem)`
-  font-size: 0.9rem;
-  .icon {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    margin-right: 0.25rem;
     vertical-align: -0.2rem;
   }
 `;
@@ -87,56 +77,107 @@ function formatHover(
   return out;
 }
 
+type BaselineForecast = { year: number; value: number };
+
+type PlotData = { x: number[]; y: number[] };
+
+function getDefaultSliceConfig(
+  cube: DimensionalMetric,
+  activeGoal: InstanceGoal | null
+) {
+  /**
+   * By default, we group by the first dimension `metric` has, whatever it is.
+   * @todo Is there a better way to select the default?
+   *
+   * If the currently selected goal has category selections for this metric,
+   * we might choose another dimension.
+   *
+   * NOTE: This is just the default -- the actually active filtering and
+   * grouping is controlled by the `sliceConfig` state below.
+   */
+  const defaultConfig: SliceConfig = {
+    dimensionId: cube.dimensions[0]?.id,
+    categories: {},
+  };
+
+  if (!activeGoal) return defaultConfig;
+
+  const cubeDefault = cube.getChoicesForGoal(activeGoal);
+  if (!cubeDefault) return defaultConfig;
+  defaultConfig.categories = cubeDefault;
+  /**
+   * Check if our default dimension to slice by is affected by the
+   * goal-based default filters. If so, we should choose another
+   * dimension.
+   */
+  if (
+    defaultConfig.dimensionId &&
+    cubeDefault.hasOwnProperty(defaultConfig.dimensionId)
+  ) {
+    const firstPossible = cube.dimensions.find(
+      (dim) => !cubeDefault.hasOwnProperty(dim.id)
+    );
+    defaultConfig.dimensionId = firstPossible?.id;
+  }
+  return defaultConfig;
+}
+
+const getRangeFromSlice = (slice: MetricSlice) =>
+  getRange(
+    [
+      ...(slice.totalValues?.historicalValues ?? []),
+      ...(slice.totalValues?.forecastValues ?? []),
+      ...(slice.categoryValues ?? []).flatMap((value) => [
+        ...value.forecastValues,
+        ...value.historicalValues,
+      ]),
+    ].filter((value): value is number => typeof value === 'number')
+  );
+
 type DimensionalNodePlotProps = {
+  withReferenceYear?: boolean;
   node: { id: string };
+  baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   startYear: number;
   endYear: number;
   color?: string | null;
+  withControls?: boolean;
+  withTools?: boolean;
 };
 
-export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
-  const { metric, startYear, color } = props;
-  let { endYear } = props;
-
+export default function DimensionalNodePlot({
+  withReferenceYear = false,
+  metric,
+  startYear,
+  color,
+  withControls = true,
+  withTools = true,
+  endYear,
+  baselineForecast,
+}: DimensionalNodePlotProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const [activeTabId, setActiveTabId] = useState('graph');
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
 
   const lastMetricYear = metric.years.slice(-1)[0];
-  if (lastMetricYear && endYear > lastMetricYear) endYear = lastMetricYear;
+  const usableEndYear =
+    lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
 
-  let defaultChoice = {};
-  let defaultSliceDim: string | undefined = metric.dimensions[0]?.id;
-
-  let goalAffectsPlot = false;
-  if (activeGoal) {
-    defaultChoice = cube.getChoicesForGoal(activeGoal);
-    if (defaultSliceDim && Object.hasOwn(defaultChoice, defaultSliceDim)) {
-      defaultSliceDim = metric.dimensions.find((dim) => !defaultChoice[dim.id])
-        ?.id;
-      goalAffectsPlot = true;
-    }
-  }
-
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>({
-    dimensionId: defaultSliceDim,
-    categories: defaultChoice,
-  });
+  const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
+  const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
 
   useEffect(() => {
-    if (!goalAffectsPlot) return;
-    if (
-      sliceConfig.dimensionId != defaultSliceDim ||
-      sliceConfig.categories != defaultChoice
-    ) {
-      setSliceConfig({
-        dimensionId: defaultSliceDim,
-        categories: defaultChoice,
-      });
-    }
-  }, [activeGoal]);
+    /**
+     * If the active goal changes, we will reset the grouping + filtering
+     * to be compatible with the new choices (if the new goal has common
+     * dimensions with our metric).
+     */
+    if (!activeGoal) return;
+    const newDefault = getDefaultSliceConfig(cube, activeGoal);
+    if (!newDefault || isEqual(sliceConfig, newDefault)) return;
+    setSliceConfig(newDefault);
+  }, [activeGoal, cube]);
 
   const sliceableDims = cube.dimensions.filter(
     (dim) => !sliceConfig.categories[dim.id]
@@ -153,9 +194,10 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   }
   const theme = useTheme();
   const site = useContext(SiteContext);
+  const instance = useInstance();
 
   const defaultColor = color || theme.graphColors.blue070;
-  const shapes = [];
+  const shapes: Plotly.Layout['shapes'] = [];
   const plotData: Partial<Plotly.PlotData>[] = [];
   const rangeMode = metric.stackable ? 'tozero' : 'normal';
   const filled = metric.stackable;
@@ -179,21 +221,51 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   let colors: string[];
   const nrCats = slice.categoryValues.length;
   if (nrCats > 1) {
-    colors = genColorsFromTheme(theme, slice.categoryValues.length);
+    // If we were asked to use a specific color, we generate the color scheme around it.
+    if (color) {
+      setUniqueColors(
+        slice.categoryValues,
+        (cv) => cv.color,
+        (cv, color) => {
+          cv.color = color;
+        },
+        defaultColor
+      );
+    } else {
+      colors = genColorsFromTheme(theme, slice.categoryValues.length);
+    }
   } else {
     colors = [defaultColor];
   }
+
+  const showReferenceYear = withReferenceYear && !!site.referenceYear;
   const hasHistorical = slice.historicalYears.length > 0;
   const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
+
+  let longUnit = metric.unit.htmlShort;
+  // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
+  // the backend gets proper support for unit specifiers.
+  if (
+    cube.hasDimension('emission_scope') &&
+    !cube.hasDimension('greenhouse_gases')
+  ) {
+    if (metric.unit.short === 't/Einw./a') {
+      longUnit = t('tco2-e-inhabitant');
+    } else if (metric.unit.short === 'kt/a') {
+      longUnit = t('ktco2-e');
+    }
+  }
+
   const unit = metric.unit.htmlShort;
 
   const genTraces = (cv: MetricCategoryValues, idx: number) => {
     const stackGroup = cv.isNegative ? 'neg' : 'pos';
-    const color = cv.category.color || colors[idx];
+    const color = cv.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
       name: cv.category.label,
       type: 'scatter',
+      xaxis: 'x2',
       line: {
         color,
         shape: 'spline',
@@ -241,33 +313,132 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
         fillcolor: tint(0.3, color),
       });
     }
+
+    if (showReferenceYear) {
+      const referenceYearIndex = slice.historicalYears.findIndex(
+        (year) => year === site.referenceYear
+      );
+      const referenceYearData = cv.historicalValues[referenceYearIndex];
+
+      if (typeof referenceYearData === 'undefined') {
+        return;
+      }
+
+      plotData.push({
+        x: [site.referenceYear - 1, site.referenceYear],
+        y: [referenceYearData, referenceYearData],
+        ...traceConfig,
+        ...filledStyles(`${stackGroup}-hist`),
+        ...formatHover(cv.category.label, color, unit, null, theme.fontFamily),
+        xaxis: 'x',
+        showlegend: false,
+      });
+    }
   };
 
   slice.categoryValues.forEach((cv, idx) => genTraces(cv, idx));
 
   const goals = cube.getGoalsForChoice(sliceConfig.categories);
+
   if (goals) {
-    const name = t('target');
+    const lineConfig: Partial<Plotly.ShapeLine> = {
+      color: theme.graphColors.red090,
+      width: 2,
+      dash: 'dot',
+    };
+
+    if (goals.length === 1) {
+      const goal = goals[goals.length - 1];
+
+      plotData.push({
+        xaxis: 'x2',
+        showlegend: false,
+        hoverinfo: 'skip',
+        x: [
+          startYear === site.referenceYear ? site.minYear : startYear,
+          goal.year > usableEndYear ? usableEndYear : goal.year,
+        ],
+        y: [goal.value, goal.value],
+        mode: 'lines',
+        line: lineConfig,
+      });
+
+      if (usableEndYear === goal.year) {
+        plotData.push({
+          xaxis: 'x2',
+          x: [goal.year],
+          y: [goal.value],
+          type: 'scatter',
+          name: `${t('target')} ${goal.year}`,
+          line: lineConfig,
+        });
+      }
+    } else if (goals?.length) {
+      const name = t('target');
+
+      plotData.push({
+        xaxis: 'x2',
+        type: 'scatter',
+        name,
+        marker: {
+          size: 6,
+        },
+        cliponaxis: false,
+        x: goals.map((v) => v.year),
+        y: goals.map((v) => v.value),
+        hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
+        line: lineConfig,
+      });
+    }
+  }
+
+  if (
+    baselineForecast &&
+    site.baselineName &&
+    instance.features?.baselineVisibleInGraphs
+  ) {
+    const reduceForecastToPlot = (forecasts: PlotData, forecast) =>
+      forecast.year >= startYear && forecast.year <= usableEndYear
+        ? {
+            x: [...forecasts.x, forecast.year],
+            y: [...forecasts.y, forecast.value],
+          }
+        : forecasts;
+
+    const baselinePlot = baselineForecast.reduce(reduceForecastToPlot, {
+      x: [],
+      y: [],
+    });
+
     plotData.push({
+      x: baselinePlot.x,
+      y: baselinePlot.y,
+      // customdata: baselineForecast.y.map(() => ''),
+      xaxis: 'x2',
+      // yaxis: 'y',
+      mode: 'lines',
+      name: site.baselineName,
       type: 'scatter',
-      name,
       line: {
-        color: theme.graphColors.red070,
+        color: theme.graphColors.grey060,
+        shape: 'spline',
+        smoothing: 0.8,
         width: 2,
-        dash: 'dot',
+        dash: 'dash',
       },
-      marker: {
-        size: 8,
-      },
-      x: goals.map((v) => v.year),
-      y: goals.map((v) => v.value),
-      hovertemplate: `<b>${name} %{x}: %{y:,.3r} ${unit}</b><extra></extra>`,
+      ...formatHover(
+        site.baselineName,
+        theme.graphColors.grey030,
+        unit,
+        predLabel
+      ),
     });
   }
 
   if (metric.stackable && slice.totalValues) {
     const label = t('plot-total')!;
     plotData.push({
+      xaxis: 'x2',
       type: 'scatter',
       name: label,
       mode: 'lines',
@@ -291,42 +462,89 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
     });
   }
 
-  const nrYears = endYear - startYear;
+  const nrYears = usableEndYear - startYear;
+
+  const commonXAxisConfig: Partial<LayoutAxis> = {
+    domain: [0, 1],
+    ticklen: 10,
+    type: 'date',
+    gridcolor: theme.graphColors.grey005,
+    tickcolor: theme.graphColors.grey030,
+    hoverformat: '%Y',
+    automargin: true,
+    dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
+  };
+
+  const mainXAxisConfig: Partial<LayoutAxis> = {
+    ...commonXAxisConfig,
+    range: [`${startYear - 1}-12-31`, `${usableEndYear}-02-01`],
+  };
+
+  const referenceXAxisConfig: Partial<LayoutAxis> = {
+    ...commonXAxisConfig,
+    visible: false,
+  };
+
   const layout: Partial<Plotly.Layout> = {
     height: 300,
     margin: {
-      t: 24,
+      t: 32,
       r: 24,
       b: 48,
-      l: 12,
+      l: 48,
     },
     hovermode: 'x unified',
-    hoverdistance: 10,
+    annotations: [
+      // Custom horizontal y axis label
+      {
+        ...(longUnit
+          ? {
+              xref: 'paper',
+              yref: 'paper',
+              yshift: 10,
+              x: 0,
+              xanchor: 'left',
+              y: 1,
+              yanchor: 'bottom',
+              text: longUnit || undefined,
+              font: {
+                size: 14,
+              },
+              showarrow: false,
+            }
+          : undefined),
+      },
+    ],
     yaxis: {
       domain: [0, 1],
       anchor: 'x',
       ticklen: 10,
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
-      tickformat: ',',
-      title: {
-        font: {
-          family: theme.fontFamily,
-        },
-        text: metric.unit?.htmlShort || undefined,
-      },
+      tickformat: 'd',
       rangemode: rangeMode,
+      range:
+        metric.stackable && slice.totalValues
+          ? getRangeFromSlice(slice)
+          : undefined,
     },
-    xaxis: {
-      domain: [0.075, 1],
-      ticklen: 10,
-      type: 'date',
-      dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
-      range: [`${startYear - 1}-11-01`, `${endYear}-02-01`],
-      gridcolor: theme.graphColors.grey005,
-      tickcolor: theme.graphColors.grey030,
-      hoverformat: '%Y',
-    },
+    xaxis: showReferenceYear
+      ? {
+          ...referenceXAxisConfig,
+          visible: true,
+          domain: [0, 0.03],
+          range: [
+            `${site.referenceYear - 1}-01-01`,
+            `${site.referenceYear}-01-01`,
+          ],
+        }
+      : referenceXAxisConfig,
+    xaxis2: showReferenceYear
+      ? {
+          ...mainXAxisConfig,
+          domain: [0.066, 1],
+        }
+      : mainXAxisConfig,
     autosize: true,
     font: {
       family: theme.fontFamily,
@@ -348,8 +566,8 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
 
   const hasGroups = cube.dimensions.some((dim) => dim.groups.length);
 
-  let controls =
-    metric.dimensions.length > 1 || hasGroups ? (
+  const controls =
+    withControls && (metric.dimensions.length > 1 || hasGroups) ? (
       <>
         <Row>
           {metric.dimensions.length > 1 && (
@@ -406,74 +624,44 @@ export default function DimensionalNodePlot(props: DimensionalNodePlotProps) {
   return (
     <>
       {controls}
-      <Nav tabs className="justify-content-end">
-        <DisplayTab>
-          <NavLink
-            href="#"
-            onClick={() => setActiveTabId('graph')}
-            active={activeTabId === 'graph'}
-          >
-            <Icon name="chartLine" /> {t('time-series')}
-          </NavLink>
-        </DisplayTab>
-        {/*
-        <DisplayTab>
-          <NavLink
-            href="#" onClick={() => setActiveTabId('table')}
-            active={activeTabId === 'table'}
-          >
-            <TableIcon /> {t('table')}
-          </NavLink>
-        </DisplayTab>
-        */}
-      </Nav>
-      <TabContent activeTab={activeTabId} className="mt-3">
-        {activeTabId === 'graph' && (
-          <Plot
-            data={plotData}
-            layout={layout}
-            useResizeHandler
-            style={{ width: '100%' }}
-            config={{ displayModeBar: false }}
-            noValidate
-          />
-        )}
-        {/* activeTabId === 'table' && (
-        <div>
-          <DataTable
-            node={tableNode}
-            subNodes={tableSubNodes}
-            startYear={startYear}
-            endYear={endYear}
-          />
-        </div>
-      ) */}
-      </TabContent>
 
-      <Tools>
-        <UncontrolledDropdown size="sm">
-          <DropdownToggle caret color="link">
-            <Icon name="download" />
-            {` ${t('download-data')}`}
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem
-              onClick={async (ev) =>
-                await cube.downloadData(sliceConfig, 'xlsx')
-              }
-            >
-              <Icon name="file" /> XLS
-            </DropdownItem>
-            <DropdownItem
-              onClick={async (ev) =>
-                await cube.downloadData(sliceConfig, 'csv')
-              }
-            >
-              <Icon name="file" /> CSV
-            </DropdownItem>
-          </DropdownMenu>
-        </UncontrolledDropdown>
-      </Tools>
+      <div className="mt-3">
+        <Plot
+          data={plotData}
+          layout={layout}
+          useResizeHandler
+          style={{ width: '100%' }}
+          config={{ displayModeBar: false }}
+          noValidate
+        />
+      </div>
+
+      {withTools && (
+        <Tools>
+          <UncontrolledDropdown size="sm">
+            <DropdownToggle caret color="link">
+              <Icon name="download" />
+              {` ${t('download-data')}`}
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem
+                onClick={async (ev) =>
+                  await cube.downloadData(sliceConfig, 'xlsx')
+                }
+              >
+                <Icon name="file" /> XLS
+              </DropdownItem>
+              <DropdownItem
+                onClick={async (ev) =>
+                  await cube.downloadData(sliceConfig, 'csv')
+                }
+              >
+                <Icon name="file" /> CSV
+              </DropdownItem>
+            </DropdownMenu>
+          </UncontrolledDropdown>
+        </Tools>
+      )}
     </>
   );
 }
