@@ -220,6 +220,7 @@ export default function DimensionalNodePlot({
 
   let colors: string[];
   const nrCats = slice.categoryValues.length;
+
   if (nrCats > 1) {
     // If we were asked to use a specific color, we generate the color scheme around it.
     if (color) {
@@ -293,7 +294,6 @@ export default function DimensionalNodePlot({
         y: [cv.historicalValues[lastHist], cv.forecastValues[0]],
         hoverinfo: 'skip',
         showlegend: false,
-        fillcolor: tint(0.3, color),
       });
     }
     if (hasForecast) {
