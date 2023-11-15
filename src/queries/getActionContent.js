@@ -8,6 +8,7 @@ const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!, $goal: ID) {
     action(id: $node) {
       ...CausalGridNode
+      goal
       description
       dimensionalFlow {
         ...DimensionalPlot
@@ -20,6 +21,7 @@ const GET_ACTION_CONTENT = gql`
         id
         name
         description
+        goal
         shortDescription
         isEnabled
         parameters {

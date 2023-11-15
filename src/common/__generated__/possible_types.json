@@ -20,6 +20,7 @@
     "StreamFieldInterface": [
       "BlockQuoteBlock",
       "BooleanBlock",
+      "CardListBlock",
       "CharBlock",
       "ChoiceBlock",
       "DateBlock",
