@@ -5,14 +5,14 @@ import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
 import { DimensionalMetric } from 'data/metric';
 
 const GET_ACTION_CONTENT = gql`
-  query GetActionContent($node: ID!, $goal: ID) {
+  query GetActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {
     action(id: $node) {
       ...CausalGridNode
       description
       dimensionalFlow {
         ...DimensionalPlot
       }
-      downstreamNodes {
+      downstreamNodes(maxDepth: $downstreamDepth) {
         ...CausalGridNode
       }
       decisionLevel
@@ -25,7 +25,7 @@ const GET_ACTION_CONTENT = gql`
         parameters {
           id
         }
-        downstreamNodes {
+        downstreamNodes(maxDepth: 1) {
           ...CausalGridNode
         }
       }

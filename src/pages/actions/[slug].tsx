@@ -132,7 +132,8 @@ export default function ActionPage() {
     fetchPolicy: 'cache-and-network',
     variables: {
       node: slug as string,
-      goal: activeGoal?.id,
+      goal: activeGoal?.id ?? null,
+      downstreamDepth: theme.settings.hideActionGrid ? 1 : null,
     },
   });
 
@@ -286,14 +287,16 @@ export default function ActionPage() {
           />
         </Container>
       )}
-      {causalNodes.length > 0 && !theme.settings.hideActionGrid && (
-        <CausalGrid
-          nodes={causalNodes}
-          yearRange={yearRange}
-          actionIsOff={!isActive}
-          action={action}
-        />
-      )}
+      {causalNodes &&
+        causalNodes.length > 0 &&
+        !theme.settings.hideActionGrid && (
+          <CausalGrid
+            nodes={causalNodes}
+            yearRange={yearRange}
+            actionIsOff={!isActive}
+            action={action}
+          />
+        )}
       <SettingsPanelFull />
     </>
   );
