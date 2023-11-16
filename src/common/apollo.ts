@@ -144,6 +144,9 @@ function createApolloClient(opts: ApolloClientOpts) {
   const httpLink = new HttpLink({
     uri,
     credentials: 'include',
+    fetchOptions: {
+      referrerPolicy: 'unsafe-url',
+    },
   });
 
   return new ApolloClient({
