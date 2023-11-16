@@ -97,9 +97,9 @@ class PathsServer extends BaseServer {
       if (this.dev) {
         message = error.toString() + '\n' + error.stack;
       } else {
-        message = 'Unknown hostname';
+        message = 'Internal server error';
       }
-      res.status(404).send(message);
+      res.status(500).send(message);
       return null;
     }
   }

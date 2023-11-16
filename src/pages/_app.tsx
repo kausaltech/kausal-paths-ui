@@ -29,7 +29,8 @@ import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
 import { setSignificantDigits } from 'common/preprocess';
 
-const basePath = getConfig().publicRuntimeConfig.basePath || '';
+const publicRuntimeConfig = getConfig().publicRuntimeConfig;
+const basePath = publicRuntimeConfig.basePath || '';
 
 require('../../styles/default/main.scss');
 
@@ -358,6 +359,14 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
   const theme = await loadTheme(
     siteProps?.instanceContext?.themeIdentifier || 'default'
   );
+
+  // We instruct the upstream cache to cache for a minute
+  if (ctx.res && siteProps.siteContext.deploymentType === 'production') {
+    ctx.res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=59'
+    );
+  }
 
   return {
     ...appProps,

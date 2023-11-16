@@ -205,9 +205,17 @@ export abstract class BaseServer {
       res.status(200).send('OK');
       return;
     }
-    const ctx = await this.getRequestContext(req, res);
+    let ctx: RequestContext | null;
+    try {
+      ctx = await this.getRequestContext(req, res);
+    } catch (error) {
+      next(error);
+      return;
+    }
     if (!ctx) {
-      res.status(404).send('Page not found');
+      if (!res.headersSent) {
+        res.status(404).send('Page not found');
+      }
       return;
     }
 
@@ -242,6 +250,16 @@ export abstract class BaseServer {
     this.setBasePath(req, basePath);
     this.setLocale(req, defaultLanguage, supportedLanguages);
 
+    // In production, we instruct upstream caches to also cache our static files
+    if (
+      normalizedPath.match(/^\/static\//) &&
+      process.env.DEPLOYMENT_TYPE === 'production'
+    ) {
+      res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=1800, stale-while-revalidate=59'
+      );
+    }
     await this.nextHandleRequest(req, res);
   }
 
