@@ -52,6 +52,7 @@ const OUTCOME_NODE_FIELDS = gql`
     upstreamActions(onlyRoot: true, decisionLevel: MUNICIPALITY) {
       id
       name
+      goal
       shortName
       shortDescription
       parameters {

@@ -17,6 +17,7 @@ const GET_ACTION_LIST = gql`
     actions(onlyRoot: true) {
       id
       name
+      goal
       shortDescription
       color
       decisionLevel

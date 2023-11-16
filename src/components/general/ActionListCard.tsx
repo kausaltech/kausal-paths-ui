@@ -119,15 +119,17 @@ const ActionListCard = (props: ActionListCardProps) => {
 
   const enabledParam = findActionEnabledParam(action.parameters);
   const isActive = !refetching && (enabledParam?.boolValue ?? false);
-
   const hasEfficiency = 'cumulativeEfficiency' in action;
 
-  /* Remove html formatting and clip description to max length */
-  const originalLength = action?.shortDescription?.length ?? 0;
   const removeHtml = /(<([^>]+)>)/gi;
-  let clippedDescription = action?.shortDescription
-    ? action.shortDescription.replace(removeHtml, '').slice(0, 120)
-    : '';
+
+  const description = (action?.goal || action?.shortDescription)?.replace(
+    removeHtml,
+    ''
+  );
+  const originalLength = description?.length ?? 0;
+  let clippedDescription = description ? description.slice(0, 220) : '';
+
   if (originalLength > clippedDescription.length) {
     clippedDescription += '...';
   }

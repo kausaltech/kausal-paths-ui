@@ -15,6 +15,7 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
   JSONString: { input: any; output: any; }
   PositiveInt: { input: any; output: any; }
+  RichText: { input: any; output: any; }
   UUID: { input: any; output: any; }
 };
 
@@ -352,7 +353,7 @@ export type GetNodePageQueryVariables = Exact<{
 
 export type GetNodePageQuery = (
   { node: (
-    { id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, unit: (
+    { id: string, name: string, shortDescription: any | null, description: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, metric: (
@@ -371,13 +372,13 @@ export type GetNodePageQuery = (
       )> | null }
       & { __typename: 'ForecastMetricType' }
     ) | null, inputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
@@ -449,7 +450,7 @@ export type GetActionContentQueryVariables = Exact<{
 
 export type GetActionContentQuery = (
   { action: (
-    { description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, dimensionalFlow: (
+    { goal: any | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, dimensionalFlow: (
       { id: string, sources: Array<string>, unit: (
         { htmlLong: string }
         & { __typename: 'UnitType' }
@@ -462,7 +463,7 @@ export type GetActionContentQuery = (
       )> }
       & { __typename: 'DimensionalFlowType' }
     ) | null, downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -561,7 +562,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -657,11 +658,11 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'Node' }
     )>, subactions: Array<(
-      { id: string, name: string, description: string | null, shortDescription: string | null, isEnabled: boolean, parameters: Array<(
+      { id: string, name: string, description: string | null, goal: any | null, shortDescription: any | null, isEnabled: boolean, parameters: Array<(
         { id: string }
         & { __typename: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
       )>, downstreamNodes: Array<(
-        { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
+        { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
         ) | null, unit: (
@@ -760,7 +761,7 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'ActionNode' }
       ) | (
-        { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
+        { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
           { htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, inputNodes: Array<(
@@ -960,7 +961,7 @@ export type GetActionContentQuery = (
 );
 
 type CausalGridNode_ActionNode_Fragment = (
-  { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
+  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, unit: (
@@ -1061,7 +1062,7 @@ type CausalGridNode_ActionNode_Fragment = (
 );
 
 type CausalGridNode_Node_Fragment = (
-  { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
+  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
     { htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
@@ -1220,7 +1221,7 @@ export type GetActionListQuery = (
     )> }
     & { __typename: 'InstanceType' }
   ), actions: Array<(
-    { id: string, name: string, shortDescription: string | null, color: string | null, decisionLevel: DecisionLevel | null, quantity: string | null, unit: (
+    { id: string, name: string, goal: any | null, shortDescription: any | null, color: string | null, decisionLevel: DecisionLevel | null, quantity: string | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, parameters: Array<(
@@ -1287,13 +1288,13 @@ export type GetActionListQuery = (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ), costNode: (
-      { id: string, name: string, shortDescription: string | null, unit: (
+      { id: string, name: string, shortDescription: any | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
     ), impactNode: (
-      { id: string, name: string, shortDescription: string | null, unit: (
+      { id: string, name: string, shortDescription: any | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
@@ -1320,7 +1321,7 @@ export type GetActionListQuery = (
 );
 
 export type OutcomeNodeFieldsFragment = (
-  { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
+  { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, metric: (
     { id: string | null, name: string | null, unit: (
       { short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
@@ -1348,7 +1349,7 @@ export type OutcomeNodeFieldsFragment = (
     { id: string }
     & { __typename: 'ActionNode' | 'Node' }
   )>, upstreamActions: Array<(
-    { id: string, name: string, shortName: string | null, shortDescription: string | null, parameters: Array<(
+    { id: string, name: string, goal: any | null, shortName: string | null, shortDescription: any | null, parameters: Array<(
       { id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
@@ -1411,8 +1412,8 @@ export type GetPageQuery = (
     & { __typename: 'InstanceRootPage' | 'Page' }
   ) | (
     { leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: (
-      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
-        { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
+      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
+        { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, metric: (
           { id: string | null, name: string | null, unit: (
             { short: string, htmlShort: string, htmlLong: string }
             & { __typename: 'UnitType' }
@@ -1440,7 +1441,7 @@ export type GetPageQuery = (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         )>, upstreamActions: Array<(
-          { id: string, name: string, shortName: string | null, shortDescription: string | null, parameters: Array<(
+          { id: string, name: string, goal: any | null, shortName: string | null, shortDescription: any | null, parameters: Array<(
             { id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
               { id: string }
               & { __typename: 'ActionNode' | 'Node' }
@@ -1511,7 +1512,7 @@ export type GetPageQuery = (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       )>, upstreamActions: Array<(
-        { id: string, name: string, shortName: string | null, shortDescription: string | null, parameters: Array<(
+        { id: string, name: string, goal: any | null, shortName: string | null, shortDescription: any | null, parameters: Array<(
           { id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }
@@ -1559,10 +1560,10 @@ export type GetPageQuery = (
   ) | (
     { id: string | null, title: string, body: Array<(
       { id: string | null }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' }
     ) | (
       { id: string | null }
-      & { __typename: 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { value: string, rawValue: string, id: string | null }
       & { __typename: 'RichTextBlock' }

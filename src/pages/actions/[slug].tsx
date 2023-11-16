@@ -30,6 +30,7 @@ import ImpactDisplay from 'components/general/ImpactDisplay';
 import Icon from 'components/common/icon';
 import SubActions from 'components/general/SubActions';
 import Loader from 'components/common/Loader';
+import { ActionGoal } from 'components/general/ActionGoal';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -249,6 +250,13 @@ export default function ActionPage() {
               </div>
               <Row>
                 <Col xs={12} md={7} className="mb-4">
+                  {!!action.goal && (
+                    <ActionGoal
+                      dangerouslySetInnerHTML={{
+                        __html: action.goal,
+                      }}
+                    />
+                  )}
                   <ActionDescription>
                     <div
                       dangerouslySetInnerHTML={{

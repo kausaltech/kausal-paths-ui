@@ -3,8 +3,14 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 import WatchActionCard from './WatchActionCard';
-import { SubActionCardFragment } from 'common/__generated__/graphql';
+import {
+  GetActionContentQuery,
+  SubActionCardFragment,
+} from 'common/__generated__/graphql';
 import { useTranslation } from 'common/i18n';
+import { ActionGoal } from './ActionGoal';
+
+type SubAction = NonNullable<GetActionContentQuery['action']>['subactions'][0];
 
 const SubactionsHeader = styled.h2`
   font-size: ${({ theme }) => theme.fontSizeLg};
@@ -162,6 +168,9 @@ const ActionContent = (props: ActionContentProps) => {
       aria-labelledby={`action-tab-${action.id}`}
     >
       <ActionDescription>
+        {!!action.goal && (
+          <ActionGoal dangerouslySetInnerHTML={{ __html: action.goal }} />
+        )}
         {action.shortDescription || action.description ? (
           <div
             dangerouslySetInnerHTML={{
@@ -210,7 +219,8 @@ const SubActions = (props: SubActionsProps) => {
     <SubActionsContainer>
       <SubactionsHeader id="subactions">Ziele und Massnahmen</SubactionsHeader>
       <ActionTabs role="tablist" aria-labelledby="subactions">
-        {actions.map((action: any) =>
+        {actions.map((action: SubAction) =>
+          action.goal ||
           action.shortDescription ||
           action.description ||
           action.downstreamNodes.length > 0 ? (
@@ -230,7 +240,7 @@ const SubActions = (props: SubActionsProps) => {
               </TabTitle>
             </ActionTab>
           ) : (
-            <DisabledActionTab disabled>
+            <DisabledActionTab key={action.id} disabled>
               <TabTitle>
                 <div>{action.name}</div>
               </TabTitle>
