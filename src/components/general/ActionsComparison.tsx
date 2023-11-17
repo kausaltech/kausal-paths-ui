@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { SortActionsConfig } from 'types/actions.types';
 import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
 import Loader from 'components/common/Loader';
+import { useTranslation } from 'next-i18next';
 
 const GraphCard = styled.div`
   position: relative;
@@ -35,6 +36,7 @@ const ActionsComparison = ({
 }: Props) => {
   // if we have efficiency limit set, remove actions over that limit
 
+  const { t } = useTranslation();
   const actionsWithImpact = actions.map((action) => {
     return {
       ...action,
@@ -62,7 +64,10 @@ const ActionsComparison = ({
     impact: sortedActions.map((action) => action.impact),
   };
 
-  const impactName = `${sortedActions[0]?.impactMetric.name} ${displayYears[1]}`;
+  console.log(sortedActions, macData);
+  const impactName = `${t(sortedActions[0]?.impactMetric.name)} ${
+    displayYears[1]
+  }`;
   const impactUnit = sortedActions[0]?.impactMetric.unit.htmlShort;
 
   return (
