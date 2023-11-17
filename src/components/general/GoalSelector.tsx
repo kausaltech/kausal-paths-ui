@@ -1,13 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import { gql, useQuery, useMutation, useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import {
   Dropdown,
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-  Spinner,
 } from 'reactstrap';
 import { InstanceGoal, useInstance } from 'common/instance';
 import { activeGoalVar } from 'common/cache';
@@ -27,6 +26,13 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
+const StyledSublabel = styled.span`
+  display: block;
+  font-style: italic;
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  line-height: ${({ theme }) => theme.lineHeightSm};
+`;
+
 const DropdownLabel = styled.div`
   font-size: 0.8rem;
 `;
@@ -38,12 +44,9 @@ const GoalSelector = () => {
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
 
-  const selectGoal = useCallback(
-    (goal: InstanceGoal) => {
-      activeGoalVar(goal);
-    },
-    [activeGoalVar]
-  );
+  const selectGoal = useCallback((goal: InstanceGoal) => {
+    activeGoalVar(goal);
+  }, []);
 
   return (
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
@@ -55,11 +58,15 @@ const GoalSelector = () => {
         <DropdownItem header>{t('change-target')}</DropdownItem>
         {instance.goals.map((goal) => (
           <DropdownItem
+            disabled={goal.disabled}
             key={goal.id}
             active={goal.id === activeGoal?.id}
             onClick={() => selectGoal(goal)}
           >
-            {goal.label}
+            <span>{goal.label}</span>
+            {goal.disabled && (
+              <StyledSublabel>{t('coming-soon')}</StyledSublabel>
+            )}
           </DropdownItem>
         ))}
       </DropdownMenu>

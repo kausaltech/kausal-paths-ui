@@ -35,6 +35,7 @@ const GET_INSTANCE_CONTEXT = gql`
         id
         label
         default
+        disabled
         outcomeNode {
           id
         }
