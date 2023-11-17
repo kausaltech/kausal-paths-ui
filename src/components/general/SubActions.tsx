@@ -147,34 +147,36 @@ const SubActions = (props: SubActionsProps) => {
     <SubActionsContainer>
       <SubactionsHeader id="subactions">Ziele und Massnahmen</SubactionsHeader>
       <ActionTabs role="tablist" aria-labelledby="subactions">
-        {actions.map((action: SubAction) =>
-          action.goal ||
-          action.shortDescription ||
-          action.description ||
-          action.downstreamNodes.length > 0 ? (
-            <ActionTab
-              role="tab"
-              aria-selected={action.id === activeTab}
-              aria-controls={`action-content-${action.id}`}
-              id={`action-tab-${action.id}`}
-              tabIndex={0}
-              key={action.id}
-              onClick={() => handleClick(action.id)}
-              $isActive={action.id === activeTab}
-              $isEnabled={action.isEnabled}
-            >
-              <TabTitle>
-                <div>{action.name}</div>
-              </TabTitle>
-            </ActionTab>
-          ) : (
-            <DisabledActionTab key={action.id} disabled>
-              <TabTitle>
-                <div>{action.name}</div>
-              </TabTitle>
-            </DisabledActionTab>
-          )
-        )}
+        {actions
+          .filter((action) => action.isVisible)
+          .map((action: SubAction) =>
+            action.goal ||
+            action.shortDescription ||
+            action.description ||
+            action.downstreamNodes.length > 0 ? (
+              <ActionTab
+                role="tab"
+                aria-selected={action.id === activeTab}
+                aria-controls={`action-content-${action.id}`}
+                id={`action-tab-${action.id}`}
+                tabIndex={0}
+                key={action.id}
+                onClick={() => handleClick(action.id)}
+                $isActive={action.id === activeTab}
+                $isEnabled={action.isEnabled}
+              >
+                <TabTitle>
+                  <div>{action.name}</div>
+                </TabTitle>
+              </ActionTab>
+            ) : (
+              <DisabledActionTab key={action.id} disabled>
+                <TabTitle>
+                  <div>{action.name}</div>
+                </TabTitle>
+              </DisabledActionTab>
+            )
+          )}
       </ActionTabs>
       {activeTab !== 'null' && (
         <ActionContent
