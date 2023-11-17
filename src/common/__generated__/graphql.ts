@@ -86,6 +86,36 @@ export type AllMetricFieldsFragment = (
   & { __typename: 'ForecastMetricType' }
 );
 
+type StreamFieldFragment_ZQdWsvqmDgiXfDp7wkeLw2YTay53DiSfbOf2CGiE7U_Fragment = (
+  { id: string | null, blockType: string, field: string }
+  & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+);
+
+type StreamFieldFragment_StructBlock_TimeBlock_UrlBlock_Fragment = (
+  { id: string | null, blockType: string, field: string }
+  & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+);
+
+type StreamFieldFragment_CardListBlock_Fragment = (
+  { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
+    { title: string | null, shortDescription: string | null }
+    & { __typename: 'CardListCardBlock' }
+  ) | null> | null }
+  & { __typename: 'CardListBlock' }
+);
+
+type StreamFieldFragment_RichTextBlock_Fragment = (
+  { value: string, rawValue: string, id: string | null, blockType: string, field: string }
+  & { __typename: 'RichTextBlock' }
+);
+
+type StreamFieldFragment_TextBlock_Fragment = (
+  { value: string, id: string | null, blockType: string, field: string }
+  & { __typename: 'TextBlock' }
+);
+
+export type StreamFieldFragmentFragment = StreamFieldFragment_ZQdWsvqmDgiXfDp7wkeLw2YTay53DiSfbOf2CGiE7U_Fragment | StreamFieldFragment_StructBlock_TimeBlock_UrlBlock_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
+
 type ActionParameter_BoolParameterType_Fragment = (
   { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
     { id: string }
@@ -857,7 +887,25 @@ export type GetActionContentQuery = (
           & { __typename: 'ForecastMetricType' }
         ) | null }
         & { __typename: 'Node' }
-      )> }
+      )>, body: Array<(
+        { id: string | null, blockType: string, field: string }
+        & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+      ) | (
+        { id: string | null, blockType: string, field: string }
+        & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      ) | (
+        { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
+          { title: string | null, shortDescription: string | null }
+          & { __typename: 'CardListCardBlock' }
+        ) | null> | null }
+        & { __typename: 'CardListBlock' }
+      ) | (
+        { value: string, rawValue: string, id: string | null, blockType: string, field: string }
+        & { __typename: 'RichTextBlock' }
+      ) | (
+        { value: string, id: string | null, blockType: string, field: string }
+        & { __typename: 'TextBlock' }
+      )> | null }
       & { __typename: 'ActionNode' }
     )>, group: (
       { id: string, name: string, color: string | null }
@@ -1560,14 +1608,23 @@ export type GetPageQuery = (
     & { __typename: 'OutcomePage' }
   ) | (
     { id: string | null, title: string, body: Array<(
-      { id: string | null }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' }
+      { id: string | null, blockType: string, field: string }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
     ) | (
-      { id: string | null }
-      & { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+      { id: string | null, blockType: string, field: string }
+      & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
-      { value: string, rawValue: string, id: string | null }
+      { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
+        { title: string | null, shortDescription: string | null }
+        & { __typename: 'CardListCardBlock' }
+      ) | null> | null }
+      & { __typename: 'CardListBlock' }
+    ) | (
+      { value: string, rawValue: string, id: string | null, blockType: string, field: string }
       & { __typename: 'RichTextBlock' }
+    ) | (
+      { value: string, id: string | null, blockType: string, field: string }
+      & { __typename: 'TextBlock' }
     ) | null> | null }
     & { __typename: 'StaticPage' }
   ) | null }

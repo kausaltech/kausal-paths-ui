@@ -2,8 +2,8 @@ import styled from 'styled-components';
 
 import type { GetPageQuery } from 'common/__generated__/graphql';
 import type { PageRefetchCallback } from './Page';
-import RichText from 'components/common/RichText';
 import { PageHero } from 'components/common/PageHero';
+import { StreamField } from 'components/common/StreamField';
 
 const BodyCard = styled.div`
   padding: 2rem;
@@ -23,12 +23,9 @@ function StaticPage({ page }: StaticPageProps) {
   return (
     <PageHero title={page.title} overlap>
       <BodyCard>
-        {(page?.body ?? []).map((block) => {
-          if (block?.__typename == 'RichTextBlock') {
-            return <RichText key={block.id} html={block.value} />;
-          }
-          return null;
-        })}
+        {page?.body?.map((block) =>
+          block ? <StreamField key={block.id} block={block} /> : null
+        )}
       </BodyCard>
     </PageHero>
   );
