@@ -86,5 +86,6 @@
   "table-measure-type": "Tyyppi",
   "outcome-bar-summary-historical": "{{goalType}} vuonna {{selectedYear}} erosi {{selectedYearDifference}} vuoden {{nearestGoalYear}} tavoitteesta ({{nearestGoalValue}}).",
   "outcome-bar-summary-forecast": "Valitulla skenaariolla {{scenarioName}} ennustettu {{goalType}} vuonna {{selectedYear}} on {{selectedYearValue}}. Tavoite vuodelle {{nearestGoalYear}} on {{nearestGoalValue}}.",
-  "outcome-tabs-label": "Esitystavat"
+  "outcome-tabs-label": "Esitystavat",
+  "coming-soon": "Tulossa pian"
 }

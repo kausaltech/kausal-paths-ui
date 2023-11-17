@@ -136,6 +136,7 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
       id
       label
       originalId
+      helpText
       categories {
         id
         originalId
