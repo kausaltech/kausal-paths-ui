@@ -689,7 +689,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'Node' }
     )>, subactions: Array<(
-      { id: string, name: string, description: string | null, goal: any | null, shortDescription: any | null, isEnabled: boolean, parameters: Array<(
+      { id: string, name: string, description: string | null, goal: any | null, shortDescription: any | null, isEnabled: boolean, isVisible: boolean, parameters: Array<(
         { id: string }
         & { __typename: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
       )>, downstreamNodes: Array<(

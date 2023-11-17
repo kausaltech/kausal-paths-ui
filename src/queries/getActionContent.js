@@ -25,7 +25,7 @@ const GET_ACTION_CONTENT = gql`
         goal
         shortDescription
         isEnabled
-        # isVisible
+        isVisible
         parameters {
           id
         }
