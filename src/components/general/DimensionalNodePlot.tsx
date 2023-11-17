@@ -601,8 +601,9 @@ export default function DimensionalNodePlot({
             return (
               <Col md={4} className="d-flex" key={dim.id}>
                 <SelectDropdown
-                  id={`dim-${dim.id}`}
+                  id={`dim-${dim.id.replaceAll(':', '-')}`}
                   className="flex-grow-1"
+                  helpText={dim.helpText ?? undefined}
                   label={dim.label}
                   options={options}
                   value={options.filter((opt) => opt.selected)}

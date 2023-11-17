@@ -269,7 +269,7 @@ export type DimensionalPlotFragment = (
 
 export type DimensionalMetricFragment = (
   { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-    { id: string, label: string, originalId: string | null, categories: Array<(
+    { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
       { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
       & { __typename: 'MetricDimensionCategoryType' }
     )>, groups: Array<(
@@ -385,7 +385,7 @@ export type GetNodePageQuery = (
       & { __typename: 'ActionNode' | 'Node' }
     )>, metricDim: (
       { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-        { id: string, label: string, originalId: string | null, categories: Array<(
+        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
         )>, groups: Array<(
@@ -416,7 +416,7 @@ export type GetNodePageQuery = (
 export type DimensionalNodeMetricFragment = (
   { metricDim: (
     { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-      { id: string, label: string, originalId: string | null, categories: Array<(
+      { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
       )>, groups: Array<(
@@ -496,7 +496,7 @@ export type GetActionContentQuery = (
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
         { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-          { id: string, label: string, originalId: string | null, categories: Array<(
+          { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
           )>, groups: Array<(
@@ -592,7 +592,7 @@ export type GetActionContentQuery = (
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
         { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-          { id: string, label: string, originalId: string | null, categories: Array<(
+          { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
           )>, groups: Array<(
@@ -695,7 +695,7 @@ export type GetActionContentQuery = (
           & { __typename: 'ForecastMetricType' }
         ) | null, metricDim: (
           { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-            { id: string, label: string, originalId: string | null, categories: Array<(
+            { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
             )>, groups: Array<(
@@ -791,7 +791,7 @@ export type GetActionContentQuery = (
           & { __typename: 'ForecastMetricType' }
         ) | null, metricDim: (
           { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-            { id: string, label: string, originalId: string | null, categories: Array<(
+            { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
             )>, groups: Array<(
@@ -891,7 +891,7 @@ export type GetActionContentQuery = (
       & { __typename: 'ForecastMetricType' }
     ) | null, metricDim: (
       { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-        { id: string, label: string, originalId: string | null, categories: Array<(
+        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
         )>, groups: Array<(
@@ -994,7 +994,7 @@ type CausalGridNode_ActionNode_Fragment = (
     & { __typename: 'ForecastMetricType' }
   ) | null, metricDim: (
     { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-      { id: string, label: string, originalId: string | null, categories: Array<(
+      { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
       )>, groups: Array<(
@@ -1092,7 +1092,7 @@ type CausalGridNode_Node_Fragment = (
     & { __typename: 'ForecastMetricType' }
   ) | null, metricDim: (
     { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-      { id: string, label: string, originalId: string | null, categories: Array<(
+      { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
       )>, groups: Array<(
@@ -1369,7 +1369,7 @@ export type OutcomeNodeFieldsFragment = (
     & { __typename: 'ActionNode' }
   )> | null, metricDim: (
     { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-      { id: string, label: string, originalId: string | null, categories: Array<(
+      { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
       )>, groups: Array<(
@@ -1461,7 +1461,7 @@ export type GetPageQuery = (
           & { __typename: 'ActionNode' }
         )> | null, metricDim: (
           { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-            { id: string, label: string, originalId: string | null, categories: Array<(
+            { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
             )>, groups: Array<(
@@ -1532,7 +1532,7 @@ export type GetPageQuery = (
         & { __typename: 'ActionNode' }
       )> | null, metricDim: (
         { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-          { id: string, label: string, originalId: string | null, categories: Array<(
+          { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
           )>, groups: Array<(
