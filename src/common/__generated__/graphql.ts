@@ -445,6 +445,7 @@ export type DimensionalNodeMetricFragment = (
 export type GetActionContentQueryVariables = Exact<{
   node: Scalars['ID']['input'];
   goal: InputMaybe<Scalars['ID']['input']>;
+  downstreamDepth: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
@@ -1636,7 +1637,7 @@ export type GetInstanceContextQuery = (
       { baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number }
       & { __typename: 'InstanceFeaturesType' }
     ), goals: Array<(
-      { id: string, label: string | null, default: boolean, outcomeNode: (
+      { id: string, label: string | null, default: boolean, disabled: boolean, outcomeNode: (
         { id: string }
         & { __typename: 'Node' }
       ), dimensions: Array<(
