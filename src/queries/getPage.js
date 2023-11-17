@@ -1,6 +1,5 @@
 import { gql } from '@apollo/client';
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
-import { STREAM_FIELD_FRAGMENT } from 'components/common/StreamField';
 
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on Node {
@@ -112,12 +111,16 @@ const GET_PAGE = gql`
       }
       ... on StaticPage {
         body {
-          ...StreamFieldFragment
+          id
+          __typename
+          ... on RichTextBlock {
+            value
+            rawValue
+          }
         }
       }
     }
   }
-  ${STREAM_FIELD_FRAGMENT}
 `;
 
 export default GET_PAGE;

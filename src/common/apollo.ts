@@ -158,11 +158,6 @@ function createApolloClient(opts: ApolloClientOpts) {
     ]),
     cache: new InMemoryCache({
       possibleTypes: possibleTypes.possibleTypes,
-      typePolicies: {
-        CardListCardBlock: {
-          keyFields: false,
-        },
-      },
     }),
   });
 }

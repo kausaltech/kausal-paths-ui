@@ -2,9 +2,13 @@ import { useState } from 'react';
 
 import styled from 'styled-components';
 
-import { GetActionContentQuery } from 'common/__generated__/graphql';
+import WatchActionCard from './WatchActionCard';
+import {
+  GetActionContentQuery,
+  SubActionCardFragment,
+} from 'common/__generated__/graphql';
+import { useTranslation } from 'common/i18n';
 import { ActionGoal } from './ActionGoal';
-import { StreamField } from 'components/common/StreamField';
 
 type SubAction = NonNullable<GetActionContentQuery['action']>['subactions'][0];
 
@@ -93,11 +97,69 @@ const SubActionsContainer = styled.div`
   padding: ${({ theme }) => theme.spaces.s100};
 `;
 
+const WatchActionList = styled.div`
+  display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+`;
+
 type ActionContentProps = {
-  action: NonNullable<GetActionContentQuery['action']>['subactions'][0];
+  action: SubActionCardFragment;
 };
 
-const ActionContent = ({ action }: ActionContentProps) => {
+const TEMP_WATCH_ACTIONS = {
+  fossil_fuel_heater_to_district_heat: [
+    'Kommunale Energieplanung',
+    'Abstimmung zwischen Siedlungs- und Energieplanung',
+    'Ausbau der thermischen Netze',
+    'Ausbau 3. Verbrennungslinie KVA Hagenholz',
+    'Stilllegung Gasverteilnetz',
+    'Förderprogramm Heizungsersatz und Restwertentschädigung',
+    'Förderung erneuerbare Energien (Heizungsersatz)',
+    'Energieberatung',
+    'Informationsplattformen: EnerGIS und Energieplattform',
+    'Heizungsersatz bei städtischen Liegenschaften',
+  ],
+  district_heat_decarbonisation: [
+    'Dekarbonisierung der thermischen Netze',
+    'Ausbau 3. Verbrennungslinie KVA Hagenholz',
+    'Erneuerbares Gas',
+  ],
+  fossil_fuel_heater_to_heat_pumps: [
+    'Kommunale Energieplanung',
+    'Abstimmung zwischen Siedlungs- und Energieplanung',
+    'Förderprogramm Heizungsersatz und Restwertentschädigung',
+    'Förderung erneuerbare Energien (Heizungsersatz)',
+    'Energieberatung',
+    'Informationsplattformen: EnerGIS und Energieplattform',
+    'Heizungsersatz bei städtischen Liegenschaften',
+    'Stilllegung Gasverteilnetz',
+  ],
+  fossil_fuel_heater_to_other: [
+    'Kommunale Energieplanung',
+    'Abstimmung zwischen Siedlungs- und Energieplanung',
+    'Förderprogramm Heizungsersatz und Restwertentschädigung',
+    'Förderung erneuerbare Energien (Heizungsersatz)',
+    'Energieberatung',
+    'Informationsplattformen: EnerGIS und Energieplattform',
+    'Heizungsersatz bei städtischen Liegenschaften',
+    'Stilllegung Gasverteilnetz',
+  ],
+  natural_gas_network_decarbonisation: [
+    'Erneuerbares Gas',
+    'Stilllegung Gasverteilnetz',
+  ],
+  other_building_fuel_to_biogas: ['Erneuerbares Gas'],
+};
+
+const ActionContent = (props: ActionContentProps) => {
+  const { action } = props;
+  const { t } = useTranslation();
+
+  // Create test subsubaction data for one particular action
+  // TODO: Get this data from the API
+  const watchActions = TEMP_WATCH_ACTIONS[action.id] ?? [];
+
   return (
     <ActionContentCard
       id={`action-content-${action.id}`}
@@ -117,20 +179,30 @@ const ActionContent = ({ action }: ActionContentProps) => {
           />
         ) : null}
       </ActionDescription>
-
-      {action.body?.map((block, i) => <StreamField key={i} block={block} />)}
+      {watchActions.length > 0 && (
+        <>
+          <h5>{t('watch-action-list-title')}</h5>
+          <WatchActionList>
+            {watchActions.map((watchAction, i) => (
+              <WatchActionCard key={i} action={{ name: watchAction }} />
+            ))}
+            <WatchActionCard />
+            <WatchActionCard />
+          </WatchActionList>
+        </>
+      )}
     </ActionContentCard>
   );
 };
 
 type SubActionsProps = {
-  actions: NonNullable<GetActionContentQuery['action']>['subactions'];
+  actions: SubActionCardFragment[];
   activeSubAction?: string;
   setActiveSubAction: (subAction?: string) => void;
 };
 
 const SubActions = (props: SubActionsProps) => {
-  const { actions, setActiveSubAction } = props;
+  const { actions, activeSubAction, setActiveSubAction } = props;
   const [activeTab, setActiveTab] = useState('null');
 
   const handleClick = (id: string) => {
