@@ -9,6 +9,12 @@ import type { PlotParams } from 'react-plotly.js';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
+const BarGraphContainer = styled.div`
+  margin: 0 auto;
+  min-width: 300px;
+  max-width: 600px;
+`;
+
 const PlotLoader = styled.div`
   height: 350px;
   display: flex;
@@ -136,6 +142,15 @@ const BarGraph = (props: BarGraphProps) => {
     subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
   const shortUnit = metric.unit?.short;
 
+  let longUnit = parentNode.metric?.unit?.htmlShort;
+  // FIXME: Another nasty hack to show 'CO2e' where it might be applicable until
+  // the backend gets proper support for unit specifiers.
+  if (shortUnit === 't/Einw./a') {
+    longUnit = t('tco2-e-inhabitant');
+  } else if (shortUnit === 'kt/a') {
+    longUnit = t('ktco2-e');
+  }
+
   const barTraces = makeTrace(parentNode, displayNodes, endYear, theme, t);
 
   // Add some buffer to y-axis range to accommodate % labels
@@ -146,6 +161,15 @@ const BarGraph = (props: BarGraphProps) => {
     height: 350,
     hovermode: false,
     barmode: 'stack',
+    title: {
+      text: endYear + '',
+      font: {
+        family: theme.fontFamily,
+        size: 20,
+      },
+      xref: 'paper',
+      x: 0,
+    },
     annotations: [
       // Places y-axis title on top of the y-axis
       {
@@ -156,8 +180,9 @@ const BarGraph = (props: BarGraphProps) => {
         xanchor: 'left',
         y: 1,
         yanchor: 'bottom',
-        text: shortUnit || undefined,
+        text: longUnit || undefined,
         font: {
+          family: theme.fontFamily,
           size: 14,
         },
         showarrow: false,
@@ -165,9 +190,16 @@ const BarGraph = (props: BarGraphProps) => {
     ],
     yaxis: {
       range: range,
+      tickfont: {
+        family: theme.fontFamily,
+      },
     },
     xaxis: {
       type: 'category',
+      tickfont: {
+        family: theme.fontFamily,
+        size: 9,
+      },
     },
     showlegend: true,
     legend: {
@@ -180,7 +212,7 @@ const BarGraph = (props: BarGraphProps) => {
   };
 
   return (
-    <div>
+    <BarGraphContainer>
       {loading && (
         <PlotLoader>
           <Spinner color="dark" />
@@ -192,9 +224,9 @@ const BarGraph = (props: BarGraphProps) => {
         useResizeHandler
         config={{ displayModeBar: false, responsive: true, staticPlot: true }}
         onInitialized={() => setLoading(false)}
-        style={{ minWidth: '300px', maxWidth: '600px', margin: '0 auto' }}
+        style={{ minWidth: '300px', maxWidth: '600px' }}
       />
-    </div>
+    </BarGraphContainer>
   );
 };
 

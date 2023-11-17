@@ -451,6 +451,75 @@ export class DimensionalMetric {
     return new MetricSlice(out);
   }
 
+  /**
+   * Get the data for a single year
+   * @param year The year to get data for
+   * @param categoryChoice The category choice to filter by
+   * @returns An object with the data for the year
+   */
+  getSingleYear(
+    year: number,
+    categoryChoice: MetricCategoryChoice | undefined
+  ) {
+    // Filter out categories that don't match the current choice and other years
+    const yearRows = this.rows.filter(
+      (row) =>
+        row.year === year &&
+        (categoryChoice ? this.rowMatchesChoice(row, categoryChoice) : true)
+    );
+
+    // Get all labels for easier lookup
+    const allLabels = this.dimensions
+      .map((dim) =>
+        dim.groups.length
+          ? dim.groups.map((grp) => ({
+              id: grp.id,
+              label: grp.label,
+              color: grp.color,
+            }))
+          : dim.categories.map((cat) => ({
+              id: cat.id,
+              label: cat.label,
+              color: cat.color,
+            }))
+      )
+      .flat();
+
+    // Get all used dimensions and their categories/groups
+    const categoryTypes = this.dimensions.map((dim) => ({
+      id: dim.id,
+      type: dim.groups.length ? 'group' : 'category',
+      options: dim.groups.length
+        ? [...new Set(yearRows.map((row) => row.dimCats[dim.id].group!))]
+        : [...new Set(yearRows.map((row) => row.dimCats[dim.id].id))],
+    }));
+
+    const rows = categoryTypes[0].options.map((rowId) =>
+      categoryTypes[1].options.map((columnId) => {
+        return (
+          yearRows.find(
+            (yearRow) =>
+              ((categoryTypes[0].type === 'group' &&
+                yearRow.dimCats[categoryTypes[0].id].group === rowId) ||
+                (categoryTypes[0].type === 'category' &&
+                  yearRow.dimCats[categoryTypes[0].id].id === rowId)) &&
+              ((categoryTypes[1].type === 'group' &&
+                yearRow.dimCats[categoryTypes[1].id].group === columnId) ||
+                (categoryTypes[1].type === 'category' &&
+                  yearRow.dimCats[categoryTypes[1].id].id === columnId))
+          )?.value ?? null
+        );
+      })
+    );
+
+    const out = {
+      categoryTypes,
+      allLabels,
+      rows,
+    };
+    return out;
+  }
+
   private isForecastYear(year: number) {
     return this.data.forecastFrom && year >= this.data.forecastFrom;
   }
