@@ -56,17 +56,15 @@ type RichTextImageProps = {
 const StyledRichText = styled.div`
   .responsive-object {
     padding-bottom: 0 !important;
-    width: 50%;
+    width: 100%;
+    max-width: ${(props) => props.theme.breakpointSm};
   }
   .responsive-object iframe {
     aspect-ratio: 16 / 9;
     width: 100%;
     height: 100%;
   }
- @media (max-width: ${(props) => props.theme.breakpointMd}) {
-    .responsive-object{
-      width: 100%;
-    }`;
+`;
 
 function ICompress() {
   // eslint-disable-next-line max-len
