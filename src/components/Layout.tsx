@@ -139,7 +139,7 @@ const Layout = ({ children }) => {
         <IntroModal>
           <RichText
             html={`<iframe width="100%" style="aspect-ratio: 16 / 9"
-                src="https://www.youtube.com/embed/MIdk7wCIdzY?autoplay=1"
+                src="https://www.youtube.com/embed/vBLbQTgZJns?autoplay=1"
                 title="Intro Video" allowFullScreen>
               </iframe>`}
           />

@@ -71,9 +71,11 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
     }
   }, []);
 
-  const toggle = () => {
+  const handleClose = () => setEnabled(false);
+
+  const handleClickClose = () => {
     localStorage.setItem('show-intro-modal', JSON.stringify(!isChecked));
-    setEnabled(false);
+    handleClose();
   };
 
   const handleChangeCheckbox = (e) => {
@@ -82,9 +84,9 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
 
   return (
     <div>
-      <Modal isOpen={enabled} toggle={toggle} size={size} fade={true}>
-        <StyledModalHeader toggle={toggle}>
-          Einblick ins neue Entwicklung der Treibhausgasemissionen
+      <Modal isOpen={enabled} toggle={handleClose} size={size} fade={true}>
+        <StyledModalHeader toggle={handleClose}>
+          So funktioniert das Netto-Null-Cockpit
         </StyledModalHeader>
         <ModalBody>{children}</ModalBody>
         <StyledModalFooter>
@@ -99,7 +101,7 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
                 {t('do-not-show-again')}
               </StyledLabel>
             </FormGroup>
-            <StyledButton onClick={toggle}>{t('close')}</StyledButton>
+            <StyledButton onClick={handleClickClose}>{t('close')}</StyledButton>
           </StyledContainer>
         </StyledModalFooter>
       </Modal>
