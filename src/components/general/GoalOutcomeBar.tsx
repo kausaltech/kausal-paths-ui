@@ -4,7 +4,7 @@ import _ from 'lodash';
 import styled, { useTheme } from 'styled-components';
 import Icon from 'components/common/icon';
 import { Spinner, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
-import { beautifyValue, getMetricValue } from 'common/preprocess';
+import { beautifyValue } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
 import {
@@ -189,6 +189,7 @@ const outcomeAsText = (
       selectedYearValue,
       nearestGoalYear,
       nearestGoalValue,
+      interpolation: { escapeValue: false },
     });
   return t('outcome-bar-summary-historical', {
     goalType,
@@ -196,6 +197,7 @@ const outcomeAsText = (
     selectedYearDifference,
     nearestGoalYear,
     nearestGoalValue,
+    interpolation: { escapeValue: false },
   });
 };
 
@@ -304,15 +306,24 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
 
   const missingFromTarget = comparisonActual.actual! - comparisonGoal.goal!;
 
+  let longUnit = goal.unit.htmlShort;
+  // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
+  // the backend gets proper support for unit specifiers.
+  if (unit === 't∕(Einw.·a)') {
+    longUnit = t('tco2-e-inhabitant');
+  } else if (unit === 'kt∕a') {
+    longUnit = t('ktco2-e');
+  }
+
   const verbalizedOutcome = outcomeAsText(
     isForecast,
     activeScenario.name,
     activeGoal.label,
     yearRange[1],
-    `${beautifyValue(missingFromTarget)} ${unit}`,
-    `${beautifyValue(comparisonActual.actual)} ${unit}`,
+    `${beautifyValue(missingFromTarget)} ${longUnit}`,
+    `${beautifyValue(comparisonActual.actual)} ${longUnit}`,
     comparisonGoal.year,
-    `${beautifyValue(comparisonGoal.goal)} ${unit}`,
+    `${beautifyValue(comparisonGoal.goal)} ${longUnit}`,
     t
   );
 
@@ -342,7 +353,9 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
               <h4>
                 {isForecast ? t('scenario-outcome') : t('historical-outcome')}
               </h4>
-              <OutcomeText>{verbalizedOutcome}</OutcomeText>
+              <OutcomeText
+                dangerouslySetInnerHTML={{ __html: verbalizedOutcome }}
+              />
             </div>
             <Icon name="angleDown" width="24px" height="24px" />
           </AccordionHeader>
