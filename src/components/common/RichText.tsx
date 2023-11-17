@@ -55,15 +55,12 @@ type RichTextImageProps = {
 
 const StyledRichText = styled.div`
   .responsive-object {
-    position: relative;
+    padding-bottom: 0 !important;
+    width: 100%;
+    max-width: ${(props) => props.theme.breakpointSm};
   }
-
-  .responsive-object iframe,
-  .responsive-object object,
-  .responsive-object embed {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .responsive-object iframe {
+    aspect-ratio: 16 / 9;
     width: 100%;
     height: 100%;
   }
