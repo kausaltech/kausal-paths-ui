@@ -31,15 +31,15 @@ const MESSAGES: TranslatedErrorTemplateContexts = {
   },
   de: {
     genericError: {
-      title: 'de.An error was encountered',
+      title: 'Ein Fehler ist aufgetreten',
       contentParagraphs: [
-        'de.Oops! We are experiencing some technical difficulties at the moment and are unable to display the requested page. Our team has been notified.',
-        'de.We apologize for any inconvenience this may cause. Please try again later, and thank you for your patience.',
+        'Huch! Wir haben zur Zeit technische Schwierigkeiten und können die angeforderte Seite nicht anzeigen. Unser Team wurde darüber informiert.',
+        'Wir entschuldigen uns für die Unannehmlichkeiten. Bitte versuchen Sie es später noch einmal. Danke für Ihre Geduld.',
       ],
     },
     notFound: {
-      title: 'de.Page not found',
-      contentParagraphs: ['de.404 Not found.'],
+      title: 'Seite nicht gefunden',
+      contentParagraphs: ['404 Nicht gefunden.'],
     },
   },
 };
