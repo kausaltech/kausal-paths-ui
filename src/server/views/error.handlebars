@@ -1,0 +1,12 @@
+<div id="card">
+  <h1>{{title}}</h1>
+  {{#each contentParagraphs}}
+    <p>{{this}}</p>
+  {{/each}}
+  {{#if errorIdentifier }}
+    <p class="details">{{errorLabel}}: {{errorIdentifier}}</p>
+  {{/if}}
+  {{#if fullError }}
+    <pre class="details">{{fullError}}</pre>
+  {{/if}}
+</div>

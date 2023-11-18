@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import { engine } from 'express-handlebars';
 import cookieSession from 'cookie-session';
 
 import type { Authenticator } from 'passport';
@@ -32,11 +33,14 @@ import {
   ServerAuthIssuer,
 } from './auth.js';
 import { logRequest } from './log.js';
+import { getErrorMessages, ErrorTemplateContext } from './errors.js';
 import { SentryLink } from 'apollo-link-sentry';
 
 if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
 }
+
+const defaultFallbackLanguage = process.env.DEFAULT_LANGUAGE ?? 'en';
 
 export const deploymentType = process.env.DEPLOYMENT_TYPE || 'development';
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -46,6 +50,8 @@ if (!process.env.SESSION_SECRET && deploymentType !== 'development') {
   console.warn('SESSION_SECRET not set, using unsafe default');
 }
 const sessionSecret = process.env.SESSION_SECRET || 'secretsecret';
+
+export class InstanceNotFoundError extends Error {}
 
 export type BaseServerRequest = Request & {
   currentURL: {
@@ -329,6 +335,10 @@ export abstract class BaseServer {
     );
     app.use(Sentry.Handlers.tracingHandler());
 
+    app.engine('handlebars', engine());
+    app.set('view engine', 'handlebars');
+    app.set('views', './src/server/views');
+
     this.apolloClient = this.initApollo(apiUrl);
     try {
       this.authIssuer = await initializeIssuer(apiUrl);
@@ -389,12 +399,18 @@ export abstract class BaseServer {
     );
     app.use((err, req, res, next) => {
       if (res.headersSent) return next(err);
-      console.log('our own error handler');
-      if (process.env.DEPLOYMENT_TYPE !== 'production') {
+      let context: ErrorTemplateContext;
+      if (err instanceof InstanceNotFoundError) {
+        context = getErrorMessages(defaultFallbackLanguage, 'notFound');
+        res.status(404);
+      } else {
+        context = getErrorMessages(defaultFallbackLanguage, 'genericError');
+        res.status(500);
       }
-      //res.status(500);
-      // FIXME: Render something
-      next(err);
+      if (process.env.DEPLOYMENT_TYPE !== 'production') {
+        context.fullError = err.toString();
+      }
+      res.render('error', context);
     });
     app.listen(port, () => {
       console.log(`> ✅ Ready on http://localhost:${port}`);
