@@ -49,6 +49,7 @@ const nextConfig = {
     basePath: process.env.BASE_PATH,
     instanceIdentifier: INSTANCE_IDENTIFIER,
     sentryDsn: process.env.SENTRY_DSN,
+    sentryDebug: process.env.SENTRY_DEBUG || '0',
     deploymentType: process.env.DEPLOYMENT_TYPE || 'development',
   },
   sassOptions: {
@@ -92,7 +93,7 @@ const nextConfig = {
     }
     cfg.plugins.push(
       new webpack.DefinePlugin({
-        __SENTRY_DEBUG__: false,
+        __SENTRY_DEBUG__: process.env.SENTRY_DEBUG === '1',
       })
     );
     cfg.experiments = { ...cfg.experiments, topLevelAwait: true };
