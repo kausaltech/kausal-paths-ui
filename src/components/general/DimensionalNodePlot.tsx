@@ -547,6 +547,7 @@ export default function DimensionalNodePlot({
         }
       : mainXAxisConfig,
     autosize: true,
+    dragmode: false,
     font: {
       family: theme.fontFamily,
     },
@@ -563,6 +564,22 @@ export default function DimensionalNodePlot({
     },
     grid: { rows: 1, columns: 2, pattern: 'independent' },
     shapes,
+    modebar: {
+      add: ['toImage'],
+      remove: [
+        'zoom2d',
+        'zoomIn2d',
+        'zoomOut2d',
+        'pan2d',
+        'select2d',
+        'lasso2d',
+        'autoScale2d',
+        'resetScale2d',
+      ],
+      color: theme.graphColors.grey090,
+      bgcolor: theme.graphColors.grey010,
+      activecolor: theme.brandDark,
+    },
   };
 
   const hasGroups = cube.dimensions.some((dim) => dim.groups.length);
@@ -623,6 +640,11 @@ export default function DimensionalNodePlot({
       </>
     ) : null;
 
+  const plotConfig = {
+    displaylogo: false,
+    responsive: true,
+  };
+
   return (
     <>
       {controls}
@@ -633,8 +655,8 @@ export default function DimensionalNodePlot({
           layout={layout}
           useResizeHandler
           style={{ width: '100%' }}
-          config={{ displayModeBar: false }}
           noValidate
+          config={plotConfig}
         />
       </div>
 
