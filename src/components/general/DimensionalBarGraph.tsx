@@ -127,11 +127,12 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
         marker: {
           color: dimDetails?.color || theme.graphColors.grey050,
         },
+        showlegend: datum !== 0,
       });
     });
   });
 
-  const range = [0, maxTotal * 1.1];
+  const range = [0, maxTotal * 1.25];
 
   const layout: Partial<Plotly.Layout> = {
     height: 400,
@@ -164,6 +165,21 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
         showarrow: false,
       },
     ],
+    modebar: {
+      remove: [
+        'zoom2d',
+        'zoomIn2d',
+        'zoomOut2d',
+        'pan2d',
+        'select2d',
+        'lasso2d',
+        'autoScale2d',
+        'resetScale2d',
+      ],
+      color: theme.graphColors.grey090,
+      bgcolor: theme.graphColors.grey010,
+      activecolor: theme.brandDark,
+    },
     yaxis: {
       range: range,
       tickfont: {
@@ -175,7 +191,22 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
         family: theme.fontFamily,
       },
     },
-    showlegend: false,
+    dragmode: false,
+    showlegend: true,
+    legend: {
+      orientation: 'h',
+      yanchor: 'top',
+      y: -0.2,
+      xanchor: 'right',
+      x: 1,
+      itemclick: false,
+      itemdoubleclick: false,
+    },
+  };
+
+  const plotConfig = {
+    displaylogo: false,
+    responsive: true,
   };
 
   return (
@@ -185,7 +216,7 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
           data={plotData}
           layout={layout}
           useResizeHandler
-          config={{ displayModeBar: false, responsive: true, staticPlot: true }}
+          config={plotConfig}
           style={{ minWidth: '300px', maxWidth: '600px' }}
           noValidate
         />
