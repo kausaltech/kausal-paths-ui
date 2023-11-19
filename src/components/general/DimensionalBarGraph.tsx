@@ -124,6 +124,7 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
         textangle: 0,
         name: dimDetails?.label,
         base: datum < 0 ? [-datum] : undefined,
+        width: 0.5,
         marker: {
           color: dimDetails?.color || theme.graphColors.grey050,
         },
