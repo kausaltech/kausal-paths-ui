@@ -64,7 +64,7 @@ const ActionsComparison = ({
     impact: sortedActions.map((action) => action.impact),
   };
 
-  console.log(sortedActions, macData);
+  // FIXME: Running impact metric name through translation as a quickfix until they are translated in the backend
   const impactName = `${t(sortedActions[0]?.impactMetric.name)} ${
     displayYears[1]
   }`;
