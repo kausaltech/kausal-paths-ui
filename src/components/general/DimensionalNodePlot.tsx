@@ -167,13 +167,6 @@ export default function DimensionalNodePlot({
   const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
 
-  console.log('DimensionalNodePlot', {
-    metric,
-    startYear,
-    endYear,
-    baselineForecast,
-    sliceConfig,
-  });
   useEffect(() => {
     /**
      * If the active goal changes, we will reset the grouping + filtering
@@ -268,7 +261,6 @@ export default function DimensionalNodePlot({
   const unit = metric.unit.htmlShort;
 
   const genTraces = (cv: MetricCategoryValues, idx: number) => {
-    console.log('genTraces', cv);
     const stackGroup = cv.isNegative ? 'neg' : 'pos';
     const color = cv.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
@@ -481,6 +473,7 @@ export default function DimensionalNodePlot({
     hoverformat: '%Y',
     automargin: true,
     dtick: nrYears > 30 ? 'M60' : nrYears > 15 ? 'M24' : 'M12',
+    fixedrange: true,
   };
 
   const mainXAxisConfig: Partial<LayoutAxis> = {
@@ -529,6 +522,7 @@ export default function DimensionalNodePlot({
       ticklen: 10,
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
+      fixedrange: true,
       rangemode: rangeMode,
       range:
         metric.stackable && slice.totalValues
