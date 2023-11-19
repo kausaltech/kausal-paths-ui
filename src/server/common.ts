@@ -9,6 +9,11 @@ import {
   NormalizedCacheObject,
   HttpLink,
   InMemoryCache,
+  ApolloLink,
+  FetchResult,
+  NextLink,
+  Observable,
+  Operation,
 } from '@apollo/client/index.js';
 import 'dotenv/config';
 
@@ -27,6 +32,7 @@ import {
   ServerAuthIssuer,
 } from './auth.js';
 import { logRequest } from './log.js';
+import { SentryLink } from 'apollo-link-sentry';
 
 if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
@@ -65,6 +71,25 @@ export type RequestContext = {
 };
 
 export type BaseServerResponse = Response;
+
+/*
+class SentryLink extends ApolloLink {
+  constructor() {
+    super();
+  }
+  request(operation: Operation, forward?: NextLink | undefined): Observable<FetchResult> | null {
+    if (!forward) return null;
+    const hub = Sentry.getCurrentHub();
+    const scope = hub.pushScope();
+    scope.setTransactionName(operation.operationName);
+    scope.setContext('variables', operation.variables);
+    const ret = forward(operation);
+    hub.popScope();
+    return ret;
+  }
+
+}
+*/
 
 export abstract class BaseServer {
   name: string;
@@ -111,7 +136,17 @@ export abstract class BaseServer {
     console.log(`> GraphQL API at ${apiUrl}`);
     const client = new ApolloClient({
       ssrMode: true,
-      link: httpLink,
+      link: ApolloLink.from([
+        new SentryLink({
+          uri: apiUrl,
+          setTransaction: false,
+          attachBreadcrumbs: {
+            includeVariables: true,
+            includeError: true,
+          },
+        }),
+        httpLink,
+      ]),
       cache: new InMemoryCache(),
     });
     return client;
@@ -195,6 +230,13 @@ export abstract class BaseServer {
     return `${req.nextBasePath}${includeLocale ? localePrefix : ''}${path}`;
   }
 
+  sendError(
+    req: BaseServerRequest,
+    res: Response,
+    statusCode: number,
+    msg: string
+  ) {}
+
   async handleRequest(
     req: BaseServerRequest,
     res: Response,
@@ -249,7 +291,7 @@ export abstract class BaseServer {
 
     this.setBasePath(req, basePath);
     this.setLocale(req, defaultLanguage, supportedLanguages);
-
+    res.set('Document-Policy', 'js-profiling');
     // In production, we instruct upstream caches to also cache our static files
     if (
       normalizedPath.match(/^\/static\//) &&
@@ -270,6 +312,22 @@ export abstract class BaseServer {
     this.nextConfig = (await import('next/config.js')).default.default();
     const apiUrl = this.nextConfig.serverRuntimeConfig.graphqlUrl;
     const app = express();
+    const sentryClient = Sentry.getCurrentHub().getClient();
+    if (sentryClient && sentryClient.addIntegration) {
+      sentryClient.addIntegration(
+        new Sentry.Integrations.Express({
+          app,
+        })
+      );
+    }
+    app.use(
+      Sentry.Handlers.requestHandler({
+        include: {
+          ip: true,
+        },
+      })
+    );
+    app.use(Sentry.Handlers.tracingHandler());
 
     this.apolloClient = this.initApollo(apiUrl);
     try {
@@ -284,7 +342,6 @@ export abstract class BaseServer {
     this.nextServer = await this.nextApp.getServer();
 
     app.use(logRequest);
-    app.use(Sentry.Handlers.requestHandler());
     app.use(
       cookieSession({
         name: this.name,
@@ -315,9 +372,30 @@ export abstract class BaseServer {
     // @ts-ignore
     this.passport = initializePassport(app);
 
-    app.all('*', asyncHandler(this.handleRequest.bind(this)));
+    const handler = asyncHandler(this.handleRequest.bind(this));
+    app.all('*', (req, res, next) => {
+      return Sentry.runWithAsyncContext(() => {
+        return handler(req, res, next);
+      });
+    });
 
-    app.use(Sentry.Handlers.errorHandler());
+    app.use(
+      Sentry.Handlers.errorHandler({
+        /*shouldHandleError: (error) => {
+        console.log('should handle 404?');
+        return true;
+      }*/
+      })
+    );
+    app.use((err, req, res, next) => {
+      if (res.headersSent) return next(err);
+      console.log('our own error handler');
+      if (process.env.DEPLOYMENT_TYPE !== 'production') {
+      }
+      //res.status(500);
+      // FIXME: Render something
+      next(err);
+    });
     app.listen(port, () => {
       console.log(`> ✅ Ready on http://localhost:${port}`);
     });

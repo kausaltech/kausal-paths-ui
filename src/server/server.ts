@@ -54,40 +54,37 @@ class PathsServer extends BaseServer {
     const instance = this.instancesByHostname.get(hostname);
     if (instance) return instance;
 
-    try {
-      const { data } = await this.apolloClient.query<
-        GetAvailableInstancesQuery,
-        GetAvailableInstancesQueryVariables
-      >({
-        query: GET_AVAILABLE_INSTANCES,
-        variables: {
-          hostname: hostname,
-        },
-        fetchPolicy: 'no-cache',
-      });
-      // FIXME: Support for multiple instances per hostname
-      const numInstances = data.availableInstances.length;
-      if (!numInstances) {
-        console.log(
-          `No instances found with the given hostname "${encodeURIComponent(
-            hostname
-          )}".`
-        );
-        return null;
-      }
-      if (numInstances != 1) {
-        throw new Error(
-          `Invalid number of available instances: ${numInstances}`
-        );
-      }
-      const instance = {
-        ...data.availableInstances[0],
-        serverAuth: null,
-      };
-      this.instancesByHostname.set(hostname, instance);
-      return instance;
-    } catch (error) {
-      console.error(error);
+    const { data } = await this.apolloClient.query<
+      GetAvailableInstancesQuery,
+      GetAvailableInstancesQueryVariables
+    >({
+      query: GET_AVAILABLE_INSTANCES,
+      variables: {
+        hostname: hostname,
+      },
+      fetchPolicy: 'no-cache',
+    });
+    // FIXME: Support for multiple instances per hostname
+    const numInstances = data.availableInstances.length;
+    if (!numInstances) {
+      console.log(
+        `No instances found with the given hostname "${encodeURIComponent(
+          hostname
+        )}".`
+      );
+      return null;
+    }
+    if (numInstances != 1) {
+      throw new Error(`Invalid number of available instances: ${numInstances}`);
+    }
+    const ret = {
+      ...data.availableInstances[0],
+      serverAuth: null,
+    };
+    this.instancesByHostname.set(hostname, ret);
+    return ret;
+    /*
+  } catch (error) {
       this.Sentry.withScope((scope) => {
         scope.setTag('hostname', hostname);
         this.Sentry.captureException(error);
@@ -102,6 +99,7 @@ class PathsServer extends BaseServer {
       res.status(500).send(message);
       return null;
     }
+    */
   }
 
   async getRequestContext(req: PathsRequest, res: BaseServerResponse) {

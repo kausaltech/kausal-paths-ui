@@ -148,7 +148,7 @@ const ActionListCard = (props: ActionListCardProps) => {
           </GroupTag>
         )}
         <ActionLink action={action}>
-          <StyledActionLink>
+          <StyledActionLink data-testid="actionlink">
             <StyledActionTitle>{action.name}</StyledActionTitle>
             <StyledIconWrapper>
               <Icon width="20px" height="20px" name="arrowRight" />

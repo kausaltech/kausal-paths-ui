@@ -368,7 +368,7 @@ function GlobalNav(props) {
                         >
                           <NavLink>
                             <Link href={page.urlPath}>
-                              <a>
+                              <a data-testid={`navitem::${page.urlPath}`}>
                                 <NavHighlighter
                                   className={`highlighter ${
                                     page.active && 'active'
