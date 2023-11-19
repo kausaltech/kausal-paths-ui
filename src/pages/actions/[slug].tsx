@@ -189,13 +189,7 @@ export default function ActionPage() {
     ? flowPlot || (
         <>
           <ActionGraphHeader>
-            {t('impact')}: {actionVizNode.name} (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: actionVizNode.unit?.htmlShort,
-              }}
-            />
-            )
+            {t('impact')}: {actionVizNode.name}
           </ActionGraphHeader>
           <NodePlot
             metric={actionVizNode.metric}
