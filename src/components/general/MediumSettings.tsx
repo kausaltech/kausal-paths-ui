@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { Row, Col, Container, Popover, PopoverBody } from 'reactstrap';
 import styled from 'styled-components';
@@ -51,6 +51,8 @@ const StyledButton = styled.button<{ ref: HTMLButtonElement }>`
   white-space: nowrap;
   overflow: hidden;
   font-weight: 400;
+  font-size: 0.9rem;
+  padding: ${({ theme }) => theme.spaces.s050};
 
   &:focus {
     box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
@@ -96,7 +98,7 @@ const YearRangeSelector = (props) => {
         aria-controls="rangeSelectorPopover"
         ref={triggerReference}
       >
-        {`${yearRange[0]} – ${yearRange[1]}`}
+        {`${yearRange[0]}–${yearRange[1]}`}
       </StyledButton>
       <Popover
         placement="bottom"
@@ -123,6 +125,24 @@ const YearRangeSelector = (props) => {
   );
 };
 
+function getColumnSizes(hasMultipleGoals: boolean) {
+  if (hasMultipleGoals) {
+    return {
+      scenario: { xs: 4, md: 2 },
+      yearRange: { xs: 3, md: 2 },
+      goal: { xs: 5, md: 3 },
+      outcome: { md: 5 },
+    };
+  }
+
+  return {
+    scenario: { xs: 6, md: 3 },
+    yearRange: { xs: 6, md: 3 },
+    goal: undefined,
+    outcome: { md: 6 },
+  };
+}
+
 const MediumSettings = (props) => {
   if (!process.browser) {
     return null;
@@ -133,18 +153,16 @@ const MediumSettings = (props) => {
   // Target
   const nrGoals = instance.goals.length;
   const hasMultipleGoals = nrGoals > 1;
-  const dropdownColProps = hasMultipleGoals
-    ? { xs: 4, md: 2 }
-    : { xs: 6, md: 3 };
+  const columnSizes = getColumnSizes(hasMultipleGoals);
 
   return (
-    <Container fluid="lg">
+    <Container fluid="xl">
       <PanelContent>
         <StyledRow>
-          <StyledDropdownCol {...dropdownColProps}>
+          <StyledDropdownCol {...columnSizes.scenario}>
             <ScenarioSelector />
           </StyledDropdownCol>
-          <StyledDropdownCol {...dropdownColProps}>
+          <StyledDropdownCol {...columnSizes.yearRange}>
             <YearRangeSelector
               minYear={site.minYear}
               maxYear={site.maxYear}
@@ -152,12 +170,12 @@ const MediumSettings = (props) => {
             />
           </StyledDropdownCol>
           {hasMultipleGoals && (
-            <StyledDropdownCol {...dropdownColProps}>
+            <StyledDropdownCol {...columnSizes.goal}>
               <GoalSelector />
             </StyledDropdownCol>
           )}
-          <StyledOutcomeCol className="text-right">
-            {true && <GoalOutcomeBar compact />}
+          <StyledOutcomeCol className="text-right" {...columnSizes.outcome}>
+            <GoalOutcomeBar compact />
           </StyledOutcomeCol>
         </StyledRow>
       </PanelContent>

@@ -19,11 +19,21 @@ const StyledDropdown = styled(Dropdown)`
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    font-size: 0.9rem;
+    padding: ${({ theme }) => theme.spaces.s050};
 
     &:focus {
       box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
     }
   }
+`;
+
+const StyledDropdownLabel = styled.span`
+  display: block;
+  position: relative;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 `;
 
 const StyledSublabel = styled.span`
@@ -52,7 +62,7 @@ const GoalSelector = () => {
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
       <DropdownLabel>{t('target')}</DropdownLabel>
       <DropdownToggle color="light">
-        <span>{activeGoal?.label}</span>
+        <StyledDropdownLabel>{activeGoal?.label}</StyledDropdownLabel>
       </DropdownToggle>
       <DropdownMenu>
         <DropdownItem header>{t('change-target')}</DropdownItem>
