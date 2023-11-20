@@ -12,8 +12,7 @@ import {
   getMetricChange,
 } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
-import OutcomeGraph from 'components/general/OutcomeGraph';
-import BarGraph from 'components/general/BarGraph';
+import DimensionalBarGraph from 'components/general/DimensionalBarGraph';
 import DataTable from './DataTable';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
@@ -157,20 +156,16 @@ const OutcomeNodeContent = ({
         withTools={false}
       />
     ),
-    [node, subNodes, color, startYear, endYear]
+    [node, color, startYear, endYear]
   );
 
   const singleYearGraph = useMemo(
     () => (
-      <BarGraph
-        node={node}
-        subNodes={subNodes}
-        color={color}
-        startYear={startYear}
-        endYear={endYear}
-      />
+      <div>
+        <DimensionalBarGraph metric={node.metricDim!} endYear={endYear} />
+      </div>
     ),
-    [node, subNodes, color, startYear, endYear]
+    [node, endYear, color]
   );
 
   return (
