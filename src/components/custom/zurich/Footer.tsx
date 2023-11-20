@@ -70,7 +70,7 @@ const Footer = (props) => {
                   badge-position="icon"
                 >
                   <a
-                    href="https://www.stadt-zuerich.ch/portal/de/index/footer/impressum.html"
+                    href="https://www.stadt-zuerich.ch/netto-null-cockpit-impressum"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
                     s-object-id="Imprint"
