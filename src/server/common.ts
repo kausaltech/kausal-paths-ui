@@ -1,5 +1,9 @@
 import express, { NextFunction, Request, Response } from 'express';
+import { engine } from 'express-handlebars';
 import cookieSession from 'cookie-session';
+
+import path from 'path';
+import fs from 'fs';
 
 import type { Authenticator } from 'passport';
 import asyncHandler from 'express-async-handler';
@@ -38,6 +42,8 @@ if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
 }
 
+const defaultFallbackLanguage = process.env.DEFAULT_FALLBACK_LANGUAGE || 'en';
+
 export const deploymentType = process.env.DEPLOYMENT_TYPE || 'development';
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -46,6 +52,8 @@ if (!process.env.SESSION_SECRET && deploymentType !== 'development') {
   console.warn('SESSION_SECRET not set, using unsafe default');
 }
 const sessionSecret = process.env.SESSION_SECRET || 'secretsecret';
+
+export class InstanceNotFoundError extends Error {}
 
 export type BaseServerRequest = Request & {
   currentURL: {
@@ -72,6 +80,15 @@ export type RequestContext = {
 
 export type BaseServerResponse = Response;
 
+export interface ErrorTemplateContext {
+  title: string;
+  intro: string;
+  apology: string | null;
+  errorLabel?: string | null;
+  errorIdentifier?: string | null;
+  fullError?: string | null;
+}
+
 /*
 class SentryLink extends ApolloLink {
   constructor() {
@@ -90,6 +107,8 @@ class SentryLink extends ApolloLink {
 
 }
 */
+
+const LOCALE_PATH = 'public/locales';
 
 export abstract class BaseServer {
   name: string;
@@ -230,6 +249,25 @@ export abstract class BaseServer {
     return `${req.nextBasePath}${includeLocale ? localePrefix : ''}${path}`;
   }
 
+  _getMessageFromLocaleJson(
+    language: string,
+    messageId: string
+  ): string | null {
+    try {
+      var jsonPath = path.join('public', 'locales', language, 'errors.json');
+      const dataDump: string = fs.readFileSync(jsonPath, 'utf8');
+      const data = JSON.parse(dataDump);
+      return data[messageId];
+    } catch (err) {
+      this.Sentry.captureException(err);
+      return null;
+    }
+  }
+
+  getMessage(language: string | null, messageId: string): string | null {
+    return this._getMessageFromLocaleJson(language ?? 'en', messageId);
+  }
+
   sendError(
     req: BaseServerRequest,
     res: Response,
@@ -329,6 +367,10 @@ export abstract class BaseServer {
     );
     app.use(Sentry.Handlers.tracingHandler());
 
+    app.engine('handlebars', engine());
+    app.set('view engine', 'handlebars');
+    app.set('views', './src/server/views');
+
     this.apolloClient = this.initApollo(apiUrl);
     try {
       this.authIssuer = await initializeIssuer(apiUrl);
@@ -389,12 +431,38 @@ export abstract class BaseServer {
     );
     app.use((err, req, res, next) => {
       if (res.headersSent) return next(err);
-      console.log('our own error handler');
-      if (process.env.DEPLOYMENT_TYPE !== 'production') {
+      let context: ErrorTemplateContext;
+      if (err instanceof InstanceNotFoundError) {
+        context = {
+          title:
+            this.getMessage(defaultFallbackLanguage, 'not-found-title') ??
+            'Page not found',
+          intro:
+            this.getMessage(defaultFallbackLanguage, 'not-found-intro') ?? '',
+          apology: null,
+        };
+        res.status(404);
+      } else {
+        context = {
+          title:
+            this.getMessage(defaultFallbackLanguage, 'generic-title') ??
+            'An error was encountered',
+          intro:
+            this.getMessage(defaultFallbackLanguage, 'generic-intro') ?? '',
+          apology: this.getMessage(defaultFallbackLanguage, 'generic-apology'),
+        };
+        res.status(500);
       }
-      //res.status(500);
-      // FIXME: Render something
-      next(err);
+      if (process.env.DEPLOYMENT_TYPE !== 'production') {
+        context.fullError = err.stack?.toString() ?? err.toString();
+      }
+      context.errorLabel = this.getMessage(
+        defaultFallbackLanguage,
+        'error-label'
+      );
+      context.errorIdentifier =
+        Sentry.getCurrentHub().getScope().getTransaction()?.traceId ?? null;
+      res.render('error', context);
     });
     app.listen(port, () => {
       console.log(`> ✅ Ready on http://localhost:${port}`);

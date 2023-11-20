@@ -1,0 +1,13 @@
+<div id="card">
+  <h1>{{title}}</h1>
+  <p>{{intro}}</p>
+  {{#if apology }}
+    <p>{{apology}}</p>
+  {{/if}}
+  {{#if errorIdentifier }}
+    <p class="details">{{errorLabel}}: {{errorIdentifier}}</p>
+  {{/if}}
+  {{#if fullError }}
+    <pre class="details">{{fullError}}</pre>
+  {{/if}}
+</div>
