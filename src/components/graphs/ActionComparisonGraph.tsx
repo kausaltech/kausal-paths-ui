@@ -4,7 +4,6 @@ import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'reactstrap';
 import Icon from 'components/common/icon';
-import { t } from 'i18next';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -56,10 +55,6 @@ function ActionComparisonGraph(props) {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
 
-  console.log('comparison graph props', props);
-  const barHoverColor = theme.graphColors.green090;
-
-  const [barColors, setBarColors] = useState(data.colors);
   const [hoverId, setHoverId] = useState(null);
 
   useEffect(() => {
@@ -129,6 +124,7 @@ function ActionComparisonGraph(props) {
             x: data['actions'],
             y: data['impact'],
             text: data['actions'],
+            name: impactName,
             marker: {
               color: data.colors,
               opacity: 0.9,
@@ -139,7 +135,7 @@ function ActionComparisonGraph(props) {
             },
             textposition: 'none',
             customdata: data['impact'],
-            hovertemplate: '%{yaxis.title.text}: %{y:.3r}<br>',
+            hovertemplate: `%{y:.3r} ${impactUnit}`,
           },
         ]}
         layout={layout}
