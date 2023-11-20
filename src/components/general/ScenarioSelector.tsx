@@ -38,6 +38,8 @@ const StyledDropdown = styled(Dropdown)`
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    font-size: 0.9rem;
+    padding: ${({ theme }) => theme.spaces.s050};
 
     &:focus {
       box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
