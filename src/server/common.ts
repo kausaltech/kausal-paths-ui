@@ -2,6 +2,9 @@ import express, { NextFunction, Request, Response } from 'express';
 import { engine } from 'express-handlebars';
 import cookieSession from 'cookie-session';
 
+import path from 'path';
+import fs from 'fs';
+
 import type { Authenticator } from 'passport';
 import asyncHandler from 'express-async-handler';
 import originalUrl from 'original-url';
@@ -33,14 +36,13 @@ import {
   ServerAuthIssuer,
 } from './auth.js';
 import { logRequest } from './log.js';
-import { getErrorMessages, ErrorTemplateContext } from './errors.js';
 import { SentryLink } from 'apollo-link-sentry';
 
 if (process.env.SENTRY_DSN) {
   console.log(`> ⚙️ Sentry initialized at ${process.env.SENTRY_DSN}`);
 }
 
-const defaultFallbackLanguage = process.env.DEFAULT_LANGUAGE ?? 'en';
+const defaultFallbackLanguage = process.env.DEFAULT_FALLBACK_LANGUAGE || 'en';
 
 export const deploymentType = process.env.DEPLOYMENT_TYPE || 'development';
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -78,6 +80,15 @@ export type RequestContext = {
 
 export type BaseServerResponse = Response;
 
+export interface ErrorTemplateContext {
+  title: string;
+  intro: string;
+  apology: string | null;
+  errorLabel?: string | null;
+  errorIdentifier?: string | null;
+  fullError?: string | null;
+}
+
 /*
 class SentryLink extends ApolloLink {
   constructor() {
@@ -96,6 +107,8 @@ class SentryLink extends ApolloLink {
 
 }
 */
+
+const LOCALE_PATH = 'public/locales';
 
 export abstract class BaseServer {
   name: string;
@@ -234,6 +247,25 @@ export abstract class BaseServer {
         ? ''
         : `/${req.nextCurrentLanguage}`;
     return `${req.nextBasePath}${includeLocale ? localePrefix : ''}${path}`;
+  }
+
+  _getMessageFromLocaleJson(
+    language: string,
+    messageId: string
+  ): string | null {
+    try {
+      var jsonPath = path.join('public', 'locales', language, 'errors.json');
+      const dataDump: string = fs.readFileSync(jsonPath, 'utf8');
+      const data = JSON.parse(dataDump);
+      return data[messageId];
+    } catch (err) {
+      this.Sentry.captureException(err);
+      return null;
+    }
+  }
+
+  getMessage(language: string | null, messageId: string): string | null {
+    return this._getMessageFromLocaleJson(language ?? 'en', messageId);
   }
 
   sendError(
@@ -401,15 +433,35 @@ export abstract class BaseServer {
       if (res.headersSent) return next(err);
       let context: ErrorTemplateContext;
       if (err instanceof InstanceNotFoundError) {
-        context = getErrorMessages(defaultFallbackLanguage, 'notFound');
+        context = {
+          title:
+            this.getMessage(defaultFallbackLanguage, 'not-found-title') ??
+            'Page not found',
+          intro:
+            this.getMessage(defaultFallbackLanguage, 'not-found-intro') ?? '',
+          apology: null,
+        };
         res.status(404);
       } else {
-        context = getErrorMessages(defaultFallbackLanguage, 'genericError');
+        context = {
+          title:
+            this.getMessage(defaultFallbackLanguage, 'generic-title') ??
+            'An error was encountered',
+          intro:
+            this.getMessage(defaultFallbackLanguage, 'generic-intro') ?? '',
+          apology: this.getMessage(defaultFallbackLanguage, 'generic-apology'),
+        };
         res.status(500);
       }
       if (process.env.DEPLOYMENT_TYPE !== 'production') {
-        context.fullError = err.toString();
+        context.fullError = err.stack?.toString() ?? err.toString();
       }
+      context.errorLabel = this.getMessage(
+        defaultFallbackLanguage,
+        'error-label'
+      );
+      context.errorIdentifier =
+        Sentry.getCurrentHub().getScope().getTransaction()?.traceId ?? null;
       res.render('error', context);
     });
     app.listen(port, () => {

@@ -1,8 +1,9 @@
 <div id="card">
   <h1>{{title}}</h1>
-  {{#each contentParagraphs}}
-    <p>{{this}}</p>
-  {{/each}}
+  <p>{{intro}}</p>
+  {{#if apology }}
+    <p>{{apology}}</p>
+  {{/if}}
   {{#if errorIdentifier }}
     <p class="details">{{errorLabel}}: {{errorIdentifier}}</p>
   {{/if}}
