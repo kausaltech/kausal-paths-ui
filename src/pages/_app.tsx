@@ -8,7 +8,11 @@ import getConfig from 'next/config';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import * as Sentry from '@sentry/nextjs';
 
-import { ApolloClientType, initializeApollo } from 'common/apollo';
+import {
+  ApolloClientOpts,
+  ApolloClientType,
+  initializeApollo,
+} from 'common/apollo';
 import { setBasePath } from 'common/links';
 import { loadTheme } from 'common/theme';
 import { getI18n } from 'common/i18n';
@@ -28,6 +32,7 @@ import {
 import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
 import { setSignificantDigits } from 'common/preprocess';
+import PathsError from './_error';
 
 const publicRuntimeConfig = getConfig().publicRuntimeConfig;
 const basePath = publicRuntimeConfig.basePath || '';
@@ -111,6 +116,10 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   },
 };
 
+function renderFallbackError({ error: Error, eventId: string }) {
+  return <PathsError statusCode={500} />;
+}
+
 export type PathsAppProps = AppProps & {
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
@@ -121,10 +130,9 @@ export type PathsAppProps = AppProps & {
 function PathsApp(props: PathsAppProps) {
   const { Component, pageProps, siteContext, instanceContext, themeProps } =
     props;
+  const isProd = publicRuntimeConfig?.deploymentType === 'production';
 
   const { i18n } = useTranslation();
-  const apolloClient = initializeApollo(null, siteContext.apolloConfig);
-
   numbro.setLanguage(
     i18n.language,
     i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined
@@ -139,7 +147,14 @@ function PathsApp(props: PathsAppProps) {
     }
   }
 
+  const component = <Component {...pageProps} />;
+
+  if (!instanceContext || !siteContext) {
+    // getInitialProps errored, return with a very simple layout
+    return component;
+  }
   const instance = instanceContext;
+
   setSignificantDigits(instance.features.showSignificantDigits);
 
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
@@ -162,8 +177,7 @@ function PathsApp(props: PathsAppProps) {
     ];
     yearRangeVar(yearRange);
   }
-
-  const component = <Component {...pageProps} />;
+  const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
   return (
     <SiteContext.Provider value={siteContext}>
@@ -172,7 +186,12 @@ function PathsApp(props: PathsAppProps) {
           <ThemeProvider theme={themeProps}>
             <ThemedGlobalStyles />
             <Layout>
-              <Sentry.ErrorBoundary>{component}</Sentry.ErrorBoundary>
+              <Sentry.ErrorBoundary
+                showDialog={!isProd}
+                fallback={renderFallbackError}
+              >
+                {component}
+              </Sentry.ErrorBoundary>
             </Layout>
           </ThemeProvider>
         </ApolloProvider>
@@ -204,20 +223,18 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
 
   // Instance is identified either by a hard-coded identifier or by the
   // request hostname.
-  const apolloConfig = {
+  const apolloConfig: ApolloClientOpts = {
     instanceHostname: host,
     instanceIdentifier: instanceConfig.identifier,
     authorizationToken: req.user?.idToken,
-  };
-  const apolloConfigServer = {
-    forwardedFor: req.headers['x-forwarded-for'],
-    remoteAddress: req.socket.remoteAddress,
+    clientIp: null,
     currentURL: req.currentURL,
   };
-  const apolloClient: ApolloClient<object> = initializeApollo(null, {
-    ...apolloConfig,
-    ...apolloConfigServer,
-  });
+  const apolloClient: ApolloClient<object> = initializeApollo(
+    null,
+    apolloConfig
+  );
+  apolloConfig.clientIp = null; // We don't need to pass this to the client
 
   // Load the instance configuration from backend
   let instance: InstanceContextType;
@@ -255,14 +272,15 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     };
   } catch (error) {
     if (isApolloError(error)) {
+      console.error('Got Apollo error while fetching instance context');
       const isProtected = error.graphQLErrors.find(
         (err) => err.extensions?.code == 'instance_protected'
       );
-      console.log(error.graphQLErrors);
+      console.error(error.graphQLErrors);
       if (isProtected) {
       }
     }
-    throw new Error(`Error loading instance data: ${error}`);
+    throw error;
   }
   Object.assign(
     siteContext,
@@ -299,13 +317,18 @@ async function getI18nProps(ctx: PathsPageContext) {
       locales: ctx.locales!,
     },
   };
-  const i18nConfig = await serverSideTranslations(locale, ['common'], conf);
+  const i18nConfig = await serverSideTranslations(
+    locale,
+    ['common', 'errors'],
+    conf
+  );
   return i18nConfig;
 }
 
 type InstanceConfig = GetAvailableInstancesQuery['availableInstances'][0];
 
 type PathsAppRequest = AppContext['ctx']['req'] & {
+  ip: string;
   instanceConfig: InstanceConfig;
   currentURL: {
     baseURL: string;
@@ -325,11 +348,12 @@ type PathsAppContext = Omit<AppContext, 'ctx'> & {
   ctx: PathsPageContext;
 };
 
+let defaultTheme: Theme | undefined;
+
 PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
   const { ctx } = appContext;
 
   if (process.browser) {
-    console.log('browser getinitialprops');
     const appProps = await App.getInitialProps(appContext);
     const nextData = window.__NEXT_DATA__;
     const { _nextI18Next } = nextData.props.pageProps;
@@ -347,18 +371,57 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
     return ret;
   }
 
+  if (!defaultTheme) {
+    defaultTheme = await loadTheme('default');
+  }
+
+  /*
+   * If we errored out when doing App.getInitialProps last time, we bail out
+   * before that stage so that it doesn't happen again.
+   */
+  const lastPhase: string | undefined = ctx.req['_appInitialPropsPhase'];
+
   // SSR
   setBasePath();
+  const appProps: Partial<PathsAppProps> =
+    await App.getInitialProps(appContext);
+  if (!appProps.pageProps) {
+    appProps.pageProps = {};
+  }
+  appProps.themeProps = defaultTheme;
+
+  const pageProps = appProps.pageProps;
+
+  if (ctx.err && lastPhase === 'i18n') {
+    return appProps;
+  }
+  ctx.req['_appInitialPropsPhase'] = 'i18n';
   const i18nProps = await getI18nProps(ctx);
+  if (ctx.err && lastPhase === 'i18n') {
+    return appProps;
+  }
+  Object.assign(pageProps, i18nProps);
+
+  if (ctx.err && lastPhase === 'site-context') {
+    return appProps;
+  }
+  ctx.req['_appInitialPropsPhase'] = 'site-context';
   const siteProps = await getSiteContext(ctx, ctx.locale!);
-  const appProps = await App.getInitialProps(appContext);
-  const pageProps = {
-    ...appProps.pageProps,
-    ...i18nProps,
-  };
+  if (siteProps) {
+    appProps.siteContext = siteProps.siteContext;
+    appProps.instanceContext = siteProps.instanceContext;
+  }
+
+  if (ctx.err && lastPhase === 'theme') {
+    return appProps;
+  }
+  ctx.req['_appInitialPropsPhase'] = 'theme';
   const theme = await loadTheme(
     siteProps?.instanceContext?.themeIdentifier || 'default'
   );
+  appProps.themeProps = theme;
+
+  delete ctx.req['_appInitialPropsPhase'];
 
   // We instruct the upstream cache to cache for a minute
   if (ctx.res && siteProps.siteContext.deploymentType === 'production') {
@@ -368,12 +431,7 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
     );
   }
 
-  return {
-    ...appProps,
-    ...(siteProps || {}),
-    themeProps: theme,
-    pageProps,
-  };
+  return appProps;
 };
 
 const PathsAppWithTranslation = appWithTranslation(PathsApp);

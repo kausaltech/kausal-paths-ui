@@ -4,5 +4,6 @@
   "generic-apology": "We apologize for any inconvenience this may cause. Please try again later, and thank you for your patience.",
   "error-label": "Error code",
   "not-found-title": "Page not found",
-  "not-found-intro": "404 Not found."
+  "not-found-intro": "404 Not found.",
+  "network-error": "Network error"
 }

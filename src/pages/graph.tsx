@@ -48,7 +48,7 @@ export default function Graph() {
     return <Spinner style={{ width: '3rem', height: '3rem' }} />;
   }
   if (error) {
-    return <GraphQLError errors={error} />;
+    return <GraphQLError error={error} />;
   }
 
   const { nodes } = data;

@@ -162,7 +162,7 @@ export default function NodePage() {
     logError(error, { query: GET_NODE_PAGE_CONTENT });
     return (
       <Container className="pt-5">
-        <GraphQLError errors={error} />
+        <GraphQLError error={error} />
       </Container>
     );
   }

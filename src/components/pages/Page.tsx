@@ -5,6 +5,7 @@ import {
   NetworkStatus,
 } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
+import Error from 'pages/_error';
 import { Container } from 'reactstrap';
 import Head from 'next/head';
 
@@ -53,11 +54,9 @@ export default function Page({ path, headerExtra }: PageProps) {
 
   if (error) {
     logError(error, { query: GET_PAGE });
-    return (
-      <Container fluid="lg" className="pt-5">
-        <GraphQLError errors={error} />
-      </Container>
-    );
+    /* If the GetPage query fails, we should show the "internal server error"
+     * dialog. */
+    throw error;
   }
   if (!data) {
     return <PageLoader />;
@@ -66,7 +65,7 @@ export default function Page({ path, headerExtra }: PageProps) {
   let pageContent: React.ReactNode;
   if (!page) {
     console.error(`No page found for path ${path}`);
-    return <ErrorMessage message={t('page-not-found')} />;
+    return <Error statusCode={404} />;
   }
   if (page.__typename === 'OutcomePage') {
     pageContent = (

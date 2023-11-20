@@ -290,7 +290,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   if (error) {
     return (
       <Container className="pt-5">
-        <GraphQLError errors={error} />
+        <GraphQLError error={error} />
       </Container>
     );
   }

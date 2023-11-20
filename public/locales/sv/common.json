@@ -78,5 +78,10 @@
   "outcome-sub-nodes": "Delbranscher",
   "outcome-sub-nodes-secondary": "Delbranscher",
   "outcome-tabs-label": "Skärmalternativ",
-  "coming-soon": "Kommer snart"
+  "coming-soon": "Kommer snart",
+  "return-to-front": "Tillbaka till förstasidan",
+  "error-occurred": "Fel inträffade",
+  "page-not-found": "Sidan hittas inte",
+  "error-with-code": "Felkod {{code}}",
+  "show-error": "Visa fel\""
 }

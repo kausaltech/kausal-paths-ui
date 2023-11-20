@@ -86,5 +86,10 @@
   "outcome-tabs-label": "Anzeigeoptionen",
   "do-not-show-again": "Nicht mehr anzeigen",
   "close": "Schliessen",
-  "coming-soon": "Werden später ergänzt"
+  "coming-soon": "Werden später ergänzt",
+  "return-to-front": "Zurück zur Titelseite",
+  "error-occurred": "Ein Fehler ist aufgetreten",
+  "page-not-found": "Seite nicht gefunden",
+  "error-with-code": "Fehler mit Code {{code}}",
+  "show-error": "Fehler anzeigen"
 }

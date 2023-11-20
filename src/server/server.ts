@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import {
   BaseServer,
   BaseServerRequest,
@@ -50,21 +49,36 @@ class PathsServer extends BaseServer {
     this.instancesByHostname = new Map();
   }
 
-  async getInstance(req: Request, res: BaseServerResponse) {
+  getApolloHeaders(req: BaseServerRequest) {
+    const headers = super.getApolloHeaders(req);
+    headers['x-paths-instance-hostname'] = req.currentURL.hostname;
+    return headers;
+  }
+
+  async getInstance(req: BaseServerRequest) {
     const { hostname } = req;
     const instance = this.instancesByHostname.get(hostname);
     if (instance) return instance;
-
-    const { data } = await this.apolloClient.query<
-      GetAvailableInstancesQuery,
-      GetAvailableInstancesQueryVariables
-    >({
-      query: GET_AVAILABLE_INSTANCES,
-      variables: {
-        hostname: hostname,
-      },
-      fetchPolicy: 'no-cache',
-    });
+    this.Sentry.setTag('hostname', hostname);
+    const queryResp = await this.Sentry.startSpan(
+      { name: 'get available instances' },
+      async () => {
+        return await this.apolloClient.query<
+          GetAvailableInstancesQuery,
+          GetAvailableInstancesQueryVariables
+        >({
+          query: GET_AVAILABLE_INSTANCES,
+          variables: {
+            hostname: hostname,
+          },
+          context: {
+            headers: this.getApolloHeaders(req),
+          },
+          fetchPolicy: 'no-cache',
+        });
+      }
+    );
+    const { data } = queryResp;
     // FIXME: Support for multiple instances per hostname
     const numInstances = data.availableInstances.length;
     if (!numInstances) {
@@ -83,27 +97,10 @@ class PathsServer extends BaseServer {
     };
     this.instancesByHostname.set(hostname, ret);
     return ret;
-    /*
-  } catch (error) {
-      this.Sentry.withScope((scope) => {
-        scope.setTag('hostname', hostname);
-        this.Sentry.captureException(error);
-      });
-
-      let message: string;
-      if (this.dev) {
-        message = error.toString() + '\n' + error.stack;
-      } else {
-        message = 'Internal server error';
-      }
-      res.status(500).send(message);
-      return null;
-    }
-    */
   }
 
   async getRequestContext(req: PathsRequest, res: BaseServerResponse) {
-    const instance = await this.getInstance(req, res);
+    const instance = await this.getInstance(req);
     if (!instance) return null;
 
     const basePath = instance.hostname?.basePath || '';

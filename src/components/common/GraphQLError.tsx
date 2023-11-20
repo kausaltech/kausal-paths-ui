@@ -1,4 +1,6 @@
+import { ApolloError } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
+import * as Sentry from '@sentry/nextjs';
 import {
   Container,
   Button,
@@ -7,15 +9,31 @@ import {
   CardBody,
   UncontrolledCollapse,
 } from 'reactstrap';
+import getConfig from 'next/config';
 
-const GraphQLError = (props) => {
-  const { errors } = props;
-  console.log('error', errors);
+type GraphQLErrorProps = {
+  error: ApolloError;
+};
+
+const GraphQLError = (props: GraphQLErrorProps) => {
+  const { error } = props;
   const { t } = useTranslation();
+  const { publicRuntimeConfig } = getConfig();
+  const isProd = publicRuntimeConfig?.deploymentType === 'production';
+  let errorDetailMsg: string | null = null;
+
+  Sentry.captureException(error);
+  if (error.networkError) {
+    errorDetailMsg = `${t(
+      'errors:network-error'
+    )}: ${error.networkError.toString()}`;
+  }
+
   return (
     <Alert color="warning">
       <h3>{t('error-loading-data')}</h3>
-      {errors.graphQLErrors?.length && (
+      {errorDetailMsg}
+      {!isProd && error.graphQLErrors?.length ? (
         <>
           <Button
             color="dark"
@@ -24,26 +42,28 @@ const GraphQLError = (props) => {
             id="toggler"
             className="mt-2 mb-2"
           >
-            Show error
+            {t('show-error')}
           </Button>
           <UncontrolledCollapse toggler="#toggler">
             <Card>
               <CardBody>
                 <small>
-                  {errors.graphQLErrors.map((err) => (
-                    <pre>
+                  {error.graphQLErrors.map((err, idx) => (
+                    <pre key={idx}>
                       <p>
                         <code>
                           <strong>{err?.message}</strong>
                         </code>
                         <br />
                         <code>
-                          {err.locations.map(
+                          {(err.locations ?? []).map(
                             (loc) => `column: ${loc.column}, line: ${loc.line}`
                           )}
                         </code>
                         <br />
-                        <code>[{err.path.map((pth) => `${pth}, `)}]</code>
+                        <code>
+                          [{(err.path ?? []).map((pth) => `${pth}, `)}]
+                        </code>
                       </p>
                     </pre>
                   ))}
@@ -52,7 +72,7 @@ const GraphQLError = (props) => {
             </Card>
           </UncontrolledCollapse>
         </>
-      )}
+      ) : null}
     </Alert>
   );
 };

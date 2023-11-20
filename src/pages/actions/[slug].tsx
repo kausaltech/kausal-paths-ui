@@ -160,7 +160,7 @@ export default function ActionPage() {
     logError(error, { query: GET_ACTION_CONTENT });
     return (
       <Container className="pt-5">
-        <GraphQLError errors={error} />
+        <GraphQLError error={error} />
       </Container>
     );
   }

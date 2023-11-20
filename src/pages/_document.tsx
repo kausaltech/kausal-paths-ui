@@ -18,7 +18,6 @@ class PlansDocument extends Document {
     const originalRenderPage = ctx.renderPage;
     let themeProps: PathsAppProps['themeProps'] | undefined;
     const basePath = getConfig().publicRuntimeConfig.basePath;
-
     setBasePath(basePath);
     const sentryTraceId = Sentry.getCurrentHub()
       ?.getScope()
@@ -29,7 +28,8 @@ class PlansDocument extends Document {
         originalRenderPage({
           enhanceApp: (App) => (props: PathsAppProps) => {
             themeProps = props.themeProps;
-            return sheet.collectStyles(<App {...props} />);
+            const ret = sheet.collectStyles(<App {...props} />);
+            return ret;
           },
         });
       const initialProps = await Document.getInitialProps(ctx);
@@ -46,7 +46,7 @@ class PlansDocument extends Document {
                 href={getThemeCSS(themeProps.name)}
               />
             )}
-            {false && sentryTraceId && (
+            {null && sentryTraceId && (
               <meta name="sentry-trace" content={sentryTraceId} />
             )}
           </>

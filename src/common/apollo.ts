@@ -28,18 +28,6 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-export type ApolloClientOpts = {
-  instanceHostname: string;
-  instanceIdentifier: string;
-  authorizationToken?: string | undefined;
-  forwardedFor?: string | string[] | null;
-  remoteAddress?: string | null;
-  currentURL?: {
-    baseURL: string;
-    path: string;
-  };
-};
-
 function createDirective(name: string, args: { name: string; val: string }[]) {
   const out: DirectiveNode = {
     kind: Kind.DIRECTIVE,
@@ -60,20 +48,53 @@ function createDirective(name: string, args: { name: string; val: string }[]) {
   return out;
 }
 
+export type ApolloClientOpts = {
+  instanceHostname: string;
+  instanceIdentifier: string;
+  authorizationToken?: string | undefined;
+  clientIp?: string | null;
+  currentURL?: {
+    baseURL: string;
+    path: string;
+  };
+};
+
+function getHttpHeaders(opts: ApolloClientOpts) {
+  const {
+    instanceHostname,
+    instanceIdentifier,
+    authorizationToken,
+    currentURL,
+    clientIp,
+  } = opts;
+  const headers = {};
+
+  if (instanceIdentifier) {
+    headers['x-paths-instance-identifier'] = opts.instanceIdentifier;
+  }
+  if (instanceHostname) {
+    headers['x-paths-instance-hostname'] = instanceHostname;
+  }
+  if (authorizationToken) {
+    headers['authorization'] = `Bearer ${authorizationToken}`;
+  }
+  if (currentURL) {
+    const { baseURL, path } = currentURL;
+    headers['referer'] = baseURL + path;
+  }
+  if (clientIp && !process.browser) {
+    headers['x-forwarded-for'] = clientIp;
+  }
+  return headers;
+}
+
 const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   /**
    * Middleware that sets HTTP headers for identifying the Paths instance.
    *
    * If identifier is set directly, use that, or fall back to request hostname.
    */
-  const {
-    instanceHostname,
-    instanceIdentifier,
-    authorizationToken,
-    currentURL,
-    forwardedFor,
-    remoteAddress,
-  } = opts;
+  const { instanceHostname, instanceIdentifier } = opts;
   if (!instanceHostname && !instanceIdentifier) {
     throw new Error('Neither hostname or identifier set for the instance');
   }
@@ -103,25 +124,11 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
     };
 
     operation.setContext(({ headers = {} }) => {
-      if (instanceIdentifier) {
-        headers['x-paths-instance-identifier'] = instanceIdentifier;
-      } else if (instanceHostname) {
-        headers['x-paths-instance-hostname'] = instanceHostname;
-      }
-      if (authorizationToken) {
-        headers['authorization'] = `Bearer ${authorizationToken}`;
-      }
-      if (currentURL) {
-        const { baseURL, path } = currentURL;
-        headers['referer'] = baseURL + path;
-        const ff = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
-        const addr = ff || remoteAddress;
-        if (addr) {
-          headers['x-forwarded-for'] = remoteAddress;
-        }
-      }
       return {
-        headers,
+        headers: {
+          ...headers,
+          ...getHttpHeaders(opts),
+        },
       };
     });
 

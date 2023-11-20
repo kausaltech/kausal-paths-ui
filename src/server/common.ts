@@ -14,10 +14,6 @@ import {
   HttpLink,
   InMemoryCache,
   ApolloLink,
-  FetchResult,
-  NextLink,
-  Observable,
-  Operation,
 } from '@apollo/client/index.js';
 import 'dotenv/config';
 
@@ -54,6 +50,8 @@ if (!process.env.SESSION_SECRET && deploymentType !== 'development') {
 const sessionSecret = process.env.SESSION_SECRET || 'secretsecret';
 
 export class InstanceNotFoundError extends Error {}
+export class PageNotFoundError extends Error {}
+export class AuthenticationError extends Error {}
 
 export type BaseServerRequest = Request & {
   currentURL: {
@@ -88,27 +86,6 @@ export interface ErrorTemplateContext {
   errorIdentifier?: string | null;
   fullError?: string | null;
 }
-
-/*
-class SentryLink extends ApolloLink {
-  constructor() {
-    super();
-  }
-  request(operation: Operation, forward?: NextLink | undefined): Observable<FetchResult> | null {
-    if (!forward) return null;
-    const hub = Sentry.getCurrentHub();
-    const scope = hub.pushScope();
-    scope.setTransactionName(operation.operationName);
-    scope.setContext('variables', operation.variables);
-    const ret = forward(operation);
-    hub.popScope();
-    return ret;
-  }
-
-}
-*/
-
-const LOCALE_PATH = 'public/locales';
 
 export abstract class BaseServer {
   name: string;
@@ -146,6 +123,20 @@ export abstract class BaseServer {
     const baseURL = `${obj.protocol}//${obj.hostname}${port}`;
     const hostname = obj.hostname!;
     return { baseURL, path, hostname };
+  }
+
+  getApolloHeaders(req: BaseServerRequest) {
+    const headers = {};
+    const currentURL = req.currentURL;
+    if (currentURL) {
+      const { baseURL, path } = currentURL;
+      headers['referer'] = baseURL + path;
+    }
+    const clientIp = req?.ip;
+    if (clientIp) {
+      headers['x-forwarded-for'] = clientIp;
+    }
+    return headers;
   }
 
   initApollo(apiUrl: string) {
@@ -254,7 +245,7 @@ export abstract class BaseServer {
     messageId: string
   ): string | null {
     try {
-      var jsonPath = path.join('public', 'locales', language, 'errors.json');
+      const jsonPath = path.join('public', 'locales', language, 'errors.json');
       const dataDump: string = fs.readFileSync(jsonPath, 'utf8');
       const data = JSON.parse(dataDump);
       return data[messageId];
@@ -267,13 +258,6 @@ export abstract class BaseServer {
   getMessage(language: string | null, messageId: string): string | null {
     return this._getMessageFromLocaleJson(language ?? 'en', messageId);
   }
-
-  sendError(
-    req: BaseServerRequest,
-    res: Response,
-    statusCode: number,
-    msg: string
-  ) {}
 
   async handleRequest(
     req: BaseServerRequest,
@@ -293,10 +277,7 @@ export abstract class BaseServer {
       return;
     }
     if (!ctx) {
-      if (!res.headersSent) {
-        res.status(404).send('Page not found');
-      }
-      return;
+      throw new Error("We shouldn't reach this");
     }
 
     const { basePath, defaultLanguage, supportedLanguages, isProtected } = ctx;
@@ -308,20 +289,19 @@ export abstract class BaseServer {
 
     const normalizedPath = this.processPath(req);
     if (!normalizedPath) {
-      res.status(404).send('Page not found');
-      return;
+      throw new PageNotFoundError();
     }
     if (normalizedPath.match(/^\/auth(\/|$)/)) {
       if (!this.authIssuer) {
         console.warn('Authentication request, but no auth issuer configured');
-        res.status(404).send('Auth requests not possible');
-        return;
+        throw new AuthenticationError('Auth requests not possible');
       }
       const auth = this.getRequestAuth(req, res);
       if (!auth) {
         console.warn('Authentication request, but no auth client available');
-        res.status(404).send('Auth requests not possible');
-        return;
+        throw new AuthenticationError(
+          'Auth requests not possible, no auth client'
+        );
       }
       auth.handleRequest(req, res, normalizedPath, next);
       return;
@@ -343,13 +323,61 @@ export abstract class BaseServer {
     await this.nextHandleRequest(req, res);
   }
 
+  handleError(
+    err: Error,
+    req: BaseServerRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    Sentry.getCurrentHub().getScope().getTransaction()?.traceId;
+    if (res.headersSent) return next(err);
+    let context: ErrorTemplateContext;
+    if (
+      err instanceof InstanceNotFoundError ||
+      err instanceof PageNotFoundError
+    ) {
+      context = {
+        title:
+          this.getMessage(defaultFallbackLanguage, 'not-found-title') ??
+          'Page not found',
+        intro:
+          this.getMessage(defaultFallbackLanguage, 'not-found-intro') ?? '',
+        apology: null,
+      };
+      res.status(404);
+    } else {
+      context = {
+        title:
+          this.getMessage(defaultFallbackLanguage, 'generic-title') ??
+          'An error was encountered',
+        intro: this.getMessage(defaultFallbackLanguage, 'generic-intro') ?? '',
+        apology: this.getMessage(defaultFallbackLanguage, 'generic-apology'),
+      };
+      res.status(500);
+    }
+    if (process.env.DEPLOYMENT_TYPE !== 'production') {
+      context.fullError = err.stack?.toString() ?? err.toString();
+    }
+    context.errorLabel = this.getMessage(
+      defaultFallbackLanguage,
+      'error-label'
+    );
+    context.errorIdentifier =
+      Sentry.getCurrentHub().getScope().getTransaction()?.traceId ?? null;
+    res.render('error', context);
+  }
+
   async init() {
     console.log('> ⚙️ Preparing NextJS');
     await this.nextApp.prepare();
 
+    // @ts-ignore
     this.nextConfig = (await import('next/config.js')).default.default();
     const apiUrl = this.nextConfig.serverRuntimeConfig.graphqlUrl;
     const app = express();
+    /* Trust the X-Forwarded-* headers if the request is coming from
+     * local interfaces. */
+    app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
     const sentryClient = Sentry.getCurrentHub().getClient();
     if (sentryClient && sentryClient.addIntegration) {
       sentryClient.addIntegration(
@@ -429,41 +457,7 @@ export abstract class BaseServer {
       }*/
       })
     );
-    app.use((err, req, res, next) => {
-      if (res.headersSent) return next(err);
-      let context: ErrorTemplateContext;
-      if (err instanceof InstanceNotFoundError) {
-        context = {
-          title:
-            this.getMessage(defaultFallbackLanguage, 'not-found-title') ??
-            'Page not found',
-          intro:
-            this.getMessage(defaultFallbackLanguage, 'not-found-intro') ?? '',
-          apology: null,
-        };
-        res.status(404);
-      } else {
-        context = {
-          title:
-            this.getMessage(defaultFallbackLanguage, 'generic-title') ??
-            'An error was encountered',
-          intro:
-            this.getMessage(defaultFallbackLanguage, 'generic-intro') ?? '',
-          apology: this.getMessage(defaultFallbackLanguage, 'generic-apology'),
-        };
-        res.status(500);
-      }
-      if (process.env.DEPLOYMENT_TYPE !== 'production') {
-        context.fullError = err.stack?.toString() ?? err.toString();
-      }
-      context.errorLabel = this.getMessage(
-        defaultFallbackLanguage,
-        'error-label'
-      );
-      context.errorIdentifier =
-        Sentry.getCurrentHub().getScope().getTransaction()?.traceId ?? null;
-      res.render('error', context);
-    });
+    app.use(this.handleError.bind(this));
     app.listen(port, () => {
       console.log(`> ✅ Ready on http://localhost:${port}`);
     });
