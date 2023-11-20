@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { useTheme } from 'common/theme';
@@ -26,11 +26,11 @@ import {
 } from 'common/__generated__/graphql';
 import ErrorMessage from 'components/common/ErrorMessage';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
-import ImpactDisplay from 'components/general/ImpactDisplay';
 import Icon from 'components/common/icon';
 import SubActions from 'components/general/SubActions';
 import Loader from 'components/common/Loader';
 import { ActionGoal } from 'components/general/ActionGoal';
+import { StreamField } from 'components/common/StreamField';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -115,6 +115,11 @@ const MetricsParameters = styled.div`
   margin-bottom: 1rem;
 `;
 
+const ActionBodyContainer = styled.div`
+  background-color: ${({ theme }) => theme.cardBackground.primary};
+  padding: ${({ theme }) => theme.spaces.s200};
+`;
+
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -123,7 +128,9 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
-  const [activeSubAction, setActiveSubAction] = useState(undefined);
+  const [activeSubAction, setActiveSubAction] = useState<string | undefined>(
+    undefined
+  );
   const theme = useTheme();
 
   const queryResp = useQuery<
@@ -173,6 +180,34 @@ export default function ActionPage() {
   const flowPlot = action.dimensionalFlow && (
     <DimensionalPlot flow={action.dimensionalFlow} />
   );
+
+  const renderSubActionsOrBody = () => {
+    if (subActions.length) {
+      return (
+        <Container fluid="lg">
+          <SubActions
+            actions={subActions}
+            activeSubAction={activeSubAction}
+            setActiveSubAction={(subAction: string) =>
+              setActiveSubAction(subAction)
+            }
+          />
+        </Container>
+      );
+    }
+
+    if (action.body?.length) {
+      return (
+        <Container fluid="lg">
+          <ActionBodyContainer>
+            {action.body.map((block, i) => (
+              <StreamField key={i} block={block} />
+            ))}
+          </ActionBodyContainer>
+        </Container>
+      );
+    }
+  };
 
   // if action is simple, has just one output node and no subactions, use first downstream node for graph
   const outputNodes = action.downstreamNodes.filter((node) =>
@@ -284,17 +319,9 @@ export default function ActionPage() {
       </HeaderSection>
       <Container fluid="lg" style={{ position: 'relative' }}>
         {loading && <Loader />}
-        <ActionPlotCard>{actionPlot}</ActionPlotCard>
+        {!!actionPlot && <ActionPlotCard>{actionPlot}</ActionPlotCard>}
       </Container>
-      {subActions.length > 0 && (
-        <Container fluid="lg">
-          <SubActions
-            actions={subActions}
-            activeSubAction={activeSubAction}
-            setActiveSubAction={setActiveSubAction}
-          />
-        </Container>
-      )}
+      {renderSubActionsOrBody()}
       {causalNodes &&
         causalNodes.length > 0 &&
         !theme.settings.hideActionGrid && (

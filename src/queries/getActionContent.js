@@ -18,6 +18,9 @@ const GET_ACTION_CONTENT = gql`
         ...CausalGridNode
       }
       decisionLevel
+      body {
+        ...StreamFieldFragment
+      }
       subactions {
         id
         name

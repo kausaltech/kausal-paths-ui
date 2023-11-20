@@ -688,7 +688,25 @@ export type GetActionContentQuery = (
         & { __typename: 'ForecastMetricType' }
       ) | null }
       & { __typename: 'Node' }
-    )>, subactions: Array<(
+    )>, body: Array<(
+      { id: string | null, blockType: string, field: string }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+    ) | (
+      { id: string | null, blockType: string, field: string }
+      & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+    ) | (
+      { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
+        { title: string | null, shortDescription: string | null }
+        & { __typename: 'CardListCardBlock' }
+      ) | null> | null }
+      & { __typename: 'CardListBlock' }
+    ) | (
+      { value: string, rawValue: string, id: string | null, blockType: string, field: string }
+      & { __typename: 'RichTextBlock' }
+    ) | (
+      { value: string, id: string | null, blockType: string, field: string }
+      & { __typename: 'TextBlock' }
+    )> | null, subactions: Array<(
       { id: string, name: string, description: string | null, goal: any | null, shortDescription: any | null, isEnabled: boolean, isVisible: boolean, parameters: Array<(
         { id: string }
         & { __typename: 'BoolParameterType' | 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
