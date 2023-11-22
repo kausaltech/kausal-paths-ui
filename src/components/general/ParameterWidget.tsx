@@ -18,7 +18,6 @@ import {
 
 const RangeWrapper = styled.div`
   display: flex;
-  min-width: 240px;
   max-width: 320px;
 `;
 
@@ -56,6 +55,10 @@ const Thumb = styled.div<{ $dragged: boolean }>`
   justify-content: center;
   align-items: center;
   box-shadow: 0px 2px 6px #aaa;
+`;
+
+const StyledResetButton = styled(Button)`
+  padding: 0;
 `;
 
 const SET_PARAMETER = gql`
@@ -112,7 +115,7 @@ const NumberWidget = (props) => {
 
   const Reset = () =>
     defaultValue !== null ? (
-      <Button
+      <StyledResetButton
         id="reset-button"
         color="link"
         size="sm"
@@ -122,7 +125,7 @@ const NumberWidget = (props) => {
         }
       >
         <Icon name="version" />
-      </Button>
+      </StyledResetButton>
     ) : null;
 
   return (
@@ -181,8 +184,8 @@ const NumberWidget = (props) => {
         />
         <RangeValue>
           {`${values[0].toFixed(0)} ${unit?.htmlShort || ''}`}
-          {isCustomized ? <Reset /> : null}
         </RangeValue>
+        {isCustomized ? <Reset /> : null}
       </RangeWrapper>
     </WidgetWrapper>
   );
