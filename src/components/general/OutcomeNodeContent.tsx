@@ -144,19 +144,24 @@ const OutcomeNodeContent = ({
   const unit = node.metric?.unit?.htmlLong || node.metric?.unit?.htmlShort;
 
   const outcomeGraph = useMemo(
-    () => (
-      <DimensionalNodePlot
-        node={node}
-        metric={node.metricDim!}
-        startYear={startYear}
-        endYear={endYear}
-        color={color}
-        withControls={false}
-        baselineForecast={node.metric?.baselineForecastValues ?? undefined}
-        withReferenceYear
-        withTools={false}
-      />
-    ),
+    () =>
+      node.metricDim ? (
+        <DimensionalNodePlot
+          node={node}
+          metric={node.metricDim!}
+          startYear={startYear}
+          endYear={endYear}
+          color={color}
+          withControls={false}
+          baselineForecast={node.metric?.baselineForecastValues ?? undefined}
+          withReferenceYear
+          withTools={false}
+        />
+      ) : (
+        <h5>
+          {t('time-series')}, {t('coming-soon')}
+        </h5>
+      ),
     [node, subNodes, color, startYear, endYear]
   );
 
