@@ -93,5 +93,7 @@
   "error-occurred": "Virhe tapahtui",
   "page-not-found": "Sivua ei löydy",
   "error-with-code": "Virhekoodi {{code}}",
-  "show-error": "Näytä virhe"
+  "show-error": "Näytä virhe",
+  "thumbSliderLabel": "Säädä",
+  "reset-button": "Nollaa"
 }

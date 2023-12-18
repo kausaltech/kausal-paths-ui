@@ -91,5 +91,7 @@
   "error-occurred": "Ein Fehler ist aufgetreten",
   "page-not-found": "Seite nicht gefunden",
   "error-with-code": "Fehler mit Code {{code}}",
-  "show-error": "Fehler anzeigen"
+  "show-error": "Fehler anzeigen",
+  "thumbSliderLabel": "Anpassen",
+  "reset-button": "Zurücksetzen"
 }

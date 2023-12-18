@@ -87,6 +87,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumberWidget = (props) => {
+  const { t } = useTranslation();
   const {
     id,
     initialValue,
@@ -123,6 +124,7 @@ const NumberWidget = (props) => {
         onClick={() =>
           handleChange({ parameterId: id, numberValue: defaultValue })
         }
+        aria-label={t('reset-button')}
       >
         <Icon name="version" />
       </StyledResetButton>
@@ -179,6 +181,7 @@ const NumberWidget = (props) => {
                 ...props.style,
               }}
               color={theme.brandDark}
+              aria-label={t('thumbSliderLabel')}
             />
           )}
         />
