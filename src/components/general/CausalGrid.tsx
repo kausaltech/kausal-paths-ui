@@ -106,6 +106,9 @@ const ActionDescription = styled.div`
   max-width: ${({ theme }) => theme.breakpointSm};
   a {
     text-decoration: underline;
+    &:hover {
+      text-decoration: none;
+    }
   }
 `;
 

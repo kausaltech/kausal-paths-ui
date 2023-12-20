@@ -49,6 +49,9 @@ const Description = styled.div`
 
   a {
     text-decoration: underline;
+    &:hover {
+      text-decoration: none;
+    }
   }
 `;
 
