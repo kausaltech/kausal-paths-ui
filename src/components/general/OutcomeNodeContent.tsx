@@ -40,7 +40,9 @@ const ContentWrapper = styled.div`
   border-radius: 0;
   border: 1px solid ${(props) => props.theme.graphColors.grey010};
   border-top: 0;
-
+  &:focus {
+    outline: 2px solid ${(props) => props.theme.graphColors.grey010};
+  }
   .x2sstick text,
   .xtick text {
     text-anchor: end !important;
@@ -316,7 +318,7 @@ const OutcomeNodeContent = ({
             </ContentWrapper>
           )}
           {activeTabId === 'table' && (
-            <ContentWrapper>
+            <ContentWrapper tabIndex={0}>
               <DataTable
                 node={node}
                 subNodes={subNodes}

@@ -259,6 +259,7 @@ function SelectDropdown<
         </Label>
       )}
       <Select
+        aria-label={label}
         isMulti={isMulti}
         components={getCustomComponents<Option, IsMulti, Group>(isMulti)}
         theme={getSelectTheme}
@@ -277,7 +278,7 @@ function SelectDropdown<
             />
           );
           if (context === 'value' || !indent) return highlighted;
-          let spans: JSX.Element[] = [];
+          const spans: JSX.Element[] = [];
           for (let i = 0; i < indent; i++) {
             spans.push(
               <span

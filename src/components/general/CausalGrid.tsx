@@ -104,6 +104,12 @@ const GoalCard = styled.div`
 
 const ActionDescription = styled.div`
   max-width: ${({ theme }) => theme.breakpointSm};
+  a {
+    text-decoration: underline;
+    &:hover {
+      text-decoration: none;
+    }
+  }
 `;
 
 const NodePlotCard = styled.div`

@@ -100,5 +100,7 @@
   "do-not-show-again": "Don't show again",
   "close": "Close",
   "coming-soon": "Coming soon",
-  "error-with-code": "Error code {{code}}"
+  "error-with-code": "Error code {{code}}",
+  "thumbSliderLabel": "Adjust",
+  "reset-button": "Reset"
 }

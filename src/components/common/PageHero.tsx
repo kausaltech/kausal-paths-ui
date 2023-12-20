@@ -46,6 +46,13 @@ const Description = styled.div`
   p:last-child {
     margin-bottom: 0;
   }
+
+  a {
+    text-decoration: underline;
+    &:hover {
+      text-decoration: none;
+    }
+  }
 `;
 
 type Props = {
