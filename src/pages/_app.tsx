@@ -257,6 +257,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
       parameters: data.parameters,
       menuPages: data.menuPages,
       title: instance.name!,
+      owner: instance.owner!,
       apolloConfig,
       availableNormalizations: data.availableNormalizations,
       referenceYear: instance.referenceYear ?? null,

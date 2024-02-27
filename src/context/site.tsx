@@ -19,6 +19,7 @@ export type SiteContextType = {
   referenceYear: number | null;
   targetYear: number;
   latestMetricYear: number;
+  owner: string | null;
 
   scenarios: SiteContextScenario[];
   availableNormalizations: GetInstanceContextQuery['availableNormalizations'];
