@@ -2,14 +2,14 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-### Initial setup
+### Initial setup and subsequent updates
 
 1. Install nvm if you don't have it yet.
-2. Activate the right node version
+2. Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
 
-   ```bash
-   nvm use
-   ```
+```bash
+nvm use
+```
 
 3. Make sure the npm version is controlled with corepack:
 
@@ -17,26 +17,32 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 corepack enable npm
 ```
 
-3. If you need access to the Kausal private themes, login to https://npm.kausal.tech
-   using your Google credentials, copy the line with `npm config set ...` from
-   the settings dialog, and execute it in your shell. Ensure the `@kausal` scope
-   is associated with that registry by running:
+4. If you need access to the Kausal private themes:
+
+4.1. remove the cookie(s) with npm.kausal.tech from your browser's cookie history.
+
+4.2. login to https://npm.kausal.tech
+      using your Google credentials, copy the line with `npm config set ...` from
+      the settings dialog, and execute it in your shell. Ensure the `@kausal` scope
+      is associated with that registry by running:
 
 ```bash
 echo '@kausal:registry=https://npm.kausal.tech/' >> ~/.npmrc
 ```
 
-4. Install dependencies:
+5. Install dependencies:
 
 ```bash
 npm i
 ```
 
-5. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+   Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
 
-   ```
-   DEFAULT_GRAPHQL_API_URL=
-   ```
+6. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+
+```
+DEFAULT_GRAPHQL_API_URL=
+```
 
 ### Running the local dev server
 
