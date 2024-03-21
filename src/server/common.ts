@@ -269,6 +269,13 @@ export abstract class BaseServer {
       res.status(200).send('OK');
       return;
     }
+
+    // Pass API requests through without any processing
+    if (req.currentURL.path.startsWith('/api/')) {
+      await this.nextHandleRequest(req, res);
+      return;
+    }
+
     let ctx: RequestContext | null;
     try {
       ctx = await this.getRequestContext(req, res);

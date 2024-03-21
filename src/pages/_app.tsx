@@ -229,6 +229,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     authorizationToken: req.user?.idToken,
     clientIp: null,
     currentURL: req.currentURL,
+    clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
   };
   const apolloClient: ApolloClient<object> = initializeApollo(
     null,
@@ -336,6 +337,7 @@ type PathsAppRequest = AppContext['ctx']['req'] & {
     path: string;
     hostname: string;
   };
+  apiCookies?: string[];
   user?: {
     idToken: string;
   };

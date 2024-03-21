@@ -57,6 +57,7 @@ export type ApolloClientOpts = {
     baseURL: string;
     path: string;
   };
+  clientCookies?: string;
 };
 
 function getHttpHeaders(opts: ApolloClientOpts) {
@@ -66,6 +67,7 @@ function getHttpHeaders(opts: ApolloClientOpts) {
     authorizationToken,
     currentURL,
     clientIp,
+    clientCookies,
   } = opts;
   const headers = {};
 
@@ -82,8 +84,13 @@ function getHttpHeaders(opts: ApolloClientOpts) {
     const { baseURL, path } = currentURL;
     headers['referer'] = baseURL + path;
   }
-  if (clientIp && !process.browser) {
-    headers['x-forwarded-for'] = clientIp;
+  if (!process.browser) {
+    if (clientIp) {
+      headers['x-forwarded-for'] = clientIp;
+    }
+    if (clientCookies) {
+      headers['cookie'] = clientCookies;
+    }
   }
   return headers;
 }

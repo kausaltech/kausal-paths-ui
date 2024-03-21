@@ -45,7 +45,7 @@ const nextConfig = {
     graphqlUrl: process.env.SERVER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
   },
   publicRuntimeConfig: {
-    graphqlUrl: process.env.BROWSER_GRAPHQL_API_URL || DEFAULT_GRAPHQL_API_URL,
+    graphqlUrl: '/api/graphql',
     basePath: process.env.BASE_PATH,
     instanceIdentifier: INSTANCE_IDENTIFIER,
     sentryDsn: process.env.SENTRY_DSN,
