@@ -38,6 +38,8 @@ import {
 import { TFunction } from 'i18next';
 import { useInstance } from 'common/instance';
 import { PageHero } from 'components/common/PageHero';
+import { CostBenefitAnalysis } from 'components/general/CostBenefitAnalysis';
+import { ReturnOnInvestment } from 'components/general/ReturnOnInvestment';
 
 const SettingsForm = styled.form`
   display: block;
@@ -140,12 +142,44 @@ const getSortOptions = (
   },
 ];
 
+type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi';
+
 type ActionListPageProps = {
   page: NonNullable<GetPageQuery['page']> & {
     __typename: 'ActionListPage';
   };
   refetch: PageRefetchCallback;
 };
+
+type ActionPageTabProps = {
+  tabId: ViewType;
+  label: string;
+  isActive: boolean;
+  onSelectTab: (id: string) => void;
+  icon: string;
+};
+
+function ActionPageTab({
+  tabId,
+  label,
+  isActive,
+  onSelectTab,
+  icon,
+}: ActionPageTabProps) {
+  return (
+    <Tab
+      className={`nav-link ${isActive ? 'active' : ''}`}
+      onClick={() => onSelectTab(tabId)}
+      role="tab"
+      tabIndex={0}
+      aria-selected={isActive}
+      aria-controls="tabId"
+      id="list-tab"
+    >
+      <Icon name={icon} /> {label}
+    </Tab>
+  );
+}
 
 function ActionListPage({ page }: ActionListPageProps) {
   const { t } = useTranslation();
@@ -173,7 +207,11 @@ function ActionListPage({ page }: ActionListPageProps) {
     !!instance.features.showAccumulatedEffects
   );
 
-  const [listType, setListType] = useState('list');
+  // TODO: Get this from Wagtail
+  const showCostBenefitAnalysis = true;
+  const showReturnOnInvestment = true;
+
+  const [listType, setListType] = useState<ViewType>('list');
   const [ascending, setAscending] = useState(true);
   const [sortBy, setSortBy] = useState<SortActionsConfig>(
     sortOptions.find(
@@ -423,43 +461,50 @@ function ActionListPage({ page }: ActionListPageProps) {
       <ActionsViewTabs>
         <Container fluid="lg">
           <div role="tablist">
-            <Tab
-              className={`nav-link ${listType === 'list' ? 'active' : ''}`}
-              onClick={() => setListType('list')}
-              role="tab"
-              tabIndex={0}
-              aria-selected={listType === 'list'}
-              aria-controls="list-view"
-              id="list-tab"
-            >
-              <Icon name="grid" /> {t('actions-as-list')}
-            </Tab>
+            <ActionPageTab
+              tabId="list"
+              isActive={listType === 'list'}
+              label={t('actions-as-list')}
+              onSelectTab={() => setListType('list')}
+              icon="grid"
+            />
+
             {hasEfficiency ? (
-              <Tab
-                className={`nav-link ${listType === 'mac' ? 'active' : ''}`}
-                onClick={() => setListType('mac')}
-                role="tab"
-                tabIndex={0}
-                aria-selected={listType === 'mac'}
-                aria-controls="efficiency-view"
-                id="list-tab"
-              >
-                <Icon name="chartColumn" /> {t('actions-as-efficiency')}
-              </Tab>
+              <ActionPageTab
+                tabId="mac"
+                isActive={listType === 'mac'}
+                label={t('actions-as-efficiency')}
+                onSelectTab={() => setListType('mac')}
+                icon="chartColumn"
+              />
             ) : (
-              <Tab
-                className={`nav-link ${
-                  listType === 'comparison' ? 'active' : ''
-                }`}
-                onClick={() => setListType('comparison')}
-                role="tab"
-                tabIndex={0}
-                aria-selected={listType === 'comparison'}
-                aria-controls="comparison-view"
-                id="list-tab"
-              >
-                <Icon name="chartColumn" /> {t('actions-as-comparison')}
-              </Tab>
+              <ActionPageTab
+                tabId="comparison"
+                isActive={listType === 'comparison'}
+                label={t('actions-as-comparison')}
+                onSelectTab={() => setListType('comparison')}
+                icon="chartColumn"
+              />
+            )}
+
+            {showCostBenefitAnalysis && (
+              <ActionPageTab
+                tabId="cost-benefit"
+                isActive={listType === 'cost-benefit'}
+                label={t('cost-benefit')}
+                onSelectTab={() => setListType('cost-benefit')}
+                icon="chartColumn"
+              />
+            )}
+
+            {showReturnOnInvestment && (
+              <ActionPageTab
+                tabId="roi"
+                isActive={listType === 'roi'}
+                label={t('return-on-investment')}
+                onSelectTab={() => setListType('roi')}
+                icon="chartColumn"
+              />
             )}
           </div>
         </Container>
@@ -492,6 +537,10 @@ function ActionListPage({ page }: ActionListPageProps) {
                 refetching={loading}
               />
             )}
+            {listType === 'cost-benefit' && (
+              <CostBenefitAnalysis isLoading={loading} />
+            )}
+            {listType === 'roi' && <ReturnOnInvestment isLoading={loading} />}
             {listType === 'comparison' && (
               <ActionsComparison
                 id="comparison-view"

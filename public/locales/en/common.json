@@ -106,5 +106,8 @@
   "coming-soon": "Coming soon",
   "error-with-code": "Error code {{code}}",
   "thumbSliderLabel": "Adjust",
-  "reset-button": "Reset"
+  "reset-button": "Reset",
+  "cost-benefit": "Cost-benefit",
+  "cost-benefit-analysis": "Cost-benefit analysis",
+  "return-on-investment": "Return on investment"
 }
