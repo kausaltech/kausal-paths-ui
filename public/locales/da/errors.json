@@ -1,9 +1,9 @@
 {
-  "generic-title": "An error was encountered",
-  "generic-intro": "Oops! We are experiencing some technical difficulties at the moment and are unable to display the requested page. Our team has been notified.",
-  "generic-apology": "We apologize for any inconvenience this may cause. Please try again later, and thank you for your patience.",
-  "error-label": "Error code",
-  "not-found-title": "Page not found",
-  "not-found-intro": "404 Not found.",
-  "network-error": "Network error"
+  "generic-title": "Der opstod en fejl",
+  "generic-intro": "Ups! Vi oplever nogle tekniske vanskeligheder i øjeblikket og kan ikke vise den ønskede side. Vores team er blevet underrettet.",
+  "generic-apology": "Vi beklager eventuelle ulejligheder, dette kan medføre. Prøv venligst igen senere, og tak for din tålmodighed.",
+  "error-label": "Fejlkode",
+  "not-found-title": "Side ikke fundet",
+  "not-found-intro": "404 Ikke fundet.",
+  "network-error": "Netværksfejl"
 }
