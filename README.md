@@ -46,7 +46,7 @@ Start the development server with:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Note: The address mentioned may differ depending on the instance you are using. For example, it could be something like `http://sunnydale.localhost:3000`.
 
 ## Development
 
