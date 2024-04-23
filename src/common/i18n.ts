@@ -7,6 +7,10 @@ import numbroEnGb from 'numbro/dist/languages/en-GB.min.js';
 import numbroFi from 'numbro/dist/languages/fi-FI.min.js';
 import numbroDe from 'numbro/dist/languages/de-DE.min.js';
 import numbroDeCh from 'numbro/dist/languages/de-CH.min.js';
+import numbroCs from 'numbro/dist/languages/cs-CZ.min.js';
+import numbroDa from 'numbro/dist/languages/da-DK.min.js';
+import numbroLv from 'numbro/dist/languages/lv-LV.min.js';
+import numbroPl from 'numbro/dist/languages/pl-PL.min.js';
 
 const numbroLangs = {
   de: numbroDe,
@@ -14,6 +18,10 @@ const numbroLangs = {
   'de-CH': numbroDeCh,
   'en-GB': numbroEnGb,
   fi: numbroFi,
+  cs: numbroCs,
+  da: numbroDa,
+  lv: numbroLv,
+  pl: numbroPl,
 };
 
 Object.entries(numbroLangs).forEach(([lang, conf]) => {

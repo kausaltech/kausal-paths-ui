@@ -60,6 +60,10 @@ const languageNames = {
   en: 'English',
   de: 'Deutsch',
   sv: 'Svenska',
+  cs: 'Čeština',
+  da: 'Dansk',
+  lv: 'Latviešu',
+  pl: 'Polski',
 };
 
 function LanguageSelector({ mobile }: { mobile: boolean }) {
