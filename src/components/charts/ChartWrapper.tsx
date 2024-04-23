@@ -11,17 +11,29 @@ const StyledCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
+const StyledSubtitle = styled.p`
+  color: ${({ theme }) => theme.textColor.secondary};
+`;
+
 type Props = {
   id?: string;
   title?: string;
+  subtitle?: string;
   isLoading: boolean;
   children: ReactNode;
 };
 
-export function ChartWrapper({ id, title, isLoading, children }: Props) {
+export function ChartWrapper({
+  id,
+  title,
+  subtitle,
+  isLoading,
+  children,
+}: Props) {
   return (
     <StyledCard id={id}>
       {!!title && <h3>{title}</h3>}
+      {!!subtitle && <StyledSubtitle>{subtitle}</StyledSubtitle>}
       {isLoading && <Loader />}
       {children}
     </StyledCard>

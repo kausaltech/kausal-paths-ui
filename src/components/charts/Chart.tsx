@@ -105,18 +105,24 @@ const option: EChartsCoreOption = {
   ],
 };
 
-const StyledChartWrapper = styled.div`
-  height: 400px;
+const StyledChartWrapper = styled.div<{ $height?: string }>`
+  height: ${({ $height }) => $height || '400px'};
 `;
 
-export function Chart() {
+type Props = {
+  isLoading: boolean;
+  data?: EChartsCoreOption;
+  height?: string;
+};
+
+export function Chart({ isLoading, data, height }: Props) {
   const theme = useTheme();
+  const chartRef = useRef<echarts.ECharts | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const chart = echarts.init(wrapperRef.current, getChartTheme(theme).theme);
-
-    chart.setOption(option);
+    chartRef.current = chart;
 
     const throttledResize = throttle(() => chart.resize(), 1000, {
       leading: false,
@@ -133,5 +139,21 @@ export function Chart() {
     };
   }, [theme]);
 
-  return <StyledChartWrapper ref={wrapperRef}></StyledChartWrapper>;
+  useEffect(() => {
+    if (chartRef.current) {
+      if (isLoading) {
+        chartRef.current.showLoading();
+      } else {
+        chartRef.current.hideLoading();
+      }
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (chartRef.current && data) {
+      chartRef.current.setOption(data);
+    }
+  }, [data]);
+
+  return <StyledChartWrapper ref={wrapperRef} $height={height} />;
 }
