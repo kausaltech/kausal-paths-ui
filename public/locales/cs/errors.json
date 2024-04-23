@@ -1,0 +1,9 @@
+{
+  "generic-title": "Došlo k chybě",
+  "generic-intro": "Jejda! V tuto chvíli máme některé technické potíže a nemůžeme zobrazit požadovanou stránku. Náš tým byl informován.",
+  "generic-apology": "Omlouváme se za případné nepříjemnosti, které to může způsobit. Zkuste to prosím později a děkujeme za vaši trpělivost.",
+  "error-label": "Kód chyby",
+  "not-found-title": "Stránka nenalezena",
+  "not-found-intro": "404 Nenalezeno.",
+  "network-error": "Chyba sítě"
+}

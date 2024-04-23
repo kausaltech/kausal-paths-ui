@@ -1,0 +1,9 @@
+{
+  "generic-title": "Napotkano błąd",
+  "generic-intro": "Ups! W tej chwili mamy pewne problemy techniczne i nie możemy wyświetlić żądanej strony. Nasz zespół został powiadomiony.",
+  "generic-apology": "Przepraszamy za wszelkie niedogodności, jakie może to spowodować. Prosimy spróbować później i dziękujemy za cierpliwość.",
+  "error-label": "Kod błędu",
+  "not-found-title": "Nie znaleziono strony",
+  "not-found-intro": "404 Nie znaleziono.",
+  "network-error": "Błąd sieci"
+}
