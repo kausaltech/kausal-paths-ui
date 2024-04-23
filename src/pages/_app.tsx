@@ -274,7 +274,10 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     };
   } catch (error) {
     if (isApolloError(error)) {
-      console.error('Got Apollo error while fetching instance context');
+      console.error(
+        'Got Apollo error while fetching instance context',
+        JSON.stringify(error, null, 2)
+      );
       const isProtected = error.graphQLErrors.find(
         (err) => err.extensions?.code == 'instance_protected'
       );

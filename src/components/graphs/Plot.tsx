@@ -1,3 +1,4 @@
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'next-i18next';
 import type { PlotParams } from 'react-plotly.js';
 import createPlotlyComponent from 'react-plotly.js/factory';
@@ -6,14 +7,12 @@ import fi from 'plotly.js-locales/fi';
 import sv from 'plotly.js-locales/sv';
 import de from 'plotly.js-locales/de';
 import de_ch from 'plotly.js-locales/de-ch';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import cs from 'plotly.js-locales/cs';
+import da from 'plotly.js-locales/da';
+import lv from 'plotly.js-locales/lv';
+import pl from 'plotly.js-locales/pl';
 
-const locales = {
-  fi,
-  sv,
-  de,
-  'de-CH': de_ch,
-};
+const locales = { fi, sv, de, 'de-CH': de_ch, cs, da, lv, pl };
 
 const PlotlyPlot = createPlotlyComponent(Plotly);
 
@@ -31,18 +30,32 @@ const Plot = (props: PlotProps) => {
 
   config.locales = locales;
   config.locale = lang;
-  if (lang == 'fi') {
-    separators = ', ';
-  } else if (lang == 'sv') {
-    separators = '.,';
-  } else if (lang == 'en') {
-    separators = '.,';
-  } else if (lang == 'de') {
-    config.locale = 'de';
-    separators = ',.';
-  } else if (lang == 'de-CH') {
-    config.locale = 'de-CH';
-    separators = ".'";
+
+  switch (lang) {
+    case 'fi':
+      separators = ', ';
+      break;
+    case 'de':
+      config.locale = 'de';
+      separators = ',.';
+      break;
+    case 'de-CH':
+      config.locale = 'de-CH';
+      separators = ".'";
+      break;
+    case 'cs':
+    case 'da':
+    case 'pl':
+      separators = '.,';
+      break;
+    case 'lv':
+      separators = ',.';
+      break;
+    case 'sv':
+    case 'en':
+    default:
+      separators = '.,';
+      break;
   }
 
   config.responsive = true;

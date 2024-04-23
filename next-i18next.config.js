@@ -1,4 +1,14 @@
-const SUPPORTED_LANGUAGES = ['en', 'fi', 'sv', 'de', 'de-CH'];
+const SUPPORTED_LANGUAGES = [
+  'en',
+  'fi',
+  'sv',
+  'de',
+  'de-CH',
+  'cs',
+  'da',
+  'lv',
+  'pl',
+];
 
 /**
  * @type {import('next-i18next').UserConfig}
