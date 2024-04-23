@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import { summarizeYearlyValuesBetween } from 'common/preprocess';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
@@ -26,6 +26,7 @@ import ActionsList from 'components/general/ActionsList';
 import {
   GetActionListQuery,
   GetActionListQueryVariables,
+  GetImpactOverviewsQuery,
   GetPageQuery,
 } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
@@ -40,6 +41,7 @@ import { useInstance } from 'common/instance';
 import { PageHero } from 'components/common/PageHero';
 import { CostBenefitAnalysis } from 'components/general/CostBenefitAnalysis';
 import { ReturnOnInvestment } from 'components/general/ReturnOnInvestment';
+import { GET_IMPACT_OVERVIEWS } from 'queries/getImpactOverviews';
 
 const SettingsForm = styled.form`
   display: block;
@@ -159,6 +161,15 @@ type ActionPageTabProps = {
   icon: string;
 };
 
+function hasGraph(
+  impactResponse: QueryResult<GetImpactOverviewsQuery>,
+  graphType: string
+) {
+  return !!impactResponse.data?.impactOverviews.find(
+    (overview) => overview.graphType === graphType
+  );
+}
+
 function ActionPageTab({
   tabId,
   label,
@@ -185,31 +196,36 @@ function ActionListPage({ page }: ActionListPageProps) {
   const { t } = useTranslation();
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
-    GET_ACTION_LIST,
-    {
-      variables: {
-        goal: activeGoal?.id,
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
-  const { error, loading, previousData } = queryResp;
+
+  const impactResp = useQuery<GetImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const actionListResp = useQuery<
+    GetActionListQuery,
+    GetActionListQueryVariables
+  >(GET_ACTION_LIST, {
+    variables: {
+      goal: activeGoal?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+  const error = actionListResp.error || impactResp.error;
+
+  const { loading: areActionsLoading, previousData } = actionListResp;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const data = queryResp.data ?? previousData;
+  const data = actionListResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
+  const showReturnOnInvestment = hasGraph(impactResp, 'return_of_investment');
+  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit');
 
   const sortOptions = getSortOptions(
     t,
     hasEfficiency,
     !!instance.features.showAccumulatedEffects
   );
-
-  // TODO: Get this from Wagtail
-  const showCostBenefitAnalysis = true;
-  const showReturnOnInvestment = true;
 
   const [listType, setListType] = useState<ViewType>('list');
   const [ascending, setAscending] = useState(true);
@@ -225,14 +241,14 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   // Different default view if we have action efficiency pairs
   useEffect(() => {
-    if (loading === false && data && hasEfficiency) {
+    if (areActionsLoading === false && data && hasEfficiency) {
       setListType('mac');
       setSortBy(
         sortOptions.find((option) => option.key === 'CUM_EFFICIENCY') ??
           sortOptions[0]
       );
     }
-  }, [loading, data, hasEfficiency]);
+  }, [areActionsLoading, data, hasEfficiency]);
 
   const filteredActions = (data?.actions || []).filter(
     (action) =>
@@ -520,7 +536,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
-                refetching={loading}
+                refetching={areActionsLoading}
               />
             )}
             {listType === 'mac' && (
@@ -534,13 +550,18 @@ function ActionListPage({ page }: ActionListPageProps) {
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}
                 sortAscending={ascending}
-                refetching={loading}
+                refetching={areActionsLoading}
               />
             )}
             {listType === 'cost-benefit' && (
-              <CostBenefitAnalysis isLoading={loading} />
+              <CostBenefitAnalysis isLoading={areActionsLoading} />
             )}
-            {listType === 'roi' && <ReturnOnInvestment isLoading={loading} />}
+            {listType === 'roi' && (
+              <ReturnOnInvestment
+                data={impactResp.data}
+                isLoading={impactResp.loading}
+              />
+            )}
             {listType === 'comparison' && (
               <ActionsComparison
                 id="comparison-view"
@@ -548,7 +569,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}
                 sortAscending={ascending}
-                refetching={loading}
+                refetching={areActionsLoading}
                 displayYears={yearRange}
               />
             )}

@@ -1,16 +1,14 @@
 import { ChartWrapper } from 'components/charts/ChartWrapper';
 import { Chart } from 'components/charts/Chart';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useReactiveVar } from '@apollo/client';
-import { GET_IMPACT_OVERVIEWS } from 'queries/getImpactOverviews';
+import { useReactiveVar } from '@apollo/client';
 import { GetImpactOverviewsQuery } from 'common/__generated__/graphql';
 import { yearRangeVar } from 'common/cache';
 import { EChartsCoreOption } from 'echarts';
 import { useMemo } from 'react';
+import round from 'lodash/round';
 
-const labelRight = {
-  position: 'right',
-} as const;
+const formatPercentage = (value: number) => `${round(value, 2)} %`;
 
 function getChartData(
   activeYear: number,
@@ -20,10 +18,12 @@ function getChartData(
     (dataset) => dataset.graphType === 'return_of_investment'
   );
 
+  console.log(dataset);
+
   return {
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (value) => `${value} %`,
+      valueFormatter: formatPercentage,
     },
     grid: {
       containLabel: true,
@@ -48,6 +48,15 @@ function getChartData(
     },
     series: [
       {
+        label: {
+          show: true,
+          align: 'left',
+          position: 'right',
+          formatter(params) {
+            const value = params.value[params.encode.x[0]];
+            return formatPercentage(value);
+          },
+        },
         type: 'bar',
         encode: {
           x: activeYear.toString(),
@@ -71,7 +80,6 @@ function getChartData(
                 action.action.name,
                 ...action.costDim.values,
               ]),
-              // ['action', '2010', '2030'],
               // ['Set policies to support EV charging', 40, 86],
               // ['Build safe parking space for bicycles', 10, 62],
               // ['The city builds EV charging infrastructure', 2, 44],
@@ -89,53 +97,19 @@ function getChartData(
           },
         ]
       : [],
-    //   series: [
-    //     {
-    //       name: 'Return on investment',
-    //       type: 'bar',
-    //       stack: 'Total',
-    //       label: {
-    //         show: true,
-    //         formatter: '{c} %',
-    //       },
-    //       transform: {
-    //         type: 'sort',
-    //         config: { dimension: 'score', order: 'desc' },
-    //       },
-    //       data: [
-    //         { value: 86, label: labelRight },
-    //         { value: 62, label: labelRight },
-    //         { value: 44, label: labelRight },
-    //         { value: 6, label: labelRight },
-    //         { value: -6, label: labelRight },
-    //         { value: -21, label: labelRight },
-    //         { value: -39, label: labelRight },
-    //       ],
-    //     },
-    //   ],
   };
 }
 
 type Props = {
+  data?: GetImpactOverviewsQuery;
   isLoading: boolean;
 };
 
-export function ReturnOnInvestment({ isLoading }: Props) {
+export function ReturnOnInvestment({ data, isLoading }: Props) {
   const { t } = useTranslation();
   const yearRange = useReactiveVar(yearRangeVar);
-  const { error, loading, data, previousData } =
-    useQuery<GetImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
-      fetchPolicy: 'cache-and-network',
-    });
-
-  const chartData = useMemo(
-    () => getChartData(yearRange[1], data),
-    [data, yearRange[1]]
-  );
-
-  console.log('GET_IMPACT_OVERVIEWS', error, loading, data, previousData);
-  console.log('yearRange', yearRange);
-  console.log('---');
+  const endYear = yearRange[1];
+  const chartData = useMemo(() => getChartData(endYear, data), [data, endYear]);
 
   return (
     <ChartWrapper
@@ -145,7 +119,7 @@ export function ReturnOnInvestment({ isLoading }: Props) {
       }
       isLoading={isLoading}
     >
-      <Chart isLoading={isLoading || loading} data={chartData} />
+      <Chart isLoading={isLoading} data={chartData} />
     </ChartWrapper>
   );
 }
