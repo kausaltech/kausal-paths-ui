@@ -56,6 +56,21 @@ If you want to run the UI against your own backend, configure it in `.env`:
 DEFAULT_GRAPHQL_API_URL=http://127.0.0.1:8000/v1/graphql/
 ```
 
+## Deployment
+
+GitHub actions are configured to handle continuous deployment when `deployment/*` branches are updated.
+To avoid merge conflicts and ensure deployment branches stay up to date with `main`, you can push `main` directly to the deployment branch via:
+
+```bash
+git push origin main:deployment/testing
+```
+
+Swap `deployment/testing` out for any of the following depending on the environment you want to update:
+
+- `deployment/production`: The production environment used by customers and end users
+- `deployment/testing`: The test environment used by customers and end users
+- `deployment/staging`: The staging environment primarily used by Kausal, this can be used as a playground and doesn't need to be stable.
+
 ## Sentry
 
 When you call sentry-cli (which probably happens automatically when you deploy this project), you need to set an auth token. You can supply this in the environment variable `SENTRY_AUTH_TOKEN` or in a file called `.sentryclirc`, for example like this:
