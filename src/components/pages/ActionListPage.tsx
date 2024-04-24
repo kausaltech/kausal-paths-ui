@@ -219,7 +219,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   const data = actionListResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
   const showReturnOnInvestment = hasGraph(impactResp, 'return_of_investment');
-  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit');
+  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit') && false; // Disabled for now
 
   const sortOptions = getSortOptions(
     t,
@@ -517,7 +517,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionPageTab
                 tabId="roi"
                 isActive={listType === 'roi'}
-                label={t('return-on-investment')}
+                label={t('return-of-investment')}
                 onSelectTab={() => setListType('roi')}
                 icon="chartColumn"
               />
