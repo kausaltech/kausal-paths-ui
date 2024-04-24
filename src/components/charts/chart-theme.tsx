@@ -1,4 +1,5 @@
 import { Theme } from '@kausal/themes/types';
+import { transparentize } from 'polished';
 
 export function getChartTheme(theme: Theme) {
   return {
@@ -12,7 +13,13 @@ export function getChartTheme(theme: Theme) {
       textColorShow: false,
       textColor: theme.textColor,
       markTextColor: '#eeeeee',
-      color: ['#516b91', '#59c4e6', '#edafda', '#93b7e3', '#a5e7f0', '#cbb0e3'],
+      color: [
+        theme.graphColors.blue030,
+        theme.graphColors.green030,
+        theme.graphColors.red030,
+        theme.graphColors.yellow030,
+        theme.graphColors.grey030,
+      ],
       borderColor: '#ccc',
       borderWidth: 0,
       visualMapColor: ['#516b91', '#59c4e6', '#a5e7f0'],
@@ -49,8 +56,8 @@ export function getChartTheme(theme: Theme) {
           axisLabelColor: '#999999',
           splitLineShow: true,
           splitLineColor: ['#eeeeee'],
-          splitAreaShow: false,
-          splitAreaColor: ['rgba(250,250,250,0.05)', 'rgba(200,200,200,0.02)'],
+          splitAreaShow: true,
+          splitAreaColor: [transparentize(0.1, theme.brandDark), 'transparent'],
         },
         {
           type: 'category',
@@ -63,8 +70,8 @@ export function getChartTheme(theme: Theme) {
           axisLabelColor: '#333',
           splitLineShow: false,
           splitLineColor: ['#ccc'],
-          splitAreaShow: false,
-          splitAreaColor: ['rgba(250,250,250,0.3)', 'rgba(200,200,200,0.3)'],
+          splitAreaShow: true,
+          splitAreaColor: [transparentize(0.1, theme.brandDark), 'transparent'],
         },
         {
           type: 'value',
@@ -78,7 +85,7 @@ export function getChartTheme(theme: Theme) {
           splitLineShow: true,
           splitLineColor: ['#ccc'],
           splitAreaShow: false,
-          splitAreaColor: ['rgba(250,250,250,0.3)', 'rgba(200,200,200,0.3)'],
+          splitAreaColor: [transparentize(0.1, theme.brandDark), 'transparent'],
         },
         {
           type: 'log',
@@ -92,7 +99,7 @@ export function getChartTheme(theme: Theme) {
           splitLineShow: true,
           splitLineColor: ['#ccc'],
           splitAreaShow: false,
-          splitAreaColor: ['rgba(250,250,250,0.3)', 'rgba(200,200,200,0.3)'],
+          splitAreaColor: [transparentize(0.1, theme.brandDark), 'transparent'],
         },
         {
           type: 'time',
@@ -106,7 +113,7 @@ export function getChartTheme(theme: Theme) {
           splitLineShow: true,
           splitLineColor: ['#ccc'],
           splitAreaShow: false,
-          splitAreaColor: ['rgba(250,250,250,0.3)', 'rgba(200,200,200,0.3)'],
+          splitAreaColor: [transparentize(0.1, theme.brandDark), 'transparent'],
         },
       ],
       axisSeperateSetting: false,
