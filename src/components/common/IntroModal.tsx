@@ -11,6 +11,7 @@ import {
   Input,
 } from 'reactstrap';
 import styled from 'styled-components';
+import RichText from './RichText';
 
 const StyledButton = styled(Button)`
   background-color: ${(props) => props.theme.brandDark};
@@ -55,9 +56,16 @@ const StyledModalFooter = styled(ModalFooter)`
 interface IntroModalProps {
   size?: string;
   children: ReactNode;
+  title: string;
+  paragraph: string;
 }
 
-const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
+const IntroModal = ({
+  size = 'lg',
+  children,
+  title,
+  paragraph,
+}: IntroModalProps) => {
   const { t } = useTranslation();
   const [enabled, setEnabled] = useState(true);
   const [isChecked, setIsChecked] = useState(true);
@@ -86,9 +94,11 @@ const IntroModal = ({ size = 'lg', children }: IntroModalProps) => {
     <div>
       <Modal isOpen={enabled} toggle={handleClose} size={size} fade={true}>
         <StyledModalHeader toggle={handleClose}>
-          So funktioniert das Netto-Null-Cockpit
+          <RichText html={title} />
         </StyledModalHeader>
-        <ModalBody>{children}</ModalBody>
+        <ModalBody>
+          <RichText html={paragraph} />
+        </ModalBody>
         <StyledModalFooter>
           <StyledContainer>
             <FormGroup check>

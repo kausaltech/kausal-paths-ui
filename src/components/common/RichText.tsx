@@ -57,7 +57,7 @@ const StyledRichText = styled.div`
   .responsive-object {
     padding-bottom: 0 !important;
     width: 100%;
-    max-width: ${(props) => props.theme.breakpointSm};
+    max-width: ${(props) => props.theme.breakpointLg};
   }
   .responsive-object iframe {
     aspect-ratio: 16 / 9;

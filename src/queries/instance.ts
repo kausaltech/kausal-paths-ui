@@ -31,6 +31,14 @@ const GET_INSTANCE_CONTEXT = gql`
         showAccumulatedEffects
         showSignificantDigits
       }
+      introContent {
+        ... on StreamFieldInterface {
+          ... on RichTextBlock {
+            field
+            value
+          }
+        }
+      }
       goals {
         id
         label

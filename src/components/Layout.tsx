@@ -12,7 +12,6 @@ import { useCustomComponent } from './custom';
 import { useTranslation } from 'common/i18n';
 import IntroModal from './common/IntroModal';
 import { useInstance } from 'common/instance';
-import RichText from 'components/common/RichText';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -95,7 +94,22 @@ const Layout = ({ children }) => {
   const FooterComponent = useCustomComponent('Footer', Footer);
 
   const instance = useInstance();
-  const introModalEnabled = instance.id === 'zuerich';
+
+  const title = instance.introContent?.find(
+    (
+      block
+    ): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
+      block.__typename === 'RichTextBlock' && block.field === 'title'
+  )?.value;
+
+  const paragraph = instance.introContent?.find(
+    (
+      block
+    ): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
+      block.__typename === 'RichTextBlock' && block.field === 'paragraph'
+  )?.value;
+
+  const introModalEnabled = !!(title && paragraph);
 
   return (
     <>
@@ -135,16 +149,7 @@ const Layout = ({ children }) => {
       <FooterContainer>
         <FooterComponent />
       </FooterContainer>
-      {introModalEnabled && (
-        <IntroModal>
-          <RichText
-            html={`<iframe width="100%" style="aspect-ratio: 16 / 9"
-                src="https://www.youtube.com/embed/vBLbQTgZJns?autoplay=1"
-                title="Intro Video" allowFullScreen>
-              </iframe>`}
-          />
-        </IntroModal>
-      )}
+      {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
     </>
   );
 };
