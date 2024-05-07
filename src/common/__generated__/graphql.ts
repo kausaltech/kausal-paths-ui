@@ -1711,7 +1711,10 @@ export type GetInstanceContextQuery = (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
       { baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number }
       & { __typename: 'InstanceFeaturesType' }
-    ), goals: Array<(
+    ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' } | { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
+      { field: string, value: string }
+      & { __typename: 'RichTextBlock' }
+    )> | null, goals: Array<(
       { id: string, label: string | null, default: boolean, disabled: boolean, outcomeNode: (
         { id: string }
         & { __typename: 'Node' }
