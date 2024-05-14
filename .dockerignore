@@ -4,3 +4,5 @@ node_modules
 .pnp.*
 /.env*
 *~
+/.github/
+/e2e-tests/

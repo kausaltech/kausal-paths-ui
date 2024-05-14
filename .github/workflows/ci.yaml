@@ -1,69 +1,20 @@
 name: CI
 on: push
+
 jobs:
-  build_test_and_push:
-    name: Build Docker images, run tests and push to Docker registry
-    runs-on: self-hosted
-    env:
-      DOCKER_IMAGE: docker.kausal.tech/paths-ui
-      DOCKER_BUILDKIT: 1
-      BUILDKIT_PROGRESS: plain
-      DEPLOYMENT_TYPE: ''  # will be populated in a step below
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+  build:
+    uses: ./.github/workflows/build.yaml
+    secrets: inherit
 
-      - name: Check for deployment branch
-        if: startsWith(github.ref, 'refs/heads/deployment/')
-        run: |
-          echo "DEPLOYMENT_TYPE=$(echo ${{ github.ref }} | cut -d / -f 4)" >> $GITHUB_ENV
-
-      - name: Building Docker base container
-        run: |
-          docker build \
-            --build-arg NPM_REGISTRY_SERVER=${{ secrets.NPM_REGISTRY_SERVER }} \
-            --build-arg NPM_TOKEN=${{ secrets.WATCH_NPM_TOKEN }} \
-            --tag kausal-paths-ui/base \
-            --target base .
-
-      # - name: Running Jest unit tests
-      #   run: docker run --rm --entrypoint '' kausal-paths-ui/base yarn test
-
-      - name: Set Sentry authentication token
-        # if: env.DEPLOYMENT_TYPE
-        run: |
-          echo "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN" >> $GITHUB_ENV
-        env:
-          SENTRY_AUTH_TOKEN: '${{ secrets.SENTRY_AUTH_TOKEN }}'
-
-      - name: Building NextJS bundles
-        run: |
-          docker build \
-            --build-arg SENTRY_ORG=${{ secrets.SENTRY_ORG }} \
-            --build-arg SENTRY_URL=${{ secrets.SENTRY_URL }} \
-            --build-arg SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }} \
-            --build-arg GIT_REV=${{ github.sha }} \
-            --build-arg GIT_REPO=${{ github.repository }} \
-            --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
-            --tag ${{ env.DOCKER_IMAGE }} \
-            .
-
-      - name: Log into Docker registry
-        if: env.DEPLOYMENT_TYPE
-        uses: docker/login-action@v2
-        with:
-          registry: docker.kausal.tech
-          username: docker
-          # FIXME: Instead of using the password, we should probably switch to token authentication with limited scope
-          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
-      # - name: Push latest tag to Docker registry
-      #   if: github.ref == 'refs/heads/master'
-      #   run: |
-      #     docker push ${{ env.DOCKER_IMAGE }}:latest
-      - name: Tag and push to registry
-        if: env.DEPLOYMENT_TYPE
-        run: |
-          docker tag ${{ env.DOCKER_IMAGE }} ${{ env.DOCKER_IMAGE }}:${{ env.DEPLOYMENT_TYPE }}-${{ github.run_number }}
-          docker tag ${{ env.DOCKER_IMAGE }} ${{ env.DOCKER_IMAGE }}:${{ env.DEPLOYMENT_TYPE }}-latest
-          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DEPLOYMENT_TYPE }}-${{ github.run_number }}
-          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DEPLOYMENT_TYPE }}-latest
+  test:
+    needs: [build]
+    uses: ./.github/workflows/e2e-image.yaml
+    with:
+      image: ${{ needs.build.outputs.image }}:${{ needs.build.outputs.image_tag }}
+      instance_identifiers: sunnydale
+      backend_base_url: https://api.paths.kausal.tech/v1
+      frontend_base_url: https://sunnydale.paths.kausal.tech
+      build_id: ${{ needs.build.outputs.build_id }}
+      s3_endpoint: ${{ vars.BUILD_S3_ENDPOINT }}
+      s3_bucket: ${{ vars.BUILD_S3_BUCKET }}
+    secrets: inherit

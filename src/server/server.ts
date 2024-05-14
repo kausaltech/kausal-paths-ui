@@ -14,6 +14,17 @@ import type {
 } from 'common/__generated__/graphql.js';
 import { ServerAuth } from './auth.js';
 
+// FIXME: This duplicates code from src/utils/environment.ts, but I couldn't figure out how to import it without
+// errors
+const isLocal = process.env.NODE_ENV === 'development';
+const wildcardDomains = process.env.NEXT_PUBLIC_WILDCARD_DOMAINS
+  ? process.env.NEXT_PUBLIC_WILDCARD_DOMAINS.split(',').map((s) =>
+      s.toLowerCase()
+    )
+  : isLocal
+  ? ['localhost']
+  : [];
+
 const GET_AVAILABLE_INSTANCES = gql`
   query GetAvailableInstances($hostname: String!) {
     availableInstances(hostname: $hostname) {
@@ -52,6 +63,7 @@ class PathsServer extends BaseServer {
   getApolloHeaders(req: BaseServerRequest) {
     const headers = super.getApolloHeaders(req);
     headers['x-paths-instance-hostname'] = req.currentURL.hostname;
+    headers['x-wildcard-domains'] = wildcardDomains;
     return headers;
   }
 

@@ -1,15 +1,15 @@
 require('dotenv').config();
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 const JS = '*.{js,jsx,ts,tsx,mjs}';
 
 module.exports = {
   client: {
-    includes: [`./src/**/${JS}`, './e2e-tests/**.ts'],
+    includes: [`./src/**/${JS}`],
     service: {
       name: 'kausal-paths',
-      url:
-        process.env.DEFAULT_GRAPHQL_API_URL ||
-        'http://localhost:8000/v1/graphql/',
+      url: `${apiUrl}/graphql/`,
     },
   },
 };

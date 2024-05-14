@@ -2,10 +2,12 @@ import { captureException } from '@sentry/nextjs';
 import { getApiCookies, setClientCookies } from 'common/cookies';
 
 import type { NextApiRequest, NextApiResponse } from 'next/types';
+import { gqlUrl } from 'utils/environment';
 
 const PASS_HEADERS = [
   'x-paths-instance-identifier',
   'x-paths-instance-hostname',
+  'x-wildcard-domains',
   'user-agent',
   'authorization',
   'accept-language',
@@ -48,14 +50,11 @@ export default async function handler(
     backendHeaders['X-Forwarded-For'] = req.socket.remoteAddress;
 
   // Do the fetch from the backend
-  const backendResponse = await fetch(
-    process.env.DEFAULT_GRAPHQL_API_URL as string,
-    {
-      method: 'POST',
-      headers: backendHeaders,
-      body: JSON.stringify(requestData),
-    }
-  );
+  const backendResponse = await fetch(gqlUrl, {
+    method: 'POST',
+    headers: backendHeaders,
+    body: JSON.stringify(requestData),
+  });
 
   // Set response headers
   const responseHeaders: { [name: string]: string } = {};

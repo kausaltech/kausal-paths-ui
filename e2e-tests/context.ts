@@ -8,14 +8,13 @@ import type {
   PlaywrightGetInstanceBasicsQueryVariables,
   PlaywrightGetInstanceBasicsQuery,
   PlaywrightGetInstanceInfoQueryVariables,
-} from 'common/__generated__/graphql';
+} from './__generated__/graphql';
 
 // @ts-ignore
 const { ApolloClient, InMemoryCache, gql } = apolloModule.default;
 
 const API_BASE =
-  process.env.DEFAULT_GRAPHQL_API_URL ||
-  'https://api.paths.kausal.tech/v1/graphql/';
+  process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.tech/v1';
 
 const GET_INSTANCE_BASICS = gql`
   query PlaywrightGetInstanceBasics($instance: ID!)
@@ -131,7 +130,7 @@ export class InstanceContext {
   static async fromInstanceId(instanceId: string) {
     const apolloClient = new ApolloClient({
       cache: new InMemoryCache(),
-      uri: API_BASE,
+      uri: `${API_BASE}/graphql/`,
     });
 
     const langRes = await apolloClient.query<
@@ -156,6 +155,24 @@ export class InstanceContext {
 }
 
 export function getIdentifiersToTest(): string[] {
-  const val = process.env.TEST_INSTANCE_IDENTIFIERS || '';
-  return val.split(',').map((s) => s.trim());
+  const val = process.env.TEST_INSTANCE_IDENTIFIERS || 'sunnydale';
+
+  return val
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s);
+}
+
+export function getPageBaseUrlToTest(instanceId: string): string {
+  let baseUrl =
+    process.env.TEST_PAGE_BASE_URL ||
+    `https://{instanceId}.paths.staging.kausal.tech`;
+  baseUrl = baseUrl.replace('{instanceId}', instanceId);
+  return baseUrl;
+}
+
+export function displayConfiguration() {
+  console.log('Base URL: ', process.env.TEST_); // FIXME: Typo? (Copy and paste from KW UI)
+  console.log('URL for Sunnydale: ', getPageBaseUrlToTest('sunnydale'));
+  console.log('API base URL: ', API_BASE);
 }

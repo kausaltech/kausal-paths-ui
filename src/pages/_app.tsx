@@ -33,6 +33,7 @@ import { Theme } from '@kausal/themes/types';
 import numbro from 'numbro';
 import { setSignificantDigits } from 'common/preprocess';
 import PathsError from './_error';
+import { wildcardDomains } from 'utils/environment';
 
 const publicRuntimeConfig = getConfig().publicRuntimeConfig;
 const basePath = publicRuntimeConfig.basePath || '';
@@ -226,6 +227,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
   const apolloConfig: ApolloClientOpts = {
     instanceHostname: host,
     instanceIdentifier: instanceConfig.identifier,
+    wildcardDomains,
     authorizationToken: req.user?.idToken,
     clientIp: null,
     currentURL: req.currentURL,

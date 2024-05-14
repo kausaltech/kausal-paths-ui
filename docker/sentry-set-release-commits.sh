@@ -4,7 +4,7 @@ BUILD_ID_FILE=".next/BUILD_ID"
 AUTH_TOKEN_FILE=/run/secrets/SENTRY_AUTH_TOKEN
 
 if [ -f $AUTH_TOKEN_FILE ] ; then
-    SENTRY_AUTH_TOKEN=$(cat $AUTH_TOKEN_FILE)
+    export SENTRY_AUTH_TOKEN=$(cat $AUTH_TOKEN_FILE)
 fi
 
 if [ ! -z "$SENTRY_ORG" -a ! -z "$SENTRY_AUTH_TOKEN" ] ; then

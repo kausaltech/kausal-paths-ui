@@ -22,9 +22,9 @@ corepack enable npm
 4.1. remove the cookie(s) with npm.kausal.tech from your browser's cookie history.
 
 4.2. login to https://npm.kausal.tech
-      using your Google credentials, copy the line with `npm config set ...` from
-      the settings dialog, and execute it in your shell. Ensure the `@kausal` scope
-      is associated with that registry by running:
+using your Google credentials, copy the line with `npm config set ...` from
+the settings dialog, and execute it in your shell. Ensure the `@kausal` scope
+is associated with that registry by running:
 
 ```bash
 echo '@kausal:registry=https://npm.kausal.tech/' >> ~/.npmrc
@@ -36,13 +36,15 @@ echo '@kausal:registry=https://npm.kausal.tech/' >> ~/.npmrc
 npm i
 ```
 
-   Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
+Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
 
 6. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
 
 ```
-DEFAULT_GRAPHQL_API_URL=
+NEXT_PUBLIC_API_URL=
 ```
+
+TODO: Explain `NEXT_PUBLIC_WILDCARD_DOMAINS`.
 
 ### Running the local dev server
 
@@ -59,7 +61,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 If you want to run the UI against your own backend, configure it in `.env`:
 
 ```
-DEFAULT_GRAPHQL_API_URL=http://127.0.0.1:8000/v1/graphql/
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/v1
 ```
 
 ## Deployment

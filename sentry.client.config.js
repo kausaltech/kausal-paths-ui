@@ -31,6 +31,9 @@ Sentry.init({
   profilesSampleRate: 1.0,
   replaysSessionSampleRate: 0.0,
   replaysOnErrorSampleRate: 1.0,
-  tracePropagationTargets: ['localhost', process.env.DEFAULT_GRAPHQL_API_URL],
+  tracePropagationTargets: [
+    'localhost',
+    `${process.env.NEXT_PUBLIC_API_URL}/graphql/`,
+  ],
   environment: DEPLOYMENT_TYPE,
 });

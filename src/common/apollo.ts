@@ -51,6 +51,7 @@ function createDirective(name: string, args: { name: string; val: string }[]) {
 export type ApolloClientOpts = {
   instanceHostname: string;
   instanceIdentifier: string;
+  wildcardDomains?: string[];
   authorizationToken?: string | undefined;
   clientIp?: string | null;
   currentURL?: {
@@ -64,6 +65,7 @@ function getHttpHeaders(opts: ApolloClientOpts) {
   const {
     instanceHostname,
     instanceIdentifier,
+    wildcardDomains,
     authorizationToken,
     currentURL,
     clientIp,
@@ -76,6 +78,9 @@ function getHttpHeaders(opts: ApolloClientOpts) {
   }
   if (instanceHostname) {
     headers['x-paths-instance-hostname'] = instanceHostname;
+  }
+  if (wildcardDomains) {
+    headers['x-wildcard-domains'] = wildcardDomains;
   }
   if (authorizationToken) {
     headers['authorization'] = `Bearer ${authorizationToken}`;
