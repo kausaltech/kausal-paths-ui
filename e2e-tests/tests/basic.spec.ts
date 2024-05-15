@@ -99,9 +99,7 @@ const testInstance = (instanceId: string) =>
       await ctx.waitForLoaded(page);
 
       await expect(page.locator('nav[aria-label="breadcrumb"]')).toBeVisible();
-      await expect(
-        page.locator('main a').getByText(ctx.i18n.t('read-more'))
-      ).toBeVisible();
+      await expect(page.locator('main a').getByText('Read more')).toBeVisible();
       await expect(page).toHaveScreenshot({ fullPage: true });
     });
   });

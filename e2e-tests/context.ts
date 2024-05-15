@@ -1,5 +1,3 @@
-import i18nConfig from '../next-i18next.config';
-import i18next, { i18n } from 'i18next';
 import fs from 'fs';
 import * as apolloModule from '@apollo/client';
 import { Page, TestType, expect } from '@playwright/test';
@@ -57,6 +55,7 @@ export type ActionListPage = PathsPage & {
   __typename: 'ActionListPage';
 };
 
+/*
 const i18nRes = Object.fromEntries(
   (i18nConfig.i18n.locales as string[]).map((lng) => {
     return [
@@ -85,19 +84,22 @@ i18next.init(
     if (err) console.log(err);
   }
 );
+*/
 
 export class InstanceContext {
   instance: InstanceInfo;
   baseURL: string;
-  i18n: i18n;
+  //i18n: i18n;
 
   constructor(instance: InstanceInfo, baseURL: string) {
     this.instance = instance;
     this.baseURL = baseURL;
     const lng = this.instance.instance.defaultLanguage;
+    /*
     this.i18n = i18next.cloneInstance({
       lng,
     });
+    */
   }
 
   getActionListPage(): ActionListPage | null {
