@@ -57,7 +57,7 @@ const nextConfig = {
     instanceIdentifier: INSTANCE_IDENTIFIER,
     sentryDsn: process.env.SENTRY_DSN,
     sentryDebug: process.env.SENTRY_DEBUG || '0',
-    deploymentType: process.env.DEPLOYMENT_TYPE || 'development',
+    deploymentType: process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE || 'development',
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],

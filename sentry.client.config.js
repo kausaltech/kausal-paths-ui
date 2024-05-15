@@ -9,7 +9,7 @@ const SENTRY_DSN =
   process.env.NEXT_PUBLIC_SENTRY_DSN;
 const DEPLOYMENT_TYPE =
   publicRuntimeConfig?.deploymentType ||
-  process.env.DEPLOYMENT_TYPE ||
+  process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE ||
   'development';
 
 const SENTRY_DEBUG = publicRuntimeConfig?.sentryDebug === '1';

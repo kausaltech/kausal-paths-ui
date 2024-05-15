@@ -12,7 +12,7 @@ Sentry.init({
   ],
   profilesSampleRate: 1.0,
   maxBreadcrumbs: 50,
-  environment: process.env.DEPLOYMENT_TYPE || 'development',
+  environment: process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE || 'development',
   debug: process.env.SENTRY_DEBUG === '1',
   integrations: [new ProfilingIntegration()],
   sendDefaultPii: true,

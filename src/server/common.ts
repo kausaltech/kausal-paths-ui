@@ -40,7 +40,8 @@ if (process.env.SENTRY_DSN) {
 
 const defaultFallbackLanguage = process.env.DEFAULT_FALLBACK_LANGUAGE || 'en';
 
-export const deploymentType = process.env.DEPLOYMENT_TYPE || 'development';
+export const deploymentType =
+  process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE || 'development';
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const dev = process.env.NODE_ENV !== 'production';
 
@@ -320,7 +321,7 @@ export abstract class BaseServer {
     // In production, we instruct upstream caches to also cache our static files
     if (
       normalizedPath.match(/^\/static\//) &&
-      process.env.DEPLOYMENT_TYPE === 'production'
+      process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE === 'production'
     ) {
       res.setHeader(
         'Cache-Control',
@@ -362,7 +363,7 @@ export abstract class BaseServer {
       };
       res.status(500);
     }
-    if (process.env.DEPLOYMENT_TYPE !== 'production') {
+    if (process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE !== 'production') {
       context.fullError = err.stack?.toString() ?? err.toString();
     }
     context.errorLabel = this.getMessage(
