@@ -1,5 +1,4 @@
-#syntax=docker/dockerfile:1.2
-ARG NODE_IMAGE=node:18-alpine
+ARG NODE_IMAGE=node:20-alpine
 #
 # Install dependencies
 #
