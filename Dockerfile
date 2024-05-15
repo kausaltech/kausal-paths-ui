@@ -1,9 +1,9 @@
-#syntax=docker/dockerfile:1
-
+#syntax=docker/dockerfile:1.2
+ARG NODE_IMAGE=node:18-alpine
 #
 # Install dependencies
 #
-FROM node:18-alpine as deps
+FROM ${NODE_IMAGE} as deps
 
 WORKDIR /app
 
@@ -32,7 +32,7 @@ RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
 #
 # Build NextJS bundles
 #
-FROM node:18-alpine as builder
+FROM ${NODE_IMAGE} as builder
 
 ENV NODE_ENV production
 WORKDIR /app
@@ -60,7 +60,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN --mount=type=cache,target=/app/.nex
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
   docker/sentry-set-release-commits.sh
 
-FROM node:18-alpine as runner
+FROM ${NODE_IMAGE} as runner
 WORKDIR /app
 ENV NODE_ENV production
 
@@ -68,17 +68,21 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy public assets
-COPY --from=builder /app/public ./public
+# FIXME: disable this when we start using standalone builds
+COPY --from=builder --chown=nextjs:nodejs /app ./
 
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+# FIXME: enable below when we start using standalone builds
+# # Copy public assets
+# COPY --from=builder /app/public ./public
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# # Set the correct permission for prerender cache
+# RUN mkdir .next
+# RUN chown nextjs:nodejs .next
+
+# # Automatically leverage output traces to reduce image size
+# # https://nextjs.org/docs/advanced-features/output-file-tracing
+# COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
