@@ -165,8 +165,9 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   const goalOutcomeValue = getMetricValue(node, endYear);
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
   const lastMeasuredYear =
-    node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
-  const isForecast = endYear > lastMeasuredYear;
+    node?.metric.historicalValues[node.metric.historicalValues.length - 1]
+      ?.year;
+  const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.metric?.unit?.htmlShort;
