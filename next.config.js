@@ -14,6 +14,7 @@ const require = createRequire(import.meta.url);
 const NEXT_PUBLIC_API_URL =
   process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.tech/v1';
 const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
+const isProd = process.env.NODE_ENV === 'production';
 
 const sentryAuthToken =
   secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
@@ -44,10 +45,13 @@ function initializeThemes() {
 
 initializeThemes();
 
+const prodAssetPrefix = process.env.NEXTJS_ASSET_PREFIX;
+
 /**
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
+  assetPrefix: isProd ? prodAssetPrefix : undefined,
   serverRuntimeConfig: {
     graphqlUrl: `${NEXT_PUBLIC_API_URL}/graphql/`,
   },

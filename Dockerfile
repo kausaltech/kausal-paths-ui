@@ -1,19 +1,16 @@
-ARG NODE_IMAGE=node:20-alpine
+#syntax=docker/dockerfile:1.7-labs
+ARG base_image=node:20-alpine
 #
 # Install dependencies
 #
-FROM ${NODE_IMAGE} as deps
+FROM ${base_image} as deps
 
 WORKDIR /app
 
-#RUN apk --no-cache add git
-RUN corepack enable npm
-
 ARG NPM_REGISTRY_SERVER
 
-ENV NPM_CONFIG_CACHE /npm-cache
+ENV NPM_CONFIG_CACHE=/npm-cache
 COPY package*.json ./
-# COPY patches ./patches/
 
 RUN \
   if [ ! -z "${NPM_REGISTRY_SERVER}" ] ; then \
@@ -22,6 +19,7 @@ RUN \
     echo "Using custom registry at: ${NPM_REGISTRY_SERVER}" ; \
   fi
 
+
 ARG NPM_TOKEN
 
 RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
@@ -29,74 +27,88 @@ RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
     npm ci
 
 #
-# Build NextJS bundles
+# NextJS base
 #
-FROM ${NODE_IMAGE} as builder
+FROM ${base_image} AS nextjs_base
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
+ARG NEXTJS_STANDALONE_BUILD=0
+ENV NEXTJS_STANDALONE_BUILD=${NEXTJS_STANDALONE_BUILD}
+ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXTJS_ASSET_PREFIX_PLACEHOLDER=__KAUSAL_ASSET_PREFIX_PLACEHOLDER__
+ENV NEXTJS_ASSET_PREFIX_PLACEHOLDER=${NEXTJS_ASSET_PREFIX_PLACEHOLDER}
+
+ARG BUILD_ID
+ARG SENTRY_PROJECT=paths-ui
+ARG SENTRY_RELEASE=${SENTRY_PROJECT}@${BUILD_ID}
+ENV BUILD_ID=${BUILD_ID} SENTRY_RELEASE=${SENTRY_RELEASE}
+
 WORKDIR /app
+
+#
+# NextJS builder
+#
+FROM nextjs_base AS builder
 
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy the rest of the files
-COPY . .
+COPY --exclude=docker --exclude=Dockerfile . .
 
 # For Sentry source map upload
 ARG SENTRY_PROJECT
 ARG SENTRY_URL
 ARG SENTRY_ORG
 ARG SENTRY_AUTH_TOKEN
-ARG GIT_REPO
-ARG GIT_REV
 
+COPY docker/manage-nextjs-cache.sh /
 # Remove the NextJS build cache if packages change
 RUN --mount=type=cache,target=/app/.next/cache \
-  docker/manage-nextjs-cache.sh check
+  /manage-nextjs-cache.sh check
 
+# Build the NextJS bundle
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN --mount=type=cache,target=/app/.next/cache \
-  npm run build && docker/manage-nextjs-cache.sh save
+  SENTRY_PROJECT=${SENTRY_PROJECT} \
+  SENTRY_URL=${SENTRY_URL} \
+  SENTRY_ORG=${SENTRY_ORG} \
+  NEXTJS_BUILD_ID=${BUILD_ID} \
+  NEXTJS_ASSET_PREFIX=${NEXTJS_ASSET_PREFIX_PLACEHOLDER} \
+  npm run build && /manage-nextjs-cache.sh save
 
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-  docker/sentry-set-release-commits.sh
 
-FROM ${NODE_IMAGE} as runner
-WORKDIR /app
-ENV NODE_ENV production
+FROM nextjs_base AS final
 
 # Add nextjs user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs && chown nextjs:nodejs /app
 
-# FIXME: disable this when we start using standalone builds
-COPY --from=builder --chown=nextjs:nodejs /app ./
+RUN apk update && apk add --no-cache caddy multirun && rm -rf /var/cache/apk
 
-# FIXME: enable below when we start using standalone builds
-# # Copy public assets
-# COPY --from=builder /app/public ./public
+# For non-standalone builds
+COPY --chown=nextjs:nodejs --from=deps /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs --from=builder /app/.next ./.next
+COPY --chown=nextjs:nodejs --from=builder /app/dist ./dist
+COPY --exclude=docker --exclude=Dockerfile --chown=nextjs:nodejs . .
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# # Set the correct permission for prerender cache
-# RUN mkdir .next
-# RUN chown nextjs:nodejs .next
-
-# # Automatically leverage output traces to reduce image size
-# # https://nextjs.org/docs/advanced-features/output-file-tracing
-# COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-# COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-#ARG GIT_REPO_URL
-#LABEL org.opencontainers.image.url="${GIT_REPO_URL}"
-#LABEL org.opencontainers.image.source="${GIT_REPO_URL}"
-#ARG BUILD_TIMESTAMP
-#LABEL org.opencontainers.image.created="${BUILD_TIMESTAMP}"
-#LABEL org.opencontainers.image.description="Kausal Paths UI"
-#LABEL org.opencontainers.image.revision="${GIT_REV}"
-#LABEL org.opencontainers.image.version="${BUILD_ID}"
+COPY ./docker/start-server.sh /entrypoint.sh
+COPY ./docker/Caddyfile /etc/caddy/
 
 ARG BUILD_ID
+ARG SENTRY_RELEASE
+ARG SENTRY_PROJECT
+ENV \
+  SENTRY_RELEASE=${SENTRY_RELEASE} \
+  BUILD_ID=${BUILD_ID} \
+  NEXTJS_ASSET_PREFIX_PLACEHOLDER=${NEXTJS_ASSET_PREFIX_PLACEHOLDER} \
+  SENTRY_PROJECT=${SENTRY_PROJECT} \
+  APP_ROOT=/app
+
+ARG NEXTJS_PORT=3000
+ARG CADDY_PORT=3001
+ARG METRICS_PORT=9464
+ENV NEXTJS_PORT=${NEXTJS_PORT} CADDY_PORT=${CADDY_PORT} METRICS_PORT=${METRICS_PORT}
+
 LABEL nextjs_build_id="${BUILD_ID}"
 
-COPY ./docker/entrypoint.sh /entrypoint.sh
-EXPOSE 3000
+EXPOSE ${PORT} ${CADDY_PORT} ${METRICS_PORT}
 ENTRYPOINT ["/entrypoint.sh"]
