@@ -1,0 +1,23 @@
+{
+  "name": "@kausal/ui",
+  "version": "1.0.0",
+  "workspaces": [
+    "docs",
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    "prettier": "^3.2.5"
+  },
+  "scripts": {
+    "paths:dev": "npm run dev -w @kausal/paths",
+    "nzc:dev": "npm run dev -w @kausal/nzc-data-studio",
+    "postinstall": "husky install",
+    "prettier:fix": "prettier --write"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,scss,css,md}": "prettier --write"
+  }
+}
