@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.dev/v1';
 
 const JS = '*.{js,jsx,ts,tsx,mjs}';
 

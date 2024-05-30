@@ -1,18 +1,29 @@
 import fs from 'fs';
-import * as apolloModule from '@apollo/client';
-import { Page, TestType, expect } from '@playwright/test';
+import apolloClient from '@apollo/client';
+//console.log(apolloClient);
+const { ApolloClient, InMemoryCache, gql } = apolloClient;
+//import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import { Page, expect } from '@playwright/test';
+import i18next from 'i18next';
+import i18nConfig from '../../next-i18next.config.js';
+import type { FallbackLng, FallbackLngObjList, i18n } from 'i18next';
 import type {
   PlaywrightGetInstanceInfoQuery,
   PlaywrightGetInstanceBasicsQueryVariables,
   PlaywrightGetInstanceBasicsQuery,
   PlaywrightGetInstanceInfoQueryVariables,
-} from './__generated__/graphql';
+} from '../__generated__/graphql.ts';
+import path from 'path';
+import { fileURLToPath } from 'node:url';
 
-// @ts-ignore
-const { ApolloClient, InMemoryCache, gql } = apolloModule.default;
+const projectRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..'
+);
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.tech/v1';
+  process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.dev/v1';
 
 const GET_INSTANCE_BASICS = gql`
   query PlaywrightGetInstanceBasics($instance: ID!)
@@ -55,14 +66,13 @@ export type ActionListPage = PathsPage & {
   __typename: 'ActionListPage';
 };
 
-/*
 const i18nRes = Object.fromEntries(
   (i18nConfig.i18n.locales as string[]).map((lng) => {
     return [
       lng,
       {
         common: JSON.parse(
-          fs.readFileSync(`public/locales/${lng}/common.json`, {
+          fs.readFileSync(`${projectRoot}/public/locales/${lng}/common.json`, {
             encoding: 'utf8',
           })
         ),
@@ -71,35 +81,35 @@ const i18nRes = Object.fromEntries(
   })
 );
 
-i18next.init(
-  {
-    lng: 'en',
-    resources: i18nRes,
-    supportedLngs: i18nConfig.supportedLngs,
-    fallbackLng: i18nConfig.fallbackLng,
-    defaultNS: i18nConfig.defaultNS,
-    fallbackNS: i18nConfig.fallbackNS,
-  },
-  (err, t) => {
-    if (err) console.log(err);
-  }
-);
-*/
+function initI18n(lang: string) {
+  const errCallback = (err, t) => {
+    if (err) console.error(err);
+  };
+  const fallbackLng = i18nConfig.fallbackLng as FallbackLngObjList;
+  return i18next.createInstance(
+    {
+      lng: lang,
+      resources: i18nRes,
+      fallbackLng: fallbackLng[lang],
+      defaultNS: 'common',
+      missingKeyHandler(lngs, ns, key, fallbackValue, updateMissing, options) {
+        console.error('missing i18n key', lngs, ns, key, options);
+      },
+    },
+    errCallback
+  );
+}
 
 export class InstanceContext {
   instance: InstanceInfo;
   baseURL: string;
-  //i18n: i18n;
+  i18n: i18n;
 
   constructor(instance: InstanceInfo, baseURL: string) {
     this.instance = instance;
     this.baseURL = baseURL;
     const lng = this.instance.instance.defaultLanguage;
-    /*
-    this.i18n = i18next.cloneInstance({
-      lng,
-    });
-    */
+    this.i18n = initI18n(lng);
   }
 
   getActionListPage(): ActionListPage | null {
@@ -167,14 +177,13 @@ export function getIdentifiersToTest(): string[] {
 
 export function getPageBaseUrlToTest(instanceId: string): string {
   let baseUrl =
-    process.env.TEST_PAGE_BASE_URL ||
-    `https://{instanceId}.paths.staging.kausal.tech`;
+    process.env.TEST_PAGE_BASE_URL || `http://{instanceId}.localhost:3000`;
   baseUrl = baseUrl.replace('{instanceId}', instanceId);
   return baseUrl;
 }
 
 export function displayConfiguration() {
-  console.log('Base URL: ', process.env.TEST_); // FIXME: Typo? (Copy and paste from KW UI)
+  console.log('Base URL: ', process.env.TEST_PAGE_BASE_URL);
   console.log('URL for Sunnydale: ', getPageBaseUrlToTest('sunnydale'));
-  console.log('API base URL: ', API_BASE);
+  console.log('API base URL for test configuration: ', API_BASE);
 }

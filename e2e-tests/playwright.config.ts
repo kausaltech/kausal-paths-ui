@@ -1,8 +1,13 @@
-import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 import dotenv from 'dotenv';
-import { displayConfiguration } from './context';
+import { defineConfig, devices } from '@playwright/test';
+import { displayConfiguration } from './common/context';
+import { fileURLToPath } from 'node:url';
 
-dotenv.config();
+const basePath = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({
+  path: [path.resolve(basePath, '.env'), path.resolve(basePath, '..', '.env')],
+});
 
 displayConfiguration();
 
@@ -20,7 +25,11 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   //workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    [process.env.CI ? 'github' : 'list'],
+    ['json', { outputFile: 'test-results.json' }],
+    ['html', { open: process.env.CI ? 'never' : 'on-failure' }],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -72,9 +81,16 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: process.env.TEST_DEVSERVER ? 'npm run dev' : 'npm start',
-    url: 'http://localhost:3000/_health',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: process.env.TEST_PAGE_BASE_URL
+    ? undefined
+    : {
+        command: process.env.TEST_DEVSERVER
+          ? 'cd .. && npm run dev'
+          : 'cd .. && npm start',
+        url: 'http://localhost:3000/_health',
+        reuseExistingServer: true,
+        env: {
+          NEXT_PUBLIC_WILDCARD_DOMAINS: 'localhost',
+        },
+      },
 });
