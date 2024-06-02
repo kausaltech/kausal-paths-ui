@@ -1,9 +1,11 @@
 import { useContext } from 'react';
-import { ThemeContext } from 'styled-components';
-import { formatStaticUrl } from './links';
 
 import type { Theme } from '@kausal/themes/types';
-import { makeThemePropType } from '@kausal/themes/props';
+import { ThemeContext } from 'styled-components';
+
+import { formatStaticUrl } from './links';
+
+//import { makeThemePropType } from '@kausal/themes/props';
 
 export function useTheme() {
   return useContext<Theme>(ThemeContext);
@@ -13,7 +15,7 @@ declare module 'styled-components' {
   export interface DefaultTheme extends Theme {}
 }
 
-export const themeProp = await makeThemePropType();
+//export let themeProp = await makeThemePropType();
 
 export async function loadTheme(themeIdentifier: string) {
   let themeProps: Theme;

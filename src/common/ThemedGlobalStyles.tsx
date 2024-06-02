@@ -1,7 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
+import type { Theme } from '@kausal/themes/types';
 import { createGlobalStyle, withTheme } from 'styled-components';
-import { themeProp } from 'common/theme';
+
+//import { themeProp } from 'common/theme';
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -204,7 +206,11 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-function ThemedGlobalStyles({ theme, children }) {
+type ThemedGlobalStylesProps = {
+  theme: Theme;
+};
+
+function ThemedGlobalStyles({ children }: React.PropsWithChildren<ThemedGlobalStylesProps>) {
   return (
     <>
       <GlobalStyle />
@@ -212,14 +218,5 @@ function ThemedGlobalStyles({ theme, children }) {
     </>
   );
 }
-
-ThemedGlobalStyles.defaultProps = {
-  children: '',
-};
-
-ThemedGlobalStyles.propTypes = {
-  theme: themeProp.isRequired,
-  children: PropTypes.node,
-};
 
 export default withTheme(React.memo(ThemedGlobalStyles));

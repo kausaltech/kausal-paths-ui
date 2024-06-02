@@ -1,15 +1,12 @@
-import Document, {
-  Html,
-  Head,
-  Main,
-  NextScript,
-  DocumentContext,
-} from 'next/document';
+import Document, { type DocumentContext, Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
+
 import * as Sentry from '@sentry/nextjs';
-import { ServerStyleSheet } from 'styled-components';
 import { getThemeCSS } from 'common/theme';
-import { setBasePath } from 'common/links';
-import getConfig from 'next/config';
+import { PUBLIC_ENV_KEY } from 'next-runtime-env/build/script/constants';
+import { ServerStyleSheet } from 'styled-components';
+
+import { exportRuntimeConfig } from '@/common/environment';
 import type { PathsAppProps } from './_app';
 
 class PlansDocument extends Document {
@@ -17,12 +14,7 @@ class PlansDocument extends Document {
     const sheet = new ServerStyleSheet();
     const originalRenderPage = ctx.renderPage;
     let themeProps: PathsAppProps['themeProps'] | undefined;
-    const basePath = getConfig().publicRuntimeConfig.basePath;
-    setBasePath(basePath);
-    const sentryTraceId = Sentry.getCurrentHub()
-      ?.getScope()
-      ?.getTransaction()
-      ?.toTraceparent();
+    const sentryTraceId = Sentry.getCurrentScope().getPropagationContext().traceId;
     try {
       ctx.renderPage = () =>
         originalRenderPage({
@@ -40,15 +32,9 @@ class PlansDocument extends Document {
             {initialProps.styles}
             {sheet.getStyleElement()}
             {themeProps && (
-              <link
-                rel="stylesheet"
-                type="text/css"
-                href={getThemeCSS(themeProps.name)}
-              />
+              <link rel="stylesheet" type="text/css" href={getThemeCSS(themeProps.name)} />
             )}
-            {null && sentryTraceId && (
-              <meta name="sentry-trace" content={sentryTraceId} />
-            )}
+            {null && sentryTraceId && <meta name="sentry-trace" content={sentryTraceId} />}
           </>
         ),
       };
@@ -67,7 +53,15 @@ class PlansDocument extends Document {
 
     return (
       <Html lang={nextData?.locale}>
-        <Head />
+        <Head>
+          <Script
+            id="runtime-env"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `window['${PUBLIC_ENV_KEY}'] = ${JSON.stringify(exportRuntimeConfig())}`,
+            }}
+          />
+        </Head>
         <body>
           <Main />
           <NextScript />

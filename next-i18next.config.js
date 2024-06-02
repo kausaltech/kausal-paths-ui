@@ -1,21 +1,11 @@
-const SUPPORTED_LANGUAGES = [
-  'en',
-  'fi',
-  'sv',
-  'de',
-  'de-CH',
-  'cs',
-  'da',
-  'lv',
-  'pl',
-];
+const SUPPORTED_LANGUAGES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl'];
 
 /**
  * @type {import('next-i18next').UserConfig}
  */
 const i18nConfig = {
   i18n: {
-    defaultLocale: 'fi',
+    defaultLocale: 'default',
     locales: SUPPORTED_LANGUAGES,
     localeDetection: false,
   },

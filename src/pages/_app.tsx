@@ -1,48 +1,42 @@
 import React from 'react';
-import { ApolloProvider, ApolloClient, isApolloError } from '@apollo/client';
-import App, { AppContext, AppProps } from 'next/app';
-import router from 'next/router';
-import { ThemeProvider } from 'styled-components';
-import getConfig from 'next/config';
+import App, { type AppContext, type AppProps } from 'next/app';
 
-import { appWithTranslation, useTranslation } from 'next-i18next';
+import { ApolloClient, ApolloProvider, isApolloError } from '@apollo/client';
+import type { Theme } from '@kausal/themes/types';
 import * as Sentry from '@sentry/nextjs';
-
-import {
-  ApolloClientOpts,
-  ApolloClientType,
-  initializeApollo,
-} from 'common/apollo';
-import { setBasePath } from 'common/links';
-import { loadTheme } from 'common/theme';
-import { getI18n } from 'common/i18n';
-import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
-import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
-import InstanceContext, {
-  GET_INSTANCE_CONTEXT,
-  InstanceContextType,
-} from 'common/instance';
-import SiteContext, { SiteContextType } from 'context/site';
-import Layout from 'components/Layout';
-import {
+import type {
   GetAvailableInstancesQuery,
   GetInstanceContextQuery,
   GetInstanceContextQueryVariables,
 } from 'common/__generated__/graphql';
-import { Theme } from '@kausal/themes/types';
+import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from 'common/apollo';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
+import { getI18n } from 'common/i18n';
+import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from 'common/instance';
+import { loadTheme } from 'common/theme';
+import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
+import Layout from 'components/Layout';
+import SiteContext, { type SiteContextType, type SiteI18nConfig } from 'context/site';
+import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
-import { setSignificantDigits } from 'common/preprocess';
-import PathsError from './_error';
-import { wildcardDomains } from 'utils/environment';
+import { ThemeProvider } from 'styled-components';
 
-const publicRuntimeConfig = getConfig().publicRuntimeConfig;
-const basePath = publicRuntimeConfig.basePath || '';
+import {
+  BASE_PATH_HEADER,
+  DEFAULT_LANGUAGE_HEADER,
+  INSTANCE_HOSTNAME_HEADER,
+  INSTANCE_IDENTIFIER_HEADER,
+  SUPPORTED_LANGUAGES_HEADER,
+  THEME_IDENTIFIER_HEADER,
+} from '@/common/const';
+import { assetPrefix, deploymentType, wildcardDomains } from '@/common/environment';
+import { getLogger } from '@/common/log';
+import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
+import PathsError from './_error';
 
 require('../../styles/default/main.scss');
 
-if (process.browser) {
-  setBasePath();
-}
+const logger = getLogger('app');
 
 const defaultSiteContext: { [key: string]: SiteContextType } = {
   sunnydale: {
@@ -129,41 +123,32 @@ export type PathsAppProps = AppProps & {
 };
 
 function PathsApp(props: PathsAppProps) {
-  const { Component, pageProps, siteContext, instanceContext, themeProps } =
-    props;
-  const isProd = publicRuntimeConfig?.deploymentType === 'production';
-
+  const { Component, pageProps, siteContext, instanceContext, themeProps } = props;
+  const isProd = deploymentType === 'production';
   const { i18n } = useTranslation();
+  // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
     i18n.language,
     i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined
   );
-
-  // NextJS messes up client router's defaultLocale in some instances.
-  // Override it here.
-  if (typeof window !== 'undefined') {
-    const defaultLocale = window.__NEXT_DATA__.defaultLocale;
-    if (router.defaultLocale !== defaultLocale) {
-      router.defaultLocale = defaultLocale;
-    }
-  }
-
   const component = <Component {...pageProps} />;
 
   if (!instanceContext || !siteContext) {
     // getInitialProps errored, return with a very simple layout
-    return component;
+    return <ThemeProvider theme={themeProps}>{component};</ThemeProvider>;
   }
   const instance = instanceContext;
 
-  setSignificantDigits(instance.features.showSignificantDigits);
+  const numbersContext = createNumbersContext(
+    i18n.language,
+    instance.features.showSignificantDigits
+  );
 
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
   const goals = instance.goals;
 
   if (!activeGoalVar()) {
-    const defaultGoal =
-      goals.length > 1 ? goals.find((goal) => goal.default) : goals[0];
+    const defaultGoal = goals.length > 1 ? goals.find((goal) => goal.default) : goals[0];
     activeGoalVar(defaultGoal ?? null);
   }
 
@@ -185,15 +170,14 @@ function PathsApp(props: PathsAppProps) {
       <InstanceContext.Provider value={instanceContext}>
         <ApolloProvider client={apolloClient}>
           <ThemeProvider theme={themeProps}>
-            <ThemedGlobalStyles />
-            <Layout>
-              <Sentry.ErrorBoundary
-                showDialog={!isProd}
-                fallback={renderFallbackError}
-              >
-                {component}
-              </Sentry.ErrorBoundary>
-            </Layout>
+            <LocalizedNumbersContext.Provider value={numbersContext}>
+              <ThemedGlobalStyles />
+              <Layout>
+                <Sentry.ErrorBoundary showDialog={!isProd} fallback={renderFallbackError}>
+                  {component}
+                </Sentry.ErrorBoundary>
+              </Layout>
+            </LocalizedNumbersContext.Provider>
           </ThemeProvider>
         </ApolloProvider>
       </InstanceContext.Provider>
@@ -201,7 +185,7 @@ function PathsApp(props: PathsAppProps) {
   );
 }
 
-async function getSiteContext(ctx: PathsPageContext, locale: string) {
+async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
   /**
    * Load the static, global data related to the instance and theme.
    *
@@ -210,33 +194,26 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
 
   // First determine the hostname for the request which we might need
   // for loading the instance that is related to it.
-  let host: string;
   const { req } = ctx;
-  if (req) {
-    host = req.currentURL.hostname;
-  } else {
-    host = window.location.hostname;
+  const host = req.headers[INSTANCE_HOSTNAME_HEADER] as string;
+  const instanceIdentifier = req.headers[INSTANCE_IDENTIFIER_HEADER] as string | undefined;
+  if (!instanceIdentifier) {
+    return null;
   }
-  const { instanceConfig } = req;
-  const { publicRuntimeConfig } = getConfig();
-
-  const { isProtected } = instanceConfig;
 
   // Instance is identified either by a hard-coded identifier or by the
   // request hostname.
   const apolloConfig: ApolloClientOpts = {
     instanceHostname: host,
-    instanceIdentifier: instanceConfig.identifier,
+    instanceIdentifier: instanceIdentifier,
     wildcardDomains,
     authorizationToken: req.user?.idToken,
-    clientIp: null,
+    clientIp: req.ip,
+    locale: i18nConf.locale,
     currentURL: req.currentURL,
     clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
   };
-  const apolloClient: ApolloClient<object> = initializeApollo(
-    null,
-    apolloConfig
-  );
+  const apolloClient: ApolloClient<object> = initializeApollo(null, apolloConfig);
   apolloConfig.clientIp = null; // We don't need to pass this to the client
 
   // Load the instance configuration from backend
@@ -249,11 +226,12 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     >({
       query: GET_INSTANCE_CONTEXT,
       context: {
-        locale,
+        locale: i18nConf.locale,
       },
     });
     const { scenarios } = data;
     instance = data.instance!;
+    const basePath = req.headers[BASE_PATH_HEADER] as string;
 
     siteContext = {
       scenarios: data.scenarios,
@@ -268,11 +246,12 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
       maxYear: instance.modelEndYear,
       targetYear: instance.targetYear ?? instance.modelEndYear,
       latestMetricYear: instance.maximumHistoricalYear || 2018,
-      baselineName: scenarios.find((scenario) => scenario.id === 'baseline')
-        ?.name,
-      iconBase: `${basePath}/static/themes/default/images/favicon`,
-      ogImage: `${basePath}/static/themes/default/images/og-image-default.png`,
-      deploymentType: publicRuntimeConfig.deploymentType,
+      baselineName: scenarios.find((scenario) => scenario.id === 'baseline')?.name,
+      iconBase: `${assetPrefix}/static/themes/default/images/favicon`,
+      ogImage: `${assetPrefix}/static/themes/default/images/og-image-default.png`,
+      i18n: i18nConf,
+      basePath,
+      assetPrefix,
     };
   } catch (error) {
     if (isApolloError(error)) {
@@ -289,10 +268,7 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
     }
     throw error;
   }
-  Object.assign(
-    siteContext,
-    defaultSiteContext[instance.id] || defaultSiteContext['sunnydale']
-  );
+  Object.assign(siteContext, defaultSiteContext[instance.id] || defaultSiteContext['sunnydale']);
   return {
     siteContext,
     instanceContext: instance,
@@ -301,34 +277,31 @@ async function getSiteContext(ctx: PathsPageContext, locale: string) {
 
 async function getI18nProps(ctx: PathsPageContext) {
   // SSR only
-  const { serverSideTranslations } = await import(
-    'next-i18next/serverSideTranslations'
-  );
+  const { serverSideTranslations } = await import('next-i18next/serverSideTranslations');
+  const { req } = ctx;
   const nextI18nConfig = (await import('../../next-i18next.config')).default;
-  const { publicRuntimeConfig } = getConfig();
-  const locale: string =
-    ctx.locale || publicRuntimeConfig.locale || ctx.locales?.[0];
+  let defaultLanguage = req.headers[DEFAULT_LANGUAGE_HEADER] as string | undefined;
+  if (!defaultLanguage) {
+    logger.warn('no i18n headers set');
+    console.log(ctx.locale, ctx.locales, ctx.defaultLocale);
+    defaultLanguage = 'en';
+  }
+  const header = req.headers[SUPPORTED_LANGUAGES_HEADER] as string | undefined;
+  const supportedLanguages = (header ?? defaultLanguage).split(',');
   const i18n = getI18n();
 
-  if (!locale) {
-    throw new Error('Locale not set');
-  }
   if (i18n) {
-    await i18n.changeLanguage(locale);
+    await i18n.changeLanguage(ctx.locale);
   }
   const conf = {
     ...nextI18nConfig,
     i18n: {
       ...nextI18nConfig.i18n,
-      defaultLocale: ctx.defaultLocale!,
-      locales: ctx.locales!,
+      defaultLocale: defaultLanguage ?? 'default',
+      locales: supportedLanguages,
     },
   };
-  const i18nConfig = await serverSideTranslations(
-    locale,
-    ['common', 'errors'],
-    conf
-  );
+  const i18nConfig = await serverSideTranslations(ctx.locale!, ['common', 'errors'], conf);
   return i18nConfig;
 }
 
@@ -383,60 +356,32 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
     defaultTheme = await loadTheme('default');
   }
 
-  /*
-   * If we errored out when doing App.getInitialProps last time, we bail out
-   * before that stage so that it doesn't happen again.
-   */
-  const lastPhase: string | undefined = ctx.req['_appInitialPropsPhase'];
-
   // SSR
-  setBasePath();
-  const appProps: Partial<PathsAppProps> =
-    await App.getInitialProps(appContext);
+  const appProps: Partial<PathsAppProps> = await App.getInitialProps(appContext);
   if (!appProps.pageProps) {
     appProps.pageProps = {};
   }
-  appProps.themeProps = defaultTheme;
-
   const pageProps = appProps.pageProps;
-
-  if (ctx.err && lastPhase === 'i18n') {
-    return appProps;
-  }
-  ctx.req['_appInitialPropsPhase'] = 'i18n';
   const i18nProps = await getI18nProps(ctx);
-  if (ctx.err && lastPhase === 'i18n') {
-    return appProps;
-  }
+  const i18nConf = i18nProps._nextI18Next!.userConfig!.i18n;
+  const siteI18nConf: SiteI18nConfig = {
+    locale: ctx.locale!,
+    defaultLocale: i18nConf.defaultLocale,
+    supportedLocales: i18nConf.locales,
+  };
   Object.assign(pageProps, i18nProps);
-
-  if (ctx.err && lastPhase === 'site-context') {
-    return appProps;
-  }
-  ctx.req['_appInitialPropsPhase'] = 'site-context';
-  const siteProps = await getSiteContext(ctx, ctx.locale!);
+  const siteProps = await getSiteContext(ctx, siteI18nConf);
   if (siteProps) {
     appProps.siteContext = siteProps.siteContext;
     appProps.instanceContext = siteProps.instanceContext;
   }
-
-  if (ctx.err && lastPhase === 'theme') {
-    return appProps;
-  }
-  ctx.req['_appInitialPropsPhase'] = 'theme';
-  const theme = await loadTheme(
-    siteProps?.instanceContext?.themeIdentifier || 'default'
-  );
+  const themeIdentifier = ctx.req?.headers[THEME_IDENTIFIER_HEADER] as string | undefined;
+  const theme = themeIdentifier ? await loadTheme(themeIdentifier) : defaultTheme;
   appProps.themeProps = theme;
 
-  delete ctx.req['_appInitialPropsPhase'];
-
   // We instruct the upstream cache to cache for a minute
-  if (ctx.res && siteProps.siteContext.deploymentType === 'production') {
-    ctx.res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=60, stale-while-revalidate=59'
-    );
+  if (ctx.res && deploymentType === 'production') {
+    ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=59');
   }
 
   return appProps;

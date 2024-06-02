@@ -1,20 +1,14 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { type ReactNode } from 'react';
 import Link from 'next/link';
-import {
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownItem,
-  DropdownMenu,
-} from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
+
 import { transparentize } from 'polished';
+import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+import styled from 'styled-components';
 
 const NavLink = styled.div`
   a {
     display: block;
-    margin: 0 0 ${(props) => props.theme.spaces.s050}
-      ${(props) => props.theme.spaces.s100};
+    margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
     color: ${(props) => props.theme.neutralDark};
 
     &:hover {
@@ -35,8 +29,7 @@ const NavLink = styled.div`
 
 const NavHighlighter = styled.span`
   display: inline-block;
-  padding: ${(props) => props.theme.spaces.s050} 0
-    calc(${(props) => props.theme.spaces.s050} - 5px);
+  padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) => props.theme.spaces.s050} - 5px);
   border-bottom: 5px solid transparent;
   transition: border 200ms;
 
@@ -53,8 +46,7 @@ const NavHighlighter = styled.span`
 const StyledDropdownToggle = styled(DropdownToggle)`
   display: block;
   padding: 0;
-  margin: 0 0 ${(props) => props.theme.spaces.s100}
-    ${(props) => props.theme.spaces.s100};
+  margin: 0 0 ${(props) => props.theme.spaces.s100} ${(props) => props.theme.spaces.s100};
   color: ${(props) => props.theme.neutralDark};
 
   &:hover {
@@ -111,14 +103,26 @@ const StyledDropdown = styled(UncontrolledDropdown)`
   }
 `;
 
-function NavDropdown(props) {
-  const { parentName, items, active, children } = props;
+export type NavDropdownListItem = {
+  id: string;
+  urlPath: string;
+  name: string;
+  locale?: string;
+};
+
+export type NavDropdownProps = {
+  items: NavDropdownListItem[];
+  active?: boolean;
+  children: ReactNode;
+  className?: string;
+};
+
+function NavDropdown(props: NavDropdownProps) {
+  const { items, active, children } = props;
   return (
     <StyledDropdown nav inNavbar className={active && 'active'}>
       <StyledDropdownToggle nav caret>
-        <NavHighlighter className={`highlighter ${active && 'active'}`}>
-          {children}
-        </NavHighlighter>
+        <NavHighlighter className={`highlighter ${active && 'active'}`}>{children}</NavHighlighter>
       </StyledDropdownToggle>
       <DropdownMenu direction="left">
         {items &&
@@ -126,9 +130,7 @@ function NavDropdown(props) {
             <DropdownItem key={child.id}>
               <NavLink>
                 <Link href={child.urlPath} locale={child.locale}>
-                  <NavHighlighter className="highlighter">
-                    {child.name}
-                  </NavHighlighter>
+                  <NavHighlighter className="highlighter">{child.name}</NavHighlighter>
                 </Link>
               </NavLink>
             </DropdownItem>
@@ -137,22 +139,5 @@ function NavDropdown(props) {
     </StyledDropdown>
   );
 }
-
-NavDropdown.defaultProps = {
-  active: false,
-};
-
-NavDropdown.propTypes = {
-  parentName: PropTypes.string.isRequired,
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string,
-      name: PropTypes.string,
-      slug: PropTypes.string,
-      children: PropTypes.node,
-    })
-  ).isRequired,
-  active: PropTypes.bool,
-};
 
 export default NavDropdown;

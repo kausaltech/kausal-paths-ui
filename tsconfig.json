@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "target": "ES2020",
     "lib": ["dom", "dom.iterable", "es2020"],
     "allowJs": true,
@@ -16,7 +19,8 @@
     "jsx": "preserve",
     "strictNullChecks": true,
     "incremental": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true
   },
   "include": [
     "next-env.d.ts",
@@ -24,7 +28,8 @@
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "**/*.mjs"
+    "**/*.mjs",
+    "middleware.ts"
   ],
   "exclude": ["node_modules"]
 }

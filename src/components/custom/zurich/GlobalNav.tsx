@@ -1,28 +1,28 @@
-import React, { useState, useContext, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useMemo, useState } from 'react';
+import Head from 'next/head';
+
+import { formatStaticUrl, Link } from 'common/links';
+import NavDropdown, { type NavDropdownProps } from 'components/common/NavDropdown';
+import LanguageSelector from 'components/general/LanguageSelector';
+import SiteContext from 'context/site';
 import { useTranslation } from 'next-i18next';
-import {
-  Collapse,
-  Navbar,
-  Nav,
-  NavItem,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownItem,
-  DropdownMenu,
-} from 'reactstrap';
+import { transparentize } from 'polished';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
+import {
+  Collapse,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  Nav,
+  Navbar,
+  NavItem,
+  UncontrolledDropdown,
+} from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
-import { transparentize } from 'polished';
-import SiteContext from 'context/site';
-import { formatStaticUrl, Link } from 'common/links';
-import NavDropdown from 'components/common/NavDropdown';
-import LanguageSelector from 'components/general/LanguageSelector';
-import Script from 'next/script';
-import { isProduction } from 'utils/environment';
-import { deploymentType } from 'server/common';
-import Head from 'next/head';
+
+import { deploymentType } from '@/common/environment';
+import type { GlobalNavProps } from '@/components/common/GlobalNav';
 
 const SecondaryNav = styled(Navbar)`
   padding: 0;
@@ -74,8 +74,7 @@ const HomeLink = styled.a`
     display: block;
     width: 135px;
     height: auto;
-    margin: ${(props) => props.theme.spaces.s050}
-      ${(props) => props.theme.spaces.s150}
+    margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}
       ${(props) => props.theme.spaces.s050} 0;
   }
 
@@ -95,8 +94,7 @@ const HomeLink = styled.a`
 const NavLink = styled.div`
   a {
     display: block;
-    margin: 0 0 ${(props) => props.theme.spaces.s050}
-      ${(props) => props.theme.spaces.s100};
+    margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
     color: ${(props) => props.theme.neutralDark};
 
     &:hover {
@@ -127,8 +125,7 @@ const NavHighlighter = styled.span`
 const StyledDropdownToggle = styled(DropdownToggle)`
   display: block;
   padding: 0;
-  margin: 0 0 ${(props) => props.theme.spaces.s100}
-    ${(props) => props.theme.spaces.s100};
+  margin: 0 0 ${(props) => props.theme.spaces.s100} ${(props) => props.theme.spaces.s100};
   color: ${(props) => props.theme.neutralDark};
 
   &:hover {
@@ -237,7 +234,7 @@ const StyledHeaderMain = styled.div`
   }
 `;
 
-function DropdownList(props) {
+function DropdownList(props: NavDropdownProps & { parentName: string }) {
   const { parentName, items, active } = props;
   return (
     <StyledDropdown nav inNavbar className={active && 'active'}>
@@ -252,9 +249,7 @@ function DropdownList(props) {
             <DropdownItem key={child.id}>
               <NavLink>
                 <Link href={child.urlPath}>
-                  <NavHighlighter className="highlighter">
-                    {child.name}
-                  </NavHighlighter>
+                  <NavHighlighter className="highlighter">{child.name}</NavHighlighter>
                 </Link>
               </NavLink>
             </DropdownItem>
@@ -264,24 +259,7 @@ function DropdownList(props) {
   );
 }
 
-DropdownList.defaultProps = {
-  active: false,
-};
-
-DropdownList.propTypes = {
-  parentName: PropTypes.string.isRequired,
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string,
-      name: PropTypes.string,
-      slug: PropTypes.string,
-      children: PropTypes.node,
-    })
-  ).isRequired,
-  active: PropTypes.bool,
-};
-
-function GlobalNav(props) {
+function GlobalNav(props: GlobalNavProps) {
   const { t } = useTranslation();
   const site = useContext(SiteContext);
   const theme = useTheme();
@@ -301,12 +279,12 @@ function GlobalNav(props) {
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
   const analyticsUrl =
-    site.deploymentType === 'production'
+    deploymentType === 'production'
       ? 'https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js'
       : 'https://www.integ.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-92ad5f87cc3b-staging.min.js';
   return (
     <>
-      {site.deploymentType !== 'development' ? (
+      {deploymentType !== 'development' ? (
         <Head>
           <script key="zuerich-analytics" src={analyticsUrl} async />
         </Head>
@@ -345,10 +323,7 @@ function GlobalNav(props) {
               container={false}
             >
               <StyledCollapse isOpen={isOpen} navbar>
-                <Nav
-                  navbar
-                  className="stzh-appnav__items sc-stzh-appnav sc-stzh-appnav-s me-auto"
-                >
+                <Nav navbar className="stzh-appnav__items sc-stzh-appnav sc-stzh-appnav-s me-auto">
                   {navItems &&
                     navItems.map((page) =>
                       page.children ? (
@@ -370,9 +345,7 @@ function GlobalNav(props) {
                             <Link href={page.urlPath}>
                               <a data-testid={`navitem::${page.urlPath}`}>
                                 <NavHighlighter
-                                  className={`highlighter ${
-                                    page.active && 'active'
-                                  }`}
+                                  className={`highlighter ${page.active && 'active'}`}
                                 >
                                   {page.name}
                                 </NavHighlighter>
@@ -410,26 +383,5 @@ function GlobalNav(props) {
     </>
   );
 }
-
-GlobalNav.defaultProps = {
-  fullwidth: false,
-  sticky: false,
-  ownerName: '',
-};
-
-GlobalNav.propTypes = {
-  siteTitle: PropTypes.string.isRequired,
-  ownerName: PropTypes.string,
-  navItems: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string,
-      name: PropTypes.string,
-      slug: PropTypes.string,
-      children: PropTypes.arrayOf(PropTypes.shape),
-    })
-  ).isRequired,
-  fullwidth: PropTypes.bool,
-  sticky: PropTypes.bool,
-};
 
 export default GlobalNav;

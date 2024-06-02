@@ -1,15 +1,18 @@
-import NextErrorComponent, { ErrorProps } from 'next/error';
-import styled from 'styled-components';
-import { Card, CardBody, Container, Row, Col } from 'reactstrap';
-import { Link } from 'common/links';
-import { useTranslation } from 'common/i18n';
-import Button from 'components/common/Button';
-import getConfig from 'next/config';
+//import styles from '../../styles/server-error.module.css';
+
+import NextErrorComponent, { type ErrorProps } from 'next/error';
+import Head from 'next/head';
 
 import * as Sentry from '@sentry/nextjs';
-import { NextPageContext } from 'next';
+import { useTranslation } from 'common/i18n';
+import { Link } from 'common/links';
 import { useTheme } from 'common/theme';
-import Head from 'next/head';
+import Button from 'components/common/Button';
+import type { NextPageContext } from 'next';
+import { Card, CardBody, Col, Container, Row } from 'reactstrap';
+import styled from 'styled-components';
+
+import { isProd } from '@/common/environment';
 
 const ErrorBackground = styled.div`
   background-color: ${(props) => props.theme.brandDark};
@@ -44,9 +47,6 @@ type AppErrorProps = ErrorProps & {
 
 const PathsError = (props: AppErrorProps) => {
   const { hasGetInitialPropsRun, err, statusCode } = props;
-  const isProd =
-    getConfig().publicRuntimeConfig?.deploymentType === 'production';
-
   if (!hasGetInitialPropsRun && err && statusCode != 404) {
     // getInitialProps is not called in case of
     // https://github.com/vercel/next.js/issues/8592. As a workaround, we pass
@@ -84,7 +84,7 @@ const PathsError = (props: AppErrorProps) => {
   }
 
   const specifiers: string[] = [];
-  const traceId = Sentry.getActiveTransaction()?.traceId;
+  const traceId = Sentry.getCurrentScope()?.getPropagationContext().traceId;
   if (traceId) {
     specifiers.push(`${t('errors:error-label')}: ${traceId}`);
   }
@@ -95,12 +95,10 @@ const PathsError = (props: AppErrorProps) => {
   if (!isProd && err) {
     fullError = err.toString();
   }
-
   if (!theme) {
     return (
       <>
         <Head>
-          <link href="/static/server-error-style.css" rel="stylesheet" />
           <title>{title}</title>
         </Head>
         <main id="container">
@@ -151,8 +149,7 @@ const PathsError = (props: AppErrorProps) => {
 PathsError.getInitialProps = async (props: NextPageContext) => {
   const { err, asPath } = props;
   await Sentry.captureUnderscoreErrorException(props);
-  const errorInitialProps: AppErrorProps =
-    await NextErrorComponent.getInitialProps(props);
+  const errorInitialProps: AppErrorProps = await NextErrorComponent.getInitialProps(props);
 
   // Workaround for https://github.com/vercel/next.js/issues/8592, mark when
   // getInitialProps has run
@@ -181,9 +178,7 @@ PathsError.getInitialProps = async (props: NextPageContext) => {
   // If this point is reached, getInitialProps was called without any
   // information about what the error might be. This is unexpected and may
   // indicate a bug introduced in Next.js, so record it in Sentry
-  Sentry.captureException(
-    new Error(`_error.js getInitialProps missing data at path: ${asPath}`)
-  );
+  Sentry.captureException(new Error(`_error.js getInitialProps missing data at path: ${asPath}`));
   return errorInitialProps;
 };
 

@@ -10,7 +10,7 @@ import { Card } from 'components/common/Card';
 
 import { activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useSite } from 'context/site';
-import { logError } from 'common/log';
+import { logApolloError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import NodePlot from 'components/general/NodePlot';
@@ -25,8 +25,7 @@ import dimensionalNodePlotFragment from 'queries/dimensionalNodePlot';
 const HeaderSection = styled.div<{ $color?: string }>`
   padding: 1rem 0 1rem;
   margin-bottom: 7rem;
-  background-color: ${(props) =>
-    props.$color || props.theme.graphColors.grey070};
+  background-color: ${(props) => props.$color || props.theme.graphColors.grey070};
 `;
 
 const PageHeader = styled.div`
@@ -139,14 +138,11 @@ export default function NodePage() {
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(
-    GET_NODE_PAGE_CONTENT,
-    {
-      variables: {
-        node: slug,
-      },
-    }
-  );
+  const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(GET_NODE_PAGE_CONTENT, {
+    variables: {
+      node: slug,
+    },
+  });
 
   const activeScenario = useReactiveVar(activeScenarioVar);
 
@@ -159,7 +155,7 @@ export default function NodePage() {
     return <ContentLoader fullPage />;
   }
   if (error || !data) {
-    logError(error, { query: GET_NODE_PAGE_CONTENT });
+    logApolloError(error, { query: GET_NODE_PAGE_CONTENT });
     return (
       <Container className="pt-5">
         <GraphQLError error={error} />
@@ -191,9 +187,7 @@ export default function NodePage() {
               <h1>{node.name}</h1>
               {node.shortDescription && (
                 <NodeDescription>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: node.shortDescription }}
-                  />
+                  <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
                 </NodeDescription>
               )}
               <div>
@@ -244,9 +238,7 @@ export default function NodePage() {
               <Col lg={{ size: 10, offset: 1 }}>
                 <Card>
                   <CardBody>
-                    <BodyText
-                      dangerouslySetInnerHTML={{ __html: node.description }}
-                    />
+                    <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
                   </CardBody>
                 </Card>
               </Col>
@@ -255,10 +247,7 @@ export default function NodePage() {
         </NodeBodyText>
       )}
       <Container fluid="lg">
-        <NodeLinks
-          outputNodes={node.outputNodes}
-          inputNodes={node.inputNodes}
-        />
+        <NodeLinks outputNodes={node.outputNodes} inputNodes={node.inputNodes} />
       </Container>
       <SettingsPanelFull />
     </>

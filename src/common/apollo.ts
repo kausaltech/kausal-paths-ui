@@ -1,25 +1,61 @@
-// Copied from: https://github.com/vardhanapoorv/epl-nextjs-app/blob/main/lib/apolloClient.js
-import { i18n } from 'next-i18next';
-import getConfig from 'next/config';
 import {
   ApolloClient,
   ApolloLink,
   HttpLink,
   InMemoryCache,
-  NormalizedCacheObject,
+  type NormalizedCacheObject,
 } from '@apollo/client';
-import possibleTypes from 'common/__generated__/possible_types.json';
-import { DirectiveNode, Kind } from 'graphql';
+import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import { type DirectiveNode, Kind } from 'graphql';
 
-const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
+import possibleTypes from '@/common/__generated__/possible_types.json';
+import {
+  GQL_PROXY_PATH,
+  INSTANCE_HOSTNAME_HEADER,
+  INSTANCE_IDENTIFIER_HEADER,
+  WILDCARD_DOMAINS_HEADER,
+} from './const';
+import { getRuntimeConfig, gqlUrl } from './environment';
+import { getLogger } from './log';
+
+const logger = getLogger('graphql');
+
+if (globalThis.__DEV__) {
+  // Adds messages only in a dev environment
+  loadDevMessages();
+  loadErrorMessages();
+}
+
+export const logQueryStart = new ApolloLink((operation, forward) => {
+  const log = operation.getContext()?.logger || logger;
+  operation.setContext({ start: Date.now() });
+  log.info({ operation: operation.operationName }, 'Starting GraphQL operation');
+  return forward(operation);
+});
+
+export const logQueryEnd = new ApolloLink((operation, forward) => {
+  const log = operation.getContext()?.logger || logger;
+  return forward(operation).map((data) => {
+    const start = operation.getContext().start;
+    if (!start) {
+      return data;
+    }
+    const time = Math.round(Date.now() - start);
+    log.info(
+      { operation: operation.operationName, duration: time / 1000 },
+      `GraphQL operation took ${time}ms`
+    );
+    return data;
+  });
+});
 
 const localeMiddleware = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers = {}, locale }) => {
-    if (locale || (i18n && i18n.language)) {
+    if (locale) {
       return {
         headers: {
           ...headers,
-          'accept-language': locale || i18n!.language,
+          'accept-language': locale,
         },
       };
     }
@@ -49,11 +85,12 @@ function createDirective(name: string, args: { name: string; val: string }[]) {
 }
 
 export type ApolloClientOpts = {
-  instanceHostname: string;
-  instanceIdentifier: string;
+  instanceHostname?: string;
+  instanceIdentifier?: string;
   wildcardDomains?: string[];
   authorizationToken?: string | undefined;
   clientIp?: string | null;
+  locale?: string;
   currentURL?: {
     baseURL: string;
     path: string;
@@ -61,11 +98,12 @@ export type ApolloClientOpts = {
   clientCookies?: string;
 };
 
-function getHttpHeaders(opts: ApolloClientOpts) {
+export function getHttpHeaders(opts: ApolloClientOpts) {
+  const config = getRuntimeConfig();
   const {
     instanceHostname,
     instanceIdentifier,
-    wildcardDomains,
+    wildcardDomains = config.wildcardDomains,
     authorizationToken,
     currentURL,
     clientIp,
@@ -74,13 +112,13 @@ function getHttpHeaders(opts: ApolloClientOpts) {
   const headers = {};
 
   if (instanceIdentifier) {
-    headers['x-paths-instance-identifier'] = opts.instanceIdentifier;
+    headers[INSTANCE_IDENTIFIER_HEADER] = opts.instanceIdentifier;
   }
   if (instanceHostname) {
-    headers['x-paths-instance-hostname'] = instanceHostname;
+    headers[INSTANCE_HOSTNAME_HEADER] = instanceHostname;
   }
   if (wildcardDomains) {
-    headers['x-wildcard-domains'] = wildcardDomains;
+    headers[WILDCARD_DOMAINS_HEADER] = wildcardDomains.join(',');
   }
   if (authorizationToken) {
     headers['authorization'] = `Bearer ${authorizationToken}`;
@@ -112,22 +150,26 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   }
 
   const middleware = new ApolloLink((operation, forward) => {
+    const context = operation.getContext();
+    const locale = context?.locale;
     operation.query = {
       ...operation.query,
       definitions: operation.query.definitions.map((def) => {
         if (def.kind !== Kind.OPERATION_DEFINITION) return def;
         const directives: DirectiveNode[] = [...(def.directives || [])];
-        if (i18n && i18n.language) {
-          directives.push(
-            createDirective('locale', [{ name: 'lang', val: i18n.language }])
-          );
+        if (locale) {
+          directives.push(createDirective('locale', [{ name: 'lang', val: locale }]));
         }
-        directives.push(
-          createDirective('instance', [
-            { name: 'identifier', val: instanceIdentifier },
-            { name: 'hostname', val: instanceHostname },
-          ])
-        );
+        const instanceArgs: { name: string; val: string }[] = [];
+        if (instanceIdentifier) {
+          instanceArgs.push({ name: 'identifier', val: instanceIdentifier });
+        }
+        if (instanceHostname) {
+          instanceArgs.push({ name: 'hostname', val: instanceHostname });
+        }
+        if (instanceArgs.length) {
+          directives.push(createDirective('instance', instanceArgs));
+        }
         return {
           ...def,
           directives,
@@ -156,9 +198,7 @@ let apolloClient: ApolloClientType | undefined;
 
 function createApolloClient(opts: ApolloClientOpts) {
   const ssrMode = typeof window === 'undefined';
-  const uri = ssrMode
-    ? serverRuntimeConfig.graphqlUrl
-    : publicRuntimeConfig.graphqlUrl;
+  const uri = ssrMode ? gqlUrl : GQL_PROXY_PATH;
 
   const httpLink = new HttpLink({
     uri,
@@ -170,11 +210,7 @@ function createApolloClient(opts: ApolloClientOpts) {
 
   return new ApolloClient({
     ssrMode,
-    link: ApolloLink.from([
-      localeMiddleware,
-      makeInstanceMiddleware(opts),
-      httpLink,
-    ]),
+    link: ApolloLink.from([localeMiddleware, makeInstanceMiddleware(opts), httpLink]),
     cache: new InMemoryCache({
       possibleTypes: possibleTypes.possibleTypes,
       typePolicies: {

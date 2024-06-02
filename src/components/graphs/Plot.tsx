@@ -1,16 +1,17 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
+
 import { useTranslation } from 'next-i18next';
-import type { PlotParams } from 'react-plotly.js';
-import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js';
-import fi from 'plotly.js-locales/fi';
-import sv from 'plotly.js-locales/sv';
-import de from 'plotly.js-locales/de';
-import de_ch from 'plotly.js-locales/de-ch';
 import cs from 'plotly.js-locales/cs';
 import da from 'plotly.js-locales/da';
+import de from 'plotly.js-locales/de';
+import de_ch from 'plotly.js-locales/de-ch';
+import fi from 'plotly.js-locales/fi';
 import lv from 'plotly.js-locales/lv';
 import pl from 'plotly.js-locales/pl';
+import sv from 'plotly.js-locales/sv';
+import type { PlotParams } from 'react-plotly.js';
+import createPlotlyComponent from 'react-plotly.js/factory';
 
 const locales = { fi, sv, de, 'de-CH': de_ch, cs, da, lv, pl };
 
@@ -78,12 +79,7 @@ type UsePlotlyArgs = {
   noValidate?: boolean;
 };
 
-export function usePlotlyBasic({
-  data,
-  layout,
-  config,
-  noValidate,
-}: UsePlotlyArgs) {
+export function usePlotlyBasic({ data, layout, config, noValidate }: UsePlotlyArgs) {
   const ref = useRef<HTMLDivElement>(null);
 
   if (!noValidate) {
@@ -111,6 +107,12 @@ export function usePlotlyBasic({
     };
   }, [ref]);
   return ref;
+}
+
+export function BasicPlot(props: UsePlotlyArgs & React.HTMLAttributes<HTMLDivElement>) {
+  const { data, layout, config, noValidate, ...rest } = props;
+  const ref = usePlotlyBasic({ data, layout, config, noValidate });
+  return <div ref={ref} {...rest} />;
 }
 
 export default Plot;

@@ -1,15 +1,9 @@
 import { ApolloError } from '@apollo/client';
-import { useTranslation } from 'next-i18next';
 import * as Sentry from '@sentry/nextjs';
-import {
-  Container,
-  Button,
-  Alert,
-  Card,
-  CardBody,
-  UncontrolledCollapse,
-} from 'reactstrap';
-import getConfig from 'next/config';
+import { useTranslation } from 'next-i18next';
+import { Alert, Button, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
+
+import { deploymentType } from '@/common/environment';
 
 type GraphQLErrorProps = {
   error: ApolloError;
@@ -18,15 +12,12 @@ type GraphQLErrorProps = {
 const GraphQLError = (props: GraphQLErrorProps) => {
   const { error } = props;
   const { t } = useTranslation();
-  const { publicRuntimeConfig } = getConfig();
-  const isProd = publicRuntimeConfig?.deploymentType === 'production';
+  const isProd = deploymentType === 'production';
   let errorDetailMsg: string | null = null;
 
   Sentry.captureException(error);
   if (error.networkError) {
-    errorDetailMsg = `${t(
-      'errors:network-error'
-    )}: ${error.networkError.toString()}`;
+    errorDetailMsg = `${t('errors:network-error')}: ${error.networkError.toString()}`;
   }
 
   return (
@@ -35,13 +26,7 @@ const GraphQLError = (props: GraphQLErrorProps) => {
       {errorDetailMsg}
       {!isProd && error.graphQLErrors?.length ? (
         <>
-          <Button
-            color="dark"
-            size="sm"
-            outline
-            id="toggler"
-            className="mt-2 mb-2"
-          >
+          <Button color="dark" size="sm" outline id="toggler" className="mt-2 mb-2">
             {t('show-error')}
           </Button>
           <UncontrolledCollapse toggler="#toggler">
@@ -61,9 +46,7 @@ const GraphQLError = (props: GraphQLErrorProps) => {
                           )}
                         </code>
                         <br />
-                        <code>
-                          [{(err.path ?? []).map((pth) => `${pth}, `)}]
-                        </code>
+                        <code>[{(err.path ?? []).map((pth) => `${pth}, `)}]</code>
                       </p>
                     </pre>
                   ))}

@@ -1,31 +1,21 @@
-import path from 'path';
-import * as url from 'url';
-import { createRequire } from 'module';
-import webpack from 'webpack';
+// @ts-check
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import * as url from 'node:url';
+
 import { withSentryConfig } from '@sentry/nextjs';
 import { secrets } from 'docker-secret';
+
 import i18nConfig from './next-i18next.config.js';
 
-const { i18n, SUPPORTED_LANGUAGES } = i18nConfig;
+const { i18n } = i18nConfig;
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
 
-const NEXT_PUBLIC_API_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.tech/v1';
-const INSTANCE_IDENTIFIER = process.env.INSTANCE_IDENTIFIER;
 const isProd = process.env.NODE_ENV === 'production';
 
-const sentryAuthToken =
-  secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
-
-console.log(`
-  ⚙ Kausal Paths UI
-    ↝ Initialising app
-      ↝ NODE_ENV: ${process.env.NODE_ENV}
-      ↝ NEXT_PUBLIC_API_URL: ${process.env.NEXT_PUBLIC_API_URL}
-      ↝ NEXT_PUBLIC_WILDCARD_DOMAINS: ${process.env.NEXT_PUBLIC_WILDCARD_DOMAINS}
-  `);
+const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
 
 function initializeThemes() {
   const destPath = path.join(__dirname, 'public', 'static', 'themes');
@@ -46,41 +36,20 @@ function initializeThemes() {
 initializeThemes();
 
 const prodAssetPrefix = process.env.NEXTJS_ASSET_PREFIX;
+const sentryDebug = !isProd || process.env.SENTRY_DEBUG === '1';
 
 /**
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
   assetPrefix: isProd ? prodAssetPrefix : undefined,
-  serverRuntimeConfig: {
-    graphqlUrl: `${NEXT_PUBLIC_API_URL}/graphql/`,
-  },
-  publicRuntimeConfig: {
-    graphqlUrl: '/api/graphql',
-    basePath: process.env.BASE_PATH,
-    instanceIdentifier: INSTANCE_IDENTIFIER,
-    sentryDsn: process.env.SENTRY_DSN,
-    sentryDebug: process.env.SENTRY_DEBUG || '0',
-    deploymentType: process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE || 'development',
-  },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
-  sentry: {
-    // If SENTRY_AUTH_TOKEN is not set, disable uploading source maps to Sentry
-    disableServerWebpackPlugin: !sentryAuthToken,
-    disableClientWebpackPlugin: !sentryAuthToken,
-  },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
   productionBrowserSourceMaps: true,
@@ -95,26 +64,28 @@ const nextConfig = {
     },
   },
   webpack: (cfg, context) => {
-    const { isServer } = context;
+    const { isServer, webpack } = context;
     if (!isServer) {
       cfg.resolve.alias['next-i18next/serverSideTranslations'] = false;
       cfg.resolve.alias['./next-i18next.config'] = false;
       cfg.resolve.alias['v8'] = false;
       cfg.resolve.symlinks = true;
+    } else {
+      cfg.resolve.extensionAlias = {
+        '.js': ['.ts', '.js'],
+      };
     }
-    cfg.plugins.push(
-      new webpack.DefinePlugin({
-        __SENTRY_DEBUG__: process.env.SENTRY_DEBUG === '1',
-      })
-    );
-    cfg.experiments = { ...cfg.experiments, topLevelAwait: true };
+    const defines = {
+      'globalThis.__DEV__': isProd ? 'false' : 'true',
+    };
+    cfg.plugins.push(new webpack.DefinePlugin(defines));
+    cfg.experiments = { ...cfg.experiments };
     return cfg;
   },
-  swcMinify: true,
   reactStrictMode: true,
+  skipMiddlewareUrlNormalize: true,
   experimental: {
-    esmExternals: 'loose',
-    runtime: 'nodejs',
+    //esmExternals: 'loose',
     outputFileTracingIncludes: {
       '/': ['./node_modules/@kausal/themes*/**'],
     },
@@ -125,24 +96,37 @@ const nextConfig = {
     return null;
   },
   // basePath: process.env.BASE_PATH,
-  i18n,
+  i18n: {
+    defaultLocale: 'default',
+    locales: ['default', ...i18nConfig.i18n.locales],
+    localeDetection: false,
+  },
 };
 
-const sentryWebpackPluginOptions = {
-  silent: false,
-  authToken: sentryAuthToken,
-};
+function initSentryWebpack(config) {
+  /**
+   * @type {import('@sentry/nextjs/types/config/types').SentryBuildOptions}
+   */
+  const sentryOptions = {
+    silent: false,
+    telemetry: false,
+    authToken: sentryAuthToken,
+    release: {
+      setCommits: {
+        auto: true,
+      },
+    },
+    disableLogger: !sentryDebug,
+    widenClientFileUpload: true,
+    automaticVercelMonitors: false,
+    reactComponentAnnotation: {
+      enabled: true,
+    },
+  };
 
-const sentryOptions = {
-  transpileClientSDK: false,
-  hideSourceMaps: false,
-  automaticVercelMonitors: false,
-};
+  // Make sure adding Sentry options is the last code to run before exporting, to
+  // ensure that your source maps include changes from all other Webpack plugins
+  return withSentryConfig(config, sentryOptions);
+}
 
-// Make sure adding Sentry options is the last code to run before exporting, to
-// ensure that your source maps include changes from all other Webpack plugins
-export default withSentryConfig(
-  nextConfig,
-  sentryWebpackPluginOptions,
-  sentryOptions
-);
+export default initSentryWebpack(nextConfig);

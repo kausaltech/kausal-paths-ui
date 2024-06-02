@@ -2,7 +2,7 @@
   "extends": [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended",
-    "plugin:styled-components-a11y/recommended",
+    "plugin:styled-components-a11y/recommended"
   ],
   "ignorePatterns": "**/__generated__/**",
   "parser": "@typescript-eslint/parser",
@@ -13,7 +13,8 @@
       "node": {
         "paths": ["./src"],
         "extensions": [".js", ".jsx", ".jsm"]
-      }
+      },
+      "typescript": true
     }
   },
   "rules": {

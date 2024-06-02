@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import { GET_ACTION_CONTENT } from 'queries/getActionContent';
 import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
 import { useSite } from 'context/site';
-import { logError } from 'common/log';
+import { logApolloError } from 'common/log';
 import GraphQLError from 'components/common/GraphQLError';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import CausalGrid from 'components/general/CausalGrid';
@@ -128,22 +128,20 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
-  const [activeSubAction, setActiveSubAction] = useState<string | undefined>(
-    undefined
-  );
+  const [activeSubAction, setActiveSubAction] = useState<string | undefined>(undefined);
   const theme = useTheme();
 
-  const queryResp = useQuery<
-    GetActionContentQuery,
-    GetActionContentQueryVariables
-  >(GET_ACTION_CONTENT, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      node: slug as string,
-      goal: activeGoal?.id ?? null,
-      downstreamDepth: theme.settings.hideActionGrid ? 1 : null,
-    },
-  });
+  const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(
+    GET_ACTION_CONTENT,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        node: slug as string,
+        goal: activeGoal?.id ?? null,
+        downstreamDepth: theme.settings.hideActionGrid ? 1 : null,
+      },
+    }
+  );
 
   const { loading, error, previousData, refetch } = queryResp;
 
@@ -157,7 +155,7 @@ export default function ActionPage() {
     return <ContentLoader fullPage />;
   }
   if (error) {
-    logError(error, { query: GET_ACTION_CONTENT });
+    logApolloError(error, { query: GET_ACTION_CONTENT });
     return (
       <Container className="pt-5">
         <GraphQLError error={error} />
@@ -177,9 +175,7 @@ export default function ActionPage() {
   )?.boolValue;
 
   // use flowplot if action has dimensional flow
-  const flowPlot = action.dimensionalFlow && (
-    <DimensionalPlot flow={action.dimensionalFlow} />
-  );
+  const flowPlot = action.dimensionalFlow && <DimensionalPlot flow={action.dimensionalFlow} />;
 
   const renderSubActionsOrBody = () => {
     if (subActions.length) {
@@ -188,9 +184,7 @@ export default function ActionPage() {
           <SubActions
             actions={subActions}
             activeSubAction={activeSubAction}
-            setActiveSubAction={(subAction: string) =>
-              setActiveSubAction(subAction)
-            }
+            setActiveSubAction={(subAction: string) => setActiveSubAction(subAction)}
           />
         </Container>
       );
@@ -214,9 +208,7 @@ export default function ActionPage() {
     node.inputNodes.find((inputNode) => inputNode.id === action.id)
   );
   const actionVizNode =
-    outputNodes.length === 1 &&
-    action.subactions.length === 0 &&
-    outputNodes[0].metric
+    outputNodes.length === 1 && action.subactions.length === 0 && outputNodes[0].metric
       ? outputNodes[0]
       : action;
 
@@ -243,8 +235,7 @@ export default function ActionPage() {
   const causalNodes =
     activeSubAction === undefined
       ? action.downstreamNodes.filter((node) => node.id !== actionVizNode.id)
-      : action.subactions.find((subAction) => subAction.id === activeSubAction)
-          ?.downstreamNodes;
+      : action.subactions.find((subAction) => subAction.id === activeSubAction)?.downstreamNodes;
 
   return (
     <>
@@ -264,9 +255,7 @@ export default function ActionPage() {
                       <a>{t('actions')}</a>
                     </ActionListLink>
                   </li>
-                  {action.group && (
-                    <li className="breadcrumb-item">{action.group.name}</li>
-                  )}
+                  {action.group && <li className="breadcrumb-item">{action.group.name}</li>}
                 </ol>
               </Breadcrumb>
               <h1>{` ${action.name}`}</h1>
@@ -316,16 +305,14 @@ export default function ActionPage() {
         {!!actionPlot && <ActionPlotCard>{actionPlot}</ActionPlotCard>}
       </Container>
       {renderSubActionsOrBody()}
-      {causalNodes &&
-        causalNodes.length > 0 &&
-        !theme.settings.hideActionGrid && (
-          <CausalGrid
-            nodes={causalNodes}
-            yearRange={yearRange}
-            actionIsOff={!isActive}
-            action={action}
-          />
-        )}
+      {causalNodes && causalNodes.length > 0 && !theme.settings.hideActionGrid && (
+        <CausalGrid
+          nodes={causalNodes}
+          yearRange={yearRange}
+          actionIsOff={!isActive}
+          action={action}
+        />
+      )}
       <SettingsPanelFull />
     </>
   );

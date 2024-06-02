@@ -2,7 +2,7 @@ import { captureException } from '@sentry/nextjs';
 import { getApiCookies, setClientCookies } from 'common/cookies';
 
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import { gqlUrl } from 'utils/environment';
+import { gqlUrl } from '@/common/environment';
 
 const PASS_HEADERS = [
   'x-paths-instance-identifier',
@@ -19,10 +19,7 @@ const PASS_HEADERS = [
  * Simple proxy which handles our GraphQL requests
  * to prevent CORS issues and attach auth headers.
  */
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const headers = req.headers;
   const requestData = req.body;
 
@@ -46,8 +43,7 @@ export default async function handler(
   if (backendCookies.length) {
     backendHeaders['Cookie'] = backendCookies.join('; ');
   }
-  if (req.socket.remoteAddress)
-    backendHeaders['X-Forwarded-For'] = req.socket.remoteAddress;
+  if (req.socket.remoteAddress) backendHeaders['X-Forwarded-For'] = req.socket.remoteAddress;
 
   // Do the fetch from the backend
   const backendResponse = await fetch(gqlUrl, {

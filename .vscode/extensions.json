@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "dozerg.tsimportsorter",
+    "apollographql.vscode-apollo",
+    "esbenp.prettier-vscode",
+  ]
+}

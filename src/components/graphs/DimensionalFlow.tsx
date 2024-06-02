@@ -1,11 +1,13 @@
+import { useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+
 import { gql, useReactiveVar } from '@apollo/client';
+import type { DimensionalPlotFragment } from 'common/__generated__/graphql';
 import { yearRangeVar } from 'common/cache';
 import { genColorsFromTheme } from 'common/colors';
-import type { DimensionalPlotFragment } from 'common/__generated__/graphql';
-import { tint, transparentize } from 'polished';
-import { useEffect, useMemo } from 'react';
-import { useTheme } from 'styled-components';
 import type Plotly from 'plotly.js';
+import { tint, transparentize } from 'polished';
+import { useTheme } from 'styled-components';
 
 type DimensionalPlotProps = {
   flow: DimensionalPlotFragment;
@@ -43,12 +45,7 @@ type DataWithSankey = Plotly.Data & {
   valueformat?: string;
 };
 
-function makeFrame(
-  flow: Flow,
-  start: FlowLink,
-  link: FlowLink,
-  nodeMap: Map<string, FlowNode>
-) {
+function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<string, FlowNode>) {
   const nodes = Array.from(nodeMap.values());
   const data: DataWithSankey = {
     type: 'sankey',
@@ -120,17 +117,8 @@ function makeFrame(
     const remainingIdx = newNode(src, `${link.year.toString()}: ${src.label}`);
 
     const impact = impactSum.get(srcId)!;
-    const remainingLinkColor = src.linkColor
-      ? tint(0.5, src.linkColor)
-      : undefined;
-    newFlow(
-      'start-remaining',
-      startIdx,
-      src.idx,
-      remainingVal,
-      remainingLinkColor,
-      {}
-    );
+    const remainingLinkColor = src.linkColor ? tint(0.5, src.linkColor) : undefined;
+    newFlow('start-remaining', startIdx, src.idx, remainingVal, remainingLinkColor, {});
     newFlow('start-impact', startIdx, src.idx, impact, src.linkColor, {});
     newFlow(
       'start-other',
@@ -141,24 +129,17 @@ function makeFrame(
       {}
     );
 
-    newFlow(
-      'action-remaining',
-      src.idx,
-      remainingIdx,
-      remainingVal,
-      remainingLinkColor,
-      {}
-    );
+    newFlow('action-remaining', src.idx, remainingIdx, remainingVal, remainingLinkColor, {});
   });
 
   return data;
 }
 
-const usePlotlyBasic =
-  process.browser && (await import('components/graphs/Plot')).usePlotlyBasic;
+const BasicPlot = dynamic(() => import('@/components/graphs/Plot').then((mod) => mod.BasicPlot), {
+  ssr: false,
+});
 
-export default function DimensionalFlow(props: DimensionalPlotProps) {
-  if (!usePlotlyBasic) return;
+export default async function DimensionalFlow(props: DimensionalPlotProps) {
   const { flow } = props;
   const theme = useTheme();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
@@ -207,12 +188,9 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
     return out;
   }, []);
 
-  const ref = usePlotlyBasic({ data: data, layout, config });
-
   // TODO: How to have useResizeHandler work with usePlotlyBasic?
   // The resulting graph is not responsive with this implementation.
-
-  return <div ref={ref} style={{ width: '100%' }} />;
+  return <BasicPlot data={data} layout={layout} config={config} style={{ width: '100%' }} />;
 }
 
 DimensionalFlow.fragment = gql`

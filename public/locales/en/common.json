@@ -106,5 +106,6 @@
   "coming-soon": "Coming soon",
   "error-with-code": "Error code {{code}}",
   "thumbSliderLabel": "Adjust",
-  "reset-button": "Reset"
+  "reset-button": "Reset",
+  "return-to-front": "Return to front page"
 }

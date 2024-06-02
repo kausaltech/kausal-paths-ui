@@ -1,39 +1,23 @@
 import * as Sentry from '@sentry/nextjs';
-import getConfig from 'next/config';
-
-const { publicRuntimeConfig } = getConfig();
-
-const SENTRY_DSN =
-  publicRuntimeConfig?.sentryDsn ||
-  process.env.SENTRY_DSN ||
-  process.env.NEXT_PUBLIC_SENTRY_DSN;
-const DEPLOYMENT_TYPE =
-  publicRuntimeConfig?.deploymentType ||
-  process.env.NEXT_PUBLIC_DEPLOYMENT_TYPE ||
-  'development';
-
-const SENTRY_DEBUG = publicRuntimeConfig?.sentryDebug === '1';
+import { sentryDsn, deploymentType } from '@/common/environment';
 
 Sentry.init({
-  dsn: SENTRY_DSN,
+  dsn: sentryDsn,
   integrations: [
-    new Sentry.Replay({
+    Sentry.replayIntegration({
       maskAllText: false,
       maskAllInputs: false,
       blockAllMedia: false,
     }),
-    new Sentry.BrowserTracing(),
-    new Sentry.BrowserProfilingIntegration(),
+    Sentry.browserTracingIntegration(),
+    Sentry.browserProfilingIntegration(),
   ],
-  debug: SENTRY_DEBUG,
+  debug: false,
   sendDefaultPii: true,
   tracesSampleRate: 1.0,
   profilesSampleRate: 1.0,
   replaysSessionSampleRate: 0.0,
   replaysOnErrorSampleRate: 1.0,
-  tracePropagationTargets: [
-    'localhost',
-    `${process.env.NEXT_PUBLIC_API_URL}/graphql/`,
-  ],
-  environment: DEPLOYMENT_TYPE,
+  tracePropagationTargets: ['localhost', `${process.env.NEXT_PUBLIC_API_URL}/graphql/`],
+  environment: deploymentType,
 });

@@ -1,7 +1,14 @@
-import { GetInstanceContextQuery } from 'common/__generated__/graphql';
 import React, { useContext } from 'react';
 
+import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
+
 export type SiteContextScenario = GetInstanceContextQuery['scenarios'][0];
+
+export type SiteI18nConfig = {
+  locale: string;
+  defaultLocale: string;
+  supportedLocales: string[];
+};
 
 export type SiteContextType = {
   title: string;
@@ -10,7 +17,9 @@ export type SiteContextType = {
     instanceIdentifier: string;
   };
 
-  deploymentType: 'production' | 'testing' | 'development';
+  basePath: string;
+  assetPrefix: string;
+  i18n: SiteI18nConfig;
   iconBase: string;
   ogImage: string;
   baselineName: string | null | undefined;
