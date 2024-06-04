@@ -14,6 +14,7 @@ import {
   SUPPORTED_LANGUAGES_HEADER,
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
+import { deploymentType, wildcardDomains } from './common/environment';
 import { generateCorrelationID, getLogger } from './common/log';
 import { getInstancesForRequest } from './middleware/context';
 
@@ -145,39 +146,37 @@ export async function middleware(req: NextRequest) {
   if (['api', 'static', '_next', 'favicon.ico'].includes(match.parts[0])) {
     return NextResponse.next(reqInit);
   }
-
+  if (!instances.length) {
+    logger.warn(
+      { 'wildcard-domains': wildcardDomains.join(',') },
+      `no matching instances for hostname ${hostname}`
+    );
+    let resp: string;
+    if (deploymentType !== 'production') {
+      resp = `Unknown hostname: ${hostname}. Wildcard domains: "${wildcardDomains.join(', ')}"`;
+    } else {
+      resp = 'Page not found.';
+    }
+    return new Response(resp, { status: 404 });
+  }
   if (!instance) {
     const bps = instances.map((i) => ensureSlash(i.hostname.basePath)).join(', ');
     logger.warn(`no matching instance found; supported basepaths: ${bps}`);
     return notFoundResponse(req, reqHeaders);
   }
 
-  path = match.path;
-
   const { locale, path: localizedPath } = determineLocale(instance, match.path);
   path = localizedPath;
 
   const href = `${nextUrl.protocol}//${nextUrl.host}${path}`;
-  const url = new NextURL(href, {
-    nextConfig: {
-      basePath: basePath,
-      i18n: {
-        locales: instance.supportedLanguages,
-        defaultLocale: 'default',
-      },
-    },
-    forceLocale: true,
-  });
-  //url.locale = locale;
-  console.log('before:');
-  console.log(nextUrl);
-  console.log(nextUrl.locale);
-  console.log('after:');
-  console.log(url);
-  console.log(url.locale);
-  //const url = request.nextUrl.clone();
-  //url.locale = locale;
-  if (nextUrl.locale === url.locale) {
+  const url = new NextURL(href);
+  const shouldRedirect = nextUrl.pathname === url.pathname;
+  logger.info({ href: nextUrl.toString(), locale: nextUrl.locale }, 'before');
+  logger.info(
+    { href: url.toString(), locale: url.locale },
+    `after${shouldRedirect ? ' (redirecting)' : ''}`
+  );
+  if (shouldRedirect) {
     return NextResponse.next(reqInit);
   }
   console.log('redirecting');

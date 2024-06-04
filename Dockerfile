@@ -21,6 +21,9 @@ RUN \
 
 
 ARG NPM_TOKEN
+ENV NPM_TOKEN=${NPM_TOKEN}
+
+RUN --mount=type=secret,id=NPM_TOKEN
 
 RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
   NPM_TOKEN=$( ([ -f /run/secrets/NPM_TOKEN ] && cat /run/secrets/NPM_TOKEN) || echo -n "${NPM_TOKEN}") \

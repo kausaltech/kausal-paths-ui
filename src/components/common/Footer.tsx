@@ -1,11 +1,13 @@
-import SVG from 'react-inlinesvg';
-import styled, { useTheme } from 'styled-components';
-import { Container } from 'reactstrap';
-import { transparentize } from 'polished';
-import Icon from './icon';
-import { Link } from 'common/links';
 import { useTranslation } from 'common/i18n';
+import { Link } from 'common/links';
 import { useSite } from 'context/site';
+import { transparentize } from 'polished';
+import SVG from 'react-inlinesvg';
+import { Container } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
+
+import { getThemeStaticURL } from '@/common/theme';
+import Icon from './icon';
 
 const StyledFooter = styled.footer`
   position: relative;
@@ -65,18 +67,13 @@ const Branding = styled.div`
 `;
 
 const Logo = styled.div`
-  height: calc(
-    ${(props) => props.theme.footerLogoSize} *
-      ${(props) => props.theme.spaces.s400}
-  );
+  height: calc(${(props) => props.theme.footerLogoSize} * ${(props) => props.theme.spaces.s400});
   max-width: calc(
-    ${(props) => props.theme.footerLogoSize} * 4 *
-      ${(props) => props.theme.spaces.s300}
+    ${(props) => props.theme.footerLogoSize} * 4 * ${(props) => props.theme.spaces.s300}
   );
   margin-right: ${(props) => props.theme.spaces.s200};
-  margin: ${(props) => props.theme.spaces.s150}
-    ${(props) => props.theme.spaces.s200} ${(props) => props.theme.spaces.s150}
-    0;
+  margin: ${(props) => props.theme.spaces.s150} ${(props) => props.theme.spaces.s200}
+    ${(props) => props.theme.spaces.s150} 0;
 
   svg {
     height: 100%;
@@ -115,8 +112,7 @@ const UtilitySection = styled.div`
   justify-content: space-between;
   margin: 0;
   padding: ${(props) => props.theme.spaces.s200} 0 0;
-  border-top: 1px solid
-    ${(props) => transparentize(0.8, props.theme.footerColor)};
+  border-top: 1px solid ${(props) => transparentize(0.8, props.theme.footerColor)};
   line-height: ${(props) => props.theme.lineHeightSm};
 
   @media (max-width: ${(props) => props.theme.breakpointMd}) {
@@ -185,8 +181,7 @@ const BaseSection = styled.div`
   display: flex;
   justify-content: space-between;
   padding: ${(props) => props.theme.spaces.s200} 0;
-  border-top: 1px solid
-    ${(props) => transparentize(0.8, props.theme.footerColor)};
+  border-top: 1px solid ${(props) => transparentize(0.8, props.theme.footerColor)};
   line-height: ${(props) => props.theme.lineHeightSm};
 
   @media (max-width: ${(props) => props.theme.breakpointLg}) {
@@ -313,7 +308,7 @@ function SiteFooter() {
   const OrgLogo = () => {
     return (
       <SVG
-        src={theme.themeLogoWhiteUrl}
+        src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
         preserveAspectRatio="xMinYMid meet"
         title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
         style={{ display: 'block' }}
@@ -331,21 +326,17 @@ function SiteFooter() {
       <Container>
         <FooterNav aria-label={t('nav-footer')}>
           <Branding>
-            {theme.themeLogoWhiteUrl !== '' && (
+            {theme.themeLogoWhiteUrl ? (
               <Logo>
                 {theme?.footerLogoLink ? (
-                  <a
-                    href={theme.footerLogoLink}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a href={theme.footerLogoLink} target="_blank" rel="noreferrer">
                     <OrgLogo aria-hidden="true" className="footer-org-logo" />
                   </a>
                 ) : (
                   <OrgLogo aria-hidden="true" className="footer-org-logo" />
                 )}
               </Logo>
-            )}
+            ) : null}
             {!theme.settings.footerLogoOnly && (
               <ServiceTitle>
                 <Link href="/">{siteTitle}</Link>
@@ -463,10 +454,7 @@ function SiteFooter() {
             {otherLogos?.length > 0 && (
               <FundingInstruments $wrap={otherLogos.length > 4}>
                 {otherLogos.map((logo) => (
-                  <FundingInstrumentContainer
-                    key={logo.id}
-                    $small={otherLogos.length > 4}
-                  >
+                  <FundingInstrumentContainer key={logo.id} $small={otherLogos.length > 4}>
                     <a
                       href={logo.link ? logo.link : '#'}
                       target={logo.link ? '_blank' : '_self'}
@@ -484,9 +472,7 @@ function SiteFooter() {
               </FundingInstruments>
             )}
             {footerStatement && (
-              <FooterStatement
-                dangerouslySetInnerHTML={{ __html: footerStatement }}
-              />
+              <FooterStatement dangerouslySetInnerHTML={{ __html: footerStatement }} />
             )}
           </FooterExtras>
         </Container>

@@ -30,7 +30,7 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from '@/common/const';
 import { assetPrefix, deploymentType, wildcardDomains } from '@/common/environment';
-import { getLogger } from '@/common/log';
+import { getLogger, logApolloError } from '@/common/log';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import PathsError from './_error';
 
@@ -214,7 +214,6 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
     clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
   };
   const apolloClient: ApolloClient<object> = initializeApollo(null, apolloConfig);
-  apolloConfig.clientIp = null; // We don't need to pass this to the client
 
   // Load the instance configuration from backend
   let instance: InstanceContextType;
@@ -227,6 +226,7 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
       query: GET_INSTANCE_CONTEXT,
       context: {
         locale: i18nConf.locale,
+        logger,
       },
     });
     const { scenarios } = data;
@@ -255,14 +255,10 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
     };
   } catch (error) {
     if (isApolloError(error)) {
-      console.error(
-        'Got Apollo error while fetching instance context',
-        JSON.stringify(error, null, 2)
-      );
+      logApolloError(error, { query: GET_INSTANCE_CONTEXT }, logger);
       const isProtected = error.graphQLErrors.find(
         (err) => err.extensions?.code == 'instance_protected'
       );
-      console.error(error.graphQLErrors);
       if (isProtected) {
       }
     }
@@ -286,6 +282,15 @@ async function getI18nProps(ctx: PathsPageContext) {
     console.log(ctx.locale, ctx.locales, ctx.defaultLocale);
     defaultLanguage = 'en';
   }
+
+  logger.debug({
+    'default-language': req.headers[DEFAULT_LANGUAGE_HEADER],
+    'supported-languages': req.headers[SUPPORTED_LANGUAGES_HEADER],
+    locale: ctx.locale,
+    'context-locales': ctx.locales,
+    'context-default-locale': ctx.defaultLocale,
+  });
+
   if (!ctx.locale) {
     logger.warn('no active locale');
     ctx.locale = 'en';

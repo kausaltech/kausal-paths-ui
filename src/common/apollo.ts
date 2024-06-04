@@ -99,11 +99,10 @@ export type ApolloClientOpts = {
 };
 
 export function getHttpHeaders(opts: ApolloClientOpts) {
-  const config = getRuntimeConfig();
   const {
     instanceHostname,
     instanceIdentifier,
-    wildcardDomains = config.wildcardDomains,
+    wildcardDomains = getRuntimeConfig().wildcardDomains,
     authorizationToken,
     currentURL,
     clientIp,
@@ -210,7 +209,13 @@ function createApolloClient(opts: ApolloClientOpts) {
 
   return new ApolloClient({
     ssrMode,
-    link: ApolloLink.from([localeMiddleware, makeInstanceMiddleware(opts), httpLink]),
+    link: ApolloLink.from([
+      logQueryStart,
+      localeMiddleware,
+      makeInstanceMiddleware(opts),
+      logQueryEnd,
+      httpLink,
+    ]),
     cache: new InMemoryCache({
       possibleTypes: possibleTypes.possibleTypes,
       typePolicies: {

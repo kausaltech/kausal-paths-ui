@@ -17,7 +17,7 @@
   "dependencies": {
     "@apollo/client": "^3.10.4",
     "@babel/eslint-parser": "^7.24.6",
-    "@kausal/themes": "^0.8.1",
+    "@kausal/themes": "^0.8.2",
     "@n8tb1t/use-scroll-position": "^2.0.3",
     "@opentelemetry/exporter-prometheus": "^0.51.1",
     "@opentelemetry/instrumentation": "^0.51.1",
@@ -151,7 +151,7 @@
   "type": "module",
   "packageManager": "npm@10.5.2",
   "optionalDependencies": {
-    "@kausal/themes-private": "^0.5.1"
+    "@kausal/themes-private": "^0.5.3"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,scss,css,md}": "prettier --write"
