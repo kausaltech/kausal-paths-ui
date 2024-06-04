@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 import type { Integration } from '@sentry/types';
 
-import { deploymentType } from './environment';
+import { deploymentType, gqlUrl } from './environment';
 
 export async function initSentry() {
   const integrations: Integration[] = [];
@@ -15,7 +15,7 @@ export async function initSentry() {
     environment: deploymentType,
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1.0,
-    tracePropagationTargets: ['localhost', `${process.env.NEXT_PUBLIC_API_URL}/graphql/`],
+    tracePropagationTargets: ['localhost', gqlUrl],
     debug: process.env.SENTRY_DEBUG === '1',
     ignoreErrors: ['NEXT_NOT_FOUND'],
     integrations,

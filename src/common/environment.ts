@@ -93,3 +93,15 @@ export function getRuntimeConfig() {
   };
   return config;
 }
+
+export function printRuntimeConfig() {
+  const p = (s: string) => (s + ':').padEnd(22);
+  console.log(`Kausal Paths UI (build ${process.env.BUILD_ID}) starting\n`);
+  console.log(p('Node environment'), process.env.NODE_ENV);
+  console.log(p('Deployment type'), deploymentType);
+  console.log(p('GraphQL backend URL'), gqlUrl);
+  console.log(p('Wildcard domains'), wildcardDomains.join(', '));
+  console.log(p('OIDC auth issuer'), authIssuer);
+  console.log(p('Sentry DSN'), sentryDsn);
+  console.log(p('Asset prefix'), assetPrefix);
+}

@@ -1,3 +1,4 @@
+import { printRuntimeConfig } from './common/environment';
 import { initSentry } from './common/sentry';
 
 //import { nodeProfilingIntegration } from '@sentry/profiling-node';
@@ -12,6 +13,7 @@ export const register = async () => {
     initSentry();
   }
   if (process.env.NEXT_RUNTIME === 'nodejs') {
+    printRuntimeConfig();
     await import('./instrumentation-node');
   }
 };

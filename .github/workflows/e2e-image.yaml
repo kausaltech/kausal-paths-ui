@@ -6,7 +6,7 @@ on:
         description: 'Comma separated list of instance identifiers'
         required: true
         type: string
-        default: 'sunnydale,espoo,zuerich'
+        default: 'sunnydale,espoo,zuerich,nzc'
       image:
         description: 'Image (incl. repo, path, tag) to test'
         required: true
@@ -57,6 +57,7 @@ jobs:
         env:
           NEXT_PUBLIC_WILDCARD_DOMAINS: localhost
           NEXT_PUBLIC_DEPLOYMENT_TYPE: testing
+          NEXT_PUBLIC_API_URL: ${{ inputs.backend_base_url }}
           AUTH_SECRET: abcd
           AUTH_TRUST_HOST: true
           HOSTNAME: 0.0.0.0

@@ -66,6 +66,7 @@ function createApolloClient(req: NextRequest) {
 
   const client: ApolloClientType = new ApolloClient({
     ssrMode: false,
+    uri: config.gqlUrl,
     link: ApolloLink.from([
       logQueryStart,
       new SentryLink({

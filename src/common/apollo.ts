@@ -209,6 +209,7 @@ function createApolloClient(opts: ApolloClientOpts) {
 
   return new ApolloClient({
     ssrMode,
+    uri,
     link: ApolloLink.from([
       logQueryStart,
       localeMiddleware,
