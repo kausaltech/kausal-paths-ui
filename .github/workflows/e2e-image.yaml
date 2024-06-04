@@ -4,7 +4,7 @@ on:
     inputs:
       instance_identifiers:
         description: 'Comma separated list of instance identifiers'
-        required: true
+        required: false
         type: string
         default: 'sunnydale,espoo,zuerich,nzc'
       image:
