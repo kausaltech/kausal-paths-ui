@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useState } from 'react';
 
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
-import { formatStaticUrl, Link } from 'common/links';
+import { Link } from 'common/links';
 import Icon from 'components/common/icon';
 import NavDropdown, {
   type NavDropdownListItem,
@@ -23,6 +23,8 @@ import {
   UncontrolledDropdown,
 } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
+
+import { getThemeStaticURL } from '@/common/theme';
 
 const TopNav = styled(Navbar)`
   padding: 0 ${(props) => props.theme.spaces.s100};
@@ -191,7 +193,6 @@ const StyledDropdownToggle = styled(DropdownToggle)`
 `;
 
 const StyledDropdown = styled(UncontrolledDropdown)`
-
   .dropdown-toggle.nav-link {
     padding-left: 0;
     padding-right: 0;
@@ -208,12 +209,12 @@ const StyledDropdown = styled(UncontrolledDropdown)`
 
     .highlighter {
       display: inline-block;
-      padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) =>
-        props.theme.spaces.s050} - 5px);
+      padding: ${(props) => props.theme.spaces.s050} 0
+        calc(${(props) => props.theme.spaces.s050} - 5px);
     }
 
     &:hover {
-    background-color: transparent;
+      background-color: transparent;
 
       .highlighter {
         border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
@@ -224,8 +225,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
-      box-shadow: 3px 3px 6px 2px ${(props) =>
-        transparentize(0.85, props.theme.themeColors.black)}};
+      box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
     }
 
     .dropdown-item {
@@ -303,13 +303,14 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   const { siteTitle, ownerName, navItems, sticky } = props;
 
   const orgLogo = useMemo(() => {
-    const url = formatStaticUrl(theme.themeLogoUrl);
+    const url = getThemeStaticURL(theme.themeLogoUrl);
     return (
       <SVG
         className="org-logo"
         src={url}
         title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
         preserveAspectRatio="xMinYMid meet"
+        onError={(err) => console.error(err)}
       />
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
@@ -330,7 +331,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
     <div>
       <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container="lg">
         <Link href="/" passHref>
-          <HomeLink>
+          <HomeLink href="dummy">
             {orgLogo}
             <SiteTitle>{siteTitle}</SiteTitle>
           </HomeLink>
@@ -339,8 +340,8 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
           <Nav navbar className="ml-auto">
             <NavItem>
               <NavLink>
-                <Link href="#admin">
-                  <a>
+                <Link href="#admin" passHref>
+                  <a href="dummy">
                     <NavHighlighter className="highlighter">
                       <Icon name="user" size={20} color={theme.brandNavColor} /> Log in
                     </NavHighlighter>

@@ -1,43 +1,31 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useQuery, useReactiveVar } from '@apollo/client';
-import styled from 'styled-components';
-import { summarizeYearlyValuesBetween } from 'common/preprocess';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
-import {
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Button,
-  FormGroup,
-  Input,
-  Label,
-} from 'reactstrap';
-import Icon from 'components/common/icon';
-import { useTranslation } from 'next-i18next';
-import { GET_ACTION_LIST } from 'queries/getActionList';
+import { useEffect, useMemo, useState } from 'react';
 
-import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanelFull from 'components/general/SettingsPanelFull';
-import ActionsMac from 'components/general/ActionsMac';
-import ActionsComparison from 'components/general/ActionsComparison';
-import ContentLoader from 'components/common/ContentLoader';
-import ActionsList from 'components/general/ActionsList';
-import {
+import { useQuery, useReactiveVar } from '@apollo/client';
+import type {
   GetActionListQuery,
   GetActionListQueryVariables,
   GetPageQuery,
 } from 'common/__generated__/graphql';
-import ScenarioBadge from 'components/common/ScenarioBadge';
-import type { PageRefetchCallback } from './Page';
-import {
-  ActionWithEfficiency,
-  SortActionsBy,
-  SortActionsConfig,
-} from 'types/actions.types';
-import { TFunction } from 'i18next';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useInstance } from 'common/instance';
+import { summarizeYearlyValuesBetween } from 'common/preprocess';
+import ContentLoader from 'components/common/ContentLoader';
+import GraphQLError from 'components/common/GraphQLError';
+import Icon from 'components/common/icon';
 import { PageHero } from 'components/common/PageHero';
+import ScenarioBadge from 'components/common/ScenarioBadge';
+import ActionsComparison from 'components/general/ActionsComparison';
+import ActionsList from 'components/general/ActionsList';
+import ActionsMac from 'components/general/ActionsMac';
+import SettingsPanelFull from 'components/general/SettingsPanelFull';
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'next-i18next';
+import { GET_ACTION_LIST } from 'queries/getActionList';
+import { Button, ButtonGroup, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
+import styled from 'styled-components';
+import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from 'types/actions.types';
+
+import type { PageRefetchCallback } from './Page';
 
 const SettingsForm = styled.form`
   display: block;
@@ -151,15 +139,12 @@ function ActionListPage({ page }: ActionListPageProps) {
   const { t } = useTranslation();
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
-    GET_ACTION_LIST,
-    {
-      variables: {
-        goal: activeGoal?.id,
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
+    variables: {
+      goal: activeGoal?.id ?? null,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
   const { error, loading, previousData } = queryResp;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
@@ -167,32 +152,21 @@ function ActionListPage({ page }: ActionListPageProps) {
   const data = queryResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
 
-  const sortOptions = getSortOptions(
-    t,
-    hasEfficiency,
-    !!instance.features.showAccumulatedEffects
-  );
+  const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
 
   const [listType, setListType] = useState('list');
   const [ascending, setAscending] = useState(true);
   const [sortBy, setSortBy] = useState<SortActionsConfig>(
-    sortOptions.find(
-      (sortOption) => sortOption.key === page.defaultSortOrder
-    ) ?? sortOptions[0]
+    sortOptions.find((sortOption) => sortOption.key === page.defaultSortOrder) ?? sortOptions[0]
   );
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
-  const [actionGroup, setActionGroup] = useState<'ALL_ACTIONS' | string>(
-    'ALL_ACTIONS'
-  );
+  const [actionGroup, setActionGroup] = useState<'ALL_ACTIONS' | string>('ALL_ACTIONS');
 
   // Different default view if we have action efficiency pairs
   useEffect(() => {
     if (loading === false && data && hasEfficiency) {
       setListType('mac');
-      setSortBy(
-        sortOptions.find((option) => option.key === 'CUM_EFFICIENCY') ??
-          sortOptions[0]
-      );
+      setSortBy(sortOptions.find((option) => option.key === 'CUM_EFFICIENCY') ?? sortOptions[0]);
     }
   }, [loading, data, hasEfficiency]);
 
@@ -217,45 +191,29 @@ function ActionListPage({ page }: ActionListPageProps) {
               [
                 ...(act.impactMetric?.historicalValues ?? []),
                 ...(act.impactMetric?.forecastValues ?? []),
-              ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ??
-              0,
+              ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ?? 0,
           };
 
           const efficiencyType = data?.actionEfficiencyPairs[activeEfficiency];
-          const efficiencyAction = efficiencyType?.actions.find(
-            (a) => a.action.id === act.id
-          );
+          const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
 
           if (!efficiencyType || !efficiencyAction) return out;
 
           out.cumulativeImpact =
             (efficiencyType.invertImpact ? -1 : 1) *
-            summarizeYearlyValuesBetween(
-              efficiencyAction.impactValues,
-              yearRange[0],
-              yearRange[1]
-            );
+            summarizeYearlyValuesBetween(efficiencyAction.impactValues, yearRange[0], yearRange[1]);
           out.cumulativeCost =
             (efficiencyType.invertCost ? -1 : 1) *
-            summarizeYearlyValuesBetween(
-              efficiencyAction.costValues,
-              yearRange[0],
-              yearRange[1]
-            );
-          out.efficiencyDivisor =
-            efficiencyAction.efficiencyDivisor ?? undefined;
+            summarizeYearlyValuesBetween(efficiencyAction.costValues, yearRange[0], yearRange[1]);
+          out.efficiencyDivisor = efficiencyAction.efficiencyDivisor ?? undefined;
           if (out.efficiencyDivisor !== undefined)
             out.cumulativeEfficiency =
-              out.cumulativeCost /
-              Math.abs(out.cumulativeImpact) /
-              out.efficiencyDivisor;
+              out.cumulativeCost / Math.abs(out.cumulativeImpact) / out.efficiencyDivisor;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
             cumulativeImpactUnit: efficiencyType?.impactUnit.htmlShort,
             cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${
-              data.actionEfficiencyPairs[activeEfficiency]?.invertImpact
-                ? reductionText
-                : ''
+              data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''
             }`,
             cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
             cumulativeCostName: efficiencyType?.costNode?.name,
@@ -266,10 +224,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           Object.assign(out, efficiencyProps);
           return out;
         })
-        .filter(
-          (action) =>
-            actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id
-        ),
+        .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
     [data, actionGroup, activeEfficiency, yearRange]
   );
 
@@ -316,9 +271,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     id="impact"
                     name="select"
                     type="select"
-                    onChange={(e) =>
-                      setActiveEfficiency(Number(e.target.value))
-                    }
+                    onChange={(e) => setActiveEfficiency(Number(e.target.value))}
                   >
                     {data.actionEfficiencyPairs.map((impactGroup, indx) => (
                       <option value={indx} key={indx}>
@@ -339,9 +292,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     type="select"
                     onChange={(e) => setActionGroup(e.target.value)}
                   >
-                    <option value="ALL_ACTIONS">
-                      {t('action-groups-all')}
-                    </option>
+                    <option value="ALL_ACTIONS">{t('action-groups-all')}</option>
                     {actionGroups.map((actionGroup) => (
                       <option value={actionGroup.id} key={actionGroup.id}>
                         {actionGroup.name}
@@ -359,9 +310,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     id="sort"
                     name="select"
                     type="select"
-                    onChange={(e) =>
-                      handleChangeSort(e.target.value as SortActionsBy)
-                    }
+                    onChange={(e) => handleChangeSort(e.target.value as SortActionsBy)}
                   >
                     {sortOptions.map(
                       (sortOption) =>
@@ -388,11 +337,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                       active={ascending === true}
                       aria-label={t('sort-ascending')}
                     >
-                      <Icon
-                        name="arrowUpWideShort"
-                        width="1.5rem"
-                        height="1.5rem"
-                      />
+                      <Icon name="arrowUpWideShort" width="1.5rem" height="1.5rem" />
                     </Button>
                     <Button
                       color="white"
@@ -401,11 +346,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                       active={ascending === false}
                       aria-label={t('sort-descending')}
                     >
-                      <Icon
-                        name="arrowDownShortWide"
-                        width="1.5rem"
-                        height="1.5rem"
-                      />
+                      <Icon name="arrowDownShortWide" width="1.5rem" height="1.5rem" />
                     </Button>
                   </SortButtons>
                 </FormGroup>
@@ -448,9 +389,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               </Tab>
             ) : (
               <Tab
-                className={`nav-link ${
-                  listType === 'comparison' ? 'active' : ''
-                }`}
+                className={`nav-link ${listType === 'comparison' ? 'active' : ''}`}
                 onClick={() => setListType('comparison')}
                 role="tab"
                 tabIndex={0}
@@ -482,9 +421,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionsMac
                 id="efficiency-view"
                 actions={usableActions}
-                actionEfficiencyPairs={
-                  data.actionEfficiencyPairs[activeEfficiency]
-                }
+                actionEfficiencyPairs={data.actionEfficiencyPairs[activeEfficiency]}
                 t={t}
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}

@@ -1,34 +1,34 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useTranslation } from 'next-i18next';
-import { tint } from 'polished';
-import styled from 'styled-components';
+
 import { useReactiveVar } from '@apollo/client';
-import { genColorsFromTheme, setUniqueColors } from 'common/colors';
-import SiteContext from 'context/site';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
-import {
-  Col,
-  Row,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-} from 'reactstrap';
+import { activeGoalVar } from 'common/cache';
+import { genColorsFromTheme, setUniqueColors } from 'common/colors';
+import { type InstanceGoal, useInstance } from 'common/instance';
+import { getRange } from 'common/preprocess';
 import Icon from 'components/common/icon';
 import SelectDropdown from 'components/common/SelectDropdown';
-import { activeGoalVar } from 'common/cache';
+import SiteContext from 'context/site';
 import {
   DimensionalMetric,
-  MetricCategoryValues,
+  type MetricCategoryValues,
   MetricSlice,
-  SliceConfig,
+  type SliceConfig,
 } from 'data/metric';
-import { useTheme } from 'common/theme';
-import { InstanceGoal, useInstance } from 'common/instance';
 import { isEqual } from 'lodash';
-import { LayoutAxis } from 'plotly.js';
-import { getRange } from 'common/preprocess';
+import { useTranslation } from 'next-i18next';
+import type { LayoutAxis } from 'plotly.js';
+import { tint } from 'polished';
+import {
+  Col,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  Row,
+  UncontrolledDropdown,
+} from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -81,10 +81,7 @@ type BaselineForecast = { year: number; value: number };
 
 type PlotData = { x: number[]; y: number[] };
 
-function getDefaultSliceConfig(
-  cube: DimensionalMetric,
-  activeGoal: InstanceGoal | null
-) {
+function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal | null) {
   /**
    * By default, we group by the first dimension `metric` has, whatever it is.
    * @todo Is there a better way to select the default?
@@ -110,13 +107,8 @@ function getDefaultSliceConfig(
    * goal-based default filters. If so, we should choose another
    * dimension.
    */
-  if (
-    defaultConfig.dimensionId &&
-    cubeDefault.hasOwnProperty(defaultConfig.dimensionId)
-  ) {
-    const firstPossible = cube.dimensions.find(
-      (dim) => !cubeDefault.hasOwnProperty(dim.id)
-    );
+  if (defaultConfig.dimensionId && cubeDefault.hasOwnProperty(defaultConfig.dimensionId)) {
+    const firstPossible = cube.dimensions.find((dim) => !cubeDefault.hasOwnProperty(dim.id));
     defaultConfig.dimensionId = firstPossible?.id;
   }
   return defaultConfig;
@@ -161,8 +153,7 @@ export default function DimensionalNodePlot({
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
 
   const lastMetricYear = metric.years.slice(-1)[0];
-  const usableEndYear =
-    lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
+  const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
 
   const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
@@ -179,12 +170,8 @@ export default function DimensionalNodePlot({
     setSliceConfig(newDefault);
   }, [activeGoal, cube]);
 
-  const sliceableDims = cube.dimensions.filter(
-    (dim) => !sliceConfig.categories[dim.id]
-  );
-  const slicedDim = cube.dimensions.find(
-    (dim) => dim.id === sliceConfig.dimensionId
-  );
+  const sliceableDims = cube.dimensions.filter((dim) => !sliceConfig.categories[dim.id]);
+  const slicedDim = cube.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
 
   let slice: MetricSlice;
   if (slicedDim) {
@@ -247,10 +234,7 @@ export default function DimensionalNodePlot({
   let longUnit = metric.unit.htmlShort;
   // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
   // the backend gets proper support for unit specifiers.
-  if (
-    cube.hasDimension('emission_scope') &&
-    !cube.hasDimension('greenhouse_gases')
-  ) {
+  if (cube.hasDimension('emission_scope') && !cube.hasDimension('greenhouse_gases')) {
     if (metric.unit.short === 't/Einw./a') {
       longUnit = t('tco2-e-inhabitant');
     } else if (metric.unit.short === 'kt/a') {
@@ -300,13 +284,7 @@ export default function DimensionalNodePlot({
       plotData.push({
         ...traceConfig,
         ...filledStyles(`${stackGroup}-forecast`),
-        ...formatHover(
-          cv.category.label,
-          color,
-          unit,
-          predLabel,
-          theme.fontFamily
-        ),
+        ...formatHover(cv.category.label, color, unit, predLabel, theme.fontFamily),
         x: slice.forecastYears,
         y: cv.forecastValues,
         showlegend: false,
@@ -392,11 +370,7 @@ export default function DimensionalNodePlot({
     }
   }
 
-  if (
-    baselineForecast &&
-    site.baselineName &&
-    instance.features?.baselineVisibleInGraphs
-  ) {
+  if (baselineForecast && site.baselineName && instance.features?.baselineVisibleInGraphs) {
     const reduceForecastToPlot = (forecasts: PlotData, forecast) =>
       forecast.year >= startYear && forecast.year <= usableEndYear
         ? {
@@ -426,12 +400,7 @@ export default function DimensionalNodePlot({
         width: 2,
         dash: 'dash',
       },
-      ...formatHover(
-        site.baselineName,
-        theme.graphColors.grey030,
-        unit,
-        predLabel
-      ),
+      ...formatHover(site.baselineName, theme.graphColors.grey030, unit, predLabel),
     });
   }
 
@@ -447,17 +416,8 @@ export default function DimensionalNodePlot({
         width: 0,
       },
       x: [...slice.historicalYears, ...slice.forecastYears],
-      y: [
-        ...slice.totalValues.historicalValues,
-        ...slice.totalValues.forecastValues,
-      ],
-      ...formatHover(
-        label,
-        theme.graphColors.grey080,
-        unit,
-        null,
-        theme.fontFamily
-      ),
+      y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
+      ...formatHover(label, theme.graphColors.grey080, unit, null, theme.fontFamily),
       showlegend: false,
     });
   }
@@ -524,20 +484,14 @@ export default function DimensionalNodePlot({
       tickcolor: theme.graphColors.grey030,
       fixedrange: true,
       rangemode: rangeMode,
-      range:
-        metric.stackable && slice.totalValues
-          ? getRangeFromSlice(slice)
-          : undefined,
+      range: metric.stackable && slice.totalValues ? getRangeFromSlice(slice) : undefined,
     },
     xaxis: showReferenceYear
       ? {
           ...referenceXAxisConfig,
           visible: true,
           domain: [0, 0.03],
-          range: [
-            `${site.referenceYear - 1}-01-01`,
-            `${site.referenceYear}-01-01`,
-          ],
+          range: [`${site.referenceYear - 1}-01-01`, `${site.referenceYear}-01-01`],
         }
       : referenceXAxisConfig,
     xaxis2: showReferenceYear
@@ -601,21 +555,14 @@ export default function DimensionalNodePlot({
                   }))
                 }
                 options={sliceableDims}
-                value={
-                  sliceableDims.find(
-                    (dim) => sliceConfig.dimensionId === dim.id
-                  ) || null
-                }
+                value={sliceableDims.find((dim) => sliceConfig.dimensionId === dim.id) || null}
                 isMulti={false}
                 isClearable={false}
               />
             </Col>
           )}
           {cube.dimensions.map((dim) => {
-            const options = cube.getOptionsForDimension(
-              dim.id,
-              sliceConfig.categories
-            );
+            const options = cube.getOptionsForDimension(dim.id, sliceConfig.categories);
             return (
               <Col md={4} className="d-flex" key={dim.id}>
                 <SelectDropdown
@@ -668,18 +615,10 @@ export default function DimensionalNodePlot({
               {` ${t('download-data')}`}
             </DropdownToggle>
             <DropdownMenu>
-              <DropdownItem
-                onClick={async (ev) =>
-                  await cube.downloadData(sliceConfig, 'xlsx')
-                }
-              >
+              <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'xlsx')}>
                 <Icon name="file" /> XLS
               </DropdownItem>
-              <DropdownItem
-                onClick={async (ev) =>
-                  await cube.downloadData(sliceConfig, 'csv')
-                }
-              >
+              <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'csv')}>
                 <Icon name="file" /> CSV
               </DropdownItem>
             </DropdownMenu>

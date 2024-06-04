@@ -32,7 +32,7 @@ RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
 FROM ${base_image} AS nextjs_base
 
 ENV NODE_ENV=production
-ARG NEXTJS_STANDALONE_BUILD=0
+ARG NEXTJS_STANDALONE_BUILD=1
 ENV NEXTJS_STANDALONE_BUILD=${NEXTJS_STANDALONE_BUILD}
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXTJS_ASSET_PREFIX_PLACEHOLDER=__KAUSAL_ASSET_PREFIX_PLACEHOLDER__
@@ -84,10 +84,15 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs &&
 RUN apk update && apk add --no-cache caddy multirun && rm -rf /var/cache/apk
 
 # For non-standalone builds
-COPY --chown=nextjs:nodejs --from=deps /app/node_modules ./node_modules
-COPY --chown=nextjs:nodejs --from=builder /app/.next ./.next
-COPY --chown=nextjs:nodejs --from=builder /app/dist ./dist
-COPY --exclude=docker --exclude=Dockerfile --chown=nextjs:nodejs . .
+# COPY --chown=nextjs:nodejs --from=deps /app/node_modules ./node_modules
+# COPY --chown=nextjs:nodejs --from=builder /app/.next ./.next
+# COPY --chown=nextjs:nodejs --from=builder /app/dist ./dist
+# COPY --exclude=docker --exclude=Dockerfile --chown=nextjs:nodejs . .
+# COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# For standalone builds
+COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 COPY ./docker/start-server.sh /entrypoint.sh

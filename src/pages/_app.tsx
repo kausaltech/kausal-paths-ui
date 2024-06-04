@@ -286,6 +286,10 @@ async function getI18nProps(ctx: PathsPageContext) {
     console.log(ctx.locale, ctx.locales, ctx.defaultLocale);
     defaultLanguage = 'en';
   }
+  if (!ctx.locale) {
+    logger.warn('no active locale');
+    ctx.locale = 'en';
+  }
   const header = req.headers[SUPPORTED_LANGUAGES_HEADER] as string | undefined;
   const supportedLanguages = (header ?? defaultLanguage).split(',');
   const i18n = getI18n();

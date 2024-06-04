@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { useTranslation } from 'next-i18next';
 import {
   Button,
+  FormGroup,
+  Input,
+  Label,
   Modal,
-  ModalHeader,
   ModalBody,
   ModalFooter,
-  FormGroup,
-  Label,
-  Input,
+  ModalHeader,
 } from 'reactstrap';
 import styled from 'styled-components';
+
 import RichText from './RichText';
 
 const StyledButton = styled(Button)`
@@ -55,17 +57,11 @@ const StyledModalFooter = styled(ModalFooter)`
 
 interface IntroModalProps {
   size?: string;
-  children: ReactNode;
   title: string;
   paragraph: string;
 }
 
-const IntroModal = ({
-  size = 'lg',
-  children,
-  title,
-  paragraph,
-}: IntroModalProps) => {
+const IntroModal = ({ size = 'lg', title, paragraph }: IntroModalProps) => {
   const { t } = useTranslation();
   const [enabled, setEnabled] = useState(true);
   const [isChecked, setIsChecked] = useState(true);
@@ -103,11 +99,7 @@ const IntroModal = ({
           <StyledContainer>
             <FormGroup check>
               <StyledLabel check>
-                <StyledInput
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={handleChangeCheckbox}
-                />
+                <StyledInput type="checkbox" checked={isChecked} onChange={handleChangeCheckbox} />
                 {t('do-not-show-again')}
               </StyledLabel>
             </FormGroup>

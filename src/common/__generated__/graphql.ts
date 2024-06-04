@@ -290,6 +290,30 @@ export type DimensionalMetricFragment = (
   & { __typename: 'DimensionalMetricType' }
 );
 
+export type GetAvailableInstancesQueryVariables = Exact<{
+  hostname: Scalars['String']['input'];
+}>;
+
+
+export type GetAvailableInstancesQuery = (
+  { availableInstances: Array<(
+    { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
+      { basePath: string | null }
+      & { __typename: 'InstanceHostname' }
+    ) }
+    & { __typename: 'InstanceBasicConfiguration' }
+  )> }
+  & { __typename: 'Query' }
+);
+
+export type AvailableInstanceFragment = (
+  { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
+    { basePath: string | null }
+    & { __typename: 'InstanceHostname' }
+  ) }
+  & { __typename: 'InstanceBasicConfiguration' }
+);
+
 export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1733,28 +1757,4 @@ export type GetInstanceContextQuery = (
     & { __typename: 'UnknownParameterType' }
   )> }
   & { __typename: 'Query' }
-);
-
-export type GetAvailableInstancesQueryVariables = Exact<{
-  hostname: Scalars['String']['input'];
-}>;
-
-
-export type GetAvailableInstancesQuery = (
-  { availableInstances: Array<(
-    { identifier: string, isProtected: boolean, defaultLanguage: string, themeIdentifier: string, supportedLanguages: Array<string>, hostname: (
-      { basePath: string | null }
-      & { __typename: 'InstanceHostname' }
-    ) }
-    & { __typename: 'InstanceBasicConfiguration' }
-  )> }
-  & { __typename: 'Query' }
-);
-
-export type AvailableInstanceFragment = (
-  { identifier: string, isProtected: boolean, defaultLanguage: string, themeIdentifier: string, supportedLanguages: Array<string>, hostname: (
-    { basePath: string | null }
-    & { __typename: 'InstanceHostname' }
-  ) }
-  & { __typename: 'InstanceBasicConfiguration' }
 );

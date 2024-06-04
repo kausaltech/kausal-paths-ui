@@ -17,19 +17,29 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
 
+const standaloneBuild = process.env.NEXTJS_STANDALONE_BUILD === '1';
+
 function initializeThemes() {
   const destPath = path.join(__dirname, 'public', 'static', 'themes');
-  const {
-    generateThemeSymlinks: generateThemeSymlinksPublic,
-  } = require('@kausal/themes/setup.cjs');
-  generateThemeSymlinksPublic(destPath, { verbose: false });
+  let themesLinked = false;
   try {
     const {
       generateThemeSymlinks: generateThemeSymlinksPrivate,
     } = require('@kausal/themes-private/setup.cjs');
     generateThemeSymlinksPrivate(destPath, { verbose: false });
+    themesLinked = true;
   } catch (error) {
-    console.error(error);
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      console.error(error);
+      throw error;
+    }
+  }
+  if (!themesLinked) {
+    console.log('Private themes not found; using public themes');
+    const {
+      generateThemeSymlinks: generateThemeSymlinksPublic,
+    } = require('@kausal/themes/setup.cjs');
+    generateThemeSymlinksPublic(destPath, { verbose: false });
   }
 }
 
@@ -46,6 +56,7 @@ const nextConfig = {
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
+  output: standaloneBuild ? 'standalone' : undefined,
   eslint: {
     ignoreDuringBuilds: true,
   },

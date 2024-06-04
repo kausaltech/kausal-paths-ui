@@ -1,17 +1,13 @@
-import { gql, useQuery, NetworkStatus, useReactiveVar } from '@apollo/client';
-import styled from 'styled-components';
+import { gql, NetworkStatus, useQuery, useReactiveVar } from '@apollo/client';
+import type { GetActionListQuery, GetActionListQueryVariables } from 'common/__generated__/graphql';
 import { activeGoalVar } from 'common/cache';
+import { findActionEnabledParam } from 'common/preprocess';
 import ContentLoader from 'components/common/ContentLoader';
 import { GET_ACTION_LIST } from 'queries/getActionList';
-import {
-  GetActionListQuery,
-  GetActionListQueryVariables,
-} from 'common/__generated__/graphql';
-
 import { useTranslation } from 'react-i18next';
+import styled, { useTheme } from 'styled-components';
+
 import ParameterWidget from './ParameterWidget';
-import { findActionEnabledParam } from 'common/preprocess';
-import { useTheme } from 'common/theme';
 
 const GlobalParametersPanel = styled.div`
   max-height: 400px;
@@ -42,9 +38,7 @@ const ActionCard = styled.div<{ $isActive: boolean; $groupColor: string }>`
   border-left: 4px solid ${(props) => props.$groupColor};
   border-radius: 0.25rem;
   background-color: ${(props) =>
-    props.$isActive
-      ? props.theme.themeColors.white
-      : props.theme.graphColors.grey010};
+    props.$isActive ? props.theme.themeColors.white : props.theme.graphColors.grey010};
 
   &:hover {
     background-color: ${(props) => props.theme.graphColors.grey010};
@@ -60,9 +54,7 @@ const ActionCard = styled.div<{ $isActive: boolean; $groupColor: string }>`
   a,
   a > h6 {
     color: ${(props) =>
-      props.$isActive
-        ? props.theme.graphColors.grey090
-        : props.theme.graphColors.grey050};
+      props.$isActive ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050};
   }
 `;
 
@@ -120,10 +112,7 @@ const ActionListCard = (props: ActionListCardProps) => {
   const theme = useTheme();
 
   return (
-    <ActionCard
-      $isActive={isActive}
-      $groupColor={action.group?.color ?? theme.actionColor}
-    >
+    <ActionCard $isActive={isActive} $groupColor={action.group?.color ?? theme.actionColor}>
       <small>{action.group?.name}</small>
       <h5>{action.name}</h5>
       {actionParameterSwitch && (
@@ -142,16 +131,13 @@ type ActionsSummaryAction = GetActionListQuery['actions'][0];
 const ActionsSummary = () => {
   const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
-  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
-    GET_ACTION_LIST,
-    {
-      variables: {
-        goal: activeGoal?.id ?? null,
-      },
-      fetchPolicy: 'cache-and-network',
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
+    variables: {
+      goal: activeGoal?.id ?? null,
+    },
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
+  });
 
   const { error, loading, networkStatus, previousData } = queryResp;
   const data = queryResp.data ?? previousData;
@@ -168,9 +154,7 @@ const ActionsSummary = () => {
     );
   }
 
-  const actions = (data?.actions ?? []).filter(
-    (action) => action.decisionLevel === 'MUNICIPALITY'
-  );
+  const actions = (data?.actions ?? []).filter((action) => action.decisionLevel === 'MUNICIPALITY');
   const activeActions = actions.filter((action) => {
     const { parameters } = action;
     const enabledParam = parameters.find(

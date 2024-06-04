@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useState } from 'react';
 import Head from 'next/head';
 
-import { formatStaticUrl, Link } from 'common/links';
+import { Link } from 'common/links';
 import NavDropdown, { type NavDropdownProps } from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
 import SiteContext from 'context/site';
@@ -22,6 +22,7 @@ import {
 import styled, { useTheme } from 'styled-components';
 
 import { deploymentType } from '@/common/environment';
+import { getThemeStaticURL } from '@/common/theme';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
 
 const SecondaryNav = styled(Navbar)`
@@ -267,7 +268,7 @@ function GlobalNav(props: GlobalNavProps) {
   const { siteTitle, ownerName, navItems, sticky } = props;
 
   const orgLogo = useMemo(() => {
-    const url = formatStaticUrl(theme.themeLogoUrl);
+    const url = getThemeStaticURL(theme.themeLogoUrl);
     return (
       <SVG
         className="org-logo"
@@ -282,9 +283,10 @@ function GlobalNav(props: GlobalNavProps) {
     deploymentType === 'production'
       ? 'https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js'
       : 'https://www.integ.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-92ad5f87cc3b-staging.min.js';
+
   return (
     <>
-      {deploymentType !== 'development' ? (
+      {deploymentType === 'production' ? (
         <Head>
           <script key="zuerich-analytics" src={analyticsUrl} async />
         </Head>
@@ -296,7 +298,9 @@ function GlobalNav(props: GlobalNavProps) {
             <div className="header__logobar" id="branding-navigation-bar">
               <div className="header__logobar-logo">
                 <Link href="/" passHref>
-                  <HomeLink className="header__logo-link">{orgLogo}</HomeLink>
+                  <HomeLink href="dummy" className="header__logo-link">
+                    {orgLogo}
+                  </HomeLink>
                 </Link>
               </div>
               <NavbarToggler

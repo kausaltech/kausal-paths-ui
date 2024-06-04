@@ -36,7 +36,11 @@ function getEnv(key: keyof typeof ENV_MAP) {
   if (isServer) {
     return process.env[key] ?? process.env[prefixedKey];
   }
-  return window[PUBLIC_ENV_KEY][key];
+  const env = window[PUBLIC_ENV_KEY] as object | undefined;
+  if (!env) {
+    return undefined;
+  }
+  return env[key];
 }
 
 export const deploymentType: DeploymentType = (getEnv('DEPLOYMENT_TYPE') ||

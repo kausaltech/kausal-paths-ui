@@ -1,30 +1,24 @@
-import { useContext } from 'react';
-
 import type { Theme } from '@kausal/themes/types';
-import { ThemeContext } from 'styled-components';
 
-import { formatStaticUrl } from './links';
-
-//import { makeThemePropType } from '@kausal/themes/props';
-
-export function useTheme() {
-  return useContext<Theme>(ThemeContext);
-}
+import { formatStaticUrl } from '@/common/links';
+import { getLogger } from '@/common/log';
 
 declare module 'styled-components' {
   export interface DefaultTheme extends Theme {}
 }
 
-//export let themeProp = await makeThemePropType();
+const logger = getLogger('theme');
 
-export async function loadTheme(themeIdentifier: string) {
+export async function loadTheme(themeIdentifier: string): Promise<Theme> {
   let themeProps: Theme;
   let readThemeFile: (id: string) => Promise<Theme>;
   if (!process.browser) {
-    const fs = require('fs');
+    const fs = await import('node:fs');
     const THEME_PATH = './public/static/themes';
     readThemeFile = async (id: string) => {
-      const theme = fs.readFileSync(`${THEME_PATH}/${id}/theme.json`);
+      const theme = fs.readFileSync(`${THEME_PATH}/${id}/theme.json`, {
+        encoding: 'utf8',
+      });
       return JSON.parse(theme) as Theme;
     };
   } else {
@@ -38,13 +32,12 @@ export async function loadTheme(themeIdentifier: string) {
     themeProps = await readThemeFile(themeIdentifier);
     return themeProps;
   } catch (error) {
-    console.error(`Theme with identifier ${themeIdentifier} not found`);
-    console.error(error);
+    logger.error(error, `Theme with identifier ${themeIdentifier} not found`);
     themeProps = await readThemeFile('default');
     return themeProps;
   }
 }
 
-export function getThemeCSS(themeIdentifier: string) {
-  return formatStaticUrl(`/static/themes/${themeIdentifier}/main.css`);
+export function getThemeStaticURL(path: string) {
+  return formatStaticUrl(`/static/themes/${path}`);
 }

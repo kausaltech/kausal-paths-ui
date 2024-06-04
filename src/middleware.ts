@@ -3,6 +3,7 @@ import { NextURL } from 'next/dist/server/web/next-url';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
 import i18nConfig from '../next-i18next.config';
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
 import {
@@ -17,22 +18,6 @@ import { generateCorrelationID, getLogger } from './common/log';
 import { getInstancesForRequest } from './middleware/context';
 
 type Instance = AvailableInstanceFragment;
-
-function ensureSlash(path: string | null) {
-  if (!path) return '/';
-  if (path.startsWith('/')) return path;
-  return `/${path}`;
-}
-
-function splitPath(path: string | null) {
-  const parts = ensureSlash(path).split('/');
-  parts.shift();
-  return parts;
-}
-
-function joinPath(parts: string[]) {
-  return ['', ...parts.filter((part) => part.length)].join('/');
-}
 
 function determineMatchingInstance(instances: Instance[], path: string) {
   const parts = splitPath(path);
@@ -136,6 +121,9 @@ export async function middleware(req: NextRequest) {
   let path = nextUrl.pathname;
   const logger = getLogger('middleware', { host, path, 'request-id': reqId });
 
+  if (req.nextUrl.pathname === '/_health') {
+    return NextResponse.json({ status: 'OK' });
+  }
   logger.info({ method: req.method }, 'middleware request');
   if (req.headers.get(INSTANCE_IDENTIFIER_HEADER)) {
     // Request has already been processed
@@ -169,7 +157,7 @@ export async function middleware(req: NextRequest) {
   const { locale, path: localizedPath } = determineLocale(instance, match.path);
   path = localizedPath;
 
-  const href = `${nextUrl.protocol}//${host}${path}`;
+  const href = `${nextUrl.protocol}//${nextUrl.host}${path}`;
   const url = new NextURL(href, {
     nextConfig: {
       basePath: basePath,

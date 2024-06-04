@@ -1,19 +1,18 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
+
+import type { Theme } from '@kausal/themes/types';
+import PopoverTip from 'components/common/PopoverTip';
+import Highlighter from 'react-highlight-words';
 import Select, {
   components,
-  DropdownIndicatorProps,
-  MultiValueProps,
-  Theme as SelectTheme,
-  ValueContainerProps as SelectValueContainerProps,
-  GroupBase,
-  SelectComponentsConfig,
+  type GroupBase,
+  type MultiValueProps,
+  type SelectComponentsConfig,
+  type Theme as SelectTheme,
+  type ValueContainerProps as SelectValueContainerProps,
 } from 'react-select';
-import styled from 'styled-components';
-import type { Theme } from '@kausal/themes/types';
-import Highlighter from 'react-highlight-words';
 import { FormGroup, Label as BSLabel } from 'reactstrap';
-import { useTheme } from 'common/theme';
-import PopoverTip from 'components/common/PopoverTip';
+import styled, { useTheme } from 'styled-components';
 
 const Label = styled(BSLabel)`
   font-weight: ${(props) => props.theme.formLabelFontWeight};
@@ -30,17 +29,15 @@ function getSelectStyles<
     `calc((${theme.inputLineHeight}*${theme.fontSizeBase}) +` +
     ` (${theme.inputPaddingY}*2) + (${theme.inputBorderWidth}*2))`;
 
-  const styles: NonNullable<
-    SelectDropdownProps<Option, IsMulti, Group>['styles']
-  > = {
+  const styles: NonNullable<SelectDropdownProps<Option, IsMulti, Group>['styles']> = {
     control: (provided, { isDisabled, isFocused }) => ({
       ...provided,
       backgroundColor: `var(--bs-select${isDisabled ? '-disabled' : ''}-bg)`,
       borderColor: isDisabled
         ? theme.graphColors.grey050
         : isFocused
-        ? theme.inputBtnFocusColor
-        : theme.themeColors.dark,
+          ? theme.inputBtnFocusColor
+          : theme.themeColors.dark,
       borderWidth: theme.inputBorderWidth,
       borderRadius: theme.inputBorderRadius,
       lineHeight: theme.inputLineHeight,
@@ -52,10 +49,7 @@ function getSelectStyles<
       },
       boxShadow: isFocused ? '0 0 0 0.25rem #4e80a6' : 'inherit',
     }),
-    singleValue: (
-      { marginLeft, marginRight, ...provided },
-      { isDisabled }
-    ) => ({
+    singleValue: ({ marginLeft, marginRight, ...provided }, { isDisabled }) => ({
       ...provided,
       maxWidth: `${multi ? '80%' : '100%'}`,
       color: `var(--bs-select${isDisabled ? '-disabled' : ''}-color)`,
@@ -63,8 +57,7 @@ function getSelectStyles<
     valueContainer: (provided, state) => ({
       ...provided,
       padding:
-        `calc(var(--bs-select-padding-y${suffix})) ` +
-        `calc(var(--bs-select-padding-x${suffix}))`,
+        `calc(var(--bs-select-padding-y${suffix})) ` + `calc(var(--bs-select-padding-x${suffix}))`,
     }),
     dropdownIndicator: (provided, state) => ({
       height: '100%',
@@ -86,8 +79,8 @@ function getSelectStyles<
         backgroundColor: isSelected
           ? theme.graphColors.grey020
           : isFocused
-          ? theme.graphColors.grey005
-          : theme.themeColors.white,
+            ? theme.graphColors.grey005
+            : theme.themeColors.white,
         margin: 0,
         //marginLeft: `${indent ?? 0}rem`,
       };
@@ -107,10 +100,7 @@ function getSelectStyles<
       height: '100%',
       width: 'var(--bs-select-indicator-padding)',
     }),
-    multiValueLabel: (
-      { padding, paddingLeft, fontSize, ...provided },
-      state
-    ) => ({
+    multiValueLabel: ({ padding, paddingLeft, fontSize, ...provided }, state) => ({
       ...provided,
       padding: `0 var(--bs-select-padding-y${suffix})`,
       whiteSpace: 'normal',
@@ -146,9 +136,7 @@ const CountContainer = styled.span`
   margin: 0 0.4em;
 `;
 
-const Counter = ({ count }: { count: number }) => (
-  <CountContainer> + {count}</CountContainer>
-);
+const Counter = ({ count }: { count: number }) => <CountContainer> + {count}</CountContainer>;
 
 function ValueContainer<
   Option extends SelectDropdownOption,
@@ -166,18 +154,12 @@ function ValueContainer<
     if (Array.isArray(firstChild) && firstChild.length > 0) {
       realChildren = [
         firstChild[0],
-        firstChild.length > 1 ? (
-          <Counter key="counter" count={firstChild.length - 1} />
-        ) : null,
+        firstChild.length > 1 ? <Counter key="counter" count={firstChild.length - 1} /> : null,
         ...remainingChildren,
       ];
     }
   }
-  return (
-    <components.ValueContainer {...rest}>
-      {realChildren}
-    </components.ValueContainer>
-  );
+  return <components.ValueContainer {...rest}>{realChildren}</components.ValueContainer>;
 }
 
 function MultiValue<
@@ -230,32 +212,15 @@ function SelectDropdown<
   IsMulti extends boolean = false,
   Group extends GroupBase<Option> = GroupBase<Option>,
 >(props: SelectDropdownProps<Option, IsMulti, Group>) {
-  const {
-    size,
-    id,
-    label,
-    value,
-    onChange,
-    helpText,
-    invert,
-    isMulti,
-    className,
-    ...rest
-  } = props;
+  const { size, id, label, value, onChange, helpText, invert, isMulti, className, ...rest } = props;
   const theme = useTheme();
-  const styles = getSelectStyles<Option, IsMulti, Group>(
-    theme,
-    props.isMulti === true,
-    size
-  );
+  const styles = getSelectStyles<Option, IsMulti, Group>(theme, props.isMulti === true, size);
   return (
     <FormGroup className={className}>
       {label && (
         <Label for={id}>
           {label}
-          {helpText && (
-            <PopoverTip content={helpText} identifier={id} invert={invert} />
-          )}
+          {helpText && <PopoverTip content={helpText} identifier={id} invert={invert} />}
         </Label>
       )}
       <Select
@@ -271,11 +236,7 @@ function SelectDropdown<
           const { context, inputValue } = meta;
           const { indent, label } = option;
           const highlighted = (
-            <Highlighter
-              highlightTag="b"
-              searchWords={[inputValue]}
-              textToHighlight={label}
-            />
+            <Highlighter highlightTag="b" searchWords={[inputValue]} textToHighlight={label} />
           );
           if (context === 'value' || !indent) return highlighted;
           const spans: JSX.Element[] = [];

@@ -32,6 +32,10 @@ export function formatStaticUrl(url: string) {
   return url;
 }
 
+export function chompBasePath(site: SiteContextType, path: string) {
+  if (!site.basePath) return path;
+}
+
 type OtherLinkProps = Omit<LinkProps, 'href' | 'as'> & {
   children?: React.ReactNode;
 };

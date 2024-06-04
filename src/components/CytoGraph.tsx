@@ -1,19 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
 import { useRouter } from 'next/router';
+
 import chroma from 'chroma-js';
+import type { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
+import { useTranslation } from 'common/i18n';
 import cytoscape, {
-  EdgeDefinition,
-  ElementDefinition,
-  NodeDefinition,
+  type EdgeDefinition,
+  type ElementDefinition,
+  type NodeDefinition,
 } from 'cytoscape';
-import dagre, { DagreLayoutOptions } from 'cytoscape-dagre';
+import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
 import { getContrast } from 'polished';
-import { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
-import { useTheme } from 'common/theme';
+import styled, { useTheme } from 'styled-components';
+
 import SelectDropdown from './common/SelectDropdown';
-import { useTranslation } from 'common/i18n';
 
 cytoscape.use(dagre);
 cytoscapeNodeHtmlLabel(cytoscape);
@@ -77,9 +78,7 @@ function NodeSelector(props: NodeSelectorProps) {
       //label={t('choose-node')!}
       onChange={(val) => setSelectedNode(val ? val.id : '')}
       options={options}
-      value={
-        selectedNode ? options.find((o) => o.id === selectedNode) || null : null
-      }
+      value={selectedNode ? options.find((o) => o.id === selectedNode) || null : null}
       isMulti={false}
       isClearable={true}
     />
@@ -233,8 +232,7 @@ export default function CytoGraph(props: CytoGraphProps) {
       'text-wrap': 'wrap',
       'text-outline-width': 0,
       'font-weight': theme.fontWeightNormal,
-      'border-width': (node) =>
-        node.data('type') === 'action' ? '2px' : '0px',
+      'border-width': (node) => (node.data('type') === 'action' ? '2px' : '0px'),
       'border-color': '#000000',
       'border-style': 'dashed',
     };
@@ -302,11 +300,7 @@ export default function CytoGraph(props: CytoGraphProps) {
 
   return (
     <>
-      <NodeSelector
-        nodes={nodes}
-        selectedNode={selectedNode}
-        setSelectedNode={setSelectedNode}
-      />
+      <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
       <VisContainer ref={visRef} />
     </>
   );

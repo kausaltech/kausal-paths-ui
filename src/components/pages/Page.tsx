@@ -1,21 +1,19 @@
-import { ObservableQuery, useQuery, useReactiveVar, NetworkStatus } from '@apollo/client';
-import { useTranslation } from 'next-i18next';
-import Error from 'pages/_error';
-import { Container } from 'reactstrap';
+import { Suspense } from 'react';
 import Head from 'next/head';
 
-import GET_PAGE from 'queries/getPage';
-import ContentLoader from 'components/common/ContentLoader';
-import { useSite } from 'context/site';
-import { logApolloError } from 'common/log';
-import GraphQLError from 'components/common/GraphQLError';
-import OutcomePage from 'components/pages/OutcomePage';
-import ActionListPage from 'components/pages/ActionListPage';
-import StaticPage from 'components/pages/StaticPage';
-import ErrorMessage from 'components/common/ErrorMessage';
-import { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
-import { Suspense } from 'react';
+import { ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import type { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
 import { activeGoalVar } from 'common/cache';
+import { logApolloError } from 'common/log';
+import ContentLoader from 'components/common/ContentLoader';
+import ErrorMessage from 'components/common/ErrorMessage';
+import ActionListPage from 'components/pages/ActionListPage';
+import OutcomePage from 'components/pages/OutcomePage';
+import StaticPage from 'components/pages/StaticPage';
+import { useSite } from 'context/site';
+import { useTranslation } from 'next-i18next';
+import Error from 'pages/_error';
+import GET_PAGE from 'queries/getPage';
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
@@ -25,7 +23,7 @@ const PageLoader = () => {
 
 type PageProps = {
   path: string;
-  headerExtra: JSX.Element;
+  headerExtra?: JSX.Element;
 };
 
 export default function Page({ path, headerExtra }: PageProps) {
@@ -34,7 +32,7 @@ export default function Page({ path, headerExtra }: PageProps) {
   const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
     variables: {
       path,
-      goal: activeGoal?.id,
+      goal: activeGoal?.id ?? null,
     },
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
@@ -69,9 +67,9 @@ export default function Page({ path, headerExtra }: PageProps) {
       />
     );
   } else if (page.__typename === 'ActionListPage') {
-    pageContent = <ActionListPage page={page} refetch={refetch} activeScenario={activeScenario} />;
+    pageContent = <ActionListPage page={page} refetch={refetch} />;
   } else if (page.__typename === 'StaticPage') {
-    pageContent = <StaticPage page={page} refetch={refetch} activeScenario={activeScenario} />;
+    pageContent = <StaticPage page={page} refetch={refetch} />;
   } else {
     console.error('Invalid page type: ', page.__typename);
     return <ErrorMessage message={`${t('invalid-page-type')}: ${page.__typename}`} />;

@@ -6,11 +6,10 @@ import Head from 'next/head';
 import * as Sentry from '@sentry/nextjs';
 import { useTranslation } from 'common/i18n';
 import { Link } from 'common/links';
-import { useTheme } from 'common/theme';
 import Button from 'components/common/Button';
 import type { NextPageContext } from 'next';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 import { isProd } from '@/common/environment';
 

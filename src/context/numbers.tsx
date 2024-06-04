@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
 
+import { setSignificantDigits } from '@/common/preprocess';
+
 class NumberParser {
   _group: RegExp;
   _decimal: RegExp;
@@ -34,6 +36,7 @@ export type LocalizedNumbersContextType = {
 };
 
 export function createNumbersContext(locale: string, nrSignificantDigits: number = 3) {
+  setSignificantDigits(nrSignificantDigits);
   return {
     format: new Intl.NumberFormat(locale),
     parse: new NumberParser(locale),

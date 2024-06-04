@@ -2,7 +2,7 @@ import Document, { type DocumentContext, Head, Html, Main, NextScript } from 'ne
 import Script from 'next/script';
 
 import * as Sentry from '@sentry/nextjs';
-import { getThemeCSS } from 'common/theme';
+import { getThemeStaticURL } from 'common/theme';
 import { PUBLIC_ENV_KEY } from 'next-runtime-env/build/script/constants';
 import { ServerStyleSheet } from 'styled-components';
 
@@ -32,7 +32,11 @@ class PlansDocument extends Document {
             {initialProps.styles}
             {sheet.getStyleElement()}
             {themeProps && (
-              <link rel="stylesheet" type="text/css" href={getThemeCSS(themeProps.name)} />
+              <link
+                rel="stylesheet"
+                type="text/css"
+                href={getThemeStaticURL(themeProps.mainCssFile)}
+              />
             )}
             {null && sentryTraceId && <meta name="sentry-trace" content={sentryTraceId} />}
           </>

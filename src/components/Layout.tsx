@@ -1,17 +1,16 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import styled from 'styled-components';
-import GlobalNav from 'components/common/GlobalNav';
-import Footer from 'components/common/Footer';
-import { useSite } from 'context/site';
-import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
-import { CombinedIconSymbols } from 'components/common/icon';
-import { useTheme } from 'common/theme';
-import dynamic from 'next/dynamic';
-import { useCustomComponent } from './custom';
+
 import { useTranslation } from 'common/i18n';
-import IntroModal from './common/IntroModal';
 import { useInstance } from 'common/instance';
+import Footer from 'components/common/Footer';
+import GlobalNav from 'components/common/GlobalNav';
+import { useSite } from 'context/site';
+import styled, { useTheme } from 'styled-components';
+
+import { getThemeStaticURL } from '@/common/theme';
+import IntroModal from './common/IntroModal';
+import { useCustomComponent } from './custom';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -35,8 +34,7 @@ const StyledSkipToContent = styled.a`
   z-index: 999;
   padding: ${({ theme }) => theme.spaces.s050};
   background-color: ${({ theme }) => theme.brandDark};
-  border: ${({ theme }) =>
-    `${theme.btnBorderWidth} solid ${theme.themeColors.light}`};
+  border: ${({ theme }) => `${theme.btnBorderWidth} solid ${theme.themeColors.light}`};
   border-radius: ${({ theme }) => theme.btnBorderRadius};
   color: ${({ theme }) => theme.themeColors.light};
   opacity: 0;
@@ -54,7 +52,7 @@ const StyledSkipToContent = styled.a`
   }
 `;
 
-const Layout = ({ children }) => {
+const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
   const theme = useTheme();
@@ -63,9 +61,7 @@ const Layout = ({ children }) => {
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
   let activePage;
 
-  const iconBase = theme.name
-    ? `/static/themes/${theme.name}/images/favicon`
-    : fallbackIconBase;
+  const iconBase = theme.name ? `/static/themes/${theme.name}/images/favicon` : fallbackIconBase;
 
   const menuItems = [...menuPages];
 
@@ -96,16 +92,12 @@ const Layout = ({ children }) => {
   const instance = useInstance();
 
   const title = instance.introContent?.find(
-    (
-      block
-    ): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
+    (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
       block.__typename === 'RichTextBlock' && block.field === 'title'
   )?.value;
 
   const paragraph = instance.introContent?.find(
-    (
-      block
-    ): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
+    (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
       block.__typename === 'RichTextBlock' && block.field === 'paragraph'
   )?.value;
 
@@ -119,28 +111,16 @@ const Layout = ({ children }) => {
         <meta property="og:site_name" content={site.title} />
         {iconBase && (
           <>
-            <link
-              rel="icon"
-              href={`${iconBase}/icon.svg`}
-              type="image/svg+xml"
-            />
-            <link rel="icon" href={`${iconBase}/favicon.ico`} />
-            <link rel="apple-touch-icon" href={`${iconBase}/apple.png`} />
+            <link rel="icon" href={getThemeStaticURL(theme.favicons.svg)} type="image/svg+xml" />
+            <link rel="icon" href={getThemeStaticURL(theme.favicons.ico)} />
+            <link rel="apple-touch-icon" href={getThemeStaticURL(theme.favicons.apple)} />
           </>
         )}
-        {ogImage && (
-          <meta property="og:image" key="head-og-image" content={ogImage} />
-        )}
+        {ogImage && <meta property="og:image" key="head-og-image" content={ogImage} />}
       </Head>
-      <CombinedIconSymbols />
-      <StyledSkipToContent href="#main">
-        {t('skip-to-main-content')}
-      </StyledSkipToContent>
-      <NavComponent
-        siteTitle={site.title}
-        ownerName={site.owner}
-        navItems={navItems}
-      />
+      {/* <CombinedIconSymbols /> */}
+      <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
+      <NavComponent siteTitle={site.title} ownerName={site.owner} navItems={navItems} />
       <PageContainer>
         <main className="main" id="main">
           {children}

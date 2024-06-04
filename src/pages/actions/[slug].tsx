@@ -1,36 +1,34 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
-import { useTheme } from 'common/theme';
-import { Container, Row, Col } from 'reactstrap';
 
-import styled from 'styled-components';
-
-import { GET_ACTION_CONTENT } from 'queries/getActionContent';
-import { yearRangeVar, activeScenarioVar, activeGoalVar } from 'common/cache';
-import { useSite } from 'context/site';
-import { logApolloError } from 'common/log';
-import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanelFull from 'components/general/SettingsPanelFull';
-import CausalGrid from 'components/general/CausalGrid';
-import NodePlot from 'components/general/NodePlot';
-import ActionParameters from 'components/general/ActionParameters';
-import ContentLoader from 'components/common/ContentLoader';
-import { ActionListLink, NodeLink } from 'common/links';
-import Badge from 'components/common/Badge';
-import {
+import { useQuery, useReactiveVar } from '@apollo/client';
+import type {
   GetActionContentQuery,
   GetActionContentQueryVariables,
 } from 'common/__generated__/graphql';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
+import { ActionListLink, NodeLink } from 'common/links';
+import { logApolloError } from 'common/log';
+import Badge from 'components/common/Badge';
+import ContentLoader from 'components/common/ContentLoader';
 import ErrorMessage from 'components/common/ErrorMessage';
-import DimensionalPlot from 'components/graphs/DimensionalFlow';
+import GraphQLError from 'components/common/GraphQLError';
 import Icon from 'components/common/icon';
-import SubActions from 'components/general/SubActions';
 import Loader from 'components/common/Loader';
-import { ActionGoal } from 'components/general/ActionGoal';
 import { StreamField } from 'components/common/StreamField';
+import { ActionGoal } from 'components/general/ActionGoal';
+import ActionParameters from 'components/general/ActionParameters';
+import CausalGrid from 'components/general/CausalGrid';
+import NodePlot from 'components/general/NodePlot';
+import SettingsPanelFull from 'components/general/SettingsPanelFull';
+import SubActions from 'components/general/SubActions';
+import DimensionalPlot from 'components/graphs/DimensionalFlow';
+import { useSite } from 'context/site';
+import { useTranslation } from 'next-i18next';
+import { GET_ACTION_CONTENT } from 'queries/getActionContent';
+import { Col, Container, Row } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;

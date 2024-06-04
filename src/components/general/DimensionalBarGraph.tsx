@@ -1,21 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useTranslation } from 'next-i18next';
+
 import { useReactiveVar } from '@apollo/client';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
-
 import { activeGoalVar } from 'common/cache';
-import { DimensionalMetric, SliceConfig } from 'data/metric';
-import { useTheme } from 'common/theme';
-import { InstanceGoal } from 'common/instance';
+import type { InstanceGoal } from 'common/instance';
+import { DimensionalMetric, type SliceConfig } from 'data/metric';
 import { isEqual } from 'lodash';
+import { useTranslation } from 'next-i18next';
+import { useTheme } from 'styled-components';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
-function getDefaultSliceConfig(
-  cube: DimensionalMetric,
-  activeGoal: InstanceGoal | null
-) {
+function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal | null) {
   /**
    * By default, we group by the first dimension `metric` has, whatever it is.
    * @todo Is there a better way to select the default?
@@ -41,13 +38,8 @@ function getDefaultSliceConfig(
    * goal-based default filters. If so, we should choose another
    * dimension.
    */
-  if (
-    defaultConfig.dimensionId &&
-    cubeDefault.hasOwnProperty(defaultConfig.dimensionId)
-  ) {
-    const firstPossible = cube.dimensions.find(
-      (dim) => !cubeDefault.hasOwnProperty(dim.id)
-    );
+  if (defaultConfig.dimensionId && cubeDefault.hasOwnProperty(defaultConfig.dimensionId)) {
+    const firstPossible = cube.dimensions.find((dim) => !cubeDefault.hasOwnProperty(dim.id));
     defaultConfig.dimensionId = firstPossible?.id;
   }
   return defaultConfig;
@@ -86,10 +78,7 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
   let longUnit = metric.unit.htmlShort;
   // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
   // the backend gets proper support for unit specifiers.
-  if (
-    cube.hasDimension('emission_scope') &&
-    !cube.hasDimension('greenhouse_gases')
-  ) {
+  if (cube.hasDimension('emission_scope') && !cube.hasDimension('greenhouse_gases')) {
     if (metric.unit.short === 't/Einw./a') {
       longUnit = t('tco2-e-inhabitant');
     } else if (metric.unit.short === 'kt/a') {
@@ -109,10 +98,8 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
     yearData.categoryTypes[0].options.forEach((rowId, rIdx) => {
       const datum = yearData.rows[rIdx][cIdx];
       const portion = datum / colTotals;
-      const displayPortions =
-        portion >= 0.01 ? Math.round((datum / colTotals) * 100) : '<1';
-      const textTemplate =
-        portion && portion !== 1 && portion !== 0 ? '%{meta[0]}%' : '';
+      const displayPortions = portion >= 0.01 ? Math.round((datum / colTotals) * 100) : '<1';
+      const textTemplate = portion && portion !== 1 && portion !== 0 ? '%{meta[0]}%' : '';
       const dimDetails = yearData.allLabels.find((l) => l.id === rowId);
       plotData.push({
         type: 'bar',

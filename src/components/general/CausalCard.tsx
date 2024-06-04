@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
-import Icon from 'components/common/icon';
-import * as BSIcon from 'react-bootstrap-icons';
-import styled from 'styled-components';
-import {
-  summarizeYearlyValuesBetween,
-  getImpactMetricValue,
-} from 'common/preprocess';
-import { Collapse } from 'reactstrap';
+
 import { useTranslation } from 'common/i18n';
-import NodePlot from 'components/general/NodePlot';
-import ImpactDisplay from './ImpactDisplay';
 import { NodeLink } from 'common/links';
+import { getImpactMetricValue, summarizeYearlyValuesBetween } from 'common/preprocess';
+import Icon from 'components/common/icon';
+import NodePlot from 'components/general/NodePlot';
 import { useSite } from 'context/site';
-import { CausalGridNode } from './CausalGrid';
+import {
+  Buildings,
+  ClipboardX,
+  CloudHaze,
+  Diamond,
+  Journals,
+  LightningChargeFill,
+  People,
+  Signpost,
+} from 'react-bootstrap-icons';
+import { Collapse } from 'reactstrap';
+import styled from 'styled-components';
+
+import type { CausalGridNode } from './CausalGrid';
+import ImpactDisplay from './ImpactDisplay';
 
 const ActionLinks = styled.div`
   margin-bottom: 1rem;
@@ -148,32 +156,32 @@ const NodeIcon = (props) => {
   switch (nodeType) {
     case 'emission_factor':
       // ClipboardX
-      return <BSIcon.ClipboardX size={24} className="node-type" />;
+      return <ClipboardX size={24} className="node-type" />;
     case 'emissions':
     case 'building_emissions':
     case 'building_heat_emissions':
       //
-      return <BSIcon.CloudHaze size={24} className="node-type" />;
+      return <CloudHaze size={24} className="node-type" />;
     case 'energy':
     case 'energy_factor':
     case 'energy_per_area':
       // LightningChargeFill
-      return <BSIcon.LightningChargeFill size={24} className="node-type" />;
+      return <LightningChargeFill size={24} className="node-type" />;
     case 'mileage':
       // Signpost
-      return <BSIcon.Signpost size={24} className="node-type" />;
+      return <Signpost size={24} className="node-type" />;
     case 'per_capita':
       // People
-      return <BSIcon.People size={24} className="node-type" />;
+      return <People size={24} className="node-type" />;
     case 'floor_area':
       // Building
-      return <BSIcon.Buildings size={24} className="node-type" />;
+      return <Buildings size={24} className="node-type" />;
     case 'action':
       // Journals
-      return <BSIcon.Journals size={24} className="node-type" />;
+      return <Journals size={24} className="node-type" />;
     default:
       // Diamond
-      return <BSIcon.Diamond size={24} className="node-type" />;
+      return <Diamond size={24} className="node-type" />;
   }
 };
 
@@ -192,11 +200,7 @@ const CausalCard = (props: CausalCardProps) => {
 
   return (
     <ActionLinks>
-      <NodeCard
-        className={`${node.__typename === 'ActionNode' && 'action'} type-${
-          node.quantity
-        }`}
-      >
+      <NodeCard className={`${node.__typename === 'ActionNode' && 'action'} type-${node.quantity}`}>
         <CardHeader>
           <button
             className="btn btn-link"
@@ -206,36 +210,20 @@ const CausalCard = (props: CausalCardProps) => {
             <NodeIcon node={node} />
             <h4>{node.name}</h4>
             {isOpen ? (
-              <Icon
-                name="angleDown"
-                width="24px"
-                height="24px"
-                className="caret ml-auto"
-              />
+              <Icon name="angleDown" width="24px" height="24px" className="caret ml-auto" />
             ) : (
-              <Icon
-                name="angleRight"
-                width="24px"
-                height="24px"
-                className="caret ml-auto"
-              />
+              <Icon name="angleRight" width="24px" height="24px" className="caret ml-auto" />
             )}
           </button>
         </CardHeader>
-        <Collapse
-          isOpen={isOpen}
-          id={`card-content-${node.id}`}
-          aria-hidden={!isOpen}
-        >
+        <Collapse isOpen={isOpen} id={`card-content-${node.id}`} aria-hidden={!isOpen}>
           <CardContent>
             <ImpactFigures>
               <ImpactDisplay
                 effectCumulative={cumulativeImpact}
                 effectYearly={impactAtTargetYear}
                 yearRange={[startYear, endYear]}
-                unitCumulative={
-                  node.impactMetric!.yearlyCumulativeUnit?.htmlShort
-                }
+                unitCumulative={node.impactMetric!.yearlyCumulativeUnit?.htmlShort}
                 unitYearly={node.impactMetric!.unit?.htmlShort}
                 muted={noEffect}
                 size="sm"
@@ -258,9 +246,7 @@ const CausalCard = (props: CausalCardProps) => {
               </PlotWrapper>
             )}
             {node.shortDescription && (
-              <TextContent
-                dangerouslySetInnerHTML={{ __html: node.shortDescription }}
-              />
+              <TextContent dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
             )}
             <MoreLink>
               <NodeLink node={node} className="node-type-icon">

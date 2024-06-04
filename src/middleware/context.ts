@@ -19,6 +19,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, getHttpHeaders, logQueryEnd, logQueryStart } from '@/common/apollo';
 import { getRuntimeConfig } from '@/common/environment';
+import { logApolloError } from '@/common/log';
 import LRUCache from './lru-cache';
 
 const GET_AVAILABLE_INSTANCES = gql`
@@ -127,6 +128,7 @@ export async function getInstancesForRequest(req: NextRequest, hostname: string,
       return await queryInstances(client, hostname, logger);
     });
   } catch (error) {
+    logApolloError(error, { query: GET_AVAILABLE_INSTANCES }, logger);
     throw error;
   }
   instanceCache.set(hostname, data);
