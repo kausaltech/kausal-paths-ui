@@ -1,3 +1,4 @@
+import { mkdir } from 'node:fs/promises';
 // @ts-check
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -5,6 +6,7 @@ import * as url from 'node:url';
 
 import { withSentryConfig } from '@sentry/nextjs';
 import { secrets } from 'docker-secret';
+import lockfile from 'proper-lockfile';
 
 import i18nConfig from './next-i18next.config.js';
 
@@ -19,27 +21,34 @@ const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOK
 
 const standaloneBuild = process.env.NEXTJS_STANDALONE_BUILD === '1';
 
-function initializeThemes() {
-  const destPath = path.join(__dirname, 'public', 'static', 'themes');
-  let themesLinked = false;
+async function initializeThemes() {
+  const staticPath = path.join(__dirname, 'public', 'static');
+  await mkdir(staticPath, { recursive: true });
+  const releaseThemeLock = await lockfile.lock('public/static');
   try {
-    const {
-      generateThemeSymlinks: generateThemeSymlinksPrivate,
-    } = require('@kausal/themes-private/setup.cjs');
-    generateThemeSymlinksPrivate(destPath, { verbose: false });
-    themesLinked = true;
-  } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') {
-      console.error(error);
-      throw error;
+    const destPath = path.join(__dirname, 'public', 'static', 'themes');
+    let themesLinked = false;
+    try {
+      const {
+        generateThemeSymlinks: generateThemeSymlinksPrivate,
+      } = require('@kausal/themes-private/setup.cjs');
+      generateThemeSymlinksPrivate(destPath, { verbose: false });
+      themesLinked = true;
+    } catch (error) {
+      if (error.code !== 'MODULE_NOT_FOUND') {
+        console.error(error);
+        throw error;
+      }
     }
-  }
-  if (!themesLinked) {
-    console.log('Private themes not found; using public themes');
-    const {
-      generateThemeSymlinks: generateThemeSymlinksPublic,
-    } = require('@kausal/themes/setup.cjs');
-    generateThemeSymlinksPublic(destPath, { verbose: false });
+    if (!themesLinked) {
+      console.log('Private themes not found; using public themes');
+      const {
+        generateThemeSymlinks: generateThemeSymlinksPublic,
+      } = require('@kausal/themes/setup.cjs');
+      generateThemeSymlinksPublic(destPath, { verbose: false });
+    }
+  } finally {
+    await releaseThemeLock();
   }
 }
 
