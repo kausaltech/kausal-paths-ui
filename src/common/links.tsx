@@ -1,20 +1,17 @@
 import NextLink, { type LinkProps } from 'next/link';
 
-import { getI18n } from 'common/i18n';
-
 import { type SiteContextType, useSite } from '@/context/site';
 import { assetPrefix } from './environment';
 
 function getLocalePrefix(site: SiteContextType, forLocale?: string | false) {
-  const i18n = getI18n()!;
-  const locale = forLocale || i18n.language;
-  const defaultLanguage = i18n.languages[0];
+  const locale = forLocale || site.i18n.locale;
+  const defaultLanguage = site.i18n.defaultLocale;
   if (locale == defaultLanguage) return '';
   return '/' + locale;
 }
 
 export function formatUrl(site: SiteContextType, url: string, forLocale?: string | false) {
-  if (!url) return url;
+  if (!url || !site) return url;
   const localePrefix = getLocalePrefix(site, forLocale);
   if (url.startsWith('/')) {
     const pathPrefix = site.basePath;

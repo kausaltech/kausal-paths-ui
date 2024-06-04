@@ -1,33 +1,30 @@
-import fs from 'fs';
-import apolloClient from '@apollo/client';
-//console.log(apolloClient);
-const { ApolloClient, InMemoryCache, gql } = apolloClient;
-//import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
-import { Page, expect } from '@playwright/test';
-import i18next from 'i18next';
-import i18nConfig from '../../next-i18next.config.js';
-import type { FallbackLng, FallbackLngObjList, i18n } from 'i18next';
-import type {
-  PlaywrightGetInstanceInfoQuery,
-  PlaywrightGetInstanceBasicsQueryVariables,
-  PlaywrightGetInstanceBasicsQuery,
-  PlaywrightGetInstanceInfoQueryVariables,
-} from '../__generated__/graphql.ts';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const projectRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..'
-);
+import apolloClient from '@apollo/client';
+import { expect, type Page } from '@playwright/test';
+import type { FallbackLngObjList, i18n } from 'i18next';
+import i18next from 'i18next';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.dev/v1';
+import i18nConfig from '../../next-i18next.config.js';
+import type {
+  PlaywrightGetInstanceBasicsQuery,
+  PlaywrightGetInstanceBasicsQueryVariables,
+  PlaywrightGetInstanceInfoQuery,
+  PlaywrightGetInstanceInfoQueryVariables,
+} from '../__generated__/graphql.ts';
+
+const { ApolloClient, InMemoryCache, gql } = apolloClient;
+
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.dev/v1';
+
+const BASE_URL = process.env.TEST_PAGE_BASE_URL || `http://{instanceId}.localhost:3000`;
 
 const GET_INSTANCE_BASICS = gql`
-  query PlaywrightGetInstanceBasics($instance: ID!)
-  @instance(identifier: $instance) {
+  query PlaywrightGetInstanceBasics($instance: ID!) @instance(identifier: $instance) {
     instance {
       id
       defaultLanguage
@@ -127,10 +124,8 @@ export class InstanceContext {
 
   async checkMeta(page: Page) {
     const siteName = page.locator('head meta[property="og:site_name"]');
-    await expect(siteName).toHaveAttribute(
-      'content',
-      this.instance.instance.name
-    );
+    await expect(siteName).toHaveAttribute('content', this.instance.instance.name);
+    await expect(page.locator('html')).toHaveAttribute('lang', this.i18n.language);
   }
 
   async waitForLoaded(page: Page) {
@@ -176,14 +171,14 @@ export function getIdentifiersToTest(): string[] {
 }
 
 export function getPageBaseUrlToTest(instanceId: string): string {
-  let baseUrl =
-    process.env.TEST_PAGE_BASE_URL || `http://{instanceId}.localhost:3000`;
-  baseUrl = baseUrl.replace('{instanceId}', instanceId);
-  return baseUrl;
+  return BASE_URL.replace('{instanceId}', instanceId);
 }
 
 export function displayConfiguration() {
-  console.log('Base URL: ', process.env.TEST_PAGE_BASE_URL);
-  console.log('URL for Sunnydale: ', getPageBaseUrlToTest('sunnydale'));
-  console.log('API base URL for test configuration: ', API_BASE);
+  const p = (s: string) => (s + ':').padEnd(22);
+
+  console.log(p('API base URL'), API_BASE);
+  console.log(p('Instances to test'), getIdentifiersToTest().join(', '));
+  console.log(p('Base URL'), BASE_URL);
+  console.log(p('  URL for Sunnydale'), getPageBaseUrlToTest('sunnydale'));
 }

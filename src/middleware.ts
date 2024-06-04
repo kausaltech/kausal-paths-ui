@@ -3,6 +3,8 @@ import { NextURL } from 'next/dist/server/web/next-url';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
 import i18nConfig from '../next-i18next.config';
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
@@ -90,7 +92,7 @@ function getAcceptPreferredLocale(supportedLocales: string[], headers: Headers) 
   }
 }
 
-function notFoundResponse(req: NextRequest, headers: Headers) {
+function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
   const locale =
     headers.get(DEFAULT_LANGUAGE_HEADER) ||
     getAcceptPreferredLocale(i18nConfig.i18n.locales, headers) ||
@@ -104,15 +106,22 @@ function notFoundResponse(req: NextRequest, headers: Headers) {
     },
     forceLocale: true,
   });
-  url.pathname = '/_error';
   const reqInit: { request: { headers: Headers }; status?: number } = {
     request: {
       headers,
     },
   };
-  reqInit.status = 404;
+  if (kind === 'not-found') {
+    reqInit.status = 404;
+    url.pathname = '/404';
+  } else {
+    reqInit.status = 500;
+    url.pathname = '/500';
+  }
   return NextResponse.rewrite(url, reqInit);
 }
+
+const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
 
 export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
@@ -120,6 +129,7 @@ export async function middleware(req: NextRequest) {
   const hostname = host.split(':')[0];
   const reqId = req.headers.get('X-Correlation-ID') || generateCorrelationID();
   let path = nextUrl.pathname;
+  const pathParts = splitPath(path);
   const logger = getLogger('middleware', { host, path, 'request-id': reqId });
 
   if (req.nextUrl.pathname === '/_health') {
@@ -137,13 +147,22 @@ export async function middleware(req: NextRequest) {
     },
   };
   reqHeaders.set(INSTANCE_HOSTNAME_HEADER, hostname);
-
-  const instances = await getInstancesForRequest(req, hostname, logger);
+  let instances: Instance[] = [];
+  try {
+    instances = await getInstancesForRequest(req, hostname, logger);
+  } catch (error) {
+    Sentry.captureException(error);
+    // We let the request proceed if it's for api etc. routes
+    if (NON_PAGE_PATHS.includes(pathParts[0])) {
+      return NextResponse.next(reqInit);
+    }
+    return errorResponse(req, reqHeaders, 'server-error');
+  }
   const match = determineMatchingInstance(instances, path);
   setInstanceHeaders(reqHeaders, instances, match?.instance || null);
   const { instance, basePath } = match;
   reqHeaders.set(BASE_PATH_HEADER, match.basePath);
-  if (['api', 'static', '_next', 'favicon.ico'].includes(match.parts[0])) {
+  if (NON_PAGE_PATHS.includes(match.parts[0])) {
     return NextResponse.next(reqInit);
   }
   if (!instances.length) {
@@ -162,7 +181,7 @@ export async function middleware(req: NextRequest) {
   if (!instance) {
     const bps = instances.map((i) => ensureSlash(i.hostname.basePath)).join(', ');
     logger.warn(`no matching instance found; supported basepaths: ${bps}`);
-    return notFoundResponse(req, reqHeaders);
+    return errorResponse(req, reqHeaders, 'not-found');
   }
 
   const { locale, path: localizedPath } = determineLocale(instance, match.path);

@@ -1,0 +1,4 @@
+runner:
+  eslint:
+    cmd: eslint . -f=eslint-formatter-rdjson
+    format: rdjson

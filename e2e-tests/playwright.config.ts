@@ -1,15 +1,13 @@
-import path from 'path';
-import dotenv from 'dotenv';
-import { defineConfig, devices } from '@playwright/test';
-import { displayConfiguration } from './common/context';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
 
 const basePath = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({
   path: [path.resolve(basePath, '.env'), path.resolve(basePath, '..', '.env')],
 });
-
-displayConfiguration();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -41,6 +39,7 @@ export default defineConfig({
     screenshot: 'on',
   },
   maxFailures: 10,
+  globalSetup: path.resolve('./global-setup'),
 
   /* Configure projects for major browsers */
   projects: [
@@ -84,9 +83,7 @@ export default defineConfig({
   webServer: process.env.TEST_PAGE_BASE_URL
     ? undefined
     : {
-        command: process.env.TEST_DEVSERVER
-          ? 'cd .. && npm run dev'
-          : 'cd .. && npm start',
+        command: process.env.TEST_DEVSERVER ? 'cd .. && npm run dev' : 'cd .. && npm start',
         url: 'http://localhost:3000/_health',
         reuseExistingServer: true,
         env: {

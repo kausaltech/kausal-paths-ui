@@ -1,7 +1,9 @@
-import pino, { Bindings, DestinationStream, Logger, LoggerOptions } from 'pino';
+import { ApolloError, type DocumentNode, HttpLink, type OperationVariables } from '@apollo/client';
 import { getOperationName } from '@apollo/client/utilities';
-import { ApolloError, DocumentNode, OperationVariables } from '@apollo/client';
 import { customAlphabet } from 'nanoid';
+import pino, { type Bindings, type DestinationStream, type Logger, type LoggerOptions } from 'pino';
+
+import type { ApolloClientType } from './apollo';
 
 let rootLogger: Logger;
 
@@ -10,26 +12,39 @@ const LOG_MAX_ERRORS = 3;
 export type ApolloErrorContext = {
   query: DocumentNode;
   variables?: OperationVariables;
+  client?: ApolloClientType;
   component?: string;
 };
 
 export function logApolloError(error: Error, context?: ApolloErrorContext, logger?: Logger) {
   const query = context?.query;
   const operationName = query ? getOperationName(query) : null;
-  const variables = context?.variables ? JSON.stringify(context.variables) : null;
+  const variables = context?.variables ? JSON.stringify(context.variables, null, 0) : null;
 
   const logCtx: Bindings = {};
   if (operationName) logCtx.graphql_operation = operationName;
-  if (!logger) logger = getLogger('graphql', logCtx);
-  let varCtx;
-  if (variables) {
-    varCtx = {
-      variables,
-    };
-  } else {
-    varCtx = {};
+  let link = context?.client?.link;
+  let uri: string | null = null;
+  let nrLinks = 0;
+  while (link && nrLinks < 10) {
+    if (link instanceof HttpLink) {
+      console.log('isinstance');
+      if (typeof link.options.uri === 'string') {
+        uri = link.options.uri;
+      }
+    }
+    link = link.right;
+    nrLinks++;
   }
-  logger.error({ error, ...varCtx }, 'Error with graphql query');
+  if (uri) {
+    logCtx.uri = uri;
+  }
+  logger = getLogger('graphql', logCtx, logger);
+  const ctx: Record<string, string> = {};
+  if (variables) {
+    ctx.variables = variables;
+  }
+  logger.error({ error, ...ctx }, `Error with graphql query. Variables: ${variables}`);
 
   if (error instanceof ApolloError) {
     const { clientErrors, graphQLErrors, networkError } = error;
@@ -123,12 +138,17 @@ function initRootLogger() {
   return rootLogger;
 }
 
-export const getLogger = (name?: string, bindings?: Bindings) => {
-  if (!rootLogger) {
-    rootLogger = initRootLogger();
+export const getLogger = (name?: string, bindings?: Bindings, parent?: Logger) => {
+  if (!parent) {
+    if (!rootLogger) {
+      rootLogger = initRootLogger();
+    }
+    parent = rootLogger;
   }
-  if (name) return rootLogger.child({ ...(bindings ?? {}), logger: name });
-  return rootLogger;
+  if (name || bindings) {
+    return parent.child({ ...(bindings ?? {}), logger: name });
+  }
+  return parent;
 };
 
 const ID_ALPHABET = '346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz';

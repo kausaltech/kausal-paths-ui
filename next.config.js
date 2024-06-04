@@ -1,5 +1,5 @@
-import { mkdir } from 'node:fs/promises';
 // @ts-check
+import { mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import * as url from 'node:url';
@@ -94,21 +94,25 @@ const nextConfig = {
       cfg.resolve.extensionAlias = {
         '.js': ['.ts', '.js'],
       };
+      cfg.optimization = {
+        ...cfg.optimization,
+        minimize: false,
+      };
     }
     const defines = {
       'globalThis.__DEV__': isProd ? 'false' : 'true',
     };
     cfg.plugins.push(new webpack.DefinePlugin(defines));
-    cfg.experiments = { ...cfg.experiments };
     return cfg;
   },
   reactStrictMode: true,
   skipMiddlewareUrlNormalize: true,
   experimental: {
-    //esmExternals: 'loose',
-    outputFileTracingIncludes: {
-      '/': ['./node_modules/@kausal/themes*/**'],
-    },
+    outputFileTracingIncludes: standaloneBuild
+      ? {
+          '/': ['./node_modules/@kausal/themes*/**'],
+        }
+      : undefined,
   },
   generateBuildId: async () => {
     if (process.env.NEXTJS_BUILD_ID) return process.env.NEXTJS_BUILD_ID;

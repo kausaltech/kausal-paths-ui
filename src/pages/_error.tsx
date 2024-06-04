@@ -142,7 +142,6 @@ const PathsError = (props: AppErrorProps) => {
       </Container>
     </ErrorBackground>
   );
-  //return <NextErrorComponent statusCode={statusCode} />;
 };
 
 PathsError.getInitialProps = async (props: NextPageContext) => {

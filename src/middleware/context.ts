@@ -66,7 +66,6 @@ function createApolloClient(req: NextRequest) {
 
   const client: ApolloClientType = new ApolloClient({
     ssrMode: false,
-    uri: config.gqlUrl,
     link: ApolloLink.from([
       logQueryStart,
       new SentryLink({
@@ -129,7 +128,7 @@ export async function getInstancesForRequest(req: NextRequest, hostname: string,
       return await queryInstances(client, hostname, logger);
     });
   } catch (error) {
-    logApolloError(error, { query: GET_AVAILABLE_INSTANCES }, logger);
+    logApolloError(error, { query: GET_AVAILABLE_INSTANCES, client }, logger);
     throw error;
   }
   instanceCache.set(hostname, data);
