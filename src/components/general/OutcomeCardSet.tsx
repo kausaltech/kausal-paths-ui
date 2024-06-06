@@ -54,7 +54,7 @@ const Bar = styled.div`
 
 const BarHeader = styled.h5`
   font-size: 1rem;
-  color: ${(props) => props.theme.graphColors.grey060};
+  color: ${({ theme }) => theme.textColor.tertiary};
 `;
 
 const Segment = styled.div`
@@ -223,11 +223,7 @@ const OutcomeCardSet = ({
   const { cardNodes, subNodeMap } = useMemo(() => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()]
-      .filter(
-        (node) =>
-          inputNodeIds.indexOf(node.id) >= 0 &&
-          getMetricValue(node, endYear) !== undefined
-      )
+      .filter((node) => inputNodeIds.indexOf(node.id) >= 0)
       .map((node) => ({ ...node }));
     orderByMetric(cardNodes);
     setUniqueColors(
