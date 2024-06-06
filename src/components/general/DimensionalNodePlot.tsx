@@ -278,6 +278,7 @@ export default function DimensionalNodePlot({
         y: [cv.historicalValues[lastHist], cv.forecastValues[0]],
         hoverinfo: 'skip',
         showlegend: false,
+        fillcolor: tint(0.3, color),
       });
     }
     if (hasForecast) {
