@@ -38,15 +38,15 @@ export PORT=${NEXTJS_PORT}
 export HOSTNAME=0.0.0.0
 
 if [ "$NEXTJS_STANDALONE_BUILD" == "1" ] ; then
-  NODE_CMD="node server.js"
+  NEXT_CMD="node server.js"
 else
-  NODE_CMD="npm run start"
+  NEXT_CMD="npm run start"
 fi
 
 CADDY_CMD="/usr/sbin/caddy run -c /etc/caddy/Caddyfile"
 
 if [ -z "$1" ] ; then
-  exec multirun "$NODE_CMD" "$CADDY_CMD"
+  exec multirun "$NEXT_CMD" "$CADDY_CMD"
 elif [ "$1" == "caddy" ]; then
   exec $CADDY_CMD
 elif [ "$1" == "nextjs" ]; then
