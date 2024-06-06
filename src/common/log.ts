@@ -28,7 +28,6 @@ export function logApolloError(error: Error, context?: ApolloErrorContext, logge
   let nrLinks = 0;
   while (link && nrLinks < 10) {
     if (link instanceof HttpLink) {
-      console.log('isinstance');
       if (typeof link.options.uri === 'string') {
         uri = link.options.uri;
       }

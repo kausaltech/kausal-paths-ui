@@ -163,8 +163,8 @@
     "maxLineLength": 100,
     "emptyLinesAfterAllImports": 1,
     "wrappingStyle": {
-      "maxBindingNamesPerLine": 12,
-      "maxDefaultAndBindingNamesPerLine": 2,
+      "maxBindingNamesPerLine": 100,
+      "maxDefaultAndBindingNamesPerLine": 100,
       "maxExportNamesPerLine": 0,
       "maxNamesPerWrappedLine": 1,
       "ignoreComments": true

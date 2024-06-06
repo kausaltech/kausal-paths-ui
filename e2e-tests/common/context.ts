@@ -148,7 +148,7 @@ export class InstanceContext {
       variables: { instance: instanceId },
     });
     const primaryLanguage = langRes.data!.instance.defaultLanguage;
-    const baseURL = `http://${instanceId}.localhost:3000`;
+    const baseURL = getPageBaseUrlToTest(instanceId);
     const res = await apolloClient.query<
       PlaywrightGetInstanceInfoQuery,
       PlaywrightGetInstanceInfoQueryVariables
