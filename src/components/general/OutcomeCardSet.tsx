@@ -54,7 +54,7 @@ const Bar = styled.div`
 
 const BarHeader = styled.h5`
   font-size: 1rem;
-  color: ${(props) => props.theme.graphColors.grey060};
+  color: ${({ theme }) => theme.textColor.tertiary};
 `;
 
 const Segment = styled.div`
@@ -92,15 +92,7 @@ const BarSeparator = styled.div`
 `;
 
 const OutcomeBar = (props) => {
-  const {
-    nodes,
-    date,
-    hovered,
-    onHover,
-    handleClick,
-    activeNode,
-    parentColor,
-  } = props;
+  const { nodes, date, hovered, onHover, handleClick, activeNode, parentColor } = props;
   const { t } = useTranslation();
   const nodesTotal = getOutcomeTotal(nodes, date);
   // Let's get the outcome type from first node and use it with translate to give bar a title
@@ -134,9 +126,7 @@ const OutcomeBar = (props) => {
           <Segment
             key={node.id}
             style={{
-              width: `${
-                (-getMetricValue(node, date) / nodesTotal) * 100 || 0
-              }%`,
+              width: `${(-getMetricValue(node, date) / nodesTotal) * 100 || 0}%`,
               backgroundColor: node.color || parentColor,
               display: `${getMetricValue(node, date) ? '' : 'none'}`,
             }}
@@ -167,8 +157,7 @@ function orderByMetric(nodes: OutcomeNodeFieldsFragment[]) {
   function getLastValue(node: OutcomeNodeFieldsFragment) {
     const { metric } = node;
     if (!metric) return 0;
-    const lastValue =
-      metric.historicalValues[metric.historicalValues.length - 1]?.value;
+    const lastValue = metric.historicalValues[metric.historicalValues.length - 1]?.value;
     if (lastValue == undefined) return 0;
     return lastValue;
   }
@@ -223,11 +212,7 @@ const OutcomeCardSet = ({
   const { cardNodes, subNodeMap } = useMemo(() => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()]
-      .filter(
-        (node) =>
-          inputNodeIds.indexOf(node.id) >= 0 &&
-          getMetricValue(node, endYear) !== undefined
-      )
+      .filter((node) => inputNodeIds.indexOf(node.id) >= 0)
       .map((node) => ({ ...node }));
     orderByMetric(cardNodes);
     setUniqueColors(
@@ -240,9 +225,7 @@ const OutcomeCardSet = ({
     const subNodeMap = new Map<string, OutcomeNodeFieldsFragment[]>(
       cardNodes.map((cn) => [
         cn.id,
-        cn.inputNodes
-          .map((child) => nodeMap.get(child.id)!)
-          .filter((child) => !!child),
+        cn.inputNodes.map((child) => nodeMap.get(child.id)!).filter((child) => !!child),
       ])
     );
     return {
@@ -251,9 +234,7 @@ const OutcomeCardSet = ({
     };
   }, [nodeMap]);
 
-  const inputNodes = rootNode.inputNodes.filter(
-    (node) => !nodeMap.has(node.id)
-  );
+  const inputNodes = rootNode.inputNodes.filter((node) => !nodeMap.has(node.id));
   // Hide outcome bar. TODO: make this configurable
   const showOutcomeBar = false;
   // If this is the last active scenario, scroll to view after render
@@ -277,8 +258,7 @@ const OutcomeCardSet = ({
   const handleClick = useCallback(
     (segmentId) => {
       // if active node clicked, make its parent active node
-      const newActiveNode =
-        segmentId === activeNodeId ? rootNode.id : segmentId;
+      const newActiveNode = segmentId === activeNodeId ? rootNode.id : segmentId;
       setLastActiveNodeId(newActiveNode);
     },
     [activeNodeId, rootNode.id, setLastActiveNodeId]
