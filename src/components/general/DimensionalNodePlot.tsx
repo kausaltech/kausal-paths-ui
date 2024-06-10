@@ -294,6 +294,7 @@ export default function DimensionalNodePlot({
         y: [cv.historicalValues[lastHist], cv.forecastValues[0]],
         hoverinfo: 'skip',
         showlegend: false,
+        fillcolor: tint(0.3, color),
       });
     }
     if (hasForecast) {
@@ -486,6 +487,26 @@ export default function DimensionalNodePlot({
     visible: false,
   };
 
+  // Take baseline data into account when deciding the custom y-range for the graph
+  const baselineRange = baselineForecast
+    ? getRange(baselineForecast?.map((item) => item.value))
+    : [undefined, undefined];
+  const dataRange =
+    metric.stackable && slice.totalValues
+      ? getRangeFromSlice(slice)
+      : [undefined, undefined];
+
+  const rangeMin =
+    dataRange[0] && baselineRange[0]
+      ? Math.min(dataRange[0], baselineRange[0])
+      : dataRange[0];
+  const rangeMax =
+    dataRange[1] && baselineRange[1]
+      ? Math.max(dataRange[1], baselineRange[1])
+      : dataRange[1];
+
+  const customRange = rangeMin && rangeMax ? [rangeMin, rangeMax] : undefined;
+
   const layout: Partial<Plotly.Layout> = {
     height: 300,
     margin: {
@@ -524,10 +545,7 @@ export default function DimensionalNodePlot({
       tickcolor: theme.graphColors.grey030,
       fixedrange: true,
       rangemode: rangeMode,
-      range:
-        metric.stackable && slice.totalValues
-          ? getRangeFromSlice(slice)
-          : undefined,
+      range: customRange,
     },
     xaxis: showReferenceYear
       ? {

@@ -65,6 +65,15 @@ const MainValue = styled.div`
   font-weight: 700;
 `;
 
+const NoValue = styled.div`
+  text-align: left;
+  font-weight: 700;
+  color: ${({ theme }) => theme.graphColors.grey030};
+  &:before {
+    content: '—';
+  }
+`;
+
 const Label = styled.div<{ $active?: boolean }>`
   font-size: 0.7rem;
   font-weight: 700;
@@ -165,13 +174,12 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   const goalOutcomeValue = getMetricValue(node, endYear);
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
   const lastMeasuredYear =
-    node?.metric.historicalValues[node.metric.historicalValues.length - 1].year;
-  const isForecast = endYear > lastMeasuredYear;
+    node?.metric.historicalValues[node.metric.historicalValues.length - 1]
+      ?.year;
+  const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.metric?.unit?.htmlShort;
-  // If there is no outcome  value for active year, do not display card set
-  if (goalOutcomeValue === undefined) return null;
 
   const handleClickTab = () => handleClick(node.id);
 
@@ -214,29 +222,39 @@ const OutcomeCard = (props: OutcomeCardProps) => {
             <Name>{node.shortName || node.name}</Name>
           </Title>
         </Header>
-        {true && (
-          <Body>
-            <MainValue>
-              <Label $active={active}>
-                {isForecast
-                  ? t('table-scenario-forecast')
-                  : t('table-historical')}{' '}
-                {endYear}
+
+        <Body>
+          <MainValue>
+            <Label $active={active}>
+              {isForecast
+                ? t('table-scenario-forecast')
+                : t('table-historical')}{' '}
+              {endYear}
+            </Label>
+            {goalOutcomeValue ? (
+              <>
+                {beautifyValue(goalOutcomeValue)}
+                <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
+              </>
+            ) : (
+              <NoValue />
+            )}
+
+            <Status>
+              <Label>
+                {t('change-over-time')} {startYear} - {endYear}
               </Label>
-              {beautifyValue(goalOutcomeValue)}
-              <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
-              {change && (
-                <Status>
-                  <Label>
-                    {t('change-over-time')} {startYear} - {endYear}
-                  </Label>
+              {change ? (
+                <>
                   {change > 0 && <span>+</span>}
                   {change ? <span>{`${change}%`}</span> : <span>-</span>}
-                </Status>
+                </>
+              ) : (
+                <NoValue />
               )}
-            </MainValue>
-          </Body>
-        )}
+            </Status>
+          </MainValue>
+        </Body>
       </DashCard>
     </StyledTab>
   );
