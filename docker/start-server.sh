@@ -50,7 +50,7 @@ if [ -z "$1" ] ; then
 elif [ "$1" == "caddy" ]; then
   exec $CADDY_CMD
 elif [ "$1" == "nextjs" ]; then
-  exec $NODE_CMD
+  exec $NEXT_CMD
 else
   echo "Invalid command: $1"
   exit 1
