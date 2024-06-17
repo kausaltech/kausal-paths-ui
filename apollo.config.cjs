@@ -7,7 +7,7 @@ const JS = '*.{js,jsx,ts,tsx,mjs}';
 
 module.exports = {
   client: {
-    includes: [`./src/**/${JS}`],
+    includes: [`./src/**/${JS}`, `./e2e-tests/**/${JS}`],
     service: {
       name: 'kausal-paths',
       url: `${apiUrl}/graphql/`,
