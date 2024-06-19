@@ -1378,6 +1378,35 @@ export type GetActionListQuery = (
   & { __typename: 'Query' }
 );
 
+export type GetImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetImpactOverviewsQuery = (
+  { impactOverviews: Array<(
+    { id: string, label: string, graphType: string | null, actions: Array<(
+      { action: (
+        { id: string, name: string }
+        & { __typename: 'ActionNode' }
+      ), costDim: (
+        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string }
+          & { __typename: 'MetricDimensionType' }
+        )> }
+        & { __typename: 'DimensionalMetricType' }
+      ), impactDim: (
+        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string }
+          & { __typename: 'MetricDimensionType' }
+        )> }
+        & { __typename: 'DimensionalMetricType' }
+      ) }
+      & { __typename: 'ActionEfficiency' }
+    )> }
+    & { __typename: 'ActionEfficiencyPairType' }
+  )> }
+  & { __typename: 'Query' }
+);
+
 export type OutcomeNodeFieldsFragment = (
   { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, metric: (
     { id: string | null, name: string | null, unit: (

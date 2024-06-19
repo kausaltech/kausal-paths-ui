@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import type {
   GetActionListQuery,
   GetActionListQueryVariables,
+  GetImpactOverviewsQuery,
   GetPageQuery,
 } from 'common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
@@ -17,10 +18,13 @@ import ScenarioBadge from 'components/common/ScenarioBadge';
 import ActionsComparison from 'components/general/ActionsComparison';
 import ActionsList from 'components/general/ActionsList';
 import ActionsMac from 'components/general/ActionsMac';
+import { CostBenefitAnalysis } from 'components/general/CostBenefitAnalysis';
+import { ReturnOnInvestment } from 'components/general/ReturnOnInvestment';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { GET_ACTION_LIST } from 'queries/getActionList';
+import { GET_IMPACT_OVERVIEWS } from 'queries/getImpactOverviews';
 import { Button, ButtonGroup, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
 import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from 'types/actions.types';
@@ -128,6 +132,8 @@ const getSortOptions = (
   },
 ];
 
+type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi';
+
 type ActionListPageProps = {
   page: NonNullable<GetPageQuery['page']> & {
     __typename: 'ActionListPage';
@@ -135,26 +141,68 @@ type ActionListPageProps = {
   refetch: PageRefetchCallback;
 };
 
+type ActionPageTabProps = {
+  tabId: ViewType;
+  label: string;
+  isActive: boolean;
+  onSelectTab: (id: string) => void;
+  icon: string;
+};
+
+function hasGraph(impactResponse: QueryResult<GetImpactOverviewsQuery>, graphType: string) {
+  return !!impactResponse.data?.impactOverviews.find(
+    (overview) => overview.graphType === graphType
+  );
+}
+
+function ActionPageTab({ tabId, label, isActive, onSelectTab, icon }: ActionPageTabProps) {
+  return (
+    <Tab
+      className={`nav-link ${isActive ? 'active' : ''}`}
+      onClick={() => onSelectTab(tabId)}
+      role="tab"
+      tabIndex={0}
+      aria-selected={isActive}
+      aria-controls="tabId"
+      id="list-tab"
+    >
+      <Icon name={icon} /> {label}
+    </Tab>
+  );
+}
+
 function ActionListPage({ page }: ActionListPageProps) {
   const { t } = useTranslation();
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
-    variables: {
-      goal: activeGoal?.id ?? null,
-    },
+
+  const impactResp = useQuery<GetImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
-  const { error, loading, previousData } = queryResp;
+
+  const actionListResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
+    GET_ACTION_LIST,
+    {
+      variables: {
+        goal: activeGoal?.id ?? null,
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+  const error = actionListResp.error || impactResp.error;
+
+  const { loading: areActionsLoading, previousData } = actionListResp;
   const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const data = queryResp.data ?? previousData;
+  const data = actionListResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
+  const showReturnOnInvestment = hasGraph(impactResp, 'return_of_investment');
+  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit') && false; // Disabled for now
 
   const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
 
-  const [listType, setListType] = useState('list');
+  const [listType, setListType] = useState<ViewType>('list');
   const [ascending, setAscending] = useState(true);
   const [sortBy, setSortBy] = useState<SortActionsConfig>(
     sortOptions.find((sortOption) => sortOption.key === page.defaultSortOrder) ?? sortOptions[0]
@@ -164,11 +212,11 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   // Different default view if we have action efficiency pairs
   useEffect(() => {
-    if (loading === false && data && hasEfficiency) {
+    if (areActionsLoading === false && data && hasEfficiency) {
       setListType('mac');
       setSortBy(sortOptions.find((option) => option.key === 'CUM_EFFICIENCY') ?? sortOptions[0]);
     }
-  }, [loading, data, hasEfficiency]);
+  }, [areActionsLoading, data, hasEfficiency]);
 
   const filteredActions = (data?.actions || []).filter(
     (action) =>
@@ -364,41 +412,50 @@ function ActionListPage({ page }: ActionListPageProps) {
       <ActionsViewTabs>
         <Container fluid="lg">
           <div role="tablist">
-            <Tab
-              className={`nav-link ${listType === 'list' ? 'active' : ''}`}
-              onClick={() => setListType('list')}
-              role="tab"
-              tabIndex={0}
-              aria-selected={listType === 'list'}
-              aria-controls="list-view"
-              id="list-tab"
-            >
-              <Icon name="grid" /> {t('actions-as-list')}
-            </Tab>
+            <ActionPageTab
+              tabId="list"
+              isActive={listType === 'list'}
+              label={t('actions-as-list')}
+              onSelectTab={() => setListType('list')}
+              icon="grid"
+            />
+
             {hasEfficiency ? (
-              <Tab
-                className={`nav-link ${listType === 'mac' ? 'active' : ''}`}
-                onClick={() => setListType('mac')}
-                role="tab"
-                tabIndex={0}
-                aria-selected={listType === 'mac'}
-                aria-controls="efficiency-view"
-                id="list-tab"
-              >
-                <Icon name="chartColumn" /> {t('actions-as-efficiency')}
-              </Tab>
+              <ActionPageTab
+                tabId="mac"
+                isActive={listType === 'mac'}
+                label={t('actions-as-efficiency')}
+                onSelectTab={() => setListType('mac')}
+                icon="chartColumn"
+              />
             ) : (
-              <Tab
-                className={`nav-link ${listType === 'comparison' ? 'active' : ''}`}
-                onClick={() => setListType('comparison')}
-                role="tab"
-                tabIndex={0}
-                aria-selected={listType === 'comparison'}
-                aria-controls="comparison-view"
-                id="list-tab"
-              >
-                <Icon name="chartColumn" /> {t('actions-as-comparison')}
-              </Tab>
+              <ActionPageTab
+                tabId="comparison"
+                isActive={listType === 'comparison'}
+                label={t('actions-as-comparison')}
+                onSelectTab={() => setListType('comparison')}
+                icon="chartColumn"
+              />
+            )}
+
+            {showCostBenefitAnalysis && (
+              <ActionPageTab
+                tabId="cost-benefit"
+                isActive={listType === 'cost-benefit'}
+                label={t('cost-benefit')}
+                onSelectTab={() => setListType('cost-benefit')}
+                icon="chartColumn"
+              />
+            )}
+
+            {showReturnOnInvestment && (
+              <ActionPageTab
+                tabId="roi"
+                isActive={listType === 'roi'}
+                label={t('return-of-investment')}
+                onSelectTab={() => setListType('roi')}
+                icon="chartColumn"
+              />
             )}
           </div>
         </Container>
@@ -414,7 +471,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
-                refetching={loading}
+                refetching={areActionsLoading}
               />
             )}
             {listType === 'mac' && (
@@ -426,8 +483,12 @@ function ActionListPage({ page }: ActionListPageProps) {
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}
                 sortAscending={ascending}
-                refetching={loading}
+                refetching={areActionsLoading}
               />
+            )}
+            {listType === 'cost-benefit' && <CostBenefitAnalysis isLoading={areActionsLoading} />}
+            {listType === 'roi' && (
+              <ReturnOnInvestment data={impactResp.data} isLoading={impactResp.loading} />
             )}
             {listType === 'comparison' && (
               <ActionsComparison
@@ -436,7 +497,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}
                 sortAscending={ascending}
-                refetching={loading}
+                refetching={areActionsLoading}
                 displayYears={yearRange}
               />
             )}

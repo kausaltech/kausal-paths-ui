@@ -1,20 +1,5 @@
-import styled from 'styled-components';
 import MacGraph from 'components/graphs/MacGraph';
-import Loader from 'components/common/Loader';
-
-const ActionCount = styled.div`
-  margin: 0 0 ${({ theme }) => theme.spaces.s100};
-  color: ${({ theme }) => theme.themeColors.dark};
-`;
-
-const GraphCard = styled.div`
-  position: relative;
-  margin: 0 0 3rem;
-  padding: 2rem;
-  border-radius: 0;
-  background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
-`;
+import { ChartWrapper } from 'components/charts/ChartWrapper';
 
 const ActionsMac = ({
   id,
@@ -32,9 +17,7 @@ const ActionsMac = ({
   const efficiencyActions = actions
     .filter((action) => action.cumulativeEfficiency)
     .filter((action) =>
-      efficiencyLimit
-        ? Math.abs(action.cumulativeEfficiency) <= efficiencyLimit
-        : true
+      efficiencyLimit ? Math.abs(action.cumulativeEfficiency) <= efficiencyLimit : true
     );
 
   const sortActions = (a, b) => {
@@ -44,10 +27,10 @@ const ActionsMac = ({
     return a.cumulativeImpact < 0
       ? -1
       : b.cumulativeImpact < 0
-      ? 0
-      : sortAscending
-      ? aValue - bValue
-      : bValue - aValue;
+        ? 0
+        : sortAscending
+          ? aValue - bValue
+          : bValue - aValue;
   };
 
   const sortedActions = [...efficiencyActions].sort(sortActions);
@@ -73,25 +56,19 @@ const ActionsMac = ({
   const costUnit = sortedActions[0]?.cumulativeCostUnit;
 
   return (
-    <>
-      {/* <ActionCount>
-        {t('actions-count', { count: sortedActions.length})}
-      </ActionCount> */}
-      <GraphCard id={id}>
-        {refetching && <Loader />}
-        <MacGraph
-          data={macData}
-          impactName={impactName}
-          impactUnit={impactUnit}
-          efficiencyName={t('efficiency')}
-          efficiencyUnit={efficiencyUnit}
-          actionIds={macData.ids}
-          costName={costName}
-          costUnit={costUnit}
-          actionGroups={actionGroups}
-        />
-      </GraphCard>
-    </>
+    <ChartWrapper id={id} isLoading={refetching}>
+      <MacGraph
+        data={macData}
+        impactName={impactName}
+        impactUnit={impactUnit}
+        efficiencyName={t('efficiency')}
+        efficiencyUnit={efficiencyUnit}
+        actionIds={macData.ids}
+        costName={costName}
+        costUnit={costUnit}
+        actionGroups={actionGroups}
+      />
+    </ChartWrapper>
   );
 };
 

@@ -107,5 +107,8 @@
   "error-with-code": "Error code {{code}}",
   "thumbSliderLabel": "Adjust",
   "reset-button": "Reset",
-  "return-to-front": "Return to front page"
+  "return-to-front": "Return to front page",
+  "cost-benefit": "Cost-benefit",
+  "cost-benefit-analysis": "Cost-benefit analysis",
+  "return-of-investment": "Return of investment"
 }

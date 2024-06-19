@@ -1,17 +1,7 @@
-import styled from 'styled-components';
 import { SortActionsConfig } from 'types/actions.types';
 import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
-import Loader from 'components/common/Loader';
 import { useTranslation } from 'next-i18next';
-
-const GraphCard = styled.div`
-  position: relative;
-  margin: 0 0 3rem;
-  padding: 2rem;
-  border-radius: 0;
-  background-color: ${(props) => props.theme.themeColors.white};
-  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
-`;
+import { ChartWrapper } from 'components/charts/ChartWrapper';
 
 type Props = {
   sortBy?: SortActionsConfig['sortKey'];
@@ -41,9 +31,8 @@ const ActionsComparison = ({
     return {
       ...action,
       impact:
-        action.impactMetric.forecastValues.find(
-          (dataPoint) => dataPoint.year === displayYears[1]
-        )?.value || 0,
+        action.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === displayYears[1])
+          ?.value || 0,
     };
   });
 
@@ -65,24 +54,19 @@ const ActionsComparison = ({
   };
 
   // FIXME: Running impact metric name through translation as a quickfix until they are translated in the backend
-  const impactName = `${t(sortedActions[0]?.impactMetric.name)} ${
-    displayYears[1]
-  }`;
+  const impactName = `${t(sortedActions[0]?.impactMetric.name)} ${displayYears[1]}`;
   const impactUnit = sortedActions[0]?.impactMetric.unit.htmlShort;
 
   return (
-    <>
-      <GraphCard id={id}>
-        {refetching && <Loader />}
-        <ActionComparisonGraph
-          data={macData}
-          impactName={impactName}
-          impactUnit={impactUnit}
-          actionIds={macData.ids}
-          actionGroups={actionGroups}
-        />
-      </GraphCard>
-    </>
+    <ChartWrapper id={id} isLoading={refetching}>
+      <ActionComparisonGraph
+        data={macData}
+        impactName={impactName}
+        impactUnit={impactUnit}
+        actionIds={macData.ids}
+        actionGroups={actionGroups}
+      />
+    </ChartWrapper>
   );
 };
 
