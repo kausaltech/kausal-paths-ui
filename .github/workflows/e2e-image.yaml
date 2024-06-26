@@ -48,9 +48,9 @@ on:
 jobs:
   e2e_test:
     name: Run tests
-    runs-on: self-hosted
+    runs-on: runner-prod
     container:
-      image: harbor.kausal.dev/library/playwright:v1.44.1
+      image: harbor.kausal.tech/library/playwright:v1.44.1
     env:
       TEST_INSTANCE_IDENTIFIERS: ${{ inputs.instance_identifiers }}
       NEXT_PUBLIC_API_URL: ${{ inputs.backend_base_url }}
