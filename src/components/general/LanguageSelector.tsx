@@ -2,20 +2,15 @@ import { Link } from 'common/links';
 import { useRouter } from 'next/router';
 import Icon from 'components/common/icon';
 import styled, { useTheme } from 'styled-components';
-import {
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-} from 'reactstrap';
+import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { useInstance } from '@/common/instance';
 
 const Selector = styled(UncontrolledDropdown)<{ $mobile: boolean }>`
   a {
     height: 100%;
     display: flex;
     align-items: center;
-    margin: 0 0 ${(props) => props.theme.spaces.s050}
-      ${(props) => props.theme.spaces.s100};
+    margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
     color: ${(props) => props.theme.neutralDark};
 
     &:hover {
@@ -35,9 +30,7 @@ const Selector = styled(UncontrolledDropdown)<{ $mobile: boolean }>`
 
   svg {
     fill: ${(props) =>
-      props.$mobile
-        ? props.theme.themeColors.dark
-        : props.theme.brandNavColor} !important;
+      props.$mobile ? props.theme.themeColors.dark : props.theme.brandNavColor} !important;
   }
 `;
 
@@ -47,8 +40,7 @@ const CurrentLanguage = styled.span<{ $mobile: boolean }>`
   margin: 0 0.5rem;
   text-transform: uppercase;
   font-size: 90%;
-  color: ${(props) =>
-    props.$mobile ? props.theme.themeColors.dark : props.theme.brandNavColor};
+  color: ${(props) => (props.$mobile ? props.theme.themeColors.dark : props.theme.brandNavColor)};
 `;
 
 const StyledDropdownMenu = styled(DropdownMenu)`
@@ -69,8 +61,11 @@ const languageNames = {
 function LanguageSelector({ mobile }: { mobile: boolean }) {
   const router = useRouter();
   const theme = useTheme();
+  const { locales: globalLocales } = useRouter();
+  const { supportedLanguages: planLocales } = useInstance();
 
-  const { locales } = router;
+  const locales = planLocales.filter((locale) => globalLocales?.includes(locale) ?? true);
+
   if (!locales || locales.length < 2) return null;
   const handleLocaleChange = (ev) => {
     ev.preventDefault();
@@ -88,17 +83,13 @@ function LanguageSelector({ mobile }: { mobile: boolean }) {
     <Selector nav inNavbar $mobile={mobile} className={mobile && 'd-md-none'}>
       <DropdownToggle nav>
         <Icon name="globe" color={theme.neutralDark} />
-        <CurrentLanguage $mobile={mobile}>
-          {getLanguageCodeLabel(router.locale)}
-        </CurrentLanguage>
+        <CurrentLanguage $mobile={mobile}>{getLanguageCodeLabel(router.locale)}</CurrentLanguage>
       </DropdownToggle>
       <StyledDropdownMenu end>
         {locales.map((locale) => (
           <DropdownItem key={locale} tag="div">
             <Link locale={locale} href="/">
-              <a onClick={handleLocaleChange}>
-                {languageNames[getLanguageCodeLabel(locale)]}
-              </a>
+              <a onClick={handleLocaleChange}>{languageNames[getLanguageCodeLabel(locale)]}</a>
             </Link>
           </DropdownItem>
         ))}
