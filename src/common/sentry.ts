@@ -14,7 +14,7 @@ export async function initSentry() {
     dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
     environment: deploymentType,
     // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.01,
     tracePropagationTargets: ['localhost', gqlUrl],
     debug: process.env.SENTRY_DEBUG === '1',
     ignoreErrors: ['NEXT_NOT_FOUND'],
