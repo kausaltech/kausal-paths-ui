@@ -1,20 +1,25 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { Badge as BSSBadge } from 'reactstrap';
-import { readableColor } from 'polished';
 
+import { darken, readableColor } from 'polished';
+import { Badge as BSSBadge } from 'reactstrap';
+import styled from 'styled-components';
+
+interface BadgeProps {
+  children?: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+  color?: string;
+  isLink?: boolean;
+}
 const StyledBadge = styled(BSSBadge)`
-  background-color: ${(props) => props.theme[props.color]} !important;
+  background-color: ${(props) => props.theme[props.color!]} !important;
   color: ${(props) =>
     readableColor(
-      props.theme[props.color],
+      props.theme[props.color!],
       props.theme.themeColors.black,
       props.theme.themeColors.white
     )};
   border-radius: ${(props) => props.theme.badgeBorderRadius};
-  padding: ${(props) => props.theme.badgePaddingY}
-    ${(props) => props.theme.badgePaddingX};
+  padding: ${(props) => props.theme.badgePaddingY} ${(props) => props.theme.badgePaddingX};
   font-weight: ${(props) => props.theme.badgeFontWeight};
   max-width: 100%;
   word-break: break-all;
@@ -25,7 +30,7 @@ const StyledBadge = styled(BSSBadge)`
 
   &:hover {
     background-color: ${(props) =>
-      props.isLink && darken(0.05, props.theme[props.color])} !important;
+      props.isLink && darken(0.05, props.theme[props.color!])} !important;
   }
 
   &.lg {
@@ -39,28 +44,13 @@ const StyledBadge = styled(BSSBadge)`
   }
 `;
 
-const Badge = (props) => {
-  const { children, size, color, isLink } = props;
-
+const Badge: React.FC = (props: BadgeProps) => {
+  const { children, size = 'sm', color = 'brandDark', isLink = false } = props;
   return (
     <StyledBadge className={size} color={color} isLink={isLink}>
       {children}
     </StyledBadge>
   );
-};
-
-Badge.defaultProps = {
-  children: null,
-  size: 'sm',
-  color: 'brandDark',
-  isLink: false,
-};
-
-Badge.propTypes = {
-  children: PropTypes.node,
-  size: PropTypes.string,
-  color: PropTypes.string,
-  isLink: PropTypes.bool,
 };
 
 export default Badge;
