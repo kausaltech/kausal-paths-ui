@@ -59,3 +59,5 @@ yarn-error.log
 /e2e-tests/*-snapshots/**
 /e2e-tests/node_modules/
 /public/static/themes
+
+*storybook.log
