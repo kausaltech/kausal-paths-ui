@@ -7,7 +7,7 @@ import apolloClient, {
   type DocumentNode,
   type OperationVariables,
 } from '@apollo/client';
-import { ApolloError } from '@apollo/client/errors';
+import { isApolloError } from '@apollo/client/core/core.cjs';
 import { HttpLink } from '@apollo/client/link/http/HttpLink.js';
 import { getOperationName } from '@apollo/client/utilities/graphql/getFromAST.js';
 import { expect, type Page } from '@playwright/test';
@@ -104,7 +104,7 @@ export function logApolloError(error: Error, context?: ApolloErrorContext) {
   if (variables) {
     ctx.variables = variables;
   }
-  if (error instanceof ApolloError) {
+  if (isApolloError(error)) {
     const { clientErrors, graphQLErrors, networkError } = error;
     if (clientErrors.length) {
       clientErrors.forEach((err, idx) => {
