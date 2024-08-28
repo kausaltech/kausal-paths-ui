@@ -2,13 +2,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import apolloClient, { type ApolloQueryResult } from '@apollo/client';
+import apolloClient, {
+  type ApolloQueryResult,
+  type DocumentNode,
+  type OperationVariables,
+} from '@apollo/client';
+import { ApolloError } from '@apollo/client/errors';
+import { HttpLink } from '@apollo/client/link/http/HttpLink.js';
+import { getOperationName } from '@apollo/client/utilities/graphql/getFromAST.js';
 import { expect, type Page } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
+import type { ApolloClientType } from '@/common/apollo.js';
 import i18nConfig from '../../next-i18next.config.js';
-import { logApolloError } from '../../src/common/log.js';
 import type {
   PlaywrightGetInstanceBasicsQuery,
   PlaywrightGetInstanceBasicsQueryVariables,
@@ -63,6 +70,71 @@ export type PathsPage = NonNullable<InstanceInfo['pages']>[0];
 export type ActionListPage = PathsPage & {
   __typename: 'ActionListPage';
 };
+
+const LOG_MAX_ERRORS = 3;
+
+export type ApolloErrorContext = {
+  query: DocumentNode;
+  variables?: OperationVariables;
+  client?: ApolloClientType;
+  component?: string;
+};
+
+export function logApolloError(error: Error, context?: ApolloErrorContext) {
+  const query = context?.query;
+  const operationName = query ? getOperationName(query) : null;
+  const variables = context?.variables ? JSON.stringify(context.variables, null, 0) : null;
+
+  let link = context?.client?.link;
+  let uri: string | null = null;
+  let nrLinks = 0;
+  while (link && nrLinks < 10) {
+    if (link instanceof HttpLink) {
+      if (typeof link.options.uri === 'string') {
+        uri = link.options.uri;
+      }
+    }
+    link = link.right;
+    nrLinks++;
+  }
+  console.error(
+    `GraphQL query ${operationName} to ${uri} returned an error. Variables: ${variables}`
+  );
+  const ctx: Record<string, string> = {};
+  if (variables) {
+    ctx.variables = variables;
+  }
+  if (error instanceof ApolloError) {
+    const { clientErrors, graphQLErrors, networkError } = error;
+    if (clientErrors.length) {
+      clientErrors.forEach((err, idx) => {
+        if (idx >= LOG_MAX_ERRORS) return;
+        console.error(err, 'Client error');
+      });
+    }
+    if (graphQLErrors.length) {
+      graphQLErrors.forEach((err, idx) => {
+        if (idx >= LOG_MAX_ERRORS) return;
+        console.error(err, 'GraphQL errors');
+      });
+    }
+    if (networkError) {
+      const message = networkError.message;
+      const result = 'result' in networkError ? networkError.result : null;
+      console.error(networkError, `Network error: ${message}`);
+
+      const errors: Error[] | null = result?.['errors'].length ? result['errors'] : null;
+      if (errors) {
+        errors.forEach((err, idx) => {
+          if (idx >= LOG_MAX_ERRORS) return;
+          console.error(err, 'Network result errors');
+        });
+      } else if (result) {
+        console.error(result, 'Network result');
+      }
+    }
+  }
+}
 
 const i18nRes = Object.fromEntries(
   (i18nConfig.i18n.locales as string[]).map((lng) => {
