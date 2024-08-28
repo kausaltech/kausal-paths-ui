@@ -2,12 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import apolloClient from '@apollo/client';
+import apolloClient, { type ApolloQueryResult } from '@apollo/client';
 import { expect, type Page } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
 import i18nConfig from '../../next-i18next.config.js';
+import { logApolloError } from '../../src/common/log.js';
 import type {
   PlaywrightGetInstanceBasicsQuery,
   PlaywrightGetInstanceBasicsQueryVariables,
@@ -140,22 +141,37 @@ export class InstanceContext {
       uri: `${API_BASE}/graphql/`,
     });
 
-    const langRes = await apolloClient.query<
-      PlaywrightGetInstanceBasicsQuery,
-      PlaywrightGetInstanceBasicsQueryVariables
-    >({
-      query: GET_INSTANCE_BASICS,
-      variables: { instance: instanceId },
-    });
+    let langRes: ApolloQueryResult<PlaywrightGetInstanceBasicsQuery>;
+    try {
+      langRes = await apolloClient.query<
+        PlaywrightGetInstanceBasicsQuery,
+        PlaywrightGetInstanceBasicsQueryVariables
+      >({
+        query: GET_INSTANCE_BASICS,
+        variables: { instance: instanceId },
+      });
+    } catch (err) {
+      logApolloError(err, { query: GET_INSTANCE_BASICS, variables: { instance: instanceId } });
+      throw err;
+    }
     const primaryLanguage = langRes.data!.instance.defaultLanguage;
     const baseURL = getPageBaseUrlToTest(instanceId);
-    const res = await apolloClient.query<
-      PlaywrightGetInstanceInfoQuery,
-      PlaywrightGetInstanceInfoQueryVariables
-    >({
-      query: GET_INSTANCE_INFO,
-      variables: { instance: instanceId, locale: primaryLanguage },
-    });
+    let res: ApolloQueryResult<PlaywrightGetInstanceInfoQuery>;
+    try {
+      res = await apolloClient.query<
+        PlaywrightGetInstanceInfoQuery,
+        PlaywrightGetInstanceInfoQueryVariables
+      >({
+        query: GET_INSTANCE_INFO,
+        variables: { instance: instanceId, locale: primaryLanguage },
+      });
+    } catch (err) {
+      logApolloError(err, {
+        query: GET_INSTANCE_INFO,
+        variables: { instance: instanceId, locale: primaryLanguage },
+      });
+      throw err;
+    }
     const data = res.data!;
     return new InstanceContext(data, baseURL);
   }

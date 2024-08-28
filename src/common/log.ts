@@ -1,5 +1,7 @@
-import { ApolloError, type DocumentNode, HttpLink, type OperationVariables } from '@apollo/client';
-import { getOperationName } from '@apollo/client/utilities';
+import { type DocumentNode, type OperationVariables } from '@apollo/client';
+import { ApolloError } from '@apollo/client/errors/index.js';
+import { HttpLink } from '@apollo/client/link/http/index.js';
+import { getOperationName } from '@apollo/client/utilities/graphql/getFromAST.js';
 import { customAlphabet } from 'nanoid';
 import pino, { type Bindings, type DestinationStream, type Logger, type LoggerOptions } from 'pino';
 

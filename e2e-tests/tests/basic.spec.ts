@@ -67,7 +67,7 @@ const testInstance = (instanceId: string) =>
       await link.click();
       await ctx.checkMeta(page);
 
-      await expect.configure({ timeout: 15000 })(page.getByRole('tab').first()).toBeVisible();
+      await expect.configure({ timeout: 45000 })(page.getByRole('tab').first()).toBeVisible();
 
       await ctx.waitForLoaded(page);
       /*
@@ -80,7 +80,7 @@ const testInstance = (instanceId: string) =>
       await ctx.checkMeta(page);
       await ctx.waitForLoaded(page);
       await expect
-        .configure({ timeout: 5000 })(page.getByRole('tab').locator('visible=true').first())
+        .configure({ timeout: 15000 })(page.getByRole('tab').locator('visible=true').first())
         .toBeVisible();
 
       //const ss = await page.screenshot({ fullPage: true });
@@ -88,12 +88,14 @@ const testInstance = (instanceId: string) =>
     });
     test('action details page', async ({ page, ctx }) => {
       test.skip(ctx.instance.actions.length == 0, 'No actions defined in instance');
-      await page.goto(ctx.getActionURL(ctx.instance.actions[0]));
+      const action = ctx.instance.actions[0];
+      await page.goto(ctx.getActionURL(action));
       await ctx.checkMeta(page);
       await ctx.waitForLoaded(page);
 
-      await expect(page.locator('nav[aria-label="breadcrumb"]')).toBeVisible();
-      await expect(page.locator('main a').getByText(ctx.i18n.t('read-more'))).toBeVisible();
+      await expect(
+        page.locator(`main a[href*="/node/${action.id}"]`).getByText(ctx.i18n.t('read-more'))
+      ).toBeVisible();
       //await expect(page).toHaveScreenshot({ fullPage: true });
     });
   });

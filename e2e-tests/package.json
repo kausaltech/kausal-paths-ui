@@ -10,12 +10,13 @@
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
-    "@apollo/client": "^3.10.4",
-    "@axe-core/playwright": "^4.9.1",
-    "@playwright/test": "^1.44.1",
+    "@apollo/client": "^3.11.4",
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.46.1",
     "dotenv": "^16.4.5",
-    "i18next": "^23.11.5",
-    "playwright": "^1.44.1",
+    "i18next": "^23.14.0",
+    "playwright": "^1.46.1",
+    "playwright-lighthouse": "^4.0.0",
     "react": "^18.3.1"
   }
 }
