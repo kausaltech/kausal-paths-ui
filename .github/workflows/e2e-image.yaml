@@ -50,7 +50,7 @@ jobs:
     name: Run tests
     runs-on: runner-prod
     container:
-      image: harbor.kausal.tech/library/playwright:v1.44.1
+      image: harbor.kausal.tech/library/playwright:v1.46.1
     env:
       TEST_INSTANCE_IDENTIFIERS: ${{ inputs.instance_identifiers }}
       NEXT_PUBLIC_API_URL: ${{ inputs.backend_base_url }}
