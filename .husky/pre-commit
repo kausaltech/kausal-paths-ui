@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-
 [ -n "$CI" ] && exit 0
 
 # Check that the active node version matches what is in
@@ -17,7 +15,5 @@ if [ -z "$husky_skip_init" ]; then
     exit 1
   fi
 fi
-
-. "$(dirname -- "$0")/_/husky.sh"
 
 npx --no lint-staged
