@@ -52,7 +52,11 @@ function determineMatchingInstance(instances: Instance[], path: string) {
   return { basePath, instance: match, path, parts };
 }
 
-function determineLocale(instance: Instance, path: string) {
+function determineLocale(instance: Instance, path: string, detectedLocale: string) {
+  if (detectedLocale !== 'default') {
+    // NextJS chomps the locale, so we need to add it back in.
+    path = `/${detectedLocale}${path}`;
+  }
   const otherLanguages = instance.supportedLanguages.filter(
     (lang) => lang != instance.defaultLanguage
   );
@@ -129,6 +133,7 @@ export async function middleware(req: NextRequest) {
   const hostname = host.split(':')[0];
   const reqId = req.headers.get('X-Correlation-ID') || generateCorrelationID();
   let path = nextUrl.pathname;
+  const detectedLocale = nextUrl.locale;
   const pathParts = splitPath(path);
   const logger = getLogger('middleware', { host, path, 'request-id': reqId });
 
@@ -161,7 +166,7 @@ export async function middleware(req: NextRequest) {
   const match = determineMatchingInstance(instances, path);
   setInstanceHeaders(reqHeaders, instances, match?.instance || null);
   const { instance, basePath } = match;
-  reqHeaders.set(BASE_PATH_HEADER, match.basePath);
+  reqHeaders.set(BASE_PATH_HEADER, basePath);
   if (NON_PAGE_PATHS.includes(match.parts[0])) {
     return NextResponse.next(reqInit);
   }
@@ -184,20 +189,20 @@ export async function middleware(req: NextRequest) {
     return errorResponse(req, reqHeaders, 'not-found');
   }
 
-  const { locale, path: localizedPath } = determineLocale(instance, match.path);
+  const { path: localizedPath } = determineLocale(instance, match.path, detectedLocale);
   path = localizedPath;
 
   const href = `${nextUrl.protocol}//${nextUrl.host}${path}`;
   const url = new NextURL(href);
-  const shouldRedirect = nextUrl.pathname === url.pathname;
+  const shouldRewrite = nextUrl.pathname !== url.pathname;
   logger.info({ href: nextUrl.toString(), locale: nextUrl.locale }, 'before');
   logger.info(
     { href: url.toString(), locale: url.locale },
-    `after${shouldRedirect ? ' (redirecting)' : ''}`
+    `after${shouldRewrite ? ' (rewriting)' : ''}`
   );
-  if (shouldRedirect) {
-    return NextResponse.next(reqInit);
+  if (!shouldRewrite) {
+    const resp = NextResponse.next(reqInit);
+    resp.headers.set('Document-Policy', 'js-profiling');
   }
-  console.log('redirecting');
   return NextResponse.rewrite(url, reqInit);
 }
