@@ -231,7 +231,6 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
     >({
       query: GET_INSTANCE_CONTEXT,
       context: {
-        locale: i18nConf.locale,
         logger,
       },
     });
