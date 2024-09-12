@@ -143,14 +143,12 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
    *
    * If identifier is set directly, use that, or fall back to request hostname.
    */
-  const { instanceHostname, instanceIdentifier } = opts;
+  const { instanceHostname, instanceIdentifier, locale } = opts;
   if (!instanceHostname && !instanceIdentifier) {
     throw new Error('Neither hostname or identifier set for the instance');
   }
 
   const middleware = new ApolloLink((operation, forward) => {
-    const context = operation.getContext();
-    const locale = context?.locale;
     operation.query = {
       ...operation.query,
       definitions: operation.query.definitions.map((def) => {
