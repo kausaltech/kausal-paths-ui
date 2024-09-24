@@ -56,6 +56,7 @@ const languageNames = {
   da: 'Dansk',
   lv: 'Latviešu',
   pl: 'Polski',
+  es: 'Español',
 };
 
 function LanguageSelector({ mobile }: { mobile: boolean }) {
