@@ -11,6 +11,23 @@ import numbroCs from 'numbro/dist/languages/cs-CZ.min.js';
 import numbroDa from 'numbro/dist/languages/da-DK.min.js';
 import numbroLv from 'numbro/dist/languages/lv-LV.min.js';
 import numbroPl from 'numbro/dist/languages/pl-PL.min.js';
+import numbroEs from 'numbro/dist/languages/es-ES.min.js';
+
+function numbroEsUs() {
+  const esUs = numbroEs;
+  esUs.languageTag = 'es-US';
+  esUs.delimiters = {
+    thousands: ',',
+    decimal: '.',
+  };
+  esUs.currency = {
+    symbol: '$',
+    position: 'prefix',
+    code: 'USD',
+  };
+
+  return esUs;
+}
 
 const numbroLangs = {
   de: numbroDe,
@@ -22,6 +39,7 @@ const numbroLangs = {
   da: numbroDa,
   lv: numbroLv,
   pl: numbroPl,
+  'es-US': numbroEsUs(),
 };
 
 Object.entries(numbroLangs).forEach(([lang, conf]) => {
@@ -31,8 +49,7 @@ Object.entries(numbroLangs).forEach(([lang, conf]) => {
   });
 });
 
-const { appWithTranslation, withTranslation, Trans, useTranslation } =
-  NextI18Next;
+const { appWithTranslation, withTranslation, Trans, useTranslation } = NextI18Next;
 
 export function getI18n() {
   return NextI18Next.i18n;

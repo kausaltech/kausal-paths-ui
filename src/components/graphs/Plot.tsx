@@ -6,6 +6,7 @@ import cs from 'plotly.js-locales/cs';
 import da from 'plotly.js-locales/da';
 import de from 'plotly.js-locales/de';
 import de_ch from 'plotly.js-locales/de-ch';
+import es from 'plotly.js-locales/es';
 import fi from 'plotly.js-locales/fi';
 import lv from 'plotly.js-locales/lv';
 import pl from 'plotly.js-locales/pl';
@@ -13,7 +14,7 @@ import sv from 'plotly.js-locales/sv';
 import type { PlotParams } from 'react-plotly.js';
 import createPlotlyComponent from 'react-plotly.js/factory';
 
-const locales = { fi, sv, de, 'de-CH': de_ch, cs, da, lv, pl };
+const locales = { fi, sv, de, 'de-CH': de_ch, cs, da, lv, pl, 'es-US': es };
 
 const PlotlyPlot = createPlotlyComponent(Plotly);
 
@@ -54,6 +55,10 @@ const Plot = (props: PlotProps) => {
       break;
     case 'sv':
     case 'en':
+    case 'es-US':
+      config.locale = 'es-US';
+      separators = '.,';
+      break;
     default:
       separators = '.,';
       break;
