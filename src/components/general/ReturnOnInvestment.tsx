@@ -2,14 +2,15 @@ import { ChartWrapper } from 'components/charts/ChartWrapper';
 import { Chart } from 'components/charts/Chart';
 import { useTranslation } from 'react-i18next';
 import { useReactiveVar } from '@apollo/client';
-import { GetImpactOverviewsQuery } from 'common/__generated__/graphql';
+import type { GetImpactOverviewsQuery } from 'common/__generated__/graphql';
 import { yearRangeVar } from 'common/cache';
 import { useMemo } from 'react';
 import round from 'lodash/round';
+import type { EChartsCoreOption } from 'echarts/core';
 
 const formatPercentage = (value: number) => `${round(value, 2)} %`;
 
-function getChartData(activeYear: number, data?: GetImpactOverviewsQuery): echarts.EChartsOption {
+function getChartData(activeYear: number, data?: GetImpactOverviewsQuery): EChartsCoreOption {
   const dataset = data?.impactOverviews.find(
     (dataset) => dataset.graphType === 'return_of_investment'
   );
@@ -97,6 +98,9 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const yearRange = useReactiveVar(yearRangeVar);
   const endYear = yearRange[1];
   const chartData = useMemo(() => getChartData(endYear, data), [data, endYear]);
+  const bars = data?.impactOverviews.find(({ graphType }) => graphType === 'return_of_investment')
+    ?.actions?.length;
+  const chartHeight = bars ? bars * 60 + 110 : 400;
 
   return (
     <ChartWrapper
@@ -106,7 +110,7 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
       }
       isLoading={isLoading}
     >
-      <Chart isLoading={isLoading} data={chartData} />
+      <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
     </ChartWrapper>
   );
 }
