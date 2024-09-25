@@ -17,6 +17,9 @@
       "StringParameterType",
       "UnknownParameterType"
     ],
+    "SnippetObjectType": [
+      "InstanceSiteContent"
+    ],
     "StreamFieldInterface": [
       "BlockQuoteBlock",
       "BooleanBlock",
@@ -37,6 +40,7 @@
       "RawHTMLBlock",
       "RegexBlock",
       "RichTextBlock",
+      "SnippetChooserBlock",
       "StaticBlock",
       "StreamBlock",
       "StreamFieldBlock",
