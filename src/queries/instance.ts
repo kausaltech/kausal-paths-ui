@@ -53,6 +53,9 @@ const GET_INSTANCE_CONTEXT = gql`
           groups
         }
       }
+      actionListPage {
+        showInMenus
+      }
     }
     scenarios {
       ...ScenarioFragment

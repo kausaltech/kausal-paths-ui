@@ -36,6 +36,58 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
+export type FrameworkConfigInput = {
+  baselineYear: Scalars['Int']['input'];
+  frameworkId: Scalars['ID']['input'];
+  /** Identifier for the model instance. Needs to be unique. */
+  instanceIdentifier: Scalars['ID']['input'];
+  /** Name for the framework configuration instance. Typically the name of the organization. */
+  name: Scalars['String']['input'];
+  /** Name of the organization. If not set, it will be determined through the user's credentials, if possible. */
+  organizationName?: InputMaybe<Scalars['String']['input']>;
+  /** UUID for the new framework config. If not set, will be generated automatically. */
+  uuid?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplatePriorityChoices {
+  /** High */
+  High = 'HIGH',
+  /** Low */
+  Low = 'LOW',
+  /** Medium */
+  Medium = 'MEDIUM'
+}
+
+export enum LowHigh {
+  High = 'HIGH',
+  Low = 'LOW'
+}
+
+export type MeasureDataPointInput = {
+  /** Value for the data point (set to null to remove) */
+  value?: InputMaybe<Scalars['Float']['input']>;
+  /** Year of the data point. If not given, defaults to the baseline year for the framework instance */
+  year?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type MeasureInput = {
+  dataPoints?: InputMaybe<Array<MeasureDataPointInput>>;
+  /** Internal notes for the measure instance */
+  internalNotes?: InputMaybe<Scalars['String']['input']>;
+  /** ID (or UUID) of the measure template within a framework */
+  measureTemplateId: Scalars['ID']['input'];
+};
+
+export type NzcCityEssentialData = {
+  /** Population of the city */
+  population: Scalars['Int']['input'];
+  /** Share of renewables in energy production (low or high) */
+  renewableMix: LowHigh;
+  /** Average yearly temperature (low or high) */
+  temperature: LowHigh;
+};
+
 export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
   instance: Scalars['ID']['input'];
 }>;

@@ -6,16 +6,12 @@ import styled from 'styled-components';
 import Loader from 'components/common/Loader';
 
 import { NodeLink } from 'common/links';
-import {
-  getMetricValue,
-  beautifyValue,
-  getMetricChange,
-} from 'common/preprocess';
+import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
 import HighlightValue from 'components/general/HighlightValue';
 import DimensionalBarGraph from 'components/general/DimensionalBarGraph';
 import DataTable from './DataTable';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import { useInstance } from 'common/instance';
 import DimensionalNodePlot from './DimensionalNodePlot';
@@ -137,12 +133,13 @@ const OutcomeNodeContent = ({
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
   const lastMeasuredYear =
-    node?.metric?.historicalValues[node.metric.historicalValues.length - 1]
-      ?.year;
+    node?.metric?.historicalValues[node.metric.historicalValues.length - 1]?.year;
   const firstForecastYear = node?.metric?.forecastValues[0]?.year;
   const isForecast = endYear > lastMeasuredYear;
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
   const unit = node.metric?.unit?.htmlLong || node.metric?.unit?.htmlShort;
+  const nodeName = node.shortName || node.name;
+  const showActionLinks = instance.actionListPage?.showInMenus ?? true;
 
   const outcomeGraph = useMemo(
     () =>
@@ -181,9 +178,13 @@ const OutcomeNodeContent = ({
         <div>
           <CardSetDescription>
             <h4>
-              <NodeLink node={node}>
-                <a>{node.shortName || node.name}</a>
-              </NodeLink>
+              {showActionLinks ? (
+                <NodeLink node={node}>
+                  <a>{nodeName}</a>
+                </NodeLink>
+              ) : (
+                nodeName
+              )}
             </h4>
             <CardSetDescriptionDetails>
               {startYear < lastMeasuredYear && (
@@ -191,16 +192,12 @@ const OutcomeNodeContent = ({
                   {t('table-historical')}
                 </ScenarioBadge>
               )}{' '}
-              {typeof firstForecastYear === 'number' &&
-                firstForecastYear < endYear && (
-                  <ScenarioBadge
-                    startYear={Math.max(startYear, firstForecastYear)}
-                    endYear={endYear}
-                  >
-                    {t('table-scenario-forecast')}
-                    {activeScenario && ` (${activeScenario})`}
-                  </ScenarioBadge>
-                )}
+              {typeof firstForecastYear === 'number' && firstForecastYear < endYear && (
+                <ScenarioBadge startYear={Math.max(startYear, firstForecastYear)} endYear={endYear}>
+                  {t('table-scenario-forecast')}
+                  {activeScenario && ` (${activeScenario})`}
+                </ScenarioBadge>
+              )}
             </CardSetDescriptionDetails>
           </CardSetDescription>
         </div>
@@ -210,20 +207,14 @@ const OutcomeNodeContent = ({
               className="figure"
               displayValue={'' + beautifyValue(nodesTotal)}
               header={`${
-                isForecast
-                  ? t('table-scenario-forecast')
-                  : t('table-historical')
+                isForecast ? t('table-scenario-forecast') : t('table-historical')
               } ${endYear}`}
               unit={unit || ''}
             />
           )}
           <HighlightValue
             className="figure"
-            displayValue={
-              outcomeChange
-                ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}`
-                : '-'
-            }
+            displayValue={outcomeChange ? `${outcomeChange > 0 ? '+' : ''}${outcomeChange}` : '-'}
             header={`${t('change-over-time')} ${startYear}–${endYear}`}
             unit="%"
           />
@@ -281,20 +272,22 @@ const OutcomeNodeContent = ({
               <Icon name="table" /> {t('table')}
             </NavLink>
           </DisplayTab>
-          <DisplayTab role="presentation">
-            <NavLink
-              href="#"
-              onClick={() => setActiveTabId('info')}
-              active={activeTabId === 'info'}
-              role="tab"
-              aria-selected={activeTabId === 'info'}
-              aria-controls={`${node.id}-panel-info`}
-              id={`${node.id}-tab-info`}
-              tabIndex={0}
-            >
-              <Icon name="circleInfo" /> {t('details')}
-            </NavLink>
-          </DisplayTab>
+          {showActionLinks && (
+            <DisplayTab role="presentation">
+              <NavLink
+                href="#"
+                onClick={() => setActiveTabId('info')}
+                active={activeTabId === 'info'}
+                role="tab"
+                aria-selected={activeTabId === 'info'}
+                aria-controls={`${node.id}-panel-info`}
+                id={`${node.id}-tab-info`}
+                tabIndex={0}
+              >
+                <Icon name="circleInfo" /> {t('details')}
+              </NavLink>
+            </DisplayTab>
+          )}
         </TabNavigation>
 
         {refetching && <Loader />}
@@ -306,12 +299,8 @@ const OutcomeNodeContent = ({
           tabIndex={0}
           aria-labelledby={`${node.id}-tab-${activeTabId}}`}
         >
-          {activeTabId === 'year' && (
-            <ContentWrapper>{singleYearGraph}</ContentWrapper>
-          )}
-          {activeTabId === 'graph' && (
-            <ContentWrapper>{outcomeGraph}</ContentWrapper>
-          )}
+          {activeTabId === 'year' && <ContentWrapper>{singleYearGraph}</ContentWrapper>}
+          {activeTabId === 'graph' && <ContentWrapper>{outcomeGraph}</ContentWrapper>}
           {activeTabId === 'info' && (
             <ContentWrapper>
               <OutcomeNodeDetails node={node} t={t} />

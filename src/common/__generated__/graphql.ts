@@ -36,6 +36,91 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
+export type FrameworkConfigInput = {
+  baselineYear: Scalars['Int']['input'];
+  frameworkId: Scalars['ID']['input'];
+  /** Identifier for the model instance. Needs to be unique. */
+  instanceIdentifier: Scalars['ID']['input'];
+  /** Name for the framework configuration instance. Typically the name of the organization. */
+  name: Scalars['String']['input'];
+  /** Name of the organization. If not set, it will be determined through the user's credentials, if possible. */
+  organizationName: InputMaybe<Scalars['String']['input']>;
+  /** UUID for the new framework config. If not set, will be generated automatically. */
+  uuid: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplatePriorityChoices {
+  /** High */
+  High = 'HIGH',
+  /** Low */
+  Low = 'LOW',
+  /** Medium */
+  Medium = 'MEDIUM'
+}
+
+export enum LowHigh {
+  High = 'HIGH',
+  Low = 'LOW'
+}
+
+export type MeasureDataPointInput = {
+  /** Value for the data point (set to null to remove) */
+  value: InputMaybe<Scalars['Float']['input']>;
+  /** Year of the data point. If not given, defaults to the baseline year for the framework instance */
+  year: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type MeasureInput = {
+  dataPoints: InputMaybe<Array<MeasureDataPointInput>>;
+  /** Internal notes for the measure instance */
+  internalNotes: InputMaybe<Scalars['String']['input']>;
+  /** ID (or UUID) of the measure template within a framework */
+  measureTemplateId: Scalars['ID']['input'];
+};
+
+export type NzcCityEssentialData = {
+  /** Population of the city */
+  population: Scalars['Int']['input'];
+  /** Share of renewables in energy production (low or high) */
+  renewableMix: LowHigh;
+  /** Average yearly temperature (low or high) */
+  temperature: LowHigh;
+};
+
+export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
+  instance: Scalars['ID']['input'];
+}>;
+
+
+export type PlaywrightGetInstanceBasicsQuery = (
+  { instance: (
+    { id: string, defaultLanguage: string, supportedLanguages: Array<string> }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
+  instance: Scalars['ID']['input'];
+  locale: Scalars['String']['input'];
+}>;
+
+
+export type PlaywrightGetInstanceInfoQuery = (
+  { instance: (
+    { id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string> }
+    & { __typename: 'InstanceType' }
+  ), pages: Array<(
+    { urlPath: string, title: string, showInMenus: boolean }
+    & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+  )>, actions: Array<(
+    { id: string }
+    & { __typename: 'ActionNode' }
+  )> }
+  & { __typename: 'Query' }
+);
+
 export type AllMetricFieldsFragment = (
   { name: string | null, id: string | null, unit: (
     { htmlShort: string, htmlLong: string }
@@ -53,14 +138,14 @@ export type AllMetricFieldsFragment = (
   & { __typename: 'ForecastMetricType' }
 );
 
-type StreamFieldFragment_ZQdWsvqmDgiXfDp7wkeLw2YTay53DiSfbOf2CGiE7U_Fragment = (
+type StreamFieldFragment_WWaFiK9c73pclpTmOGasRmul4Gpm5mdmMGqTry1ao_Fragment = (
   { id: string | null, blockType: string, field: string }
-  & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+  & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' }
 );
 
-type StreamFieldFragment_StructBlock_TimeBlock_UrlBlock_Fragment = (
+type StreamFieldFragment_Av9AcWmA9vrj2sk5VfBzTaQnBkdecLnEOs3dJoQwN1Q_Fragment = (
   { id: string | null, blockType: string, field: string }
-  & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+  & { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
 );
 
 type StreamFieldFragment_CardListBlock_Fragment = (
@@ -81,7 +166,7 @@ type StreamFieldFragment_TextBlock_Fragment = (
   & { __typename: 'TextBlock' }
 );
 
-export type StreamFieldFragmentFragment = StreamFieldFragment_ZQdWsvqmDgiXfDp7wkeLw2YTay53DiSfbOf2CGiE7U_Fragment | StreamFieldFragment_StructBlock_TimeBlock_UrlBlock_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
+export type StreamFieldFragmentFragment = StreamFieldFragment_WWaFiK9c73pclpTmOGasRmul4Gpm5mdmMGqTry1ao_Fragment | StreamFieldFragment_Av9AcWmA9vrj2sk5VfBzTaQnBkdecLnEOs3dJoQwN1Q_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
 
 type ActionParameter_BoolParameterType_Fragment = (
   { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
@@ -681,10 +766,10 @@ export type GetActionContentQuery = (
       & { __typename: 'Node' }
     )>, body: Array<(
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' }
     ) | (
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
         { title: string | null, shortDescription: string | null }
@@ -898,10 +983,10 @@ export type GetActionContentQuery = (
         & { __typename: 'Node' }
       )>, body: Array<(
         { id: string | null, blockType: string, field: string }
-        & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+        & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' }
       ) | (
         { id: string | null, blockType: string, field: string }
-        & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+        & { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
       ) | (
         { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
           { title: string | null, shortDescription: string | null }
@@ -1647,10 +1732,10 @@ export type GetPageQuery = (
   ) | (
     { id: string | null, title: string, body: Array<(
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' }
     ) | (
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
         { title: string | null, shortDescription: string | null }
@@ -1731,7 +1816,7 @@ export type GetInstanceContextQuery = (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
       { baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number }
       & { __typename: 'InstanceFeaturesType' }
-    ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'StaticBlock' | 'StreamBlock' } | { __typename: 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
+    ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' } | { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
       { field: string, value: string }
       & { __typename: 'RichTextBlock' }
     )> | null, goals: Array<(
@@ -1743,7 +1828,10 @@ export type GetInstanceContextQuery = (
         & { __typename: 'InstanceGoalDimension' }
       )> }
       & { __typename: 'InstanceGoalEntry' }
-    )> }
+    )>, actionListPage: (
+      { showInMenus: boolean }
+      & { __typename: 'ActionListPage' }
+    ) | null }
     & { __typename: 'InstanceType' }
   ), scenarios: Array<(
     { id: string | null, isActive: boolean | null, isDefault: boolean | null, name: string | null }
@@ -1751,6 +1839,9 @@ export type GetInstanceContextQuery = (
   )>, availableNormalizations: Array<(
     { id: string, label: string, isActive: boolean }
     & { __typename: 'NormalizationType' }
+  )>, pages: Array<(
+    { pageType: string | null, showInMenus: boolean }
+    & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
   )>, menuPages: Array<(
     { id: string | null, title: string, urlPath: string, parent: (
       { id: string | null }
