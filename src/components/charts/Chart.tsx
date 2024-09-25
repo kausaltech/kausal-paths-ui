@@ -1,6 +1,5 @@
 // Import the echarts core module, which provides the necessary interfaces for using echarts.
 import * as echarts from 'echarts/core';
-import { EChartsCoreOption } from 'echarts';
 
 // Import bar charts, all suffixed with Chart
 import { BarChart } from 'echarts/charts';
@@ -45,7 +44,7 @@ const StyledChartWrapper = styled.div<{ $height?: string }>`
 
 type Props = {
   isLoading: boolean;
-  data?: EChartsCoreOption;
+  data?: echarts.EChartsCoreOption;
   height?: string;
 };
 
