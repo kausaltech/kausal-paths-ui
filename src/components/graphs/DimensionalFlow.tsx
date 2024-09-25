@@ -139,7 +139,7 @@ const BasicPlot = dynamic(() => import('@/components/graphs/Plot').then((mod) =>
   ssr: false,
 });
 
-export default async function DimensionalFlow(props: DimensionalPlotProps) {
+export default function DimensionalFlow(props: DimensionalPlotProps) {
   const { flow } = props;
   const theme = useTheme();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
