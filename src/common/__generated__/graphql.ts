@@ -1814,7 +1814,7 @@ export type GetInstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetInstanceContextQuery = (
   { instance: (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
-      { baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number }
+      { hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null }
       & { __typename: 'InstanceFeaturesType' }
     ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' } | { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
       { field: string, value: string }
@@ -1839,9 +1839,6 @@ export type GetInstanceContextQuery = (
   )>, availableNormalizations: Array<(
     { id: string, label: string, isActive: boolean }
     & { __typename: 'NormalizationType' }
-  )>, pages: Array<(
-    { pageType: string | null, showInMenus: boolean }
-    & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
   )>, menuPages: Array<(
     { id: string | null, title: string, urlPath: string, parent: (
       { id: string | null }

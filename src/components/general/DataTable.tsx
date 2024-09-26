@@ -2,6 +2,7 @@ import { Table } from 'reactstrap';
 import Styled from 'styled-components';
 import { useTranslation } from 'common/i18n';
 import { formatNumber } from 'common/preprocess';
+import { useFeatures } from '@/common/instance';
 
 const TableWrapper = Styled.div`
   margin: 0 auto;
@@ -25,6 +26,7 @@ const DataTable = (props) => {
   const totalForecastValues = node.metric.forecastValues.filter(
     (value) => value.year >= startYear && value.year <= endYear
   );
+  const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
 
   const hasTotalValues =
     totalHistoricalValues.some((val) => val.value !== null) ||
@@ -40,9 +42,7 @@ const DataTable = (props) => {
           <tr>
             <th>{t('table-year')}</th>
             <th>{t('table-measure-type')}</th>
-            {subNodes?.map((subNode) => (
-              <th key={subNode.id}>{subNode.name}</th>
-            ))}
+            {subNodes?.map((subNode) => <th key={subNode.id}>{subNode.name}</th>)}
             {hasTotalValues && <th>{node.metric.name}</th>}
             <th>{t('table-unit')}</th>
           </tr>
@@ -54,20 +54,18 @@ const DataTable = (props) => {
               <td>{t('table-historical')}</td>
               {subNodes?.map((subNode) => (
                 <td key={`${subNode.id}-${metric.year}`}>
-                  {subNode.metric.historicalValues.find(
-                    (value) => value.year === metric.year
-                  )
+                  {subNode.metric.historicalValues.find((value) => value.year === metric.year)
                     ? formatNumber(
-                        subNode.metric.historicalValues.find(
-                          (value) => value.year === metric.year
-                        ).value,
-                        i18n.language
+                        subNode.metric.historicalValues.find((value) => value.year === metric.year)
+                          .value,
+                        i18n.language,
+                        maximumFractionDigits
                       )
                     : '-'}
                 </td>
               ))}
               {hasTotalValues && (
-                <td>{formatNumber(metric.value, i18n.language)}</td>
+                <td>{formatNumber(metric.value, i18n.language, maximumFractionDigits)}</td>
               )}
               <td
                 dangerouslySetInnerHTML={{
@@ -82,20 +80,18 @@ const DataTable = (props) => {
               <td>{t('table-scenario-forecast')}</td>
               {subNodes?.map((subNode) => (
                 <td key={`${subNode.id}-${metric.year}`}>
-                  {subNode.metric.forecastValues.find(
-                    (value) => value.year === metric.year
-                  )
+                  {subNode.metric.forecastValues.find((value) => value.year === metric.year)
                     ? formatNumber(
-                        subNode.metric.forecastValues.find(
-                          (value) => value.year === metric.year
-                        ).value,
-                        i18n.language
+                        subNode.metric.forecastValues.find((value) => value.year === metric.year)
+                          .value,
+                        i18n.language,
+                        maximumFractionDigits
                       )
                     : '-'}
                 </td>
               ))}
               {hasTotalValues && (
-                <td>{formatNumber(metric.value, i18n.language)}</td>
+                <td>{formatNumber(metric.value, i18n.language, maximumFractionDigits)}</td>
               )}
               <td
                 dangerouslySetInnerHTML={{

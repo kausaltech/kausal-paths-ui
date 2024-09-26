@@ -1,10 +1,7 @@
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
 import { ActionLink } from 'common/links';
-import {
-  findActionEnabledParam,
-  summarizeYearlyValuesBetween,
-} from 'common/preprocess';
+import { findActionEnabledParam, summarizeYearlyValuesBetween } from 'common/preprocess';
 
 import ActionParameters from 'components/general/ActionParameters';
 import ImpactDisplay from 'components/general/ImpactDisplay';
@@ -24,10 +21,7 @@ const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
     $isActive ? theme.cardBackground.primary : theme.cardBackground.secondary};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
   border-left: 6px solid
-    ${(props) =>
-      props.color !== 'undefined'
-        ? props.color
-        : props.theme.graphColors.grey090};
+    ${(props) => (props.color !== 'undefined' ? props.color : props.theme.graphColors.grey090)};
 
   h5,
   a {
@@ -123,10 +117,7 @@ const ActionListCard = (props: ActionListCardProps) => {
 
   const removeHtml = /(<([^>]+)>)/gi;
 
-  const description = (action?.goal || action?.shortDescription)?.replace(
-    removeHtml,
-    ''
-  );
+  const description = (action?.goal || action?.shortDescription)?.replace(removeHtml, '');
   const originalLength = description?.length ?? 0;
   let clippedDescription = description ? description.slice(0, 220) : '';
 
@@ -135,17 +126,11 @@ const ActionListCard = (props: ActionListCardProps) => {
   }
 
   return (
-    <ActionItem
-      key={action.id}
-      $isActive={isActive}
-      color={action.group?.color ?? 'undefined'}
-    >
+    <ActionItem key={action.id} $isActive={isActive} color={action.group?.color ?? 'undefined'}>
       {refetching && <Loader />}
       <CardHeader>
         {action.group && (
-          <GroupTag color={action.group.color ?? undefined}>
-            {action.group.name}
-          </GroupTag>
+          <GroupTag color={action.group.color ?? undefined}>{action.group.name}</GroupTag>
         )}
         <ActionLink action={action}>
           <StyledActionLink data-testid="actionlink">
@@ -196,7 +181,5 @@ const ActionListCard = (props: ActionListCardProps) => {
     </ActionItem>
   );
 };
-
-// cumulative impact: displayValue={beautifyValue(summarizeYearlyValues(action.impactMetric.forecastValues))}
 
 export default ActionListCard;
