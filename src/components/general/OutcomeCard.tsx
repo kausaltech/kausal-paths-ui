@@ -3,8 +3,9 @@ import { useTranslation } from 'next-i18next';
 import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
 import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import Loader from 'components/common/Loader';
+import { useFeatures } from '@/common/instance';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
@@ -171,6 +172,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   const lastMeasuredYear =
     node?.metric.historicalValues[node.metric.historicalValues.length - 1]?.year;
   const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
+  const { maximumFractionDigits } = useFeatures();
 
   // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
   const unit = node.metric?.unit?.htmlShort;
@@ -218,7 +220,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
             </Label>
             {goalOutcomeValue ? (
               <>
-                {beautifyValue(goalOutcomeValue)}
+                {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
                 <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
               </>
             ) : (

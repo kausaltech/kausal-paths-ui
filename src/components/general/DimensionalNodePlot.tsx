@@ -5,7 +5,7 @@ import { useReactiveVar } from '@apollo/client';
 import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import { activeGoalVar } from 'common/cache';
 import { genColorsFromTheme, setUniqueColors } from 'common/colors';
-import { type InstanceGoal, useInstance } from 'common/instance';
+import { type InstanceGoal, useInstance, useFeatures } from 'common/instance';
 import { getRange } from 'common/preprocess';
 import Icon from 'components/common/icon';
 import SelectDropdown from 'components/common/SelectDropdown';
@@ -50,9 +50,14 @@ function formatHover(
   color: string,
   unit: string,
   predLabel: string | null,
-  fontFamily?: string
+  fontFamily?: string,
+  maximumFractionDigits?: number
 ) {
+  const valueFormatter =
+    // Round to maximumFractionDigits if provided, otherwise 3 significant digits
+    typeof maximumFractionDigits === 'number' ? `.${maximumFractionDigits}f` : '.3r';
   //const predText = predLabel ? ` <i>(${predLabel})</i>` : '';
+
   const out: Partial<Plotly.PlotData> = {
     /*
     hovertemplate: `${name}<br />` +
@@ -63,7 +68,7 @@ function formatHover(
     */
     hovertemplate:
       `${name}: ` +
-      `<b>%{y:,.3r}</b> ` +
+      `<b>%{y:,${valueFormatter}}</b> ` +
       `${unit}` +
       //`${predText}` +
       `<extra></extra>`,
@@ -157,6 +162,8 @@ export default function DimensionalNodePlot({
 
   const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
+
+  const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
 
   useEffect(() => {
     /**
@@ -265,7 +272,14 @@ export default function DimensionalNodePlot({
         x: slice.historicalYears,
         y: cv.historicalValues,
         ...filledStyles(`${stackGroup}-hist`),
-        ...formatHover(cv.category.label, color, unit, null, theme.fontFamily),
+        ...formatHover(
+          cv.category.label,
+          color,
+          unit,
+          null,
+          theme.fontFamily,
+          maximumFractionDigits
+        ),
       });
     }
     if (hasHistorical && hasForecast) {
@@ -285,7 +299,14 @@ export default function DimensionalNodePlot({
       plotData.push({
         ...traceConfig,
         ...filledStyles(`${stackGroup}-forecast`),
-        ...formatHover(cv.category.label, color, unit, predLabel, theme.fontFamily),
+        ...formatHover(
+          cv.category.label,
+          color,
+          unit,
+          predLabel,
+          theme.fontFamily,
+          maximumFractionDigits
+        ),
         x: slice.forecastYears,
         y: cv.forecastValues,
         showlegend: false,
@@ -308,7 +329,14 @@ export default function DimensionalNodePlot({
         y: [referenceYearData, referenceYearData],
         ...traceConfig,
         ...filledStyles(`${stackGroup}-hist`),
-        ...formatHover(cv.category.label, color, unit, null, theme.fontFamily),
+        ...formatHover(
+          cv.category.label,
+          color,
+          unit,
+          null,
+          theme.fontFamily,
+          maximumFractionDigits
+        ),
         xaxis: 'x',
         showlegend: false,
       });
@@ -401,7 +429,14 @@ export default function DimensionalNodePlot({
         width: 2,
         dash: 'dash',
       },
-      ...formatHover(site.baselineName, theme.graphColors.grey030, unit, predLabel),
+      ...formatHover(
+        site.baselineName,
+        theme.graphColors.grey030,
+        unit,
+        predLabel,
+        theme.fontFamily,
+        maximumFractionDigits
+      ),
     });
   }
 
@@ -418,7 +453,14 @@ export default function DimensionalNodePlot({
       },
       x: [...slice.historicalYears, ...slice.forecastYears],
       y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
-      ...formatHover(label, theme.graphColors.grey080, unit, null, theme.fontFamily),
+      ...formatHover(
+        label,
+        theme.graphColors.grey080,
+        unit,
+        null,
+        theme.fontFamily,
+        maximumFractionDigits
+      ),
       showlegend: false,
     });
   }

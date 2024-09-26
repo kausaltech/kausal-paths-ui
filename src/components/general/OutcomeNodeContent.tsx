@@ -139,8 +139,8 @@ const OutcomeNodeContent = ({
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
   const unit = node.metric?.unit?.htmlLong || node.metric?.unit?.htmlShort;
   const nodeName = node.shortName || node.name;
-  const showActionLinks = instance.actionListPage?.showInMenus ?? true;
-
+  const showNodeLinks = !instance.features?.hideNodeDetails;
+  const maximumFractionDigits = instance.features?.maximumFractionDigits ?? undefined;
   const outcomeGraph = useMemo(
     () =>
       node.metricDim ? (
@@ -178,7 +178,7 @@ const OutcomeNodeContent = ({
         <div>
           <CardSetDescription>
             <h4>
-              {showActionLinks ? (
+              {showNodeLinks ? (
                 <NodeLink node={node}>
                   <a>{nodeName}</a>
                 </NodeLink>
@@ -205,7 +205,7 @@ const OutcomeNodeContent = ({
           {nodesTotal && (
             <HighlightValue
               className="figure"
-              displayValue={'' + beautifyValue(nodesTotal)}
+              displayValue={'' + beautifyValue(nodesTotal, undefined, maximumFractionDigits)}
               header={`${
                 isForecast ? t('table-scenario-forecast') : t('table-historical')
               } ${endYear}`}
@@ -272,7 +272,7 @@ const OutcomeNodeContent = ({
               <Icon name="table" /> {t('table')}
             </NavLink>
           </DisplayTab>
-          {showActionLinks && (
+          {showNodeLinks && (
             <DisplayTab role="presentation">
               <NavLink
                 href="#"
