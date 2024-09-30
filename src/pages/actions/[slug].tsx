@@ -29,6 +29,7 @@ import { useTranslation } from 'next-i18next';
 import { GET_ACTION_CONTENT } from 'queries/getActionContent';
 import { Col, Container, Row } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
+import { useInstance } from '@/common/instance';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -126,6 +127,7 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
+  const instance = useInstance();
   const [activeSubAction, setActiveSubAction] = useState<string | undefined>(undefined);
   const theme = useTheme();
 
@@ -176,7 +178,8 @@ export default function ActionPage() {
   const flowPlot = action.dimensionalFlow && <DimensionalPlot flow={action.dimensionalFlow} />;
 
   const renderSubActionsOrBody = () => {
-    if (subActions.length) {
+    if (subActions.length && instance.id === 'zuerich') {
+      // TODO: Convert to feature boolean. Subaction tabs are currently only enabled for Zuerich.
       return (
         <Container fluid="lg">
           <SubActions
