@@ -1,9 +1,18 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useContext, useState } from 'react';
+
+import SiteContext from 'context/site';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
-import SiteContext from 'context/site';
 
 const StyledFooter = styled.div`
+  // Handle mystery regression in prod
+  // Copy + paste from https://designsystem.stadt-zuerich.ch/2.8.0/?path=/story/components-footer--default
+  stzh-link[slot='info'] .stzh-link,
+  stzh-link[slot='link'] .stzh-link,
+  stzh-link[slot='social-link'] .stzh-link,
+  stzh-link.stzh-footer__link .stzh-link {
+    font-size: inherit;
+  }
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     &.stzh-footer {
       padding-bottom: var(--stzh-space-xxxlarge);
@@ -50,9 +59,7 @@ const Footer = (props) => {
                     <div className="stzh-link__inner sc-stzh-link">
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
                       <div className="stzh-link__text sc-stzh-link">
-                        <div className="sc-stzh-link sc-stzh-link-s">
-                          Rechtliche Hinweise
-                        </div>
+                        <div className="sc-stzh-link sc-stzh-link-s">Rechtliche Hinweise</div>
                       </div>
                     </div>
                   </a>
@@ -78,9 +85,7 @@ const Footer = (props) => {
                     <div className="stzh-link__inner sc-stzh-link">
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
                       <div className="stzh-link__text sc-stzh-link">
-                        <div className="sc-stzh-link sc-stzh-link-s">
-                          Impressum
-                        </div>
+                        <div className="sc-stzh-link sc-stzh-link-s">Impressum</div>
                       </div>
                     </div>
                   </a>
@@ -106,9 +111,7 @@ const Footer = (props) => {
                     <div className="stzh-link__inner sc-stzh-link">
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
                       <div className="stzh-link__text sc-stzh-link">
-                        <div className="sc-stzh-link sc-stzh-link-s">
-                          Barrierefreiheit
-                        </div>
+                        <div className="sc-stzh-link sc-stzh-link-s">Barrierefreiheit</div>
                       </div>
                     </div>
                   </a>
