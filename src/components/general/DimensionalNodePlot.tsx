@@ -382,6 +382,7 @@ export default function DimensionalNodePlot({
           type: 'scatter',
           name: `${t('target')} ${goal.year}`,
           line: lineConfig,
+          hovertemplate: `<b>${t('target')} %{x}: %{y:,.${maximumFractionDigits ?? 3}r} ${unit}</b><extra></extra>`,
         });
       }
     } else if (goals?.length) {
