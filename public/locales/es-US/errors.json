@@ -1,1 +1,9 @@
-{}
+{
+    "generic-title": "Se ha producido un error",
+    "generic-intro": "¡Uy! Estamos experimentando algunas dificultades técnicas en este momento y no podemos mostrar la página solicitada. Nuestro equipo ha sido notificado.",
+    "generic-apology": "Disculpe las molestias que esto pueda ocasionarle. Vuelva a intentarlo más tarde y gracias por su paciencia.",
+    "error-label": "Código de error",
+    "not-found-title": "Página no encontrada",
+    "not-found-intro": "404 No encontrado.",
+    "network-error": "Error de red"
+}
