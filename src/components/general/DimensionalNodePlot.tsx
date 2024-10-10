@@ -144,6 +144,7 @@ type DimensionalNodePlotProps = {
 };
 
 export default function DimensionalNodePlot({
+  hasNegativeValues,
   withReferenceYear = false,
   metric,
   startYear,
@@ -250,12 +251,6 @@ export default function DimensionalNodePlot({
   }
 
   const unit = metric.unit.htmlShort;
-
-  const hasNegativeValues = useMemo(() => {
-    return slice.categoryValues.some((cv) =>
-      cv.historicalValues.concat(cv.forecastValues).some((value) => value < 0)
-    );
-  }, [slice.categoryValues]);
 
   const genTraces = (cv: MetricCategoryValues, idx: number) => {
     const color = cv.color || colors[idx];
