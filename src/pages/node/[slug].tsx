@@ -172,6 +172,10 @@ export default function NodePage() {
     );
   }
 
+  const hasNegativeValues =
+    node.metric?.historicalValues.some((v) => v.value < 0) ||
+    node.metric?.forecastValues.some((v) => v.value < 0);
+
   return (
     <>
       <Head>
@@ -208,6 +212,7 @@ export default function NodePage() {
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
                     color={node.color}
+                    hasNegativeValues={hasNegativeValues}
                   />
                 </ContentWrapper>
               ) : (
