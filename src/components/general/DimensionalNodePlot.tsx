@@ -251,6 +251,12 @@ export default function DimensionalNodePlot({
 
   const unit = metric.unit.htmlShort;
 
+  const hasNegativeValues = useMemo(() => {
+    return slice.categoryValues.some((cv) =>
+      cv.historicalValues.concat(cv.forecastValues).some((value) => value < 0)
+    );
+  }, [slice.categoryValues]);
+
   const genTraces = (cv: MetricCategoryValues, idx: number) => {
     const color = cv.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
@@ -263,6 +269,7 @@ export default function DimensionalNodePlot({
         width: 3,
       },
       fillcolor: color,
+      showlegend: false,
     };
 
     const hasNegativeForecast = cv.forecastValues.some((value) => value < 0);
@@ -315,7 +322,7 @@ export default function DimensionalNodePlot({
           theme.fontFamily,
           maximumFractionDigits
         ),
-        showlegend: false,
+        showlegend: true,
         fillcolor: tint(0.3, color),
       });
     }
@@ -445,28 +452,23 @@ export default function DimensionalNodePlot({
     });
   }
 
-  if (metric.stackable && slice.totalValues) {
-    const label = t('plot-total')!;
+  if (metric.stackable && slice.totalValues && hasNegativeValues) {
     plotData.push({
       xaxis: 'x2',
       type: 'scatter',
-      name: label,
+      name: t('plot-total'),
       mode: 'lines',
       line: {
         color: theme.graphColors.grey080,
-        width: 0,
+        shape: 'spline',
+        smoothing: 0.8,
+        width: 0.8,
+        dash: 'dot',
       },
       x: [...slice.historicalYears, ...slice.forecastYears],
       y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
-      ...formatHover(
-        label,
-        theme.graphColors.grey080,
-        unit,
-        null,
-        theme.fontFamily,
-        maximumFractionDigits
-      ),
-      showlegend: false,
+      hovertemplate: `<b>${t('plot-total')} %{x}: %{y:,.${maximumFractionDigits ?? 3}r} ${unit}</b><extra></extra>`,
+      showlegend: true,
     });
   }
 
