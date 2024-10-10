@@ -91,6 +91,12 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   zuerich: {
     watchLink: null,
   },
+  'lappeenranta-syke': {
+    watchLink: {
+      title: 'Lappeenrannan ilmastovahti',
+      url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
+    },
+  },
   longmont: {
     watchLink: {
       title: 'Longmont Indicators',

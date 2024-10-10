@@ -123,6 +123,30 @@ export default function CytoGraph(props: CytoGraphProps) {
         if (node.quantity == 'emission_factor') {
           return '#ffff00';
         }
+        if (node.quantity == 'unit_price') {
+          if (node.color) {
+            return node.color;
+          }
+          return '#9ecae1';
+        }
+        if (node.quantity == 'currency') {
+          if (node.color) {
+            return node.color;
+          }
+          return '#3182bd';
+        }
+        if (node.quantity == 'effect') {
+          if (node.color) {
+            return node.color;
+          }
+          return '#fee8c8';
+        }
+        if (node.quantity == 'utility') {
+          if (node.color) {
+            return node.color;
+          }
+          return '#43a2ca';
+        }
         return '#eeeeee';
       }
       let label = wordWrap(node.name, 30);
