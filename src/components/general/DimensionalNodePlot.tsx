@@ -447,23 +447,22 @@ export default function DimensionalNodePlot({
     });
   }
 
-  if (metric.stackable && slice.totalValues && hasNegativeValues) {
+  if (metric.stackable && slice.totalValues) {
+    const label = t('plot-total')!;
     plotData.push({
       xaxis: 'x2',
       type: 'scatter',
-      name: t('plot-total'),
+      name: label,
       mode: 'lines',
       line: {
         color: theme.graphColors.grey080,
-        shape: 'spline',
-        smoothing: 0.8,
-        width: 0.8,
-        dash: 'dot',
+        width: hasNegativeValues ? 0.8 : 0,
+        dash: hasNegativeValues ? 'dot' : 'solid',
       },
       x: [...slice.historicalYears, ...slice.forecastYears],
       y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
-      hovertemplate: `<b>${t('plot-total')} %{x}: %{y:,.${maximumFractionDigits ?? 3}r} ${unit}</b><extra></extra>`,
-      showlegend: true,
+      hovertemplate: `<b>${label} %{x}: %{y:,.${maximumFractionDigits ?? 3}r} ${unit}</b><extra></extra>`,
+      showlegend: hasNegativeValues,
     });
   }
 
