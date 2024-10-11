@@ -449,6 +449,9 @@ export default function DimensionalNodePlot({
 
   if (metric.stackable && slice.totalValues) {
     const label = t('plot-total')!;
+    const totalSumX = [...slice.historicalYears, ...slice.forecastYears];
+    const totalSumY = [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues];
+
     plotData.push({
       xaxis: 'x2',
       type: 'scatter',
@@ -456,14 +459,38 @@ export default function DimensionalNodePlot({
       mode: 'lines',
       line: {
         color: theme.graphColors.grey080,
-        width: hasNegativeValues ? 0.8 : 0,
-        dash: hasNegativeValues ? 'dot' : 'solid',
+        width: 0,
       },
-      x: [...slice.historicalYears, ...slice.forecastYears],
-      y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
-      hovertemplate: `<b>${label} %{x}: %{y:,.${maximumFractionDigits ?? 3}r} ${unit}</b><extra></extra>`,
-      showlegend: hasNegativeValues,
+      x: totalSumX,
+      y: totalSumY,
+      ...formatHover(
+        label,
+        theme.graphColors.grey080,
+        unit,
+        null,
+        theme.fontFamily,
+        maximumFractionDigits
+      ),
+      showlegend: false,
     });
+
+    if (hasNegativeValues) {
+      plotData.push({
+        xaxis: 'x2',
+        type: 'scatter',
+        name: label,
+        mode: 'lines',
+        line: {
+          color: theme.graphColors.grey080,
+          width: 0.8,
+          dash: 'dot',
+        },
+        x: totalSumX,
+        y: totalSumY,
+        hoverinfo: 'skip',
+        showlegend: true,
+      });
+    }
   }
 
   const nrYears = usableEndYear - startYear;
