@@ -144,6 +144,7 @@ type DimensionalNodePlotProps = {
 };
 
 export default function DimensionalNodePlot({
+  hasNegativeValues,
   withReferenceYear = false,
   metric,
   startYear,
@@ -252,7 +253,6 @@ export default function DimensionalNodePlot({
   const unit = metric.unit.htmlShort;
 
   const genTraces = (cv: MetricCategoryValues, idx: number) => {
-    const stackGroup = cv.isNegative ? 'neg' : 'pos';
     const color = cv.color || colors[idx];
     const traceConfig: Partial<Plotly.PlotData> = {
       name: cv.category.label,
@@ -264,14 +264,21 @@ export default function DimensionalNodePlot({
         width: 3,
       },
       fillcolor: color,
+      showlegend: false,
     };
+
+    const hasNegativeForecast = cv.forecastValues.some((value) => value < 0);
+    const hasNegativeHistorical = cv.historicalValues.some((value) => value < 0);
+
+    const forecastStackGroup = hasNegativeForecast ? 'neg-forecast' : 'pos-forecast';
+    const historicalStackGroup = hasNegativeHistorical ? 'neg-hist' : 'pos-hist';
 
     if (hasHistorical) {
       plotData.push({
         ...traceConfig,
         x: slice.historicalYears,
         y: cv.historicalValues,
-        ...filledStyles(`${stackGroup}-hist`),
+        ...filledStyles(historicalStackGroup),
         ...formatHover(
           cv.category.label,
           color,
@@ -282,12 +289,12 @@ export default function DimensionalNodePlot({
         ),
       });
     }
+
     if (hasHistorical && hasForecast) {
       const lastHist = slice.historicalYears.length - 1;
-      // Short trace to join historical and forecast series together
       plotData.push({
         ...traceConfig,
-        ...filledStyles(`${stackGroup}-join`),
+        ...filledStyles(`${forecastStackGroup}-join`),
         x: [slice.historicalYears[lastHist], slice.forecastYears[0]],
         y: [cv.historicalValues[lastHist], cv.forecastValues[0]],
         hoverinfo: 'skip',
@@ -295,10 +302,13 @@ export default function DimensionalNodePlot({
         fillcolor: tint(0.3, color),
       });
     }
+
     if (hasForecast) {
       plotData.push({
         ...traceConfig,
-        ...filledStyles(`${stackGroup}-forecast`),
+        x: slice.forecastYears,
+        y: cv.forecastValues,
+        ...filledStyles(forecastStackGroup),
         ...formatHover(
           cv.category.label,
           color,
@@ -307,9 +317,7 @@ export default function DimensionalNodePlot({
           theme.fontFamily,
           maximumFractionDigits
         ),
-        x: slice.forecastYears,
-        y: cv.forecastValues,
-        showlegend: false,
+        showlegend: true,
         fillcolor: tint(0.3, color),
       });
     }
@@ -320,26 +328,24 @@ export default function DimensionalNodePlot({
       );
       const referenceYearData = cv.historicalValues[referenceYearIndex];
 
-      if (typeof referenceYearData === 'undefined') {
-        return;
+      if (typeof referenceYearData !== 'undefined') {
+        plotData.push({
+          x: [site.referenceYear - 1, site.referenceYear],
+          y: [referenceYearData, referenceYearData],
+          ...traceConfig,
+          ...filledStyles(`${historicalStackGroup}`),
+          ...formatHover(
+            cv.category.label,
+            color,
+            unit,
+            null,
+            theme.fontFamily,
+            maximumFractionDigits
+          ),
+          xaxis: 'x',
+          showlegend: false,
+        });
       }
-
-      plotData.push({
-        x: [site.referenceYear - 1, site.referenceYear],
-        y: [referenceYearData, referenceYearData],
-        ...traceConfig,
-        ...filledStyles(`${stackGroup}-hist`),
-        ...formatHover(
-          cv.category.label,
-          color,
-          unit,
-          null,
-          theme.fontFamily,
-          maximumFractionDigits
-        ),
-        xaxis: 'x',
-        showlegend: false,
-      });
     }
   };
 
@@ -378,6 +384,7 @@ export default function DimensionalNodePlot({
           type: 'scatter',
           name: `${t('target')} ${goal.year}`,
           line: lineConfig,
+          hovertemplate: `<b>${t('target')} %{x}: %{y:,.${maximumFractionDigits ?? 3}r} ${unit}</b><extra></extra>`,
         });
       }
     } else if (goals?.length) {
@@ -442,6 +449,9 @@ export default function DimensionalNodePlot({
 
   if (metric.stackable && slice.totalValues) {
     const label = t('plot-total')!;
+    const totalSumX = [...slice.historicalYears, ...slice.forecastYears];
+    const totalSumY = [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues];
+
     plotData.push({
       xaxis: 'x2',
       type: 'scatter',
@@ -451,8 +461,8 @@ export default function DimensionalNodePlot({
         color: theme.graphColors.grey080,
         width: 0,
       },
-      x: [...slice.historicalYears, ...slice.forecastYears],
-      y: [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues],
+      x: totalSumX,
+      y: totalSumY,
       ...formatHover(
         label,
         theme.graphColors.grey080,
@@ -463,6 +473,24 @@ export default function DimensionalNodePlot({
       ),
       showlegend: false,
     });
+
+    if (hasNegativeValues) {
+      plotData.push({
+        xaxis: 'x2',
+        type: 'scatter',
+        name: label,
+        mode: 'lines',
+        line: {
+          color: theme.graphColors.grey080,
+          width: 0.8,
+          dash: 'dot',
+        },
+        x: totalSumX,
+        y: totalSumY,
+        hoverinfo: 'skip',
+        showlegend: true,
+      });
+    }
   }
 
   const nrYears = usableEndYear - startYear;
