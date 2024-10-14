@@ -120,7 +120,7 @@ export function RefreshPrompt() {
   return (
     <StyledWrapper $isVisible={isVisible}>
       <StyledToast isOpen={isVisible} fade transition={{ unmountOnExit: false }}>
-        <ToastHeader toggle={handleClose}>Refresh for the latest data</ToastHeader>
+        <ToastHeader toggle={handleClose}>Reload for the latest data</ToastHeader>
         <ToastBody>
           <p>
             Updates may be available, click on the reload button or refresh the page to ensure you
