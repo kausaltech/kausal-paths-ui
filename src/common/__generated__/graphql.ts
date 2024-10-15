@@ -109,7 +109,10 @@ export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
 
 export type PlaywrightGetInstanceInfoQuery = (
   { instance: (
-    { id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string> }
+    { id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: (
+      { showRefreshPrompt: boolean }
+      & { __typename: 'InstanceFeaturesType' }
+    ) }
     & { __typename: 'InstanceType' }
   ), pages: Array<(
     { urlPath: string, title: string, showInMenus: boolean }
