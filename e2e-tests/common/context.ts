@@ -50,6 +50,9 @@ const GET_INSTANCE_INFO = gql`
       name
       defaultLanguage
       supportedLanguages
+      features {
+        showRefreshPrompt
+      }
     }
     pages {
       urlPath

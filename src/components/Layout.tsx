@@ -10,6 +10,7 @@ import styled, { useTheme } from 'styled-components';
 
 import { getThemeStaticURL } from '@/common/theme';
 import IntroModal from './common/IntroModal';
+import { RefreshPrompt } from './general/RefreshPrompt';
 import { useCustomComponent } from './custom';
 
 const PageContainer = styled.div`
@@ -102,6 +103,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   )?.value;
 
   const introModalEnabled = !!(title && paragraph);
+  const showRefreshPrompt = instance.features.showRefreshPrompt;
 
   return (
     <>
@@ -122,6 +124,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
       <NavComponent siteTitle={site.title} ownerName={site.owner} navItems={navItems} />
       <PageContainer>
+        {showRefreshPrompt && <RefreshPrompt />}
         <main className="main" id="main">
           {children}
         </main>
