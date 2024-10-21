@@ -32,6 +32,7 @@ const GET_INSTANCE_CONTEXT = gql`
         baselineVisibleInGraphs
         showAccumulatedEffects
         showSignificantDigits
+        showRefreshPrompt
       }
       introContent {
         ... on StreamFieldInterface {

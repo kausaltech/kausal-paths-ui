@@ -109,7 +109,10 @@ export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
 
 export type PlaywrightGetInstanceInfoQuery = (
   { instance: (
-    { id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string> }
+    { id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: (
+      { showRefreshPrompt: boolean }
+      & { __typename: 'InstanceFeaturesType' }
+    ) }
     & { __typename: 'InstanceType' }
   ), pages: Array<(
     { urlPath: string, title: string, showInMenus: boolean }
@@ -1814,7 +1817,7 @@ export type GetInstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetInstanceContextQuery = (
   { instance: (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
-      { hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null }
+      { hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null, showRefreshPrompt: boolean }
       & { __typename: 'InstanceFeaturesType' }
     ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' } | { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
       { field: string, value: string }
