@@ -43,6 +43,8 @@ const RangeValue = styled.div`
   min-width: 75px;
   margin-left: 1rem;
   line-height: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Thumb = styled.div<{ $dragged: boolean }>`
@@ -98,6 +100,7 @@ const NumberWidget = (props) => {
     handleChange,
     loading,
     description,
+    label,
     unit,
     step,
   } = props;
@@ -112,7 +115,7 @@ const NumberWidget = (props) => {
     handleChange({ parameterId: id, numberValue: newValues[0] });
   };
 
-  if (!min || !max) return null;
+  if (min === undefined || max === undefined) return null;
 
   const Reset = () =>
     defaultValue !== null ? (
@@ -121,9 +124,7 @@ const NumberWidget = (props) => {
         color="link"
         size="sm"
         outline
-        onClick={() =>
-          handleChange({ parameterId: id, numberValue: defaultValue })
-        }
+        onClick={() => handleChange({ parameterId: id, numberValue: defaultValue })}
         aria-label={t('reset-button')}
       >
         <Icon name="version" />
@@ -132,7 +133,7 @@ const NumberWidget = (props) => {
 
   return (
     <WidgetWrapper>
-      <div>{description}</div>
+      <div>{description || label || t('will_be_implemented')}</div>
       <RangeWrapper>
         <Range
           key="Base"
@@ -185,9 +186,7 @@ const NumberWidget = (props) => {
             />
           )}
         />
-        <RangeValue>
-          {`${values[0].toFixed(0)} ${unit?.htmlShort || ''}`}
-        </RangeValue>
+        <RangeValue>{`${values[0].toFixed(0)} ${unit?.htmlShort || ''}`}</RangeValue>
         {isCustomized ? <Reset /> : null}
       </RangeWrapper>
     </WidgetWrapper>
@@ -206,8 +205,7 @@ export const BoolWidget = (props: BoolWidgetProps) => {
   const { id, boolValue, isCustomized, isCustomizable } = parameter;
   const { t } = useTranslation();
 
-  const label =
-    parameter.label || parameter.description || t('will_be_implemented');
+  const label = parameter.label || parameter.description || t('will_be_implemented');
 
   return (
     <WidgetWrapper className="form-check form-switch">
@@ -218,9 +216,7 @@ export const BoolWidget = (props: BoolWidgetProps) => {
         id={id!}
         name={id!}
         checked={boolValue!}
-        onChange={() =>
-          handleChange({ parameterId: id!, boolValue: !boolValue })
-        }
+        onChange={() => handleChange({ parameterId: id!, boolValue: !boolValue })}
         disabled={!isCustomizable || loading}
         style={{ transform: 'scale(1.5)' }}
       />
@@ -241,16 +237,15 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   const { parameter } = props;
   const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] =
-    useMutation<SetParameterMutation, SetParameterMutationVariables>(
-      SET_PARAMETER,
-      {
-        refetchQueries: 'active',
-        onCompleted: () => {
-          activeScenarioVar({ ...activeScenario });
-        },
-      }
-    );
+  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
+    SetParameterMutation,
+    SetParameterMutationVariables
+  >(SET_PARAMETER, {
+    refetchQueries: 'active',
+    onCompleted: () => {
+      activeScenarioVar({ ...activeScenario });
+    },
+  });
 
   const handleUserSelection = (evt) => {
     SetParameter({ variables: evt });
@@ -269,6 +264,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           loading={mutationLoading}
           isCustomized={parameter.isCustomized}
           description={parameter.description}
+          label={parameter.label}
           unit={parameter.unit}
           step={parameter.step}
         />
