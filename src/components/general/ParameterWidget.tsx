@@ -137,7 +137,7 @@ const NumberWidget = (props) => {
       <RangeWrapper>
         <Range
           key="Base"
-          step={step ?? 1}
+          step={step && step <= max ? step : 1}
           min={min}
           max={max}
           values={values}
