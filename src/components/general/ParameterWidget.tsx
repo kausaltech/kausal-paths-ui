@@ -133,7 +133,7 @@ const NumberWidget = (props) => {
 
   return (
     <WidgetWrapper>
-      <div>{description || label || t('will_be_implemented')}</div>
+      <div>{description || label}</div>
       <RangeWrapper>
         <Range
           key="Base"
