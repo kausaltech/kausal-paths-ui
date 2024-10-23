@@ -237,7 +237,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   const { parameter } = props;
   const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
+  const [setParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
     SetParameterMutation,
     SetParameterMutationVariables
   >(SET_PARAMETER, {
@@ -248,7 +248,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   });
 
   const handleUserSelection = (evt) => {
-    SetParameter({ variables: evt });
+    setParameter({ variables: evt });
   };
 
   switch (parameter.__typename) {
@@ -271,7 +271,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
       );
 
     case 'StringParameterType':
-      return <div>String</div>;
+      return null;
 
     case 'BoolParameterType':
       return (
