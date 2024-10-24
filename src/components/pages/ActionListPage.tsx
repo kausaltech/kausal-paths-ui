@@ -198,7 +198,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   const data = actionListResp.data ?? previousData;
   const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
   const showReturnOnInvestment = hasGraph(impactResp, 'return_of_investment');
-  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit') && false; // Disabled for now
+  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit');
 
   const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
 
@@ -486,7 +486,9 @@ function ActionListPage({ page }: ActionListPageProps) {
                 refetching={areActionsLoading}
               />
             )}
-            {listType === 'cost-benefit' && <CostBenefitAnalysis isLoading={areActionsLoading} />}
+            {listType === 'cost-benefit' && (
+              <CostBenefitAnalysis data={impactResp.data} isLoading={impactResp.loading} />
+            )}
             {listType === 'roi' && (
               <ReturnOnInvestment data={impactResp.data} isLoading={impactResp.loading} />
             )}
