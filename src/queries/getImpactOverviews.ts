@@ -1,3 +1,4 @@
+import { DimensionalMetric } from '@/data/metric';
 import { gql } from '@apollo/client';
 
 export const GET_IMPACT_OVERVIEWS = gql`
@@ -6,14 +7,31 @@ export const GET_IMPACT_OVERVIEWS = gql`
       id
       label
       graphType
+      costNode {
+        id
+      }
+      costUnit {
+        short
+        long
+      }
       actions {
         action {
           id
           name
         }
         costDim {
+          ...DimensionalMetric
+          id
+          unit {
+            short
+          }
           dimensions {
-            id
+            originalId
+            label
+            categories {
+              originalId
+              label
+            }
           }
           years
           values
@@ -28,4 +46,6 @@ export const GET_IMPACT_OVERVIEWS = gql`
       }
     }
   }
+
+  ${DimensionalMetric.fragment}
 `;
