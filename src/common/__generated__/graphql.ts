@@ -1482,9 +1482,12 @@ export type GetImpactOverviewsQuery = (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
       ), costDim: (
-        { name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
-          { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
-            { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+        { id: string, years: Array<number>, values: Array<number | null>, name: string, stackable: boolean, forecastFrom: number | null, unit: (
+          { short: string, htmlShort: string }
+          & { __typename: 'UnitType' }
+        ), dimensions: Array<(
+          { originalId: string | null, label: string, id: string, helpText: string | null, categories: Array<(
+            { originalId: string | null, label: string, id: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
           )>, groups: Array<(
             { id: string, originalId: string, label: string, color: string | null, order: number | null }
@@ -1497,16 +1500,13 @@ export type GetImpactOverviewsQuery = (
             & { __typename: 'MetricYearlyGoalType' }
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
-        )>, unit: (
-          { htmlShort: string, short: string }
-          & { __typename: 'UnitType' }
-        ), normalizedBy: (
+        )>, normalizedBy: (
           { id: string, name: string }
           & { __typename: 'Node' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
       ), impactDim: (
-        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { id: string, years: Array<number>, values: Array<number | null>, dimensions: Array<(
           { id: string }
           & { __typename: 'MetricDimensionType' }
         )> }
