@@ -1,4 +1,3 @@
-import { DimensionalMetric } from '@/data/metric';
 import { gql } from '@apollo/client';
 
 export const GET_IMPACT_OVERVIEWS = gql`
@@ -20,19 +19,48 @@ export const GET_IMPACT_OVERVIEWS = gql`
           name
         }
         costDim {
-          ...DimensionalMetric
-          id
-          unit {
-            short
-          }
+          # id # TODO: prevents ROI from rendering
+          name
           dimensions {
-            originalId
+            id
             label
+            originalId
+            helpText
             categories {
+              id
               originalId
               label
+              color
+              order
+              group
+            }
+            groups {
+              id
+              originalId
+              label
+              color
+              order
             }
           }
+          goals {
+            categories
+            groups
+            values {
+              year
+              value
+              isInterpolated
+            }
+          }
+          unit {
+            htmlShort
+            short
+          }
+          stackable
+          normalizedBy {
+            id
+            name
+          }
+          forecastFrom
           years
           values
         }
@@ -46,6 +74,4 @@ export const GET_IMPACT_OVERVIEWS = gql`
       }
     }
   }
-
-  ${DimensionalMetric.fragment}
 `;

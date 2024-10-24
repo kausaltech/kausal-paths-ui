@@ -220,7 +220,6 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const theme = useTheme();
 
   const chartData = useMemo(() => {
-    console.log(cubes?.map((cube) => cube.totals.netBenefit));
     return cubes ? getChartData(cubes, theme) : null;
   }, [cubes, theme]);
 

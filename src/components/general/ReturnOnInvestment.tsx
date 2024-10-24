@@ -102,8 +102,6 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
     ?.actions?.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
 
-  console.log(chartData);
-
   return (
     <ChartWrapper
       title={t('return-of-investment')}

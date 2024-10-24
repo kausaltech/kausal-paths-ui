@@ -1482,12 +1482,9 @@ export type GetImpactOverviewsQuery = (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
       ), costDim: (
-        { id: string, years: Array<number>, values: Array<number | null>, name: string, stackable: boolean, forecastFrom: number | null, unit: (
-          { short: string, htmlShort: string }
-          & { __typename: 'UnitType' }
-        ), dimensions: Array<(
-          { originalId: string | null, label: string, id: string, helpText: string | null, categories: Array<(
-            { originalId: string | null, label: string, id: string, color: string | null, order: number | null, group: string | null }
+        { name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
+            { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
           )>, groups: Array<(
             { id: string, originalId: string, label: string, color: string | null, order: number | null }
@@ -1500,7 +1497,10 @@ export type GetImpactOverviewsQuery = (
             & { __typename: 'MetricYearlyGoalType' }
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
-        )>, normalizedBy: (
+        )>, unit: (
+          { htmlShort: string, short: string }
+          & { __typename: 'UnitType' }
+        ), normalizedBy: (
           { id: string, name: string }
           & { __typename: 'Node' }
         ) | null }
