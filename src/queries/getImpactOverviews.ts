@@ -1,4 +1,3 @@
-import { DimensionalMetric } from '@/data/metric';
 import { gql } from '@apollo/client';
 
 export const GET_IMPACT_OVERVIEWS = gql`
@@ -20,24 +19,56 @@ export const GET_IMPACT_OVERVIEWS = gql`
           name
         }
         costDim {
-          ...DimensionalMetric
-          id
-          unit {
-            short
-          }
+          # TODO: There's an issue with the API where dimension ids
+          #       are the same as action ids and causes cache issues.
+          #       Once fixed, we should use the DimensionalMetric fragment here.
+          # id
+          name
           dimensions {
-            originalId
+            id
             label
+            originalId
+            helpText
             categories {
+              id
               originalId
               label
+              color
+              order
+              group
+            }
+            groups {
+              id
+              originalId
+              label
+              color
+              order
             }
           }
+          goals {
+            categories
+            groups
+            values {
+              year
+              value
+              isInterpolated
+            }
+          }
+          unit {
+            htmlShort
+            short
+          }
+          stackable
+          normalizedBy {
+            id
+            name
+          }
+          forecastFrom
           years
           values
         }
         impactDim {
-          id
+          # id
           dimensions {
             id
           }
@@ -47,6 +78,4 @@ export const GET_IMPACT_OVERVIEWS = gql`
       }
     }
   }
-
-  ${DimensionalMetric.fragment}
 `;
