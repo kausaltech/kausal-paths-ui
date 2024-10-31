@@ -452,7 +452,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionPageTab
                 tabId="roi"
                 isActive={listType === 'roi'}
-                label={t('return-of-investment')}
+                label={t('return-on-investment')}
                 onSelectTab={() => setListType('roi')}
                 icon="chartColumn"
               />

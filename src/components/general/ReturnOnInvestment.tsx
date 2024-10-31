@@ -122,7 +122,7 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
 
   return (
     <ChartWrapper
-      title={t('return-of-investment')}
+      title={t('return-on-investment')}
       subtitle={
         'Higher percentages indicate actions with a more favorable ROI, demonstrating greater returns relative to the initial investment.'
       }
