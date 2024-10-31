@@ -1471,18 +1471,42 @@ export type GetImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetImpactOverviewsQuery = (
   { impactOverviews: Array<(
-    { id: string, label: string, graphType: string | null, actions: Array<(
+    { id: string, label: string, graphType: string | null, costNode: (
+      { id: string }
+      & { __typename: 'Node' }
+    ), costUnit: (
+      { short: string, long: string }
+      & { __typename: 'UnitType' }
+    ), actions: Array<(
       { action: (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
       ), costDim: (
-        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
-          { id: string }
+        { id: string, years: Array<number>, values: Array<number | null>, name: string, stackable: boolean, forecastFrom: number | null, unit: (
+          { short: string, htmlShort: string }
+          & { __typename: 'UnitType' }
+        ), dimensions: Array<(
+          { originalId: string | null, label: string, id: string, helpText: string | null, categories: Array<(
+            { originalId: string | null, label: string, id: string, color: string | null, order: number | null, group: string | null }
+            & { __typename: 'MetricDimensionCategoryType' }
+          )>, groups: Array<(
+            { id: string, originalId: string, label: string, color: string | null, order: number | null }
+            & { __typename: 'MetricDimensionCategoryGroupType' }
+          )> }
           & { __typename: 'MetricDimensionType' }
-        )> }
+        )>, goals: Array<(
+          { categories: Array<string>, groups: Array<string>, values: Array<(
+            { year: number, value: number, isInterpolated: boolean }
+            & { __typename: 'MetricYearlyGoalType' }
+          )> }
+          & { __typename: 'DimensionalMetricGoalEntry' }
+        )>, normalizedBy: (
+          { id: string, name: string }
+          & { __typename: 'Node' }
+        ) | null }
         & { __typename: 'DimensionalMetricType' }
       ), impactDim: (
-        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { id: string, years: Array<number>, values: Array<number | null>, dimensions: Array<(
           { id: string }
           & { __typename: 'MetricDimensionType' }
         )> }

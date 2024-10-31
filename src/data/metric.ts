@@ -105,12 +105,14 @@ export class MetricSlice {
       })),
     ];
     const rows = this.categoryValues.map((cv) => {
-      const hist: [string, number | null][] = this.historicalYears.map(
-        (year, idx) => [year.toString(), cv.historicalValues[idx]]
-      );
-      const fc: [string, number | null][] = this.forecastYears.map(
-        (year, idx) => [year.toString(), cv.forecastValues[idx]]
-      );
+      const hist: [string, number | null][] = this.historicalYears.map((year, idx) => [
+        year.toString(),
+        cv.historicalValues[idx],
+      ]);
+      const fc: [string, number | null][] = this.forecastYears.map((year, idx) => [
+        year.toString(),
+        cv.forecastValues[idx],
+      ]);
       const out: { [key: string]: string | number | null } = {
         category: cv.category.label,
         ...Object.fromEntries(hist),
@@ -201,11 +203,7 @@ export class DimensionalMetric {
     this.rows = this.createRows([], this.dimensions, {});
   }
 
-  private createRows(
-    rows: MetricRow[],
-    dimsLeft: MetricDimension[],
-    dimPath: DimCats
-  ) {
+  private createRows(rows: MetricRow[], dimsLeft: MetricDimension[], dimPath: DimCats) {
     const dim = dimsLeft[0];
 
     if (!dim) {
@@ -263,9 +261,7 @@ export class DimensionalMetric {
       selectedCategories = [];
     }
     const catStr = JSON.stringify(selectedCategories.sort()); // JS 🤮
-    const goals = this.data.goals.find(
-      (g) => JSON.stringify([...g.categories].sort()) == catStr
-    );
+    const goals = this.data.goals.find((g) => JSON.stringify([...g.categories].sort()) == catStr);
     if (!goals) return null;
     return goals.values;
   }
@@ -327,11 +323,7 @@ export class DimensionalMetric {
     return this.dimensions.filter((dim) => !selection.categories[dim.id]);
   }
 
-  updateChoice(
-    dim: MetricDimension,
-    old: SliceConfig,
-    newChoice: readonly { id: string }[]
-  ) {
+  updateChoice(dim: MetricDimension, old: SliceConfig, newChoice: readonly { id: string }[]) {
     let dimensionId = old.dimensionId;
     let sliceableDims = this.getSliceableDims(old);
     if (dimensionId === dim.id) {
@@ -359,12 +351,8 @@ export class DimensionalMetric {
    *   or `null` if the current goal does not have an effect on this cube.
    */
   getChoicesForGoal(activeGoal: InstanceGoal) {
-    const metricDims = new Map(
-      this.dimensions.map((dim) => [dim.originalId, dim])
-    );
-    const matchingDims = activeGoal.dimensions.filter((gdim) =>
-      metricDims.has(gdim.dimension)
-    );
+    const metricDims = new Map(this.dimensions.map((dim) => [dim.originalId, dim]));
+    const matchingDims = activeGoal.dimensions.filter((gdim) => metricDims.has(gdim.dimension));
 
     if (!matchingDims.length) return null;
 
@@ -457,15 +445,11 @@ export class DimensionalMetric {
    * @param categoryChoice The category choice to filter by
    * @returns An object with the data for the year
    */
-  getSingleYear(
-    year: number,
-    categoryChoice: MetricCategoryChoice | undefined
-  ) {
+  getSingleYear(year: number, categoryChoice: MetricCategoryChoice | undefined) {
     // Filter out categories that don't match the current choice and other years
     const yearRows = this.rows.filter(
       (row) =>
-        row.year === year &&
-        (categoryChoice ? this.rowMatchesChoice(row, categoryChoice) : true)
+        row.year === year && (categoryChoice ? this.rowMatchesChoice(row, categoryChoice) : true)
     );
 
     // Get all labels for easier lookup
@@ -524,10 +508,7 @@ export class DimensionalMetric {
     return this.data.forecastFrom && year >= this.data.forecastFrom;
   }
 
-  private rowMatchesChoice(
-    row: MetricRow,
-    categoryChoice: MetricCategoryChoice
-  ) {
+  private rowMatchesChoice(row: MetricRow, categoryChoice: MetricCategoryChoice) {
     const noMatch = Object.entries(categoryChoice).some(([dimId, choice]) => {
       if (!choice) return false;
       if (!choice.categories.length) return false;
@@ -621,8 +602,7 @@ export class DimensionalMetric {
           oldVal = (oldVal ?? 0) + val;
           totalValues.forecastValues[idx] = oldVal;
         });
-        const isNegative =
-          cat.order !== null && cat.order !== undefined ? cat.order < 0 : false;
+        const isNegative = cat.order !== null && cat.order !== undefined ? cat.order < 0 : false;
         return {
           category: cat,
           forecastValues,
@@ -638,12 +618,8 @@ export class DimensionalMetric {
         return hasVals !== undefined;
       });
 
-    const historicalYears = this.data.years.filter(
-      (year) => !this.isForecastYear(year)
-    );
-    const forecastYears = this.data.years.filter((year) =>
-      this.isForecastYear(year)
-    );
+    const historicalYears = this.data.years.filter((year) => !this.isForecastYear(year));
+    const forecastYears = this.data.years.filter((year) => this.isForecastYear(year));
     const ordered = categoryValues
       .filter((cv) => cv.category.order != null)
       .sort((a, b) => a.category.order! - b.category.order!);
@@ -689,9 +665,7 @@ export class DimensionalMetric {
 
     const filename = this.createFilename();
     const table = slice.createTable();
-    const rows = table.rows.map((row) =>
-      table.header.map((hdr) => row[hdr.key])
-    );
+    const rows = table.rows.map((row) => table.header.map((hdr) => row[hdr.key]));
     const header = table.header.map((hdr) => hdr.label);
     if (format === 'csv') {
       const delimiter = ';';

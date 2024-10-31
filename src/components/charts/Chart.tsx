@@ -2,7 +2,7 @@
 import * as echarts from 'echarts/core';
 
 // Import bar charts, all suffixed with Chart
-import { BarChart } from 'echarts/charts';
+import { BarChart, CustomChart } from 'echarts/charts';
 
 // Import the tooltip, title, rectangular coordinate system, dataset and transform components
 import {
@@ -11,6 +11,7 @@ import {
   GridComponent,
   DatasetComponent,
   TransformComponent,
+  LegendComponent,
 } from 'echarts/components';
 
 // Features like Universal Transition and Label Layout
@@ -28,11 +29,13 @@ import { getChartTheme } from './chart-theme';
 // Register the required components
 echarts.use([
   BarChart,
+  CustomChart,
   TitleComponent,
   TooltipComponent,
   GridComponent,
   DatasetComponent,
   TransformComponent,
+  LegendComponent,
   LabelLayout,
   UniversalTransition,
   CanvasRenderer,

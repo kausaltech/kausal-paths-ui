@@ -2,7 +2,9 @@
   "extends": [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended",
-    "plugin:styled-components-a11y/recommended"
+    "plugin:styled-components-a11y/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
   ],
   "ignorePatterns": "**/__generated__/**",
   "parser": "@typescript-eslint/parser",
@@ -12,10 +14,10 @@
     "import/resolver": {
       "node": {
         "paths": ["./src"],
-        "extensions": [".js", ".jsx", ".jsm"]
+        "extensions": [".js", ".jsx", ".jsm"],
       },
-      "typescript": true
-    }
+      "typescript": true,
+    },
   },
   "rules": {
     "react/react-in-jsx-scope": "off",
@@ -27,6 +29,6 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/no-explicit-any": "warn"
-  }
+    "@typescript-eslint/no-explicit-any": "warn",
+  },
 }

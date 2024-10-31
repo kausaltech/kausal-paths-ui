@@ -10,7 +10,11 @@ import type { EChartsCoreOption } from 'echarts/core';
 
 const formatPercentage = (value: number) => `${round(value, 2)} %`;
 
-function getChartData(activeYear: number, data?: GetImpactOverviewsQuery): EChartsCoreOption {
+function getChartConfig(
+  startYear: number,
+  endYear: number,
+  data?: GetImpactOverviewsQuery
+): EChartsCoreOption {
   const dataset = data?.impactOverviews.find(
     (dataset) => dataset.graphType === 'return_of_investment'
   );
@@ -19,21 +23,33 @@ function getChartData(activeYear: number, data?: GetImpactOverviewsQuery): EChar
     dataset: dataset
       ? [
           {
-            dimensions: ['action', ...dataset.actions[0].costDim.years.map(String)],
-            source: dataset.actions.map((action) => [
-              action.action.name,
-              ...action.costDim.years.map((_, index) => {
-                const impact = action.impactDim.values[index];
-                const cost = action.costDim.values[index];
+            dimensions: ['action', 'returnOnInvestment'],
+            source: dataset.actions.map((action) => ({
+              action: action.action.name,
+              // Sums the cumulative impact and cost across the selected year range, then calculates ROI
+              returnOnInvestment: action.costDim.years.reduce(
+                ({ totalCost, totalImpact, roi }, year, index) => {
+                  if (year < startYear || year > endYear) {
+                    return { totalCost, totalImpact, roi };
+                  }
 
-                return impact && cost ? (impact / cost - 1) * 100 : null;
-              }),
-            ]),
+                  const impact = totalImpact + (action.impactDim.values[index] ?? 0);
+                  const cost = totalCost + (action.costDim.values[index] ?? 0);
+
+                  return {
+                    totalCost: cost,
+                    totalImpact: impact,
+                    roi: impact && cost ? (impact / cost - 1) * 100 : 0,
+                  };
+                },
+                { totalCost: 0, totalImpact: 0, roi: 0 }
+              ).roi,
+            })),
           },
           {
             transform: {
               type: 'sort',
-              config: { dimension: activeYear.toString(), order: 'desc' },
+              config: { dimension: 'returnOnInvestment', order: 'desc' },
             },
           },
         ]
@@ -68,7 +84,7 @@ function getChartData(activeYear: number, data?: GetImpactOverviewsQuery): EChar
       {
         type: 'bar',
         encode: {
-          x: activeYear.toString(),
+          x: 'returnOnInvestment',
           y: 'action',
         },
         datasetIndex: 1,
@@ -95,16 +111,18 @@ type Props = {
 
 export function ReturnOnInvestment({ data, isLoading }: Props) {
   const { t } = useTranslation();
-  const yearRange = useReactiveVar(yearRangeVar);
-  const endYear = yearRange[1];
-  const chartData = useMemo(() => getChartData(endYear, data), [data, endYear]);
+  const [startYear, endYear] = useReactiveVar(yearRangeVar);
+  const chartData = useMemo(
+    () => getChartConfig(startYear, endYear, data),
+    [data, startYear, endYear]
+  );
   const bars = data?.impactOverviews.find(({ graphType }) => graphType === 'return_of_investment')
     ?.actions?.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
 
   return (
     <ChartWrapper
-      title={t('return-of-investment')}
+      title={t('return-on-investment')}
       subtitle={
         'Higher percentages indicate actions with a more favorable ROI, demonstrating greater returns relative to the initial investment.'
       }
