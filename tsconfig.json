@@ -7,6 +7,14 @@
       "/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "src/**/*", "src/*"],
+  "include": [
+    "next-env.d.ts",
+    "src/**/*",
+    "src/*",
+    "*.config.mjs",
+    "*.config.ts",
+    "*.config.js",
+    "codegen.ts"
+  ],
   "exclude": ["node_modules"]
 }

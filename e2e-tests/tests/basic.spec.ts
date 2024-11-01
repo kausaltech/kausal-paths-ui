@@ -1,6 +1,7 @@
-import { expect, test as base } from '@playwright/test';
+/* eslint-disable react-hooks/rules-of-hooks */
+import { test as base, expect } from '@playwright/test';
 
-import { getIdentifiersToTest, InstanceContext } from '../common/context';
+import { InstanceContext, getIdentifiersToTest } from '@/common/context.js';
 
 const test = base.extend<{ ctx: InstanceContext }>({});
 
@@ -15,6 +16,7 @@ const testInstance = (instanceId: string) =>
       },
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test.beforeEach(async ({ page }) => {
       return;
       // FIXME: Enable later

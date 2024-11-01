@@ -1,19 +1,26 @@
-import { printRuntimeConfig } from './common/environment';
-import { initSentry } from './common/sentry';
+import type { VercelEdgeClient } from '@sentry/nextjs';
+import type { NodeClient } from '@sentry/node';
 
-//import { nodeProfilingIntegration } from '@sentry/profiling-node';
-//import { getLogger } from './common/log';
-
-//const logger = getLogger('init');
-
-//logger.info({ config: getRuntimeConfig() }, 'Initializing app');
+import { getRuntimeConfig, printRuntimeConfig } from '@common/env/runtime';
+import { initRootLogger } from '@common/logging/logger';
+import { getSpotlightViewUrl, initSentry } from '@common/sentry/server-init';
 
 export const register = async () => {
-  if (process.env.NEXT_RUNTIME === 'edge' || process.env.NEXT_RUNTIME === 'nodejs') {
-    initSentry();
-  }
+  await initRootLogger();
+  const sentryClient = await initSentry();
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    printRuntimeConfig();
-    await import('./instrumentation-node');
+    const runtimeConfig = getRuntimeConfig();
+    if (runtimeConfig.isLocal) {
+      printRuntimeConfig('Kausal Paths UI');
+      const spotlightUrl = getSpotlightViewUrl();
+      if (spotlightUrl) {
+        console.log(`🔦 Sentry Spotlight enabled at: ${spotlightUrl}`);
+      }
+    }
+    const nodeOtel = await import('./instrumentation-node');
+    await nodeOtel.initTelemetry(sentryClient as NodeClient);
+  } else {
+    const edgeOtel = await import('./instrumentation-edge');
+    await edgeOtel.initTelemetry(sentryClient as VercelEdgeClient);
   }
 };

@@ -1,7 +1,7 @@
-import setCookie from 'set-cookie-parser';
-import libCookie from 'cookie';
+import * as cookie from 'cookie';
 import type { IncomingMessage } from 'http';
 import type { NextApiResponse } from 'next';
+import setCookie from 'set-cookie-parser';
 
 const API_COOKIE_PREFIX = 'api_';
 
@@ -11,7 +11,7 @@ export function getApiCookies(req: IncomingMessage) {
     return [];
   }
   const backendCookies: string[] = [];
-  const cookies = libCookie.parse(reqCookieHeader);
+  const cookies = cookie.parse(reqCookieHeader);
   Object.entries(cookies).forEach(([name, value]) => {
     if (!name.startsWith(API_COOKIE_PREFIX)) return;
     const upstreamName = name.slice(API_COOKIE_PREFIX.length);
@@ -20,19 +20,16 @@ export function getApiCookies(req: IncomingMessage) {
   return backendCookies;
 }
 
-export function setClientCookies(
-  backendResponse: Response,
-  res: NextApiResponse
-) {
+export function setClientCookies(backendResponse: Response, res: NextApiResponse) {
   // Pass cookies to the client, modify some of the attributes along the way
   const cookies = setCookie.parse(backendResponse.headers.getSetCookie());
-  cookies.forEach((cookie) => {
+  cookies.forEach((ck) => {
     res.appendHeader(
       'Set-Cookie',
-      libCookie.serialize(`${API_COOKIE_PREFIX}${cookie.name}`, cookie.value, {
-        expires: cookie.expires,
-        maxAge: cookie.maxAge,
-        httpOnly: cookie.httpOnly,
+      cookie.serialize(`${API_COOKIE_PREFIX}${ck.name}`, ck.value, {
+        expires: ck.expires,
+        maxAge: ck.maxAge,
+        httpOnly: ck.httpOnly,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
       })

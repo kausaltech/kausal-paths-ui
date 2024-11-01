@@ -1,17 +1,18 @@
 import type { Theme } from '@kausal/themes/types';
 
 import { getLogger } from '@common/logging';
+
 import { formatStaticUrl } from '@/common/links';
 
 declare module 'styled-components' {
   export interface DefaultTheme extends Theme {}
 }
 
-const logger = getLogger('theme');
-
 export async function loadTheme(themeIdentifier: string): Promise<Theme> {
   let themeProps: Theme;
   let readThemeFile: (id: string) => Promise<Theme>;
+  const logger = getLogger('theme');
+
   if (!process.browser) {
     const fs = await import('node:fs');
     const THEME_PATH = './public/static/themes';

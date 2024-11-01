@@ -3,23 +3,25 @@ import type { NextRequest } from 'next/server';
 import {
   ApolloClient,
   ApolloLink,
-  gql,
   HttpLink,
   InMemoryCache,
   type NormalizedCacheObject,
+  gql,
 } from '@apollo/client';
 import * as Sentry from '@sentry/nextjs';
-import { SentryLink } from 'apollo-link-sentry';
 import type { Logger } from 'pino';
 
-import { logApolloError } from '@common/logging/logApolloError';
+import { createSentryLink, logOperationLink } from '@common/apollo/links';
+import { getPathsGraphQLUrl } from '@common/env';
+import { envToBool } from '@common/env/utils';
+
 import type {
   AvailableInstanceFragment,
   GetAvailableInstancesQuery,
   GetAvailableInstancesQueryVariables,
 } from '@/common/__generated__/graphql';
-import { type ApolloClientOpts, getHttpHeaders, logQueryEnd, logQueryStart } from '@/common/apollo';
-import { getRuntimeConfig } from '@/common/environment';
+import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
+
 import LRUCache from './lru-cache';
 
 const GET_AVAILABLE_INSTANCES = gql`
@@ -43,9 +45,8 @@ const GET_AVAILABLE_INSTANCES = gql`
 const instanceCache = new LRUCache<string, AvailableInstanceFragment[]>();
 type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
-function createApolloClient(req: NextRequest) {
-  const config = getRuntimeConfig();
-
+function createApolloClient(req: NextRequest, logger: Logger) {
+  const uri = getPathsGraphQLUrl();
   const fwdforHdr = req.headers.get('x-forwarded-for');
   const apolloOpts: ApolloClientOpts = {
     currentURL: {
@@ -56,42 +57,37 @@ function createApolloClient(req: NextRequest) {
     // clientcookies??
   };
   const httpLink = new HttpLink({
-    uri: config.gqlUrl,
+    uri,
     credentials: 'include',
     fetchOptions: {
       referrerPolicy: 'unsafe-url',
     },
-    headers: getHttpHeaders(apolloOpts),
   });
 
   const client: ApolloClientType = new ApolloClient({
     ssrMode: false,
     link: ApolloLink.from([
-      logQueryStart,
-      new SentryLink({
-        uri: config.gqlUrl,
-        setTransaction: false,
-        attachBreadcrumbs: {
-          includeVariables: true,
-          includeError: true,
-        },
-      }),
+      logOperationLink,
+      createSentryLink(uri),
       new ApolloLink((operation, forward) => {
         operation.setContext(({ headers = {} }) => {
           const ctxHeaders = getHttpHeaders(apolloOpts);
+          const newHeaders = {
+            ...headers,
+            ...ctxHeaders,
+          };
           return {
-            headers: {
-              ...headers,
-              ...ctxHeaders,
-            },
+            headers: newHeaders,
           };
         });
         return forward(operation);
       }),
-      logQueryEnd,
       httpLink,
     ]),
     cache: new InMemoryCache(),
+    defaultContext: {
+      logger: logger,
+    },
   });
   return client;
 }
@@ -116,11 +112,13 @@ async function queryInstances(client: ApolloClientType, hostname: string, logger
   return resp.data.availableInstances;
 }
 
+const disableInstanceCache = envToBool(process.env.DISABLE_INSTANCE_LRU_CACHE, false);
+
 export async function getInstancesForRequest(req: NextRequest, hostname: string, logger: Logger) {
   const instances = instanceCache.get(hostname);
-  if (instances) return instances;
+  if (instances && !disableInstanceCache) return instances;
 
-  const client = createApolloClient(req);
+  const client = createApolloClient(req, logger);
   let data: AvailableInstanceFragment[];
   try {
     data = await Sentry.withScope(async (scope) => {
@@ -128,7 +126,6 @@ export async function getInstancesForRequest(req: NextRequest, hostname: string,
       return await queryInstances(client, hostname, logger);
     });
   } catch (error) {
-    logApolloError(error, { query: GET_AVAILABLE_INSTANCES, client }, logger);
     throw error;
   }
   instanceCache.set(hostname, data);

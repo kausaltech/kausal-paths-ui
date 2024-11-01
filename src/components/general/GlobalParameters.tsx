@@ -1,26 +1,19 @@
 import { useEffect, useState } from 'react';
-import { gql, useMutation, useQuery, NetworkStatus } from '@apollo/client';
+
+import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
 import type { ObservableQuery } from '@apollo/client';
+import { useTranslation } from 'react-i18next';
+import { Button, Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
-import {
-  Row,
-  Col,
-  FormGroup,
-  Label,
-  Input,
-  Button,
-  InputGroup,
-  FormFeedback,
-} from 'reactstrap';
-import Icon from 'components/common/icon';
-import ContentLoader from 'components/common/ContentLoader';
-import { GET_PARAMETERS } from 'queries/getParameters';
+
 import {
   GetParametersQuery,
   SetNormalizationMutation,
   SetNormalizationMutationVariables,
-} from 'common/__generated__/graphql';
-import { useTranslation } from 'react-i18next';
+} from '@/common/__generated__/graphql';
+import ContentLoader from '@/components/common/ContentLoader';
+import Icon from '@/components/common/icon';
+import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const GlobalParametersPanel = styled(Row)`
   .form-group {
@@ -43,9 +36,7 @@ type StyledInputProps = {
 
 const StyledInput = styled(Input)<StyledInputProps>`
   background-color: ${(props) =>
-    props.customized
-      ? props.theme.graphColors.blue010
-      : props.theme.themeColors.white};
+    props.customized ? props.theme.graphColors.blue010 : props.theme.themeColors.white};
 `;
 
 const SET_PARAMETER = gql`
@@ -75,8 +66,7 @@ const SET_PARAMETER = gql`
 `;
 
 const NumericParameter = (props) => {
-  const { id, isCustomized, refetching, value, invalid, handleUserSelection } =
-    props;
+  const { id, isCustomized, refetching, value, invalid, handleUserSelection } = props;
 
   const [currentValue, setCurrentValue] = useState(value);
 
@@ -122,12 +112,7 @@ const NumericParameter = (props) => {
       />
       <FormFeedback tooltip>{invalid}</FormFeedback>
       {false && (
-        <Button
-          size="sm"
-          outline
-          color="black"
-          disabled={!parameter.isCustomized}
-        >
+        <Button size="sm" outline color="black" disabled={!parameter.isCustomized}>
           <Icon name="version" />
         </Button>
       )}
@@ -154,18 +139,18 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
     stringValue,
   } = props.param;
   const [invalid, setInvalid] = useState(false);
-  const [parameterValue, setParameterValue] = useState(
-    numberValue || boolValue || stringValue
-  );
+  const [parameterValue, setParameterValue] = useState(numberValue || boolValue || stringValue);
 
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] =
-    useMutation(SET_PARAMETER, {
+  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(
+    SET_PARAMETER,
+    {
       notifyOnNetworkStatusChange: true,
       refetchQueries: 'all',
       onCompleted: (dat) => {
         //console.log("set param---------", dat);
       },
-    });
+    }
+  );
 
   useEffect(() => {
     const validity = isInvalid({
@@ -181,13 +166,9 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
     switch (__typename) {
       case 'NumberParameterType':
         if (isNaN(input.numberValue)) return 'Please provide a number';
-        if (
-          input.numberValue >= param.minValue &&
-          input.numberValue <= param.maxValue
-        )
+        if (input.numberValue >= param.minValue && input.numberValue <= param.maxValue)
           return false;
-        else
-          return `Value must be between ${param.minValue} - ${param.maxValue}`;
+        else return `Value must be between ${param.minValue} - ${param.maxValue}`;
       case 'StringParameterType':
         return false;
       case 'BoolParameterType':

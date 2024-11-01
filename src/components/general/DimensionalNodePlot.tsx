@@ -1,14 +1,15 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
+
 import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
 import { type DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import { activeGoalVar } from 'common/cache';
 import { genColorsFromTheme, setUniqueColors } from 'common/colors';
-import { type InstanceGoal, useInstance, useFeatures } from 'common/instance';
+import { type InstanceGoal, useFeatures, useInstance } from 'common/instance';
 import { getRange } from 'common/preprocess';
-import Icon from 'components/common/icon';
 import SelectDropdown from 'components/common/SelectDropdown';
+import Icon from 'components/common/icon';
 import SiteContext from 'context/site';
 import {
   DimensionalMetric,
@@ -29,6 +30,7 @@ import {
   UncontrolledDropdown,
 } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
+
 import {
   getProgressTrackingScenario,
   metricHasProgressTrackingScenario,
@@ -67,7 +69,7 @@ function formatHover(
     hovertemplate: `${name}<br />` +
                    `%{x|%Y}: <b>%{y:,.3r}</b> ` +
                    `${unit}` +
-                   `${predText}` + 
+                   `${predText}` +
                    `<extra></extra>`,
     */
     hovertemplate:
@@ -532,8 +534,8 @@ export default function DimensionalNodePlot({
 
       const historicalValues =
         referenceYearIndex !== -1
-          ? progressSlice?.totalValues?.historicalValues.slice(referenceYearIndex + 1) ?? []
-          : progressSlice?.totalValues?.historicalValues ?? [];
+          ? (progressSlice?.totalValues?.historicalValues.slice(referenceYearIndex + 1) ?? [])
+          : (progressSlice?.totalValues?.historicalValues ?? []);
 
       if (progressSlice.totalValues && progressYears?.length) {
         const lastHist = slice.historicalYears.length - 1;

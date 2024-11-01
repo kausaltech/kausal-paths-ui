@@ -1,19 +1,22 @@
 import { Suspense } from 'react';
+
 import Head from 'next/head';
 
-import { ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
-import type { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
-import { activeGoalVar } from 'common/cache';
-import { logApolloError } from 'common/log';
-import ContentLoader from 'components/common/ContentLoader';
-import ErrorMessage from 'components/common/ErrorMessage';
-import ActionListPage from 'components/pages/ActionListPage';
-import OutcomePage from 'components/pages/OutcomePage';
-import StaticPage from 'components/pages/StaticPage';
-import { useSite } from 'context/site';
+import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
-import Error from 'pages/_error';
-import GET_PAGE from 'queries/getPage';
+
+import { logApolloError } from '@common/logging/apollo';
+
+import type { GetPageQuery, GetPageQueryVariables } from '@/common/__generated__/graphql';
+import { activeGoalVar } from '@/common/cache';
+import ContentLoader from '@/components/common/ContentLoader';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import ActionListPage from '@/components/pages/ActionListPage';
+import OutcomePage from '@/components/pages/OutcomePage';
+import StaticPage from '@/components/pages/StaticPage';
+import { useSite } from '@/context/site';
+import Error from '@/pages/_error';
+import GET_PAGE from '@/queries/getPage';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];

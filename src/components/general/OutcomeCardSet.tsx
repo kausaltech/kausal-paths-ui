@@ -1,13 +1,16 @@
-import { useState, useMemo, useCallback } from 'react';
-import styled from 'styled-components';
+import { useCallback, useMemo, useState } from 'react';
+
+import { animated, config, useSpring } from '@react-spring/web';
 import { useTranslation } from 'next-i18next';
-import { useSpring, animated, config } from '@react-spring/web';
 import useScrollTo from 'react-spring-scroll-to-hook';
-import { getMetricValue, getOutcomeTotal } from 'common/preprocess';
-import OutcomeNodeContent from 'components/general/OutcomeNodeContent';
+import styled from 'styled-components';
+
+import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { setUniqueColors } from '@/common/colors';
+import { getMetricValue, getOutcomeTotal } from '@/common/preprocess';
+import OutcomeNodeContent from '@/components/general/OutcomeNodeContent';
+
 import OutcomeCard from './OutcomeCard';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import { setUniqueColors } from 'common/colors';
 
 const CardSet = styled(animated.div)<{
   $color?: string;

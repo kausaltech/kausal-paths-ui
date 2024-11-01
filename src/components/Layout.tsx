@@ -1,17 +1,18 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { useTranslation } from 'common/i18n';
-import { useInstance } from 'common/instance';
-import Footer from 'components/common/Footer';
-import GlobalNav from 'components/common/GlobalNav';
-import { useSite } from 'context/site';
 import styled, { useTheme } from 'styled-components';
 
+import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
 import { getThemeStaticURL } from '@/common/theme';
+import Footer from '@/components/common/Footer';
+import GlobalNav from '@/components/common/GlobalNav';
+import { useSite } from '@/context/site';
+
 import IntroModal from './common/IntroModal';
-import { RefreshPrompt } from './general/RefreshPrompt';
 import { useCustomComponent } from './custom';
+import { RefreshPrompt } from './general/RefreshPrompt';
 
 const PageContainer = styled.div`
   width: 100%;

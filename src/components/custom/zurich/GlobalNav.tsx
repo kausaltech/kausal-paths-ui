@@ -1,10 +1,7 @@
 import React, { useContext, useMemo, useState } from 'react';
+
 import Head from 'next/head';
 
-import { Link } from 'common/links';
-import NavDropdown, { type NavDropdownProps } from 'components/common/NavDropdown';
-import LanguageSelector from 'components/general/LanguageSelector';
-import SiteContext from 'context/site';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import * as Icon from 'react-bootstrap-icons';
@@ -15,15 +12,20 @@ import {
   DropdownMenu,
   DropdownToggle,
   Nav,
-  Navbar,
   NavItem,
+  Navbar,
   UncontrolledDropdown,
 } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
-import { deploymentType } from '@/common/environment';
+import { isProductionDeployment } from '@common/env';
+
+import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
+import NavDropdown, { type NavDropdownProps } from '@/components/common/NavDropdown';
+import LanguageSelector from '@/components/general/LanguageSelector';
+import SiteContext from '@/context/site';
 
 const SecondaryNav = styled(Navbar)`
   padding: 0;
@@ -164,7 +166,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
     }
 
     &:hover {
-    background-color: transparent;
+      background-color: transparent;
 
       .highlighter {
         color: var(--hover-color);
@@ -175,8 +177,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
-      box-shadow: 3px 3px 6px 2px ${(props) =>
-        transparentize(0.85, props.theme.themeColors.black)}};
+      box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
     }
 
     .dropdown-item {
@@ -279,14 +280,13 @@ function GlobalNav(props: GlobalNavProps) {
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
-  const analyticsUrl =
-    deploymentType === 'production'
-      ? 'https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js'
-      : 'https://www.integ.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-92ad5f87cc3b-staging.min.js';
+  const analyticsUrl = isProductionDeployment()
+    ? 'https://www.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-9189fcb507a0.min.js'
+    : 'https://www.integ.stadt-zuerich.ch/etc/clientlibs/stzh/analytics/294297d554c0/068a31a4609c/launch-92ad5f87cc3b-staging.min.js';
 
   return (
     <>
-      {deploymentType === 'production' ? (
+      {isProductionDeployment() ? (
         <Head>
           <script key="zuerich-analytics" src={analyticsUrl} async />
         </Head>

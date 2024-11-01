@@ -1,16 +1,18 @@
 import { useState } from 'react';
+
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'reactstrap';
 import styled from 'styled-components';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
-import { activeScenarioVar } from 'common/cache';
-import { useInstance } from 'common/instance';
-import { GET_SCENARIOS } from 'queries/getScenarios';
+
 import type {
   ActivateScenarioMutation,
   ActivateScenarioMutationVariables,
   GetScenariosQuery,
-} from 'common/__generated__/graphql';
+} from '@/common/__generated__/graphql';
+import { activeScenarioVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import { GET_SCENARIOS } from '@/queries/getScenarios';
 
 const ACTIVATE_SCENARIO = gql`
   mutation ActivateScenario($scenarioId: ID!) {

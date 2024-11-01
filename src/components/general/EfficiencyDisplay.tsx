@@ -1,7 +1,8 @@
-import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
-import HighlightValue from 'components/general/HighlightValue';
-import { formatNumber } from 'common/preprocess';
+import styled from 'styled-components';
+
+import { formatNumber } from '@/common/preprocess';
+import HighlightValue from '@/components/general/HighlightValue';
 
 const EfficiencyDisplayWrapper = styled.div`
   display: flex;
@@ -17,9 +18,7 @@ const EfficiencyDisplayHeader = styled.div<{ muted?: boolean }>`
   font-size: 0.75rem;
   font-weight: 700;
   color: ${(props) =>
-    props.muted
-      ? props.theme.graphColors.grey050
-      : props.theme.graphColors.grey090};
+    props.muted ? props.theme.graphColors.grey050 : props.theme.graphColors.grey090};
 `;
 
 const EfficiencyDisplayItem = styled.div`

@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+
 import { useRouter } from 'next/router';
 
 import chroma from 'chroma-js';
-import type { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
-import { useTranslation } from 'common/i18n';
 import cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,
@@ -13,6 +12,9 @@ import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
 import { getContrast } from 'polished';
 import styled, { useTheme } from 'styled-components';
+
+import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 
 import SelectDropdown from './common/SelectDropdown';
 

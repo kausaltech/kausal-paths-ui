@@ -1,23 +1,14 @@
-import { gql, useMutation, useQuery, NetworkStatus } from '@apollo/client';
+import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
+import { useTranslation } from 'react-i18next';
+import { Button, Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
-import {
-  Row,
-  Col,
-  FormGroup,
-  Label,
-  Input,
-  Button,
-  InputGroup,
-  FormFeedback,
-} from 'reactstrap';
 
 import {
   GetParametersQuery,
   SetNormalizationMutation,
   SetNormalizationMutationVariables,
-} from 'common/__generated__/graphql';
-import { GET_PARAMETERS } from 'queries/getParameters';
-import { useTranslation } from 'react-i18next';
+} from '@/common/__generated__/graphql';
+import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const SwitchWrapper = styled.div`
   max-width: 160px;
@@ -48,15 +39,13 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
       notifyOnNetworkStatusChange: true,
     });
 
-  const [
-    setNormalization,
-    { data: mutationData, loading: mutationLoading, error: mutationError },
-  ] = useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(
-    SET_NORMALIZATION_MUTATION,
-    {
-      refetchQueries: 'active',
-    }
-  );
+  const [setNormalization, { data: mutationData, loading: mutationLoading, error: mutationError }] =
+    useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(
+      SET_NORMALIZATION_MUTATION,
+      {
+        refetchQueries: 'active',
+      }
+    );
 
   if ((loading && !previousData) || !data || !data.parameters) {
     return <>-</>;

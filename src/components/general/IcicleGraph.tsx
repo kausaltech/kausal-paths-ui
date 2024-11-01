@@ -1,14 +1,16 @@
 import { useState } from 'react';
+
 import dynamic from 'next/dynamic';
+
 import { useTranslation } from 'next-i18next';
-import styled, { useTheme } from 'styled-components';
 import { readableColor } from 'polished';
-
-import { Spinner } from 'reactstrap';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import type { PlotParams } from 'react-plotly.js';
+import { Spinner } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+import { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const PlotLoader = styled.div`
   height: 350px;
@@ -40,10 +42,7 @@ const makeTrace = (parentNode, childNodes, year, i18n, unit, theme) => {
   cats.push({
     name: `${parentNode.shortName || parentNode.name} ${year}`,
     id: parentNode.id,
-    value: cats.reduce(
-      (acc, cat) => (cat.value > 0 ? acc + cat.value : acc),
-      0
-    ),
+    value: cats.reduce((acc, cat) => (cat.value > 0 ? acc + cat.value : acc), 0),
     parent: '',
     color: theme.graphColors.grey010,
   });
@@ -57,9 +56,7 @@ const makeTrace = (parentNode, childNodes, year, i18n, unit, theme) => {
         : `${numberFormat.format(cat.value)} ${unit}`;
   });
 
-  const segmentBgColors = cats.map(
-    (cat) => cat.color || theme.graphColors.grey050
-  );
+  const segmentBgColors = cats.map((cat) => cat.color || theme.graphColors.grey050);
   const segmentTextColors = segmentBgColors.map((segment) =>
     segment ? readableColor(segment, '#000000', '#ffffff') : null
   );
@@ -114,18 +111,10 @@ const IcicleGraph = (props: IcicleGraphProps) => {
 
   const metric = parentNode.metric!;
 
-  const displayNodes =
-    subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
+  const displayNodes = subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
   const shortUnit = metric.unit?.short;
 
-  const icicleTrace = makeTrace(
-    parentNode,
-    displayNodes,
-    endYear,
-    i18n,
-    shortUnit,
-    theme
-  );
+  const icicleTrace = makeTrace(parentNode, displayNodes, endYear, i18n, shortUnit, theme);
 
   const layout: PlotParams['layout'] = {
     showlegend: false,

@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 [ -n "$CI" ] && exit 0
 
 # Check that the active node version matches what is in
@@ -5,9 +6,9 @@
 
 if [ -z "$husky_skip_init" ]; then
   ACTIVE_NODE_VER=$(node -v | sed -e 's/^v//')
-  REQUIRED_NODE_VER=$(cat .nvmrc | sed -e 's/^v//')
+  REQUIRED_NODE_VER=$(sed -e 's/^v//' < .nvmrc)
 
-  if ! (echo $ACTIVE_NODE_VER | grep -q "^$REQUIRED_NODE_VER"); then
+  if ! (echo "$ACTIVE_NODE_VER" | grep -q "^$REQUIRED_NODE_VER"); then
     echo "❌ node version mismatch"
     echo "   active node version: ${ACTIVE_NODE_VER}"
     echo "   project requires: ${REQUIRED_NODE_VER}"

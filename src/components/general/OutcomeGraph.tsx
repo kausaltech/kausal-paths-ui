@@ -1,16 +1,19 @@
 import { useContext, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { useTranslation } from 'next-i18next';
-import styled, { ThemeContext } from 'styled-components';
-import { tint } from 'polished';
-import { Spinner } from 'reactstrap';
-import { metricToPlot, getRange } from 'common/preprocess';
-import SiteContext from 'context/site';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import type { PlotParams } from 'react-plotly.js';
-import { useInstance } from 'common/instance';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+import dynamic from 'next/dynamic';
+
+import { useTranslation } from 'next-i18next';
+import { tint } from 'polished';
+import type { PlotParams } from 'react-plotly.js';
+import { Spinner } from 'reactstrap';
+import styled, { ThemeContext } from 'styled-components';
+
+import { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useInstance } from '@/common/instance';
+import { getRange, metricToPlot } from '@/common/preprocess';
+import SiteContext from '@/context/site';
+
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const smoothingFactor = 0.8;
 
@@ -73,9 +76,7 @@ const generatePlotFromNode = (
   const fillColor = n.color || color;
 
   const getPercentage = (dataPoint, parentMetric) => {
-    const parentDataPoint = parentMetric.find(
-      (val) => val.year === dataPoint.year
-    );
+    const parentDataPoint = parentMetric.find((val) => val.year === dataPoint.year);
     const percentage = parentDataPoint
       ? ((dataPoint.value / parentDataPoint.value) * 100).toPrecision(3)
       : undefined;
@@ -88,10 +89,7 @@ const generatePlotFromNode = (
     // Do not include base year in historical values
     if (dataPoint.year === site.referenceYear) {
       baseValue = dataPoint.value;
-      parentBaseValue = getPercentage(
-        dataPoint,
-        parentNode.metric.historicalValues
-      );
+      parentBaseValue = getPercentage(dataPoint, parentNode.metric.historicalValues);
       return;
     }
     // Filter out years outside user selected range
@@ -111,9 +109,7 @@ const generatePlotFromNode = (
     }
     valueArray.push(dataPoint.value);
     dateArray.push(dataPoint.year);
-    parentValueArray.push(
-      getPercentage(dataPoint, parentNode.metric.historicalValues)
-    );
+    parentValueArray.push(getPercentage(dataPoint, parentNode.metric.historicalValues));
   });
   if (site.referenceYear && baseValue !== undefined) {
     const referenceYearTrace: Plotly.Data = {
@@ -132,14 +128,7 @@ const generatePlotFromNode = (
       fillcolor: fillColor,
       xaxis: 'x',
       yaxis: 'y',
-      ...formatHover(
-        n.shortName || n.name,
-        fillColor,
-        false,
-        systemFont,
-        predLabel,
-        shortUnit
-      ),
+      ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
     };
     plotData.push(referenceYearTrace);
   }
@@ -162,22 +151,13 @@ const generatePlotFromNode = (
       smoothing: smoothingFactor,
       width: 0.75,
     },
-    ...formatHover(
-      n.shortName || n.name,
-      fillColor,
-      false,
-      systemFont,
-      predLabel,
-      shortUnit
-    ),
+    ...formatHover(n.shortName || n.name, fillColor, false, systemFont, predLabel, shortUnit),
   });
   n.metric.forecastValues.forEach((dataPoint) => {
     if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
       forecastValues.push(dataPoint.value);
       forecastDates.push(dataPoint.year);
-      parentForecastValues.push(
-        getPercentage(dataPoint, parentNode.metric.forecastValues)
-      );
+      parentForecastValues.push(getPercentage(dataPoint, parentNode.metric.forecastValues));
     }
   });
 
@@ -224,14 +204,7 @@ const generatePlotFromNode = (
       smoothing: smoothingFactor,
       width: 0.5,
     },
-    ...formatHover(
-      n.shortName || n.name,
-      fillColor,
-      true,
-      systemFont,
-      predLabel,
-      shortUnit
-    ),
+    ...formatHover(n.shortName || n.name, fillColor, true, systemFont, predLabel, shortUnit),
   });
 
   return plotData;
@@ -260,29 +233,22 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
 
   const baselineForecast =
     metric.baselineForecastValues &&
-    metricToPlot(
-      parentNode.metric,
-      'baselineForecastValues',
-      startYear,
-      endYear
-    );
+    metricToPlot(parentNode.metric, 'baselineForecastValues', startYear, endYear);
   const goals = parentNode.goals;
   const targetYearGoal = parentNode.targetYearGoal;
 
   const systemFont =
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
 
-  const displayNodes = (
-    subNodes?.length > 1 ? subNodes : parentNode && [parentNode]
-  ).map((node) => ({ ...node }));
+  const displayNodes = (subNodes?.length > 1 ? subNodes : parentNode && [parentNode]).map(
+    (node) => ({ ...node })
+  );
   const shortUnit = metric.unit?.short;
   const longUnit = metric.unit?.htmlLong;
   const predLabel = t('pred');
 
   // Find the lowes forecast year
-  const forecastYears = displayNodes.map(
-    (node) => node.metric.forecastValues[0]?.year
-  );
+  const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
   const minForecastYear = forecastYears.reduce((p, v) => (p < v ? p : v));
 
   // Split nodes to pos and neg
@@ -292,9 +258,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     return false;
   };
   const negativeDisplayNodes = displayNodes?.filter(hasNegativeValues);
-  const positiveDisplayNodes = displayNodes?.filter(
-    (node) => !hasNegativeValues(node)
-  );
+  const positiveDisplayNodes = displayNodes?.filter((node) => !hasNegativeValues(node));
 
   // generate separate stacks for positive and negative side
   positiveDisplayNodes?.forEach((node, index) => {
@@ -335,11 +299,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     );
   });
 
-  if (
-    baselineForecast &&
-    site.baselineName &&
-    instance.features?.baselineVisibleInGraphs
-  ) {
+  if (baselineForecast && site.baselineName && instance.features?.baselineVisibleInGraphs) {
     plotData.push({
       x: baselineForecast.x,
       y: baselineForecast.y,
@@ -366,9 +326,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       ),
     });
   }
-  const goalsWithinRange = goals.filter(
-    (goal) => goal.year >= startYear && goal.year <= endYear
-  );
+  const goalsWithinRange = goals.filter((goal) => goal.year >= startYear && goal.year <= endYear);
   if (goalsWithinRange.length >= 2) {
     const name = t('target')!;
     plotData.push({

@@ -1,7 +1,9 @@
 import { gql } from '@apollo/client';
-import RichText from './RichText';
-import { StreamFieldFragmentFragment } from 'common/__generated__/graphql';
+
+import type { StreamFieldFragmentFragment } from '@/common/__generated__/graphql';
+
 import { CardListBlock } from './CardListBlock';
+import RichText from './RichText';
 
 export const STREAM_FIELD_FRAGMENT = gql`
   fragment StreamFieldFragment on StreamFieldInterface {
