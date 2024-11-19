@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
-import { Input as BSCustomInput } from 'reactstrap';
 import Icon from 'components/common/icon';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 import { activeScenarioVar } from 'common/cache';
-import { GET_SCENARIOS } from 'queries/getScenarios';
-import { GET_PARAMETERS } from 'queries/getParameters';
-import { GET_ACTION_LIST } from 'queries/getActionList';
 import Button from 'components/common/Button';
-import {
+import type {
   ActionParameterFragment,
   SetParameterMutation,
   SetParameterMutationVariables,
