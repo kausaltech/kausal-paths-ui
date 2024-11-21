@@ -36,7 +36,12 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
-/** An enumeration. */
+/** Desired (benificial) direction for the values of the output of a node */
+export enum DesiredOutcome {
+  Decreasing = 'decreasing',
+  Increasing = 'increasing'
+}
+
 export enum DimensionKind {
   Common = 'COMMON',
   Node = 'NODE',

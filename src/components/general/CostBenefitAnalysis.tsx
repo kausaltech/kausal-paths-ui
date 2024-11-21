@@ -154,13 +154,13 @@ function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOpt
         barCategoryGap: '40%',
         name: 'Benefit',
         encode: { x: 'benefit', y: 'action' },
-        itemStyle: { color: theme.graphColors.green050 },
+        itemStyle: { color: theme.graphColors.green030 },
       },
       {
         type: 'bar',
         name: 'Cost',
         encode: { x: 'cost', y: 'action' },
-        itemStyle: { color: theme.graphColors.red050 },
+        itemStyle: { color: theme.graphColors.red030 },
       },
     ],
   };

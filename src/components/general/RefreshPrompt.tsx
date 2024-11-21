@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowClockwise, X } from 'react-bootstrap-icons';
+import { ArrowClockwise } from 'react-bootstrap-icons';
 import { useApolloClient } from '@apollo/client';
 import { Toast, ToastBody, ToastHeader } from 'reactstrap';
 import styled from 'styled-components';
@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import Button from '../common/Button';
 
 const DISABLE_REFRESH_PROMPT = 'hideRefreshPrompt';
+const TEN_MINS = 10 * 60 * 1000;
 
 function getIsPromptDisabled() {
   try {
@@ -37,8 +38,6 @@ function storeDisableRefreshPrompt() {
 function useIsPromptVisible() {
   const [isPromptVisible, setIsPromptVisible] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
-
-  const TEN_MINS = 10 * 60 * 1000;
 
   function handleClose() {
     setIsPromptVisible(false);

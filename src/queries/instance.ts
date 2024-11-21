@@ -7,6 +7,8 @@ export const scenarioFragment = gql`
     isActive
     isDefault
     name
+    actualHistoricalYears
+    kind
   }
 `;
 

@@ -14,6 +14,7 @@ import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
 import Error from 'pages/_error';
 import GET_PAGE from 'queries/getPage';
+import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
@@ -28,11 +29,15 @@ type PageProps = {
 
 export default function Page({ path, headerExtra }: PageProps) {
   const site = useSite();
+  const scenarios = !!getProgressTrackingScenario(site.scenarios)
+    ? ['default', 'progress_tracking']
+    : null;
   const activeGoal = useReactiveVar(activeGoalVar);
   const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
     variables: {
       path,
       goal: activeGoal?.id ?? null,
+      scenarios,
     },
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,

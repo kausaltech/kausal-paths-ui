@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
-import type { DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
+import { type DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
 import { activeGoalVar } from 'common/cache';
 import { genColorsFromTheme, setUniqueColors } from 'common/colors';
 import { type InstanceGoal, useInstance, useFeatures } from 'common/instance';
@@ -29,6 +29,10 @@ import {
   UncontrolledDropdown,
 } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
+import {
+  getProgressTrackingScenario,
+  metricHasProgressTrackingScenario,
+} from '@/utils/progress-tracking';
 
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
@@ -141,6 +145,8 @@ type DimensionalNodePlotProps = {
   color?: string | null;
   withControls?: boolean;
   withTools?: boolean;
+  onClickMeasuredEmissions?: (year: number) => void;
+  hasNegativeValues?: boolean;
 };
 
 export default function DimensionalNodePlot({
@@ -153,10 +159,25 @@ export default function DimensionalNodePlot({
   withTools = true,
   endYear,
   baselineForecast,
+  onClickMeasuredEmissions,
 }: DimensionalNodePlotProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
-  const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
+  const theme = useTheme();
+  const site = useContext(SiteContext);
+  const instance = useInstance();
+  const hasProgressTracking = metricHasProgressTrackingScenario(metric, site.scenarios);
+
+  const metrics = useMemo(() => {
+    const defaultMetric = new DimensionalMetric(metric);
+
+    return {
+      default: defaultMetric,
+      progress: hasProgressTracking ? new DimensionalMetric(metric, 'progress_tracking') : null,
+    };
+  }, [metric, hasProgressTracking]);
+
+  const cube = metrics.default;
 
   const lastMetricYear = metric.years.slice(-1)[0];
   const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
@@ -182,14 +203,12 @@ export default function DimensionalNodePlot({
   const slicedDim = cube.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
 
   let slice: MetricSlice;
+
   if (slicedDim) {
     slice = cube.sliceBy(slicedDim.id, true, sliceConfig.categories);
   } else {
     slice = cube.flatten(sliceConfig.categories);
   }
-  const theme = useTheme();
-  const site = useContext(SiteContext);
-  const instance = useInstance();
 
   const defaultColor = color || theme.graphColors.blue070;
   const shapes: Plotly.Layout['shapes'] = [];
@@ -234,7 +253,8 @@ export default function DimensionalNodePlot({
     colors = [defaultColor];
   }
 
-  const showReferenceYear = withReferenceYear && !!site.referenceYear;
+  const showReferenceYear =
+    withReferenceYear && !!site.referenceYear && site.minYear !== site.referenceYear;
   const hasHistorical = slice.historicalYears.length > 0;
   const hasForecast = slice.forecastYears.length > 0;
   const predLabel = t('pred');
@@ -292,6 +312,7 @@ export default function DimensionalNodePlot({
 
     if (hasHistorical && hasForecast) {
       const lastHist = slice.historicalYears.length - 1;
+
       plotData.push({
         ...traceConfig,
         ...filledStyles(`${forecastStackGroup}-join`),
@@ -491,9 +512,92 @@ export default function DimensionalNodePlot({
         showlegend: true,
       });
     }
+
+    if (hasProgressTracking && metrics.progress && slicedDim) {
+      const lastHist = slice.historicalYears.length - 1;
+      const progressScenario = getProgressTrackingScenario(site.scenarios);
+      const progressSlice = metrics.progress.sliceBy(slicedDim.id, true, sliceConfig.categories);
+      const progressYears = progressScenario?.actualHistoricalYears;
+
+      const referenceYearIndex = slice.historicalYears.findIndex(
+        (year) => year === instance.referenceYear
+      );
+
+      const historicalYears =
+        referenceYearIndex !== -1
+          ? progressSlice.historicalYears.slice(referenceYearIndex + 1)
+          : progressSlice.historicalYears;
+
+      const historicalValues =
+        referenceYearIndex !== -1
+          ? progressSlice?.totalValues?.historicalValues.slice(referenceYearIndex + 1) ?? []
+          : progressSlice?.totalValues?.historicalValues ?? [];
+
+      if (progressSlice.totalValues && progressYears?.length) {
+        const totalSumX = [site.minYear, ...historicalYears, ...progressSlice.forecastYears];
+        const totalSumY = [
+          slice.totalValues.historicalValues[lastHist],
+          ...historicalValues,
+          ...progressSlice.totalValues.forecastValues,
+        ];
+
+        // Filter out data for years that are not in the progress scenario
+        const { x: filteredX, y: filteredY } = totalSumX.reduce(
+          (acc, x, index) =>
+            progressYears.includes(x) ? { x: [...acc.x, x], y: [...acc.y, totalSumY[index]] } : acc,
+          { x: [] as number[], y: [] as number[] }
+        );
+
+        plotData.push({
+          xaxis: 'x2',
+          type: 'scatter',
+          name: t('measured-emissions'),
+          mode: 'lines+markers',
+          x: filteredX,
+          y: filteredY,
+          line: {
+            color: theme.themeColors.black,
+            width: 1,
+          },
+          ...formatHover(
+            t('measured-emissions'),
+            theme.themeColors.black,
+            unit,
+            null,
+            theme.fontFamily,
+            maximumFractionDigits
+          ),
+          marker: {
+            symbol: 'x',
+            size: 8,
+            color: 'black',
+            line: {
+              color: 'white',
+              width: 1,
+            },
+            opacity: filteredX.map((x) => (x === instance.referenceYear ? 0 : 1)),
+          },
+          showlegend: true,
+        });
+      }
+    }
   }
 
   const nrYears = usableEndYear - startYear;
+
+  const handlePlotClick = (event: Plotly.PlotMouseEvent) => {
+    const measuredEmissionsDataPoint = event.points?.find(
+      (point) => point.data.name === 'Measured emissions'
+    );
+
+    if (measuredEmissionsDataPoint?.x && typeof onClickMeasuredEmissions === 'function') {
+      const year = new Date(measuredEmissionsDataPoint.x).getFullYear();
+
+      if (!isNaN(year)) {
+        onClickMeasuredEmissions(year);
+      }
+    }
+  };
 
   const commonXAxisConfig: Partial<LayoutAxis> = {
     domain: [0, 1],
@@ -689,6 +793,7 @@ export default function DimensionalNodePlot({
           style={{ width: '100%' }}
           noValidate
           config={plotConfig}
+          onClick={onClickMeasuredEmissions ? handlePlotClick : undefined}
         />
       </div>
 

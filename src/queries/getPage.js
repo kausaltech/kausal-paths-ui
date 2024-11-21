@@ -82,7 +82,7 @@ const OUTCOME_NODE_FIELDS = gql`
 
 const GET_PAGE = gql`
   ${OUTCOME_NODE_FIELDS}
-  query GetPage($path: String!, $goal: ID) {
+  query GetPage($path: String!, $goal: ID, $scenarios: [String!]) {
     activeScenario {
       id
     }
@@ -95,11 +95,7 @@ const GET_PAGE = gql`
         leadParagraph
         outcomeNode {
           ...OutcomeNodeFields
-          upstreamNodes(
-            sameQuantity: true
-            sameUnit: true
-            includeActions: false
-          ) {
+          upstreamNodes(sameQuantity: true, sameUnit: true, includeActions: false) {
             ...OutcomeNodeFields
           }
         }

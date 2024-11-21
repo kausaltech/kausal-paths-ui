@@ -112,5 +112,15 @@
   "cost-benefit-analysis": "Cost-benefit analysis",
   "return-on-investment": "Return on investment",
   "megaEUR": "M €",
-  "kiloSEK": "kSEK"
+  "kiloSEK": "kSEK",
+  "higher-than-forecast": "{{percentage}}% higher than forecast",
+  "lower-than-forecast": "{{percentage}}% lower than forecast",
+  "on-track": "On track",
+  "off-track": "Off track",
+  "deviating": "Deviating",
+  "view-details": "View details",
+  "measured-emissions": "Measured emissions",
+  "emissions-by-sector": "Emissions by sector ({{year}})",
+  "total-forecast-emissions": "Total forecast emissions ({{year}})",
+  "total-measured-emissions": "Measured emissions ({{year}})"
 }

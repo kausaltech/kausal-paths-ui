@@ -36,7 +36,12 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
-/** An enumeration. */
+/** Desired (benificial) direction for the values of the output of a node */
+export enum DesiredOutcome {
+  Decreasing = 'decreasing',
+  Increasing = 'increasing'
+}
+
 export enum DimensionKind {
   Common = 'COMMON',
   Node = 'NODE',
@@ -382,7 +387,7 @@ export type DimensionalPlotFragment = (
 );
 
 export type DimensionalMetricFragment = (
-  { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+  { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
     { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
       { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
       & { __typename: 'MetricDimensionCategoryType' }
@@ -399,10 +404,10 @@ export type DimensionalMetricFragment = (
     & { __typename: 'DimensionalMetricGoalEntry' }
   )>, unit: (
     { htmlShort: string, short: string }
-    & { __typename: 'UnitType' }
+    & { __typename: 'SBUnit' }
   ), normalizedBy: (
     { id: string, name: string }
-    & { __typename: 'Node' }
+    & { __typename: 'NormalizerNodeType' }
   ) | null }
   & { __typename: 'DimensionalMetricType' }
 );
@@ -486,6 +491,7 @@ export type GetCytoscapeNodesQuery = (
 
 export type GetNodePageQueryVariables = Exact<{
   node: Scalars['ID']['input'];
+  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
 }>;
 
 
@@ -522,7 +528,7 @@ export type GetNodePageQuery = (
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metricDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -539,10 +545,10 @@ export type GetNodePageQuery = (
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
         { htmlShort: string, short: string }
-        & { __typename: 'UnitType' }
+        & { __typename: 'SBUnit' }
       ), normalizedBy: (
         { id: string, name: string }
-        & { __typename: 'Node' }
+        & { __typename: 'NormalizerNodeType' }
       ) | null }
       & { __typename: 'DimensionalMetricType' }
     ) | null }
@@ -553,7 +559,7 @@ export type GetNodePageQuery = (
 
 export type DimensionalNodeMetricFragment = (
   { metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -570,10 +576,10 @@ export type DimensionalNodeMetricFragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string }
-      & { __typename: 'UnitType' }
+      & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
-      & { __typename: 'Node' }
+      & { __typename: 'NormalizerNodeType' }
     ) | null }
     & { __typename: 'DimensionalMetricType' }
   ) | null }
@@ -633,7 +639,7 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -650,10 +656,10 @@ export type GetActionContentQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string }
-          & { __typename: 'UnitType' }
+          & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
-          & { __typename: 'Node' }
+          & { __typename: 'NormalizerNodeType' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
       ) | null, parameters: Array<(
@@ -729,7 +735,7 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -746,10 +752,10 @@ export type GetActionContentQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string }
-          & { __typename: 'UnitType' }
+          & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
-          & { __typename: 'Node' }
+          & { __typename: 'NormalizerNodeType' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
       ) | null, parameters: Array<(
@@ -850,7 +856,7 @@ export type GetActionContentQuery = (
           ) | null }
           & { __typename: 'ForecastMetricType' }
         ) | null, metricDim: (
-          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
             { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
@@ -867,10 +873,10 @@ export type GetActionContentQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string }
-            & { __typename: 'UnitType' }
+            & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
-            & { __typename: 'Node' }
+            & { __typename: 'NormalizerNodeType' }
           ) | null }
           & { __typename: 'DimensionalMetricType' }
         ) | null, parameters: Array<(
@@ -946,7 +952,7 @@ export type GetActionContentQuery = (
           ) | null }
           & { __typename: 'ForecastMetricType' }
         ) | null, metricDim: (
-          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
             { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
@@ -963,10 +969,10 @@ export type GetActionContentQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string }
-            & { __typename: 'UnitType' }
+            & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
-            & { __typename: 'Node' }
+            & { __typename: 'NormalizerNodeType' }
           ) | null }
           & { __typename: 'DimensionalMetricType' }
         ) | null, parameters: Array<(
@@ -1064,7 +1070,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'ForecastMetricType' }
     ) | null, metricDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -1081,10 +1087,10 @@ export type GetActionContentQuery = (
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
         { htmlShort: string, short: string }
-        & { __typename: 'UnitType' }
+        & { __typename: 'SBUnit' }
       ), normalizedBy: (
         { id: string, name: string }
-        & { __typename: 'Node' }
+        & { __typename: 'NormalizerNodeType' }
       ) | null }
       & { __typename: 'DimensionalMetricType' }
     ) | null, parameters: Array<(
@@ -1167,7 +1173,7 @@ type CausalGridNode_ActionNode_Fragment = (
     ) | null }
     & { __typename: 'ForecastMetricType' }
   ) | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -1184,10 +1190,10 @@ type CausalGridNode_ActionNode_Fragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string }
-      & { __typename: 'UnitType' }
+      & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
-      & { __typename: 'Node' }
+      & { __typename: 'NormalizerNodeType' }
     ) | null }
     & { __typename: 'DimensionalMetricType' }
   ) | null, parameters: Array<(
@@ -1265,7 +1271,7 @@ type CausalGridNode_Node_Fragment = (
     ) | null }
     & { __typename: 'ForecastMetricType' }
   ) | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -1282,10 +1288,10 @@ type CausalGridNode_Node_Fragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string }
-      & { __typename: 'UnitType' }
+      & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
-      & { __typename: 'Node' }
+      & { __typename: 'NormalizerNodeType' }
     ) | null }
     & { __typename: 'DimensionalMetricType' }
   ) | null, parameters: Array<(
@@ -1511,7 +1517,7 @@ export type GetImpactOverviewsQuery = (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
       ), costDim: (
-        { name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1528,14 +1534,14 @@ export type GetImpactOverviewsQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string }
-          & { __typename: 'UnitType' }
+          & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
-          & { __typename: 'Node' }
+          & { __typename: 'NormalizerNodeType' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
       ), impactDim: (
-        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string }
           & { __typename: 'MetricDimensionType' }
         )> }
@@ -1595,7 +1601,7 @@ export type OutcomeNodeFieldsFragment = (
     ) | null }
     & { __typename: 'ActionNode' }
   )> | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -1612,10 +1618,10 @@ export type OutcomeNodeFieldsFragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string }
-      & { __typename: 'UnitType' }
+      & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
-      & { __typename: 'Node' }
+      & { __typename: 'NormalizerNodeType' }
     ) | null }
     & { __typename: 'DimensionalMetricType' }
   ) | null }
@@ -1625,6 +1631,7 @@ export type OutcomeNodeFieldsFragment = (
 export type GetPageQueryVariables = Exact<{
   path: Scalars['String']['input'];
   goal: InputMaybe<Scalars['ID']['input']>;
+  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
 }>;
 
 
@@ -1687,7 +1694,7 @@ export type GetPageQuery = (
           ) | null }
           & { __typename: 'ActionNode' }
         )> | null, metricDim: (
-          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
             { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
@@ -1704,10 +1711,10 @@ export type GetPageQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string }
-            & { __typename: 'UnitType' }
+            & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
-            & { __typename: 'Node' }
+            & { __typename: 'NormalizerNodeType' }
           ) | null }
           & { __typename: 'DimensionalMetricType' }
         ) | null }
@@ -1758,7 +1765,7 @@ export type GetPageQuery = (
         ) | null }
         & { __typename: 'ActionNode' }
       )> | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1775,10 +1782,10 @@ export type GetPageQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string }
-          & { __typename: 'UnitType' }
+          & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
-          & { __typename: 'Node' }
+          & { __typename: 'NormalizerNodeType' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
       ) | null }
@@ -1860,7 +1867,7 @@ export type GetScenariosQuery = (
 );
 
 export type ScenarioFragmentFragment = (
-  { id: string | null, isActive: boolean, isDefault: boolean, name: string }
+  { id: string | null, isActive: boolean, isDefault: boolean, name: string, actualHistoricalYears: Array<number> | null, kind: ScenarioKind | null }
   & { __typename: 'ScenarioType' }
 );
 
@@ -1890,7 +1897,7 @@ export type GetInstanceContextQuery = (
     ) | null }
     & { __typename: 'InstanceType' }
   ), scenarios: Array<(
-    { id: string | null, isActive: boolean, isDefault: boolean, name: string }
+    { id: string | null, isActive: boolean, isDefault: boolean, name: string, actualHistoricalYears: Array<number> | null, kind: ScenarioKind | null }
     & { __typename: 'ScenarioType' }
   )>, availableNormalizations: Array<(
     { id: string, label: string, isActive: boolean }

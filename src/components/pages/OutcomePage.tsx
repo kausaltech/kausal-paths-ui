@@ -7,14 +7,11 @@ import SettingsPanelFull from 'components/general/SettingsPanelFull';
 import { useRouter } from 'next/router';
 import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
-import {
-  GetPageQuery,
-  OutcomeNodeFieldsFragment,
-} from 'common/__generated__/graphql';
-import { PageRefetchCallback } from './Page';
-import { ParsedUrlQuery } from 'querystring';
+import type { GetPageQuery, OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import type { PageRefetchCallback } from './Page';
+import type { ParsedUrlQuery } from 'querystring';
 import { PageHero } from 'components/common/PageHero';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
 
@@ -52,29 +49,17 @@ type OutcomePageProps = {
 };
 
 export default function OutcomePage(props: OutcomePageProps) {
-  const {
-    page,
-    refetch,
-    activeScenario: queryActiveScenario,
-    refetching,
-  } = props;
+  const { page, refetch, activeScenario: queryActiveScenario, refetching } = props;
   const { t } = useTranslation();
   const instance = useInstance();
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const router = useRouter();
-  const queryNodeId = Array.isArray(router.query.node)
-    ? router.query.node[0]
-    : router.query.node;
-  const [lastActiveNodeId, setLastActiveNodeId] = useState<string | undefined>(
-    queryNodeId
-  );
+  const queryNodeId = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+  const [lastActiveNodeId, setLastActiveNodeId] = useState<string | undefined>(queryNodeId);
 
   useEffect(() => {
-    if (
-      activeScenario === null ||
-      activeScenario.id !== queryActiveScenario?.id
-    ) {
+    if (activeScenario === null || activeScenario.id !== queryActiveScenario?.id) {
       refetch();
     }
   }, [activeScenario]);
@@ -100,16 +85,13 @@ export default function OutcomePage(props: OutcomePageProps) {
     () => new Map(upstreamNodes.map((node) => [node.id, node])),
     [upstreamNodes]
   );
+
   allNodes.set(outcomeNode.id, outcomeNode);
 
   const activeNodeId =
-    lastActiveNodeId && allNodes.has(lastActiveNodeId)
-      ? lastActiveNodeId
-      : outcomeNode.id;
+    lastActiveNodeId && allNodes.has(lastActiveNodeId) ? lastActiveNodeId : outcomeNode.id;
   // TODO: filtering out empty nodes, in some instances there are some -> investigate why
-  const visibleNodes = findVisibleNodes(allNodes, activeNodeId, []).filter(
-    (node) => node?.id
-  );
+  const visibleNodes = findVisibleNodes(allNodes, activeNodeId, []).filter((node) => node?.id);
 
   const outcomeType = visibleNodes[0].quantity;
 
@@ -130,9 +112,7 @@ export default function OutcomePage(props: OutcomePageProps) {
               key={node.id}
               // Hacky solution to support different sub node titles depending on level
               subNodesTitle={
-                index === 0
-                  ? t('outcome-sub-nodes')
-                  : t('outcome-sub-nodes-secondary')
+                index === 0 ? t('outcome-sub-nodes') : t('outcome-sub-nodes-secondary')
               }
               nodeMap={allNodes}
               rootNode={node}
@@ -141,11 +121,8 @@ export default function OutcomePage(props: OutcomePageProps) {
               activeScenario={activeScenario?.name}
               parentColor="#666"
               activeNodeId={
-                index < visibleNodes.length - 1
-                  ? visibleNodes[index + 1].id
-                  : undefined
+                index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined
               }
-              lastActiveNodeId={lastActiveNodeId}
               setLastActiveNodeId={setLastActiveNodeId}
               refetching={refetching}
             />
