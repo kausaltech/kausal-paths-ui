@@ -7,6 +7,7 @@ const GET_SCENARIOS = gql`
       name
       isActive
       isDefault
+      isSelectable
     }
   }
 `;

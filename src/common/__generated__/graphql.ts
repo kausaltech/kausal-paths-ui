@@ -36,6 +36,13 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
+/** An enumeration. */
+export enum DimensionKind {
+  Common = 'COMMON',
+  Node = 'NODE',
+  Scenario = 'SCENARIO'
+}
+
 export type FrameworkConfigInput = {
   baselineYear: Scalars['Int']['input'];
   frameworkId: Scalars['ID']['input'];
@@ -79,6 +86,14 @@ export type MeasureInput = {
   measureTemplateId: Scalars['ID']['input'];
 };
 
+/** An enumeration. */
+export enum ModelAction {
+  Add = 'ADD',
+  Change = 'CHANGE',
+  Delete = 'DELETE',
+  View = 'VIEW'
+}
+
 export type NzcCityEssentialData = {
   /** Population of the city */
   population: Scalars['Int']['input'];
@@ -87,6 +102,20 @@ export type NzcCityEssentialData = {
   /** Average yearly temperature (low or high) */
   temperature: LowHigh;
 };
+
+/** An enumeration. */
+export enum ScenarioKind {
+  Baseline = 'BASELINE',
+  Custom = 'CUSTOM',
+  Default = 'DEFAULT',
+  ProgressTracking = 'PROGRESS_TRACKING'
+}
+
+/** Enum for search operator. */
+export enum SearchOperatorEnum {
+  And = 'AND',
+  Or = 'OR'
+}
 
 export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
   instance: Scalars['ID']['input'];
@@ -330,7 +359,7 @@ export type ActivateScenarioMutationVariables = Exact<{
 export type ActivateScenarioMutation = (
   { activateScenario: (
     { ok: boolean | null, activeScenario: (
-      { id: string | null, name: string | null }
+      { id: string | null, name: string }
       & { __typename: 'ScenarioType' }
     ) | null }
     & { __typename: 'ActivateScenarioMutation' }
@@ -1482,12 +1511,9 @@ export type GetImpactOverviewsQuery = (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
       ), costDim: (
-        { id: string, years: Array<number>, values: Array<number | null>, name: string, stackable: boolean, forecastFrom: number | null, unit: (
-          { short: string, htmlShort: string }
-          & { __typename: 'UnitType' }
-        ), dimensions: Array<(
-          { originalId: string | null, label: string, id: string, helpText: string | null, categories: Array<(
-            { originalId: string | null, label: string, id: string, color: string | null, order: number | null, group: string | null }
+        { name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+          { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
+            { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
           )>, groups: Array<(
             { id: string, originalId: string, label: string, color: string | null, order: number | null }
@@ -1500,13 +1526,16 @@ export type GetImpactOverviewsQuery = (
             & { __typename: 'MetricYearlyGoalType' }
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
-        )>, normalizedBy: (
+        )>, unit: (
+          { htmlShort: string, short: string }
+          & { __typename: 'UnitType' }
+        ), normalizedBy: (
           { id: string, name: string }
           & { __typename: 'Node' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
       ), impactDim: (
-        { id: string, years: Array<number>, values: Array<number | null>, dimensions: Array<(
+        { years: Array<number>, values: Array<number | null>, dimensions: Array<(
           { id: string }
           & { __typename: 'MetricDimensionType' }
         )> }
@@ -1603,7 +1632,7 @@ export type GetPageQuery = (
   { activeScenario: (
     { id: string | null }
     & { __typename: 'ScenarioType' }
-  ) | null, page: (
+  ), page: (
     { showOnlyMunicipalActions: boolean | null, defaultSortOrder: ActionSortOrder, id: string | null, title: string, actionListLeadTitle: string | null, actionListLeadParagraph: string | null }
     & { __typename: 'ActionListPage' }
   ) | (
@@ -1824,14 +1853,14 @@ export type GetScenariosQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetScenariosQuery = (
   { scenarios: Array<(
-    { id: string | null, name: string | null, isActive: boolean | null, isDefault: boolean | null }
+    { id: string | null, name: string, isActive: boolean, isDefault: boolean, isSelectable: boolean }
     & { __typename: 'ScenarioType' }
   )> }
   & { __typename: 'Query' }
 );
 
 export type ScenarioFragmentFragment = (
-  { id: string | null, isActive: boolean | null, isDefault: boolean | null, name: string | null }
+  { id: string | null, isActive: boolean, isDefault: boolean, name: string }
   & { __typename: 'ScenarioType' }
 );
 
@@ -1861,7 +1890,7 @@ export type GetInstanceContextQuery = (
     ) | null }
     & { __typename: 'InstanceType' }
   ), scenarios: Array<(
-    { id: string | null, isActive: boolean | null, isDefault: boolean | null, name: string | null }
+    { id: string | null, isActive: boolean, isDefault: boolean, name: string }
     & { __typename: 'ScenarioType' }
   )>, availableNormalizations: Array<(
     { id: string, label: string, isActive: boolean }
