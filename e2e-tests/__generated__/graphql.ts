@@ -36,6 +36,13 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
+/** An enumeration. */
+export enum DimensionKind {
+  Common = 'COMMON',
+  Node = 'NODE',
+  Scenario = 'SCENARIO'
+}
+
 export type FrameworkConfigInput = {
   baselineYear: Scalars['Int']['input'];
   frameworkId: Scalars['ID']['input'];
@@ -79,6 +86,14 @@ export type MeasureInput = {
   measureTemplateId: Scalars['ID']['input'];
 };
 
+/** An enumeration. */
+export enum ModelAction {
+  Add = 'ADD',
+  Change = 'CHANGE',
+  Delete = 'DELETE',
+  View = 'VIEW'
+}
+
 export type NzcCityEssentialData = {
   /** Population of the city */
   population: Scalars['Int']['input'];
@@ -87,6 +102,20 @@ export type NzcCityEssentialData = {
   /** Average yearly temperature (low or high) */
   temperature: LowHigh;
 };
+
+/** An enumeration. */
+export enum ScenarioKind {
+  Baseline = 'BASELINE',
+  Custom = 'CUSTOM',
+  Default = 'DEFAULT',
+  ProgressTracking = 'PROGRESS_TRACKING'
+}
+
+/** Enum for search operator. */
+export enum SearchOperatorEnum {
+  And = 'AND',
+  Or = 'OR'
+}
 
 export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
   instance: Scalars['ID']['input'];
