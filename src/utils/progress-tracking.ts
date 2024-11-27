@@ -1,5 +1,5 @@
 import { ScenarioKind, type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
-import type { SiteContextScenario } from '@/context/site';
+import type { SiteContextScenario, SiteContextType } from '@/context/site';
 
 type Metric = NonNullable<DimensionalNodeMetricFragment['metricDim']>;
 
@@ -41,4 +41,14 @@ export function hasProgressTracking(
       (year) => year !== minYear
     ).length
   );
+}
+
+export function getLatestProgressYear(site: SiteContextType) {
+  const progressTrackingScenario = getProgressTrackingScenario(site.scenarios);
+  const progressYears =
+    progressTrackingScenario?.actualHistoricalYears
+      ?.filter((year) => year !== site.minYear)
+      ?.sort((a, b) => b - a) ?? [];
+
+  return progressYears[0] ?? null;
 }

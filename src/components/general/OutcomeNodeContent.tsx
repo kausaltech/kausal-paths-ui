@@ -15,8 +15,8 @@ import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import { useInstance } from 'common/instance';
 import DimensionalNodePlot from './DimensionalNodePlot';
-import { MOCK_DATA, ProgressIndicator } from './ProgressIndicator';
-import { hasProgressTracking } from '@/utils/progress-tracking';
+import { ProgressIndicator } from './ProgressIndicator';
+import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
 import { useSite } from '@/context/site';
 
 const DisplayTab = styled(NavItem)`
@@ -131,15 +131,16 @@ const OutcomeNodeContent = ({
 }: OutcomeNodeContentProps) => {
   const { t } = useTranslation();
   const [progressModalOpen, setProgressModalOpen] = useState(false);
-
-  const measuredYears = MOCK_DATA.sort((a, b) => b.year - a.year).filter(
-    (data) => data.measured.length > 0
-  );
-
-  const [selectedProgressYear, setSelectedProgressYear] = useState(measuredYears[0].year);
-  const [activeTabId, setActiveTabId] = useState('graph');
   const instance = useInstance();
   const site = useSite();
+
+  const [selectedProgressYear, setSelectedProgressYear] = useState<number | null>(() =>
+    getLatestProgressYear(site)
+  );
+  const showProgressTrackingStatus =
+    node.metricDim && hasProgressTracking(node.metricDim, site.scenarios, site.minYear);
+
+  const [activeTabId, setActiveTabId] = useState('graph');
   const showDistribution = instance.id === 'zuerich' && subNodes.length > 1;
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
@@ -152,8 +153,6 @@ const OutcomeNodeContent = ({
   const nodeName = node.shortName || node.name;
   const showNodeLinks = !instance.features?.hideNodeDetails;
   const maximumFractionDigits = instance.features?.maximumFractionDigits ?? undefined;
-  const showProgressTrackingStatus =
-    node.metricDim && hasProgressTracking(node.metricDim, site.scenarios, site.minYear);
 
   function onClickMeasuredEmissions(year: number) {
     setSelectedProgressYear(year);
@@ -222,8 +221,10 @@ const OutcomeNodeContent = ({
           </CardSetDescription>
         </div>
         <CardSetSummary>
-          {showProgressTrackingStatus && (
+          {showProgressTrackingStatus && selectedProgressYear && node.metricDim && (
             <ProgressIndicator
+              color={node.color ?? undefined}
+              metric={node.metricDim}
               isModalOpen={progressModalOpen}
               onModalOpenChange={setProgressModalOpen}
               selectedYear={selectedProgressYear}

@@ -1,7 +1,7 @@
 import { useTranslation } from '@/common/i18n';
 import type { Theme } from '@kausal/themes/types';
 import type { TFunction } from 'i18next';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Modal,
   ModalBody,
@@ -14,6 +14,18 @@ import {
 import styled, { useTheme } from 'styled-components';
 import { Chart } from '../charts/Chart';
 import type { EChartsOption } from 'echarts';
+import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import {
+  metricHasProgressTrackingScenario,
+  getProgressTrackingScenario,
+} from '@/utils/progress-tracking';
+import { useSite } from '@/context/site';
+import { DimensionalMetric, type MetricCategoryValues } from '@/data/metric';
+import { getDefaultSliceConfig } from '@/components/general/DimensionalNodePlot';
+import { useReactiveVar } from '@apollo/client';
+import { activeGoalVar } from '@/common/cache';
+import { setUniqueColors } from '@/common/colors';
+import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 
 const StyledContainer = styled.div<{ $size?: string; $muted?: boolean }>`
   padding: 0;
@@ -61,6 +73,10 @@ const StyledStatusBadge = styled.button<{ $backgroundColor: string; $color: stri
   }
 `;
 
+const StyledStatusText = styled.span`
+  line-height: 100%;
+`;
+
 const StyledTitle = styled.p`
   font-size: 0.75rem;
   line-height: 1.2;
@@ -78,7 +94,8 @@ const StyledSubtitle = styled.p`
 `;
 
 export type ProgressIndicatorProps = {
-  data: ProgressData[];
+  color?: string;
+  metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   isModalOpen: boolean;
   onModalOpenChange: (isOpen: boolean) => void;
   selectedYear: number;
@@ -87,13 +104,16 @@ export type ProgressIndicatorProps = {
 
 type ProgressData = {
   year: number;
-  forecast: {
+  unit: string;
+  totalExpected: number | null;
+  expected: {
     id: string;
     color: string;
     label: string;
     value: number;
   }[];
-  measured: {
+  totalObserved: number | null;
+  observed: {
     id: string;
     color: string;
     label: string;
@@ -148,265 +168,119 @@ function EmissionsCard({ title, value, unit }: EmissionsCardProps) {
     <StyledCard>
       <StyledEmissionsCardTitle>{title}</StyledEmissionsCardTitle>
       <StyledEmissionsCardValue>
-        {value} <StyledEmissionsCardUnit>{unit}</StyledEmissionsCardUnit>
+        {value.toLocaleString(undefined, { maximumFractionDigits: 0 })}{' '}
+        <StyledEmissionsCardUnit>{unit}</StyledEmissionsCardUnit>
       </StyledEmissionsCardValue>
     </StyledCard>
   );
 }
 
-export const MOCK_DATA: ProgressData[] = [
-  {
-    year: 2020,
-    forecast: [
-      {
-        id: 'electricity',
-        color: '#C33D0B',
-        label: 'Electricity emissions',
-        value: 100,
-      },
-      {
-        id: 'transport',
-        color: '#0F608D',
-        label: 'Transport emissions',
-        value: 200,
-      },
-      {
-        id: 'buildings',
-        color: '#2A8442',
-        label: 'Building emissions',
-        value: 150,
-      },
-      {
-        id: 'freight',
-        color: '#8B4513',
-        label: 'Freight transport emissions',
-        value: 120,
-      },
-      {
-        id: 'waste',
-        color: '#6B4423',
-        label: 'Waste emissions',
-        value: 80,
-      },
-      {
-        id: 'other',
-        color: '#808080',
-        label: 'Emissions from other sectors',
-        value: 50,
-      },
-    ],
-    measured: [
-      {
-        id: 'electricity',
-        color: '#C33D0B',
-        label: 'Electricity emissions',
-        value: 150,
-      },
-      {
-        id: 'transport',
-        color: '#0F608D',
-        label: 'Transport emissions',
-        value: 180,
-      },
-      {
-        id: 'buildings',
-        color: '#2A8442',
-        label: 'Building emissions',
-        value: 140,
-      },
-      {
-        id: 'freight',
-        color: '#8B4513',
-        label: 'Freight transport emissions',
-        value: 110,
-      },
-      {
-        id: 'waste',
-        color: '#6B4423',
-        label: 'Waste emissions',
-        value: 85,
-      },
-      {
-        id: 'other',
-        color: '#808080',
-        label: 'Emissions from other sectors',
-        value: 45,
-      },
-    ],
-  },
-  {
-    year: 2021,
-    forecast: [
-      {
-        id: 'electricity',
-        color: '#C33D0B',
-        label: 'Electricity emissions',
-        value: 120,
-      },
-      {
-        id: 'transport',
-        color: '#0F608D',
-        label: 'Transport emissions',
-        value: 250,
-      },
-      {
-        id: 'buildings',
-        color: '#2A8442',
-        label: 'Building emissions',
-        value: 140,
-      },
-      {
-        id: 'freight',
-        color: '#8B4513',
-        label: 'Freight transport emissions',
-        value: 110,
-      },
-      {
-        id: 'waste',
-        color: '#6B4423',
-        label: 'Waste emissions',
-        value: 75,
-      },
-      {
-        id: 'other',
-        color: '#808080',
-        label: 'Emissions from other sectors',
-        value: 45,
-      },
-    ],
-    measured: [
-      {
-        id: 'electricity',
-        color: '#C33D0B',
-        label: 'Electricity emissions',
-        value: 180,
-      },
-      {
-        id: 'transport',
-        color: '#0F608D',
-        label: 'Transport emissions',
-        value: 220,
-      },
-      {
-        id: 'buildings',
-        color: '#2A8442',
-        label: 'Building emissions',
-        value: 130,
-      },
-      {
-        id: 'freight',
-        color: '#8B4513',
-        label: 'Freight transport emissions',
-        value: 100,
-      },
-      {
-        id: 'waste',
-        color: '#6B4423',
-        label: 'Waste emissions',
-        value: 70,
-      },
-      {
-        id: 'other',
-        color: '#808080',
-        label: 'Emissions from other sectors',
-        value: 40,
-      },
-    ],
-  },
-  {
-    year: 2022,
-    forecast: [
-      {
-        id: 'electricity',
-        color: '#C33D0B',
-        label: 'Electricity emissions',
-        value: 150,
-      },
-      {
-        id: 'transport',
-        color: '#0F608D',
-        label: 'Transport emissions',
-        value: 300,
-      },
-      {
-        id: 'buildings',
-        color: '#2A8442',
-        label: 'Building emissions',
-        value: 130,
-      },
-      {
-        id: 'freight',
-        color: '#8B4513',
-        label: 'Freight transport emissions',
-        value: 100,
-      },
-      {
-        id: 'waste',
-        color: '#6B4423',
-        label: 'Waste emissions',
-        value: 70,
-      },
-      {
-        id: 'other',
-        color: '#808080',
-        label: 'Emissions from other sectors',
-        value: 40,
-      },
-    ],
-    measured: [
-      {
-        id: 'electricity',
-        color: '#C33D0B',
-        label: 'Electricity emissions',
-        value: 200,
-      },
-      {
-        id: 'transport',
-        color: '#0F608D',
-        label: 'Transport emissions',
-        value: 280,
-      },
-      {
-        id: 'buildings',
-        color: '#2A8442',
-        label: 'Building emissions',
-        value: 120,
-      },
-      {
-        id: 'freight',
-        color: '#8B4513',
-        label: 'Freight transport emissions',
-        value: 90,
-      },
-      {
-        id: 'waste',
-        color: '#6B4423',
-        label: 'Waste emissions',
-        value: 65,
-      },
-      {
-        id: 'other',
-        color: '#808080',
-        label: 'Emissions from other sectors',
-        value: 35,
-      },
-    ],
-  },
-];
+function useProgressData(metric: ProgressIndicatorProps['metric'], color?: string): ProgressData[] {
+  const site = useSite();
+  const activeGoal = useReactiveVar(activeGoalVar);
+  const theme = useTheme();
 
-function getTotalMeasuredAndForecast(yearlyValues: ProgressData) {
-  const totalForecast = yearlyValues.forecast.reduce((sum, { value }) => sum + value, 0);
-  const totalMeasured = yearlyValues.measured.reduce((sum, { value }) => sum + value, 0);
+  return useMemo(() => {
+    const defaultMetric = new DimensionalMetric(metric);
+    const hasProgressTracking = metricHasProgressTrackingScenario(metric, site.scenarios);
 
-  const delta = totalForecast !== 0 ? ((totalMeasured - totalForecast) / totalForecast) * 100 : 0;
+    if (!hasProgressTracking) return [];
 
-  return {
-    ...yearlyValues,
-    delta: Math.round(delta),
-    totalForecast,
-    totalMeasured,
-    plannedRateOfChange: totalForecast,
-  };
+    const metrics = {
+      default: defaultMetric,
+      progress: new DimensionalMetric(metric, 'progress_tracking'),
+    };
+
+    const defaultConfig = getDefaultSliceConfig(metrics.default, activeGoal);
+    const defaultSlice = metrics.default.sliceBy(
+      defaultConfig.dimensionId!,
+      true,
+      defaultConfig.categories
+    );
+
+    const progressSlice = metrics.progress.sliceBy(
+      defaultConfig.dimensionId!,
+      true,
+      defaultConfig.categories
+    );
+
+    const defaultColor = color || theme.graphColors.blue070;
+
+    /**
+     * Generate colours for nodes missing colours using the same
+     * logic as DimensionalNodePlot for node colour consistency.
+     * Note that the setUniqueColors function mutates the categoryValues.
+     */
+    if (color && defaultSlice.categoryValues.length > 1) {
+      setUniqueColors(
+        defaultSlice.categoryValues,
+        (cv) => cv.color,
+        (cv, color) => {
+          cv.color = color;
+        },
+        defaultColor
+      );
+
+      setUniqueColors(
+        progressSlice.categoryValues,
+        (cv) => cv.color,
+        (cv, color) => {
+          cv.color = color;
+        },
+        defaultColor
+      );
+    }
+
+    const progressScenario = getProgressTrackingScenario(site.scenarios);
+    const progressYears = progressScenario?.actualHistoricalYears ?? [];
+
+    return progressYears.map((year) => {
+      const yearIndex = [...defaultSlice.historicalYears, ...defaultSlice.forecastYears].indexOf(
+        year
+      );
+      const progressIndex = [
+        ...progressSlice.historicalYears,
+        ...progressSlice.forecastYears,
+      ].indexOf(year);
+
+      return {
+        year,
+        unit: defaultSlice.unit,
+        totalExpected:
+          [
+            ...(defaultSlice.totalValues?.historicalValues ?? []),
+            ...(defaultSlice.totalValues?.forecastValues ?? []),
+          ][yearIndex] || 0,
+        expected: defaultSlice.categoryValues.map((cv) => ({
+          id: cv.category.originalId!,
+          color: cv.color || '',
+          label: cv.category.label,
+          value: [...cv.historicalValues, ...cv.forecastValues][yearIndex] || 0,
+        })),
+        totalObserved:
+          [
+            ...(progressSlice.totalValues?.historicalValues ?? []),
+            ...(progressSlice.totalValues?.forecastValues ?? []),
+          ][yearIndex] || 0,
+        observed: progressSlice.categoryValues.map((cv) => ({
+          id: cv.category.originalId!,
+          color: cv.color || '',
+          label: cv.category.label,
+          value: [...cv.historicalValues, ...cv.forecastValues][progressIndex] || 0,
+        })),
+      };
+    });
+  }, [metric, site.scenarios, activeGoal]);
+}
+
+function getDeltaPercentage({ totalExpected, totalObserved }: ProgressData) {
+  if (totalObserved == null || totalExpected == null || totalExpected === 0) {
+    return 0;
+  }
+
+  const delta = ((totalObserved - totalExpected) / totalExpected) * 100;
+
+  return Math.round(delta);
 }
 
 type Status = {
@@ -423,7 +297,13 @@ function getStripeGradient(color?: string) {
             rgba(255,255,255,0.4) 75%);background-size: 8px 8px;`;
 }
 
-const getTooltipRow = (style: string, seriesName: string, value: number | null, color: string) => {
+const getTooltipRow = (
+  style: string,
+  seriesName: string,
+  value: string | null,
+  color: string,
+  unit: string
+) => {
   const styles = [
     'display: inline-block',
     'margin-right: 5px',
@@ -433,11 +313,11 @@ const getTooltipRow = (style: string, seriesName: string, value: number | null, 
     style,
   ];
 
-  return `<span style="${styles.join(';')}"></span>${seriesName}: ${value ?? ''}`;
+  return `<span style="${styles.join(';')}"></span>${seriesName}: ${value ?? ''} ${unit}`;
 };
 
 function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): Status {
-  if (deltaPercentage === 0 || deltaPercentage > 0) {
+  if (deltaPercentage === 0 || deltaPercentage < 0) {
     return {
       key: 'ON_TRACK',
       label: t('on-track'),
@@ -446,7 +326,7 @@ function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): Status 
     };
   }
 
-  if (deltaPercentage < -10) {
+  if (deltaPercentage > 10) {
     return {
       key: 'OFF_TRACK',
       label: t('off-track'),
@@ -464,7 +344,7 @@ function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): Status 
 }
 
 function getChartConfig(
-  mostRecentMeasuredEmissions: ProgressData,
+  measuredEmissionsData: ProgressData,
   t: TFunction,
   theme: Theme
 ): EChartsOption {
@@ -477,7 +357,7 @@ function getChartConfig(
       axisPointer: {
         type: 'shadow',
       },
-      formatter: (params) => {
+      formatter: (params: TopLevelFormatterParams) => {
         const firstParam = params[0];
         const label = firstParam.axisValue.split('\n')[0];
 
@@ -488,15 +368,23 @@ function getChartConfig(
         const colorBlocks = params
           .map((param) => {
             const style =
-              param.seriesName === 'Measured emissions'
-                ? getStripeGradient(param.color)
+              param.seriesName === t('observed-emissions')
+                ? getStripeGradient(param.color as string)
                 : `background-color: ${param.color};`;
+
+            const roundedValue =
+              typeof param.value === 'number'
+                ? param.value.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })
+                : null;
 
             return getTooltipRow(
               style,
               param.seriesName ?? '',
-              typeof param.value === 'number' ? param.value : null,
-              param.color ?? ''
+              roundedValue,
+              (param.color as string) ?? '',
+              measuredEmissionsData.unit
             );
           })
           .join('<br/>');
@@ -505,7 +393,7 @@ function getChartConfig(
       },
     },
     legend: {
-      data: ['Forecast emissions', 'Measured emissions'],
+      data: [t('expected-emissions'), t('observed-emissions')],
       top: '0',
       itemStyle: {
         color: '#111',
@@ -520,19 +408,18 @@ function getChartConfig(
     },
     xAxis: {
       type: 'value',
-      name: 'ktCO2e', // TODO: get unit from backend
+      name: measuredEmissionsData.unit,
     },
     yAxis: {
       type: 'category',
-      data: mostRecentMeasuredEmissions.measured.map((m, i) => {
-        const forecast = mostRecentMeasuredEmissions.forecast[i].value;
-        const measured = m.value;
-        const isOnTrack = measured <= forecast;
+      data: measuredEmissionsData.observed.map((observed, i) => {
+        const expected = measuredEmissionsData.expected[i];
+        const isOnTrack = observed.value <= expected.value;
         const status = isOnTrack
           ? `{statusOnTrack|${t('on-track')}}`
           : `{statusOffTrack|${t('off-track')}}`;
 
-        return `${m.label}\n${status}`;
+        return `${observed.label}\n${status}`;
       }),
       axisLabel: {
         formatter: '{value}',
@@ -557,24 +444,24 @@ function getChartConfig(
     },
     series: [
       {
-        name: 'Forecast emissions',
+        name: t('expected-emissions'),
         type: 'bar',
-        data: mostRecentMeasuredEmissions.forecast.map((f) => f.value),
+        data: measuredEmissionsData.expected.map((f) => f.value),
         itemStyle: {
           color: (params) => {
-            const forecast = mostRecentMeasuredEmissions.forecast[params.dataIndex];
-            return forecast.color;
+            const expected = measuredEmissionsData.expected[params.dataIndex];
+            return expected.color;
           },
         },
       },
       {
-        name: 'Measured emissions',
+        name: t('observed-emissions'),
         type: 'bar',
-        data: mostRecentMeasuredEmissions.measured.map((m) => m.value),
+        data: measuredEmissionsData.observed.map((m) => m.value),
         itemStyle: {
           color: (params) => {
-            const measured = mostRecentMeasuredEmissions.measured[params.dataIndex];
-            return measured.color;
+            const observed = measuredEmissionsData.observed[params.dataIndex];
+            return observed.color;
           },
           decal: {
             rotation: -Math.PI / 4,
@@ -589,7 +476,8 @@ function getChartConfig(
 }
 
 export const ProgressIndicator = ({
-  data = MOCK_DATA,
+  color,
+  metric,
   isModalOpen,
   onModalOpenChange,
   selectedYear,
@@ -598,32 +486,30 @@ export const ProgressIndicator = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const site = useSite();
 
-  const measuredYears = data
+  const progressData = useProgressData(metric, color);
+
+  const observedYears = progressData
     .sort((a, b) => b.year - a.year)
-    .filter((data) => data.measured.length > 0);
+    .filter((data) => data.observed.length > 0 && data.year !== site.minYear);
 
-  const mostRecentMeasuredEmissions = measuredYears[0];
-  const selectedEmissions = measuredYears.find((d) => d.year === selectedYear);
+  const latestProgressData = observedYears[0];
+  const selectedEmissions = observedYears.find((d) => d.year === selectedYear);
 
-  const { delta: mostRecentDelta } = getTotalMeasuredAndForecast(mostRecentMeasuredEmissions);
-  const selectedEmissionsWithTotals = selectedEmissions
-    ? getTotalMeasuredAndForecast(selectedEmissions)
-    : undefined;
-  const totalForecast = selectedEmissionsWithTotals?.totalForecast ?? null;
-  const totalMeasured = selectedEmissionsWithTotals?.totalMeasured ?? null;
+  const latestDeltaPercentage = getDeltaPercentage(latestProgressData);
+  const totalExpected = selectedEmissions?.totalExpected ?? null;
+  const totalObserved = selectedEmissions?.totalObserved ?? null;
 
-  const status = getStatus(mostRecentDelta, t, theme);
-  const chartConfig = selectedEmissionsWithTotals
-    ? getChartConfig(selectedEmissionsWithTotals, t, theme)
-    : undefined;
+  const status = getStatus(latestDeltaPercentage, t, theme);
+  const chartConfig = selectedEmissions ? getChartConfig(selectedEmissions, t, theme) : undefined;
 
   function handleOpenModal() {
     onModalOpenChange(true);
   }
 
   function toggleDropdown() {
-    setDropdownOpen(!dropdownOpen);
+    setDropdownOpen((isOpen) => !isOpen);
   }
 
   function handleYearSelect(year: number) {
@@ -634,13 +520,13 @@ export const ProgressIndicator = ({
     <>
       <StyledContainer>
         <StyledTitle>
-          {t('measured-emissions')} ({mostRecentMeasuredEmissions.year})
+          {t('observed-emissions')} ({latestProgressData.year})
         </StyledTitle>
 
-        {mostRecentDelta !== 0 && (
+        {latestDeltaPercentage !== 0 && (
           <StyledSubtitle>
-            {t(mostRecentDelta < 0 ? 'higher-than-forecast' : 'lower-than-forecast', {
-              percentage: Math.abs(mostRecentDelta),
+            {t(latestDeltaPercentage > 0 ? 'higher-than-expected' : 'lower-than-expected', {
+              percentage: Math.abs(latestDeltaPercentage),
             })}
           </StyledSubtitle>
         )}
@@ -652,7 +538,7 @@ export const ProgressIndicator = ({
             $color={status.color}
           >
             <StyledIndicator />
-            <span>{status.label}</span>
+            <StyledStatusText>{status.label}</StyledStatusText>
           </StyledStatusBadge>
         </div>
 
@@ -667,35 +553,36 @@ export const ProgressIndicator = ({
         centered
       >
         <ModalHeader toggle={() => onModalOpenChange(false)}>
-          {t('measured-emissions')} ({selectedEmissions?.year})
+          {t('observed-emissions')} ({selectedEmissions?.year})
         </ModalHeader>
         <ModalBody>
-          <StyledYearSelector>
-            <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-              <DropdownToggle caret>{selectedYear}</DropdownToggle>
-              <DropdownMenu>
-                {measuredYears.map(({ year }) => (
-                  <DropdownItem key={year} onClick={() => handleYearSelect(year)}>
-                    {year}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-          </StyledYearSelector>
-
+          {observedYears.length > 1 && (
+            <StyledYearSelector>
+              <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                <DropdownToggle caret>{selectedYear}</DropdownToggle>
+                <DropdownMenu>
+                  {observedYears.map(({ year }) => (
+                    <DropdownItem key={year} onClick={() => handleYearSelect(year)}>
+                      {year}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              </Dropdown>
+            </StyledYearSelector>
+          )}
           <StyledFlexContainer>
-            {totalForecast != null && (
+            {totalExpected != null && (
               <EmissionsCard
-                title={t('total-forecast-emissions', { year: selectedEmissions?.year })}
-                value={totalForecast}
-                unit={'ktCO2e'} // TODO: get unit from backend
+                title={t('expected-emissions-year', { year: selectedEmissions?.year })}
+                value={totalExpected}
+                unit={selectedEmissions?.unit ?? ''}
               />
             )}
-            {totalMeasured != null && (
+            {totalObserved != null && (
               <EmissionsCard
-                title={t('total-measured-emissions', { year: selectedEmissions?.year })}
-                value={totalMeasured}
-                unit={'ktCO2e'} // TODO: get unit from backend
+                title={t('observed-emissions-year', { year: selectedEmissions?.year })}
+                value={totalObserved}
+                unit={selectedEmissions?.unit ?? ''}
               />
             )}
           </StyledFlexContainer>

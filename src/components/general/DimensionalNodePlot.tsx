@@ -90,7 +90,7 @@ type BaselineForecast = { year: number; value: number };
 
 type PlotData = { x: number[]; y: number[] };
 
-function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal | null) {
+export function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal | null) {
   /**
    * By default, we group by the first dimension `metric` has, whatever it is.
    * @todo Is there a better way to select the default?
@@ -167,6 +167,7 @@ export default function DimensionalNodePlot({
   const site = useContext(SiteContext);
   const instance = useInstance();
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, site.scenarios);
+  const observedEmissionsLabel = t('observed-emissions');
 
   const metrics = useMemo(() => {
     const defaultMetric = new DimensionalMetric(metric);
@@ -514,10 +515,12 @@ export default function DimensionalNodePlot({
     }
 
     if (hasProgressTracking && metrics.progress && slicedDim) {
-      const lastHist = slice.historicalYears.length - 1;
       const progressScenario = getProgressTrackingScenario(site.scenarios);
       const progressSlice = metrics.progress.sliceBy(slicedDim.id, true, sliceConfig.categories);
-      const progressYears = progressScenario?.actualHistoricalYears;
+      const progressYears =
+        progressScenario?.actualHistoricalYears?.filter(
+          (year) => year !== instance.referenceYear
+        ) ?? [];
 
       const referenceYearIndex = slice.historicalYears.findIndex(
         (year) => year === instance.referenceYear
@@ -534,6 +537,7 @@ export default function DimensionalNodePlot({
           : progressSlice?.totalValues?.historicalValues ?? [];
 
       if (progressSlice.totalValues && progressYears?.length) {
+        const lastHist = slice.historicalYears.length - 1;
         const totalSumX = [site.minYear, ...historicalYears, ...progressSlice.forecastYears];
         const totalSumY = [
           slice.totalValues.historicalValues[lastHist],
@@ -541,17 +545,23 @@ export default function DimensionalNodePlot({
           ...progressSlice.totalValues.forecastValues,
         ];
 
-        // Filter out data for years that are not in the progress scenario
+        /**
+         * Filter out data for years that are not in the progress scenario.
+         * Include the reference year in order to draw a line from the total reference
+         * year emissions to the first observed year emissions.
+         */
         const { x: filteredX, y: filteredY } = totalSumX.reduce(
           (acc, x, index) =>
-            progressYears.includes(x) ? { x: [...acc.x, x], y: [...acc.y, totalSumY[index]] } : acc,
+            [instance.referenceYear, ...progressYears].includes(x)
+              ? { x: [...acc.x, x], y: [...acc.y, totalSumY[index]] }
+              : acc,
           { x: [] as number[], y: [] as number[] }
         );
 
         plotData.push({
           xaxis: 'x2',
           type: 'scatter',
-          name: t('measured-emissions'),
+          name: observedEmissionsLabel,
           mode: 'lines+markers',
           x: filteredX,
           y: filteredY,
@@ -560,7 +570,7 @@ export default function DimensionalNodePlot({
             width: 1,
           },
           ...formatHover(
-            t('measured-emissions'),
+            observedEmissionsLabel,
             theme.themeColors.black,
             unit,
             null,
@@ -586,12 +596,16 @@ export default function DimensionalNodePlot({
   const nrYears = usableEndYear - startYear;
 
   const handlePlotClick = (event: Plotly.PlotMouseEvent) => {
-    const measuredEmissionsDataPoint = event.points?.find(
-      (point) => point.data.name === 'Measured emissions'
+    const observedDataPoint = event.points?.find(
+      (point) => point.data.name === observedEmissionsLabel
     );
 
-    if (measuredEmissionsDataPoint?.x && typeof onClickMeasuredEmissions === 'function') {
-      const year = new Date(measuredEmissionsDataPoint.x).getFullYear();
+    if (
+      observedDataPoint?.x &&
+      observedDataPoint['marker.opacity'] !== 0 && // Ignore hidden data points
+      typeof onClickMeasuredEmissions === 'function'
+    ) {
+      const year = new Date(observedDataPoint.x).getFullYear();
 
       if (!isNaN(year)) {
         onClickMeasuredEmissions(year);

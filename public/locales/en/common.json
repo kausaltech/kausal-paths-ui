@@ -113,14 +113,15 @@
   "return-on-investment": "Return on investment",
   "megaEUR": "M €",
   "kiloSEK": "kSEK",
-  "higher-than-forecast": "{{percentage}}% higher than forecast",
-  "lower-than-forecast": "{{percentage}}% lower than forecast",
+  "higher-than-expected": "{{percentage}}% higher than expected",
+  "lower-than-expected": "{{percentage}}% lower than expected",
   "on-track": "On track",
   "off-track": "Off track",
   "deviating": "Deviating",
   "view-details": "View details",
-  "measured-emissions": "Measured emissions",
+  "expected-emissions": "Expected emissions",
+  "observed-emissions": "Observed emissions",
   "emissions-by-sector": "Emissions by sector ({{year}})",
-  "total-forecast-emissions": "Total forecast emissions ({{year}})",
-  "total-measured-emissions": "Measured emissions ({{year}})"
+  "expected-emissions-year": "Expected emissions ({{year}})",
+  "observed-emissions-year": "Observed emissions ({{year}})"
 }
