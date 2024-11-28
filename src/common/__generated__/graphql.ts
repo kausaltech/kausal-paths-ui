@@ -1554,6 +1554,34 @@ export type GetImpactOverviewsQuery = (
   & { __typename: 'Query' }
 );
 
+export type GetNodeVisualizationsQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+}>;
+
+
+export type GetNodeVisualizationsQuery = (
+  { node: (
+    { id: string, visualizations: Array<(
+      { label: string | null, children: Array<(
+        { label: string | null }
+        & { __typename: 'VisualizationGroup' }
+      ) | (
+        { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, dimensions: Array<(
+          { id: string, categories: Array<string> | null, flatten: boolean | null }
+          & { __typename: 'VisualizationNodeDimension' }
+        )> }
+        & { __typename: 'VisualizationNodeOutput' }
+      )> }
+      & { __typename: 'VisualizationGroup' }
+    ) | (
+      { label: string | null }
+      & { __typename: 'VisualizationNodeOutput' }
+    )> | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type OutcomeNodeFieldsFragment = (
   { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, metric: (
     { id: string | null, name: string | null, unit: (
@@ -1938,3 +1966,18 @@ export type GetInstanceContextQuery = (
   )> }
   & { __typename: 'Query' }
 );
+
+type VisualizationEntryFragment_VisualizationGroup_Fragment = (
+  { label: string | null }
+  & { __typename: 'VisualizationGroup' }
+);
+
+type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
+  { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, dimensions: Array<(
+    { id: string, categories: Array<string> | null, flatten: boolean | null }
+    & { __typename: 'VisualizationNodeDimension' }
+  )> }
+  & { __typename: 'VisualizationNodeOutput' }
+);
+
+export type VisualizationEntryFragmentFragment = VisualizationEntryFragment_VisualizationGroup_Fragment | VisualizationEntryFragment_VisualizationNodeOutput_Fragment;
