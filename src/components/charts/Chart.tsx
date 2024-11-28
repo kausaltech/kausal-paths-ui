@@ -12,6 +12,7 @@ import {
   DatasetComponent,
   TransformComponent,
   LegendComponent,
+  GraphicComponent,
 } from 'echarts/components';
 
 // Features like Universal Transition and Label Layout
@@ -39,6 +40,7 @@ echarts.use([
   LabelLayout,
   UniversalTransition,
   CanvasRenderer,
+  GraphicComponent,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`
@@ -49,15 +51,17 @@ type Props = {
   isLoading: boolean;
   data?: echarts.EChartsCoreOption;
   height?: string;
+  onZrClick?: (clickedDataIndex: number) => void;
 };
 
-export function Chart({ isLoading, data, height }: Props) {
+export function Chart({ isLoading, data, height, onZrClick }: Props) {
   const theme = useTheme();
   const chartRef = useRef<echarts.ECharts | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const chart = echarts.init(wrapperRef.current, getChartTheme(theme).theme);
+
     chartRef.current = chart;
 
     const throttledResize = throttle(() => chart.resize(), 1000, {
@@ -70,6 +74,11 @@ export function Chart({ isLoading, data, height }: Props) {
     return () => {
       throttledResize.flush();
       window.removeEventListener('resize', throttledResize);
+
+      if (typeof onZrClick === 'function') {
+        chart.getZr().off('click', onZrClick);
+      }
+
       chart.clear();
       chart.dispose();
     };
@@ -90,6 +99,30 @@ export function Chart({ isLoading, data, height }: Props) {
       chartRef.current.setOption(data);
     }
   }, [data]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    const chartZr = chart?.getZr();
+    const withClickHandler = typeof onZrClick === 'function';
+
+    function handleClick(params) {
+      if (chart && withClickHandler) {
+        const pointInPixel = [params.offsetX, params.offsetY];
+        const pointInGrid = chart.convertFromPixel('grid', pointInPixel);
+        const dataIndex = pointInGrid[1];
+
+        onZrClick(dataIndex);
+      }
+    }
+
+    if (chartZr && typeof onZrClick === 'function') {
+      chartZr.on('click', handleClick);
+
+      return () => {
+        chartZr.off('click', handleClick);
+      };
+    }
+  }, [onZrClick]);
 
   return <StyledChartWrapper ref={wrapperRef} $height={height} />;
 }

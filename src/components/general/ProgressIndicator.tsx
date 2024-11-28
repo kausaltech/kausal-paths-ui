@@ -27,6 +27,11 @@ import { activeGoalVar } from '@/common/cache';
 import { setUniqueColors } from '@/common/colors';
 import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 
+type DrillDownState = {
+  categoryId: string;
+  label: string;
+} | null;
+
 const StyledContainer = styled.div<{ $size?: string; $muted?: boolean }>`
   padding: 0;
   color: ${({ theme }) => theme.textColor.secondary};
@@ -405,43 +410,71 @@ function getChartConfig(
       bottom: '3%',
       top: '10%',
       containLabel: true,
+      tooltip: {
+        trigger: 'axis',
+      },
     },
     xAxis: {
       type: 'value',
       name: measuredEmissionsData.unit,
     },
-    yAxis: {
-      type: 'category',
-      data: measuredEmissionsData.observed.map((observed, i) => {
-        const expected = measuredEmissionsData.expected[i];
-        const isOnTrack = observed.value <= expected.value;
-        const status = isOnTrack
-          ? `{statusOnTrack|${t('on-track')}}`
-          : `{statusOffTrack|${t('off-track')}}`;
+    yAxis: [
+      {
+        type: 'category',
+        data: measuredEmissionsData.observed.map((observed, i) => {
+          const expected = measuredEmissionsData.expected[i];
+          const isOnTrack = observed.value <= expected.value;
+          const status = isOnTrack
+            ? `{statusOnTrack|${t('on-track')}}`
+            : `{statusOffTrack|${t('off-track')}}`;
 
-        return `${observed.label}\n${status}`;
-      }),
-      axisLabel: {
-        formatter: '{value}',
-        lineHeight: 18,
-        rich: {
-          statusOnTrack: {
-            fontSize: 10,
-            backgroundColor: theme.graphColors.green010,
-            borderRadius: 4,
-            padding: [2, 6],
-            color: theme.graphColors.green070,
-          },
-          statusOffTrack: {
-            fontSize: 10,
-            backgroundColor: theme.graphColors.red010,
-            borderRadius: 4,
-            padding: [2, 6],
-            color: theme.graphColors.red070,
+          return `${observed.label} {chevron|}\n${status}`;
+        }),
+        axisLabel: {
+          formatter: '{value}',
+          lineHeight: 18,
+          rich: {
+            statusOnTrack: {
+              fontSize: 10,
+              backgroundColor: theme.graphColors.green010,
+              borderRadius: 4,
+              padding: [2, 6],
+              color: theme.graphColors.green070,
+            },
+            statusOffTrack: {
+              fontSize: 10,
+              backgroundColor: theme.graphColors.red010,
+              borderRadius: 4,
+              padding: [2, 6],
+              color: theme.graphColors.red070,
+            },
+            chevron: {
+              backgroundColor: {
+                image:
+                  'data:image/svg+xml;base64,' +
+                  btoa(
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>'
+                  ),
+              },
+              width: 16,
+              height: 16,
+            },
           },
         },
+        triggerEvent: true,
       },
-    },
+      {
+        type: 'category',
+        data: measuredEmissionsData.expected.map(() => '›'),
+        axisLine: {
+          show: false,
+        },
+        // style text size bigger
+        axisTick: {
+          show: false,
+        },
+      },
+    ],
     series: [
       {
         name: t('expected-emissions'),
@@ -486,6 +519,7 @@ export const ProgressIndicator = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [drillDownState, setDrillDownState] = useState<DrillDownState>(null);
   const site = useSite();
 
   const progressData = useProgressData(metric, color);
@@ -502,7 +536,6 @@ export const ProgressIndicator = ({
   const totalObserved = selectedEmissions?.totalObserved ?? null;
 
   const status = getStatus(latestDeltaPercentage, t, theme);
-  const chartConfig = selectedEmissions ? getChartConfig(selectedEmissions, t, theme) : undefined;
 
   function handleOpenModal() {
     onModalOpenChange(true);
@@ -515,6 +548,16 @@ export const ProgressIndicator = ({
   function handleYearSelect(year: number) {
     onSelectedYearChange(year);
   }
+
+  function handleChartClick(dataIndex: number) {
+    const clickedCategory = selectedEmissions?.expected[dataIndex];
+
+    if (clickedCategory) {
+      setDrillDownState({ categoryId: clickedCategory.id, label: clickedCategory.label });
+    }
+  }
+
+  const chartConfig = selectedEmissions ? getChartConfig(selectedEmissions, t, theme) : undefined;
 
   return (
     <>
@@ -553,45 +596,73 @@ export const ProgressIndicator = ({
         centered
       >
         <ModalHeader toggle={() => onModalOpenChange(false)}>
-          {t('observed-emissions')} ({selectedEmissions?.year})
+          {drillDownState ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={() => setDrillDownState(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                ←
+              </button>
+              {drillDownState.label}
+            </div>
+          ) : (
+            `${t('observed-emissions')} (${selectedEmissions?.year})`
+          )}
         </ModalHeader>
         <ModalBody>
-          {observedYears.length > 1 && (
-            <StyledYearSelector>
-              <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-                <DropdownToggle caret>{selectedYear}</DropdownToggle>
-                <DropdownMenu>
-                  {observedYears.map(({ year }) => (
-                    <DropdownItem key={year} onClick={() => handleYearSelect(year)}>
-                      {year}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            </StyledYearSelector>
+          {drillDownState ? (
+            <div>
+              {/* Placeholder for drill-down view */}
+              <p>Detailed view for {drillDownState.label}</p>
+            </div>
+          ) : (
+            <>
+              {observedYears.length > 1 && (
+                <StyledYearSelector>
+                  <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                    <DropdownToggle caret>{selectedYear}</DropdownToggle>
+                    <DropdownMenu>
+                      {observedYears.map(({ year }) => (
+                        <DropdownItem key={year} onClick={() => handleYearSelect(year)}>
+                          {year}
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
+                </StyledYearSelector>
+              )}
+              <StyledFlexContainer>
+                {totalExpected != null && (
+                  <EmissionsCard
+                    title={t('expected-emissions-year', { year: selectedEmissions?.year })}
+                    value={totalExpected}
+                    unit={selectedEmissions?.unit ?? ''}
+                  />
+                )}
+                {totalObserved != null && (
+                  <EmissionsCard
+                    title={t('observed-emissions-year', { year: selectedEmissions?.year })}
+                    value={totalObserved}
+                    unit={selectedEmissions?.unit ?? ''}
+                  />
+                )}
+              </StyledFlexContainer>
+              <h5>{t('emissions-by-sector', { year: selectedEmissions?.year })}</h5>
+              <StyledCard>
+                <StyledChartWrapper>
+                  {chartConfig && (
+                    <Chart isLoading={false} data={chartConfig} onZrClick={handleChartClick} />
+                  )}
+                </StyledChartWrapper>
+              </StyledCard>
+            </>
           )}
-          <StyledFlexContainer>
-            {totalExpected != null && (
-              <EmissionsCard
-                title={t('expected-emissions-year', { year: selectedEmissions?.year })}
-                value={totalExpected}
-                unit={selectedEmissions?.unit ?? ''}
-              />
-            )}
-            {totalObserved != null && (
-              <EmissionsCard
-                title={t('observed-emissions-year', { year: selectedEmissions?.year })}
-                value={totalObserved}
-                unit={selectedEmissions?.unit ?? ''}
-              />
-            )}
-          </StyledFlexContainer>
-          <h5>{t('emissions-by-sector', { year: selectedEmissions?.year })}</h5>
-          <StyledCard>
-            <StyledChartWrapper>
-              {chartConfig && <Chart isLoading={false} data={chartConfig} />}
-            </StyledChartWrapper>
-          </StyledCard>
         </ModalBody>
       </Modal>
     </>
