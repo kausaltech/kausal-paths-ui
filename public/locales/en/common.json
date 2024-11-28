@@ -121,7 +121,5 @@
   "view-details": "View details",
   "expected-emissions": "Expected emissions",
   "observed-emissions": "Observed emissions",
-  "emissions-by-sector": "Emissions by sector ({{year}})",
-  "expected-emissions-year": "Expected emissions ({{year}})",
-  "observed-emissions-year": "Observed emissions ({{year}})"
+  "emissions-by-sector": "Emissions by sector ({{year}})"
 }

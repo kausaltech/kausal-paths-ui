@@ -52,9 +52,10 @@ type Props = {
   data?: echarts.EChartsCoreOption;
   height?: string;
   onZrClick?: (clickedDataIndex: number) => void;
+  className?: string;
 };
 
-export function Chart({ isLoading, data, height, onZrClick }: Props) {
+export function Chart({ isLoading, data, height, onZrClick, className }: Props) {
   const theme = useTheme();
   const chartRef = useRef<echarts.ECharts | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -74,11 +75,6 @@ export function Chart({ isLoading, data, height, onZrClick }: Props) {
     return () => {
       throttledResize.flush();
       window.removeEventListener('resize', throttledResize);
-
-      if (typeof onZrClick === 'function') {
-        chart.getZr().off('click', onZrClick);
-      }
-
       chart.clear();
       chart.dispose();
     };
@@ -124,5 +120,5 @@ export function Chart({ isLoading, data, height, onZrClick }: Props) {
     }
   }, [onZrClick]);
 
-  return <StyledChartWrapper ref={wrapperRef} $height={height} />;
+  return <StyledChartWrapper ref={wrapperRef} className={className} $height={height} />;
 }
