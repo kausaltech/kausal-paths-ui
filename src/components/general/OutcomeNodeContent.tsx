@@ -15,7 +15,7 @@ import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import { useInstance } from 'common/instance';
 import DimensionalNodePlot from './DimensionalNodePlot';
-import { ProgressIndicator } from './ProgressIndicator';
+import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
 import { useSite } from '@/context/site';
 
