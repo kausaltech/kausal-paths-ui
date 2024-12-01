@@ -23,7 +23,7 @@ import { StyledCard } from './StyledCard';
 import { StyledIndicator, StyledStatusBadge } from './StyledStatusBadge';
 import { getStatus } from './utils';
 import { EmissionsCard } from './EmissionsCard';
-import { NodeDriversVisualization } from './NodeDriversVisualization';
+import { ProgressDriversWrapper } from './ProgressDriversWrapper';
 
 type DrillDownState = {
   categoryId: string;
@@ -474,7 +474,7 @@ export const ProgressIndicator = ({
                     <StyledSpan>Back to emissions by sector</StyledSpan>
                   </StyledBackButton>
 
-                  <NodeDriversVisualization nodeId={drillDownState.categoryId} />
+                  <ProgressDriversWrapper nodeId={drillDownState.categoryId} />
                 </div>
               ) : (
                 <>

@@ -1,8 +1,8 @@
 // Import the echarts core module, which provides the necessary interfaces for using echarts.
 import * as echarts from 'echarts/core';
 
-// Import bar charts, all suffixed with Chart
-import { BarChart, CustomChart } from 'echarts/charts';
+// Import used charts
+import { BarChart, CustomChart, LineChart } from 'echarts/charts';
 
 // Import the tooltip, title, rectangular coordinate system, dataset and transform components
 import {
@@ -41,6 +41,7 @@ echarts.use([
   UniversalTransition,
   CanvasRenderer,
   GraphicComponent,
+  LineChart,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`

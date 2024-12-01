@@ -180,6 +180,7 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
 `;
 
 export class DimensionalMetric {
+  static ALL_SCENARIOS = 'ALL_SCENARIOS';
   private readonly data: Metric;
   private readonly rows: MetricRow[];
   valuesByDim: Map<string, DimValues>;
@@ -195,7 +196,7 @@ export class DimensionalMetric {
    * @param scenarioId - The ID of the scenario to filter by. Defaults to 'default'.
    * @returns The filtered metric data.
    */
-  private filterMultipleScenarios(data: Metric, scenarioId: string = 'default') {
+  private filterMultipleScenarios(data: Metric, scenarioId: string) {
     const scenarioDim = data.dimensions.find((dim) => this.isScenarioDim(dim));
     const filteredDimensions = data.dimensions.filter((dim) => !this.isScenarioDim(dim));
 
@@ -214,8 +215,12 @@ export class DimensionalMetric {
     return data;
   }
 
-  constructor(data: Metric, scenarioId?: string) {
-    this.data = this.filterMultipleScenarios(data, scenarioId);
+  constructor(data: Metric, scenarioId: string = 'default') {
+    this.data =
+      scenarioId === DimensionalMetric.ALL_SCENARIOS
+        ? data
+        : this.filterMultipleScenarios(data, scenarioId);
+
     this.dimensions = this.data.dimensions.map((dimIn) => {
       const groups = dimIn.groups.map((grpIn) => ({
         ...grpIn,
@@ -232,10 +237,10 @@ export class DimensionalMetric {
   }
 
   private filterValuesByScenario(
-    values: Array<number | null>,
+    values: Array<number>,
     scenarioIndex: number,
     scenarioDim?: MetricDimensionInput
-  ): Array<number | null> {
+  ): Array<number> {
     if (!scenarioDim) return values;
 
     const valuesPerScenario = values.length / scenarioDim.categories.length;

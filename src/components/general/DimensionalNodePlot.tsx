@@ -137,7 +137,6 @@ const getRangeFromSlice = (slice: MetricSlice) =>
 
 type DimensionalNodePlotProps = {
   withReferenceYear?: boolean;
-  node: { id: string };
   baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   startYear: number;

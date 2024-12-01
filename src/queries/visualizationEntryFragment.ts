@@ -1,7 +1,5 @@
 import { gql } from '@apollo/client';
-
-// import { DimensionalMetric } from 'data/metric';
-// ${DimensionalMetric.fragment}
+import { DimensionalMetric } from 'data/metric';
 
 const visualizationEntryFragment = gql`
   fragment VisualizationEntryFragment on VisualizationEntry {
@@ -16,8 +14,13 @@ const visualizationEntryFragment = gql`
         flatten
       }
       desiredOutcome
+      metricDim {
+        ...DimensionalMetric
+      }
     }
   }
+
+  ${DimensionalMetric.fragment}
 `;
 
 export default visualizationEntryFragment;

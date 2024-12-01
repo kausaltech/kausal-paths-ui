@@ -2,10 +2,12 @@ import { useQuery } from '@apollo/client';
 import { Fade, Spinner } from 'reactstrap';
 import GraphQLError from '@/components/common/GraphQLError';
 import { GET_NODE_VISUALIZATIONS } from '@/queries/getNodeVisualizations';
-import DimensionalNodePlot from '../DimensionalNodePlot';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import type { GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { StyledCard } from './StyledCard';
+import { useSite } from '@/context/site';
+import { getProgressTrackingScenario } from '@/utils/progress-tracking';
+import { ProgressDriversVisualization } from './ProgressDriversVisualization';
 
 const VisualizationContainer = styled.div`
   display: grid;
@@ -33,7 +35,13 @@ interface Props {
   nodeId: string;
 }
 
-export function NodeDriversVisualization({ nodeId }: Props) {
+export function ProgressDriversWrapper({ nodeId }: Props) {
+  const site = useSite();
+  const theme = useTheme();
+  const progressTrackingScenario = getProgressTrackingScenario(site.scenarios);
+  const observedYears = progressTrackingScenario?.actualHistoricalYears ?? [];
+  const yearRange = [observedYears[0], observedYears[observedYears.length - 1]];
+
   const { loading, error, data } = useQuery<GetNodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
     variables: { nodeId },
   });
@@ -50,9 +58,11 @@ export function NodeDriversVisualization({ nodeId }: Props) {
     return <GraphQLError error={error} />;
   }
 
-  if (!data?.node?.visualizations?.length) {
+  if (!data?.node?.visualizations?.length || !observedYears.length) {
     return null;
   }
+
+  console.log('🌝D🌝A🌝T🌝A🌝', data);
 
   return (
     <Fade>
@@ -66,9 +76,11 @@ export function NodeDriversVisualization({ nodeId }: Props) {
                 viz.children?.map((child, ii) => (
                   <div key={ii}>
                     {child.label && <StyledChartTitle>{child.label}</StyledChartTitle>}
-                    {child.__typename === 'VisualizationNodeOutput' && (
-                      <pre>{JSON.stringify(child, null, 2)}</pre>
-                      // <DimensionalNodePlot metric={child} withControls={true} withTools={true} />
+                    {child.__typename === 'VisualizationNodeOutput' && child.metricDim && (
+                      <ProgressDriversVisualization
+                        metric={child.metricDim}
+                        desiredOutcome={child.desiredOutcome}
+                      />
                     )}
                   </div>
                 ))}
