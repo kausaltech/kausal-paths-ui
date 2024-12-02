@@ -81,7 +81,7 @@ const StyledSubtitle = styled.p`
 
 const StyledBackButton = styled.button`
   color: ${({ theme }) => theme.graphColors.blue050};
-  font-size: ${({ theme }) => theme.fontSizeSm};
+  font-size: ${({ theme }) => theme.fontSizeBase};
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spaces.s025};
@@ -89,6 +89,16 @@ const StyledBackButton = styled.button`
   border: none;
   padding: 0px;
   cursor: pointer;
+  margin-bottom: ${({ theme }) => theme.spaces.s100};
+  transition:
+    color 0.2s,
+    border-bottom-color 0.2s;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: ${({ theme }) => theme.graphColors.blue070};
+    border-bottom-color: ${({ theme }) => theme.graphColors.blue050};
+  }
 `;
 
 const StyledChart = styled(Chart)`
@@ -104,6 +114,7 @@ export type ProgressIndicatorProps = {
   onModalOpenChange: (isOpen: boolean) => void;
   selectedYear: number;
   onSelectedYearChange: (year: number) => void;
+  showViewDetails?: boolean;
 };
 
 const StyledChartWrapper = styled.div`
@@ -264,7 +275,14 @@ function getChartConfig(
       {
         type: 'category',
         data: measuredEmissionsData.observed.map((observed, i) => {
-          const expected = measuredEmissionsData.expected[i];
+          const expected = measuredEmissionsData.expected.find(
+            (expected) => expected.id === observed.id
+          );
+
+          if (!expected) {
+            return observed.label;
+          }
+
           const isOnTrack = observed.value <= expected.value;
           const status = isOnTrack
             ? `{statusOnTrack|${t('on-track')}}`
@@ -360,6 +378,7 @@ export const ProgressIndicator = ({
   onModalOpenChange,
   selectedYear,
   onSelectedYearChange,
+  showViewDetails = true,
 }: ProgressIndicatorProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -447,7 +466,9 @@ export const ProgressIndicator = ({
           </StyledStatusBadgeButton>
         </div>
 
-        <StyledViewDetails onClick={handleOpenModal}>{t('view-details')}</StyledViewDetails>
+        {showViewDetails && (
+          <StyledViewDetails onClick={handleOpenModal}>{t('view-details')}</StyledViewDetails>
+        )}
       </StyledContainer>
 
       <StyledModal
@@ -470,7 +491,7 @@ export const ProgressIndicator = ({
               {drillDownState ? (
                 <div>
                   <StyledBackButton onClick={() => setDrillDownState(null)}>
-                    <Icon width="20px" height="20px" name="arrowLeft" />
+                    <Icon width="24px" height="24px" name="arrowLeft" />
                     <StyledSpan>Back to emissions by sector</StyledSpan>
                   </StyledBackButton>
 
@@ -518,7 +539,7 @@ export const ProgressIndicator = ({
                         <StyledChart
                           isLoading={false}
                           data={chartConfig}
-                          onZrClick={handleChartClick}
+                          onZrClick={showViewDetails ? handleChartClick : undefined}
                         />
                       )}
                     </StyledChartWrapper>

@@ -167,6 +167,8 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
     unit {
       htmlShort
       short
+      htmlLong
+      long
     }
     stackable
     normalizedBy {

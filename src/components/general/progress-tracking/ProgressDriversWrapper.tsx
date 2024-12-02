@@ -1,27 +1,31 @@
-import { useQuery } from '@apollo/client';
 import { Fade, Spinner } from 'reactstrap';
 import GraphQLError from '@/components/common/GraphQLError';
 import { GET_NODE_VISUALIZATIONS } from '@/queries/getNodeVisualizations';
-import styled, { useTheme } from 'styled-components';
-import type { GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
+import styled from 'styled-components';
+import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { StyledCard } from './StyledCard';
+import { useQuery } from '@apollo/client';
 import { useSite } from '@/context/site';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 import { ProgressDriversVisualization } from './ProgressDriversVisualization';
+import { useTranslation } from '@/common/i18n';
 
 const VisualizationContainer = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spaces.s200};
+  gap: ${({ theme }) => theme.spaces.s100};
+`;
+
+const StyledDriversTitle = styled.h2`
+  font-size: ${({ theme }) => theme.fontSizeMd};
+  margin-top: ${({ theme }) => theme.spaces.s100};
+  margin-bottom: 0;
+  color: ${({ theme }) => theme.textColor.primary};
 `;
 
 const StyledGroupTitle = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizeMd};
-  margin-bottom: ${({ theme }) => theme.spaces.s050};
-`;
-
-const StyledChartTitle = styled.h4`
   font-size: ${({ theme }) => theme.fontSizeBase};
-  margin-bottom: ${({ theme }) => theme.spaces.s050};
+  margin-bottom: ${({ theme }) => theme.spaces.s100};
+  color: ${({ theme }) => theme.textColor.primary};
 `;
 
 const StyledSpinnerContainer = styled.div`
@@ -31,19 +35,22 @@ const StyledSpinnerContainer = styled.div`
   padding: ${({ theme }) => theme.spaces.s400};
 `;
 
+const StyledChartContainer = styled.div`
+  margin-bottom: ${({ theme }) => theme.spaces.s200};
+`;
+
 interface Props {
   nodeId: string;
 }
 
 export function ProgressDriversWrapper({ nodeId }: Props) {
   const site = useSite();
-  const theme = useTheme();
+  const { t } = useTranslation();
   const progressTrackingScenario = getProgressTrackingScenario(site.scenarios);
   const observedYears = progressTrackingScenario?.actualHistoricalYears ?? [];
-  const yearRange = [observedYears[0], observedYears[observedYears.length - 1]];
 
   const { loading, error, data } = useQuery<GetNodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
-    variables: { nodeId },
+    variables: { nodeId, scenarios: ['default', 'progress_tracking'] },
   });
 
   if (loading) {
@@ -58,35 +65,60 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
     return <GraphQLError error={error} />;
   }
 
-  if (!data?.node?.visualizations?.length || !observedYears.length) {
+  const metricDim = data?.node?.metricDim;
+  const visualizations = data?.node?.visualizations;
+
+  if ((!metricDim && !visualizations?.length) || !observedYears.length) {
     return null;
   }
-
-  console.log('🌝D🌝A🌝T🌝A🌝', data);
 
   return (
     <Fade>
       <VisualizationContainer>
-        {data.node.visualizations.map((viz, i) => (
-          <div key={i}>
-            {viz.label && <StyledGroupTitle>{viz.label}</StyledGroupTitle>}
+        {!!metricDim && (
+          <StyledCard>
+            <ProgressDriversVisualization
+              title={`${metricDim.name} (${metricDim.unit.short})`}
+              metric={metricDim}
+              desiredOutcome={DesiredOutcome.Decreasing}
+            />
+          </StyledCard>
+        )}
 
-            <StyledCard>
-              {viz.__typename === 'VisualizationGroup' &&
-                viz.children?.map((child, ii) => (
-                  <div key={ii}>
-                    {child.label && <StyledChartTitle>{child.label}</StyledChartTitle>}
-                    {child.__typename === 'VisualizationNodeOutput' && child.metricDim && (
-                      <ProgressDriversVisualization
-                        metric={child.metricDim}
-                        desiredOutcome={child.desiredOutcome}
-                      />
-                    )}
-                  </div>
-                ))}
-            </StyledCard>
-          </div>
-        ))}
+        {!!visualizations && (
+          <>
+            <StyledDriversTitle>{t('emission-drivers')}</StyledDriversTitle>
+
+            {visualizations.map((viz, i) => (
+              <StyledCard key={i}>
+                {viz.label && <StyledGroupTitle>{viz.label}</StyledGroupTitle>}
+                {viz.__typename === 'VisualizationGroup' &&
+                  viz.children?.map(
+                    (child, ii) =>
+                      child.__typename === 'VisualizationNodeOutput' &&
+                      child.metricDim && (
+                        <StyledChartContainer key={ii}>
+                          <ProgressDriversVisualization
+                            title={
+                              child.label
+                                ? `${child.label} ${
+                                    child.metricDim.unit.short
+                                      ? /* TODO: Remove this translation when the backend label is updated */
+                                        `(${t(child.metricDim.unit.short as any)})`
+                                      : ''
+                                  }`
+                                : undefined
+                            }
+                            metric={child.metricDim}
+                            desiredOutcome={child.desiredOutcome}
+                          />
+                        </StyledChartContainer>
+                      )
+                  )}
+              </StyledCard>
+            ))}
+          </>
+        )}
       </VisualizationContainer>
     </Fade>
   );

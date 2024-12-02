@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { DesiredOutcome, type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { DimensionalMetric } from 'data/metric';
 import { Chart } from '@/components/charts/Chart';
-import { useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { activeGoalVar } from 'common/cache';
 import { getDefaultSliceConfig } from '../DimensionalNodePlot';
@@ -41,9 +41,17 @@ const getPositiveAreaStyle = (theme: Theme) => ({
   color: theme.graphColors.green010,
 });
 
+const StyledChartTitle = styled.h4`
+  font-size: ${({ theme }) => theme.fontSizeBase};
+  font-weight: ${({ theme }) => theme.fontWeightBase};
+  margin-bottom: ${({ theme }) => theme.spaces.s050};
+  color: ${({ theme }) => theme.textColor.secondary};
+`;
+
 type Props = {
   metric: DimensionalNodeMetricFragment['metricDim'];
   desiredOutcome: DesiredOutcome;
+  title?: string;
 };
 
 /**
@@ -90,7 +98,7 @@ function interpolateProgressValues(progressData: (number | null)[]): (number | n
   return result;
 }
 
-export function ProgressDriversVisualization({ metric, desiredOutcome }: Props) {
+export function ProgressDriversVisualization({ metric, desiredOutcome, title }: Props) {
   const site = useSite();
   const theme = useTheme();
   const activeGoal = useReactiveVar(activeGoalVar);
@@ -231,9 +239,10 @@ export function ProgressDriversVisualization({ metric, desiredOutcome }: Props) 
       legend: {
         bottom: 0,
         left: 'center',
+        selectedMode: false,
       },
       grid: {
-        left: '5%',
+        left: '2%',
         right: '5%',
         top: '5%',
         bottom: '15%',
@@ -242,12 +251,15 @@ export function ProgressDriversVisualization({ metric, desiredOutcome }: Props) 
       xAxis: {
         type: 'category',
         data: years,
-        boundaryGap: false,
+        boundaryGap: true,
+        axisTick: {
+          show: false,
+        },
       },
       yAxis: {
         type: 'value',
         axisLabel: {
-          formatter: `{value} ${metric.unit.short}`,
+          formatter: metric.unit.short.length > 2 ? '{value}' : `{value} ${metric.unit.short}`,
         },
       },
       series: [
@@ -301,7 +313,16 @@ export function ProgressDriversVisualization({ metric, desiredOutcome }: Props) 
     };
 
     return option;
-  }, [metric, theme, activeGoal, site.minYear, site.scenarios]);
+  }, [metric, theme, activeGoal, site.minYear, site.scenarios, desiredOutcome]);
 
-  return <Chart isLoading={!chartData} data={chartData} height="300px" />;
+  if (!chartData) {
+    return null;
+  }
+
+  return (
+    <>
+      <StyledChartTitle>{title}</StyledChartTitle>
+      <Chart isLoading={false} data={chartData} height="220px" />
+    </>
+  );
 }
