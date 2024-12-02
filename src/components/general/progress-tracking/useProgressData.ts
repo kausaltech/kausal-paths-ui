@@ -119,12 +119,23 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
             ...(progressSlice.totalValues?.historicalValues ?? []),
             ...(progressSlice.totalValues?.forecastValues ?? []),
           ][yearIndex] || 0,
-        observed: progressSlice.categoryValues.map((cv) => ({
-          id: cv.category.originalId!,
-          color: cv.color || '',
-          label: cv.category.label,
-          value: [...cv.historicalValues, ...cv.forecastValues][progressIndex] || 0,
-        })),
+        observed: defaultSlice.categoryValues.map((cv) => {
+          const matchingProgressCategory = progressSlice.categoryValues.find(
+            ({ category }) => category.originalId === cv.category.originalId
+          );
+
+          return {
+            id: cv.category.originalId!,
+            color: cv.color || '',
+            label: cv.category.label,
+            value: matchingProgressCategory
+              ? [
+                  ...matchingProgressCategory.historicalValues,
+                  ...matchingProgressCategory.forecastValues,
+                ][progressIndex] || 0
+              : 0,
+          };
+        }),
       };
     });
   }, [metric, site.scenarios, activeGoal, defaultColor]);
