@@ -111,6 +111,7 @@ const CardSetSummary = styled.div`
 `;
 
 type OutcomeNodeContentProps = {
+  isRootNode: boolean;
   node: OutcomeNodeFieldsFragment;
   subNodes: OutcomeNodeFieldsFragment[];
   color?: string | null;
@@ -121,6 +122,7 @@ type OutcomeNodeContentProps = {
 };
 
 const OutcomeNodeContent = ({
+  isRootNode,
   node,
   subNodes,
   color,
@@ -229,6 +231,7 @@ const OutcomeNodeContent = ({
               onModalOpenChange={setProgressModalOpen}
               selectedYear={selectedProgressYear}
               onSelectedYearChange={setSelectedProgressYear}
+              showViewDetails={isRootNode}
             />
           )}
           {nodesTotal && (

@@ -190,6 +190,7 @@ type OutcomeCardSetProps = {
   activeNodeId: string | undefined;
   setLastActiveNodeId: (s: string) => void;
   subNodesTitle: string;
+  isRootNode: boolean;
   refetching: boolean;
 };
 
@@ -203,6 +204,7 @@ const OutcomeCardSet = ({
   activeNodeId,
   setLastActiveNodeId,
   subNodesTitle,
+  isRootNode,
   refetching,
 }: OutcomeCardSetProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
@@ -278,6 +280,7 @@ const OutcomeCardSet = ({
       >
         <ContentArea>
           <OutcomeNodeContent
+            isRootNode={isRootNode}
             node={rootNode}
             subNodes={cardNodes}
             color={rootNode.color || parentColor}

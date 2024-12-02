@@ -403,7 +403,7 @@ export type DimensionalMetricFragment = (
     )> }
     & { __typename: 'DimensionalMetricGoalEntry' }
   )>, unit: (
-    { htmlShort: string, short: string }
+    { htmlShort: string, short: string, htmlLong: string, long: string }
     & { __typename: 'SBUnit' }
   ), normalizedBy: (
     { id: string, name: string }
@@ -544,7 +544,7 @@ export type GetNodePageQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string }
+        { htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'SBUnit' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -575,7 +575,7 @@ export type DimensionalNodeMetricFragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string }
+      { htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -655,7 +655,7 @@ export type GetActionContentQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string }
+          { htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -751,7 +751,7 @@ export type GetActionContentQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string }
+          { htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -872,7 +872,7 @@ export type GetActionContentQuery = (
             )> }
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
-            { htmlShort: string, short: string }
+            { htmlShort: string, short: string, htmlLong: string, long: string }
             & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
@@ -968,7 +968,7 @@ export type GetActionContentQuery = (
             )> }
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
-            { htmlShort: string, short: string }
+            { htmlShort: string, short: string, htmlLong: string, long: string }
             & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
@@ -1086,7 +1086,7 @@ export type GetActionContentQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string }
+        { htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'SBUnit' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -1189,7 +1189,7 @@ type CausalGridNode_ActionNode_Fragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string }
+      { htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -1287,7 +1287,7 @@ type CausalGridNode_Node_Fragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string }
+      { htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -1561,7 +1561,31 @@ export type GetNodeVisualizationsQueryVariables = Exact<{
 
 export type GetNodeVisualizationsQuery = (
   { node: (
-    { id: string, visualizations: Array<(
+    { id: string, metricDim: (
+      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
+          { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+          & { __typename: 'MetricDimensionCategoryType' }
+        )>, groups: Array<(
+          { id: string, originalId: string, label: string, color: string | null, order: number | null }
+          & { __typename: 'MetricDimensionCategoryGroupType' }
+        )> }
+        & { __typename: 'MetricDimensionType' }
+      )>, goals: Array<(
+        { categories: Array<string>, groups: Array<string>, values: Array<(
+          { year: number, value: number, isInterpolated: boolean }
+          & { __typename: 'MetricYearlyGoalType' }
+        )> }
+        & { __typename: 'DimensionalMetricGoalEntry' }
+      )>, unit: (
+        { htmlShort: string, short: string, htmlLong: string, long: string }
+        & { __typename: 'SBUnit' }
+      ), normalizedBy: (
+        { id: string, name: string }
+        & { __typename: 'NormalizerNodeType' }
+      ) | null }
+      & { __typename: 'DimensionalMetricType' }
+    ) | null, visualizations: Array<(
       { label: string | null, children: Array<(
         { label: string | null }
         & { __typename: 'VisualizationGroup' }
@@ -1586,7 +1610,7 @@ export type GetNodeVisualizationsQuery = (
             )> }
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
-            { htmlShort: string, short: string }
+            { htmlShort: string, short: string, htmlLong: string, long: string }
             & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
@@ -1669,7 +1693,7 @@ export type OutcomeNodeFieldsFragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string }
+      { htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -1762,7 +1786,7 @@ export type GetPageQuery = (
             )> }
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
-            { htmlShort: string, short: string }
+            { htmlShort: string, short: string, htmlLong: string, long: string }
             & { __typename: 'SBUnit' }
           ), normalizedBy: (
             { id: string, name: string }
@@ -1833,7 +1857,7 @@ export type GetPageQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string }
+          { htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'SBUnit' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -2017,7 +2041,7 @@ type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string }
+      { htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'SBUnit' }
     ), normalizedBy: (
       { id: string, name: string }

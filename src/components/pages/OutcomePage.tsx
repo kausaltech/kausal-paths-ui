@@ -116,6 +116,7 @@ export default function OutcomePage(props: OutcomePageProps) {
               }
               nodeMap={allNodes}
               rootNode={node}
+              isRootNode={node.id === outcomeNode.id}
               startYear={yearRange[0]}
               endYear={yearRange[1]}
               activeScenario={activeScenario?.name}
