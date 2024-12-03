@@ -137,12 +137,11 @@ export default function NodePage() {
   const { t } = useTranslation();
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
-  const scenarios = ['default', 'progress-tracking'];
 
   const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
-      scenarios,
+      scenarios: null,
     },
   });
 
