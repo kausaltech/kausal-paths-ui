@@ -15,6 +15,9 @@ import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
 import ScenarioBadge from 'components/common/ScenarioBadge';
 import { useInstance } from 'common/instance';
 import DimensionalNodePlot from './DimensionalNodePlot';
+import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
+import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
+import { useSite } from '@/context/site';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
@@ -108,6 +111,7 @@ const CardSetSummary = styled.div`
 `;
 
 type OutcomeNodeContentProps = {
+  isRootNode: boolean;
   node: OutcomeNodeFieldsFragment;
   subNodes: OutcomeNodeFieldsFragment[];
   color?: string | null;
@@ -118,6 +122,7 @@ type OutcomeNodeContentProps = {
 };
 
 const OutcomeNodeContent = ({
+  isRootNode,
   node,
   subNodes,
   color,
@@ -127,8 +132,17 @@ const OutcomeNodeContent = ({
   refetching,
 }: OutcomeNodeContentProps) => {
   const { t } = useTranslation();
-  const [activeTabId, setActiveTabId] = useState('graph');
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
   const instance = useInstance();
+  const site = useSite();
+
+  const [selectedProgressYear, setSelectedProgressYear] = useState<number | null>(() =>
+    getLatestProgressYear(site)
+  );
+  const showProgressTrackingStatus =
+    node.metricDim && hasProgressTracking(node.metricDim, site.scenarios, site.minYear);
+
+  const [activeTabId, setActiveTabId] = useState('graph');
   const showDistribution = instance.id === 'zuerich' && subNodes.length > 1;
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
@@ -141,12 +155,18 @@ const OutcomeNodeContent = ({
   const nodeName = node.shortName || node.name;
   const showNodeLinks = !instance.features?.hideNodeDetails;
   const maximumFractionDigits = instance.features?.maximumFractionDigits ?? undefined;
+
+  function onClickMeasuredEmissions(year: number) {
+    setSelectedProgressYear(year);
+    setProgressModalOpen(true);
+  }
+
   const outcomeGraph = useMemo(
     () =>
       node.metricDim ? (
         <DimensionalNodePlot
           node={node}
-          metric={node.metricDim!}
+          metric={node.metricDim}
           startYear={startYear}
           endYear={endYear}
           color={color}
@@ -154,6 +174,7 @@ const OutcomeNodeContent = ({
           baselineForecast={node.metric?.baselineForecastValues ?? undefined}
           withReferenceYear
           withTools={false}
+          onClickMeasuredEmissions={onClickMeasuredEmissions}
         />
       ) : (
         <h5>
@@ -202,6 +223,17 @@ const OutcomeNodeContent = ({
           </CardSetDescription>
         </div>
         <CardSetSummary>
+          {showProgressTrackingStatus && selectedProgressYear && node.metricDim && (
+            <ProgressIndicator
+              color={node.color ?? undefined}
+              metric={node.metricDim}
+              isModalOpen={progressModalOpen}
+              onModalOpenChange={setProgressModalOpen}
+              selectedYear={selectedProgressYear}
+              onSelectedYearChange={setSelectedProgressYear}
+              showViewDetails={isRootNode}
+            />
+          )}
           {nodesTotal && (
             <HighlightValue
               className="figure"

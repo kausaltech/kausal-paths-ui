@@ -1,8 +1,8 @@
 // Import the echarts core module, which provides the necessary interfaces for using echarts.
 import * as echarts from 'echarts/core';
 
-// Import bar charts, all suffixed with Chart
-import { BarChart, CustomChart } from 'echarts/charts';
+// Import used charts
+import { BarChart, CustomChart, LineChart } from 'echarts/charts';
 
 // Import the tooltip, title, rectangular coordinate system, dataset and transform components
 import {
@@ -12,6 +12,7 @@ import {
   DatasetComponent,
   TransformComponent,
   LegendComponent,
+  GraphicComponent,
 } from 'echarts/components';
 
 // Features like Universal Transition and Label Layout
@@ -39,6 +40,8 @@ echarts.use([
   LabelLayout,
   UniversalTransition,
   CanvasRenderer,
+  GraphicComponent,
+  LineChart,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`
@@ -49,15 +52,18 @@ type Props = {
   isLoading: boolean;
   data?: echarts.EChartsCoreOption;
   height?: string;
+  onZrClick?: (clickedDataIndex: number) => void;
+  className?: string;
 };
 
-export function Chart({ isLoading, data, height }: Props) {
+export function Chart({ isLoading, data, height, onZrClick, className }: Props) {
   const theme = useTheme();
   const chartRef = useRef<echarts.ECharts | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const chart = echarts.init(wrapperRef.current, getChartTheme(theme).theme);
+
     chartRef.current = chart;
 
     const throttledResize = throttle(() => chart.resize(), 1000, {
@@ -91,5 +97,29 @@ export function Chart({ isLoading, data, height }: Props) {
     }
   }, [data]);
 
-  return <StyledChartWrapper ref={wrapperRef} $height={height} />;
+  useEffect(() => {
+    const chart = chartRef.current;
+    const chartZr = chart?.getZr();
+    const withClickHandler = typeof onZrClick === 'function';
+
+    function handleClick(params) {
+      if (chart && withClickHandler) {
+        const pointInPixel = [params.offsetX, params.offsetY];
+        const pointInGrid = chart.convertFromPixel('grid', pointInPixel);
+        const dataIndex = pointInGrid[1];
+
+        onZrClick(dataIndex);
+      }
+    }
+
+    if (chartZr && typeof onZrClick === 'function') {
+      chartZr.on('click', handleClick);
+
+      return () => {
+        chartZr.off('click', handleClick);
+      };
+    }
+  }, [onZrClick]);
+
+  return <StyledChartWrapper ref={wrapperRef} className={className} $height={height} />;
 }

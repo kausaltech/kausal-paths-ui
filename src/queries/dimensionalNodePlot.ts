@@ -3,7 +3,7 @@ import { DimensionalMetric } from 'data/metric';
 
 const dimensionalNodePlotFragment = gql`
   fragment DimensionalNodeMetric on NodeInterface {
-    metricDim {
+    metricDim(withScenarios: $scenarios) {
       ...DimensionalMetric
     }
   }

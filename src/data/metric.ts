@@ -1,10 +1,10 @@
-import { Font, Style } from 'exceljs';
+import type { Font, Style } from 'exceljs';
 import dayjs from 'dayjs';
 import slugify from 'slugify';
 
-import { DimensionalMetricFragment } from 'common/__generated__/graphql';
-import { InstanceGoal } from 'common/instance';
-import { DocumentNode, gql } from '@apollo/client';
+import type { DimensionalMetricFragment } from 'common/__generated__/graphql';
+import { type InstanceGoal } from 'common/instance';
+import { type DocumentNode, gql } from '@apollo/client';
 
 type CatValue = number | null;
 
@@ -167,6 +167,8 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
     unit {
       htmlShort
       short
+      htmlLong
+      long
     }
     stackable
     normalizedBy {
@@ -180,15 +182,48 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
 `;
 
 export class DimensionalMetric {
+  static ALL_SCENARIOS = 'ALL_SCENARIOS';
   private readonly data: Metric;
   private readonly rows: MetricRow[];
   valuesByDim: Map<string, DimValues>;
   dimensions: MetricDimension[];
   dimsById: Map<string, MetricDimension>;
 
-  constructor(data: Metric) {
-    this.data = data;
-    this.dimensions = data.dimensions.map((dimIn) => {
+  private isScenarioDim(dim: MetricDimensionInput) {
+    return dim.id.endsWith(':scenario:ScenarioName');
+  }
+
+  /**
+   * Filter metric data to include only the specified scenario or the default scenario if no scenario is specified.
+   * @param scenarioId - The ID of the scenario to filter by. Defaults to 'default'.
+   * @returns The filtered metric data.
+   */
+  private filterMultipleScenarios(data: Metric, scenarioId: string) {
+    const scenarioDim = data.dimensions.find((dim) => this.isScenarioDim(dim));
+    const filteredDimensions = data.dimensions.filter((dim) => !this.isScenarioDim(dim));
+
+    if (scenarioDim) {
+      const scenarioCat = scenarioDim.categories.find((cat) => cat.originalId === scenarioId);
+      // Default to the first scenario category if the specified or default scenario is not found
+      const scenarioCatIndex = scenarioCat ? scenarioDim.categories.indexOf(scenarioCat) : 0;
+
+      return {
+        ...data,
+        dimensions: filteredDimensions,
+        values: this.filterValuesByScenario(data.values, scenarioCatIndex, scenarioDim),
+      };
+    }
+
+    return data;
+  }
+
+  constructor(data: Metric, scenarioId: string = 'default') {
+    this.data =
+      scenarioId === DimensionalMetric.ALL_SCENARIOS
+        ? data
+        : this.filterMultipleScenarios(data, scenarioId);
+
+    this.dimensions = this.data.dimensions.map((dimIn) => {
       const groups = dimIn.groups.map((grpIn) => ({
         ...grpIn,
         categories: dimIn.categories.filter((cat) => cat.group === grpIn.id),
@@ -201,6 +236,18 @@ export class DimensionalMetric {
       return dim;
     });
     this.rows = this.createRows([], this.dimensions, {});
+  }
+
+  private filterValuesByScenario(
+    values: Array<number>,
+    scenarioIndex: number,
+    scenarioDim?: MetricDimensionInput
+  ): Array<number> {
+    if (!scenarioDim) return values;
+
+    const valuesPerScenario = values.length / scenarioDim.categories.length;
+
+    return values.slice(scenarioIndex * valuesPerScenario, (scenarioIndex + 1) * valuesPerScenario);
   }
 
   private createRows(rows: MetricRow[], dimsLeft: MetricDimension[], dimPath: DimCats) {

@@ -56,6 +56,7 @@ const ScenarioSelector = () => {
     notifyOnNetworkStatusChange: true,
     onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive)),
   });
+
   const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation<
     ActivateScenarioMutation,
     ActivateScenarioMutationVariables

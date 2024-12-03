@@ -188,9 +188,9 @@ type OutcomeCardSetProps = {
   endYear: number;
   activeScenario: string;
   activeNodeId: string | undefined;
-  lastActiveNodeId: string | undefined;
   setLastActiveNodeId: (s: string) => void;
   subNodesTitle: string;
+  isRootNode: boolean;
   refetching: boolean;
 };
 
@@ -202,9 +202,9 @@ const OutcomeCardSet = ({
   endYear,
   activeScenario,
   activeNodeId,
-  lastActiveNodeId,
   setLastActiveNodeId,
   subNodesTitle,
+  isRootNode,
   refetching,
 }: OutcomeCardSetProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
@@ -237,12 +237,7 @@ const OutcomeCardSet = ({
   const inputNodes = rootNode.inputNodes.filter((node) => !nodeMap.has(node.id));
   // Hide outcome bar. TODO: make this configurable
   const showOutcomeBar = false;
-  // If this is the last active scenario, scroll to view after render
-  /*
-  useEffect(() => {
-    if (lastActiveNodeId === rootNode.id) scrollTo(document.querySelector(`#${lastActiveNodeId}`), -150);
-  }, []);
-  */
+
   const fadeIn = useSpring({
     to: { opacity: 1 },
     from: { opacity: 0 },
@@ -268,6 +263,7 @@ const OutcomeCardSet = ({
     cardNodes.filter((node) => getMetricValue(node, endYear) < 0),
     endYear
   );
+
   const positiveNodesTotal = getOutcomeTotal(
     cardNodes.filter((node) => getMetricValue(node, endYear) >= 0),
     endYear
@@ -284,6 +280,7 @@ const OutcomeCardSet = ({
       >
         <ContentArea>
           <OutcomeNodeContent
+            isRootNode={isRootNode}
             node={rootNode}
             subNodes={cardNodes}
             color={rootNode.color || parentColor}

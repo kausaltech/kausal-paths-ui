@@ -20,8 +20,20 @@ type IconProps = {
   alt?: string;
 } & Omit<HTMLProps<SVGElement>, 'ref'>;
 
-const Icon = (props: IconProps) => {
+export function useSVGIconPath(name: string) {
   const theme = useTheme();
+  const kebabName = camelToKebabCase(name);
+
+  if (!(kebabName in theme.icons)) {
+    throw new Error(`Unsupported icon: ${name}`);
+  }
+
+  const iconPath = getThemeStaticURL(theme.icons[kebabName]);
+
+  return iconPath;
+}
+
+const Icon = (props: IconProps) => {
   const {
     name = 'circleOutline',
     color = 'inherit',
@@ -31,11 +43,10 @@ const Icon = (props: IconProps) => {
     alt,
     ...rest
   } = props;
-  const kebabName = camelToKebabCase(name);
-  if (!(kebabName in theme.icons)) {
-    throw new Error(`Unsupported icon: ${name}`);
-  }
-  const iconPath = getThemeStaticURL(theme.icons[kebabName]);
+
+  const theme = useTheme();
+  const iconPath = useSVGIconPath(name);
+
   return (
     <SVG
       src={iconPath}
