@@ -97,6 +97,18 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
       url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
     },
   },
+  'lappeenranta-nzc': {
+    watchLink: {
+      title: 'Lappeenrannan ilmastovahti',
+      url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
+    },
+  },
+  'potsdam-gpc': {
+    watchLink: {
+      title: 'Klimaschutz-Monitor-Potsdam',
+      url: 'https://klima-potsdam.watch-test.kausal.tech/',
+    },
+  },
   longmont: {
     watchLink: {
       title: 'Longmont Indicators',
