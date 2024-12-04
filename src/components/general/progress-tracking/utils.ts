@@ -10,10 +10,26 @@ type Status = {
   backgroundColor: string;
 };
 
+export function getDeltaPercentage(expected: number | null, observed: number | null) {
+  if (observed == null || expected == null || expected === 0) {
+    return 0;
+  }
+
+  const delta = ((observed - expected) / expected) * 100;
+
+  return Math.round(delta);
+}
+
+export const STATUS_KEYS: Record<string, 'ON_TRACK' | 'OFF_TRACK' | 'DEVIATING'> = {
+  ON_TRACK: 'ON_TRACK',
+  OFF_TRACK: 'OFF_TRACK',
+  DEVIATING: 'DEVIATING',
+};
+
 export function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): Status {
   if (deltaPercentage === 0 || deltaPercentage < 0) {
     return {
-      key: 'ON_TRACK',
+      key: STATUS_KEYS.ON_TRACK,
       label: t('on-track'),
       color: theme.graphColors.green070,
       iconColor: theme.graphColors.green050,
@@ -24,7 +40,7 @@ export function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): 
 
   if (deltaPercentage > 10) {
     return {
-      key: 'OFF_TRACK',
+      key: STATUS_KEYS.OFF_TRACK,
       label: t('off-track'),
       color: theme.graphColors.red070,
       iconColor: theme.graphColors.red050,
@@ -34,7 +50,7 @@ export function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): 
   }
 
   return {
-    key: 'DEVIATING',
+    key: STATUS_KEYS.DEVIATING,
     label: t('deviating'),
     color: theme.graphColors.yellow070,
     iconColor: theme.graphColors.yellow050,
