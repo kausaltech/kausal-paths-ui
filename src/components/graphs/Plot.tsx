@@ -36,6 +36,10 @@ const Plot = (props: PlotProps) => {
 
   switch (lang) {
     case 'fi':
+    case 'sv':
+    case 'cs':
+    case 'pl':
+    case 'lv':
       separators = ', ';
       break;
     case 'de':
@@ -46,21 +50,15 @@ const Plot = (props: PlotProps) => {
       config.locale = 'de-CH';
       separators = ".'";
       break;
-    case 'cs':
     case 'da':
-    case 'pl':
-      separators = '.,';
-      break;
     case 'el':
-    case 'lv':
       separators = ',.';
       break;
-    case 'sv':
-    case 'en':
     case 'es-US':
       config.locale = 'es-US';
       separators = '.,';
       break;
+    case 'en':
     default:
       separators = '.,';
       break;

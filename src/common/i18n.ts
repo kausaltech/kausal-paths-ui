@@ -12,6 +12,7 @@ import numbroEs from 'numbro/dist/languages/es-ES.min.js';
 import numbroFi from 'numbro/dist/languages/fi-FI.min.js';
 import numbroLv from 'numbro/dist/languages/lv-LV.min.js';
 import numbroPl from 'numbro/dist/languages/pl-PL.min.js';
+import numbroSv from 'numbro/dist/languages/sv-SE.min.js';
 
 import type nsCommon from '../../public/locales/en/common.json';
 
@@ -43,6 +44,7 @@ const numbroLangs = {
   pl: numbroPl,
   'es-US': numbroEsUs(),
   el: numbroEl,
+  sv: numbroSv,
 };
 
 Object.entries(numbroLangs).forEach(([lang, conf]) => {
