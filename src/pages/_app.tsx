@@ -118,7 +118,7 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   saskatoon: {
     watchLink: {
       title: "Saskatoon's Climate Dashboard",
-      url: 'https://saskatoon.ca/climatedashboard ',
+      url: 'https://saskatoon.ca/climatedashboard',
     },
   },
   surrey: {
