@@ -117,8 +117,8 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   },
   saskatoon: {
     watchLink: {
-      title: "Saskatoon's Low Emissions Community Plan",
-      url: 'https://saskatoon-lec.watch-test.kausal.tech/',
+      title: "Saskatoon's Climate Dashboard",
+      url: 'https://saskatoon.ca/climatedashboard ',
     },
   },
   surrey: {
