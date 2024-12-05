@@ -21,7 +21,7 @@ import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useProgressData, type MetricDim, type ProgressData } from './useProgressData';
 import { StyledCard } from './StyledCard';
 import { StyledIndicator, StyledStatusBadge } from './StyledStatusBadge';
-import { getStatus } from './utils';
+import { STATUS_KEYS, getDeltaPercentage, getStatus } from './utils';
 import { EmissionsCard } from './EmissionsCard';
 import { ProgressDriversWrapper } from './ProgressDriversWrapper';
 
@@ -164,16 +164,6 @@ const GlobalModalStyle = createGlobalStyle`
   }
 `;
 
-function getDeltaPercentage({ totalExpected, totalObserved }: ProgressData) {
-  if (totalObserved == null || totalExpected == null || totalExpected === 0) {
-    return 0;
-  }
-
-  const delta = ((totalObserved - totalExpected) / totalExpected) * 100;
-
-  return Math.round(delta);
-}
-
 function getStripeGradient(color?: string) {
   return `background-image: linear-gradient(-45deg, ${color} 25%,
             rgba(255,255,255,0.4) 25%, rgba(255,255,255,0.4) 50%,
@@ -283,25 +273,31 @@ function getChartConfig(
             return observed.label;
           }
 
-          const isOnTrack = observed.value <= expected.value;
-          const status = isOnTrack
-            ? `{statusOnTrack|${t('on-track')}}`
-            : `{statusOffTrack|${t('off-track')}}`;
+          const deltaPercentage = getDeltaPercentage(expected.value, observed.value);
+          const status = getStatus(deltaPercentage, t, theme);
+          const statusLabel = `{${status.key}|${status.label}}`;
 
-          return `${observed.label}\n${status}`;
+          return `${observed.label}\n${statusLabel}`;
         }),
         axisLabel: {
           formatter: '{value}',
           lineHeight: 18,
           rich: {
-            statusOnTrack: {
+            [STATUS_KEYS.ON_TRACK]: {
               fontSize: 10,
               backgroundColor: theme.graphColors.green010,
               borderRadius: 4,
               padding: [2, 6],
               color: theme.graphColors.green070,
             },
-            statusOffTrack: {
+            [STATUS_KEYS.DEVIATING]: {
+              fontSize: 10,
+              backgroundColor: theme.graphColors.yellow010,
+              borderRadius: 4,
+              padding: [2, 6],
+              color: theme.graphColors.yellow070,
+            },
+            [STATUS_KEYS.OFF_TRACK]: {
               fontSize: 10,
               backgroundColor: theme.graphColors.red010,
               borderRadius: 4,
@@ -397,7 +393,10 @@ export const ProgressIndicator = ({
   const latestProgressData = observedYears[0];
   const selectedEmissions = observedYears.find((d) => d.year === selectedYear);
 
-  const latestDeltaPercentage = getDeltaPercentage(latestProgressData);
+  const latestDeltaPercentage = getDeltaPercentage(
+    latestProgressData.totalExpected,
+    latestProgressData.totalObserved
+  );
   const totalExpected = selectedEmissions?.totalExpected ?? null;
   const totalObserved = selectedEmissions?.totalObserved ?? null;
 
@@ -527,7 +526,10 @@ export const ProgressIndicator = ({
                           title={`${t('observed-emissions')} (${selectedEmissions.year})`}
                           value={totalObserved}
                           unit={selectedEmissions.unit}
-                          deltaPercentage={getDeltaPercentage(selectedEmissions)}
+                          deltaPercentage={getDeltaPercentage(
+                            selectedEmissions.totalExpected,
+                            selectedEmissions.totalObserved
+                          )}
                         />
                       )}
                     </StyledFlexContainer>
