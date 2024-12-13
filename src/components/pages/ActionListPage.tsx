@@ -210,14 +210,6 @@ function ActionListPage({ page }: ActionListPageProps) {
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState<'ALL_ACTIONS' | string>('ALL_ACTIONS');
 
-  // Different default view if we have action efficiency pairs
-  useEffect(() => {
-    if (areActionsLoading === false && data && hasEfficiency) {
-      setListType('mac');
-      setSortBy(sortOptions.find((option) => option.key === 'CUM_EFFICIENCY') ?? sortOptions[0]);
-    }
-  }, [areActionsLoading, data, hasEfficiency]);
-
   const filteredActions = (data?.actions || []).filter(
     (action) =>
       !page.showOnlyMunicipalActions ||
