@@ -3,6 +3,7 @@ import { DimensionalMetric } from 'data/metric';
 
 const visualizationEntryFragment = gql`
   fragment VisualizationEntryFragment on VisualizationEntry {
+    id
     label
     ... on VisualizationNodeOutput {
       label
