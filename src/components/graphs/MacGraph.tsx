@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
 import dynamic from 'next/dynamic';
@@ -9,7 +9,6 @@ import { t } from 'i18next';
 const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
 
 const GraphContainer = styled.div`
-  margin-bottom: 3rem;
   .js-plotly-plot {
     margin-bottom: 1rem;
   }
@@ -74,13 +73,6 @@ function MacGraph(props) {
   } = props;
   const theme = useTheme();
   const { i18n, t } = useTranslation();
-  const graphRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (graphRef.current) {
-      graphRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [data]);
 
   const barHoverColor = theme.graphColors.green090;
 
@@ -183,7 +175,14 @@ function MacGraph(props) {
       paper_bgcolor: theme.themeColors.white,
       plot_bgcolor: theme.themeColors.white,
     }),
-    [theme, efficiencyName, efficiencyUnit, impactUnit, impactName, negativeSide]
+    [
+      theme,
+      efficiencyName,
+      efficiencyUnit,
+      impactUnit,
+      impactName,
+      negativeSide,
+    ]
   );
 
   const handleHover = useCallback(
@@ -242,13 +241,16 @@ function MacGraph(props) {
   );
 
   return (
-    <GraphContainer ref={graphRef}>
+    <GraphContainer>
       {plot}
       {hoverId !== null && (
         <ActionDescription>
           <a href={`/actions/${actionIds[hoverId]}/`}>
             <HoverGroupTag color={data.colors[hoverId]}>
-              {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
+              {
+                actionGroups.find((group) => group.id === data.groups[hoverId])
+                  ?.name
+              }
             </HoverGroupTag>
             <h4>
               {data.actions[hoverId]} <Icon name="arrowRight" />
@@ -261,14 +263,20 @@ function MacGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: impactUnit }} />
+                <HoverValueUnit
+                  dangerouslySetInnerHTML={{ __html: impactUnit }}
+                />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end">
               <HoverValue>
                 <HoverValueTitle>{costName}</HoverValueTitle>
-                <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: costUnit }} />
+                <HoverValueValue>
+                  {formatNumber(data.cost[hoverId], i18n.language)}
+                </HoverValueValue>
+                <HoverValueUnit
+                  dangerouslySetInnerHTML={{ __html: costUnit }}
+                />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end">
@@ -277,7 +285,9 @@ function MacGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.efficiency[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: efficiencyUnit }} />
+                <HoverValueUnit
+                  dangerouslySetInnerHTML={{ __html: efficiencyUnit }}
+                />
               </HoverValue>
             </Col>
           </Row>
