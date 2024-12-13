@@ -141,6 +141,7 @@ function MacGraph(props) {
 
   const layout = useMemo(
     () => ({
+      height: 450,
       barmode: 'relative',
       hoverlabel: {
         bgcolor: theme.themeColors.white,
@@ -175,14 +176,7 @@ function MacGraph(props) {
       paper_bgcolor: theme.themeColors.white,
       plot_bgcolor: theme.themeColors.white,
     }),
-    [
-      theme,
-      efficiencyName,
-      efficiencyUnit,
-      impactUnit,
-      impactName,
-      negativeSide,
-    ]
+    [theme, efficiencyName, efficiencyUnit, impactUnit, impactName, negativeSide]
   );
 
   const handleHover = useCallback(
@@ -247,10 +241,7 @@ function MacGraph(props) {
         <ActionDescription>
           <a href={`/actions/${actionIds[hoverId]}/`}>
             <HoverGroupTag color={data.colors[hoverId]}>
-              {
-                actionGroups.find((group) => group.id === data.groups[hoverId])
-                  ?.name
-              }
+              {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>
               {data.actions[hoverId]} <Icon name="arrowRight" />
@@ -263,20 +254,14 @@ function MacGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit
-                  dangerouslySetInnerHTML={{ __html: impactUnit }}
-                />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: impactUnit }} />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end">
               <HoverValue>
                 <HoverValueTitle>{costName}</HoverValueTitle>
-                <HoverValueValue>
-                  {formatNumber(data.cost[hoverId], i18n.language)}
-                </HoverValueValue>
-                <HoverValueUnit
-                  dangerouslySetInnerHTML={{ __html: costUnit }}
-                />
+                <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: costUnit }} />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end">
@@ -285,9 +270,7 @@ function MacGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.efficiency[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit
-                  dangerouslySetInnerHTML={{ __html: efficiencyUnit }}
-                />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: efficiencyUnit }} />
               </HoverValue>
             </Col>
           </Row>
