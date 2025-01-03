@@ -146,6 +146,21 @@ function initSentryWebpack(config) {
     reactComponentAnnotation: {
       enabled: true,
     },
+    unstable_sentryWebpackPluginOptions: {
+      // Even though this is advertised as unstable, the risk has low impact for this use case.
+      //
+      // This is passing options straight to the SentryWebpackPlugin and the key has to be found
+      // in SentryWebpackPluginOptions which come from @sentry/bundler-plugin-core
+      errorHandler: (error) => {
+        // When an error occurs during release creation or sourcemaps
+        // upload, the plugin will call this function. Without this
+        // handler, the build would fail completely.
+        console.error(
+          '⚠️  There was an error communicating with the Sentry API'
+        );
+        console.error(error.message);
+      },
+    },
   };
 
   // Make sure adding Sentry options is the last code to run before exporting, to
