@@ -28,6 +28,7 @@ const GET_AVAILABLE_INSTANCES = gql`
       ...AvailableInstance
     }
   }
+  # TODO: Add isNZCProtected
   fragment AvailableInstance on InstanceBasicConfiguration {
     identifier
     isProtected
