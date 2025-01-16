@@ -4,7 +4,7 @@
   "description": "End-to-end tests for Kausal Paths UI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "playwright test --workers 2"
   },
   "author": "",
   "license": "AGPL-3.0-or-later",
