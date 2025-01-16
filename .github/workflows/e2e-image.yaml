@@ -6,7 +6,7 @@ on:
         description: 'Comma separated list of instance identifiers'
         required: false
         type: string
-        default: 'sunnydale,espoo,zuerich'
+        default: 'sunnydale,espoo' #,zuerich'
       image:
         description: 'Image (incl. repo, path, tag) to test'
         required: true

@@ -77,6 +77,7 @@ const testInstance = (instanceId: string) =>
       */
       // Test direct URL navigation
       await page.goto(`${ctx.baseURL}${listItem.urlPath}`);
+      await expect(page).toHaveURL(`${ctx.baseURL}${listItem.urlPath}`, { timeout: 3000 }); // Fix NS_BINDING_ABORTED error in Firefox
       await ctx.checkMeta(page);
       await ctx.waitForLoaded(page);
       await expect
