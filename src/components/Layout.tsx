@@ -24,9 +24,9 @@ const PageContainer = styled.div`
   }
 `;
 
-const FooterContainer = styled.footer`
+const FooterContainer = styled.footer<{ isSettingsPanelHidden: boolean }>`
   background-color: ${(props) => props.theme.themeColors.black};
-  padding-bottom: 7rem;
+  padding-bottom: ${({ isSettingsPanelHidden }) => (isSettingsPanelHidden ? '0' : '7rem')};
 `;
 
 const StyledSkipToContent = styled.a`
@@ -92,6 +92,8 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
   const instance = useInstance();
 
+  const isSettingsPanelHidden = !!instance.features?.hideNodeDetails;
+
   const title = instance.introContent?.find(
     (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
       block.__typename === 'RichTextBlock' && block.field === 'title'
@@ -129,7 +131,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           {children}
         </main>
       </PageContainer>
-      <FooterContainer>
+      <FooterContainer isSettingsPanelHidden={isSettingsPanelHidden}>
         <FooterComponent />
       </FooterContainer>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
