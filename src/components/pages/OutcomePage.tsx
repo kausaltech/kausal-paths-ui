@@ -97,6 +97,7 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   const pageLeadTitle = page.leadTitle || instance.leadTitle;
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
+  const showSettingsPanel = !instance.features?.hideNodeDetails;
 
   return (
     <>
@@ -130,7 +131,7 @@ export default function OutcomePage(props: OutcomePageProps) {
           ))}
         </>
       </PageHero>
-      <SettingsPanelFull />
+      {showSettingsPanel && <SettingsPanelFull />}
     </>
   );
 }
