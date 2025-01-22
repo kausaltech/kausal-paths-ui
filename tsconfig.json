@@ -20,7 +20,12 @@
     "strictNullChecks": true,
     "incremental": true,
     "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -29,7 +34,8 @@
     "**/*.js",
     "**/*.jsx",
     "**/*.mjs",
-    "middleware.ts"
+    "middleware.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

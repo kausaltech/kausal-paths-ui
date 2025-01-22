@@ -15,8 +15,7 @@ const StyledHeroContainer = styled.div<{ $overlap: boolean }>`
 `;
 
 const StyledHero = styled.div<{ $overlap: boolean }>`
-  background: ${({ $overlap, theme }) =>
-    !$overlap ? theme.brandDark : undefined};
+  background: ${({ $overlap, theme }) => (!$overlap ? theme.brandDark : undefined)};
 `;
 
 const StyledTitle = styled.h1`
@@ -28,7 +27,7 @@ const StyledTitle = styled.h1`
   }
 `;
 
-const StyledHeroCard = styled(Container)`
+export const StyledHeroCard = styled(Container)`
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   color: ${(props) => props.theme.textColor.primary};
@@ -83,9 +82,7 @@ export const PageHero = ({
                 <StyledHeroCard>
                   {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
                   {!!leadDescription && (
-                    <Description
-                      dangerouslySetInnerHTML={{ __html: leadDescription }}
-                    />
+                    <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
                   )}
                 </StyledHeroCard>
               </Container>
