@@ -216,13 +216,13 @@ export default function DimensionalNodePlot({
   const rangeMode = metric.stackable ? 'tozero' : 'normal';
   const filled = metric.stackable;
 
-  const filledStyles = (stackGroup: string) => {
+  const filledStyles = (stackGroup: string, color: string = 'white') => {
     if (!filled) return {};
     const out: Partial<Plotly.PlotData> = {
       stackgroup: stackGroup,
       //marker: { opacity: 0 },
       line: {
-        color: 'white',
+        color: color,
         width: 1,
         dash: 'solid',
         shape: 'spline',
@@ -287,8 +287,8 @@ export default function DimensionalNodePlot({
       showlegend: false,
     };
 
-    const hasNegativeForecast = cv.forecastValues.some((value) => value < 0);
-    const hasNegativeHistorical = cv.historicalValues.some((value) => value < 0);
+    const hasNegativeForecast = cv.forecastValues.every((value) => value < 0);
+    const hasNegativeHistorical = cv.historicalValues.every((value) => value < 0);
 
     const forecastStackGroup = hasNegativeForecast ? 'neg-forecast' : 'pos-forecast';
     const historicalStackGroup = hasNegativeHistorical ? 'neg-hist' : 'pos-hist';
