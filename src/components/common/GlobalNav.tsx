@@ -295,12 +295,23 @@ export type GlobalNavProps = {
 };
 
 function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const site = useContext(SiteContext);
   const theme = useTheme();
   const [navIsFixed, setnavIsFixed] = useState(false);
   const [isOpen, toggleOpen] = useState(false);
   const { siteTitle, ownerName, navItems, sticky } = props;
+  const instanceId = site.instanceId || site.instanceContext?.id || 'default';
+
+  const watchLinkTitle = site.watchLink
+    ? t(`watch.${site.instanceId}`, { defaultValue: site.watchLink.title })
+    : null;
+
+  const watchLinkUrl = site.watchLink
+    ? i18n.language.startsWith('es-US') || i18n.language === 'es-US'
+      ? `${site.watchLink.url}/es-US`
+      : site.watchLink.url
+    : '';
 
   const orgLogo = useMemo(() => {
     const url = getThemeStaticURL(theme.themeLogoUrl);
@@ -314,10 +325,6 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
       />
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
-
-  const translatedWatchLinkTitle = site.watchLink
-    ? t(`watch.${site.instanceId}`, { defaultValue: site.watchLink.title })
-    : null;
 
   if (sticky) {
     useScrollPosition(
@@ -403,11 +410,9 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
             <Nav navbar>
               <NavItem>
                 <NavLink>
-                  <Link href={site.watchLink.url}>
+                  <Link href={watchLinkUrl}>
                     <a>
-                      <NavHighlighter className="highlighter">
-                        {translatedWatchLinkTitle}
-                      </NavHighlighter>
+                      <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
                     </a>
                   </Link>
                 </NavLink>
