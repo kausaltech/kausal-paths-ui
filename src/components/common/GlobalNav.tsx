@@ -315,6 +315,10 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
+  const translatedWatchLinkTitle = site.watchLink
+    ? t(`watch.${site.instanceId}`, { defaultValue: site.watchLink.title })
+    : null;
+
   if (sticky) {
     useScrollPosition(
       ({ prevPos, currPos }) => {
@@ -402,7 +406,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
                   <Link href={site.watchLink.url}>
                     <a>
                       <NavHighlighter className="highlighter">
-                        {site.watchLink.title}
+                        {translatedWatchLinkTitle}
                       </NavHighlighter>
                     </a>
                   </Link>

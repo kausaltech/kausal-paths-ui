@@ -110,6 +110,7 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
     },
   },
   longmont: {
+    instanceId: 'longmont',
     watchLink: {
       title: 'Longmont Indicators',
       url: 'https://indicators.longmontcolorado.gov',
