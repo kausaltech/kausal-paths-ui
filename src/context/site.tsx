@@ -35,10 +35,6 @@ export type SiteContextType = {
   availableNormalizations: GetInstanceContextQuery['availableNormalizations'];
   parameters: GetInstanceContextQuery['parameters'];
   menuPages: GetInstanceContextQuery['menuPages'];
-  watchLink?: {
-    title: string;
-    url: string;
-  } | null;
 };
 
 const SiteContext = React.createContext<SiteContextType>(null!);
