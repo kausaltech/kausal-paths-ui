@@ -32,11 +32,16 @@ type ScenarioBadgeProps = {
 const ScenarioBadge = (props: ScenarioBadgeProps) => {
   const { children, startYear, endYear } = props;
 
+  const formattedYears =
+    startYear && endYear
+      ? startYear === endYear
+        ? `${startYear}`
+        : `${startYear} - ${endYear}`
+      : '';
+
   return (
     <StyledBadge>
-      {startYear && endYear && (
-        <BadgeYears>{`${startYear} - ${endYear}`}: </BadgeYears>
-      )}
+      {formattedYears && <BadgeYears>{formattedYears}: </BadgeYears>}
       {children}
     </StyledBadge>
   );

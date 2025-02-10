@@ -208,7 +208,7 @@ const OutcomeNodeContent = ({
               )}
             </h4>
             <CardSetDescriptionDetails>
-              {startYear < lastMeasuredYear && (
+              {startYear <= lastMeasuredYear && (
                 <ScenarioBadge startYear={startYear} endYear={lastMeasuredYear}>
                   {t('table-historical')}
                 </ScenarioBadge>
