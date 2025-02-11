@@ -310,7 +310,11 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   const watchLinkUrl = site.watchLink
     ? i18n.language.startsWith('es-US') || i18n.language === 'es-US'
       ? `${site.watchLink.url}/es-US`
-      : site.watchLink.url
+      : i18n.language.startsWith('en')
+        ? `${site.watchLink.url}/en`
+        : i18n.language.startsWith('sv')
+          ? `${site.watchLink.url}/sv`
+          : site.watchLink.url
     : '';
 
   const orgLogo = useMemo(() => {

@@ -83,6 +83,7 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
     },
   },
   espoo: {
+    instanceId: 'espoo',
     watchLink: {
       title: 'Ilmastovahti',
       url: 'https://ilmastovahti.espoo.fi',
