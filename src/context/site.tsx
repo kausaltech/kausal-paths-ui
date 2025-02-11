@@ -11,6 +11,7 @@ export type SiteI18nConfig = {
 };
 
 export type SiteContextType = {
+  instanceId?: string;
   title: string;
   apolloConfig: {
     instanceHostname: string;
