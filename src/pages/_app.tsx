@@ -85,10 +85,19 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   espoo: {
     instanceId: 'espoo',
     watchLink: {
-      title: 'Ilmastovahti',
-      url: 'https://ilmastovahti.espoo.fi',
+      title: {
+        fi: 'Ilmastovahti',
+        en: 'Espoo Climate Watch',
+        sv: 'Esbo klimatvakt',
+      },
+      url: {
+        fi: 'https://ilmastovahti.espoo.fi',
+        en: 'https://ilmastovahti.espoo.fi/en',
+        sv: 'https://ilmastovahti.espoo.fi/sv',
+      },
     },
   },
+
   zuerich: {
     watchLink: null,
   },
@@ -113,8 +122,14 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   longmont: {
     instanceId: 'longmont',
     watchLink: {
-      title: 'Longmont Indicators',
-      url: 'https://indicators.longmontcolorado.gov',
+      title: {
+        en: 'Longmont Indicators',
+        'es-US': 'Indicadores de Longmont',
+      },
+      url: {
+        en: 'https://indicators.longmontcolorado.gov',
+        'es-US': 'https://indicators.longmontcolorado.gov/es-US',
+      },
     },
   },
   saskatoon: {
