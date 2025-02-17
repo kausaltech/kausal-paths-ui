@@ -1,5 +1,5 @@
 import React from 'react';
-import { Spinner } from 'reactstrap';
+import { Spinner, type SpinnerProps } from 'reactstrap';
 import styled from 'styled-components';
 
 const LoaderOverlay = styled.div`
@@ -15,10 +15,14 @@ const LoaderOverlay = styled.div`
   z-index: 1;
 `;
 
-const Loader = () => {
+interface Props {
+  size?: SpinnerProps['size'];
+}
+
+const Loader = ({ size = 'sm' }: Props) => {
   return (
     <LoaderOverlay>
-      <Spinner size="sm" color="primary" />
+      <Spinner size={size} color="primary" />
     </LoaderOverlay>
   );
 };

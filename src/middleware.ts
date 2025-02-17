@@ -2,6 +2,7 @@ import { acceptLanguage } from 'next/dist/server/accept-header';
 import { NextURL } from 'next/dist/server/web/next-url';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import type { NextAuthRequest } from 'next-auth/lib';
 
 import * as Sentry from '@sentry/nextjs';
 
@@ -19,6 +20,7 @@ import {
 import { deploymentType, wildcardDomains } from './common/environment';
 import { generateCorrelationID, getLogger } from './common/log';
 import { getInstancesForRequest } from './middleware/context';
+import { auth } from '../auth';
 
 type Instance = AvailableInstanceFragment;
 
@@ -126,8 +128,9 @@ function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | '
 }
 
 const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
+const ALLOWED_UNAUTHENTICATED_PATHS = ['/signed-out-netzeroplanner'];
 
-export async function middleware(req: NextRequest) {
+export default auth(async (req: NextAuthRequest) => {
   const { nextUrl } = req;
   const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || req.nextUrl.host;
   const hostname = host.split(':')[0];
@@ -204,5 +207,21 @@ export async function middleware(req: NextRequest) {
     const resp = NextResponse.next(reqInit);
     resp.headers.set('Document-Policy', 'js-profiling');
   }
+
+  if (
+    isNZCProtected(instance) &&
+    !req.auth &&
+    !ALLOWED_UNAUTHENTICATED_PATHS.includes(nextUrl.pathname)
+  ) {
+    const newUrl = new URL('/sso-redirect', req.nextUrl.origin);
+
+    return NextResponse.rewrite(newUrl);
+  }
+
   return NextResponse.rewrite(url, reqInit);
+});
+
+// TODO: Remove this once we have a proper way to check if an instance is protected and from NetZeroCities
+function isNZCProtected(instance: AvailableInstanceFragment) {
+  return instance.themeIdentifier === 'eu-netzerocities';
 }
