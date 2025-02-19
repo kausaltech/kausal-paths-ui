@@ -304,15 +304,19 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   const instanceId = site.instanceId || site.instanceContext?.id || 'default';
 
   const watchLinkTitle = site.watchLink
-    ? t(`watch.${site.instanceId}`, { defaultValue: site.watchLink.title })
+    ? t(`watchLink.${site.instanceId}.${i18n.language}`, {
+        defaultValue:
+          typeof site.watchLink.title === 'string'
+            ? site.watchLink.title
+            : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0],
+      })
     : null;
 
   const watchLinkUrl = site.watchLink
-    ? i18n.language.startsWith('es-US') || i18n.language === 'es-US'
-      ? `${site.watchLink.url}/es-US`
-      : site.watchLink.url
+    ? typeof site.watchLink.url === 'string'
+      ? site.watchLink.url
+      : site.watchLink.url[i18n.language] || Object.values(site.watchLink.url)[0]
     : '';
-
   const orgLogo = useMemo(() => {
     const url = getThemeStaticURL(theme.themeLogoUrl);
     return (
