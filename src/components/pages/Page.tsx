@@ -3,7 +3,7 @@ import Head from 'next/head';
 
 import { ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
 import type { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
-import { activeGoalVar } from 'common/cache';
+import { activeGoalVar, activeScenarioVar } from 'common/cache';
 import { logApolloError } from 'common/log';
 import ContentLoader from 'components/common/ContentLoader';
 import ErrorMessage from 'components/common/ErrorMessage';
@@ -29,10 +29,12 @@ type PageProps = {
 
 export default function Page({ path, headerExtra }: PageProps) {
   const site = useSite();
-  const scenarios = !!getProgressTrackingScenario(site.scenarios)
-    ? ['default', 'progress_tracking']
-    : null;
+  const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
+  // If the progress tracking scenario is found, we add it to the scenarios query so that metricDim includes both the selected and progress tracking scenarios
+  const scenarios = !!getProgressTrackingScenario(site.scenarios)
+    ? [activeScenario?.id ?? 'default', 'progress_tracking']
+    : null;
   const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
     variables: {
       path,
@@ -56,7 +58,7 @@ export default function Page({ path, headerExtra }: PageProps) {
   if (!data) {
     return <PageLoader />;
   }
-  const { page, activeScenario } = data;
+  const { page } = data;
   let pageContent: React.ReactNode;
   if (!page) {
     console.error(`No page found for path ${path}`);
