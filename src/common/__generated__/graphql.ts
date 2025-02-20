@@ -57,6 +57,8 @@ export type FrameworkConfigInput = {
   name: Scalars['String']['input'];
   /** Name of the organization. If not set, it will be determined through the user's credentials, if possible. */
   organizationName: InputMaybe<Scalars['String']['input']>;
+  /** Target year for model. */
+  targetYear: InputMaybe<Scalars['Int']['input']>;
   /** UUID for the new framework config. If not set, will be generated automatically. */
   uuid: InputMaybe<Scalars['UUID']['input']>;
 };
@@ -70,6 +72,12 @@ export enum FrameworksMeasureTemplatePriorityChoices {
   /** Medium */
   Medium = 'MEDIUM'
 }
+
+export type InstanceContext = {
+  hostname: InputMaybe<Scalars['String']['input']>;
+  identifier: InputMaybe<Scalars['ID']['input']>;
+  locale: InputMaybe<Scalars['String']['input']>;
+};
 
 export enum LowHigh {
   High = 'HIGH',
@@ -120,6 +128,11 @@ export enum ScenarioKind {
 export enum SearchOperatorEnum {
   And = 'AND',
   Or = 'OR'
+}
+
+export enum VisualizationKind {
+  Group = 'group',
+  Node = 'node'
 }
 
 export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
@@ -404,7 +417,7 @@ export type DimensionalMetricFragment = (
     & { __typename: 'DimensionalMetricGoalEntry' }
   )>, unit: (
     { htmlShort: string, short: string, htmlLong: string, long: string }
-    & { __typename: 'SBUnit' }
+    & { __typename: 'UnitType' }
   ), normalizedBy: (
     { id: string, name: string }
     & { __typename: 'NormalizerNodeType' }
@@ -545,7 +558,7 @@ export type GetNodePageQuery = (
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
         { htmlShort: string, short: string, htmlLong: string, long: string }
-        & { __typename: 'SBUnit' }
+        & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
         & { __typename: 'NormalizerNodeType' }
@@ -576,7 +589,7 @@ export type DimensionalNodeMetricFragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string, htmlLong: string, long: string }
-      & { __typename: 'SBUnit' }
+      & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
       & { __typename: 'NormalizerNodeType' }
@@ -656,7 +669,7 @@ export type GetActionContentQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string, htmlLong: string, long: string }
-          & { __typename: 'SBUnit' }
+          & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
           & { __typename: 'NormalizerNodeType' }
@@ -752,7 +765,7 @@ export type GetActionContentQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string, htmlLong: string, long: string }
-          & { __typename: 'SBUnit' }
+          & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
           & { __typename: 'NormalizerNodeType' }
@@ -873,7 +886,7 @@ export type GetActionContentQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string, htmlLong: string, long: string }
-            & { __typename: 'SBUnit' }
+            & { __typename: 'UnitType' }
           ), normalizedBy: (
             { id: string, name: string }
             & { __typename: 'NormalizerNodeType' }
@@ -969,7 +982,7 @@ export type GetActionContentQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string, htmlLong: string, long: string }
-            & { __typename: 'SBUnit' }
+            & { __typename: 'UnitType' }
           ), normalizedBy: (
             { id: string, name: string }
             & { __typename: 'NormalizerNodeType' }
@@ -1087,7 +1100,7 @@ export type GetActionContentQuery = (
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
         { htmlShort: string, short: string, htmlLong: string, long: string }
-        & { __typename: 'SBUnit' }
+        & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
         & { __typename: 'NormalizerNodeType' }
@@ -1190,7 +1203,7 @@ type CausalGridNode_ActionNode_Fragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string, htmlLong: string, long: string }
-      & { __typename: 'SBUnit' }
+      & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
       & { __typename: 'NormalizerNodeType' }
@@ -1288,7 +1301,7 @@ type CausalGridNode_Node_Fragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string, htmlLong: string, long: string }
-      & { __typename: 'SBUnit' }
+      & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
       & { __typename: 'NormalizerNodeType' }
@@ -1534,7 +1547,7 @@ export type GetImpactOverviewsQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string }
-          & { __typename: 'SBUnit' }
+          & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
           & { __typename: 'NormalizerNodeType' }
@@ -1579,7 +1592,7 @@ export type GetNodeVisualizationsQuery = (
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
         { htmlShort: string, short: string, htmlLong: string, long: string }
-        & { __typename: 'SBUnit' }
+        & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
         & { __typename: 'NormalizerNodeType' }
@@ -1587,10 +1600,10 @@ export type GetNodeVisualizationsQuery = (
       & { __typename: 'DimensionalMetricType' }
     ) | null, visualizations: Array<(
       { label: string | null, children: Array<(
-        { label: string | null }
+        { id: string, label: string | null }
         & { __typename: 'VisualizationGroup' }
       ) | (
-        { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, dimensions: Array<(
+        { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, id: string, dimensions: Array<(
           { id: string, categories: Array<string> | null, flatten: boolean | null }
           & { __typename: 'VisualizationNodeDimension' }
         )>, metricDim: (
@@ -1611,7 +1624,7 @@ export type GetNodeVisualizationsQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string, htmlLong: string, long: string }
-            & { __typename: 'SBUnit' }
+            & { __typename: 'UnitType' }
           ), normalizedBy: (
             { id: string, name: string }
             & { __typename: 'NormalizerNodeType' }
@@ -1694,7 +1707,7 @@ export type OutcomeNodeFieldsFragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string, htmlLong: string, long: string }
-      & { __typename: 'SBUnit' }
+      & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
       & { __typename: 'NormalizerNodeType' }
@@ -1787,7 +1800,7 @@ export type GetPageQuery = (
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
             { htmlShort: string, short: string, htmlLong: string, long: string }
-            & { __typename: 'SBUnit' }
+            & { __typename: 'UnitType' }
           ), normalizedBy: (
             { id: string, name: string }
             & { __typename: 'NormalizerNodeType' }
@@ -1858,7 +1871,7 @@ export type GetPageQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
           { htmlShort: string, short: string, htmlLong: string, long: string }
-          & { __typename: 'SBUnit' }
+          & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
           & { __typename: 'NormalizerNodeType' }
@@ -2016,12 +2029,12 @@ export type GetInstanceContextQuery = (
 );
 
 type VisualizationEntryFragment_VisualizationGroup_Fragment = (
-  { label: string | null }
+  { id: string, label: string | null }
   & { __typename: 'VisualizationGroup' }
 );
 
 type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
-  { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, dimensions: Array<(
+  { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, id: string, dimensions: Array<(
     { id: string, categories: Array<string> | null, flatten: boolean | null }
     & { __typename: 'VisualizationNodeDimension' }
   )>, metricDim: (
@@ -2042,7 +2055,7 @@ type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
       { htmlShort: string, short: string, htmlLong: string, long: string }
-      & { __typename: 'SBUnit' }
+      & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
       & { __typename: 'NormalizerNodeType' }

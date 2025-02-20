@@ -5,9 +5,11 @@ import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 import { Container } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
+import { signOut, useSession } from 'next-auth/react';
 
 import { getThemeStaticURL } from '@/common/theme';
 import Icon from './icon';
+import { useRouter } from 'next/router';
 
 const StyledFooter = styled.footer`
   position: relative;
@@ -209,7 +211,18 @@ const BaseColumn = styled.ul`
 const BaseLink = styled.li`
   margin-left: ${(props) => props.theme.spaces.s200};
 
-  a {
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: ${(props) => props.theme.fontFamily};
+    font-weight: ${(props) => props.theme.fontWeightNormal};
+    cursor: pointer;
+    color: ${(props) => props.theme.footerColor};
+  }
+
+  a,
+  button {
     text-decoration: underline;
 
     &:hover {
@@ -296,9 +309,10 @@ function SiteFooter() {
   const { t } = useTranslation();
   const theme = useTheme();
   const site = useSite();
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const utilityLinks = [];
-  const additionalLinks = [];
   const ownerName = site.owner;
   const siteTitle = site.title;
   const ownerUrl = undefined;
@@ -319,6 +333,11 @@ function SiteFooter() {
   function scrollToTop(e) {
     e.preventDefault();
     window.scrollTo(0, 0);
+  }
+
+  async function handleSignOut() {
+    await signOut({ redirect: false });
+    router.push('/signed-out-netzeroplanner');
   }
 
   return (
@@ -416,12 +435,13 @@ function SiteFooter() {
         <BaseSection>
           <BaseColumn></BaseColumn>
           <BaseColumn>
-            {additionalLinks &&
-              additionalLinks.map((page) => (
-                <BaseLink key={page.slug}>
-                  <Link href={page.slug}>{page.name}</Link>
-                </BaseLink>
-              ))}
+            {!!session && (
+              <BaseLink>
+                {session.user?.email ?? session.user?.name}{' '}
+                <button onClick={handleSignOut}>Sign out</button>
+              </BaseLink>
+            )}
+
             <BaseLink>
               {t('published-on')}{' '}
               <a href="https://kausal.tech" target="_blank" rel="noreferrer">
