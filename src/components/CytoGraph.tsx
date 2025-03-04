@@ -11,12 +11,14 @@ import cytoscape, {
 } from 'cytoscape';
 import CytoscapeComponent from 'react-cytoscapejs';
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
+import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 // @ts-ignore
-import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
-import { getContrast } from 'polished';
+//import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
+import { readableColor } from 'polished';
 import styled, { useTheme } from 'styled-components';
 
 import SelectDropdown from './common/SelectDropdown';
+import { NutFill } from 'react-bootstrap-icons';
 
 const GraphContainer = styled.div`
   width: 100%;
@@ -25,7 +27,8 @@ const GraphContainer = styled.div`
 `;
 
 cytoscape.use(dagre);
-cytoscapeNodeHtmlLabel(cytoscape);
+cytoscape.use(elk);
+//cytoscapeNodeHtmlLabel(cytoscape);
 
 function getBackgroundColor(node: GetCytoscapeNodesQuery['nodes'][0]) {
   const nodeColors = {
@@ -114,15 +117,95 @@ function NodeSelector(props: NodeSelectorProps) {
   );
 }
 
-const cyLayoutOptions: DagreLayoutOptions = {
-  name: 'dagre',
-  ranker: 'tight-tree',
-  edgeWeight: (edge) => (edge.data('type') === 'parent' ? 5 : 1),
-  nodeDimensionsIncludeLabels: true,
-  animate: false,
-  rankDir: 'TB',
-  animationDuration: 2000,
+type LayoutOption = {
+  id: string;
+  label: string;
+  options: {
+    layout: DagreLayoutOptions | ElkLayoutOptions;
+    edgeStyle: Partial<Cytoscape.Css.Edge>;
+  };
 };
+
+const graphSettings: LayoutOption[] = [
+  {
+    id: 'dagre',
+    label: 'Dagre',
+    options: {
+      layout: {
+        name: 'dagre',
+        ranker: 'tight-tree',
+        edgeWeight: (edge) => (edge.data('type') === 'parent' ? 5 : 1),
+        nodeDimensionsIncludeLabels: true,
+        animate: false,
+        rankDir: 'TB',
+        animationDuration: 2000,
+      },
+      edgeStyle: {
+        'curve-style': 'bezier',
+        'control-point-step-size': 40,
+      },
+    },
+  },
+  {
+    id: 'tree-td',
+    label: 'Top-down tree',
+    options: {
+      layout: {
+        name: 'elk',
+        nodeDimensionsIncludeLabels: true,
+        elk: {
+          algorithm: 'layered',
+          'elk.direction': 'DOWN',
+          'elk.spacing.nodeNode': 80,
+          'elk.layered.spacing.nodeNodeBetweenLayers': 100,
+          'elk.edgeRouting': 'SPLINES',
+          'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+          'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+          'elk.layered.priority.shortness': 100,
+          'elk.spacing.edgeEdge': 20,
+          'elk.spacing.edgeNode': 30,
+          'elk.layered.edgeWeight': 'data(weight)',
+        },
+        fit: true,
+        padding: 50,
+      },
+      edgeStyle: {
+        'curve-style': 'bezier',
+        'control-point-step-size': 40,
+      },
+    },
+  },
+  {
+    id: 'orthogonal-lr',
+    label: 'Left-to-right orthogonal',
+    options: {
+      layout: {
+        name: 'elk',
+        nodeDimensionsIncludeLabels: true,
+        elk: {
+          algorithm: 'layered',
+          'elk.direction': 'RIGHT',
+          'elk.spacing.nodeNode': 80,
+          'elk.layered.spacing.nodeNodeBetweenLayers': 100,
+          'elk.edgeRouting': 'ORTHOGONAL',
+          'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+          'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+          'elk.layered.priority.shortness': 100,
+          'elk.spacing.edgeEdge': 20,
+          'elk.spacing.edgeNode': 30,
+          'elk.layered.edgeWeight': 'data(weight)',
+        },
+        fit: true,
+        padding: 50,
+      },
+      edgeStyle: {
+        'curve-style': 'taxi',
+        'taxi-direction': 'rightward',
+        'taxi-turn': '50%',
+      },
+    },
+  },
+];
 
 const edgeStyle: cytoscape.Css.Edge = {
   label: 'data(label)',
@@ -143,20 +226,19 @@ const edgeStyle: cytoscape.Css.Edge = {
 const nodeStyle: cytoscape.Css.Node = {
   shape: 'rectangle',
   'background-color': 'data(backgroundColor)',
-  //color: 'data(textColor)',
-  color: '#cccccc',
+  color: (node) => node.data('textColor'),
   'text-valign': 'center',
   padding: '24px',
   label: 'data(label)',
-  'text-opacity': 0,
+  'text-opacity': 1,
   'text-wrap': 'wrap',
   'text-outline-width': 0,
   'font-weight': 'normal',
   'border-width': (node) => (node.data('type') === 'action' ? '2px' : '0px'),
   'border-color': '#000000',
   'border-style': 'dashed',
-  width: 'label',
-  height: 'label',
+  width: 175,
+  height: 'auto',
 };
 
 type CytoGraphProps = {
@@ -166,17 +248,36 @@ type CytoGraphProps = {
 export default function CytoGraph(props: CytoGraphProps) {
   const { nodes } = props;
   const [selectedNode, setSelectedNode] = useState('');
+  const [layout, setLayout] = useState(graphSettings[0]);
   const router = useRouter();
   const theme = useTheme();
   const visRef = useRef<HTMLDivElement>(null);
   const elements: ElementDefinition[] = [];
 
+  const handleNodeClick = (event: Cytoscape.EventObject) => {
+    const nodeId = event.target.data('id');
+    router.push(`/node/${nodeId}`);
+  };
+
   // Nodes
   nodes.forEach((node) => {
-    const label = wordWrap(node.name, 30);
-    const hist = 'xxx';
+    //const label = wordWrap(node.name, 30);
+    const latestHistorical = node.metric?.historicalValues?.[0];
+    const latest = {
+      year: null,
+      value: '',
+      unit: node.unit?.htmlShort?.replace(/<[^>]*>/g, '') || '',
+    };
+    if (latestHistorical) {
+      const val = latestHistorical.value;
+      latest.year = latestHistorical.year;
+      latest.value = val < 0 ? val.toPrecision(3) : val.toFixed(0);
+    }
+
+    const label = `${wordWrap(node.name, 30)}\n${latest.value !== '' ? `${latest.year}: ${latest.value} ${latest.unit}` : ''}`;
+    //const label = "this can be anything and it doesn't matter";
     const bgColor = getBackgroundColor(node);
-    const textColor = '#000000';
+    const textColor = readableColor(bgColor);
 
     const element: NodeDefinition = {
       group: 'nodes',
@@ -185,7 +286,7 @@ export default function CytoGraph(props: CytoGraphProps) {
         backgroundColor: bgColor,
         textColor,
         name: node.name,
-        hist,
+        hist: latest,
         label: label,
         type: node.__typename == 'ActionNode' ? 'action' : 'node',
       },
@@ -203,7 +304,7 @@ export default function CytoGraph(props: CytoGraphProps) {
           source: node.id,
           target: target.id,
           label: '',
-          color: 'teal',
+          color: '#888',
         },
       };
       elements.push(edge);
@@ -221,7 +322,7 @@ export default function CytoGraph(props: CytoGraphProps) {
             source: node.id,
             target: sub.id,
             label: '',
-            color: 'teal',
+            color: '#888',
             type: 'parent',
           },
         };
@@ -244,11 +345,10 @@ export default function CytoGraph(props: CytoGraphProps) {
     },
     {
       selector: 'edge',
-      style: edgeStyle,
+      style: { ...edgeStyle, ...layout.options.edgeStyle },
     },
   ];
 
-  console.log('ELEMENTS', elements);
   return (
     <GraphContainer>
       <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
@@ -256,8 +356,10 @@ export default function CytoGraph(props: CytoGraphProps) {
         elements={elements}
         style={{ width: '100%', height: '100%' }}
         stylesheet={cyStyle}
-        layout={cyLayoutOptions}
+        layout={layout.options.layout}
         cy={(cy) => {
+          cy.on('tap', 'node', handleNodeClick);
+          /*
           cy.nodeHtmlLabel([
             {
               query: 'node',
@@ -267,13 +369,13 @@ export default function CytoGraph(props: CytoGraphProps) {
               halignBox: 'center',
               tpl: (data) => {
                 const name = wordWrap(data.name, 30, '<br />');
-                const histStr = data.hist
+                const histStr = data.hist.value
                   ? `<br />${data.hist.year}: <em>${data.hist.value} ${data.hist.unit}</em>`
                   : '';
                 return `<div style="color: ${data.textColor}"><strong>${name}</strong>${histStr}</div>`;
               },
             },
-          ]);
+          ]);*/
         }}
       />
     </GraphContainer>
