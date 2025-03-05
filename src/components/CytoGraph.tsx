@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 
-import chroma from 'chroma-js';
 import type { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
 import { useTranslation } from 'common/i18n';
 import cytoscape, {
@@ -14,11 +13,10 @@ import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 // @ts-ignore
 //import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
-import { readableColor } from 'polished';
+import { darken, readableColor } from 'polished';
 import styled, { useTheme } from 'styled-components';
 
 import SelectDropdown from './common/SelectDropdown';
-import { NutFill } from 'react-bootstrap-icons';
 
 const GraphContainer = styled.div`
   width: 100%;
@@ -32,20 +30,20 @@ cytoscape.use(elk);
 
 function getBackgroundColor(node: GetCytoscapeNodesQuery['nodes'][0]) {
   const nodeColors = {
-    action: '#94dd94',
-    emissions: '#c6b58a',
-    utility: '#93c2d6',
-    effect: '#e0b472',
-    currency: '#748d77',
-    unit_price: '#9ecae1',
-    energy: '#b74848',
-    emission_factor: '#d8e899',
+    action: '#0A5E43',
+    emissions: '#682901',
+    utility: '#AAC5DB',
+    effect: '#F4CE73',
+    currency: '#B2DFC2',
+    unit_price: '#6BBC95',
+    energy: '#E37D7D',
+    emission_factor: '#FDF1D2',
     argument: '#ff7354',
   };
 
   if (node.__typename == 'ActionNode') {
     if (node.group?.color) {
-      const actionColor = chroma(node.group.color).brighten().hex();
+      const actionColor = node.group.color;
       return actionColor;
     }
     return nodeColors.action;
@@ -111,6 +109,32 @@ function NodeSelector(props: NodeSelectorProps) {
       onChange={(val) => setSelectedNode(val ? val.id : '')}
       options={options}
       value={selectedNode ? options.find((o) => o.id === selectedNode) || null : null}
+      isMulti={false}
+      isClearable={true}
+    />
+  );
+}
+
+type LayoutSelectorProps = {
+  layoutId: string;
+  setLayout: React.Dispatch<React.SetStateAction<any>>;
+};
+
+function LayoutSelector(props: LayoutSelectorProps) {
+  const { layoutId, setLayout } = props;
+  const options = graphSettings.map((setting) => ({
+    id: setting.id,
+    label: setting.label,
+  }));
+  return (
+    <SelectDropdown
+      id="layout"
+      //label={t('choose-node')!}
+      onChange={(val) =>
+        setLayout(val ? graphSettings.find((s) => s.id === val.id) : graphSettings[0])
+      }
+      options={options}
+      value={layoutId ? options.find((o) => o.id === layoutId) || null : null}
       isMulti={false}
       isClearable={true}
     />
@@ -223,9 +247,16 @@ const edgeStyle: cytoscape.Css.Edge = {
   width: 2,
 };
 
+/*
+  'background-gradient-stop-colors': (node) =>
+    `${node.data('themeColor')} ${node.data('themeColor')} ${node.data('backgroundColor')}`,
+  'background-gradient-stop-positions': '0 3 3.5',
+  'background-gradient-direction': 'to-right',
+*/
+
 const nodeStyle: cytoscape.Css.Node = {
   shape: 'rectangle',
-  'background-color': 'data(backgroundColor)',
+  'background-color': (node) => node.data('backgroundColor'),
   color: (node) => node.data('textColor'),
   'text-valign': 'center',
   padding: '24px',
@@ -234,11 +265,12 @@ const nodeStyle: cytoscape.Css.Node = {
   'text-wrap': 'wrap',
   'text-outline-width': 0,
   'font-weight': 'normal',
-  'border-width': (node) => (node.data('type') === 'action' ? '2px' : '0px'),
-  'border-color': '#000000',
-  'border-style': 'dashed',
+  'border-width': (node) => (node.data('type') === 'action' ? '7px' : '0px'),
+  'border-color': (node) => darken(0.1, node.data('backgroundColor')),
+  'border-position': 'outside',
+  'border-join': 'round',
   width: 175,
-  height: 'auto',
+  height: 50,
 };
 
 type CytoGraphProps = {
@@ -251,7 +283,7 @@ export default function CytoGraph(props: CytoGraphProps) {
   const [layout, setLayout] = useState(graphSettings[0]);
   const router = useRouter();
   const theme = useTheme();
-  const visRef = useRef<HTMLDivElement>(null);
+  //const visRef = useRef<HTMLDivElement>(null);
   const elements: ElementDefinition[] = [];
 
   const handleNodeClick = (event: Cytoscape.EventObject) => {
@@ -276,18 +308,19 @@ export default function CytoGraph(props: CytoGraphProps) {
 
     const label = `${wordWrap(node.name, 30)}\n${latest.value !== '' ? `${latest.year}: ${latest.value} ${latest.unit}` : ''}`;
     //const label = "this can be anything and it doesn't matter";
-    const bgColor = getBackgroundColor(node);
-    const textColor = readableColor(bgColor);
 
+    const textColor = readableColor(getBackgroundColor(node));
+    //const textColor = '#000000';
     const element: NodeDefinition = {
       group: 'nodes',
       data: {
         id: node.id,
-        backgroundColor: bgColor,
+        backgroundColor: getBackgroundColor(node),
         textColor,
         name: node.name,
         hist: latest,
         label: label,
+        isVisible: node.isVisible,
         type: node.__typename == 'ActionNode' ? 'action' : 'node',
       },
     };
@@ -305,6 +338,7 @@ export default function CytoGraph(props: CytoGraphProps) {
           target: target.id,
           label: '',
           color: '#888',
+          weight: 1,
         },
       };
       elements.push(edge);
@@ -324,6 +358,7 @@ export default function CytoGraph(props: CytoGraphProps) {
             label: '',
             color: '#888',
             type: 'parent',
+            weight: 5,
           },
         };
         elements.push(edge);
@@ -351,7 +386,10 @@ export default function CytoGraph(props: CytoGraphProps) {
 
   return (
     <GraphContainer>
-      <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+        <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+        <LayoutSelector layoutId={layout.id} setLayout={setLayout} />
+      </div>
       <CytoscapeComponent
         elements={elements}
         style={{ width: '100%', height: '100%' }}
