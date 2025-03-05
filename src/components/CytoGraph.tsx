@@ -1,33 +1,42 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
-
 import type { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
 import { useTranslation } from 'common/i18n';
-import cytoscape, {
+import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,
   type NodeDefinition,
 } from 'cytoscape';
-import CytoscapeComponent from 'react-cytoscapejs';
+
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 // @ts-ignore
-//import cytoscapeNodeHtmlLabel from 'cytoscape-node-html-label';
-import { darken, readableColor } from 'polished';
-import styled, { useTheme } from 'styled-components';
+//import pdfExport from 'cytoscape-pdf-export';
+
+import { readableColor } from 'polished';
+import styled from 'styled-components';
 
 import SelectDropdown from './common/SelectDropdown';
+import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+import Icon from './common/icon';
 
 const GraphContainer = styled.div`
+  background-color: ${(props) => props.theme.graphColors.grey005};
   width: 100%;
   height: 800px;
   position: relative;
 `;
 
-cytoscape.use(dagre);
-cytoscape.use(elk);
-//cytoscapeNodeHtmlLabel(cytoscape);
+const Toolbar = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 1rem 1rem 0 1rem;
+  margin-bottom: 10px;
+`;
 
+Cytoscape.use(dagre);
+Cytoscape.use(elk);
 function getBackgroundColor(node: GetCytoscapeNodesQuery['nodes'][0]) {
   const nodeColors = {
     action: '#0A5E43',
@@ -136,10 +145,38 @@ function LayoutSelector(props: LayoutSelectorProps) {
       options={options}
       value={layoutId ? options.find((o) => o.id === layoutId) || null : null}
       isMulti={false}
-      isClearable={true}
     />
   );
 }
+
+const DownloadSelector = (props: {
+  handleExport: (format: 'jpg' | 'png' | 'json' | 'pdf') => void;
+}) => {
+  const { handleExport } = props;
+  const { t } = useTranslation();
+  return (
+    <UncontrolledDropdown size="sm">
+      <DropdownToggle caret size="lg">
+        <Icon name="download" />
+        {` ${t('download-data')}`}
+      </DropdownToggle>
+      <DropdownMenu>
+        <DropdownItem onClick={(e) => handleExport('jpg')}>
+          <Icon name="file" /> JPG
+        </DropdownItem>
+        <DropdownItem onClick={(e) => handleExport('png')}>
+          <Icon name="file" /> PNG
+        </DropdownItem>
+        <DropdownItem onClick={(e) => handleExport('json')}>
+          <Icon name="file" /> JSON
+        </DropdownItem>
+        <DropdownItem onClick={(e) => handleExport('pdf')}>
+          <Icon name="file" /> PDF
+        </DropdownItem>
+      </DropdownMenu>
+    </UncontrolledDropdown>
+  );
+};
 
 type LayoutOption = {
   id: string;
@@ -231,20 +268,18 @@ const graphSettings: LayoutOption[] = [
   },
 ];
 
-const edgeStyle: cytoscape.Css.Edge = {
+const edgeStyle: Cytoscape.Css.Edge = {
   label: 'data(label)',
   'target-text-offset': 1,
-  'target-arrow-shape': 'triangle',
+  'target-arrow-shape': 'chevron',
   'target-arrow-color': 'data(color)',
-  'arrow-scale': 2,
+  'arrow-scale': 1,
+  'source-arrow-shape': 'circle',
+  'source-arrow-color': 'data(color)',
   'line-color': 'data(color)',
   'text-outline-width': 3,
   'text-outline-color': 'data(color)',
-  color: '#ffffff',
-  'curve-style': 'bezier',
-  'font-size': '18px',
-  'font-weight': 'bold',
-  width: 2,
+  width: 3,
 };
 
 /*
@@ -254,7 +289,7 @@ const edgeStyle: cytoscape.Css.Edge = {
   'background-gradient-direction': 'to-right',
 */
 
-const nodeStyle: cytoscape.Css.Node = {
+const nodeStyle: Cytoscape.Css.Node = {
   shape: 'rectangle',
   'background-color': (node) => node.data('backgroundColor'),
   color: (node) => node.data('textColor'),
@@ -265,13 +300,91 @@ const nodeStyle: cytoscape.Css.Node = {
   'text-wrap': 'wrap',
   'text-outline-width': 0,
   'font-weight': 'normal',
-  'border-width': (node) => (node.data('type') === 'action' ? '7px' : '0px'),
-  'border-color': (node) => darken(0.1, node.data('backgroundColor')),
-  'border-position': 'outside',
-  'border-join': 'round',
   width: 175,
   height: 50,
 };
+
+const nodeToElement = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
+  const latestHistorical = node.metric?.historicalValues?.[0];
+  const latest = {
+    year: undefined,
+    value: '',
+    unit: node.unit?.htmlShort?.replace(/<[^>]*>/g, '') || '',
+  };
+  if (latestHistorical) {
+    const val = latestHistorical.value;
+    latest.year = latestHistorical.year;
+    latest.value = val < 0 ? val.toPrecision(3) : val.toFixed(0);
+  }
+
+  const label = `${wordWrap(node.name, 30)}\n${latest.value !== '' ? `${latest.year}: ${latest.value} ${latest.unit}` : ''}`;
+  //const label = "this can be anything and it doesn't matter";
+
+  const textColor = readableColor(getBackgroundColor(node));
+  //const textColor = '#000000';
+  const element: NodeDefinition = {
+    group: 'nodes',
+    data: {
+      id: node.id,
+      backgroundColor: getBackgroundColor(node),
+      textColor,
+      name: node.name,
+      hist: latest,
+      label: label,
+      isVisible: node.isVisible,
+      type: node.__typename == 'ActionNode' ? 'action' : 'node',
+    },
+  };
+  return element;
+};
+
+const edgesToElements = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
+  const edges: EdgeDefinition[] = [];
+  node.outputNodes.forEach((target) => {
+    const edge: EdgeDefinition = {
+      group: 'edges',
+      data: {
+        id: `${node.id}-${target.id}`,
+        source: node.id,
+        target: target.id,
+        label: '',
+        color: '#888',
+        weight: 1,
+      },
+    };
+    edges.push(edge);
+  });
+  if (node.__typename == 'ActionNode') {
+    if (node.subactions.length) {
+      console.log(node);
+      console.log(node.subactions);
+    }
+    node.subactions.forEach((sub) => {
+      const edge: EdgeDefinition = {
+        group: 'edges',
+        data: {
+          id: `${node.id}-${sub.id}`,
+          source: node.id,
+          target: sub.id,
+          label: '',
+          color: '#888',
+          type: 'parent',
+          weight: 5,
+        },
+      };
+      edges.push(edge);
+    });
+  }
+  return edges;
+};
+
+async function saveAs(blob: Blob, filename: string, isPDF: boolean) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+}
 
 type CytoGraphProps = {
   nodes: GetCytoscapeNodesQuery['nodes'];
@@ -281,141 +394,144 @@ export default function CytoGraph(props: CytoGraphProps) {
   const { nodes } = props;
   const [selectedNode, setSelectedNode] = useState('');
   const [layout, setLayout] = useState(graphSettings[0]);
+  const [cy, setCy] = useState<Cytoscape.Core | null>(null);
   const router = useRouter();
-  const theme = useTheme();
-  //const visRef = useRef<HTMLDivElement>(null);
-  const elements: ElementDefinition[] = [];
+  const cyRef = useRef<Cytoscape.Core | null>(null);
 
-  const handleNodeClick = (event: Cytoscape.EventObject) => {
-    const nodeId = event.target.data('id');
-    router.push(`/node/${nodeId}`);
-  };
-
-  // Nodes
-  nodes.forEach((node) => {
-    //const label = wordWrap(node.name, 30);
-    const latestHistorical = node.metric?.historicalValues?.[0];
-    const latest = {
-      year: null,
-      value: '',
-      unit: node.unit?.htmlShort?.replace(/<[^>]*>/g, '') || '',
-    };
-    if (latestHistorical) {
-      const val = latestHistorical.value;
-      latest.year = latestHistorical.year;
-      latest.value = val < 0 ? val.toPrecision(3) : val.toFixed(0);
-    }
-
-    const label = `${wordWrap(node.name, 30)}\n${latest.value !== '' ? `${latest.year}: ${latest.value} ${latest.unit}` : ''}`;
-    //const label = "this can be anything and it doesn't matter";
-
-    const textColor = readableColor(getBackgroundColor(node));
-    //const textColor = '#000000';
-    const element: NodeDefinition = {
-      group: 'nodes',
-      data: {
-        id: node.id,
-        backgroundColor: getBackgroundColor(node),
-        textColor,
-        name: node.name,
-        hist: latest,
-        label: label,
-        isVisible: node.isVisible,
-        type: node.__typename == 'ActionNode' ? 'action' : 'node',
-      },
-    };
-    elements.push(element);
-  });
-
-  // Edges
-  nodes.forEach((node) => {
-    node.outputNodes.forEach((target) => {
-      const edge: EdgeDefinition = {
-        group: 'edges',
-        data: {
-          id: `${node.id}-${target.id}`,
-          source: node.id,
-          target: target.id,
-          label: '',
-          color: '#888',
-          weight: 1,
-        },
-      };
-      elements.push(edge);
+  const elements = useMemo(() => {
+    const elements: ElementDefinition[] = [];
+    // Nodes
+    nodes.forEach((node) => {
+      elements.push(nodeToElement(node));
     });
-    if (node.__typename == 'ActionNode') {
-      if (node.subactions.length) {
-        console.log(node);
-        console.log(node.subactions);
-      }
-      node.subactions.forEach((sub) => {
-        const edge: EdgeDefinition = {
-          group: 'edges',
-          data: {
-            id: `${node.id}-${sub.id}`,
-            source: node.id,
-            target: sub.id,
-            label: '',
-            color: '#888',
-            type: 'parent',
-            weight: 5,
-          },
-        };
-        elements.push(edge);
-      });
-    }
-  });
+    // Edges
+    nodes.forEach((node) => {
+      elements.push(...edgesToElements(node));
+    });
+    return elements;
+  }, [nodes]);
 
-  const cyStyle = [
-    // the stylesheet for the graph
-    {
-      selector: '*',
-      style: {
-        'font-family': `${theme.fontFamily}, sans-serif`,
+  const cyStyle = useMemo(
+    () => [
+      // the stylesheet for the graph
+      {
+        selector: '*',
+        style: {
+          'font-family': 'system-ui, sans-serif',
+        },
       },
+      {
+        selector: 'node',
+        style: nodeStyle,
+      },
+      {
+        selector: 'edge',
+        style: { ...edgeStyle, ...layout.options.edgeStyle },
+      },
+    ],
+    [layout]
+  );
+
+  const handleNodeClick = useCallback(
+    (event: Cytoscape.EventObject) => {
+      const nodeId = event.target.data('id');
+      router.push(`/node/${nodeId}`);
     },
-    {
-      selector: 'node',
-      style: nodeStyle,
+    [router]
+  );
+
+  useEffect(() => {
+    if (!cyRef.current) {
+      return;
+    }
+    const registerPdfExport = async () => {
+      try {
+        const pdfExport = (await import('cytoscape-pdf-export')).default;
+        if (!Cytoscape?.pdf) {
+          Cytoscape.use(pdfExport);
+        }
+      } catch (error) {
+        console.error('Failed to load PDF export:', error);
+      }
+    };
+    registerPdfExport();
+
+    const cy = Cytoscape({
+      container: cyRef.current,
+      elements: elements,
+      style: cyStyle,
+      layout: layout.options.layout,
+    });
+    setCy(cy);
+  }, [cyRef, elements, cyStyle, layout]);
+
+  useEffect(() => {
+    if (cy) {
+      cy.on('tap', 'node', handleNodeClick);
+    }
+  }, [cy, handleNodeClick]);
+
+  const handleExport = useCallback(
+    async (format: 'jpg' | 'png' | 'json' | 'pdf') => {
+      if (cy) {
+        try {
+          let blob: Blob;
+          switch (format) {
+            case 'jpg':
+              console.log('EXPORTING: jpg');
+              blob = await cy.jpg({
+                full: true,
+                scale: 1.5,
+                quality: 1,
+                bg: '#ffffff',
+                output: 'blob-promise',
+              });
+              saveAs(blob, 'graph.jpg', false);
+              break;
+            case 'png':
+              console.log('EXPORTING: png');
+              blob = await cy.png({
+                full: true,
+                scale: 1.5,
+                bg: '#ffffff',
+                output: 'blob-promise',
+              });
+              saveAs(blob, 'graph.png', false);
+              break;
+            case 'json':
+              console.log('EXPORTING: json');
+              const json = cy.json();
+              blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
+              saveAs(blob, 'graph.json', false);
+              break;
+            case 'pdf':
+              if (cy.pdf) {
+                console.log('EXPORTING: pdf', layout.id);
+                blob = await cy.pdf({
+                  full: true,
+                  paperSize: 'A4',
+                  orientation: layout.id === 'orthogonal-lr' ? 'PORTRAIT' : 'LANDSCAPE',
+                  bg: '#ffffff',
+                });
+                saveAs(blob, 'graph.pdf', true);
+              }
+          }
+        } catch (error) {
+          console.error('Export failed:', error);
+        }
+      }
     },
-    {
-      selector: 'edge',
-      style: { ...edgeStyle, ...layout.options.edgeStyle },
-    },
-  ];
+    [cy]
+  );
 
   return (
     <GraphContainer>
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+      <Toolbar>
         <NodeSelector nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
         <LayoutSelector layoutId={layout.id} setLayout={setLayout} />
-      </div>
-      <CytoscapeComponent
-        elements={elements}
-        style={{ width: '100%', height: '100%' }}
-        stylesheet={cyStyle}
-        layout={layout.options.layout}
-        cy={(cy) => {
-          cy.on('tap', 'node', handleNodeClick);
-          /*
-          cy.nodeHtmlLabel([
-            {
-              query: 'node',
-              valign: 'center',
-              halign: 'center',
-              valignBox: 'center',
-              halignBox: 'center',
-              tpl: (data) => {
-                const name = wordWrap(data.name, 30, '<br />');
-                const histStr = data.hist.value
-                  ? `<br />${data.hist.year}: <em>${data.hist.value} ${data.hist.unit}</em>`
-                  : '';
-                return `<div style="color: ${data.textColor}"><strong>${name}</strong>${histStr}</div>`;
-              },
-            },
-          ]);*/
-        }}
-      />
+        <DownloadSelector handleExport={handleExport} />
+      </Toolbar>
+      <div ref={cyRef} style={{ width: '100%', height: '100%', backgroundColor: '#ffffff' }} />
     </GraphContainer>
   );
 }

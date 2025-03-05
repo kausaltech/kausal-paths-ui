@@ -47,7 +47,7 @@
     "cytoscape-dagre": "^2.5.0",
     "cytoscape-elk": "^2.3.0",
     "cytoscape-node-html-label": "^1.2.2",
-    "cytoscape-svg": "^0.4.0",
+    "cytoscape-pdf-export": "^0.0.3",
     "dayjs": "^1.11.11",
     "docker-secret": "^2.0.6",
     "dotenv": "^16.4.5",

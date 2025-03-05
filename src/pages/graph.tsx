@@ -1,5 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
-import { Spinner } from 'reactstrap';
+import ContentLoader from 'components/common/ContentLoader';
 import CytoGraph from 'components/CytoGraph';
 import GraphQLError from 'components/common/GraphQLError';
 
@@ -10,6 +10,7 @@ const GET_NODES = gql`
       name
       color
       quantity
+      isVisible
       unit {
         htmlShort
       }
@@ -44,8 +45,8 @@ const GET_NODES = gql`
 export default function Graph() {
   const { loading, error, data } = useQuery(GET_NODES);
 
-  if (loading) {
-    return <Spinner style={{ width: '3rem', height: '3rem' }} />;
+  if (loading || typeof window === 'undefined') {
+    return <ContentLoader />;
   }
   if (error) {
     return <GraphQLError error={error} />;
