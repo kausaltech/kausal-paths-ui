@@ -224,7 +224,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
         formatter: (params) => {
           const year = params[0].axisValue;
           const noDataColor = theme.graphColors.red030 || '#ef9a9a';
-          const noDataText = t('no-data-reported', 'No data reported');
+          const noDataText = t('no-data-reported');
           const items = params.map((param) => {
             if (param.value == null || isNaN(param.value)) {
               return `${param.marker} ${param.seriesName}:
