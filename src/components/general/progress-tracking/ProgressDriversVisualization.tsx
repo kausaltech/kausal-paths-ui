@@ -10,6 +10,7 @@ import { useSite } from '@/context/site';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 import type { EChartsCoreOption } from 'echarts';
 import type { Theme } from '@kausal/themes/types';
+import { useTranslation } from 'next-i18next';
 
 const X_SYMBOL =
   'path://M0.979266 20.7782C-0.192306 21.9497 -0.192307 23.8492 0.979266 25.0208C2.15084 26.1924 4.05033 26.1924 5.22191 ' +
@@ -101,6 +102,7 @@ function interpolateProgressValues(progressData: (number | null)[]): (number | n
 export function ProgressDriversVisualization({ metric, desiredOutcome, title }: Props) {
   const site = useSite();
   const theme = useTheme();
+  const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
 
   const chartData = useMemo<EChartsCoreOption | undefined>(() => {
@@ -221,11 +223,13 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
         trigger: 'axis',
         formatter: (params) => {
           const year = params[0].axisValue;
+          const noDataColor = theme.graphColors.red030 || '#ef9a9a';
+          const noDataText = t('no-data-reported');
           const items = params.map((param) => {
-            if (param.value == null) {
-              return '';
+            if (param.value == null || isNaN(param.value)) {
+              return `${param.marker} ${param.seriesName}:
+                <span style="color: ${noDataColor}; font-style: italic;">${noDataText}</span>`;
             }
-
             const value = param.value.toLocaleString(undefined, {
               maximumFractionDigits: 0,
             });
@@ -311,7 +315,6 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
         },
       ],
     };
-
     return option;
   }, [metric, theme, activeGoal, site.minYear, site.scenarios, desiredOutcome]);
 
