@@ -1,8 +1,8 @@
 import styled from 'styled-components';
-import Icon from 'components/common/icon';
 
-import { NodeLink } from 'common/links';
-import DashCard from 'components/general/DashCard';
+import { NodeLink } from '@/common/links';
+import Icon from '@/components/common/icon';
+import DashCard from '@/components/general/DashCard';
 
 const InputNodesWrapper = styled.div`
   padding: 0.5rem;

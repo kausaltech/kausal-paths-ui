@@ -1,7 +1,8 @@
-import { SortActionsConfig } from 'types/actions.types';
-import ActionComparisonGraph from 'components/graphs/ActionComparisonGraph';
 import { useTranslation } from 'next-i18next';
-import { ChartWrapper } from 'components/charts/ChartWrapper';
+import { SortActionsConfig } from 'types/actions.types';
+
+import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import ActionComparisonGraph from '@/components/graphs/ActionComparisonGraph';
 
 type Props = {
   sortBy?: SortActionsConfig['sortKey'];

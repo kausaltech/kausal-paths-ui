@@ -1,17 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useReactiveVar } from '@apollo/client';
+import type { ParsedUrlQuery } from 'node:querystring';
 
-import { activeScenarioVar, yearRangeVar } from 'common/cache';
-import OutcomeCardSet from 'components/general/OutcomeCardSet';
-import SettingsPanelFull from 'components/general/SettingsPanelFull';
+import { useEffect, useMemo, useState } from 'react';
+
 import { useRouter } from 'next/router';
-import { useInstance } from 'common/instance';
-import { useTranslation } from 'next-i18next';
-import type { GetPageQuery, OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import type { PageRefetchCallback } from './Page';
-import type { ParsedUrlQuery } from 'querystring';
-import { PageHero } from 'components/common/PageHero';
+
+import { useReactiveVar } from '@apollo/client';
 import type { TFunction } from 'i18next';
+import { useTranslation } from 'next-i18next';
+
+import type { GetPageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import { PageHero } from '@/components/common/PageHero';
+import OutcomeCardSet from '@/components/general/OutcomeCardSet';
+import SettingsPanelFull from '@/components/general/SettingsPanelFull';
+
+import type { PageRefetchCallback } from './Page';
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
 

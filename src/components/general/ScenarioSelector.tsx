@@ -1,16 +1,20 @@
 import { useState } from 'react';
+
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'reactstrap';
 import styled from 'styled-components';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Spinner } from 'reactstrap';
-import { activeScenarioVar } from 'common/cache';
-import { useInstance } from 'common/instance';
-import { GET_SCENARIOS } from 'queries/getScenarios';
+
+import { startInteraction } from '@common/sentry/helpers';
+
 import type {
   ActivateScenarioMutation,
   ActivateScenarioMutationVariables,
   GetScenariosQuery,
-} from 'common/__generated__/graphql';
+} from '@/common/__generated__/graphql';
+import { activeScenarioVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import { GET_SCENARIOS } from '@/queries/getScenarios';
 
 const ACTIVATE_SCENARIO = gql`
   mutation ActivateScenario($scenarioId: ID!) {
@@ -55,6 +59,9 @@ const ScenarioSelector = () => {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
     onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive)),
+    context: {
+      componentName: 'ScenarioSelector',
+    },
   });
 
   const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation<
@@ -86,7 +93,7 @@ const ScenarioSelector = () => {
     data?.scenarios.filter(
       (scen) => scen.isSelectable && (hideBaseScenario ? scen.id !== 'baseline' : true)
     ) ?? [];
-  const activeScenario = scenarios.find((scen) => scen.isActive);
+  const activeScenario = scenarios.find((scen) => scen.isActive)!;
 
   return (
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
@@ -101,7 +108,16 @@ const ScenarioSelector = () => {
           <DropdownItem
             key={scenario.id}
             active={scenario.isActive}
-            onClick={() => activateScenario({ variables: { scenarioId: scenario.id } })}
+            onClick={() =>
+              void startInteraction(
+                () => activateScenario({ variables: { scenarioId: scenario.id! } }),
+                {
+                  name: 'activateScenario',
+                  componentName: 'ScenarioSelector',
+                  attributes: { scenario_id: scenario.id! },
+                }
+              )
+            }
           >
             {scenario.name}
           </DropdownItem>

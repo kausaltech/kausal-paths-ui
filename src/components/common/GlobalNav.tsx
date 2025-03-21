@@ -1,14 +1,6 @@
 import React, { useContext, useMemo, useState } from 'react';
 
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
-import { Link } from 'common/links';
-import Icon from 'components/common/icon';
-import NavDropdown, {
-  type NavDropdownListItem,
-  type NavDropdownProps,
-} from 'components/common/NavDropdown';
-import LanguageSelector from 'components/general/LanguageSelector';
-import SiteContext from 'context/site';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
@@ -18,13 +10,21 @@ import {
   DropdownMenu,
   DropdownToggle,
   Nav,
-  Navbar,
   NavItem,
+  Navbar,
   UncontrolledDropdown,
 } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
+import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
+import NavDropdown, {
+  type NavDropdownListItem,
+  type NavDropdownProps,
+} from '@/components/common/NavDropdown';
+import Icon from '@/components/common/icon';
+import LanguageSelector from '@/components/general/LanguageSelector';
+import SiteContext from '@/context/site';
 
 const TopNav = styled(Navbar)`
   padding: 0 ${(props) => props.theme.spaces.s100};

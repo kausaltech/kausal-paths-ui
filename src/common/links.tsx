@@ -1,7 +1,8 @@
 import NextLink, { type LinkProps } from 'next/link';
 
+import { getAssetPrefix } from '@common/env';
+
 import { type SiteContextType, useSite } from '@/context/site';
-import { assetPrefix } from './environment';
 
 function getLocalePrefix(site: SiteContextType, forLocale?: string | false) {
   const locale = forLocale || site.i18n.locale;
@@ -23,7 +24,7 @@ export function formatUrl(site: SiteContextType, url: string, forLocale?: string
 export function formatStaticUrl(url: string) {
   if (!url) return url;
   if (url.startsWith('/')) {
-    const pathPrefix = assetPrefix || '';
+    const pathPrefix = getAssetPrefix() || '';
     return `${pathPrefix}${url}`;
   }
   return url;

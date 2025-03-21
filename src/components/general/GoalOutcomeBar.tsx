@@ -1,16 +1,18 @@
 import { useEffect } from 'react';
+
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
-import styled, { useTheme } from 'styled-components';
-import Icon from 'components/common/icon';
-import { Spinner, CardBody, UncontrolledCollapse, Button } from 'reactstrap';
-import { beautifyValue } from 'common/preprocess';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { useTranslation } from 'next-i18next';
+import { Button, CardBody, Spinner, UncontrolledCollapse } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
+
 import {
   GetInstanceGoalOutcomeQuery,
   GetInstanceGoalOutcomeQueryVariables,
-} from 'common/__generated__/graphql';
+} from '@/common/__generated__/graphql';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { beautifyValue } from '@/common/preprocess';
+import Icon from '@/components/common/icon';
 
 export const GET_INSTANCE_GOAL_OUTCOME = gql`
   query GetInstanceGoalOutcome($goal: ID!) {
@@ -85,8 +87,7 @@ const BarLabel = styled.div<{
       : `${24 - props.$placement * 7}px 5px 0 5px`};
   bottom: ${(props) => (props.$side === 'top' ? '0' : 'auto')};
   left: ${(props) => (props.$negative || props.$small ? 'auto' : '-1px')};
-  right: ${(props) =>
-    props.$small ? (props.$negative ? '-1px' : '100%') : 'auto'};
+  right: ${(props) => (props.$small ? (props.$negative ? '-1px' : '100%') : 'auto')};
   border-left: ${(props) =>
     !props.$small ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
   border-right: ${(props) =>
@@ -115,19 +116,14 @@ const EmissionBar = styled.div<{
 }>`
   position: absolute;
   top: ${(props) => props.$placement * 7}px;
-  right: ${(props) =>
-    props.$barWidth < 0 ? 0 : `${Math.abs(props.$zeroOffset)}%`};
+  right: ${(props) => (props.$barWidth < 0 ? 0 : `${Math.abs(props.$zeroOffset)}%`)};
   height: 6px;
   width: ${(props) => Math.abs(props.$barWidth)}%;
   background-color: ${(props) => props.$barColor};
   border-right: ${(props) =>
-    props.$barWidth > 0
-      ? `1px solid ${props.theme.graphColors.grey070}`
-      : 'none'};
+    props.$barWidth > 0 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
   border-left: ${(props) =>
-    props.$barWidth < 0
-      ? `1px solid ${props.theme.graphColors.grey070}`
-      : 'none'};
+    props.$barWidth < 0 ? `1px solid ${props.theme.graphColors.grey070}` : 'none'};
 `;
 
 const Card = styled.div`
@@ -136,16 +132,7 @@ const Card = styled.div`
 `;
 
 const BarWithLabel = (props) => {
-  const {
-    label,
-    value,
-    unit,
-    barWidth,
-    barColor,
-    labelSide,
-    placement,
-    zeroOffset,
-  } = props;
+  const { label, value, unit, barWidth, barColor, labelSide, placement, zeroOffset } = props;
 
   return (
     <EmissionBar
@@ -162,8 +149,7 @@ const BarWithLabel = (props) => {
       >
         <Label>{label}</Label>
         <Value>
-          {beautifyValue(value)}{' '}
-          <Unit dangerouslySetInnerHTML={{ __html: unit }} />
+          {beautifyValue(value)} <Unit dangerouslySetInnerHTML={{ __html: unit }} />
         </Value>
       </BarLabel>
     </EmissionBar>
@@ -247,21 +233,12 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
   const outcomeNow = historical[historical.length - 1];
   // Use the closest goal value to the end of the year range
   const comparisonGoal =
-    goalValues.filter((v) => v.year >= yearRange[1])[0] ||
-    goalValues[goalValues.length - 1];
+    goalValues.filter((v) => v.year >= yearRange[1])[0] || goalValues[goalValues.length - 1];
   // const comparisonGoal = goalValues[goalValues.length - 1];
   const comparisonActual = valuesByYear.get(yearRange[1])!;
 
-  const maxOutcome = _.max([
-    outcomeNow.actual,
-    comparisonActual.actual,
-    comparisonGoal.goal,
-  ])!;
-  const minOutcome = _.min([
-    outcomeNow.actual,
-    comparisonActual.actual,
-    comparisonGoal.goal,
-  ])!;
+  const maxOutcome = _.max([outcomeNow.actual, comparisonActual.actual, comparisonGoal.goal])!;
+  const minOutcome = _.min([outcomeNow.actual, comparisonActual.actual, comparisonGoal.goal])!;
   const totalRange = minOutcome < 0 ? maxOutcome - minOutcome : maxOutcome;
   const zeroOffset = minOutcome < 0 ? (minOutcome / totalRange) * 100 : 0;
   const outcomeColor =
@@ -333,29 +310,16 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
         <div>
           <EmissionsBar aria-live="polite">
             {bars.map((bar, index) => (
-              <BarWithLabel
-                {...bar}
-                key={bar.label}
-                placement={index}
-                zeroOffset={zeroOffset}
-              />
+              <BarWithLabel {...bar} key={bar.label} placement={index} zeroOffset={zeroOffset} />
             ))}
           </EmissionsBar>
         </div>
       ) : (
         <>
-          <AccordionHeader
-            color="primary"
-            id="outcome-toggler"
-            className="settings-section-header"
-          >
+          <AccordionHeader color="primary" id="outcome-toggler" className="settings-section-header">
             <div>
-              <h4>
-                {isForecast ? t('scenario-outcome') : t('historical-outcome')}
-              </h4>
-              <OutcomeText
-                dangerouslySetInnerHTML={{ __html: verbalizedOutcome }}
-              />
+              <h4>{isForecast ? t('scenario-outcome') : t('historical-outcome')}</h4>
+              <OutcomeText dangerouslySetInnerHTML={{ __html: verbalizedOutcome }} />
             </div>
             <Icon name="angleDown" width="24px" height="24px" />
           </AccordionHeader>

@@ -1,5 +1,0 @@
-{
-  "watch": ["src/server/*.ts"],
-  "exec": "node --loader ts-node/esm src/server/server.ts",
-  "ext": "js ts"
-}

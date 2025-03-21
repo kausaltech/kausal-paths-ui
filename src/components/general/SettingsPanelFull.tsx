@@ -1,13 +1,16 @@
 import { useCallback, useContext, useState } from 'react';
+
 import { useReactiveVar } from '@apollo/client';
-import styled from 'styled-components';
-import { transparentize } from 'polished';
-import { Row, Col, Button } from 'reactstrap';
-import Icon from 'components/common/icon';
-import { useSite } from 'context/site';
-import { yearRangeVar } from 'common/cache';
-import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
+import { transparentize } from 'polished';
+import { Button, Col, Row } from 'reactstrap';
+import styled from 'styled-components';
+
+import { yearRangeVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import Icon from '@/components/common/icon';
+import { useSite } from '@/context/site';
+
 import CompleteSettings from './CompleteSettings';
 import MediumSettings from './MediumSettings';
 
@@ -46,8 +49,7 @@ const FixedPanel = styled.aside`
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: ${(props) =>
-        transparentize(0.15, props.theme.graphColors.grey090)};
+      background-color: ${(props) => transparentize(0.15, props.theme.graphColors.grey090)};
     }
   }
 `;
@@ -126,8 +128,7 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
       <StyledSettingsButton onClick={(e) => handleToggle(e)}>
         {mode === MODE.MD && (
           <>
-            <Icon name="gear" />{' '}
-            <StyledButtonLabel>{t('settings-expand')}</StyledButtonLabel>
+            <Icon name="gear" /> <StyledButtonLabel>{t('settings-expand')}</StyledButtonLabel>
           </>
         )}
         {mode === MODE.LG && (

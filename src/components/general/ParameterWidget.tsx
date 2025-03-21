@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
-import Icon from 'components/common/icon';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
-import { activeScenarioVar } from 'common/cache';
-import Button from 'components/common/Button';
+
+import { startInteraction } from '@common/sentry/helpers';
+
 import type {
   ActionParameterFragment,
   SetParameterMutation,
   SetParameterMutationVariables,
-} from 'common/__generated__/graphql';
+} from '@/common/__generated__/graphql';
+import { activeScenarioVar } from '@/common/cache';
+import Button from '@/components/common/Button';
+import Icon from '@/components/common/icon';
 
 const RangeWrapper = styled.div`
   display: flex;
@@ -244,7 +248,11 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   });
 
   const handleUserSelection = (evt) => {
-    setParameter({ variables: evt });
+    void startInteraction(() => setParameter({ variables: evt }), {
+      name: 'setParameter',
+      componentName: 'ParameterWidget',
+      attributes: { parameter_id: parameter.id },
+    });
   };
 
   switch (parameter.__typename) {

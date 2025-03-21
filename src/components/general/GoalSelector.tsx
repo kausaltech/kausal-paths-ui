@@ -1,15 +1,12 @@
 import { useCallback, useState } from 'react';
-import { useTranslation } from 'next-i18next';
+
 import { useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 import styled from 'styled-components';
-import {
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-} from 'reactstrap';
-import { InstanceGoal, useInstance } from 'common/instance';
-import { activeGoalVar } from 'common/cache';
+
+import { activeGoalVar } from '@/common/cache';
+import { InstanceGoal, useInstance } from '@/common/instance';
 
 const StyledDropdown = styled(Dropdown)`
   //min-width: 200px;
@@ -74,9 +71,7 @@ const GoalSelector = () => {
             onClick={() => selectGoal(goal)}
           >
             <span>{goal.label}</span>
-            {goal.disabled && (
-              <StyledSublabel>{t('coming-soon')}</StyledSublabel>
-            )}
+            {goal.disabled && <StyledSublabel>{t('coming-soon')}</StyledSublabel>}
           </DropdownItem>
         ))}
       </DropdownMenu>

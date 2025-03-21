@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
-import Loader from 'components/common/Loader';
+
 import styled from 'styled-components';
+
+import Loader from '@/components/common/Loader';
 
 const StyledCard = styled.div`
   position: relative;

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
+
 import styled from 'styled-components';
 
-import { ActionLink, NodeLink } from 'common/links';
+import { ActionLink, NodeLink } from '@/common/links';
 
 const ActionsList = styled.ul`
   font-size: 0.9rem;
@@ -41,9 +42,7 @@ const ActionsListCard = styled.li<{ active: boolean; $groupColor: string }>`
   a,
   a > h6 {
     color: ${(props) =>
-      props.active
-        ? props.theme.graphColors.grey090
-        : props.theme.graphColors.grey050};
+      props.active ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050};
   }
 `;
 
@@ -79,13 +78,10 @@ const OutcomeNodeDetails = (props) => {
 
   return (
     <div>
-      {node.shortDescription && (
-        <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
-      )}
+      {node.shortDescription && <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />}
       {actions.length > 0 && (
         <h5>
-          {t('actions-influencing-this', { sector: node.name })} (
-          {actions.length})
+          {t('actions-influencing-this', { sector: node.name })} ({actions.length})
         </h5>
       )}
       <ActionsList>

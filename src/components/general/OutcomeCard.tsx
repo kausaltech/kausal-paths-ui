@@ -1,11 +1,13 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+
 import { useTranslation } from 'next-i18next';
-import DashCard from 'components/general/DashCard';
 import styled from 'styled-components';
-import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
-import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import Loader from 'components/common/Loader';
+
+import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures } from '@/common/instance';
+import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
+import Loader from '@/components/common/Loader';
+import DashCard from '@/components/general/DashCard';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;

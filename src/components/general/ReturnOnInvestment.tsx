@@ -1,12 +1,14 @@
-import { ChartWrapper } from 'components/charts/ChartWrapper';
-import { Chart } from 'components/charts/Chart';
-import { useTranslation } from 'react-i18next';
-import { useReactiveVar } from '@apollo/client';
-import type { GetImpactOverviewsQuery } from 'common/__generated__/graphql';
-import { yearRangeVar } from 'common/cache';
 import { useMemo } from 'react';
-import round from 'lodash/round';
+
+import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
+import round from 'lodash/round';
+import { useTranslation } from 'react-i18next';
+
+import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import { yearRangeVar } from '@/common/cache';
+import { Chart } from '@/components/charts/Chart';
+import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
 const formatPercentage = (value: number) => `${round(value, 2)} %`;
 

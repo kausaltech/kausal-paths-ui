@@ -1,10 +1,10 @@
-import type { Font, Style } from 'exceljs';
+import { type DocumentNode, gql } from '@apollo/client';
 import dayjs from 'dayjs';
+import type { Font, Style } from 'exceljs';
 import slugify from 'slugify';
 
-import type { DimensionalMetricFragment } from 'common/__generated__/graphql';
-import { type InstanceGoal } from 'common/instance';
-import { type DocumentNode, gql } from '@apollo/client';
+import type { DimensionalMetricFragment } from '@/common/__generated__/graphql';
+import { type InstanceGoal } from '@/common/instance';
 
 type CatValue = number | null;
 

@@ -1,19 +1,24 @@
 import { Suspense } from 'react';
+
 import Head from 'next/head';
 
-import { ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
-import type { GetPageQuery, GetPageQueryVariables } from 'common/__generated__/graphql';
-import { activeGoalVar } from 'common/cache';
-import { logApolloError } from 'common/log';
-import ContentLoader from 'components/common/ContentLoader';
-import ErrorMessage from 'components/common/ErrorMessage';
-import ActionListPage from 'components/pages/ActionListPage';
-import OutcomePage from 'components/pages/OutcomePage';
-import StaticPage from 'components/pages/StaticPage';
-import { useSite } from 'context/site';
+import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import * as Sentry from '@sentry/nextjs';
 import { useTranslation } from 'next-i18next';
-import Error from 'pages/_error';
-import GET_PAGE from 'queries/getPage';
+
+import { isLocal } from '@common/env';
+import { logApolloError } from '@common/logging/apollo';
+
+import type { GetPageQuery, GetPageQueryVariables } from '@/common/__generated__/graphql';
+import { activeGoalVar } from '@/common/cache';
+import ContentLoader from '@/components/common/ContentLoader';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import ActionListPage from '@/components/pages/ActionListPage';
+import OutcomePage from '@/components/pages/OutcomePage';
+import StaticPage from '@/components/pages/StaticPage';
+import { useSite } from '@/context/site';
+import Error from '@/pages/_error';
+import GET_PAGE from '@/queries/getPage';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
@@ -24,10 +29,12 @@ const PageLoader = () => {
 
 type PageProps = {
   path: string;
-  headerExtra?: JSX.Element;
+  headerExtra?: React.JSX.Element;
 };
 
-export default function Page({ path, headerExtra }: PageProps) {
+function Page(props: PageProps) {
+  const { path, headerExtra } = props;
+
   const site = useSite();
   const scenarios = !!getProgressTrackingScenario(site.scenarios)
     ? ['default', 'progress_tracking']
@@ -39,6 +46,9 @@ export default function Page({ path, headerExtra }: PageProps) {
       goal: activeGoal?.id ?? null,
       scenarios,
     },
+    context: {
+      componentName: 'Page',
+    },
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
   });
@@ -48,10 +58,12 @@ export default function Page({ path, headerExtra }: PageProps) {
   const { t } = useTranslation();
 
   if (error) {
-    logApolloError(error, { query: GET_PAGE, component: 'Page' });
-    /* If the GetPage query fails, we should show the "internal server error"
-     * dialog. */
-    throw error;
+    logApolloError(error, { component: 'Page' });
+    if (isLocal) {
+      throw error;
+    } else {
+      return <Error statusCode={500} />;
+    }
   }
   if (!data) {
     return <PageLoader />;
@@ -91,3 +103,5 @@ export default function Page({ path, headerExtra }: PageProps) {
     </>
   );
 }
+
+export default Page;
