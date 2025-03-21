@@ -1,6 +1,8 @@
 import { gql } from '@apollo/client';
+
+import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
+
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
-import { STREAM_FIELD_FRAGMENT } from 'components/common/StreamField';
 
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on Node {

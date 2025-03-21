@@ -1,19 +1,20 @@
 import { useCallback, useRef, useState } from 'react';
+
 import { useReactiveVar } from '@apollo/client';
-import { Row, Col, Container, Popover, PopoverBody } from 'reactstrap';
-import styled from 'styled-components';
 import { useTranslation } from 'next-i18next';
-import { useSite } from 'context/site';
-import { yearRangeVar } from 'common/cache';
-import { useInstance } from 'common/instance';
-import ScenarioSelector from 'components/general/ScenarioSelector';
-import RangeSelector from 'components/general/RangeSelector';
-import GoalSelector from 'components/general/GoalSelector';
-import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
+import { Col, Container, Popover, PopoverBody, Row } from 'reactstrap';
+import styled from 'styled-components';
+
+import { yearRangeVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import GoalOutcomeBar from '@/components/general/GoalOutcomeBar';
+import GoalSelector from '@/components/general/GoalSelector';
+import RangeSelector from '@/components/general/RangeSelector';
+import ScenarioSelector from '@/components/general/ScenarioSelector';
+import { useSite } from '@/context/site';
 
 const PanelContent = styled.div`
-  padding: ${({ theme }) =>
-    `${theme.spaces.s150} ${theme.spaces.s050} ${theme.spaces.s050}`};
+  padding: ${({ theme }) => `${theme.spaces.s150} ${theme.spaces.s050} ${theme.spaces.s050}`};
 `;
 
 const ButtonLabel = styled.div`
@@ -59,7 +60,13 @@ const StyledButton = styled.button<{ ref: HTMLButtonElement }>`
   }
 `;
 
-const YearRangeSelector = (props) => {
+type YearRangeSelectorProps = {
+  minYear: number;
+  maxYear: number;
+  referenceYear?: number | null;
+};
+
+const YearRangeSelector = (props: YearRangeSelectorProps) => {
   const { minYear, maxYear, referenceYear } = props;
   const inputReference = useRef<HTMLDivElement>(null);
   const triggerReference = useRef<HTMLButtonElement>(null);
@@ -115,7 +122,7 @@ const YearRangeSelector = (props) => {
               max={maxYear}
               defaultMin={yearRange[0]}
               defaultMax={yearRange[1]}
-              referenceYear={referenceYear}
+              referenceYear={referenceYear ?? null}
               handleChange={setYearRange}
             />
           </div>

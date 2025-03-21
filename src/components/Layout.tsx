@@ -1,17 +1,18 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { useTranslation } from 'common/i18n';
-import { useInstance } from 'common/instance';
-import Footer from 'components/common/Footer';
-import GlobalNav from 'components/common/GlobalNav';
-import { useSite } from 'context/site';
 import styled, { useTheme } from 'styled-components';
 
+import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
 import { getThemeStaticURL } from '@/common/theme';
+import Footer from '@/components/common/Footer';
+import GlobalNav from '@/components/common/GlobalNav';
+import { useSite } from '@/context/site';
+
 import IntroModal from './common/IntroModal';
-import { RefreshPrompt } from './general/RefreshPrompt';
 import { useCustomComponent } from './custom';
+import { RefreshPrompt } from './general/RefreshPrompt';
 
 const PageContainer = styled.div`
   width: 100%;
@@ -24,9 +25,10 @@ const PageContainer = styled.div`
   }
 `;
 
-const FooterContainer = styled.footer<{ isSettingsPanelHidden: boolean }>`
+const FooterContainer = styled.footer<{ $isSettingsPanelHidden: boolean }>`
   background-color: ${(props) => props.theme.themeColors.black};
-  padding-bottom: ${({ isSettingsPanelHidden }) => (isSettingsPanelHidden ? '0' : '7rem')};
+  padding-bottom: ${({ $isSettingsPanelHidden: isSettingsPanelHidden }) =>
+    isSettingsPanelHidden ? '0' : '7rem'};
 `;
 
 const StyledSkipToContent = styled.a`
@@ -81,6 +83,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   }
 
   const navItems = menuItems.map((page) => ({
+    id: page.id,
     name: page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
@@ -124,14 +127,18 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       </Head>
       {/* <CombinedIconSymbols /> */}
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
-      <NavComponent siteTitle={site.title} ownerName={site.owner} navItems={navItems} />
+      <NavComponent
+        siteTitle={site.title}
+        ownerName={site.owner ?? undefined}
+        navItems={navItems}
+      />
       <PageContainer>
         {showRefreshPrompt && <RefreshPrompt />}
         <main className="main" id="main">
           {children}
         </main>
       </PageContainer>
-      <FooterContainer isSettingsPanelHidden={isSettingsPanelHidden}>
+      <FooterContainer $isSettingsPanelHidden={isSettingsPanelHidden}>
         <FooterComponent />
       </FooterContainer>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}

@@ -1,11 +1,14 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useTranslation } from 'next-i18next';
-import styled, { useTheme } from 'styled-components';
-import dynamic from 'next/dynamic';
-import { Col, Row } from 'reactstrap';
-import Icon from 'components/common/icon';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+import dynamic from 'next/dynamic';
+
+import { useTranslation } from 'next-i18next';
+import { Col, Row } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
+
+import Icon from '@/components/common/icon';
+
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const GraphContainer = styled.div`
   .js-plotly-plot {
@@ -155,10 +158,7 @@ function ActionComparisonGraph(props) {
         <ActionDescription color={data.colors[hoverId]}>
           <a href={`/actions/${actionIds[hoverId]}/`}>
             <HoverGroupTag color={data.colors[hoverId]}>
-              {
-                actionGroups.find((group) => group.id === data.groups[hoverId])
-                  ?.name
-              }
+              {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>
               {data.actions[hoverId]} <Icon name="arrowRight" />
@@ -171,9 +171,7 @@ function ActionComparisonGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit
-                  dangerouslySetInnerHTML={{ __html: impactUnit }}
-                />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: impactUnit }} />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end"></Col>

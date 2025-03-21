@@ -1,12 +1,11 @@
 import Document, { type DocumentContext, Head, Html, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 
-import * as Sentry from '@sentry/nextjs';
-import { getThemeStaticURL } from 'common/theme';
-import { PUBLIC_ENV_KEY } from 'next-runtime-env/build/script/constants';
 import { ServerStyleSheet } from 'styled-components';
 
-import { exportRuntimeConfig } from '@/common/environment';
+import { getEnvScriptContents } from '@common/env/script-component';
+
+import { getThemeStaticURL } from '@/common/theme';
+
 import type { PathsAppProps } from './_app';
 
 class PlansDocument extends Document {
@@ -14,7 +13,7 @@ class PlansDocument extends Document {
     const sheet = new ServerStyleSheet();
     const originalRenderPage = ctx.renderPage;
     let themeProps: PathsAppProps['themeProps'] | undefined;
-    const sentryTraceId = Sentry.getCurrentScope().getPropagationContext().traceId;
+    //const sentryTrace = Sentry.getTraceData();
     try {
       ctx.renderPage = () =>
         originalRenderPage({
@@ -38,7 +37,9 @@ class PlansDocument extends Document {
                 href={getThemeStaticURL(themeProps.mainCssFile)}
               />
             )}
-            {null && sentryTraceId && <meta name="sentry-trace" content={sentryTraceId} />}
+            {/*Object.entries(sentryTrace).filter(([_, value]) => !!value).map(([key, value]) => (
+              <meta key={key} name={key} content={value} />
+            ))*/}
           </>
         ),
       };
@@ -58,11 +59,10 @@ class PlansDocument extends Document {
     return (
       <Html lang={nextData?.locale}>
         <Head>
-          <Script
-            id="runtime-env"
-            strategy="beforeInteractive"
+          <script
+            id="public-runtime-env"
             dangerouslySetInnerHTML={{
-              __html: `window['${PUBLIC_ENV_KEY}'] = ${JSON.stringify(exportRuntimeConfig())}`,
+              __html: getEnvScriptContents(),
             }}
           />
         </Head>

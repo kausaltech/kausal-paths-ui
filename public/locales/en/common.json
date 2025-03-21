@@ -123,5 +123,6 @@
   "observed-emissions": "Observed emissions",
   "emission-drivers": "Emission drivers",
   "emissions-by-sector": "Emissions by sector ({{year}})",
-  "no-data-reported": "No data reported"
+  "no-data-reported": "No data reported",
+  "invalid-page-type": "Invalid page type"
 }

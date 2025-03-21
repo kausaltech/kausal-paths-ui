@@ -1,8 +1,9 @@
-import styled from 'styled-components';
-import HighlightValue from 'components/general/HighlightValue';
-import { formatNumber } from 'common/preprocess';
 import { useTranslation } from 'next-i18next';
-import { useInstance } from 'common/instance';
+import styled from 'styled-components';
+
+import { useInstance } from '@/common/instance';
+import { formatNumber } from '@/common/preprocess';
+import HighlightValue from '@/components/general/HighlightValue';
 
 const ImpactDisplayWrapper = styled.div`
   display: flex;
@@ -18,8 +19,7 @@ const ImpactDisplayHeader = styled.div<{ $muted: boolean }>`
   line-height: 1;
   font-size: 0.75rem;
   font-weight: 700;
-  color: ${({ theme, $muted }) =>
-    $muted ? theme.textColor.tertiary : theme.textColor.secondary};
+  color: ${({ theme, $muted }) => ($muted ? theme.textColor.tertiary : theme.textColor.secondary)};
 `;
 
 const ImpactDisplayItem = styled.div`
@@ -73,8 +73,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
   } = props;
   const { t, i18n } = useTranslation();
 
-  const cumulativePrefix =
-    effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
+  const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
   const yearlyPrefix = effectYearly > 0 ? '+' : '';
 
   const instance = useInstance();
@@ -85,27 +84,23 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
         {t('impact')}
         {impactName && ` (${impactName})`}
       </ImpactDisplayHeader>
-      {effectCumulative !== undefined &&
-        instance.features.showAccumulatedEffects && (
-          <ImpactDisplayItem>
-            <HighlightValue
-              displayValue={`${cumulativePrefix}${formatNumber(
-                effectCumulative || 0,
-                i18n.language
-              )}`}
-              header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
-              unit={unitCumulative}
-              muted={muted}
-              size={size}
-            />
-          </ImpactDisplayItem>
-        )}
+      {effectCumulative !== undefined && instance.features.showAccumulatedEffects && (
+        <ImpactDisplayItem>
+          <HighlightValue
+            displayValue={`${cumulativePrefix}${formatNumber(
+              effectCumulative || 0,
+              i18n.language
+            )}`}
+            header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
+            unit={unitCumulative}
+            muted={muted}
+            size={size}
+          />
+        </ImpactDisplayItem>
+      )}
       <ImpactDisplayItem>
         <HighlightValue
-          displayValue={`${yearlyPrefix}${formatNumber(
-            effectYearly || 0,
-            i18n.language
-          )}`}
+          displayValue={`${yearlyPrefix}${formatNumber(effectYearly || 0, i18n.language)}`}
           header={`${t('impact-on-year')} ${yearRange[1]}`}
           unit={unitYearly}
           muted={muted}

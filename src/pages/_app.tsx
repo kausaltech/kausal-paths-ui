@@ -1,26 +1,33 @@
 import React from 'react';
+
 import App, { type AppContext, type AppProps } from 'next/app';
 
-import { ApolloClient, ApolloProvider, isApolloError } from '@apollo/client';
+import type { ApolloClient } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
 import * as Sentry from '@sentry/nextjs';
-import type {
-  GetAvailableInstancesQuery,
-  GetInstanceContextQuery,
-  GetInstanceContextQueryVariables,
-} from 'common/__generated__/graphql';
-import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from 'common/apollo';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
-import { getI18n } from 'common/i18n';
-import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from 'common/instance';
-import { loadTheme } from 'common/theme';
-import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
-import Layout from 'components/Layout';
-import SiteContext, { type SiteContextType, type SiteI18nConfig } from 'context/site';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
 import { ThemeProvider } from 'styled-components';
 
+import {
+  getAssetPrefix,
+  getWildcardDomains,
+  isLocal,
+  isProductionDeployment,
+  printRuntimeConfig,
+} from '@common/env';
+import { getLoggerAsync } from '@common/logging/logger';
+import { getClientIP, getCurrentURL } from '@common/utils';
+
+import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
+import type {
+  GetAvailableInstancesQuery,
+  GetInstanceContextQuery,
+  GetInstanceContextQueryVariables,
+} from '@/common/__generated__/graphql';
+import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from '@/common/apollo';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import {
   BASE_PATH_HEADER,
   DEFAULT_LANGUAGE_HEADER,
@@ -29,16 +36,19 @@ import {
   SUPPORTED_LANGUAGES_HEADER,
   THEME_IDENTIFIER_HEADER,
 } from '@/common/const';
-import { assetPrefix, deploymentType, wildcardDomains } from '@/common/environment';
-import { getLogger, logApolloError } from '@/common/log';
+import { getI18n } from '@/common/i18n';
+import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
+import { loadTheme } from '@/common/theme';
+import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
-import PathsError from './_error';
+import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
 
 require('../../styles/default/main.scss');
 
-const logger = getLogger('app');
+type WatchLink = { title: string; url: string } | null;
+type DemoPage = { id: string; lang: string; title: string; urlPath: string };
 
-const defaultSiteContext: { [key: string]: SiteContextType } = {
+const defaultSiteContext: { [key: string]: { watchLink: WatchLink; demoPages?: DemoPage[] } } = {
   sunnydale: {
     watchLink: null,
     demoPages: [
@@ -146,10 +156,6 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
   },
 };
 
-function renderFallbackError({ error: Error, eventId: string }) {
-  return <PathsError statusCode={500} />;
-}
-
 export type PathsAppProps = AppProps & {
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
@@ -158,8 +164,8 @@ export type PathsAppProps = AppProps & {
 };
 
 function PathsApp(props: PathsAppProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { Component, pageProps, siteContext, instanceContext, themeProps } = props;
-  const isProd = deploymentType === 'production';
   const { i18n } = useTranslation();
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
@@ -176,7 +182,7 @@ function PathsApp(props: PathsAppProps) {
 
   const numbersContext = createNumbersContext(
     i18n.language,
-    instance.features.showSignificantDigits
+    instance.features.showSignificantDigits ?? undefined
   );
 
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
@@ -199,7 +205,6 @@ function PathsApp(props: PathsAppProps) {
     yearRangeVar(yearRange);
   }
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
-
   return (
     <SiteContext.Provider value={siteContext}>
       <InstanceContext.Provider value={instanceContext}>
@@ -207,11 +212,7 @@ function PathsApp(props: PathsAppProps) {
           <ThemeProvider theme={themeProps}>
             <LocalizedNumbersContext.Provider value={numbersContext}>
               <ThemedGlobalStyles />
-              <Layout>
-                <Sentry.ErrorBoundary showDialog={!isProd} fallback={renderFallbackError}>
-                  {component}
-                </Sentry.ErrorBoundary>
-              </Layout>
+              <Layout>{component}</Layout>
             </LocalizedNumbersContext.Provider>
           </ThemeProvider>
         </ApolloProvider>
@@ -235,73 +236,80 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
   if (!instanceIdentifier) {
     return null;
   }
+  const logger = await getLoggerAsync({ name: 'app', request: req });
 
   // Instance is identified either by a hard-coded identifier or by the
   // request hostname.
-  const apolloConfig: ApolloClientOpts = {
-    instanceHostname: host,
-    instanceIdentifier: instanceIdentifier,
-    wildcardDomains,
-    authorizationToken: req.user?.idToken,
-    clientIp: req.ip,
-    locale: i18nConf.locale,
-    currentURL: req.currentURL,
-    clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
-  };
+  const apolloConfig: ApolloClientOpts & { instanceHostname: string; instanceIdentifier: string } =
+    {
+      instanceHostname: host,
+      instanceIdentifier: instanceIdentifier,
+      wildcardDomains: getWildcardDomains(),
+      authorizationToken: req.user?.idToken,
+      clientIp: getClientIP(req),
+      currentURL: getCurrentURL(req),
+      locale: i18nConf.locale,
+      clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
+    };
   const apolloClient: ApolloClient<object> = initializeApollo(null, apolloConfig);
 
   // Load the instance configuration from backend
-  let instance: InstanceContextType;
-  let siteContext: SiteContextType;
-  try {
-    const { data } = await apolloClient.query<
-      GetInstanceContextQuery,
-      GetInstanceContextQueryVariables
-    >({
-      query: GET_INSTANCE_CONTEXT,
-      context: {
-        logger,
-      },
-    });
-    const { scenarios } = data;
-    instance = data.instance!;
-    const basePath = req.headers[BASE_PATH_HEADER] as string;
-
-    siteContext = {
-      scenarios: data.scenarios,
-      parameters: data.parameters,
-      menuPages: data.menuPages,
-      title: instance.name!,
-      owner: instance.owner!,
-      apolloConfig,
-      availableNormalizations: data.availableNormalizations,
-      referenceYear: instance.referenceYear ?? null,
-      minYear: instance.minimumHistoricalYear,
-      maxYear: instance.modelEndYear,
-      targetYear: instance.targetYear ?? instance.modelEndYear,
-      latestMetricYear: instance.maximumHistoricalYear || 2018,
-      baselineName: scenarios.find((scenario) => scenario.id === 'baseline')?.name,
-      iconBase: `${assetPrefix}/static/themes/default/images/favicon`,
-      ogImage: `${assetPrefix}/static/themes/default/images/og-image-default.png`,
-      i18n: i18nConf,
-      basePath,
-      assetPrefix,
-    };
-  } catch (error) {
-    if (isApolloError(error)) {
-      logApolloError(error, { query: GET_INSTANCE_CONTEXT }, logger);
-      const isProtected = error.graphQLErrors.find(
-        (err) => err.extensions?.code == 'instance_protected'
-      );
-      if (isProtected) {
-      }
-    }
-    throw error;
-  }
+  const { data } = await apolloClient.query<
+    GetInstanceContextQuery,
+    GetInstanceContextQueryVariables
+  >({
+    query: GET_INSTANCE_CONTEXT,
+    context: {
+      'instance-hostname': apolloConfig.instanceHostname,
+      logger,
+      'component-name': 'PathsApp.getSiteContext',
+    },
+  });
+  const { scenarios } = data;
+  const instance = data.instance;
+  const basePath = req.headers[BASE_PATH_HEADER] as string;
+  const assetPrefix = getAssetPrefix();
+  const siteContext: SiteContextType = {
+    scenarios: data.scenarios,
+    parameters: data.parameters,
+    menuPages: data.menuPages,
+    title: instance.name,
+    owner: instance.owner!,
+    apolloConfig,
+    availableNormalizations: data.availableNormalizations,
+    referenceYear: instance.referenceYear ?? null,
+    minYear: instance.minimumHistoricalYear,
+    maxYear: instance.modelEndYear,
+    targetYear: instance.targetYear ?? instance.modelEndYear,
+    latestMetricYear: instance.maximumHistoricalYear || 2018,
+    baselineName: scenarios.find((scenario) => scenario.id === 'baseline')?.name,
+    iconBase: `${assetPrefix}/static/themes/default/images/favicon`,
+    ogImage: `${assetPrefix}/static/themes/default/images/og-image-default.png`,
+    i18n: i18nConf,
+    basePath,
+    assetPrefix,
+  };
   Object.assign(siteContext, defaultSiteContext[instance.id] || defaultSiteContext['sunnydale']);
   return {
     siteContext,
     instanceContext: instance,
+  };
+}
+
+function hasInstanceIdentifier(ctx: PathsPageContext) {
+  return !!ctx.req.headers[INSTANCE_IDENTIFIER_HEADER];
+}
+
+function getLocaleDebug(ctx: PathsPageContext) {
+  const { req } = ctx;
+  return {
+    url: ctx.req.url,
+    host: ctx.req.headers['host'],
+    locale: ctx.locale,
+    'default-language': req.headers[DEFAULT_LANGUAGE_HEADER],
+    'supported-languages': req.headers[SUPPORTED_LANGUAGES_HEADER],
+    'context-locales': ctx.locales,
+    'context-default-locale': ctx.defaultLocale,
   };
 }
 
@@ -311,23 +319,22 @@ async function getI18nProps(ctx: PathsPageContext) {
   const { req } = ctx;
   const nextI18nConfig = (await import('../../next-i18next.config')).default;
   let defaultLanguage = req.headers[DEFAULT_LANGUAGE_HEADER] as string | undefined;
-  if (!defaultLanguage) {
-    logger.warn('no i18n headers set');
-    console.log(ctx.locale, ctx.locales, ctx.defaultLocale);
+  const logger = await getLoggerAsync({ name: 'app-get-i18n-props', request: req });
+
+  if (!defaultLanguage || defaultLanguage === 'default') {
+    if (hasInstanceIdentifier(ctx)) {
+      logger.warn(getLocaleDebug(ctx), 'no i18n headers set, but instance identifier is present');
+    }
     defaultLanguage = 'en';
   }
 
-  logger.debug({
-    'default-language': req.headers[DEFAULT_LANGUAGE_HEADER],
-    'supported-languages': req.headers[SUPPORTED_LANGUAGES_HEADER],
-    locale: ctx.locale,
-    'context-locales': ctx.locales,
-    'context-default-locale': ctx.defaultLocale,
-  });
+  if (false) {
+    logger.debug(getLocaleDebug(ctx));
+  }
 
   if (!ctx.locale) {
-    logger.warn('no active locale');
-    ctx.locale = 'en';
+    logger.warn(getLocaleDebug(ctx), 'no active locale');
+    ctx.locale = defaultLanguage;
   }
   const header = req.headers[SUPPORTED_LANGUAGES_HEADER] as string | undefined;
   const supportedLanguages = (header ?? defaultLanguage).split(',');
@@ -340,11 +347,11 @@ async function getI18nProps(ctx: PathsPageContext) {
     ...nextI18nConfig,
     i18n: {
       ...nextI18nConfig.i18n,
-      defaultLocale: defaultLanguage ?? 'default',
+      defaultLocale: defaultLanguage,
       locales: supportedLanguages,
     },
   };
-  const i18nConfig = await serverSideTranslations(ctx.locale!, ['common', 'errors'], conf);
+  const i18nConfig = await serverSideTranslations(ctx.locale, ['common', 'errors'], conf);
   return i18nConfig;
 }
 
@@ -353,11 +360,6 @@ type InstanceConfig = GetAvailableInstancesQuery['availableInstances'][0];
 type PathsAppRequest = AppContext['ctx']['req'] & {
   ip: string;
   instanceConfig: InstanceConfig;
-  currentURL: {
-    baseURL: string;
-    path: string;
-    hostname: string;
-  };
   apiCookies?: string[];
   user?: {
     idToken: string;
@@ -374,21 +376,29 @@ type PathsAppContext = Omit<AppContext, 'ctx'> & {
 
 let defaultTheme: Theme | undefined;
 
-PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
+const getInitialProps = async (appContext: PathsAppContext) => {
   const { ctx } = appContext;
+  const logger = await getLoggerAsync({ name: 'app-initial-props', request: ctx.req });
 
   if (process.browser) {
+    if (!isLocal) {
+      printRuntimeConfig('Kausal Paths');
+    }
     const appProps = await App.getInitialProps(appContext);
     const nextData = window.__NEXT_DATA__;
-    const { _nextI18Next } = nextData.props.pageProps;
-    const { siteContext, instanceContext, themeProps } = nextData.props;
+    const pageProps = nextData.props as PathsAppProps;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { _nextI18Next } = pageProps.pageProps;
+    const { siteContext, instanceContext, themeProps } = pageProps;
     const ret = {
       ...appProps,
       siteContext,
       instanceContext,
       themeProps,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       pageProps: {
         ...appProps.pageProps,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         _nextI18Next,
       },
     };
@@ -404,7 +414,8 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
   if (!appProps.pageProps) {
     appProps.pageProps = {};
   }
-  const pageProps = appProps.pageProps;
+  const pageProps = appProps.pageProps as Record<string, unknown>;
+
   const i18nProps = await getI18nProps(ctx);
   const i18nConf = i18nProps._nextI18Next!.userConfig!.i18n;
   const siteI18nConf: SiteI18nConfig = {
@@ -423,11 +434,17 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
   appProps.themeProps = theme;
 
   // We instruct the upstream cache to cache for a minute
-  if (ctx.res && deploymentType === 'production') {
+  if (ctx.res && isProductionDeployment()) {
     ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=59');
   }
 
   return appProps;
+};
+
+PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
+  return Sentry.startSpan({ name: 'PathsApp.getInitialProps' }, async (_span) => {
+    return await getInitialProps(appContext);
+  });
 };
 
 const PathsAppWithTranslation = appWithTranslation(PathsApp);

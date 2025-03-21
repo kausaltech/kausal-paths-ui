@@ -1,9 +1,10 @@
 import { gql } from '@apollo/client';
-import DimensionalFlow from 'components/graphs/DimensionalFlow';
-import { SUBACTIONS_FRAGMENT } from 'components/general/SubActions';
-import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
-import { DimensionalMetric } from 'data/metric';
-import { STREAM_FIELD_FRAGMENT } from 'components/common/StreamField';
+
+import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
+import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
+import { SUBACTIONS_FRAGMENT } from '@/components/general/SubActions';
+import DimensionalFlow from '@/components/graphs/DimensionalFlow';
+import { DimensionalMetric } from '@/data/metric';
 
 const GET_ACTION_CONTENT = gql`
   query GetActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {

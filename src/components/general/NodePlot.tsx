@@ -1,17 +1,21 @@
 import { useContext } from 'react';
+
 import dynamic from 'next/dynamic';
+
 import { useTranslation } from 'next-i18next';
-import { tint, transparentize } from 'polished';
-import styled, { ThemeContext } from 'styled-components';
-import Icon from 'components/common/icon';
-import CsvDownload from 'react-json-to-csv';
-import { metricToPlot } from 'common/preprocess';
-import SiteContext, { useSite } from 'context/site';
 import type Plotly from 'plotly.js';
-import { useInstance } from 'common/instance';
+import { tint, transparentize } from 'polished';
+import CsvDownload from 'react-json-to-csv';
+import styled, { ThemeContext } from 'styled-components';
+
+import { useInstance } from '@/common/instance';
+import { metricToPlot } from '@/common/preprocess';
+import Icon from '@/components/common/icon';
+import SiteContext, { useSite } from '@/context/site';
+
 import type { CausalGridNode } from './CausalGrid';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const PlotWrapper = styled.div<{ $compact?: boolean }>`
   margin: 0 auto;
@@ -94,33 +98,20 @@ const NodePlot = (props: NodePlotProps) => {
     return out;
   };
 
-  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length)
-    return null;
+  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length) return null;
 
   const hasImpact =
     impactMetric?.forecastValues.length &&
     impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
 
-  const baselineForecast = metricToPlot(
-    metric,
-    'baselineForecastValues',
-    startYear,
-    endYear
-  );
+  const baselineForecast = metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
 
-  const historical = metricToPlot(
-    metric,
-    'historicalValues',
-    startYear,
-    endYear
-  );
+  const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
   const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
   const impactHistorical =
-    hasImpact &&
-    metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
+    hasImpact && metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
   const impactForecast =
-    hasImpact &&
-    metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
+    hasImpact && metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
 
   // create downloadable table
   const tableColumns = [
@@ -259,11 +250,7 @@ const NodePlot = (props: NodePlotProps) => {
     });
   }
 
-  if (
-    !isAction &&
-    site.baselineName &&
-    instance.features.baselineVisibleInGraphs
-  ) {
+  if (!isAction && site.baselineName && instance.features.baselineVisibleInGraphs) {
     plotData.push({
       x: baselineForecast.x,
       y: baselineForecast.y,
@@ -348,10 +335,7 @@ const NodePlot = (props: NodePlotProps) => {
       type: 'date',
       nticks: compact ? 10 : 20,
       // dtick: nrYears > 15 ? 'M24' : 'M12',
-      range: [
-        Date.parse(`Nov 1, ${startYear - 1}`),
-        Date.parse(`Feb 1, ${endYear}`),
-      ],
+      range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
       hoverformat: '<b>%Y</b>',

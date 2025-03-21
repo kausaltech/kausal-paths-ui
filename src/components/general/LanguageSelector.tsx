@@ -1,11 +1,11 @@
 import { useRouter } from 'next/router';
 
-import { Link } from 'common/links';
-import Icon from 'components/common/icon';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
 import { useInstance } from '@/common/instance';
+import { Link } from '@/common/links';
+import Icon from '@/components/common/icon';
 
 const Selector = styled(UncontrolledDropdown)<{ $mobile: boolean }>`
   a {

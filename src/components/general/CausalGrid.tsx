@@ -1,20 +1,19 @@
-import { useRef, useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
+
 import { remove } from 'lodash';
-import { Container, Alert } from 'reactstrap';
-import Icon from 'components/common/icon';
-import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, ArcherElement } from 'react-archer';
-import {
-  summarizeYearlyValuesBetween,
-  getImpactMetricValue,
-} from 'common/preprocess';
-import NodePlot from 'components/general/NodePlot';
-import CausalCard from 'components/general/CausalCard';
-import ImpactDisplay from 'components/general/ImpactDisplay';
-import { useInstance } from 'common/instance';
-import { NodeLink } from 'common/links';
-import { GetActionContentQuery } from 'common/__generated__/graphql';
-import { useTranslation } from 'common/i18n';
+import { Alert, Container } from 'reactstrap';
+import styled, { ThemeContext } from 'styled-components';
+
+import { GetActionContentQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
+import { NodeLink } from '@/common/links';
+import { getImpactMetricValue, summarizeYearlyValuesBetween } from '@/common/preprocess';
+import Icon from '@/components/common/icon';
+import CausalCard from '@/components/general/CausalCard';
+import ImpactDisplay from '@/components/general/ImpactDisplay';
+import NodePlot from '@/components/general/NodePlot';
 
 const ActionPoint = styled.button`
   display: flex;
@@ -137,9 +136,7 @@ const ImpactFigures = styled.div`
   }
 `;
 
-export type CausalGridNode = NonNullable<
-  GetActionContentQuery['action']
->['downstreamNodes'][0];
+export type CausalGridNode = NonNullable<GetActionContentQuery['action']>['downstreamNodes'][0];
 
 type CausalGridProps = {
   nodes: CausalGridNode[];
@@ -192,9 +189,9 @@ const CausalGrid = (props: CausalGridProps) => {
   const findOutputs = (parentIds: string[], tree: CausalGridNode[]) => {
     const grid = tree?.length ? tree : [];
     // return all nodes that input to given node ids
-    const inputs = Array.from(
-      new Set(parentIds.flatMap((id) => parentMap.get(id) || []))
-    ).filter((node) => node.id !== action.id);
+    const inputs = Array.from(new Set(parentIds.flatMap((id) => parentMap.get(id) || []))).filter(
+      (node) => node.id !== action.id
+    );
     // create grid row of ids
     const rowIds = inputs.map((outputNode) => outputNode.id);
     // remove higher duplicates from the grid
@@ -216,11 +213,7 @@ const CausalGrid = (props: CausalGridProps) => {
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact =
     lastNode.quantity === 'emissions'
-      ? summarizeYearlyValuesBetween(
-          lastNode.impactMetric,
-          yearRange[0],
-          yearRange[1]
-        )
+      ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1])
       : undefined;
 
   // find nodes that the action affects directly
@@ -284,19 +277,14 @@ const CausalGrid = (props: CausalGridProps) => {
         </ArcherElement>
         <div id="causal-grid" aria-hidden={!gridOpen}>
           {causalGridNodes?.map((row, rowIndex) => (
-            <GridRowWrapper
-              onScroll={() => gridCanvas.current.refreshScreen()}
-              key={rowIndex}
-            >
+            <GridRowWrapper onScroll={() => gridCanvas.current.refreshScreen()} key={rowIndex}>
               <GridRow>
                 {row.map((col, colindex) => (
                   <GridCol key={col.id}>
                     <ArcherElement
                       id={col.id}
                       relations={col.outputNodes
-                        .filter((outnode) =>
-                          visibleNodesIds.includes(outnode.id)
-                        )
+                        .filter((outnode) => visibleNodesIds.includes(outnode.id))
                         .map((node) => ({
                           targetId: node.id,
                           targetAnchor: 'top',

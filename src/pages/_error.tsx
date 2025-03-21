@@ -1,17 +1,17 @@
 //import styles from '../../styles/server-error.module.css';
-
 import NextErrorComponent, { type ErrorProps } from 'next/error';
 import Head from 'next/head';
 
 import * as Sentry from '@sentry/nextjs';
-import { useTranslation } from 'common/i18n';
-import { Link } from 'common/links';
-import Button from 'components/common/Button';
 import type { NextPageContext } from 'next';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
-import { isProd } from '@/common/environment';
+import { isProductionDeployment } from '@common/env';
+
+import { useTranslation } from '@/common/i18n';
+import { Link } from '@/common/links';
+import Button from '@/components/common/Button';
 
 const ErrorBackground = styled.div`
   background-color: ${(props) => props.theme.brandDark};
@@ -91,7 +91,7 @@ const PathsError = (props: AppErrorProps) => {
     specifiers.push(`HTTP ${statusCode}`);
   }
   let fullError: string | null = null;
-  if (!isProd && err) {
+  if (!isProductionDeployment() && err) {
     fullError = err.toString();
   }
   if (!theme) {
