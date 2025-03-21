@@ -8,6 +8,7 @@ import {
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { type DirectiveNode, Kind } from 'graphql';
 
+import { getLogger } from '@common/logging';
 import possibleTypes from '@/common/__generated__/possible_types.json';
 import {
   GQL_PROXY_PATH,
@@ -16,7 +17,6 @@ import {
   WILDCARD_DOMAINS_HEADER,
 } from './const';
 import { getRuntimeConfig, gqlUrl } from './environment';
-import { getLogger } from './log';
 
 const logger = getLogger('graphql');
 

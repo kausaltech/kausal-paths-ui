@@ -28,9 +28,9 @@
     "@opentelemetry/sdk-metrics": "^1.25.0",
     "@opentelemetry/semantic-conventions": "^1.25.0",
     "@react-spring/web": "^9.7.3",
-    "@sentry/nextjs": "^8.9.2",
-    "@sentry/node": "^8.9.2",
-    "@sentry/profiling-node": "^8.9.2",
+    "@sentry/nextjs": "^8.36.0",
+    "@sentry/node": "^8.36.0",
+    "@sentry/profiling-node": "^8.36.0",
     "@types/cookie-session": "^2.0.49",
     "@types/passport": "^1.0.16",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
@@ -106,7 +106,7 @@
     "@graphql-codegen/typescript": "^4.0.7",
     "@graphql-codegen/typescript-operations": "^4.2.1",
     "@graphql-codegen/typescript-react-apollo": "^4.3.0",
-    "@sentry/cli": "^2.32.1",
+    "@sentry/cli": "^2.38.1",
     "@storybook/addon-actions": "^8.1.9",
     "@storybook/addon-essentials": "^8.1.9",
     "@storybook/addon-links": "^8.1.9",
@@ -179,6 +179,7 @@
       ],
       {},
       [
+        "^@common/",
         "^@/",
         "^[.]"
       ]

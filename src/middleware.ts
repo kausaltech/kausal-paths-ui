@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
 
+import { generateCorrelationID, getLogger } from '@common/logging/logger';
 import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
 import i18nConfig from '../next-i18next.config';
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
@@ -17,7 +18,6 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
 import { deploymentType, wildcardDomains } from './common/environment';
-import { generateCorrelationID, getLogger } from './common/log';
 import { getInstancesForRequest } from './middleware/context';
 
 type Instance = AvailableInstanceFragment;

@@ -4,10 +4,9 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import * as url from 'node:url';
 
-import { withSentryConfig } from '@sentry/nextjs';
-import { secrets } from 'docker-secret';
 import lockfile from 'proper-lockfile';
 
+import { wrapWithSentryConfig } from './kausal_common/src/sentry/next-config.js';
 import i18nConfig from './next-i18next.config.js';
 
 const { i18n } = i18nConfig;
@@ -16,8 +15,6 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
 
 const isProd = process.env.NODE_ENV === 'production';
-
-const sentryAuthToken = secrets.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN;
 
 const standaloneBuild = process.env.NEXTJS_STANDALONE_BUILD === '1';
 
@@ -127,45 +124,4 @@ const nextConfig = {
   },
 };
 
-function initSentryWebpack(config) {
-  /**
-   * @type {import('@sentry/nextjs/types/config/types').SentryBuildOptions}
-   */
-  const sentryOptions = {
-    silent: false,
-    telemetry: false,
-    authToken: sentryAuthToken,
-    release: {
-      setCommits: {
-        auto: true,
-      },
-    },
-    disableLogger: !sentryDebug,
-    widenClientFileUpload: true,
-    automaticVercelMonitors: false,
-    reactComponentAnnotation: {
-      enabled: true,
-    },
-    unstable_sentryWebpackPluginOptions: {
-      // Even though this is advertised as unstable, the risk has low impact for this use case.
-      //
-      // This is passing options straight to the SentryWebpackPlugin and the key has to be found
-      // in SentryWebpackPluginOptions which come from @sentry/bundler-plugin-core
-      errorHandler: (error) => {
-        // When an error occurs during release creation or sourcemaps
-        // upload, the plugin will call this function. Without this
-        // handler, the build would fail completely.
-        console.error(
-          '⚠️  There was an error communicating with the Sentry API'
-        );
-        console.error(error.message);
-      },
-    },
-  };
-
-  // Make sure adding Sentry options is the last code to run before exporting, to
-  // ensure that your source maps include changes from all other Webpack plugins
-  return withSentryConfig(config, sentryOptions);
-}
-
-export default initSentryWebpack(nextConfig);
+export default wrapWithSentryConfig(nextConfig);

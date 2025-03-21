@@ -63,6 +63,7 @@ export default function Page({ path, headerExtra }: PageProps) {
     return <Error statusCode={404} />;
   }
   if (page.__typename === 'OutcomePage') {
+    console.log(page);
     pageContent = (
       <OutcomePage
         page={page}

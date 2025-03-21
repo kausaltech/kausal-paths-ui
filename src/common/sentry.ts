@@ -32,6 +32,7 @@ export async function initSentry() {
       return event;
     },
     skipOpenTelemetrySetup: true,
+    spotlight: true,
   });
   return Sentry;
 }

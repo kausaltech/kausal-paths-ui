@@ -1,19 +1,19 @@
 import { useMemo, useState } from 'react';
+
+import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
+import { useInstance } from 'common/instance';
+import { NodeLink } from 'common/links';
+import { beautifyValue, getMetricChange, getMetricValue } from 'common/preprocess';
+import Icon from 'components/common/icon';
+import Loader from 'components/common/Loader';
+import ScenarioBadge from 'components/common/ScenarioBadge';
+import DimensionalBarGraph from 'components/general/DimensionalBarGraph';
+import HighlightValue from 'components/general/HighlightValue';
 import { useTranslation } from 'next-i18next';
 import { Nav, NavItem, NavLink, TabContent } from 'reactstrap';
-import Icon from 'components/common/icon';
 import styled from 'styled-components';
-import Loader from 'components/common/Loader';
 
-import { NodeLink } from 'common/links';
-import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
-import HighlightValue from 'components/general/HighlightValue';
-import DimensionalBarGraph from 'components/general/DimensionalBarGraph';
 import DataTable from './DataTable';
-import OutcomeNodeDetails from './OutcomeNodeDetails';
-import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import ScenarioBadge from 'components/common/ScenarioBadge';
-import { useInstance } from 'common/instance';
 import DimensionalNodePlot from './DimensionalNodePlot';
 import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';

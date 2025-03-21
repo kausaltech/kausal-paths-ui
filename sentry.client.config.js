@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
-import { sentryDsn, deploymentType } from '@/common/environment';
+
+import { deploymentType, sentryDsn } from '@/common/environment';
 
 Sentry.init({
   dsn: sentryDsn,
@@ -20,4 +21,5 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
   tracePropagationTargets: ['localhost', `${process.env.NEXT_PUBLIC_API_URL}/graphql/`],
   environment: deploymentType,
+  spotlight: true,
 });

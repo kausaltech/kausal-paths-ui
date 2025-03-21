@@ -4,23 +4,19 @@ import App, { type AppContext, type AppProps } from 'next/app';
 import { ApolloClient, ApolloProvider, isApolloError } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
 import * as Sentry from '@sentry/nextjs';
-import type {
-  GetAvailableInstancesQuery,
-  GetInstanceContextQuery,
-  GetInstanceContextQueryVariables,
-} from 'common/__generated__/graphql';
-import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from 'common/apollo';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
-import { getI18n } from 'common/i18n';
-import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from 'common/instance';
-import { loadTheme } from 'common/theme';
-import ThemedGlobalStyles from 'common/ThemedGlobalStyles';
-import Layout from 'components/Layout';
-import SiteContext, { type SiteContextType, type SiteI18nConfig } from 'context/site';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
 import { ThemeProvider } from 'styled-components';
 
+import { logApolloError } from '@common/logging/logApolloError';
+import { getLogger } from '@common/logging/logger';
+import type {
+  GetAvailableInstancesQuery,
+  GetInstanceContextQuery,
+  GetInstanceContextQueryVariables,
+} from '@/common/__generated__/graphql';
+import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from '@/common/apollo';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import {
   BASE_PATH_HEADER,
   DEFAULT_LANGUAGE_HEADER,
@@ -30,8 +26,13 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from '@/common/const';
 import { assetPrefix, deploymentType, wildcardDomains } from '@/common/environment';
-import { getLogger, logApolloError } from '@/common/log';
+import { getI18n } from '@/common/i18n';
+import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
+import { loadTheme } from '@/common/theme';
+import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
+import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
+import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
 import PathsError from './_error';
 
 require('../../styles/default/main.scss');

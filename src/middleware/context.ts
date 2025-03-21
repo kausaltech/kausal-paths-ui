@@ -12,6 +12,7 @@ import * as Sentry from '@sentry/nextjs';
 import { SentryLink } from 'apollo-link-sentry';
 import type { Logger } from 'pino';
 
+import { logApolloError } from '@common/logging/logApolloError';
 import type {
   AvailableInstanceFragment,
   GetAvailableInstancesQuery,
@@ -19,7 +20,6 @@ import type {
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, getHttpHeaders, logQueryEnd, logQueryStart } from '@/common/apollo';
 import { getRuntimeConfig } from '@/common/environment';
-import { logApolloError } from '@/common/log';
 import LRUCache from './lru-cache';
 
 const GET_AVAILABLE_INSTANCES = gql`

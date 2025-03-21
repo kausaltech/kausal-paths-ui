@@ -1,7 +1,7 @@
 import type { Theme } from '@kausal/themes/types';
 
+import { getLogger } from '@common/logging';
 import { formatStaticUrl } from '@/common/links';
-import { getLogger } from '@/common/log';
 
 declare module 'styled-components' {
   export interface DefaultTheme extends Theme {}
