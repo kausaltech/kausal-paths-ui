@@ -1,82 +1,97 @@
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-//import { HostMetrics } from '@opentelemetry/host-metrics';
+import { DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
-import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici';
-import {
-  detectResourcesSync,
-  envDetector,
-  hostDetector,
-  processDetector,
-  Resource,
-} from '@opentelemetry/resources';
-import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-} from '@opentelemetry/semantic-conventions';
+import { Resource } from '@opentelemetry/resources';
+import { type SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import * as Sentry from '@sentry/node';
+import type { NodeClient } from '@sentry/node';
+import { SentryPropagator, SentrySampler, SentrySpanProcessor } from '@sentry/opentelemetry';
 
-const metricsPort = process.env.METRICS_PORT ? Number(process.env.METRICS_PORT) : 9464;
+import { getBuildId, getProjectId } from '@common/env';
+import { envToBool } from '@common/env/utils';
+import { DebugPropagator, DebugSampler, DebugSpanProcessor } from '@common/sentry/debug';
+import { getHttpInstrumentationOptions } from '@common/sentry/server-init';
 
-const exporter = new PrometheusExporter({
-  port: metricsPort,
-});
-const detectedResources = detectResourcesSync({
-  detectors: [envDetector, processDetector, hostDetector],
-});
-
-const customResources = new Resource({
-  [SEMRESATTRS_SERVICE_NAME]: process.env.SENTRY_PROJECT,
-  [SEMRESATTRS_SERVICE_VERSION]: process.env.BUILD_ID,
-});
-
-const resources = detectedResources.merge(customResources);
-
-const meterProvider = new MeterProvider({
-  readers: [exporter],
-  resource: resources,
-});
-/*
-const hostMetrics = new HostMetrics({
-    name: process.env.SENTRY_PROJECT!,
-    meterProvider,
-});
-*/
-registerInstrumentations({
-  meterProvider,
-  instrumentations: [
-    new HttpInstrumentation(),
-    new RuntimeNodeInstrumentation(),
-    new UndiciInstrumentation(),
-  ],
-});
-
-console.log(`Prometheus metrics served at :${metricsPort}`);
-
-exporter.startServer();
-/*
-function initLogging() {
-  // To start a logger, you first need to initialize the Logger provider.
-  const loggerProvider = new LoggerProvider();
-  // Add a processor to export log record
-  loggerProvider.addLogRecordProcessor(
-    new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())
-  );
-
-  // You can also use global singleton
-  logs.setGlobalLoggerProvider(loggerProvider);
-  const logger = logs.getLogger('default');
-
-  // emit a log record
-  logger.emit({
-    severityNumber: SeverityNumber.INFO,
-    severityText: 'INFO',
-    body: 'this is a log record body',
-    attributes: { 'log.type': 'LogRecord' },
-  });
-  return logger;
+function initDebugLogging() {
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ALL);
 }
 
-const logger = initLogging();
-*/
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function initTelemetry(sentryClient: NodeClient) {
+  const otelDebug = envToBool(process.env.OTEL_DEBUG, false);
+  const otelDebugLogging = envToBool(process.env.OTEL_DEBUG_LOGGING, false);
+  if (otelDebugLogging) {
+    initDebugLogging();
+  }
+  const traceSampler = otelDebug ? new DebugSampler(sentryClient) : new SentrySampler(sentryClient);
+  const propagator = otelDebug ? new DebugPropagator() : new SentryPropagator();
+  const processorOpts = { timeout: sentryClient.getOptions().maxSpanWaitDuration };
+  const spanProcessor = new SentrySpanProcessor(processorOpts);
+  const spanProcessors: SpanProcessor[] = [spanProcessor];
+  if (otelDebug) {
+    spanProcessors.push(new DebugSpanProcessor());
+  }
+  const provider = new NodeTracerProvider({
+    // Ensure the correct subset of traces is sent to Sentry
+    // This also ensures trace propagation works as expected
+    sampler: traceSampler,
+    resource: new Resource({
+      [ATTR_SERVICE_NAME]: getProjectId(),
+      [ATTR_SERVICE_VERSION]: getBuildId(),
+    }),
+    spanProcessors,
+  });
+  const contextManager = new Sentry.SentryContextManager();
+  provider.register({
+    // Ensure trace propagation works
+    // This relies on the SentrySampler for correct propagation
+    propagator,
+    // Ensure context & request isolation are correctly managed
+    contextManager,
+  });
+  const httpOptions = getHttpInstrumentationOptions();
+  const httpInstrumentation = new HttpInstrumentation(httpOptions);
+  registerInstrumentations({
+    instrumentations: [httpInstrumentation],
+  });
+  Sentry.validateOpenTelemetrySetup();
+  // This is a hack to force the http module to be instrumented
+  require('http');
+}
+
+export async function initMetrics() {
+  /*
+  const metricsPort = process.env.METRICS_PORT ? Number(process.env.METRICS_PORT) : 9464;
+
+  //const exporter = new PrometheusExporter({
+  //  port: metricsPort,
+  //});
+  const detectedResources = detectResourcesSync({
+    detectors: [envDetector, processDetector, hostDetector],
+  });
+
+  const customResources = new Resource({
+    [ATTR_SERVICE_NAME]: getProjectId(),
+    [ATTR_SERVICE_VERSION]: getBuildId(),
+  });
+
+  const resources = detectedResources.merge(customResources);
+
+  const meterProvider = new MeterProvider({
+    //readers: [exporter],
+    resource: resources,
+  });
+  const hostMetrics = new HostMetrics({
+      name: process.env.SENTRY_PROJECT!,
+      meterProvider,
+  });
+  registerInstrumentations({
+    meterProvider,
+    instrumentations: [],
+  });
+
+  console.log(`Prometheus metrics served at :${metricsPort}`);
+  */
+}

@@ -1,17 +1,20 @@
-import { useRef, useContext, useState, useEffect } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+
 import { remove } from 'lodash';
-import { Container, Alert, Spinner } from 'reactstrap';
-import Icon from 'components/common/icon';
-import styled, { ThemeContext } from 'styled-components';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
-import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
-import NodePlot from 'components/general/NodePlot';
-import CausalCard from 'components/general/CausalCard';
-import ImpactDisplay from 'components/general/ImpactDisplay';
-import { useInstance } from 'common/instance';
-import { NodeLink } from 'common/links';
-import type { GetActionContentQuery } from 'common/__generated__/graphql';
-import { useTranslation } from 'common/i18n';
+import { Alert, Container, Spinner } from 'reactstrap';
+import styled, { ThemeContext } from 'styled-components';
+
+import type { GetActionContentQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
+import { NodeLink } from '@/common/links';
+import { getImpactMetricValue, summarizeYearlyValuesBetween } from '@/common/preprocess';
+import Icon from '@/components/common/icon';
+import CausalCard from '@/components/general/CausalCard';
+import ImpactDisplay from '@/components/general/ImpactDisplay';
+import NodePlot from '@/components/general/NodePlot';
+
 import CausalGridOutcomeCard from './CausalGridOutcomeCard';
 
 const EXPAND_GRID_ID = 'expand-grid-button';

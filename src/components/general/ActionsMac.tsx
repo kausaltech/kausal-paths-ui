@@ -1,5 +1,5 @@
-import MacGraph from 'components/graphs/MacGraph';
-import { ChartWrapper } from 'components/charts/ChartWrapper';
+import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import MacGraph from '@/components/graphs/MacGraph';
 
 const ActionsMac = ({
   id,

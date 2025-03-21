@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
-import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
+
+import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
 
 export const scenarioFragment = gql`
   fragment ScenarioFragment on ScenarioType {

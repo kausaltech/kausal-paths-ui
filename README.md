@@ -1,8 +1,13 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Getting Started
 
 ### Initial setup and subsequent updates
+
+0. When cloning the repo, you should pass `--recurse-submodules` to the `git clone` invocation to ensure you also
+   get the `kausal_common` submodule checked out. If you have a pre-existing clone, you can update the submodule with:
+
+```bash
+git submodule update --init
+```
 
 1. Install nvm if you don't have it yet.
 2. Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
@@ -19,15 +24,9 @@ corepack enable npm
 
 4. If you need access to the Kausal private themes:
 
-4.1. remove the cookie(s) with npm.kausal.tech from your browser's cookie history.
-
-4.2. login to https://npm.kausal.tech
-using your Google credentials, copy the line with `npm config set ...` from
-the settings dialog, and execute it in your shell. Ensure the `@kausal-private` scope
-is associated with that registry by running:
-
-```bash
-echo '@kausal-private:registry=https://npm.kausal.tech/' >> ~/.npmrc
+```
+npx verdaccio-openid@latest --registry https://npm.kausal.tech
+npm config set @kausal-private:registry https://npm.kausal.tech
 ```
 
 5. Install dependencies:
@@ -38,13 +37,11 @@ npm i
 
 Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
 
-6. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+6. To run local development against a Kausal Paths backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
 
 ```
-NEXT_PUBLIC_API_URL=
+PATHS_BACKEND_URL=
 ```
-
-TODO: Explain `NEXT_PUBLIC_WILDCARD_DOMAINS`.
 
 ### Running the local dev server
 
@@ -61,7 +58,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 If you want to run the UI against your own backend, configure it in `.env`:
 
 ```
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/v1
+PATHS_BACKEND_URL=http://localhost:8000
 ```
 
 ## Deployment

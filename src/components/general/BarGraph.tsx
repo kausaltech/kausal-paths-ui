@@ -1,13 +1,15 @@
 import { useState } from 'react';
+
 import dynamic from 'next/dynamic';
+
 import { useTranslation } from 'next-i18next';
+import type { PlotParams } from 'react-plotly.js';
+import { Spinner } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
-import { Spinner } from 'reactstrap';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import type { PlotParams } from 'react-plotly.js';
+import { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const BarGraphContainer = styled.div`
   margin: 0 auto;
@@ -62,8 +64,8 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
   const negGroupName = hasOnlyOneNegativeSector
     ? cats.find((cat) => cat.value < 0).name
     : hasPositiveSectors
-    ? t('negative')
-    : parentNode.shortName || parentNode.name;
+      ? t('negative')
+      : parentNode.shortName || parentNode.name;
 
   const posTraces: PlotParams['data'] = [];
   const negTraces: PlotParams['data'] = [];
@@ -88,11 +90,7 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
         y: [cat.value],
         name: cat.shortName || cat.name,
         type: 'bar',
-        meta: [
-          cat.value / posTotal >= 0.01
-            ? Math.round((cat.value / posTotal) * 100)
-            : '<1',
-        ],
+        meta: [cat.value / posTotal >= 0.01 ? Math.round((cat.value / posTotal) * 100) : '<1'],
         textposition: 'outside',
         texttemplate: '%{meta[0]}%',
         textangle: 0,
@@ -118,8 +116,7 @@ const getLargestTotal = (traces) => {
       negTotal += trace.y[0];
     }
   });
-  const maxTotal =
-    Math.abs(negTotal) > posTotal ? Math.abs(negTotal) : posTotal;
+  const maxTotal = Math.abs(negTotal) > posTotal ? Math.abs(negTotal) : posTotal;
   return maxTotal;
 };
 
@@ -138,8 +135,7 @@ const BarGraph = (props: BarGraphProps) => {
 
   const metric = parentNode.metric!;
 
-  const displayNodes =
-    subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
+  const displayNodes = subNodes?.length > 1 ? subNodes : parentNode && [parentNode];
   const shortUnit = metric.unit?.short;
 
   let longUnit = parentNode.metric?.unit?.htmlShort;

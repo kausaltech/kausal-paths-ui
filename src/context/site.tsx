@@ -1,6 +1,6 @@
 import React, { useContext, type Dispatch, type SetStateAction } from 'react';
 
-import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
+import type { GetInstanceContextQuery } from '@/common/__generated__/graphql';
 
 export type SiteContextScenario = GetInstanceContextQuery['scenarios'][0];
 

@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { useTranslation } from 'next-i18next';
-import styled, { useTheme } from 'styled-components';
-import { tint } from 'polished';
-import { Spinner } from 'reactstrap';
-import { metricToPlot, getRange } from 'common/preprocess';
-import { useSite } from 'context/site';
-import { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import type { PlotParams } from 'react-plotly.js';
-import { useInstance } from 'common/instance';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+import dynamic from 'next/dynamic';
+
+import { useTranslation } from 'next-i18next';
+import { tint } from 'polished';
+import type { PlotParams } from 'react-plotly.js';
+import { Spinner } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
+
+import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useInstance } from '@/common/instance';
+import { getRange, metricToPlot } from '@/common/preprocess';
+import { useSite } from '@/context/site';
+import SiteContext from '@/context/site';
+
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const smoothingFactor = 0.8;
 
