@@ -1,15 +1,17 @@
-import { ChartWrapper } from 'components/charts/ChartWrapper';
-import { Chart } from 'components/charts/Chart';
-import { useTranslation } from 'react-i18next';
-import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import type { EChartsCoreOption } from 'echarts/core';
-import { useReactiveVar } from '@apollo/client';
-import { yearRangeVar } from '@/common/cache';
 import { useMemo } from 'react';
-import { DimensionalMetric } from '@/data/metric';
+
+import { useReactiveVar } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
-import { useTheme } from 'styled-components';
+import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from 'styled-components';
+
+import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import { yearRangeVar } from '@/common/cache';
+import { Chart } from '@/components/charts/Chart';
+import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { DimensionalMetric } from '@/data/metric';
 
 /**
  * For cost-benefit visualisations, only costDim is used.

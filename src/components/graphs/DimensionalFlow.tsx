@@ -1,13 +1,15 @@
 import { useEffect, useMemo } from 'react';
+
 import dynamic from 'next/dynamic';
 
 import { gql, useReactiveVar } from '@apollo/client';
-import type { DimensionalPlotFragment } from 'common/__generated__/graphql';
-import { yearRangeVar } from 'common/cache';
-import { genColorsFromTheme } from 'common/colors';
 import type Plotly from 'plotly.js';
 import { tint, transparentize } from 'polished';
 import { useTheme } from 'styled-components';
+
+import type { DimensionalPlotFragment } from '@/common/__generated__/graphql';
+import { yearRangeVar } from '@/common/cache';
+import { genColorsFromTheme } from '@/common/colors';
 
 type DimensionalPlotProps = {
   flow: DimensionalPlotFragment;

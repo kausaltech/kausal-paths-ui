@@ -3,13 +3,12 @@ import React, { type HTMLProps } from 'react';
 import SVG from 'react-inlinesvg';
 import { useTheme } from 'styled-components';
 
-import { getLogger } from '@/common/log';
+import { getLogger } from '@common/logging';
+
 import { getThemeStaticURL } from '@/common/theme';
 
 const camelToKebabCase = (s: string) =>
   s.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
-
-const logger = getLogger('icon');
 
 type IconProps = {
   name?: string;
@@ -51,9 +50,12 @@ const Icon = (props: IconProps) => {
     <SVG
       src={iconPath}
       className={`icon ${className}`}
-      onError={(error) => logger.error(error, `Error rendering icon ${name}`)}
+      onError={(error) => {
+        const logger = getLogger('icon');
+        logger.error(error, `Error rendering icon ${name}`);
+      }}
       key={`${theme.name}-${name}`}
-      style={{ width, height }}
+      style={{ width, height, color }}
       aria-hidden={alt ? 'false' : 'true'}
       focusable={alt ? 'true' : 'false'}
       title={alt}

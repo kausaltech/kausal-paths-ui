@@ -1,7 +1,8 @@
 import { gql, useQuery } from '@apollo/client';
 import { Spinner } from 'reactstrap';
-import CytoGraph from 'components/CytoGraph';
-import GraphQLError from 'components/common/GraphQLError';
+
+import CytoGraph from '@/components/CytoGraph';
+import GraphQLError from '@/components/common/GraphQLError';
 
 const GET_NODES = gql`
   query GetCytoscapeNodes {

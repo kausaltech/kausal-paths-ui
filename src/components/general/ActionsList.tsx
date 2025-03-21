@@ -1,9 +1,11 @@
-import styled from 'styled-components';
-import { Row, Col } from 'reactstrap';
-import { summarizeYearlyValuesBetween } from 'common/preprocess';
-import ActionListCard from 'components/general/ActionListCard';
-import { ActionWithEfficiency, SortActionsConfig } from 'types/actions.types';
 import { useMemo } from 'react';
+
+import { Col, Row } from 'reactstrap';
+import styled from 'styled-components';
+import { ActionWithEfficiency, SortActionsConfig } from 'types/actions.types';
+
+import { summarizeYearlyValuesBetween } from '@/common/preprocess';
+import ActionListCard from '@/components/general/ActionListCard';
 
 const ActionListList = styled(Row)`
   list-style: none;
@@ -33,11 +35,7 @@ const getValueForSorting = (
   yearRange: [number, number]
 ): number => {
   if (sortBy.key === 'CUM_IMPACT') {
-    return summarizeYearlyValuesBetween(
-      action.impactMetric,
-      yearRange[0],
-      yearRange[1]
-    );
+    return summarizeYearlyValuesBetween(action.impactMetric, yearRange[0], yearRange[1]);
   }
 
   if (sortBy.sortKey) {

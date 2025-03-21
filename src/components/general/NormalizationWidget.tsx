@@ -1,23 +1,16 @@
-import { gql, useMutation, useQuery, NetworkStatus } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { useTranslation } from 'react-i18next';
+import { FormGroup, Input, Label } from 'reactstrap';
 import styled from 'styled-components';
-import {
-  Row,
-  Col,
-  FormGroup,
-  Label,
-  Input,
-  Button,
-  InputGroup,
-  FormFeedback,
-} from 'reactstrap';
 
-import {
+import { startInteraction } from '@common/sentry/helpers';
+
+import type {
   GetParametersQuery,
   SetNormalizationMutation,
   SetNormalizationMutationVariables,
-} from 'common/__generated__/graphql';
-import { GET_PARAMETERS } from 'queries/getParameters';
-import { useTranslation } from 'react-i18next';
+} from '@/common/__generated__/graphql';
+import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const SwitchWrapper = styled.div`
   max-width: 160px;
@@ -48,15 +41,13 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
       notifyOnNetworkStatusChange: true,
     });
 
-  const [
-    setNormalization,
-    { data: mutationData, loading: mutationLoading, error: mutationError },
-  ] = useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(
-    SET_NORMALIZATION_MUTATION,
-    {
-      refetchQueries: 'active',
-    }
-  );
+  const [setNormalization, { data: mutationData, loading: mutationLoading, error: mutationError }] =
+    useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(
+      SET_NORMALIZATION_MUTATION,
+      {
+        refetchQueries: 'active',
+      }
+    );
 
   if ((loading && !previousData) || !data || !data.parameters) {
     return <>-</>;
@@ -85,13 +76,21 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
           id={norm.id}
           name={norm.id}
           checked={norm.isActive}
-          onChange={(e) => {
-            setNormalization({
-              variables: {
-                id: norm.isActive ? null : norm.id,
-              },
-            });
-          }}
+          onChange={(_e) =>
+            void startInteraction(
+              () =>
+                setNormalization({
+                  variables: {
+                    id: norm.isActive ? null : norm.id,
+                  },
+                }),
+              {
+                name: 'setNormalization',
+                componentName: 'NormalizationWidget',
+                attributes: { normalization_id: norm.id },
+              }
+            )
+          }
         />
       </FormGroup>
     </SwitchWrapper>

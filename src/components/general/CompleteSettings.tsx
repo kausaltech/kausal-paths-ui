@@ -1,27 +1,23 @@
 import { useCallback, useContext, useState } from 'react';
+
 import { useReactiveVar } from '@apollo/client';
-import styled from 'styled-components';
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  UncontrolledCollapse,
-  CardBody,
-} from 'reactstrap';
-import Icon from 'components/common/icon';
-import RangeSelector from 'components/general/RangeSelector';
-import { useSite } from 'context/site';
-import { yearRangeVar, activeScenarioVar } from 'common/cache';
-import GoalSelector from 'components/general/GoalSelector';
-import ScenarioSelector from 'components/general/ScenarioSelector';
-import NormalizationWidget from './NormalizationWidget';
-import GoalOutcomeBar from 'components/general/GoalOutcomeBar';
-import ScenarioBadge from 'components/common/ScenarioBadge';
-import GlobalParameters from 'components/general/GlobalParameters';
-import ActionsSummary from './ActionsSummary';
-import { useInstance } from 'common/instance';
 import { useTranslation } from 'next-i18next';
+import { Button, CardBody, Col, Container, Row, UncontrolledCollapse } from 'reactstrap';
+import styled from 'styled-components';
+
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import ScenarioBadge from '@/components/common/ScenarioBadge';
+import Icon from '@/components/common/icon';
+import GlobalParameters from '@/components/general/GlobalParameters';
+import GoalOutcomeBar from '@/components/general/GoalOutcomeBar';
+import GoalSelector from '@/components/general/GoalSelector';
+import RangeSelector from '@/components/general/RangeSelector';
+import ScenarioSelector from '@/components/general/ScenarioSelector';
+import { useSite } from '@/context/site';
+
+import ActionsSummary from './ActionsSummary';
+import NormalizationWidget from './NormalizationWidget';
 
 const SettingsHeader = styled.div`
   padding: 1rem 0;
@@ -86,8 +82,7 @@ const CompleteSettings = (props) => {
   const instance = useInstance();
   const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const hasGlobalParameters =
-    site.parameters.find((param) => param.isCustomizable) !== undefined;
+  const hasGlobalParameters = site.parameters.find((param) => param.isCustomizable) !== undefined;
   const hasNormalizations = site.availableNormalizations.length > 0;
 
   // State of display settings
@@ -132,18 +127,14 @@ const CompleteSettings = (props) => {
                           max={site.maxYear}
                           defaultMin={yearRange[0]}
                           defaultMax={yearRange[1]}
-                          referenceYear={
-                            instance.referenceYear ?? site.referenceYear
-                          }
+                          referenceYear={instance.referenceYear ?? site.referenceYear}
                           handleChange={setYearRange}
                         />
                       </Col>
                       {hasNormalizations && (
                         <Col md="3">
                           <h5>{t('normalization')}</h5>
-                          <NormalizationWidget
-                            availableNormalizations={availableNormalizations}
-                          />
+                          <NormalizationWidget availableNormalizations={availableNormalizations} />
                         </Col>
                       )}
                       {nrGoals > 1 && (

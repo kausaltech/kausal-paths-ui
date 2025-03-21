@@ -1,12 +1,13 @@
-import { useTranslation } from 'common/i18n';
-import { Link } from 'common/links';
-import { useSite } from 'context/site';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 import { Container } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
+import { useTranslation } from '@/common/i18n';
+import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
+import { useSite } from '@/context/site';
+
 import Icon from './icon';
 
 const StyledFooter = styled.footer`

@@ -1,12 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useTranslation } from 'next-i18next';
-import styled, { useTheme } from 'styled-components';
-import dynamic from 'next/dynamic';
-import { Col, Row } from 'reactstrap';
-import Icon from 'components/common/icon';
-import { t } from 'i18next';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+import dynamic from 'next/dynamic';
+
+import { t } from 'i18next';
+import { useTranslation } from 'next-i18next';
+import { Col, Row } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
+
+import Icon from '@/components/common/icon';
+
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const GraphContainer = styled.div`
   .js-plotly-plot {

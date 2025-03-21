@@ -1,14 +1,16 @@
-import React, { useState, ReactElement } from 'react';
-import Zoom from 'react-medium-image-zoom';
+import React, { ReactElement, useState } from 'react';
+
 import parse, { domToReact } from 'html-react-parser';
-import { Collapse } from 'reactstrap';
-import Button from 'components/common/Button';
-import Icon from 'components/common/icon';
+import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
-import { useTranslation } from 'common/i18n';
+import { Collapse } from 'reactstrap';
 import styled from 'styled-components';
-import { useSite } from 'context/site';
-import { useInstance } from 'common/instance';
+
+import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
+import Button from '@/components/common/Button';
+import Icon from '@/components/common/icon';
+import { useSite } from '@/context/site';
 
 const BreakPoint = styled.div<{ fade: boolean }>`
   text-align: center;
@@ -22,11 +24,7 @@ const BreakPoint = styled.div<{ fade: boolean }>`
     height: 75px;
     top: -90px;
     width: 100%;
-    background: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 1) 100%
-    );
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
   }
 `;
 
@@ -160,8 +158,7 @@ const CollapsibleText = (props: CollapsibleTextProps) => {
         introLength += node.props?.children?.length ?? 0;
       }
       if (indx > 0 && restOfContent.length === 0) {
-        if (previousNodeType === 'p' && introLength > BREAK_POINT)
-          restOfContent.push(node);
+        if (previousNodeType === 'p' && introLength > BREAK_POINT) restOfContent.push(node);
         else {
           intro.push(node);
           introLength += node.props?.children?.length ?? 0;
@@ -177,11 +174,7 @@ const CollapsibleText = (props: CollapsibleTextProps) => {
         <>
           <Collapse isOpen={isOpen}>{restOfContent}</Collapse>
           <BreakPoint fade={isOpen}>
-            <ToggleButton
-              color="link"
-              onClick={toggle}
-              className={isOpen ? 'open' : ''}
-            >
+            <ToggleButton color="link" onClick={toggle} className={isOpen ? 'open' : ''}>
               {isOpen ? t('close') : t('read-more')}
               <Icon name={isOpen ? 'angle-up' : 'angle-down'} />
             </ToggleButton>
@@ -219,16 +212,11 @@ export default function RichText(props: RichTextProps) {
         if (attribs['data-link-type']) {
           // FIXME: Add icon based on attribs['data-file-extension']
           return (
-            <a href={`${plan.serveFileBaseUrl}${attribs.href}`}>
-              {domToReact(children, options)}
-            </a>
+            <a href={`${plan.serveFileBaseUrl}${attribs.href}`}>{domToReact(children, options)}</a>
           );
         }
         // Internal link
-        if (
-          cutHttp(attribs.href.split('.')[0]) === currentDomain ||
-          attribs.href.startsWith('#')
-        ) {
+        if (cutHttp(attribs.href.split('.')[0]) === currentDomain || attribs.href.startsWith('#')) {
           return <a href={attribs.href}>{domToReact(children, options)}</a>;
         }
         // Assumed external link, open in new tab
@@ -249,10 +237,7 @@ export default function RichText(props: RichTextProps) {
 
   const parsedContent = parse(html, options);
 
-  if (isCollapsible)
-    return (
-      <CollapsibleText parsedContent={parsedContent} className={className} />
-    );
+  if (isCollapsible) return <CollapsibleText parsedContent={parsedContent} className={className} />;
 
   return (
     <div {...rest} className={`text-content ${className || ''}`}>

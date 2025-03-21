@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import Icon from 'components/common/icon';
+
+import Icon from '@/components/common/icon';
 
 const ActionCard = styled.div`
   display: flex;

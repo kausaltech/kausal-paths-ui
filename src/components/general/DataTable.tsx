@@ -1,8 +1,9 @@
 import { Table } from 'reactstrap';
 import Styled from 'styled-components';
-import { useTranslation } from 'common/i18n';
-import { formatNumber } from 'common/preprocess';
+
+import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
+import { formatNumber } from '@/common/preprocess';
 
 const TableWrapper = Styled.div`
   margin: 0 auto;

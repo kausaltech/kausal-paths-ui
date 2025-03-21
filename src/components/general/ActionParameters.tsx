@@ -1,7 +1,8 @@
-import styled from 'styled-components';
-import ParameterWidget from 'components/general/ParameterWidget';
 import { gql } from '@apollo/client';
-import { ActionParameterFragment } from 'common/__generated__/graphql';
+import styled from 'styled-components';
+
+import type { ActionParameterFragment } from '@/common/__generated__/graphql';
+import ParameterWidget from '@/components/general/ParameterWidget';
 
 const Parameters = styled.div`
   display: flex;
@@ -66,10 +67,7 @@ const ActionParameters = (props: { parameters: ActionParameterType[] }) => {
   return (
     <Parameters>
       {actionParameterSwitch && (
-        <ParameterWidget
-          key={actionParameterSwitch.id}
-          parameter={actionParameterSwitch}
-        />
+        <ParameterWidget key={actionParameterSwitch.id} parameter={actionParameterSwitch} />
       )}
       {actionEnabled &&
         actionOtherParameters?.map((parameter) => (

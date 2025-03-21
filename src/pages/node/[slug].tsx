@@ -1,26 +1,29 @@
 import { useEffect } from 'react';
+
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { Container, Row, Col, CardBody } from 'reactstrap';
-import styled from 'styled-components';
-import Icon from 'components/common/icon';
-import { Card } from 'components/common/Card';
 
-import { activeScenarioVar, yearRangeVar } from 'common/cache';
-import { useSite } from 'context/site';
-import { logApolloError } from 'common/log';
-import GraphQLError from 'components/common/GraphQLError';
-import SettingsPanelFull from 'components/general/SettingsPanelFull';
-import NodePlot from 'components/general/NodePlot';
-import NodeLinks from 'components/general/NodeLinks';
-import ContentLoader from 'components/common/ContentLoader';
-import { ActionLink } from 'common/links';
-import DimensionalNodePlot from 'components/general/DimensionalNodePlot';
-import { GetNodePageQuery } from 'common/__generated__/graphql';
-import ErrorMessage from 'components/common/ErrorMessage';
-import dimensionalNodePlotFragment from 'queries/dimensionalNodePlot';
+import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
+import { CardBody, Col, Container, Row } from 'reactstrap';
+import styled from 'styled-components';
+
+import { logApolloError } from '@common/logging/apollo';
+
+import { GetNodePageQuery } from '@/common/__generated__/graphql';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { ActionLink } from '@/common/links';
+import { Card } from '@/components/common/Card';
+import ContentLoader from '@/components/common/ContentLoader';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import GraphQLError from '@/components/common/GraphQLError';
+import Icon from '@/components/common/icon';
+import DimensionalNodePlot from '@/components/general/DimensionalNodePlot';
+import NodeLinks from '@/components/general/NodeLinks';
+import NodePlot from '@/components/general/NodePlot';
+import SettingsPanelFull from '@/components/general/SettingsPanelFull';
+import { useSite } from '@/context/site';
+import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
 const HeaderSection = styled.div<{ $color?: string }>`
   padding: 1rem 0 1rem;

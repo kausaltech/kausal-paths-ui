@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 import { ButtonToggle } from 'reactstrap';
-import Icon from 'components/common/icon';
 import styled, { useTheme } from 'styled-components';
-import { useTranslation } from 'next-i18next';
+
+import Icon from '@/components/common/icon';
 
 const SectionWrapper = styled.div`
   display: flex;
@@ -74,8 +76,7 @@ type RangeSelectorProps = {
 };
 
 const RangeSelector = (props: RangeSelectorProps) => {
-  const { min, max, referenceYear, handleChange, defaultMin, defaultMax } =
-    props;
+  const { min, max, referenceYear, handleChange, defaultMin, defaultMax } = props;
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -114,9 +115,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
     <SectionWrapper>
       <ActiveYearDisplay>
         <YearDescription>{t('comparison-year')}</YearDescription>
-        <ActiveYear>
-          {referenceYearActive ? referenceYear : values[0]}
-        </ActiveYear>
+        <ActiveYear>{referenceYearActive ? referenceYear : values[0]}</ActiveYear>
         {referenceYear && (
           <StyledButtonToggle
             color="link"
@@ -177,14 +176,14 @@ const RangeSelector = (props: RangeSelectorProps) => {
                 </div>
               </div>
             )}
-            renderThumb={({ props, isDragged, index }) => (
+            renderThumb={({ props, isDragged, _index }) => (
               <Thumb
                 {...props}
                 $dragged={isDragged}
                 style={{
                   ...props.style,
                 }}
-                color={theme.brandDark}
+                color={theme.brandLight}
               >
                 <Icon name="caretLeft" color="#eee" />
               </Thumb>

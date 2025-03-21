@@ -1,6 +1,7 @@
-import { expect, test as base } from '@playwright/test';
+/* eslint-disable react-hooks/rules-of-hooks */
+import { test as base, expect } from '@playwright/test';
 
-import { getIdentifiersToTest, InstanceContext } from '../common/context';
+import { InstanceContext, getIdentifiersToTest } from '@/common/context.js';
 
 const test = base.extend<{ ctx: InstanceContext }>({});
 
@@ -15,6 +16,7 @@ const testInstance = (instanceId: string) =>
       },
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test.beforeEach(async ({ page }) => {
       return;
       // FIXME: Enable later
@@ -32,8 +34,7 @@ const testInstance = (instanceId: string) =>
 
     test('basic layout', async ({ page, ctx }) => {
       await test.step('Initial page load', async () => {
-        await page.goto(ctx.baseURL);
-        await ctx.checkMeta(page);
+        await ctx.navigateTo(page, ctx.baseURL);
 
         test.slow();
         await expect(page.locator('nav#global-navigation-bar')).toBeVisible();
@@ -47,12 +48,11 @@ const testInstance = (instanceId: string) =>
       await ctx.waitForLoaded(page);
       //await expect(page).toHaveScreenshot({ fullPage: true });
     });
-    test('action list page', async ({ page, ctx }) => {
+    test('action list page through menu click', async ({ page, ctx }) => {
       const listItem = ctx.getActionListPage()!;
       test.skip(!listItem, 'No action list page for instance');
 
-      await page.goto(ctx.baseURL);
-      await ctx.checkMeta(page);
+      await ctx.navigateTo(page, ctx.baseURL);
 
       const nav = page.locator('nav#global-navigation-bar');
       const link = nav.getByRole('link', {
@@ -70,27 +70,23 @@ const testInstance = (instanceId: string) =>
       await expect.configure({ timeout: 45000 })(page.getByRole('tab').first()).toBeVisible();
 
       await ctx.waitForLoaded(page);
-      /*
-      await expect(page).toHaveScreenshot(`action-list-${instanceId}.png`, {
-        fullPage: true,
-      });
-      */
-      // Test direct URL navigation
-      await page.goto(`${ctx.baseURL}${listItem.urlPath}`);
+    });
+    test('action list page through direct URL', async ({ page, ctx }) => {
+      const listItem = ctx.getActionListPage()!;
+      test.skip(!listItem, 'No action list page for instance');
+
+      await ctx.navigateTo(page, `${ctx.baseURL}${listItem.urlPath}`);
       await expect(page).toHaveURL(`${ctx.baseURL}${listItem.urlPath}`, { timeout: 3000 }); // Fix NS_BINDING_ABORTED error in Firefox
       await ctx.checkMeta(page);
       await ctx.waitForLoaded(page);
       await expect
         .configure({ timeout: 15000 })(page.getByRole('tab').locator('visible=true').first())
         .toBeVisible();
-
-      //const ss = await page.screenshot({ fullPage: true });
-      //expect(ss).toMatchSnapshot('action-list.png');
     });
     test('action details page', async ({ page, ctx }) => {
       test.skip(ctx.instance.actions.length == 0, 'No actions defined in instance');
       const action = ctx.instance.actions[0];
-      await page.goto(ctx.getActionURL(action));
+      await ctx.navigateTo(page, ctx.getActionURL(action));
       await ctx.checkMeta(page);
       await ctx.waitForLoaded(page);
 

@@ -1,8 +1,9 @@
 import React, { useContext, useState } from 'react';
 
-import SiteContext from 'context/site';
 import { useTranslation } from 'next-i18next';
 import styled, { useTheme } from 'styled-components';
+
+import SiteContext from '@/context/site';
 
 const StyledFooter = styled.div`
   // Handle mystery regression in prod

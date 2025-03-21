@@ -1,15 +1,15 @@
 import { useTranslation } from 'next-i18next';
 import styled from 'styled-components';
-import { ActionLink } from 'common/links';
-import { findActionEnabledParam, summarizeYearlyValuesBetween } from 'common/preprocess';
 
-import ActionParameters from 'components/general/ActionParameters';
-import ImpactDisplay from 'components/general/ImpactDisplay';
-import Badge from 'components/common/Badge';
-import EfficiencyDisplay from 'components/general/EfficiencyDisplay';
-import { ActionWithEfficiency } from 'components/pages/ActionListPage';
-import Icon from 'components/common/icon';
-import Loader from 'components/common/Loader';
+import { ActionLink } from '@/common/links';
+import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
+import Badge from '@/components/common/Badge';
+import Loader from '@/components/common/Loader';
+import Icon from '@/components/common/icon';
+import ActionParameters from '@/components/general/ActionParameters';
+import EfficiencyDisplay from '@/components/general/EfficiencyDisplay';
+import ImpactDisplay from '@/components/general/ImpactDisplay';
+import { ActionWithEfficiency } from '@/components/pages/ActionListPage';
 
 const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
   position: relative;
