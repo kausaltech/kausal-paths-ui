@@ -13,7 +13,7 @@
     "prettier:fix": "prettier ./ --write",
     "typecheck": "tsc --noEmit",
     "lint": "next lint",
-    "prepare": "node .husky/install.mjs"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",
