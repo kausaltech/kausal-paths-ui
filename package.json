@@ -48,7 +48,6 @@
     "i18next-http-backend": "^3.0.2",
     "lodash-es": "^4.17.21",
     "nanoid": "^5.1.5",
-    "next": "^15.3.0-canary.20",
     "next-i18next": "^15.4.2",
     "numbro": "^2.5.0",
     "pino": "^9.6.0",
@@ -145,6 +144,7 @@
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "next": "canary"
   }
 }
