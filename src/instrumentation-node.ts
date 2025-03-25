@@ -7,8 +7,8 @@ import {
   hostDetector,
   processDetector,
 } from '@opentelemetry/resources';
-import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { NodeTracerProvider, type SpanProcessor } from '@opentelemetry/sdk-trace-node';
+//import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { BasicTracerProvider, type SpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import * as Sentry from '@sentry/node';
 import type { NodeClient } from '@sentry/node';
@@ -37,7 +37,7 @@ export async function initTelemetry(sentryClient: NodeClient) {
   if (otelDebug) {
     spanProcessors.push(new DebugSpanProcessor());
   }
-  const provider = new NodeTracerProvider({
+  const provider = new BasicTracerProvider({
     // Ensure the correct subset of traces is sent to Sentry
     // This also ensures trace propagation works as expected
     sampler: traceSampler,
@@ -58,8 +58,8 @@ export async function initTelemetry(sentryClient: NodeClient) {
   Sentry.validateOpenTelemetrySetup();
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function initMetrics() {
+  /*
   const metricsPort = process.env.METRICS_PORT ? Number(process.env.METRICS_PORT) : 9464;
 
   //const exporter = new PrometheusExporter({
@@ -80,16 +80,15 @@ export async function initMetrics() {
     //readers: [exporter],
     resource: resources,
   });
-  /*
   const hostMetrics = new HostMetrics({
       name: process.env.SENTRY_PROJECT!,
       meterProvider,
   });
-  */
   registerInstrumentations({
     meterProvider,
     instrumentations: [],
   });
 
   console.log(`Prometheus metrics served at :${metricsPort}`);
+  */
 }

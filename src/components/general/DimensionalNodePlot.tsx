@@ -3,20 +3,6 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
-import { type DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
-import { activeGoalVar } from 'common/cache';
-import { genColorsFromTheme, setUniqueColors } from 'common/colors';
-import { type InstanceGoal, useFeatures, useInstance } from 'common/instance';
-import { getRange } from 'common/preprocess';
-import SelectDropdown from 'components/common/SelectDropdown';
-import Icon from 'components/common/icon';
-import SiteContext from 'context/site';
-import {
-  DimensionalMetric,
-  type MetricCategoryValues,
-  MetricSlice,
-  type SliceConfig,
-} from 'data/metric';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'next-i18next';
 import type { LayoutAxis } from 'plotly.js';
@@ -31,12 +17,26 @@ import {
 } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
+import { type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import { activeGoalVar } from '@/common/cache';
+import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
+import { type InstanceGoal, useFeatures, useInstance } from '@/common/instance';
+import { getRange } from '@/common/preprocess';
+import SelectDropdown from '@/components/common/SelectDropdown';
+import Icon from '@/components/common/icon';
+import SiteContext from '@/context/site';
+import {
+  DimensionalMetric,
+  type MetricCategoryValues,
+  type MetricSlice,
+  type SliceConfig,
+} from '@/data/metric';
 import {
   getProgressTrackingScenario,
   metricHasProgressTrackingScenario,
 } from '@/utils/progress-tracking';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const Tools = styled.div`
   padding: 0 1rem 0.5rem;

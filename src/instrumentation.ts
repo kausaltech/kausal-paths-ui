@@ -1,4 +1,5 @@
 import type { VercelEdgeClient } from '@sentry/nextjs';
+import { captureRequestError } from '@sentry/nextjs';
 import type { NodeClient } from '@sentry/node';
 
 import { getRuntimeConfig, printRuntimeConfig } from '@common/env/runtime';
@@ -6,6 +7,9 @@ import { initRootLogger } from '@common/logging/logger';
 import { getSpotlightViewUrl, initSentry } from '@common/sentry/server-init';
 
 export const register = async () => {
+  if (!process.env.PROJECT_ID) {
+    process.env.PROJECT_ID = 'paths-ui';
+  }
   await initRootLogger();
   const sentryClient = await initSentry();
   if (process.env.NEXT_RUNTIME === 'nodejs') {
@@ -24,3 +28,5 @@ export const register = async () => {
     await edgeOtel.initTelemetry(sentryClient as VercelEdgeClient);
   }
 };
+
+export const onRequestError = captureRequestError;

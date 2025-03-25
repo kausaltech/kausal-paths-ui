@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import getRawBody from 'raw-body';
 
 import { getSentryDsn } from '@common/env/runtime';
 import { forwardToSentry } from '@common/sentry/tunnel';
@@ -12,21 +11,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ error: 'Sentry disabled' });
     return;
   }
-  const body: NodeJS.ReadableStream = req.body;
-  const buffer = await getRawBody(body, {
-    length: req.headers['content-length'],
-    limit: '1mb',
-  });
+  if (!req.body) {
+    res.status(500).json({ error: 'No request body' });
+    return;
+  }
   try {
-    await forwardToSentry(buffer, sentryDsnUrl);
-  } catch (err) {
+    await forwardToSentry(req.body as string, sentryDsnUrl);
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to forward to Sentry' });
   }
   return res.status(200).json({});
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};

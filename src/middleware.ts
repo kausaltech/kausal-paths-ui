@@ -274,4 +274,8 @@ async function middleware(req: NextRequest) {
   return rewrittenResp;
 }
 
+export const config = {
+  runtime: 'nodejs',
+};
+
 export default Sentry.wrapMiddlewareWithSentry(middleware);

@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { animated, config, useSpring } from '@react-spring/web';
+//import { animated, config, useSpring } from '@react-spring/web';
 import { useTranslation } from 'next-i18next';
-import useScrollTo from 'react-spring-scroll-to-hook';
+//import useScrollTo from 'react-spring-scroll-to-hook';
 import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -12,10 +12,12 @@ import OutcomeNodeContent from '@/components/general/OutcomeNodeContent';
 
 import OutcomeCard from './OutcomeCard';
 
-const CardSet = styled(animated.div)<{
+type CardSetProps = {
   $color?: string;
   $haschildren?: boolean;
-}>`
+};
+
+const CardSet = styled.div<CardSetProps>`
   position: relative;
   padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
   background-color: ${({ theme }) => theme.cardBackground.secondary};
@@ -94,7 +96,17 @@ const BarSeparator = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey070};
 `;
 
-const OutcomeBar = (props) => {
+type OutcomeBarProps = {
+  nodes: OutcomeNodeFieldsFragment[];
+  date: number;
+  hovered: string | undefined;
+  onHover: (evt: string | undefined) => void;
+  handleClick: (evt: string) => void;
+  activeNode: string | undefined;
+  parentColor: string;
+};
+
+const OutcomeBar = (props: OutcomeBarProps) => {
   const { nodes, date, hovered, onHover, handleClick, activeNode, parentColor } = props;
   const { t } = useTranslation();
   const nodesTotal = getOutcomeTotal(nodes, date);
@@ -211,7 +223,7 @@ const OutcomeCardSet = ({
   refetching,
 }: OutcomeCardSetProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
-  const { scrollTo } = useScrollTo(config.molasses);
+  //const { scrollTo } = useScrollTo(config.molasses);
   const { cardNodes, subNodeMap } = useMemo(() => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()]
@@ -241,10 +253,12 @@ const OutcomeCardSet = ({
   // Hide outcome bar. TODO: make this configurable
   const showOutcomeBar = false;
 
+  /*
   const fadeIn = useSpring({
     to: { opacity: 1 },
     from: { opacity: 0 },
   });
+  */
 
   const handleHover = useCallback(
     (evt) => {
@@ -275,12 +289,7 @@ const OutcomeCardSet = ({
   // console.log("card nodes" , cardNodes);
   return (
     <>
-      <CardSet
-        id={rootNode.id}
-        style={fadeIn}
-        $color={rootNode.color!}
-        $haschildren={cardNodes.length > 0}
-      >
+      <CardSet id={rootNode.id} $color={rootNode.color!} $haschildren={cardNodes.length > 0}>
         <ContentArea>
           <OutcomeNodeContent
             isRootNode={isRootNode}
