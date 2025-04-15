@@ -15,7 +15,7 @@ on:
         description: 'Base URL for backend API'
         required: true
         type: string
-        default: 'https://api.paths.kausal.dev/v1'
+        default: 'https://api.paths.kausal.dev'
       build_id:
         description: 'Unique ID for the build'
         required: true
@@ -50,7 +50,7 @@ jobs:
     name: Run tests
     runs-on: runner-prod
     container:
-      image: harbor.kausal.tech/library/playwright:v1.46.1
+      image: harbor.kausal.tech/library/playwright:v1.51.1
     env:
       TEST_INSTANCE_IDENTIFIERS: ${{ inputs.instance_identifiers }}
       PATHS_BACKEND_URL: ${{ inputs.backend_base_url }}
@@ -74,7 +74,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install dependencies
+      - name: Install main dependencies
+        run: npm ci
+        working-directory: ./
+
+      - name: Install dependencies for e2e tests
         run: npm ci
         working-directory: ./e2e-tests
 
