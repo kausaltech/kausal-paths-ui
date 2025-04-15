@@ -30,13 +30,11 @@ npm i
 
 Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
 
-6. To run local development against the staging backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+6. To run local development against a Kausal Paths backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
 
 ```
 PATHS_BACKEND_URL=
 ```
-
-TODO: Explain `NEXT_PUBLIC_WILDCARD_DOMAINS`.
 
 ### Running the local dev server
 
