@@ -5,6 +5,8 @@ import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 import styled, { useTheme } from 'styled-components';
 
+import { startInteraction } from '@common/sentry/helpers';
+
 import type {
   ActionParameterFragment,
   SetParameterMutation,
@@ -246,7 +248,11 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   });
 
   const handleUserSelection = (evt) => {
-    setParameter({ variables: evt });
+    void startInteraction(() => setParameter({ variables: evt }), {
+      name: 'setParameter',
+      componentName: 'ParameterWidget',
+      attributes: { parameter_id: parameter.id },
+    });
   };
 
   switch (parameter.__typename) {

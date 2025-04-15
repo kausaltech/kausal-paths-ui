@@ -1,8 +1,8 @@
 import { makeVar } from '@apollo/client';
 
-import { SiteContextScenario } from '@/context/site';
+import type { SiteContextScenario } from '@/context/site';
 
-import { InstanceGoal } from './instance';
+import type { InstanceGoal } from './instance';
 
 export const yearRangeVar = makeVar<[number, number]>(null!);
 export const activeScenarioVar = makeVar<SiteContextScenario>(null!);

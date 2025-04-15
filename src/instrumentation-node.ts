@@ -1,14 +1,9 @@
 import { DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import {
-  Resource,
-  detectResourcesSync,
-  envDetector,
-  hostDetector,
-  processDetector,
-} from '@opentelemetry/resources';
-//import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { BasicTracerProvider, type SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { Resource } from '@opentelemetry/resources';
+import { type SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import * as Sentry from '@sentry/node';
 import type { NodeClient } from '@sentry/node';
@@ -17,9 +12,10 @@ import { SentryPropagator, SentrySampler, SentrySpanProcessor } from '@sentry/op
 import { getBuildId, getProjectId } from '@common/env';
 import { envToBool } from '@common/env/utils';
 import { DebugPropagator, DebugSampler, DebugSpanProcessor } from '@common/sentry/debug';
+import { getHttpInstrumentationOptions } from '@common/sentry/server-init';
 
 function initDebugLogging() {
-  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.VERBOSE);
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ALL);
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -37,7 +33,7 @@ export async function initTelemetry(sentryClient: NodeClient) {
   if (otelDebug) {
     spanProcessors.push(new DebugSpanProcessor());
   }
-  const provider = new BasicTracerProvider({
+  const provider = new NodeTracerProvider({
     // Ensure the correct subset of traces is sent to Sentry
     // This also ensures trace propagation works as expected
     sampler: traceSampler,
@@ -55,7 +51,14 @@ export async function initTelemetry(sentryClient: NodeClient) {
     // Ensure context & request isolation are correctly managed
     contextManager,
   });
+  const httpOptions = getHttpInstrumentationOptions();
+  const httpInstrumentation = new HttpInstrumentation(httpOptions);
+  registerInstrumentations({
+    instrumentations: [httpInstrumentation],
+  });
   Sentry.validateOpenTelemetrySetup();
+  // This is a hack to force the http module to be instrumented
+  require('http');
 }
 
 export async function initMetrics() {

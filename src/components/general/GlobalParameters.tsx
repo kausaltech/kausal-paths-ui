@@ -6,7 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { Button, Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
 
-import {
+import { startInteraction } from '@common/sentry/helpers';
+
+import type {
   GetParametersQuery,
   SetNormalizationMutation,
   SetNormalizationMutationVariables,
@@ -31,12 +33,12 @@ const GlobalParametersPanel = styled(Row)`
 `;
 
 type StyledInputProps = {
-  customized: boolean;
+  $customized: boolean;
 };
 
 const StyledInput = styled(Input)<StyledInputProps>`
   background-color: ${(props) =>
-    props.customized ? props.theme.graphColors.blue010 : props.theme.themeColors.white};
+    props.$customized ? props.theme.graphColors.blue010 : props.theme.themeColors.white};
 `;
 
 const SET_PARAMETER = gql`
@@ -65,9 +67,16 @@ const SET_PARAMETER = gql`
   }
 `;
 
-const NumericParameter = (props) => {
+type NumericParameterProps = {
+  id: string;
+  isCustomized: boolean;
+  refetching: boolean;
+  value: number;
+  invalid: boolean;
+  handleUserSelection: (e: any) => void;
+};
+const NumericParameter = (props: NumericParameterProps) => {
   const { id, isCustomized, refetching, value, invalid, handleUserSelection } = props;
-
   const [currentValue, setCurrentValue] = useState(value);
 
   useEffect(() => {
@@ -99,7 +108,7 @@ const NumericParameter = (props) => {
     <InputGroup>
       <StyledInput
         invalid={invalid !== false}
-        customized={isCustomized}
+        $customized={isCustomized}
         id={id}
         name={id}
         placeholder={refetching ? '///' : currentValue}
@@ -111,11 +120,11 @@ const NumericParameter = (props) => {
         onKeyPress={(e) => handleInput(e)}
       />
       <FormFeedback tooltip>{invalid}</FormFeedback>
-      {false && (
+      {/* (
         <Button size="sm" outline color="black" disabled={!parameter.isCustomized}>
           <Icon name="version" />
         </Button>
-      )}
+      )} */}
     </InputGroup>
   );
 };
@@ -141,7 +150,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   const [invalid, setInvalid] = useState(false);
   const [parameterValue, setParameterValue] = useState(numberValue || boolValue || stringValue);
 
-  const [SetParameter, { loading: mutationLoading, error: mutationError }] = useMutation(
+  const [setParameter, { loading: mutationLoading, error: mutationError }] = useMutation(
     SET_PARAMETER,
     {
       notifyOnNetworkStatusChange: true,
@@ -197,7 +206,11 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
 
     // Send mutation if checks pass (and user presses enter)
     if (evt?.char === 'Enter') {
-      SetParameter({ variables: evt });
+      void startInteraction(() => setParameter({ variables: evt }), {
+        name: 'setParameter',
+        componentName: 'GlobalParameters',
+        attributes: { parameter_id: id },
+      });
     }
   };
 
@@ -227,8 +240,8 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           <FormGroup>
             <Label for={param.id}>{param.label || param.id}</Label>
             <Input
-              id={param.id!}
-              name={param.id!}
+              id={param.id}
+              name={param.id}
               placeholder={mutationLoading ? 'loading' : param.stringValue!}
               defaultValue={mutationLoading ? 'loading' : param.stringValue!}
               type="text"
@@ -326,6 +339,9 @@ const GlobalParameters = (props: GlobalParametersProps) => {
   const { loading, error, data, previousData, refetch, networkStatus } =
     useQuery<GetParametersQuery>(GET_PARAMETERS, {
       notifyOnNetworkStatusChange: true,
+      context: {
+        componentName: 'GlobalParameters',
+      },
     });
   const { t } = useTranslation();
 

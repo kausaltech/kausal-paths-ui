@@ -25,9 +25,10 @@ const PageContainer = styled.div`
   }
 `;
 
-const FooterContainer = styled.footer<{ isSettingsPanelHidden: boolean }>`
+const FooterContainer = styled.footer<{ $isSettingsPanelHidden: boolean }>`
   background-color: ${(props) => props.theme.themeColors.black};
-  padding-bottom: ${({ isSettingsPanelHidden }) => (isSettingsPanelHidden ? '0' : '7rem')};
+  padding-bottom: ${({ $isSettingsPanelHidden: isSettingsPanelHidden }) =>
+    isSettingsPanelHidden ? '0' : '7rem'};
 `;
 
 const StyledSkipToContent = styled.a`
@@ -82,6 +83,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   }
 
   const navItems = menuItems.map((page) => ({
+    id: page.id,
     name: page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
@@ -125,14 +127,18 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       </Head>
       {/* <CombinedIconSymbols /> */}
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
-      <NavComponent siteTitle={site.title} ownerName={site.owner} navItems={navItems} />
+      <NavComponent
+        siteTitle={site.title}
+        ownerName={site.owner ?? undefined}
+        navItems={navItems}
+      />
       <PageContainer>
         {showRefreshPrompt && <RefreshPrompt />}
         <main className="main" id="main">
           {children}
         </main>
       </PageContainer>
-      <FooterContainer isSettingsPanelHidden={isSettingsPanelHidden}>
+      <FooterContainer $isSettingsPanelHidden={isSettingsPanelHidden}>
         <FooterComponent />
       </FooterContainer>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}

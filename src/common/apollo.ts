@@ -11,8 +11,10 @@ import type { Logger } from 'pino';
 import type { DefaultApolloContext } from '@common/apollo';
 import { type DirectiveArg, createOperationDirective } from '@common/apollo/directives';
 import { createSentryLink, logOperationLink } from '@common/apollo/links';
+import { FORWARDED_HEADER } from '@common/constants/headers.mjs';
 import { GRAPHQL_CLIENT_PROXY_PATH } from '@common/constants/routes.mjs';
 import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
+import type { CurrentURL } from '@common/utils';
 
 import possibleTypes from '@/common/__generated__/possible_types.json';
 
@@ -23,7 +25,7 @@ import {
 } from './const';
 
 declare module '@apollo/client/core' {
-  export interface DefaultContext extends DefaultApolloContext {
+  export interface DefaultContext extends Partial<DefaultApolloContext> {
     instanceHostname?: string;
   }
 }
@@ -49,10 +51,7 @@ export type ApolloClientOpts = {
   authorizationToken?: string | undefined;
   clientIp?: string | null;
   locale?: string;
-  currentURL?: {
-    baseURL: string;
-    path: string;
-  };
+  currentURL?: CurrentURL;
   clientCookies?: string;
   logger?: Logger;
 };
@@ -87,7 +86,7 @@ export function getHttpHeaders(opts: ApolloClientOpts) {
   }
   if (!process.browser) {
     if (clientIp) {
-      headers['x-forwarded-for'] = clientIp;
+      headers[FORWARDED_HEADER] = `for="${clientIp}"`;
     }
     if (clientCookies) {
       headers['cookie'] = clientCookies;
@@ -193,12 +192,9 @@ export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
 let apolloClient: ApolloClientType | undefined;
 
-type FetchOptions = RequestInit & {
-  //_parentSpan?: Span;
-};
-
-async function fetchWithParentSpan(url: string, options: FetchOptions) {
-  return await fetch(url, options);
+async function apolloFetch(url: RequestInfo | URL, init?: RequestInit) {
+  // TODO: Sign the request headers here
+  return await fetch(url, init);
 }
 
 function createApolloClient(opts: ApolloClientOpts) {
@@ -211,15 +207,15 @@ function createApolloClient(opts: ApolloClientOpts) {
     fetchOptions: {
       referrerPolicy: 'unsafe-url',
     },
-    fetch: typeof window !== 'undefined' ? fetchWithParentSpan : fetch,
+    fetch: apolloFetch,
   });
 
   return new ApolloClient({
     ssrMode,
     uri,
     link: ApolloLink.from([
-      logOperationLink,
       createSentryLink(uri),
+      logOperationLink,
       localeMiddleware,
       makeInstanceMiddleware(opts),
       httpLink,

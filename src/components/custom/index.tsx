@@ -11,8 +11,14 @@ export const CUSTOM_COMPONENTS = {
   },
 };
 
-export const useCustomComponent = (componentName: string, FallbackComponent: ComponentType) => {
+export function useCustomComponent<CT extends ComponentType>(
+  componentName: string,
+  FallbackComponent: CT
+): CT {
   const theme = useTheme();
 
-  return CUSTOM_COMPONENTS[theme.name]?.[componentName] ?? FallbackComponent;
-};
+  return (
+    (CUSTOM_COMPONENTS[theme.name]?.[componentName] as typeof FallbackComponent) ??
+    FallbackComponent
+  );
+}

@@ -5,6 +5,8 @@ import { useTranslation } from 'next-i18next';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'reactstrap';
 import styled from 'styled-components';
 
+import { startInteraction } from '@common/sentry/helpers';
+
 import type {
   ActivateScenarioMutation,
   ActivateScenarioMutationVariables,
@@ -57,6 +59,9 @@ const ScenarioSelector = () => {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
     onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive)),
+    context: {
+      componentName: 'ScenarioSelector',
+    },
   });
 
   const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation<
@@ -88,7 +93,7 @@ const ScenarioSelector = () => {
     data?.scenarios.filter(
       (scen) => scen.isSelectable && (hideBaseScenario ? scen.id !== 'baseline' : true)
     ) ?? [];
-  const activeScenario = scenarios.find((scen) => scen.isActive);
+  const activeScenario = scenarios.find((scen) => scen.isActive)!;
 
   return (
     <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
@@ -103,7 +108,16 @@ const ScenarioSelector = () => {
           <DropdownItem
             key={scenario.id}
             active={scenario.isActive}
-            onClick={() => activateScenario({ variables: { scenarioId: scenario.id } })}
+            onClick={() =>
+              void startInteraction(
+                () => activateScenario({ variables: { scenarioId: scenario.id! } }),
+                {
+                  name: 'activateScenario',
+                  componentName: 'ScenarioSelector',
+                  attributes: { scenario_id: scenario.id! },
+                }
+              )
+            }
           >
             {scenario.name}
           </DropdownItem>

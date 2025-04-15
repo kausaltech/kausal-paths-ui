@@ -11,7 +11,6 @@ import {
   WILDCARD_DOMAINS_HEADER,
 } from '@common/constants/headers.mjs';
 import { getPathsGraphQLUrl, isLocal } from '@common/env';
-import { envToBool } from '@common/env/utils';
 import { getLoggerAsync } from '@common/logging/logger';
 
 import { getApiCookies, setClientCookies } from '@/common/cookies';
@@ -114,7 +113,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.appendHeader('Cache-Control', 'no-store');
 
   if (!backendResponse.ok) {
-    logger.error('Backend responded with ', backendResponse.status);
+    logger.error(`Backend responded with HTTP ${backendResponse.status}`);
     let data: object | undefined, errorMessage: string | undefined;
     try {
       if (backendResponse.headers['content-type'] === 'application/json') {

@@ -21,7 +21,13 @@ import type {
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.dev/v1';
+function getApiBase() {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.PATHS_BACKEND_URL) return `${process.env.PATHS_BACKEND_URL}/v1`;
+  return 'https://api.paths.kausal.dev/v1';
+}
+
+const API_BASE = getApiBase();
 
 const BASE_URL = process.env.TEST_PAGE_BASE_URL || `http://{instanceId}.localhost:3000`;
 

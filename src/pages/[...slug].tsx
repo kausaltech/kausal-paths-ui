@@ -1,17 +1,25 @@
 import { useRouter } from 'next/router';
 
-import * as Sentry from '@sentry/nextjs';
+import { getLogger } from '@common/logging/logger';
 
 import Page from '@/components/pages/Page';
 import { useSite } from '@/context/site';
+import Error from '@/pages/_error';
 import { stripPathPrefix } from '@/utils/paths';
 
 function SlugPage() {
+  const logger = getLogger('slug-page');
   const router = useRouter();
   const { slug } = router.query;
   const path = '/' + (slug as string[]).join('/');
   const site = useSite();
-  return <Page path={stripPathPrefix(path, site.basePath)} />;
+  logger.debug({ path }, 'render catchall page');
+
+  if (!site) {
+    logger.error({ path }, 'no site context');
+    return <Error statusCode={500} />;
+  }
+  return <Page path={stripPathPrefix(path, site?.basePath) || '/'} />;
 }
 
 export default SlugPage;

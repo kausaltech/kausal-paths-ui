@@ -1,9 +1,11 @@
-import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
-import { Button, Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
+import { FormGroup, Input, Label } from 'reactstrap';
 import styled from 'styled-components';
 
-import {
+import { startInteraction } from '@common/sentry/helpers';
+
+import type {
   GetParametersQuery,
   SetNormalizationMutation,
   SetNormalizationMutationVariables,
@@ -74,13 +76,21 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
           id={norm.id}
           name={norm.id}
           checked={norm.isActive}
-          onChange={(e) => {
-            setNormalization({
-              variables: {
-                id: norm.isActive ? null : norm.id,
-              },
-            });
-          }}
+          onChange={(_e) =>
+            void startInteraction(
+              () =>
+                setNormalization({
+                  variables: {
+                    id: norm.isActive ? null : norm.id,
+                  },
+                }),
+              {
+                name: 'setNormalization',
+                componentName: 'NormalizationWidget',
+                attributes: { normalization_id: norm.id },
+              }
+            )
+          }
         />
       </FormGroup>
     </SwitchWrapper>

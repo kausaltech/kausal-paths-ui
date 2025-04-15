@@ -3,8 +3,10 @@ import { Suspense } from 'react';
 import Head from 'next/head';
 
 import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import * as Sentry from '@sentry/nextjs';
 import { useTranslation } from 'next-i18next';
 
+import { isLocal } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
 import type { GetPageQuery, GetPageQueryVariables } from '@/common/__generated__/graphql';
@@ -27,10 +29,12 @@ const PageLoader = () => {
 
 type PageProps = {
   path: string;
-  headerExtra?: JSX.Element;
+  headerExtra?: React.JSX.Element;
 };
 
-export default function Page({ path, headerExtra }: PageProps) {
+function Page(props: PageProps) {
+  const { path, headerExtra } = props;
+
   const site = useSite();
   const scenarios = !!getProgressTrackingScenario(site.scenarios)
     ? ['default', 'progress_tracking']
@@ -42,6 +46,9 @@ export default function Page({ path, headerExtra }: PageProps) {
       goal: activeGoal?.id ?? null,
       scenarios,
     },
+    context: {
+      componentName: 'Page',
+    },
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
   });
@@ -51,10 +58,12 @@ export default function Page({ path, headerExtra }: PageProps) {
   const { t } = useTranslation();
 
   if (error) {
-    logApolloError(error, { query: GET_PAGE, component: 'Page' });
-    /* If the GetPage query fails, we should show the "internal server error"
-     * dialog. */
-    throw error;
+    logApolloError(error, { component: 'Page' });
+    if (isLocal) {
+      throw error;
+    } else {
+      return <Error statusCode={500} />;
+    }
   }
   if (!data) {
     return <PageLoader />;
@@ -66,7 +75,6 @@ export default function Page({ path, headerExtra }: PageProps) {
     return <Error statusCode={404} />;
   }
   if (page.__typename === 'OutcomePage') {
-    console.log(page);
     pageContent = (
       <OutcomePage
         page={page}
@@ -95,3 +103,5 @@ export default function Page({ path, headerExtra }: PageProps) {
     </>
   );
 }
+
+export default Page;

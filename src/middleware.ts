@@ -13,6 +13,8 @@ import { HEALTH_CHECK_PUBLIC_PATH } from '@common/constants/routes.mjs';
 import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocal } from '@common/env';
 import {
   LOGGER_CORRELATION_ID,
+  LOGGER_SPAN_ID,
+  LOGGER_TRACE_ID,
   generateCorrelationID,
   getLoggerAsync,
 } from '@common/logging/logger';
@@ -160,18 +162,33 @@ async function middleware(req: NextRequest) {
   let path = nextUrl.pathname;
   const detectedLocale = nextUrl.locale;
   const pathParts = splitPath(path);
+
+  const span = Sentry.getActiveSpan();
+  const spanBindings = {};
+  if (span) {
+    spanBindings[LOGGER_TRACE_ID] = span.spanContext().traceId;
+    spanBindings[LOGGER_SPAN_ID] = span.spanContext().spanId;
+    spanBindings['sampled'] = span.isRecording();
+  }
   const logger = await getLoggerAsync({
     name: 'middleware',
-    bindings: { [LOGGER_CORRELATION_ID]: reqId, host, path },
+    bindings: {
+      ...spanBindings,
+      [LOGGER_CORRELATION_ID]: reqId,
+      host,
+      path,
+    },
     request: req,
   });
-  let span = Sentry.getActiveSpan();
 
-  if (!span?.isRecording()) {
-    span = undefined;
-  }
   if (req.nextUrl.pathname === HEALTH_CHECK_PUBLIC_PATH) {
     return NextResponse.json({ status: 'OK' });
+  }
+  if (
+    req.nextUrl.pathname === '/__nextjs_original-stack-frame' ||
+    req.nextUrl.pathname.startsWith('/_next/static/')
+  ) {
+    return NextResponse.next();
   }
 
   // If spotlight is enabled, we enrich the span with the request headers
@@ -186,9 +203,8 @@ async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === '/_ping') {
     return NextResponse.json({ status: 'pong' });
   }
-
   logger.info({ method: req.method }, `${req.method} ${req.nextUrl.pathname}`);
-  if (isLocal) {
+  if (false && isLocal) {
     const debugHeaders: Record<string, string> = {};
     req.headers.forEach((value, key) => {
       debugHeaders[key] = value;
@@ -273,9 +289,5 @@ async function middleware(req: NextRequest) {
   const rewrittenResp = NextResponse.rewrite(url, reqInit);
   return rewrittenResp;
 }
-
-export const config = {
-  runtime: 'nodejs',
-};
 
 export default Sentry.wrapMiddlewareWithSentry(middleware);

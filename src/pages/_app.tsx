@@ -1,6 +1,6 @@
 import React from 'react';
 
-import App, { type AppContext, type AppInitialProps, type AppProps } from 'next/app';
+import App, { type AppContext, type AppProps } from 'next/app';
 
 import type { ApolloClient } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client';
@@ -18,6 +18,7 @@ import {
   printRuntimeConfig,
 } from '@common/env';
 import { getLoggerAsync } from '@common/logging/logger';
+import { getClientIP, getCurrentURL } from '@common/utils';
 
 import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
 import type {
@@ -245,7 +246,8 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
       instanceIdentifier: instanceIdentifier,
       wildcardDomains: getWildcardDomains(),
       authorizationToken: req.user?.idToken,
-      clientIp: req.ip,
+      clientIp: getClientIP(req),
+      currentURL: getCurrentURL(req),
       locale: i18nConf.locale,
       clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
     };
@@ -258,9 +260,9 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
   >({
     query: GET_INSTANCE_CONTEXT,
     context: {
-      instanceHostname: apolloConfig.instanceHostname,
+      'instance-hostname': apolloConfig.instanceHostname,
       logger,
-      componentName: 'PathsApp.getSiteContext',
+      'component-name': 'PathsApp.getSiteContext',
     },
   });
   const { scenarios } = data;
@@ -294,6 +296,23 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
   };
 }
 
+function hasInstanceIdentifier(ctx: PathsPageContext) {
+  return !!ctx.req.headers[INSTANCE_IDENTIFIER_HEADER];
+}
+
+function getLocaleDebug(ctx: PathsPageContext) {
+  const { req } = ctx;
+  return {
+    url: ctx.req.url,
+    host: ctx.req.headers['host'],
+    locale: ctx.locale,
+    'default-language': req.headers[DEFAULT_LANGUAGE_HEADER],
+    'supported-languages': req.headers[SUPPORTED_LANGUAGES_HEADER],
+    'context-locales': ctx.locales,
+    'context-default-locale': ctx.defaultLocale,
+  };
+}
+
 async function getI18nProps(ctx: PathsPageContext) {
   // SSR only
   const { serverSideTranslations } = await import('next-i18next/serverSideTranslations');
@@ -302,23 +321,20 @@ async function getI18nProps(ctx: PathsPageContext) {
   let defaultLanguage = req.headers[DEFAULT_LANGUAGE_HEADER] as string | undefined;
   const logger = await getLoggerAsync({ name: 'app-get-i18n-props', request: req });
 
-  if (!defaultLanguage) {
-    logger.warn('no i18n headers set');
-    console.log(ctx.locale, ctx.locales, ctx.defaultLocale);
+  if (!defaultLanguage || defaultLanguage === 'default') {
+    if (hasInstanceIdentifier(ctx)) {
+      logger.warn(getLocaleDebug(ctx), 'no i18n headers set, but instance identifier is present');
+    }
     defaultLanguage = 'en';
   }
 
-  logger.debug({
-    'default-language': req.headers[DEFAULT_LANGUAGE_HEADER],
-    'supported-languages': req.headers[SUPPORTED_LANGUAGES_HEADER],
-    locale: ctx.locale,
-    'context-locales': ctx.locales,
-    'context-default-locale': ctx.defaultLocale,
-  });
+  if (false) {
+    logger.debug(getLocaleDebug(ctx));
+  }
 
   if (!ctx.locale) {
-    logger.warn('no active locale');
-    ctx.locale = 'en';
+    logger.warn(getLocaleDebug(ctx), 'no active locale');
+    ctx.locale = defaultLanguage;
   }
   const header = req.headers[SUPPORTED_LANGUAGES_HEADER] as string | undefined;
   const supportedLanguages = (header ?? defaultLanguage).split(',');
@@ -331,7 +347,7 @@ async function getI18nProps(ctx: PathsPageContext) {
     ...nextI18nConfig,
     i18n: {
       ...nextI18nConfig.i18n,
-      defaultLocale: defaultLanguage ?? 'default',
+      defaultLocale: defaultLanguage,
       locales: supportedLanguages,
     },
   };
@@ -399,6 +415,7 @@ const getInitialProps = async (appContext: PathsAppContext) => {
     appProps.pageProps = {};
   }
   const pageProps = appProps.pageProps as Record<string, unknown>;
+
   const i18nProps = await getI18nProps(ctx);
   const i18nConf = i18nProps._nextI18Next!.userConfig!.i18n;
   const siteI18nConf: SiteI18nConfig = {

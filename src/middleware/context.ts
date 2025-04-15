@@ -14,6 +14,7 @@ import type { Logger } from 'pino';
 import { createSentryLink, logOperationLink } from '@common/apollo/links';
 import { getPathsGraphQLUrl } from '@common/env';
 import { envToBool } from '@common/env/utils';
+import { getClientIP } from '@common/utils';
 
 import type {
   AvailableInstanceFragment,
@@ -47,13 +48,12 @@ type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
 function createApolloClient(req: NextRequest, logger: Logger) {
   const uri = getPathsGraphQLUrl();
-  const fwdforHdr = req.headers.get('x-forwarded-for');
   const apolloOpts: ApolloClientOpts = {
     currentURL: {
       baseURL: req.nextUrl.origin,
       path: req.nextUrl.pathname,
     },
-    clientIp: fwdforHdr ? fwdforHdr.split(',')[0] : undefined,
+    clientIp: getClientIP(req),
     // clientcookies??
   };
   const httpLink = new HttpLink({

@@ -17,4 +17,4 @@ if [ -z "$husky_skip_init" ]; then
   fi
 fi
 
-npx --no lint-staged
+npx --yes lint-staged
