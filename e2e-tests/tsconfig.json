@@ -11,7 +11,10 @@
     "moduleResolution": "NodeNext",
     "esModuleInterop": false,
     "jsx": "react-jsx",
-    "moduleDetection": "auto"
+    "baseUrl": ".",
+    "moduleDetection": "auto",
+    "rewriteRelativeImportExtensions": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["tests/**/*.ts", "common/**/*.ts"],
   "exclude": ["node_modules"]

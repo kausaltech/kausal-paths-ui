@@ -74,10 +74,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install main dependencies
-        run: npm ci
-        working-directory: ./
-
       - name: Install dependencies for e2e tests
         run: npm ci
         working-directory: ./e2e-tests

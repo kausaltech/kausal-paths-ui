@@ -2,14 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { type ApolloQueryResult, type DocumentNode, type OperationVariables } from '@apollo/client';
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client/core/core.cjs';
+import type {
+  ApolloClient as ApolloClientType,
+  ApolloQueryResult,
+  DocumentNode,
+  NormalizedCacheObject,
+  OperationVariables,
+} from '@apollo/client';
+import * as apollo from '@apollo/client';
 import { type Page, expect } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
-
-import type { ApolloClientType } from '@common/apollo/index.js';
-import { logApolloError } from '@common/logging/apollo.js';
 
 import i18nConfig from '../../next-i18next.config.js';
 import type {
@@ -18,6 +21,9 @@ import type {
   PlaywrightGetInstanceInfoQuery,
   PlaywrightGetInstanceInfoQueryVariables,
 } from '../__generated__/graphql.ts';
+
+// @ts-expect-error crazy apollo imports
+const { ApolloClient, InMemoryCache, gql } = apollo.default as typeof apollo;
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -77,7 +83,7 @@ export type ActionListPage = PathsPage & {
 export type ApolloErrorContext = {
   query: DocumentNode;
   variables?: OperationVariables;
-  client?: ApolloClientType;
+  client?: ApolloClientType<NormalizedCacheObject>;
   component?: string;
 };
 
@@ -142,6 +148,11 @@ export class InstanceContext {
     return `${this.baseURL}/actions/${action.id}`;
   }
 
+  async navigateTo(page: Page, url: string) {
+    await page.goto(url);
+    await this.checkMeta(page);
+  }
+
   async checkMeta(page: Page) {
     const siteName = page.locator('head meta[property="og:site_name"]');
     await expect(siteName).toHaveAttribute('content', this.instance.instance.name);
@@ -170,8 +181,7 @@ export class InstanceContext {
         variables: { instance: instanceId },
       });
     } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      logApolloError(err);
+      console.error(err);
       throw err;
     }
     const primaryLanguage = langRes.data.instance.defaultLanguage;
@@ -186,8 +196,7 @@ export class InstanceContext {
         variables: { instance: instanceId, locale: primaryLanguage },
       });
     } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      logApolloError(err);
+      console.error(err);
       throw err;
     }
     const data = res.data;

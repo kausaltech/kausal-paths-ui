@@ -15,9 +15,9 @@
     "@playwright/test": "^1.51.1",
     "dotenv": "^16.5.0",
     "i18next": "^24.2.3",
-    "pino": "^9.6.0",
     "playwright": "^1.51.1",
     "playwright-lighthouse": "^4.0.0",
-    "react": "^19.1.0"
+    "react": "^19.1.0",
+    "typescript": "^5.8.3"
   }
 }
