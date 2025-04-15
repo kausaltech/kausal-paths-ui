@@ -3,7 +3,7 @@ on: push
 
 jobs:
   build:
-    uses: kausaltech/github-actions/.github/workflows/build.yaml@dev
+    uses: kausaltech/github-actions/.github/workflows/build.yaml@main
     with:
       project_id: paths-ui
       project_type: nextjs
