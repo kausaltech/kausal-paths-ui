@@ -7,7 +7,6 @@ jobs:
     with:
       project_id: paths-ui
       project_type: nextjs
-      dockerfile: kausal_common/docker/Dockerfile
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
