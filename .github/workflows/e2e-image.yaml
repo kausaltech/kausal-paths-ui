@@ -53,7 +53,7 @@ jobs:
       image: harbor.kausal.tech/library/playwright:v1.46.1
     env:
       TEST_INSTANCE_IDENTIFIERS: ${{ inputs.instance_identifiers }}
-      NEXT_PUBLIC_API_URL: ${{ inputs.backend_base_url }}
+      PATHS_BACKEND_URL: ${{ inputs.backend_base_url }}
       TEST_PAGE_BASE_URL: 'http://{instanceId}.localhost:3000'
       CI: 1
     services:
@@ -62,7 +62,7 @@ jobs:
         env:
           NEXT_PUBLIC_WILDCARD_DOMAINS: localhost
           NEXT_PUBLIC_DEPLOYMENT_TYPE: testing
-          NEXT_PUBLIC_API_URL: ${{ inputs.backend_base_url }}
+          PATHS_BACKEND_URL: ${{ inputs.backend_base_url }}
           AUTH_SECRET: abcd
           AUTH_TRUST_HOST: true
           HOSTNAME: 0.0.0.0
@@ -71,6 +71,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install dependencies
         run: npm ci
