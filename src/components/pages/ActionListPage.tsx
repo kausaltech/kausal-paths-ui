@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { Button, ButtonGroup, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
-import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from 'types/actions.types';
 
-import type {
-  GetActionListQuery,
-  GetActionListQueryVariables,
-  GetImpactOverviewsQuery,
-  GetPageQuery,
+import {
+  DecisionLevel,
+  type GetActionListQuery,
+  type GetActionListQueryVariables,
+  type GetImpactOverviewsQuery,
+  type GetPageQuery,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -29,6 +29,7 @@ import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
 import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
+import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
 import type { PageRefetchCallback } from './Page';
 
@@ -209,12 +210,12 @@ function ActionListPage({ page }: ActionListPageProps) {
     sortOptions.find((sortOption) => sortOption.key === page.defaultSortOrder) ?? sortOptions[0]
   );
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
-  const [actionGroup, setActionGroup] = useState<'ALL_ACTIONS' | string>('ALL_ACTIONS');
+  const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');
 
   const filteredActions = (data?.actions || []).filter(
     (action) =>
       !page.showOnlyMunicipalActions ||
-      (page.showOnlyMunicipalActions && action.decisionLevel === 'MUNICIPALITY')
+      (page.showOnlyMunicipalActions && action.decisionLevel === DecisionLevel.Municipality)
   );
 
   const usableActions: ActionWithEfficiency[] = useMemo(
@@ -266,7 +267,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           return out;
         })
         .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
-    [data, actionGroup, activeEfficiency, yearRange]
+    [data, actionGroup, activeEfficiency, yearRange, filteredActions, t]
   );
 
   const actionGroups = filteredActions.reduce(

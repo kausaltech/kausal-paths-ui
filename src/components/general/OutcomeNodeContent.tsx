@@ -18,6 +18,7 @@ import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tra
 
 import DataTable from './DataTable';
 import DimensionalNodePlot from './DimensionalNodePlot';
+import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 
 const DisplayTab = styled(NavItem)`
