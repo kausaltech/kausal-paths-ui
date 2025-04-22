@@ -89,7 +89,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
 
   useEffect(() => {
     handleChange([defaultMin, defaultMax]);
-  }, [defaultMin, defaultMax]);
+  }, [defaultMin, defaultMax, handleChange]);
 
   const handleSliderChange = (changedValues: number[]) => {
     setValues(changedValues);
@@ -176,7 +176,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
                 </div>
               </div>
             )}
-            renderThumb={({ props, isDragged, _index }) => (
+            renderThumb={({ props, isDragged }) => (
               <Thumb
                 {...props}
                 $dragged={isDragged}
