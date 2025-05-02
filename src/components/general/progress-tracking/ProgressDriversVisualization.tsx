@@ -316,7 +316,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       ],
     };
     return option;
-  }, [metric, theme, activeGoal, site.minYear, site.scenarios, desiredOutcome]);
+  }, [t, metric, theme, activeGoal, site.minYear, site.scenarios, desiredOutcome]);
 
   if (!chartData) {
     return null;

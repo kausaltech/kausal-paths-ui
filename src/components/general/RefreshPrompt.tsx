@@ -91,7 +91,7 @@ const StyledWrapper = styled.div<{ $isVisible: boolean }>`
   right: 0;
   max-width: 500px;
   display: ${({ $isVisible }) => ($isVisible ? 'block' : 'none')};
-  z-index: ${({ $isVisible }) => ($isVisible ? '100' : 'unset')};
+  z-index: ${({ $isVisible }) => ($isVisible ? '1100' : 'unset')};
 `;
 
 const StyledToast = styled(Toast)`
@@ -112,7 +112,7 @@ export function RefreshPrompt() {
   const apolloClient = useApolloClient();
 
   function handleRefresh() {
-    apolloClient.refetchQueries({ include: ['GetPage'] });
+    apolloClient.refetchQueries({ include: ['GetPage', 'GetNodeVisualizations'] });
     handleClose();
   }
 
@@ -131,7 +131,7 @@ export function RefreshPrompt() {
               <span className="m-2">Reload</span>
             </Button>
             <Button size="sm" onClick={handleDisable}>
-              Don't show this again
+              Don&apos;t show this again
             </Button>
           </StyledActions>
         </ToastBody>

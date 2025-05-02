@@ -51,6 +51,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
 
   const { loading, error, data } = useQuery<GetNodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
     variables: { nodeId, scenarios: ['default', 'progress_tracking'] },
+    notifyOnNetworkStatusChange: true,
   });
 
   if (loading) {
