@@ -105,7 +105,7 @@ const HomeLink = styled.a`
 
   svg {
     display: block;
-    max-width: 6em;
+    max-width: 12em;
     height: ${(props) => props.theme.spaces.s200};
     margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}
       ${(props) => props.theme.spaces.s050} 0;
@@ -113,7 +113,7 @@ const HomeLink = styled.a`
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     svg {
-      max-width: 10em;
+      max-width: 18em;
       height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
       margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}
         ${(props) => props.theme.spaces.s050} 0;
