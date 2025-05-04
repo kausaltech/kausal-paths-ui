@@ -1,6 +1,7 @@
 import React from 'react';
 import App, { type AppContext, type AppProps } from 'next/app';
 
+import { SessionProvider } from 'next-auth/react';
 import { ApolloClient, ApolloProvider, isApolloError } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
 import * as Sentry from '@sentry/nextjs';
@@ -158,7 +159,13 @@ export type PathsAppProps = AppProps & {
 };
 
 function PathsApp(props: PathsAppProps) {
-  const { Component, pageProps, siteContext, instanceContext, themeProps } = props;
+  const {
+    Component,
+    pageProps: { session, ...pageProps },
+    siteContext,
+    instanceContext,
+    themeProps,
+  } = props;
   const isProd = deploymentType === 'production';
   const { i18n } = useTranslation();
   // FIXME: Remove this when possible; it's not safe for async contexts
@@ -201,22 +208,24 @@ function PathsApp(props: PathsAppProps) {
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
   return (
-    <SiteContext.Provider value={siteContext}>
-      <InstanceContext.Provider value={instanceContext}>
-        <ApolloProvider client={apolloClient}>
-          <ThemeProvider theme={themeProps}>
-            <LocalizedNumbersContext.Provider value={numbersContext}>
-              <ThemedGlobalStyles />
-              <Layout>
-                <Sentry.ErrorBoundary showDialog={!isProd} fallback={renderFallbackError}>
-                  {component}
-                </Sentry.ErrorBoundary>
-              </Layout>
-            </LocalizedNumbersContext.Provider>
-          </ThemeProvider>
-        </ApolloProvider>
-      </InstanceContext.Provider>
-    </SiteContext.Provider>
+    <SessionProvider session={session}>
+      <SiteContext.Provider value={siteContext}>
+        <InstanceContext.Provider value={instanceContext}>
+          <ApolloProvider client={apolloClient}>
+            <ThemeProvider theme={themeProps}>
+              <LocalizedNumbersContext.Provider value={numbersContext}>
+                <ThemedGlobalStyles />
+                <Layout>
+                  <Sentry.ErrorBoundary showDialog={!isProd} fallback={renderFallbackError}>
+                    {component}
+                  </Sentry.ErrorBoundary>
+                </Layout>
+              </LocalizedNumbersContext.Provider>
+            </ThemeProvider>
+          </ApolloProvider>
+        </InstanceContext.Provider>
+      </SiteContext.Provider>
+    </SessionProvider>
   );
 }
 
