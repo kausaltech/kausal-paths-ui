@@ -28,6 +28,7 @@ jobs:
     needs: [build]
     uses: kausaltech/github-actions/.github/workflows/deploy.yaml@dev
     secrets:
+      #
       gitops_ssh_key: ${{ secrets.GITOPS_SSH_KEY }}
     if: needs.build.outputs.deployment_env
     with:
