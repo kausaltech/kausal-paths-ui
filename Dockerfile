@@ -20,6 +20,7 @@ RUN \
     echo "Using custom registry at: ${NPM_REGISTRY_SERVER}" ; \
   fi
 
+RUN --mount=type=secret,id=NPM_TOKEN ls -R /run || true
 RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
   NPM_TOKEN=$( ([ -f /run/secrets/NPM_TOKEN ] && cat /run/secrets/NPM_TOKEN) || echo -n "$NPM_TOKEN") \
     npm ci
