@@ -87,3 +87,4 @@ When you call sentry-cli (which probably happens automatically when you deploy t
 [auth]
 token=your-auth-token
 ```
+
