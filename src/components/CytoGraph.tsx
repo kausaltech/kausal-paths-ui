@@ -147,6 +147,12 @@ export default function CytoGraph(props: CytoGraphProps) {
           }
           return '#43a2ca';
         }
+        if (node.quantity == 'argument') {
+          if (node.color) {
+            return node.color;
+          }
+          return '#ff7354';
+        }
         return '#eeeeee';
       }
       let label = wordWrap(node.name, 30);
