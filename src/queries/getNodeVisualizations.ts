@@ -11,6 +11,7 @@ export const GET_NODE_VISUALIZATIONS = gql`
       id
       metricDim(withScenarios: ["default", "progress_tracking"]) {
         ...DimensionalMetric
+        measureDatapointYears
       }
       visualizations {
         label

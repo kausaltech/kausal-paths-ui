@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DesiredOutcome, type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { DimensionalMetric } from 'data/metric';
 import { Chart } from '@/components/charts/Chart';
 import styled, { useTheme } from 'styled-components';
@@ -50,7 +50,7 @@ const StyledChartTitle = styled.h4`
 `;
 
 type Props = {
-  metric: DimensionalNodeMetricFragment['metricDim'];
+  metric: NonNullable<NonNullable<GetNodeVisualizationsQuery['node']>['metricDim']>;
   desiredOutcome: DesiredOutcome;
   title?: string;
 };
@@ -140,7 +140,10 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       progressData: number[];
     };
 
-    const progressYears = getProgressTrackingScenario(site.scenarios)?.actualHistoricalYears ?? [];
+    let progressYears = getProgressTrackingScenario(site.scenarios)?.actualHistoricalYears ?? [];
+    if (metric.measureDatapointYears.length) {
+      progressYears = progressYears.filter((year) => metric.measureDatapointYears.includes(year));
+    }
     const [firstYear, lastYear] = progressYears
       .sort()
       .filter((_, i) => i === 0 || i === progressYears.length - 1);
@@ -171,7 +174,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
           defaultValue: allDefaultData[i] ?? null,
           progressValue:
             year !== site.minYear && progressYears.includes(year)
-              ? allProgressData[i] ?? null
+              ? (allProgressData[i] ?? null)
               : null,
         };
       })
