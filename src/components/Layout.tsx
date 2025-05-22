@@ -111,6 +111,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     <>
       <Head>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <meta name="robots" content="noindex" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content={site.title} />
         {iconBase && (
