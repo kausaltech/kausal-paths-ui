@@ -17,6 +17,7 @@ const visualizationEntryFragment = gql`
       desiredOutcome
       metricDim {
         ...DimensionalMetric
+        measureDatapointYears
       }
     }
   }
