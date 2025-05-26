@@ -144,6 +144,20 @@ const defaultSiteContext: { [key: string]: SiteContextType } = {
       url: 'https://surrey-ccas.watch-test.kausal.tech/',
     },
   },
+  'demo-stadt-bisko': {
+    watchLink: {
+      title: {
+        en: 'Sunnydale climate action plan',
+        fi: 'Päiväkummun ilmastosuunnitelma',
+        de: 'Klimaneutrales Sunnydale',
+      },
+      url: {
+        en: 'https://sunnydale.test.kausal.tech/climate',
+        fi: 'https://sunnydale.test.kausal.tech/fi/climate',
+        de: 'https://sunnydale.test.kausal.tech/de/climate',
+      },
+    },
+  },
 };
 
 function renderFallbackError({ error: Error, eventId: string }) {
