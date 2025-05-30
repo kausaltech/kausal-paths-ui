@@ -1,49 +1,10 @@
 import { gql } from '@apollo/client';
 import DimensionalFlow from 'components/graphs/DimensionalFlow';
-import { SUBACTIONS_FRAGMENT } from 'components/general/SubActions';
 import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
 import { DimensionalMetric } from 'data/metric';
 import { STREAM_FIELD_FRAGMENT } from 'components/common/StreamField';
 
-const GET_ACTION_CONTENT = gql`
-  query GetActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {
-    action(id: $node) {
-      ...CausalGridNode
-      goal
-      description
-      dimensionalFlow {
-        ...DimensionalPlot
-      }
-      downstreamNodes(maxDepth: $downstreamDepth) {
-        ...CausalGridNode
-      }
-      decisionLevel
-      body {
-        ...StreamFieldFragment
-      }
-      subactions {
-        id
-        name
-        description
-        goal
-        shortDescription
-        isEnabled
-        isVisible
-        parameters {
-          id
-        }
-        downstreamNodes(maxDepth: 1) {
-          ...CausalGridNode
-        }
-        body {
-          ...StreamFieldFragment
-        }
-      }
-    }
-  }
-  ${DimensionalFlow.fragment}
-  ${STREAM_FIELD_FRAGMENT}
-
+const CAUSAL_GRID_NODE_FRAGMENT = gql`
   fragment CausalGridNode on NodeInterface {
     id
     name
@@ -115,8 +76,49 @@ const GET_ACTION_CONTENT = gql`
       }
     }
   }
+`;
+
+/**
+ * Returns the downstream nodes of a given action until a specific leaf node (outcome) is reached.
+ * This is used to render the causal chain on an action page.
+ */
+export const GET_CAUSAL_CHAIN = gql`
+  query GetCausalChain($node: ID!, $goal: ID, $untilNode: ID) {
+    action(id: $node) {
+      id
+      downstreamNodes(untilNode: $untilNode) {
+        ...CausalGridNode
+      }
+    }
+  }
+
   ${DimensionalMetric.fragment}
+  ${CAUSAL_GRID_NODE_FRAGMENT}
   ${ACTION_PARAMETER_FRAGMENT}
 `;
 
+const GET_ACTION_CONTENT = gql`
+  query GetActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {
+    action(id: $node) {
+      ...CausalGridNode
+      goal
+      description
+      dimensionalFlow {
+        ...DimensionalPlot
+      }
+      downstreamNodes(maxDepth: $downstreamDepth, onlyOutcome: true) {
+        ...CausalGridNode
+      }
+      decisionLevel
+      body {
+        ...StreamFieldFragment
+      }
+    }
+  }
+  ${CAUSAL_GRID_NODE_FRAGMENT}
+  ${DimensionalFlow.fragment}
+  ${STREAM_FIELD_FRAGMENT}
+  ${DimensionalMetric.fragment}
+  ${ACTION_PARAMETER_FRAGMENT}
+`;
 export { GET_ACTION_CONTENT };
