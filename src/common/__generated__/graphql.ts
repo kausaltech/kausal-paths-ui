@@ -600,7 +600,7 @@ export type DimensionalNodeMetricFragment = (
 );
 
 type CausalGridNode_ActionNode_Fragment = (
-  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
+  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, unit: (
@@ -701,7 +701,7 @@ type CausalGridNode_ActionNode_Fragment = (
 );
 
 type CausalGridNode_Node_Fragment = (
-  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
+  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
     { htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
@@ -809,8 +809,8 @@ export type GetCausalChainQueryVariables = Exact<{
 
 export type GetCausalChainQuery = (
   { action: (
-    { downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
+    { id: string, downstreamNodes: Array<(
+      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -909,7 +909,7 @@ export type GetCausalChainQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -1019,7 +1019,7 @@ export type GetActionContentQueryVariables = Exact<{
 
 export type GetActionContentQuery = (
   { action: (
-    { goal: any | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, dimensionalFlow: (
+    { goal: any | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, dimensionalFlow: (
       { id: string, sources: Array<string>, unit: (
         { htmlLong: string }
         & { __typename: 'UnitType' }
@@ -1032,7 +1032,7 @@ export type GetActionContentQuery = (
       )> }
       & { __typename: 'DimensionalFlowType' }
     ) | null, downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, group: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -1131,7 +1131,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(

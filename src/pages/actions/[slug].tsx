@@ -119,6 +119,12 @@ const ActionBodyContainer = styled.div`
   padding: ${({ theme }) => theme.spaces.s200};
 `;
 
+function getOutcomeCards(leafNodes: CausalGridNode[]) {
+  return [...leafNodes]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((node) => ({ title: node.name, id: node.id }));
+}
+
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -314,7 +320,7 @@ export default function ActionPage() {
           yearRange={yearRange}
           actionIsOff={!isActive}
           action={action}
-          nodeOutcomeCards={leafNodes.map((node) => ({ title: node.name, id: node.id }))}
+          nodeOutcomeCards={getOutcomeCards(leafNodes)}
           selectedOutcomeNode={activeDownstreamNode}
           onClickOutcomeNodeCard={(id) => setActiveDownstreamNode(id)}
           onClickExpandGrid={handleExpandGrid}

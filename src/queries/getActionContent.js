@@ -11,6 +11,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
     shortDescription
     color
     targetYearGoal
+    order
     unit {
       htmlShort
     }
