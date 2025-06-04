@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
 import type {
   GetActionContentQuery,
   GetActionContentQueryVariables,
+  GetCausalChainQuery,
+  GetCausalChainQueryVariables,
 } from 'common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
 import { ActionListLink, NodeLink } from 'common/links';
@@ -19,17 +21,15 @@ import Loader from 'components/common/Loader';
 import { StreamField } from 'components/common/StreamField';
 import { ActionGoal } from 'components/general/ActionGoal';
 import ActionParameters from 'components/general/ActionParameters';
-import CausalGrid from 'components/general/CausalGrid';
+import CausalGrid, { type CausalGridNode } from 'components/general/CausalGrid';
 import NodePlot from 'components/general/NodePlot';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
-import SubActions from 'components/general/SubActions';
 import DimensionalPlot from 'components/graphs/DimensionalFlow';
 import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
-import { GET_ACTION_CONTENT } from 'queries/getActionContent';
+import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from 'queries/getActionContent';
 import { Col, Container, Row } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
-import { useInstance } from '@/common/instance';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -119,6 +119,12 @@ const ActionBodyContainer = styled.div`
   padding: ${({ theme }) => theme.spaces.s200};
 `;
 
+function getOutcomeCards(outcomeNodes: CausalGridNode[]) {
+  return [...outcomeNodes]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((node) => ({ title: node.name, id: node.id }));
+}
+
 export default function ActionPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -127,8 +133,7 @@ export default function ActionPage() {
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
   const site = useSite();
-  const instance = useInstance();
-  const [activeSubAction, setActiveSubAction] = useState<string | undefined>(undefined);
+  const [activeDownstreamNode, setActiveDownstreamNode] = useState<string | undefined>(undefined);
   const theme = useTheme();
 
   const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(
@@ -143,17 +148,30 @@ export default function ActionPage() {
     }
   );
 
+  // Fetch the full causal chain only upon clicking the expand grid button
+  const [getCausalChain, causalChainResp] = useLazyQuery<
+    GetCausalChainQuery,
+    GetCausalChainQueryVariables
+  >(GET_CAUSAL_CHAIN);
+
   const { loading, error, previousData, refetch } = queryResp;
 
   const data = queryResp.data ?? previousData;
 
   useEffect(() => {
     refetch();
-  }, [activeScenario]);
+  }, [activeScenario, refetch]);
+
+  useEffect(() => {
+    if (!activeDownstreamNode && data?.action?.downstreamNodes?.length) {
+      setActiveDownstreamNode(data.action.downstreamNodes[0].id);
+    }
+  }, [activeDownstreamNode, data]);
 
   if (!data) {
     return <ContentLoader fullPage />;
   }
+
   if (error) {
     logApolloError(error, { query: GET_ACTION_CONTENT });
     return (
@@ -162,12 +180,19 @@ export default function ActionPage() {
       </Container>
     );
   }
+
   if (!data || !data.action) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
 
   const action = data.action;
-  const subActions = action.subactions;
+  const outcomeNodes = action.downstreamNodes; // Non-outcome nodes are filtered out
+  const selectedOutcomeNode = outcomeNodes.find((node) => node.id === activeDownstreamNode);
+  const allNodes = (
+    causalChainResp.data?.action?.downstreamNodes
+      ? causalChainResp.data.action.downstreamNodes
+      : [selectedOutcomeNode]
+  ).filter((node): node is CausalGridNode => !!node);
 
   // style differently if not active
   const isActive = action.parameters.find(
@@ -177,66 +202,38 @@ export default function ActionPage() {
   // use flowplot if action has dimensional flow
   const flowPlot = action.dimensionalFlow && <DimensionalPlot flow={action.dimensionalFlow} />;
 
-  const renderSubActionsOrBody = () => {
-    if (subActions.length && instance.id === 'zuerich') {
-      // TODO: Convert to feature boolean. Subaction tabs are currently only enabled for Zuerich.
-      return (
-        <Container fluid="lg">
-          <SubActions
-            actions={subActions}
-            activeSubAction={activeSubAction}
-            setActiveSubAction={(subAction: string) => setActiveSubAction(subAction)}
-          />
-        </Container>
-      );
-    }
-
-    if (action.body?.length) {
-      return (
-        <Container fluid="lg">
-          <ActionBodyContainer>
-            {action.body.map((block, i) => (
-              <StreamField key={i} block={block} />
-            ))}
-          </ActionBodyContainer>
-        </Container>
-      );
-    }
-  };
-
-  // if action is simple, has just one output node and no subactions, use first downstream node for graph
-  const outputNodes = action.downstreamNodes.filter((node) =>
-    node.inputNodes.find((inputNode) => inputNode.id === action.id)
-  );
-  const actionVizNode =
-    outputNodes.length === 1 && action.subactions.length === 0 && outputNodes[0].metric
-      ? outputNodes[0]
-      : action;
-
   const actionPlot = action.metric
     ? flowPlot || (
         <>
           <ActionGraphHeader>
-            {t('impact')}: {actionVizNode.name}
+            {t('impact')}: {action.name}
           </ActionGraphHeader>
           <NodePlot
-            metric={actionVizNode.metric}
-            impactMetric={actionVizNode.impactMetric}
+            metric={action.metric}
+            impactMetric={action.impactMetric}
             startYear={yearRange[0]}
             endYear={yearRange[1]}
             color={action.color}
             isAction={action.__typename === 'ActionNode'}
-            targetYearGoal={action.targetYearGoal}
+            targetYearGoal={action.targetYearGoal ?? undefined}
           />
         </>
       )
     : undefined;
 
-  // show causal nodes only for selected subaction, filter out node used for visualisation
-  const causalNodes =
-    activeSubAction === undefined
-      ? action.downstreamNodes.filter((node) => node.id !== actionVizNode.id)
-      : action.subactions.find((subAction) => subAction.id === activeSubAction)?.downstreamNodes;
+  function handleExpandGrid() {
+    if (!activeDownstreamNode) {
+      return;
+    }
+
+    getCausalChain({
+      variables: {
+        node: slug as string,
+        goal: activeGoal?.id ?? null,
+        untilNode: activeDownstreamNode,
+      },
+    });
+  }
 
   return (
     <>
@@ -305,13 +302,29 @@ export default function ActionPage() {
         {loading && <Loader />}
         {!!actionPlot && <ActionPlotCard>{actionPlot}</ActionPlotCard>}
       </Container>
-      {renderSubActionsOrBody()}
-      {causalNodes && causalNodes.length > 0 && !theme.settings.hideActionGrid && (
+
+      {!!action.body?.length && (
+        <Container fluid="lg">
+          <ActionBodyContainer>
+            {action.body.map((block, i) => (
+              <StreamField key={i} block={block} />
+            ))}
+          </ActionBodyContainer>
+        </Container>
+      )}
+
+      {selectedOutcomeNode && !theme.settings.hideActionGrid && (
         <CausalGrid
-          nodes={causalNodes}
+          nodes={allNodes}
+          lastNode={selectedOutcomeNode}
           yearRange={yearRange}
           actionIsOff={!isActive}
           action={action}
+          nodeOutcomeCards={getOutcomeCards(outcomeNodes)}
+          selectedOutcomeNode={activeDownstreamNode}
+          onClickOutcomeNodeCard={(id) => setActiveDownstreamNode(id)}
+          onClickExpandGrid={handleExpandGrid}
+          expandedGridLoading={causalChainResp.loading}
         />
       )}
       <SettingsPanelFull />

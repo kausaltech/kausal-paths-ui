@@ -97,5 +97,6 @@
   "error-with-code": "Fehler mit Code {{code}}",
   "show-error": "Fehler anzeigen",
   "thumbSliderLabel": "Anpassen",
-  "reset-button": "Zurücksetzen"
+  "reset-button": "Zurücksetzen",
+  "outcomes": "Ergebnisse"
 }

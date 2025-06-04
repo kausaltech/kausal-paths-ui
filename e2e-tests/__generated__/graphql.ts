@@ -57,6 +57,8 @@ export type FrameworkConfigInput = {
   name: Scalars['String']['input'];
   /** Name of the organization. If not set, it will be determined through the user's credentials, if possible. */
   organizationName?: InputMaybe<Scalars['String']['input']>;
+  /** Target year for model. */
+  targetYear?: InputMaybe<Scalars['Int']['input']>;
   /** UUID for the new framework config. If not set, will be generated automatically. */
   uuid?: InputMaybe<Scalars['UUID']['input']>;
 };
@@ -71,6 +73,12 @@ export enum FrameworksMeasureTemplatePriorityChoices {
   Medium = 'MEDIUM'
 }
 
+export type InstanceContext = {
+  hostname?: InputMaybe<Scalars['String']['input']>;
+  identifier?: InputMaybe<Scalars['ID']['input']>;
+  locale?: InputMaybe<Scalars['String']['input']>;
+};
+
 export enum LowHigh {
   High = 'HIGH',
   Low = 'LOW'
@@ -79,7 +87,7 @@ export enum LowHigh {
 export type MeasureDataPointInput = {
   /** Value for the data point (set to null to remove) */
   value?: InputMaybe<Scalars['Float']['input']>;
-  /** Year of the data point. If not given, defaults to the baseline year for the framework instance */
+  /** Year of the data point. If not given, defaults to the baseline year for the framework instance. */
   year?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -120,6 +128,11 @@ export enum ScenarioKind {
 export enum SearchOperatorEnum {
   And = 'AND',
   Or = 'OR'
+}
+
+export enum VisualizationKind {
+  Group = 'group',
+  Node = 'node'
 }
 
 export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
