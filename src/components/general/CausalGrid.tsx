@@ -301,7 +301,7 @@ const CausalGrid = ({
           <StyledImpactsContainer fluid="lg">
             <StyledOutcomeCardContainer>
               <hr />
-              <h5>{t('impacts')}</h5>
+              <h5>{t('outcomes')}</h5>
               <StyledOutcomeCardSelectorContainer
                 onScroll={() => gridCanvas.current?.refreshScreen()}
               >
