@@ -33,6 +33,7 @@ const StyledShowCalculationButton = styled.button`
 
 const GridSection = styled.div`
   width: 100%;
+  overflow-x: hidden;
 `;
 
 const GridRowWrapper = styled.div`
