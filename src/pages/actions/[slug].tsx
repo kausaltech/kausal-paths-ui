@@ -119,8 +119,8 @@ const ActionBodyContainer = styled.div`
   padding: ${({ theme }) => theme.spaces.s200};
 `;
 
-function getOutcomeCards(leafNodes: CausalGridNode[]) {
-  return [...leafNodes]
+function getOutcomeCards(outcomeNodes: CausalGridNode[]) {
+  return [...outcomeNodes]
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .map((node) => ({ title: node.name, id: node.id }));
 }
@@ -186,12 +186,12 @@ export default function ActionPage() {
   }
 
   const action = data.action;
-  const leafNodes = action.downstreamNodes; // Non-outcome nodes are filtered out
-  const selectedLeafNode = leafNodes.find((node) => node.id === activeDownstreamNode);
+  const outcomeNodes = action.downstreamNodes; // Non-outcome nodes are filtered out
+  const selectedOutcomeNode = outcomeNodes.find((node) => node.id === activeDownstreamNode);
   const allNodes = (
     causalChainResp.data?.action?.downstreamNodes
       ? causalChainResp.data.action.downstreamNodes
-      : [selectedLeafNode]
+      : [selectedOutcomeNode]
   ).filter((node): node is CausalGridNode => !!node);
 
   // style differently if not active
@@ -313,14 +313,14 @@ export default function ActionPage() {
         </Container>
       )}
 
-      {selectedLeafNode && !theme.settings.hideActionGrid && (
+      {selectedOutcomeNode && !theme.settings.hideActionGrid && (
         <CausalGrid
           nodes={allNodes}
-          lastNode={selectedLeafNode}
+          lastNode={selectedOutcomeNode}
           yearRange={yearRange}
           actionIsOff={!isActive}
           action={action}
-          nodeOutcomeCards={getOutcomeCards(leafNodes)}
+          nodeOutcomeCards={getOutcomeCards(outcomeNodes)}
           selectedOutcomeNode={activeDownstreamNode}
           onClickOutcomeNodeCard={(id) => setActiveDownstreamNode(id)}
           onClickExpandGrid={handleExpandGrid}
