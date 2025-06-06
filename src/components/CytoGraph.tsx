@@ -155,8 +155,8 @@ const DownloadSelector = (props: {
   const { handleExport } = props;
   const { t } = useTranslation();
   return (
-    <UncontrolledDropdown size="sm">
-      <DropdownToggle caret size="lg">
+    <UncontrolledDropdown size="md">
+      <DropdownToggle caret size="md">
         <Icon name="download" />
         {` ${t('download-data')}`}
       </DropdownToggle>
@@ -306,10 +306,33 @@ const nodeStyle: Cytoscape.Css.Node = {
 
 const nodeToElement = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
   const latestHistorical = node.metric?.historicalValues?.[0];
+
   const latest = {
     year: undefined,
     value: '',
-    unit: node.unit?.htmlShort?.replace(/<[^>]*>/g, '') || '',
+    unit: (() => {
+      // Minimal sanitization to satisfy CodeQL warning about incomplete tags
+      let text = node.unit?.htmlShort || '';
+
+      // Keep removing tags until none remain (prevents pattern re-emergence)
+      let previousLength;
+      do {
+        previousLength = text.length;
+        // Remove both complete tags and incomplete tags (missing closing >)
+        text = text.replace(/<[^>]*>?/g, '');
+      } while (text.length !== previousLength);
+
+      // Basic entity decoding for common unit symbols
+      return text
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&deg;/g, '°')
+        .replace(/&sup2;/g, '²')
+        .replace(/&sup3;/g, '³')
+        .replace(/&micro;/g, 'µ')
+        .replace(/&nbsp;/g, ' ');
+    })(),
   };
   if (latestHistorical) {
     const val = latestHistorical.value;
