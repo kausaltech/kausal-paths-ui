@@ -422,17 +422,50 @@ export default function CytoGraph(props: CytoGraphProps) {
   const cyRef = useRef<Cytoscape.Core | null>(null);
 
   const elements = useMemo(() => {
-    const elements: ElementDefinition[] = [];
+    const allElements: ElementDefinition[] = [];
     // Nodes
     nodes.forEach((node) => {
-      elements.push(nodeToElement(node));
+      allElements.push(nodeToElement(node));
     });
     // Edges
     nodes.forEach((node) => {
-      elements.push(...edgesToElements(node));
+      allElements.push(...edgesToElements(node));
     });
-    return elements;
-  }, [nodes]);
+
+    // If no node is selected, return all elements
+    if (!selectedNode) {
+      return allElements;
+    }
+
+    // Filter to show only selected node and its predecessors/successors
+    const nodeElements = allElements.filter((el) => el.group === 'nodes');
+    const edgeElements = allElements.filter((el) => el.group === 'edges');
+
+    // Find predecessors (nodes with edges pointing to selectedNode)
+    const predecessorIds = new Set(
+      edgeElements
+        .filter((edge) => edge.data.target === selectedNode)
+        .map((edge) => edge.data.source)
+    );
+
+    // Find successors (nodes that selectedNode points to)
+    const successorIds = new Set(
+      edgeElements
+        .filter((edge) => edge.data.source === selectedNode)
+        .map((edge) => edge.data.target)
+    );
+
+    // Keep only the selected node and its predecessors/successors
+    const keepNodeIds = new Set([selectedNode, ...predecessorIds, ...successorIds]);
+    const filteredNodes = nodeElements.filter((node) => keepNodeIds.has(node.data.id));
+
+    // Keep only edges that connect the kept nodes
+    const filteredEdges = edgeElements.filter(
+      (edge) => keepNodeIds.has(edge.data.source) && keepNodeIds.has(edge.data.target)
+    );
+
+    return [...filteredNodes, ...filteredEdges];
+  }, [nodes, selectedNode]);
 
   const cyStyle = useMemo(
     () => [
@@ -485,8 +518,21 @@ export default function CytoGraph(props: CytoGraphProps) {
       style: cyStyle,
       layout: layout.options.layout,
     });
+
+    // Center on selected node after layout is complete
+    cy.ready(() => {
+      if (selectedNode) {
+        const node = cy.getElementById(selectedNode);
+        if (node.length > 0) {
+          cy.center(node);
+        }
+      } else {
+        cy.center();
+      }
+    });
+
     setCy(cy);
-  }, [cyRef, elements, cyStyle, layout]);
+  }, [cyRef, elements, cyStyle, layout, selectedNode]);
 
   useEffect(() => {
     if (cy) {
@@ -544,7 +590,7 @@ export default function CytoGraph(props: CytoGraphProps) {
         }
       }
     },
-    [cy]
+    [cy, layout.id]
   );
 
   return (
