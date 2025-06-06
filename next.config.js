@@ -106,6 +106,7 @@ const nextConfig = {
     return cfg;
   },
   reactStrictMode: true,
+  transpilePackages: ['react-cytoscapejs'],
   skipMiddlewareUrlNormalize: true,
   experimental: {
     outputFileTracingIncludes: standaloneBuild
@@ -155,9 +156,7 @@ function initSentryWebpack(config) {
         // When an error occurs during release creation or sourcemaps
         // upload, the plugin will call this function. Without this
         // handler, the build would fail completely.
-        console.error(
-          '⚠️  There was an error communicating with the Sentry API'
-        );
+        console.error('⚠️  There was an error communicating with the Sentry API');
         console.error(error.message);
       },
     },
