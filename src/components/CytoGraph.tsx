@@ -326,12 +326,12 @@ const nodeToElement = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
       return text
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&')
         .replace(/&deg;/g, '°')
         .replace(/&sup2;/g, '²')
         .replace(/&sup3;/g, '³')
         .replace(/&micro;/g, 'µ')
-        .replace(/&nbsp;/g, ' ');
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&');
     })(),
   };
   if (latestHistorical) {
