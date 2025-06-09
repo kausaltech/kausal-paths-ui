@@ -24,9 +24,9 @@ const PageContainer = styled.div`
   }
 `;
 
-const FooterContainer = styled.footer<{ isSettingsPanelHidden: boolean }>`
+const FooterContainer = styled.footer<{ $isSettingsPanelHidden: boolean }>`
   background-color: ${(props) => props.theme.themeColors.black};
-  padding-bottom: ${({ isSettingsPanelHidden }) => (isSettingsPanelHidden ? '0' : '7rem')};
+  padding-bottom: ${({ $isSettingsPanelHidden }) => ($isSettingsPanelHidden ? '0' : '7rem')};
 `;
 
 const StyledSkipToContent = styled.a`
@@ -132,7 +132,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           {children}
         </main>
       </PageContainer>
-      <FooterContainer isSettingsPanelHidden={isSettingsPanelHidden}>
+      <FooterContainer $isSettingsPanelHidden={isSettingsPanelHidden}>
         <FooterComponent />
       </FooterContainer>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}

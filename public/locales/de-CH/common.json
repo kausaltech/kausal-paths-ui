@@ -17,5 +17,6 @@
   "outcome-sub-nodes-secondary": "Emissionsquellen",
   "table-unit": "Masseinheit",
   "tco2-e-inhabitant": "t CO<sub>2</sub>-Äquivalente/Einw./a",
-  "ktco2-e": "kt CO<sub>2</sub>-Äquivalente/a"
+  "ktco2-e": "kt CO<sub>2</sub>-Äquivalente/a",
+  "outcomes": "Ergebnisse"
 }

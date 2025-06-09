@@ -1,22 +1,23 @@
-import { useRef, useContext, useState } from 'react';
+import { useRef, useContext, useState, useEffect } from 'react';
 import { remove } from 'lodash';
-import { Container, Alert } from 'reactstrap';
+import { Container, Alert, Spinner } from 'reactstrap';
 import Icon from 'components/common/icon';
 import styled, { ThemeContext } from 'styled-components';
-import { ArcherContainer, ArcherElement } from 'react-archer';
-import {
-  summarizeYearlyValuesBetween,
-  getImpactMetricValue,
-} from 'common/preprocess';
+import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
+import { summarizeYearlyValuesBetween, getImpactMetricValue } from 'common/preprocess';
 import NodePlot from 'components/general/NodePlot';
 import CausalCard from 'components/general/CausalCard';
 import ImpactDisplay from 'components/general/ImpactDisplay';
 import { useInstance } from 'common/instance';
 import { NodeLink } from 'common/links';
-import { GetActionContentQuery } from 'common/__generated__/graphql';
+import type { GetActionContentQuery } from 'common/__generated__/graphql';
 import { useTranslation } from 'common/i18n';
+import CausalGridOutcomeCard from './CausalGridOutcomeCard';
 
-const ActionPoint = styled.button`
+const EXPAND_GRID_ID = 'expand-grid-button';
+const SELECTED_OUTCOME_CARD_ID = 'selected-outcome-card';
+
+const StyledShowCalculationButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -27,14 +28,12 @@ const ActionPoint = styled.button`
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
-
-  svg {
-    margin-right: 1rem;
-  }
+  gap: 1rem;
 `;
 
 const GridSection = styled.div`
   width: 100%;
+  overflow-x: hidden;
 `;
 
 const GridRowWrapper = styled.div`
@@ -137,26 +136,76 @@ const ImpactFigures = styled.div`
   }
 `;
 
-export type CausalGridNode = NonNullable<
-  GetActionContentQuery['action']
->['downstreamNodes'][0];
+const StyledOutcomeCardSelectorContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: visible; // To avoid clipping shadows
+
+  // Allow cards to horizontally scroll out of the parent container if necessary
+  // otherwise, cards will by cut off by the container but the arrow will still be visible
+  margin-left: -200px;
+  margin-right: 200px;
+  width: calc(400px + 100%);
+  padding: 0 200px;
+
+  // Prevent clipping of card shadows
+  margin-bottom: -20px;
+  padding-bottom: 20px;
+`;
+
+const StyledImpactsContainer = styled(Container)`
+  margin-bottom: ${({ theme }) => theme.spaces.s300};
+`;
+
+const StyledOutcomeCardContainer = styled.div`
+  background-color: ${({ theme }) => theme.cardBackground.primary};
+  padding: ${({ theme }) => theme.spaces.s200};
+`;
+
+export type CausalGridNode = NonNullable<GetActionContentQuery['action']>['downstreamNodes'][0];
 
 type CausalGridProps = {
   nodes: CausalGridNode[];
   yearRange: [number, number];
   actionIsOff: boolean;
   action: NonNullable<GetActionContentQuery['action']>;
+  lastNode: CausalGridNode;
+  nodeOutcomeCards?: { id: string; title: string }[];
+  selectedOutcomeNode?: string;
+  onClickOutcomeNodeCard: (id: string) => void;
+  onClickExpandGrid: () => void;
+  expandedGridLoading?: boolean;
 };
 
-const CausalGrid = (props: CausalGridProps) => {
-  const { nodes, yearRange, actionIsOff, action } = props;
+const CausalGrid = ({
+  nodes,
+  yearRange,
+  actionIsOff,
+  action,
+  lastNode,
+  nodeOutcomeCards,
+  selectedOutcomeNode,
+  onClickOutcomeNodeCard,
+  onClickExpandGrid,
+  expandedGridLoading = false,
+}: CausalGridProps) => {
   const theme = useContext(ThemeContext);
   const instance = useInstance();
-  const gridCanvas = useRef(null);
+  const gridCanvas = useRef<ArcherContainerRef>(null);
 
-  const [gridOpen, setGridOpen] = useState(false);
+  const [gridExpanded, setGridExpanded] = useState(false);
 
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (gridCanvas.current) {
+      gridCanvas.current.refreshScreen();
+    }
+
+    // Close the grid when the selected outcome is changed
+    setGridExpanded(false);
+  }, [selectedOutcomeNode]);
 
   if (nodes.length === 0) {
     return (
@@ -166,16 +215,17 @@ const CausalGrid = (props: CausalGridProps) => {
     );
   }
 
-  const lastNode = nodes.find((node) => node.outputNodes.length === 0)!;
-  const visibleNodes = gridOpen ? nodes : [lastNode];
+  const visibleNodes = gridExpanded ? nodes : [lastNode];
 
   const parentMap = new Map<string, CausalGridNode[]>();
+
   [action, ...visibleNodes].forEach((node) => {
     node.outputNodes.forEach((output) => {
       const old = parentMap.get(output.id) || [];
       parentMap.set(output.id, [...old, node]);
     });
   });
+
   const filteredNodes = visibleNodes.filter((node) => {
     // Remove some nodes from the causal pathways (for now)
     if (action.dimensionalFlow && node.quantity !== 'emissions') {
@@ -192,9 +242,9 @@ const CausalGrid = (props: CausalGridProps) => {
   const findOutputs = (parentIds: string[], tree: CausalGridNode[]) => {
     const grid = tree?.length ? tree : [];
     // return all nodes that input to given node ids
-    const inputs = Array.from(
-      new Set(parentIds.flatMap((id) => parentMap.get(id) || []))
-    ).filter((node) => node.id !== action.id);
+    const inputs = Array.from(new Set(parentIds.flatMap((id) => parentMap.get(id) || []))).filter(
+      (node) => node.id !== action.id
+    );
     // create grid row of ids
     const rowIds = inputs.map((outputNode) => outputNode.id);
     // remove higher duplicates from the grid
@@ -216,11 +266,7 @@ const CausalGrid = (props: CausalGridProps) => {
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact =
     lastNode.quantity === 'emissions'
-      ? summarizeYearlyValuesBetween(
-          lastNode.impactMetric,
-          yearRange[0],
-          yearRange[1]
-        )
+      ? summarizeYearlyValuesBetween(lastNode.impactMetric, yearRange[0], yearRange[1])
       : undefined;
 
   // find nodes that the action affects directly
@@ -233,77 +279,123 @@ const CausalGrid = (props: CausalGridProps) => {
   // We use this to filter out outputnodes that are not visible when drawing the arrows
   const visibleNodesIds = causalGridNodes.flat().map((node) => node.id);
 
+  function handleToggleCalculationVisible() {
+    const nextGridOpen = !gridExpanded;
+
+    setGridExpanded(nextGridOpen);
+
+    if (nextGridOpen) {
+      onClickExpandGrid();
+    }
+  }
+
   return (
     <ArcherContainer
-      strokeColor={theme.graphColors.grey060}
+      key={`${selectedOutcomeNode}-${gridExpanded ? 'open' : 'closed'}`}
+      strokeColor={theme?.graphColors.grey060}
       strokeWidth={6}
       endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
       ref={gridCanvas}
     >
       <GridSection>
+        {!!nodeOutcomeCards && nodeOutcomeCards.length > 1 && (
+          <StyledImpactsContainer fluid="lg">
+            <StyledOutcomeCardContainer>
+              <hr />
+              <h5>{t('outcomes')}</h5>
+              <StyledOutcomeCardSelectorContainer
+                onScroll={() => gridCanvas.current?.refreshScreen()}
+              >
+                {nodeOutcomeCards.map((card) =>
+                  selectedOutcomeNode === card.id ? (
+                    <ArcherElement
+                      key={card.id}
+                      id={SELECTED_OUTCOME_CARD_ID}
+                      relations={[
+                        {
+                          targetId: EXPAND_GRID_ID,
+                          targetAnchor: 'top',
+                          sourceAnchor: 'bottom',
+                          style: {
+                            endMarker: false,
+                          },
+                        },
+                      ]}
+                    >
+                      <CausalGridOutcomeCard
+                        title={card.title}
+                        onClick={() => onClickOutcomeNodeCard(card.id)}
+                        selected
+                      />
+                    </ArcherElement>
+                  ) : (
+                    <CausalGridOutcomeCard
+                      key={card.id}
+                      title={card.title}
+                      onClick={() => onClickOutcomeNodeCard(card.id)}
+                    />
+                  )
+                )}
+              </StyledOutcomeCardSelectorContainer>
+            </StyledOutcomeCardContainer>
+          </StyledImpactsContainer>
+        )}
+
         <ArcherElement
+          id={EXPAND_GRID_ID}
           relations={
             actionOutputNodes.length > 0
               ? actionOutputNodes.map((node) => ({
                   targetId: node.id,
                   targetAnchor: 'top',
                   sourceAnchor: 'bottom',
-                  style: {
-                    style: { strokeDasharray: '5,5' },
-                  },
                 }))
               : [
                   {
                     targetId: lastNode.id,
                     targetAnchor: 'top',
                     sourceAnchor: 'bottom',
-                    style: {
-                      style: { strokeDasharray: '5,5' },
-                    },
                   },
                 ]
           }
         >
-          <ActionPoint
-            onClick={() => setGridOpen(!gridOpen)}
-            aria-expanded={gridOpen}
+          <StyledShowCalculationButton
+            onClick={handleToggleCalculationVisible}
+            aria-expanded={gridExpanded}
             aria-controls="causal-grid"
+            disabled={expandedGridLoading}
           >
-            {gridOpen ? (
+            {!expandedGridLoading && gridExpanded ? (
               <>
                 <Icon name="dash-circle" height="1.5rem" width="1.5rem" />
                 {t('hide-calculation')}
               </>
             ) : (
               <>
-                <Icon name="plus-circle" height="1.5rem" width="1.5rem" />
+                {expandedGridLoading ? (
+                  <Spinner color="primary" style={{ width: '1.5rem', height: '1.5rem' }} />
+                ) : (
+                  <Icon name="plus-circle" height="1.5rem" width="1.5rem" />
+                )}
                 {t('show-calculation')}
               </>
             )}
-          </ActionPoint>
+          </StyledShowCalculationButton>
         </ArcherElement>
-        <div id="causal-grid" aria-hidden={!gridOpen}>
+        <div id="causal-grid" aria-hidden={!gridExpanded}>
           {causalGridNodes?.map((row, rowIndex) => (
-            <GridRowWrapper
-              onScroll={() => gridCanvas.current.refreshScreen()}
-              key={rowIndex}
-            >
+            <GridRowWrapper onScroll={() => gridCanvas.current?.refreshScreen()} key={rowIndex}>
               <GridRow>
-                {row.map((col, colindex) => (
+                {row.map((col) => (
                   <GridCol key={col.id}>
                     <ArcherElement
                       id={col.id}
                       relations={col.outputNodes
-                        .filter((outnode) =>
-                          visibleNodesIds.includes(outnode.id)
-                        )
+                        .filter((outnode) => [lastNode.id, ...visibleNodesIds].includes(outnode.id))
                         .map((node) => ({
                           targetId: node.id,
                           targetAnchor: 'top',
                           sourceAnchor: 'bottom',
-                          style: {
-                            style: { strokeDasharray: '5,5' },
-                          },
                         }))}
                     >
                       <div>
@@ -361,14 +453,13 @@ const CausalGrid = (props: CausalGridProps) => {
               <NodePlot
                 metric={lastNode.metric}
                 impactMetric={lastNode.impactMetric}
-                year="2021"
                 startYear={yearRange[0]}
                 endYear={yearRange[1]}
                 color={lastNode.color}
                 isAction={lastNode.__typename === 'ActionNode'}
-                targetYear={instance.targetYear}
-                targetYearGoal={lastNode.targetYearGoal}
-                quantity={lastNode.quantity}
+                targetYear={instance.targetYear ?? undefined}
+                targetYearGoal={lastNode.targetYearGoal ?? undefined}
+                quantity={lastNode.quantity ?? undefined}
               />
             </NodePlotCard>
           )}

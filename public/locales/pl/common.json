@@ -106,5 +106,6 @@
   "coming-soon": "Wkrótce",
   "error-with-code": "Kod błędu {{code}}",
   "thumbSliderLabel": "Dostosuj",
-  "reset-button": "Resetuj"
+  "reset-button": "Resetuj",
+  "outcomes": "Wyniki"
 }
