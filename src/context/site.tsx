@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, type Dispatch, type SetStateAction } from 'react';
 
 import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
 
@@ -37,9 +37,27 @@ export type SiteContextType = {
   menuPages: GetInstanceContextQuery['menuPages'];
 };
 
-const SiteContext = React.createContext<SiteContextType>(null!);
+export type SiteContextWithSetterType = [
+  SiteContextType,
+  Dispatch<SetStateAction<SiteContextType>>,
+];
 
+const SiteContext = React.createContext<SiteContextWithSetterType>(null!);
+
+/**
+ * @deprecated Use useSiteWithSetter instead
+ */
 export const useSite = () => {
+  const [siteContext] = useContext(SiteContext);
+
+  return siteContext;
+};
+
+/**
+ * For legacy reasons, expose the full site context with context value and
+ * setter in a separate hook. In future we could migrate all uses of useSite to this.
+ */
+export const useSiteWithSetter = () => {
   return useContext(SiteContext);
 };
 

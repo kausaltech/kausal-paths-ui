@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import App, { type AppContext, type AppProps } from 'next/app';
 
 import { ApolloClient, ApolloProvider, isApolloError } from '@apollo/client';
@@ -172,9 +172,17 @@ export type PathsAppProps = AppProps & {
 };
 
 function PathsApp(props: PathsAppProps) {
-  const { Component, pageProps, siteContext, instanceContext, themeProps } = props;
+  const {
+    Component,
+    pageProps,
+    siteContext: initialSiteContext,
+    instanceContext,
+    themeProps,
+  } = props;
   const isProd = deploymentType === 'production';
+  const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
   const { i18n } = useTranslation();
+
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
     i18n.language,
@@ -215,7 +223,7 @@ function PathsApp(props: PathsAppProps) {
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
   return (
-    <SiteContext.Provider value={siteContext}>
+    <SiteContext.Provider value={[siteContext, setSiteContext]}>
       <InstanceContext.Provider value={instanceContext}>
         <ApolloProvider client={apolloClient}>
           <ThemeProvider theme={themeProps}>

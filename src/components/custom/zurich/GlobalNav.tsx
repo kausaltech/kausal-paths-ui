@@ -1,10 +1,10 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Head from 'next/head';
 
 import { Link } from 'common/links';
 import NavDropdown, { type NavDropdownProps } from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
-import SiteContext from 'context/site';
+import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import * as Icon from 'react-bootstrap-icons';
@@ -262,7 +262,7 @@ function DropdownList(props: NavDropdownProps & { parentName: string }) {
 
 function GlobalNav(props: GlobalNavProps) {
   const { t } = useTranslation();
-  const site = useContext(SiteContext);
+  const site = useSite();
   const theme = useTheme();
   const [isOpen, toggleOpen] = useState(false);
   const { siteTitle, ownerName, navItems, sticky } = props;

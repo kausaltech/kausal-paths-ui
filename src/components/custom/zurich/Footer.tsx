@@ -21,12 +21,6 @@ const StyledFooter = styled.div`
 `;
 
 const Footer = (props) => {
-  const { t } = useTranslation();
-  const site = useContext(SiteContext);
-  const theme = useTheme();
-  const [navIsFixed, setnavIsFixed] = useState(false);
-  const [isOpen, toggleOpen] = useState(false);
-
   return (
     <stzh-footer variant="egov" className="hydrated">
       <StyledFooter className="stzh-footer">

@@ -140,7 +140,10 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       progressData: number[];
     };
 
-    let progressYears = getProgressTrackingScenario(site.scenarios)?.actualHistoricalYears ?? [];
+    let progressYears = [
+      ...(getProgressTrackingScenario(site.scenarios)?.actualHistoricalYears ?? []),
+    ];
+
     if (metric.measureDatapointYears.length) {
       progressYears = progressYears.filter((year) => metric.measureDatapointYears.includes(year));
     }
@@ -174,7 +177,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
           defaultValue: allDefaultData[i] ?? null,
           progressValue:
             year !== site.minYear && progressYears.includes(year)
-              ? (allProgressData[i] ?? null)
+              ? allProgressData[i] ?? null
               : null,
         };
       })

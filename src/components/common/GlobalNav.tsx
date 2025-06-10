@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { Link } from 'common/links';
@@ -8,7 +8,7 @@ import NavDropdown, {
   type NavDropdownProps,
 } from 'components/common/NavDropdown';
 import LanguageSelector from 'components/general/LanguageSelector';
-import SiteContext from 'context/site';
+import { useSite } from 'context/site';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
@@ -296,7 +296,7 @@ export type GlobalNavProps = {
 
 function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   const { t, i18n } = useTranslation();
-  const site = useContext(SiteContext);
+  const site = useSite();
   const theme = useTheme();
   const [navIsFixed, setnavIsFixed] = useState(false);
   const [isOpen, toggleOpen] = useState(false);
