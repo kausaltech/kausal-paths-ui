@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
 import { type DimensionalNodeMetricFragment } from 'common/__generated__/graphql';
-import { activeGoalVar } from 'common/cache';
+import { activeGoalVar, activeScenarioVar } from 'common/cache';
 import { genColorsFromTheme, setUniqueColors } from 'common/colors';
 import { type InstanceGoal, useInstance, useFeatures } from 'common/instance';
 import { getRange } from 'common/preprocess';
@@ -162,6 +162,7 @@ export default function DimensionalNodePlot({
 }: DimensionalNodePlotProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
+  const activeScenarioId = useReactiveVar(activeScenarioVar)?.id ?? undefined;
   const theme = useTheme();
   const site = useContext(SiteContext);
   const instance = useInstance();
@@ -169,13 +170,13 @@ export default function DimensionalNodePlot({
   const observedEmissionsLabel = t('observed-emissions');
 
   const metrics = useMemo(() => {
-    const defaultMetric = new DimensionalMetric(metric);
+    const defaultMetric = new DimensionalMetric(metric, activeScenarioId);
 
     return {
       default: defaultMetric,
       progress: hasProgressTracking ? new DimensionalMetric(metric, 'progress_tracking') : null,
     };
-  }, [metric, hasProgressTracking]);
+  }, [metric, hasProgressTracking, activeScenarioId]);
 
   const cube = metrics.default;
 
