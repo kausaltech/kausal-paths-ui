@@ -1564,7 +1564,10 @@ export type GetNodeVisualizationsQueryVariables = Exact<{
 
 
 export type GetNodeVisualizationsQuery = (
-  { node: (
+  { scenarios: Array<(
+    { id: string, isActive: boolean, isDefault: boolean, name: string, actualHistoricalYears: Array<number> | null, kind: ScenarioKind | null }
+    & { __typename: 'ScenarioType' }
+  )>, node: (
     { id: string, metricDim: (
       { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(

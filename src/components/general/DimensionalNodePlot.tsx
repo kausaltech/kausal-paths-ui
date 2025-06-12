@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
@@ -9,7 +9,7 @@ import { type InstanceGoal, useInstance, useFeatures } from 'common/instance';
 import { getRange } from 'common/preprocess';
 import Icon from 'components/common/icon';
 import SelectDropdown from 'components/common/SelectDropdown';
-import SiteContext from 'context/site';
+import { useSite } from 'context/site';
 import {
   DimensionalMetric,
   type MetricCategoryValues,
@@ -163,7 +163,7 @@ export default function DimensionalNodePlot({
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
   const theme = useTheme();
-  const site = useContext(SiteContext);
+  const site = useSite();
   const instance = useInstance();
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, site.scenarios);
   const observedEmissionsLabel = t('observed-emissions');

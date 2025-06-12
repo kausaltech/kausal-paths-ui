@@ -5,10 +5,11 @@ import styled from 'styled-components';
 import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { StyledCard } from './StyledCard';
 import { useQuery } from '@apollo/client';
-import { useSite } from '@/context/site';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 import { ProgressDriversVisualization } from './ProgressDriversVisualization';
 import { useTranslation } from '@/common/i18n';
+import { useSiteWithSetter } from '@/context/site';
+import { useEffect } from 'react';
 
 const VisualizationContainer = styled.div`
   display: grid;
@@ -44,15 +45,40 @@ interface Props {
 }
 
 export function ProgressDriversWrapper({ nodeId }: Props) {
-  const site = useSite();
   const { t } = useTranslation();
-  const progressTrackingScenario = getProgressTrackingScenario(site.scenarios);
-  const observedYears = progressTrackingScenario?.actualHistoricalYears ?? [];
+  const [siteContext, setSiteContext] = useSiteWithSetter();
 
   const { loading, error, data } = useQuery<GetNodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
     variables: { nodeId, scenarios: ['default', 'progress_tracking'] },
     notifyOnNetworkStatusChange: true,
   });
+
+  const progressTrackingScenario = getProgressTrackingScenario(data?.scenarios ?? []);
+  const observedYears = progressTrackingScenario?.actualHistoricalYears;
+
+  /**
+   * Scenario data is not updated on the client side, so we need to
+   * manually update the site context when the scenario data is updated.
+   */
+  useEffect(() => {
+    if (loading || !data || !observedYears) {
+      return;
+    }
+
+    const originalObservedYears =
+      getProgressTrackingScenario(siteContext.scenarios)?.actualHistoricalYears ?? [];
+
+    /**
+     * If actualHistoricalYears has changed since first load, the user has updated
+     * their additional historical data. Ensure this is also updated in the site context scenarios.
+     */
+    if (
+      originalObservedYears.length !== observedYears.length ||
+      originalObservedYears.every((year) => !observedYears.includes(year))
+    ) {
+      setSiteContext({ ...siteContext, scenarios: data.scenarios });
+    }
+  }, [loading, data, observedYears, siteContext, setSiteContext]);
 
   if (loading) {
     return (
@@ -69,7 +95,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
   const metricDim = data?.node?.metricDim;
   const visualizations = data?.node?.visualizations;
 
-  if ((!metricDim && !visualizations?.length) || !observedYears.length) {
+  if ((!metricDim && !visualizations?.length) || !observedYears?.length) {
     return null;
   }
 
@@ -100,6 +126,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                       child.metricDim && (
                         <StyledChartContainer key={ii}>
                           <ProgressDriversVisualization
+                            key={`${loading}`}
                             title={
                               child.label
                                 ? `${child.label} ${
