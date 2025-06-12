@@ -48,9 +48,13 @@ const SiteContext = React.createContext<SiteContextWithSetterType>(null!);
  * @deprecated Use useSiteWithSetter instead
  */
 export const useSite = () => {
-  const [siteContext] = useContext(SiteContext);
+  const context = useContext(SiteContext);
 
-  return siteContext;
+  if (!context) {
+    return null;
+  }
+
+  return context[0];
 };
 
 /**
