@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 const TotalValue = styled.div<{ $size?: string; $muted?: boolean }>`
@@ -6,8 +6,7 @@ const TotalValue = styled.div<{ $size?: string; $muted?: boolean }>`
   line-height: 1.2;
   font-weight: 700;
   font-size: ${({ $size }) => ($size === 'sm' ? '1.25' : '1.5')}rem;
-  color: ${({ $muted, theme }) =>
-    $muted ? theme.textColor.tertiary : theme.textColor.secondary};
+  color: ${({ $muted, theme }) => ($muted ? theme.textColor.tertiary : theme.textColor.secondary)};
 
   &:hover {
     color: ${({ theme }) => theme.textColor.secondary};
@@ -24,12 +23,12 @@ const TotalValue = styled.div<{ $size?: string; $muted?: boolean }>`
 
 const TotalUnit = styled.span<{ $size?: string }>`
   margin-left: 0.25rem;
-  font-size: ${({ $size }) => ($size === 'sm' ? '0.6' : '0.75')}rem;
+  font-size: ${({ $size }) => ($size === 'sm' ? '0.7' : '0.75')}rem;
 `;
 
 const YearRange = styled.div<{ $size?: string }>`
   display: flex;
-  font-size: ${({ $size }) => ($size === 'sm' ? '0.6' : '0.75')}rem;
+  font-size: ${({ $size }) => ($size === 'sm' ? '0.7' : '0.75')}rem;
   color: ${({ theme }) => theme.textColor.secondary};
 `;
 
@@ -46,8 +45,6 @@ const HighlightValue = (props: HighlightValueProps) => {
   const { displayValue, header, unit, className, size, muted } = props;
 
   const id = `tt-${displayValue}`.replace(/\W/g, '_');
-  const [tooltipOpen, setTooltipOpen] = useState(false);
-  const toggle = () => setTooltipOpen(!tooltipOpen);
 
   return (
     <TotalValue className={className} $size={size} $muted={muted} id={id}>

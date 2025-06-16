@@ -23,6 +23,7 @@
   "edit-scenario": "Szenario bearbeiten",
   "emissions": "Emissionen",
   "emissions-forecast": "Entwicklung der Treibhausgasemissionen",
+  "emissions-impact": "Emissionseinfluss",
   "error-loading-data": "Fehler beim Laden der Daten",
   "forecast": "Prognose",
   "front-page": "Titelseite",
@@ -98,5 +99,10 @@
   "show-error": "Fehler anzeigen",
   "thumbSliderLabel": "Anpassen",
   "reset-button": "Zurücksetzen",
-  "outcomes": "Ergebnisse"
+  "outcomes": "Ergebnisse",
+  "efficiency": "Kosteneffizienz",
+  "cost-efficiency": "Kosteneffizienz",
+  "financial-impact": "Finanzielle Auswirkungen",
+  "net-cost": "Nettokosten",
+  "reduction": "Reduzierung"
 }

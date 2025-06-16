@@ -149,32 +149,36 @@ const ActionListCard = (props: ActionListCardProps) => {
       <CardContent>
         <ActionState>
           <ActionParameters parameters={action.parameters} />
-          {action.impactMetric && !hasEfficiency && (
-            <ImpactDisplay
-              effectCumulative={actionEffectCumulative}
-              effectYearly={action.impactOnTargetYear}
-              yearRange={displayYears}
-              unitCumulative={unitCumulative}
-              unitYearly={unitYearly}
-              muted={!isActive}
-            />
-          )}
-          {hasEfficiency && (
-            <EfficiencyDisplay
-              impactCumulative={action.cumulativeImpact}
-              impactCumulativeUnit={action.cumulativeImpactUnit}
-              impactCumulativeLabel={action.cumulativeImpactName}
-              costCumulative={action.cumulativeCost}
-              costCumulativeUnit={action.cumulativeCostUnit}
-              costCumulativeLabel={action.cumulativeCostName}
-              efficiencyCumulative={action.cumulativeEfficiency}
-              efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
-              efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
-              efficiencyCap={action.efficiencyCap}
-              yearRange={displayYears}
-              muted={!isActive}
-            />
-          )}
+          <div>
+            {action.impactMetric && (
+              <ImpactDisplay
+                effectCumulative={actionEffectCumulative}
+                effectYearly={action.impactOnTargetYear}
+                yearRange={displayYears}
+                unitCumulative={unitCumulative}
+                unitYearly={unitYearly}
+                muted={!isActive}
+                size="sm"
+              />
+            )}
+            {hasEfficiency && (
+              <EfficiencyDisplay
+                showImpact={action.cumulativeImpactId !== 'net_emissions'}
+                impactCumulative={action.cumulativeImpact}
+                impactCumulativeUnit={action.cumulativeImpactUnit}
+                impactCumulativeLabel={action.cumulativeImpactName}
+                costCumulative={action.cumulativeCost}
+                costCumulativeUnit={action.cumulativeCostUnit}
+                costCumulativeLabel={action.cumulativeCostName}
+                efficiencyCumulative={action.cumulativeEfficiency}
+                efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
+                efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
+                efficiencyCap={action.efficiencyCap}
+                yearRange={displayYears}
+                muted={!isActive}
+              />
+            )}
+          </div>
         </ActionState>
         <CardDetails>{clippedDescription}</CardDetails>
       </CardContent>
