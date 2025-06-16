@@ -251,6 +251,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               out.cumulativeCost / Math.abs(out.cumulativeImpact) / out.efficiencyDivisor;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
+            cumulativeImpactId: efficiencyType?.impactNode?.id,
             cumulativeImpactUnit: efficiencyType?.impactUnit.htmlShort,
             cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${
               data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''

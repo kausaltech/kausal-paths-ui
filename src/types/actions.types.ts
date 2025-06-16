@@ -1,10 +1,8 @@
-import {
-  ActionSortOrder,
-  GetActionListQuery,
-} from 'common/__generated__/graphql';
+import { ActionSortOrder, type GetActionListQuery } from 'common/__generated__/graphql';
 
 export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
   impactOnTargetYear: number;
+  cumulativeImpactId?: string;
   cumulativeImpact?: number;
   cumulativeImpactUnit?: string;
   cumulativeImpactName?: string;
@@ -18,10 +16,7 @@ export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
   efficiencyCap?: number;
 };
 
-export type SortActionsBy =
-  | `${ActionSortOrder}`
-  | 'CUM_EFFICIENCY'
-  | 'CUM_COST';
+export type SortActionsBy = `${ActionSortOrder}` | 'CUM_EFFICIENCY' | 'CUM_COST';
 
 export type SortActionsConfig = {
   key: SortActionsBy;
