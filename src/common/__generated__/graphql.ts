@@ -17,6 +17,7 @@ export type Scalars = {
   PositiveInt: { input: any; output: any; }
   RichText: { input: any; output: any; }
   UUID: { input: any; output: any; }
+  _Any: { input: any; output: any; }
 };
 
 /** An enumeration. */
@@ -274,7 +275,7 @@ export type SetGlobalParameterFromActionSummaryMutation = (
     ) | null }
     & { __typename: 'SetParameterMutation' }
   ) | null }
-  & { __typename: 'Mutations' }
+  & { __typename: 'Mutation' }
 );
 
 export type SetGlobalParameterMutationVariables = Exact<{
@@ -296,7 +297,7 @@ export type SetGlobalParameterMutation = (
     ) | null }
     & { __typename: 'SetParameterMutation' }
   ) | null }
-  & { __typename: 'Mutations' }
+  & { __typename: 'Mutation' }
 );
 
 export type SetNormalizationMutationVariables = Exact<{
@@ -308,8 +309,8 @@ export type SetNormalizationMutation = (
   { setNormalizer: (
     { ok: boolean }
     & { __typename: 'SetNormalizerMutation' }
-  ) | null }
-  & { __typename: 'Mutations' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type GetInstanceGoalOutcomeQueryVariables = Exact<{
@@ -343,8 +344,8 @@ export type SetNormalizationFromWidgetMutation = (
   { setNormalizer: (
     { ok: boolean }
     & { __typename: 'SetNormalizerMutation' }
-  ) | null }
-  & { __typename: 'Mutations' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type SetParameterMutationVariables = Exact<{
@@ -366,7 +367,7 @@ export type SetParameterMutation = (
     ) | null }
     & { __typename: 'SetParameterMutation' }
   ) | null }
-  & { __typename: 'Mutations' }
+  & { __typename: 'Mutation' }
 );
 
 export type ActivateScenarioMutationVariables = Exact<{
@@ -382,7 +383,7 @@ export type ActivateScenarioMutation = (
     ) | null }
     & { __typename: 'ActivateScenarioMutation' }
   ) | null }
-  & { __typename: 'Mutations' }
+  & { __typename: 'Mutation' }
 );
 
 export type DimensionalPlotFragment = (
@@ -1569,7 +1570,7 @@ export type GetNodeVisualizationsQuery = (
     & { __typename: 'ScenarioType' }
   )>, node: (
     { id: string, metricDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+      { measureDatapointYears: Array<number>, id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -1601,7 +1602,7 @@ export type GetNodeVisualizationsQuery = (
           { id: string, categories: Array<string> | null, flatten: boolean | null }
           & { __typename: 'VisualizationNodeDimension' }
         )>, metricDim: (
-          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+          { measureDatapointYears: Array<number>, id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
             { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
@@ -2032,7 +2033,7 @@ type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
     { id: string, categories: Array<string> | null, flatten: boolean | null }
     & { __typename: 'VisualizationNodeDimension' }
   )>, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+    { measureDatapointYears: Array<number>, id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }

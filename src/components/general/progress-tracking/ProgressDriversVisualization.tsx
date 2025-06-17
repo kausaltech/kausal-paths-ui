@@ -6,7 +6,7 @@ import styled, { useTheme } from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { activeGoalVar } from 'common/cache';
 import { getDefaultSliceConfig } from '../DimensionalNodePlot';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 import type { EChartsCoreOption } from 'echarts';
 import type { Theme } from '@kausal/themes/types';
@@ -100,7 +100,7 @@ function interpolateProgressValues(progressData: (number | null)[]): (number | n
 }
 
 export function ProgressDriversVisualization({ metric, desiredOutcome, title }: Props) {
-  const site = useSite();
+  const [site] = useSiteWithSetter();
   const theme = useTheme();
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
@@ -140,16 +140,19 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       progressData: number[];
     };
 
-    let progressYears = [
+    const progressYears = [
       ...(getProgressTrackingScenario(site.scenarios)?.actualHistoricalYears ?? []),
     ];
 
-    if (metric.measureDatapointYears.length) {
-      progressYears = progressYears.filter((year) => metric.measureDatapointYears.includes(year));
-    }
-    const [firstYear, lastYear] = progressYears
+    const [firstProgressYear, lastProgressYear] = progressYears
       .sort()
       .filter((_, i) => i === 0 || i === progressYears.length - 1);
+
+    // If the node has observed values, filter progress years to only render these
+    const filteredProgressYears = metric.measureDatapointYears.length
+      ? progressYears.filter((year) => metric.measureDatapointYears.includes(year))
+      : progressYears;
+
     const allYears = [...slice.historicalYears, ...slice.forecastYears];
     const allDefaultData = [...defaultScenario.historicalValues, ...defaultScenario.forecastValues];
     const allProgressData = [
@@ -164,7 +167,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
          * render the default value as the starting point for progress tracking.
          * We don't render a marker for this point.
          */
-        if (year === firstYear) {
+        if (year === firstProgressYear) {
           return {
             year,
             defaultValue: allDefaultData[i] ?? null,
@@ -176,12 +179,12 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
           year,
           defaultValue: allDefaultData[i] ?? null,
           progressValue:
-            year !== site.minYear && progressYears.includes(year)
+            year !== site.minYear && filteredProgressYears.includes(year)
               ? allProgressData[i] ?? null
               : null,
         };
       })
-      .filter(({ year }) => year >= firstYear && year <= lastYear);
+      .filter(({ year }) => year >= firstProgressYear && year <= lastProgressYear);
 
     /**
      * Convert the combined data back into separate arrays of years, default values, and progress values

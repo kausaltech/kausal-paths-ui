@@ -17,6 +17,7 @@ export type Scalars = {
   PositiveInt: { input: any; output: any; }
   RichText: { input: any; output: any; }
   UUID: { input: any; output: any; }
+  _Any: { input: any; output: any; }
 };
 
 /** An enumeration. */
