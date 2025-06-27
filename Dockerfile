@@ -1,9 +1,9 @@
-#syntax=docker/dockerfile:1.7-labs
+#syntax=docker/dockerfile:1.17-labs
 ARG base_image=node:20-alpine
 #
 # Install dependencies
 #
-FROM ${base_image} as deps
+FROM ${base_image} AS deps
 
 WORKDIR /app
 
@@ -12,22 +12,33 @@ ARG NPM_REGISTRY_SERVER
 ENV NPM_CONFIG_CACHE=/npm-cache
 COPY package*.json ./
 
-RUN \
-  if [ ! -z "${NPM_REGISTRY_SERVER}" ] ; then \
-    echo "@kausal:registry=${NPM_REGISTRY_SERVER}" >> $HOME/.npmrc ; \
-    echo "registry=https://registry.npmjs.org/" >> $HOME/.npmrc ; \
-    echo "$(echo ${NPM_REGISTRY_SERVER} | sed -e 's/https://')/"':_authToken=${NPM_TOKEN}' >> $HOME/.npmrc ; \
-    echo "Using custom registry at: ${NPM_REGISTRY_SERVER}" ; \
+RUN --mount=type=secret,id=NPM_USER --mount=type=secret,id=NPM_PASSWORD --mount=type=cache,target=/npm-cache <<EOF sh
+  set -e
+  if [ ! -z "${NPM_REGISTRY_SERVER}" ] ; then
+    NPM_USER="$(cat /run/secrets/NPM_USER 2> /dev/null || true)"
+    NPM_PASS="$(cat /run/secrets/NPM_PASSWORD 2> /dev/null || true)"
+    if [ ! -z "${NPM_USER}" -a ! -z "${NPM_PASS}" ] ; then
+      npx -y npm-cli-login@1.0.0 -r "${NPM_REGISTRY_SERVER}" -e "${NPM_USER}@kausal.tech"
+    else
+      echo "$(echo ${NPM_REGISTRY_SERVER} | sed -e 's/https://')/"':_authToken=${NPM_TOKEN}' >> $HOME/.npmrc
+    fi
+    echo "@kausal:registry=${NPM_REGISTRY_SERVER}" >> $HOME/.npmrc
+    echo "@kausal-private:registry=${NPM_REGISTRY_SERVER}" >> $HOME/.npmrc
+    echo "registry=https://registry.npmjs.org/" >> $HOME/.npmrc
+    echo "Using custom registry at: ${NPM_REGISTRY_SERVER}"
   fi
+EOF
 
 RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
   NPM_TOKEN=$( ([ -f /run/secrets/NPM_TOKEN ] && cat /run/secrets/NPM_TOKEN) || echo -n "$NPM_TOKEN") \
     npm ci --include optional
-RUN \
-  if [ ! -d node_modules/@kausal/themes-private ] ; then \
-    echo Private themes not found. ; \
-    exit 1 ; \
+RUN <<EOF sh
+  set -e
+  if [ ! -d node_modules/@kausal/themes-private ] ; then
+    echo Private themes not found.
+    exit 1
   fi
+EOF
 
 #
 # NextJS base
@@ -62,7 +73,6 @@ COPY --exclude=docker --exclude=Dockerfile . .
 ARG SENTRY_PROJECT
 ARG SENTRY_URL
 ARG SENTRY_ORG
-ARG SENTRY_AUTH_TOKEN
 
 COPY docker/manage-nextjs-cache.sh /
 # Remove the NextJS build cache if packages change
