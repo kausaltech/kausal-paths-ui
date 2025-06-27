@@ -84,11 +84,15 @@ const BotNav = styled(Navbar)`
 `;
 
 const SiteTitle = styled.div`
-  font-size: 1.25rem;
-  line-height: 1.666rem;
+  font-size: ${(props) => props.theme.fontSizeBase};
+  font-family: ${(props) => `${props.theme.brandNavFontFamily}, ${props.theme.fontFamilyFallback}`};
+  line-height: 1;
   padding: ${(props) => props.theme.spaces.s150} 0 ${(props) => props.theme.spaces.s150};
-`;
 
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    font-size: ${(props) => props.theme.fontSizeMd};
+  }
+`;
 const HomeLink = styled.a`
   display: flex;
   align-items: center;
@@ -104,8 +108,9 @@ const HomeLink = styled.a`
   }
 
   svg {
-    display: block;
-    max-width: 12em;
+    display: none;
+    width: auto;
+    max-width: 6em;
     height: ${(props) => props.theme.spaces.s200};
     margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}
       ${(props) => props.theme.spaces.s050} 0;
@@ -113,6 +118,7 @@ const HomeLink = styled.a`
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     svg {
+      display: block;
       max-width: 18em;
       height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
       margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}

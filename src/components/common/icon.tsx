@@ -53,7 +53,7 @@ const Icon = (props: IconProps) => {
       className={`icon ${className}`}
       onError={(error) => logger.error(error, `Error rendering icon ${name}`)}
       key={`${theme.name}-${name}`}
-      style={{ width, height }}
+      style={{ width, height, color }}
       aria-hidden={alt ? 'false' : 'true'}
       focusable={alt ? 'true' : 'false'}
       title={alt}
