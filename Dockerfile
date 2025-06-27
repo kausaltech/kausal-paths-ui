@@ -12,29 +12,33 @@ ARG NPM_REGISTRY_SERVER
 ENV NPM_CONFIG_CACHE=/npm-cache
 COPY package*.json ./
 
-RUN --mount=type=secret,id=NPM_USER --mount=type=secret,id=NPM_PASSWORD --mount=type=cache,target=/npm-cache <<EOF sh
+RUN --mount=type=secret,id=NPM_USER --mount=type=secret,id=NPM_PASSWORD --mount=type=cache,target=/npm-cache <<EOF
   set -e
   if [ ! -z "${NPM_REGISTRY_SERVER}" ] ; then
-    NPM_USER="$(cat /run/secrets/NPM_USER 2> /dev/null || true)"
-    NPM_PASS="$(cat /run/secrets/NPM_PASSWORD 2> /dev/null || true)"
-    if [ ! -z "${NPM_USER}" -a ! -z "${NPM_PASS}" ] ; then
-      npx -y npm-cli-login@1.0.0 -r "${NPM_REGISTRY_SERVER}" -e "${NPM_USER}@kausal.tech"
-    else
-      echo "$(echo ${NPM_REGISTRY_SERVER} | sed -e 's/https://')/"':_authToken=${NPM_TOKEN}' >> $HOME/.npmrc
+    echo "Using custom registry at: ${NPM_REGISTRY_SERVER}"
+    ls -l /run/secrets
+    if [ ! -f /run/secrets/NPM_USER  -o ! -f /run/secrets/NPM_PASSWORD ] ; then
+      echo "Custom registry credentials not passed as secrets"
+      exit 1
     fi
-    echo "@kausal:registry=${NPM_REGISTRY_SERVER}" >> $HOME/.npmrc
+    export NPM_USER="$(cat /run/secrets/NPM_USER)"
+    export NPM_PASS="$(cat /run/secrets/NPM_PASSWORD)"
+    if [ -z "$NPM_USER" -o -z "$NPM_PASS" ] ; then
+      echo "Custom registry credentials not set"
+      exit 1
+    fi
+    echo "Logging in to custom registry"
+    npx -y npm-cli-login@1.0.0 -r "${NPM_REGISTRY_SERVER}" -e "${NPM_USER}@kausal.tech"
     echo "@kausal-private:registry=${NPM_REGISTRY_SERVER}" >> $HOME/.npmrc
     echo "registry=https://registry.npmjs.org/" >> $HOME/.npmrc
-    echo "Using custom registry at: ${NPM_REGISTRY_SERVER}"
   fi
 EOF
 
-RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
-  NPM_TOKEN=$( ([ -f /run/secrets/NPM_TOKEN ] && cat /run/secrets/NPM_TOKEN) || echo -n "$NPM_TOKEN") \
-    npm ci --include optional
-RUN <<EOF sh
+RUN npm ci --include optional
+
+RUN <<EOF
   set -e
-  if [ ! -d node_modules/@kausal/themes-private ] ; then
+  if [ ! -d node_modules/@kausal-private/themes-private ] ; then
     echo Private themes not found.
     exit 1
   fi
