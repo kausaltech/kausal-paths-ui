@@ -20,10 +20,14 @@ RUN \
     echo "Using custom registry at: ${NPM_REGISTRY_SERVER}" ; \
   fi
 
-RUN --mount=type=secret,id=NPM_TOKEN ls -R /run || true
 RUN --mount=type=secret,id=NPM_TOKEN --mount=type=cache,target=/npm-cache \
   NPM_TOKEN=$( ([ -f /run/secrets/NPM_TOKEN ] && cat /run/secrets/NPM_TOKEN) || echo -n "$NPM_TOKEN") \
     npm ci --include optional
+RUN \
+  if [ ! -d node_modules/@kausal/themes-private ] ; then \
+    echo Private themes not found. ; \
+    exit 1 ; \
+  fi
 
 #
 # NextJS base
