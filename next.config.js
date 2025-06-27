@@ -111,7 +111,7 @@ const nextConfig = {
   experimental: {
     outputFileTracingIncludes: standaloneBuild
       ? {
-          '/': ['./node_modules/@kausal/themes*/**'],
+          '/': ['./node_modules/@kausal*/themes*/**'],
         }
       : undefined,
   },

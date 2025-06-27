@@ -23,11 +23,11 @@ corepack enable npm
 
 4.2. login to https://npm.kausal.tech
 using your Google credentials, copy the line with `npm config set ...` from
-the settings dialog, and execute it in your shell. Ensure the `@kausal` scope
+the settings dialog, and execute it in your shell. Ensure the `@kausal-private` scope
 is associated with that registry by running:
 
 ```bash
-echo '@kausal:registry=https://npm.kausal.tech/' >> ~/.npmrc
+echo '@kausal-private:registry=https://npm.kausal.tech/' >> ~/.npmrc
 ```
 
 5. Install dependencies:
@@ -87,4 +87,3 @@ When you call sentry-cli (which probably happens automatically when you deploy t
 [auth]
 token=your-auth-token
 ```
-
