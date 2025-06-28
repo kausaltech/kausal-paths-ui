@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import type {
@@ -196,8 +196,8 @@ function ActionListPage({ page }: ActionListPageProps) {
   const yearRange = useReactiveVar(yearRangeVar);
 
   const data = actionListResp.data ?? previousData;
-  const hasEfficiency = data ? data.actionEfficiencyPairs.length > 0 : false;
-  const showReturnOnInvestment = hasGraph(impactResp, 'return_of_investment');
+  const hasEfficiency = data ? data.impactOverviews.length > 0 : false;
+  const showReturnOnInvestment = hasGraph(impactResp, 'return_on_investment');
   const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit');
 
   const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
@@ -220,7 +220,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     () =>
       filteredActions
         .map((act) => {
-          // If we have action efficiency pairs, we augment the actions with the cumulative values
+          // If we have impact overviews, we augment the actions with the cumulative values
           const reductionText = `(${t('reduction')}, ${t(
             'accumulated-between'
           )} ${yearRange[0]}-${yearRange[1]})`;
@@ -234,33 +234,31 @@ function ActionListPage({ page }: ActionListPageProps) {
               ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ?? 0,
           };
 
-          const efficiencyType = data?.actionEfficiencyPairs[activeEfficiency];
+          const efficiencyType = data?.impactOverviews[activeEfficiency];
           const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
 
           if (!efficiencyType || !efficiencyAction) return out;
 
           out.cumulativeImpact =
-            (efficiencyType.invertImpact ? -1 : 1) *
             summarizeYearlyValuesBetween(efficiencyAction.impactValues, yearRange[0], yearRange[1]);
           out.cumulativeCost =
-            (efficiencyType.invertCost ? -1 : 1) *
             summarizeYearlyValuesBetween(efficiencyAction.costValues, yearRange[0], yearRange[1]);
-          out.efficiencyDivisor = efficiencyAction.efficiencyDivisor ?? undefined;
-          if (out.efficiencyDivisor !== undefined)
+          out.unitAdjustmentMultiplier = efficiencyAction.unitAdjustmentMultiplier ?? undefined;
+          if (out.unitAdjustmentMultiplier !== undefined)
             out.cumulativeEfficiency =
-              out.cumulativeCost / Math.abs(out.cumulativeImpact) / out.efficiencyDivisor;
+              out.cumulativeCost / Math.abs(out.cumulativeImpact) * out.unitAdjustmentMultiplier;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
-            cumulativeImpactId: efficiencyType?.impactNode?.id,
-            cumulativeImpactUnit: efficiencyType?.impactUnit.htmlShort,
-            cumulativeImpactName: `${efficiencyType?.impactNode?.name} ${
-              data.actionEfficiencyPairs[activeEfficiency]?.invertImpact ? reductionText : ''
+            cumulativeImpactId: efficiencyType?.effectNode?.id,
+            cumulativeImpactUnit: efficiencyType?.effectUnit.htmlShort,
+            cumulativeImpactName: `${efficiencyType?.effectNode?.name} ${
+              data.impactOverviews[activeEfficiency]?.invertImpact ? reductionText : ''
             }`,
             cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
             cumulativeCostName: efficiencyType?.costNode?.name,
-            cumulativeEfficiencyUnit: efficiencyType?.efficiencyUnit.htmlShort,
+            cumulativeEfficiencyUnit: efficiencyType?.indicatorUnit.htmlShort,
             cumulativeEfficiencyName: efficiencyType?.label,
-            efficiencyCap: efficiencyType?.plotLimitEfficiency ?? undefined,
+            efficiencyCap: efficiencyType?.plotLimitForIndicator ?? undefined,
           };
           Object.assign(out, efficiencyProps);
           return out;
@@ -314,7 +312,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     type="select"
                     onChange={(e) => setActiveEfficiency(Number(e.target.value))}
                   >
-                    {data.actionEfficiencyPairs.map((impactGroup, indx) => (
+                    {data.impactOverviews.map((impactGroup, indx) => (
                       <option value={indx} key={indx}>
                         {impactGroup.label}
                       </option>
@@ -471,7 +469,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionsMac
                 id="efficiency-view"
                 actions={usableActions}
-                actionEfficiencyPairs={data.actionEfficiencyPairs[activeEfficiency]}
+                impactOverviews={data.impactOverviews[activeEfficiency]}
                 t={t}
                 actionGroups={data.instance.actionGroups}
                 sortBy={sortBy.sortKey}

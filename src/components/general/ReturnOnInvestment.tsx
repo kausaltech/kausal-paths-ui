@@ -1,14 +1,15 @@
-import { ChartWrapper } from 'components/charts/ChartWrapper';
-import { Chart } from 'components/charts/Chart';
-import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
+
 import { useReactiveVar } from '@apollo/client';
 import type { GetImpactOverviewsQuery } from 'common/__generated__/graphql';
 import { yearRangeVar } from 'common/cache';
-import { useMemo } from 'react';
-import round from 'lodash/round';
+import { Chart } from 'components/charts/Chart';
+import { ChartWrapper } from 'components/charts/ChartWrapper';
 import type { EChartsCoreOption } from 'echarts/core';
+import round from 'lodash/round';
+import { useTranslation } from 'react-i18next';
 
-const formatPercentage = (value: number) => `${round(value, 2)} %`;
+const formatValue = (value: number, unit: string) => `${round(value, 2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
@@ -16,47 +17,54 @@ function getChartConfig(
   data?: GetImpactOverviewsQuery
 ): EChartsCoreOption {
   const dataset = data?.impactOverviews.find(
-    (dataset) => dataset.graphType === 'return_of_investment'
+    (dataset) => dataset.graphType === 'return_on_investment'
   );
+
+  const unit = dataset?.indicatorUnit?.short || '';
 
   return {
     dataset: dataset
       ? [
           {
             dimensions: ['action', 'returnOnInvestment'],
-            source: dataset.actions.map((action) => ({
-              action: action.action.name,
-              // Sums the cumulative impact and cost across the selected year range, then calculates ROI
-              returnOnInvestment: action.costDim.years.reduce(
-                ({ totalCost, totalImpact, roi }, year, index) => {
+            source: dataset.actions
+            .map((action) => {
+              const totals = action.effectDim.years.reduce(
+                ({ totalCost, totalEffect }, year, index) => {
                   if (year < startYear || year > endYear) {
-                    return { totalCost, totalImpact, roi };
+                    return { totalCost, totalEffect };
                   }
-
-                  const impact = totalImpact + (action.impactDim.values[index] ?? 0);
-                  const cost = totalCost + (action.costDim.values[index] ?? 0);
-
+          
                   return {
-                    totalCost: cost,
-                    totalImpact: impact,
-                    roi: impact && cost ? (impact / cost - 1) * 100 : 0,
+                    totalCost: totalCost + (action.costDim.values[index] ?? 0),
+                    totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
                   };
                 },
-                { totalCost: 0, totalImpact: 0, roi: 0 }
-              ).roi,
-            })),
+                { totalCost: 0, totalEffect: 0 }
+              );
+          
+              const roi = totals.totalCost > 0 
+                ? (totals.totalEffect / totals.totalCost) * action.unitAdjustmentMultiplier
+                : null;
+          
+              return {
+                action: action.action.name,
+                returnOnInvestment: roi,
+              };
+            })
+            .filter(item => item.returnOnInvestment !== null), // Remove actions with no cost
           },
           {
             transform: {
               type: 'sort',
-              config: { dimension: 'returnOnInvestment', order: 'desc' },
+              config: { dimension: 'returnOnInvestment', order: 'asc' },
             },
           },
         ]
       : [],
     tooltip: {
       trigger: 'axis',
-      valueFormatter: formatPercentage,
+      valueFormatter: (value: number) => formatValue(value, unit),
     },
     grid: {
       containLabel: true,
@@ -67,7 +75,7 @@ function getChartConfig(
       type: 'value',
       position: 'top',
       axisLabel: {
-        formatter: '{value}%',
+        formatter: `{value} ${unit}`,
       },
     },
 
@@ -96,7 +104,7 @@ function getChartConfig(
             const activeIndex = params.encode?.x[0];
             const value = activeIndex ? params.value?.[activeIndex] : null;
 
-            return value ? formatPercentage(value) : '';
+            return value ? formatValue(value, unit) : '';
           },
         },
       },
@@ -116,16 +124,17 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
     () => getChartConfig(startYear, endYear, data),
     [data, startYear, endYear]
   );
-  const bars = data?.impactOverviews.find(({ graphType }) => graphType === 'return_of_investment')
-    ?.actions?.length;
+  const d = data?.impactOverviews.find(({ graphType }) => graphType === 'return_on_investment');
+  const bars = d?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
+  const title = d.label || t('return-on-investment');
+  const subtitle = d.indicatorLabel || 'Higher values indicate actions with a more favorable outcome, demonstrating greater returns relative to the initial investment.'
+
 
   return (
     <ChartWrapper
-      title={t('return-on-investment')}
-      subtitle={
-        'Higher percentages indicate actions with a more favorable ROI, demonstrating greater returns relative to the initial investment.'
-      }
+      title={title}
+      subtitle={subtitle}
       isLoading={isLoading}
     >
       <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />

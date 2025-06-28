@@ -1,10 +1,10 @@
-import MacGraph from 'components/graphs/MacGraph';
 import { ChartWrapper } from 'components/charts/ChartWrapper';
+import MacGraph from 'components/graphs/MacGraph';
 
 const ActionsMac = ({
   id,
   actions,
-  actionEfficiencyPairs,
+  impactOverviews,
   t,
   actionGroups,
   sortBy,
@@ -12,7 +12,7 @@ const ActionsMac = ({
   refetching,
 }) => {
   // if we have efficiency limit set, remove actions over that limit
-  const efficiencyLimit = actionEfficiencyPairs?.plotLimitEfficiency;
+  const efficiencyLimit = impactOverviews?.plotLimitForIndicator;
   // Remove actions without efficiency data
   const efficiencyActions = actions
     .filter((action) => action.cumulativeEfficiency)
@@ -45,12 +45,12 @@ const ActionsMac = ({
     impact: sortedActions.map((action) => action.cumulativeImpact),
   };
 
-  //const efficiencyUnit = actionEfficiencyPairs.efficiencyUnit.htmlShort;
+  //const indicatorUnit = impactOverviews.indicatorUnit.htmlShort;
   const efficiencyName = sortedActions[0]?.cumulativeEfficiencyName;
-  const efficiencyUnit = sortedActions[0]?.cumulativeEfficiencyUnit;
+  const indicatorUnit = sortedActions[0]?.cumulativeEfficiencyUnit;
 
   const impactName = sortedActions[0]?.cumulativeImpactName;
-  const impactUnit = sortedActions[0]?.cumulativeImpactUnit;
+  const effectUnit = sortedActions[0]?.cumulativeImpactUnit;
 
   const costName = sortedActions[0]?.cumulativeCostName;
   const costUnit = sortedActions[0]?.cumulativeCostUnit;
@@ -60,9 +60,9 @@ const ActionsMac = ({
       <MacGraph
         data={macData}
         impactName={impactName}
-        impactUnit={impactUnit}
+        effectUnit={effectUnit}
         efficiencyName={t('efficiency')}
-        efficiencyUnit={efficiencyUnit}
+        indicatorUnit={indicatorUnit}
         actionIds={macData.ids}
         costName={costName}
         costUnit={costUnit}

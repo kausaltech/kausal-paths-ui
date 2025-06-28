@@ -1366,7 +1366,7 @@ export type GetActionImpactsQuery = (
       & { __typename: 'ForecastMetricType' }
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
-  ) | null, costNode: (
+  ) | null, effectNode: (
     { metric: (
       { id: string | null, unit: (
         { short: string }
@@ -1463,30 +1463,30 @@ export type GetActionListQuery = (
       & { __typename: 'ActionGroupType' }
     ) | null }
     & { __typename: 'ActionNode' }
-  )>, actionEfficiencyPairs: Array<(
-    { id: string, label: string, plotLimitEfficiency: number | null, invertCost: boolean, invertImpact: boolean, efficiencyUnit: (
+  )>, impactOverviews: Array<(
+    { id: string, label: string, plotLimitForIndicator: number | null, invertCost?: boolean, invertImpact?: boolean, indicatorUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ), impactUnit: (
+    ), effectUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ), costNode: (
+    ), costNode?: (
       { id: string, name: string, shortDescription: any | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
-    ), impactNode: (
+    ), effectNode: (
       { id: string, name: string, shortDescription: any | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
     ), actions: Array<(
-      { efficiencyDivisor: number | null, action: (
+      { unitAdjustmentMultiplier: number | null, action: (
         { id: string, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
@@ -1511,17 +1511,17 @@ export type GetImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetImpactOverviewsQuery = (
   { impactOverviews: Array<(
-    { id: string, label: string, graphType: string | null, costNode: (
+    { id: string, label: string, graphType: string | null, effectNode: (
       { id: string }
       & { __typename: 'Node' }
-    ), costUnit: (
+    ), effectUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
     ), actions: Array<(
       { action: (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
-      ), costDim: (
+      ), effectDim: (
         { name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
@@ -1545,7 +1545,7 @@ export type GetImpactOverviewsQuery = (
           & { __typename: 'NormalizerNodeType' }
         ) | null }
         & { __typename: 'DimensionalMetricType' }
-      ), impactDim: (
+      ), costDim: (
         { years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string }
           & { __typename: 'MetricDimensionType' }
