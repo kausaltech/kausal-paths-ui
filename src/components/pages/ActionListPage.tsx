@@ -21,6 +21,7 @@ import ActionsMac from 'components/general/ActionsMac';
 import { CostBenefitAnalysis } from 'components/general/CostBenefitAnalysis';
 import { ReturnOnInvestment } from 'components/general/ReturnOnInvestment';
 import SettingsPanelFull from 'components/general/SettingsPanelFull';
+import { SimpleEffect } from 'components/general/SimpleEffect';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { GET_ACTION_LIST } from 'queries/getActionList';
@@ -132,7 +133,7 @@ const getSortOptions = (
   },
 ];
 
-type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi';
+type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi' | 'simple';
 
 type ActionListPageProps = {
   page: NonNullable<GetPageQuery['page']> & {
@@ -199,6 +200,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   const hasEfficiency = data ? data.impactOverviews.length > 0 : false;
   const showReturnOnInvestment = hasGraph(impactResp, 'return_on_investment');
   const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit');
+  const showSimpleEffect = hasGraph(impactResp, 'simple_effect');
 
   const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
 
@@ -239,14 +241,20 @@ function ActionListPage({ page }: ActionListPageProps) {
 
           if (!efficiencyType || !efficiencyAction) return out;
 
-          out.cumulativeImpact =
-            summarizeYearlyValuesBetween(efficiencyAction.impactValues, yearRange[0], yearRange[1]);
-          out.cumulativeCost =
-            summarizeYearlyValuesBetween(efficiencyAction.costValues, yearRange[0], yearRange[1]);
+          out.cumulativeImpact = summarizeYearlyValuesBetween(
+            efficiencyAction.impactValues,
+            yearRange[0],
+            yearRange[1]
+          );
+          out.cumulativeCost = summarizeYearlyValuesBetween(
+            efficiencyAction.costValues,
+            yearRange[0],
+            yearRange[1]
+          );
           out.unitAdjustmentMultiplier = efficiencyAction.unitAdjustmentMultiplier ?? undefined;
           if (out.unitAdjustmentMultiplier !== undefined)
             out.cumulativeEfficiency =
-              out.cumulativeCost / Math.abs(out.cumulativeImpact) * out.unitAdjustmentMultiplier;
+              (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
             cumulativeImpactId: efficiencyType?.effectNode?.id,
@@ -448,6 +456,16 @@ function ActionListPage({ page }: ActionListPageProps) {
                 icon="chartColumn"
               />
             )}
+
+            {showSimpleEffect && (
+              <ActionPageTab
+                tabId="simple"
+                isActive={listType === 'simple'}
+                label={t('simple-effect')}
+                onSelectTab={() => setListType('simple')}
+                icon="chartColumn"
+              />
+            )}
           </div>
         </Container>
       </ActionsViewTabs>
@@ -482,6 +500,9 @@ function ActionListPage({ page }: ActionListPageProps) {
             )}
             {listType === 'roi' && (
               <ReturnOnInvestment data={impactResp.data} isLoading={impactResp.loading} />
+            )}
+            {listType === 'simple' && (
+              <SimpleEffect data={impactResp.data} isLoading={impactResp.loading} />
             )}
             {listType === 'comparison' && (
               <ActionsComparison
