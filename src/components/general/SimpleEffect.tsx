@@ -16,9 +16,7 @@ function getChartConfig(
   endYear: number,
   data?: GetImpactOverviewsQuery
 ): EChartsCoreOption {
-  const dataset = data?.impactOverviews.find(
-    (dataset) => dataset.graphType === 'return_on_investment'
-  );
+  const dataset = data?.impactOverviews.find((dataset) => dataset.graphType === 'simple_effect');
 
   const unit = dataset?.indicatorUnit?.short || '';
 
@@ -26,39 +24,33 @@ function getChartConfig(
     dataset: dataset
       ? [
           {
-            dimensions: ['action', 'returnOnInvestment'],
-            source: dataset.actions
-              .map((action) => {
-                const totals = action.effectDim.years.reduce(
-                  ({ totalCost, totalEffect }, year, index) => {
-                    if (year < startYear || year > endYear) {
-                      return { totalCost, totalEffect };
-                    }
+            dimensions: ['action', 'simpleEffect'],
+            source: dataset.actions.map((action) => {
+              const totals = action.effectDim.years.reduce(
+                ({ totalEffect }, year, index) => {
+                  if (year < startYear || year > endYear) {
+                    return { totalEffect };
+                  }
 
-                    return {
-                      totalCost: totalCost + (action.costDim.values[index] ?? 0),
-                      totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
-                    };
-                  },
-                  { totalCost: 0, totalEffect: 0 }
-                );
+                  return {
+                    totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
+                  };
+                },
+                { totalEffect: 0 }
+              );
 
-                const roi =
-                  totals.totalCost > 0
-                    ? (totals.totalEffect / totals.totalCost) * action.unitAdjustmentMultiplier
-                    : null;
+              // const effect = totals.totalEffect;
 
-                return {
-                  action: action.action.name,
-                  returnOnInvestment: roi,
-                };
-              })
-              .filter((item) => item.returnOnInvestment !== null), // Remove actions with no cost
+              return {
+                action: action.action.name,
+                simpleEffect: totals.totalEffect,
+              };
+            }),
           },
           {
             transform: {
               type: 'sort',
-              config: { dimension: 'returnOnInvestment', order: 'asc' },
+              config: { dimension: 'simpleEffect', order: 'asc' },
             },
           },
         ]
@@ -93,7 +85,7 @@ function getChartConfig(
       {
         type: 'bar',
         encode: {
-          x: 'returnOnInvestment',
+          x: 'simpleEffect',
           y: 'action',
         },
         datasetIndex: 1,
@@ -118,18 +110,18 @@ type Props = {
   isLoading: boolean;
 };
 
-export function ReturnOnInvestment({ data, isLoading }: Props) {
+export function SimpleEffect({ data, isLoading }: Props) {
   const { t } = useTranslation();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const chartData = useMemo(
     () => getChartConfig(startYear, endYear, data),
     [data, startYear, endYear]
   );
-  const d = data?.impactOverviews.find(({ graphType }) => graphType === 'return_on_investment');
+  const d = data?.impactOverviews.find(({ graphType }) => graphType === 'simple_effect');
   const bars = d?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = d.label || t('return-on-investment');
-  const subtitle = d.indicatorLabel || t('return-on-invetment-subtitle');
+  const title = d.label || t('simple-effect');
+  const subtitle = d.indicatorLabel || t('simple-effect-subtitle');
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
