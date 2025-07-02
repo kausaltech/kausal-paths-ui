@@ -58,3 +58,22 @@ export function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): 
     subLabel: t('higher-than-expected', { percentage: deltaPercentage }),
   };
 }
+
+// TODO: Move to node descriptions on the backend
+// This is a temporary solution with non-translated text for NZC specific plans (only supported in English).
+const HELP_TEXT_BY_NODE_ID = new Map([
+  [
+    'waste_emissions',
+    'Waste emissions have a very small effect on overall city GHG and are assumed to be on plan in the Observed Emissions drill down.',
+  ],
+  [
+    'emissions_from_other_sectors',
+    'The "Other" sector includes all emissions not covered by the main categories: ' +
+      'Transport, Buildings & Heating, Electricity, Waste, and Freight. ' +
+      'It includes emissions from industrial processes and product use (IPPU) and agriculture.',
+  ],
+]);
+
+export function getHelpText(nodeId: string) {
+  return HELP_TEXT_BY_NODE_ID.get(nodeId);
+}
