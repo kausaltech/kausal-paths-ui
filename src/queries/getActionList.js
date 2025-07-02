@@ -59,19 +59,17 @@ const GET_ACTION_LIST = gql`
         color
       }
     }
-    actionEfficiencyPairs {
+    impactOverviews {
       id
       label
-      plotLimitEfficiency
-      invertCost
-      invertImpact
-      efficiencyUnit {
+      plotLimitForIndicator
+      indicatorUnit {
         htmlShort
       }
       costUnit {
         htmlShort
       }
-      impactUnit {
+      effectUnit {
         htmlShort
       }
       costNode {
@@ -82,7 +80,7 @@ const GET_ACTION_LIST = gql`
           short
         }
       }
-      impactNode {
+      effectNode {
         id
         name
         shortDescription
@@ -99,7 +97,7 @@ const GET_ACTION_LIST = gql`
             color
           }
         }
-        efficiencyDivisor
+        unitAdjustmentMultiplier
         costValues {
           value
           year

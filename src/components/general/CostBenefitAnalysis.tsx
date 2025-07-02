@@ -1,19 +1,21 @@
-import { ChartWrapper } from 'components/charts/ChartWrapper';
-import { Chart } from 'components/charts/Chart';
-import { useTranslation } from 'react-i18next';
-import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import type { EChartsCoreOption } from 'echarts/core';
-import { useReactiveVar } from '@apollo/client';
-import { yearRangeVar } from '@/common/cache';
 import { useMemo } from 'react';
-import { DimensionalMetric } from '@/data/metric';
+
+import { useReactiveVar } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
-import { useTheme } from 'styled-components';
+import { Chart } from 'components/charts/Chart';
+import { ChartWrapper } from 'components/charts/ChartWrapper';
+import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from 'styled-components';
+
+import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import { yearRangeVar } from '@/common/cache';
+import { DimensionalMetric } from '@/data/metric';
 
 /**
- * For cost-benefit visualisations, only costDim is used.
- * Previously, costs were in costDim and benefits in impactDim.
+ * For cost-benefit visualisations, only effectDim is used.
+ * Previously, costs were in costDim and benefits in effectDim.
  * But it makes more sense to have everything in one node so that
  * positive category values are costs and negative are benefits.
  */
@@ -183,7 +185,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
     }
 
     return costBenefitData.actions
-      .map((action) => (action.costDim ? new DimensionalMetric(action.costDim) : undefined))
+      .map((action) => (action.effectDim ? new DimensionalMetric(action.effectDim) : undefined))
       .filter((metric): metric is DimensionalMetric => metric !== undefined);
   }, [data]);
 
