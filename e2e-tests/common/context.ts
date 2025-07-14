@@ -154,7 +154,7 @@ export class InstanceContext {
   }
 
   async checkMeta(page: Page) {
-    const siteName = page.locator('head meta[property="og:site_name"]');
+    const siteName = page.locator('head meta[property="og:site_name"]').first();
     await expect(siteName).toHaveAttribute('content', this.instance.instance.name);
     await expect(page.locator('html')).toHaveAttribute('lang', this.i18n.language);
   }
