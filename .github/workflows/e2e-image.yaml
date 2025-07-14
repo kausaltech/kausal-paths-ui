@@ -60,8 +60,8 @@ jobs:
       app:
         image: ${{ inputs.image }}
         env:
-          NEXT_PUBLIC_WILDCARD_DOMAINS: localhost
-          NEXT_PUBLIC_DEPLOYMENT_TYPE: testing
+          WILDCARD_DOMAINS: localhost
+          DEPLOYMENT_TYPE: testing
           PATHS_BACKEND_URL: ${{ inputs.backend_base_url }}
           AUTH_SECRET: abcd
           AUTH_TRUST_HOST: true
