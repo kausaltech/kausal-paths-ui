@@ -157,14 +157,12 @@ const defaultSiteContext: { [key: string]: { watchLink: WatchLink; demoPages?: D
   'demo-stadt-bisko': {
     watchLink: {
       title: {
-        en: 'Sunnydale climate action plan',
-        fi: 'Päiväkummun ilmastosuunnitelma',
-        de: 'Klimaneutrales Sunnydale',
+        en: 'Demo City climate action plan',
+        de: 'Klimaneutrales Demo-Stadt',
       },
       url: {
-        en: 'https://sunnydale.test.kausal.tech/climate',
-        fi: 'https://sunnydale.test.kausal.tech/fi/climate',
-        de: 'https://sunnydale.test.kausal.tech/de/climate',
+        en: 'https://demo-duesseldorf.watch-test.kausal.tech/en/',
+        de: 'https://demo-duesseldorf.watch-test.kausal.tech',
       },
     },
   },

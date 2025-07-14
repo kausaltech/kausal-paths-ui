@@ -9,7 +9,7 @@ import Icon from '@/components/common/icon';
 import ActionParameters from '@/components/general/ActionParameters';
 import EfficiencyDisplay from '@/components/general/EfficiencyDisplay';
 import ImpactDisplay from '@/components/general/ImpactDisplay';
-import { ActionWithEfficiency } from '@/components/pages/ActionListPage';
+import type { ActionWithEfficiency } from '@/types/actions.types';
 
 const ActionItem = styled.div<{ $isActive: boolean; color?: string }>`
   position: relative;

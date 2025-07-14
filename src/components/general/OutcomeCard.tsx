@@ -5,9 +5,11 @@ import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures } from '@/common/instance';
-import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
-import Loader from '@/components/common/Loader';
-import DashCard from '@/components/general/DashCard';
+import { beautifyValue } from '@/common/preprocess';
+import PopoverTip from '@/components/common/PopoverTip';
+
+import DashCard from './DashCard';
+import { getHelpText } from './progress-tracking/utils';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
@@ -22,7 +24,6 @@ const StyledTab = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-
   &.root h2 {
     font-size: 1.5rem;
   }
@@ -174,9 +175,11 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   const lastMeasuredYear =
     node?.metric.historicalValues[node.metric.historicalValues.length - 1]?.year;
   const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
-  const { maximumFractionDigits } = useFeatures();
+  const { maximumFractionDigits, showRefreshPrompt } = useFeatures();
 
-  // const unit = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
+  // TODO: Remove the showRefreshPrompt check once help text is moved to node descriptions on the backend
+  const helpText = showRefreshPrompt ? getHelpText(node.id) : undefined;
+
   const unit = node.metric?.unit?.htmlShort;
 
   const handleClickTab = () => handleClick(node.id);
@@ -213,6 +216,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
           <Title color={color}>
             <Name>{node.shortName || node.name}</Name>
           </Title>
+          {helpText && <PopoverTip identifier={`${node.id}-help-text`} content={helpText} />}
         </Header>
 
         <Body>
