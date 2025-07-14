@@ -6,6 +6,7 @@ import type { Options as SassOptions } from 'sass';
 
 import { getNextConfig } from './kausal_common/configs/common-next-config';
 import { wrapWithSentryConfig } from './kausal_common/src/sentry/sentry-next-config';
+import { initializeThemes } from './kausal_common/src/themes/next-config.mjs';
 import i18nConfig from './next-i18next.config.js';
 
 const { i18n } = i18nConfig;
@@ -13,6 +14,8 @@ const { i18n } = i18nConfig;
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';
+
+initializeThemes(__dirname);
 
 let nextConfig: NextConfig = {
   ...getNextConfig(__dirname, { isPagesRouter: true }),
