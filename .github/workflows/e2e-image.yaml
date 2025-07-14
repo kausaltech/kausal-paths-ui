@@ -61,7 +61,9 @@ jobs:
         image: ${{ inputs.image }}
         env:
           WILDCARD_DOMAINS: localhost
-          DEPLOYMENT_TYPE: testing
+          DEPLOYMENT_TYPE: ci
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          SENTRY_ENVIRONMENT: ci
           PATHS_BACKEND_URL: ${{ inputs.backend_base_url }}
           AUTH_SECRET: abcd
           AUTH_TRUST_HOST: true
