@@ -10,8 +10,8 @@ import {
   PATHS_INSTANCE_IDENTIFIER_HEADER,
   WILDCARD_DOMAINS_HEADER,
 } from '@common/constants/headers.mjs';
-import { getPathsGraphQLUrl, isLocal } from '@common/env';
-import { getLoggerAsync } from '@common/logging/logger';
+import { getPathsGraphQLUrl, isLocalDev } from '@common/env';
+import { getLogger } from '@common/logging/logger';
 
 import { getApiCookies, setClientCookies } from '@/common/cookies';
 
@@ -32,7 +32,7 @@ const PASS_HEADERS = [
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const headers = req.headers;
   const requestData = req.body as Body;
-  const logger = await getLoggerAsync({
+  const logger = getLogger({
     name: 'graphql-proxy',
     request: req,
   });
@@ -81,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   if (req.socket.remoteAddress) backendHeaders['X-Forwarded-For'] = req.socket.remoteAddress;
 
-  if (isLocal) {
+  if (isLocalDev) {
     logger.info(req.headers, 'Headers from client');
     logger.info(backendHeaders, 'Headers to backend');
   }

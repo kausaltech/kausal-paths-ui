@@ -3,10 +3,9 @@ import { Suspense } from 'react';
 import Head from 'next/head';
 
 import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
-import * as Sentry from '@sentry/nextjs';
 import { useTranslation } from 'next-i18next';
 
-import { isLocal } from '@common/env';
+import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
 import type { GetPageQuery, GetPageQueryVariables } from '@/common/__generated__/graphql';
@@ -16,7 +15,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import ActionListPage from '@/components/pages/ActionListPage';
 import OutcomePage from '@/components/pages/OutcomePage';
 import StaticPage from '@/components/pages/StaticPage';
-import { useSite } from '@/context/site';
+import { useSiteOrNull } from '@/context/site';
 import Error from '@/pages/_error';
 import GET_PAGE from '@/queries/getPage';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
@@ -35,10 +34,9 @@ type PageProps = {
 function Page(props: PageProps) {
   const { path, headerExtra } = props;
 
-  const site = useSite();
-  const scenarios = !!getProgressTrackingScenario(site.scenarios)
-    ? ['default', 'progress_tracking']
-    : null;
+  const site = useSiteOrNull();
+  const scenarios =
+    site && !!getProgressTrackingScenario(site.scenarios) ? ['default', 'progress_tracking'] : null;
   const activeGoal = useReactiveVar(activeGoalVar);
   const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
     variables: {
@@ -59,7 +57,7 @@ function Page(props: PageProps) {
 
   if (error) {
     logApolloError(error, { component: 'Page' });
-    if (isLocal) {
+    if (isLocalDev) {
       throw error;
     } else {
       return <Error statusCode={500} />;
@@ -94,9 +92,11 @@ function Page(props: PageProps) {
   return (
     <>
       <Head>
-        <title>
-          {site.title} | {page.title}
-        </title>
+        {site ? (
+          <title>
+            {site?.title} | {page.title}
+          </title>
+        ) : null}
       </Head>
       {headerExtra}
       <Suspense fallback={<PageLoader />}>{pageContent}</Suspense>

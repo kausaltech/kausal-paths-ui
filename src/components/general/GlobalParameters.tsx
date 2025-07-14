@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
 import type { ObservableQuery } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
-import { Button, Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
+import { Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
 
 import { startInteraction } from '@common/sentry/helpers';
@@ -14,7 +14,6 @@ import type {
   SetNormalizationMutationVariables,
 } from '@/common/__generated__/graphql';
 import ContentLoader from '@/components/common/ContentLoader';
-import Icon from '@/components/common/icon';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const GlobalParametersPanel = styled(Row)`

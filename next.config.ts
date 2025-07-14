@@ -2,6 +2,7 @@ import * as url from 'node:url';
 
 import type BundleAnalyzerPlugin from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
+import type { Options as SassOptions } from 'sass';
 
 import { getNextConfig } from './kausal_common/configs/common-next-config';
 import { wrapWithSentryConfig } from './kausal_common/src/sentry/sentry-next-config';
@@ -15,6 +16,16 @@ process.env.NEXT_TELEMETRY_DISABLED = '1';
 
 let nextConfig: NextConfig = {
   ...getNextConfig(__dirname, { isPagesRouter: true }),
+  sassOptions: {
+    quietDeps: true,
+    silenceDeprecations: [
+      'import',
+      'legacy-js-api',
+      'color-functions',
+      'global-builtin',
+      'color-4-api',
+    ],
+  } satisfies SassOptions<'sync'>,
   // basePath: process.env.BASE_PATH,
   i18n: {
     defaultLocale: 'default',

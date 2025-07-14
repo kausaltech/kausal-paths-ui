@@ -1,10 +1,9 @@
 import * as Sentry from '@sentry/nextjs';
 
+import { initBrowserRootLogger } from '@common/logging/browser';
 import { initSentryBrowser } from '@common/sentry/client-init';
 
-function initSentry() {
-  initSentryBrowser();
-}
-initSentry();
+initBrowserRootLogger();
+initSentryBrowser();
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

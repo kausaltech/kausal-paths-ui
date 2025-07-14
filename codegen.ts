@@ -12,6 +12,13 @@ const tsoConfig: TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig = {
   preResolveTypes: true,
   avoidOptionals: true,
   nonOptionalTypename: true,
+  scalars: {
+    UUID: 'string',
+    RichText: 'string',
+    PositiveInt: 'number',
+    DateTime: 'string',
+    JSONString: 'string',
+  },
 };
 
 const generalExcludes = ['!**/node_modules/**', '!**/__generated__/**'];
@@ -29,13 +36,13 @@ const config: CodegenConfig = {
         useExplicitTyping: true,
       },
     },
-    'src/common/__generated__/apollo-helpers.ts': {
-      plugins: ['typescript-apollo-client-helpers'],
-      documents: [e2eTestsExclude, ...apolloConfigDocs],
-      config: {
-        useTypeImports: true,
-      } satisfies ApolloClientHelpersConfig,
-    },
+    // 'src/common/__generated__/apollo-helpers.ts': {
+    //   plugins: ['typescript-apollo-client-helpers'],
+    //   documents: [e2eTestsExclude, ...apolloConfigDocs],
+    //   config: {
+    //     useTypeImports: true,
+    //   } satisfies ApolloClientHelpersConfig,
+    // },
     'src/common/__generated__/graphql.ts': {
       plugins: ['typescript', 'typescript-operations'],
       documents: [e2eTestsExclude, ...apolloConfigDocs],

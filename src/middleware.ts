@@ -10,14 +10,9 @@ import {
   REQUEST_CORRELATION_ID_HEADER,
 } from '@common/constants/headers.mjs';
 import { HEALTH_CHECK_PUBLIC_PATH } from '@common/constants/routes.mjs';
-import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocal } from '@common/env';
-import {
-  LOGGER_CORRELATION_ID,
-  LOGGER_SPAN_ID,
-  LOGGER_TRACE_ID,
-  generateCorrelationID,
-  getLoggerAsync,
-} from '@common/logging/logger';
+import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocalDev } from '@common/env';
+import { LOGGER_SPAN_ID, LOGGER_TRACE_ID } from '@common/logging/init';
+import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
 
 import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
 
@@ -141,7 +136,7 @@ function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | '
 const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
 
 function isHotReloadPath(parts: string[]) {
-  return isLocal && parts.join('/').startsWith('_next/static/webpack');
+  return isLocalDev && parts.join('/').startsWith('_next/static/webpack');
 }
 
 function shouldAddInstanceHeaders(parts: string[]) {
@@ -170,7 +165,7 @@ async function middleware(req: NextRequest) {
     spanBindings[LOGGER_SPAN_ID] = span.spanContext().spanId;
     spanBindings['sampled'] = span.isRecording();
   }
-  const logger = await getLoggerAsync({
+  const logger = getLogger({
     name: 'middleware',
     bindings: {
       ...spanBindings,
@@ -204,7 +199,7 @@ async function middleware(req: NextRequest) {
     return NextResponse.json({ status: 'pong' });
   }
   logger.info({ method: req.method }, `${req.method} ${req.nextUrl.pathname}`);
-  if (false && isLocal) {
+  if (false && isLocalDev) {
     const debugHeaders: Record<string, string> = {};
     req.headers.forEach((value, key) => {
       debugHeaders[key] = value;
@@ -290,4 +285,4 @@ async function middleware(req: NextRequest) {
   return rewrittenResp;
 }
 
-export default Sentry.wrapMiddlewareWithSentry(middleware);
+export default middleware;

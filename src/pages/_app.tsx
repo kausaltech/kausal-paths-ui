@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import App, { type AppContext, type AppProps } from 'next/app';
 
 import type { ApolloClient } from '@apollo/client';
@@ -12,11 +13,11 @@ import { ThemeProvider } from 'styled-components';
 import {
   getAssetPrefix,
   getWildcardDomains,
-  isLocal,
+  isLocalDev,
   isProductionDeployment,
   printRuntimeConfig,
 } from '@common/env';
-import { getLoggerAsync } from '@common/logging/logger';
+import { getLogger } from '@common/logging/logger';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
 import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
@@ -169,7 +170,7 @@ const defaultSiteContext: { [key: string]: { watchLink: WatchLink; demoPages?: D
   },
 };
 
-export type PathsAppProps = AppProps & {
+export type PathsAppProps = AppProps<Record<string, unknown>> & {
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
   themeProps: Theme;
@@ -186,17 +187,17 @@ function PathsApp(props: PathsAppProps) {
   } = props;
   const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
   const { i18n } = useTranslation();
-
+  const logger = getLogger({ name: 'app-component' });
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
     i18n.language,
     i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined
   );
   const component = <Component {...pageProps} />;
-
   if (!instanceContext || !siteContext) {
     // getInitialProps errored, return with a very simple layout
-    return <ThemeProvider theme={themeProps}>{component};</ThemeProvider>;
+    logger.error('no site context');
+    return <ThemeProvider theme={themeProps}>{component}</ThemeProvider>;
   }
   const instance = instanceContext;
 
@@ -256,7 +257,7 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
   if (!instanceIdentifier) {
     return null;
   }
-  const logger = await getLoggerAsync({ name: 'app', request: req });
+  const logger = getLogger({ name: 'app', request: req });
 
   // Instance is identified either by a hard-coded identifier or by the
   // request hostname.
@@ -339,7 +340,7 @@ async function getI18nProps(ctx: PathsPageContext) {
   const { req } = ctx;
   const nextI18nConfig = (await import('../../next-i18next.config')).default;
   let defaultLanguage = req.headers[DEFAULT_LANGUAGE_HEADER] as string | undefined;
-  const logger = await getLoggerAsync({ name: 'app-get-i18n-props', request: req });
+  const logger = getLogger({ name: 'app-get-i18n-props', request: req });
 
   if (!defaultLanguage || defaultLanguage === 'default') {
     if (hasInstanceIdentifier(ctx)) {
@@ -398,16 +399,14 @@ let defaultTheme: Theme | undefined;
 
 const getInitialProps = async (appContext: PathsAppContext) => {
   const { ctx } = appContext;
-  const logger = await getLoggerAsync({ name: 'app-initial-props', request: ctx.req });
 
   if (process.browser) {
-    if (!isLocal) {
-      printRuntimeConfig('Kausal Paths');
+    if (isLocalDev) {
+      printRuntimeConfig('Kausal Paths UI');
     }
     const appProps = await App.getInitialProps(appContext);
     const nextData = window.__NEXT_DATA__;
     const pageProps = nextData.props as PathsAppProps;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { _nextI18Next } = pageProps.pageProps;
     const { siteContext, instanceContext, themeProps } = pageProps;
     const ret = {
@@ -418,7 +417,6 @@ const getInitialProps = async (appContext: PathsAppContext) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       pageProps: {
         ...appProps.pageProps,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         _nextI18Next,
       },
     };
@@ -434,7 +432,7 @@ const getInitialProps = async (appContext: PathsAppContext) => {
   if (!appProps.pageProps) {
     appProps.pageProps = {};
   }
-  const pageProps = appProps.pageProps as Record<string, unknown>;
+  const pageProps = appProps.pageProps;
 
   const i18nProps = await getI18nProps(ctx);
   const i18nConf = i18nProps._nextI18Next!.userConfig!.i18n;
@@ -457,7 +455,6 @@ const getInitialProps = async (appContext: PathsAppContext) => {
   if (ctx.res && isProductionDeployment()) {
     ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=59');
   }
-
   return appProps;
 };
 
