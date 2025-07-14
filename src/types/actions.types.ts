@@ -1,4 +1,4 @@
-import { ActionSortOrder, type GetActionListQuery } from '@/common/__generated__/graphql';
+import type { ActionSortOrder, GetActionListQuery } from '@/common/__generated__/graphql';
 
 export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
   impactOnTargetYear: number;

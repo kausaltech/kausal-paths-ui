@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures } from '@/common/instance';
-import { beautifyValue } from '@/common/preprocess';
+import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
 import PopoverTip from '@/components/common/PopoverTip';
 
 import DashCard from './DashCard';

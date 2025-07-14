@@ -1,19 +1,20 @@
 import { useTranslation } from 'next-i18next';
 
+import type { GetActionListQuery } from '@/common/__generated__/graphql';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import ActionComparisonGraph from '@/components/graphs/ActionComparisonGraph';
-import type { SortActionsConfig } from '@/types/actions.types';
+import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
 type Props = {
   sortBy?: SortActionsConfig['sortKey'];
 
   // TODO: Type props
-  actions;
-  id;
-  actionGroups;
-  sortAscending;
-  refetching;
-  displayYears;
+  actions: ActionWithEfficiency[];
+  id: string;
+  actionGroups: GetActionListQuery['instance']['actionGroups'];
+  sortAscending: boolean;
+  refetching: boolean;
+  displayYears: [number, number];
 };
 
 const ActionsComparison = ({
@@ -32,12 +33,12 @@ const ActionsComparison = ({
     return {
       ...action,
       impact:
-        action.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === displayYears[1])
+        action.impactMetric?.forecastValues.find((dataPoint) => dataPoint.year === displayYears[1])
           ?.value || 0,
     };
   });
 
-  const sortActions = (a, b) => {
+  const sortActions = (a: ActionWithEfficiency, b: ActionWithEfficiency) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
 

@@ -376,7 +376,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     <Button
                       color="white"
                       outline
-                      onClick={(e) => setAscending(true)}
+                      onClick={(_e) => setAscending(true)}
                       active={ascending === true}
                       aria-label={t('sort-ascending')}
                     >
@@ -385,7 +385,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     <Button
                       color="white"
                       outline
-                      onClick={(e) => setAscending(false)}
+                      onClick={(_e) => setAscending(false)}
                       active={ascending === false}
                       aria-label={t('sort-descending')}
                     >

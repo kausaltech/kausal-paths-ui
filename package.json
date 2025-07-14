@@ -62,6 +62,7 @@
     "plotly.js-locales": "^3.0.1",
     "polished": "^4.3.1",
     "prop-types": "^15.8.1",
+    "raw-body": "^3.0.0",
     "react-archer": "^4.4.0",
     "react-bootstrap-icons": "^1.11.6",
     "react-cytoscapejs": "^2.0.0",

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import getRawBody from 'raw-body';
 
 import { FORWARDED_FOR_HEADER } from '@common/constants/headers.mjs';
 import { getSentryDsn } from '@common/env/runtime';
@@ -12,19 +13,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ error: 'Sentry disabled' });
     return;
   }
-  if (!req.body) {
-    res.status(500).json({ error: 'No request body' });
-    return;
-  }
   const clientIp =
     typeof req.headers[FORWARDED_FOR_HEADER] === 'string'
       ? req.headers[FORWARDED_FOR_HEADER]
       : req.socket.remoteAddress;
 
+  const body = await getRawBody(req);
   try {
-    await forwardToSentry(req.body as string, sentryDsnUrl, clientIp);
+    await forwardToSentry(body, sentryDsnUrl, {
+      clientIp,
+      contentType: req.headers['content-type'],
+      referer: req.headers['referer'],
+    });
   } catch (_err) {
     res.status(500).json({ error: 'Failed to forward to Sentry' });
   }
   return res.status(200).json({});
 }
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
