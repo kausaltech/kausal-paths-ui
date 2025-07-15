@@ -1,7 +1,7 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
+import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
 import { FormGroup, Input, Label } from 'reactstrap';
-import styled from 'styled-components';
 
 import { startInteraction } from '@common/sentry/helpers';
 

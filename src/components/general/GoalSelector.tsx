@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
-import styled from 'styled-components';
 
 import { activeGoalVar } from '@/common/cache';
 import { InstanceGoal, useInstance } from '@/common/instance';

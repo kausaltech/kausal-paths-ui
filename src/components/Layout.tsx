@@ -1,11 +1,11 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import styled from 'styled-components';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
-import { useBaseTheme } from '@/common/mui-theme/use-base-theme';
 import { getThemeStaticURL } from '@/common/theme';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
@@ -58,7 +58,7 @@ const StyledSkipToContent = styled.a`
 const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
-  const theme = useBaseTheme();
+  const theme = useTheme();
   const site = useSite();
   const { t } = useTranslation();
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;

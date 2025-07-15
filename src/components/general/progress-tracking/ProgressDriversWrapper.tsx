@@ -1,15 +1,18 @@
-import { Fade, Spinner } from 'reactstrap';
-import GraphQLError from '@/components/common/GraphQLError';
-import { GET_NODE_VISUALIZATIONS } from '@/queries/getNodeVisualizations';
-import styled from 'styled-components';
-import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
-import { StyledCard } from './StyledCard';
-import { useQuery } from '@apollo/client';
-import { getProgressTrackingScenario } from '@/utils/progress-tracking';
-import { ProgressDriversVisualization } from './ProgressDriversVisualization';
-import { useTranslation } from '@/common/i18n';
-import { useSiteWithSetter } from '@/context/site';
 import { useEffect } from 'react';
+
+import { useQuery } from '@apollo/client';
+import styled from '@emotion/styled';
+import { Fade, Spinner } from 'reactstrap';
+
+import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
+import GraphQLError from '@/components/common/GraphQLError';
+import { useSiteWithSetter } from '@/context/site';
+import { GET_NODE_VISUALIZATIONS } from '@/queries/getNodeVisualizations';
+import { getProgressTrackingScenario } from '@/utils/progress-tracking';
+
+import { ProgressDriversVisualization } from './ProgressDriversVisualization';
+import { StyledCard } from './StyledCard';
 
 const VisualizationContainer = styled.div`
   display: grid;

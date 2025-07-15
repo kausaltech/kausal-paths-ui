@@ -12,53 +12,13 @@ import {
   type DocumentHeadTagsProps,
   documentGetInitialProps,
 } from '@mui/material-nextjs/v14-pagesRouter';
-import * as Sentry from '@sentry/nextjs';
-import { ServerStyleSheet } from 'styled-components';
 
 import { getEnvScriptContents } from '@common/env/script-component';
 
-import { getThemeStaticURL } from '@/common/theme';
-
-import type { PathsAppProps } from './_app';
-
 async function getInitialProps(ctx: DocumentContext) {
-  const styledComponentsSheet = new ServerStyleSheet();
-  let themeProps: PathsAppProps['themeProps'] | undefined;
+  const muiProps = await documentGetInitialProps(ctx);
 
-  try {
-    const muiProps = await documentGetInitialProps(ctx, {
-      plugins: [
-        {
-          // Include styled-components styles and theme stylesheet
-          enhanceApp: (App) => (props) => {
-            themeProps = props.themeProps;
-
-            return styledComponentsSheet.collectStyles(<App {...props} />);
-          },
-          resolveProps: async (initialProps) => ({
-            ...initialProps,
-            styles: (
-              <>
-                {initialProps.styles}
-                {styledComponentsSheet.getStyleElement()}
-                {themeProps && (
-                  <link
-                    rel="stylesheet"
-                    type="text/css"
-                    href={getThemeStaticURL(themeProps.mainCssFile)}
-                  />
-                )}
-              </>
-            ),
-          }),
-        },
-      ],
-    });
-
-    return muiProps;
-  } finally {
-    styledComponentsSheet.seal();
-  }
+  return muiProps;
 }
 
 function PathsDocument(props: DocumentProps & DocumentHeadTagsProps) {

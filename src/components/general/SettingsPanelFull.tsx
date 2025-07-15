@@ -1,10 +1,10 @@
 import { useCallback, useContext, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import { Button, Col, Row } from 'reactstrap';
-import styled from 'styled-components';
 
 import { yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
