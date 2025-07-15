@@ -1,10 +1,11 @@
-import { createTheme, type Theme as MuiTheme } from '@mui/material/styles';
 import type { Theme } from '@kausal/themes/types';
+import { type Theme as MuiTheme, createTheme } from '@mui/material/styles';
 
+import { getComponents } from './components';
 import { getPalette } from './palette';
 import { getTypography } from './typography';
-import { getComponents } from './components';
-import { isServer } from '../environment';
+
+const isServer = typeof window === 'undefined';
 
 let muiTheme: MuiTheme;
 
