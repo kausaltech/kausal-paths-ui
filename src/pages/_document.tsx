@@ -9,8 +9,8 @@ import {
 
 import {
   DocumentHeadTags,
-  documentGetInitialProps,
   type DocumentHeadTagsProps,
+  documentGetInitialProps,
 } from '@mui/material-nextjs/v14-pagesRouter';
 import * as Sentry from '@sentry/nextjs';
 import { ServerStyleSheet } from 'styled-components';
@@ -39,11 +39,10 @@ async function getInitialProps(ctx: DocumentContext) {
             ...initialProps,
             styles: (
               <>
-                {styledComponentsSheet.getStyleElement()}
                 {initialProps.styles}
+                {styledComponentsSheet.getStyleElement()}
                 {themeProps && (
                   <link
-                    data-name="potato"
                     rel="stylesheet"
                     type="text/css"
                     href={getThemeStaticURL(themeProps.mainCssFile)}
@@ -62,7 +61,7 @@ async function getInitialProps(ctx: DocumentContext) {
   }
 }
 
-function PlansDocument(props: DocumentProps & DocumentHeadTagsProps) {
+function PathsDocument(props: DocumentProps & DocumentHeadTagsProps) {
   const nextData = props.__NEXT_DATA__;
   let serverError;
 
@@ -76,11 +75,10 @@ function PlansDocument(props: DocumentProps & DocumentHeadTagsProps) {
         <DocumentHeadTags {...props} />
         <script
           id="public-runtime-env"
-
           dangerouslySetInnerHTML={{
             __html: getEnvScriptContents(),
           }}
-        />     
+        />
       </Head>
       <body>
         <Main />
@@ -91,6 +89,6 @@ function PlansDocument(props: DocumentProps & DocumentHeadTagsProps) {
   );
 }
 
-PlansDocument.getInitialProps = getInitialProps;
+PathsDocument.getInitialProps = getInitialProps;
 
-export default PlansDocument;
+export default PathsDocument;
