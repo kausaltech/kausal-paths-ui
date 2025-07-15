@@ -1,30 +1,28 @@
 // Import the echarts core module, which provides the necessary interfaces for using echarts.
-import * as echarts from 'echarts/core';
+import { useEffect, useRef } from 'react';
 
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 // Import used charts
 import { BarChart, CustomChart, LineChart } from 'echarts/charts';
-
 // Import the tooltip, title, rectangular coordinate system, dataset and transform components
 import {
+  DatasetComponent,
+  GraphicComponent,
+  GridComponent,
+  LegendComponent,
   TitleComponent,
   TooltipComponent,
-  GridComponent,
-  DatasetComponent,
   TransformComponent,
-  LegendComponent,
-  GraphicComponent,
 } from 'echarts/components';
-
+import * as echarts from 'echarts/core';
 // Features like Universal Transition and Label Layout
 import { LabelLayout, UniversalTransition } from 'echarts/features';
-
 // Import the Canvas renderer
 // Note that including the CanvasRenderer or SVGRenderer is a required step
 import { CanvasRenderer } from 'echarts/renderers';
-
 import throttle from 'lodash/throttle';
-import { useEffect, useRef } from 'react';
-import styled, { useTheme } from 'styled-components';
+
 import { getChartTheme } from './chart-theme';
 
 // Register the required components

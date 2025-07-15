@@ -3,20 +3,8 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
-import { type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
-import { activeGoalVar } from '@/common/cache';
-import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
-import { type InstanceGoal, useInstance, useFeatures } from '@/common/instance';
-import { getRange } from '@/common/preprocess';
-import Icon from '@/components/common/icon';
-import SelectDropdown from '@/components/common/SelectDropdown';
-import { useSite } from '@/context/site';
-import {
-  DimensionalMetric,
-  type MetricCategoryValues,
-  MetricSlice,
-  type SliceConfig,
-} from '@/data/metric';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'next-i18next';
 import type { LayoutAxis } from 'plotly.js';
@@ -29,8 +17,21 @@ import {
   Row,
   UncontrolledDropdown,
 } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
+import { type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import { activeGoalVar } from '@/common/cache';
+import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
+import { type InstanceGoal, useFeatures, useInstance } from '@/common/instance';
+import { getRange } from '@/common/preprocess';
+import SelectDropdown from '@/components/common/SelectDropdown';
+import Icon from '@/components/common/icon';
+import { useSite } from '@/context/site';
+import {
+  DimensionalMetric,
+  type MetricCategoryValues,
+  MetricSlice,
+  type SliceConfig,
+} from '@/data/metric';
 import {
   getProgressTrackingScenario,
   metricHasProgressTrackingScenario,

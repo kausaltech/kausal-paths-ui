@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 
 import Head from 'next/head';
 
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import * as Icon from 'react-bootstrap-icons';
@@ -16,7 +18,6 @@ import {
   Navbar,
   UncontrolledDropdown,
 } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
 import { isProductionDeployment } from '@common/env';
 

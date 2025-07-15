@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import type { Theme } from '@kausal/themes/types';
 import Highlighter from 'react-highlight-words';
 import Select, {
@@ -11,7 +13,6 @@ import Select, {
   components,
 } from 'react-select';
 import { Label as BSLabel, FormGroup } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
 import PopoverTip from '@/components/common/PopoverTip';
 

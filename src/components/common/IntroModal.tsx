@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import {
   Button,
@@ -11,7 +12,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from 'reactstrap';
-import styled from 'styled-components';
 
 import RichText from './RichText';
 

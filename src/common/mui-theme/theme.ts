@@ -7,12 +7,13 @@ import { getTypography } from './typography';
 
 const isServer = typeof window === 'undefined';
 declare module '@mui/material/styles' {
-  interface Theme {
-    base: BaseTheme;
-  }
-  interface ThemeOptions {
-    base: BaseTheme;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface Theme extends BaseTheme {}
+}
+
+declare module '@emotion/react' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface Theme extends BaseTheme {}
 }
 
 let muiTheme: MuiTheme;
@@ -22,16 +23,18 @@ export function initializeMuiTheme(theme: BaseTheme): MuiTheme {
     return muiTheme;
   }
 
-  muiTheme = createTheme({
-    base: theme,
-    palette: getPalette(theme),
-    typography: getTypography(theme),
-    shape: {
-      borderRadius: theme.btnBorderRadius,
-    },
-    spacing: theme.space,
-    components: getComponents(theme),
-  });
+  muiTheme = {
+    ...theme,
+    ...createTheme({
+      palette: getPalette(theme),
+      typography: getTypography(theme),
+      shape: {
+        borderRadius: theme.btnBorderRadius,
+      },
+      spacing: theme.space,
+      components: getComponents(theme),
+    }),
+  };
 
   return muiTheme;
 }
