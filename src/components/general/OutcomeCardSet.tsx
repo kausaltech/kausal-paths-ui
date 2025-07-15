@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 
+//import useScrollTo from 'react-spring-scroll-to-hook';
+import styled from '@emotion/styled';
 //import { animated, config, useSpring } from '@react-spring/web';
 import { useTranslation } from 'next-i18next';
-//import useScrollTo from 'react-spring-scroll-to-hook';
-import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { setUniqueColors } from '@/common/colors';
@@ -23,7 +23,7 @@ const CardSet = styled.div<CardSetProps>`
   background-color: ${({ theme }) => theme.cardBackground.secondary};
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     margin-top: 1rem;
   }
 `;

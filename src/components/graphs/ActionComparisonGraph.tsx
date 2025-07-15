@@ -1,17 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useTranslation } from 'next-i18next';
 import dynamic from 'next/dynamic';
-import {
-  Col,
-  Row,
-} from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
+
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
+import { useTranslation } from 'next-i18next';
+import { Col, Row } from 'reactstrap';
 
 import Icon from '@/components/common/icon';
 
@@ -178,9 +172,7 @@ function ActionComparisonGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit
-                  dangerouslySetInnerHTML={{ __html: effectUnit }}
-                />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end"></Col>

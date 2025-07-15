@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 
 import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { Button, ButtonGroup, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
-import styled from 'styled-components';
 
 import {
   DecisionLevel,

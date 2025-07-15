@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
 import type { ObservableQuery } from '@apollo/client';
+import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
 import { Col, FormFeedback, FormGroup, Input, InputGroup, Label, Row } from 'reactstrap';
-import styled from 'styled-components';
 
 import { startInteraction } from '@common/sentry/helpers';
 

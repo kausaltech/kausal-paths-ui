@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Nav, NavItem, NavLink, TabContent } from 'reactstrap';
-import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures, useInstance } from '@/common/instance';
