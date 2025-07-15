@@ -21,7 +21,7 @@ import {
 import { type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
-import { type InstanceGoal, useFeatures, useInstance } from '@/common/instance';
+import { useFeatures, useInstance } from '@/common/instance';
 import { getRange } from '@/common/preprocess';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import Icon from '@/components/common/icon';
@@ -90,39 +90,6 @@ type BaselineForecast = { year: number; value: number };
 
 type PlotData = { x: number[]; y: number[] };
 
-export function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal | null) {
-  /**
-   * By default, we group by the first dimension `metric` has, whatever it is.
-   * @todo Is there a better way to select the default?
-   *
-   * If the currently selected goal has category selections for this metric,
-   * we might choose another dimension.
-   *
-   * NOTE: This is just the default -- the actually active filtering and
-   * grouping is controlled by the `sliceConfig` state below.
-   */
-  const defaultConfig: SliceConfig = {
-    dimensionId: cube.dimensions[0]?.id,
-    categories: {},
-  };
-
-  if (!activeGoal) return defaultConfig;
-
-  const cubeDefault = cube.getChoicesForGoal(activeGoal);
-  if (!cubeDefault) return defaultConfig;
-  defaultConfig.categories = cubeDefault;
-  /**
-   * Check if our default dimension to slice by is affected by the
-   * goal-based default filters. If so, we should choose another
-   * dimension.
-   */
-  if (defaultConfig.dimensionId && cubeDefault.hasOwnProperty(defaultConfig.dimensionId)) {
-    const firstPossible = cube.dimensions.find((dim) => !cubeDefault.hasOwnProperty(dim.id));
-    defaultConfig.dimensionId = firstPossible?.id;
-  }
-  return defaultConfig;
-}
-
 const getRangeFromSlice = (slice: MetricSlice) =>
   getRange(
     [
@@ -182,7 +149,7 @@ export default function DimensionalNodePlot({
   const lastMetricYear = metric.years.slice(-1)[0];
   const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
 
-  const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
+  const defaultConfig = cube.getDefaultSliceConfig(activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
 
   const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
@@ -194,10 +161,10 @@ export default function DimensionalNodePlot({
      * dimensions with our metric).
      */
     if (!activeGoal) return;
-    const newDefault = getDefaultSliceConfig(cube, activeGoal);
+    const newDefault = cube.getDefaultSliceConfig(activeGoal);
     if (!newDefault || isEqual(sliceConfig, newDefault)) return;
     setSliceConfig(newDefault);
-  }, [activeGoal, cube]);
+  }, [activeGoal, cube, sliceConfig]);
 
   const sliceableDims = cube.dimensions.filter((dim) => !sliceConfig.categories[dim.id]);
   const slicedDim = cube.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
@@ -469,7 +436,7 @@ export default function DimensionalNodePlot({
   }
 
   if (metric.stackable && slice.totalValues) {
-    const label = t('plot-total')!;
+    const label = t('plot-total');
     const totalSumX = [...slice.historicalYears, ...slice.forecastYears];
     const totalSumY = [...slice.totalValues.historicalValues, ...slice.totalValues.forecastValues];
 
@@ -746,7 +713,7 @@ export default function DimensionalNodePlot({
               <SelectDropdown
                 id="dimension"
                 className="flex-grow-1"
-                label={t('plot-choose-dimension')!}
+                label={t('plot-choose-dimension')}
                 onChange={(val) =>
                   setSliceConfig((old) => ({
                     ...old,

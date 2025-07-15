@@ -14,8 +14,6 @@ import { useSiteWithSetter } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
-import { getDefaultSliceConfig } from '../DimensionalNodePlot';
-
 const X_SYMBOL =
   'path://M0.979266 20.7782C-0.192306 21.9497 -0.192307 23.8492 0.979266 25.0208C2.15084 26.1924 4.05033 26.1924 5.22191 ' +
   '25.0208L13.0001 17.2426L20.7783 25.0208C21.9498 26.1924 23.8493 26.1924 25.0209 25.0208C26.1925 23.8492 26.1925 21.9497 ' +
@@ -118,7 +116,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
     }
 
     const dimensionalMetric = new DimensionalMetric(metric, DimensionalMetric.ALL_SCENARIOS);
-    const defaultConfig = getDefaultSliceConfig(dimensionalMetric, activeGoal);
+    const defaultConfig = dimensionalMetric.getDefaultSliceConfig(activeGoal);
 
     const slicedDim = dimensionalMetric.dimensions.find(
       (dim) => dim.id === defaultConfig.dimensionId

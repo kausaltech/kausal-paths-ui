@@ -488,6 +488,39 @@ export class DimensionalMetric {
   }
 
   /**
+   * By default, we group by the first dimension `metric` has, whatever it is.
+   * @todo Is there a better way to select the default?
+   *
+   * If the currently selected goal has category selections for this metric,
+   * we might choose another dimension.
+   *
+   * NOTE: This is just the default -- the actually active filtering and
+   * grouping is controlled by the `sliceConfig` state below.
+   */
+  getDefaultSliceConfig(activeGoal: InstanceGoal | null) {
+    const defaultConfig: SliceConfig = {
+      dimensionId: this.dimensions[0]?.id,
+      categories: {},
+    };
+
+    if (!activeGoal) return defaultConfig;
+
+    const cubeDefault = this.getChoicesForGoal(activeGoal);
+    if (!cubeDefault) return defaultConfig;
+    defaultConfig.categories = cubeDefault;
+    /**
+     * Check if our default dimension to slice by is affected by the
+     * goal-based default filters. If so, we should choose another
+     * dimension.
+     */
+    if (defaultConfig.dimensionId && cubeDefault.hasOwnProperty(defaultConfig.dimensionId)) {
+      const firstPossible = this.dimensions.find((dim) => !cubeDefault.hasOwnProperty(dim.id));
+      defaultConfig.dimensionId = firstPossible?.id;
+    }
+    return defaultConfig;
+  }
+
+  /**
    * Get the data for a single year
    * @param year The year to get data for
    * @param categoryChoice The category choice to filter by
