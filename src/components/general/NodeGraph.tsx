@@ -153,7 +153,7 @@ export default function NodeGraph({
     series: series,
   };
 
-  return <Chart isLoading={false} data={option} height={CHART_HEIGHT} />;
+  return <Chart isLoading={false} data={option} height={CHART_HEIGHT} className="plot-container" />;
 }
 
 // Helper functions
