@@ -66,11 +66,17 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiTextField: {
       styleOverrides: {
         root: {
-          border: 0,
           '& .MuiOutlinedInput-root': {
             backgroundColor: theme.inputBg,
             borderRadius: theme.inputBorderRadius,
-            border: 0,
+            border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
+            '&:hover': {
+              borderColor: theme.graphColors.grey050,
+            },
+            '&.Mui-focused': {
+              borderColor: theme.inputBtnFocusColor,
+              boxShadow: `0 0 0 0.25rem ${theme.inputBtnFocusColor}`,
+            },
           },
           '& .MuiInputLabel-root': {
             fontWeight: theme.formLabelFontWeight,
@@ -83,7 +89,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         root: {
           backgroundColor: theme.inputBg,
           borderRadius: theme.inputBorderRadius,
-          border: 0,
+          border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
           '&:hover': {
             borderColor: theme.graphColors.grey050,
           },
@@ -473,6 +479,9 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         root: {
           paddingLeft: theme.spaces.s100,
           paddingRight: theme.spaces.s100,
+          '&.Mui-expanded': {
+            minHeight: 'auto',
+          },
         },
       },
     },
