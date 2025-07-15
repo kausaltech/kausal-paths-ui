@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 
 import App, { type AppContext, type AppProps } from 'next/app';
 
-
-import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
-import { ApolloClient, ApolloProvider, isApolloError } from '@apollo/client';
+import type { ApolloClient } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
+import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
@@ -39,13 +40,11 @@ import {
 } from '@/common/const';
 import { getI18n } from '@/common/i18n';
 import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
+import { initializeMuiTheme } from '@/common/mui-theme/theme';
 import { loadTheme } from '@/common/theme';
 import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
-
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import { initializeMuiTheme } from '@/common/mui-theme/theme';
 
 require('../../styles/default/main.scss');
 
@@ -240,11 +239,7 @@ function PathsApp(props: PathsAppProps) {
               <MuiThemeProvider theme={muiTheme}>
                 <LocalizedNumbersContext.Provider value={numbersContext}>
                   <ThemedGlobalStyles />
-                  <Layout>
-                    <Sentry.ErrorBoundary showDialog={!isProd} fallback={renderFallbackError}>
-                      {component}
-                    </Sentry.ErrorBoundary>
-                  </Layout>
+                  <Layout>{component}</Layout>
                 </LocalizedNumbersContext.Provider>
               </MuiThemeProvider>
             </ThemeProvider>
