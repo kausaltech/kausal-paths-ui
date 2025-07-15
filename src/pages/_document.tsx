@@ -1,5 +1,18 @@
-import Document, { type DocumentContext, Head, Html, Main, NextScript } from 'next/document';
+import {
+  type DocumentContext,
+  type DocumentProps,
+  Head,
+  Html,
+  Main,
+  NextScript,
+} from 'next/document';
 
+import {
+  DocumentHeadTags,
+  documentGetInitialProps,
+  type DocumentHeadTagsProps,
+} from '@mui/material-nextjs/v14-pagesRouter';
+import * as Sentry from '@sentry/nextjs';
 import { ServerStyleSheet } from 'styled-components';
 
 import { getEnvScriptContents } from '@common/env/script-component';
@@ -8,72 +21,76 @@ import { getThemeStaticURL } from '@/common/theme';
 
 import type { PathsAppProps } from './_app';
 
-class PlansDocument extends Document {
-  static async getInitialProps(ctx: DocumentContext) {
-    const sheet = new ServerStyleSheet();
-    const originalRenderPage = ctx.renderPage;
-    let themeProps: PathsAppProps['themeProps'] | undefined;
-    //const sentryTrace = Sentry.getTraceData();
-    try {
-      ctx.renderPage = () =>
-        originalRenderPage({
-          enhanceApp: (App) => (props: PathsAppProps) => {
+async function getInitialProps(ctx: DocumentContext) {
+  const styledComponentsSheet = new ServerStyleSheet();
+  let themeProps: PathsAppProps['themeProps'] | undefined;
+
+  try {
+    const muiProps = await documentGetInitialProps(ctx, {
+      plugins: [
+        {
+          // Include styled-components styles and theme stylesheet
+          enhanceApp: (App) => (props) => {
             themeProps = props.themeProps;
-            const ret = sheet.collectStyles(<App {...props} />);
-            return ret;
+
+            return styledComponentsSheet.collectStyles(<App {...props} />);
           },
-        });
-      const initialProps = await Document.getInitialProps(ctx);
-      return {
-        ...initialProps,
-        styles: (
-          <>
-            {initialProps.styles}
-            {sheet.getStyleElement()}
-            {themeProps && (
-              <link
-                rel="stylesheet"
-                type="text/css"
-                href={getThemeStaticURL(themeProps.mainCssFile)}
-              />
-            )}
-            {/*Object.entries(sentryTrace).filter(([_, value]) => !!value).map(([key, value]) => (
-              <meta key={key} name={key} content={value} />
-            ))*/}
-          </>
-        ),
-      };
-    } finally {
-      sheet.seal();
-    }
-  }
+          resolveProps: async (initialProps) => ({
+            ...initialProps,
+            styles: (
+              <>
+                {styledComponentsSheet.getStyleElement()}
+                {initialProps.styles}
+                {themeProps && (
+                  <link
+                    data-name="potato"
+                    rel="stylesheet"
+                    type="text/css"
+                    href={getThemeStaticURL(themeProps.mainCssFile)}
+                  />
+                )}
+              </>
+            ),
+          }),
+        },
+      ],
+    });
 
-  render() {
-    const nextData = this.props.__NEXT_DATA__;
-    let serverError;
-
-    if (!nextData) {
-      serverError = <h1>Internal Server Error</h1>;
-    }
-
-    return (
-      <Html lang={nextData?.locale}>
-        <Head>
-          <script
-            id="public-runtime-env"
-            dangerouslySetInnerHTML={{
-              __html: getEnvScriptContents(),
-            }}
-          />
-        </Head>
-        <body>
-          <Main />
-          <NextScript />
-          {serverError}
-        </body>
-      </Html>
-    );
+    return muiProps;
+  } finally {
+    styledComponentsSheet.seal();
   }
 }
+
+function PlansDocument(props: DocumentProps & DocumentHeadTagsProps) {
+  const nextData = props.__NEXT_DATA__;
+  let serverError;
+
+  if (!nextData) {
+    serverError = <h1>Internal Server Error</h1>;
+  }
+
+  return (
+    <Html lang={nextData?.locale}>
+      <Head>
+        <DocumentHeadTags {...props} />
+        <script
+          id="public-runtime-env"
+
+          dangerouslySetInnerHTML={{
+            __html: getEnvScriptContents(),
+          }}
+        />     
+      </Head>
+      <body>
+        <Main />
+        <NextScript />
+        {serverError}
+      </body>
+    </Html>
+  );
+}
+
+PlansDocument.getInitialProps = getInitialProps;
 
 export default PlansDocument;
