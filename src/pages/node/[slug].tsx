@@ -10,7 +10,7 @@ import { CardBody, Col, Container, Row } from 'reactstrap';
 
 import { logApolloError } from '@common/logging/apollo';
 
-import { GetNodePageQuery } from '@/common/__generated__/graphql';
+import type { GetNodePageQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionLink } from '@/common/links';
 import { Card } from '@/components/common/Card';
@@ -18,7 +18,7 @@ import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
 import Icon from '@/components/common/icon';
-import DimensionalNodePlot from '@/components/general/DimensionalNodePlot';
+import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
 import NodePlot from '@/components/general/NodePlot';
 import SettingsPanelFull from '@/components/general/SettingsPanelFull';
@@ -209,14 +209,14 @@ export default function NodePage() {
               </div>
               {node.metricDim ? (
                 <ContentWrapper>
-                  <DimensionalNodePlot
+                  <DimensionalNodeVisualisation
                     key={node.id}
                     node={node}
                     metric={node.metricDim}
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
-                    color={node.color}
-                    hasNegativeValues={hasNegativeValues}
+                    // color={node.color}
+                    // hasNegativeValues={hasNegativeValues}
                   />
                 </ContentWrapper>
               ) : (
