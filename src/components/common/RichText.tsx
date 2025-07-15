@@ -1,10 +1,10 @@
 import React, { ReactElement, useState } from 'react';
 
+import styled from '@emotion/styled';
 import parse, { domToReact } from 'html-react-parser';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 import { Collapse } from 'reactstrap';
-import styled from 'styled-components';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';

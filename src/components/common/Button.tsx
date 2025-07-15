@@ -1,13 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+
+import styled from '@emotion/styled';
 import { darken, transparentize } from 'polished';
+import PropTypes from 'prop-types';
 import { Button as BSButton } from 'reactstrap';
 import type { ButtonProps as BSButtonProps } from 'reactstrap';
 
 const StyledButton = styled(BSButton)`
-  padding: ${(props) => props.theme.inputBtnPaddingY}
-    ${(props) => props.theme.inputBtnPaddingX};
+  padding: ${(props) => props.theme.inputBtnPaddingY} ${(props) => props.theme.inputBtnPaddingX};
   border-radius: ${(props) => props.theme.btnBorderRadius};
   border-width: ${(props) => props.theme.btnBorderWidth};
   font-weight: ${(props) => props.theme.fontWeightBold};
@@ -59,13 +59,11 @@ const StyledButton = styled(BSButton)`
     }
 
     &:hover {
-      background-color: ${(props) =>
-        transparentize(0.9, props.theme.brandDark)};
+      background-color: ${(props) => transparentize(0.9, props.theme.brandDark)};
     }
 
     &:not(:disabled):not(.disabled):active {
-      background-color: ${(props) =>
-        transparentize(0.8, props.theme.brandDark)};
+      background-color: ${(props) => transparentize(0.8, props.theme.brandDark)};
     }
   }
 
@@ -78,13 +76,11 @@ const StyledButton = styled(BSButton)`
     }
 
     &:hover {
-      background-color: ${(props) =>
-        transparentize(0.9, props.theme.brandLight)};
+      background-color: ${(props) => transparentize(0.9, props.theme.brandLight)};
     }
 
     &:not(:disabled):not(.disabled):active {
-      background-color: ${(props) =>
-        transparentize(0.8, props.theme.brandLight)};
+      background-color: ${(props) => transparentize(0.8, props.theme.brandLight)};
     }
   }
 
@@ -97,13 +93,11 @@ const StyledButton = styled(BSButton)`
     }
 
     &:hover {
-      background-color: ${(props) =>
-        transparentize(0.9, props.theme.themeColors.light)};
+      background-color: ${(props) => transparentize(0.9, props.theme.themeColors.light)};
     }
 
     &:not(:disabled):not(.disabled):active {
-      background-color: ${(props) =>
-        transparentize(0.8, props.theme.themeColors.light)};
+      background-color: ${(props) => transparentize(0.8, props.theme.themeColors.light)};
     }
   }
 
@@ -116,13 +110,11 @@ const StyledButton = styled(BSButton)`
     }
 
     &:hover {
-      background-color: ${(props) =>
-        transparentize(0.9, props.theme.themeColors.dark)};
+      background-color: ${(props) => transparentize(0.9, props.theme.themeColors.dark)};
     }
 
     &:not(:disabled):not(.disabled):active {
-      background-color: ${(props) =>
-        transparentize(0.8, props.theme.themeColors.dark)};
+      background-color: ${(props) => transparentize(0.8, props.theme.themeColors.dark)};
     }
   }
 
@@ -131,27 +123,23 @@ const StyledButton = styled(BSButton)`
 
     &:hover {
       text-decoration: none;
-      background-color: ${(props) =>
-        transparentize(0.9, props.theme.brandDark)};
+      background-color: ${(props) => transparentize(0.9, props.theme.brandDark)};
     }
 
     &:not(:disabled):not(.disabled):active {
-      background-color: ${(props) =>
-        transparentize(0.8, props.theme.brandDark)};
+      background-color: ${(props) => transparentize(0.8, props.theme.brandDark)};
     }
   }
 `;
 
-const Button = React.forwardRef<typeof StyledButton, BSButtonProps>(
-  (props, ref) => {
-    const { children } = props;
+const Button = React.forwardRef<typeof StyledButton, BSButtonProps>((props, ref) => {
+  const { children } = props;
 
-    return (
-      <StyledButton ref={ref} {...props}>
-        {children}
-      </StyledButton>
-    );
-  }
-);
+  return (
+    <StyledButton ref={ref} {...props}>
+      {children}
+    </StyledButton>
+  );
+});
 
 export default Button;

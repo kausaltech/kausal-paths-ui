@@ -1,16 +1,18 @@
 import { useMemo } from 'react';
-import { useSite } from '@/context/site';
+
 import { useReactiveVar } from '@apollo/client';
+import { useTheme } from '@emotion/react';
+
+import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
+import { setUniqueColors } from '@/common/colors';
+import { getDefaultSliceConfig } from '@/components/general/DimensionalNodePlot';
+import { useSite } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import {
-  metricHasProgressTrackingScenario,
   getProgressTrackingScenario,
+  metricHasProgressTrackingScenario,
 } from '@/utils/progress-tracking';
-import { getDefaultSliceConfig } from '@/components/general/DimensionalNodePlot';
-import { setUniqueColors } from '@/common/colors';
-import { useTheme } from 'styled-components';
-import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 
 export type MetricDim = NonNullable<DimensionalNodeMetricFragment['metricDim']>;
 
