@@ -1,10 +1,7 @@
 import React, { useMemo, useState } from 'react';
+
 import Head from 'next/head';
 
-import { Link } from '@/common/links';
-import NavDropdown, { type NavDropdownProps } from '@/components/common/NavDropdown';
-import LanguageSelector from '@/components/general/LanguageSelector';
-import { useSite } from '@/context/site';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
 import * as Icon from 'react-bootstrap-icons';
@@ -23,8 +20,12 @@ import styled, { useTheme } from 'styled-components';
 
 import { isProductionDeployment } from '@common/env';
 
+import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
+import NavDropdown, { type NavDropdownProps } from '@/components/common/NavDropdown';
+import LanguageSelector from '@/components/general/LanguageSelector';
+import { useSite } from '@/context/site';
 
 const SecondaryNav = styled(Navbar)`
   padding: 0;
