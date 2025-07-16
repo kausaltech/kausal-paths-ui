@@ -49,6 +49,7 @@ yarn-error.log
 .envrc
 
 /public/static/themes/
+/public/static/sbom/
 /dist/
 
 *.tsbuildinfo
