@@ -1,7 +1,8 @@
 import type { ApolloError } from '@apollo/client';
+import { Button } from '@mui/material';
 import * as Sentry from '@sentry/nextjs';
 import { useTranslation } from 'next-i18next';
-import { Alert, Button, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
+import { Alert, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
 
@@ -25,7 +26,7 @@ const GraphQLError = (props: GraphQLErrorProps) => {
       {errorDetailMsg}
       {!isProductionDeployment() && error.graphQLErrors?.length ? (
         <>
-          <Button color="dark" size="sm" outline id="toggler" className="mt-2 mb-2">
+          <Button size="small" variant="outlined" id="toggler" className="mt-2 mb-2">
             {t('show-error')}
           </Button>
           <UncontrolledCollapse toggler="#toggler">

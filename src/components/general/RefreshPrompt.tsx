@@ -2,10 +2,15 @@ import { useEffect, useState } from 'react';
 
 import { useApolloClient } from '@apollo/client';
 import styled from '@emotion/styled';
-import { ArrowClockwise } from 'react-bootstrap-icons';
-import { Toast, ToastBody, ToastHeader } from 'reactstrap';
-
-import Button from '../common/Button';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from '@mui/material';
+import { ArrowClockwise, X } from 'react-bootstrap-icons';
 
 const DISABLE_REFRESH_PROMPT = 'hideRefreshPrompt';
 const TEN_MINS = 10 * 60 * 1000;
@@ -86,26 +91,68 @@ function useIsPromptVisible() {
   };
 }
 
-const StyledWrapper = styled.div<{ $isVisible: boolean }>`
-  position: fixed;
-  top: 0;
-  right: 0;
-  max-width: 500px;
-  display: ${({ $isVisible }) => ($isVisible ? 'block' : 'none')};
-  z-index: ${({ $isVisible }) => ($isVisible ? '1100' : 'unset')};
+const StyledDialog = styled(Dialog)`
+  .MuiDialog-root {
+    position: fixed;
+  }
+
+  .MuiDialog-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: auto;
+    bottom: auto;
+    height: auto;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: ${({ theme }) => theme.spaces.s100};
+    pointer-events: none;
+  }
+
+  .MuiDialog-paper {
+    position: relative;
+    margin: 0;
+    background-color: ${({ theme }) => theme.cardBackground.primary};
+    max-width: 400px;
+    width: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    pointer-events: auto;
+  }
 `;
 
-const StyledToast = styled(Toast)`
-  margin: ${({ theme }) => theme.spaces.s100};
-  background-color: ${({ theme }) => theme.cardBackground.primary};
-  display: block !important; // Support fade in transition
-`;
-
-const StyledActions = styled.div`
+const StyledDialogTitle = styled(DialogTitle)`
   display: flex;
-  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+`;
+
+const StyledDialogContent = styled(DialogContent)`
+  padding: 0.5rem 1.5rem;
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+`;
+
+const StyledDialogActions = styled(DialogActions)`
+  padding: 1rem 1.5rem;
   justify-content: flex-end;
   gap: 8px;
+`;
+
+const StyledCloseButton = styled(IconButton)`
+  color: ${({ theme }) => theme.textColor.secondary};
+  padding: 4px;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.graphColors.grey020};
+  }
 `;
 
 export function RefreshPrompt() {
@@ -113,30 +160,43 @@ export function RefreshPrompt() {
   const apolloClient = useApolloClient();
 
   function handleRefresh() {
-    apolloClient.refetchQueries({ include: ['GetPage', 'GetNodeVisualizations'] });
+    void apolloClient.refetchQueries({ include: ['GetPage', 'GetNodeVisualizations'] });
     handleClose();
   }
 
   return (
-    <StyledWrapper $isVisible={isVisible}>
-      <StyledToast isOpen={isVisible} fade transition={{ unmountOnExit: false, timeout: 400 }}>
-        <ToastHeader toggle={handleClose}>Reload for the latest data</ToastHeader>
-        <ToastBody>
-          <p>
-            Updates may be available, click on the reload button or refresh the page to ensure you
-            have the latest content.
-          </p>
-          <StyledActions>
-            <Button size="sm" onClick={handleRefresh}>
-              <ArrowClockwise size={18} />
-              <span className="m-2">Reload</span>
-            </Button>
-            <Button size="sm" onClick={handleDisable}>
-              Don&apos;t show this again
-            </Button>
-          </StyledActions>
-        </ToastBody>
-      </StyledToast>
-    </StyledWrapper>
+    <StyledDialog
+      open={isVisible}
+      onClose={handleClose}
+      hideBackdrop
+      disableEnforceFocus
+      disableAutoFocus
+      disableRestoreFocus
+      PaperProps={{
+        elevation: 3,
+      }}
+    >
+      <StyledDialogTitle>
+        Reload for the latest data
+        <StyledCloseButton onClick={handleClose} size="small">
+          <X size={16} />
+        </StyledCloseButton>
+      </StyledDialogTitle>
+      <StyledDialogContent>
+        <p>
+          Updates may be available, click on the reload button or refresh the page to ensure you
+          have the latest content.
+        </p>
+      </StyledDialogContent>
+      <StyledDialogActions>
+        <Button size="small" onClick={handleRefresh}>
+          <ArrowClockwise size={18} />
+          <span className="m-2">Reload</span>
+        </Button>
+        <Button size="small" onClick={handleDisable}>
+          Don&apos;t show this again
+        </Button>
+      </StyledDialogActions>
+    </StyledDialog>
   );
 }
