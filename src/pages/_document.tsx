@@ -15,13 +15,33 @@ import {
 
 import { getEnvScriptContents } from '@common/env/script-component';
 
-async function getInitialProps(ctx: DocumentContext) {
-  const muiProps = await documentGetInitialProps(ctx);
+import { getThemeStaticURL } from '@/common/theme';
 
-  return muiProps;
+import type { PathsAppProps } from './_app';
+
+async function getInitialProps(ctx: DocumentContext) {
+  let themeProps: PathsAppProps['pageProps']['themeProps'] = null;
+
+  const props = await documentGetInitialProps(ctx, {
+    // Get the theme props from the app for the theme stylesheet
+    plugins: [
+      {
+        enhanceApp: (App) => (props: PathsAppProps) => {
+          themeProps = props.themeProps;
+          return <App {...props} />;
+        },
+        resolveProps: async (props) => Promise.resolve({ ...props, themeProps }),
+      },
+    ],
+  });
+
+  return props;
 }
 
-function PathsDocument(props: DocumentProps & DocumentHeadTagsProps) {
+function PathsDocument({
+  themeProps,
+  ...props
+}: DocumentProps & DocumentHeadTagsProps & PathsAppProps) {
   const nextData = props.__NEXT_DATA__;
   let serverError;
 
@@ -32,6 +52,14 @@ function PathsDocument(props: DocumentProps & DocumentHeadTagsProps) {
   return (
     <Html lang={nextData?.locale}>
       <Head>
+        {themeProps && (
+          <link
+            id="theme-stylesheet"
+            rel="stylesheet"
+            type="text/css"
+            href={getThemeStaticURL(themeProps.mainCssFile)}
+          />
+        )}
         <DocumentHeadTags {...props} />
         <script
           id="public-runtime-env"
