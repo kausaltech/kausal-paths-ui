@@ -17,6 +17,8 @@ function getHeadingFontConfig(theme: Theme, size: string) {
 
 export function getTypography(theme: Theme): ThemeOptions['typography'] {
   return {
+    fontWeightBold: theme.fontWeightBold,
+    fontWeightRegular: theme.fontWeightBase,
     fontFamily:
       theme.fontFamily !== ''
         ? `${theme.fontFamily}, ${theme.fontFamilyFallback}`

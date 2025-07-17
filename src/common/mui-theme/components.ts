@@ -446,11 +446,15 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiAccordion: {
       styleOverrides: {
         root: {
-          backgroundColor: theme.cardBackground.primary,
-          borderRadius: theme.cardBorderRadius,
-          border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
+          borderRadius: '0 !important',
+          backgroundColor: 'transparent',
           boxShadow: 'none',
-          '&:before': {
+          borderTop: `1px solid ${theme.graphColors.grey020}`,
+          borderBottom: `1px solid ${theme.graphColors.grey020}`,
+          '&:not(:last-child)': {
+            borderBottom: 0,
+          },
+          '&::before': {
             display: 'none',
           },
         },
@@ -459,9 +463,8 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiAccordionSummary: {
       styleOverrides: {
         root: {
-          '&.Mui-expanded': {
-            minHeight: 'auto',
-          },
+          paddingLeft: theme.spaces.s100,
+          paddingRight: theme.spaces.s100,
         },
       },
     },
