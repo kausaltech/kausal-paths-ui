@@ -1,18 +1,19 @@
 import React from 'react';
+
 import {
+  Alert,
+  Box,
   Button,
   Card,
   CardContent,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
+  Chip,
   FormControl,
   InputLabel,
-  Chip,
-  Alert,
-  Box,
+  MenuItem,
+  Select,
   Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
 
 /**
@@ -147,6 +148,34 @@ export function MuiThemeExample() {
             <Typography variant="caption">
               Caption text with your theme&apos;s smallest font size.
             </Typography>
+          </Stack>
+        </Box>
+
+        {/* Colors */}
+        <Box>
+          <Stack spacing={1}>
+            <Box>
+              <Typography variant="h3" gutterBottom>
+                Primary
+              </Typography>
+              <Stack direction="row" flexWrap="wrap">
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.light' }} />
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.main' }} />
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.dark' }} />
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.contrastText' }} />
+              </Stack>
+            </Box>
+            <Box>
+              <Typography variant="h3" gutterBottom>
+                Secondary
+              </Typography>
+              <Stack direction="row" flexWrap="wrap">
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.light' }} />
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.main' }} />
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.dark' }} />
+                <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.contrastText' }} />
+              </Stack>
+            </Box>
           </Stack>
         </Box>
       </Stack>
