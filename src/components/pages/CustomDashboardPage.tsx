@@ -13,10 +13,9 @@ import {
 import { readableColor } from 'polished';
 import { ArrowRight } from 'react-bootstrap-icons';
 
-import { SettingsToggleBar } from '@common/components/SettingsToggleBar';
-
 import { Link } from '@/common/links';
 
+import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
 import DashboardVisualizationProgress from './DashboardVisualizationProgress';
 import mockClimateDashboardPage from './mock-climate-dashboard-page.json';
 
@@ -76,12 +75,7 @@ function CustomDashboardPage() {
           </Typography>
         )}
 
-        <SettingsToggleBar
-          title="Display"
-          label="Values per inhabitant"
-          value={perInhabitant}
-          onChange={setPerInhabitant}
-        />
+        <DashboardNormalizationBar />
 
         {page.dashboardCards.map((card, i) => (
           <Card key={i}>
