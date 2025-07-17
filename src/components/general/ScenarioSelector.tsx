@@ -1,10 +1,14 @@
-import { useState } from 'react';
-
 import { gql, useMutation, useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
-import { CircularProgress } from '@mui/material';
+import {
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  type SelectChangeEvent,
+} from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -28,33 +32,42 @@ const ACTIVATE_SCENARIO = gql`
     }
   }
 `;
-
-const StyledDropdown = styled(Dropdown)`
+const StyledFormControl = styled(FormControl)`
   max-width: 320px;
+  min-width: 200px;
+`;
 
-  .btn {
-    width: 100%;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    font-size: 0.9rem;
-    padding: ${({ theme }) => theme.spaces.s050};
+const StyledInputLabel = styled(InputLabel)`
+  /* Position label above the input like Bootstrap */
+  position: static;
+  transform: none;
+  color: ${(props) => props.theme.palette.text.primary};
+  font-size: ${(props) => props.theme.fontSizeSm};
 
-    &:focus {
-      box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
-    }
+  /* Remove MUI's shrink behavior */
+  &.MuiInputLabel-shrink {
+    transform: none;
+  }
+
+  /* Override focused state */
+  &.Mui-focused {
+    color: ${(props) => props.theme.palette.text.primary};
   }
 `;
 
-const DropdownLabel = styled.div`
-  font-size: 0.8rem;
+const StyledSelect = styled(Select)`
+  /* Make it look like Bootstrap form-control */
+
+  .MuiSelect-select {
+    padding: 8px 12px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
 `;
 
 const ScenarioSelector = () => {
   const { t } = useTranslation();
   const instance = useInstance();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const toggle = () => setDropdownOpen((prevState) => !prevState);
 
   const { loading, error, data } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
@@ -72,19 +85,21 @@ const ScenarioSelector = () => {
     refetchQueries: 'active',
   });
 
-  if (loading) {
+  if (loading || mutationLoading) {
     return (
-      <StyledDropdown>
-        <DropdownLabel>{t('scenario')}</DropdownLabel>
-        <DropdownToggle color="light">
-          <span>
-            <CircularProgress size={24} />
-          </span>
-        </DropdownToggle>
-      </StyledDropdown>
+      <StyledFormControl>
+        <StyledInputLabel>{t('scenario')}</StyledInputLabel>
+        <StyledSelect value={t('loading')} id="scenario-select">
+          <MenuItem disabled value={t('loading')}>
+            <span>
+              <CircularProgress size={16} />
+            </span>
+          </MenuItem>
+        </StyledSelect>
+      </StyledFormControl>
     );
   }
-  if (error) {
+  if (error || mutationError) {
     //console.log("Error", JSON.stringify(error));
     return <div>{t('error-loading-data')}</div>;
   }
@@ -96,35 +111,31 @@ const ScenarioSelector = () => {
     ) ?? [];
   const activeScenario = scenarios.find((scen) => scen.isActive)!;
 
+  const handleChange = (event: SelectChangeEvent) => {
+    void startInteraction(
+      () => activateScenario({ variables: { scenarioId: event.target.value } }),
+      {
+        name: 'activateScenario',
+        componentName: 'ScenarioSelector',
+        attributes: { scenario_id: event.target.value },
+      }
+    );
+  };
+
   return (
-    <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
-      <DropdownLabel>{t('scenario')}</DropdownLabel>
-      <DropdownToggle color={`${activeScenario.id === 'custom' ? 'secondary' : 'light'}`}>
-        <span>{activeScenario.name}</span>
-        <span>{activeScenario.id === 'custom' && <span>*</span>}</span>
-      </DropdownToggle>
-      <DropdownMenu>
-        <DropdownItem header>{t('change-scenario')}</DropdownItem>
-        {scenarios?.map((scenario) => (
-          <DropdownItem
-            key={scenario.id}
-            active={scenario.isActive}
-            onClick={() =>
-              void startInteraction(
-                () => activateScenario({ variables: { scenarioId: scenario.id } }),
-                {
-                  name: 'activateScenario',
-                  componentName: 'ScenarioSelector',
-                  attributes: { scenario_id: scenario.id },
-                }
-              )
-            }
-          >
+    <StyledFormControl>
+      <StyledInputLabel>{t('scenario')}</StyledInputLabel>
+      <StyledSelect value={activeScenario.id} onChange={handleChange} id="scenario-select">
+        <MenuItem disabled value="">
+          {t('change-scenario')}
+        </MenuItem>
+        {scenarios.map((scenario) => (
+          <MenuItem key={scenario.id} value={scenario.id}>
             {scenario.name}
-          </DropdownItem>
+          </MenuItem>
         ))}
-      </DropdownMenu>
-    </StyledDropdown>
+      </StyledSelect>
+    </StyledFormControl>
   );
 };
 

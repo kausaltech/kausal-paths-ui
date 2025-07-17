@@ -369,8 +369,8 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         paper: {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
-          border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
-          boxShadow: 'none',
+          border: `1px solid ${theme.graphColors.grey020}`,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1)',
         },
       },
     },

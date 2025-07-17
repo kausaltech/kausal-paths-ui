@@ -6,6 +6,7 @@ import { useTranslation } from 'next-i18next';
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures } from '@/common/instance';
 import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
+import Loader from '@/components/common/Loader';
 import PopoverTip from '@/components/common/PopoverTip';
 
 import DashCard from './DashCard';

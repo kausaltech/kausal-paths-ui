@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { ToggleButton } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
-import { ButtonToggle } from 'reactstrap';
 
 import Icon from '@/components/common/icon';
 
 const SectionWrapper = styled.div`
   display: flex;
   min-width: 320px;
-  padding: 0.75rem 0;
+  padding: 1rem 0.5rem;
 `;
 
 const RangeWrapper = styled.div`
@@ -56,12 +56,6 @@ const Thumb = styled.div<ThumbProps>`
   justify-content: center;
   align-items: center;
 
-  &:focus {
-    box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
-  }
-`;
-
-const StyledButtonToggle = styled(ButtonToggle)`
   &:focus {
     box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
   }
@@ -118,24 +112,27 @@ const RangeSelector = (props: RangeSelectorProps) => {
         <YearDescription>{t('comparison-year')}</YearDescription>
         <ActiveYear>{referenceYearActive ? referenceYear : values[0]}</ActiveYear>
         {referenceYear && (
-          <StyledButtonToggle
-            color="link"
-            size="sm"
-            outline
-            active={referenceYearActive}
-            onClick={() => handleReferenceYear(!referenceYearActive)}
+          <ToggleButton
+            size="small"
+            selected={referenceYearActive}
+            onChange={() => handleReferenceYear(!referenceYearActive)}
+            sx={{
+              py: 0,
+              my: 0.5,
+            }}
           >
             {referenceYearActive ? (
               <span>
                 <Icon name="pencil" />
-                {` ${t('edit')}`}
+                {/* TODO: Add translation */}
+                {` Edit`}
               </span>
             ) : (
               <span>
                 <Icon name="version" /> {referenceYear}
               </span>
             )}
-          </StyledButtonToggle>
+          </ToggleButton>
         )}
       </ActiveYearDisplay>
       {referenceYearActive ? (
