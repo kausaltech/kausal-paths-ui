@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 import App, { type AppContext, type AppProps } from 'next/app';
-import Head from 'next/head';
 
 import type { ApolloClient } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client';
@@ -41,7 +40,7 @@ import {
 import { getI18n } from '@/common/i18n';
 import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
 import { initializeMuiTheme } from '@/common/mui-theme/theme';
-import { getThemeStaticURL, loadTheme } from '@/common/theme';
+import { loadTheme } from '@/common/theme';
 import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
@@ -232,32 +231,20 @@ function PathsApp(props: PathsAppProps) {
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
   return (
-    <>
-      <Head>
-        {
-          <link
-            id="theme-stylesheet"
-            rel="stylesheet"
-            type="text/css"
-            href={getThemeStaticURL(themeProps.mainCssFile)}
-          />
-        }
-      </Head>
-      <AppCacheProvider {...props}>
-        <SiteContext.Provider value={[siteContext, setSiteContext]}>
-          <InstanceContext.Provider value={instanceContext}>
-            <ApolloProvider client={apolloClient}>
-              <ThemeProvider theme={muiTheme}>
-                <ThemedGlobalStyles />
-                <LocalizedNumbersContext.Provider value={numbersContext}>
-                  <Layout>{component}</Layout>
-                </LocalizedNumbersContext.Provider>
-              </ThemeProvider>
-            </ApolloProvider>
-          </InstanceContext.Provider>
-        </SiteContext.Provider>
-      </AppCacheProvider>
-    </>
+    <AppCacheProvider {...props}>
+      <SiteContext.Provider value={[siteContext, setSiteContext]}>
+        <InstanceContext.Provider value={instanceContext}>
+          <ApolloProvider client={apolloClient}>
+            <ThemeProvider theme={muiTheme}>
+              <ThemedGlobalStyles />
+              <LocalizedNumbersContext.Provider value={numbersContext}>
+                <Layout>{component}</Layout>
+              </LocalizedNumbersContext.Provider>
+            </ThemeProvider>
+          </ApolloProvider>
+        </InstanceContext.Provider>
+      </SiteContext.Provider>
+    </AppCacheProvider>
   );
 }
 
