@@ -1,20 +1,21 @@
 import type { Theme } from '@kausal/themes/types';
 import type { ThemeOptions } from '@mui/material/styles';
+import { darken, lighten } from 'polished';
 
 export function getPalette(theme: Theme): ThemeOptions['palette'] {
   return {
     mode: 'light',
     primary: {
       main: theme.brandDark,
-      light: theme.brandLight,
-      dark: theme.brandDark,
+      light: lighten(0.1, theme.brandDark),
+      dark: darken(0.1, theme.brandDark),
       contrastText: theme.themeColors.white,
     },
     secondary: {
-      main: theme.neutralDark,
-      light: theme.neutralLight,
-      dark: theme.neutralDark,
-      contrastText: theme.themeColors.white,
+      main: theme.brandLight,
+      light: lighten(0.05, theme.brandLight),
+      dark: darken(0.1, theme.brandLight),
+      contrastText: theme.themeColors.black,
     },
     error: {
       main: theme.graphColors.red070,
