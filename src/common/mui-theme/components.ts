@@ -214,6 +214,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiSwitch: {
       styleOverrides: {
         root: {
+          padding: 8,
           '& .MuiSwitch-switchBase': {
             '&.Mui-checked': {
               color: theme.themeColors.white,
@@ -222,7 +223,14 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
               },
             },
           },
+          '& .MuiSwitch-thumb': {
+            boxShadow: 'none',
+            width: 16,
+            height: 16,
+            margin: 2,
+          },
           '& .MuiSwitch-track': {
+            borderRadius: 16,
             backgroundColor: theme.graphColors.grey030,
           },
         },
