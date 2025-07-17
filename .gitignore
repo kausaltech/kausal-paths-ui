@@ -63,3 +63,5 @@ yarn-error.log
 /.*token
 
 *.code-workspace
+
+public/**/sbom/**
