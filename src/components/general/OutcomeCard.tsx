@@ -217,7 +217,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
           <Title color={color}>
             <Name>{node.shortName || node.name}</Name>
           </Title>
-          {helpText && <PopoverTip identifier={`${node.id}-help-text`} content={helpText} />}
+          {helpText && <PopoverTip content={helpText} />}
         </Header>
 
         <Body>

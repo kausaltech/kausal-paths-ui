@@ -212,9 +212,7 @@ const OutcomeNodeContent = ({
               ) : (
                 nodeName
               )}
-              {helpText && (
-                <PopoverTip identifier={`${node.id}-card-help-text`} content={helpText} />
-              )}
+              {helpText && <PopoverTip content={helpText} />}
             </h4>
             <CardSetDescriptionDetails>
               {startYear <= lastMeasuredYear && (
