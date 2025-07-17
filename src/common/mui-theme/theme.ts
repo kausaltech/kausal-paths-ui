@@ -6,6 +6,7 @@ import { getPalette } from './palette';
 import { getTypography } from './typography';
 
 const isServer = typeof window === 'undefined';
+
 declare module '@mui/material/styles' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface Theme extends BaseTheme {}
@@ -13,7 +14,7 @@ declare module '@mui/material/styles' {
 
 declare module '@emotion/react' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Theme extends BaseTheme {}
+  interface Theme extends BaseTheme, MuiTheme {}
 }
 
 let muiTheme: MuiTheme;
