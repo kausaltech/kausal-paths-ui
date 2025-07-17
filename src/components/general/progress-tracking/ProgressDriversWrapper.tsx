@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 
 import { useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
-import { Fade, Spinner } from 'reactstrap';
+import { CircularProgress } from '@mui/material';
+import { Fade } from 'reactstrap';
 
 import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -86,7 +87,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
   if (loading) {
     return (
       <StyledSpinnerContainer>
-        <Spinner style={{ width: '3rem', height: '3rem' }} />
+        <CircularProgress size="3rem" />
       </StyledSpinnerContainer>
     );
   }

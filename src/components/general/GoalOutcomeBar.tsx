@@ -3,11 +3,12 @@ import { useEffect } from 'react';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { CircularProgress } from '@mui/material';
 import _ from 'lodash';
 import { useTranslation } from 'next-i18next';
-import { Button, CardBody, Spinner, UncontrolledCollapse } from 'reactstrap';
+import { Button, CardBody, UncontrolledCollapse } from 'reactstrap';
 
-import {
+import type {
   GetInstanceGoalOutcomeQuery,
   GetInstanceGoalOutcomeQueryVariables,
 } from '@/common/__generated__/graphql';
@@ -218,7 +219,7 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
   if (loading)
     return (
       <span>
-        <Spinner size="sm" color="primary" />
+        <CircularProgress size={24} />
       </span>
     );
   if (error) return <div>error!</div>;

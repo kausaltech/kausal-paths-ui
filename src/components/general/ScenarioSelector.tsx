@@ -2,8 +2,9 @@ import { useState } from 'react';
 
 import { gql, useMutation, useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
+import { CircularProgress } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from 'reactstrap';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -77,7 +78,7 @@ const ScenarioSelector = () => {
         <DropdownLabel>{t('scenario')}</DropdownLabel>
         <DropdownToggle color="light">
           <span>
-            <Spinner size="sm" color="primary" />
+            <CircularProgress size={24} />
           </span>
         </DropdownToggle>
       </StyledDropdown>
@@ -110,11 +111,11 @@ const ScenarioSelector = () => {
             active={scenario.isActive}
             onClick={() =>
               void startInteraction(
-                () => activateScenario({ variables: { scenarioId: scenario.id! } }),
+                () => activateScenario({ variables: { scenarioId: scenario.id } }),
                 {
                   name: 'activateScenario',
                   componentName: 'ScenarioSelector',
-                  attributes: { scenario_id: scenario.id! },
+                  attributes: { scenario_id: scenario.id },
                 }
               )
             }
