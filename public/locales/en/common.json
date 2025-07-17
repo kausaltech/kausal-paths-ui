@@ -132,5 +132,8 @@
   "emissions-by-sector": "Emissions by sector ({{year}})",
   "no-data-reported": "No data reported",
   "invalid-page-type": "Invalid page type",
-  "outcomes": "Outcomes"
+  "outcomes": "Outcomes",
+  "expand-all": "Expand all",
+  "collapse-all": "Collapse all",
+  "values-per": "Values per {{normalization}}"
 }
