@@ -65,3 +65,5 @@ yarn-error.log
 /.secrets/
 
 *.code-workspace
+
+public/**/sbom/**
