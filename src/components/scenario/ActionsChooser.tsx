@@ -54,7 +54,6 @@ const WidgetWrapper = styled.div`
 
 type ActionListCardProps = {
   action: ActionsSummaryAction;
-  refetching: boolean;
 };
 
 /* Nice mock skeleton loader */
@@ -86,9 +85,9 @@ const LoaderSkeleton = ({ t }: { t: TFunction }) => {
 };
 
 const ActionListCard = (props: ActionListCardProps) => {
-  const { action, refetching } = props;
+  const { action } = props;
   const actionParameterSwitch = findActionEnabledParam(action.parameters);
-  const isActive = !refetching && (actionParameterSwitch?.boolValue ?? false);
+  const isActive = actionParameterSwitch?.boolValue ?? false;
   const theme = useTheme();
 
   const categoryColor = action.group?.color ?? theme.actionColor;
@@ -149,9 +148,9 @@ const ActionsChooser = () => {
     notifyOnNetworkStatusChange: true,
   });
 
-  const { error, loading, networkStatus, previousData } = queryResp;
+  const { error, loading, previousData } = queryResp;
   const data = queryResp.data ?? previousData;
-  const refetching = networkStatus === NetworkStatus.refetch;
+  // const refetching = networkStatus === NetworkStatus.refetch;
 
   if (loading && !previousData) {
     return <LoaderSkeleton t={t} />;
@@ -188,7 +187,7 @@ const ActionsChooser = () => {
         {actions.map((action) => {
           return (
             <ActionsListItem key={action.id}>
-              <ActionListCard action={action} refetching={refetching} />
+              <ActionListCard action={action} />
             </ActionsListItem>
           );
         })}
