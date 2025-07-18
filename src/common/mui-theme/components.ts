@@ -49,20 +49,28 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         },
       },
     },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
+          '&:hover': {
+            borderColor: theme.graphColors.grey050,
+          },
+          '&.Mui-focused': {
+            borderColor: theme.inputBtnFocusColor,
+            boxShadow: `0 0 0 0.25rem ${theme.inputBtnFocusColor}`,
+          },
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
+          border: 0,
           '& .MuiOutlinedInput-root': {
             backgroundColor: theme.inputBg,
             borderRadius: theme.inputBorderRadius,
-            border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
-            '&:hover': {
-              borderColor: theme.graphColors.grey050,
-            },
-            '&.Mui-focused': {
-              borderColor: theme.inputBtnFocusColor,
-              boxShadow: `0 0 0 0.25rem ${theme.inputBtnFocusColor}`,
-            },
+            border: 0,
           },
           '& .MuiInputLabel-root': {
             fontWeight: theme.formLabelFontWeight,
@@ -75,7 +83,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         root: {
           backgroundColor: theme.inputBg,
           borderRadius: theme.inputBorderRadius,
-          border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
+          border: 0,
           '&:hover': {
             borderColor: theme.graphColors.grey050,
           },

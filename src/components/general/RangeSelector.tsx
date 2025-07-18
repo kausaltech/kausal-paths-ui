@@ -68,10 +68,11 @@ type RangeSelectorProps = {
   handleChange: (range: number[]) => void;
   defaultMin: number;
   defaultMax: number;
+  disabled?: boolean;
 };
 
 const RangeSelector = (props: RangeSelectorProps) => {
-  const { min, max, referenceYear, handleChange, defaultMin, defaultMax } = props;
+  const { min, max, referenceYear, handleChange, defaultMin, defaultMax, disabled = false } = props;
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -139,6 +140,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
         <RangeWrapper>
           <Range
             key="Reference"
+            disabled={disabled}
             step={1}
             min={min}
             max={max}

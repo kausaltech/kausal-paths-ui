@@ -34,7 +34,7 @@ const ACTIVATE_SCENARIO = gql`
 `;
 const StyledFormControl = styled(FormControl)`
   max-width: 320px;
-  min-width: 200px;
+  min-width: 100px;
 `;
 
 const StyledInputLabel = styled(InputLabel)`
