@@ -154,9 +154,9 @@ export function RefreshPrompt() {
         <StyledCard elevation={3}>
           <StyledCardHeader>
             <StyledTitle>Reload for the latest data</StyledTitle>
-            <StyledCloseButton onClick={handleClose} size="small">
-              <X size={16} />
-            </StyledCloseButton>
+            <IconButton onClick={handleClose}>
+              <X size={24} />
+            </IconButton>
           </StyledCardHeader>
           <StyledCardContent>
             <p>
