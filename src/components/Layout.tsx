@@ -1,8 +1,11 @@
+import React from 'react';
+
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Box, Divider, Drawer, Fab, IconButton } from '@mui/material';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
@@ -15,20 +18,33 @@ import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
 
-const PageContainer = styled.div`
-  width: 100%;
-  min-height: calc(100vh - 20rem);
-  background-color: ${(props) => props.theme.graphColors.grey030};
-  padding-bottom: ${(props) => props.theme.spaces.s400};
+const DRAWER_WIDTH = 320;
 
-  .popover {
-    max-width: 480px;
-  }
+const Content = styled.div<{ open?: boolean }>`
+  flex-grow: 1;
+  transition: ${({ theme }) =>
+    theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    })};
+  margin-left: -${DRAWER_WIDTH}px;
+
+  ${({ open, theme }) =>
+    open &&
+    `
+    transition: ${theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    })};
+    margin-left: 0;
+  `}
 `;
 
-const FooterContainer = styled.footer<{ $isSettingsPanelHidden: boolean }>`
-  background-color: ${(props) => props.theme.themeColors.black};
-  padding-bottom: ${({ $isSettingsPanelHidden }) => ($isSettingsPanelHidden ? '0' : '7rem')};
+const DrawerHeader = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${({ theme }) => theme.spaces.s050};
+  justify-content: flex-end;
 `;
 
 const StyledSkipToContent = styled.a`
@@ -62,6 +78,16 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const site = useSite();
   const { t } = useTranslation();
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+
+  const handleDrawerOpen = () => {
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+
   let activePage;
 
   const iconBase = theme.name ? `/static/themes/${theme.name}/images/favicon` : fallbackIconBase;
@@ -127,21 +153,52 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         {ogImage && <meta property="og:image" key="head-og-image" content={ogImage} />}
       </Head>
       {/* <CombinedIconSymbols /> */}
+
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
-      <NavComponent
-        siteTitle={site.title}
-        ownerName={site.owner ?? undefined}
-        navItems={navItems}
-      />
-      <PageContainer>
+      <Fab
+        color="primary"
+        aria-label="add"
+        size="large"
+        onClick={drawerOpen ? handleDrawerClose : handleDrawerOpen}
+        sx={{ position: 'fixed', bottom: '20px', right: '20px' }}
+      >
+        <span>{'<'}</span>
+      </Fab>
+      <Box sx={{ display: 'flex' }}>
+        <Drawer
+          sx={{
+            width: DRAWER_WIDTH,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+              width: DRAWER_WIDTH,
+              boxSizing: 'border-box',
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={drawerOpen}
+        >
+          <DrawerHeader>
+            <IconButton onClick={handleDrawerClose}>
+              {theme.direction === 'ltr' ? <span>{'>'}</span> : <span>{'<'}</span>}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <h4>HELLO</h4>
+        </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <main className="main" id="main">
-          {children}
-        </main>
-      </PageContainer>
-      <FooterContainer $isSettingsPanelHidden={isSettingsPanelHidden}>
-        <FooterComponent />
-      </FooterContainer>
+        <Content open={drawerOpen}>
+          <NavComponent
+            siteTitle={site.title}
+            ownerName={site.owner ?? undefined}
+            navItems={navItems}
+          />
+          <main className="main" id="main">
+            {children}
+          </main>
+          <FooterComponent />
+        </Content>
+      </Box>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
     </>
   );
