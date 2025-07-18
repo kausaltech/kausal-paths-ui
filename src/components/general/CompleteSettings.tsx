@@ -1,9 +1,9 @@
 import { useCallback, useContext, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Button, CardBody, Col, Container, Row, UncontrolledCollapse } from 'reactstrap';
-import styled from 'styled-components';
 
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';

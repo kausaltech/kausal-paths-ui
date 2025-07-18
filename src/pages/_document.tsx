@@ -12,8 +12,6 @@ import {
   type DocumentHeadTagsProps,
   documentGetInitialProps,
 } from '@mui/material-nextjs/v14-pagesRouter';
-import * as Sentry from '@sentry/nextjs';
-import { ServerStyleSheet } from 'styled-components';
 
 import { getEnvScriptContents } from '@common/env/script-component';
 
@@ -22,46 +20,28 @@ import { getThemeStaticURL } from '@/common/theme';
 import type { PathsAppProps } from './_app';
 
 async function getInitialProps(ctx: DocumentContext) {
-  const styledComponentsSheet = new ServerStyleSheet();
-  let themeProps: PathsAppProps['themeProps'] | undefined;
+  let themeProps: PathsAppProps['pageProps']['themeProps'] = null;
 
-  try {
-    const muiProps = await documentGetInitialProps(ctx, {
-      plugins: [
-        {
-          // Include styled-components styles and theme stylesheet
-          enhanceApp: (App) => (props) => {
-            themeProps = props.themeProps;
-
-            return styledComponentsSheet.collectStyles(<App {...props} />);
-          },
-          resolveProps: async (initialProps) => ({
-            ...initialProps,
-            styles: (
-              <>
-                {initialProps.styles}
-                {styledComponentsSheet.getStyleElement()}
-                {themeProps && (
-                  <link
-                    rel="stylesheet"
-                    type="text/css"
-                    href={getThemeStaticURL(themeProps.mainCssFile)}
-                  />
-                )}
-              </>
-            ),
-          }),
+  const props = await documentGetInitialProps(ctx, {
+    // Get the theme props from the app for the theme stylesheet
+    plugins: [
+      {
+        enhanceApp: (App) => (props: PathsAppProps) => {
+          themeProps = props.themeProps;
+          return <App {...props} />;
         },
-      ],
-    });
+        resolveProps: async (props) => Promise.resolve({ ...props, themeProps }),
+      },
+    ],
+  });
 
-    return muiProps;
-  } finally {
-    styledComponentsSheet.seal();
-  }
+  return props;
 }
 
-function PathsDocument(props: DocumentProps & DocumentHeadTagsProps) {
+function PathsDocument({
+  themeProps,
+  ...props
+}: DocumentProps & DocumentHeadTagsProps & PathsAppProps) {
   const nextData = props.__NEXT_DATA__;
   let serverError;
 
@@ -72,6 +52,14 @@ function PathsDocument(props: DocumentProps & DocumentHeadTagsProps) {
   return (
     <Html lang={nextData?.locale}>
       <Head>
+        {themeProps && (
+          <link
+            id="theme-stylesheet"
+            rel="stylesheet"
+            type="text/css"
+            href={getThemeStaticURL(themeProps.mainCssFile)}
+          />
+        )}
         <DocumentHeadTags {...props} />
         <script
           id="public-runtime-env"

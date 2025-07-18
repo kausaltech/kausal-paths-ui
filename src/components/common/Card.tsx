@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
-import { Card as ReactStrapCard, type CardProps } from 'reactstrap';
-import styled from 'styled-components';
+
+import styled from '@emotion/styled';
+import { type CardProps, Card as ReactStrapCard } from 'reactstrap';
 
 const StyledCard = styled(ReactStrapCard)`
   background-color: ${({ theme }) => theme.cardBackground};

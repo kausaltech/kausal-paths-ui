@@ -1,7 +1,8 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import styled, { useTheme } from 'styled-components';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';

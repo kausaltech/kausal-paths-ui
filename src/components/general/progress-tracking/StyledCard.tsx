@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 export const StyledCard = styled.div`
   border-radius: ${(props) => props.theme.cardBorderRadius};

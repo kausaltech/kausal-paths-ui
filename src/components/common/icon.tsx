@@ -1,7 +1,7 @@
 import React, { type HTMLProps } from 'react';
 
+import { useTheme } from '@emotion/react';
 import SVG from 'react-inlinesvg';
-import { useTheme } from 'styled-components';
 
 import { getLogger } from '@common/logging';
 

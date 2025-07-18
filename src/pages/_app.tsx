@@ -6,11 +6,10 @@ import type { ApolloClient } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
 import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
-import { ThemeProvider } from 'styled-components';
 
 import {
   getAssetPrefix,
@@ -46,7 +45,7 @@ import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
 
-require('../../styles/default/main.scss');
+import '../../styles/default/main.scss';
 
 type WatchLink = { title: string; url: string } | null;
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
@@ -189,6 +188,8 @@ function PathsApp(props: PathsAppProps) {
   const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
   const { i18n } = useTranslation();
   const logger = getLogger({ name: 'app-component' });
+  const muiTheme = initializeMuiTheme(themeProps);
+
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
     i18n.language,
@@ -198,7 +199,7 @@ function PathsApp(props: PathsAppProps) {
   if (!instanceContext || !siteContext) {
     // getInitialProps errored, return with a very simple layout
     logger.error('no site context');
-    return <ThemeProvider theme={themeProps}>{component}</ThemeProvider>;
+    return <ThemeProvider theme={muiTheme}>{component}</ThemeProvider>;
   }
 
   const instance = instanceContext;
@@ -228,20 +229,17 @@ function PathsApp(props: PathsAppProps) {
     yearRangeVar(yearRange);
   }
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
-  const muiTheme = initializeMuiTheme(themeProps);
 
   return (
     <AppCacheProvider {...props}>
       <SiteContext.Provider value={[siteContext, setSiteContext]}>
         <InstanceContext.Provider value={instanceContext}>
           <ApolloProvider client={apolloClient}>
-            <ThemeProvider theme={themeProps}>
-              <MuiThemeProvider theme={muiTheme}>
-                <LocalizedNumbersContext.Provider value={numbersContext}>
-                  <ThemedGlobalStyles />
-                  <Layout>{component}</Layout>
-                </LocalizedNumbersContext.Provider>
-              </MuiThemeProvider>
+            <ThemeProvider theme={muiTheme}>
+              <ThemedGlobalStyles />
+              <LocalizedNumbersContext.Provider value={numbersContext}>
+                <Layout>{component}</Layout>
+              </LocalizedNumbersContext.Provider>
             </ThemeProvider>
           </ApolloProvider>
         </InstanceContext.Provider>

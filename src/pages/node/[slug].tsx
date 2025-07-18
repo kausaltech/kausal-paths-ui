@@ -4,9 +4,9 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { CardBody, Col, Container, Row } from 'reactstrap';
-import styled from 'styled-components';
 
 import { logApolloError } from '@common/logging/apollo';
 

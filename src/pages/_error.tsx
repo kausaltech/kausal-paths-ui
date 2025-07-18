@@ -2,10 +2,11 @@
 import NextErrorComponent, { type ErrorProps } from 'next/error';
 import Head from 'next/head';
 
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import * as Sentry from '@sentry/nextjs';
 import type { NextPageContext } from 'next';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
 import { isProductionDeployment } from '@common/env';
 import { getLogger } from '@common/logging';
