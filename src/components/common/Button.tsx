@@ -1,4 +1,4 @@
-/* deprecated in favour of @mui/material/Button */
+/* @deprecated in favour of @mui/material/Button */
 import { type ButtonProps, Button as MuiButton } from '@mui/material';
 
 const Button = (props: ButtonProps) => <MuiButton {...props} />;
