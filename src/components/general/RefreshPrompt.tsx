@@ -139,15 +139,6 @@ const StyledCardActions = styled(CardActions)`
   gap: 8px;
 `;
 
-const StyledCloseButton = styled(IconButton)`
-  color: ${({ theme }) => theme.textColor.secondary};
-  padding: 4px;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.graphColors.grey020};
-  }
-`;
-
 export function RefreshPrompt() {
   const { isVisible, handleDisable, handleClose } = useIsPromptVisible();
   const apolloClient = useApolloClient();
