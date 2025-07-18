@@ -468,6 +468,14 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         },
       },
     },
+    MuiAccordionDetails: {
+      styleOverrides: {
+        root: {
+          paddingLeft: theme.spaces.s100,
+          paddingRight: theme.spaces.s100,
+        },
+      },
+    },
     MuiBreadcrumbs: {
       styleOverrides: {
         root: {
