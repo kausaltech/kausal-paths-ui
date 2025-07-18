@@ -1,7 +1,7 @@
 import React from 'react';
 
 import styled from '@emotion/styled';
-import { Spinner } from 'reactstrap';
+import { CircularProgress } from '@mui/material';
 
 const LoaderOverlay = styled.div`
   position: absolute;
@@ -19,7 +19,7 @@ const LoaderOverlay = styled.div`
 const Loader = () => {
   return (
     <LoaderOverlay>
-      <Spinner size="sm" color="primary" />
+      <CircularProgress size={24} />
     </LoaderOverlay>
   );
 };

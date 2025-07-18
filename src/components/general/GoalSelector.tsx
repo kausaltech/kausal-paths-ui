@@ -1,36 +1,43 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
+import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 
 import { activeGoalVar } from '@/common/cache';
-import { InstanceGoal, useInstance } from '@/common/instance';
+import type { InstanceGoal } from '@/common/instance';
+import { useInstance } from '@/common/instance';
 
-const StyledDropdown = styled(Dropdown)`
-  //min-width: 200px;
+const StyledFormControl = styled(FormControl)`
+  max-width: 320px;
+  min-width: 200px;
+`;
 
-  .btn {
-    width: 100%;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    font-size: 0.9rem;
-    padding: ${({ theme }) => theme.spaces.s050};
+const StyledInputLabel = styled(InputLabel)`
+  /* Position label above the input like Bootstrap */
+  position: static;
+  transform: none;
+  color: ${(props) => props.theme.palette.text.primary};
+  font-size: ${(props) => props.theme.fontSizeSm};
 
-    &:focus {
-      box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
-    }
+  /* Remove MUI's shrink behavior */
+  &.MuiInputLabel-shrink {
+    transform: none;
+  }
+
+  /* Override focused state */
+  &.Mui-focused {
+    color: ${(props) => props.theme.palette.text.primary};
   }
 `;
 
-const StyledDropdownLabel = styled.span`
-  display: block;
-  position: relative;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+const StyledSelect = styled(Select)`
+  .MuiSelect-select {
+    padding: 8px 12px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
 `;
 
 const StyledSublabel = styled.span`
@@ -38,16 +45,11 @@ const StyledSublabel = styled.span`
   font-style: italic;
   font-size: ${({ theme }) => theme.fontSizeSm};
   line-height: ${({ theme }) => theme.lineHeightSm};
-`;
-
-const DropdownLabel = styled.div`
-  font-size: 0.8rem;
+  color: ${(props) => props.theme.palette.text.secondary};
 `;
 
 const GoalSelector = () => {
   const { t } = useTranslation();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const toggle = () => setDropdownOpen((prevState) => !prevState);
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
 
@@ -55,27 +57,30 @@ const GoalSelector = () => {
     activeGoalVar(goal);
   }, []);
 
+  const handleChange = (event: SelectChangeEvent) => {
+    const selectedGoal = instance.goals.find((goal) => goal.id === event.target.value);
+    if (selectedGoal) {
+      selectGoal(selectedGoal);
+    }
+  };
+
   return (
-    <StyledDropdown isOpen={dropdownOpen} toggle={toggle}>
-      <DropdownLabel>{t('target')}</DropdownLabel>
-      <DropdownToggle color="light">
-        <StyledDropdownLabel>{activeGoal?.label}</StyledDropdownLabel>
-      </DropdownToggle>
-      <DropdownMenu>
-        <DropdownItem header>{t('change-target')}</DropdownItem>
+    <StyledFormControl>
+      <StyledInputLabel>{t('target')}</StyledInputLabel>
+      <StyledSelect value={activeGoal?.id || ''} onChange={handleChange} id="goal-select">
+        <MenuItem disabled value="">
+          {t('change-target')}
+        </MenuItem>
         {instance.goals.map((goal) => (
-          <DropdownItem
-            disabled={goal.disabled}
-            key={goal.id}
-            active={goal.id === activeGoal?.id}
-            onClick={() => selectGoal(goal)}
-          >
-            <span>{goal.label}</span>
-            {goal.disabled && <StyledSublabel>{t('coming-soon')}</StyledSublabel>}
-          </DropdownItem>
+          <MenuItem key={goal.id} value={goal.id} disabled={goal.disabled}>
+            <div>
+              <span>{goal.label}</span>
+              {goal.disabled && <StyledSublabel>{t('coming-soon')}</StyledSublabel>}
+            </div>
+          </MenuItem>
         ))}
-      </DropdownMenu>
-    </StyledDropdown>
+      </StyledSelect>
+    </StyledFormControl>
   );
 };
 

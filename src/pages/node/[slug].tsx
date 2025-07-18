@@ -10,7 +10,7 @@ import { CardBody, Col, Container, Row } from 'reactstrap';
 
 import { logApolloError } from '@common/logging/apollo';
 
-import { GetNodePageQuery } from '@/common/__generated__/graphql';
+import type { GetNodePageQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionLink } from '@/common/links';
 import { Card } from '@/components/common/Card';
@@ -258,7 +258,6 @@ export default function NodePage() {
       <Container fluid="lg">
         <NodeLinks outputNodes={node.outputNodes} inputNodes={node.inputNodes} />
       </Container>
-      <SettingsPanelFull />
     </>
   );
 }

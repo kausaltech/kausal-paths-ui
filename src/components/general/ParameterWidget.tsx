@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Button, CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 
@@ -14,7 +15,6 @@ import type {
   SetParameterMutationVariables,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
-import Button from '@/components/common/Button';
 import Icon from '@/components/common/icon';
 
 const RangeWrapper = styled.div`
@@ -24,18 +24,6 @@ const RangeWrapper = styled.div`
 
 const WidgetWrapper = styled.div`
   font-size: 0.8rem;
-
-  .form-check-input {
-    &:checked {
-      background-color: ${(props) => props.theme.brandDark};
-      border-color: ${(props) => props.theme.brandDark};
-    }
-  }
-
-  .form-check-label {
-    margin-left: 0.5rem;
-    line-height: 1;
-  }
 `;
 
 const RangeValue = styled.div`
@@ -58,10 +46,6 @@ const Thumb = styled.div<{ $dragged: boolean }>`
   justify-content: center;
   align-items: center;
   box-shadow: 0px 2px 6px #aaa;
-`;
-
-const StyledResetButton = styled(Button)`
-  padding: 0;
 `;
 
 const SET_PARAMETER = gql`
@@ -120,16 +104,15 @@ const NumberWidget = (props) => {
 
   const Reset = () =>
     defaultValue !== null ? (
-      <StyledResetButton
+      <Button
         id="reset-button"
-        color="link"
-        size="sm"
-        outline
+        variant="text"
+        size="small"
         onClick={() => handleChange({ parameterId: id, numberValue: defaultValue })}
         aria-label={t('reset-button')}
       >
         <Icon name="version" />
-      </StyledResetButton>
+      </Button>
     ) : null;
 
   return (
@@ -199,32 +182,39 @@ type BoolWidgetProps = {
   handleChange: (opts: { parameterId: string; boolValue: boolean }) => void;
   loading: boolean;
   WidgetWrapper: typeof WidgetWrapper;
+  disabled?: boolean;
 };
 
 export const BoolWidget = (props: BoolWidgetProps) => {
-  const { parameter, handleChange, loading, WidgetWrapper } = props;
+  const { parameter, handleChange, loading, WidgetWrapper, disabled } = props;
   const { id, boolValue, isCustomized, isCustomizable } = parameter;
   const { t } = useTranslation();
 
   const label = parameter.label || parameter.description || t('will_be_implemented');
 
   return (
-    <WidgetWrapper className="form-check form-switch">
-      <input
-        className="form-check-input"
-        type="checkbox"
-        role="switch"
-        id={id!}
-        name={id!}
-        checked={boolValue!}
-        onChange={() => handleChange({ parameterId: id!, boolValue: !boolValue })}
-        disabled={!isCustomizable || loading}
-        style={{ transform: 'scale(1.5)' }}
+    <WidgetWrapper>
+      <FormControlLabel
+        control={
+          <Switch
+            onChange={() => handleChange({ parameterId: id, boolValue: !boolValue })}
+            disabled={!isCustomizable || loading || disabled}
+            checked={boolValue ?? false}
+            size="small"
+          />
+        }
+        label={label}
+        sx={{
+          m: 0,
+          p: 0,
+        }}
+        slotProps={{
+          typography: {
+            variant: 'caption',
+          },
+        }}
       />
-      <label className="form-check-label" htmlFor={id!}>
-        {label}
-        {isCustomized ? '*' : ''}
-      </label>
+      {loading && <CircularProgress size={10} sx={{ ml: 0.5, mb: -0.1 }} />}
     </WidgetWrapper>
   );
 };
@@ -232,10 +222,11 @@ export const BoolWidget = (props: BoolWidgetProps) => {
 type ParameterWidgetProps = {
   parameter: ActionParameterFragment;
   WidgetWrapper?: typeof WidgetWrapper;
+  disabled?: boolean;
 };
 
 const ParameterWidget = (props: ParameterWidgetProps) => {
-  const { parameter } = props;
+  const { parameter, disabled = false } = props;
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   const [setParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
@@ -285,6 +276,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           handleChange={handleUserSelection}
           loading={mutationLoading}
           WidgetWrapper={props.WidgetWrapper ?? WidgetWrapper}
+          disabled={disabled}
         />
       );
 

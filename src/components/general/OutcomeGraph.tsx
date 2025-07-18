@@ -4,10 +4,10 @@ import dynamic from 'next/dynamic';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { CircularProgress } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 import type { PlotParams } from 'react-plotly.js';
-import { Spinner } from 'reactstrap';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
@@ -330,7 +330,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   }
   const goalsWithinRange = goals.filter((goal) => goal.year >= startYear && goal.year <= endYear);
   if (goalsWithinRange.length >= 2) {
-    const name = t('target')!;
+    const name = t('target');
     plotData.push({
       name,
       type: 'scatter',
@@ -401,7 +401,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   if (subNodes?.length > 1) {
     plotData.push({
       type: 'scatter',
-      name: t('plot-total')!,
+      name: t('plot-total'),
       mode: 'lines',
       line: {
         color: theme.graphColors.grey080,
@@ -413,7 +413,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
       xaxis: 'x2',
       yaxis: 'y',
       ...formatHover(
-        t('plot-total')!,
+        t('plot-total'),
         theme.graphColors.grey080,
         false,
         systemFont,
@@ -508,7 +508,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     <>
       {loading && (
         <PlotLoader>
-          <Spinner color="dark" />
+          <CircularProgress />
         </PlotLoader>
       )}
       <Plot

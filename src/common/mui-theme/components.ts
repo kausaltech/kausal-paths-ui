@@ -16,7 +16,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           borderRadius: theme.btnBorderRadius,
           fontWeight: theme.fontWeightBold,
           textTransform: 'none',
-          boxShadow: 'none',
           '&:hover': {
             boxShadow: 'none',
           },
@@ -45,24 +44,31 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
           border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
-          boxShadow: 'none',
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
+          '&:hover': {
+            borderColor: theme.graphColors.grey050,
+          },
+          '&.Mui-focused': {
+            borderColor: theme.inputBtnFocusColor,
+            boxShadow: `0 0 0 0.25rem ${theme.inputBtnFocusColor}`,
+          },
         },
       },
     },
     MuiTextField: {
       styleOverrides: {
         root: {
+          border: 0,
           '& .MuiOutlinedInput-root': {
             backgroundColor: theme.inputBg,
             borderRadius: theme.inputBorderRadius,
-            border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
-            '&:hover': {
-              borderColor: theme.graphColors.grey050,
-            },
-            '&.Mui-focused': {
-              borderColor: theme.inputBtnFocusColor,
-              boxShadow: `0 0 0 0.25rem ${theme.inputBtnFocusColor}`,
-            },
+            border: 0,
           },
           '& .MuiInputLabel-root': {
             fontWeight: theme.formLabelFontWeight,
@@ -75,7 +81,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         root: {
           backgroundColor: theme.inputBg,
           borderRadius: theme.inputBorderRadius,
-          border: `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`,
+          border: 0,
           '&:hover': {
             borderColor: theme.graphColors.grey050,
           },
@@ -138,7 +144,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
           border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
-          boxShadow: 'none',
         },
       },
     },
@@ -163,7 +168,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         paper: {
           backgroundColor: theme.themeColors.white,
           border: 'none',
-          boxShadow: 'none',
         },
       },
     },
@@ -217,17 +221,15 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           padding: 8,
           '& .MuiSwitch-switchBase': {
             '&.Mui-checked': {
-              color: theme.themeColors.white,
+              color: theme.brandDark,
               '& + .MuiSwitch-track': {
                 backgroundColor: theme.brandDark,
               },
             },
           },
           '& .MuiSwitch-thumb': {
-            boxShadow: 'none',
             width: 16,
             height: 16,
-            margin: 2,
           },
           '& .MuiSwitch-track': {
             borderRadius: 16,
@@ -290,11 +292,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
       },
     },
     MuiSkeleton: {
-      styleOverrides: {
-        root: {
-          backgroundColor: theme.graphColors.grey010,
-        },
-      },
+      styleOverrides: {},
     },
     MuiAlert: {
       styleOverrides: {
@@ -369,8 +367,8 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         paper: {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
-          border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
-          boxShadow: 'none',
+          border: `1px solid ${theme.graphColors.grey020}`,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1)',
         },
       },
     },
