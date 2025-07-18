@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   Stack,
   Typography,
 } from '@mui/material';
@@ -43,7 +44,7 @@ function getBarColor(
   target: number | undefined
 ) {
   if (typeof target === 'number') {
-    return value > target ? theme.graphColors.red030 : theme.graphColors.green030;
+    return value > target ? theme.graphColors.red030 : theme.graphColors.green010;
   }
 
   return defaultColor ?? theme.graphColors.blue050;
@@ -68,6 +69,7 @@ const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
     },
     series: [
       {
+        silent: true,
         showBackground: true,
         backgroundStyle: {
           color: theme.graphColors.grey010,
@@ -104,11 +106,12 @@ const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
           ? {
               markLine: {
                 symbol: 'square',
-                symbolSize: 2,
+                animation: false,
+                symbolSize: 4,
                 label: { show: false },
                 symbolOffset: [
-                  [-0.5, -3],
-                  [0.5, -3],
+                  [0, -3],
+                  [0, -3],
                 ],
                 lineStyle: {
                   dashOffset: 3,
@@ -133,6 +136,40 @@ const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
 
   return config;
 };
+
+function TargetVariation({ item }: { item: DashboardProgressItem }) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+
+  if (!item.targetValue || item.value === item.targetValue) {
+    return null;
+  }
+
+  const isAboveTarget = item.value > item.targetValue;
+  const badgeColor = getBarColor(undefined, theme, item.value, item.targetValue);
+  const percentageAboveOrBelowTarget = Math.max(
+    1,
+    Math.round(Math.abs((item.value - item.targetValue) / item.targetValue) * 100)
+  );
+
+  return (
+    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 1 }}>
+      <Chip
+        size="small"
+        label={`${percentageAboveOrBelowTarget}%`}
+        sx={{
+          borderRadius: 8,
+          p: 0,
+          backgroundColor: badgeColor,
+          color: readableColor(badgeColor, theme.textColor.primary, theme.themeColors.white),
+        }}
+      />
+      <Typography variant="body2" sx={{ fontWeight: 'fontWeightBold', color: 'text.secondary' }}>
+        {isAboveTarget ? t('above-target') : t('below-target')}
+      </Typography>
+    </Stack>
+  );
+}
 
 const DashboardVisualizationProgress = ({ items = [] }: Props) => {
   const [expanded, setExpanded] = useState<number[]>([]);
@@ -219,17 +256,19 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
                     <Typography variant="h5" component="p" sx={{ color: 'text.primary' }}>
                       {item.chartLabel}
                     </Typography>
+
                     {!!item.unit && (
                       <Typography variant="body2" color="text.secondary">
                         {item.unit}
                       </Typography>
                     )}
                     <Chart isLoading={false} data={getBarOption(item, theme)} height="80px" />
+                    <TargetVariation item={item} />
                   </CardContent>
                 </Card>
 
                 {item.description && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     {item.description}
                   </Typography>
                 )}

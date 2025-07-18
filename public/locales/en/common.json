@@ -135,5 +135,7 @@
   "outcomes": "Outcomes",
   "expand-all": "Expand all",
   "collapse-all": "Collapse all",
-  "values-per": "Values per {{normalization}}"
+  "values-per": "Values per {{normalization}}",
+  "above-target": "above the target",
+  "below-target": "below the target"
 }

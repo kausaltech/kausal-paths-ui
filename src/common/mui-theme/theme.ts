@@ -30,7 +30,8 @@ export function initializeMuiTheme(theme: BaseTheme): MuiTheme {
       palette: getPalette(theme),
       typography: getTypography(theme),
       shape: {
-        borderRadius: theme.btnBorderRadius,
+        // The base border radius, used as a multiplier when setting borderRadius on components
+        borderRadius: theme.spaces.s025,
       },
       spacing: theme.space,
       components: getComponents(theme),
