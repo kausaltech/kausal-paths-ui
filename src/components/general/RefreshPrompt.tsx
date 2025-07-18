@@ -4,11 +4,12 @@ import { useApolloClient } from '@apollo/client';
 import styled from '@emotion/styled';
 import {
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Card,
+  CardActions,
+  CardContent,
   IconButton,
+  Portal,
+  Typography,
 } from '@mui/material';
 import { ArrowClockwise, X } from 'react-bootstrap-icons';
 
@@ -91,47 +92,39 @@ function useIsPromptVisible() {
   };
 }
 
-const StyledDialog = styled(Dialog)`
-  .MuiDialog-root {
-    position: fixed;
-  }
-
-  .MuiDialog-container {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: auto;
-    bottom: auto;
-    height: auto;
-    justify-content: flex-end;
-    align-items: flex-start;
-    padding: ${({ theme }) => theme.spaces.s100};
-    pointer-events: none;
-  }
-
-  .MuiDialog-paper {
-    position: relative;
-    margin: 0;
-    background-color: ${({ theme }) => theme.cardBackground.primary};
-    max-width: 400px;
-    width: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    pointer-events: auto;
-  }
+const StyledNotificationContainer = styled.div<{ $isVisible: boolean }>`
+  position: fixed;
+  top: ${({ theme }) => theme.spaces.s100};
+  right: ${({ theme }) => theme.spaces.s100};
+  z-index: 1300;
+  max-width: 400px;
+  opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
+  transform: translateX(${({ $isVisible }) => ($isVisible ? '0' : '100%')});
+  transition: all 0.3s ease-in-out;
+  pointer-events: ${({ $isVisible }) => ($isVisible ? 'auto' : 'none')};
 `;
 
-const StyledDialogTitle = styled(DialogTitle)`
+const StyledCard = styled(Card)`
+  background-color: ${({ theme }) => theme.cardBackground.primary};
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+`;
+
+const StyledCardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
 `;
 
-const StyledDialogContent = styled(DialogContent)`
-  padding: 0.5rem 1.5rem;
+const StyledTitle = styled(Typography)`
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+`;
+
+const StyledCardContent = styled(CardContent)`
+  padding: 0.5rem 1.5rem !important;
 
   p {
     margin: 0;
@@ -140,7 +133,7 @@ const StyledDialogContent = styled(DialogContent)`
   }
 `;
 
-const StyledDialogActions = styled(DialogActions)`
+const StyledCardActions = styled(CardActions)`
   padding: 1rem 1.5rem;
   justify-content: flex-end;
   gap: 8px;
@@ -165,38 +158,32 @@ export function RefreshPrompt() {
   }
 
   return (
-    <StyledDialog
-      open={isVisible}
-      onClose={handleClose}
-      hideBackdrop
-      disableEnforceFocus
-      disableAutoFocus
-      disableRestoreFocus
-      PaperProps={{
-        elevation: 3,
-      }}
-    >
-      <StyledDialogTitle>
-        Reload for the latest data
-        <StyledCloseButton onClick={handleClose} size="small">
-          <X size={16} />
-        </StyledCloseButton>
-      </StyledDialogTitle>
-      <StyledDialogContent>
-        <p>
-          Updates may be available, click on the reload button or refresh the page to ensure you
-          have the latest content.
-        </p>
-      </StyledDialogContent>
-      <StyledDialogActions>
-        <Button size="small" onClick={handleRefresh}>
-          <ArrowClockwise size={18} />
-          <span className="m-2">Reload</span>
-        </Button>
-        <Button size="small" onClick={handleDisable}>
-          Don&apos;t show this again
-        </Button>
-      </StyledDialogActions>
-    </StyledDialog>
+    <Portal>
+      <StyledNotificationContainer $isVisible={isVisible}>
+        <StyledCard elevation={3}>
+          <StyledCardHeader>
+            <StyledTitle>Reload for the latest data</StyledTitle>
+            <StyledCloseButton onClick={handleClose} size="small">
+              <X size={16} />
+            </StyledCloseButton>
+          </StyledCardHeader>
+          <StyledCardContent>
+            <p>
+              Updates may be available, click on the reload button or refresh the page to ensure you
+              have the latest content.
+            </p>
+          </StyledCardContent>
+          <StyledCardActions>
+            <Button size="small" onClick={handleRefresh} color="primary">
+              <ArrowClockwise size={18} />
+              <span className="m-2">Reload</span>
+            </Button>
+            <Button size="small" onClick={handleDisable}>
+              Don&apos;t show this again
+            </Button>
+          </StyledCardActions>
+        </StyledCard>
+      </StyledNotificationContainer>
+    </Portal>
   );
 }
