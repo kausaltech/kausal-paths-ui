@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Button, FormControlLabel, Switch } from '@mui/material';
+import { Button, CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 
@@ -182,10 +182,11 @@ type BoolWidgetProps = {
   handleChange: (opts: { parameterId: string; boolValue: boolean }) => void;
   loading: boolean;
   WidgetWrapper: typeof WidgetWrapper;
+  disabled?: boolean;
 };
 
 export const BoolWidget = (props: BoolWidgetProps) => {
-  const { parameter, handleChange, loading, WidgetWrapper } = props;
+  const { parameter, handleChange, loading, WidgetWrapper, disabled } = props;
   const { id, boolValue, isCustomized, isCustomizable } = parameter;
   const { t } = useTranslation();
 
@@ -197,7 +198,7 @@ export const BoolWidget = (props: BoolWidgetProps) => {
         control={
           <Switch
             onChange={() => handleChange({ parameterId: id, boolValue: !boolValue })}
-            disabled={!isCustomizable || loading}
+            disabled={!isCustomizable || loading || disabled}
             checked={boolValue ?? false}
             size="small"
           />
@@ -213,6 +214,7 @@ export const BoolWidget = (props: BoolWidgetProps) => {
           },
         }}
       />
+      {loading && <CircularProgress size={10} sx={{ ml: 0.5, mb: -0.1 }} />}
     </WidgetWrapper>
   );
 };
@@ -220,10 +222,11 @@ export const BoolWidget = (props: BoolWidgetProps) => {
 type ParameterWidgetProps = {
   parameter: ActionParameterFragment;
   WidgetWrapper?: typeof WidgetWrapper;
+  disabled?: boolean;
 };
 
 const ParameterWidget = (props: ParameterWidgetProps) => {
-  const { parameter } = props;
+  const { parameter, disabled = false } = props;
   const activeScenario = useReactiveVar(activeScenarioVar);
 
   const [setParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
@@ -273,6 +276,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
           handleChange={handleUserSelection}
           loading={mutationLoading}
           WidgetWrapper={props.WidgetWrapper ?? WidgetWrapper}
+          disabled={disabled}
         />
       );
 
