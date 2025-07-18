@@ -11,6 +11,7 @@ import {
   GraphicComponent,
   GridComponent,
   LegendComponent,
+  MarkLineComponent,
   TitleComponent,
   TooltipComponent,
   TransformComponent,
@@ -40,6 +41,7 @@ echarts.use([
   CanvasRenderer,
   GraphicComponent,
   LineChart,
+  MarkLineComponent,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`
