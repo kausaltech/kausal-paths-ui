@@ -22,58 +22,58 @@
             "progressBars": [
               {
                 "label": "Target: Where do we want to be?",
-                "description": "Our 2025 emission reduction target",
-                "chartLabel": "Target",
-                "color": "#4CAF50",
+                "description": "If the greenhouse gas emissions of Sunnydale develop without any interventions we will not meet the target (Business as usual -scenario). If we successfully complete the actions of Climate plan 2025, the emissions will be 70% below the target in 2045.",
+                "chartLabel": "Target maximum emissions (2045)",
+                "color": "#AAC5DB",
                 "unit": "ktCO2e",
                 "currentValue": 551,
-                "targetValue": 551,
+                "targetValue": null,
                 "minValue": 0,
-                "maxValue": 1500
+                "maxValue": 1300
               },
               {
                 "label": "Reference: Where did we start from?",
-                "description": "Baseline emissions from 2019",
-                "chartLabel": "Reference",
-                "color": "#FF9800",
+                "description": "The year 1990 was chosen as the standard reference year because the Kyoto Protocol established it as the baseline for measuring emission reductions. It was selected due to reliable data availability and representing a stable economic period before major global transitions. Most reliable data we have is for year 1995 so that is used.",
+                "chartLabel": "Reference year emissions (1995)",
+                "color": "#205D82",
                 "unit": "ktCO2e",
                 "currentValue": 1300,
-                "targetValue": 1300,
+                "targetValue": null,
                 "minValue": 0,
-                "maxValue": 1500
+                "maxValue": 1300
               },
               {
                 "label": "Where are we now?",
-                "description": "Latest measured emissions (2023)",
-                "chartLabel": "Current",
-                "color": "#2196F3",
+                "description": "The latest measured emission calculations that we have are for the year 2021. The more up to date yearly values are updated here when the data becomes available.",
+                "chartLabel": "Latest measured emissions (2021)",
+                "color": "#205D82",
                 "unit": "ktCO2e",
                 "currentValue": 808,
-                "targetValue": 808,
+                "targetValue": null,
                 "minValue": 0,
-                "maxValue": 1500
+                "maxValue": 1300
               },
               {
                 "label": "Scenario: What if we do nothing?",
-                "description": "Business as usual scenario projection",
-                "chartLabel": "Business as usual",
+                "description": "This is the baseline scenario. The greenhouse gas emissions would still drop due to XXX XXX but not enough in relation to the goal.",
+                "chartLabel": "Scenario forecast: Business as usual (2045)",
                 "color": "#F44336",
                 "unit": "ktCO2e",
-                "currentValue": 990,
-                "targetValue": 990,
+                "currentValue": 690,
+                "targetValue": 551,
                 "minValue": 0,
-                "maxValue": 1500
+                "maxValue": 1300
               },
               {
                 "label": "Scenario: What if we complete all activities?",
-                "description": "Complete climate plan implementation",
-                "chartLabel": "Complete activities",
+                "description": "If all the activities in the climate plan are completed, the yearly emissions will be well below the goal level.",
+                "chartLabel": "Scenario forecast: Climate plan 2025 (2045)",
                 "color": "#4CAF50",
                 "unit": "ktCO2e",
                 "currentValue": 207,
-                "targetValue": 207,
+                "targetValue": 551,
                 "minValue": 0,
-                "maxValue": 1500
+                "maxValue": 1300
               }
             ]
           }

@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 
+import { type Theme, useTheme } from '@emotion/react';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
   Button,
+  Card,
+  CardContent,
   Stack,
   Typography,
 } from '@mui/material';
+import type { LabelLayoutOptionCallbackParams } from 'echarts';
+import type { EChartsCoreOption } from 'echarts/core';
+import { readableColor } from 'polished';
 import { Dash, Plus } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -30,55 +36,108 @@ type Props = {
   items?: DashboardProgressItem[];
 };
 
-const getBarOption = (item: DashboardProgressItem) => {
-  const min = item.min ?? 0;
-  const max = item.max ?? 100;
+function getBarColor(
+  defaultColor: string | undefined,
+  theme: Theme,
+  value: number,
+  target: number | undefined
+) {
+  if (typeof target === 'number') {
+    return value > target ? theme.graphColors.red030 : theme.graphColors.green030;
+  }
+
+  return defaultColor ?? theme.graphColors.blue050;
+}
+
+const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
   const value = item.value;
+  const { min = 0, max = value } = item;
   const target = item.targetValue;
-  return {
-    grid: { left: 0, right: 0, top: 20, bottom: 20 },
-    xAxis: {
-      min,
-      max,
-      show: false,
-    },
+  const barColor = getBarColor(item.color, theme, value, target);
+
+  const config: EChartsCoreOption = {
+    grid: { left: 5, right: 20, top: 40, bottom: 20 },
+    xAxis: { min, max, axisTick: { show: false }, axisLabel: { customValues: [min, max] } },
     yAxis: {
       type: 'category',
+      axisLine: {
+        show: false,
+      },
       data: [''],
       show: false,
     },
     series: [
       {
+        showBackground: true,
+        backgroundStyle: {
+          color: theme.graphColors.grey010,
+        },
+        labelLine: {
+          show: true,
+          lineStyle: {
+            color: barColor,
+          },
+        },
+        labelLayout(params: LabelLayoutOptionCallbackParams) {
+          return {
+            verticalAlign: 'bottom',
+            align: 'center',
+            x: params.labelRect.x - 6,
+            y: params.labelRect.y - 10,
+          };
+        },
+        label: {
+          show: true,
+          position: 'right',
+          backgroundColor: barColor,
+          borderRadius: 16,
+          padding: [4, 8],
+          color: readableColor(barColor, theme.textColor.primary, theme.themeColors.white),
+        },
         type: 'bar',
         data: [value],
         barWidth: 20,
         itemStyle: {
-          color: item.color || '#1976d2',
+          color: barColor,
         },
-        z: 2,
+        ...(target
+          ? {
+              markLine: {
+                symbol: 'square',
+                symbolSize: 2,
+                label: { show: false },
+                symbolOffset: [
+                  [-0.5, -3],
+                  [0.5, -3],
+                ],
+                lineStyle: {
+                  dashOffset: 3,
+                  color: theme.graphColors.red050,
+                  type: 'dotted',
+                  width: 2,
+                },
+                data: [
+                  {
+                    xAxis: target,
+                  },
+                ],
+              },
+            }
+          : {}),
       },
-      target !== undefined
-        ? {
-            type: 'bar',
-            data: [target],
-            barWidth: 8,
-            itemStyle: {
-              color: '#ff9800',
-            },
-            z: 3,
-          }
-        : {},
     ],
-    animation: false,
     tooltip: {
       show: false,
     },
   };
+
+  return config;
 };
 
 const DashboardVisualizationProgress = ({ items = [] }: Props) => {
   const [expanded, setExpanded] = useState<number[]>([]);
 
+  const theme = useTheme();
   const { t } = useTranslation();
 
   const allExpanded = items.length > 0 && expanded.length === items.length;
@@ -91,7 +150,7 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
     setExpanded([]);
   };
 
-  const handleChange = (idx: number) => (_: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleChange = (idx: number) => (_: unknown, isExpanded: boolean) => {
     setExpanded((prev) => (isExpanded ? [...prev, idx] : prev.filter((i) => i !== idx)));
   };
 
@@ -110,6 +169,7 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
         ) : (
           <Button
             color="inherit"
+            variant="text"
             size="small"
             onClick={handleExpandAll}
             sx={{ color: 'inherit', fontWeight: 'fontWeightRegular', textDecoration: 'underline' }}
@@ -129,6 +189,7 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
               expanded={isItemExpanded}
               onChange={handleChange(idx)}
               disableGutters
+              slotProps={{ transition: { unmountOnExit: true } }}
             >
               <AccordionSummary
                 expandIcon={isItemExpanded ? <Dash size={30} /> : <Plus size={30} />}
@@ -153,9 +214,20 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
               </AccordionSummary>
 
               <AccordionDetails>
-                <Box sx={{ width: '100%', maxWidth: 500, mb: 1 }}>
-                  <Chart isLoading={false} data={getBarOption(item)} height="60px" />
-                </Box>
+                <Card sx={{ backgroundColor: 'background.default' }}>
+                  <CardContent>
+                    <Typography variant="h5" component="p" sx={{ color: 'text.primary' }}>
+                      {item.chartLabel}
+                    </Typography>
+                    {!!item.unit && (
+                      <Typography variant="body2" color="text.secondary">
+                        {item.unit}
+                      </Typography>
+                    )}
+                    <Chart isLoading={false} data={getBarOption(item, theme)} height="80px" />
+                  </CardContent>
+                </Card>
+
                 {item.description && (
                   <Typography variant="body2" color="text.secondary">
                     {item.description}
