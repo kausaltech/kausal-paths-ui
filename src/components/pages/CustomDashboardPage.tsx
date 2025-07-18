@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useTheme } from '@emotion/react';
 import {
+  Box,
   Card,
   CardContent,
   CardMedia,
@@ -58,7 +59,6 @@ function DashboardVisualization({
 }
 
 function CustomDashboardPage() {
-  const [perInhabitant, setPerInhabitant] = useState(false);
   const theme = useTheme();
 
   const backgroundColor = page.backgroundColor ?? 'primary.light';
@@ -67,51 +67,53 @@ function CustomDashboardPage() {
     : 'primary.contrastText';
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4, backgroundColor: backgroundColor }}>
-      <Stack spacing={2}>
-        {!!page.title && (
-          <Typography variant="h1" color={textColor}>
-            {page.title}
-          </Typography>
-        )}
+    <Box sx={{ py: 4, backgroundColor: backgroundColor }}>
+      <Container maxWidth="lg">
+        <Stack spacing={2}>
+          {!!page.title && (
+            <Typography variant="h1" color={textColor}>
+              {page.title}
+            </Typography>
+          )}
 
-        <DashboardNormalizationBar />
+          <DashboardNormalizationBar />
 
-        {page.dashboardCards.map((card, i) => (
-          <Card key={i}>
-            {!!card.image?.url && <CardMedia sx={{ height: 300 }} image={card.image.url} />}
-            <CardContent>
-              {!!card.title && (
-                <Typography variant="h2" gutterBottom>
-                  {card.title}
-                </Typography>
-              )}
+          {page.dashboardCards.map((card, i) => (
+            <Card key={i}>
+              {!!card.image?.url && <CardMedia sx={{ height: 300 }} image={card.image.url} />}
+              <CardContent>
+                {!!card.title && (
+                  <Typography variant="h2" gutterBottom>
+                    {card.title}
+                  </Typography>
+                )}
 
-              {!!card.description && <Typography sx={{ my: 2 }}>{card.description}</Typography>}
+                {!!card.description && <Typography sx={{ my: 2 }}>{card.description}</Typography>}
 
-              {!!card.visualization && (
-                <DashboardVisualization visualization={card.visualization} />
-              )}
+                {!!card.visualization && (
+                  <DashboardVisualization visualization={card.visualization} />
+                )}
 
-              {!!card.callToAction && (
-                <MuiLink component={Link} href={card.callToAction.linkUrl}>
-                  <Card sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText' }}>
-                    <CardContent>
-                      <Typography variant="h3" gutterBottom sx={{ color: 'inherit' }}>
-                        {card.callToAction.title}
-                      </Typography>
-                      <Typography>
-                        {card.callToAction.content} <ArrowRight size={16} />
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </MuiLink>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </Stack>
-    </Container>
+                {!!card.callToAction && (
+                  <MuiLink component={Link} href={card.callToAction.linkUrl}>
+                    <Card sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText' }}>
+                      <CardContent>
+                        <Typography variant="h3" gutterBottom sx={{ color: 'inherit' }}>
+                          {card.callToAction.title}
+                        </Typography>
+                        <Typography>
+                          {card.callToAction.content} <ArrowRight size={16} />
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </MuiLink>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      </Container>
+    </Box>
   );
 }
 
