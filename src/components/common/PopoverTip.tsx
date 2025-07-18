@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 
+import { Global, css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { Button, Tooltip } from 'reactstrap';
-import styled, { createGlobalStyle } from 'styled-components';
 
 import { useTranslation } from '@/common/i18n';
 
 // Fixes an issue where the tooltip initially renders below the parent element
-const GlobalStyles = createGlobalStyle`
+const globalStyles = css`
   .tooltip-container {
     position: absolute;
     top: 0;
@@ -47,7 +48,7 @@ const PopoverTip = (props: PopoverTipProps) => {
 
   return (
     <>
-      <GlobalStyles />
+      <Global styles={globalStyles} />
       <InfoButton id={id} color="link" invert={invert.toString()}>
         <svg
           xmlns="http://www.w3.org/2000/svg"

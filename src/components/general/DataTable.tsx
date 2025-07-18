@@ -1,11 +1,11 @@
+import styled from '@emotion/styled';
 import { Table } from 'reactstrap';
-import Styled from 'styled-components';
 
 import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 import { formatNumber } from '@/common/preprocess';
 
-const TableWrapper = Styled.div`
+const TableWrapper = styled.div`
   margin: 0 auto;
   max-width: 100%;
   overflow-x: auto;
@@ -43,7 +43,9 @@ const DataTable = (props) => {
           <tr>
             <th>{t('table-year')}</th>
             <th>{t('table-measure-type')}</th>
-            {subNodes?.map((subNode) => <th key={subNode.id}>{subNode.name}</th>)}
+            {subNodes?.map((subNode) => (
+              <th key={subNode.id}>{subNode.name}</th>
+            ))}
             {hasTotalValues && <th>{node.metric.name}</th>}
             <th>{t('table-unit')}</th>
           </tr>

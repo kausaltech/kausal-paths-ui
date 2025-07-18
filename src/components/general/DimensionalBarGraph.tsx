@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
+import { useTheme } from '@emotion/react';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'next-i18next';
-import { useTheme } from 'styled-components';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';

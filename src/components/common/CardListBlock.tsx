@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { Card, CardText, CardTitle } from 'reactstrap';
 
 type Props = {
@@ -36,9 +36,7 @@ export function CardListBlock({ title, cards }: Props) {
         {cards.map((card, i) => (
           <StyledCard key={i}>
             <StyledCardTitle tag="p">{card.title}</StyledCardTitle>
-            {!!card.shortDescription && (
-              <CardText>{card.shortDescription}</CardText>
-            )}
+            {!!card.shortDescription && <CardText>{card.shortDescription}</CardText>}
           </StyledCard>
         ))}
       </StyledCardContainer>

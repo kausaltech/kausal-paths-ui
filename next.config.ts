@@ -18,7 +18,7 @@ process.env.NEXT_TELEMETRY_DISABLED = '1';
 initializeThemes(__dirname);
 
 let nextConfig: NextConfig = {
-  ...getNextConfig(__dirname, { isPagesRouter: true }),
+  ...getNextConfig(__dirname, { isPagesRouter: true, cssInJsLibrary: 'emotion' }),
   sassOptions: {
     quietDeps: true,
     silenceDeprecations: [

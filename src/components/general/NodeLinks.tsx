@@ -1,8 +1,8 @@
 import React from 'react';
 
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Col, Container, ListGroup, Row } from 'reactstrap';
-import styled from 'styled-components';
 
 import { NodeLink } from '@/common/links';
 

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
+import styled from '@emotion/styled';
 import { Col, Row } from 'reactstrap';
-import styled from 'styled-components';
 import { ActionWithEfficiency, SortActionsConfig } from 'types/actions.types';
 
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';

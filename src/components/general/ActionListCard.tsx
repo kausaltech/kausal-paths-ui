@@ -1,5 +1,5 @@
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
-import styled from 'styled-components';
 
 import { ActionLink } from '@/common/links';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
@@ -76,10 +76,8 @@ const StyledActionLink = styled.a`
   align-items: center;
   justify-content: space-between;
 
-  &:hover {
-    ${StyledIconWrapper} {
-      transform: translateX(4px);
-    }
+  &:hover .action-link-icon-wrapper {
+    transform: translateX(4px);
   }
 `;
 
@@ -135,7 +133,7 @@ const ActionListCard = (props: ActionListCardProps) => {
         <ActionLink action={action}>
           <StyledActionLink data-testid="actionlink">
             <StyledActionTitle>{action.name}</StyledActionTitle>
-            <StyledIconWrapper>
+            <StyledIconWrapper className="action-link-icon-wrapper">
               <Icon width="20px" height="20px" name="arrowRight" />
             </StyledIconWrapper>
           </StyledActionLink>

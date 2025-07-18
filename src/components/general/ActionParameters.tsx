@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 import type { ActionParameterFragment } from '@/common/__generated__/graphql';
 import ParameterWidget from '@/components/general/ParameterWidget';

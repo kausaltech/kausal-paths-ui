@@ -1,9 +1,10 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { remove } from 'lodash';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
 import { Alert, Container, Spinner } from 'reactstrap';
-import styled, { ThemeContext } from 'styled-components';
 
 import type { GetActionContentQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -193,7 +194,7 @@ const CausalGrid = ({
   onClickExpandGrid,
   expandedGridLoading = false,
 }: CausalGridProps) => {
-  const theme = useContext(ThemeContext);
+  const theme = useTheme();
   const instance = useInstance();
   const gridCanvas = useRef<ArcherContainerRef>(null);
 

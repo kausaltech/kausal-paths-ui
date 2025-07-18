@@ -1,6 +1,7 @@
 import React from 'react';
+
+import styled from '@emotion/styled';
 import { Spinner } from 'reactstrap';
-import styled from 'styled-components';
 
 const LoaderOverlay = styled.div`
   position: absolute;

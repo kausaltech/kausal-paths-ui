@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { Container, Row } from 'reactstrap';
 
 export const StyledContentContainer = styled(Container)<{ $overlap: boolean }>`
@@ -15,8 +15,7 @@ const StyledHeroContainer = styled.div<{ $overlap: boolean }>`
 `;
 
 const StyledHero = styled.div<{ $overlap: boolean }>`
-  background: ${({ $overlap, theme }) =>
-    !$overlap ? theme.brandDark : undefined};
+  background: ${({ $overlap, theme }) => (!$overlap ? theme.brandDark : undefined)};
 `;
 
 const StyledTitle = styled.h1`
@@ -83,9 +82,7 @@ export const PageHero = ({
                 <StyledHeroCard>
                   {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
                   {!!leadDescription && (
-                    <Description
-                      dangerouslySetInnerHTML={{ __html: leadDescription }}
-                    />
+                    <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
                   )}
                 </StyledHeroCard>
               </Container>

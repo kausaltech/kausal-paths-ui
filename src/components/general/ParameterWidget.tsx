@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
-import styled, { useTheme } from 'styled-components';
 
 import { startInteraction } from '@common/sentry/helpers';
 
