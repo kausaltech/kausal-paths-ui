@@ -4,6 +4,7 @@ import Head from 'next/head';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import * as Sentry from '@sentry/nextjs';
 import type { NextPageContext } from 'next';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
@@ -13,7 +14,6 @@ import { getLogger } from '@common/logging';
 
 import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
-import Button from '@/components/common/Button';
 
 const ErrorBackground = styled.div`
   background-color: ${(props) => props.theme.brandDark};
@@ -136,7 +136,7 @@ const PathsError = (props: AppErrorProps) => {
                 {apology ? <p>{apology}</p> : null}
                 <Link href="/">
                   <a>
-                    <Button outline color="dark" size="sm">
+                    <Button variant="outlined" size="small" color="primary">
                       {t('return-to-front', { ns: 'common' })}
                     </Button>
                   </a>

@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { CircularProgress } from '@mui/material';
 import { remove } from 'lodash';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
-import { Alert, Container, Spinner } from 'reactstrap';
+import { Alert, Container } from 'reactstrap';
 
 import type { GetActionContentQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -377,7 +378,7 @@ const CausalGrid = ({
             ) : (
               <>
                 {expandedGridLoading ? (
-                  <Spinner color="primary" style={{ width: '1.5rem', height: '1.5rem' }} />
+                  <CircularProgress size="1.5rem" />
                 ) : (
                   <Icon name="plus-circle" height="1.5rem" width="1.5rem" />
                 )}

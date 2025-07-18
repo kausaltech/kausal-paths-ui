@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 
@@ -14,7 +15,6 @@ import type {
   SetParameterMutationVariables,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
-import Button from '@/components/common/Button';
 import Icon from '@/components/common/icon';
 
 const RangeWrapper = styled.div`
@@ -58,10 +58,6 @@ const Thumb = styled.div<{ $dragged: boolean }>`
   justify-content: center;
   align-items: center;
   box-shadow: 0px 2px 6px #aaa;
-`;
-
-const StyledResetButton = styled(Button)`
-  padding: 0;
 `;
 
 const SET_PARAMETER = gql`
@@ -120,16 +116,15 @@ const NumberWidget = (props) => {
 
   const Reset = () =>
     defaultValue !== null ? (
-      <StyledResetButton
+      <Button
         id="reset-button"
-        color="link"
-        size="sm"
-        outline
+        variant="text"
+        size="small"
         onClick={() => handleChange({ parameterId: id, numberValue: defaultValue })}
         aria-label={t('reset-button')}
       >
         <Icon name="version" />
-      </StyledResetButton>
+      </Button>
     ) : null;
 
   return (
@@ -214,14 +209,14 @@ export const BoolWidget = (props: BoolWidgetProps) => {
         className="form-check-input"
         type="checkbox"
         role="switch"
-        id={id!}
-        name={id!}
+        id={id}
+        name={id}
         checked={boolValue!}
-        onChange={() => handleChange({ parameterId: id!, boolValue: !boolValue })}
+        onChange={() => handleChange({ parameterId: id, boolValue: !boolValue })}
         disabled={!isCustomizable || loading}
         style={{ transform: 'scale(1.5)' }}
       />
-      <label className="form-check-label" htmlFor={id!}>
+      <label className="form-check-label" htmlFor={id}>
         {label}
         {isCustomized ? '*' : ''}
       </label>
