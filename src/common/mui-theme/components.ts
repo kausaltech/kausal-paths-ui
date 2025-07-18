@@ -16,7 +16,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           borderRadius: theme.btnBorderRadius,
           fontWeight: theme.fontWeightBold,
           textTransform: 'none',
-          boxShadow: 'none',
           '&:hover': {
             boxShadow: 'none',
           },
@@ -45,7 +44,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
           border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
-          boxShadow: 'none',
         },
       },
     },
@@ -146,7 +144,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
           border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
-          boxShadow: 'none',
         },
       },
     },
@@ -171,7 +168,6 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         paper: {
           backgroundColor: theme.themeColors.white,
           border: 'none',
-          boxShadow: 'none',
         },
       },
     },
@@ -225,17 +221,15 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           padding: 8,
           '& .MuiSwitch-switchBase': {
             '&.Mui-checked': {
-              color: theme.themeColors.white,
+              color: theme.brandDark,
               '& + .MuiSwitch-track': {
                 backgroundColor: theme.brandDark,
               },
             },
           },
           '& .MuiSwitch-thumb': {
-            boxShadow: 'none',
             width: 16,
             height: 16,
-            margin: 2,
           },
           '& .MuiSwitch-track': {
             borderRadius: 16,
@@ -298,11 +292,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
       },
     },
     MuiSkeleton: {
-      styleOverrides: {
-        root: {
-          backgroundColor: theme.graphColors.grey010,
-        },
-      },
+      styleOverrides: {},
     },
     MuiAlert: {
       styleOverrides: {
