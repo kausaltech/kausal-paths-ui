@@ -522,7 +522,6 @@ function ActionListPage({ page }: ActionListPageProps) {
           </Col>
         </Row>
       </Container>
-      <SettingsPanelFull />
     </>
   );
 }
