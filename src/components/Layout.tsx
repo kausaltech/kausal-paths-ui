@@ -5,13 +5,14 @@ import { useRouter } from 'next/router';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Box, Divider, Drawer, Fab, IconButton } from '@mui/material';
+import { Box, Drawer, Fab, IconButton } from '@mui/material';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { getThemeStaticURL } from '@/common/theme';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
+import ScenarioEditor from '@/components/scenario/ScenarioEditor';
 import { useSite } from '@/context/site';
 
 import IntroModal from './common/IntroModal';
@@ -20,31 +21,15 @@ import { RefreshPrompt } from './general/RefreshPrompt';
 
 const DRAWER_WIDTH = 320;
 
-const Content = styled.div<{ open?: boolean }>`
+const Content = styled.div`
   flex-grow: 1;
-  transition: ${({ theme }) =>
-    theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    })};
-  margin-left: -${DRAWER_WIDTH}px;
-
-  ${({ open, theme }) =>
-    open &&
-    `
-    transition: ${theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    })};
-    margin-left: 0;
-  `}
 `;
 
 const DrawerHeader = styled.div`
   display: flex;
   align-items: center;
   padding: ${({ theme }) => theme.spaces.s050};
-  justify-content: flex-end;
+  justify-content: space-between;
 `;
 
 const StyledSkipToContent = styled.a`
@@ -109,7 +94,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   }
 
   const navItems = menuItems.map((page) => ({
-    id: page.id,
+    id: page.id || '',
     name: page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
@@ -167,27 +152,37 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       <Box sx={{ display: 'flex' }}>
         <Drawer
           sx={{
-            width: DRAWER_WIDTH,
+            width: drawerOpen ? DRAWER_WIDTH : 0,
             flexShrink: 0,
+            transition: theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
             '& .MuiDrawer-paper': {
               width: DRAWER_WIDTH,
               boxSizing: 'border-box',
+              backgroundColor: theme.graphColors.blue010,
             },
           }}
           variant="persistent"
           anchor="left"
           open={drawerOpen}
+          slotProps={{
+            paper: {
+              elevation: 5,
+            },
+          }}
         >
           <DrawerHeader>
+            <h1 style={{ fontSize: '1rem' }}>Scenario editor</h1>
             <IconButton onClick={handleDrawerClose}>
               {theme.direction === 'ltr' ? <span>{'>'}</span> : <span>{'<'}</span>}
             </IconButton>
           </DrawerHeader>
-          <Divider />
-          <h4>HELLO</h4>
+          {drawerOpen && <ScenarioEditor />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <Content open={drawerOpen}>
+        <Content>
           <NavComponent
             siteTitle={site.title}
             ownerName={site.owner ?? undefined}

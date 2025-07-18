@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
+import { Button, FormControlLabel, Switch } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 
@@ -24,18 +24,6 @@ const RangeWrapper = styled.div`
 
 const WidgetWrapper = styled.div`
   font-size: 0.8rem;
-
-  .form-check-input {
-    &:checked {
-      background-color: ${(props) => props.theme.brandDark};
-      border-color: ${(props) => props.theme.brandDark};
-    }
-  }
-
-  .form-check-label {
-    margin-left: 0.5rem;
-    line-height: 1;
-  }
 `;
 
 const RangeValue = styled.div`
@@ -204,22 +192,27 @@ export const BoolWidget = (props: BoolWidgetProps) => {
   const label = parameter.label || parameter.description || t('will_be_implemented');
 
   return (
-    <WidgetWrapper className="form-check form-switch">
-      <input
-        className="form-check-input"
-        type="checkbox"
-        role="switch"
-        id={id}
-        name={id}
-        checked={boolValue!}
-        onChange={() => handleChange({ parameterId: id, boolValue: !boolValue })}
-        disabled={!isCustomizable || loading}
-        style={{ transform: 'scale(1.5)' }}
+    <WidgetWrapper>
+      <FormControlLabel
+        control={
+          <Switch
+            onChange={() => handleChange({ parameterId: id, boolValue: !boolValue })}
+            disabled={!isCustomizable || loading}
+            checked={boolValue ?? false}
+            size="small"
+          />
+        }
+        label={label}
+        sx={{
+          m: 0,
+          p: 0,
+        }}
+        slotProps={{
+          typography: {
+            variant: 'caption',
+          },
+        }}
       />
-      <label className="form-check-label" htmlFor={id}>
-        {label}
-        {isCustomized ? '*' : ''}
-      </label>
     </WidgetWrapper>
   );
 };

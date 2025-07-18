@@ -135,7 +135,6 @@ export default function OutcomePage(props: OutcomePageProps) {
           ))}
         </>
       </PageHero>
-      {showSettingsPanel && <SettingsPanelFull />}
     </>
   );
 }
