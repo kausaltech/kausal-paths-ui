@@ -222,7 +222,7 @@ function SelectDropdown<
       {label && (
         <Label for={id}>
           {label}
-          {helpText && <PopoverTip content={helpText} identifier={id} invert={invert} />}
+          {helpText && <PopoverTip content={helpText} />}
         </Label>
       )}
       <Select
