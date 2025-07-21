@@ -2,8 +2,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
+import { Button, InputLabel, Popover } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Col, Container, Popover, PopoverBody, Row } from 'reactstrap';
+import { Col, Container, Row } from 'reactstrap';
 
 import { yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -17,9 +18,22 @@ const PanelContent = styled.div`
   padding: ${({ theme }) => `${theme.spaces.s150} ${theme.spaces.s050} ${theme.spaces.s050}`};
 `;
 
-const ButtonLabel = styled.div`
-  white-space: nowrap;
-  font-size: 0.8rem;
+const StyledInputLabel = styled(InputLabel)`
+  /* Position label above the input like Bootstrap */
+  position: static;
+  transform: none;
+  color: ${(props) => props.theme.palette.text.primary};
+  font-size: ${(props) => props.theme.fontSizeSm};
+
+  /* Remove MUI's shrink behavior */
+  &.MuiInputLabel-shrink {
+    transform: none;
+  }
+
+  /* Override focused state */
+  &.Mui-focused {
+    color: ${(props) => props.theme.palette.text.primary};
+  }
 `;
 
 const StyledRow = styled(Row)`
@@ -46,14 +60,24 @@ const StyledOutcomeCol = styled(Col)`
   }
 `;
 
-const StyledButton = styled.button<{ ref: HTMLButtonElement }>`
+const StyledButton = styled(Button)`
   width: 100%;
+  min-width: 100px;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   font-weight: 400;
   font-size: 0.9rem;
-  padding: ${({ theme }) => theme.spaces.s050};
+  justify-content: flex-start;
+  padding: ${({ theme }) => theme.spaces.s050} ${({ theme }) => theme.spaces.s100};
+  background-color: ${({ theme }) => theme.inputBg};
+  border: ${({ theme }) => `${theme.inputBorderWidth} solid ${theme.graphColors.grey030}`};
+  border-radius: ${({ theme }) => theme.inputBorderRadius};
+  color: ${({ theme }) => theme.themeColors.black};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.graphColors.grey005};
+  }
 
   &:focus {
     box-shadow: 0 0 0 0.25rem ${(props) => props.theme.inputBtnFocusColor};
@@ -71,6 +95,7 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
   const inputReference = useRef<HTMLDivElement>(null);
   const triggerReference = useRef<HTMLButtonElement>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [rangeVisible, setRangeVisible] = useState(false);
   const toggle = () => {
     setPopoverOpen(!popoverOpen);
     // Focus on the input when the popover is opened
@@ -96,37 +121,48 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
 
   return (
     <div>
-      <ButtonLabel>{t('comparing-years')}</ButtonLabel>
+      <StyledInputLabel>{t('comparing-years')}</StyledInputLabel>
       <StyledButton
         className="btn btn-light"
-        id="rangeSelector"
+        onClick={toggle}
         aria-expanded={popoverOpen}
         aria-haspopup="dialog"
-        aria-controls="rangeSelectorPopover"
         ref={triggerReference}
       >
         {`${yearRange[0]}–${yearRange[1]}`}
       </StyledButton>
       <Popover
-        placement="bottom"
-        isOpen={popoverOpen}
-        target="rangeSelector"
-        toggle={toggle}
-        trigger="click"
-        aria-modal="true"
+        open={popoverOpen}
+        anchorEl={triggerReference.current}
+        onClose={toggle}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        slotProps={{
+          transition: {
+            mountOnEnter: true,
+            appear: true,
+            onEntered: () => setRangeVisible(true),
+            onExited: () => setRangeVisible(false),
+          },
+        }}
       >
-        <PopoverBody>
-          <div tabIndex={-1} ref={inputReference}>
-            <RangeSelector
-              min={minYear}
-              max={maxYear}
-              defaultMin={yearRange[0]}
-              defaultMax={yearRange[1]}
-              referenceYear={referenceYear ?? null}
-              handleChange={setYearRange}
-            />
-          </div>
-        </PopoverBody>
+        <div tabIndex={-1} ref={inputReference}>
+          <RangeSelector
+            min={minYear}
+            max={maxYear}
+            defaultMin={yearRange[0]}
+            defaultMax={yearRange[1]}
+            referenceYear={referenceYear ?? null}
+            handleChange={setYearRange}
+            disabled={!rangeVisible}
+          />
+        </div>
       </Popover>
     </div>
   );
@@ -151,11 +187,12 @@ function getColumnSizes(hasMultipleGoals: boolean) {
 }
 
 const MediumSettings = (props) => {
+  const site = useSite();
+  const instance = useInstance();
+
   if (!process.browser) {
     return null;
   }
-  const site = useSite();
-  const instance = useInstance();
 
   // Target
   const nrGoals = instance.goals.length;

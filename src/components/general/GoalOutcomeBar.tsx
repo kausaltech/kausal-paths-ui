@@ -3,11 +3,12 @@ import { useEffect } from 'react';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { CircularProgress } from '@mui/material';
 import _ from 'lodash';
 import { useTranslation } from 'next-i18next';
-import { Button, CardBody, Spinner, UncontrolledCollapse } from 'reactstrap';
+import { CardBody, UncontrolledCollapse } from 'reactstrap';
 
-import {
+import type {
   GetInstanceGoalOutcomeQuery,
   GetInstanceGoalOutcomeQueryVariables,
 } from '@/common/__generated__/graphql';
@@ -35,13 +36,14 @@ export const GET_INSTANCE_GOAL_OUTCOME = gql`
   }
 `;
 
-const AccordionHeader = styled(Button)`
+const AccordionHeader = styled.button`
   display: flex;
   justify-content: space-between;
   width: 100%;
   text-align: left;
   border-radius: 0;
-  //border-bottom: 2px solid ${(props) => props.theme.graphColors.grey050};
+  padding: 1rem 1rem;
+  border-bottom: 2px solid ${(props) => props.theme.graphColors.grey050};
   border-top: none;
   border-left: none;
   border-right: none;
@@ -55,6 +57,10 @@ const AccordionHeader = styled(Button)`
   &:focus {
     background-color: ${(props) => props.theme.graphColors.grey010} !important;
     color: ${(props) => props.theme.graphColors.grey090} !important;
+  }
+
+  h4 {
+    margin: 0;
   }
 `;
 
@@ -218,7 +224,7 @@ const GoalOutcomeBar: React.FC<{}> = (props: GoalOutcomeBarProps) => {
   if (loading)
     return (
       <span>
-        <Spinner size="sm" color="primary" />
+        <CircularProgress size={24} />
       </span>
     );
   if (error) return <div>error!</div>;
