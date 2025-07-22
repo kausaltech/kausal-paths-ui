@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'next-i18next';
 import {
@@ -11,7 +13,6 @@ import {
   Row,
   UncontrolledDropdown,
 } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
