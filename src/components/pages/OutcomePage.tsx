@@ -13,8 +13,8 @@ import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { PageHero } from '@/components/common/PageHero';
 import OutcomeCardSet from '@/components/general/OutcomeCardSet';
-import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 
+import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
@@ -111,6 +111,7 @@ export default function OutcomePage(props: OutcomePageProps) {
         leadDescription={pageLeadParagraph ?? undefined}
         overlap
       >
+        <ScenarioPanel />
         <>
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet

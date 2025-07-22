@@ -7,6 +7,7 @@ import type { InstanceGoal } from './instance';
 export const yearRangeVar = makeVar<[number, number]>(null!);
 export const activeScenarioVar = makeVar<SiteContextScenario>(null!);
 export const activeGoalVar = makeVar<InstanceGoal | null>(null);
+export const scenarioEditorDrawerOpenVar = makeVar<boolean>(false);
 
 type SettingsVarType = {
   iconBase: string;

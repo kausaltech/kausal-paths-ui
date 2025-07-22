@@ -3,10 +3,12 @@ import React from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
+import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, Drawer, Fab, IconButton } from '@mui/material';
 
+import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { getThemeStaticURL } from '@/common/theme';
@@ -63,14 +65,14 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const site = useSite();
   const { t } = useTranslation();
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
   const handleDrawerOpen = () => {
-    setDrawerOpen(true);
+    scenarioEditorDrawerOpenVar(true);
   };
 
   const handleDrawerClose = () => {
-    setDrawerOpen(false);
+    scenarioEditorDrawerOpenVar(false);
   };
 
   let activePage;
@@ -176,7 +178,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           <DrawerHeader>
             <h1 style={{ fontSize: '1rem' }}>Scenario editor</h1>
             <IconButton onClick={handleDrawerClose}>
-              {theme.direction === 'ltr' ? <span>{'>'}</span> : <span>{'<'}</span>}
+              <span>{'X'}</span>
             </IconButton>
           </DrawerHeader>
           {drawerOpen && <ScenarioEditor />}

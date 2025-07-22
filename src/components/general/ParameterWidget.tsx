@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react';
 
 import { gql, useMutation, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Button, CircularProgress, FormControlLabel, Switch } from '@mui/material';
+import {
+  CircularProgress,
+  FormControlLabel,
+  InputAdornment,
+  Slider,
+  Stack,
+  Switch,
+  TextField,
+} from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Range, getTrackBackground } from 'react-range';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -15,37 +21,11 @@ import type {
   SetParameterMutationVariables,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
-import Icon from '@/components/common/icon';
-
-const RangeWrapper = styled.div`
-  display: flex;
-  max-width: 320px;
-`;
 
 const WidgetWrapper = styled.div`
   font-size: 0.8rem;
-`;
-
-const RangeValue = styled.div`
-  display: flex;
-  white-space: nowrap;
-  min-width: 75px;
-  margin-left: 1rem;
-  line-height: 3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const Thumb = styled.div<{ $dragged: boolean }>`
-  height: 20px;
-  width: 20px;
-  border-radius: 16px;
-  background-color: ${(props) => (props.$dragged ? props.color : props.color)};
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0px 2px 6px #aaa;
+  margin-bottom: 1rem;
+  width: 100%;
 `;
 
 const SET_PARAMETER = gql`
@@ -73,8 +53,22 @@ const SET_PARAMETER = gql`
   }
 `;
 
-const NumberWidget = (props) => {
-  const { t } = useTranslation();
+type NumberWidgetProps = {
+  id: string;
+  initialValue: number;
+  defaultValue: number;
+  min: number;
+  max: number;
+  isCustomized: boolean;
+  handleChange: (opts: { parameterId: string; numberValue: number }) => void;
+  loading: boolean;
+  description: string;
+  label: string;
+  unit: string;
+  step: number | null;
+};
+
+const NumberWidget = (props: NumberWidgetProps) => {
   const {
     id,
     initialValue,
@@ -87,92 +81,128 @@ const NumberWidget = (props) => {
     description,
     label,
     unit,
-    step,
+    step: defaultStep,
   } = props;
-  const theme = useTheme();
-  const [values, setValues] = useState([initialValue]);
+
+  const [value, setValue] = useState(initialValue);
+  const [inputValue, setInputValue] = useState(initialValue.toString());
+  const [error, setError] = useState(false);
+
+  const marks = defaultValue ? [{ value: defaultValue, label: '' }] : [];
+
+  // If the parameter is customized, but the value is the same as the default,
+  // it is not really customized.
+  const isReallyCustomized = isCustomized && initialValue !== defaultValue;
+
+  // Try to guess a good step value if not provided
+  const getStep = (min: number, max: number, step: number | null, defaultValue: number) => {
+    if (step) return step;
+    const range = max - min;
+    const digitsAfterDefaultDecimal = defaultValue.toString().split('.')[1]?.length ?? 0;
+    const digitsAfterRangeDecimal = range.toString().split('.')[1]?.length ?? 0;
+    if (digitsAfterDefaultDecimal > 0) return Math.pow(10, -digitsAfterDefaultDecimal);
+    if (digitsAfterRangeDecimal > 0) return Math.pow(10, -digitsAfterRangeDecimal);
+    return 1;
+  };
+
+  const step = getStep(min, max, defaultStep, defaultValue);
 
   useEffect(() => {
-    setValues([initialValue]);
+    setValue(initialValue);
+    setInputValue(initialValue.toString());
   }, [initialValue]);
 
-  const handleSlide = (newValues) => {
-    handleChange({ parameterId: id, numberValue: newValues[0] });
+  const validateNumber = (value: number) => {
+    const isValid = value >= min && value <= max && !isNaN(value);
+    setError(!isValid);
+    return isValid;
+  };
+
+  const handleSlide = (event: Event, newValue: number) => {
+    setValue(newValue);
+    setInputValue(newValue.toString());
+    validateNumber(newValue);
+  };
+
+  const handleSlideCommitted = (event: Event, newValue: number) => {
+    setValue(newValue);
+    setInputValue(newValue.toString());
+    const isValid = validateNumber(newValue);
+    if (isValid) handleChange({ parameterId: id, numberValue: newValue });
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputVal = event.target.value;
+    setInputValue(inputVal);
+
+    // Convert comma to dot for number parsing, but keep original input for display
+    const normalizedVal = inputVal.replace(',', '.');
+    const numericValue = Number(normalizedVal);
+
+    if (inputVal === '' || (!isNaN(numericValue) && normalizedVal !== '.')) {
+      setValue(inputVal === '' ? 0 : numericValue);
+      validateNumber(inputVal === '' ? 0 : numericValue);
+    }
+  };
+
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const inputVal = event.target.value;
+    const normalizedVal = inputVal.replace(',', '.');
+    const numericValue = Number(normalizedVal);
+
+    // If input is empty or just a decimal point/comma, reset to current value
+    if (inputVal === '' || inputVal === '.' || inputVal === ',' || isNaN(numericValue)) {
+      setInputValue(value.toString());
+      validateNumber(value);
+      return;
+    }
+
+    setValue(numericValue);
+    // Convert comma to dot in the final display
+    setInputValue(normalizedVal);
+    const isValid = validateNumber(numericValue);
+    if (isValid) handleChange({ parameterId: id, numberValue: numericValue });
   };
 
   if (min == null || max == null) return null;
 
-  const Reset = () =>
-    defaultValue !== null ? (
-      <Button
-        id="reset-button"
-        variant="text"
-        size="small"
-        onClick={() => handleChange({ parameterId: id, numberValue: defaultValue })}
-        aria-label={t('reset-button')}
-      >
-        <Icon name="version" />
-      </Button>
-    ) : null;
-
   return (
     <WidgetWrapper>
-      <div>{description || label}</div>
-      <RangeWrapper>
-        <Range
-          key="Base"
-          step={step && step <= max ? step : 1}
+      <Stack spacing={0.5} direction="column" sx={{ alignItems: 'flex-start', width: '100%' }}>
+        <div>
+          {description || label} {isReallyCustomized ? '*' : null}
+        </div>
+        <TextField
+          value={inputValue}
+          size="small"
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          slotProps={{
+            input: {
+              endAdornment: <InputAdornment position="start">{unit}</InputAdornment>,
+            },
+          }}
+          error={error}
+          helperText={error ? 'Value must be between ' + min + ' and ' + max : ''}
+          sx={{
+            width: '100%',
+            backgroundColor: isReallyCustomized ? 'theme.graphColors.yellow030' : 'grey.100',
+          }}
+        />
+        <Slider
+          aria-label={description || label}
+          value={value}
+          onChangeCommitted={handleSlideCommitted}
+          onChange={handleSlide}
           min={min}
           max={max}
-          values={values}
-          onChange={(vals) => setValues(vals)}
-          onFinalChange={(vals) => handleSlide(vals)}
-          renderTrack={({ props, children }) => (
-            <div
-              onMouseDown={props.onMouseDown}
-              onTouchStart={props.onTouchStart}
-              style={{
-                ...props.style,
-                height: '36px',
-                display: 'flex',
-                width: '100%',
-              }}
-            >
-              <div
-                disabled={loading}
-                ref={props.ref}
-                style={{
-                  height: '5px',
-                  width: '100%',
-                  borderRadius: '4px',
-                  background: getTrackBackground({
-                    values,
-                    colors: [theme.brandDark, theme.graphColors.grey030],
-                    min,
-                    max,
-                  }),
-                  alignSelf: 'center',
-                }}
-              >
-                {children}
-              </div>
-            </div>
-          )}
-          renderThumb={({ props, isDragged }) => (
-            <Thumb
-              {...props}
-              $dragged={isDragged}
-              style={{
-                ...props.style,
-              }}
-              color={theme.brandDark}
-              aria-label={t('thumbSliderLabel')}
-            />
-          )}
+          step={step}
+          disabled={loading}
+          id={id}
+          name={id}
+          marks={marks}
         />
-        <RangeValue>{`${values[0].toFixed(0)} ${unit?.htmlShort || ''}`}</RangeValue>
-        {isCustomized ? <Reset /> : null}
-      </RangeWrapper>
+      </Stack>
     </WidgetWrapper>
   );
 };
@@ -252,16 +282,16 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
       return (
         <NumberWidget
           id={parameter.id}
-          initialValue={parameter.numberValue}
-          defaultValue={parameter.numberDefaultValue}
-          min={parameter.minValue}
-          max={parameter.maxValue}
+          initialValue={parameter.numberValue ?? 0}
+          defaultValue={parameter.numberDefaultValue ?? 0}
+          min={parameter.minValue ?? 0}
+          max={parameter.maxValue ?? 0}
           handleChange={handleUserSelection}
           loading={mutationLoading}
           isCustomized={parameter.isCustomized}
-          description={parameter.description}
-          label={parameter.label}
-          unit={parameter.unit}
+          description={parameter.description ?? ''}
+          label={parameter.label ?? ''}
+          unit={parameter.unit?.htmlShort ?? ''}
           step={parameter.step}
         />
       );
