@@ -8,6 +8,7 @@ import { useFeatures } from '@/common/instance';
 import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
 import PopoverTip from '@/components/common/PopoverTip';
 
+import Loader from '../common/Loader';
 import DashCard from './DashCard';
 import { getHelpText } from './progress-tracking/utils';
 
