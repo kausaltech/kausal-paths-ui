@@ -1,6 +1,6 @@
+import { useTheme } from '@emotion/react';
 import { useTranslation } from 'next-i18next';
 import { tint } from 'polished';
-import { useTheme } from 'styled-components';
 
 import { beautifyValue } from '@/common/preprocess';
 import { Chart } from '@/components/charts/Chart';
