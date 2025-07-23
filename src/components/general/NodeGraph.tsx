@@ -24,12 +24,12 @@ type NodeGraphProps = {
 };
 
 // Constants
-const CHART_HEIGHT = '400px';
+const CHART_HEIGHT = '350px';
 const BAR_WIDTH = '85%';
 const BAR_MAX_WIDTH = '50';
 const BAR_CATEGORY_GAP = '20%';
 const FORECAST_TINT_AMOUNT = 0.35;
-const SPECIAL_SERIES_NAMES = ['Total', 'Goal', 'Baseline'] as const;
+const SPECIAL_SERIES_NAMES = ['Total', 'Goal', 'Baseline', 'Progress'] as const;
 
 export default function NodeGraph({
   plotData,
@@ -46,6 +46,31 @@ export default function NodeGraph({
   const theme = useTheme();
   const { t } = useTranslation();
 
+  const handleChartClick = (dataPoint: [number, number]) => {
+    console.log('chart clicked', dataPoint);
+    const clickedYear = startYear + dataPoint[0];
+
+    console.log('clickedYear', clickedYear);
+    /*
+      const observedDataPoint = event.points?.find(
+        (point) => point.data.name === observedEmissionsLabel
+      );
+  
+      if (
+        observedDataPoint?.x &&
+        observedDataPoint['marker.opacity'] !== 0 && // Ignore hidden data points
+        typeof onClickMeasuredEmissions === 'function'
+      ) {
+        const year = new Date(observedDataPoint.x).getFullYear();
+  
+        if (!isNaN(year)) {
+          onClickMeasuredEmissions(year);
+        }
+      }
+
+*/
+  };
+
   // Remove the Type column from the dataset
   const dataset = {
     source: plotData.source.map((row) => row.filter((_, index) => index !== 1)),
@@ -55,6 +80,7 @@ export default function NodeGraph({
     Total: t('plot-total'),
     Goal: t('target'),
     Baseline: baselineLabel || t('plot-baseline'),
+    Progress: t('observed-emissions'),
   };
 
   // Split dataset at reference year if it exists
@@ -63,7 +89,25 @@ export default function NodeGraph({
     referenceYear
   );
 
-  const legendData = createLegendData(plotData, categoryColors, theme);
+  console.log('plot data', dataset);
+
+  const hasGoalData =
+    dataset.source
+      .find((row) => row[0] === 'Goal')
+      ?.some((cell, index) => cell !== undefined && index > 1) ?? false;
+  const hasBaselineData =
+    dataset.source
+      .find((row) => row[0] === 'Baseline')
+      ?.some((cell, index) => cell !== undefined && index > 1) ?? false;
+  const hasProgressData =
+    dataset.source
+      .find((row) => row[0] === 'Progress')
+      ?.some((cell, index) => cell !== undefined && index > 1) ?? false;
+
+  console.log('hasGoalData', hasGoalData);
+  console.log('hasBaselineData', hasBaselineData);
+  console.log('hasProgressData', hasProgressData);
+  const legendData = createLegendData(dataset, categoryColors, theme);
 
   // Calculate indices for the forecast range
   const markAreaStartIndex =
@@ -110,8 +154,9 @@ export default function NodeGraph({
     ...(hasForecastData
       ? [createMarkAreaSeries(theme, t, markAreaStartIndex, markAreaEndIndex)]
       : []),
-    createGoalSeries(theme),
-    createBaselineSeries(theme),
+    hasGoalData ? createGoalSeries(theme) : null,
+    hasBaselineData ? createBaselineSeries(theme) : null,
+    hasProgressData ? createProgressSeries(theme) : null,
   ];
 
   const option: echarts.EChartsCoreOption = {
@@ -153,7 +198,15 @@ export default function NodeGraph({
     series: series,
   };
 
-  return <Chart isLoading={false} data={option} height={CHART_HEIGHT} className="plot-container" />;
+  return (
+    <Chart
+      isLoading={false}
+      data={option}
+      height={CHART_HEIGHT}
+      className="plot-container"
+      onZrClick={handleChartClick}
+    />
+  );
 }
 
 // Helper functions
@@ -188,20 +241,20 @@ function splitDatasetAtReferenceYear(
 }
 
 function createLegendData(
-  plotData: { source: string[][] },
+  dataset: { source: string[][] },
   categoryColors: Record<string, string>,
   theme: any
 ) {
-  const regularSeries = plotData.source
+  const regularSeries = dataset.source
     .slice(1) // Remove header row
-    .slice(0, -3) // Remove total, goal, and baseline rows
+    .slice(0, -4) // Remove total, goal, and baseline rows
     .map((row, idx) => ({
       name: row[0],
       itemStyle: {
         color: categoryColors[idx] ?? theme.graphColors.blue070,
       },
     }));
-
+  console.log('regularSeries', regularSeries);
   const specialSeries = [
     {
       name: 'Goal',
@@ -213,6 +266,12 @@ function createLegendData(
       name: 'Baseline',
       itemStyle: {
         color: theme.graphColors.grey060,
+      },
+    },
+    {
+      name: 'Progress',
+      itemStyle: {
+        color: theme.themeColors.black,
       },
     },
   ];
@@ -229,7 +288,7 @@ function createBarSeries(
 ) {
   return dataset.source
     .slice(1) // Remove header row
-    .slice(0, -3) // Remove total, goal, and baseline rows
+    .slice(0, -4) // Remove total, goal, and baseline rows
     .map((row, idx) => ({
       type: 'bar',
       seriesLayoutBy: 'row',
@@ -337,6 +396,24 @@ function createBaselineSeries(theme: any) {
     lineStyle: {
       color: theme.graphColors.grey060,
       type: 'dashed',
+    },
+  };
+}
+
+function createProgressSeries(theme: any) {
+  return {
+    type: 'line',
+    seriesLayoutBy: 'row',
+    name: 'Progress',
+    symbol: 'diamond',
+    symbolSize: 8,
+    step: false,
+    connectNulls: true,
+    itemStyle: {
+      color: theme.themeColors.black,
+    },
+    lineStyle: {
+      color: theme.themeColors.black,
     },
   };
 }

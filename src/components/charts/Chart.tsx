@@ -72,7 +72,7 @@ type Props = {
   isLoading: boolean;
   data?: echarts.EChartsCoreOption;
   height?: string;
-  onZrClick?: (clickedDataIndex: number) => void;
+  onZrClick?: (clickedDataIndex: [number, number]) => void;
   className?: string;
 };
 
@@ -140,7 +140,9 @@ export function Chart({ isLoading, data, height, onZrClick, className }: Props) 
         const pointInGrid = chart.convertFromPixel('grid', pointInPixel);
         const dataIndex = pointInGrid[1];
 
-        onZrClick(dataIndex);
+        console.log('click params', params);
+        console.log('pointInGrid', pointInGrid);
+        onZrClick(pointInGrid);
       }
     }
 
