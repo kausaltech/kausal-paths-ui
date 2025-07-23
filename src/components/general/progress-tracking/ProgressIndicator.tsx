@@ -429,8 +429,8 @@ export const ProgressIndicator = ({
     onSelectedYearChange(year);
   }
 
-  function handleChartClick(dataIndex: number) {
-    const clickedCategory = selectedEmissions?.expected[dataIndex];
+  function handleChartClick(dataPoint: [number, number]) {
+    const clickedCategory = selectedEmissions?.expected[dataPoint[1]];
 
     if (clickedCategory) {
       setDrillDownState({ categoryId: clickedCategory.id, label: clickedCategory.label });
