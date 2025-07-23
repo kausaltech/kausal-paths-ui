@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 import { NodeLink } from '@/common/links';
 import Icon from '@/components/common/icon';

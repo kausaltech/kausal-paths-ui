@@ -1,5 +1,5 @@
+import styled from '@emotion/styled';
 import { CardBody } from 'reactstrap';
-import styled from 'styled-components';
 
 const CardWithState = styled.div`
   position: relative;
@@ -79,9 +79,7 @@ const DashCard = (props) => {
 
   return (
     <CardWithState
-      className={`card ${state} ${hovered ? 'hovered' : ''}  ${
-        active ? 'active' : ''
-      }`}
+      className={`card ${state} ${hovered ? 'hovered' : ''}  ${active ? 'active' : ''}`}
       color={color}
       ref={refProp}
     >

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import styled from '@emotion/styled';
 import {
   Buildings,
   ClipboardX,
@@ -11,7 +12,6 @@ import {
   Signpost,
 } from 'react-bootstrap-icons';
 import { Collapse } from 'reactstrap';
-import styled from 'styled-components';
 
 import { useTranslation } from '@/common/i18n';
 import { NodeLink } from '@/common/links';

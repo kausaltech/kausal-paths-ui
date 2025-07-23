@@ -1,5 +1,5 @@
+import type { Theme } from '@kausal/themes/types';
 import chroma from 'chroma-js';
-import type { DefaultTheme } from 'styled-components';
 
 export function genColors(colorsIn: string[], numColors: number) {
   const colors = colorsIn.slice(0, -1);
@@ -14,40 +14,26 @@ export function genColors(colorsIn: string[], numColors: number) {
       .map((x, y) => x + y * step);
 
   const even = numColors % 2 === 0;
-  const numColorsLeft = diverging
-    ? Math.ceil(numColors / 2) + (even ? 1 : 0)
-    : numColors;
-  const numColorsRight = diverging
-    ? Math.ceil(numColors / 2) + (even ? 1 : 0)
-    : 0;
-  const genColors =
-    colors.length !== 1 ? colors : autoColors(colors[0], numColorsLeft);
-  const genColors2 =
-    colors2.length !== 1
-      ? colors2
-      : autoColors(colors2[0], numColorsRight, true);
+  const numColorsLeft = diverging ? Math.ceil(numColors / 2) + (even ? 1 : 0) : numColors;
+  const numColorsRight = diverging ? Math.ceil(numColors / 2) + (even ? 1 : 0) : 0;
+  const genColors = colors.length !== 1 ? colors : autoColors(colors[0], numColorsLeft);
+  const genColors2 = colors2.length !== 1 ? colors2 : autoColors(colors2[0], numColorsRight, true);
   const stepsLeft = colors.length
     ? chroma
-        .scale(
-          bezier && colors.length > 1 ? chroma.bezier(genColors) : genColors
-        )
+        .scale(bezier && colors.length > 1 ? chroma.bezier(genColors) : genColors)
         .correctLightness(correctLightness)
         .colors(numColorsLeft)
     : [];
   const stepsRight =
     diverging && colors2.length
       ? chroma
-          .scale(
-            bezier && colors2.length > 1
-              ? chroma.bezier(genColors2)
-              : genColors2
-          )
+          .scale(bezier && colors2.length > 1 ? chroma.bezier(genColors2) : genColors2)
           .correctLightness(correctLightness)
           .colors(numColorsRight)
       : [];
-  let steps = (
-    even && diverging ? stepsLeft.slice(0, stepsLeft.length - 1) : stepsLeft
-  ).concat(stepsRight.slice(1));
+  let steps = (even && diverging ? stepsLeft.slice(0, stepsLeft.length - 1) : stepsLeft).concat(
+    stepsRight.slice(1)
+  );
 
   function autoGradient(color, numColors) {
     const lab = chroma(color).lab();
@@ -79,12 +65,8 @@ export function genColors(colorsIn: string[], numColors: number) {
   return steps;
 }
 
-export function genColorsFromTheme(theme: DefaultTheme, numColors: number) {
-  const colors = [
-    theme.graphColors.blue070,
-    theme.graphColors.red050,
-    theme.graphColors.green070,
-  ];
+export function genColorsFromTheme(theme: Theme, numColors: number) {
+  const colors = [theme.graphColors.blue070, theme.graphColors.red050, theme.graphColors.green070];
   return genColors(colors, numColors);
 }
 
@@ -108,9 +90,7 @@ export function setUniqueColors<T>(
   const colors = Object.fromEntries(
     Object.entries(colorCount).map(([color, count]) => {
       if (count == 1) return [color, [color]];
-      const color1 = (
-        count >= 3 ? chroma(color).brighten(2) : chroma(color)
-      ).hex();
+      const color1 = (count >= 3 ? chroma(color).brighten(2) : chroma(color)).hex();
       const color2 = chroma(color).darken(2).hex();
       const scale = chroma
         .bezier([color1, color2])

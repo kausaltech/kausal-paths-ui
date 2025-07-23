@@ -4,10 +4,6 @@ import { getLogger } from '@common/logging';
 
 import { formatStaticUrl } from '@/common/links';
 
-declare module 'styled-components' {
-  export interface DefaultTheme extends Theme {}
-}
-
 export async function loadTheme(themeIdentifier: string): Promise<Theme> {
   let themeProps: Theme;
   let readThemeFile: (id: string) => Promise<Theme>;

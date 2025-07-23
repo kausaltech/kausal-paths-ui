@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 
-import { useTranslation } from 'next-i18next';
+import styled from '@emotion/styled';
 import {
   Button,
-  FormGroup,
-  Input,
-  Label,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from 'reactstrap';
-import styled from 'styled-components';
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+} from '@mui/material';
+import { useTranslation } from 'next-i18next';
 
 import RichText from './RichText';
 
@@ -25,17 +24,16 @@ const StyledButton = styled(Button)`
   }
 `;
 
-const StyledLabel = styled(Label)`
-  &:hover {
+const StyledFormControlLabel = styled(FormControlLabel)`
+  .MuiFormControlLabel-label:hover {
     color: ${(props) => props.theme.inputBtnFocusColor};
     cursor: pointer;
   }
 `;
 
-const StyledInput = styled(Input)`
-  &:checked {
-    background-color: ${(props) => props.theme.brandDark};
-    border-color: ${(props) => props.theme.brandDark};
+const StyledCheckbox = styled(Checkbox)`
+  &.Mui-checked {
+    color: ${(props) => props.theme.brandDark};
   }
 `;
 
@@ -47,12 +45,13 @@ const StyledContainer = styled.div`
   align-items: center;
 `;
 
-const StyledModalHeader = styled(ModalHeader)`
+const StyledDialogTitle = styled(DialogTitle)`
   border: none;
 `;
 
-const StyledModalFooter = styled(ModalFooter)`
+const StyledDialogActions = styled(DialogActions)`
   border: none;
+  padding: 1rem 1.5rem;
 `;
 
 interface IntroModalProps {
@@ -82,32 +81,44 @@ const IntroModal = ({ size = 'lg', title, paragraph }: IntroModalProps) => {
     handleClose();
   };
 
-  const handleChangeCheckbox = (e) => {
-    setIsChecked(e.target.checked);
+  const handleChangeCheckbox = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsChecked(event.target.checked);
+  };
+
+  // Convert size prop to MUI maxWidth values
+  const getMaxWidth = (size: string) => {
+    switch (size) {
+      case 'sm':
+        return 'sm';
+      case 'lg':
+        return 'lg';
+      case 'xl':
+        return 'xl';
+      default:
+        return 'md';
+    }
   };
 
   return (
-    <div>
-      <Modal isOpen={enabled} toggle={handleClose} size={size} fade={true}>
-        <StyledModalHeader toggle={handleClose}>
-          <RichText html={title} />
-        </StyledModalHeader>
-        <ModalBody>
-          <RichText html={paragraph} />
-        </ModalBody>
-        <StyledModalFooter>
-          <StyledContainer>
-            <FormGroup check>
-              <StyledLabel check>
-                <StyledInput type="checkbox" checked={isChecked} onChange={handleChangeCheckbox} />
-                {t('do-not-show-again')}
-              </StyledLabel>
-            </FormGroup>
-            <StyledButton onClick={handleClickClose}>{t('close')}</StyledButton>
-          </StyledContainer>
-        </StyledModalFooter>
-      </Modal>
-    </div>
+    <Dialog open={enabled} onClose={handleClose} maxWidth={getMaxWidth(size)} fullWidth>
+      <StyledDialogTitle>
+        <RichText html={title} />
+      </StyledDialogTitle>
+      <DialogContent>
+        <RichText html={paragraph} />
+      </DialogContent>
+      <StyledDialogActions>
+        <StyledContainer>
+          <StyledFormControlLabel
+            control={<StyledCheckbox checked={isChecked} onChange={handleChangeCheckbox} />}
+            label={t('do-not-show-again')}
+          />
+          <StyledButton variant="contained" onClick={handleClickClose}>
+            {t('close')}
+          </StyledButton>
+        </StyledContainer>
+      </StyledDialogActions>
+    </Dialog>
   );
 };
 

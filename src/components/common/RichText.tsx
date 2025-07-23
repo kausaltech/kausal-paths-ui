@@ -1,48 +1,12 @@
-import React, { ReactElement, useState } from 'react';
+import React from 'react';
 
+import styled from '@emotion/styled';
 import parse, { domToReact } from 'html-react-parser';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
-import { Collapse } from 'reactstrap';
-import styled from 'styled-components';
 
-import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
-import Button from '@/components/common/Button';
 import Icon from '@/components/common/icon';
-import { useSite } from '@/context/site';
-
-const BreakPoint = styled.div<{ fade: boolean }>`
-  text-align: center;
-  margin-bottom: ${(props) => props.theme.spaces.s150};
-  position: relative;
-
-  &:before {
-    content: '';
-    display: ${(props) => (props.fade ? 'none' : 'block')};
-    position: absolute;
-    height: 75px;
-    top: -90px;
-    width: 100%;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
-  }
-`;
-
-const ToggleButton = styled(Button)`
-  margin: auto;
-  width: 25%;
-  min-width: 120px;
-  color: ${(props) => props.theme.themeColors.dark};
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-
-  &.open {
-    color: ${(props) => props.theme.graphColors.grey050};
-  }
-`;
 
 type RichTextImageProps = {
   attribs: {
@@ -65,7 +29,6 @@ const StyledRichText = styled.div`
 `;
 
 function ICompress() {
-  // eslint-disable-next-line max-len
   return React.createElement(
     'svg',
     {
@@ -76,7 +39,7 @@ function ICompress() {
       viewBox: '0 0 16 16',
       xmlns: 'http://www.w3.org/2000/svg',
     },
-    // eslint-disable-next-line max-len
+
     React.createElement('path', {
       d: 'M 14.144531 1.148438 L 9 6.292969 L 9 3 L 8 3 L 8 8 L 13 8 L 13 7 L 9.707031 7 L 14.855469 1.851563 Z M 8 8 L 3 8 L 3 9 L 6.292969 9 L 1.148438 14.144531 L 1.851563 14.855469 L 7 9.707031 L 7 13 L 8 13 Z',
     })
@@ -133,66 +96,13 @@ function RichTextImage(props: RichTextImageProps) {
   return imgElement;
 }
 
-type CollapsibleTextProps = {
-  parsedContent: string | JSX.Element | JSX.Element[];
-  className?: string;
-};
-
-const CollapsibleText = (props: CollapsibleTextProps) => {
-  const { parsedContent, className, ...rest } = props;
-  const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
-
-  const BREAK_POINT = 400; // characters at least visible
-  // Make sure we do not break inside html elements, only break after <p> tags
-  const intro: ReactElement[] = [];
-  const restOfContent: ReactElement[] = [];
-  let previousNodeType: string | React.JSXElementConstructor<any> = '';
-  let introLength = 0;
-
-  Array.isArray(parsedContent) &&
-    parsedContent.forEach((node, indx) => {
-      if (indx === 0) {
-        intro.push(node);
-        introLength += node.props?.children?.length ?? 0;
-      }
-      if (indx > 0 && restOfContent.length === 0) {
-        if (previousNodeType === 'p' && introLength > BREAK_POINT) restOfContent.push(node);
-        else {
-          intro.push(node);
-          introLength += node.props?.children?.length ?? 0;
-        }
-      } else if (restOfContent.length > 0) restOfContent.push(node);
-      previousNodeType = node.type;
-    });
-
-  return (
-    <div {...rest} className={`text-content ${className || ''}`}>
-      {intro}
-      {restOfContent.length > 0 && (
-        <>
-          <Collapse isOpen={isOpen}>{restOfContent}</Collapse>
-          <BreakPoint fade={isOpen}>
-            <ToggleButton color="link" onClick={toggle} className={isOpen ? 'open' : ''}>
-              {isOpen ? t('close') : t('read-more')}
-              <Icon name={isOpen ? 'angle-up' : 'angle-down'} />
-            </ToggleButton>
-          </BreakPoint>
-        </>
-      )}
-    </div>
-  );
-};
-
 type RichTextProps = {
   html: string;
   className?: string;
-  isCollapsible?: boolean;
 };
 
 export default function RichText(props: RichTextProps) {
-  const { html, isCollapsible, className, ...rest } = props;
+  const { html, className, ...rest } = props;
   // const { t } = useTranslation(); // FIXME: Unsure if we need alt/title for icons
 
   if (typeof html !== 'string') return <div />;
@@ -236,8 +146,6 @@ export default function RichText(props: RichTextProps) {
   };
 
   const parsedContent = parse(html, options);
-
-  if (isCollapsible) return <CollapsibleText parsedContent={parsedContent} className={className} />;
 
   return (
     <div {...rest} className={`text-content ${className || ''}`}>

@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 /**
  * Added for Zürich, in future this will be renamed to be more generic and

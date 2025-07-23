@@ -1,7 +1,8 @@
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 import { Container } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
 import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';

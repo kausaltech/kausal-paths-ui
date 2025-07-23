@@ -1,29 +1,33 @@
-import { useTranslation } from '@/common/i18n';
-import type { Theme } from '@kausal/themes/types';
-import type { TFunction } from 'i18next';
 import React, { useState } from 'react';
+
+import { Global, css, useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
+import type { Theme } from '@kausal/themes/types';
+import type { EChartsOption } from 'echarts';
+import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
+import type { TFunction } from 'i18next';
 import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  Fade,
   Modal,
   ModalBody,
   ModalHeader,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  Fade,
 } from 'reactstrap';
-import styled, { useTheme, createGlobalStyle } from 'styled-components';
+
+import { useTranslation } from '@/common/i18n';
 import { Chart } from '@/components/charts/Chart';
-import type { EChartsOption } from 'echarts';
-import { useSite } from '@/context/site';
-import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
-import { useProgressData, type MetricDim, type ProgressData } from './useProgressData';
-import { StyledCard } from './StyledCard';
-import { StyledIndicator, StyledStatusBadge } from './StyledStatusBadge';
-import { STATUS_KEYS, getDeltaPercentage, getStatus } from './utils';
+import { useSite } from '@/context/site';
+
 import { EmissionsCard } from './EmissionsCard';
 import { ProgressDriversWrapper } from './ProgressDriversWrapper';
+import { StyledCard } from './StyledCard';
+import { StyledIndicator, StyledStatusBadge } from './StyledStatusBadge';
+import { type MetricDim, type ProgressData, useProgressData } from './useProgressData';
+import { STATUS_KEYS, getDeltaPercentage, getStatus } from './utils';
 
 type DrillDownState = {
   categoryId: string;
@@ -51,7 +55,7 @@ const StyledViewDetails = styled.button`
   }
 `;
 
-const StyledStatusBadgeButton = styled(StyledStatusBadge).attrs({ as: 'button' })`
+const StyledStatusBadgeButton = styled(StyledStatusBadge)`
   border: none;
   outline: none;
   cursor: pointer;
@@ -152,12 +156,12 @@ const StyledModal = styled(Modal)`
 `;
 
 // Slide the modal in from the right
-const GlobalModalStyle = createGlobalStyle`
+const globalModalCss = css`
   .progress-tracking-modal {
     .modal.fade .modal-dialog {
       transform: translate(50px, 0);
     }
-      
+
     .modal.show .modal-dialog {
       transform: none;
     }
@@ -439,7 +443,7 @@ export const ProgressIndicator = ({
 
   return (
     <>
-      <GlobalModalStyle />
+      <Global styles={globalModalCss} />
       <StyledContainer>
         <StyledTitle>
           {t('observed-emissions')} ({latestProgressData.year})
@@ -455,6 +459,7 @@ export const ProgressIndicator = ({
 
         <div>
           <StyledStatusBadgeButton
+            as="button"
             onClick={handleOpenModal}
             $backgroundColor={status.backgroundColor}
             $color={status.color}

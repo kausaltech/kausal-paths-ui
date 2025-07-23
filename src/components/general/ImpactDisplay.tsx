@@ -1,7 +1,9 @@
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
+
 import { useInstance } from '@/common/instance';
 import { formatNumber } from '@/common/preprocess';
+
 import HighlightValue from './HighlightValue';
 
 export const StyledDisplayWrapper = styled.div`

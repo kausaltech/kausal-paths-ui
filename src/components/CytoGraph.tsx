@@ -1,24 +1,25 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/router';
-import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
+
+import styled from '@emotion/styled';
 import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,
   type NodeDefinition,
 } from 'cytoscape';
-
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 // @ts-ignore
 //import pdfExport from 'cytoscape-pdf-export';
 
 import { readableColor } from 'polished';
-import styled from 'styled-components';
+import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+
+import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 
 import SelectDropdown from './common/SelectDropdown';
-import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 import Icon from './common/icon';
 
 const GraphContainer = styled.div`
