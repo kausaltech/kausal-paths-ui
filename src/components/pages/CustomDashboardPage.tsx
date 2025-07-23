@@ -17,6 +17,8 @@ import { ArrowRight } from 'react-bootstrap-icons';
 import { Link } from '@/common/links';
 
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
+import DashboardVisualizationActionImpact from './DashboardVisualizationActionImpact';
+import DashboardVisualizationEmissionSources from './DashboardVisualizationEmissionSources';
 import DashboardVisualizationProgress from './DashboardVisualizationProgress';
 import mockClimateDashboardPage from './mock-climate-dashboard-page.json';
 
@@ -46,11 +48,41 @@ function DashboardVisualization({
   }
 
   if (visualization.visualizationType === 'emission_sources') {
-    // return <DashboardVisualizationEmissionSources progressBars={visualization.progressBars} />;
+    if (!visualization.emissionSources) {
+      return null;
+    }
+
+    return (
+      <DashboardVisualizationEmissionSources
+        referenceYear={visualization.referenceYear}
+        sources={visualization.emissionSources?.map((source) => ({
+          id: source.node.id,
+          name: source.node.name,
+          color: source.node.color,
+          value: source.node.value,
+        }))}
+        chartLabel="Emission sources"
+      />
+    );
   }
 
-  if (visualization.visualizationType === 'action_impact') {
-    // return <DashboardVisualizationActionImpact progressBars={visualization.progressBars} />;
+  if (visualization.visualizationType === 'action_impact' && 'referenceYear' in visualization) {
+    if (!visualization.actions || !visualization.referenceYear) {
+      return null;
+    }
+
+    return (
+      <DashboardVisualizationActionImpact
+        referenceYear={visualization.referenceYear}
+        actions={visualization.actions.map((action) => ({
+          id: action.node.id,
+          name: action.node.name,
+          color: action.node.color,
+          value: action.node.value,
+        }))}
+        chartLabel="Action impact"
+      />
+    );
   }
 
   console.warn(`Unknown dashboard card visualization type: ${visualization.visualizationType}`);
