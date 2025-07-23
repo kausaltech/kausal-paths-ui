@@ -19,7 +19,7 @@ import { activeGoalVar } from '@/common/cache';
 import { useFeatures, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import Icon from '@/components/common/icon';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 import {
   DimensionalMetric,
   type MetricCategoryValues,
@@ -86,7 +86,7 @@ export default function DimensionalNodeVisualisation({
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
   const theme = useTheme();
-  const site = useSite();
+  const [site] = useSiteWithSetter();
   const instance = useInstance();
 
   const scenarios = site?.scenarios ?? [];
@@ -121,7 +121,7 @@ export default function DimensionalNodeVisualisation({
     const newDefault = cube.getDefaultSliceConfig(activeGoal);
     if (!newDefault || isEqual(sliceConfig, newDefault)) return;
     setSliceConfig(newDefault);
-  }, [activeGoal, cube]);
+  }, [activeGoal, cube, sliceConfig]);
 
   const sliceableDims = cube.dimensions.filter((dim) => !sliceConfig.categories[dim.id]);
   const slicedDim = cube.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
@@ -169,6 +169,58 @@ export default function DimensionalNodeVisualisation({
   // Create indices for filtering values
   const yearIndices = filteredYears.map((year) => allYears.indexOf(year));
 
+  const filteredProgressValues: number[] = [];
+  const filteredProgressYears: number[] = [];
+
+  // Create filtered data for progress tracking
+  if (hasProgressTracking && metrics.progress && slicedDim) {
+    const progressScenario = getProgressTrackingScenario(site.scenarios);
+    const progressSlice = metrics.progress.sliceBy(slicedDim.id, true, sliceConfig.categories);
+    const progressYears =
+      progressScenario?.actualHistoricalYears?.filter((year) => year !== instance.referenceYear) ??
+      [];
+
+    const referenceYearIndex = slice.historicalYears.findIndex(
+      (year) => year === instance.referenceYear
+    );
+
+    const historicalYears =
+      referenceYearIndex !== -1
+        ? progressSlice.historicalYears.slice(referenceYearIndex + 1)
+        : progressSlice.historicalYears;
+
+    const historicalValues =
+      referenceYearIndex !== -1
+        ? (progressSlice?.totalValues?.historicalValues.slice(referenceYearIndex + 1) ?? [])
+        : (progressSlice?.totalValues?.historicalValues ?? []);
+
+    if (progressSlice.totalValues && progressYears?.length) {
+      const lastHist = slice.historicalYears.length - 1;
+      const totalSumX = [site.minYear, ...historicalYears, ...progressSlice.forecastYears];
+      const totalSumY = [
+        slice.totalValues.historicalValues[lastHist],
+        ...historicalValues,
+        ...progressSlice.totalValues.forecastValues,
+      ];
+
+      /**
+       * Filter out data for years that are not in the progress scenario.
+       * Include the reference year in order to draw a line from the total reference
+       * year emissions to the first observed year emissions.
+       */
+      const { x: filteredX, y: filteredY } = totalSumX.reduce(
+        (acc, x, index) =>
+          [instance.referenceYear, ...progressYears].includes(x)
+            ? { x: [...acc.x, x], y: [...acc.y, totalSumY[index]] }
+            : acc,
+        { x: [] as number[], y: [] as number[] }
+      );
+
+      filteredProgressYears.push(...filteredX);
+      filteredProgressValues.push(...filteredY);
+    }
+  }
+
   const datasetTable = {
     source: [
       ['Category', 'Type', ...filteredYears],
@@ -201,6 +253,15 @@ export default function DimensionalNodeVisualisation({
             ),
           ]
         : ['Baseline', 'baseline', ...filteredYears.map(() => undefined)],
+      hasProgressTracking && metrics.progress && slicedDim
+        ? [
+            'Progress',
+            'progress',
+            ...filteredYears.map(
+              (year) => filteredProgressValues[filteredProgressYears.indexOf(year)] ?? undefined
+            ),
+          ]
+        : ['Progress', 'progress', ...filteredYears.map(() => undefined)],
     ].filter((row) => row.length > 0),
   };
 
