@@ -1,0 +1,240 @@
+{
+  "data": {
+    "page": {
+      "id": "climate-dashboard-sunnydale",
+      "title": "Sunnydale Climate Plan 2025",
+      "backgroundColor": null,
+      "dashboardCards": [
+        {
+          "title": "Climate plan 2025: Reducing city emissions",
+          "description": "Track our progress towards reducing city emissions and achieving our climate goals through various scenarios and actions.",
+          "image": {
+            "title": "Sunnydale city skyline",
+            "url": "https://picsum.photos/800/400"
+          },
+          "callToAction": {
+            "title": "Try out scenarios",
+            "content": "Explore the full emissions inventory and try out your own scenario here",
+            "linkUrl": "/scenarios/explore"
+          },
+          "visualization": {
+            "visualizationType": "progress",
+            "progressBars": [
+              {
+                "label": "Target: Where do we want to be?",
+                "description": "If the greenhouse gas emissions of Sunnydale develop without any interventions we will not meet the target (Business as usual -scenario). If we successfully complete the actions of Climate plan 2025, the emissions will be 70% below the target in 2045.",
+                "chartLabel": "Target maximum emissions (2045)",
+                "color": "#AAC5DB",
+                "unit": "ktCO2e",
+                "currentValue": 551,
+                "targetValue": null,
+                "minValue": 0,
+                "maxValue": 1300
+              },
+              {
+                "label": "Reference: Where did we start from?",
+                "description": "The year 1990 was chosen as the standard reference year because the Kyoto Protocol established it as the baseline for measuring emission reductions. It was selected due to reliable data availability and representing a stable economic period before major global transitions. Most reliable data we have is for year 1995 so that is used.",
+                "chartLabel": "Reference year emissions (1995)",
+                "color": "#205D82",
+                "unit": "ktCO2e",
+                "currentValue": 1300,
+                "targetValue": null,
+                "minValue": 0,
+                "maxValue": 1300
+              },
+              {
+                "label": "Where are we now?",
+                "description": "The latest measured emission calculations that we have are for the year 2021. The more up to date yearly values are updated here when the data becomes available.",
+                "chartLabel": "Latest measured emissions (2021)",
+                "color": "#205D82",
+                "unit": "ktCO2e",
+                "currentValue": 808,
+                "targetValue": null,
+                "minValue": 0,
+                "maxValue": 1300
+              },
+              {
+                "label": "Scenario: What if we do nothing?",
+                "description": "This is the baseline scenario. The greenhouse gas emissions would still drop due to XXX XXX but not enough in relation to the goal.",
+                "chartLabel": "Scenario forecast: Business as usual (2045)",
+                "color": "#F44336",
+                "unit": "ktCO2e",
+                "currentValue": 690,
+                "targetValue": 551,
+                "minValue": 0,
+                "maxValue": 1300
+              },
+              {
+                "label": "Scenario: What if we complete all activities?",
+                "description": "If all the activities in the climate plan are completed, the yearly emissions will be well below the goal level.",
+                "chartLabel": "Scenario forecast: Climate plan 2025 (2045)",
+                "color": "#4CAF50",
+                "unit": "ktCO2e",
+                "currentValue": 207,
+                "targetValue": 551,
+                "minValue": 0,
+                "maxValue": 1300
+              }
+            ]
+          }
+        },
+        {
+          "title": "Sunnydale greenhouse gas emission sources",
+          "description": "As recorded last in 2021 in tonnes carbon dioxide equivalent (tCO2e). This means that the actual greenhouse gas emissions for each of the city-wide sectors are calculated to CO2 equivalents.",
+          "image": null,
+          "callToAction": {
+            "title": "Explore emission sources",
+            "content": "Explore the full historical development and forecast of emissions",
+            "linkUrl": "/emissions/explore"
+          },
+          "visualization": {
+            "visualizationType": "emission_sources",
+            "chartLabel": "Latest measured emissions (2021)",
+            "unit": "ktCO2e",
+            "referenceYear": 2021,
+            "emissionSources": [
+              {
+                "node": {
+                  "id": "heating-emissions",
+                  "name": "Heating",
+                  "color": "#FF6B6B",
+                  "value": 308
+                }
+              },
+              {
+                "node": {
+                  "id": "energy-emissions",
+                  "name": "Energy",
+                  "color": "#4ECDC4",
+                  "value": 125
+                }
+              },
+              {
+                "node": {
+                  "id": "transportation-emissions",
+                  "name": "Transportation",
+                  "color": "#45B7D1",
+                  "value": 285
+                }
+              },
+              {
+                "node": {
+                  "id": "waste-emissions",
+                  "name": "Waste",
+                  "color": "#96CEB4",
+                  "value": 90
+                }
+              }
+            ]
+          }
+        },
+        {
+          "title": "Impact of climate activities",
+          "description": "Sunnydale Plan 2025 activities impact (2025 scenario [2045]). The impact of the activities does not include the business as usual development, which is available in the policy simulator.",
+          "image": null,
+          "callToAction": {
+            "title": "Compare actions",
+            "content": "Compare actions' impact and try out different scenarios",
+            "linkUrl": "/actions/compare"
+          },
+          "visualization": {
+            "visualizationType": "action_impact",
+            "unit": "ktCO2e",
+            "actions": [
+              {
+                "node": {
+                  "id": "renewable-energy-expansion",
+                  "name": "Renewable energy expansion",
+                  "color": "#4CAF50",
+                  "value": -180,
+                  "category": "Energy"
+                }
+              },
+              {
+                "node": {
+                  "id": "building-efficiency-upgrades",
+                  "name": "Building efficiency upgrades",
+                  "color": "#FF9800",
+                  "value": -150,
+                  "category": "Heating"
+                }
+              },
+              {
+                "node": {
+                  "id": "public-transport-expansion",
+                  "name": "Public transport expansion",
+                  "color": "#2196F3",
+                  "value": -120,
+                  "category": "Transportation"
+                }
+              },
+              {
+                "node": {
+                  "id": "electric-vehicle-adoption",
+                  "name": "Electric vehicle adoption",
+                  "color": "#9C27B0",
+                  "value": -95,
+                  "category": "Transportation"
+                }
+              },
+              {
+                "node": {
+                  "id": "waste-reduction-programs",
+                  "name": "Waste reduction programs",
+                  "color": "#795548",
+                  "value": -75,
+                  "category": "Waste"
+                }
+              },
+              {
+                "node": {
+                  "id": "smart-grid-implementation",
+                  "name": "Smart grid implementation",
+                  "color": "#607D8B",
+                  "value": -60,
+                  "category": "Energy"
+                }
+              },
+              {
+                "node": {
+                  "id": "green-building-standards",
+                  "name": "Green building standards",
+                  "color": "#8BC34A",
+                  "value": -45,
+                  "category": "Heating"
+                }
+              },
+              {
+                "node": {
+                  "id": "bike-infrastructure",
+                  "name": "Bike infrastructure",
+                  "color": "#00BCD4",
+                  "value": -30,
+                  "category": "Transportation"
+                }
+              },
+              {
+                "node": {
+                  "id": "urban-forest-expansion",
+                  "name": "Urban forest expansion",
+                  "color": "#4CAF50",
+                  "value": -25,
+                  "category": "Environmental"
+                }
+              },
+              {
+                "node": {
+                  "id": "energy-efficiency-programs",
+                  "name": "Energy efficiency programs",
+                  "color": "#FFEB3B",
+                  "value": -20,
+                  "category": "Energy"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
