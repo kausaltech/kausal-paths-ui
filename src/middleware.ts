@@ -5,7 +5,17 @@ import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
 
+import {
+  MIDDLEWARE_RAN_HEADER,
+  REQUEST_CORRELATION_ID_HEADER,
+} from '@common/constants/headers.mjs';
+import { HEALTH_CHECK_PUBLIC_PATH } from '@common/constants/routes.mjs';
+import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocalDev } from '@common/env';
+import { LOGGER_SPAN_ID, LOGGER_TRACE_ID } from '@common/logging/init';
+import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
+
 import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
+
 import i18nConfig from '../next-i18next.config';
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
 import {
@@ -16,8 +26,6 @@ import {
   SUPPORTED_LANGUAGES_HEADER,
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
-import { deploymentType, wildcardDomains } from './common/environment';
-import { generateCorrelationID, getLogger } from './common/log';
 import { getInstancesForRequest } from './middleware/context';
 
 type Instance = AvailableInstanceFragment;
@@ -89,11 +97,11 @@ function setInstanceHeaders(
 }
 
 function getAcceptPreferredLocale(supportedLocales: string[], headers: Headers) {
-  if (headers?.['accept-language'] && !Array.isArray(headers['accept-language'])) {
-    try {
-      return acceptLanguage(headers['accept-language'], supportedLocales);
-    } catch (err) {}
-  }
+  const acceptLanguageHeader = headers.get('accept-language');
+  try {
+    return acceptLanguage(acceptLanguageHeader ?? undefined, supportedLocales);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {}
 }
 
 function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
@@ -127,7 +135,21 @@ function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | '
 
 const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
 
-export async function middleware(req: NextRequest) {
+function isHotReloadPath(parts: string[]) {
+  return isLocalDev && parts.join('/').startsWith('_next/static/webpack');
+}
+
+function shouldAddInstanceHeaders(parts: string[]) {
+  if (isHotReloadPath(parts)) {
+    return true;
+  }
+  if (NON_PAGE_PATHS.includes(parts[0])) {
+    return false;
+  }
+  return true;
+}
+
+async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || req.nextUrl.host;
   const hostname = host.split(':')[0];
@@ -135,13 +157,56 @@ export async function middleware(req: NextRequest) {
   let path = nextUrl.pathname;
   const detectedLocale = nextUrl.locale;
   const pathParts = splitPath(path);
-  const logger = getLogger('middleware', { host, path, 'request-id': reqId });
 
-  if (req.nextUrl.pathname === '/_health') {
+  const span = Sentry.getActiveSpan();
+  const spanBindings = {};
+  if (span) {
+    spanBindings[LOGGER_TRACE_ID] = span.spanContext().traceId;
+    spanBindings[LOGGER_SPAN_ID] = span.spanContext().spanId;
+    spanBindings['sampled'] = span.isRecording();
+  }
+  const logger = getLogger({
+    name: 'middleware',
+    bindings: {
+      ...spanBindings,
+      [LOGGER_CORRELATION_ID]: reqId,
+      host,
+      path,
+    },
+    request: req,
+  });
+
+  if (req.nextUrl.pathname === HEALTH_CHECK_PUBLIC_PATH) {
     return NextResponse.json({ status: 'OK' });
   }
-  logger.info({ method: req.method }, 'middleware request');
-  if (req.headers.get(INSTANCE_IDENTIFIER_HEADER)) {
+  if (
+    req.nextUrl.pathname === '/__nextjs_original-stack-frame' ||
+    req.nextUrl.pathname.startsWith('/_next/static/')
+  ) {
+    return NextResponse.next();
+  }
+
+  // If spotlight is enabled, we enrich the span with the request headers
+  // for nicer debug experience.
+  if (span && getSpotlightUrl()) {
+    req.headers.forEach((headerValue, headerName) => {
+      const key = `http.request.header.${headerName}`;
+      span.setAttribute(key, headerValue);
+    });
+  }
+
+  if (req.nextUrl.pathname === '/_ping') {
+    return NextResponse.json({ status: 'pong' });
+  }
+  logger.info({ method: req.method }, `${req.method} ${req.nextUrl.pathname}`);
+  if (false && isLocalDev) {
+    const debugHeaders: Record<string, string> = {};
+    req.headers.forEach((value, key) => {
+      debugHeaders[key] = value;
+    });
+    logger.info(debugHeaders, 'incoming headers');
+  }
+  if (req.headers.get(MIDDLEWARE_RAN_HEADER)) {
     // Request has already been processed
     return NextResponse.next();
   }
@@ -152,6 +217,8 @@ export async function middleware(req: NextRequest) {
     },
   };
   reqHeaders.set(INSTANCE_HOSTNAME_HEADER, hostname);
+  reqHeaders.set(MIDDLEWARE_RAN_HEADER, '1');
+
   let instances: Instance[] = [];
   try {
     instances = await getInstancesForRequest(req, hostname, logger);
@@ -159,7 +226,8 @@ export async function middleware(req: NextRequest) {
     Sentry.captureException(error);
     // We let the request proceed if it's for api etc. routes
     if (NON_PAGE_PATHS.includes(pathParts[0])) {
-      return NextResponse.next(reqInit);
+      const resp = NextResponse.next(reqInit);
+      return resp;
     }
     return errorResponse(req, reqHeaders, 'server-error');
   }
@@ -167,16 +235,18 @@ export async function middleware(req: NextRequest) {
   setInstanceHeaders(reqHeaders, instances, match?.instance || null);
   const { instance, basePath } = match;
   reqHeaders.set(BASE_PATH_HEADER, basePath);
-  if (NON_PAGE_PATHS.includes(match.parts[0])) {
+  reqHeaders.set(REQUEST_CORRELATION_ID_HEADER, reqId);
+  if (!shouldAddInstanceHeaders(match.parts)) {
     return NextResponse.next(reqInit);
   }
   if (!instances.length) {
+    const wildcardDomains = getWildcardDomains();
     logger.warn(
       { 'wildcard-domains': wildcardDomains.join(',') },
       `no matching instances for hostname ${hostname}`
     );
     let resp: string;
-    if (deploymentType !== 'production') {
+    if (getDeploymentType() !== 'production') {
       resp = `Unknown hostname: ${hostname}. Wildcard domains: "${wildcardDomains.join(', ')}"`;
     } else {
       resp = 'Page not found.';
@@ -195,14 +265,24 @@ export async function middleware(req: NextRequest) {
   const href = `${nextUrl.protocol}//${nextUrl.host}${path}`;
   const url = new NextURL(href);
   const shouldRewrite = nextUrl.pathname !== url.pathname;
-  logger.info({ href: nextUrl.toString(), locale: nextUrl.locale }, 'before');
-  logger.info(
-    { href: url.toString(), locale: url.locale },
-    `after${shouldRewrite ? ' (rewriting)' : ''}`
-  );
-  if (!shouldRewrite) {
+  if (shouldRewrite) {
+    logger.info(
+      {
+        beforeHref: nextUrl.toString(),
+        beforeLocale: nextUrl.locale,
+        afterHref: url.toString(),
+        afterLocale: url.locale,
+      },
+      'rewriting URL'
+    );
+  }
+  if (!shouldRewrite || isHotReloadPath(match.parts)) {
     const resp = NextResponse.next(reqInit);
     resp.headers.set('Document-Policy', 'js-profiling');
+    return resp;
   }
-  return NextResponse.rewrite(url, reqInit);
+  const rewrittenResp = NextResponse.rewrite(url, reqInit);
+  return rewrittenResp;
 }
+
+export default middleware;

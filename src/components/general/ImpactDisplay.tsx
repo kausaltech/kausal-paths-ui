@@ -1,8 +1,8 @@
 import styled from 'styled-components';
-import HighlightValue from 'components/general/HighlightValue';
-import { formatNumber } from 'common/preprocess';
 import { useTranslation } from 'next-i18next';
-import { useInstance } from 'common/instance';
+import { useInstance } from '@/common/instance';
+import { formatNumber } from '@/common/preprocess';
+import HighlightValue from './HighlightValue';
 
 export const StyledDisplayWrapper = styled.div`
   border-radius: 0;

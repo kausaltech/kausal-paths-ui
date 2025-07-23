@@ -2,19 +2,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import apolloClient, {
-  type ApolloQueryResult,
-  type DocumentNode,
-  type OperationVariables,
+import type {
+  ApolloClient as ApolloClientType,
+  ApolloQueryResult,
+  DocumentNode,
+  NormalizedCacheObject,
+  OperationVariables,
 } from '@apollo/client';
-import { isApolloError } from '@apollo/client/core/core.cjs';
-import { HttpLink } from '@apollo/client/link/http/HttpLink.js';
-import { getOperationName } from '@apollo/client/utilities/graphql/getFromAST.js';
-import { expect, type Page } from '@playwright/test';
+import * as apollo from '@apollo/client';
+import { type Page, expect } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
-import type { ApolloClientType } from '@/common/apollo.js';
 import i18nConfig from '../../next-i18next.config.js';
 import type {
   PlaywrightGetInstanceBasicsQuery,
@@ -23,11 +22,18 @@ import type {
   PlaywrightGetInstanceInfoQueryVariables,
 } from '../__generated__/graphql.ts';
 
-const { ApolloClient, InMemoryCache, gql } = apolloClient;
+// @ts-expect-error crazy apollo imports
+const { ApolloClient, InMemoryCache, gql } = apollo.default as typeof apollo;
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.paths.kausal.dev/v1';
+function getApiBase() {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.PATHS_BACKEND_URL) return `${process.env.PATHS_BACKEND_URL}/v1`;
+  return 'https://api.paths.kausal.dev/v1';
+}
+
+const API_BASE = getApiBase();
 
 const BASE_URL = process.env.TEST_PAGE_BASE_URL || `http://{instanceId}.localhost:3000`;
 
@@ -74,73 +80,17 @@ export type ActionListPage = PathsPage & {
   __typename: 'ActionListPage';
 };
 
-const LOG_MAX_ERRORS = 3;
-
 export type ApolloErrorContext = {
   query: DocumentNode;
   variables?: OperationVariables;
-  client?: ApolloClientType;
+  client?: ApolloClientType<NormalizedCacheObject>;
   component?: string;
 };
 
-export function logApolloError(error: Error, context?: ApolloErrorContext) {
-  const query = context?.query;
-  const operationName = query ? getOperationName(query) : null;
-  const variables = context?.variables ? JSON.stringify(context.variables, null, 0) : null;
-
-  let link = context?.client?.link;
-  let uri: string | null = null;
-  let nrLinks = 0;
-  while (link && nrLinks < 10) {
-    if (link instanceof HttpLink) {
-      if (typeof link.options.uri === 'string') {
-        uri = link.options.uri;
-      }
-    }
-    link = link.right;
-    nrLinks++;
-  }
-  console.error(
-    `GraphQL query ${operationName} to ${uri} returned an error. Variables: ${variables}`
-  );
-  const ctx: Record<string, string> = {};
-  if (variables) {
-    ctx.variables = variables;
-  }
-  if (isApolloError(error)) {
-    const { clientErrors, graphQLErrors, networkError } = error;
-    if (clientErrors.length) {
-      clientErrors.forEach((err, idx) => {
-        if (idx >= LOG_MAX_ERRORS) return;
-        console.error(err, 'Client error');
-      });
-    }
-    if (graphQLErrors.length) {
-      graphQLErrors.forEach((err, idx) => {
-        if (idx >= LOG_MAX_ERRORS) return;
-        console.error(err, 'GraphQL errors');
-      });
-    }
-    if (networkError) {
-      const message = networkError.message;
-      const result = 'result' in networkError ? networkError.result : null;
-      console.error(networkError, `Network error: ${message}`);
-
-      const errors: Error[] | null = result?.['errors'].length ? result['errors'] : null;
-      if (errors) {
-        errors.forEach((err, idx) => {
-          if (idx >= LOG_MAX_ERRORS) return;
-          console.error(err, 'Network result errors');
-        });
-      } else if (result) {
-        console.error(result, 'Network result');
-      }
-    }
-  }
-}
+type LocaleDefs = Record<string, string>;
 
 const i18nRes = Object.fromEntries(
-  (i18nConfig.i18n.locales as string[]).map((lng) => {
+  i18nConfig.i18n.locales.map((lng) => {
     return [
       lng,
       {
@@ -148,7 +98,7 @@ const i18nRes = Object.fromEntries(
           fs.readFileSync(`${projectRoot}/public/locales/${lng}/common.json`, {
             encoding: 'utf8',
           })
-        ),
+        ) as LocaleDefs,
       },
     ];
   })
@@ -198,8 +148,13 @@ export class InstanceContext {
     return `${this.baseURL}/actions/${action.id}`;
   }
 
+  async navigateTo(page: Page, url: string) {
+    await page.goto(url);
+    await this.checkMeta(page);
+  }
+
   async checkMeta(page: Page) {
-    const siteName = page.locator('head meta[property="og:site_name"]');
+    const siteName = page.locator('head meta[property="og:site_name"]').first();
     await expect(siteName).toHaveAttribute('content', this.instance.instance.name);
     await expect(page.locator('html')).toHaveAttribute('lang', this.i18n.language);
   }
@@ -226,10 +181,10 @@ export class InstanceContext {
         variables: { instance: instanceId },
       });
     } catch (err) {
-      logApolloError(err, { query: GET_INSTANCE_BASICS, variables: { instance: instanceId } });
+      console.error(err);
       throw err;
     }
-    const primaryLanguage = langRes.data!.instance.defaultLanguage;
+    const primaryLanguage = langRes.data.instance.defaultLanguage;
     const baseURL = getPageBaseUrlToTest(instanceId);
     let res: ApolloQueryResult<PlaywrightGetInstanceInfoQuery>;
     try {
@@ -241,13 +196,10 @@ export class InstanceContext {
         variables: { instance: instanceId, locale: primaryLanguage },
       });
     } catch (err) {
-      logApolloError(err, {
-        query: GET_INSTANCE_INFO,
-        variables: { instance: instanceId, locale: primaryLanguage },
-      });
+      console.error(err);
       throw err;
     }
-    const data = res.data!;
+    const data = res.data;
     return new InstanceContext(data, baseURL);
   }
 }

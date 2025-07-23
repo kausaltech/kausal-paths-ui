@@ -1,6 +1,6 @@
-import React, { useContext, type Dispatch, type SetStateAction } from 'react';
+import React, { type Dispatch, type SetStateAction, useContext } from 'react';
 
-import type { GetInstanceContextQuery } from 'common/__generated__/graphql';
+import type { GetInstanceContextQuery } from '@/common/__generated__/graphql';
 
 export type SiteContextScenario = GetInstanceContextQuery['scenarios'][0];
 
@@ -51,9 +51,15 @@ export const useSite = () => {
   const context = useContext(SiteContext);
 
   if (!context) {
-    return null;
+    throw new Error('useSite called without a SiteContext');
   }
 
+  return context[0];
+};
+
+export const useSiteOrNull = () => {
+  const context = useContext(SiteContext);
+  if (!context) return null;
   return context[0];
 };
 

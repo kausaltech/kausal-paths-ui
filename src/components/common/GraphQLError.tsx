@@ -1,9 +1,9 @@
-import { ApolloError } from '@apollo/client';
+import type { ApolloError } from '@apollo/client';
 import * as Sentry from '@sentry/nextjs';
 import { useTranslation } from 'next-i18next';
 import { Alert, Button, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
 
-import { deploymentType } from '@/common/environment';
+import { isProductionDeployment } from '@common/env';
 
 type GraphQLErrorProps = {
   error: ApolloError;
@@ -12,7 +12,6 @@ type GraphQLErrorProps = {
 const GraphQLError = (props: GraphQLErrorProps) => {
   const { error } = props;
   const { t } = useTranslation();
-  const isProd = deploymentType === 'production';
   let errorDetailMsg: string | null = null;
 
   Sentry.captureException(error);
@@ -24,7 +23,7 @@ const GraphQLError = (props: GraphQLErrorProps) => {
     <Alert color="warning">
       <h3>{t('error-loading-data')}</h3>
       {errorDetailMsg}
-      {!isProd && error.graphQLErrors?.length ? (
+      {!isProductionDeployment() && error.graphQLErrors?.length ? (
         <>
           <Button color="dark" size="sm" outline id="toggler" className="mt-2 mb-2">
             {t('show-error')}

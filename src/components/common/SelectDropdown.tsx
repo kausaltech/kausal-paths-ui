@@ -1,18 +1,19 @@
 import React from 'react';
 
 import type { Theme } from '@kausal/themes/types';
-import PopoverTip from 'components/common/PopoverTip';
 import Highlighter from 'react-highlight-words';
 import Select, {
-  components,
   type GroupBase,
   type MultiValueProps,
   type SelectComponentsConfig,
   type Theme as SelectTheme,
   type ValueContainerProps as SelectValueContainerProps,
+  components,
 } from 'react-select';
-import { FormGroup, Label as BSLabel } from 'reactstrap';
+import { Label as BSLabel, FormGroup } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
+
+import PopoverTip from '@/components/common/PopoverTip';
 
 const Label = styled(BSLabel)`
   font-weight: ${(props) => props.theme.formLabelFontWeight};

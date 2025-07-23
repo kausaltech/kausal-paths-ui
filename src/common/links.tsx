@@ -1,7 +1,8 @@
 import NextLink, { type LinkProps } from 'next/link';
 
-import { type SiteContextType, useSite } from '@/context/site';
-import { assetPrefix } from './environment';
+import { getAssetPrefix } from '@common/env';
+
+import { type SiteContextType, useSite, useSiteOrNull } from '@/context/site';
 
 function getLocalePrefix(site: SiteContextType, forLocale?: string | false) {
   const locale = forLocale || site.i18n.locale;
@@ -10,7 +11,7 @@ function getLocalePrefix(site: SiteContextType, forLocale?: string | false) {
   return '/' + locale;
 }
 
-export function formatUrl(site: SiteContextType, url: string, forLocale?: string | false) {
+export function formatUrl(site: SiteContextType | null, url: string, forLocale?: string | false) {
   if (!url || !site) return url;
   const localePrefix = getLocalePrefix(site, forLocale);
   if (url.startsWith('/')) {
@@ -23,7 +24,7 @@ export function formatUrl(site: SiteContextType, url: string, forLocale?: string
 export function formatStaticUrl(url: string) {
   if (!url) return url;
   if (url.startsWith('/')) {
-    const pathPrefix = assetPrefix || '';
+    const pathPrefix = getAssetPrefix() || '';
     return `${pathPrefix}${url}`;
   }
   return url;
@@ -41,15 +42,15 @@ export function Link(props: OtherLinkProps & { href: string }) {
   const { href, ...rest } = props;
   let as: string | undefined;
 
-  const site = useSite();
+  const site = useSiteOrNull();
 
   if (href.startsWith('/')) {
     as = formatUrl(site, href, rest.locale);
   } else {
     as = undefined;
   }
-  rest.locale = false;
-  return <NextLink legacyBehavior href={href} as={as} {...rest} />;
+  const localeDisabledProps = { ...rest, locale: false } satisfies OtherLinkProps;
+  return <NextLink legacyBehavior href={href} as={as} {...localeDisabledProps} />;
 }
 
 type FormattedLinkProps = {
@@ -58,7 +59,7 @@ type FormattedLinkProps = {
 };
 
 function getLinkProps(
-  site: SiteContextType,
+  site: SiteContextType | null,
   hrefProps: FormattedLinkProps,
   otherProps: OtherLinkProps
 ) {
@@ -70,6 +71,7 @@ function getLinkProps(
     as: formatUrl(site, as, locale),
     passHref: otherProps.passHref ?? true,
     locale: false,
+    prefetch: false,
     ...rest,
   };
   return linkProps;
@@ -113,7 +115,7 @@ export function ActionLink(props: ActionLinkProps) {
     },
     as: `/actions/${action.id}`,
   };
-  const site = useSite();
+  const site = useSiteOrNull();
   return <NextLink legacyBehavior {...getLinkProps(site, hrefProps, rest)} />;
 }
 
@@ -129,7 +131,7 @@ export function ActionListLink(props: ActionListLinkProps) {
     },
     as: pathname,
   };
-  const site = useSite();
+  const site = useSiteOrNull();
   const linkProps = getLinkProps(site, hrefProps, rest);
   return <NextLink legacyBehavior passHref={true} {...linkProps} />;
 }

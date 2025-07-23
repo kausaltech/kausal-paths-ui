@@ -2,3 +2,4 @@
 /test-results/
 test-results.json
 *.ts-snapshots/
+tests-out/

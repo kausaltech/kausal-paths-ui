@@ -1,23 +1,27 @@
 import { useMemo, useState } from 'react';
+
 import { useTranslation } from 'next-i18next';
 import { Nav, NavItem, NavLink, TabContent } from 'reactstrap';
-import Icon from 'components/common/icon';
 import styled from 'styled-components';
-import Loader from 'components/common/Loader';
 
-import { NodeLink } from 'common/links';
-import { getMetricValue, beautifyValue, getMetricChange } from 'common/preprocess';
-import HighlightValue from 'components/general/HighlightValue';
-import DimensionalBarGraph from 'components/general/DimensionalBarGraph';
-import DataTable from './DataTable';
-import OutcomeNodeDetails from './OutcomeNodeDetails';
-import type { OutcomeNodeFieldsFragment } from 'common/__generated__/graphql';
-import ScenarioBadge from 'components/common/ScenarioBadge';
-import { useInstance } from 'common/instance';
-import DimensionalNodePlot from './DimensionalNodePlot';
-import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
-import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
+import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useFeatures, useInstance } from '@/common/instance';
+import { NodeLink } from '@/common/links';
+import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
+import Loader from '@/components/common/Loader';
+import PopoverTip from '@/components/common/PopoverTip';
+import ScenarioBadge from '@/components/common/ScenarioBadge';
+import Icon from '@/components/common/icon';
+import DimensionalBarGraph from '@/components/general/DimensionalBarGraph';
+import HighlightValue from '@/components/general/HighlightValue';
 import { useSite } from '@/context/site';
+import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
+
+import DataTable from './DataTable';
+import DimensionalNodePlot from './DimensionalNodePlot';
+import OutcomeNodeDetails from './OutcomeNodeDetails';
+import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
+import { getHelpText } from './progress-tracking/utils';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
@@ -142,6 +146,7 @@ const OutcomeNodeContent = ({
   const showProgressTrackingStatus =
     node.metricDim && hasProgressTracking(node.metricDim, site.scenarios, site.minYear);
 
+  const { showRefreshPrompt } = useFeatures();
   const [activeTabId, setActiveTabId] = useState('graph');
   const showDistribution = instance.id === 'zuerich' && subNodes.length > 1;
   const nodesTotal = getMetricValue(node, endYear);
@@ -155,7 +160,8 @@ const OutcomeNodeContent = ({
   const nodeName = node.shortName || node.name;
   const showNodeLinks = !instance.features?.hideNodeDetails;
   const maximumFractionDigits = instance.features?.maximumFractionDigits ?? undefined;
-
+  // TODO: Remove showRefreshPrompt check when node help text is moved to the backend
+  const helpText = showRefreshPrompt ? getHelpText(node.id) : undefined;
   function onClickMeasuredEmissions(year: number) {
     setSelectedProgressYear(year);
     setProgressModalOpen(true);
@@ -205,6 +211,9 @@ const OutcomeNodeContent = ({
                 </NodeLink>
               ) : (
                 nodeName
+              )}
+              {helpText && (
+                <PopoverTip identifier={`${node.id}-card-help-text`} content={helpText} />
               )}
             </h4>
             <CardSetDescriptionDetails>

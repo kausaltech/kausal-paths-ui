@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
 
-import { useTranslation } from 'common/i18n';
-import { NodeLink } from 'common/links';
-import { getImpactMetricValue, summarizeYearlyValuesBetween } from 'common/preprocess';
-import Icon from 'components/common/icon';
-import NodePlot from 'components/general/NodePlot';
-import { useSite } from 'context/site';
 import {
   Buildings,
   ClipboardX,
@@ -18,6 +12,13 @@ import {
 } from 'react-bootstrap-icons';
 import { Collapse } from 'reactstrap';
 import styled from 'styled-components';
+
+import { useTranslation } from '@/common/i18n';
+import { NodeLink } from '@/common/links';
+import { getImpactMetricValue, summarizeYearlyValuesBetween } from '@/common/preprocess';
+import Icon from '@/components/common/icon';
+import NodePlot from '@/components/general/NodePlot';
+import { useSite } from '@/context/site';
 
 import type { CausalGridNode } from './CausalGrid';
 import ImpactDisplay from './ImpactDisplay';

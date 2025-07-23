@@ -1,17 +1,18 @@
 //import styles from '../../styles/server-error.module.css';
-
 import NextErrorComponent, { type ErrorProps } from 'next/error';
 import Head from 'next/head';
 
 import * as Sentry from '@sentry/nextjs';
-import { useTranslation } from 'common/i18n';
-import { Link } from 'common/links';
-import Button from 'components/common/Button';
 import type { NextPageContext } from 'next';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
-import { isProd } from '@/common/environment';
+import { isProductionDeployment } from '@common/env';
+import { getLogger } from '@common/logging';
+
+import { useTranslation } from '@/common/i18n';
+import { Link } from '@/common/links';
+import Button from '@/components/common/Button';
 
 const ErrorBackground = styled.div`
   background-color: ${(props) => props.theme.brandDark};
@@ -46,6 +47,10 @@ type AppErrorProps = ErrorProps & {
 
 const PathsError = (props: AppErrorProps) => {
   const { hasGetInitialPropsRun, err, statusCode } = props;
+  const logger = getLogger('error-page');
+  logger.info(
+    `rendering error page (statusCode=${statusCode}; hasGetInitialPropsRun=${hasGetInitialPropsRun})`
+  );
   if (!hasGetInitialPropsRun && err && statusCode != 404) {
     // getInitialProps is not called in case of
     // https://github.com/vercel/next.js/issues/8592. As a workaround, we pass
@@ -64,20 +69,20 @@ const PathsError = (props: AppErrorProps) => {
   );
 
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('errors');
 
   let title = props.title;
-  let intro: string | null = t('errors:generic-intro');
-  let apology: string | null = t('errors:generic-apology');
+  let intro: string | null = t('generic-intro');
+  let apology: string | null = t('generic-apology');
   if (!title) {
-    title = t('errors:generic-title');
+    title = t('generic-title');
     if (statusCode) {
       if (statusCode === 404) {
-        title = t('errors:not-found-title');
-        intro = t('errors:not-found-intro');
+        title = t('not-found-title');
+        intro = t('not-found-intro');
         apology = null;
       } else if (statusCode !== 500) {
-        title = t('error-with-code', { code: statusCode });
+        title = t('error-with-code', { code: statusCode, ns: 'common' });
       }
     }
   }
@@ -85,13 +90,13 @@ const PathsError = (props: AppErrorProps) => {
   const specifiers: string[] = [];
   const traceId = Sentry.getCurrentScope()?.getPropagationContext().traceId;
   if (traceId) {
-    specifiers.push(`${t('errors:error-label')}: ${traceId}`);
+    specifiers.push(`${t('error-label')}: ${traceId}`);
   }
   if (statusCode) {
     specifiers.push(`HTTP ${statusCode}`);
   }
   let fullError: string | null = null;
-  if (!isProd && err) {
+  if (!isProductionDeployment() && err) {
     fullError = err.toString();
   }
   if (!theme) {
@@ -131,7 +136,7 @@ const PathsError = (props: AppErrorProps) => {
                 <Link href="/">
                   <a>
                     <Button outline color="dark" size="sm">
-                      {t('return-to-front')}
+                      {t('return-to-front', { ns: 'common' })}
                     </Button>
                   </a>
                 </Link>

@@ -1,8 +1,9 @@
 import { gql } from '@apollo/client';
-import DimensionalFlow from 'components/graphs/DimensionalFlow';
-import { ACTION_PARAMETER_FRAGMENT } from 'components/general/ActionParameters';
-import { DimensionalMetric } from 'data/metric';
-import { STREAM_FIELD_FRAGMENT } from 'components/common/StreamField';
+
+import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
+import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
+import DimensionalFlow from '@/components/graphs/DimensionalFlow';
+import { DimensionalMetric } from '@/data/metric';
 
 const CAUSAL_GRID_NODE_FRAGMENT = gql`
   fragment CausalGridNode on NodeInterface {

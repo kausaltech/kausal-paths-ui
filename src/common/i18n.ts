@@ -1,5 +1,4 @@
 import 'i18next';
-
 import * as NextI18Next from 'next-i18next';
 import numbro from 'numbro';
 import numbroCs from 'numbro/dist/languages/cs-CZ.min.js';
@@ -15,9 +14,12 @@ import numbroPl from 'numbro/dist/languages/pl-PL.min.js';
 import numbroSv from 'numbro/dist/languages/sv-SE.min.js';
 
 import type nsCommon from '../../public/locales/en/common.json';
+import type nsErrors from '../../public/locales/en/errors.json';
+
+type NL = numbro.NumbroLanguage;
 
 function numbroEsUs() {
-  const esUs = numbroEs;
+  const esUs = numbroEs as NL;
   esUs.languageTag = 'es-US';
   esUs.delimiters = {
     thousands: ',',
@@ -33,18 +35,18 @@ function numbroEsUs() {
 }
 
 const numbroLangs = {
-  de: numbroDe,
-  'de-DE': numbroDe,
-  'de-CH': numbroDeCh,
-  'en-GB': numbroEnGb,
-  fi: numbroFi,
-  cs: numbroCs,
-  da: numbroDa,
-  lv: numbroLv,
-  pl: numbroPl,
+  de: numbroDe as NL,
+  'de-DE': numbroDe as NL,
+  'de-CH': numbroDeCh as NL,
+  'en-GB': numbroEnGb as NL,
+  fi: numbroFi as NL,
+  cs: numbroCs as NL,
+  da: numbroDa as NL,
+  lv: numbroLv as NL,
+  pl: numbroPl as NL,
   'es-US': numbroEsUs(),
-  el: numbroEl,
-  sv: numbroSv,
+  el: numbroEl as NL,
+  sv: numbroSv as NL,
 };
 
 Object.entries(numbroLangs).forEach(([lang, conf]) => {
@@ -67,9 +69,11 @@ declare module 'i18next' {
   interface CustomTypeOptions {
     // custom namespace type, if you changed it
     defaultNS: 'common';
+    nsSeparator: ':';
     // custom resources type
     resources: {
       common: typeof nsCommon;
+      errors: typeof nsErrors;
     };
     // other
   }

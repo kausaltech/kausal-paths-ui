@@ -111,7 +111,7 @@ export default class LRUCache<K, V> implements NodeChain {
       this._max = Infinity;
       this._maxBytes = Infinity;
       this._ttl = Infinity;
-      this._ttlInterval = 60000;
+      this._ttlInterval = 5000;
     }
     // fix ttl interval
     if (this.ttlInterval > this.ttl) this.ttlInterval = this.ttl;

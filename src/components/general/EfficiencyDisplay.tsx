@@ -1,10 +1,12 @@
 import { useTranslation } from 'next-i18next';
-import HighlightValue from 'components/general/HighlightValue';
-import { formatNumber } from 'common/preprocess';
+
+import { formatNumber } from '@/common/preprocess';
+import HighlightValue from '@/components/general/HighlightValue';
+
 import {
   StyledDisplayHeader,
-  StyledDisplayWrapper,
   StyledDisplayItem,
+  StyledDisplayWrapper,
   StyledItemsWrapper,
 } from './ImpactDisplay';
 

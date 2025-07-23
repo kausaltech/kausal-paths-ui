@@ -1,7 +1,8 @@
 import { gql, useQuery } from '@apollo/client';
-import ContentLoader from 'components/common/ContentLoader';
-import CytoGraph from 'components/CytoGraph';
-import GraphQLError from 'components/common/GraphQLError';
+
+import CytoGraph from '@/components/CytoGraph';
+import ContentLoader from '@/components/common/ContentLoader';
+import GraphQLError from '@/components/common/GraphQLError';
 
 const GET_NODES = gql`
   query GetCytoscapeNodes {

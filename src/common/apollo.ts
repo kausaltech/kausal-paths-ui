@@ -5,49 +5,30 @@ import {
   InMemoryCache,
   type NormalizedCacheObject,
 } from '@apollo/client';
-import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { type DirectiveNode, Kind } from 'graphql';
+import { type DirectiveNode, Kind, type VariableDefinitionNode } from 'graphql';
+import type { Logger } from 'pino';
+
+import type { DefaultApolloContext } from '@common/apollo';
+import { type DirectiveArg, createOperationDirective } from '@common/apollo/directives';
+import { createSentryLink, logOperationLink } from '@common/apollo/links';
+import { FORWARDED_HEADER } from '@common/constants/headers.mjs';
+import { GRAPHQL_CLIENT_PROXY_PATH } from '@common/constants/routes.mjs';
+import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
+import type { CurrentURL } from '@common/utils';
 
 import possibleTypes from '@/common/__generated__/possible_types.json';
+
 import {
-  GQL_PROXY_PATH,
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
   WILDCARD_DOMAINS_HEADER,
 } from './const';
-import { getRuntimeConfig, gqlUrl } from './environment';
-import { getLogger } from './log';
 
-const logger = getLogger('graphql');
-
-if (globalThis.__DEV__) {
-  // Adds messages only in a dev environment
-  loadDevMessages();
-  loadErrorMessages();
+declare module '@apollo/client/core' {
+  export interface DefaultContext extends Partial<DefaultApolloContext> {
+    instanceHostname?: string;
+  }
 }
-
-export const logQueryStart = new ApolloLink((operation, forward) => {
-  const log = operation.getContext()?.logger || logger;
-  operation.setContext({ start: Date.now() });
-  log.info({ operation: operation.operationName }, 'Starting GraphQL operation');
-  return forward(operation);
-});
-
-export const logQueryEnd = new ApolloLink((operation, forward) => {
-  const log = operation.getContext()?.logger || logger;
-  return forward(operation).map((data) => {
-    const start = operation.getContext().start;
-    if (!start) {
-      return data;
-    }
-    const time = Math.round(Date.now() - start);
-    log.info(
-      { operation: operation.operationName, duration: time / 1000 },
-      `GraphQL operation took ${time}ms`
-    );
-    return data;
-  });
-});
 
 const localeMiddleware = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers = {}, locale }) => {
@@ -60,29 +41,8 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
       };
     }
   });
-
   return forward(operation);
 });
-
-function createDirective(name: string, args: { name: string; val: string }[]) {
-  const out: DirectiveNode = {
-    kind: Kind.DIRECTIVE,
-    name: {
-      kind: Kind.NAME,
-      value: name,
-    },
-    arguments: args.map((arg) => ({
-      kind: Kind.ARGUMENT,
-      name: { kind: Kind.NAME, value: arg.name },
-      value: {
-        kind: Kind.STRING,
-        value: arg.val,
-        block: false,
-      },
-    })),
-  };
-  return out;
-}
 
 export type ApolloClientOpts = {
   instanceHostname?: string;
@@ -91,11 +51,9 @@ export type ApolloClientOpts = {
   authorizationToken?: string | undefined;
   clientIp?: string | null;
   locale?: string;
-  currentURL?: {
-    baseURL: string;
-    path: string;
-  };
+  currentURL?: CurrentURL;
   clientCookies?: string;
+  logger?: Logger;
 };
 
 export function getHttpHeaders(opts: ApolloClientOpts) {
@@ -128,7 +86,7 @@ export function getHttpHeaders(opts: ApolloClientOpts) {
   }
   if (!process.browser) {
     if (clientIp) {
-      headers['x-forwarded-for'] = clientIp;
+      headers[FORWARDED_HEADER] = `for="${clientIp}"`;
     }
     if (clientCookies) {
       headers['cookie'] = clientCookies;
@@ -149,31 +107,72 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   }
 
   const middleware = new ApolloLink((operation, forward) => {
-    operation.query = {
-      ...operation.query,
-      definitions: operation.query.definitions.map((def) => {
-        if (def.kind !== Kind.OPERATION_DEFINITION) return def;
-        const directives: DirectiveNode[] = [...(def.directives || [])];
-        if (locale) {
-          directives.push(createDirective('locale', [{ name: 'lang', val: locale }]));
-        }
-        const instanceArgs: { name: string; val: string }[] = [];
-        if (instanceIdentifier) {
-          instanceArgs.push({ name: 'identifier', val: instanceIdentifier });
-        }
-        if (instanceHostname) {
-          instanceArgs.push({ name: 'hostname', val: instanceHostname });
-        }
-        if (instanceArgs.length) {
-          directives.push(createDirective('instance', instanceArgs));
-        }
-        return {
-          ...def,
-          directives,
-        };
-      }),
+    const variables: Record<string, unknown> = {
+      ...operation.variables,
     };
 
+    const definitions = operation.query.definitions.map((def) => {
+      if (def.kind !== Kind.OPERATION_DEFINITION) return def;
+      const variableDefinitions: VariableDefinitionNode[] = [...(def.variableDefinitions || [])];
+      const directives: DirectiveNode[] = [...(def.directives || [])];
+      if (locale) {
+        const directive = createOperationDirective({
+          name: 'locale',
+          args: [
+            {
+              name: 'lang',
+              variable: {
+                name: '_locale',
+                type: 'String',
+              },
+            },
+          ],
+        });
+        directives.push(directive.directive);
+        variableDefinitions.push(...directive.variableDefinitions);
+        variables['_locale'] = locale;
+      }
+      const instanceArgs: DirectiveArg[] = [];
+      if (instanceIdentifier) {
+        instanceArgs.push({
+          name: 'identifier',
+          variable: {
+            name: '_identifier',
+            type: 'ID',
+          },
+        });
+        variables['_identifier'] = instanceIdentifier;
+      }
+      if (instanceHostname) {
+        instanceArgs.push({
+          name: 'hostname',
+          variable: {
+            name: '_hostname',
+            type: 'String',
+          },
+        });
+        variables['_hostname'] = instanceHostname;
+      }
+      if (instanceArgs.length) {
+        const directive = createOperationDirective({
+          name: 'instance',
+          args: instanceArgs,
+        });
+        directives.push(directive.directive);
+        variableDefinitions.push(...directive.variableDefinitions);
+      }
+      return {
+        ...def,
+        directives,
+        variableDefinitions,
+      };
+    });
+
+    operation.query = {
+      ...operation.query,
+      definitions,
+    };
+    operation.variables = variables;
     operation.setContext(({ headers = {} }) => {
       return {
         headers: {
@@ -193,9 +192,14 @@ export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 
 let apolloClient: ApolloClientType | undefined;
 
+async function apolloFetch(url: RequestInfo | URL, init?: RequestInit) {
+  // TODO: Sign the request headers here
+  return await fetch(url, init);
+}
+
 function createApolloClient(opts: ApolloClientOpts) {
   const ssrMode = typeof window === 'undefined';
-  const uri = ssrMode ? gqlUrl : GQL_PROXY_PATH;
+  const uri = ssrMode ? getPathsGraphQLUrl() : GRAPHQL_CLIENT_PROXY_PATH;
 
   const httpLink = new HttpLink({
     uri,
@@ -203,16 +207,17 @@ function createApolloClient(opts: ApolloClientOpts) {
     fetchOptions: {
       referrerPolicy: 'unsafe-url',
     },
+    fetch: apolloFetch,
   });
 
   return new ApolloClient({
     ssrMode,
     uri,
     link: ApolloLink.from([
-      logQueryStart,
+      createSentryLink(uri),
+      logOperationLink,
       localeMiddleware,
       makeInstanceMiddleware(opts),
-      logQueryEnd,
       httpLink,
     ]),
     cache: new InMemoryCache({

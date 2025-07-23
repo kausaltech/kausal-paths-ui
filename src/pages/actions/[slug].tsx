@@ -1,35 +1,37 @@
 import { useEffect, useState } from 'react';
+
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
+import { Col, Container, Row } from 'reactstrap';
+import styled, { useTheme } from 'styled-components';
+
 import type {
   GetActionContentQuery,
   GetActionContentQueryVariables,
   GetCausalChainQuery,
   GetCausalChainQueryVariables,
-} from 'common/__generated__/graphql';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from 'common/cache';
-import { ActionListLink, NodeLink } from 'common/links';
-import { logApolloError } from 'common/log';
-import Badge from 'components/common/Badge';
-import ContentLoader from 'components/common/ContentLoader';
-import ErrorMessage from 'components/common/ErrorMessage';
-import GraphQLError from 'components/common/GraphQLError';
-import Icon from 'components/common/icon';
-import Loader from 'components/common/Loader';
-import { StreamField } from 'components/common/StreamField';
-import { ActionGoal } from 'components/general/ActionGoal';
-import ActionParameters from 'components/general/ActionParameters';
-import CausalGrid, { type CausalGridNode } from 'components/general/CausalGrid';
-import NodePlot from 'components/general/NodePlot';
-import SettingsPanelFull from 'components/general/SettingsPanelFull';
-import DimensionalPlot from 'components/graphs/DimensionalFlow';
-import { useSite } from 'context/site';
-import { useTranslation } from 'next-i18next';
-import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from 'queries/getActionContent';
-import { Col, Container, Row } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
+} from '@/common/__generated__/graphql';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { ActionListLink, NodeLink } from '@/common/links';
+import Badge from '@/components/common/Badge';
+import ContentLoader from '@/components/common/ContentLoader';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import GraphQLError from '@/components/common/GraphQLError';
+import Loader from '@/components/common/Loader';
+import { StreamField } from '@/components/common/StreamField';
+import Icon from '@/components/common/icon';
+import { ActionGoal } from '@/components/general/ActionGoal';
+import ActionParameters from '@/components/general/ActionParameters';
+import CausalGrid, { type CausalGridNode } from '@/components/general/CausalGrid';
+import NodePlot from '@/components/general/NodePlot';
+import SettingsPanelFull from '@/components/general/SettingsPanelFull';
+import DimensionalPlot from '@/components/graphs/DimensionalFlow';
+import { useSite } from '@/context/site';
+import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from '@/queries/getActionContent';
+import { logApolloError } from '@common/logging/apollo';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;
@@ -173,7 +175,6 @@ export default function ActionPage() {
   }
 
   if (error) {
-    logApolloError(error, { query: GET_ACTION_CONTENT });
     return (
       <Container className="pt-5">
         <GraphQLError error={error} />

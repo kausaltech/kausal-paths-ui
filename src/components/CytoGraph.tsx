@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+
 import { useRouter } from 'next/router';
-import type { GetCytoscapeNodesQuery } from 'common/__generated__/graphql';
-import { useTranslation } from 'common/i18n';
+import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,

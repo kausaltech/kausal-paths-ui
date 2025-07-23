@@ -10,6 +10,8 @@ jobs:
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_USER: ${{ secrets.NPM_USER }}
+      NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
@@ -18,7 +20,7 @@ jobs:
     uses: ./.github/workflows/e2e-image.yaml
     with:
       image: ${{ needs.build.outputs.image }}:${{ needs.build.outputs.image_tag }}
-      backend_base_url: https://api.paths.kausal.dev/v1
+      backend_base_url: https://api.paths.kausal.dev
       build_id: ${{ needs.build.outputs.build_id }}
       s3_endpoint: ${{ vars.BUILD_S3_ENDPOINT }}
       s3_bucket: ${{ vars.BUILD_S3_BUCKET }}

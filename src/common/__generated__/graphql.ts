@@ -12,11 +12,11 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  DateTime: { input: any; output: any; }
-  JSONString: { input: any; output: any; }
-  PositiveInt: { input: any; output: any; }
-  RichText: { input: any; output: any; }
-  UUID: { input: any; output: any; }
+  DateTime: { input: string; output: string; }
+  JSONString: { input: string; output: string; }
+  PositiveInt: { input: number; output: number; }
+  RichText: { input: string; output: string; }
+  UUID: { input: string; output: string; }
   _Any: { input: any; output: any; }
 };
 
@@ -135,42 +135,6 @@ export enum VisualizationKind {
   Group = 'group',
   Node = 'node'
 }
-
-export type PlaywrightGetInstanceBasicsQueryVariables = Exact<{
-  instance: Scalars['ID']['input'];
-}>;
-
-
-export type PlaywrightGetInstanceBasicsQuery = (
-  { instance: (
-    { id: string, defaultLanguage: string, supportedLanguages: Array<string> }
-    & { __typename: 'InstanceType' }
-  ) }
-  & { __typename: 'Query' }
-);
-
-export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
-  instance: Scalars['ID']['input'];
-  locale: Scalars['String']['input'];
-}>;
-
-
-export type PlaywrightGetInstanceInfoQuery = (
-  { instance: (
-    { id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: (
-      { showRefreshPrompt: boolean }
-      & { __typename: 'InstanceFeaturesType' }
-    ) }
-    & { __typename: 'InstanceType' }
-  ), pages: Array<(
-    { urlPath: string, title: string, showInMenus: boolean }
-    & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
-  )>, actions: Array<(
-    { id: string }
-    & { __typename: 'ActionNode' }
-  )> }
-  & { __typename: 'Query' }
-);
 
 export type AllMetricFieldsFragment = (
   { name: string | null, id: string | null, unit: (
@@ -455,7 +419,7 @@ export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetCytoscapeNodesQuery = (
   { nodes: Array<(
-    { id: string, name: string, color: string | null, quantity: string | null, parentAction: (
+    { id: string, name: string, color: string | null, quantity: string | null, isVisible: boolean, parentAction: (
       { id: string }
       & { __typename: 'ActionNode' }
     ) | null, subactions: Array<(
@@ -482,7 +446,7 @@ export type GetCytoscapeNodesQuery = (
     ) | null }
     & { __typename: 'ActionNode' }
   ) | (
-    { id: string, name: string, color: string | null, quantity: string | null, unit: (
+    { id: string, name: string, color: string | null, quantity: string | null, isVisible: boolean, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
@@ -511,7 +475,7 @@ export type GetNodePageQueryVariables = Exact<{
 
 export type GetNodePageQuery = (
   { node: (
-    { id: string, name: string, shortDescription: any | null, description: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, unit: (
+    { id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, metric: (
@@ -530,13 +494,13 @@ export type GetNodePageQuery = (
       )> | null }
       & { __typename: 'ForecastMetricType' }
     ) | null, inputNodes: Array<(
-      { id: string, name: string, shortDescription: any | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
-      { id: string, name: string, shortDescription: any | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
@@ -601,7 +565,7 @@ export type DimensionalNodeMetricFragment = (
 );
 
 type CausalGridNode_ActionNode_Fragment = (
-  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
+  { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, unit: (
@@ -702,7 +666,7 @@ type CausalGridNode_ActionNode_Fragment = (
 );
 
 type CausalGridNode_Node_Fragment = (
-  { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
+  { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
     { htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
@@ -811,7 +775,7 @@ export type GetCausalChainQueryVariables = Exact<{
 export type GetCausalChainQuery = (
   { action: (
     { id: string, downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -910,7 +874,7 @@ export type GetCausalChainQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -1020,7 +984,7 @@ export type GetActionContentQueryVariables = Exact<{
 
 export type GetActionContentQuery = (
   { action: (
-    { goal: any | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, dimensionalFlow: (
+    { goal: string | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, dimensionalFlow: (
       { id: string, sources: Array<string>, unit: (
         { htmlLong: string }
         & { __typename: 'UnitType' }
@@ -1033,7 +997,7 @@ export type GetActionContentQuery = (
       )> }
       & { __typename: 'DimensionalFlowType' }
     ) | null, downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -1132,7 +1096,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: any | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -1407,7 +1371,7 @@ export type GetActionListQuery = (
     )> }
     & { __typename: 'InstanceType' }
   ), actions: Array<(
-    { id: string, name: string, goal: any | null, shortDescription: any | null, color: string | null, decisionLevel: DecisionLevel | null, quantity: string | null, unit: (
+    { id: string, name: string, goal: string | null, shortDescription: string | null, color: string | null, decisionLevel: DecisionLevel | null, quantity: string | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, parameters: Array<(
@@ -1474,13 +1438,13 @@ export type GetActionListQuery = (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ), costNode?: (
-      { id: string, name: string, shortDescription: any | null, unit: (
+      { id: string, name: string, shortDescription: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
     ), effectNode: (
-      { id: string, name: string, shortDescription: any | null, unit: (
+      { id: string, name: string, shortDescription: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
@@ -1639,7 +1603,7 @@ export type GetNodeVisualizationsQuery = (
 );
 
 export type OutcomeNodeFieldsFragment = (
-  { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, metric: (
+  { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
     { id: string | null, name: string | null, unit: (
       { short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
@@ -1667,7 +1631,7 @@ export type OutcomeNodeFieldsFragment = (
     { id: string }
     & { __typename: 'ActionNode' | 'Node' }
   )>, upstreamActions: Array<(
-    { id: string, name: string, goal: any | null, shortName: string | null, shortDescription: any | null, parameters: Array<(
+    { id: string, name: string, goal: string | null, shortName: string | null, shortDescription: string | null, parameters: Array<(
       { id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
@@ -1731,8 +1695,8 @@ export type GetPageQuery = (
     & { __typename: 'InstanceRootPage' | 'Page' }
   ) | (
     { leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: (
-      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
-        { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: any | null, targetYearGoal: number | null, quantity: string | null, metric: (
+      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
+        { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
           { id: string | null, name: string | null, unit: (
             { short: string, htmlShort: string, htmlLong: string }
             & { __typename: 'UnitType' }
@@ -1760,7 +1724,7 @@ export type GetPageQuery = (
           { id: string }
           & { __typename: 'ActionNode' | 'Node' }
         )>, upstreamActions: Array<(
-          { id: string, name: string, goal: any | null, shortName: string | null, shortDescription: any | null, parameters: Array<(
+          { id: string, name: string, goal: string | null, shortName: string | null, shortDescription: string | null, parameters: Array<(
             { id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
               { id: string }
               & { __typename: 'ActionNode' | 'Node' }
@@ -1831,7 +1795,7 @@ export type GetPageQuery = (
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
       )>, upstreamActions: Array<(
-        { id: string, name: string, goal: any | null, shortName: string | null, shortDescription: any | null, parameters: Array<(
+        { id: string, name: string, goal: string | null, shortName: string | null, shortDescription: string | null, parameters: Array<(
           { id: string, nodeRelativeId: string | null, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
             { id: string }
             & { __typename: 'ActionNode' | 'Node' }

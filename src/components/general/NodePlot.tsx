@@ -1,16 +1,19 @@
 import dynamic from 'next/dynamic';
+
 import { useTranslation } from 'next-i18next';
-import { tint, transparentize } from 'polished';
-import styled, { useTheme } from 'styled-components';
-import Icon from 'components/common/icon';
-import CsvDownload from 'react-json-to-csv';
-import { metricToPlot } from 'common/preprocess';
-import { useSite } from 'context/site';
 import type Plotly from 'plotly.js';
-import { useInstance } from 'common/instance';
+import { tint, transparentize } from 'polished';
+import CsvDownload from 'react-json-to-csv';
+import styled, { useTheme } from 'styled-components';
+
+import { useInstance } from '@/common/instance';
+import { metricToPlot } from '@/common/preprocess';
+import Icon from '@/components/common/icon';
+import { useSite } from '@/context/site';
+
 import type { CausalGridNode } from './CausalGrid';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const PlotWrapper = styled.div<{ $compact?: boolean }>`
   margin: 0 auto;
@@ -203,7 +206,7 @@ const NodePlot = (props: NodePlotProps) => {
     smoothing: true,
     fillcolor: scenarioPlotColor,
     ...filledStyles,
-    ...formatHover(t('plot-scenario', scenarioPlotColor)),
+    ...formatHover(t('plot-scenario'), scenarioPlotColor),
   });
 
   if (hasImpact) {
@@ -312,7 +315,9 @@ const NodePlot = (props: NodePlotProps) => {
       ticklen: 10,
       gridcolor: theme.graphColors.grey005,
       tickcolor: theme.graphColors.grey030,
-      title: metric?.unit?.htmlShort,
+      title: {
+        text: metric?.unit?.htmlShort,
+      },
       rangemode: rangeMode,
     },
     xaxis2: {

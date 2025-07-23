@@ -1,4 +1,4 @@
-import _, { range } from 'lodash';
+import _ from 'lodash-es';
 import numbro from 'numbro';
 
 let nrSignificantDigits = 3;

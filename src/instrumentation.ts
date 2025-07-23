@@ -1,19 +1,18 @@
-import { printRuntimeConfig } from './common/environment';
-import { initSentry } from './common/sentry';
+import { captureRequestError } from '@sentry/nextjs';
 
-//import { nodeProfilingIntegration } from '@sentry/profiling-node';
-//import { getLogger } from './common/log';
-
-//const logger = getLogger('init');
-
-//logger.info({ config: getRuntimeConfig() }, 'Initializing app');
+const productName = 'Kausal Paths UI';
 
 export const register = async () => {
-  if (process.env.NEXT_RUNTIME === 'edge' || process.env.NEXT_RUNTIME === 'nodejs') {
-    initSentry();
+  if (!process.env.PROJECT_ID) {
+    process.env.PROJECT_ID = 'paths-ui';
   }
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    printRuntimeConfig();
-    await import('./instrumentation-node');
+    const nodeOtel = await import('@common/instrumentation/node');
+    await nodeOtel.initAll(productName);
+  } else {
+    const edgeOtel = await import('@common/instrumentation/edge');
+    await edgeOtel.initAll(productName);
   }
 };
+
+export const onRequestError = captureRequestError;

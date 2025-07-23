@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { useTranslation } from 'common/i18n';
+
 import { Button, Tooltip } from 'reactstrap';
+import styled, { createGlobalStyle } from 'styled-components';
+
+import { useTranslation } from '@/common/i18n';
+
+// Fixes an issue where the tooltip initially renders below the parent element
+const GlobalStyles = createGlobalStyle`
+  .tooltip-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 400px;
+    z-index: 1040;
+  }
+`;
 
 const InfoButton = styled(Button)`
   padding: 0 0.5rem 0.1rem;
@@ -9,9 +22,7 @@ const InfoButton = styled(Button)`
   opacity: 0.5;
   svg {
     fill: ${(props) =>
-      props.invert === 'true'
-        ? props.theme.themeColors.white
-        : props.theme.themeColors.black};
+      props.invert === 'true' ? props.theme.themeColors.white : props.theme.themeColors.black};
   }
 
   &:hover {
@@ -36,6 +47,7 @@ const PopoverTip = (props: PopoverTipProps) => {
 
   return (
     <>
+      <GlobalStyles />
       <InfoButton id={id} color="link" invert={invert.toString()}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -55,6 +67,7 @@ const PopoverTip = (props: PopoverTipProps) => {
         isOpen={tooltipOpen}
         autohide={false}
         toggle={toggle}
+        className="tooltip-container"
       >
         {content}
       </Tooltip>

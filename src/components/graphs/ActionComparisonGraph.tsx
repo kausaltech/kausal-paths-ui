@@ -1,12 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
-import Icon from 'components/common/icon';
 import { useTranslation } from 'next-i18next';
-import { Col, Row } from 'reactstrap';
+import dynamic from 'next/dynamic';
+import {
+  Col,
+  Row,
+} from 'reactstrap';
 import styled, { useTheme } from 'styled-components';
 
-const Plot = dynamic(() => import('components/graphs/Plot'), { ssr: false });
+import Icon from '@/components/common/icon';
+
+const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const GraphContainer = styled.div`
   .js-plotly-plot {
@@ -156,10 +165,7 @@ function ActionComparisonGraph(props) {
         <ActionDescription color={data.colors[hoverId]}>
           <a href={`/actions/${actionIds[hoverId]}/`}>
             <HoverGroupTag color={data.colors[hoverId]}>
-              {
-                actionGroups.find((group) => group.id === data.groups[hoverId])
-                  ?.name
-              }
+              {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>
               {data.actions[hoverId]} <Icon name="arrowRight" />

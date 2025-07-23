@@ -1,8 +1,10 @@
-import styled from 'styled-components';
-import { useTranslation } from 'next-i18next';
-import { Container, Row, Col, ListGroup } from 'reactstrap';
-import { NodeLink } from 'common/links';
 import React from 'react';
+
+import { useTranslation } from 'next-i18next';
+import { Col, Container, ListGroup, Row } from 'reactstrap';
+import styled from 'styled-components';
+
+import { NodeLink } from '@/common/links';
 
 const InputNodes = styled.div`
   margin-bottom: 4rem;
@@ -46,10 +48,7 @@ type ListGroupItemProps = React.PropsWithChildren &
     | ({ tag: 'h5' } & React.JSX.IntrinsicElements['h5'])
   );
 
-function ListGroupItemInner(
-  props: ListGroupItemProps,
-  ref: React.ForwardedRef<any>
-) {
+function ListGroupItemInner(props: ListGroupItemProps, ref: React.ForwardedRef<any>) {
   const className = 'list-group-item';
   if (props.tag === 'a') {
     const { tag, ...rest } = props;
