@@ -177,7 +177,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         >
           <DrawerHeader>
             <h1 style={{ fontSize: '1rem' }}>Scenario editor</h1>
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton onClick={handleDrawerClose} size="small">
               <span>{'X'}</span>
             </IconButton>
           </DrawerHeader>

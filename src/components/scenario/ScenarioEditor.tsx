@@ -11,17 +11,21 @@ const ScenarioEditor = () => {
   const hasGlobalParameters = site.parameters.length > 0;
   return (
     <Box sx={{ p: 1 }}>
-      <ScenarioSelector />
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mb: 2 }}>
+        <ScenarioSelector />
+      </Box>
+      <Box sx={{ mb: 3 }}>
         <Typography variant="h5" component="h2">
           Actions
         </Typography>
         <ActionsChooser />
         {hasGlobalParameters && (
-          <>
-            <h5>Global settings</h5>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" component="h2">
+              Global settings
+            </Typography>
             <GlobalParameters />
-          </>
+          </Box>
         )}
       </Box>
     </Box>

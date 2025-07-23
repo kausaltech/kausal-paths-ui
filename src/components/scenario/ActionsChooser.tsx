@@ -24,7 +24,7 @@ import { activeGoalVar } from '@/common/cache';
 import { findActionEnabledParam } from '@/common/preprocess';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 
-import ParameterWidget from '../general/ParameterWidget';
+import ActionParameters from '../general/ActionParameters';
 
 const ActionsList = styled.div`
   display: flex;
@@ -34,22 +34,6 @@ const ActionsList = styled.div`
 
 const ActionsListItem = styled.div`
   flex: 1 1 320px;
-`;
-
-const WidgetWrapper = styled.div`
-  font-size: 0.8rem;
-
-  .form-check-input {
-    &:checked {
-      background-color: ${(props) => props.theme.brandDark};
-      border-color: ${(props) => props.theme.brandDark};
-    }
-  }
-
-  .form-check-label {
-    margin-left: 0.5rem;
-    line-height: 1;
-  }
 `;
 
 type ActionListCardProps = {
@@ -123,13 +107,7 @@ const ActionListCard = (props: ActionListCardProps) => {
       </CardActionArea>
 
       <CardActions sx={{ pt: 0 }}>
-        {actionParameterSwitch && (
-          <ParameterWidget
-            key={actionParameterSwitch.id}
-            parameter={actionParameterSwitch}
-            WidgetWrapper={WidgetWrapper}
-          />
-        )}
+        <ActionParameters parameters={action.parameters} />
       </CardActions>
     </Card>
   );
@@ -176,7 +154,7 @@ const ActionsChooser = () => {
   });
 
   return (
-    <Box>
+    <Box sx={{ mb: 2 }}>
       <Typography variant="caption" component="p" sx={{ mb: 1 }}>
         {t('active-actions', {
           count: activeActions.length,
@@ -191,8 +169,6 @@ const ActionsChooser = () => {
             </ActionsListItem>
           );
         })}
-        <ActionsListItem />
-        <ActionsListItem />
       </ActionsList>
     </Box>
   );
