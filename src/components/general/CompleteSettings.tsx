@@ -12,7 +12,7 @@ import GlobalParameters from '@/components/general/GlobalParameters';
 import GoalOutcomeBar from '@/components/general/GoalOutcomeBar';
 import GoalSelector from '@/components/general/GoalSelector';
 import RangeSelector from '@/components/general/RangeSelector';
-import ScenarioSelector from '@/components/general/ScenarioSelector';
+import ScenarioSelector from '@/components/scenario/ScenarioSelector';
 import { useSite } from '@/context/site';
 
 import ActionsSummary from './ActionsSummary';

@@ -35,6 +35,7 @@ const ACTIVATE_SCENARIO = gql`
 const StyledFormControl = styled(FormControl)`
   max-width: 320px;
   min-width: 100px;
+  width: 100%;
 `;
 
 const StyledInputLabel = styled(InputLabel)`
@@ -55,15 +56,25 @@ const StyledInputLabel = styled(InputLabel)`
   }
 `;
 
-const StyledSelect = styled(Select)`
+const StyledSelect = styled(Select)<{ $custom: boolean }>`
   /* Make it look like Bootstrap form-control */
-
   .MuiSelect-select {
     padding: 8px 12px;
     font-size: 1rem;
     line-height: 1.5;
+    background-color: ${(props) =>
+      props.$custom ? props.theme.graphColors.yellow010 : props.theme.inputBg};
   }
 `;
+
+const StyledMenuItem = styled(MenuItem)<{ $custom?: boolean }>`
+  background-color: ${(props) =>
+    props.$custom ? props.theme.graphColors.yellow010 : 'transparent'};
+`;
+
+const isCustomScenario = (scenario: any) => {
+  return scenario.id === 'custom';
+};
 
 const ScenarioSelector = () => {
   const { t } = useTranslation();
@@ -72,7 +83,7 @@ const ScenarioSelector = () => {
   const { loading, error, data } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
-    onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive)),
+    onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive) as any),
     context: {
       componentName: 'ScenarioSelector',
     },
@@ -89,7 +100,7 @@ const ScenarioSelector = () => {
     return (
       <StyledFormControl>
         <StyledInputLabel>{t('scenario')}</StyledInputLabel>
-        <StyledSelect value={t('loading')} id="scenario-select">
+        <StyledSelect value={t('loading')} id="scenario-select" $custom={false}>
           <MenuItem disabled value={t('loading')}>
             <span>
               <CircularProgress size={16} />
@@ -125,14 +136,19 @@ const ScenarioSelector = () => {
   return (
     <StyledFormControl>
       <StyledInputLabel>{t('scenario')}</StyledInputLabel>
-      <StyledSelect value={activeScenario.id} onChange={handleChange} id="scenario-select">
+      <StyledSelect
+        value={activeScenario.id}
+        onChange={handleChange}
+        id="scenario-select"
+        $custom={isCustomScenario(activeScenario)}
+      >
         <MenuItem disabled value="">
           {t('change-scenario')}
         </MenuItem>
         {scenarios.map((scenario) => (
-          <MenuItem key={scenario.id} value={scenario.id}>
-            {scenario.name}
-          </MenuItem>
+          <StyledMenuItem key={scenario.id} value={scenario.id}>
+            {isCustomScenario(scenario) ? <i>{scenario.name}</i> : scenario.name}
+          </StyledMenuItem>
         ))}
       </StyledSelect>
     </StyledFormControl>
