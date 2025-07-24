@@ -1428,7 +1428,7 @@ export type GetActionListQuery = (
     ) | null }
     & { __typename: 'ActionNode' }
   )>, impactOverviews: Array<(
-    { id: string, label: string, plotLimitForIndicator: number | null, invertCost?: boolean, invertImpact?: boolean, indicatorUnit: (
+    { id: string, label: string, plotLimitForIndicator: number | null, indicatorUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
@@ -1475,14 +1475,20 @@ export type GetImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetImpactOverviewsQuery = (
   { impactOverviews: Array<(
-    { id: string, label: string, graphType: string | null, effectNode: (
+    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, effectNode: (
       { id: string }
       & { __typename: 'Node' }
     ), effectUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
+    ), indicatorUnit: (
+      { short: string, long: string }
+      & { __typename: 'UnitType' }
+    ), costUnit: (
+      { short: string, long: string }
+      & { __typename: 'UnitType' }
     ), actions: Array<(
-      { action: (
+      { unitAdjustmentMultiplier: number | null, action: (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
       ), effectDim: (

@@ -1,7 +1,7 @@
 {
   "extends": "./kausal_common/configs/tsconfig.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"],
       "@common/*": ["./kausal_common/src/*"],
