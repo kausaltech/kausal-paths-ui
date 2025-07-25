@@ -22,6 +22,7 @@ import Icon from '@/components/common/icon';
 import { useSiteWithSetter } from '@/context/site';
 import {
   DimensionalMetric,
+  type DimensionalMetric as DimensionalMetricType,
   type MetricCategoryValues,
   type MetricSlice,
   type SliceConfig,
@@ -48,7 +49,7 @@ const Tools = styled.div`
 
 type BaselineForecast = { year: number; value: number };
 
-const getLongUnit = (cube: DimensionalMetric, unit: string, t: (key: string) => string) => {
+const getLongUnit = (cube: DimensionalMetricType, unit: string, t: (key: string) => string) => {
   let longUnit = unit;
   // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
   // the backend gets proper support for unit specifiers.
@@ -64,7 +65,6 @@ const getLongUnit = (cube: DimensionalMetric, unit: string, t: (key: string) => 
 };
 
 type DimensionalNodeVisualisationProps = {
-  withReferenceYear?: boolean;
   baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   startYear: number;
@@ -75,13 +75,13 @@ type DimensionalNodeVisualisationProps = {
 };
 
 export default function DimensionalNodeVisualisation({
-  withReferenceYear = false,
   metric,
   startYear,
   withControls = true,
   withTools = true,
   endYear,
   baselineForecast,
+  onClickMeasuredEmissions,
 }: DimensionalNodeVisualisationProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
@@ -103,13 +103,8 @@ export default function DimensionalNodeVisualisation({
 
   const cube = metrics.default;
 
-  const lastMetricYear = metric.years.slice(-1)[0];
-  const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
-
   const defaultConfig = cube.getDefaultSliceConfig(activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
-
-  const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
 
   useEffect(() => {
     /**
@@ -134,38 +129,37 @@ export default function DimensionalNodeVisualisation({
     slice = cube.flatten(sliceConfig.categories);
   }
 
-  const showReferenceYear =
-    withReferenceYear &&
-    !!instance?.referenceYear &&
-    instance.minimumHistoricalYear !== instance.referenceYear;
-  const referenceYear = showReferenceYear ? instance.referenceYear : undefined;
-
   const goals = cube.getGoalsForChoice(sliceConfig.categories);
-
-  const generateRow = (cv: MetricCategoryValues, idx: number) => {
-    return {
-      name: cv.category.label,
-      values: [...cv.historicalValues, ...cv.forecastValues],
-      type: 'historical',
-      color: cv.color,
-    };
-  };
-
-  const rows = slice.categoryValues.map((cv, idx) => generateRow(cv, idx));
 
   const showBaseline =
     baselineForecast && site?.baselineName && instance.features?.baselineVisibleInGraphs;
 
+  // Create an array of visualizable years that takes into account the user selected range and the reference year
+
+  const lastMetricYear = metric.years.slice(-1)[0];
+  const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
+
+  // Let's check if there is a gap between the minimum historical year and the reference year
+  // And double check if we actually want to show the reference year (plan setting)
+  // And user has selected the reference year as the start year of the chart
+  const showReferenceYear = !!instance?.referenceYear && startYear === instance.referenceYear;
+  const referenceYear = showReferenceYear ? instance.referenceYear : undefined;
+
   // Filter years to only include those between startYear and usableEndYear
+  // Make sure the years between referenceYear and minimumHistoricalYear are not included
   const filteredHistoricalYears = slice.historicalYears.filter(
-    (year) => year >= startYear && year <= usableEndYear
+    (year) => year >= startYear && year <= usableEndYear && year >= instance.minimumHistoricalYear
   );
   const filteredForecastYears = slice.forecastYears.filter(
-    (year) => year >= startYear && year <= usableEndYear
+    (year) => year >= startYear && year <= usableEndYear && year >= instance.minimumHistoricalYear
   );
   const allYears = [...slice.historicalYears, ...slice.forecastYears];
   const filteredYears = [...filteredHistoricalYears, ...filteredForecastYears];
 
+  // If we are showing the reference year, add it to the beginning of the filtered years
+  if (referenceYear) {
+    filteredYears.unshift(referenceYear);
+  }
   // Create indices for filtering values
   const yearIndices = filteredYears.map((year) => allYears.indexOf(year));
 
@@ -217,58 +211,83 @@ export default function DimensionalNodeVisualisation({
       );
 
       filteredProgressYears.push(...filteredX);
-      filteredProgressValues.push(...filteredY);
+      filteredProgressValues.push(...filteredY.filter((y) => y !== null));
     }
   }
 
-  const datasetTable = {
-    source: [
-      ['Category', 'Type', ...filteredYears],
-      ...rows.map((row) => [row.name, 'historical', ...yearIndices.map((idx) => row.values[idx])]),
-      ...(slice.totalValues
-        ? [
-            [
-              'Total',
-              'total',
-              ...yearIndices.map(
-                (idx) =>
-                  [...slice.totalValues!.historicalValues, ...slice.totalValues!.forecastValues][
-                    idx
-                  ]
-              ),
-            ],
-          ]
-        : []),
-      [
-        'Goal',
-        'goal',
-        ...filteredYears.map((year) => goals?.find((goal) => goal.year === year)?.value),
-      ],
-      showBaseline
-        ? [
-            'Baseline',
-            'baseline',
-            ...filteredYears.map(
-              (year) => baselineForecast?.find((forecast) => forecast.year === year)?.value
-            ),
-          ]
-        : ['Baseline', 'baseline', ...filteredYears.map(() => undefined)],
-      hasProgressTracking && metrics.progress && slicedDim
-        ? [
+  // Collect full data for each category in the chart
+
+  const dataCategories = slice.categoryValues.map((cv: MetricCategoryValues) => {
+    return {
+      name: cv.category.label,
+      values: [...cv.historicalValues, ...cv.forecastValues],
+      color: cv.color,
+    };
+  });
+
+  // Create simple tables for category data, goal data, baseline data, progress data, and total data
+  // Using the filtered years
+  const headerRow = ['Category', ...filteredYears];
+  const datasetTable = [
+    headerRow,
+    ...dataCategories.map((row) => [row.name, ...yearIndices.map((idx) => row.values[idx])]),
+  ].filter((row) => row.length > 0);
+
+  const goalTable = [
+    headerRow,
+    ['Goal', ...filteredYears.map((year) => goals?.find((goal) => goal.year === year)?.value)],
+  ];
+
+  const baselineTable = showBaseline
+    ? [
+        headerRow,
+        [
+          'Baseline',
+          ...filteredYears.map(
+            (year) => baselineForecast?.find((forecast) => forecast.year === year)?.value
+          ),
+        ],
+      ]
+    : undefined;
+
+  const progressTable =
+    hasProgressTracking && metrics.progress && slicedDim
+      ? [
+          headerRow,
+          [
             'Progress',
-            'progress',
             ...filteredYears.map(
               (year) => filteredProgressValues[filteredProgressYears.indexOf(year)] ?? undefined
             ),
-          ]
-        : ['Progress', 'progress', ...filteredYears.map(() => undefined)],
-    ].filter((row) => row.length > 0),
-  };
+          ],
+        ]
+      : undefined;
 
-  const categoryColors = [...rows.map((row) => row.color ?? theme.graphColors.blue070)];
+  const totalTable = slice.totalValues
+    ? [
+        headerRow,
+        [
+          'Total',
+          ...yearIndices.map(
+            (idx) =>
+              [...slice.totalValues!.historicalValues, ...slice.totalValues!.forecastValues][idx]
+          ),
+        ],
+      ]
+    : undefined;
 
-  // TODO: Progress tracking
+  // Define colors for the categories
+  const categoryColors = [...dataCategories.map((row) => row.color ?? theme.graphColors.blue070)];
 
+  // Check if the data has any negative values, in order to decide if we want to show the total line
+  // We could use filtered year range here only, but let's show the total line even if negative values are filtered out
+  const hasNegativeValues = slice.categoryValues.some(
+    (cv) =>
+      cv.historicalValues.some((value) => Number(value) < 0) ||
+      cv.forecastValues.some((value) => Number(value) < 0)
+  );
+
+  // Let's create UI for selecting dimensions and categories
   const hasGroups = cube.dimensions.some((dim) => dim.groups.length); // Typically direct & indirect emissions
 
   const controls =
@@ -326,19 +345,22 @@ export default function DimensionalNodeVisualisation({
 
       <div className="mt-3">
         <NodeGraph
-          plotData={datasetTable}
+          dataTable={datasetTable}
+          goalTable={goalTable}
+          baselineTable={baselineTable}
+          progressTable={progressTable}
+          totalTable={totalTable}
           unit={getLongUnit(cube, metric.unit.htmlShort, t)}
-          stackable={metric.stackable}
-          endYear={usableEndYear}
-          startYear={startYear}
           referenceYear={referenceYear}
           forecastRange={[
             slice.forecastYears[0],
             slice.forecastYears[slice.forecastYears.length - 1],
           ]}
           categoryColors={categoryColors}
-          maximumFractionDigits={maximumFractionDigits}
+          maximumFractionDigits={useFeatures().maximumFractionDigits ?? undefined}
           baselineLabel={site?.baselineName}
+          showTotalLine={hasNegativeValues}
+          onClickMeasuredEmissions={onClickMeasuredEmissions}
         />
       </div>
 

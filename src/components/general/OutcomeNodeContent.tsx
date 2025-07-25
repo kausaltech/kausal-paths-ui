@@ -178,7 +178,6 @@ const OutcomeNodeContent = ({
           // color={color}
           withControls={false}
           baselineForecast={node.metric?.baselineForecastValues ?? undefined}
-          withReferenceYear
           withTools={false}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
         />
