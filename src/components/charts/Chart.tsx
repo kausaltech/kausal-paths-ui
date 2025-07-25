@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 // Import used charts
-import { BarChart, CustomChart, LineChart } from 'echarts/charts';
+import { BarChart, CustomChart, LineChart, PieChart } from 'echarts/charts';
 // Import the tooltip, title, rectangular coordinate system, dataset and transform components
 import {
   DatasetComponent,
@@ -42,6 +42,7 @@ echarts.use([
   GraphicComponent,
   LineChart,
   MarkLineComponent,
+  PieChart,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`
