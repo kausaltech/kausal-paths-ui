@@ -66,12 +66,11 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
       axisPointer: { type: 'shadow' },
       formatter: (params) => {
         const p = Array.isArray(params) ? params[0] : params;
-        return `${p.name}: <b>${p.value}</b> ${unit || ''}`;
+        return `${p.name}: <b>${p.value.value}</b> ${unit || ''}`;
       },
     },
     xAxis: {
       type: 'value',
-      axisLabel: { formatter: `{value}${unit ? ' ' + unit : ''}` },
     },
     yAxis: {
       type: 'category',

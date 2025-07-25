@@ -449,6 +449,8 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           borderRadius: '0 !important',
           backgroundColor: 'transparent',
           boxShadow: 'none',
+          borderLeftWidth: 0,
+          borderRightWidth: 0,
           borderTop: `1px solid ${theme.graphColors.grey020}`,
           borderBottom: `1px solid ${theme.graphColors.grey020}`,
           '&:not(:last-child)': {
