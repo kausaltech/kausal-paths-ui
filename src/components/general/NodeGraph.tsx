@@ -17,7 +17,7 @@ import { Chart } from '@/components/charts/Chart';
  * @param totalTable - The total table to plot. If present, visualized as a line only if showTotalLine is true. Otherwise only visible in tooltip.
  * @param unit - The unit of the data.
  * @param referenceYear - The reference year to plot. If present, we are aware that there is a gap in the data.
- * @param forecastRange - The forecast range to plot. Visualized as an areaMarker. Datapoints in the range marked as forecast.
+ * @param forecastRange - The forecast range to plot. Visualized as an areaMarker. Datapoints in the range marked as forecast. Filtered to the visible range of years.
  * @param categoryColors - The colors of the categories.
  * @param maximumFractionDigits - Used for beautifying and localizing values for display.
  * @param baselineLabel - The label of the baseline.
@@ -26,13 +26,13 @@ import { Chart } from '@/components/charts/Chart';
 
 type NodeGraphProps = {
   dataTable: DataTable;
-  goalTable: DataTable | undefined;
-  baselineTable: DataTable | undefined;
-  progressTable: DataTable | undefined;
-  totalTable: DataTable | undefined;
+  goalTable: DataTable | null;
+  baselineTable: DataTable | null;
+  progressTable: DataTable | null;
+  totalTable: DataTable | null;
   unit: string;
   referenceYear: number | undefined | null;
-  forecastRange: [number, number];
+  forecastRange: [number, number] | null;
   categoryColors: Record<string, string>;
   maximumFractionDigits: number | undefined;
   baselineLabel: string | undefined;
@@ -110,20 +110,20 @@ export default function NodeGraph({
       sourceHeader: true,
     },
     {
-      source: goalTable,
-      sourceHeader: true,
+      source: goalTable ?? [],
+      sourceHeader: goalTable ? true : false,
     },
     {
-      source: baselineTable,
-      sourceHeader: true,
+      source: baselineTable ?? [],
+      sourceHeader: baselineTable ? true : false,
     },
     {
-      source: progressTable,
-      sourceHeader: true,
+      source: progressTable ?? [],
+      sourceHeader: progressTable ? true : false,
     },
     {
-      source: totalTable,
-      sourceHeader: true,
+      source: totalTable ?? [],
+      sourceHeader: totalTable ? true : false,
     },
   ];
 
@@ -134,9 +134,9 @@ export default function NodeGraph({
     Progress: t('observed-emissions'),
   };
 
-  const hasGoalData = goalTable !== undefined;
-  const hasBaselineData = baselineTable !== undefined;
-  const hasProgressData = progressTable !== undefined;
+  const hasGoalData = goalTable !== null;
+  const hasBaselineData = baselineTable !== null;
+  const hasProgressData = progressTable !== null;
 
   const legendData = createLegendData(
     fullDataset,
@@ -146,24 +146,21 @@ export default function NodeGraph({
     showTotalLine
   );
 
-  const visibleForecastMinYear = Math.max(forecastRange[0], Number(startYear));
-  const visibleForecastMaxYear = Math.min(forecastRange[1], Number(endYear));
-
   // Calculate indices for the forecast range
-  const markAreaStartIndex =
-    fullDataset[PLOT_INDEX].source?.[0]?.findIndex(
-      (year) => Number(year) === visibleForecastMinYear
-    ) - 1;
-  const markAreaEndIndex =
-    fullDataset[PLOT_INDEX].source?.[0]?.findIndex(
-      (year) => Number(year) === visibleForecastMaxYear
-    ) - 1;
+  const markAreaStartIndex = forecastRange
+    ? fullDataset[PLOT_INDEX].source?.[0]?.findIndex((year) => Number(year) === forecastRange[0]) -
+      (referenceYear ? 2 : 1)
+    : -1;
+  const markAreaEndIndex = forecastRange
+    ? fullDataset[PLOT_INDEX].source?.[0]?.findIndex((year) => Number(year) === forecastRange[1]) -
+      (referenceYear ? 2 : 1)
+    : -1;
 
   // Check if forecast range years exist in the data
   const hasForecastData = markAreaStartIndex > -1 && markAreaEndIndex > -1;
 
   const isForecastYear = (year: number) => {
-    return year >= forecastRange[0] && year <= forecastRange[1];
+    return forecastRange ? year >= forecastRange[0] && year <= forecastRange[1] : false;
   };
 
   const createTooltipFormatter = () => {
@@ -291,8 +288,11 @@ function createLegendData(
   if (dataset[BASELINE_INDEX].source !== undefined) {
     specialSeriesLegend.push({
       name: specialSeriesLabels.Baseline,
-      itemStyle: {
+      lineStyle: {
         color: theme.graphColors.grey060,
+      },
+      itemStyle: {
+        opacity: 0,
       },
     });
   }
@@ -393,9 +393,6 @@ function createBaselineSeries(theme: Theme, name: string) {
     name: name,
     symbol: 'none',
     step: false,
-    itemStyle: {
-      color: theme.graphColors.grey060,
-    },
     lineStyle: {
       color: theme.graphColors.grey060,
       type: 'dashed',
@@ -409,7 +406,7 @@ function createProgressSeries(theme: Theme, name: string) {
     seriesLayoutBy: 'row',
     datasetIndex: PROGRESS_INDEX,
     name: name,
-    symbol: 'diamond',
+    symbol: 'path://M-4,-2 L-2,-4 L6,4 L4,6 M-2,6 L-4,4 L4,-4 L6,-2',
     symbolSize: 8,
     step: false,
     connectNulls: true,
