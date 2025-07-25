@@ -1,10 +1,10 @@
 import React from 'react';
 
 import { useTheme } from '@emotion/react';
-import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 
-import { Chart } from '../charts/Chart';
+import { Chart } from '../../charts/Chart';
 
 export type ActionImpactNode = {
   id: string;

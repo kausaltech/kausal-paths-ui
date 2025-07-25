@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { useTheme } from '@emotion/react';
 import {
   Box,
@@ -17,9 +15,9 @@ import { ArrowRight } from 'react-bootstrap-icons';
 import { Link } from '@/common/links';
 
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
-import DashboardVisualizationActionImpact from './DashboardVisualizationActionImpact';
-import DashboardVisualizationEmissionSources from './DashboardVisualizationEmissionSources';
-import DashboardVisualizationProgress from './DashboardVisualizationProgress';
+import DashboardVisualizationActionImpact from '../general/resident-dashboard/DashboardVisualizationActionImpact';
+import DashboardVisualizationEmissionSources from '../general/resident-dashboard/DashboardVisualizationEmissionSources';
+import DashboardVisualizationProgress from '../general/resident-dashboard/DashboardVisualizationProgress';
 import mockClimateDashboardPage from './mock-climate-dashboard-page.json';
 
 const page = mockClimateDashboardPage.data.page;
