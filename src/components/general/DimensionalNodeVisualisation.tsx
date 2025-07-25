@@ -130,19 +130,30 @@ export default function DimensionalNodeVisualisation({
   }
 
   const goals = cube.getGoalsForChoice(sliceConfig.categories);
-
   const showBaseline =
     baselineForecast && site?.baselineName && instance.features?.baselineVisibleInGraphs;
 
   // Create an array of visualizable years that takes into account the user selected range and the reference year
-
   const lastMetricYear = metric.years.slice(-1)[0];
   const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
+
+  // Check if forecast range overlaps with visible range [startYear, usableEndYear]
+  const forecastStart = slice.forecastYears[0];
+  const forecastEnd = slice.forecastYears[slice.forecastYears.length - 1];
+  const hasOverlap = forecastStart <= usableEndYear && startYear <= forecastEnd;
+
+  // Define visible forecast range (intersection of forecast range and visible range)
+  const visibleForecastRange: [number, number] | null = hasOverlap
+    ? [Math.max(forecastStart, startYear), Math.min(forecastEnd, usableEndYear)]
+    : null;
 
   // Let's check if there is a gap between the minimum historical year and the reference year
   // And double check if we actually want to show the reference year (plan setting)
   // And user has selected the reference year as the start year of the chart
-  const showReferenceYear = !!instance?.referenceYear && startYear === instance.referenceYear;
+  const showReferenceYear =
+    !!instance?.referenceYear &&
+    startYear === instance.referenceYear &&
+    instance.referenceYear !== instance.minimumHistoricalYear;
   const referenceYear = showReferenceYear ? instance.referenceYear : undefined;
 
   // Filter years to only include those between startYear and usableEndYear
@@ -233,10 +244,16 @@ export default function DimensionalNodeVisualisation({
     ...dataCategories.map((row) => [row.name, ...yearIndices.map((idx) => row.values[idx])]),
   ].filter((row) => row.length > 0);
 
-  const goalTable = [
-    headerRow,
-    ['Goal', ...filteredYears.map((year) => goals?.find((goal) => goal.year === year)?.value)],
-  ];
+  const goalTable =
+    goals !== null
+      ? [
+          headerRow,
+          [
+            'Goal',
+            ...filteredYears.map((year) => goals?.find((goal) => goal.year === year)?.value),
+          ],
+        ]
+      : null;
 
   const baselineTable = showBaseline
     ? [
@@ -248,20 +265,20 @@ export default function DimensionalNodeVisualisation({
           ),
         ],
       ]
-    : undefined;
+    : null;
 
   const progressTable =
-    hasProgressTracking && metrics.progress && slicedDim
+    filteredProgressValues.length > 0 && filteredProgressYears.length > 0
       ? [
           headerRow,
           [
             'Progress',
             ...filteredYears.map(
-              (year) => filteredProgressValues[filteredProgressYears.indexOf(year)] ?? undefined
+              (year) => filteredProgressValues[filteredProgressYears.indexOf(year)] ?? null
             ),
           ],
         ]
-      : undefined;
+      : null;
 
   const totalTable = slice.totalValues
     ? [
@@ -274,10 +291,12 @@ export default function DimensionalNodeVisualisation({
           ),
         ],
       ]
-    : undefined;
+    : null;
 
   // Define colors for the categories
-  const categoryColors = [...dataCategories.map((row) => row.color ?? theme.graphColors.blue070)];
+  const categoryColors: Record<string, string> = {
+    ...dataCategories.map((row) => row.color ?? theme.graphColors.blue070),
+  };
 
   // Check if the data has any negative values, in order to decide if we want to show the total line
   // We could use filtered year range here only, but let's show the total line even if negative values are filtered out
@@ -352,10 +371,7 @@ export default function DimensionalNodeVisualisation({
           totalTable={totalTable}
           unit={getLongUnit(cube, metric.unit.htmlShort, t)}
           referenceYear={referenceYear}
-          forecastRange={[
-            slice.forecastYears[0],
-            slice.forecastYears[slice.forecastYears.length - 1],
-          ]}
+          forecastRange={visibleForecastRange}
           categoryColors={categoryColors}
           maximumFractionDigits={useFeatures().maximumFractionDigits ?? undefined}
           baselineLabel={site?.baselineName}
