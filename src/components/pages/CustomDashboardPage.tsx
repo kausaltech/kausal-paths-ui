@@ -126,7 +126,17 @@ function CustomDashboardPage() {
 
                 {!!card.callToAction && (
                   <MuiLink component={Link} href={card.callToAction.linkUrl}>
-                    <Card sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText' }}>
+                    <Card
+                      sx={{
+                        backgroundColor: 'primary.main',
+                        color: 'primary.contrastText',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'primary.dark',
+                        },
+                      }}
+                    >
                       <CardContent>
                         <Typography variant="h3" gutterBottom sx={{ color: 'inherit' }}>
                           {card.callToAction.title}
