@@ -19,7 +19,7 @@ import { readableColor } from 'polished';
 import { Dash, Plus } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
 
-import { Chart } from '../charts/Chart';
+import { Chart } from '../../charts/Chart';
 
 export type DashboardProgressItem = {
   title: string;
