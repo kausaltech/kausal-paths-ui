@@ -12,7 +12,11 @@
     "graphql-codegen": "graphql-codegen --config codegen.ts",
     "prettier:fix": "prettier ./ --write",
     "typecheck": "tsc --noEmit",
+    "typecheck:baseline": "tsc --noEmit | tsc-baseline -p tsc-baseline.json check",
+    "typecheck:baseline:update": "tsc --noEmit | tsc-baseline -p tsc-baseline.json save",
     "lint": "next lint",
+    "lint:baseline": "eslint --cache --suppressions-location eslint-baseline.json",
+    "lint:baseline:update": "eslint --cache --suppressions-location eslint-baseline.json --prune-suppressions",
     "prepare": "husky || true"
   },
   "dependencies": {
@@ -117,6 +121,7 @@
     "@types/react-plotly.js": "^2.6.3",
     "@types/set-cookie-parser": "^2.4.10",
     "@types/styled-components": "^5.1.34",
+    "ansi-styles": "^6.2.1",
     "babel-loader": "^10.0.0",
     "babel-plugin-graphql-tag": "^3.3.0",
     "babel-plugin-react-compiler": "^19.1.0-rc.2",
@@ -141,6 +146,7 @@
     "proper-lockfile": "^4.1.2",
     "sass": "^1.77.5",
     "source-map-loader": "^5.0.0",
+    "tsc-baseline": "^1.9.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.0"
   },
@@ -150,7 +156,11 @@
     "@kausal-private/themes-private": "^0.5.49"
   },
   "lint-staged": {
-    "*.{tsx,ts,js,css,scss,md,json,mjs,cjs}": "prettier --write"
+    "*.{tsx,ts,js,mjs,cjs}": [
+      "prettier --write",
+      "npm run lint:baseline --"
+    ],
+    "*.{css,scss,md,json}": "prettier --write"
   },
   "overrides": {
     "react": "^19",
