@@ -1,20 +1,9 @@
-import {
-  useMemo,
-  useState,
-} from 'react';
+import { useMemo, useState } from 'react';
 
+import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
-import {
-  Button,
-  ButtonGroup,
-  Col,
-  Container,
-  FormGroup,
-  Input,
-  Label,
-  Row,
-} from 'reactstrap';
+import { Button, ButtonGroup, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
 import styled from 'styled-components';
 
 import {
@@ -24,18 +13,14 @@ import {
   type GetImpactOverviewsQuery,
   type GetPageQuery,
 } from '@/common/__generated__/graphql';
-import {
-  activeGoalVar,
-  activeScenarioVar,
-  yearRangeVar,
-} from '@/common/cache';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
-import Icon from '@/components/common/icon';
 import { PageHero } from '@/components/common/PageHero';
 import ScenarioBadge from '@/components/common/ScenarioBadge';
+import Icon from '@/components/common/icon';
 import ActionsComparison from '@/components/general/ActionsComparison';
 import ActionsList from '@/components/general/ActionsList';
 import ActionsMac from '@/components/general/ActionsMac';
@@ -44,17 +29,9 @@ import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
 import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
-import type {
-  ActionWithEfficiency,
-  SortActionsBy,
-  SortActionsConfig,
-} from '@/types/actions.types';
-import {
-  type QueryResult,
-  useQuery,
-  useReactiveVar,
-} from '@apollo/client';
+import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
+import { SimpleEffect } from '../general/SimpleEffect';
 import type { PageRefetchCallback } from './Page';
 
 const SettingsForm = styled.form`
