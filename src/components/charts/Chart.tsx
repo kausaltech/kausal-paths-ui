@@ -138,11 +138,12 @@ export function Chart({ isLoading, data, height, onZrClick, className }: Props) 
       if (chart && withClickHandler) {
         const pointInPixel = [params.offsetX, params.offsetY];
         const pointInGrid = chart.convertFromPixel('grid', pointInPixel);
-        const dataIndex = pointInGrid[1];
 
-        console.log('click params', params);
-        console.log('pointInGrid', pointInGrid);
-        onZrClick(pointInGrid);
+        // Ensure we have a valid coordinate pair
+        if (Array.isArray(pointInGrid) && pointInGrid.length >= 2) {
+          const dataIndex: [number, number] = [pointInGrid[0], pointInGrid[1]];
+          onZrClick(dataIndex);
+        }
       }
     }
 

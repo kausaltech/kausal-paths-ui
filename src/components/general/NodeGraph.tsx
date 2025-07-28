@@ -1,5 +1,7 @@
 import { useTheme } from '@emotion/react';
+import { Alert } from '@mui/material';
 import { type Theme } from '@mui/material/styles';
+import * as Sentry from '@sentry/nextjs';
 import type * as echarts from 'echarts/core';
 import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
@@ -49,40 +51,47 @@ const BAR_MAX_WIDTH = '50';
 const BAR_CATEGORY_GAP = '20%';
 const FORECAST_TINT_AMOUNT = 0.35;
 
-// Index of the dataset in the dataset array
-const PLOT_INDEX = 0;
-const GOAL_INDEX = 1;
-const BASELINE_INDEX = 2;
-const PROGRESS_INDEX = 3;
-const TOTAL_INDEX = 4;
-
-export default function NodeGraph({
-  dataTable,
-  goalTable,
-  baselineTable,
-  progressTable,
-  totalTable,
-  unit,
-  referenceYear,
-  forecastRange,
-  categoryColors,
-  maximumFractionDigits,
-  baselineLabel,
-  showTotalLine = false,
-  onClickMeasuredEmissions,
-}: NodeGraphProps) {
+export default function NodeGraph(props: NodeGraphProps) {
   const theme = useTheme();
   const { t } = useTranslation();
 
+  const {
+    dataTable,
+    goalTable,
+    baselineTable,
+    progressTable,
+    totalTable,
+    unit,
+    referenceYear,
+    forecastRange,
+    categoryColors,
+    maximumFractionDigits,
+    baselineLabel,
+    showTotalLine = false,
+    onClickMeasuredEmissions,
+  } = props;
+
   // Figure out the start year of the dataset sans reference year
-  const startYear = referenceYear ? dataTable[0][2] : dataTable[0][1];
-  const endYear = dataTable[0][dataTable[0].length - 1];
+  const startYear =
+    dataTable?.[0] && dataTable[0].length > (referenceYear ? 2 : 1)
+      ? referenceYear
+        ? dataTable[0][2]
+        : dataTable[0][1]
+      : null;
+  const endYear =
+    dataTable?.[0] && dataTable[0].length > 0 ? dataTable[0][dataTable[0].length - 1] : null;
+
+  // Early return if we don't have valid data
+  if (!dataTable || !dataTable[0] || dataTable[0].length === 0) {
+    Sentry.captureException('NodeGraph: No data available');
+    return <Alert severity="error">No data available</Alert>;
+  }
 
   // Define events that are supposed to propagate up to the parent component
   // onClickMeasuredEmissions checks if the clicked year has progress data (nzc) and if so, calls the onClickMeasuredEmissions function
   const handleChartClick = (dataPoint: [number, number]) => {
     // If no callback is provided, no point in going further
-    if (!onClickMeasuredEmissions) return;
+    if (!onClickMeasuredEmissions || !startYear) return;
     // If the clicked year is the reference year, we do nothing
     // By definition reference year has no progress data
     if (dataPoint[0] === 0 && referenceYear) return;
@@ -104,28 +113,61 @@ export default function NodeGraph({
   const fullDataset: {
     source: DataTable | undefined;
     sourceHeader: boolean;
-  }[] = [
-    {
+  }[] = [];
+
+  // Track actual dataset indices as we build the array
+  const datasetIndices = {
+    data: -1,
+    goal: -1,
+    baseline: -1,
+    progress: -1,
+    total: -1,
+  };
+
+  // Add main data dataset (always present)
+  if (dataTable && dataTable.length > 0) {
+    datasetIndices.data = fullDataset.length;
+    fullDataset.push({
       source: dataTable,
       sourceHeader: true,
-    },
-    {
-      source: goalTable ?? [],
-      sourceHeader: goalTable ? true : false,
-    },
-    {
-      source: baselineTable ?? [],
-      sourceHeader: baselineTable ? true : false,
-    },
-    {
-      source: progressTable ?? [],
-      sourceHeader: progressTable ? true : false,
-    },
-    {
-      source: totalTable ?? [],
-      sourceHeader: totalTable ? true : false,
-    },
-  ];
+    });
+  }
+
+  // Add goal dataset if present
+  if (goalTable && goalTable.length > 0) {
+    datasetIndices.goal = fullDataset.length;
+    fullDataset.push({
+      source: goalTable,
+      sourceHeader: true,
+    });
+  }
+
+  // Add baseline dataset if present
+  if (baselineTable && baselineTable.length > 0) {
+    datasetIndices.baseline = fullDataset.length;
+    fullDataset.push({
+      source: baselineTable,
+      sourceHeader: true,
+    });
+  }
+
+  // Add progress dataset if present
+  if (progressTable && progressTable.length > 0) {
+    datasetIndices.progress = fullDataset.length;
+    fullDataset.push({
+      source: progressTable,
+      sourceHeader: true,
+    });
+  }
+
+  // Add total dataset if present
+  if (totalTable && totalTable.length > 0) {
+    datasetIndices.total = fullDataset.length;
+    fullDataset.push({
+      source: totalTable,
+      sourceHeader: true,
+    });
+  }
 
   const specialSeriesLabels = {
     Total: t('plot-total'),
@@ -140,6 +182,7 @@ export default function NodeGraph({
 
   const legendData = createLegendData(
     fullDataset,
+    datasetIndices,
     specialSeriesLabels,
     categoryColors,
     theme,
@@ -147,14 +190,18 @@ export default function NodeGraph({
   );
 
   // Calculate indices for the forecast range
-  const markAreaStartIndex = forecastRange
-    ? fullDataset[PLOT_INDEX].source?.[0]?.findIndex((year) => Number(year) === forecastRange[0]) -
-      (referenceYear ? 2 : 1)
-    : -1;
-  const markAreaEndIndex = forecastRange
-    ? fullDataset[PLOT_INDEX].source?.[0]?.findIndex((year) => Number(year) === forecastRange[1]) -
-      (referenceYear ? 2 : 1)
-    : -1;
+  const markAreaStartIndex =
+    forecastRange && datasetIndices.data >= 0 && fullDataset[datasetIndices.data]?.source?.[0]
+      ? fullDataset[datasetIndices.data].source![0].findIndex(
+          (year) => Number(year) === forecastRange[0]
+        ) - (referenceYear ? 2 : 1)
+      : -1;
+  const markAreaEndIndex =
+    forecastRange && datasetIndices.data >= 0 && fullDataset[datasetIndices.data]?.source?.[0]
+      ? fullDataset[datasetIndices.data].source![0].findIndex(
+          (year) => Number(year) === forecastRange[1]
+        ) - (referenceYear ? 2 : 1)
+      : -1;
 
   // Check if forecast range years exist in the data
   const hasForecastData = markAreaStartIndex > -1 && markAreaEndIndex > -1;
@@ -171,12 +218,13 @@ export default function NodeGraph({
 
       const isForecast =
         hasForecastData && dataIndex >= markAreaStartIndex && dataIndex <= markAreaEndIndex;
-      const year = fullDataset[PLOT_INDEX]?.source?.[0]?.[dataIndex + 1]; // +1 because first column is "Category"
+      const year =
+        datasetIndices.data >= 0 && fullDataset[datasetIndices.data]?.source?.[0]?.[dataIndex + 1]; // +1 because first column is "Category"
       const isReferenceYear = Boolean(referenceYear && Number(year) === referenceYear);
 
       return buildTooltipContent(
         params,
-        year,
+        typeof year === 'string' || typeof year === 'number' ? year : undefined,
         isForecast,
         isReferenceYear,
         unit,
@@ -188,19 +236,28 @@ export default function NodeGraph({
   };
 
   const series = [
-    ...createBarSeries(fullDataset, categoryColors, theme, isForecastYear),
-    hasGoalData ? createGoalSeries(theme, specialSeriesLabels.Goal) : null,
-    hasBaselineData ? createBaselineSeries(theme, specialSeriesLabels.Baseline) : null,
-    hasProgressData ? createProgressSeries(theme, specialSeriesLabels.Progress) : null,
-    createTotalSeries(
-      theme,
-      t,
-      markAreaStartIndex,
-      markAreaEndIndex,
-      showTotalLine,
-      specialSeriesLabels.Total
-    ),
-  ];
+    ...(createBarSeries(fullDataset, datasetIndices, categoryColors, theme, isForecastYear) || []),
+    hasGoalData && datasetIndices.goal >= 0
+      ? createGoalSeries(theme, datasetIndices.goal, specialSeriesLabels.Goal)
+      : null,
+    hasBaselineData && datasetIndices.baseline >= 0
+      ? createBaselineSeries(theme, datasetIndices.baseline, specialSeriesLabels.Baseline)
+      : null,
+    hasProgressData && datasetIndices.progress >= 0
+      ? createProgressSeries(theme, datasetIndices.progress, specialSeriesLabels.Progress)
+      : null,
+    datasetIndices.total >= 0
+      ? createTotalSeries(
+          theme,
+          t,
+          datasetIndices.total,
+          markAreaStartIndex,
+          markAreaEndIndex,
+          showTotalLine,
+          specialSeriesLabels.Total
+        )
+      : null,
+  ].filter(Boolean);
 
   const option: echarts.EChartsCoreOption = {
     aria: {
@@ -260,24 +317,34 @@ function createLegendData(
     source: DataTable | undefined;
     sourceHeader: boolean;
   }[],
+  datasetIndices: {
+    data: number;
+    goal: number;
+    baseline: number;
+    progress: number;
+    total: number;
+  },
   specialSeriesLabels: Record<string, string>,
   categoryColors: Record<string, string>,
   theme: Theme,
   showTotalLine: boolean
 ) {
   const regularSeriesLegend =
-    dataset[PLOT_INDEX].source &&
-    dataset[PLOT_INDEX].source
-      .slice(1) // Remove header row
-      .map((row, idx) => ({
-        name: row[0],
-        itemStyle: {
-          color: categoryColors[idx] ?? theme.graphColors.blue070,
-        },
-      }));
+    datasetIndices.data >= 0 &&
+    dataset[datasetIndices.data]?.source &&
+    dataset[datasetIndices.data].source!.length > 1
+      ? dataset[datasetIndices.data]
+          .source!.slice(1) // Remove header row
+          .map((row, idx) => ({
+            name: row[0],
+            itemStyle: {
+              color: categoryColors[idx] ?? theme.graphColors.blue070,
+            },
+          }))
+      : [];
 
-  const specialSeriesLegend: { name: string; itemStyle: { color: string } }[] = [];
-  if (dataset[GOAL_INDEX].source !== undefined) {
+  const specialSeriesLegend: any[] = [];
+  if (datasetIndices.goal >= 0 && dataset[datasetIndices.goal]?.source !== undefined) {
     specialSeriesLegend.push({
       name: specialSeriesLabels.Goal,
       itemStyle: {
@@ -285,18 +352,18 @@ function createLegendData(
       },
     });
   }
-  if (dataset[BASELINE_INDEX].source !== undefined) {
+  if (datasetIndices.baseline >= 0 && dataset[datasetIndices.baseline]?.source !== undefined) {
     specialSeriesLegend.push({
       name: specialSeriesLabels.Baseline,
       lineStyle: {
         color: theme.graphColors.grey060,
       },
       itemStyle: {
-        opacity: 0,
+        color: 'transparent',
       },
     });
   }
-  if (dataset[PROGRESS_INDEX].source !== undefined) {
+  if (datasetIndices.progress >= 0 && dataset[datasetIndices.progress]?.source !== undefined) {
     specialSeriesLegend.push({
       name: specialSeriesLabels.Progress,
       itemStyle: {
@@ -311,7 +378,7 @@ function createLegendData(
         color: theme.graphColors.red070,
       },
       itemStyle: {
-        opacity: 0,
+        color: 'transparent',
       },
     });
   }
@@ -324,39 +391,51 @@ function createBarSeries(
     source: DataTable | undefined;
     sourceHeader: boolean;
   }[],
+  datasetIndices: {
+    data: number;
+    goal: number;
+    baseline: number;
+    progress: number;
+    total: number;
+  },
   categoryColors: Record<string, string>,
   theme: Theme,
   isForecastYear: (year: number) => boolean
 ) {
-  return (
-    dataset[PLOT_INDEX].source &&
-    dataset[PLOT_INDEX].source
-      .slice(1) // Remove header row
-      .map((row, idx) => ({
-        type: 'bar',
-        seriesLayoutBy: 'row',
-        stack: 'x',
-        name: row[0],
-        stackStrategy: 'samesign',
-        datasetIndex: PLOT_INDEX,
-        itemStyle: {
-          color: (param: any) => {
-            const dataYear = param.data[param.encode.x[0]];
-            const baseColor = categoryColors[idx] ?? theme.graphColors.blue070;
-            return isForecastYear(dataYear) ? tint(FORECAST_TINT_AMOUNT, baseColor) : baseColor;
-          },
+  if (
+    datasetIndices.data < 0 ||
+    !dataset[datasetIndices.data]?.source ||
+    dataset[datasetIndices.data].source!.length <= 1
+  ) {
+    return [];
+  }
+
+  return dataset[datasetIndices.data]
+    .source!.slice(1) // Remove header row
+    .map((row, idx) => ({
+      type: 'bar',
+      seriesLayoutBy: 'row',
+      stack: 'x',
+      name: row[0],
+      stackStrategy: 'samesign',
+      datasetIndex: datasetIndices.data,
+      itemStyle: {
+        color: (param: any) => {
+          const dataYear = param.data[param.encode.x[0]];
+          const baseColor = categoryColors[idx] ?? theme.graphColors.blue070;
+          return isForecastYear(dataYear) ? tint(FORECAST_TINT_AMOUNT, baseColor) : baseColor;
         },
-        barWidth: BAR_WIDTH,
-        barMaxWidth: BAR_MAX_WIDTH,
-      }))
-  );
+      },
+      barWidth: BAR_WIDTH,
+      barMaxWidth: BAR_MAX_WIDTH,
+    }));
 }
 
-function createGoalSeries(theme: Theme, name: string) {
+function createGoalSeries(theme: Theme, datasetIndex: number, name: string) {
   return {
     type: 'line',
     seriesLayoutBy: 'row',
-    datasetIndex: GOAL_INDEX,
+    datasetIndex: datasetIndex,
     name: name,
     symbol: 'circle',
     symbolSize: 8,
@@ -367,29 +446,14 @@ function createGoalSeries(theme: Theme, name: string) {
     lineStyle: {
       color: 'rgba(0, 0, 0, 0)',
     },
-    markLine: {
-      silent: true,
-      lineStyle: {
-        color: theme.graphColors.red090,
-        width: 2,
-      },
-      data: [
-        [
-          {
-            name: 'GoalMark',
-            yAxis: 5,
-          },
-        ],
-      ],
-    },
   };
 }
 
-function createBaselineSeries(theme: Theme, name: string) {
+function createBaselineSeries(theme: Theme, datasetIndex: number, name: string) {
   return {
     type: 'line',
     seriesLayoutBy: 'row',
-    datasetIndex: BASELINE_INDEX,
+    datasetIndex: datasetIndex,
     name: name,
     symbol: 'none',
     step: false,
@@ -400,11 +464,11 @@ function createBaselineSeries(theme: Theme, name: string) {
   };
 }
 
-function createProgressSeries(theme: Theme, name: string) {
+function createProgressSeries(theme: Theme, datasetIndex: number, name: string) {
   return {
     type: 'line',
     seriesLayoutBy: 'row',
-    datasetIndex: PROGRESS_INDEX,
+    datasetIndex: datasetIndex,
     name: name,
     symbol: 'path://M-4,-2 L-2,-4 L6,4 L4,6 M-2,6 L-4,4 L4,-4 L6,-2',
     symbolSize: 8,
@@ -422,17 +486,19 @@ function createProgressSeries(theme: Theme, name: string) {
 function createTotalSeries(
   theme: Theme,
   t: TFunction,
+  datasetIndex: number,
   markAreaStartIndex: number,
   markAreaEndIndex: number,
   showTotalLine: boolean,
   name: string
 ) {
-  // If forecast is outside the visible range, we don't color the forecast area
-  const hasForecastData = markAreaStartIndex > -1 && markAreaEndIndex > -1;
+  // If forecast is outside the visible range or indices are invalid, we don't color the forecast area
+  const hasForecastData =
+    markAreaStartIndex > -1 && markAreaEndIndex > -1 && markAreaStartIndex < markAreaEndIndex;
   return {
     type: 'line',
     seriesLayoutBy: 'row',
-    datasetIndex: TOTAL_INDEX,
+    datasetIndex: datasetIndex,
     name: name,
     symbol: 'none',
     lineStyle: {
