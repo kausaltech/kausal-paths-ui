@@ -2,6 +2,9 @@ name: CI
 on: push
 
 jobs:
+  lint:
+    uses: ./.github/workflows/reviewdog.yaml
+
   build:
     uses: kausaltech/github-actions/.github/workflows/build.yaml@main
     with:

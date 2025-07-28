@@ -92,21 +92,26 @@ export const summarizeYearlyValuesBetween = (
   return summarizeYearlyValues(yearlyValues);
 };
 
-export const metricToPlot = (
-  metric: NodeMetric,
-  segment: 'forecastValues' | 'historicalValues',
+type MetricLike<K extends string> = {
+  [key in K]: MetricValue[] | null;
+};
+
+export function metricToPlot<M extends MetricLike<K>, K extends string>(
+  metric: M,
+  segment: K,
   startYear: number,
   endYear: number
-) => {
+) {
   const plot: { x: number[]; y: number[] } = { x: [], y: [] };
-  (metric?.[segment] ?? []).forEach((dataPoint) => {
+  if (!metric[segment]) return plot;
+  (metric[segment] ?? []).forEach((dataPoint) => {
     if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
       plot.x.push(dataPoint.year);
       plot.y.push(dataPoint.value);
     }
   });
   return plot;
-};
+}
 
 type getRangeType = (values: number[]) => [number, number];
 

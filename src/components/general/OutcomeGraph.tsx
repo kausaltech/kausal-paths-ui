@@ -234,7 +234,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
 
   const baselineForecast =
     metric.baselineForecastValues &&
-    metricToPlot(parentNode.metric, 'baselineForecastValues', startYear, endYear);
+    metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
   const goals = parentNode.goals;
   const targetYearGoal = parentNode.targetYearGoal;
 
