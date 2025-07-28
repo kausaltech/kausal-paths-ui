@@ -230,7 +230,8 @@ export default function NodeGraph(props: NodeGraphProps) {
         unit,
         maximumFractionDigits,
         specialSeriesLabels,
-        t
+        t,
+        showTotalLine
       );
     };
   };
@@ -461,6 +462,7 @@ function createBaselineSeries(theme: Theme, datasetIndex: number, name: string) 
       color: theme.graphColors.grey060,
       type: 'dashed',
     },
+    color: theme.graphColors.grey060,
   };
 }
 
@@ -480,6 +482,7 @@ function createProgressSeries(theme: Theme, datasetIndex: number, name: string) 
     lineStyle: {
       color: theme.themeColors.black,
     },
+    color: theme.themeColors.black,
   };
 }
 
@@ -505,6 +508,7 @@ function createTotalSeries(
       color: theme.graphColors.red070,
       opacity: showTotalLine ? 1 : 0,
     },
+    color: theme.graphColors.red070,
     markArea: hasForecastData
       ? {
           silent: true,
@@ -540,7 +544,8 @@ function buildTooltipContent(
   unit: string,
   maximumFractionDigits: number | undefined,
   specialSeriesLabels: Record<string, string>,
-  t: TFunction
+  t: TFunction,
+  showTotalLine: boolean
 ) {
   if (!year) return '';
   const yearLabel = isForecast
@@ -579,7 +584,13 @@ function buildTooltipContent(
   if (specialSeries.length > 0) {
     tooltip += `<div style="border-top: 1px solid #ccc; margin: 8px 0 4px 0;"></div>`;
     specialSeries.forEach((param) => {
-      tooltip += buildTooltipRow(param, unit, maximumFractionDigits, specialSeriesLabels);
+      tooltip += buildTooltipRow(
+        param,
+        unit,
+        maximumFractionDigits,
+        specialSeriesLabels,
+        showTotalLine
+      );
     });
   }
 
@@ -590,7 +601,8 @@ function buildTooltipRow(
   param: any,
   unit: string,
   maximumFractionDigits: number | undefined,
-  specialSeriesLabels?: Record<string, string>
+  specialSeriesLabels?: Record<string, string>,
+  showTotalLine?: boolean
 ) {
   const value = beautifyValue(
     param.data[param.encode.y[0]],
@@ -603,9 +615,19 @@ function buildTooltipRow(
 
   const color = param.color || '#000';
   const displayName = specialSeriesLabels?.[param.seriesName] || param.seriesName;
-
+  const getMarker = () => {
+    if (param.dimensionNames[1] === 'Goal')
+      return `<span style=\"display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${color};\"></span>`;
+    if (param.dimensionNames[1] === 'Total')
+      return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:2px;background-color:${showTotalLine ? color : 'transparent'};\"></span>`;
+    else if (param?.componentSubType === 'line')
+      return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:2px;background-color:${color};\"></span>`;
+    else
+      return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:10px;background-color:${color};\"></span>`;
+  };
+  const seriesMarker = getMarker();
   return `<div style="margin: 2px 0;">
-    <span style="display: inline-block; width: 10px; height: 10px; background-color: ${color}; margin-right: 5px;"></span>
+    ${seriesMarker}
     ${displayName}: <strong>${value} ${unit}</strong>
   </div>`;
 }
