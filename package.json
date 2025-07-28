@@ -158,7 +158,8 @@
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
       "prettier --write",
-      "npm run lint:baseline --"
+      "npm run lint:baseline --",
+      "npm run typecheck:baseline --"
     ],
     "*.{css,scss,md,json}": "prettier --write"
   },
