@@ -1,31 +1,4 @@
 {
-  "e2e-tests/global-setup.ts": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
-    "@typescript-eslint/require-await": {
-      "count": 1
-    }
-  },
-  "kausal_common/src/components/Chart.tsx": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    }
-  },
-  "kausal_common/src/logging/init.ts": {
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    }
-  },
   "src/common/fonts.js": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
@@ -61,20 +34,6 @@
       "count": 1
     },
     "react-hooks/rules-of-hooks": {
-      "count": 3
-    }
-  },
-  "src/components/charts/Chart.tsx": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
       "count": 3
     }
   },
@@ -337,9 +296,6 @@
   },
   "src/pages/node/[slug].tsx": {
     "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
     }
   },
