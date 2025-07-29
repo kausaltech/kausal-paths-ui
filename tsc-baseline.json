@@ -460,6 +460,30 @@
       "count": 2,
       "message": "'site.referenceYear' is possibly 'null'."
     },
+    "227683d5185e2a3795c35e46283d4f45bbd0dc0f": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS18047",
+      "count": 1,
+      "message": "'slice.totalValues' is possibly 'null'."
+    },
+    "4c55a23d551b1a55801baac154276cfab410205a": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ [n: number]: string; length: number; toString(): string; toLocaleString(): string; toLocaleString(locales: string | string[], options?: Intl.NumberFormatOptions & Intl.DateTimeFormatOptions): string; ... 31 more ...; [Symbol.unscopables]: { ...; }; }' is not assignable to type 'Record<string, string>'."
+    },
+    "0f0572bf95e24c458106fc9cfd6d3c288717bac8": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type 'TFunction<\"common\", undefined>' is not assignable to parameter of type '(key: string) => string'."
+    },
+    "9fb90e24a2db0223e1f6efcc849205bdc4c279f8": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type 'string | null | undefined' is not assignable to type 'string | undefined'."
+    },
     "4205b0fe2501b3fee8b22306ee7f3303f60814db": {
       "file": "src/components/general/GlobalParameters.tsx",
       "code": "TS2322",
@@ -652,11 +676,11 @@
       "count": 1,
       "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'."
     },
-    "1756094ea98250ad90638704bbe3efe8da8f031b": {
+    "c5084a2849b943df6d2656bc62a01aa4e415593c": {
       "file": "src/components/general/OutcomeNodeContent.tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ node: OutcomeNodeFieldsFragment; metric: { id: string; name: string; measureDatapointYears: number[]; stackable: boolean; forecastFrom: number | null; years: number[]; ... 4 more ...; normalizedBy: ({ ...; } & { ...; }) | null; } & { ...; }; ... 7 more ...; onClickMeasuredEmissions: (year: number) => void; }' is not assignable to type 'IntrinsicAttributes & DimensionalNodePlotProps'."
+      "message": "Type '{ node: OutcomeNodeFieldsFragment; metric: { id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ ...; } & { ...; })[]; goals: ({ ...; } & { ...; })[]; unit: { ...; } & { ...; }; normalizedBy: ({ ...; } & { ...; }) | null; } & { ...; }; ... 5 mo...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "791fd92d417103c3a38194c36470dcbc3acb2724": {
       "file": "src/components/general/OutcomeNodeDetails.tsx",
@@ -675,6 +699,12 @@
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ children: ReactNode; disabled: any; ref: RefObject<any>; style: { height: string; width: string; borderRadius: string; background: string; alignSelf: \"center\"; }; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'."
+    },
+    "8a210e71a1b54d2c6c86264ecfa4297154897f9d": {
+      "file": "src/components/general/progress-tracking/useProgressData.ts",
+      "code": "TS2345",
+      "count": 2,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
     },
     "c73cfa02cf6c46729be4db5721d36429482321ef": {
       "file": "src/components/general/RangeSelector.tsx",
@@ -868,12 +898,6 @@
       "count": 4,
       "message": "'locale' is possibly 'undefined'."
     },
-    "ce02ca8c8ce1b7149d6ec6f3a8476fc37d499234": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS1484",
-      "count": 1,
-      "message": "'GetNodePageQuery' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled."
-    },
     "5284777988880e8044d5689cda3e6396f96113bd": {
       "file": "src/pages/node/[slug].tsx",
       "code": "TS2345",
@@ -892,11 +916,11 @@
       "count": 1,
       "message": "Argument of type '[\"page-not-found\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
-    "a9a9412c49bc69d05b4b3cdd7ed840fff78922a2": {
+    "b682c4d90c5719f9e6a30117deb3e0014c162b4c": {
       "file": "src/pages/node/[slug].tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ key: string; node: { id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; ... 5 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }; ... 4 more ...; hasNegativeValues: boolean | undefined; }' is not assignable to type 'IntrinsicAttributes & DimensionalNodePlotProps'."
+      "message": "Type '{ key: string; node: { id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; ... 5 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }; metric: { ...; } & { ...; }; startYear: number; endYear: n...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "7025de8f2e55d076fd9673331071748bbe3da92b": {
       "file": "src/pages/node/[slug].tsx",
