@@ -1,4 +1,4 @@
-import { Theme } from '@kausal/themes/types';
+import type { Theme } from '@kausal/themes/types';
 import { transparentize } from 'polished';
 
 export function getChartTheme(theme: Theme) {
