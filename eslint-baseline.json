@@ -114,16 +114,6 @@
       "count": 3
     }
   },
-  "src/components/charts/ChartWrapper.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    }
-  },
-  "src/components/charts/chart-theme.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    }
-  },
   "src/components/common/Badge.tsx": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
