@@ -454,30 +454,6 @@
       "count": 2,
       "message": "'site.referenceYear' is possibly 'null'."
     },
-    "227683d5185e2a3795c35e46283d4f45bbd0dc0f": {
-      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
-      "code": "TS18047",
-      "count": 1,
-      "message": "'slice.totalValues' is possibly 'null'."
-    },
-    "4c55a23d551b1a55801baac154276cfab410205a": {
-      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ [n: number]: string; length: number; toString(): string; toLocaleString(): string; toLocaleString(locales: string | string[], options?: Intl.NumberFormatOptions & Intl.DateTimeFormatOptions): string; ... 31 more ...; [Symbol.unscopables]: { ...; }; }' is not assignable to type 'Record<string, string>'."
-    },
-    "0f0572bf95e24c458106fc9cfd6d3c288717bac8": {
-      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'TFunction<\"common\", undefined>' is not assignable to parameter of type '(key: string) => string'."
-    },
-    "9fb90e24a2db0223e1f6efcc849205bdc4c279f8": {
-      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'string | null | undefined' is not assignable to type 'string | undefined'."
-    },
     "4205b0fe2501b3fee8b22306ee7f3303f60814db": {
       "file": "src/components/general/GlobalParameters.tsx",
       "code": "TS2322",
@@ -802,11 +778,11 @@
       "count": 1,
       "message": "Type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to type 'Map<string, OutcomeNodeFieldsFragment>'."
     },
-    "8875ecc4b546b277f296ec7a96958bf3fbc00798": {
+    "4716ee043cc6fe73832f29305401332c51fcf21a": {
       "file": "src/components/pages/Page.tsx",
       "code": "TS2367",
       "count": 1,
-      "message": "This comparison appears to be unintentional because the types '\"ActionListPage\" | \"InstanceRootPage\" | \"OutcomePage\" | \"Page\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
+      "message": "This comparison appears to be unintentional because the types '\"OutcomePage\" | \"ActionListPage\" | \"InstanceRootPage\" | \"Page\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
     },
     "0ffca2d6c30523720b83a07e15a250dc85c225df": {
       "file": "src/middleware/lru-cache.ts",

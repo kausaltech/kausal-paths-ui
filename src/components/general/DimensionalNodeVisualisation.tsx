@@ -4,7 +4,7 @@ import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { isEqual } from 'lodash';
-import { useTranslation } from 'next-i18next';
+import { type TFunction, useTranslation } from 'next-i18next';
 import {
   Col,
   DropdownItem,
@@ -49,7 +49,7 @@ const Tools = styled.div`
 
 type BaselineForecast = { year: number; value: number };
 
-const getLongUnit = (cube: DimensionalMetricType, unit: string, t: (key: string) => string) => {
+const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) => {
   let longUnit = unit;
   // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
   // the backend gets proper support for unit specifiers.
@@ -203,7 +203,7 @@ export default function DimensionalNodeVisualisation({
       const lastHist = slice.historicalYears.length - 1;
       const totalSumX = [site.minYear, ...historicalYears, ...progressSlice.forecastYears];
       const totalSumY = [
-        slice.totalValues.historicalValues[lastHist],
+        slice?.totalValues?.historicalValues?.[lastHist] ?? 0,
         ...historicalValues,
         ...progressSlice.totalValues.forecastValues,
       ];
@@ -228,13 +228,14 @@ export default function DimensionalNodeVisualisation({
 
   // Collect full data for each category in the chart
 
-  const dataCategories = slice.categoryValues.map((cv: MetricCategoryValues) => {
-    return {
-      name: cv.category.label,
-      values: [...cv.historicalValues, ...cv.forecastValues],
-      color: cv.color,
-    };
-  });
+  const dataCategories: { name: string; values: (number | null)[]; color: string | null }[] =
+    slice.categoryValues.map((cv: MetricCategoryValues) => {
+      return {
+        name: cv.category.label,
+        values: [...cv.historicalValues, ...cv.forecastValues],
+        color: cv.color,
+      };
+    });
 
   // Create simple tables for category data, goal data, baseline data, progress data, and total data
   // Using the filtered years
@@ -294,9 +295,9 @@ export default function DimensionalNodeVisualisation({
     : null;
 
   // Define colors for the categories
-  const categoryColors: Record<string, string> = {
-    ...dataCategories.map((row) => row.color ?? theme.graphColors.blue070),
-  };
+  const categoryColors: Record<string, string> = Object.fromEntries(
+    dataCategories.map((row) => [row.name, row.color ?? theme.graphColors.blue070])
+  );
 
   // Check if the data has any negative values, in order to decide if we want to show the total line
   // We could use filtered year range here only, but let's show the total line even if negative values are filtered out
@@ -388,10 +389,10 @@ export default function DimensionalNodeVisualisation({
               {` ${t('download-data')}`}
             </DropdownToggle>
             <DropdownMenu>
-              <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'xlsx')}>
+              <DropdownItem onClick={() => void cube.downloadData(sliceConfig, 'xlsx')}>
                 <Icon name="file" /> XLS
               </DropdownItem>
-              <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'csv')}>
+              <DropdownItem onClick={() => void cube.downloadData(sliceConfig, 'csv')}>
                 <Icon name="file" /> CSV
               </DropdownItem>
             </DropdownMenu>
