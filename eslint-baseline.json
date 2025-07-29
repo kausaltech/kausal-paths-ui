@@ -1,23 +1,7 @@
 {
-  "e2e-tests/global-setup.ts": {
-    "@typescript-eslint/require-await": {
-      "count": 1
-    }
-  },
   "kausal_common/src/utils/lru-cache.ts": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 2
-    }
-  },
-  "load-tests/flows.cjs": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 5
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 6
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 7
     }
   },
   "src/common/fonts.js": {
@@ -725,14 +709,6 @@
     },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
-    }
-  },
-  "stories/EmissionsCard.stories.js": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 5
     }
   }
 }
