@@ -1,19 +1,13 @@
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { Spinner } from 'reactstrap';
 
+import styled from '@emotion/styled';
+import { CircularProgress } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 
 const Loader = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-`;
-
-const StyledSpinner = styled(Spinner)`
-  width: ${(props) => props.theme.spaces.s100};
-  height: ${(props) => props.theme.spaces.s100};
-  background-color: ${(props) => props.theme.themeColors.dark};
 `;
 
 interface ContentLoaderProps {
@@ -35,13 +29,8 @@ const ContentLoader = ({ fullPage = false }: ContentLoaderProps) => {
   }
 
   return (
-    <Loader
-      aria-busy="true"
-      style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}
-    >
-      <StyledSpinner type="grow" className="mx-1" />
-      <StyledSpinner type="grow" className="mx-1" />
-      <StyledSpinner type="grow" className="mx-1" />
+    <Loader aria-busy="true" style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}>
+      <CircularProgress />
       <div className="visually-hidden">{t('loading')}</div>
     </Loader>
   );

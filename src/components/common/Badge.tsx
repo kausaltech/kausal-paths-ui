@@ -1,8 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { Badge as BSSBadge } from 'reactstrap';
+
+import styled from '@emotion/styled';
 import { readableColor } from 'polished';
+import PropTypes from 'prop-types';
+import { Badge as BSSBadge } from 'reactstrap';
 
 const StyledBadge = styled(BSSBadge)`
   background-color: ${(props) => props.theme[props.color]} !important;
@@ -13,8 +14,7 @@ const StyledBadge = styled(BSSBadge)`
       props.theme.themeColors.white
     )};
   border-radius: ${(props) => props.theme.badgeBorderRadius};
-  padding: ${(props) => props.theme.badgePaddingY}
-    ${(props) => props.theme.badgePaddingX};
+  padding: ${(props) => props.theme.badgePaddingY} ${(props) => props.theme.badgePaddingX};
   font-weight: ${(props) => props.theme.badgeFontWeight};
   max-width: 100%;
   word-break: break-all;

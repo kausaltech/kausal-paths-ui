@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 
 import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
-import { Button, ButtonGroup, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
-import styled from 'styled-components';
+import { Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
 
 import {
   DecisionLevel,
@@ -55,10 +56,29 @@ const StyledFormGroup = styled(FormGroup)`
   width: 100%;
 `;
 
-const SortButtons = styled(ButtonGroup)`
+const SortButtons = styled(ToggleButtonGroup)`
   button {
     padding-top: 0.4rem;
     padding-bottom: 0.4rem;
+
+    &.Mui-selected {
+      background-color: ${(props) => props.theme.themeColors.white};
+      svg {
+        fill: ${(props) => props.theme.themeColors.black};
+      }
+    }
+
+    &.Mui-selected:hover {
+      background-color: ${(props) => props.theme.graphColors.grey010};
+    }
+
+    &:hover {
+      background-color: ${(props) => props.theme.graphColors.grey080};
+    }
+
+    svg {
+      fill: ${(props) => props.theme.themeColors.white};
+    }
   }
 
   .icon {
@@ -291,6 +311,14 @@ function ActionListPage({ page }: ActionListPageProps) {
     setSortBy(selectedSorter ?? sortOptions[0]);
   };
 
+  const handleSortDirectionChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newDirection: string
+  ) => {
+    if (newDirection === null) return;
+    setAscending(newDirection === 'asc');
+  };
+
   if (error) {
     return (
       <Container className="pt-5">
@@ -378,25 +406,18 @@ function ActionListPage({ page }: ActionListPageProps) {
               </div>
               <div className="d-flex align-items-end">
                 <FormGroup>
-                  <SortButtons>
-                    <Button
-                      color="white"
-                      outline
-                      onClick={(_e) => setAscending(true)}
-                      active={ascending === true}
-                      aria-label={t('sort-ascending')}
-                    >
+                  <SortButtons
+                    value={ascending ? 'asc' : 'desc'}
+                    exclusive
+                    onChange={handleSortDirectionChange}
+                    aria-label={t('sort-direction')}
+                  >
+                    <ToggleButton value="asc" aria-label={t('sort-ascending')}>
                       <Icon name="arrowUpWideShort" width="1.5rem" height="1.5rem" />
-                    </Button>
-                    <Button
-                      color="white"
-                      outline
-                      onClick={(_e) => setAscending(false)}
-                      active={ascending === false}
-                      aria-label={t('sort-descending')}
-                    >
+                    </ToggleButton>
+                    <ToggleButton value="desc" aria-label={t('sort-descending')}>
                       <Icon name="arrowDownShortWide" width="1.5rem" height="1.5rem" />
-                    </Button>
+                    </ToggleButton>
                   </SortButtons>
                 </FormGroup>
               </div>

@@ -4,9 +4,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Col, Container, Row } from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
 
 import type {
   GetActionContentQuery,
@@ -31,7 +32,6 @@ import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import DimensionalPlot from '@/components/graphs/DimensionalFlow';
 import { useSite } from '@/context/site';
 import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from '@/queries/getActionContent';
-import { logApolloError } from '@common/logging/apollo';
 
 const HeaderSection = styled.div`
   padding: 3rem 0 1rem;

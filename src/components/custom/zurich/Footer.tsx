@@ -1,9 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React from 'react';
 
-import { useTranslation } from 'next-i18next';
-import styled, { useTheme } from 'styled-components';
-
-import SiteContext from '@/context/site';
+import styled from '@emotion/styled';
 
 const StyledFooter = styled.div`
   // Handle mystery regression in prod
@@ -21,7 +18,7 @@ const StyledFooter = styled.div`
   }
 `;
 
-const Footer = (props) => {
+const Footer = () => {
   return (
     <stzh-footer variant="egov" className="hydrated">
       <StyledFooter className="stzh-footer">

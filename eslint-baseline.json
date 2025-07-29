@@ -4,11 +4,6 @@
       "count": 1
     }
   },
-  "kausal_common/src/components/DelayedCircularProgress.tsx": {
-    "@typescript-eslint/no-redundant-type-constituents": {
-      "count": 1
-    }
-  },
   "kausal_common/src/utils/lru-cache.ts": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 2
@@ -51,9 +46,6 @@
     }
   },
   "src/common/theme.ts": {
-    "@typescript-eslint/no-empty-object-type": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
     },
@@ -125,21 +117,13 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 8
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 7
-    },
     "@typescript-eslint/no-unsafe-return": {
       "count": 2
-    }
-  },
-  "src/components/common/Button.tsx": {
-    "react/display-name": {
-      "count": 1
     }
   },
   "src/components/common/Footer.tsx": {
@@ -178,40 +162,23 @@
       "count": 1
     }
   },
-  "src/components/common/IntroModal.tsx": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    }
-  },
   "src/components/common/RichText.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
     "@typescript-eslint/no-explicit-any": {
-      "count": 2
-    },
-    "@typescript-eslint/no-redundant-type-constituents": {
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 7
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 12
+      "count": 10
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 14
+      "count": 11
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unused-expressions": {
       "count": 1
     },
     "react-compiler/react-compiler": {
@@ -291,9 +258,6 @@
     }
   },
   "src/components/general/BarGraph.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 10
     },
@@ -416,9 +380,6 @@
     }
   },
   "src/components/general/GoalOutcomeBar.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
     "@typescript-eslint/no-empty-object-type": {
       "count": 1
     },
@@ -444,15 +405,7 @@
       "count": 2
     }
   },
-  "src/components/general/GoalSelector.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    }
-  },
   "src/components/general/IcicleGraph.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 5
     },
@@ -497,14 +450,6 @@
       "count": 1
     }
   },
-  "src/components/general/MediumSettings.tsx": {
-    "react-compiler/react-compiler": {
-      "count": 2
-    },
-    "react-hooks/rules-of-hooks": {
-      "count": 2
-    }
-  },
   "src/components/general/NodeLinks.tsx": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
@@ -537,9 +482,6 @@
     }
   },
   "src/components/general/OutcomeGraph.tsx": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 3
-    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 3
     },
@@ -571,9 +513,6 @@
     }
   },
   "src/components/general/ParameterWidget.tsx": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 4
-    },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 13
     },
@@ -587,16 +526,6 @@
       "count": 1
     }
   },
-  "src/components/general/RangeSelector.tsx": {
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
-  "src/components/general/RefreshPrompt.tsx": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    }
-  },
   "src/components/general/ReturnOnInvestment.tsx": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
@@ -606,11 +535,6 @@
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 3
-    }
-  },
-  "src/components/general/ScenarioSelector.tsx": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 2
     }
   },
   "src/components/general/SettingsPanelFull.tsx": {

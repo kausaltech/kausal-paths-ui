@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
-import { ArrowClockwise } from 'react-bootstrap-icons';
-import { useApolloClient } from '@apollo/client';
-import { Toast, ToastBody, ToastHeader } from 'reactstrap';
-import styled from 'styled-components';
 
-import Button from '../common/Button';
+import { useApolloClient } from '@apollo/client';
+import styled from '@emotion/styled';
+import {
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  IconButton,
+  Portal,
+  Typography,
+} from '@mui/material';
+import { ArrowClockwise, X } from 'react-bootstrap-icons';
 
 const DISABLE_REFRESH_PROMPT = 'hideRefreshPrompt';
 const TEN_MINS = 10 * 60 * 1000;
@@ -85,24 +92,49 @@ function useIsPromptVisible() {
   };
 }
 
-const StyledWrapper = styled.div<{ $isVisible: boolean }>`
+const StyledNotificationContainer = styled.div<{ $isVisible: boolean }>`
   position: fixed;
-  top: 0;
-  right: 0;
-  max-width: 500px;
-  display: ${({ $isVisible }) => ($isVisible ? 'block' : 'none')};
-  z-index: ${({ $isVisible }) => ($isVisible ? '1100' : 'unset')};
+  top: ${({ theme }) => theme.spaces.s100};
+  right: ${({ theme }) => theme.spaces.s100};
+  z-index: 1300;
+  max-width: 400px;
+  opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
+  transform: translateX(${({ $isVisible }) => ($isVisible ? '0' : '100%')});
+  transition: all 0.3s ease-in-out;
+  pointer-events: ${({ $isVisible }) => ($isVisible ? 'auto' : 'none')};
 `;
 
-const StyledToast = styled(Toast)`
-  margin: ${({ theme }) => theme.spaces.s100};
+const StyledCard = styled(Card)`
   background-color: ${({ theme }) => theme.cardBackground.primary};
-  display: block !important; // Support fade in transition
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
 `;
 
-const StyledActions = styled.div`
+const StyledCardHeader = styled.div`
   display: flex;
-  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem 0.5rem;
+`;
+
+const StyledTitle = styled(Typography)`
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+`;
+
+const StyledCardContent = styled(CardContent)`
+  padding: 0.5rem 1.5rem !important;
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+`;
+
+const StyledCardActions = styled(CardActions)`
+  padding: 1rem 1.5rem;
   justify-content: flex-end;
   gap: 8px;
 `;
@@ -112,30 +144,37 @@ export function RefreshPrompt() {
   const apolloClient = useApolloClient();
 
   function handleRefresh() {
-    apolloClient.refetchQueries({ include: ['GetPage', 'GetNodeVisualizations'] });
+    void apolloClient.refetchQueries({ include: ['GetPage', 'GetNodeVisualizations'] });
     handleClose();
   }
 
   return (
-    <StyledWrapper $isVisible={isVisible}>
-      <StyledToast isOpen={isVisible} fade transition={{ unmountOnExit: false, timeout: 400 }}>
-        <ToastHeader toggle={handleClose}>Reload for the latest data</ToastHeader>
-        <ToastBody>
-          <p>
-            Updates may be available, click on the reload button or refresh the page to ensure you
-            have the latest content.
-          </p>
-          <StyledActions>
-            <Button size="sm" onClick={handleRefresh}>
+    <Portal>
+      <StyledNotificationContainer $isVisible={isVisible}>
+        <StyledCard elevation={3}>
+          <StyledCardHeader>
+            <StyledTitle>Reload for the latest data</StyledTitle>
+            <IconButton onClick={handleClose}>
+              <X size={24} />
+            </IconButton>
+          </StyledCardHeader>
+          <StyledCardContent>
+            <p>
+              Updates may be available, click on the reload button or refresh the page to ensure you
+              have the latest content.
+            </p>
+          </StyledCardContent>
+          <StyledCardActions>
+            <Button size="small" onClick={handleRefresh} color="primary">
               <ArrowClockwise size={18} />
               <span className="m-2">Reload</span>
             </Button>
-            <Button size="sm" onClick={handleDisable}>
+            <Button size="small" onClick={handleDisable}>
               Don&apos;t show this again
             </Button>
-          </StyledActions>
-        </ToastBody>
-      </StyledToast>
-    </StyledWrapper>
+          </StyledCardActions>
+        </StyledCard>
+      </StyledNotificationContainer>
+    </Portal>
   );
 }

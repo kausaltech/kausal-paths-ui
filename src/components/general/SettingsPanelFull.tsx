@@ -1,10 +1,10 @@
 import { useCallback, useContext, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
+import { Fab } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
-import { Button, Col, Row } from 'reactstrap';
-import styled from 'styled-components';
 
 import { yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -54,23 +54,12 @@ const FixedPanel = styled.aside`
   }
 `;
 
-const StyledSettingsButton = styled(Button)`
+const StyledSettingsButton = styled(Fab)`
   position: absolute;
-  background-color: ${(props) => props.theme.themeColors.white} !important;
-  z-index: 25;
-  height: 2.5rem;
-  border-radius: 1.25rem;
-  padding: ${({ theme }) => `0 ${theme.spaces.s050}`};
   top: -1.5rem;
   right: 6px;
+  background-color: ${(props) => props.theme.themeColors.white} !important;
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background-color: ${(props) => props.theme.graphColors.grey030};
-  }
 `;
 
 const StyledButtonLabel = styled.span`
@@ -125,7 +114,7 @@ const SettingsPanelFull: React.FC<SettingsPanelFullProps> = (props) => {
   // console.log(props);
   return (
     <FixedPanel className={`panel-${mode}`} aria-label={t('all-settings')}>
-      <StyledSettingsButton onClick={(e) => handleToggle(e)}>
+      <StyledSettingsButton onClick={(e) => handleToggle(e)} variant="extended">
         {mode === MODE.MD && (
           <>
             <Icon name="gear" /> <StyledButtonLabel>{t('settings-expand')}</StyledButtonLabel>

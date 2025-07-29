@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Nav, NavItem, NavLink, TabContent } from 'reactstrap';
-import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures, useInstance } from '@/common/instance';
@@ -25,6 +25,10 @@ import { getHelpText } from './progress-tracking/utils';
 
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
+
+  a.active {
+    background-color: white;
+  }
 
   .icon {
     width: 1.2rem !important;
@@ -212,9 +216,7 @@ const OutcomeNodeContent = ({
               ) : (
                 nodeName
               )}
-              {helpText && (
-                <PopoverTip identifier={`${node.id}-card-help-text`} content={helpText} />
-              )}
+              {helpText && <PopoverTip content={helpText} />}
             </h4>
             <CardSetDescriptionDetails>
               {startYear <= lastMeasuredYear && (

@@ -1,5 +1,5 @@
+import type { Theme } from '@kausal/themes/types';
 import chroma from 'chroma-js';
-import type { DefaultTheme } from 'styled-components';
 
 export function genColors(colorsIn: string[], numColors: number) {
   const colors = colorsIn.slice(0, -1);
@@ -65,7 +65,7 @@ export function genColors(colorsIn: string[], numColors: number) {
   return steps;
 }
 
-export function genColorsFromTheme(theme: DefaultTheme, numColors: number) {
+export function genColorsFromTheme(theme: Theme, numColors: number) {
   const colors = [theme.graphColors.blue070, theme.graphColors.red050, theme.graphColors.green070];
   return genColors(colors, numColors);
 }

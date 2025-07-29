@@ -1,17 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useTranslation } from 'next-i18next';
 import dynamic from 'next/dynamic';
-import {
-  Col,
-  Row,
-} from 'reactstrap';
-import styled, { useTheme } from 'styled-components';
+
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
+import { useTranslation } from 'next-i18next';
+import { Col, Row } from 'reactstrap';
 
 import Icon from '@/components/common/icon';
 

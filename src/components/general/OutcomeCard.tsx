@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
 
+import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
-import styled from 'styled-components';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures } from '@/common/instance';
 import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
+import Loader from '@/components/common/Loader';
 import PopoverTip from '@/components/common/PopoverTip';
 
-import Loader from '../common/Loader';
 import DashCard from './DashCard';
 import { getHelpText } from './progress-tracking/utils';
 
@@ -217,7 +217,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
           <Title color={color}>
             <Name>{node.shortName || node.name}</Name>
           </Title>
-          {helpText && <PopoverTip identifier={`${node.id}-help-text`} content={helpText} />}
+          {helpText && <PopoverTip content={helpText} />}
         </Header>
 
         <Body>
