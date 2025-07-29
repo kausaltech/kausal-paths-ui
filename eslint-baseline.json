@@ -1,9 +1,4 @@
 {
-  "kausal_common/src/utils/lru-cache.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    }
-  },
   "src/common/fonts.js": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
@@ -40,14 +35,6 @@
     },
     "react-hooks/rules-of-hooks": {
       "count": 3
-    }
-  },
-  "src/components/charts/Chart.tsx": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 2
     }
   },
   "src/components/common/Badge.tsx": {
@@ -303,9 +290,6 @@
   },
   "src/pages/node/[slug].tsx": {
     "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
     }
   }
