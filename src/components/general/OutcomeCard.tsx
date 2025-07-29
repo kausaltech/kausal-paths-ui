@@ -9,7 +9,6 @@ import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preproc
 import Loader from '@/components/common/Loader';
 import PopoverTip from '@/components/common/PopoverTip';
 
-import Loader from '../common/Loader';
 import DashCard from './DashCard';
 import { getHelpText } from './progress-tracking/utils';
 
