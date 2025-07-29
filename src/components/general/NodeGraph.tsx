@@ -3,6 +3,11 @@ import { Alert } from '@mui/material';
 import { type Theme } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
 import type * as echarts from 'echarts/core';
+import type {
+  CallbackDataParams,
+  LegendOption,
+  TooltipPositionCallback,
+} from 'echarts/types/dist/shared';
 import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 
@@ -37,7 +42,7 @@ type NodeGraphProps = {
   forecastRange: [number, number] | null;
   categoryColors: Record<string, string>;
   maximumFractionDigits: number | undefined;
-  baselineLabel: string | undefined;
+  baselineLabel: string | null | undefined;
   showTotalLine?: boolean;
   onClickMeasuredEmissions?: (year: number) => void;
 };
@@ -78,8 +83,8 @@ export default function NodeGraph(props: NodeGraphProps) {
         ? dataTable[0][2]
         : dataTable[0][1]
       : null;
-  const endYear =
-    dataTable?.[0] && dataTable[0].length > 0 ? dataTable[0][dataTable[0].length - 1] : null;
+  //const endYear =
+  //  dataTable?.[0] && dataTable[0].length > 0 ? dataTable[0][dataTable[0].length - 1] : null;
 
   // Early return if we don't have valid data
   if (!dataTable || !dataTable[0] || dataTable[0].length === 0) {
@@ -206,14 +211,15 @@ export default function NodeGraph(props: NodeGraphProps) {
   // Check if forecast range years exist in the data
   const hasForecastData = markAreaStartIndex > -1 && markAreaEndIndex > -1;
 
-  const isForecastYear = (year: number) => {
+  const isForecastYear = (year: number | undefined): boolean => {
+    if (!year) return false;
     return forecastRange ? year >= forecastRange[0] && year <= forecastRange[1] : false;
   };
 
   const createTooltipFormatter = () => {
-    return function (params: any) {
+    return function (params: CallbackDataParams[]) {
       if (!Array.isArray(params)) return '';
-      const dataIndex = params[0]?.dataIndex;
+      const dataIndex: number | undefined = params[0]?.dataIndex;
       if (typeof dataIndex !== 'number') return '';
 
       const isForecast =
@@ -269,7 +275,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       right: 10,
       bottom: 10,
       data: legendData,
-      formatter: (name) => {
+      formatter: (name: string) => {
         return specialSeriesLabels[name as keyof typeof specialSeriesLabels] || name;
       },
     },
@@ -278,11 +284,11 @@ export default function NodeGraph(props: NodeGraphProps) {
     },
     tooltip: {
       trigger: 'axis',
-      position: function (pos, params, dom, rect, size) {
+      position: function (point, params, dom, rect, size) {
         const obj = { top: 60 };
-        obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 5;
+        obj[['left', 'right'][+(point[0] < size.viewSize[0] / 2)]] = 5;
         return obj;
-      },
+      } as TooltipPositionCallback,
       confine: true,
       formatter: createTooltipFormatter(),
     },
@@ -344,7 +350,7 @@ function createLegendData(
           }))
       : [];
 
-  const specialSeriesLegend: any[] = [];
+  const specialSeriesLegend: LegendOption[] = [];
   if (datasetIndices.goal >= 0 && dataset[datasetIndices.goal]?.source !== undefined) {
     specialSeriesLegend.push({
       name: specialSeriesLabels.Goal,
@@ -401,7 +407,7 @@ function createBarSeries(
   },
   categoryColors: Record<string, string>,
   theme: Theme,
-  isForecastYear: (year: number) => boolean
+  isForecastYear: (year: number | undefined) => boolean
 ) {
   if (
     datasetIndices.data < 0 ||
@@ -421,8 +427,12 @@ function createBarSeries(
       stackStrategy: 'samesign',
       datasetIndex: datasetIndices.data,
       itemStyle: {
-        color: (param: any) => {
-          const dataYear = param.data[param.encode.x[0]];
+        color: (param: CallbackDataParams) => {
+          // This is pretty complex due to typing
+          const xIndex = param.encode?.x?.[0];
+          const rawYear: unknown =
+            typeof xIndex === 'number' ? (param.data as unknown)?.[xIndex] : undefined;
+          const dataYear: number | undefined = typeof rawYear === 'number' ? rawYear : undefined;
           const baseColor = categoryColors[idx] ?? theme.graphColors.blue070;
           return isForecastYear(dataYear) ? tint(FORECAST_TINT_AMOUNT, baseColor) : baseColor;
         },
@@ -537,7 +547,7 @@ function createTotalSeries(
 }
 
 function buildTooltipContent(
-  params: any[],
+  params: CallbackDataParams[],
   year: string | number | null | undefined,
   isForecast: boolean,
   isReferenceYear: boolean,
@@ -598,27 +608,26 @@ function buildTooltipContent(
 }
 
 function buildTooltipRow(
-  param: any,
+  param: CallbackDataParams,
   unit: string,
   maximumFractionDigits: number | undefined,
   specialSeriesLabels?: Record<string, string>,
   showTotalLine?: boolean
 ) {
-  const value = beautifyValue(
-    param.data[param.encode.y[0]],
-    undefined,
-    maximumFractionDigits ?? undefined
-  );
+  const yIndex: number | undefined = param?.encode?.y?.[0];
+  if (!yIndex || !param.data) return '';
+  const rawValue: number = param.data[yIndex] as number;
+  const value = beautifyValue(rawValue, undefined, maximumFractionDigits ?? undefined);
 
   if (value === 0 || value === undefined || value === null) return '';
   if (!param.seriesName || param.value === undefined) return '';
 
-  const color = param.color || '#000';
+  const color = typeof param.color === 'string' ? param.color : '#000';
   const displayName = specialSeriesLabels?.[param.seriesName] || param.seriesName;
   const getMarker = () => {
-    if (param.dimensionNames[1] === 'Goal')
+    if (param?.dimensionNames?.[1] === 'Goal')
       return `<span style=\"display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${color};\"></span>`;
-    if (param.dimensionNames[1] === 'Total')
+    if (param?.dimensionNames?.[1] === 'Total')
       return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:2px;background-color:${showTotalLine ? color : 'transparent'};\"></span>`;
     else if (param?.componentSubType === 'line')
       return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:2px;background-color:${color};\"></span>`;
