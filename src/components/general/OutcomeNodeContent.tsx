@@ -26,6 +26,10 @@ import { getHelpText } from './progress-tracking/utils';
 const DisplayTab = styled(NavItem)`
   font-size: 0.9rem;
 
+  a.active {
+    background-color: white;
+  }
+
   .icon {
     width: 1.2rem !important;
     height: 1.2rem !important;
