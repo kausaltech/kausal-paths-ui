@@ -38,7 +38,8 @@ function DashboardNormalizationBar() {
   // Store normalization separately to optimistically update the UI on switch press
   const [normalizationActive, setNormalizationActive] = useState(normalization?.isActive ?? false);
 
-  const [setNormalization, { loading: mutationLoading, error: mutationError }] = useMutation<
+  // Todo handle mutation error
+  const [setNormalization, { loading: mutationLoading }] = useMutation<
     SetNormalizationMutation,
     SetNormalizationMutationVariables
   >(SET_NORMALIZATION_MUTATION, { refetchQueries: 'active' });

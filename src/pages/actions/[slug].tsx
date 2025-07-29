@@ -9,8 +9,6 @@ import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 import { Col, Container, Row } from 'reactstrap';
 
-import { logApolloError } from '@common/logging/apollo';
-
 import type {
   GetActionContentQuery,
   GetActionContentQueryVariables,

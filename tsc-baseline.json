@@ -16,12 +16,6 @@
       "count": 2,
       "message": "Argument of type 'string[] | Color[]' is not assignable to parameter of type 'string[]'."
     },
-    "6fccf9da27135b5a965ce3d029f6512109c3cfca": {
-      "file": "src/common/mui-theme/use-base-theme.ts",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'base' does not exist on type 'Theme'."
-    },
     "d7b48510ef99dd1b8cbe48783e60f9131839eb0d": {
       "file": "src/common/preprocess.ts",
       "code": "TS2339",

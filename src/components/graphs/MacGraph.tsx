@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { t } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { Col, Row } from 'reactstrap';
 
