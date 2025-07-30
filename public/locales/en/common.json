@@ -115,6 +115,9 @@
   "cost-benefit": "Cost-benefit",
   "cost-benefit-analysis": "Cost-benefit analysis",
   "return-on-investment": "Return on investment",
+  "return-on-investmet-subtitle": "Higher values indicate actions with a more favorable outcome, demonstrating greater returns relative to the initial investment.",
+  "simple-effect": "Other effect",
+  "simple-effect-subtitle": "The grapn shows the selected impact of each action.",
   "megaEUR": "M €",
   "kiloSEK": "kSEK",
   "higher-than-expected": "{{percentage}}% higher than expected",
@@ -129,5 +132,10 @@
   "emissions-by-sector": "Emissions by sector ({{year}})",
   "no-data-reported": "No data reported",
   "invalid-page-type": "Invalid page type",
-  "outcomes": "Outcomes"
+  "outcomes": "Outcomes",
+  "expand-all": "Expand all",
+  "collapse-all": "Collapse all",
+  "values-per": "Values per {{normalization}}",
+  "above-target": "above the target",
+  "below-target": "below the target"
 }

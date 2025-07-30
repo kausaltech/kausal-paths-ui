@@ -40,6 +40,7 @@ echarts.use([
   CanvasRenderer,
   GraphicComponent,
   LineChart,
+  MarkLineComponent,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`

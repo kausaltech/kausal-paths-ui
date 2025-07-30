@@ -8,10 +8,10 @@ export function genColors(colorsIn: string[], numColors: number) {
   const bezier = true;
   const correctLightness = true;
 
-  const genRange = (start, stop, step = 1) =>
+  const genRange = (start: number, stop: number, step: number = 1) =>
     Array(Math.ceil((stop - start) / step))
       .fill(start)
-      .map((x, y) => x + y * step);
+      .map((x: number, y: number) => x + y * step);
 
   const even = numColors % 2 === 0;
   const numColorsLeft = diverging ? Math.ceil(numColors / 2) + (even ? 1 : 0) : numColors;
@@ -31,21 +31,21 @@ export function genColors(colorsIn: string[], numColors: number) {
           .correctLightness(correctLightness)
           .colors(numColorsRight)
       : [];
-  let steps = (even && diverging ? stepsLeft.slice(0, stepsLeft.length - 1) : stepsLeft).concat(
+  const steps = (even && diverging ? stepsLeft.slice(0, stepsLeft.length - 1) : stepsLeft).concat(
     stepsRight.slice(1)
   );
 
-  function autoGradient(color, numColors) {
+  function autoGradient(color: string, numColors: number) {
     const lab = chroma(color).lab();
     const lRange = 100 * (0.95 - 1 / numColors);
     const lStep = lRange / (numColors - 1);
-    let lStart = (100 - lRange) * 0.5;
+    const lStart = (100 - lRange) * 0.5;
     const range = genRange(lStart, lStart + numColors * lStep, lStep);
     let offset = 0;
     if (!diverging) {
       offset = 9999;
       for (let i = 0; i < numColors; i++) {
-        let diff = lab[0] - range[i];
+        const diff = lab[0] - range[i];
         if (Math.abs(diff) < Math.abs(offset)) {
           offset = diff;
         }
@@ -53,7 +53,7 @@ export function genColors(colorsIn: string[], numColors: number) {
     }
     return range.map((l) => chroma.lab(l + offset, lab[1], lab[2]));
   }
-  function autoColors(color, numColors, reverse = false) {
+  function autoColors(color: string, numColors: number, reverse = false) {
     if (diverging) {
       const colors = autoGradient(color, 3).concat(chroma('#f5f5f5'));
       if (reverse) colors.reverse();

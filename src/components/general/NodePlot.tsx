@@ -99,18 +99,20 @@ const NodePlot = (props: NodePlotProps) => {
 
   const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
   const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
-  const impactHistorical =
-    hasImpact && metricToPlot(impactMetric, 'historicalValues', startYear, endYear);
-  const impactForecast =
-    hasImpact && metricToPlot(impactMetric, 'forecastValues', startYear, endYear);
+  const impactHistorical = hasImpact
+    ? metricToPlot(impactMetric, 'historicalValues', startYear, endYear)
+    : null;
+  const impactForecast = hasImpact
+    ? metricToPlot(impactMetric, 'forecastValues', startYear, endYear)
+    : null;
 
   // create downloadable table
   const tableColumns = [
-    t('table-year')!,
-    t('table-historical')!,
-    t('table-scenario-forecast')!,
-    site.baselineName,
-    t('table-action-impact')!,
+    t('table-year'),
+    t('table-historical'),
+    t('table-scenario-forecast'),
+    site.baselineName ?? '',
+    t('table-action-impact'),
   ];
 
   const downloadableHistorical = historical.x.map((date, index) => ({
@@ -118,7 +120,7 @@ const NodePlot = (props: NodePlotProps) => {
     [tableColumns[1]]: historical.y[index],
     [tableColumns[2]]: '',
     [tableColumns[3]]: '',
-    [tableColumns[4]]: hasImpact ? impactHistorical.y[index] : '',
+    [tableColumns[4]]: impactHistorical ? impactHistorical.y[index] : '',
   }));
 
   const downloadableForecast = forecast.x.map((date, index) => ({
@@ -126,21 +128,21 @@ const NodePlot = (props: NodePlotProps) => {
     [tableColumns[1]]: '',
     [tableColumns[2]]: forecast.y[index],
     [tableColumns[3]]: baselineForecast.y[index],
-    [tableColumns[4]]: hasImpact ? impactForecast.y[index] : '',
+    [tableColumns[4]]: impactForecast ? impactForecast.y[index] : '',
   }));
 
   const downloadableTable = downloadableHistorical.concat(downloadableForecast);
 
-  const filledStyles = filled
+  const filledStyles: Partial<Plotly.PlotData> = filled
     ? {
         fill: 'tozeroy',
         marker: { opacity: 0 },
         line: {
           color: 'white',
-          width: '1',
+          width: 1,
           dash: 'solid',
           shape: 'spline',
-        },
+        } satisfies Partial<Plotly.ScatterLine>,
       }
     : {};
 
@@ -150,15 +152,16 @@ const NodePlot = (props: NodePlotProps) => {
     xaxis: 'x2',
     yaxis: 'y1',
     marker: { size: 8 },
-    name: t('plot-actualized')!,
+    name: t('plot-actualized'),
     type: 'scatter',
     mode: historical.x.length > 8 ? 'lines' : 'lines+markers',
     line: {
       color: plotColor,
       shape: 'spline',
       width: 3,
-    },
+    } satisfies Partial<Plotly.ScatterLine>,
     fillcolor: plotColor,
+    // @ts-expect-error ¿qué?
     smoothing: true,
     ...filledStyles,
     ...formatHover(t('plot-actualized'), plotColor),
@@ -168,7 +171,7 @@ const NodePlot = (props: NodePlotProps) => {
     hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
   // Two-entry trace to join historical and scenario together
   if (historical?.x && forecast?.x) {
-    const joinTrace: Plotly.PlotData = {
+    const joinTrace: Partial<Plotly.PlotData> = {
       x: [historical.x[historical.x.length - 1], forecast.x[0]],
       y: [historical.y[historical.y.length - 1], forecast.y[0]],
       xaxis: 'x2',
@@ -197,13 +200,14 @@ const NodePlot = (props: NodePlotProps) => {
     yaxis: 'y1',
     marker: { size: 8 },
     mode: forecast.x.length > 8 ? 'lines' : 'lines+markers',
-    name: t('plot-scenario')!,
+    name: t('plot-scenario'),
     type: 'scatter',
     line: {
       color: scenarioPlotColor,
       shape: 'spline',
       width: 3,
-    },
+    } satisfies Partial<Plotly.ScatterLine>,
+    // @ts-expect-error - Plotly types are not up to date
     smoothing: true,
     fillcolor: scenarioPlotColor,
     ...filledStyles,
@@ -232,7 +236,7 @@ const NodePlot = (props: NodePlotProps) => {
       xaxis: 'x2',
       yaxis: 'y1',
       mode: 'lines',
-      name: t('plot-action-impact')!,
+      name: t('plot-action-impact'),
       type: 'scatter',
       fill: 'tonexty',
       fillcolor: transparentize(0.85, scenarioPlotColor),
@@ -248,7 +252,7 @@ const NodePlot = (props: NodePlotProps) => {
       xaxis: 'x2',
       yaxis: 'y1',
       mode: 'lines',
-      name: site.baselineName!,
+      name: site.baselineName,
       type: 'scatter',
       line: {
         color: theme.graphColors.grey060,
@@ -256,7 +260,7 @@ const NodePlot = (props: NodePlotProps) => {
         width: 2,
         dash: 'dash',
       },
-      ...formatHover(site.baselineName!, theme.graphColors.grey030),
+      ...formatHover(site.baselineName, theme.graphColors.grey030),
     });
   }
 
@@ -288,7 +292,6 @@ const NodePlot = (props: NodePlotProps) => {
       },
     });
   }
-  const nrYears = endYear - startYear;
   const layout: Partial<Plotly.Layout> = {
     height: compact ? 200 : 300,
     margin: compact

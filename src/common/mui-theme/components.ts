@@ -221,15 +221,17 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           padding: 8,
           '& .MuiSwitch-switchBase': {
             '&.Mui-checked': {
-              color: theme.brandDark,
+              color: theme.themeColors.white,
               '& + .MuiSwitch-track': {
                 backgroundColor: theme.brandDark,
               },
             },
           },
           '& .MuiSwitch-thumb': {
+            boxShadow: 'none',
             width: 16,
             height: 16,
+            margin: 2,
           },
           '& .MuiSwitch-track': {
             borderRadius: 16,
@@ -292,7 +294,11 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
       },
     },
     MuiSkeleton: {
-      styleOverrides: {},
+      styleOverrides: {
+        root: {
+          backgroundColor: theme.graphColors.grey010,
+        },
+      },
     },
     MuiAlert: {
       styleOverrides: {
@@ -436,11 +442,15 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiAccordion: {
       styleOverrides: {
         root: {
-          backgroundColor: theme.cardBackground.primary,
-          borderRadius: theme.cardBorderRadius,
-          border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
+          borderRadius: '0 !important',
+          backgroundColor: 'transparent',
           boxShadow: 'none',
-          '&:before': {
+          borderTop: `1px solid ${theme.graphColors.grey020}`,
+          borderBottom: `1px solid ${theme.graphColors.grey020}`,
+          '&:not(:last-child)': {
+            borderBottom: 0,
+          },
+          '&::before': {
             display: 'none',
           },
         },
@@ -449,9 +459,16 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiAccordionSummary: {
       styleOverrides: {
         root: {
-          '&.Mui-expanded': {
-            minHeight: 'auto',
-          },
+          paddingLeft: theme.spaces.s100,
+          paddingRight: theme.spaces.s100,
+        },
+      },
+    },
+    MuiAccordionDetails: {
+      styleOverrides: {
+        root: {
+          paddingLeft: theme.spaces.s100,
+          paddingRight: theme.spaces.s100,
         },
       },
     },

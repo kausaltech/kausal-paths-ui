@@ -55,7 +55,7 @@ const formatNumber = (value, language) => {
 };
 
 function ActionComparisonGraph(props) {
-  const { data, impactUnit, impactName, actionIds, actionGroups } = props;
+  const { data, effectUnit, impactName, actionIds, actionGroups } = props;
   const theme = useTheme();
   const { t, i18n } = useTranslation();
 
@@ -86,7 +86,7 @@ function ActionComparisonGraph(props) {
       hovermode: 'x unified',
       hoverdistance: 10,
       yaxis: {
-        title: `${impactName} (${impactUnit})`,
+        title: `${impactName} (${effectUnit})`,
       },
       xaxis: {
         title: t('actions'),
@@ -103,7 +103,7 @@ function ActionComparisonGraph(props) {
       paper_bgcolor: theme.themeColors.white,
       plot_bgcolor: theme.themeColors.white,
     }),
-    [theme, impactUnit, impactName]
+    [theme, effectUnit, impactName]
   );
 
   const handleHover = useCallback(
@@ -139,7 +139,7 @@ function ActionComparisonGraph(props) {
             },
             textposition: 'none',
             customdata: data['impact'],
-            hovertemplate: `%{y:.3r} ${impactUnit}`,
+            hovertemplate: `%{y:.3r} ${effectUnit}`,
           },
         ]}
         layout={layout}
@@ -172,7 +172,7 @@ function ActionComparisonGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: impactUnit }} />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end"></Col>

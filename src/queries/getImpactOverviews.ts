@@ -4,10 +4,24 @@ export const GET_IMPACT_OVERVIEWS = gql`
   query GetImpactOverviews {
     impactOverviews {
       id
-      label
       graphType
-      costNode {
+      label
+      costLabel
+      effectLabel
+      indicatorLabel
+      costCategoryLabel
+      effectCategoryLabel
+      description
+      effectNode {
         id
+      }
+      effectUnit {
+        short
+        long
+      }
+      indicatorUnit {
+        short
+        long
       }
       costUnit {
         short
@@ -18,7 +32,8 @@ export const GET_IMPACT_OVERVIEWS = gql`
           id
           name
         }
-        costDim {
+        unitAdjustmentMultiplier
+        effectDim {
           # TODO: There's an issue with the API where dimension ids
           #       are the same as action ids and causes cache issues.
           #       Once fixed, we should use the DimensionalMetric fragment here.
@@ -67,7 +82,7 @@ export const GET_IMPACT_OVERVIEWS = gql`
           years
           values
         }
-        impactDim {
+        costDim {
           # id
           dimensions {
             id

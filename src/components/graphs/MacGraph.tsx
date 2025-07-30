@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { t } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { Col, Row } from 'reactstrap';
 
@@ -66,9 +65,9 @@ const formatNumber = (value, language) => {
 function MacGraph(props) {
   const {
     data,
-    impactUnit,
+    effectUnit,
     impactName,
-    efficiencyUnit,
+    indicatorUnit,
     efficiencyName,
     actionIds,
     costName,
@@ -159,13 +158,13 @@ function MacGraph(props) {
       hoverdistance: 10,
       yaxis: {
         title: {
-          text: `${efficiencyName} (${efficiencyUnit})`,
+          text: `${efficiencyName} (${indicatorUnit})`,
         },
       },
       xaxis: {
-        ticksuffix: ` ${impactUnit}`,
+        ticksuffix: ` ${effectUnit}`,
         title: {
-          text: `${impactName} (${impactUnit})`,
+          text: `${impactName} (${effectUnit})`,
         },
         showgrid: true,
       },
@@ -180,7 +179,7 @@ function MacGraph(props) {
       paper_bgcolor: theme.themeColors.white,
       plot_bgcolor: theme.themeColors.white,
     }),
-    [theme, efficiencyName, efficiencyUnit, impactUnit, impactName, negativeSide]
+    [theme, efficiencyName, indicatorUnit, effectUnit, impactName, negativeSide]
   );
 
   const handleHover = useCallback(
@@ -258,7 +257,7 @@ function MacGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: impactUnit }} />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
             </Col>
             <Col md={3} className="d-flex align-items-end">
@@ -274,7 +273,7 @@ function MacGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.efficiency[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: efficiencyUnit }} />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: indicatorUnit }} />
               </HoverValue>
             </Col>
           </Row>

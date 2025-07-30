@@ -13,7 +13,6 @@ declare module '@mui/material/styles' {
 }
 
 declare module '@emotion/react' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface Theme extends BaseTheme, MuiTheme {}
 }
 
@@ -30,7 +29,8 @@ export function initializeMuiTheme(theme: BaseTheme): MuiTheme {
       palette: getPalette(theme),
       typography: getTypography(theme),
       shape: {
-        borderRadius: theme.btnBorderRadius,
+        // The base border radius, used as a multiplier when setting borderRadius on components
+        borderRadius: theme.spaces.s025,
       },
       spacing: theme.space,
       components: getComponents(theme),

@@ -6,7 +6,7 @@ export type ActionWithEfficiency = GetActionListQuery['actions'][0] & {
   cumulativeImpact?: number;
   cumulativeImpactUnit?: string;
   cumulativeImpactName?: string;
-  efficiencyDivisor?: number;
+  unitAdjustmentMultiplier?: number;
   cumulativeEfficiency?: number;
   cumulativeEfficiencyUnit?: string;
   cumulativeEfficiencyName?: string;

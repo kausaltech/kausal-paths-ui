@@ -57,14 +57,14 @@ const ActionsComparison = ({
 
   // FIXME: Running impact metric name through translation as a quickfix until they are translated in the backend
   const impactName = `${t(sortedActions[0]?.impactMetric.name)} ${displayYears[1]}`;
-  const impactUnit = sortedActions[0]?.impactMetric.unit.htmlShort;
+  const effectUnit = sortedActions[0]?.impactMetric.unit.htmlShort;
 
   return (
     <ChartWrapper id={id} isLoading={refetching}>
       <ActionComparisonGraph
         data={macData}
         impactName={impactName}
-        impactUnit={impactUnit}
+        effectUnit={effectUnit}
         actionIds={macData.ids}
         actionGroups={actionGroups}
       />

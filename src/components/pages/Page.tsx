@@ -13,6 +13,7 @@ import { activeGoalVar } from '@/common/cache';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ActionListPage from '@/components/pages/ActionListPage';
+import CustomDashboardPage from '@/components/pages/CustomDashboardPage';
 import OutcomePage from '@/components/pages/OutcomePage';
 import StaticPage from '@/components/pages/StaticPage';
 import { useSiteOrNull } from '@/context/site';
@@ -72,7 +73,11 @@ function Page(props: PageProps) {
     console.error(`No page found for path ${path}`);
     return <Error statusCode={404} />;
   }
-  if (page.__typename === 'OutcomePage') {
+
+  // TODO: Remove this when we have the actual page type
+  if (/** true || **/ page.__typename === 'CustomDashboardPage') {
+    pageContent = <CustomDashboardPage />;
+  } else if (page.__typename === 'OutcomePage') {
     pageContent = (
       <OutcomePage
         page={page}

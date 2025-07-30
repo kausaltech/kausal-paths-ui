@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import * as _ from 'lodash-es';
 import numbro from 'numbro';
 
 let nrSignificantDigits = 3;
@@ -41,7 +41,7 @@ export const formatNumber = (value: number, language = 'en', maximumFractionDigi
   return parseFloat(Number(value).toPrecision(nrSignificantDigits)).toLocaleString(language);
 };
 
-export const getInitialMetric = (node) => node.metric.historicalValues[0];
+export const getInitialMetric = (node: { metric: NodeMetric }) => node.metric.historicalValues[0];
 
 type MetricValue = {
   year: number;
@@ -62,16 +62,21 @@ export const getImpactMetricValue = (node: { impactMetric: NodeMetric }, date) =
   node.impactMetric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value ??
   0;
 
-export const getMetricChange = (initial, current) =>
+export const getMetricChange = (initial: number, current: number) =>
   initial !== 0 ? -Math.round(((initial - current) / initial) * 100) : undefined;
 
-export const getOutcomeTotal = (nodes, date) =>
+export const getOutcomeTotal = (nodes: { metric: NodeMetric }[], date: number) =>
   _.sum(nodes.map((node) => getMetricValue(node, date)));
 
-export const summarizeYearlyValues = (yearlyValues) => _.sum(yearlyValues.map((v) => v.value));
+export const summarizeYearlyValues = (yearlyValues: MetricValue[]) =>
+  _.sum(yearlyValues.map((v) => v.value));
 
-export const summarizeYearlyValuesBetween = (metric, startYear, endYear) => {
-  const yearlyValues = [];
+export const summarizeYearlyValuesBetween = (
+  metric: NodeMetric,
+  startYear: number,
+  endYear: number
+) => {
+  const yearlyValues: MetricValue[] = [];
   if (metric?.historicalValues)
     metric.historicalValues.forEach((dataPoint) => {
       if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
@@ -87,16 +92,26 @@ export const summarizeYearlyValuesBetween = (metric, startYear, endYear) => {
   return summarizeYearlyValues(yearlyValues);
 };
 
-export const metricToPlot = (metric, segment: string, startYear: number, endYear: number) => {
+type MetricLike<K extends string> = {
+  [key in K]: MetricValue[] | null;
+};
+
+export function metricToPlot<M extends MetricLike<K>, K extends string>(
+  metric: M,
+  segment: K,
+  startYear: number,
+  endYear: number
+) {
   const plot: { x: number[]; y: number[] } = { x: [], y: [] };
-  (metric?.[segment] ?? []).forEach((dataPoint) => {
+  if (!metric[segment]) return plot;
+  (metric[segment] ?? []).forEach((dataPoint) => {
     if (dataPoint.year <= endYear && dataPoint.year >= startYear) {
       plot.x.push(dataPoint.year);
       plot.y.push(dataPoint.value);
     }
   });
   return plot;
-};
+}
 
 type getRangeType = (values: number[]) => [number, number];
 

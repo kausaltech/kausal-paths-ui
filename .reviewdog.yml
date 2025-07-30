@@ -1,0 +1,12 @@
+runner:
+  eslint:
+    cmd: node_modules/.bin/eslint --cache --suppressions-location eslint-baseline.json -f rdjson
+    format: rdjson
+    filter-mode: added
+  typecheck:
+    cmd: |
+      node_modules/.bin/tsc --noEmit | \
+        node_modules/.bin/tsc-baseline -p tsc-baseline.json check --error-format gitlab 2>&1 | \
+        node kausal_common/scripts/gitlab-to-rdjsonl.js
+    format: rdjsonl
+    filter-mode: nofilter
