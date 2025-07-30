@@ -294,8 +294,6 @@ const FundingInstrumentContainer = styled.div<{ $small?: boolean }>`
   }
 `;
 
-const potato = peruna;
-
 function SiteFooter() {
   const { t } = useTranslation();
   const theme = useTheme();
