@@ -27,11 +27,11 @@ import ActionsList from '@/components/general/ActionsList';
 import ActionsMac from '@/components/general/ActionsMac';
 import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
 import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
-import { SimpleEffect } from '@/components/general/SimpleEffect';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
+import { SimpleEffect } from '../general/SimpleEffect';
 import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
 

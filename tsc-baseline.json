@@ -28,12 +28,6 @@
       "count": 1,
       "message": "Property 'forEach' does not exist on type 'NodeMetric'."
     },
-    "01e91a0d862646de6748f5958e6cab44e79e2a94": {
-      "file": "src/components/charts/Chart.tsx",
-      "code": "TS2304",
-      "count": 1,
-      "message": "Cannot find name 'MarkLineComponent'."
-    },
     "fb14b78258386f0e7c1311ce412aff3f546953fb": {
       "file": "src/components/common/Badge.tsx",
       "code": "TS2538",
@@ -730,11 +724,11 @@
       "count": 1,
       "message": "Property 'invertImpact' does not exist on type '{ id: string; label: string; plotLimitForIndicator: number | null; indicatorUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; costUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; effectUnit: { ...; } & { ...; }; costNode?: ({ ...; } & { ...; }) | undefined; effectNode: { ...; } & { ...; }; actio...'."
     },
-    "5c3576dde510ea2c53f06f38d18c5b49291f3509": {
+    "3457ea5970f80301b31de4ccecbde5bc0f1e8d05": {
       "file": "src/components/pages/ActionListPage.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[\"sort-direction\"]' is not assignable to parameter of type '[key: \"actions\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"actions-available\" | \"actions-influencing-this\" | \"affected-by\" | \"all-settings\" | ... 129 more ... | (\"actions\" | ... 138 more ... | TemplateStringsArray)[], options?: (TOptionsBase & $Dictionary) | undefined] | [ke...'."
+      "message": "Argument of type '[\"sort-direction\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"display\" | \"close\" | \"actions\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | ... 129 more ... | (\"details\" | ... 138 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "3090ef9924fdd60d9acb8538c3358559a9427982": {
       "file": "src/components/pages/CustomDashboardPage.tsx",
@@ -760,11 +754,11 @@
       "count": 1,
       "message": "Type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to type 'Map<string, OutcomeNodeFieldsFragment>'."
     },
-    "4716ee043cc6fe73832f29305401332c51fcf21a": {
+    "0f21882df85d960dada12b50ded68c24be70589f": {
       "file": "src/components/pages/Page.tsx",
       "code": "TS2367",
       "count": 1,
-      "message": "This comparison appears to be unintentional because the types '\"OutcomePage\" | \"ActionListPage\" | \"InstanceRootPage\" | \"Page\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
+      "message": "This comparison appears to be unintentional because the types '\"ActionListPage\" | \"InstanceRootPage\" | \"Page\" | \"OutcomePage\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
     },
     "0ffca2d6c30523720b83a07e15a250dc85c225df": {
       "file": "src/middleware/lru-cache.ts",
