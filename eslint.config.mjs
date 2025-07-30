@@ -7,6 +7,6 @@ import { getEslintConfig } from './kausal_common/configs/eslint.mjs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const config = getEslintConfig(__dirname);
+const config = getEslintConfig(__dirname, ['e2e-tests/**']);
 
 export default config;
