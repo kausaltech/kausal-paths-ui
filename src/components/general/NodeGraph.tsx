@@ -40,7 +40,7 @@ type NodeGraphProps = {
   unit: string;
   referenceYear: number | undefined | null;
   forecastRange: [number, number] | null;
-  categoryColors: Record<string, string>;
+  categoryColors: string[];
   maximumFractionDigits: number | undefined;
   baselineLabel: string | null | undefined;
   showTotalLine?: boolean;
@@ -332,7 +332,7 @@ function createLegendData(
     total: number;
   },
   specialSeriesLabels: Record<string, string>,
-  categoryColors: Record<string, string>,
+  categoryColors: string[],
   theme: Theme,
   showTotalLine: boolean
 ) {
@@ -405,7 +405,7 @@ function createBarSeries(
     progress: number;
     total: number;
   },
-  categoryColors: Record<string, string>,
+  categoryColors: string[],
   theme: Theme,
   isForecastYear: (year: number | undefined) => boolean
 ) {

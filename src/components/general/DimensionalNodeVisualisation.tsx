@@ -295,8 +295,8 @@ export default function DimensionalNodeVisualisation({
     : null;
 
   // Define colors for the categories
-  const categoryColors: Record<string, string> = Object.fromEntries(
-    dataCategories.map((row) => [row.name, row.color ?? theme.graphColors.blue070])
+  const categoryColors: string[] = dataCategories.map(
+    (row) => row.color ?? theme.graphColors.blue070
   );
 
   // Check if the data has any negative values, in order to decide if we want to show the total line
