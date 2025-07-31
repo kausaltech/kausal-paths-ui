@@ -28,18 +28,6 @@
       "count": 1,
       "message": "Property 'forEach' does not exist on type 'NodeMetric'."
     },
-    "c33c20ede93b5f72131f9101ce40dba73430da24": {
-      "file": "src/components/charts/chart-theme.tsx",
-      "code": "TS1484",
-      "count": 1,
-      "message": "'Theme' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled."
-    },
-    "fc8b2f7e6b237510d9d2df3324553f5facacbba8": {
-      "file": "src/components/charts/ChartWrapper.tsx",
-      "code": "TS1484",
-      "count": 1,
-      "message": "'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled."
-    },
     "fb14b78258386f0e7c1311ce412aff3f546953fb": {
       "file": "src/components/common/Badge.tsx",
       "code": "TS2538",
@@ -70,11 +58,11 @@
       "count": 2,
       "message": "Type '{ \"aria-hidden\": string; className: string; }' is not assignable to type 'IntrinsicAttributes'."
     },
-    "55a3435d59e9c4cb1d2462fa2cdd1ed4c13dfd66": {
+    "ecfd16fdddfcd81bdc51e05f7eabb88314f8f6fe": {
       "file": "src/components/common/Footer.tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ children: (string | false | Element | null | undefined)[]; href: never; target: string; rel: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LinkProps<any>, \"href\" | \"as\"> & { children?: ReactNode; } & { href: string; }'."
+      "message": "Type '{ children: (string | false | Element | null | undefined)[]; href: never; target: string; rel: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LinkProps<any>, \"as\" | \"href\"> & { children?: ReactNode; } & { href: string; }'."
     },
     "ad56b3d151da1c62606cbe8200329811791bf23f": {
       "file": "src/components/common/Footer.tsx",
@@ -130,11 +118,11 @@
       "count": 1,
       "message": "Argument of type 'null' is not assignable to parameter of type 'ElementRef | undefined'."
     },
-    "b8983a1ffbb3c5746060a16d100c1b16d252dadd": {
+    "05ab1e02e83c59376151d802d7289c3a6c7a395c": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"action\" | \"target\" | \"display\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | ... 128 more ... | (\"details\" | ... 138 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "1484f806f69e92e870e04470aab2e62401c4c6bf": {
       "file": "src/components/common/GraphQLError.tsx",
@@ -304,11 +292,11 @@
       "count": 3,
       "message": "Object is possibly 'null'."
     },
-    "fa03fe9184701391e6bd391accae2eae80d368a9": {
+    "aab0774a5531662965a7ab6b1f16a6372a1c7c47": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"action\" | \"target\" | \"display\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | ... 128 more ... | (\"details\" | ... 138 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "22b6dfb797da7efcd08defba7b4babe42c15aa46": {
       "file": "src/components/general/ActionsList.tsx",
@@ -358,11 +346,11 @@
       "count": 1,
       "message": "Type 'string | null' is not assignable to type 'string | undefined'."
     },
-    "e952cd2c208781c64e231dbb3b3f2eb7dfe55999": {
+    "790ddfbe4b32e33ff83e758da1c41c5403bb3f3f": {
       "file": "src/components/general/CausalCard.tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ children: Element; node: ({ id: string; name: string; shortDescription: string | null; color: string | null; targetYearGoal: number | null; order: number | null; quantity: string | null; ... 7 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; }); className: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LinkProps<any>, \"href\" | \"as\"> & { children?: ReactNode; } & { node: { id: string; }; }'."
+      "message": "Type '{ children: Element; node: ({ id: string; name: string; shortDescription: string | null; color: string | null; targetYearGoal: number | null; order: number | null; quantity: string | null; ... 7 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; }); className: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LinkProps<any>, \"as\" | \"href\"> & { children?: ReactNode; } & { node: { id: string; }; }'."
     },
     "be5c007ec4e7d127e5225d58cddcb7dcac13019f": {
       "file": "src/components/general/CausalGrid.tsx",
@@ -418,11 +406,11 @@
       "count": 2,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "49006aca0409fc969ca4295a578af21e881111ab": {
+    "f09f8c4d045c9ee4f3dd91121e56c2987bf88464": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"action\" | \"target\" | \"display\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | ... 128 more ... | (\"details\" | ... 138 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "3186d64cd5707a556087f33ee127a5a37c67d25b": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -586,11 +574,11 @@
       "count": 6,
       "message": "Argument of type 'OutcomeNodeFieldsFragment' is not assignable to parameter of type '{ metric: NodeMetric; }'."
     },
-    "28895ba7c6c1ecca2d8d76b0754fd150bbf36d77": {
+    "98094abccc147db449bc28e76a5131228ac839e6": {
       "file": "src/components/general/OutcomeCardSet.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"action\" | \"target\" | \"display\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | ... 128 more ... | (\"details\" | ... 138 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "1344e7affcf6ca4a1ab90dd81bb334ff0a1ef45b": {
       "file": "src/components/general/OutcomeCardSet.tsx",
@@ -658,11 +646,11 @@
       "count": 1,
       "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'."
     },
-    "7326888e74da6822d3caa82f1db64b7f32ef2f5c": {
+    "c5084a2849b943df6d2656bc62a01aa4e415593c": {
       "file": "src/components/general/OutcomeNodeContent.tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ node: OutcomeNodeFieldsFragment; metric: { id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ ...; } & { ...; })[]; goals: ({ ...; } & { ...; })[]; unit: { ...; } & { ...; }; normalizedBy: ({ ...; } & { ...; }) | null; } & { ...; }; ... 7 mo...' is not assignable to type 'IntrinsicAttributes & DimensionalNodePlotProps'."
+      "message": "Type '{ node: OutcomeNodeFieldsFragment; metric: { id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ ...; } & { ...; })[]; goals: ({ ...; } & { ...; })[]; unit: { ...; } & { ...; }; normalizedBy: ({ ...; } & { ...; }) | null; } & { ...; }; ... 5 mo...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "791fd92d417103c3a38194c36470dcbc3acb2724": {
       "file": "src/components/general/OutcomeNodeDetails.tsx",
@@ -681,6 +669,12 @@
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ children: ReactNode; disabled: any; ref: RefObject<any>; style: { height: string; width: string; borderRadius: string; background: string; alignSelf: \"center\"; }; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'."
+    },
+    "8a210e71a1b54d2c6c86264ecfa4297154897f9d": {
+      "file": "src/components/general/progress-tracking/useProgressData.ts",
+      "code": "TS2345",
+      "count": 2,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
     },
     "c73cfa02cf6c46729be4db5721d36429482321ef": {
       "file": "src/components/general/RangeSelector.tsx",
@@ -784,11 +778,11 @@
       "count": 1,
       "message": "Type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to type 'Map<string, OutcomeNodeFieldsFragment>'."
     },
-    "0f21882df85d960dada12b50ded68c24be70589f": {
+    "4716ee043cc6fe73832f29305401332c51fcf21a": {
       "file": "src/components/pages/Page.tsx",
       "code": "TS2367",
       "count": 1,
-      "message": "This comparison appears to be unintentional because the types '\"ActionListPage\" | \"InstanceRootPage\" | \"Page\" | \"OutcomePage\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
+      "message": "This comparison appears to be unintentional because the types '\"OutcomePage\" | \"ActionListPage\" | \"InstanceRootPage\" | \"Page\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
     },
     "0ffca2d6c30523720b83a07e15a250dc85c225df": {
       "file": "src/middleware/lru-cache.ts",
@@ -844,12 +838,6 @@
       "count": 4,
       "message": "'locale' is possibly 'undefined'."
     },
-    "ce02ca8c8ce1b7149d6ec6f3a8476fc37d499234": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS1484",
-      "count": 1,
-      "message": "'GetNodePageQuery' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled."
-    },
     "5284777988880e8044d5689cda3e6396f96113bd": {
       "file": "src/pages/node/[slug].tsx",
       "code": "TS2345",
@@ -868,11 +856,11 @@
       "count": 1,
       "message": "Argument of type '[\"page-not-found\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
-    "a9a9412c49bc69d05b4b3cdd7ed840fff78922a2": {
+    "b682c4d90c5719f9e6a30117deb3e0014c162b4c": {
       "file": "src/pages/node/[slug].tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ key: string; node: { id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; ... 5 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }; ... 4 more ...; hasNegativeValues: boolean | undefined; }' is not assignable to type 'IntrinsicAttributes & DimensionalNodePlotProps'."
+      "message": "Type '{ key: string; node: { id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; ... 5 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }; metric: { ...; } & { ...; }; startYear: number; endYear: n...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "7025de8f2e55d076fd9673331071748bbe3da92b": {
       "file": "src/pages/node/[slug].tsx",
