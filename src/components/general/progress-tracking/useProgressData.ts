@@ -6,7 +6,6 @@ import { useTheme } from '@emotion/react';
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { setUniqueColors } from '@/common/colors';
-import { getDefaultSliceConfig } from '@/components/general/DimensionalNodePlot';
 import { useSite } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import {
@@ -52,15 +51,15 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
       progress: new DimensionalMetric(metric, 'progress_tracking'),
     };
 
-    const defaultConfig = getDefaultSliceConfig(metrics.default, activeGoal);
+    const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
     const defaultSlice = metrics.default.sliceBy(
-      defaultConfig.dimensionId!,
+      defaultConfig.dimensionId,
       true,
       defaultConfig.categories
     );
 
     const progressSlice = metrics.progress.sliceBy(
-      defaultConfig.dimensionId!,
+      defaultConfig.dimensionId,
       true,
       defaultConfig.categories
     );
