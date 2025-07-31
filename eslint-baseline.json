@@ -42,11 +42,6 @@
       "count": 1
     }
   },
-  "src/components/common/Footer.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    }
-  },
   "src/components/common/GlobalNav.tsx": {
     "react-compiler/react-compiler": {
       "count": 1
@@ -126,9 +121,6 @@
   },
   "src/components/general/DimensionalNodePlot.tsx": {
     "@typescript-eslint/no-misused-promises": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 2
     }
   },

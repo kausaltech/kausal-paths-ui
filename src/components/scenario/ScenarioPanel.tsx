@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
-import { Alert, Box, Button, Grid } from '@mui/material';
+import { Alert, Box, Button, Grid, Typography } from '@mui/material';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -22,7 +22,7 @@ const ScenarioPanel = () => {
 
   const minYear = site.minYear;
   const maxYear = site.maxYear;
-
+  const maxHistoricalYear = instance.maximumHistoricalYear;
   const availableNormalizations =
     site.availableNormalizations.length > 0 ? site.availableNormalizations : [];
 
@@ -56,14 +56,23 @@ const ScenarioPanel = () => {
       </Box>
       <Box sx={{ p: 1, backgroundColor: theme.graphColors.grey010 }}>
         <Grid container spacing={1}>
+          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+              Display:
+            </Typography>
+          </Grid>
+          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+            <YearRangeSelector
+              minYear={minYear}
+              maxYear={maxYear}
+              maxHistoricalYear={maxHistoricalYear}
+            />
+          </Grid>
           {availableNormalizations.length > 0 && (
-            <Grid>
-              <NormalizationWidget availableNormalizations={availableNormalizations} />
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+              <NormalizationWidget />
             </Grid>
           )}
-          <Grid>
-            <YearRangeSelector minYear={minYear} maxYear={maxYear} />
-          </Grid>
         </Grid>
       </Box>
     </Box>

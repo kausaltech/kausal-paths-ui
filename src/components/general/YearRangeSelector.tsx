@@ -1,21 +1,64 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import styled from '@emotion/styled';
+import { Box, InputLabel, NativeSelect } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import { yearRangeVar } from '@/common/cache';
 
+const StyledFormControl = styled(Box)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: ${(props) => props.theme.spacing(1)};
+  border-right: 1px solid ${(props) => props.theme.graphColors.grey040};
+  padding-right: ${(props) => props.theme.spacing(1)};
+
+  label {
+    font-size: 0.8rem;
+  }
+
+  .MuiInputBase-root {
+    border: 0;
+    font-size: 0.8rem;
+  }
+
+  select {
+    padding-bottom: 3px;
+  }
+`;
+
+// Get array of years in given range for easy creation of year dropdown
+// Split into historical and forecast years if maxHistoricalYear is provided.
+const availableYears = (minYear: number, maxYear: number, maxHistoricalYear?: number | null) => {
+  const years: {
+    historical?: number[] | null;
+    forecast?: number[] | null;
+    all: number[];
+  } = {
+    all: [],
+  };
+  years.all = Array.from({ length: maxYear - minYear }, (_, i) => minYear + i);
+  if (maxHistoricalYear) {
+    years.historical = years.all.filter((year) => year <= maxHistoricalYear);
+    years.forecast = years.all.filter((year) => year > maxHistoricalYear);
+  } else {
+    years.historical = null;
+    years.forecast = null;
+  }
+  return years;
+};
 interface YearRangeSelectorProps {
   minYear: number;
   maxYear: number;
+  maxHistoricalYear?: number | null;
 }
 
 const YearRangeSelector = (props: YearRangeSelectorProps) => {
-  const { minYear, maxYear } = props;
-  // const [yearRange, setYearRange] = useState([minYear, maxYear]);
+  const { minYear, maxYear, maxHistoricalYear } = props;
+
   const { t } = useTranslation();
-  console.log(props);
   // State of display settings
   // Year range
   const yearRange = useReactiveVar(yearRangeVar);
@@ -23,37 +66,96 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
     yearRangeVar(newRange);
   }, []);
 
+  const availableReferenceYears = useMemo(
+    () => availableYears(minYear, yearRange[1], maxHistoricalYear),
+    [minYear, yearRange, maxHistoricalYear]
+  );
+  const availableTargetYears = useMemo(
+    () => availableYears(yearRange[0] + 1, maxYear, maxHistoricalYear),
+    [yearRange, maxYear, maxHistoricalYear]
+  );
+
   return (
-    <div>
-      <FormControl>
-        <InputLabel>{t('comparing-years')}</InputLabel>
-        <Select
-          value={yearRange[0]}
-          onChange={(e) => setYearRange([e.target.value, yearRange[1]])}
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <StyledFormControl>
+        <InputLabel variant="standard" htmlFor="reference-year">
+          {t('comparison-year')}
+        </InputLabel>
+        <NativeSelect
+          defaultValue={yearRange[0]}
+          onChange={(e) => setYearRange([Number(e.target.value), yearRange[1]])}
           size="small"
+          inputProps={{
+            name: 'reference-year',
+            id: 'reference-year',
+          }}
         >
-          {Array.from({ length: yearRange[1] - minYear }, (_, i) => (
-            <MenuItem key={i} value={minYear + i}>
-              {minYear + i}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl>
-        <InputLabel>{t('comparing-years')}</InputLabel>
-        <Select
-          value={yearRange[1]}
-          onChange={(e) => setYearRange([yearRange[0], e.target.value])}
+          {availableReferenceYears.historical && availableReferenceYears.historical.length > 0 && (
+            <optgroup label="Historical years">
+              {availableReferenceYears.historical.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {availableReferenceYears.forecast && availableReferenceYears.forecast.length > 0 && (
+            <optgroup label="Forecast years">
+              {availableReferenceYears.forecast.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {!maxHistoricalYear &&
+            availableReferenceYears.all.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+        </NativeSelect>
+      </StyledFormControl>
+      <StyledFormControl>
+        <InputLabel variant="standard" htmlFor="target-year">
+          {t('target-year')}
+        </InputLabel>
+        <NativeSelect
+          defaultValue={yearRange[1]}
+          onChange={(e) => setYearRange([yearRange[0], Number(e.target.value)])}
           size="small"
+          inputProps={{
+            name: 'target-year',
+            id: 'target-year',
+          }}
         >
-          {Array.from({ length: maxYear - yearRange[0] }, (_, i) => (
-            <MenuItem key={i} value={yearRange[0] + i + 1}>
-              {yearRange[0] + i + 1}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </div>
+          {availableTargetYears.historical && availableTargetYears.historical.length > 0 && (
+            <optgroup label="Historical years">
+              {availableTargetYears.historical.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {availableTargetYears.forecast && availableTargetYears.forecast.length > 0 && (
+            <optgroup label="Forecast years">
+              {availableTargetYears.forecast.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {!maxHistoricalYear &&
+            availableTargetYears.all.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+        </NativeSelect>
+      </StyledFormControl>
+    </Box>
   );
 };
 
