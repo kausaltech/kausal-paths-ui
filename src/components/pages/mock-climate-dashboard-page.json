@@ -140,6 +140,7 @@
           "visualization": {
             "visualizationType": "action_impact",
             "unit": "ktCO2e",
+            "referenceYear": 2045,
             "actions": [
               {
                 "node": {
@@ -164,7 +165,7 @@
                   "id": "public-transport-expansion",
                   "name": "Public transport expansion",
                   "color": "#2196F3",
-                  "value": -120,
+                  "value": 10,
                   "category": "Transportation"
                 }
               },
