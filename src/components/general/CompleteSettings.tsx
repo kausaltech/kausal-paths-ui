@@ -1,3 +1,4 @@
+/* @deprecated Use ScenarioEditor instead */
 import { useCallback } from 'react';
 
 import { useReactiveVar } from '@apollo/client';

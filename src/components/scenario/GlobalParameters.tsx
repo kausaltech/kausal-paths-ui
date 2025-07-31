@@ -1,4 +1,4 @@
-import { NetworkStatus, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Grid } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +28,7 @@ const GlobalParametersPanel = styled(Row)`
 `;
 
 const GlobalParameters = () => {
-  const { loading, error, data, previousData, refetch, networkStatus } = useQuery<
+  const { loading, error, data, previousData } = useQuery<
     GetParametersQuery,
     GetParametersQueryVariables
   >(GET_PARAMETERS, {
@@ -39,7 +39,7 @@ const GlobalParameters = () => {
   });
   const { t } = useTranslation();
 
-  const refetching = networkStatus === NetworkStatus.refetch;
+  //const refetching = networkStatus === NetworkStatus.refetch;
 
   if ((loading && !previousData) || !data || !data.parameters) {
     return (

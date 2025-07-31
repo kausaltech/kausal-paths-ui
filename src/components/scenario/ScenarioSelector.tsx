@@ -19,6 +19,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
+import type { SiteContextScenario } from '@/context/site';
 import { GET_SCENARIOS } from '@/queries/getScenarios';
 
 const ACTIVATE_SCENARIO = gql`
@@ -72,7 +73,7 @@ const StyledMenuItem = styled(MenuItem)<{ $custom?: boolean }>`
     props.$custom ? props.theme.graphColors.yellow010 : 'transparent'};
 `;
 
-const isCustomScenario = (scenario: any) => {
+const isCustomScenario = (scenario: SiteContextScenario) => {
   return scenario.id === 'custom';
 };
 
@@ -83,7 +84,10 @@ const ScenarioSelector = () => {
   const { loading, error, data } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
-    onCompleted: (dat) => activeScenarioVar(dat.scenarios.find((scen) => scen.isActive) as any),
+    onCompleted: (dat) =>
+      activeScenarioVar(
+        dat.scenarios.find((scen) => scen.isActive) as unknown as SiteContextScenario
+      ),
     context: {
       componentName: 'ScenarioSelector',
     },
@@ -120,7 +124,7 @@ const ScenarioSelector = () => {
     data?.scenarios.filter(
       (scen) => scen.isSelectable && (hideBaseScenario ? scen.id !== 'baseline' : true)
     ) ?? [];
-  const activeScenario = scenarios.find((scen) => scen.isActive)!;
+  const activeScenario = scenarios.find((scen) => scen.isActive) as unknown as SiteContextScenario;
 
   const handleChange = (event: SelectChangeEvent) => {
     void startInteraction(
@@ -147,7 +151,11 @@ const ScenarioSelector = () => {
         </MenuItem>
         {scenarios.map((scenario) => (
           <StyledMenuItem key={scenario.id} value={scenario.id}>
-            {isCustomScenario(scenario) ? <i>{scenario.name}</i> : scenario.name}
+            {isCustomScenario(scenario as unknown as SiteContextScenario) ? (
+              <i>{scenario.name}</i>
+            ) : (
+              scenario.name
+            )}
           </StyledMenuItem>
         ))}
       </StyledSelect>
