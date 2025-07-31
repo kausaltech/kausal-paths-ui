@@ -43,7 +43,7 @@ const testInstance = (instanceId: string) =>
       });
 
       await test.step('There should be a plot', async () => {
-        await expect(page.locator('.plot-container svg').nth(0)).toBeVisible();
+        await expect(page.locator('.plot-container canvas').nth(0)).toBeVisible();
       });
       await ctx.waitForLoaded(page);
       //await expect(page).toHaveScreenshot({ fullPage: true });
