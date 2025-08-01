@@ -1,6 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import { Alert, Box, Button, Grid, Typography } from '@mui/material';
+import { useTranslation } from 'next-i18next';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -13,6 +14,7 @@ import ScenarioSelector from './ScenarioSelector';
 
 const ScenarioPanel = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [site] = useSiteWithSetter();
   const instance = useInstance();
   const scenarioEditorDrawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
@@ -32,12 +34,15 @@ const ScenarioPanel = () => {
   return (
     <Box>
       <Box sx={{ p: 1, backgroundColor: theme.graphColors.blue010 }}>
+        <Typography variant="h4" sx={{ lineHeight: 1, m: 0, p: 0, mb: 1 }}>
+          {t('scenario')}
+        </Typography>
         <Grid container spacing={1}>
           <Grid>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
               <ScenarioSelector />
               <Button size="small" variant="outlined" color="primary" onClick={handleEditClick}>
-                Edit
+                {t('edit')}
               </Button>
             </Box>
           </Grid>
@@ -58,7 +63,7 @@ const ScenarioPanel = () => {
         <Grid container spacing={1}>
           <Grid sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
-              Display:
+              {t('display')}:
             </Typography>
           </Grid>
           <Grid sx={{ display: 'flex', alignItems: 'center' }}>

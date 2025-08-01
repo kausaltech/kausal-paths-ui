@@ -103,7 +103,7 @@ const ScenarioSelector = () => {
   if (loading || mutationLoading) {
     return (
       <StyledFormControl>
-        <StyledInputLabel>{t('scenario')}</StyledInputLabel>
+        <StyledInputLabel>{t('plot-scenario')}</StyledInputLabel>
         <StyledSelect value={t('loading')} id="scenario-select" $custom={false}>
           <MenuItem disabled value={t('loading')}>
             <span>
@@ -139,7 +139,7 @@ const ScenarioSelector = () => {
 
   return (
     <StyledFormControl>
-      <StyledInputLabel>{t('scenario')}</StyledInputLabel>
+      <StyledInputLabel>{t('plot-scenario')}</StyledInputLabel>
       <StyledSelect
         value={activeScenario.id}
         onChange={handleChange}
