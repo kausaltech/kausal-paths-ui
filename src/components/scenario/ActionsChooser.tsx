@@ -1,4 +1,4 @@
-import { NetworkStatus, useQuery, useReactiveVar } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import {
@@ -155,6 +155,9 @@ const ActionsChooser = () => {
 
   return (
     <Box sx={{ mb: 2 }}>
+      <Typography variant="h5" component="h2" sx={{ mb: 0.5 }}>
+        {t('actions')}
+      </Typography>
       <Typography variant="caption" component="p" sx={{ mb: 1 }}>
         {t('active-actions', {
           count: activeActions.length,

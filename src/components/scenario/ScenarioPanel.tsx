@@ -2,6 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import { Alert, Box, Button, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'next-i18next';
+import { Sliders } from 'react-bootstrap-icons';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -41,7 +42,12 @@ const ScenarioPanel = () => {
           <Grid>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
               <ScenarioSelector />
-              <Button size="small" variant="outlined" color="primary" onClick={handleEditClick}>
+              <Button
+                size="small"
+                color="primary"
+                onClick={handleEditClick}
+                startIcon={<Sliders />}
+              >
                 {t('edit')}
               </Button>
             </Box>

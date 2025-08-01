@@ -676,12 +676,6 @@
       "count": 1,
       "message": "Argument of type '[\"return-on-invetment-subtitle\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
-    "51969df0f852acfd3811977443aead4248a360a8": {
-      "file": "src/components/general/SettingsPanelFull.tsx",
-      "code": "TS2304",
-      "count": 1,
-      "message": "Cannot find name 'SettingsPanelFullProps'."
-    },
     "e9e88c15b2ccb1ce77bb9f24cb92a814b6694b48": {
       "file": "src/components/general/SimpleEffect.tsx",
       "code": "TS18048",
@@ -766,12 +760,6 @@
       "count": 2,
       "message": "Type '{ en: string; de: string; }' is not assignable to type 'string'."
     },
-    "9f800ee095d0ee03a3b113b48b5869e0b232adec": {
-      "file": "src/pages/actions/[slug].tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"page-not-found\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
     "0df5553a908f9e3e69fd9e54f99e3e137e109806": {
       "file": "src/pages/actions/[slug].tsx",
       "code": "TS18047",
@@ -795,30 +783,6 @@
       "code": "TS18048",
       "count": 4,
       "message": "'locale' is possibly 'undefined'."
-    },
-    "5284777988880e8044d5689cda3e6396f96113bd": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'ApolloError | undefined' is not assignable to parameter of type 'ApolloErrorLike'."
-    },
-    "23375b276f301d9594ffc483dd54b5353a35ab9d": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'ApolloError | undefined' is not assignable to type 'ApolloError'."
-    },
-    "109c6017eb3d1180a439d4762056d3ebffc4c284": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"page-not-found\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
-    "b682c4d90c5719f9e6a30117deb3e0014c162b4c": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ key: string; node: { id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; ... 5 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }; metric: { ...; } & { ...; }; startYear: number; endYear: n...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "7025de8f2e55d076fd9673331071748bbe3da92b": {
       "file": "src/pages/node/[slug].tsx",

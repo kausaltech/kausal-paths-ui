@@ -6,7 +6,8 @@ import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Box, Drawer, Fab, IconButton } from '@mui/material';
+import { Box, Drawer, IconButton, Typography } from '@mui/material';
+import { XLg } from 'react-bootstrap-icons';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -67,10 +68,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
-  const handleDrawerOpen = () => {
-    scenarioEditorDrawerOpenVar(true);
-  };
-
   const handleDrawerClose = () => {
     scenarioEditorDrawerOpenVar(false);
   };
@@ -108,8 +105,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
   const instance = useInstance();
 
-  const isSettingsPanelHidden = !!instance.features?.hideNodeDetails;
-
   const title = instance.introContent?.find(
     (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
       block.__typename === 'RichTextBlock' && block.field === 'title'
@@ -142,15 +137,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       {/* <CombinedIconSymbols /> */}
 
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
-      <Fab
-        color="primary"
-        aria-label="add"
-        size="large"
-        onClick={drawerOpen ? handleDrawerClose : handleDrawerOpen}
-        sx={{ position: 'fixed', bottom: '20px', right: '20px' }}
-      >
-        <span>{'<'}</span>
-      </Fab>
+
       <Box sx={{ display: 'flex' }}>
         <Drawer
           sx={{
@@ -176,9 +163,11 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           }}
         >
           <DrawerHeader>
-            <h1 style={{ fontSize: '1rem' }}>Scenario editor</h1>
+            <Typography variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
+              {t('edit-scenario')}
+            </Typography>
             <IconButton onClick={handleDrawerClose} size="small">
-              <span>{'X'}</span>
+              <XLg />
             </IconButton>
           </DrawerHeader>
           {drawerOpen && <ScenarioEditor />}

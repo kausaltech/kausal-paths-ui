@@ -15,9 +15,6 @@ const ScenarioEditor = () => {
         <ScenarioSelector />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" component="h2">
-          Actions
-        </Typography>
         <ActionsChooser />
         {hasGlobalParameters && (
           <Box sx={{ mb: 3 }}>

@@ -1,6 +1,7 @@
 {
   "action-impact": "Impacto de la acción",
   "front-page": "Portada",
+  "page-not-found": "Página no encontrada",
   "error-with-code": "Código de error {{code}}",
   "thumbSliderLabel": "Ajustar",
   "reset-button": "Restablecer",
