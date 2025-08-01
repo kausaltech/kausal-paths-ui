@@ -21,7 +21,6 @@ import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
 import NodePlot from '@/components/general/NodePlot';
-import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import { useSite } from '@/context/site';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
@@ -152,19 +151,17 @@ export default function NodePage() {
 
   useEffect(() => {
     if (!activeScenario?.id) return;
-    refetch();
+    void refetch();
   }, [activeScenario?.id, refetch]);
 
   if (loading) {
     return <ContentLoader fullPage />;
   }
   if (error || !data) {
-    logApolloError(error, { query: GET_NODE_PAGE_CONTENT });
-    return (
-      <Container className="pt-5">
-        <GraphQLError error={error} />
-      </Container>
-    );
+    if (error) {
+      logApolloError(error);
+    }
+    return <Container className="pt-5">{error && <GraphQLError error={error} />}</Container>;
   }
 
   const { node } = data;
@@ -175,10 +172,6 @@ export default function NodePage() {
       </Container>
     );
   }
-
-  const hasNegativeValues =
-    node.metric?.historicalValues.some((v) => v.value < 0) ||
-    node.metric?.forecastValues.some((v) => v.value < 0);
 
   return (
     <>
@@ -211,12 +204,10 @@ export default function NodePage() {
                 <ContentWrapper>
                   <DimensionalNodeVisualisation
                     key={node.id}
-                    node={node}
                     metric={node.metricDim}
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
                     // color={node.color}
-                    // hasNegativeValues={hasNegativeValues}
                   />
                 </ContentWrapper>
               ) : (
@@ -258,7 +249,6 @@ export default function NodePage() {
       <Container fluid="lg">
         <NodeLinks outputNodes={node.outputNodes} inputNodes={node.inputNodes} />
       </Container>
-      <SettingsPanelFull />
     </>
   );
 }

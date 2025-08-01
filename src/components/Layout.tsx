@@ -1,34 +1,38 @@
+import React from 'react';
+
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
+import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Box, Drawer, IconButton, Typography } from '@mui/material';
+import { XLg } from 'react-bootstrap-icons';
 
+import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { getThemeStaticURL } from '@/common/theme';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
+import ScenarioEditor from '@/components/scenario/ScenarioEditor';
 import { useSite } from '@/context/site';
 
 import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
 
-const PageContainer = styled.div`
-  width: 100%;
-  min-height: calc(100vh - 20rem);
-  background-color: ${(props) => props.theme.graphColors.grey030};
-  padding-bottom: ${(props) => props.theme.spaces.s400};
+const DRAWER_WIDTH = 320;
 
-  .popover {
-    max-width: 480px;
-  }
+const Content = styled.div`
+  flex-grow: 1;
 `;
 
-const FooterContainer = styled.footer<{ $isSettingsPanelHidden: boolean }>`
-  background-color: ${(props) => props.theme.themeColors.black};
-  padding-bottom: ${({ $isSettingsPanelHidden }) => ($isSettingsPanelHidden ? '0' : '7rem')};
+const DrawerHeader = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${({ theme }) => theme.spaces.s050};
+  justify-content: space-between;
 `;
 
 const StyledSkipToContent = styled.a`
@@ -62,6 +66,12 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const site = useSite();
   const { t } = useTranslation();
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
+  const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
+
+  const handleDrawerClose = () => {
+    scenarioEditorDrawerOpenVar(false);
+  };
+
   let activePage;
 
   const iconBase = theme.name ? `/static/themes/${theme.name}/images/favicon` : fallbackIconBase;
@@ -83,7 +93,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   }
 
   const navItems = menuItems.map((page) => ({
-    id: page.id,
+    id: page.id || '',
     name: page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
@@ -94,8 +104,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const FooterComponent = useCustomComponent('Footer', Footer);
 
   const instance = useInstance();
-
-  const isSettingsPanelHidden = !!instance.features?.hideNodeDetails;
 
   const title = instance.introContent?.find(
     (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
@@ -127,21 +135,56 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         {ogImage && <meta property="og:image" key="head-og-image" content={ogImage} />}
       </Head>
       {/* <CombinedIconSymbols /> */}
+
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
-      <NavComponent
-        siteTitle={site.title}
-        ownerName={site.owner ?? undefined}
-        navItems={navItems}
-      />
-      <PageContainer>
+
+      <Box sx={{ display: 'flex' }}>
+        <Drawer
+          sx={{
+            width: drawerOpen ? DRAWER_WIDTH : 0,
+            flexShrink: 0,
+            transition: theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            '& .MuiDrawer-paper': {
+              width: DRAWER_WIDTH,
+              boxSizing: 'border-box',
+              backgroundColor: theme.graphColors.blue010,
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={drawerOpen}
+          slotProps={{
+            paper: {
+              elevation: 5,
+            },
+          }}
+        >
+          <DrawerHeader>
+            <Typography variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
+              {t('edit-scenario')}
+            </Typography>
+            <IconButton onClick={handleDrawerClose} size="small">
+              <XLg />
+            </IconButton>
+          </DrawerHeader>
+          {drawerOpen && <ScenarioEditor />}
+        </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <main className="main" id="main">
-          {children}
-        </main>
-      </PageContainer>
-      <FooterContainer $isSettingsPanelHidden={isSettingsPanelHidden}>
-        <FooterComponent />
-      </FooterContainer>
+        <Content>
+          <NavComponent
+            siteTitle={site.title}
+            ownerName={site.owner ?? undefined}
+            navItems={navItems}
+          />
+          <main className="main" id="main">
+            {children}
+          </main>
+          <FooterComponent />
+        </Content>
+      </Box>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
     </>
   );

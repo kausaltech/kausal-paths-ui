@@ -1,7 +1,7 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
+import { CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FormGroup, Input, Label } from 'reactstrap';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -29,28 +29,25 @@ const SET_NORMALIZATION_MUTATION = gql`
   }
 `;
 
-type NormalizationWidgetProps = {
-  availableNormalizations: GetParametersQuery['availableNormalizations'];
-};
-
-function NormalizationWidget(props: NormalizationWidgetProps) {
+function NormalizationWidget() {
   const { t } = useTranslation();
 
-  const { loading, error, data, previousData, refetch, networkStatus } =
-    useQuery<GetParametersQuery>(GET_PARAMETERS, {
+  const { loading, error, data, previousData, networkStatus } = useQuery<GetParametersQuery>(
+    GET_PARAMETERS,
+    {
       notifyOnNetworkStatusChange: true,
-    });
+    }
+  );
 
-  const [setNormalization, { data: mutationData, loading: mutationLoading, error: mutationError }] =
-    useMutation<SetNormalizationMutation, SetNormalizationMutationVariables>(
-      SET_NORMALIZATION_MUTATION,
-      {
-        refetchQueries: 'active',
-      }
-    );
+  const [setNormalization, { loading: mutationLoading }] = useMutation<
+    SetNormalizationMutation,
+    SetNormalizationMutationVariables
+  >(SET_NORMALIZATION_MUTATION, {
+    refetchQueries: 'active',
+  });
 
   if ((loading && !previousData) || !data || !data.parameters) {
-    return <>-</>;
+    return <CircularProgress size={10} sx={{ ml: 0.5, mb: -0.1 }} />;
   }
   if (error) {
     return (
@@ -63,36 +60,45 @@ function NormalizationWidget(props: NormalizationWidgetProps) {
   const { availableNormalizations } = data;
   if (!availableNormalizations.length) return null;
 
+  // Assume there is only one normalization
   const norm = availableNormalizations[0];
   const label = t('normalize-by', { node: norm.label });
   return (
     <SwitchWrapper>
-      <FormGroup switch>
-        <Label for={norm.id}>{label}</Label>
-        <Input
-          disabled={mutationLoading}
-          type="switch"
-          role="switch"
-          id={norm.id}
-          name={norm.id}
-          checked={norm.isActive}
-          onChange={(_e) =>
-            void startInteraction(
-              () =>
-                setNormalization({
-                  variables: {
-                    id: norm.isActive ? null : norm.id,
-                  },
-                }),
-              {
-                name: 'setNormalization',
-                componentName: 'NormalizationWidget',
-                attributes: { normalization_id: norm.id },
-              }
-            )
-          }
-        />
-      </FormGroup>
+      <FormControlLabel
+        control={
+          <Switch
+            onChange={(_e) =>
+              void startInteraction(
+                () =>
+                  setNormalization({
+                    variables: {
+                      id: norm.isActive ? null : norm.id,
+                    },
+                  }),
+                {
+                  name: 'setNormalization',
+                  componentName: 'NormalizationWidget',
+                  attributes: { normalization_id: norm.id },
+                }
+              )
+            }
+            disabled={mutationLoading || networkStatus === NetworkStatus.refetch}
+            checked={norm.isActive}
+            size="small"
+          />
+        }
+        label={label}
+        sx={{
+          m: 0,
+          p: 0,
+        }}
+        slotProps={{
+          typography: {
+            variant: 'caption',
+          },
+        }}
+      />
     </SwitchWrapper>
   );
 }

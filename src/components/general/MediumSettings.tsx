@@ -11,7 +11,7 @@ import { useInstance } from '@/common/instance';
 import GoalOutcomeBar from '@/components/general/GoalOutcomeBar';
 import GoalSelector from '@/components/general/GoalSelector';
 import RangeSelector from '@/components/general/RangeSelector';
-import ScenarioSelector from '@/components/general/ScenarioSelector';
+import ScenarioSelector from '@/components/scenario/ScenarioSelector';
 import { useSite } from '@/context/site';
 
 const PanelContent = styled.div`

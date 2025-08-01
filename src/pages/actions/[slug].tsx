@@ -328,7 +328,6 @@ export default function ActionPage() {
           expandedGridLoading={causalChainResp.loading}
         />
       )}
-      <SettingsPanelFull />
     </>
   );
 }
