@@ -93,14 +93,6 @@
       "count": 3
     }
   },
-  "src/components/general/CompleteSettings.tsx": {
-    "react-compiler/react-compiler": {
-      "count": 5
-    },
-    "react-hooks/rules-of-hooks": {
-      "count": 6
-    }
-  },
   "src/components/general/CostBenefitAnalysis.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 6
@@ -254,14 +246,6 @@
   "src/middleware/lru-cache.ts": {
     "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 2
-    }
-  },
-  "src/pages/actions/[slug].tsx": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-enum-comparison": {
-      "count": 1
     }
   }
 }

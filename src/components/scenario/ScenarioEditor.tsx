@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 
 import ScenarioSelector from '@/components/scenario/ScenarioSelector';
 import { useSiteWithSetter } from '@/context/site';
@@ -18,9 +18,7 @@ const ScenarioEditor = () => {
         <ActionsChooser />
         {hasGlobalParameters && (
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" component="h2">
-              Global settings
-            </Typography>
+            <Divider />
             <GlobalParameters />
           </Box>
         )}

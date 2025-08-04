@@ -112,5 +112,7 @@
   "error-with-code": "Fejlkode {{code}}",
   "thumbSliderLabel": "Juster",
   "reset-button": "Nulstil",
-  "outcomes": "Resultater"
+  "outcomes": "Resultater",
+  "above-target": "over målet",
+  "below-target": "under målet"
 }

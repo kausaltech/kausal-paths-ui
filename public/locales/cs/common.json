@@ -113,5 +113,7 @@
   "error-with-code": "Chybový kód {{code}}",
   "thumbSliderLabel": "Upravit",
   "reset-button": "Resetovat",
-  "outcomes": "Výsledky"
+  "outcomes": "Výsledky",
+  "above-target": "nad cílem",
+  "below-target": "pod cílem"
 }

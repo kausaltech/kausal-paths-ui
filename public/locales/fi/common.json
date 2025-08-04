@@ -106,5 +106,7 @@
   "thumbSliderLabel": "Säädä",
   "reset-button": "Nollaa",
   "plot-choose-dimension": "Valitse dimensio",
-  "outcomes": "Lopputulemat"
+  "outcomes": "Lopputulemat",
+  "above-target": "yli tavoitteen",
+  "below-target": "alle tavoitteen"
 }

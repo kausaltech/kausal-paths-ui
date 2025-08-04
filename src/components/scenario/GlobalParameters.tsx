@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Row } from 'reactstrap';
 
@@ -60,7 +60,10 @@ const GlobalParameters = () => {
 
   return (
     <GlobalParametersPanel>
-      <Grid container spacing={1}>
+      <Typography variant="h5" component="h2" sx={{ mb: 0.5 }}>
+        {t('all-settings')}
+      </Typography>
+      <Grid container spacing={1} sx={{ mt: 1 }}>
         {parameters.map(
           (param) => param.isCustomizable && <ParameterWidget key={param.id} parameter={param} />
         )}

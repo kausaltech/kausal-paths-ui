@@ -113,5 +113,7 @@
   "error-with-code": "Kod błędu {{code}}",
   "thumbSliderLabel": "Dostosuj",
   "reset-button": "Resetuj",
-  "outcomes": "Wyniki"
+  "outcomes": "Wyniki",
+  "above-target": "powyżej celu",
+  "below-target": "poniżej celu"
 }

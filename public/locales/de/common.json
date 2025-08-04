@@ -105,5 +105,7 @@
   "cost-efficiency": "Kosteneffizienz",
   "financial-impact": "Finanzielle Auswirkungen",
   "net-cost": "Nettokosten",
-  "reduction": "Reduzierung"
+  "reduction": "Reduzierung",
+  "above-target": "über dem Ziel",
+  "below-target": "unter dem Ziel"
 }

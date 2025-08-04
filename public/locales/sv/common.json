@@ -98,5 +98,7 @@
   },
   "table-unit": "Enhet",
   "plot-choose-dimension": "Välj dimension",
-  "outcomes": "Resultat"
+  "outcomes": "Resultat",
+  "above-target": "över målet",
+  "below-target": "under målet"
 }

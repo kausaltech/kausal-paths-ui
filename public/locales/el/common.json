@@ -129,5 +129,7 @@
   "observed-emissions": "Παρατηρούμενες εκπομπές",
   "emission-drivers": "Οδηγοί εκπομπών",
   "emissions-by-sector": "Εκπομπές ανά τομέα ({{year}})",
-  "outcomes": "Αποτελέσματα"
+  "outcomes": "Αποτελέσματα",
+  "above-target": "πάνω από τον στόχο",
+  "below-target": "κάτω από τον στόχο"
 }

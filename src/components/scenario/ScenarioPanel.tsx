@@ -1,17 +1,42 @@
-import { useReactiveVar } from '@apollo/client';
+import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
-import { Alert, Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import { Sliders } from 'react-bootstrap-icons';
 
-import { scenarioEditorDrawerOpenVar } from '@/common/cache';
+import type {
+  GetInstanceGoalOutcomeQuery,
+  GetInstanceGoalOutcomeQueryVariables,
+} from '@/common/__generated__/graphql';
+import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { useSiteWithSetter } from '@/context/site';
 
 import GoalSelector from '../general/GoalSelector';
 import NormalizationWidget from '../general/NormalizationWidget';
 import YearRangeSelector from '../general/YearRangeSelector';
+import ScenarioOutcome from './ScenarioOutcome';
 import ScenarioSelector from './ScenarioSelector';
+
+export const GET_INSTANCE_GOAL_OUTCOME = gql`
+  query GetInstanceGoalOutcome($goal: ID!) {
+    instance {
+      id
+      goals(id: $goal) {
+        values {
+          year
+          goal
+          actual
+          isForecast
+          isInterpolated
+        }
+        unit {
+          htmlShort
+        }
+      }
+    }
+  }
+`;
 
 const ScenarioPanel = () => {
   const theme = useTheme();
@@ -19,9 +44,24 @@ const ScenarioPanel = () => {
   const [site] = useSiteWithSetter();
   const instance = useInstance();
   const scenarioEditorDrawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
+  const yearRange = useReactiveVar(yearRangeVar);
+  const activeGoal = useReactiveVar(activeGoalVar);
   const handleEditClick = () => {
     scenarioEditorDrawerOpenVar(!scenarioEditorDrawerOpen);
   };
+
+  // Get the goal outcome for the active goal
+  const { error, data } = useQuery<
+    GetInstanceGoalOutcomeQuery,
+    GetInstanceGoalOutcomeQueryVariables
+  >(GET_INSTANCE_GOAL_OUTCOME, {
+    variables: {
+      goal: activeGoal?.id ?? '',
+    },
+  });
+
+  // if (loading) return <Skeleton variant="text" width={100} height={24} />;
+  if (error) return <div>error!</div>;
 
   const minYear = site.minYear;
   const maxYear = site.maxYear;
@@ -29,8 +69,11 @@ const ScenarioPanel = () => {
   const availableNormalizations =
     site.availableNormalizations.length > 0 ? site.availableNormalizations : [];
 
-  // Target
   const nrGoals = instance.goals.length;
+  const yearsWithGoals =
+    data?.instance?.goals?.[0]?.values
+      .filter((value) => value.goal !== null)
+      .map((value) => value.year) ?? [];
 
   return (
     <Box>
@@ -38,8 +81,8 @@ const ScenarioPanel = () => {
         <Typography variant="h4" sx={{ lineHeight: 1, m: 0, p: 0, mb: 1 }}>
           {t('scenario')}
         </Typography>
-        <Grid container spacing={1}>
-          <Grid>
+        <Grid container spacing={2} sx={{ alignItems: 'flex-end' }}>
+          <Grid size={6}>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
               <ScenarioSelector />
               <Button
@@ -53,16 +96,19 @@ const ScenarioPanel = () => {
             </Box>
           </Grid>
           {nrGoals > 1 && (
-            <Grid>
+            <Grid size={6}>
               <GoalSelector />
             </Grid>
           )}
-
-          <Grid>
-            <Alert variant="outlined" severity="success">
-              This is an outlined success Alert.
-            </Alert>
-          </Grid>
+          {activeGoal && (
+            <Grid size={6}>
+              <ScenarioOutcome
+                activeGoal={activeGoal}
+                targetYear={yearRange[1]}
+                variant="compact"
+              />
+            </Grid>
+          )}
         </Grid>
       </Box>
       <Box sx={{ p: 1, backgroundColor: theme.graphColors.grey010 }}>
@@ -77,6 +123,7 @@ const ScenarioPanel = () => {
               minYear={minYear}
               maxYear={maxYear}
               maxHistoricalYear={maxHistoricalYear}
+              yearsWithGoals={yearsWithGoals}
             />
           </Grid>
           {availableNormalizations.length > 0 && (

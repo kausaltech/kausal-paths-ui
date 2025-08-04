@@ -43,7 +43,10 @@ type ActionListCardProps = {
 /* Nice mock skeleton loader */
 const LoaderSkeleton = ({ t }: { t: TFunction }) => {
   return (
-    <Box>
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="h5" component="h2" sx={{ mb: 0.5 }}>
+        {t('actions')}
+      </Typography>
       <Typography variant="caption" component="p" sx={{ mb: 1, color: 'text.disabled' }}>
         {t('active-actions', {
           count: 0,

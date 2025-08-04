@@ -117,5 +117,7 @@
   "do-not-show-again": "No mostrar de nuevo",
   "close": "Cerrar",
   "coming-soon": "Próximamente",
-  "outcomes": "Resultados"
+  "outcomes": "Resultados",
+  "above-target": "por encima del objetivo",
+  "below-target": "por debajo del objetivo"
 }

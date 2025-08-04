@@ -39,7 +39,7 @@ const availableYears = (minYear: number, maxYear: number, maxHistoricalYear?: nu
   } = {
     all: [],
   };
-  years.all = Array.from({ length: maxYear - minYear }, (_, i) => minYear + i);
+  years.all = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i);
   if (maxHistoricalYear) {
     years.historical = years.all.filter((year) => year <= maxHistoricalYear);
     years.forecast = years.all.filter((year) => year > maxHistoricalYear);
@@ -53,10 +53,17 @@ interface YearRangeSelectorProps {
   minYear: number;
   maxYear: number;
   maxHistoricalYear?: number | null;
+  yearsWithGoals?: number[];
 }
 
+/*
+Display two dropdowns for reference and target year.
+Make sure that only available years are shown in the dropdowns.
+Mark the years with goals with a dot.
+*/
+
 const YearRangeSelector = (props: YearRangeSelectorProps) => {
-  const { minYear, maxYear, maxHistoricalYear } = props;
+  const { minYear, maxYear, maxHistoricalYear, yearsWithGoals } = props;
 
   const { t } = useTranslation();
   // State of display settings
@@ -67,13 +74,28 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
   }, []);
 
   const availableReferenceYears = useMemo(
-    () => availableYears(minYear, yearRange[1], maxHistoricalYear),
+    () => availableYears(minYear, yearRange[1] - 1, maxHistoricalYear),
     [minYear, yearRange, maxHistoricalYear]
   );
   const availableTargetYears = useMemo(
     () => availableYears(yearRange[0] + 1, maxYear, maxHistoricalYear),
     [yearRange, maxYear, maxHistoricalYear]
   );
+
+  const YearOption = (year: number) => {
+    if (yearsWithGoals?.includes(year)) {
+      return (
+        <option key={year} value={year}>
+          {year} {String.fromCharCode(8226)}
+        </option>
+      );
+    }
+    return (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    );
+  };
 
   return (
     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -91,29 +113,16 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
           }}
         >
           {availableReferenceYears.historical && availableReferenceYears.historical.length > 0 && (
-            <optgroup label="Historical years">
-              {availableReferenceYears.historical.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
+            <optgroup label={t('table-historical')}>
+              {availableReferenceYears.historical.map((year) => YearOption(year))}
             </optgroup>
           )}
           {availableReferenceYears.forecast && availableReferenceYears.forecast.length > 0 && (
-            <optgroup label="Forecast years">
-              {availableReferenceYears.forecast.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
+            <optgroup label={t('forecast')}>
+              {availableReferenceYears.forecast.map((year) => YearOption(year))}
             </optgroup>
           )}
-          {!maxHistoricalYear &&
-            availableReferenceYears.all.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
+          {!maxHistoricalYear && availableReferenceYears.all.map((year) => YearOption(year))}
         </NativeSelect>
       </StyledFormControl>
       <StyledFormControl>
@@ -130,29 +139,16 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
           }}
         >
           {availableTargetYears.historical && availableTargetYears.historical.length > 0 && (
-            <optgroup label="Historical years">
-              {availableTargetYears.historical.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
+            <optgroup label={t('table-historical')}>
+              {availableTargetYears.historical.map((year) => YearOption(year))}
             </optgroup>
           )}
           {availableTargetYears.forecast && availableTargetYears.forecast.length > 0 && (
-            <optgroup label="Forecast years">
-              {availableTargetYears.forecast.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
+            <optgroup label={t('forecast')}>
+              {availableTargetYears.forecast.map((year) => YearOption(year))}
             </optgroup>
           )}
-          {!maxHistoricalYear &&
-            availableTargetYears.all.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
+          {!maxHistoricalYear && availableTargetYears.all.map((year) => YearOption(year))}
         </NativeSelect>
       </StyledFormControl>
     </Box>
