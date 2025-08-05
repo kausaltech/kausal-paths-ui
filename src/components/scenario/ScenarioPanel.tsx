@@ -100,9 +100,10 @@ const ScenarioPanel = () => {
               <GoalSelector />
             </Grid>
           )}
-          {activeGoal && (
+          {activeGoal && data?.instance?.goals?.[0] && (
             <Grid size={6}>
               <ScenarioOutcome
+                goalOutcome={data?.instance?.goals?.[0]}
                 activeGoal={activeGoal}
                 targetYear={yearRange[1]}
                 variant="compact"

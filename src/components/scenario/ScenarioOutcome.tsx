@@ -1,7 +1,9 @@
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useTranslation } from 'next-i18next';
+import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
 
 import type {
   GetInstanceGoalOutcomeQuery,
@@ -13,6 +15,28 @@ import type { InstanceGoal } from '@/common/instance';
 import { beautifyValue } from '@/common/preprocess';
 
 import ScenarioOutcomeAsText from './ScenarioOutcomeAsText';
+
+const CompactOutcome = styled(Box)`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: ${({ theme }) => theme.spacing(1)};
+  height: auto;
+  padding: 0.5em 1em;
+  border-radius: ${({ theme }) => theme.inputBorderRadius};
+  min-height: 1.4375em;
+  background-color: ${({ theme }) => theme.graphColors.grey005};
+  border: 2px solid ${({ theme }) => theme.themeColors.white};
+
+  .icon-negative {
+    color: ${({ theme }) => theme.graphColors.red070};
+  }
+
+  .icon-positive {
+    color: ${({ theme }) => theme.graphColors.green070};
+  }
+`;
 
 export const GET_INSTANCE_GOAL_OUTCOME = gql`
   query GetInstanceGoalOutcome($goal: ID!) {
@@ -44,31 +68,30 @@ type ScenarioOutcomeProps = {
   activeGoal: InstanceGoal;
   targetYear: number;
   variant?: 'default' | 'verbose' | 'compact';
+  goalOutcome: GetInstanceGoalOutcomeQuery['instance']['goals'][0];
+  loading?: boolean;
+  refetching?: boolean;
 };
 
 const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
-  const { activeGoal, targetYear, variant = 'default' } = props;
+  const { activeGoal, targetYear, variant = 'default', loading, refetching, goalOutcome } = props;
   const { t } = useTranslation();
   const features = useFeatures();
   const activeScenario = useReactiveVar(activeScenarioVar);
   const maximumFractionDigits = features.maximumFractionDigits ?? undefined;
   //const yearRange = useReactiveVar(yearRangeVar);
 
-  // Get the goal outcome for the active goal
-  const { loading, error, data } = useQuery<
-    GetInstanceGoalOutcomeQuery,
-    GetInstanceGoalOutcomeQueryVariables
-  >(GET_INSTANCE_GOAL_OUTCOME, {
-    variables: {
-      goal: activeGoal.id,
-    },
-  });
+  if (loading || refetching) {
+    switch (variant) {
+      case 'verbose':
+        return <Skeleton variant="text" width={100} height={24} />;
+      case 'compact':
+        return <Skeleton variant="text" width={200} height={64} />;
+      default:
+        return null;
+    }
+  }
 
-  if (loading) return <Skeleton variant="text" width={100} height={24} />;
-  if (error) return <div>error!</div>;
-  if (!data || !data.instance.goals.length) return <div>no data</div>;
-
-  const goalOutcome = data.instance.goals[0];
   const firstForecastYear = goalOutcome.values.find((val) => val.isForecast)?.year;
   const isForecast = targetYear >= firstForecastYear!;
   const valuesByYear = new Map(goalOutcome.values.map((goal) => [goal.year, goal]));
@@ -133,22 +156,28 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
         );
       };
 
+      // TODO: We always assume that under the target is better
+      const sentiment = missingFromTarget > 0 ? 'negative' : 'positive';
+      const icon =
+        sentiment === 'negative' ? (
+          <PatchExclamationFill className="icon-negative" />
+        ) : (
+          <PatchCheckFill className="icon-positive" />
+        );
+
+      // TODO: A11y: Add aria-label to the icon
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            flexDirection: 'column',
-          }}
-        >
-          <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
-            {isForecast ? t('scenario-outcome') : t('table-historical')} {targetYear}
-          </Typography>
-          <Typography variant="body2" sx={{ lineHeight: 1, m: 0, p: 0 }}>
-            {activeGoal.label} {differenceToGoal(missingFromTarget)}
-          </Typography>
-        </Box>
+        <CompactOutcome>
+          {icon}
+          <Box>
+            <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+              {isForecast ? t('scenario-outcome') : t('table-historical')} {targetYear}
+            </Typography>
+            <Typography variant="body2" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+              {activeGoal.label} {differenceToGoal(missingFromTarget)}
+            </Typography>
+          </Box>
+        </CompactOutcome>
       );
   }
 };
