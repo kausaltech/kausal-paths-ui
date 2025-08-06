@@ -20,6 +20,7 @@
   "display-yearly-effect": "vuosipäästöihin",
   "distribution": "Jakauma",
   "download-data": "Lataa",
+  "edit": "Muokkaa",
   "edit-scenario": "Muokkaa skenaariota",
   "emissions": "Päästöt",
   "emissions-forecast": "Päästöennuste",
@@ -106,5 +107,7 @@
   "reset-button": "Nollaa",
   "plot-choose-dimension": "Valitse dimensio",
   "outcomes": "Lopputulemat",
-  "impact-compared-to-baseline": "Kokonaisvaikutus {{impact}} {{unit}} verrattuna jatkuvuusskenaarioon"
+  "impact-compared-to-baseline": "Kokonaisvaikutus {{impact}} {{unit}} verrattuna jatkuvuusskenaarioon",
+  "above-target": "yli tavoitteen",
+  "below-target": "alle tavoitteen"
 }

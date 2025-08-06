@@ -15,6 +15,7 @@ import type {
   GetCausalChainQuery,
   GetCausalChainQueryVariables,
 } from '@/common/__generated__/graphql';
+import { DecisionLevel } from '@/common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionListLink, NodeLink } from '@/common/links';
 import Badge from '@/components/common/Badge';
@@ -28,7 +29,6 @@ import { ActionGoal } from '@/components/general/ActionGoal';
 import ActionParameters from '@/components/general/ActionParameters';
 import CausalGrid, { type CausalGridNode } from '@/components/general/CausalGrid';
 import NodePlot from '@/components/general/NodePlot';
-import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import DimensionalPlot from '@/components/graphs/DimensionalFlow';
 import { useSite } from '@/context/site';
 import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from '@/queries/getActionContent';
@@ -161,7 +161,7 @@ export default function ActionPage() {
   const data = queryResp.data ?? previousData;
 
   useEffect(() => {
-    refetch();
+    void refetch();
   }, [activeScenario, refetch]);
 
   useEffect(() => {
@@ -196,8 +196,10 @@ export default function ActionPage() {
   ).filter((node): node is CausalGridNode => !!node);
 
   // style differently if not active
-  const isActive = action.parameters.find(
-    (param) => param.id == `${param.node.id}.enabled`
+  const isActive = (
+    action.parameters.find((param) => param.id == `${param.node?.id}.enabled`) as
+      | { boolValue: boolean | null }
+      | undefined
   )?.boolValue;
 
   // use flowplot if action has dimensional flow
@@ -227,7 +229,7 @@ export default function ActionPage() {
       return;
     }
 
-    getCausalChain({
+    void getCausalChain({
       variables: {
         node: slug as string,
         goal: activeGoal?.id ?? null,
@@ -259,7 +261,7 @@ export default function ActionPage() {
               </Breadcrumb>
               <h1>{` ${action.name}`}</h1>
               <div>
-                {action.decisionLevel === 'NATION' && (
+                {action.decisionLevel === DecisionLevel.Nation && (
                   <ActionCategory>
                     <Badge color="neutralLight">{t('decision-national')}</Badge>
                   </ActionCategory>
@@ -277,7 +279,7 @@ export default function ActionPage() {
                   <ActionDescription>
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: action.shortDescription,
+                        __html: action.shortDescription ?? '',
                       }}
                     />
                     <NodeLink node={action}>
@@ -328,7 +330,6 @@ export default function ActionPage() {
           expandedGridLoading={causalChainResp.loading}
         />
       )}
-      <SettingsPanelFull />
     </>
   );
 }

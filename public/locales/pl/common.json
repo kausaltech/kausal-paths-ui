@@ -20,6 +20,7 @@
   "display-yearly-effect": "na roczne emisje",
   "distribution": "Dystrybucja",
   "download-data": "Pobierz",
+  "edit": "Edytuj",
   "edit-scenario": "Edytuj scenariusz",
   "emissions": "Emisje",
   "emissions-forecast": "Prognoza emisji",
@@ -108,9 +109,12 @@
   "do-not-show-again": "Nie pokazuj ponownie",
   "close": "Zamknij",
   "coming-soon": "Wkrótce",
+  "page-not-found": "Strona nie została znaleziona",
   "error-with-code": "Kod błędu {{code}}",
   "thumbSliderLabel": "Dostosuj",
   "reset-button": "Resetuj",
   "outcomes": "Wyniki",
-  "impact-compared-to-baseline": "Całkowity wpływ {{impact}} {{unit}} w porównaniu ze scenariuszem kontynuacji"
+  "impact-compared-to-baseline": "Całkowity wpływ {{impact}} {{unit}} w porównaniu ze scenariuszem kontynuacji",
+  "above-target": "powyżej celu",
+  "below-target": "poniżej celu"
 }
