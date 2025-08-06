@@ -16,6 +16,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           borderRadius: theme.btnBorderRadius,
           fontWeight: theme.fontWeightBold,
           textTransform: 'none',
+          boxShadow: 'none',
           '&:hover': {
             boxShadow: 'none',
           },
@@ -44,6 +45,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
           border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
+          boxShadow: 'none',
         },
       },
     },
@@ -144,6 +146,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           backgroundColor: theme.cardBackground.primary,
           borderRadius: theme.cardBorderRadius,
           border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
+          boxShadow: 'none',
         },
       },
     },
@@ -168,6 +171,7 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
         paper: {
           backgroundColor: theme.themeColors.white,
           border: 'none',
+          boxShadow: 'none',
         },
       },
     },

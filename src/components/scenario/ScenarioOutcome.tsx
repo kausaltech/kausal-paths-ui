@@ -1,14 +1,11 @@
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
+import { gql, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useTranslation } from 'next-i18next';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
 
-import type {
-  GetInstanceGoalOutcomeQuery,
-  GetInstanceGoalOutcomeQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { GetInstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useFeatures } from '@/common/instance';
 import type { InstanceGoal } from '@/common/instance';
