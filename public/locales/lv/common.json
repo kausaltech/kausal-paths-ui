@@ -19,6 +19,7 @@
   "display-yearly-effect": "uz gada emisijām",
   "distribution": "Sadalījums",
   "download-data": "Lejupielādēt",
+  "edit": "Rediģēt",
   "edit-scenario": "Rediģēt scenāriju",
   "emissions": "Emisijas",
   "emissions-forecast": "Emisiju prognoze",
@@ -101,5 +102,7 @@
   "outcome-tabs-label": "Attēlošanas opcijas",
   "tco2-e-inhabitant": "t CO<sub>2</sub>eq/iedzīvotājs/g",
   "ktco2-e": "kt CO<sub>2</sub>eq/g",
-  "outcomes": "Rezultāti"
+  "outcomes": "Rezultāti",
+  "above-target": "pārsniedz mērķi",
+  "below-target": "nepārsniedz mērķi"
 }

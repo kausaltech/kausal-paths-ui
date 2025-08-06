@@ -20,6 +20,7 @@
   "display-yearly-effect": "zu jährlichen Emissionen",
   "distribution": "Verteilung",
   "download-data": "Herunterladen",
+  "edit": "Bearbeiten",
   "edit-scenario": "Szenario bearbeiten",
   "emissions": "Emissionen",
   "emissions-forecast": "Entwicklung der Treibhausgasemissionen",
@@ -104,5 +105,7 @@
   "cost-efficiency": "Kosteneffizienz",
   "financial-impact": "Finanzielle Auswirkungen",
   "net-cost": "Nettokosten",
-  "reduction": "Reduzierung"
+  "reduction": "Reduzierung",
+  "above-target": "über dem Ziel",
+  "below-target": "unter dem Ziel"
 }

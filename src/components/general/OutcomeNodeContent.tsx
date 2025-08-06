@@ -18,7 +18,7 @@ import { useSite } from '@/context/site';
 import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
 
 import DataTable from './DataTable';
-import DimensionalNodePlot from './DimensionalNodePlot';
+import DimensionalNodeVisualisation from './DimensionalNodeVisualisation';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 import { getHelpText } from './progress-tracking/utils';
@@ -174,15 +174,14 @@ const OutcomeNodeContent = ({
   const outcomeGraph = useMemo(
     () =>
       node.metricDim ? (
-        <DimensionalNodePlot
+        <DimensionalNodeVisualisation
           node={node}
           metric={node.metricDim}
           startYear={startYear}
           endYear={endYear}
-          color={color}
+          // color={color}
           withControls={false}
           baselineForecast={node.metric?.baselineForecastValues ?? undefined}
-          withReferenceYear
           withTools={false}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
         />

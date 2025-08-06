@@ -75,6 +75,7 @@ function Page(props: PageProps) {
   }
 
   // TODO: Remove this when we have the actual page type
+  //@ts-ignore
   if (/** true || **/ page.__typename === 'CustomDashboardPage') {
     pageContent = <CustomDashboardPage />;
   } else if (page.__typename === 'OutcomePage') {

@@ -18,6 +18,7 @@
   "display-yearly-effect": "på årliga utsläpp",
   "distribution": "Distribution",
   "download-data": "Ladda",
+  "edit": "Redigera",
   "edit-scenario": "Redigera scenario",
   "settings-expand": "Visa alla inställningar",
   "settings-collapse": "Dölj alla inställningar",
@@ -97,5 +98,7 @@
   },
   "table-unit": "Enhet",
   "plot-choose-dimension": "Välj dimension",
-  "outcomes": "Resultat"
+  "outcomes": "Resultat",
+  "above-target": "över målet",
+  "below-target": "under målet"
 }
