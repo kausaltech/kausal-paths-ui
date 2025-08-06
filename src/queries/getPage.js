@@ -4,6 +4,14 @@ import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
 
+const UNIT_FRAGMENT = gql`
+  fragment UnitFields on UnitType {
+    short
+    htmlShort
+    htmlLong
+  }
+`;
+
 const DASHBOARD_PAGE_FRAGMENT = gql`
   fragment DashboardCardVisualizations on DashboardCardBlock {
     visualizations {
@@ -32,6 +40,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         description
         chartLabel
         color
+        scenarioId
       }
       ... on DimensionVisualizationBlock {
         dimensionId
@@ -53,7 +62,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
           name
         }
         unit {
-          short
+          ...UnitFields
         }
         goalValue
         referenceYearValue
@@ -92,6 +101,8 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
       }
     }
   }
+
+  ${UNIT_FRAGMENT}
 `;
 
 const OUTCOME_NODE_FIELDS = gql`
@@ -106,9 +117,7 @@ const OUTCOME_NODE_FIELDS = gql`
       id
       name
       unit {
-        short
-        htmlShort
-        htmlLong
+        ...UnitFields
       }
       forecastValues {
         year
@@ -129,9 +138,7 @@ const OUTCOME_NODE_FIELDS = gql`
       value
     }
     unit {
-      short
-      htmlShort
-      htmlLong
+      ...UnitFields
     }
     quantity
     shortDescription
@@ -170,6 +177,7 @@ const OUTCOME_NODE_FIELDS = gql`
     ...DimensionalNodeMetric
   }
   ${dimensionalNodePlotFragment}
+  ${UNIT_FRAGMENT}
 `;
 
 const GET_PAGE = gql`

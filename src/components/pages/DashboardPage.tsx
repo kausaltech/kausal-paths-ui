@@ -14,7 +14,6 @@ import { ArrowRight } from 'react-bootstrap-icons';
 
 import type {
   DashboardCardVisualizationsFragment,
-  DashboardPageFieldsFragment,
   GetPageQuery,
 } from '@/common/__generated__/graphql';
 import { Link } from '@/common/links';
@@ -79,14 +78,8 @@ function getBarValue(
   }
 
   if (bar.__typename === 'ScenarioProgressBarBlock') {
-    type ScenarioProgressBarBlock = ProgressBarVisualization & {
-      __typename: 'ScenarioProgressBarBlock';
-    };
-
-    return values.scenarioValues?.find(
-      // TODO: Fix this type
-      (scenario) => scenario?.scenario.id === (bar as ScenarioProgressBarBlock).scenarioId
-    )?.value;
+    return values.scenarioValues?.find((scenario) => scenario?.scenario.id === bar.scenarioId)
+      ?.value;
   }
 }
 
@@ -98,10 +91,14 @@ function getBarGoalValue(
   >
 ) {
   if (bar.__typename === 'ScenarioProgressBarBlock') {
-    return values.goalValue;
+    return values.goalValue ?? undefined;
   }
 
-  return null;
+  return undefined;
+}
+
+function roundValue(value: number | null | undefined) {
+  return value ? Math.round(value) : null;
 }
 
 function DashboardVisualization({
@@ -113,11 +110,12 @@ function DashboardVisualization({
   unit,
 }: DashboardVisualizationProps) {
   const values = {
-    referenceYearValue,
-    goalValue,
-    scenarioValues,
-
-    lastHistoricalYearValue,
+    referenceYearValue: roundValue(referenceYearValue),
+    goalValue: roundValue(goalValue),
+    scenarioValues: scenarioValues?.map((scenario) =>
+      scenario?.value ? { ...scenario, value: roundValue(scenario.value) } : scenario
+    ),
+    lastHistoricalYearValue: roundValue(lastHistoricalYearValue),
   };
 
   if (visualizations.some(isProgressBar)) {
@@ -131,18 +129,16 @@ function DashboardVisualization({
     return (
       <DashboardVisualizationProgress
         items={visualizations
-          .filter((visualization): visualization is ProgressBarVisualization =>
-            isProgressBar(visualization)
-          )
-          .map((bar) => ({
-            title: bar.title,
-            chartLabel: bar.chartLabel,
-            color: bar.color,
-            value: getBarValue(bar, values),
-            goalValue: getBarGoalValue(bar, values),
+          .filter((viz): viz is ProgressBarVisualization => isProgressBar(viz))
+          .map((viz) => ({
+            title: viz.title,
+            chartLabel: viz.chartLabel,
+            color: viz.color ?? undefined,
+            value: getBarValue(viz, values) ?? undefined,
+            goalValue: getBarGoalValue(viz, values),
             max: maxValue,
-            unit,
-            description: bar.description,
+            unit: unit ?? undefined,
+            description: viz.description ?? undefined,
           }))}
       />
     );
@@ -218,7 +214,7 @@ function DashboardPage({ page, isLoading }: Props) {
                         referenceYearValue={card.referenceYearValue}
                         lastHistoricalYearValue={card.lastHistoricalYearValue}
                         goalValue={card.goalValue}
-                        scenarioValues={card.scenarioValues}
+                        scenarioValues={card.scenarioValues ?? undefined}
                         visualizations={card.visualizations}
                         unit={card.unit}
                       />
@@ -227,7 +223,15 @@ function DashboardPage({ page, isLoading }: Props) {
                     {!!card.callToAction && (
                       <MuiLink component={Link} href={card.callToAction.linkUrl}>
                         <Card
-                          sx={{ backgroundColor: 'primary.main', color: 'primary.contrastText' }}
+                          sx={{
+                            backgroundColor: 'primary.main',
+                            color: 'primary.contrastText',
+                            transition: 'background-color 0.1s ease',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: 'primary.dark',
+                            },
+                          }}
                         >
                           <CardContent>
                             <Typography variant="h3" gutterBottom sx={{ color: 'inherit' }}>
