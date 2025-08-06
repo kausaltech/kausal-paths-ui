@@ -222,24 +222,64 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiSwitch: {
       styleOverrides: {
         root: {
-          padding: 8,
+          width: 42,
+          height: 26,
+          padding: 0,
+          marginRight: 6,
+          '&.MuiSwitch-sizeSmall': {
+            width: 34,
+            height: 18,
+            padding: 0,
+            marginRight: 6,
+
+            '& .MuiSwitch-switchBase': {
+              padding: 0,
+              margin: 2,
+            },
+            '& .MuiSwitch-thumb': {
+              width: 14,
+              height: 14,
+            },
+            '& .MuiSwitch-track': {
+              borderRadius: 18 / 2,
+            },
+          },
           '& .MuiSwitch-switchBase': {
+            padding: 0,
+            margin: 2,
+            transitionDuration: '300ms',
             '&.Mui-checked': {
+              transform: 'translateX(16px)',
               color: theme.themeColors.white,
               '& + .MuiSwitch-track': {
                 backgroundColor: theme.brandDark,
+                opacity: 1,
+                border: 0,
               },
+              '&.Mui-disabled + .MuiSwitch-track': {
+                opacity: 0.5,
+              },
+            },
+            '&.Mui-focusVisible .MuiSwitch-thumb': {
+              color: theme.brandDark,
+              border: `6px solid ${theme.themeColors.white}`,
+            },
+            '&.Mui-disabled .MuiSwitch-thumb': {
+              color: theme.graphColors.grey010,
+            },
+            '&.Mui-disabled + .MuiSwitch-track': {
+              opacity: 0.7,
             },
           },
           '& .MuiSwitch-thumb': {
-            boxShadow: 'none',
-            width: 16,
-            height: 16,
-            margin: 2,
+            boxSizing: 'border-box',
+            width: 22,
+            height: 22,
           },
           '& .MuiSwitch-track': {
-            borderRadius: 16,
+            borderRadius: 26 / 2,
             backgroundColor: theme.graphColors.grey030,
+            opacity: 1,
           },
         },
       },

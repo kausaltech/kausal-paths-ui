@@ -8,10 +8,12 @@ import {
   CardContent,
   Chip,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -83,7 +85,7 @@ export function MuiThemeExample() {
           <Typography variant="h3" gutterBottom>
             Form Elements
           </Typography>
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap mb={2}>
             <TextField label="Text Field" placeholder="Enter some text..." variant="outlined" />
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel>Select Option</InputLabel>
@@ -97,6 +99,52 @@ export function MuiThemeExample() {
                 <MenuItem value="option3">Option 3</MenuItem>
               </Select>
             </FormControl>
+          </Stack>
+          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap mb={2}>
+            <FormControlLabel
+              control={<Switch disabled={false} checked={true} />}
+              label="This is base switch on"
+              sx={{
+                m: 0,
+                p: 0,
+              }}
+            />
+            <FormControlLabel
+              control={<Switch disabled={false} checked={false} />}
+              label="This is base switch off"
+              sx={{
+                m: 0,
+                p: 0,
+              }}
+            />
+          </Stack>
+          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap mb={2}>
+            <FormControlLabel
+              control={<Switch disabled={false} checked={true} size="small" />}
+              label="This is small switch on"
+              sx={{
+                m: 0,
+                p: 0,
+              }}
+              slotProps={{
+                typography: {
+                  variant: 'caption',
+                },
+              }}
+            />
+            <FormControlLabel
+              control={<Switch disabled={false} checked={false} size="small" />}
+              label="This is small switch off"
+              sx={{
+                m: 0,
+                p: 0,
+              }}
+              slotProps={{
+                typography: {
+                  variant: 'caption',
+                },
+              }}
+            />
           </Stack>
         </Box>
 
