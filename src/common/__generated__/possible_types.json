@@ -22,7 +22,7 @@
       "InstanceSiteContent"
     ],
     "StreamFieldInterface": [
-      "ActionImpactBlock",
+      "ActionImpactVisualizationBlock",
       "BlockQuoteBlock",
       "BooleanBlock",
       "CallToActionBlock",
