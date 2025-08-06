@@ -35,6 +35,7 @@
       "DateBlock",
       "DateTimeBlock",
       "DecimalBlock",
+      "DimensionVisualizationBlock",
       "DocumentChooserBlock",
       "EmailBlock",
       "EmbedBlock",
