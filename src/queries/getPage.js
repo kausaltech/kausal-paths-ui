@@ -4,6 +4,96 @@ import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
 
+const DASHBOARD_PAGE_FRAGMENT = gql`
+  fragment DashboardCardVisualizations on DashboardCardBlock {
+    visualizations {
+      __typename
+      id
+      ... on GoalProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on CurrentProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on ReferenceProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on ScenarioProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on DimensionVisualizationBlock {
+        dimensionId
+      }
+    }
+  }
+
+  fragment DashboardPageFields on DashboardPage {
+    backgroundColor
+    dashboardCards {
+      ... on DashboardCardBlock {
+        title
+        description
+        image {
+          url
+        }
+        node {
+          id
+          name
+        }
+        unit {
+          short
+        }
+        goalValue
+        referenceYearValue
+        lastHistoricalYearValue
+        scenarioValues {
+          scenario {
+            id
+            name
+          }
+          value
+        }
+        metricDimensionCategoryValues {
+          dimension {
+            label
+            id
+            originalId
+          }
+          category {
+            id
+            originalId
+            label
+            color
+          }
+          value
+        }
+
+        ...DashboardCardVisualizations
+
+        callToAction {
+          ... on CallToActionBlock {
+            title
+            content
+            linkUrl
+          }
+        }
+      }
+    }
+  }
+`;
+
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on Node {
     id
@@ -83,6 +173,7 @@ const OUTCOME_NODE_FIELDS = gql`
 `;
 
 const GET_PAGE = gql`
+  ${DASHBOARD_PAGE_FRAGMENT}
   ${OUTCOME_NODE_FIELDS}
   query GetPage($path: String!, $goal: ID, $scenarios: [String!]) {
     activeScenario {
@@ -92,6 +183,9 @@ const GET_PAGE = gql`
       id
       __typename
       title
+      ... on DashboardPage {
+        ...DashboardPageFields
+      }
       ... on OutcomePage {
         leadTitle
         leadParagraph

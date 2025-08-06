@@ -13,7 +13,7 @@ import { activeGoalVar } from '@/common/cache';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ActionListPage from '@/components/pages/ActionListPage';
-import CustomDashboardPage from '@/components/pages/CustomDashboardPage';
+import DashboardPage from '@/components/pages/DashboardPage';
 import OutcomePage from '@/components/pages/OutcomePage';
 import StaticPage from '@/components/pages/StaticPage';
 import { useSiteOrNull } from '@/context/site';
@@ -74,10 +74,8 @@ function Page(props: PageProps) {
     return <Error statusCode={404} />;
   }
 
-  // TODO: Remove this when we have the actual page type
-  //@ts-ignore
-  if (/** true || **/ page.__typename === 'CustomDashboardPage') {
-    pageContent = <CustomDashboardPage />;
+  if (page.__typename === 'DashboardPage') {
+    pageContent = <DashboardPage page={page} isLoading={loading} />;
   } else if (page.__typename === 'OutcomePage') {
     pageContent = (
       <OutcomePage
