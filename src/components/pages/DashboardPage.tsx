@@ -177,8 +177,6 @@ function DashboardPage({ page, isLoading }: Props) {
     ? readableColor(page.backgroundColor, theme.textColor.primary, theme.themeColors.white)
     : 'primary.contrastText';
 
-  console.log(page);
-
   return (
     <Box sx={{ py: 4, backgroundColor: backgroundColor }}>
       <Container maxWidth="lg">
