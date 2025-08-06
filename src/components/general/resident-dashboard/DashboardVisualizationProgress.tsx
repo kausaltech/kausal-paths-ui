@@ -271,7 +271,12 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
                         {item.unit.short}
                       </Typography>
                     )}
-                    <Chart isLoading={false} data={getBarOption(item, theme)} height="80px" />
+                    <Chart
+                      isLoading={false}
+                      data={getBarOption(item, theme)}
+                      height="80px"
+                      withResizeLegend={false}
+                    />
                     <TargetVariation item={item} />
                   </CardContent>
                 </Card>
