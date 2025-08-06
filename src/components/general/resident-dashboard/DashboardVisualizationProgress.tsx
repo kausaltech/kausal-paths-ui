@@ -26,8 +26,7 @@ export type DashboardProgressItem = {
   chartLabel?: string;
   color?: string;
   value: number;
-  targetValue?: number;
-  min?: number;
+  goalValue?: number;
   max?: number;
   unit?: string;
   description?: string;
@@ -52,8 +51,9 @@ function getBarColor(
 
 const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
   const value = item.value;
-  const { min = 0, max = value } = item;
-  const target = item.targetValue;
+  const min = 0;
+  const { max = value } = item;
+  const target = item.goalValue;
   const barColor = getBarColor(item.color, theme, value, target);
 
   const config: EChartsCoreOption = {
@@ -141,15 +141,15 @@ function TargetVariation({ item }: { item: DashboardProgressItem }) {
   const theme = useTheme();
   const { t } = useTranslation();
 
-  if (!item.targetValue || item.value === item.targetValue) {
+  if (!item.goalValue || item.value === item.goalValue) {
     return null;
   }
 
-  const isAboveTarget = item.value > item.targetValue;
-  const badgeColor = getBarColor(undefined, theme, item.value, item.targetValue);
+  const isAboveTarget = item.value > item.goalValue;
+  const badgeColor = getBarColor(undefined, theme, item.value, item.goalValue);
   const percentageAboveOrBelowTarget = Math.max(
     1,
-    Math.round(Math.abs((item.value - item.targetValue) / item.targetValue) * 100)
+    Math.round(Math.abs((item.value - item.goalValue) / item.goalValue) * 100)
   );
 
   return (
