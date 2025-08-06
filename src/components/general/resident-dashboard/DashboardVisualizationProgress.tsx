@@ -19,16 +19,18 @@ import { readableColor } from 'polished';
 import { Dash, Plus } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
 
+import type { UnitFieldsFragment } from '@/common/__generated__/graphql';
+
 import { Chart } from '../../charts/Chart';
 
 export type DashboardProgressItem = {
   title: string;
   chartLabel?: string;
   color?: string;
-  value: number;
+  value?: number;
   goalValue?: number;
   max?: number;
-  unit?: string;
+  unit?: Omit<UnitFieldsFragment, '__typename'>;
   description?: string;
 };
 
@@ -39,14 +41,15 @@ type Props = {
 function getBarColor(
   defaultColor: string | undefined,
   theme: Theme,
-  value: number,
-  target: number | undefined
+  value?: number,
+  target?: number
 ) {
-  if (typeof target === 'number') {
+  if (typeof value === 'number' && typeof target === 'number') {
     return value > target ? theme.graphColors.red030 : theme.graphColors.green010;
   }
 
-  return defaultColor ?? theme.graphColors.blue050;
+  // defaultColor may be an empty string
+  return defaultColor ? defaultColor : theme.graphColors.blue050;
 }
 
 const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
@@ -141,7 +144,11 @@ function TargetVariation({ item }: { item: DashboardProgressItem }) {
   const theme = useTheme();
   const { t } = useTranslation();
 
-  if (!item.goalValue || item.value === item.goalValue) {
+  if (
+    typeof item.value !== 'number' ||
+    typeof item.goalValue !== 'number' ||
+    item.value === item.goalValue
+  ) {
     return null;
   }
 
@@ -236,17 +243,19 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
                     {item.title}
                   </Typography>
 
-                  <Typography sx={{ minWidth: 100, textAlign: 'right', mx: 1 }}>
-                    <Typography
-                      variant="h4"
-                      component="span"
-                      sx={{ color: 'text.primary', fontWeight: 'fontWeightRegular' }}
-                    >
-                      {item.value}{' '}
-                    </Typography>
+                  {typeof item.value === 'number' && (
+                    <Typography sx={{ minWidth: 100, textAlign: 'right', mx: 1 }}>
+                      <Typography
+                        variant="h4"
+                        component="span"
+                        sx={{ color: 'text.primary', fontWeight: 'fontWeightRegular' }}
+                      >
+                        {item.value.toLocaleString()}{' '}
+                      </Typography>
 
-                    {item.unit && <span>{item.unit}</span>}
-                  </Typography>
+                      {item.unit && <span>{item.unit.short}</span>}
+                    </Typography>
+                  )}
                 </Box>
               </AccordionSummary>
 
@@ -259,7 +268,7 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
 
                     {!!item.unit && (
                       <Typography variant="body2" color="text.secondary">
-                        {item.unit}
+                        {item.unit.short}
                       </Typography>
                     )}
                     <Chart isLoading={false} data={getBarOption(item, theme)} height="80px" />
