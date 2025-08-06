@@ -46,24 +46,6 @@
       "count": 1,
       "message": "Type 'ForwardedRef<unknown>' is not assignable to type 'Ref<HTMLElement> | undefined'."
     },
-    "1efa5e168c6e4803e72943f20defc1c59bff36d5": {
-      "file": "src/components/common/Footer.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'footerOwnerLinks' does not exist on type '{ actionView: { showPaginationTop: boolean; showPaginationBottom: boolean; }; dashboard: { showResponsibles: boolean; showIndicators: boolean; showActionDonutTotals?: boolean | undefined; showActionUpdateStatus?: boolean | undefined; showPieCharts?: boolean | undefined; }; ... 20 more ...; googleAnalyticsId?: string...'."
-    },
-    "9bc819ffd58be562ead62b77b2cfe3db4f6c69af": {
-      "file": "src/components/common/Footer.tsx",
-      "code": "TS2322",
-      "count": 2,
-      "message": "Type '{ \"aria-hidden\": string; className: string; }' is not assignable to type 'IntrinsicAttributes'."
-    },
-    "ecfd16fdddfcd81bdc51e05f7eabb88314f8f6fe": {
-      "file": "src/components/common/Footer.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ children: (string | false | Element | null | undefined)[]; href: never; target: string; rel: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LinkProps<any>, \"as\" | \"href\"> & { children?: ReactNode; } & { href: string; }'."
-    },
     "ad56b3d151da1c62606cbe8200329811791bf23f": {
       "file": "src/components/common/Footer.tsx",
       "code": "TS2339",
@@ -346,12 +328,6 @@
       "count": 1,
       "message": "Type 'string | null' is not assignable to type 'string | undefined'."
     },
-    "790ddfbe4b32e33ff83e758da1c41c5403bb3f3f": {
-      "file": "src/components/general/CausalCard.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ children: Element; node: ({ id: string; name: string; shortDescription: string | null; color: string | null; targetYearGoal: number | null; order: number | null; quantity: string | null; ... 7 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; }); className: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LinkProps<any>, \"as\" | \"href\"> & { children?: ReactNode; } & { node: { id: string; }; }'."
-    },
     "be5c007ec4e7d127e5225d58cddcb7dcac13019f": {
       "file": "src/components/general/CausalGrid.tsx",
       "code": "TS2345",
@@ -387,6 +363,12 @@
       "code": "TS2339",
       "count": 1,
       "message": "Property 'map' does not exist on type '({ id: string; name: string; shortDescription: string | null; color: string | null; targetYearGoal: number | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ .....'."
+    },
+    "ec43ab5b544a906c84ae17d4422dada8631b29c8": {
+      "file": "src/components/general/CompleteSettings.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ availableNormalizations: ({ id: string; label: string; isActive: boolean; } & { __typename: \"NormalizationType\"; })[]; }' is not assignable to type 'IntrinsicAttributes'."
     },
     "103684ee779bcd17e60e867ec437eb1188397715": {
       "file": "src/components/general/CompleteSettings.tsx",
@@ -664,12 +646,6 @@
       "count": 1,
       "message": "Property 'id' does not exist on type 'never'."
     },
-    "e9b53fc1f7baedff9d651d8e7cc01793e0e04916": {
-      "file": "src/components/general/ParameterWidget.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ children: ReactNode; disabled: any; ref: RefObject<any>; style: { height: string; width: string; borderRadius: string; background: string; alignSelf: \"center\"; }; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'."
-    },
     "8a210e71a1b54d2c6c86264ecfa4297154897f9d": {
       "file": "src/components/general/progress-tracking/useProgressData.ts",
       "code": "TS2345",
@@ -700,18 +676,6 @@
       "count": 1,
       "message": "Argument of type '[\"return-on-invetment-subtitle\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
-    "186419e8f4bd24300543d840e3a12544790981c4": {
-      "file": "src/components/general/ScenarioSelector.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '({ id: string; name: string; isActive: boolean; isDefault: boolean; isSelectable: boolean; } & { __typename: \"ScenarioType\"; }) | undefined' is not assignable to parameter of type '({ id: string; isActive: boolean; isDefault: boolean; name: string; actualHistoricalYears: number[] | null; kind: ScenarioKind | null; } & { __typename: \"ScenarioType\"; }) | undefined'."
-    },
-    "51969df0f852acfd3811977443aead4248a360a8": {
-      "file": "src/components/general/SettingsPanelFull.tsx",
-      "code": "TS2304",
-      "count": 1,
-      "message": "Cannot find name 'SettingsPanelFullProps'."
-    },
     "e9e88c15b2ccb1ce77bb9f24cb92a814b6694b48": {
       "file": "src/components/general/SimpleEffect.tsx",
       "code": "TS18048",
@@ -729,12 +693,6 @@
       "code": "TS2769",
       "count": 1,
       "message": "No overload matches this call."
-    },
-    "8432a87274af7927167b1adcdda3cbb6196d15ae": {
-      "file": "src/components/Layout.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ id: string | null; name: string; slug: string; urlPath: string; active: boolean; }[]' is not assignable to type '{ id: string; name: string; slug: string; urlPath: string; active?: boolean | undefined; children?: NavDropdownListItem[] | undefined; }[]'."
     },
     "6e7b62a0436a15292b3c9e6e3045d49a8f544f14": {
       "file": "src/components/pages/ActionListPage.tsx",
@@ -778,12 +736,6 @@
       "count": 1,
       "message": "Type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to type 'Map<string, OutcomeNodeFieldsFragment>'."
     },
-    "4716ee043cc6fe73832f29305401332c51fcf21a": {
-      "file": "src/components/pages/Page.tsx",
-      "code": "TS2367",
-      "count": 1,
-      "message": "This comparison appears to be unintentional because the types '\"OutcomePage\" | \"ActionListPage\" | \"InstanceRootPage\" | \"Page\" | \"StaticPage\"' and '\"CustomDashboardPage\"' have no overlap."
-    },
     "0ffca2d6c30523720b83a07e15a250dc85c225df": {
       "file": "src/middleware/lru-cache.ts",
       "code": "TS2554",
@@ -808,12 +760,6 @@
       "count": 2,
       "message": "Type '{ en: string; de: string; }' is not assignable to type 'string'."
     },
-    "9f800ee095d0ee03a3b113b48b5869e0b232adec": {
-      "file": "src/pages/actions/[slug].tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"page-not-found\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
     "0df5553a908f9e3e69fd9e54f99e3e137e109806": {
       "file": "src/pages/actions/[slug].tsx",
       "code": "TS18047",
@@ -837,30 +783,6 @@
       "code": "TS18048",
       "count": 4,
       "message": "'locale' is possibly 'undefined'."
-    },
-    "5284777988880e8044d5689cda3e6396f96113bd": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'ApolloError | undefined' is not assignable to parameter of type 'ApolloErrorLike'."
-    },
-    "23375b276f301d9594ffc483dd54b5353a35ab9d": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'ApolloError | undefined' is not assignable to type 'ApolloError'."
-    },
-    "109c6017eb3d1180a439d4762056d3ebffc4c284": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"page-not-found\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
-    "b682c4d90c5719f9e6a30117deb3e0014c162b4c": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ key: string; node: { id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; ... 5 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }; metric: { ...; } & { ...; }; startYear: number; endYear: n...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "7025de8f2e55d076fd9673331071748bbe3da92b": {
       "file": "src/pages/node/[slug].tsx",

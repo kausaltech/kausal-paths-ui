@@ -451,6 +451,7 @@ function createGoalSeries(theme: Theme, datasetIndex: number, name: string) {
     symbol: 'circle',
     symbolSize: 8,
     smooth: true,
+    showAllSymbol: true,
     itemStyle: {
       color: theme.graphColors.red090,
     },

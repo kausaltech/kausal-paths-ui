@@ -20,6 +20,7 @@
   "display-yearly-effect": "på årlige emissioner",
   "distribution": "Fordeling",
   "download-data": "Download",
+  "edit": "Rediger",
   "edit-scenario": "Rediger scenarie",
   "emissions": "Emissioner",
   "emissions-forecast": "Emissionsprognose",
@@ -107,8 +108,11 @@
   "do-not-show-again": "Vis ikke igen",
   "close": "Luk",
   "coming-soon": "Kommer snart",
+  "page-not-found": "Side ikke fundet",
   "error-with-code": "Fejlkode {{code}}",
   "thumbSliderLabel": "Juster",
   "reset-button": "Nulstil",
-  "outcomes": "Resultater"
+  "outcomes": "Resultater",
+  "above-target": "over målet",
+  "below-target": "under målet"
 }

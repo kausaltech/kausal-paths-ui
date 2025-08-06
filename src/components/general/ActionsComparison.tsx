@@ -3,10 +3,7 @@ import { useTranslation } from 'next-i18next';
 import type { GetActionListQuery } from '@/common/__generated__/graphql';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import ActionComparisonGraph from '@/components/graphs/ActionComparisonGraph';
-import type {
-  ActionWithEfficiency,
-  SortActionsConfig,
-} from '@/types/actions.types';
+import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
 type Props = {
   sortBy?: SortActionsConfig['sortKey'];

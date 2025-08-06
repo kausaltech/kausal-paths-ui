@@ -1,6 +1,7 @@
 {
   "action-impact": "Impacto de la acción",
   "front-page": "Portada",
+  "page-not-found": "Página no encontrada",
   "error-with-code": "Código de error {{code}}",
   "thumbSliderLabel": "Ajustar",
   "reset-button": "Restablecer",
@@ -28,6 +29,7 @@
   "display-yearly-effect": "sobre las emisiones anuales",
   "distribution": "Distribución",
   "download-data": "Descargar",
+  "edit": "Editar",
   "edit-scenario": "Editar escenario",
   "emissions": "Emisiones",
   "emissions-forecast": "Previsión de emisiones",
@@ -115,5 +117,7 @@
   "do-not-show-again": "No mostrar de nuevo",
   "close": "Cerrar",
   "coming-soon": "Próximamente",
-  "outcomes": "Resultados"
+  "outcomes": "Resultados",
+  "above-target": "por encima del objetivo",
+  "below-target": "por debajo del objetivo"
 }
