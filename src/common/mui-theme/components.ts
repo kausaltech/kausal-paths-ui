@@ -222,13 +222,13 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiSwitch: {
       styleOverrides: {
         root: {
-          width: 42,
-          height: 26,
+          width: 36,
+          height: 20,
           padding: 0,
           marginRight: 6,
           '&.MuiSwitch-sizeSmall': {
-            width: 34,
-            height: 18,
+            width: 32,
+            height: 16,
             padding: 0,
             marginRight: 6,
 
@@ -237,11 +237,11 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
               margin: 2,
             },
             '& .MuiSwitch-thumb': {
-              width: 14,
-              height: 14,
+              width: 12,
+              height: 12,
             },
             '& .MuiSwitch-track': {
-              borderRadius: 18 / 2,
+              borderRadius: 16 / 2,
             },
           },
           '& .MuiSwitch-switchBase': {
@@ -273,11 +273,11 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
           },
           '& .MuiSwitch-thumb': {
             boxSizing: 'border-box',
-            width: 22,
-            height: 22,
+            width: 16,
+            height: 16,
           },
           '& .MuiSwitch-track': {
-            borderRadius: 26 / 2,
+            borderRadius: 20 / 2,
             backgroundColor: theme.graphColors.grey030,
             opacity: 1,
           },
