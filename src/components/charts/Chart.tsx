@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 // Import used charts
-import { BarChart, CustomChart, LineChart } from 'echarts/charts';
+import { BarChart, CustomChart, LineChart, PieChart } from 'echarts/charts';
 // Import the tooltip, title, rectangular coordinate system, dataset and transform components
 import {
   DatasetComponent,
@@ -44,6 +44,7 @@ echarts.use([
   LineChart,
   MarkLineComponent,
   MarkAreaComponent,
+  PieChart,
 ]);
 
 const StyledChartWrapper = styled.div<{ $height?: string }>`
@@ -74,9 +75,18 @@ type Props = {
   height?: string;
   onZrClick?: (clickedDataIndex: [number, number]) => void;
   className?: string;
+  // Resize the legend when the chart loaded or resized, also adds additional space to the bottom of the chart
+  withResizeLegend?: boolean;
 };
 
-export function Chart({ isLoading, data, height, onZrClick, className }: Props) {
+export function Chart({
+  isLoading,
+  data,
+  height,
+  onZrClick,
+  className,
+  withResizeLegend = true,
+}: Props) {
   const theme = useTheme();
   const chartRef = useRef<echarts.ECharts | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -90,7 +100,10 @@ export function Chart({ isLoading, data, height, onZrClick, className }: Props) 
     const throttledResize = throttle(
       () => {
         chart.resize();
-        resizeLegend(chart);
+
+        if (withResizeLegend) {
+          resizeLegend(chart);
+        }
       },
       1000,
       {
@@ -107,7 +120,7 @@ export function Chart({ isLoading, data, height, onZrClick, className }: Props) 
       chart.clear();
       chart.dispose();
     };
-  }, [theme]);
+  }, [theme, withResizeLegend]);
 
   // Show/hide the loading indicator
   useEffect(() => {
@@ -124,9 +137,12 @@ export function Chart({ isLoading, data, height, onZrClick, className }: Props) 
   useEffect(() => {
     if (chartRef.current && data) {
       chartRef.current.setOption(data);
-      resizeLegend(chartRef.current);
+
+      if (withResizeLegend) {
+        resizeLegend(chartRef.current);
+      }
     }
-  }, [data]);
+  }, [data, withResizeLegend]);
 
   // Add click handler to the chart
   useEffect(() => {
