@@ -25,7 +25,7 @@ import {
 } from '@/common/preprocess';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
-interface ActionsListProps {
+type ActionsListProps = {
   id?: string;
   actions: ActionWithEfficiency[];
   actionGroups: { id: string; name: string; color: string | null }[];
@@ -36,7 +36,7 @@ interface ActionsListProps {
   refetching: boolean;
   onChangeSort?: (key: SortActionsConfig['key']) => void;
   onToggleSortDirection?: () => void;
-}
+};
 
 const getValueForSorting = (
   action: ActionWithEfficiency,
@@ -57,7 +57,7 @@ const getValueForSorting = (
   return 0;
 };
 
-const ActionsList: React.FC<ActionsListProps> = ({
+const ActionsList = ({
   id,
   actions,
   yearRange,
@@ -66,7 +66,7 @@ const ActionsList: React.FC<ActionsListProps> = ({
   refetching,
   onChangeSort,
   onToggleSortDirection,
-}) => {
+}: ActionsListProps) => {
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
