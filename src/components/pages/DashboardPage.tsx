@@ -6,10 +6,12 @@ import type {
   DashboardCardVisualizationsFragment,
   GetPageQuery,
   MetricDimensionCategoryValueFieldsFragment,
+  ScenarioActionImpactsFieldsFragment,
 } from '@/common/__generated__/graphql';
 
 import CallToActionCard from '../common/CallToActionCard';
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
+import DashboardVisualizationActionImpact from '../general/resident-dashboard/DashboardVisualizationActionImpact';
 import DashboardVisualizationDimension from '../general/resident-dashboard/DashboardVisualizationDimension';
 import DashboardVisualizationProgress from '../general/resident-dashboard/DashboardVisualizationProgress';
 
@@ -44,6 +46,7 @@ type DashboardVisualizationProps = {
     htmlLong: string;
   };
   metricDimensionCategoryValues: (MetricDimensionCategoryValueFieldsFragment | null)[];
+  scenarioActionImpacts: (ScenarioActionImpactsFieldsFragment | null)[];
 };
 
 const isProgressBar = (
@@ -102,6 +105,7 @@ function DashboardVisualization({
   scenarioValues,
   unit,
   metricDimensionCategoryValues,
+  scenarioActionImpacts,
 }: DashboardVisualizationProps) {
   const values = {
     referenceYearValue: roundValue(referenceYearValue),
@@ -174,9 +178,29 @@ function DashboardVisualization({
           );
         }
 
-        // if (visualization.visualizationType === 'action_impact') {
-        //   return <DashboardVisualizationActionImpact progressBars={visualization.progressBars} />;
-        // }
+        if (visualization?.__typename === 'ActionImpactVisualizationBlock') {
+          return (
+            <DashboardVisualizationActionImpact
+              key={visualization.id}
+              unit={unit?.short}
+              chartLabel={visualization.title}
+              actions={
+                scenarioActionImpacts
+                  .filter((impact) => impact?.scenario.id === visualization.scenarioId)
+                  .flatMap(
+                    (impact) =>
+                      impact?.impacts.map((impact) => ({
+                        id: impact.action.id,
+                        name: impact.action.shortName ?? impact.action.name,
+                        value: impact.value,
+                        color: impact.action.color ?? undefined,
+                        group: impact.action.group ?? undefined,
+                      })) ?? []
+                  ) ?? []
+              }
+            />
+          );
+        }
 
         console.warn(`Unknown dashboard card visualization type: ${visualization?.__typename}`);
 
@@ -243,6 +267,7 @@ function DashboardPage({ page, isLoading }: Props) {
                         visualizations={card.visualizations}
                         unit={card.unit}
                         metricDimensionCategoryValues={card.metricDimensionCategoryValues ?? []}
+                        scenarioActionImpacts={card.scenarioActionImpacts ?? []}
                       />
                     )}
 

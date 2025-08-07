@@ -1,47 +1,57 @@
 import React from 'react';
 
 import { useTheme } from '@emotion/react';
-import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
+import type { CallbackDataParams } from 'echarts/types/dist/shared';
 
 import { Chart } from '../../charts/Chart';
 
-export type ActionImpactNode = {
+type ActionGroup = {
+  id: string;
+  name: string;
+  color?: string | null;
+};
+
+type Action = {
   id: string;
   name: string;
   color?: string;
   value: number;
-  category?: string;
+  group?: ActionGroup;
 };
 
 type Props = {
-  actions: ActionImpactNode[];
+  actions: Action[];
   chartLabel?: string;
   unit?: string;
 };
 
 const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props) => {
   const theme = useTheme();
-  const fallbackColors = [
-    theme.graphColors.blue030,
-    theme.graphColors.green030,
-    theme.graphColors.red030,
-    theme.graphColors.yellow030,
-    theme.graphColors.grey030,
-  ];
-
+  const fallbackColor = theme.graphColors.grey030;
   const dataWithColors = actions.map((action, idx) => ({
     ...action,
-    color: action.color || fallbackColors[idx % fallbackColors.length],
+    // Note: color could be an empty string
+    color: action.group?.color || action.color || fallbackColor,
   }));
+  const groups = new Map(
+    actions
+      .filter((action): action is Action & { group: ActionGroup } => !!action.group)
+      .map((action) => [action.group?.id, { ...action.group }])
+  );
+
+  console.log([...groups.values()].map((group) => group.name));
 
   const chartData: EChartsCoreOption = {
     dataset: [
       {
-        dimensions: ['action', 'value'],
+        dimensions: ['action', 'value', 'group'],
         source: dataWithColors.map((action) => ({
           action: action.name,
           value: action.value,
+          color: action.color,
+          group: action.group?.id,
         })),
       },
       {
@@ -51,32 +61,35 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
         },
       },
     ],
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      valueFormatter: (value: number) =>
+        `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${unit}`,
+    },
     grid: {
       containLabel: true,
-      left: 10,
-      right: '20%',
-      top: 30,
-      bottom: 30,
+      top: 20,
+      bottom: 20,
+      left: 20,
+      right: 0,
     },
     legend: {
       show: false,
     },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      formatter: (params) => {
-        const p = Array.isArray(params) ? params[0] : params;
-        return `${p.name}: <b>${p.value.value}</b> ${unit || ''}`;
-      },
-    },
     xAxis: {
       type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false },
+      splitLine: { show: false },
+      axisLabel: { show: false },
     },
     yAxis: {
       type: 'category',
+      position: 'right',
       splitArea: { show: true },
-      axisLine: { show: false },
-      axisLabel: { show: false },
+      axisLine: { show: true, lineStyle: { color: theme.textColor.secondary } },
+      axisLabel: { show: true, width: 250, overflow: 'truncate' },
       axisTick: { show: false },
       splitLine: { show: false },
     },
@@ -88,11 +101,19 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
           y: 'action',
         },
         datasetIndex: 1,
-        barWidth: 18,
+        itemStyle: {
+          color: function (params) {
+            const group = groups.get(params.data.group);
+
+            return group ? (group?.color ?? params.data.color) : params.data.color;
+          },
+        },
         label: {
           show: true,
-          position: 'right',
-          formatter: (params) => params.data.action, // Show the action name
+          align: 'right',
+          position: 'left',
+          formatter: (params: CallbackDataParams) =>
+            params.data?.value?.toLocaleString(undefined, { maximumFractionDigits: 1 }),
           fontWeight: 'bold',
         },
       },
@@ -100,6 +121,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
   };
 
   const totalImpact = dataWithColors.reduce((sum, action) => sum + action.value, 0);
+  const chartHeight = actions ? actions.length * 28 + 110 : 400;
 
   return (
     <Box sx={{ my: 2 }}>
@@ -115,7 +137,29 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
               {unit}
             </Typography>
           )}
-          <Chart isLoading={false} data={chartData} height="340px" />
+          {groups.size > 0 && (
+            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+              {[...groups.values()].map((group) => (
+                <Stack key={group.id} direction="row" spacing={0.5} alignItems="center">
+                  <Box
+                    sx={{
+                      backgroundColor: group.color,
+                      width: 20,
+                      height: 20,
+                      borderRadius: theme.badgeBorderRadius,
+                    }}
+                  />
+                  <Typography color="text.secondary">{group.name}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          )}
+          <Chart
+            isLoading={false}
+            data={chartData}
+            height={`${chartHeight}px`}
+            withResizeLegend={false}
+          />
           <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
             Total impact {totalImpact > 0 ? '+' : ''}
