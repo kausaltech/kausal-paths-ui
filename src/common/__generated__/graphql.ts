@@ -1655,13 +1655,24 @@ export type DashboardCardVisualizationsFragment = (
     { title: string, description: string | null, chartLabel: string, color: string | null, id: string | null }
     & { __typename: 'CurrentProgressBarBlock' | 'GoalProgressBarBlock' | 'ReferenceProgressBarBlock' }
   ) | (
-    { dimensionId: string, id: string | null }
+    { title: string, dimensionId: string, id: string | null }
     & { __typename: 'DimensionVisualizationBlock' }
   ) | (
     { title: string, description: string | null, chartLabel: string, color: string | null, scenarioId: string, id: string | null }
     & { __typename: 'ScenarioProgressBarBlock' }
   ) | null> | null }
   & { __typename: 'DashboardCardBlock' }
+);
+
+export type MetricDimensionCategoryValueFieldsFragment = (
+  { value: number | null, dimension: (
+    { label: string, id: string, originalId: string | null }
+    & { __typename: 'MetricDimensionType' }
+  ), category: (
+    { id: string, originalId: string | null, label: string, color: string | null }
+    & { __typename: 'MetricDimensionCategoryType' }
+  ) }
+  & { __typename: 'MetricDimensionCategoryValue' }
 );
 
 export type DashboardPageFieldsFragment = (
@@ -1703,7 +1714,7 @@ export type DashboardPageFieldsFragment = (
       { title: string, description: string | null, chartLabel: string, color: string | null, id: string | null }
       & { __typename: 'CurrentProgressBarBlock' | 'GoalProgressBarBlock' | 'ReferenceProgressBarBlock' }
     ) | (
-      { dimensionId: string, id: string | null }
+      { title: string, dimensionId: string, id: string | null }
       & { __typename: 'DimensionVisualizationBlock' }
     ) | (
       { title: string, description: string | null, chartLabel: string, color: string | null, scenarioId: string, id: string | null }
@@ -1841,7 +1852,7 @@ export type GetPageQuery = (
         { title: string, description: string | null, chartLabel: string, color: string | null, id: string | null }
         & { __typename: 'CurrentProgressBarBlock' | 'GoalProgressBarBlock' | 'ReferenceProgressBarBlock' }
       ) | (
-        { dimensionId: string, id: string | null }
+        { title: string, dimensionId: string, id: string | null }
         & { __typename: 'DimensionVisualizationBlock' }
       ) | (
         { title: string, description: string | null, chartLabel: string, color: string | null, scenarioId: string, id: string | null }

@@ -15,10 +15,12 @@ import { ArrowRight } from 'react-bootstrap-icons';
 import type {
   DashboardCardVisualizationsFragment,
   GetPageQuery,
+  MetricDimensionCategoryValueFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { Link } from '@/common/links';
 
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
+import DashboardVisualizationDimension from '../general/resident-dashboard/DashboardVisualizationDimension';
 import DashboardVisualizationProgress from '../general/resident-dashboard/DashboardVisualizationProgress';
 
 const PROGRESS_BAR_TYPES = [
@@ -51,6 +53,7 @@ type DashboardVisualizationProps = {
     htmlShort: string;
     htmlLong: string;
   };
+  metricDimensionCategoryValues: (MetricDimensionCategoryValueFieldsFragment | null)[];
 };
 
 const isProgressBar = (
@@ -108,6 +111,7 @@ function DashboardVisualization({
   goalValue,
   scenarioValues,
   unit,
+  metricDimensionCategoryValues,
 }: DashboardVisualizationProps) {
   const values = {
     referenceYearValue: roundValue(referenceYearValue),
@@ -118,45 +122,78 @@ function DashboardVisualization({
     lastHistoricalYearValue: roundValue(lastHistoricalYearValue),
   };
 
-  if (visualizations.some(isProgressBar)) {
-    const maxValue = Math.max(
-      values.referenceYearValue ?? 0,
-      values.goalValue ?? 0,
-      values.lastHistoricalYearValue ?? 0,
-      ...(scenarioValues?.map((scenario) => scenario?.value ?? 0) ?? [])
-    );
+  // Separate the progress visualizations so they're rendered together in a single accordion
+  const progressVisualizations = visualizations.filter((viz): viz is ProgressBarVisualization =>
+    isProgressBar(viz)
+  );
+  const hasProgressVisualizations = progressVisualizations.length > 0;
+  const hasNonProgressVisualizations = progressVisualizations.length !== visualizations.length;
+  const maxValue = Math.max(
+    values.referenceYearValue ?? 0,
+    values.goalValue ?? 0,
+    values.lastHistoricalYearValue ?? 0,
+    ...(scenarioValues?.map((scenario) => scenario?.value ?? 0) ?? [])
+  );
 
-    return (
-      <DashboardVisualizationProgress
-        items={visualizations
-          .filter((viz): viz is ProgressBarVisualization => isProgressBar(viz))
-          .map((viz) => ({
-            title: viz.title,
-            chartLabel: viz.chartLabel,
-            color: viz.color ?? undefined,
-            value: getBarValue(viz, values) ?? undefined,
-            goalValue: getBarGoalValue(viz, values),
-            max: maxValue,
-            unit: unit ?? undefined,
-            description: viz.description ?? undefined,
-          }))}
-      />
-    );
+  const progressVisualization = hasProgressVisualizations ? (
+    <DashboardVisualizationProgress
+      items={progressVisualizations.map((viz) => ({
+        title: viz.title,
+        chartLabel: viz.chartLabel,
+        color: viz.color ?? undefined,
+        value: getBarValue(viz, values) ?? undefined,
+        goalValue: getBarGoalValue(viz, values),
+        max: maxValue,
+        unit: unit ?? undefined,
+        description: viz.description ?? undefined,
+      }))}
+    />
+  ) : null;
+
+  if (hasProgressVisualizations && !hasNonProgressVisualizations) {
+    return progressVisualization;
   }
 
-  return visualizations.map((visualization) => {
-    // if (visualization.visualizationType === 'emission_sources') {
-    //   return <DashboardVisualizationEmissionSources progressBars={visualization.progressBars} />;
-    // }
+  const nonProgressVisualizations = visualizations.filter((viz) => !isProgressBar(viz));
 
-    // if (visualization.visualizationType === 'action_impact') {
-    //   return <DashboardVisualizationActionImpact progressBars={visualization.progressBars} />;
-    // }
+  return (
+    <>
+      {progressVisualization}
+      {nonProgressVisualizations.map((visualization) => {
+        if (visualization?.__typename === 'DimensionVisualizationBlock') {
+          return (
+            <DashboardVisualizationDimension
+              key={visualization.id}
+              chartLabel={visualization.title}
+              unit={unit?.short}
+              data={metricDimensionCategoryValues
+                .filter(
+                  (
+                    value
+                  ): value is MetricDimensionCategoryValueFieldsFragment & { value: number } =>
+                    value?.dimension.originalId === visualization.dimensionId &&
+                    value.value !== null
+                )
+                .map((value) => ({
+                  id: value.category.id,
+                  name: value.category.label,
+                  color: value.category.color ?? undefined,
+                  value: value.value,
+                }))}
+            />
+          );
+        }
 
-    console.warn(`Unknown dashboard card visualization type: ${visualization?.__typename}`);
+        // if (visualization.visualizationType === 'action_impact') {
+        //   return <DashboardVisualizationActionImpact progressBars={visualization.progressBars} />;
+        // }
 
-    return null;
-  });
+        console.warn(`Unknown dashboard card visualization type: ${visualization?.__typename}`);
+
+        return null;
+      })}
+    </>
+  );
 }
 
 type Props = {
@@ -215,6 +252,7 @@ function DashboardPage({ page, isLoading }: Props) {
                         scenarioValues={card.scenarioValues ?? undefined}
                         visualizations={card.visualizations}
                         unit={card.unit}
+                        metricDimensionCategoryValues={card.metricDimensionCategoryValues ?? []}
                       />
                     )}
 

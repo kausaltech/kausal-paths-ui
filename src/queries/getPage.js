@@ -43,9 +43,25 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         scenarioId
       }
       ... on DimensionVisualizationBlock {
+        title
         dimensionId
       }
     }
+  }
+
+  fragment MetricDimensionCategoryValueFields on MetricDimensionCategoryValue {
+    dimension {
+      label
+      id
+      originalId
+    }
+    category {
+      id
+      originalId
+      label
+      color
+    }
+    value
   }
 
   fragment DashboardPageFields on DashboardPage {
@@ -75,18 +91,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
           value
         }
         metricDimensionCategoryValues {
-          dimension {
-            label
-            id
-            originalId
-          }
-          category {
-            id
-            originalId
-            label
-            color
-          }
-          value
+          ...MetricDimensionCategoryValueFields
         }
 
         ...DashboardCardVisualizations
