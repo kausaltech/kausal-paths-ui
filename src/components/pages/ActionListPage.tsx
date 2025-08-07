@@ -500,6 +500,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionsList
                 id="list-view"
                 actions={usableActions}
+                actionGroups={actionGroups}
                 displayType="displayTypeYearly"
                 yearRange={yearRange}
                 sortBy={sortBy}
