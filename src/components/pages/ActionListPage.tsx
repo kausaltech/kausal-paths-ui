@@ -506,6 +506,13 @@ function ActionListPage({ page }: ActionListPageProps) {
                 sortBy={sortBy}
                 sortAscending={ascending}
                 refetching={areActionsLoading}
+                onChangeSort={(key) => {
+                  handleChangeSort(key);
+                  setAscending(true);
+                }}
+                onToggleSortDirection={() => {
+                  setAscending((prev) => !prev);
+                }}
               />
             )}
             {listType === 'mac' && (
