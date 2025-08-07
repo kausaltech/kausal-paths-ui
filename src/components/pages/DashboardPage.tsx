@@ -1,24 +1,14 @@
 import { useTheme } from '@emotion/react';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  Container,
-  Link as MuiLink,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Container, Stack, Typography } from '@mui/material';
 import { readableColor } from 'polished';
-import { ArrowRight } from 'react-bootstrap-icons';
 
 import type {
   DashboardCardVisualizationsFragment,
   GetPageQuery,
   MetricDimensionCategoryValueFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { Link } from '@/common/links';
 
+import CallToActionCard from '../common/CallToActionCard';
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
 import DashboardVisualizationDimension from '../general/resident-dashboard/DashboardVisualizationDimension';
 import DashboardVisualizationProgress from '../general/resident-dashboard/DashboardVisualizationProgress';
@@ -257,28 +247,11 @@ function DashboardPage({ page, isLoading }: Props) {
                     )}
 
                     {!!card.callToAction && (
-                      <MuiLink component={Link} href={card.callToAction.linkUrl}>
-                        <Card
-                          sx={{
-                            backgroundColor: 'primary.main',
-                            color: 'primary.contrastText',
-                            transition: 'background-color 0.1s ease',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: 'primary.dark',
-                            },
-                          }}
-                        >
-                          <CardContent>
-                            <Typography variant="h3" gutterBottom sx={{ color: 'inherit' }}>
-                              {card.callToAction.title}
-                            </Typography>
-                            <Typography>
-                              {card.callToAction.content} <ArrowRight size={16} />
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </MuiLink>
+                      <CallToActionCard
+                        title={card.callToAction.title}
+                        content={card.callToAction.content}
+                        linkUrl={card.callToAction.linkUrl}
+                      />
                     )}
                   </CardContent>
                 </Card>
