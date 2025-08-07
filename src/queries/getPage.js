@@ -13,6 +13,26 @@ const UNIT_FRAGMENT = gql`
 `;
 
 const DASHBOARD_PAGE_FRAGMENT = gql`
+  fragment ScenarioActionImpactsFields on ScenarioActionImpacts {
+    scenario {
+      id
+    }
+    impacts {
+      action {
+        id
+        name
+        shortName
+        color
+        group {
+          id
+          name
+          color
+        }
+      }
+      value
+    }
+  }
+
   fragment DashboardCardVisualizations on DashboardCardBlock {
     visualizations {
       __typename
@@ -45,6 +65,10 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
       ... on DimensionVisualizationBlock {
         title
         dimensionId
+      }
+      ... on ActionImpactVisualizationBlock {
+        title
+        scenarioId
       }
     }
   }
@@ -92,6 +116,10 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         }
         metricDimensionCategoryValues {
           ...MetricDimensionCategoryValueFields
+        }
+
+        scenarioActionImpacts {
+          ...ScenarioActionImpactsFields
         }
 
         ...DashboardCardVisualizations
