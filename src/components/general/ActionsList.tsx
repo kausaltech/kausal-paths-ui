@@ -74,12 +74,11 @@ const ActionsList: React.FC<ActionsListProps> = ({
   const impacts = useMemo(
     () =>
       actions.map((action) => {
-        const metric = action.impactMetric;
-        if (!metric) {
-          return { id: action.id, yearly: action.impactOnTargetYear, cumulative: 0 };
-        }
         const yearly = action.impactOnTargetYear;
-        const cumulative = summarizeYearlyValuesBetween(metric, yearRange[0], yearRange[1]);
+        const metric = action.impactMetric;
+        const cumulative = metric
+          ? summarizeYearlyValuesBetween(metric, yearRange[0], yearRange[1])
+          : 0;
         return { id: action.id, yearly, cumulative };
       }),
     [actions, yearRange]
