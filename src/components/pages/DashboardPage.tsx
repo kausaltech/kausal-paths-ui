@@ -2,11 +2,12 @@ import { useTheme } from '@emotion/react';
 import { Box, Card, CardContent, CardMedia, Container, Stack, Typography } from '@mui/material';
 import { readableColor } from 'polished';
 
-import type {
-  DashboardCardVisualizationsFragment,
-  GetPageQuery,
-  MetricDimensionCategoryValueFieldsFragment,
-  ScenarioActionImpactsFieldsFragment,
+import {
+  type DashboardCardVisualizationsFragment,
+  DimensionKind,
+  type GetPageQuery,
+  type MetricDimensionCategoryValueFieldsFragment,
+  type ScenarioActionImpactsFieldsFragment,
 } from '@/common/__generated__/graphql';
 
 import CallToActionCard from '../common/CallToActionCard';
@@ -154,7 +155,7 @@ function DashboardVisualization({
     <>
       {progressVisualization}
       {nonProgressVisualizations.map((visualization) => {
-        if (visualization?.__typename === 'DimensionVisualizationBlock') {
+        if (visualization?.__typename === 'CategoryBreakdownBlock') {
           return (
             <DashboardVisualizationDimension
               key={visualization.id}
@@ -165,8 +166,11 @@ function DashboardVisualization({
                   (
                     value
                   ): value is MetricDimensionCategoryValueFieldsFragment & { value: number } =>
-                    value?.dimension.originalId === visualization.dimensionId &&
-                    value.value !== null
+                    // If the dimensionId is empty, we default to the node dimension
+                    visualization.dimensionId === ''
+                      ? value?.dimension.kind === DimensionKind.Node && value.value !== null
+                      : value?.dimension.originalId === visualization.dimensionId &&
+                        value.value !== null
                 )
                 .map((value) => ({
                   id: value.category.id,
@@ -178,7 +182,7 @@ function DashboardVisualization({
           );
         }
 
-        if (visualization?.__typename === 'ActionImpactVisualizationBlock') {
+        if (visualization?.__typename === 'ActionImpactBlock') {
           return (
             <DashboardVisualizationActionImpact
               key={visualization.id}

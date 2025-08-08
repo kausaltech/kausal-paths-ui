@@ -22,7 +22,7 @@
       "InstanceSiteContent"
     ],
     "StreamFieldInterface": [
-      "ActionImpactVisualizationBlock",
+      "ActionImpactBlock",
       "BlockQuoteBlock",
       "BooleanBlock",
       "CallToActionBlock",
@@ -35,7 +35,6 @@
       "DateBlock",
       "DateTimeBlock",
       "DecimalBlock",
-      "DimensionVisualizationBlock",
       "DocumentChooserBlock",
       "EmailBlock",
       "EmbedBlock",
