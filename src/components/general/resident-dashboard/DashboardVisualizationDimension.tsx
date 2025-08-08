@@ -10,17 +10,18 @@ type Data = {
   name: string;
   color?: string;
   value: number;
+  year: number;
 };
 
 type Props = {
   data: Data[];
   chartLabel?: string;
   unit?: string;
-  referenceYear?: number;
 };
 
-const DashboardVisualizationDimension = ({ data, chartLabel, unit, referenceYear }: Props) => {
+const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
   const theme = useTheme();
+  const year = data?.[0]?.year;
   const fallbackColors = [
     theme.graphColors.blue030,
     theme.graphColors.green030,
@@ -85,7 +86,7 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit, referenceYear
         <CardContent>
           {chartLabel && (
             <Typography variant="h5" component="p" sx={{ color: 'text.primary' }}>
-              {chartLabel} ({referenceYear})
+              {chartLabel} {year && `(${year})`}
             </Typography>
           )}
           {!!unit && (

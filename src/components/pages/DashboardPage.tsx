@@ -4,9 +4,9 @@ import { readableColor } from 'polished';
 
 import {
   type DashboardCardVisualizationsFragment,
+  type MetricDimensionCategoryValueFieldsFragment as DimensionCategory,
   DimensionKind,
   type GetPageQuery,
-  type MetricDimensionCategoryValueFieldsFragment,
   type ScenarioActionImpactsFieldsFragment,
 } from '@/common/__generated__/graphql';
 
@@ -46,8 +46,14 @@ type DashboardVisualizationProps = {
     htmlShort: string;
     htmlLong: string;
   };
-  metricDimensionCategoryValues: (MetricDimensionCategoryValueFieldsFragment | null)[];
+  metricDimensionCategoryValues: (DimensionCategory | null)[];
   scenarioActionImpacts: (ScenarioActionImpactsFieldsFragment | null)[];
+};
+
+type Visualization = NonNullable<DashboardCardVisualizations[0]>;
+
+type CategoryBreakdownVisualization = Visualization & {
+  __typename: 'CategoryBreakdownBlock';
 };
 
 const isProgressBar = (
@@ -97,6 +103,14 @@ function getBarGoalValue(
 function roundValue(value: number | null | undefined) {
   return value ? Math.round(value) : null;
 }
+
+const filterBySelectedDimension =
+  (visualization: CategoryBreakdownVisualization) =>
+  (value: DimensionCategory | null): value is DimensionCategory & { value: number } =>
+    // If the dimensionId is empty, we default to the node dimension
+    visualization.dimensionId === ''
+      ? value?.dimension.kind === DimensionKind.Node && value.value !== null
+      : value?.dimension.originalId === visualization.dimensionId && value.value !== null;
 
 function DashboardVisualization({
   visualizations,
@@ -162,21 +176,13 @@ function DashboardVisualization({
               chartLabel={visualization.title}
               unit={unit?.short}
               data={metricDimensionCategoryValues
-                .filter(
-                  (
-                    value
-                  ): value is MetricDimensionCategoryValueFieldsFragment & { value: number } =>
-                    // If the dimensionId is empty, we default to the node dimension
-                    visualization.dimensionId === ''
-                      ? value?.dimension.kind === DimensionKind.Node && value.value !== null
-                      : value?.dimension.originalId === visualization.dimensionId &&
-                        value.value !== null
-                )
+                .filter(filterBySelectedDimension(visualization))
                 .map((value) => ({
                   id: value.category.id,
                   name: value.category.label,
                   color: value.category.color ?? undefined,
                   value: value.value,
+                  year: value.year,
                 }))}
             />
           );
@@ -199,6 +205,7 @@ function DashboardVisualization({
                         value: impact.value,
                         color: impact.action.color ?? undefined,
                         group: impact.action.group ?? undefined,
+                        year: impact.year,
                       })) ?? []
                   ) ?? []
               }
@@ -216,10 +223,9 @@ function DashboardVisualization({
 
 type Props = {
   page: GetPageQuery['page'];
-  isLoading: boolean;
 };
 
-function DashboardPage({ page, isLoading }: Props) {
+function DashboardPage({ page }: Props) {
   const theme = useTheme();
 
   if (page?.__typename !== 'DashboardPage') {
