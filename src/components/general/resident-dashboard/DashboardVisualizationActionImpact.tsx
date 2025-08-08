@@ -5,6 +5,8 @@ import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/materia
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 
+import { useTranslation } from '@/common/i18n';
+
 import { Chart } from '../../charts/Chart';
 
 type ActionGroup = {
@@ -19,6 +21,36 @@ type Action = {
   color?: string;
   value: number;
   group?: ActionGroup;
+  year: number;
+};
+
+type Datum = {
+  action: string;
+  value: number;
+  color: string;
+  group: string | undefined;
+};
+
+const Legend = ({ groups }: { groups: ActionGroup[] }) => {
+  const theme = useTheme();
+
+  return (
+    <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1 }}>
+      {groups.map((group) => (
+        <Stack key={group.id} direction="row" spacing={0.5} alignItems="center">
+          <Box
+            sx={{
+              backgroundColor: group.color,
+              width: 20,
+              height: 20,
+              borderRadius: theme.badgeBorderRadius,
+            }}
+          />
+          <Typography color="text.secondary">{group.name}</Typography>
+        </Stack>
+      ))}
+    </Stack>
+  );
 };
 
 type Props = {
@@ -29,19 +61,21 @@ type Props = {
 
 const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const fallbackColor = theme.graphColors.grey030;
-  const dataWithColors = actions.map((action, idx) => ({
+  const year = actions[0]?.year;
+  const dataWithColors = actions.map((action) => ({
     ...action,
     // Note: color could be an empty string
     color: action.group?.color || action.color || fallbackColor,
   }));
+
+  // Used to separate actions typically by sector e.g. "Energy", "Transport" etc
   const groups = new Map(
     actions
       .filter((action): action is Action & { group: ActionGroup } => !!action.group)
       .map((action) => [action.group?.id, { ...action.group }])
   );
-
-  console.log([...groups.values()].map((group) => group.name));
 
   const chartData: EChartsCoreOption = {
     dataset: [
@@ -69,8 +103,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
     },
     grid: {
       containLabel: true,
-      top: 20,
-      bottom: 20,
+      top: 0,
+      bottom: 0,
       left: 0,
       right: 0,
     },
@@ -102,8 +136,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
         },
         datasetIndex: 1,
         itemStyle: {
-          color: function (params) {
-            const group = groups.get(params.data.group);
+          color: function (params: CallbackDataParams & { data: Datum }) {
+            const group = groups.get(params.data.group ?? '');
 
             return group ? (group?.color ?? params.data.color) : params.data.color;
           },
@@ -112,8 +146,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
           show: true,
           align: 'right',
           position: 'left',
-          formatter: (params: CallbackDataParams) =>
-            params.data?.value?.toLocaleString(undefined, { maximumFractionDigits: 1 }),
+          formatter: (params: CallbackDataParams & { data: Datum }) =>
+            params.data.value.toLocaleString(undefined, { maximumFractionDigits: 1 }),
           fontWeight: 'bold',
         },
       },
@@ -129,41 +163,35 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
         <CardContent>
           {chartLabel && (
             <Typography variant="h5" component="p" sx={{ color: 'text.primary' }}>
-              {chartLabel}
+              {chartLabel} {year && `(${year})`}
             </Typography>
           )}
+
           {!!unit && (
             <Typography variant="body2" color="text.secondary">
               {unit}
             </Typography>
           )}
-          {groups.size > 0 && (
-            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-              {[...groups.values()].map((group) => (
-                <Stack key={group.id} direction="row" spacing={0.5} alignItems="center">
-                  <Box
-                    sx={{
-                      backgroundColor: group.color,
-                      width: 20,
-                      height: 20,
-                      borderRadius: theme.badgeBorderRadius,
-                    }}
-                  />
-                  <Typography color="text.secondary">{group.name}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-          )}
+
+          {groups.size > 0 && <Legend groups={Array.from(groups.values())} />}
+
           <Chart
             isLoading={false}
             data={chartData}
             height={`${chartHeight}px`}
             withResizeLegend={false}
           />
+
           <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
-            Total impact {totalImpact > 0 ? '+' : ''}
-            {totalImpact.toLocaleString()} {unit || ''} compared to business as usual scenario
+
+          <Typography variant="subtitle1">
+            {t('impact-compared-to-baseline', {
+              impact:
+                totalImpact > 0
+                  ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                  : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+              unit: unit || '',
+            })}
           </Typography>
         </CardContent>
       </Card>

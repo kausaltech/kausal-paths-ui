@@ -75,7 +75,7 @@ function Page(props: PageProps) {
   }
 
   if (page.__typename === 'DashboardPage') {
-    pageContent = <DashboardPage page={page} isLoading={loading} />;
+    pageContent = <DashboardPage page={page} />;
   } else if (page.__typename === 'OutcomePage') {
     pageContent = (
       <OutcomePage
