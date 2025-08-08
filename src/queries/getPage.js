@@ -30,6 +30,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         }
       }
       value
+      year
     }
   }
 
@@ -62,11 +63,11 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         color
         scenarioId
       }
-      ... on DimensionVisualizationBlock {
+      ... on CategoryBreakdownBlock {
         title
         dimensionId
       }
-      ... on ActionImpactVisualizationBlock {
+      ... on ActionImpactBlock {
         title
         scenarioId
       }
@@ -75,6 +76,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
 
   fragment MetricDimensionCategoryValueFields on MetricDimensionCategoryValue {
     dimension {
+      kind
       label
       id
       originalId
@@ -86,6 +88,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
       color
     }
     value
+    year
   }
 
   fragment DashboardPageFields on DashboardPage {
@@ -113,6 +116,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
             name
           }
           value
+          year
         }
         metricDimensionCategoryValues {
           ...MetricDimensionCategoryValueFields
