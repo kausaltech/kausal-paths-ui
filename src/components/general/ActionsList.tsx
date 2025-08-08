@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-
+import { useTranslation } from 'next-i18next';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Box,
@@ -75,6 +75,7 @@ const ActionsList = ({
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
@@ -82,7 +83,7 @@ const ActionsList = ({
     const base: ColumnDef[] = [
       {
         key: 'CUM_IMPACT',
-        label: `Total impact ${yearRange[0]}–${yearRange[1]}`,
+        label: `${t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
         getValue: (a) =>
           a.impactMetric
             ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
@@ -91,7 +92,7 @@ const ActionsList = ({
       },
       {
         key: 'IMPACT',
-        label: `Annual impact ${yearRange[1]}`,
+        label: `${t('annual-impact')} ${yearRange[1]}`,
         sortKey: 'impactOnTargetYear',
         getValue: (a) => a.impactOnTargetYear,
         getUnit: (a) => a.impactMetric?.unit?.htmlShort,
@@ -101,7 +102,7 @@ const ActionsList = ({
     if (actions.some((a) => typeof a.cumulativeCost === 'number')) {
       base.push({
         key: 'CUM_COST',
-        label: 'Cost (cumulative)',
+        label: `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
         sortKey: 'cumulativeCost',
         getValue: (a) => a.cumulativeCost ?? 0,
         getUnit: (a) => a.cumulativeCostUnit,
@@ -111,7 +112,7 @@ const ActionsList = ({
     if (actions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
       base.push({
         key: 'CUM_EFFICIENCY',
-        label: 'Efficiency',
+        label: t('cost-efficiency'),
         sortKey: 'cumulativeEfficiency',
         getValue: (a) => a.cumulativeEfficiency ?? 0,
         getUnit: (a) => a.cumulativeEfficiencyUnit,
@@ -156,9 +157,9 @@ const ActionsList = ({
       <Table sx={{ borderCollapse: 'collapse' }}>
         <TableHead>
           <TableRow sx={{ backgroundColor: theme.graphColors.blue010 }}>
-            <TableCell>Type</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Included in scenario</TableCell>
+            <TableCell>{t('actions-group-type')}</TableCell>
+            <TableCell>{t('action-name')}</TableCell>
+            <TableCell>{t('included-in-scenario')}</TableCell>
 
             {columns.map((col) => (
               <TableCell key={col.key}>
@@ -296,7 +297,7 @@ const ActionsList = ({
                               '&:hover': { textDecoration: 'underline' },
                             }}
                           >
-                            How is this calculated? &gt;
+                            {t('how-calculated')} &gt;
                           </Typography>
                         </ActionLink>
                       </Box>
