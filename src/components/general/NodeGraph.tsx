@@ -32,6 +32,7 @@ import { Chart } from '@/components/charts/Chart';
  */
 
 type NodeGraphProps = {
+  title: string;
   dataTable: DataTable;
   goalTable: DataTable | null;
   baselineTable: DataTable | null;
@@ -45,6 +46,7 @@ type NodeGraphProps = {
   baselineLabel: string | null | undefined;
   showTotalLine?: boolean;
   onClickMeasuredEmissions?: (year: number) => void;
+  forecastTitle?: string;
 };
 
 type DataTable = (string | number | null | undefined)[][];
@@ -61,6 +63,7 @@ export default function NodeGraph(props: NodeGraphProps) {
   const { t } = useTranslation();
 
   const {
+    title,
     dataTable,
     goalTable,
     baselineTable,
@@ -74,6 +77,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     baselineLabel,
     showTotalLine = false,
     onClickMeasuredEmissions,
+    forecastTitle,
   } = props;
 
   // Figure out the start year of the dataset sans reference year
@@ -256,7 +260,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     datasetIndices.total >= 0
       ? createTotalSeries(
           theme,
-          t,
+          forecastTitle ?? t('table-scenario-forecast'),
           datasetIndices.total,
           markAreaStartIndex,
           markAreaEndIndex,
@@ -267,6 +271,17 @@ export default function NodeGraph(props: NodeGraphProps) {
   ].filter(Boolean);
 
   const option: echarts.EChartsCoreOption = {
+    title: {
+      text: title,
+      left: '10%',
+      top: 10,
+      padding: 0,
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: theme.themeColors.dark,
+      },
+    },
     aria: {
       enabled: true,
     },
@@ -280,7 +295,9 @@ export default function NodeGraph(props: NodeGraphProps) {
       },
     },
     grid: {
+      left: '10%',
       bottom: 100,
+      top: 60,
     },
     tooltip: {
       trigger: 'axis',
@@ -300,8 +317,17 @@ export default function NodeGraph(props: NodeGraphProps) {
       },
     },
     yAxis: {
-      name: unit,
       type: 'value',
+      name: unit,
+      nameLocation: 'end',
+      nameTextStyle: {
+        align: 'left',
+        verticalAlign: 'top',
+        fontSize: 12,
+        color: theme.themeColors.dark,
+        fontWeight: 'normal',
+      },
+      nameGap: 30,
     },
     barGap: 0,
     barCategoryGap: BAR_CATEGORY_GAP,
@@ -499,7 +525,7 @@ function createProgressSeries(theme: Theme, datasetIndex: number, name: string) 
 
 function createTotalSeries(
   theme: Theme,
-  t: TFunction,
+  forecastTitle: string,
   datasetIndex: number,
   markAreaStartIndex: number,
   markAreaEndIndex: number,
@@ -534,7 +560,7 @@ function createTotalSeries(
           data: [
             [
               {
-                name: t('table-scenario-forecast'),
+                name: forecastTitle,
                 xAxis: markAreaStartIndex,
               },
               {

@@ -364,24 +364,6 @@
       "count": 1,
       "message": "Property 'map' does not exist on type '({ id: string; name: string; shortDescription: string | null; color: string | null; targetYearGoal: number | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ .....'."
     },
-    "ec43ab5b544a906c84ae17d4422dada8631b29c8": {
-      "file": "src/components/general/CompleteSettings.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ availableNormalizations: ({ id: string; label: string; isActive: boolean; } & { __typename: \"NormalizationType\"; })[]; }' is not assignable to type 'IntrinsicAttributes'."
-    },
-    "103684ee779bcd17e60e867ec437eb1188397715": {
-      "file": "src/components/general/CompleteSettings.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ activeScenario: { id: string; isActive: boolean; isDefault: boolean; name: string; actualHistoricalYears: number[] | null; kind: ScenarioKind | null; } & { __typename: \"ScenarioType\"; }; }' is not assignable to type 'IntrinsicAttributes'."
-    },
-    "0e281c17f9f5b7d666e0b2ece0f1fe66ee4790f6": {
-      "file": "src/components/general/CompleteSettings.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ parameters: (({ id: string; label: string | null; description: string | null; nodeRelativeId: string | null; isCustomized: boolean; isCustomizable: boolean; boolValue: boolean | null; boolDefaultValue: boolean | null; node: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; }) | ({ ...; } & { ...; })...' is not assignable to type 'IntrinsicAttributes'."
-    },
     "5b6453f07542be6d7bfec4d26b70f9f8cf392d97": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2341",
@@ -514,66 +496,6 @@
       "count": 1,
       "message": "Type '{ compact: true; }' is not assignable to type 'IntrinsicAttributes'."
     },
-    "a17350401a1fa6c362259ade8dfb144356a6437d": {
-      "file": "src/components/general/OutcomeCard.tsx",
-      "code": "TS2345",
-      "count": 2,
-      "message": "Argument of type 'OutcomeNodeFieldsFragment' is not assignable to parameter of type '{ metric: NodeMetric; }'."
-    },
-    "3691bb7a9cbe2b72cd128a0be250569bb318d9dc": {
-      "file": "src/components/general/OutcomeCard.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'."
-    },
-    "cd3538339bb6517ec6bb2d3dec8052e51928bba5": {
-      "file": "src/components/general/OutcomeCard.tsx",
-      "code": "TS18047",
-      "count": 2,
-      "message": "'node.metric' is possibly 'null'."
-    },
-    "bca86c5d604dbc51572c876845dba6e326b62111": {
-      "file": "src/components/general/OutcomeCard.tsx",
-      "code": "TS18048",
-      "count": 1,
-      "message": "'goalOutcomeValue' is possibly 'undefined'."
-    },
-    "f0dbdb3907f529c6f36e9579a467d108e6472832": {
-      "file": "src/components/general/OutcomeCardSet.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'OutcomeNodeFieldsFragment[]' is not assignable to parameter of type '{ metric: NodeMetric; }[]'."
-    },
-    "fe787eb73ce93a00516de4e58681b052a0489d16": {
-      "file": "src/components/general/OutcomeCardSet.tsx",
-      "code": "TS2532",
-      "count": 6,
-      "message": "Object is possibly 'undefined'."
-    },
-    "5a6aa5a375e6eee22cf617a1effc6c0cae88edf2": {
-      "file": "src/components/general/OutcomeCardSet.tsx",
-      "code": "TS2345",
-      "count": 6,
-      "message": "Argument of type 'OutcomeNodeFieldsFragment' is not assignable to parameter of type '{ metric: NodeMetric; }'."
-    },
-    "98094abccc147db449bc28e76a5131228ac839e6": {
-      "file": "src/components/general/OutcomeCardSet.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
-    "1344e7affcf6ca4a1ab90dd81bb334ff0a1ef45b": {
-      "file": "src/components/general/OutcomeCardSet.tsx",
-      "code": "TS2345",
-      "count": 2,
-      "message": "Argument of type '{ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; quantity: string | null; ... 7 more ...; __typename: \"Node\"; }[]' is not assignable to parameter of type '{ metric: NodeMetric; }[]'."
-    },
-    "cc5872d2a8948be1f84cbf8b08db50f0e6ce26ff": {
-      "file": "src/components/general/OutcomeCardSet.tsx",
-      "code": "TS2345",
-      "count": 2,
-      "message": "Argument of type '{ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; quantity: string | null; ... 7 more ...; __typename: \"Node\"; }' is not assignable to parameter of type '{ metric: NodeMetric; }'."
-    },
     "e3a2d64a5d7cc9e6007790f7e6a33440c1a2b341": {
       "file": "src/components/general/OutcomeGraph.tsx",
       "code": "TS18047",
@@ -609,30 +531,6 @@
       "code": "TS18047",
       "count": 2,
       "message": "'parentNode.metric' is possibly 'null'."
-    },
-    "67f7823cabf89d8a4e76f05b68646286abcafa22": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS2345",
-      "count": 2,
-      "message": "Argument of type 'OutcomeNodeFieldsFragment' is not assignable to parameter of type '{ metric: NodeMetric; }'."
-    },
-    "e143b5ce25276976fc028c45155665d95a5a0286": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS18048",
-      "count": 2,
-      "message": "'lastMeasuredYear' is possibly 'undefined'."
-    },
-    "57d9cce8605f12a7013b094147e52142a07de8f2": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'."
-    },
-    "c5084a2849b943df6d2656bc62a01aa4e415593c": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ node: OutcomeNodeFieldsFragment; metric: { id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ ...; } & { ...; })[]; goals: ({ ...; } & { ...; })[]; unit: { ...; } & { ...; }; normalizedBy: ({ ...; } & { ...; }) | null; } & { ...; }; ... 5 mo...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
     },
     "791fd92d417103c3a38194c36470dcbc3acb2724": {
       "file": "src/components/general/OutcomeNodeDetails.tsx",
@@ -718,24 +616,6 @@
       "count": 1,
       "message": "Type '{ title: string; chartLabel: string; color: string; value: number; targetValue: number | null; min: number; max: number; unit: string; description: string; }[] | undefined' is not assignable to type 'DashboardProgressItem[] | undefined'."
     },
-    "1513ea577f1e140519298dffbc080c8bfb87a7b0": {
-      "file": "src/components/pages/OutcomePage.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'id' does not exist on type '{ __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })'."
-    },
-    "d68ac9a552f736d1abac2005ec53adb3edbc642e": {
-      "file": "src/components/pages/OutcomePage.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to parameter of type 'Map<string, OutcomeNodeFieldsFragment>'."
-    },
-    "63dc38231528da4a10c5573510c49a1dab0d4170": {
-      "file": "src/components/pages/OutcomePage.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to type 'Map<string, OutcomeNodeFieldsFragment>'."
-    },
     "0ffca2d6c30523720b83a07e15a250dc85c225df": {
       "file": "src/middleware/lru-cache.ts",
       "code": "TS2554",
@@ -759,24 +639,6 @@
       "code": "TS2322",
       "count": 2,
       "message": "Type '{ en: string; de: string; }' is not assignable to type 'string'."
-    },
-    "0df5553a908f9e3e69fd9e54f99e3e137e109806": {
-      "file": "src/pages/actions/[slug].tsx",
-      "code": "TS18047",
-      "count": 1,
-      "message": "'param.node' is possibly 'null'."
-    },
-    "551f81f25b8286fc6a841a1d480618b8515b201e": {
-      "file": "src/pages/actions/[slug].tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'boolValue' does not exist on type '({ id: string; label: string | null; description: string | null; nodeRelativeId: string | null; isCustomized: boolean; isCustomizable: boolean; boolValue: boolean | null; boolDefaultValue: boolean | null; node: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | ({ ...; } & ...'."
-    },
-    "4ac348f6dd15f7397f6f06f26b5efc61e0cb1722": {
-      "file": "src/pages/actions/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'string | null' is not assignable to type 'string | TrustedHTML'."
     },
     "258ef5e1c027b84dbd8936956c2ba73aa4af1e73": {
       "file": "src/pages/demo/about.tsx",

@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
-import { CardBody } from 'reactstrap';
+import { Box } from '@mui/material';
+import { ChevronCompactDown, ChevronCompactUp } from 'react-bootstrap-icons';
 
 const CardWithState = styled.div`
   position: relative;
@@ -7,17 +8,15 @@ const CardWithState = styled.div`
   border-radius: 0;
   height: 170px;
 
-  .card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
 
   &.open,
   &.root {
     color: ${({ theme }) => theme.textColor.tertiary};
-    background-color: white;
+    background-color: ${({ theme }) => theme.graphColors.grey020};
 
     h2 {
       color: ${({ theme }) => theme.textColor.tertiary};
@@ -26,8 +25,8 @@ const CardWithState = styled.div`
 
   &.inactive,
   &.closed {
-    color: ${({ theme }) => theme.textColor.secondary};
-    background-color: white;
+    color: ${({ theme }) => theme.textColor.primary};
+    background-color: ${({ theme }) => theme.cardBackground.primary};
 
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
@@ -41,16 +40,6 @@ const CardWithState = styled.div`
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
     }
-
-    &::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 36px;
-      background-color: white;
-      bottom: -36px;
-      left: 0;
-    }
   }
 
   &.active.hovered:after {
@@ -59,14 +48,8 @@ const CardWithState = styled.div`
 
   &.active.open,
   &.root {
-    position: relative;
-    color: ${({ theme }) => theme.textColor.secondary};
-    background-color: ${({ theme }) => theme.cardBackground.secondary};
-    // border-radius: ${(props) => props.theme.cardBorderRadius} ${(props) =>
-      props.theme.cardBorderRadius} 0 0;
-    height: 206px;
-    padding-bottom: 36px;
-    box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+    color: ${({ theme }) => theme.textColor.primary};
+    background-color: ${({ theme }) => theme.cardBackground.primary};
 
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
@@ -74,17 +57,60 @@ const CardWithState = styled.div`
   }
 `;
 
-const DashCard = (props) => {
+const CardFooter = styled.div<{ $active: boolean; $hovered: boolean; $state: 'open' | 'closed' }>`
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme, $active, $hovered, $state }) => {
+    if ($active) {
+      return theme.cardBackground.secondary;
+    }
+    if ($state === 'open' && $hovered) {
+      return theme.graphColors.grey020;
+    }
+    if ($state === 'open') {
+      return theme.graphColors.grey030;
+    }
+    if ($hovered) {
+      return theme.cardBackground.secondary;
+    }
+    return theme.graphColors.grey010;
+  }};
+`;
+
+const CardContainer = styled.div`
+  &.active.open,
+  &.root {
+    box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+  }
+`;
+
+type DashCardProps = {
+  state: 'open' | 'closed';
+  hovered: boolean;
+  active: boolean;
+  color: string;
+  refProp: React.RefObject<HTMLDivElement | null>;
+  children: React.ReactNode;
+};
+
+const DashCard = (props: DashCardProps) => {
   const { children, state, hovered, active, color, refProp } = props;
 
   return (
-    <CardWithState
-      className={`card ${state} ${hovered ? 'hovered' : ''}  ${active ? 'active' : ''}`}
-      color={color}
-      ref={refProp}
-    >
-      <CardBody>{children}</CardBody>
-    </CardWithState>
+    <CardContainer>
+      <CardWithState
+        className={`card ${state} ${hovered ? 'hovered' : ''}  ${active ? 'active' : ''}`}
+        color={color}
+        ref={refProp}
+      >
+        {children}
+      </CardWithState>
+      <CardFooter $active={active} $hovered={hovered} $state={state}>
+        {active ? <></> : <ChevronCompactDown />}
+      </CardFooter>
+    </CardContainer>
   );
 };
 
