@@ -137,5 +137,6 @@
   "collapse-all": "Collapse all",
   "values-per": "Values per {{normalization}}",
   "above-target": "above the target",
-  "below-target": "below the target"
+  "below-target": "below the target",
+  "impact-compared-to-baseline": "Total impact {{impact}} {{unit}} compared to business as usual scenario"
 }
