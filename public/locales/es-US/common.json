@@ -115,5 +115,6 @@
   "do-not-show-again": "No mostrar de nuevo",
   "close": "Cerrar",
   "coming-soon": "Próximamente",
-  "outcomes": "Resultados"
+  "outcomes": "Resultados",
+  "impact-compared-to-baseline": "Impacto total {{impact}} {{unit}} comparado con el escenario de continuidad"
 }

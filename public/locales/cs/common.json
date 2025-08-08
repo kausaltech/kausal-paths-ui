@@ -111,5 +111,6 @@
   "error-with-code": "Chybový kód {{code}}",
   "thumbSliderLabel": "Upravit",
   "reset-button": "Resetovat",
-  "outcomes": "Výsledky"
+  "outcomes": "Výsledky",
+  "impact-compared-to-baseline": "Celkový dopad {{impact}} {{unit}} ve srovnání se scénářem běžného vývoje"
 }

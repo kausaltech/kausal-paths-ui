@@ -13,6 +13,27 @@ const UNIT_FRAGMENT = gql`
 `;
 
 const DASHBOARD_PAGE_FRAGMENT = gql`
+  fragment ScenarioActionImpactsFields on ScenarioActionImpacts {
+    scenario {
+      id
+    }
+    impacts {
+      action {
+        id
+        name
+        shortName
+        color
+        group {
+          id
+          name
+          color
+        }
+      }
+      value
+      year
+    }
+  }
+
   fragment DashboardCardVisualizations on DashboardCardBlock {
     visualizations {
       __typename
@@ -42,10 +63,32 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         color
         scenarioId
       }
-      ... on DimensionVisualizationBlock {
+      ... on CategoryBreakdownBlock {
+        title
         dimensionId
       }
+      ... on ActionImpactBlock {
+        title
+        scenarioId
+      }
     }
+  }
+
+  fragment MetricDimensionCategoryValueFields on MetricDimensionCategoryValue {
+    dimension {
+      kind
+      label
+      id
+      originalId
+    }
+    category {
+      id
+      originalId
+      label
+      color
+    }
+    value
+    year
   }
 
   fragment DashboardPageFields on DashboardPage {
@@ -73,20 +116,14 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
             name
           }
           value
+          year
         }
         metricDimensionCategoryValues {
-          dimension {
-            label
-            id
-            originalId
-          }
-          category {
-            id
-            originalId
-            label
-            color
-          }
-          value
+          ...MetricDimensionCategoryValueFields
+        }
+
+        scenarioActionImpacts {
+          ...ScenarioActionImpactsFields
         }
 
         ...DashboardCardVisualizations

@@ -111,5 +111,6 @@
   "error-with-code": "Kod błędu {{code}}",
   "thumbSliderLabel": "Dostosuj",
   "reset-button": "Resetuj",
-  "outcomes": "Wyniki"
+  "outcomes": "Wyniki",
+  "impact-compared-to-baseline": "Całkowity wpływ {{impact}} {{unit}} w porównaniu ze scenariuszem kontynuacji"
 }

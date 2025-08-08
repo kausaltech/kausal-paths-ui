@@ -110,5 +110,6 @@
   "error-with-code": "Fejlkode {{code}}",
   "thumbSliderLabel": "Juster",
   "reset-button": "Nulstil",
-  "outcomes": "Resultater"
+  "outcomes": "Resultater",
+  "impact-compared-to-baseline": "Samlet påvirkning {{impact}} {{unit}} sammenlignet med business-as-usual scenarie"
 }

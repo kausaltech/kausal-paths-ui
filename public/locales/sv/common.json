@@ -97,5 +97,6 @@
   },
   "table-unit": "Enhet",
   "plot-choose-dimension": "Välj dimension",
-  "outcomes": "Resultat"
+  "outcomes": "Resultat",
+  "impact-compared-to-baseline": "Total påverkan {{impact}} {{unit}} jämfört med referensscenariot"
 }
