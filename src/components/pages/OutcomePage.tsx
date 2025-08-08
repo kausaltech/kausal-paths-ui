@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 
 import { useReactiveVar } from '@apollo/client';
+import styled from '@emotion/styled';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 
@@ -18,6 +19,15 @@ import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
 
 type OutcomeNode = OutcomeNodeFieldsFragment;
+
+const StyledTitle = styled.h1`
+  font-size: ${(props) => props.theme.fontSizeLg};
+  color: inherit;
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    font-size: ${(props) => props.theme.fontSizeXl};
+  }
+`;
 
 const findVisibleNodes = (
   allNodes: Map<string, OutcomeNode>,
@@ -61,12 +71,13 @@ export default function OutcomePage(props: OutcomePageProps) {
   const router = useRouter();
   const queryNodeId = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
   const [lastActiveNodeId, setLastActiveNodeId] = useState<string | undefined>(queryNodeId);
+  const showSettingsPanel = !instance.features?.hideNodeDetails;
 
   useEffect(() => {
     if (activeScenario === null || activeScenario.id !== queryActiveScenario?.id) {
-      refetch();
+      void refetch();
     }
-  }, [activeScenario]);
+  }, [activeScenario, refetch, queryActiveScenario]);
 
   useEffect(() => {
     if (router.query?.node === lastActiveNodeId) return;
@@ -74,23 +85,26 @@ export default function OutcomePage(props: OutcomePageProps) {
     if (lastActiveNodeId) {
       query.node = lastActiveNodeId;
     }
-    router.replace(
+    void router.replace(
       {
         query,
       },
       undefined,
       { shallow: true }
     );
-  }, [lastActiveNodeId]);
+  }, [lastActiveNodeId, router]);
 
   const { outcomeNode } = page;
   const { upstreamNodes } = outcomeNode;
-  const allNodes = useMemo(
-    () => new Map(upstreamNodes.map((node) => [node.id, node])),
-    [upstreamNodes]
-  );
-
-  allNodes.set(outcomeNode.id, outcomeNode);
+  const allNodes = useMemo(() => {
+    // Filter out nodes that do not have an 'id' property
+    const validNodes = upstreamNodes.filter(
+      (node): node is OutcomeNode => 'id' in node && typeof node.id === 'string'
+    );
+    const map = new Map(validNodes.map((node) => [node.id, node]));
+    map.set(outcomeNode.id, outcomeNode);
+    return map;
+  }, [upstreamNodes, outcomeNode]);
 
   const activeNodeId =
     lastActiveNodeId && allNodes.has(lastActiveNodeId) ? lastActiveNodeId : outcomeNode.id;
@@ -101,7 +115,6 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   const pageLeadTitle = page.leadTitle || instance.leadTitle;
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
-  const showSettingsPanel = !instance.features?.hideNodeDetails;
 
   return (
     <>
@@ -111,7 +124,8 @@ export default function OutcomePage(props: OutcomePageProps) {
         leadDescription={pageLeadParagraph ?? undefined}
         overlap
       >
-        <ScenarioPanel />
+        {showSettingsPanel && <ScenarioPanel />}
+        <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
         <>
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet

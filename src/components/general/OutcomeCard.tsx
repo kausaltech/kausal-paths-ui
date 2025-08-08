@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 
+import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import Chip from '@mui/material/Chip';
 import { useTranslation } from 'next-i18next';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -44,12 +46,11 @@ const Name = styled.h2`
   font-size: 1rem;
 `;
 
-const Status = styled.div`
-  margin-top: 0.5rem;
+const Status = styled.div<{ $active: boolean | undefined }>`
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  color: ${({ theme, $active }) => ($active ? theme.textColor.primary : theme.textColor.tertiary)};
+  line-height: 1.2;
   white-space: nowrap;
-  font-size: 1rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.textColor.tertiary};
 `;
 
 const Body = styled.div`
@@ -61,9 +62,13 @@ const Body = styled.div`
 
 const MainValue = styled.div`
   text-align: left;
-  font-size: 1.25rem;
+`;
+
+const TotalValue = styled.div`
+  font-size: 1.5rem;
   line-height: 1.2;
   font-weight: 700;
+  margin-bottom: 0.25rem;
 `;
 
 const NoValue = styled.div`
@@ -76,8 +81,8 @@ const NoValue = styled.div`
 `;
 
 const Label = styled.div<{ $active?: boolean }>`
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  line-height: 1.2;
   color: ${({ theme, $active }) => ($active ? theme.textColor.primary : theme.textColor.tertiary)};
 `;
 
@@ -94,7 +99,7 @@ const ProportionBarBar = styled.div<{ $size: number; $color: string }>`
   top: ${(props) => (props.$size > 0 ? 'auto' : '0')}%;
   left: 0;
   height: ${(props) => Math.abs(props.$size) * 100}%;
-  width: 14px;
+  width: 12px;
   background-color: ${(props) => props.$color};
 `;
 
@@ -104,23 +109,46 @@ const ProportionBarContainer = styled.div<{ $active: boolean }>`
   bottom: ${(props) => (props.$active ? '36px' : '0')};
   left: 0;
   width: 12px;
+  background-color: ${({ theme, $active }) =>
+    $active ? theme.graphColors.grey005 : theme.cardBackground.primary};
 `;
 
 const ProportionBar = ({
   size,
   color,
   active,
-  offset,
+  isOpen,
 }: {
   size: number;
   color: string;
   active: boolean;
+  isOpen: boolean;
   offset?: number;
 }) => {
   return (
-    <ProportionBarContainer $active={active}>
+    <ProportionBarContainer $active={active || !isOpen}>
       <ProportionBarBar $size={size} $color={color} />
     </ProportionBarContainer>
+  );
+};
+
+const ChangeValue = ({ change }: { change: number | undefined }) => {
+  const theme = useTheme();
+  const chipColor = change
+    ? change > 0
+      ? theme.graphColors.red010
+      : theme.graphColors.green010
+    : theme.graphColors.grey010;
+
+  const changeDisplay = change !== undefined ? (change > 0 ? `+${change}%` : `${change}%`) : '-';
+
+  return (
+    <Chip
+      label={changeDisplay}
+      size="small"
+      variant="outlined"
+      sx={{ backgroundColor: chipColor, borderColor: chipColor }}
+    />
   );
 };
 
@@ -153,7 +181,6 @@ const OutcomeCard = (props: OutcomeCardProps) => {
     startYear,
     endYear,
     total,
-    positiveTotal,
     negativeTotal,
     refetching,
   } = props;
@@ -170,11 +197,14 @@ const OutcomeCard = (props: OutcomeCardProps) => {
 
   //console.log(state);
   const { t } = useTranslation();
-  const baseOutcomeValue = getMetricValue(node, startYear) || 0;
-  const goalOutcomeValue = getMetricValue(node, endYear);
+  const baseOutcomeValue = node.metric
+    ? getMetricValue({ metric: node.metric }, startYear) || 0
+    : 0;
+  const goalOutcomeValue = node.metric ? getMetricValue({ metric: node.metric }, endYear) || 0 : 0;
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
+
   const lastMeasuredYear =
-    node?.metric.historicalValues[node.metric.historicalValues.length - 1]?.year;
+    node?.metric?.historicalValues[node.metric.historicalValues.length - 1]?.year;
   const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
   const { maximumFractionDigits, showRefreshPrompt } = useFeatures();
 
@@ -208,9 +238,10 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         {refetching && <Loader />}
 
         <ProportionBar
-          size={goalOutcomeValue / total}
+          size={goalOutcomeValue ? goalOutcomeValue / total : 0}
           color={color}
           active={active}
+          isOpen={state === 'open'}
           offset={negativeTotal < 0 ? Math.abs(negativeTotal / total) : 0}
         />
         <Header className={state}>
@@ -223,30 +254,21 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         <Body>
           <MainValue>
             <Label $active={active}>
-              {isForecast ? t('table-scenario-forecast') : t('table-historical')} {endYear}
+              {isForecast ? t('table-scenario-forecast') : t('table-historical')}
             </Label>
-            {goalOutcomeValue ? (
-              <>
+            {goalOutcomeValue !== undefined ? (
+              <TotalValue>
                 {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
                 <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
-              </>
+              </TotalValue>
             ) : (
               <NoValue />
             )}
-
-            <Status>
-              <Label>
-                {t('change-over-time')} {startYear} - {endYear}
-              </Label>
-              {change ? (
-                <>
-                  {change > 0 && <span>+</span>}
-                  {change ? <span>{`${change}%`}</span> : <span>-</span>}
-                </>
-              ) : (
-                <NoValue />
-              )}
-            </Status>
+            {change !== undefined && (
+              <Status $active={active}>
+                <ChangeValue change={change} /> ({startYear} - {endYear})
+              </Status>
+            )}
           </MainValue>
         </Body>
       </DashCard>
