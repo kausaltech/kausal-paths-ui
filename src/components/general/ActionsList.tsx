@@ -127,7 +127,7 @@ const ActionsList = ({
       const bVal = getValueForSorting(b, sortBy, yearRange);
       return sortAscending ? aVal - bVal : bVal - aVal;
     });
-  }, [actions, sortBy.key, sortAscending, yearRange]);
+  }, [actions, sortBy, sortAscending, yearRange]);
 
   const handleSortClick = (key: SortActionsConfig['key']) => {
     if (sortBy.key === key) {
@@ -214,13 +214,14 @@ const ActionsList = ({
 
                   {columns.map((col) => {
                     const val = col.getValue(action);
+                    const display = formatNumber(val);
                     const unit = col.getUnit(action);
                     const total = totals[col.key] || 0;
                     const percent = total ? (val / total) * 100 : 0;
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
                         <Typography variant="h5" component="span">
-                          {formatNumber(val)}
+                           {display}
                         </Typography>
                         {unit && (
                           <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
