@@ -586,30 +586,6 @@
       "count": 2,
       "message": "'parentNode.metric' is possibly 'null'."
     },
-    "67f7823cabf89d8a4e76f05b68646286abcafa22": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS2345",
-      "count": 2,
-      "message": "Argument of type 'OutcomeNodeFieldsFragment' is not assignable to parameter of type '{ metric: NodeMetric; }'."
-    },
-    "e143b5ce25276976fc028c45155665d95a5a0286": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS18048",
-      "count": 2,
-      "message": "'lastMeasuredYear' is possibly 'undefined'."
-    },
-    "57d9cce8605f12a7013b094147e52142a07de8f2": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'."
-    },
-    "c5084a2849b943df6d2656bc62a01aa4e415593c": {
-      "file": "src/components/general/OutcomeNodeContent.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ node: OutcomeNodeFieldsFragment; metric: { id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ ...; } & { ...; })[]; goals: ({ ...; } & { ...; })[]; unit: { ...; } & { ...; }; normalizedBy: ({ ...; } & { ...; }) | null; } & { ...; }; ... 5 mo...' is not assignable to type 'IntrinsicAttributes & DimensionalNodeVisualisationProps'."
-    },
     "791fd92d417103c3a38194c36470dcbc3acb2724": {
       "file": "src/components/general/OutcomeNodeDetails.tsx",
       "code": "TS2339",
@@ -693,24 +669,6 @@
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ title: string; chartLabel: string; color: string; value: number; targetValue: number | null; min: number; max: number; unit: string; description: string; }[] | undefined' is not assignable to type 'DashboardProgressItem[] | undefined'."
-    },
-    "1513ea577f1e140519298dffbc080c8bfb87a7b0": {
-      "file": "src/components/pages/OutcomePage.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'id' does not exist on type '{ __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })'."
-    },
-    "d68ac9a552f736d1abac2005ec53adb3edbc642e": {
-      "file": "src/components/pages/OutcomePage.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to parameter of type 'Map<string, OutcomeNodeFieldsFragment>'."
-    },
-    "63dc38231528da4a10c5573510c49a1dab0d4170": {
-      "file": "src/components/pages/OutcomePage.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'Map<any, { __typename: \"ActionNode\"; } | ({ id: string; name: string; color: string | null; order: number | null; shortName: string | null; shortDescription: string | null; targetYearGoal: number | null; ... 7 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; })>' is not assignable to type 'Map<string, OutcomeNodeFieldsFragment>'."
     },
     "0ffca2d6c30523720b83a07e15a250dc85c225df": {
       "file": "src/middleware/lru-cache.ts",

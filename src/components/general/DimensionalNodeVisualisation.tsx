@@ -65,6 +65,7 @@ const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) =>
 };
 
 type DimensionalNodeVisualisationProps = {
+  title: string;
   baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   startYear: number;
@@ -72,9 +73,11 @@ type DimensionalNodeVisualisationProps = {
   withControls?: boolean;
   withTools?: boolean;
   onClickMeasuredEmissions?: (year: number) => void;
+  forecastTitle?: string;
 };
 
 export default function DimensionalNodeVisualisation({
+  title,
   metric,
   startYear,
   withControls = true,
@@ -82,6 +85,7 @@ export default function DimensionalNodeVisualisation({
   endYear,
   baselineForecast,
   onClickMeasuredEmissions,
+  forecastTitle,
 }: DimensionalNodeVisualisationProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
@@ -91,7 +95,6 @@ export default function DimensionalNodeVisualisation({
 
   const scenarios = site?.scenarios ?? [];
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, scenarios);
-
   const metrics = useMemo(() => {
     const defaultMetric = new DimensionalMetric(metric);
 
@@ -363,8 +366,9 @@ export default function DimensionalNodeVisualisation({
     <>
       {controls}
 
-      <div className="mt-3">
+      <div>
         <NodeGraph
+          title={title}
           dataTable={datasetTable}
           goalTable={goalTable}
           baselineTable={baselineTable}
@@ -378,6 +382,7 @@ export default function DimensionalNodeVisualisation({
           baselineLabel={site?.baselineName}
           showTotalLine={hasNegativeValues}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
+          forecastTitle={forecastTitle}
         />
       </div>
 

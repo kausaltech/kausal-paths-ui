@@ -203,6 +203,7 @@ export default function NodePage() {
               {node.metricDim ? (
                 <ContentWrapper>
                   <DimensionalNodeVisualisation
+                    title={node.name}
                     key={node.id}
                     metric={node.metricDim}
                     startYear={yearRange[0]}
