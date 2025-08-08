@@ -19,29 +19,27 @@ type CardSetProps = {
 
 const CardSet = styled.div<CardSetProps>`
   position: relative;
-  padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
+  //padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
   background-color: transparent;
   //box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
-const SubNodes = styled.div`
-  padding: 0.5rem;
-`;
+const SubNodes = styled.div``;
 const CardDeck = styled.div`
-  position: absolute;
+  //position: absolute;
   display: flex;
+  gap: 0.75rem;
   overflow-x: auto;
   overflow-y: visible;
   width: calc(100% - 1rem);
-  bottom: -1rem;
-  height: 206px;
+  //bottom: -1rem;
+  //height: 206px;
   z-index: 1;
   scroll-behavior: smooth;
 `;
 
 const ContentArea = styled.div`
-  position: relative;
-  padding: 0.5rem;
+  margin-bottom: 2rem;
 `;
 
 const BarHeader = styled.h5`

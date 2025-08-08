@@ -16,12 +16,7 @@ import { getHelpText } from './progress-tracking/utils';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
-  margin: 0 0.25rem 0;
   cursor: pointer;
-
-  &:first-child {
-    margin-left: 0;
-  }
 `;
 
 const Header = styled.div`
@@ -94,7 +89,7 @@ const MainUnit = styled.span`
 // bottom: ${(props) => props.$size > 0 ? props.offset * 100 : 0}%;
 const ProportionBarBar = styled.div<{ $size: number; $color: string }>`
   position: absolute;
-  bottom: ${(props) => (props.$size > 0 ? '0' : 'auto')}%;
+  bottom: 0;
   //bottom: 0;
   top: ${(props) => (props.$size > 0 ? 'auto' : '0')}%;
   left: 0;
@@ -106,11 +101,11 @@ const ProportionBarBar = styled.div<{ $size: number; $color: string }>`
 const ProportionBarContainer = styled.div<{ $active: boolean }>`
   position: absolute;
   height: 170px;
-  bottom: ${(props) => (props.$active ? '36px' : '0')};
+  bottom: 0;
   left: 0;
   width: 12px;
   background-color: ${({ theme, $active }) =>
-    $active ? theme.graphColors.grey005 : theme.cardBackground.primary};
+    $active ? theme.graphColors.grey005 : theme.graphColors.grey030};
 `;
 
 const ProportionBar = ({

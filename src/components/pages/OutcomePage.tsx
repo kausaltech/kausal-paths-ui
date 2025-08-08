@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
+import { Box } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 
@@ -126,7 +127,7 @@ export default function OutcomePage(props: OutcomePageProps) {
       >
         {showSettingsPanel && <ScenarioPanel />}
         <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
-        <>
+        <Box mb={3}>
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
@@ -148,7 +149,7 @@ export default function OutcomePage(props: OutcomePageProps) {
               refetching={refetching}
             />
           ))}
-        </>
+        </Box>
       </PageHero>
     </>
   );
