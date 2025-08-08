@@ -101,5 +101,6 @@
   "outcome-tabs-label": "Attēlošanas opcijas",
   "tco2-e-inhabitant": "t CO<sub>2</sub>eq/iedzīvotājs/g",
   "ktco2-e": "kt CO<sub>2</sub>eq/g",
-  "outcomes": "Rezultāti"
+  "outcomes": "Rezultāti",
+  "impact-compared-to-baseline": "Kopējā ietekme {{impact}} {{unit}} salīdzinājumā ar ierasto attīstības scenāriju"
 }

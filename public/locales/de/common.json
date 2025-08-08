@@ -104,5 +104,6 @@
   "cost-efficiency": "Kosteneffizienz",
   "financial-impact": "Finanzielle Auswirkungen",
   "net-cost": "Nettokosten",
-  "reduction": "Reduzierung"
+  "reduction": "Reduzierung",
+  "impact-compared-to-baseline": "Gesamtauswirkung {{impact}} {{unit}} im Vergleich zum Referenzszenario"
 }
