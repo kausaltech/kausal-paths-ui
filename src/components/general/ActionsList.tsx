@@ -38,6 +38,14 @@ type ActionsListProps = {
   onToggleSortDirection?: () => void;
 };
 
+type ColumnDef = {
+  key: SortActionsConfig['key'];
+  label: string;
+  sortKey?: keyof ActionWithEfficiency;
+  getValue: (a: ActionWithEfficiency) => number;
+  getUnit: (a: ActionWithEfficiency) => string | undefined;
+};
+
 const getValueForSorting = (
   action: ActionWithEfficiency,
   sortBy: SortActionsConfig,
@@ -70,32 +78,47 @@ const ActionsList = ({
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
-  // Calculate each action's impacts for percentages
-  const impacts = useMemo(
-    () =>
-      actions.map((action) => {
-        const yearly = action.impactOnTargetYear;
-        const metric = action.impactMetric;
-        const cumulative = metric
-          ? summarizeYearlyValuesBetween(metric, yearRange[0], yearRange[1])
-          : 0;
-        return { id: action.id, yearly, cumulative };
-      }),
-    [actions, yearRange]
-  );
+  const columns: ColumnDef[] = useMemo(() => {
+    const base: ColumnDef[] = [
+      {
+        key: 'CUM_IMPACT',
+        label: `Total impact ${yearRange[0]}–${yearRange[1]}`,
+        getValue: (a) =>
+          a.impactMetric
+            ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
+            : 0,
+        getUnit: (a) => a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
+      },
+      {
+        key: 'IMPACT',
+        label: `Annual impact ${yearRange[1]}`,
+        sortKey: 'impactOnTargetYear',
+        getValue: (a) => a.impactOnTargetYear,
+        getUnit: (a) => a.impactMetric?.unit?.htmlShort,
+      },
+    ];
 
-  // Compute totals for percentages
-  const totals = useMemo(
-    () =>
-      impacts.reduce(
-        (acc, cur) => ({
-          totalYearly: acc.totalYearly + cur.yearly,
-          totalCumulative: acc.totalCumulative + cur.cumulative,
-        }),
-        { totalYearly: 0, totalCumulative: 0 }
-      ),
-    [impacts]
-  );
+    if (actions.some((a) => typeof a.cumulativeCost === 'number')) {
+      base.push({
+        key: 'CUM_COST',
+        label: 'Cost (cumulative)',
+        sortKey: 'cumulativeCost',
+        getValue: (a) => a.cumulativeCost ?? 0,
+        getUnit: (a) => a.cumulativeCostUnit,
+      });
+    }
+
+    if (actions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
+      base.push({
+        key: 'CUM_EFFICIENCY',
+        label: 'Efficiency',
+        sortKey: 'cumulativeEfficiency',
+        getValue: (a) => a.cumulativeEfficiency ?? 0,
+        getUnit: (a) => a.cumulativeEfficiencyUnit,
+      });
+    }
+    return base;
+  }, [actions, yearRange]);
 
   const sortedActions = useMemo(() => {
     return [...actions].sort((a, b) => {
@@ -114,158 +137,16 @@ const ActionsList = ({
     }
   };
 
-  const renderActionRow = (action: ActionWithEfficiency, rowIndex: number) => {
-    const isOpen = Boolean(openRows[action.id]);
-    const enabledParam = findActionEnabledParam(action.parameters);
-    const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
-
-    const imp = impacts.find((i) => i.id === action.id) || { yearly: 0, cumulative: 0 };
-    const { yearly, cumulative } = imp;
-
-    const percentYearly = totals.totalYearly ? (yearly / totals.totalYearly) * 100 : 0;
-    const percentTotal = totals.totalCumulative ? (cumulative / totals.totalCumulative) * 100 : 0;
-
-    const groupColor = action.group?.color;
-
-    return (
-      <React.Fragment key={action.id}>
-        <TableRow
-          sx={{
-            bgcolor: rowIndex % 2 === 1 ? theme.graphColors.grey010 : 'transparent',
-          }}
-        >
-          <TableCell
-            sx={{
-              pl: 1,
-              borderLeft: `6px solid ${groupColor ?? theme.graphColors.grey090}`,
-            }}
-          >
-            {action.group?.name}
-          </TableCell>
-          <TableCell>
-            <ActionLink action={action}>
-              <Typography
-                component="a"
-                variant="h6"
-                sx={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-              >
-                {action.name}
-              </Typography>
-            </ActionLink>
-          </TableCell>
-          <TableCell>
-            <Checkbox checked={isIncluded} disabled />
-          </TableCell>
-          <TableCell sx={{ pb: 1, pt: 1 }}>
-            <Typography variant="h5" component="span">
-              {formatNumber(cumulative)}
-            </Typography>
-            <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
-              {action.impactMetric?.unit?.htmlShort}
-            </Typography>
-            <Box
-              sx={{
-                position: 'relative',
-                height: 4,
-                width: '100%',
-                backgroundColor: theme.palette.grey[300],
-                mt: 0.5,
-              }}
-            >
-              <Box
-                sx={{
-                  width: `${percentTotal}%`,
-                  height: '100%',
-                  backgroundColor: theme.palette.success.main,
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                }}
-              />
-            </Box>
-          </TableCell>
-          <TableCell sx={{ pb: 1, pt: 1 }}>
-            <Typography variant="h5" component="span">
-              {formatNumber(yearly)}
-            </Typography>
-            <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
-              {action.impactMetric?.unit?.htmlShort}
-            </Typography>
-            <Box
-              sx={{
-                position: 'relative',
-                height: 4,
-                width: '100%',
-                backgroundColor: theme.palette.grey[300],
-                mt: 0.5,
-              }}
-            >
-              <Box
-                sx={{
-                  width: `${percentYearly}%`,
-                  height: '100%',
-                  backgroundColor: theme.palette.success.main,
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                }}
-              />
-            </Box>
-          </TableCell>
-          <TableCell>
-            <IconButton
-              size="small"
-              onClick={() =>
-                setOpenRows((prev) => ({
-                  ...prev,
-                  [action.id]: !prev[action.id],
-                }))
-              }
-            >
-              <ExpandMoreIcon
-                sx={{
-                  transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                }}
-              />
-            </IconButton>
-          </TableCell>
-        </TableRow>
-        <TableRow sx={{ mt: '-8px' }}>
-          <TableCell
-            colSpan={6}
-            sx={{
-              p: 0,
-              borderBottom: 'none',
-              borderLeft: `6px solid ${groupColor ?? theme.graphColors.grey090}`,
-            }}
-          >
-            <Collapse in={isOpen} timeout="auto" unmountOnExit>
-              <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="body2">
-                  {(action.goal || action.shortDescription)?.replace(/<[^>]+>/g, '')}
-                </Typography>
-                <ActionLink action={action}>
-                  <Typography
-                    component="a"
-                    variant="h6"
-                    sx={{
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      '&:hover': { textDecoration: 'underline' },
-                    }}
-                  >
-                    How is this calculated? &gt;
-                  </Typography>
-                </ActionLink>
-              </Box>
-            </Collapse>
-          </TableCell>
-        </TableRow>
-      </React.Fragment>
+  // Totals for percent bars
+  const totals = useMemo(() => {
+    return columns.reduce(
+      (acc, col) => {
+        acc[col.key] = actions.reduce((sum, a) => sum + col.getValue(a), 0);
+        return acc;
+      },
+      {} as Record<SortActionsConfig['key'], number>
     );
-  };
+  }, [actions, columns]);
 
   return (
     <TableContainer
@@ -278,20 +159,153 @@ const ActionsList = ({
             <TableCell>Type</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Included in scenario</TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={sortBy.key === 'CUM_IMPACT'}
-                direction={sortBy.key === 'CUM_IMPACT' ? (sortAscending ? 'asc' : 'desc') : 'asc'}
-                onClick={() => handleSortClick('CUM_IMPACT')}
-              >
-                Total impact {yearRange[0]}–{yearRange[1]}
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>Annual impact {yearRange[1]}</TableCell>
+
+            {columns.map((col) => (
+              <TableCell key={col.key}>
+                <TableSortLabel
+                  active={sortBy.key === col.key}
+                  direction={sortBy.key === col.key ? (sortAscending ? 'asc' : 'desc') : 'asc'}
+                  onClick={() => handleSortClick(col.key)}
+                >
+                  {col.label}
+                </TableSortLabel>
+              </TableCell>
+            ))}
+
             <TableCell />
           </TableRow>
         </TableHead>
-        <TableBody>{sortedActions.map((a, i) => renderActionRow(a, i))}</TableBody>
+
+        <TableBody>
+          {sortedActions.map((action, rowIndex) => {
+            const isOpen = Boolean(openRows[action.id]);
+            const enabledParam = findActionEnabledParam(action.parameters);
+            const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
+
+            return (
+              <React.Fragment key={action.id}>
+                <TableRow
+                  sx={{
+                    bgcolor: rowIndex % 2 === 1 ? theme.graphColors.grey010 : 'transparent',
+                  }}
+                >
+                  <TableCell
+                    sx={{
+                      pl: 1,
+                      borderLeft: `6px solid ${action.group?.color ?? theme.graphColors.grey090}`,
+                    }}
+                  >
+                    {action.group?.name}
+                  </TableCell>
+                  <TableCell>
+                    <ActionLink action={action}>
+                      <Typography
+                        component="a"
+                        variant="h6"
+                        sx={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                      >
+                        {action.name}
+                      </Typography>
+                    </ActionLink>
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox checked={isIncluded} disabled />
+                  </TableCell>
+
+                  {columns.map((col) => {
+                    const val = col.getValue(action);
+                    const unit = col.getUnit(action);
+                    const total = totals[col.key] || 0;
+                    const percent = total ? (val / total) * 100 : 0;
+                    return (
+                      <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
+                        <Typography variant="h5" component="span">
+                          {formatNumber(val)}
+                        </Typography>
+                        {unit && (
+                          <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
+                            {unit}
+                          </Typography>
+                        )}
+                        {(col.key === 'CUM_IMPACT' || col.key === 'IMPACT') && (
+                          <Box
+                            sx={{
+                              position: 'relative',
+                              height: 4,
+                              width: '100%',
+                              backgroundColor: theme.palette.grey[300],
+                              mt: 0.5,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: `${percent}%`,
+                                height: '100%',
+                                backgroundColor: theme.palette.success.main,
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
+                              }}
+                            />
+                          </Box>
+                        )}
+                      </TableCell>
+                    );
+                  })}
+
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setOpenRows((prev) => ({ ...prev, [action.id]: !prev[action.id] }))
+                      }
+                    >
+                      <ExpandMoreIcon
+                        sx={{
+                          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s',
+                        }}
+                      />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell
+                    colSpan={4 + columns.length}
+                    sx={{
+                      p: 0,
+                      borderBottom: 'none',
+                      borderLeft: `6px solid ${action.group?.color ?? theme.graphColors.grey090}`,
+                    }}
+                  >
+                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Typography variant="body2">
+                          {(action.goal || action.shortDescription)?.replace(/<[^>]+>/g, '')}
+                        </Typography>
+                        <ActionLink action={action}>
+                          <Typography
+                            component="a"
+                            variant="h6"
+                            sx={{
+                              color: 'primary.main',
+                              textDecoration: 'none',
+                              cursor: 'pointer',
+                              '&:hover': { textDecoration: 'underline' },
+                            }}
+                          >
+                            How is this calculated? &gt;
+                          </Typography>
+                        </ActionLink>
+                      </Box>
+                    </Collapse>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
+            );
+          })}
+        </TableBody>
       </Table>
     </TableContainer>
   );
