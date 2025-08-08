@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 
@@ -65,6 +65,7 @@ type OutcomePageProps = {
 
 export default function OutcomePage(props: OutcomePageProps) {
   const { page, refetch, activeScenario: queryActiveScenario, refetching } = props;
+  const theme = useTheme();
   const { t } = useTranslation();
   const instance = useInstance();
   const yearRange = useReactiveVar(yearRangeVar);
@@ -118,7 +119,7 @@ export default function OutcomePage(props: OutcomePageProps) {
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
 
   return (
-    <>
+    <Box sx={{ backgroundColor: theme.graphColors.grey040, paddingBottom: 2 }}>
       <PageHero
         title={getTitle(t, outcomeType)}
         leadTitle={pageLeadTitle ?? undefined}
@@ -126,8 +127,9 @@ export default function OutcomePage(props: OutcomePageProps) {
         overlap
       >
         {showSettingsPanel && <ScenarioPanel />}
-        <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
-        <Box mb={3}>
+
+        <Box my={3}>
+          <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
           {visibleNodes.map((node, index) => (
             <OutcomeCardSet
               key={node.id}
@@ -151,6 +153,6 @@ export default function OutcomePage(props: OutcomePageProps) {
           ))}
         </Box>
       </PageHero>
-    </>
+    </Box>
   );
 }
