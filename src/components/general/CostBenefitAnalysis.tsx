@@ -7,9 +7,10 @@ import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
+import { Chart } from '@common/components/Chart';
+
 import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { Chart } from '@/components/charts/Chart';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
 
