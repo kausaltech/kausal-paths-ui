@@ -149,6 +149,9 @@ const ActionsList = ({
     );
   }, [actions, columns]);
 
+  const COLSPAN = 4 + columns.length;
+  const ROW_GAP = 0.5;
+  
   return (
     <TableContainer
       id={id}
@@ -178,16 +181,25 @@ const ActionsList = ({
         </TableHead>
 
         <TableBody>
+          <TableRow aria-hidden>
+            <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>
+              <Box sx={{ height: theme.spacing(ROW_GAP) }} />
+            </TableCell>
+          </TableRow>
           {sortedActions.map((action, rowIndex) => {
             const isOpen = Boolean(openRows[action.id]);
             const enabledParam = findActionEnabledParam(action.parameters);
             const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
 
+            const rowBg = isOpen ? theme.palette.action.hover : 'transparent';
+
             return (
               <React.Fragment key={action.id}>
                 <TableRow
                   sx={{
-                    bgcolor: rowIndex % 2 === 1 ? theme.graphColors.grey010 : 'transparent',
+                    bgcolor: rowBg,
+                    '& > .MuiTableCell-root': { borderBottom: isOpen ? 'none' : undefined },
+
                   }}
                 >
                   <TableCell
@@ -274,11 +286,12 @@ const ActionsList = ({
 
                 <TableRow>
                   <TableCell
-                    colSpan={4 + columns.length}
+                    colSpan={COLSPAN}
                     sx={{
                       p: 0,
                       borderBottom: 'none',
                       borderLeft: `6px solid ${action.group?.color ?? theme.graphColors.grey090}`,
+                      bgcolor: rowBg,
                     }}
                   >
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
@@ -304,6 +317,13 @@ const ActionsList = ({
                     </Collapse>
                   </TableCell>
                 </TableRow>
+                {rowIndex < sortedActions.length - 1 && (
+                <TableRow aria-hidden>
+                  <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>
+                    <Box sx={{ height: theme.spacing(ROW_GAP) }} />
+                  </TableCell>
+                </TableRow>
+              )}
               </React.Fragment>
             );
           })}
