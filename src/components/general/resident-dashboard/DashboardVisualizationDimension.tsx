@@ -3,7 +3,7 @@ import React from 'react';
 import { useTheme } from '@emotion/react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
 
-import { Chart } from '../../charts/Chart';
+import { Chart } from '@common/components/Chart';
 
 type Data = {
   id: string;

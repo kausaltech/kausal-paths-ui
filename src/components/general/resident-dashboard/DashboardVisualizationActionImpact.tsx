@@ -5,9 +5,9 @@ import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/materia
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 
-import { useTranslation } from '@/common/i18n';
+import { Chart } from '@common/components/Chart';
 
-import { Chart } from '../../charts/Chart';
+import { useTranslation } from '@/common/i18n';
 
 type ActionGroup = {
   id: string;

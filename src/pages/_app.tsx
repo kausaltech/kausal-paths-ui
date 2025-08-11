@@ -19,6 +19,7 @@ import {
   printRuntimeConfig,
 } from '@common/env';
 import { getLogger } from '@common/logging/logger';
+import { CommonThemeProvider } from '@common/providers/CommonThemeProvider';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
 import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
@@ -242,10 +243,12 @@ function PathsApp(props: PathsAppProps) {
         <InstanceContext.Provider value={instanceContext}>
           <ApolloProvider client={apolloClient}>
             <ThemeProvider theme={muiTheme}>
-              <ThemedGlobalStyles />
-              <LocalizedNumbersContext.Provider value={numbersContext}>
-                <Layout>{component}</Layout>
-              </LocalizedNumbersContext.Provider>
+              <CommonThemeProvider theme={themeProps}>
+                <ThemedGlobalStyles />
+                <LocalizedNumbersContext.Provider value={numbersContext}>
+                  <Layout>{component}</Layout>
+                </LocalizedNumbersContext.Provider>
+              </CommonThemeProvider>
             </ThemeProvider>
           </ApolloProvider>
         </InstanceContext.Provider>

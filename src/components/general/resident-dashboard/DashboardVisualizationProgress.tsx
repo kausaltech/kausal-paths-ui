@@ -19,9 +19,9 @@ import { readableColor } from 'polished';
 import { Dash, Plus } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
 
-import type { UnitFieldsFragment } from '@/common/__generated__/graphql';
+import { Chart } from '@common/components/Chart';
 
-import { Chart } from '../../charts/Chart';
+import type { UnitFieldsFragment } from '@/common/__generated__/graphql';
 
 export type DashboardProgressItem = {
   title: string;
