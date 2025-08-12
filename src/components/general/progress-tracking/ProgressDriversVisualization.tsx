@@ -7,9 +7,10 @@ import type { Theme } from '@kausal/themes/types';
 import type { EChartsCoreOption } from 'echarts';
 import { useTranslation } from 'next-i18next';
 
+import { Chart } from '@common/components/Chart';
+
 import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
-import { Chart } from '@/components/charts/Chart';
 import { useSiteWithSetter } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';

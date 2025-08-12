@@ -113,6 +113,7 @@
   "thumbSliderLabel": "Juster",
   "reset-button": "Nulstil",
   "outcomes": "Resultater",
+  "impact-compared-to-baseline": "Samlet påvirkning {{impact}} {{unit}} sammenlignet med business-as-usual scenarie",
   "above-target": "over målet",
   "below-target": "under målet"
 }

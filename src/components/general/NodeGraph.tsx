@@ -11,8 +11,9 @@ import type {
 import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 
+import { Chart } from '@common/components/Chart';
+
 import { beautifyValue } from '@/common/preprocess';
-import { Chart } from '@/components/charts/Chart';
 
 /**
  * Receives filtered node data as tables and plots them in a chart.

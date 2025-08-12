@@ -153,14 +153,14 @@ export type AllMetricFieldsFragment = (
   & { __typename: 'ForecastMetricType' }
 );
 
-type StreamFieldFragment_2m1XrLdHtcnFwYiEmWiF8KhHi8avcR6fifz3urm8_Fragment = (
+type StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment = (
   { id: string | null, blockType: string, field: string }
-  & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' }
+  & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
 );
 
-type StreamFieldFragment_MUuwV54Y89O0mQBjkeqgeZHwZkJ0na4UyckrUfxlWpY_Fragment = (
+type StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment = (
   { id: string | null, blockType: string, field: string }
-  & { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+  & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
 );
 
 type StreamFieldFragment_CardListBlock_Fragment = (
@@ -181,7 +181,7 @@ type StreamFieldFragment_TextBlock_Fragment = (
   & { __typename: 'TextBlock' }
 );
 
-export type StreamFieldFragmentFragment = StreamFieldFragment_2m1XrLdHtcnFwYiEmWiF8KhHi8avcR6fifz3urm8_Fragment | StreamFieldFragment_MUuwV54Y89O0mQBjkeqgeZHwZkJ0na4UyckrUfxlWpY_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
+export type StreamFieldFragmentFragment = StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment | StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
 
 type ActionParameter_BoolParameterType_Fragment = (
   { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
@@ -242,6 +242,19 @@ export type SetGlobalParameterFromActionSummaryMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type SetNormalizationFromWidgetMutationVariables = Exact<{
+  id: InputMaybe<Scalars['ID']['input']>;
+}>;
+
+
+export type SetNormalizationFromWidgetMutation = (
+  { setNormalizer: (
+    { ok: boolean }
+    & { __typename: 'SetNormalizerMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type SetGlobalParameterMutationVariables = Exact<{
   parameterId: Scalars['ID']['input'];
   boolValue: InputMaybe<Scalars['Boolean']['input']>;
@@ -297,19 +310,6 @@ export type GetInstanceGoalOutcomeQuery = (
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
-);
-
-export type SetNormalizationFromWidgetMutationVariables = Exact<{
-  id: InputMaybe<Scalars['ID']['input']>;
-}>;
-
-
-export type SetNormalizationFromWidgetMutation = (
-  { setNormalizer: (
-    { ok: boolean }
-    & { __typename: 'SetNormalizerMutation' }
-  ) }
-  & { __typename: 'Mutation' }
 );
 
 export type SetParameterMutationVariables = Exact<{
@@ -1193,10 +1193,10 @@ export type GetActionContentQuery = (
       & { __typename: 'Node' }
     )>, body: Array<(
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
     ) | (
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
         { title: string | null, shortDescription: string | null }
@@ -1330,7 +1330,7 @@ export type GetActionImpactsQuery = (
       & { __typename: 'ForecastMetricType' }
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
-  ) | null, effectNode: (
+  ) | null, costNode: (
     { metric: (
       { id: string | null, unit: (
         { short: string }
@@ -1434,16 +1434,16 @@ export type GetActionListQuery = (
     ), costUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ), effectUnit: (
+    ) | null, effectUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ), costNode?: (
+    ) | null, costNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
-    ), effectNode: (
+    ) | null, effectNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
@@ -1459,10 +1459,10 @@ export type GetActionListQuery = (
       ), costValues: Array<(
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
-      ) | null>, impactValues: Array<(
+      ) | null> | null, impactValues: Array<(
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
-      ) | null> }
+      ) | null> | null }
       & { __typename: 'ActionImpact' }
     )> }
     & { __typename: 'ImpactOverviewType' }
@@ -1481,13 +1481,13 @@ export type GetImpactOverviewsQuery = (
     ), effectUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
-    ), indicatorUnit: (
+    ) | null, indicatorUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
-    ), actions: Array<(
+    ) | null, actions: Array<(
       { unitAdjustmentMultiplier: number | null, action: (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
@@ -1521,7 +1521,7 @@ export type GetImpactOverviewsQuery = (
           & { __typename: 'MetricDimensionType' }
         )> }
         & { __typename: 'DimensionalMetricType' }
-      ) }
+      ) | null }
       & { __typename: 'ActionImpact' }
     )> }
     & { __typename: 'ImpactOverviewType' }
@@ -1606,6 +1606,130 @@ export type GetNodeVisualizationsQuery = (
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
   & { __typename: 'Query' }
+);
+
+export type UnitFieldsFragment = (
+  { short: string, htmlShort: string, htmlLong: string }
+  & { __typename: 'UnitType' }
+);
+
+export type ScenarioActionImpactsFieldsFragment = (
+  { scenario: (
+    { id: string }
+    & { __typename: 'ScenarioType' }
+  ), impacts: Array<(
+    { value: number, year: number, action: (
+      { id: string, name: string, shortName: string | null, color: string | null, group: (
+        { id: string, name: string, color: string | null }
+        & { __typename: 'ActionGroupType' }
+      ) | null }
+      & { __typename: 'ActionNode' }
+    ) }
+    & { __typename: 'ActionImpactType' }
+  )> }
+  & { __typename: 'ScenarioActionImpacts' }
+);
+
+export type DashboardCardVisualizationsFragment = (
+  { visualizations: Array<(
+    { title: string, scenarioId: string, id: string | null }
+    & { __typename: 'ActionImpactBlock' }
+  ) | (
+    { id: string | null }
+    & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' }
+  ) | (
+    { id: string | null }
+    & { __typename: 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+  ) | (
+    { title: string, dimensionId: string, id: string | null }
+    & { __typename: 'CategoryBreakdownBlock' }
+  ) | (
+    { title: string, description: string, chartLabel: string, color: string, id: string | null }
+    & { __typename: 'CurrentProgressBarBlock' | 'GoalProgressBarBlock' | 'ReferenceProgressBarBlock' }
+  ) | (
+    { title: string, description: string, chartLabel: string, color: string, scenarioId: string, id: string | null }
+    & { __typename: 'ScenarioProgressBarBlock' }
+  ) | null> | null }
+  & { __typename: 'DashboardCardBlock' }
+);
+
+export type MetricDimensionCategoryValueFieldsFragment = (
+  { value: number | null, year: number, dimension: (
+    { kind: DimensionKind, label: string, id: string, originalId: string | null }
+    & { __typename: 'MetricDimensionType' }
+  ), category: (
+    { id: string, originalId: string | null, label: string, color: string | null }
+    & { __typename: 'MetricDimensionCategoryType' }
+  ) }
+  & { __typename: 'MetricDimensionCategoryValue' }
+);
+
+export type DashboardPageFieldsFragment = (
+  { backgroundColor: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
+    { title: string, description: string, goalValue: number | null, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
+      { url: string }
+      & { __typename: 'ImageObjectType' }
+    ) | null, node: (
+      { id: string, name: string }
+      & { __typename: 'Node' }
+    ), unit: (
+      { short: string, htmlShort: string, htmlLong: string }
+      & { __typename: 'UnitType' }
+    ), scenarioValues: Array<(
+      { value: number | null, year: number, scenario: (
+        { id: string, name: string }
+        & { __typename: 'ScenarioType' }
+      ) }
+      & { __typename: 'ScenarioValue' }
+    ) | null> | null, metricDimensionCategoryValues: Array<(
+      { value: number | null, year: number, dimension: (
+        { kind: DimensionKind, label: string, id: string, originalId: string | null }
+        & { __typename: 'MetricDimensionType' }
+      ), category: (
+        { id: string, originalId: string | null, label: string, color: string | null }
+        & { __typename: 'MetricDimensionCategoryType' }
+      ) }
+      & { __typename: 'MetricDimensionCategoryValue' }
+    ) | null> | null, scenarioActionImpacts: Array<(
+      { scenario: (
+        { id: string }
+        & { __typename: 'ScenarioType' }
+      ), impacts: Array<(
+        { value: number, year: number, action: (
+          { id: string, name: string, shortName: string | null, color: string | null, group: (
+            { id: string, name: string, color: string | null }
+            & { __typename: 'ActionGroupType' }
+          ) | null }
+          & { __typename: 'ActionNode' }
+        ) }
+        & { __typename: 'ActionImpactType' }
+      )> }
+      & { __typename: 'ScenarioActionImpacts' }
+    ) | null> | null, callToAction: (
+      { title: string, content: string, linkUrl: string }
+      & { __typename: 'CallToActionBlock' }
+    ), visualizations: Array<(
+      { title: string, scenarioId: string, id: string | null }
+      & { __typename: 'ActionImpactBlock' }
+    ) | (
+      { id: string | null }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' }
+    ) | (
+      { id: string | null }
+      & { __typename: 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+    ) | (
+      { title: string, dimensionId: string, id: string | null }
+      & { __typename: 'CategoryBreakdownBlock' }
+    ) | (
+      { title: string, description: string, chartLabel: string, color: string, id: string | null }
+      & { __typename: 'CurrentProgressBarBlock' | 'GoalProgressBarBlock' | 'ReferenceProgressBarBlock' }
+    ) | (
+      { title: string, description: string, chartLabel: string, color: string, scenarioId: string, id: string | null }
+      & { __typename: 'ScenarioProgressBarBlock' }
+    ) | null> | null }
+    & { __typename: 'DashboardCardBlock' }
+  ) | null> | null }
+  & { __typename: 'DashboardPage' }
 );
 
 export type OutcomeNodeFieldsFragment = (
@@ -1696,6 +1820,72 @@ export type GetPageQuery = (
   ), page: (
     { showOnlyMunicipalActions: boolean | null, defaultSortOrder: ActionSortOrder, id: string | null, title: string, actionListLeadTitle: string | null, actionListLeadParagraph: string | null }
     & { __typename: 'ActionListPage' }
+  ) | (
+    { id: string | null, title: string, backgroundColor: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
+      { title: string, description: string, goalValue: number | null, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
+        { url: string }
+        & { __typename: 'ImageObjectType' }
+      ) | null, node: (
+        { id: string, name: string }
+        & { __typename: 'Node' }
+      ), unit: (
+        { short: string, htmlShort: string, htmlLong: string }
+        & { __typename: 'UnitType' }
+      ), scenarioValues: Array<(
+        { value: number | null, year: number, scenario: (
+          { id: string, name: string }
+          & { __typename: 'ScenarioType' }
+        ) }
+        & { __typename: 'ScenarioValue' }
+      ) | null> | null, metricDimensionCategoryValues: Array<(
+        { value: number | null, year: number, dimension: (
+          { kind: DimensionKind, label: string, id: string, originalId: string | null }
+          & { __typename: 'MetricDimensionType' }
+        ), category: (
+          { id: string, originalId: string | null, label: string, color: string | null }
+          & { __typename: 'MetricDimensionCategoryType' }
+        ) }
+        & { __typename: 'MetricDimensionCategoryValue' }
+      ) | null> | null, scenarioActionImpacts: Array<(
+        { scenario: (
+          { id: string }
+          & { __typename: 'ScenarioType' }
+        ), impacts: Array<(
+          { value: number, year: number, action: (
+            { id: string, name: string, shortName: string | null, color: string | null, group: (
+              { id: string, name: string, color: string | null }
+              & { __typename: 'ActionGroupType' }
+            ) | null }
+            & { __typename: 'ActionNode' }
+          ) }
+          & { __typename: 'ActionImpactType' }
+        )> }
+        & { __typename: 'ScenarioActionImpacts' }
+      ) | null> | null, callToAction: (
+        { title: string, content: string, linkUrl: string }
+        & { __typename: 'CallToActionBlock' }
+      ), visualizations: Array<(
+        { title: string, scenarioId: string, id: string | null }
+        & { __typename: 'ActionImpactBlock' }
+      ) | (
+        { id: string | null }
+        & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' }
+      ) | (
+        { id: string | null }
+        & { __typename: 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+      ) | (
+        { title: string, dimensionId: string, id: string | null }
+        & { __typename: 'CategoryBreakdownBlock' }
+      ) | (
+        { title: string, description: string, chartLabel: string, color: string, id: string | null }
+        & { __typename: 'CurrentProgressBarBlock' | 'GoalProgressBarBlock' | 'ReferenceProgressBarBlock' }
+      ) | (
+        { title: string, description: string, chartLabel: string, color: string, scenarioId: string, id: string | null }
+        & { __typename: 'ScenarioProgressBarBlock' }
+      ) | null> | null }
+      & { __typename: 'DashboardCardBlock' }
+    ) | null> | null }
+    & { __typename: 'DashboardPage' }
   ) | (
     { id: string | null, title: string }
     & { __typename: 'InstanceRootPage' | 'Page' }
@@ -1849,10 +2039,10 @@ export type GetPageQuery = (
   ) | (
     { id: string | null, title: string, body: Array<(
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
     ) | (
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
         { title: string | null, shortDescription: string | null }
@@ -1933,7 +2123,7 @@ export type GetInstanceContextQuery = (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
       { hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null, showRefreshPrompt: boolean }
       & { __typename: 'InstanceFeaturesType' }
-    ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' } | { __typename: 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
+    ), introContent: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' } | { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
       { field: string, value: string }
       & { __typename: 'RichTextBlock' }
     )> | null, goals: Array<(
@@ -1959,9 +2149,9 @@ export type GetInstanceContextQuery = (
   )>, menuPages: Array<(
     { id: string | null, title: string, urlPath: string, parent: (
       { id: string | null }
-      & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+      & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
     ) | null }
-    & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+    & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
   )>, parameters: Array<(
     { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }

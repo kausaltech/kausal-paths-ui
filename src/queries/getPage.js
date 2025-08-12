@@ -4,6 +4,144 @@ import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
 
+const UNIT_FRAGMENT = gql`
+  fragment UnitFields on UnitType {
+    short
+    htmlShort
+    htmlLong
+  }
+`;
+
+const DASHBOARD_PAGE_FRAGMENT = gql`
+  fragment ScenarioActionImpactsFields on ScenarioActionImpacts {
+    scenario {
+      id
+    }
+    impacts {
+      action {
+        id
+        name
+        shortName
+        color
+        group {
+          id
+          name
+          color
+        }
+      }
+      value
+      year
+    }
+  }
+
+  fragment DashboardCardVisualizations on DashboardCardBlock {
+    visualizations {
+      __typename
+      id
+      ... on GoalProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on CurrentProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on ReferenceProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+      }
+      ... on ScenarioProgressBarBlock {
+        title
+        description
+        chartLabel
+        color
+        scenarioId
+      }
+      ... on CategoryBreakdownBlock {
+        title
+        dimensionId
+      }
+      ... on ActionImpactBlock {
+        title
+        scenarioId
+      }
+    }
+  }
+
+  fragment MetricDimensionCategoryValueFields on MetricDimensionCategoryValue {
+    dimension {
+      kind
+      label
+      id
+      originalId
+    }
+    category {
+      id
+      originalId
+      label
+      color
+    }
+    value
+    year
+  }
+
+  fragment DashboardPageFields on DashboardPage {
+    backgroundColor
+    dashboardCards {
+      ... on DashboardCardBlock {
+        title
+        description
+        image {
+          url
+        }
+        node {
+          id
+          name
+        }
+        unit {
+          ...UnitFields
+        }
+        goalValue
+        referenceYearValue
+        lastHistoricalYearValue
+        scenarioValues {
+          scenario {
+            id
+            name
+          }
+          value
+          year
+        }
+        metricDimensionCategoryValues {
+          ...MetricDimensionCategoryValueFields
+        }
+
+        scenarioActionImpacts {
+          ...ScenarioActionImpactsFields
+        }
+
+        ...DashboardCardVisualizations
+
+        callToAction {
+          ... on CallToActionBlock {
+            title
+            content
+            linkUrl
+          }
+        }
+      }
+    }
+  }
+
+  ${UNIT_FRAGMENT}
+`;
+
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on Node {
     id
@@ -16,9 +154,7 @@ const OUTCOME_NODE_FIELDS = gql`
       id
       name
       unit {
-        short
-        htmlShort
-        htmlLong
+        ...UnitFields
       }
       forecastValues {
         year
@@ -39,9 +175,7 @@ const OUTCOME_NODE_FIELDS = gql`
       value
     }
     unit {
-      short
-      htmlShort
-      htmlLong
+      ...UnitFields
     }
     quantity
     shortDescription
@@ -80,9 +214,11 @@ const OUTCOME_NODE_FIELDS = gql`
     ...DimensionalNodeMetric
   }
   ${dimensionalNodePlotFragment}
+  ${UNIT_FRAGMENT}
 `;
 
 const GET_PAGE = gql`
+  ${DASHBOARD_PAGE_FRAGMENT}
   ${OUTCOME_NODE_FIELDS}
   query GetPage($path: String!, $goal: ID, $scenarios: [String!]) {
     activeScenario {
@@ -92,6 +228,9 @@ const GET_PAGE = gql`
       id
       __typename
       title
+      ... on DashboardPage {
+        ...DashboardPageFields
+      }
       ... on OutcomePage {
         leadTitle
         leadParagraph
