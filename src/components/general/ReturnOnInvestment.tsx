@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 
+import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
 import round from 'lodash/round';
 import { useTranslation } from 'react-i18next';
 
+import { Chart } from '@common/components/Chart';
+
 import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { Chart } from '@/components/charts/Chart';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-import { useReactiveVar } from '@apollo/client';
 
 const formatValue = (value: number, unit: string) => `${round(value, 2)} ${unit}`;
 

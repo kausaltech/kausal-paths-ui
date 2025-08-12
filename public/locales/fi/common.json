@@ -105,5 +105,6 @@
   "thumbSliderLabel": "Säädä",
   "reset-button": "Nollaa",
   "plot-choose-dimension": "Valitse dimensio",
-  "outcomes": "Lopputulemat"
+  "outcomes": "Lopputulemat",
+  "impact-compared-to-baseline": "Kokonaisvaikutus {{impact}} {{unit}} verrattuna jatkuvuusskenaarioon"
 }

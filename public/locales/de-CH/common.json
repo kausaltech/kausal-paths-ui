@@ -19,5 +19,6 @@
   "tco2-e-inhabitant": "t CO<sub>2</sub>-Äquivalente/Einw./a",
   "ktco2-e": "kt CO<sub>2</sub>-Äquivalente/a",
   "net-cost": "Nettokosten",
-  "outcomes": "Ergebnisse"
+  "outcomes": "Ergebnisse",
+  "impact-compared-to-baseline": "Gesamtauswirkung {{impact}} {{unit}} im Vergleich zum Referenzszenario"
 }

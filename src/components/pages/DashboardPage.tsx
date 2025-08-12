@@ -1,24 +1,19 @@
 import { useTheme } from '@emotion/react';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  Container,
-  Link as MuiLink,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Container, Stack, Typography } from '@mui/material';
 import { readableColor } from 'polished';
-import { ArrowRight } from 'react-bootstrap-icons';
 
-import type {
-  DashboardCardVisualizationsFragment,
-  GetPageQuery,
+import {
+  type DashboardCardVisualizationsFragment,
+  type MetricDimensionCategoryValueFieldsFragment as DimensionCategory,
+  DimensionKind,
+  type GetPageQuery,
+  type ScenarioActionImpactsFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { Link } from '@/common/links';
 
+import CallToActionCard from '../common/CallToActionCard';
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
+import DashboardVisualizationActionImpact from '../general/resident-dashboard/DashboardVisualizationActionImpact';
+import DashboardVisualizationDimension from '../general/resident-dashboard/DashboardVisualizationDimension';
 import DashboardVisualizationProgress from '../general/resident-dashboard/DashboardVisualizationProgress';
 
 const PROGRESS_BAR_TYPES = [
@@ -51,6 +46,14 @@ type DashboardVisualizationProps = {
     htmlShort: string;
     htmlLong: string;
   };
+  metricDimensionCategoryValues: (DimensionCategory | null)[];
+  scenarioActionImpacts: (ScenarioActionImpactsFieldsFragment | null)[];
+};
+
+type Visualization = NonNullable<DashboardCardVisualizations[0]>;
+
+type CategoryBreakdownVisualization = Visualization & {
+  __typename: 'CategoryBreakdownBlock';
 };
 
 const isProgressBar = (
@@ -101,6 +104,14 @@ function roundValue(value: number | null | undefined) {
   return value ? Math.round(value) : null;
 }
 
+const filterBySelectedDimension =
+  (visualization: CategoryBreakdownVisualization) =>
+  (value: DimensionCategory | null): value is DimensionCategory & { value: number } =>
+    // If the dimensionId is empty, we default to the node dimension
+    visualization.dimensionId === ''
+      ? value?.dimension.kind === DimensionKind.Node && value.value !== null
+      : value?.dimension.originalId === visualization.dimensionId && value.value !== null;
+
 function DashboardVisualization({
   visualizations,
   referenceYearValue,
@@ -108,6 +119,8 @@ function DashboardVisualization({
   goalValue,
   scenarioValues,
   unit,
+  metricDimensionCategoryValues,
+  scenarioActionImpacts,
 }: DashboardVisualizationProps) {
   const values = {
     referenceYearValue: roundValue(referenceYearValue),
@@ -118,53 +131,101 @@ function DashboardVisualization({
     lastHistoricalYearValue: roundValue(lastHistoricalYearValue),
   };
 
-  if (visualizations.some(isProgressBar)) {
-    const maxValue = Math.max(
-      values.referenceYearValue ?? 0,
-      values.goalValue ?? 0,
-      values.lastHistoricalYearValue ?? 0,
-      ...(scenarioValues?.map((scenario) => scenario?.value ?? 0) ?? [])
-    );
+  // Separate the progress visualizations so they're rendered together in a single accordion
+  const progressVisualizations = visualizations.filter((viz): viz is ProgressBarVisualization =>
+    isProgressBar(viz)
+  );
+  const hasProgressVisualizations = progressVisualizations.length > 0;
+  const hasNonProgressVisualizations = progressVisualizations.length !== visualizations.length;
+  const maxValue = Math.max(
+    values.referenceYearValue ?? 0,
+    values.goalValue ?? 0,
+    values.lastHistoricalYearValue ?? 0,
+    ...(scenarioValues?.map((scenario) => scenario?.value ?? 0) ?? [])
+  );
 
-    return (
-      <DashboardVisualizationProgress
-        items={visualizations
-          .filter((viz): viz is ProgressBarVisualization => isProgressBar(viz))
-          .map((viz) => ({
-            title: viz.title,
-            chartLabel: viz.chartLabel,
-            color: viz.color ?? undefined,
-            value: getBarValue(viz, values) ?? undefined,
-            goalValue: getBarGoalValue(viz, values),
-            max: maxValue,
-            unit: unit ?? undefined,
-            description: viz.description ?? undefined,
-          }))}
-      />
-    );
+  const progressVisualization = hasProgressVisualizations ? (
+    <DashboardVisualizationProgress
+      items={progressVisualizations.map((viz) => ({
+        title: viz.title,
+        chartLabel: viz.chartLabel,
+        color: viz.color ?? undefined,
+        value: getBarValue(viz, values) ?? undefined,
+        goalValue: getBarGoalValue(viz, values),
+        max: maxValue,
+        unit: unit ?? undefined,
+        description: viz.description ?? undefined,
+      }))}
+    />
+  ) : null;
+
+  if (hasProgressVisualizations && !hasNonProgressVisualizations) {
+    return progressVisualization;
   }
 
-  return visualizations.map((visualization) => {
-    // if (visualization.visualizationType === 'emission_sources') {
-    //   return <DashboardVisualizationEmissionSources progressBars={visualization.progressBars} />;
-    // }
+  const nonProgressVisualizations = visualizations.filter((viz) => !isProgressBar(viz));
 
-    // if (visualization.visualizationType === 'action_impact') {
-    //   return <DashboardVisualizationActionImpact progressBars={visualization.progressBars} />;
-    // }
+  return (
+    <>
+      {progressVisualization}
+      {nonProgressVisualizations.map((visualization) => {
+        if (visualization?.__typename === 'CategoryBreakdownBlock') {
+          return (
+            <DashboardVisualizationDimension
+              key={visualization.id}
+              chartLabel={visualization.title}
+              unit={unit?.short}
+              data={metricDimensionCategoryValues
+                .filter(filterBySelectedDimension(visualization))
+                .map((value) => ({
+                  id: value.category.id,
+                  name: value.category.label,
+                  color: value.category.color ?? undefined,
+                  value: value.value,
+                  year: value.year,
+                }))}
+            />
+          );
+        }
 
-    console.warn(`Unknown dashboard card visualization type: ${visualization?.__typename}`);
+        if (visualization?.__typename === 'ActionImpactBlock') {
+          return (
+            <DashboardVisualizationActionImpact
+              key={visualization.id}
+              unit={unit?.short}
+              chartLabel={visualization.title}
+              actions={
+                scenarioActionImpacts
+                  .filter((impact) => impact?.scenario.id === visualization.scenarioId)
+                  .flatMap(
+                    (impact) =>
+                      impact?.impacts.map((impact) => ({
+                        id: impact.action.id,
+                        name: impact.action.shortName ?? impact.action.name,
+                        value: impact.value,
+                        color: impact.action.color ?? undefined,
+                        group: impact.action.group ?? undefined,
+                        year: impact.year,
+                      })) ?? []
+                  ) ?? []
+              }
+            />
+          );
+        }
 
-    return null;
-  });
+        console.warn(`Unknown dashboard card visualization type: ${visualization?.__typename}`);
+
+        return null;
+      })}
+    </>
+  );
 }
 
 type Props = {
   page: GetPageQuery['page'];
-  isLoading: boolean;
 };
 
-function DashboardPage({ page, isLoading }: Props) {
+function DashboardPage({ page }: Props) {
   const theme = useTheme();
 
   if (page?.__typename !== 'DashboardPage') {
@@ -215,32 +276,17 @@ function DashboardPage({ page, isLoading }: Props) {
                         scenarioValues={card.scenarioValues ?? undefined}
                         visualizations={card.visualizations}
                         unit={card.unit}
+                        metricDimensionCategoryValues={card.metricDimensionCategoryValues ?? []}
+                        scenarioActionImpacts={card.scenarioActionImpacts ?? []}
                       />
                     )}
 
                     {!!card.callToAction && (
-                      <MuiLink component={Link} href={card.callToAction.linkUrl}>
-                        <Card
-                          sx={{
-                            backgroundColor: 'primary.main',
-                            color: 'primary.contrastText',
-                            transition: 'background-color 0.1s ease',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: 'primary.dark',
-                            },
-                          }}
-                        >
-                          <CardContent>
-                            <Typography variant="h3" gutterBottom sx={{ color: 'inherit' }}>
-                              {card.callToAction.title}
-                            </Typography>
-                            <Typography>
-                              {card.callToAction.content} <ArrowRight size={16} />
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </MuiLink>
+                      <CallToActionCard
+                        title={card.callToAction.title}
+                        content={card.callToAction.content}
+                        linkUrl={card.callToAction.linkUrl}
+                      />
                     )}
                   </CardContent>
                 </Card>

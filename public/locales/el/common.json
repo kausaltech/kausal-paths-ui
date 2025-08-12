@@ -127,5 +127,6 @@
   "observed-emissions": "Παρατηρούμενες εκπομπές",
   "emission-drivers": "Οδηγοί εκπομπών",
   "emissions-by-sector": "Εκπομπές ανά τομέα ({{year}})",
-  "outcomes": "Αποτελέσματα"
+  "outcomes": "Αποτελέσματα",
+  "impact-compared-to-baseline": "Συνολική επίπτωση {{impact}} {{unit}} σε σύγκριση με το σενάριο συνήθους πορείας"
 }
