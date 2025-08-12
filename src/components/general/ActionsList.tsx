@@ -155,10 +155,10 @@ const ActionsList = ({
   return (
     <TableContainer
       id={id}
-      sx={{ borderRadius: 1, overflow: 'hidden', boxShadow: theme.shadows[1] }}
+      sx={{ borderRadius: 1, overflow: 'hidden' }}
     >
       <Table sx={{ borderCollapse: 'collapse' }}>
-        <TableHead>
+        <TableHead >
           <TableRow sx={{ backgroundColor: theme.graphColors.blue010 }}>
             <TableCell>{t('actions-group-type')}</TableCell>
             <TableCell>{t('action-name')}</TableCell>
