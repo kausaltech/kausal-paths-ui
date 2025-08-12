@@ -27,12 +27,12 @@ import ActionsList from '@/components/general/ActionsList';
 import ActionsMac from '@/components/general/ActionsMac';
 import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
 import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
-import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
 import { SimpleEffect } from '../general/SimpleEffect';
+import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
 
 const SettingsForm = styled.form`
@@ -338,6 +338,7 @@ function ActionListPage({ page }: ActionListPageProps) {
         leadTitle={page.actionListLeadTitle ?? undefined}
         leadDescription={page.actionListLeadParagraph ?? undefined}
       >
+        <ScenarioPanel />
         <SettingsForm className="text-light mt-4">
           <Row>
             {hasEfficiency && (
@@ -499,11 +500,19 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionsList
                 id="list-view"
                 actions={usableActions}
+                actionGroups={actionGroups}
                 displayType="displayTypeYearly"
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
                 refetching={areActionsLoading}
+                onChangeSort={(key) => {
+                  handleChangeSort(key);
+                  setAscending(true);
+                }}
+                onToggleSortDirection={() => {
+                  setAscending((prev) => !prev);
+                }}
               />
             )}
             {listType === 'mac' && (
@@ -541,7 +550,6 @@ function ActionListPage({ page }: ActionListPageProps) {
           </Col>
         </Row>
       </Container>
-      <SettingsPanelFull />
     </>
   );
 }
