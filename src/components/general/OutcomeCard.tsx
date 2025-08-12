@@ -100,7 +100,7 @@ const ProportionBarBar = styled.div<{ $size: number; $color: string }>`
 
 const ProportionBarContainer = styled.div<{ $active: boolean }>`
   position: absolute;
-  height: 170px;
+  height: 100%;
   bottom: 0;
   left: 0;
   width: 12px;

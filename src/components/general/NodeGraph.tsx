@@ -621,7 +621,7 @@ function buildTooltipContent(
   // Add special series data
   if (specialSeries.length > 0) {
     tooltip += `<div style="border-top: 1px solid #ccc; margin: 8px 0 4px 0;"></div>`;
-    specialSeries.forEach((param) => {
+    specialSeries.reverse().forEach((param) => {
       tooltip += buildTooltipRow(
         param,
         unit,

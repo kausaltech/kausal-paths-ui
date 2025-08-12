@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 
-//import useScrollTo from 'react-spring-scroll-to-hook';
 import styled from '@emotion/styled';
-
-//import { animated, config, useSpring } from '@react-spring/web';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { setUniqueColors } from '@/common/colors';
@@ -19,23 +18,24 @@ type CardSetProps = {
 
 const CardSet = styled.div<CardSetProps>`
   position: relative;
-  //padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
   background-color: transparent;
-  //box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+
+  .os-top-scrollbar {
+    // Move the horizontal scrollbar to the top
+    .os-scrollbar-horizontal {
+      top: 0;
+      bottom: auto;
+    }
+  }
 `;
 
 const SubNodes = styled.div``;
 const CardDeck = styled.div`
-  //position: absolute;
   display: flex;
   gap: 0.75rem;
-  overflow-x: auto;
-  overflow-y: visible;
-  width: calc(100% - 1rem);
-  //bottom: -1rem;
-  //height: 206px;
-  z-index: 1;
-  scroll-behavior: smooth;
+  // Make space for the horizontal scrollbar
+  // TODO: Only apply when os-scrollbar-horizontal is visible
+  padding-top: 0.75rem;
 `;
 
 const ContentArea = styled.div`
@@ -45,6 +45,7 @@ const ContentArea = styled.div`
 const BarHeader = styled.h5`
   font-size: 1rem;
   color: ${({ theme }) => theme.textColor.tertiary};
+  margin-bottom: 0.25rem;
 `;
 
 const DEFAULT_NODE_ORDER = 100;
@@ -184,26 +185,35 @@ const OutcomeCardSet = ({
             <BarHeader>
               {subNodesTitle} ({endYear})
             </BarHeader>
-            <CardDeck role="tablist">
-              {cardNodes.map((node) => (
-                <OutcomeCard
-                  key={node.id}
-                  startYear={startYear}
-                  endYear={endYear}
-                  node={node}
-                  state={activeNodeId === undefined ? 'closed' : 'open'}
-                  hovered={hoveredNodeId === node.id}
-                  active={activeNodeId === node.id}
-                  onHover={handleHover}
-                  handleClick={handleClick}
-                  color={node.color || parentColor}
-                  total={positiveNodesTotal - negativeNodesTotal}
-                  positiveTotal={positiveNodesTotal}
-                  negativeTotal={negativeNodesTotal}
-                  refetching={refetching}
-                />
-              ))}
-            </CardDeck>
+            <OverlayScrollbarsComponent
+              defer
+              className="os-top-scrollbar"
+              options={{
+                scrollbars: { autoHide: 'never' },
+                overflow: { x: 'scroll', y: 'visible' },
+              }}
+            >
+              <CardDeck role="tablist">
+                {cardNodes.map((node) => (
+                  <OutcomeCard
+                    key={node.id}
+                    startYear={startYear}
+                    endYear={endYear}
+                    node={node}
+                    state={activeNodeId === undefined ? 'closed' : 'open'}
+                    hovered={hoveredNodeId === node.id}
+                    active={activeNodeId === node.id}
+                    onHover={handleHover}
+                    handleClick={handleClick}
+                    color={node.color || parentColor}
+                    total={positiveNodesTotal - negativeNodesTotal}
+                    positiveTotal={positiveNodesTotal}
+                    negativeTotal={negativeNodesTotal}
+                    refetching={refetching}
+                  />
+                ))}
+              </CardDeck>
+            </OverlayScrollbarsComponent>
           </SubNodes>
         )}
       </CardSet>

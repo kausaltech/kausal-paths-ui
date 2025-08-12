@@ -17,7 +17,7 @@ const CardWithState = styled.div`
   &.root {
     color: ${({ theme }) => theme.textColor.tertiary};
     background-color: ${({ theme }) => theme.graphColors.grey020};
-
+    border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey040};
     h2 {
       color: ${({ theme }) => theme.textColor.tertiary};
     }
@@ -27,7 +27,7 @@ const CardWithState = styled.div`
   &.closed {
     color: ${({ theme }) => theme.textColor.primary};
     background-color: ${({ theme }) => theme.cardBackground.primary};
-
+    border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey030};
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
     }
@@ -50,7 +50,7 @@ const CardWithState = styled.div`
   &.root {
     color: ${({ theme }) => theme.textColor.primary};
     background-color: ${({ theme }) => theme.cardBackground.primary};
-
+    border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey020};
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
     }
@@ -64,7 +64,7 @@ const CardFooter = styled.div<{ $active: boolean; $hovered: boolean; $state: 'op
   justify-content: center;
   background-color: ${({ theme, $active, $hovered, $state }) => {
     if ($active) {
-      return theme.cardBackground.secondary;
+      return theme.cardBackground.primary;
     }
     if ($state === 'open' && $hovered) {
       return theme.graphColors.grey020;
@@ -108,7 +108,7 @@ const DashCard = (props: DashCardProps) => {
         {children}
       </CardWithState>
       <CardFooter $active={active} $hovered={hovered} $state={state}>
-        {active ? <></> : <ChevronCompactDown />}
+        {active ? <ChevronCompactUp /> : <ChevronCompactDown />}
       </CardFooter>
     </CardContainer>
   );
