@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { ChevronDown } from 'react-bootstrap-icons';
 import {
   Box,
   Checkbox,
@@ -159,7 +159,17 @@ const ActionsList = ({
     >
       <Table sx={{ borderCollapse: 'collapse' }}>
         <TableHead >
-          <TableRow sx={{ backgroundColor: theme.graphColors.blue010 }}>
+          <TableRow 
+            sx={{
+              backgroundColor: theme.graphColors.blue010,
+              '& .MuiTableCell-root': {
+                py: 0.6,     
+                lineHeight: 1.2,
+              },
+              '& .MuiTableSortLabel-root': {
+                lineHeight: 1.2,
+              },
+            }}>
             <TableCell>{t('actions-group-type')}</TableCell>
             <TableCell>{t('action-name')}</TableCell>
             <TableCell>{t('included-in-scenario')}</TableCell>
@@ -253,11 +263,12 @@ const ActionsList = ({
                           >
                             <Box
                               sx={{
-                                width: `${percent}%`,
+                                width: `${Math.abs(percent)}%`,
                                 height: '100%',
-                                backgroundColor: theme.palette.success.main,
+                                backgroundColor: val < 0 ? theme.palette.success.main : theme.palette.error.main,
                                 position: 'absolute',
-                                left: 0,
+                                left: val < 0 ? 'auto' : 0,
+                                right: val < 0 ? 0 : 'auto',
                                 top: 0,
                               }}
                             />
@@ -274,8 +285,9 @@ const ActionsList = ({
                         setOpenRows((prev) => ({ ...prev, [action.id]: !prev[action.id] }))
                       }
                     >
-                      <ExpandMoreIcon
-                        sx={{
+                      <ChevronDown
+                        size={20}
+                        style={{
                           transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                           transition: 'transform 0.2s',
                         }}
