@@ -500,11 +500,19 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionsList
                 id="list-view"
                 actions={usableActions}
+                actionGroups={actionGroups}
                 displayType="displayTypeYearly"
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
                 refetching={areActionsLoading}
+                onChangeSort={(key) => {
+                  handleChangeSort(key);
+                  setAscending(true);
+                }}
+                onToggleSortDirection={() => {
+                  setAscending((prev) => !prev);
+                }}
               />
             )}
             {listType === 'mac' && (
