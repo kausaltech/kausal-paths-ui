@@ -17,8 +17,9 @@ import {
   ModalHeader,
 } from 'reactstrap';
 
+import { Chart } from '@common/components/Chart';
+
 import { useTranslation } from '@/common/i18n';
-import { Chart } from '@/components/charts/Chart';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useSite } from '@/context/site';
 
