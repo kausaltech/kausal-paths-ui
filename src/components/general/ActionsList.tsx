@@ -65,6 +65,16 @@ const getValueForSorting = (
   return 0;
 };
 
+const formatEfficiencyForDisplay = (
+  eff: number | null | undefined,
+  cap: number | null | undefined,
+  lang: string
+) => {
+  const value = eff ?? 0;
+  const limit = cap ?? Infinity;
+  return Math.abs(value) < limit ? formatNumber(value, lang) : '-';
+};
+
 const ActionsList = ({
   id,
   actions,
@@ -75,7 +85,7 @@ const ActionsList = ({
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
@@ -237,10 +247,24 @@ const ActionsList = ({
 
                   {columns.map((col) => {
                     const val = col.getValue(action);
-                    const display = formatNumber(val);
-                    const unit = col.getUnit(action);
                     const total = totals[col.key] || 0;
                     const percent = total ? (val / total) * 100 : 0;
+
+                    let display: string;
+                    let unit: string | undefined;
+
+                    if (col.key === 'CUM_EFFICIENCY') {
+                      display = formatEfficiencyForDisplay(
+                        action.cumulativeEfficiency,
+                        action.efficiencyCap,
+                        i18n.language      
+                      );
+                      unit = action.cumulativeEfficiencyUnit;
+                    } else {
+                      display = formatNumber(val);          
+                      unit = col.getUnit(action);            
+                    }
+
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
                         <Typography variant="h5" component="span">
