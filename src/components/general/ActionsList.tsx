@@ -89,6 +89,12 @@ const ActionsList = ({
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
+ // hide ungrouped actions if at least one group exists
+  const filteredActions = useMemo(() => {
+    const hasAnyGroup = actions.some((a) => a.group);
+    return hasAnyGroup ? actions.filter((a) => a.group) : actions;
+}, [actions]);
+
   const columns: ColumnDef[] = useMemo(() => {
     const base: ColumnDef[] = [
       {
@@ -109,7 +115,7 @@ const ActionsList = ({
       },
     ];
 
-    if (actions.some((a) => typeof a.cumulativeCost === 'number')) {
+    if (filteredActions.some((a) => typeof a.cumulativeCost === 'number')) {
       base.push({
         key: 'CUM_COST',
         label: `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
@@ -119,7 +125,7 @@ const ActionsList = ({
       });
     }
 
-    if (actions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
+    if (filteredActions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
       base.push({
         key: 'CUM_EFFICIENCY',
         label: t('cost-efficiency'),
@@ -129,16 +135,16 @@ const ActionsList = ({
       });
     }
     return base;
-  }, [actions, yearRange]);
+  }, [filteredActions, yearRange]);
 
   const sortedActions = useMemo(() => {
-    return [...actions].sort((a, b) => {
+    return [...filteredActions].sort((a, b) => {
       if (sortBy.key === 'STANDARD') return 0;
       const aVal = getValueForSorting(a, sortBy, yearRange);
       const bVal = getValueForSorting(b, sortBy, yearRange);
       return sortAscending ? aVal - bVal : bVal - aVal;
     });
-  }, [actions, sortBy, sortAscending, yearRange]);
+  }, [filteredActions, sortBy, sortAscending, yearRange]);
 
   const handleSortClick = (key: SortActionsConfig['key']) => {
     if (sortBy.key === key) {
@@ -152,12 +158,12 @@ const ActionsList = ({
   const totals = useMemo(() => {
     return columns.reduce(
       (acc, col) => {
-        acc[col.key] = actions.reduce((sum, a) => sum + col.getValue(a), 0);
+        acc[col.key] = filteredActions.reduce((sum, a) => sum + col.getValue(a), 0);
         return acc;
       },
       {} as Record<SortActionsConfig['key'], number>
     );
-  }, [actions, columns]);
+  }, [filteredActions, columns]);
 
   const COLSPAN = 4 + columns.length;
   const ROW_GAP = 0.5;
