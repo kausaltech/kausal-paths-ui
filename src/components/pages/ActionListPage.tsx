@@ -14,13 +14,12 @@ import {
   type GetImpactOverviewsQuery,
   type GetPageQuery,
 } from '@/common/__generated__/graphql';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { activeGoalVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
 import { PageHero } from '@/components/common/PageHero';
-import ScenarioBadge from '@/components/common/ScenarioBadge';
 import Icon from '@/components/common/icon';
 import ActionsComparison from '@/components/general/ActionsComparison';
 import ActionsList from '@/components/general/ActionsList';
@@ -215,7 +214,6 @@ function ActionListPage({ page }: ActionListPageProps) {
   const error = actionListResp.error || impactResp.error;
 
   const { loading: areActionsLoading, previousData } = actionListResp;
-  const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
   const data = actionListResp.data ?? previousData;
@@ -426,9 +424,6 @@ function ActionListPage({ page }: ActionListPageProps) {
           </Row>
         </SettingsForm>
         <ActionCount>
-          <ScenarioBadge>
-            {t('scenario')}: {activeScenario?.name}
-          </ScenarioBadge>
           <div>{t('actions-count', { count: usableActions.length })}</div>
         </ActionCount>
       </PageHero>
