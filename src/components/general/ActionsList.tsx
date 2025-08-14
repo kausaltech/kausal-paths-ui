@@ -78,6 +78,7 @@ const formatEfficiencyForDisplay = (
 const ActionsList = ({
   id,
   actions,
+  actionGroups,
   yearRange,
   sortBy,
   sortAscending,
@@ -94,6 +95,16 @@ const ActionsList = ({
     const hasAnyGroup = actions.some((a) => a.group);
     return hasAnyGroup ? actions.filter((a) => a.group) : actions;
 }, [actions]);
+
+  const groupOrder = useMemo(
+  () => new Map(actionGroups.map((g, i) => [g.id, i])),
+  [actionGroups]
+);
+
+const originalIndex = useMemo(
+  () => new Map(filteredActions.map((a, i) => [a.id, i])),
+  [filteredActions]
+);
 
   const columns: ColumnDef[] = useMemo(() => {
     const base: ColumnDef[] = [
@@ -138,13 +149,26 @@ const ActionsList = ({
   }, [filteredActions, yearRange]);
 
   const sortedActions = useMemo(() => {
-    return [...filteredActions].sort((a, b) => {
-      if (sortBy.key === 'STANDARD') return 0;
-      const aVal = getValueForSorting(a, sortBy, yearRange);
-      const bVal = getValueForSorting(b, sortBy, yearRange);
-      return sortAscending ? aVal - bVal : bVal - aVal;
+    const arr = [...filteredActions];
+
+    if (sortBy.key === 'STANDARD') {
+      arr.sort((a, b) => {
+        const ga = groupOrder.get(a.group?.id ?? '') ?? Number.MAX_SAFE_INTEGER;
+        const gb = groupOrder.get(b.group?.id ?? '') ?? Number.MAX_SAFE_INTEGER;
+        if (ga !== gb) return ga - gb;
+        return (originalIndex.get(a.id) ?? 0) - (originalIndex.get(b.id) ?? 0);
+      });
+      return arr;
+    }
+
+    arr.sort((a, b) => {
+      const av = getValueForSorting(a, sortBy, yearRange);
+      const bv = getValueForSorting(b, sortBy, yearRange);
+      return sortAscending ? av - bv : bv - av;
     });
-  }, [filteredActions, sortBy, sortAscending, yearRange]);
+
+    return arr;
+  }, [filteredActions, sortBy, sortAscending, yearRange, groupOrder, originalIndex]);
 
   const handleSortClick = (key: SortActionsConfig['key']) => {
     if (sortBy.key === key) {
