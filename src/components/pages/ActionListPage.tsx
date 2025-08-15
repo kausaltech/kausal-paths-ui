@@ -278,11 +278,11 @@ function ActionListPage({ page }: ActionListPageProps) {
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
             cumulativeImpactId: efficiencyType?.effectNode?.id,
-            cumulativeImpactUnit: efficiencyType?.effectUnit.htmlShort,
+            cumulativeImpactUnit: efficiencyType?.effectUnit?.htmlShort,
             cumulativeImpactName: `${efficiencyType?.effectNode?.name} ${
               data.impactOverviews[activeEfficiency]?.invertImpact ? reductionText : ''
             }`,
-            cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
+            cumulativeCostUnit: efficiencyType?.costUnit?.htmlShort,
             cumulativeCostName: efficiencyType?.costNode?.name,
             cumulativeEfficiencyUnit: efficiencyType?.indicatorUnit.htmlShort,
             cumulativeEfficiencyName: efficiencyType?.label,

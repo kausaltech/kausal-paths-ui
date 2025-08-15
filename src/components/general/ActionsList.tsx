@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'next-i18next';
-import { ChevronDown } from 'react-bootstrap-icons';
+
+import { useTheme } from '@emotion/react';
 import {
   Box,
   Checkbox,
@@ -15,14 +15,16 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
-import { useTheme } from '@emotion/react';
-import ScenarioChip from '@/components/general/ScenarioChip';
+import { useTranslation } from 'next-i18next';
+import { ChevronDown } from 'react-bootstrap-icons';
+
 import { ActionLink } from '@/common/links';
 import {
   findActionEnabledParam,
   formatNumber,
   summarizeYearlyValuesBetween,
 } from '@/common/preprocess';
+import ScenarioChip from '@/components/general/ScenarioChip';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
 type ActionsListProps = {
@@ -90,27 +92,24 @@ const ActionsList = ({
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
-  const cardBgPrimary   = theme.cardBackground?.primary ?? theme.palette.background.paper;
+  const cardBgPrimary = theme.cardBackground?.primary ?? theme.palette.background.paper;
   const cardBgSecondary = theme.cardBackground?.secondary ?? theme.palette.background.default;
-  const textPrimary     = theme.textColor?.primary ?? theme.palette.text.primary;
-  const textSecondary   = theme.textColor?.secondary ?? theme.palette.text.primary;
-  const textTertiary    = theme.textColor?.tertiary ?? theme.palette.text.secondary;
-  
- // hide ungrouped actions if at least one group exists
+  const textPrimary = theme.textColor?.primary ?? theme.palette.text.primary;
+  const textSecondary = theme.textColor?.secondary ?? theme.palette.text.primary;
+  const textTertiary = theme.textColor?.tertiary ?? theme.palette.text.secondary;
+
+  // hide ungrouped actions if at least one group exists
   const filteredActions = useMemo(() => {
     const hasAnyGroup = actions.some((a) => a.group);
     return hasAnyGroup ? actions.filter((a) => a.group) : actions;
-}, [actions]);
+  }, [actions]);
 
-  const groupOrder = useMemo(
-  () => new Map(actionGroups.map((g, i) => [g.id, i])),
-  [actionGroups]
-);
+  const groupOrder = useMemo(() => new Map(actionGroups.map((g, i) => [g.id, i])), [actionGroups]);
 
-const originalIndex = useMemo(
-  () => new Map(filteredActions.map((a, i) => [a.id, i])),
-  [filteredActions]
-);
+  const originalIndex = useMemo(
+    () => new Map(filteredActions.map((a, i) => [a.id, i])),
+    [filteredActions]
+  );
 
   const columns: ColumnDef[] = useMemo(() => {
     const base: ColumnDef[] = [
@@ -152,7 +151,7 @@ const originalIndex = useMemo(
       });
     }
     return base;
-  }, [filteredActions, yearRange]);
+  }, [filteredActions, yearRange, t]);
 
   const sortedActions = useMemo(() => {
     const arr = [...filteredActions];
@@ -197,25 +196,23 @@ const originalIndex = useMemo(
 
   const COLSPAN = 4 + columns.length;
   const ROW_GAP = 0.5;
-  
+
   return (
-    <TableContainer
-      id={id}
-      sx={{ borderRadius: 1, overflow: 'hidden' }}
-    >
+    <TableContainer id={id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
       <Table sx={{ borderCollapse: 'collapse' }}>
-        <TableHead >
-          <TableRow 
+        <TableHead>
+          <TableRow
             sx={{
               backgroundColor: theme.graphColors.blue010,
               '& .MuiTableCell-root': {
-                py: 0.6,     
+                py: 0.6,
                 lineHeight: 1.2,
               },
               '& .MuiTableSortLabel-root': {
                 lineHeight: 1.2,
               },
-            }}>
+            }}
+          >
             <TableCell>{t('actions-group-type')}</TableCell>
             <TableCell>{t('action-name')}</TableCell>
             <TableCell>{t('included-in-scenario')}</TableCell>
@@ -248,10 +245,9 @@ const originalIndex = useMemo(
             const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
 
             const colors = {
-              bg:    isIncluded ? cardBgPrimary : cardBgSecondary,
-              text:  isIncluded ? textSecondary : textTertiary,
-              title: isIncluded ? textPrimary   : textTertiary,
-
+              bg: isIncluded ? cardBgPrimary : cardBgSecondary,
+              text: isIncluded ? textSecondary : textTertiary,
+              title: isIncluded ? textPrimary : textTertiary,
             };
             const rowBg = colors.bg;
 
@@ -261,8 +257,11 @@ const originalIndex = useMemo(
                   sx={{
                     bgcolor: rowBg,
                     color: colors.text,
-                    '& > .MuiTableCell-root': { backgroundColor: 'inherit', color: 'inherit', borderBottom: isOpen ? 'none' : undefined },
-
+                    '& > .MuiTableCell-root': {
+                      backgroundColor: 'inherit',
+                      color: 'inherit',
+                      borderBottom: isOpen ? 'none' : undefined,
+                    },
                   }}
                 >
                   <TableCell
@@ -284,10 +283,7 @@ const originalIndex = useMemo(
                       </Typography>
                     </ActionLink>
                   </TableCell>
-                  <ScenarioChip
-                    checked={isIncluded}
-                    label={t('included-in-scenario')}
-                  />
+                  <ScenarioChip checked={isIncluded} label={t('included-in-scenario')} />
                   {columns.map((col) => {
                     const val = col.getValue(action);
                     const total = totals[col.key] || 0;
@@ -300,21 +296,25 @@ const originalIndex = useMemo(
                       display = formatEfficiencyForDisplay(
                         action.cumulativeEfficiency,
                         action.efficiencyCap,
-                        i18n.language      
+                        i18n.language
                       );
                       unit = action.cumulativeEfficiencyUnit;
                     } else {
-                      display = formatNumber(val);          
-                      unit = col.getUnit(action);            
+                      display = formatNumber(val);
+                      unit = col.getUnit(action);
                     }
 
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
                         <Typography variant="h5" component="span" sx={{ color: colors.title }}>
-                           {display}
+                          {display}
                         </Typography>
                         {unit && (
-                          <Typography variant="body2" component="span" sx={{ ml: 0.5, color: colors.text }}>
+                          <Typography
+                            variant="body2"
+                            component="span"
+                            sx={{ ml: 0.5, color: colors.text }}
+                          >
                             {unit}
                           </Typography>
                         )}
@@ -332,7 +332,8 @@ const originalIndex = useMemo(
                               sx={{
                                 width: `${Math.abs(percent)}%`,
                                 height: '100%',
-                                backgroundColor: val < 0 ? theme.palette.success.main : theme.palette.error.main,
+                                backgroundColor:
+                                  val < 0 ? theme.palette.success.main : theme.palette.error.main,
                                 position: 'absolute',
                                 left: val < 0 ? 'auto' : 0,
                                 right: val < 0 ? 0 : 'auto',
@@ -373,9 +374,9 @@ const originalIndex = useMemo(
                       bgcolor: rowBg,
                       color: colors.text,
                       '& .MuiCollapse-root, & .MuiCollapse-root *': {
-                      backgroundColor: 'inherit',
-                      color: 'inherit',
-                     },
+                        backgroundColor: 'inherit',
+                        color: 'inherit',
+                      },
                     }}
                   >
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
@@ -402,12 +403,12 @@ const originalIndex = useMemo(
                   </TableCell>
                 </TableRow>
                 {rowIndex < sortedActions.length - 1 && (
-                <TableRow aria-hidden>
-                  <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>
-                    <Box sx={{ height: theme.spacing(ROW_GAP) }} />
-                  </TableCell>
-                </TableRow>
-              )}
+                  <TableRow aria-hidden>
+                    <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>
+                      <Box sx={{ height: theme.spacing(ROW_GAP) }} />
+                    </TableCell>
+                  </TableRow>
+                )}
               </React.Fragment>
             );
           })}

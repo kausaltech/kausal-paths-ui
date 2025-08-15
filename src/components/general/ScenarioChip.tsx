@@ -1,7 +1,9 @@
 import * as React from 'react';
-import { TableCell, Chip } from '@mui/material';
+
 import { useTheme } from '@emotion/react';
+import { Chip, TableCell } from '@mui/material';
 import { Check, X } from 'react-bootstrap-icons';
+
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 
 type ScenarioChipProps = {
@@ -11,19 +13,19 @@ type ScenarioChipProps = {
 };
 
 const ScenarioChip: React.FC<ScenarioChipProps> = React.memo(({ checked, label, width = 64 }) => {
-  const theme = useTheme() as any;
+  const theme = useTheme();
 
   const bg = checked
     ? (theme.graphColors?.blue010 ?? theme.palette.action.selected)
-    : (theme.graphColors?.pink020 ?? theme.graphColors?.red010 ?? theme.palette.error.light);
+    : (theme.graphColors?.red010 ?? theme.palette.error.light);
 
   const fg = checked
     ? (theme.graphColors?.blue090 ?? theme.palette.primary.main)
-    : (theme.graphColors?.pink090 ?? theme.graphColors?.red090 ?? theme.palette.error.main);
+    : (theme.graphColors?.red090 ?? theme.palette.error.main);
 
   const border = checked
     ? (theme.graphColors?.blue030 ?? 'transparent')
-    : (theme.graphColors?.pink030 ?? theme.graphColors?.red030 ?? 'transparent');
+    : (theme.graphColors?.red030 ?? 'transparent');
 
   return (
     <TableCell sx={{ width }}>
@@ -73,4 +75,3 @@ const ScenarioChip: React.FC<ScenarioChipProps> = React.memo(({ checked, label, 
 
 ScenarioChip.displayName = 'ScenarioChip';
 export default ScenarioChip;
-
