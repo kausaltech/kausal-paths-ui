@@ -12,7 +12,7 @@ import { useInstance } from '@/common/instance';
 //import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';
 import DimensionalBarGraph from '@/components/general/DimensionalBarGraph';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
 
 import DataTable from './DataTable';
@@ -141,7 +141,7 @@ const OutcomeNodeContent = ({
 }: OutcomeNodeContentProps) => {
   const { t } = useTranslation();
   const instance = useInstance();
-  const site = useSite();
+  const [site] = useSiteWithSetter();
 
   const [progressModalOpen, setProgressModalOpen] = useState(false);
   const [selectedProgressYear, setSelectedProgressYear] = useState<number | null>(() =>
@@ -200,7 +200,7 @@ const OutcomeNodeContent = ({
           {t('time-series')}, {t('coming-soon')}
         </h5>
       ),
-    [node, startYear, endYear, nodeName, t, activeScenario]
+    [node, startYear, endYear, nodeName, t, activeScenario, color]
   );
 
   const singleYearGraph = useMemo(

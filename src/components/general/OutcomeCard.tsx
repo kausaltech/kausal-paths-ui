@@ -19,22 +19,31 @@ const StyledTab = styled.div`
   cursor: pointer;
 `;
 
+const ContentArea = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100%;
+`;
+
+const CardContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+`;
+
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
+  flex: 1;
+  margin-bottom: 0.25rem;
   &.root h2 {
     font-size: 1.5rem;
   }
 `;
 
-const Title = styled.div`
-  // border-left: 6px solid ${(props) => props.color};
-  // padding-left: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-`;
+const Title = styled.div``;
 
 const Name = styled.h2`
   margin-bottom: 0;
@@ -99,11 +108,8 @@ const ProportionBarBar = styled.div<{ $size: number; $color: string }>`
 `;
 
 const ProportionBarContainer = styled.div<{ $active: boolean }>`
-  position: absolute;
-  height: 100%;
-  bottom: 0;
-  left: 0;
-  width: 12px;
+  position: relative;
+  flex: 0 0 12px;
   background-color: ${({ theme, $active }) =>
     $active ? theme.graphColors.grey005 : theme.graphColors.grey030};
 `;
@@ -172,7 +178,7 @@ export const SectorSummary = ({
   return (
     <MainValueWrapper>
       <Label $active={active}>
-        {isForecast ? t('table-scenario-forecast') : t('table-historical')}
+        {isForecast ? t('table-scenario-forecast') : t('table-historical')} {endYear}
       </Label>
       {goalOutcomeValue !== undefined ? (
         <TotalValue>
@@ -190,6 +196,40 @@ export const SectorSummary = ({
     </MainValueWrapper>
   );
 };
+
+const TabWrapper = ({
+  children,
+  nodeId,
+  onHover,
+  handleClick,
+  active,
+  handleKeyDownOnTab,
+}: {
+  children: React.ReactNode;
+  nodeId: string;
+  onHover: ((evt: string | undefined) => void) | undefined;
+  handleClick: ((segmentId: string) => void) | undefined;
+  active: boolean;
+  handleKeyDownOnTab: (e: React.KeyboardEvent) => void;
+}) => {
+  if (onHover && handleClick)
+    return (
+      <StyledTab
+        key={nodeId}
+        role="tab"
+        tabIndex={0}
+        onMouseEnter={() => onHover(nodeId)}
+        onMouseLeave={() => onHover(undefined)}
+        onClick={() => handleClick(nodeId)}
+        onKeyDown={handleKeyDownOnTab}
+        aria-selected={active}
+        aria-controls={`tabpanel-${nodeId}`}
+      >
+        {children}
+      </StyledTab>
+    );
+  return <div>{children}</div>;
+};
 type OutcomeCardProps = {
   node: OutcomeNodeFieldsFragment;
   startYear: number;
@@ -198,7 +238,7 @@ type OutcomeCardProps = {
   state: 'open' | 'closed';
   hovered: boolean;
   active: boolean;
-  onHover: (evt: string | undefined) => void;
+  onHover: ((evt: string | undefined) => void) | undefined;
   handleClick: ((segmentId: string) => void) | undefined;
   color: string;
   positiveTotal?: number;
@@ -250,8 +290,6 @@ const OutcomeCard = (props: OutcomeCardProps) => {
 
   const unit = node.metric?.unit?.htmlShort;
 
-  const handleClickTab = () => handleClick && handleClick(node.id);
-
   const handleKeyDownOnTab = (e: React.KeyboardEvent) => {
     if (e.code === 'Enter' || e.code === 'Space') {
       e.preventDefault();
@@ -260,16 +298,12 @@ const OutcomeCard = (props: OutcomeCardProps) => {
   };
 
   return (
-    <StyledTab
-      key={node.id}
-      role="tab"
-      tabIndex={0}
-      onMouseEnter={() => onHover(node.id)}
-      onMouseLeave={() => onHover(undefined)}
-      onClick={handleClickTab}
-      onKeyDown={handleKeyDownOnTab}
-      aria-selected={active}
-      aria-controls={`tabpanel-${node.id}`}
+    <TabWrapper
+      nodeId={node.id}
+      onHover={onHover}
+      handleClick={handleClick}
+      active={active}
+      handleKeyDownOnTab={handleKeyDownOnTab}
     >
       <DashCard
         state={state}
@@ -279,37 +313,41 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         refProp={cardRef}
         interactive={handleClick !== undefined}
       >
-        {refetching && <Loader />}
-        {isCompared && siblingsTotal && (
-          <ProportionBar
-            size={goalOutcomeValue ? goalOutcomeValue / siblingsTotal : 0}
-            color={color}
-            active={active}
-            isOpen={state === 'open'}
-            offset={negativeTotal < 0 ? Math.abs(negativeTotal / siblingsTotal) : 0}
-          />
-        )}
-        <Header className={state}>
-          <Title color={color}>
-            <Name>{node.shortName || node.name}</Name>
-          </Title>
-          {helpText && <PopoverTip content={helpText} />}
-        </Header>
+        <ContentArea>
+          {refetching && <Loader />}
+          {isCompared && siblingsTotal && (
+            <ProportionBar
+              size={goalOutcomeValue ? goalOutcomeValue / siblingsTotal : 0}
+              color={color}
+              active={active}
+              isOpen={state === 'open'}
+              offset={negativeTotal < 0 ? Math.abs(negativeTotal / siblingsTotal) : 0}
+            />
+          )}
+          <CardContent>
+            <Header className={state}>
+              <Title color={color}>
+                <Name>{node.shortName || node.name}</Name>
+              </Title>
+              {helpText && <PopoverTip content={helpText} />}
+            </Header>
 
-        <Body>
-          <SectorSummary
-            active={active}
-            isForecast={isForecast}
-            goalOutcomeValue={goalOutcomeValue}
-            maximumFractionDigits={maximumFractionDigits}
-            unit={unit}
-            change={change}
-            startYear={startYear}
-            endYear={endYear}
-          />
-        </Body>
+            <Body>
+              <SectorSummary
+                active={active}
+                isForecast={isForecast}
+                goalOutcomeValue={goalOutcomeValue}
+                maximumFractionDigits={maximumFractionDigits}
+                unit={unit}
+                change={change}
+                startYear={startYear}
+                endYear={endYear}
+              />
+            </Body>
+          </CardContent>
+        </ContentArea>
       </DashCard>
-    </StyledTab>
+    </TabWrapper>
   );
 };
 

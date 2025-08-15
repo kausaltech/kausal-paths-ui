@@ -29,10 +29,12 @@ const CardSet = styled.div<CardSetProps>`
   }
 `;
 
-const SubNodes = styled.div``;
 const CardDeck = styled.div`
   display: flex;
   gap: 0.75rem;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
   // Make space for the horizontal scrollbar
   // TODO: Only apply when os-scrollbar-horizontal is visible
   padding-top: 0.75rem;
@@ -168,24 +170,20 @@ const OutcomeCardSet = ({
   return (
     <>
       {isRootNode && (
-        <SubNodes>
-          <CardDeck>
-            <OutcomeCard
-              startYear={startYear}
-              endYear={endYear}
-              node={rootNode}
-              state="open"
-              hovered={false}
-              active={true}
-              onHover={() => {}}
-              handleClick={undefined}
-              color={rootNode.color || parentColor}
-              positiveTotal={undefined}
-              negativeTotal={negativeNodesTotal}
-              refetching={refetching}
-            />
-          </CardDeck>
-        </SubNodes>
+        <OutcomeCard
+          startYear={startYear}
+          endYear={endYear}
+          node={rootNode}
+          state="open"
+          hovered={false}
+          active={true}
+          onHover={undefined}
+          handleClick={undefined}
+          color={rootNode.color || parentColor}
+          positiveTotal={undefined}
+          negativeTotal={negativeNodesTotal}
+          refetching={refetching}
+        />
       )}
       <CardSet id={rootNode.id} $color={rootNode.color!} $haschildren={cardNodes.length > 0}>
         <ContentArea>
@@ -201,7 +199,7 @@ const OutcomeCardSet = ({
           />
         </ContentArea>
         {cardNodes.length > 0 && (
-          <SubNodes>
+          <div>
             <BarHeader>
               {subNodesTitle} ({endYear})
             </BarHeader>
@@ -233,7 +231,7 @@ const OutcomeCardSet = ({
                 ))}
               </CardDeck>
             </OverlayScrollbarsComponent>
-          </SubNodes>
+          </div>
         )}
       </CardSet>
     </>

@@ -3,14 +3,9 @@ import { ChevronCompactDown, ChevronCompactUp } from 'react-bootstrap-icons';
 
 const CardWithState = styled.div`
   position: relative;
+  flex: 1;
   border: 0;
   border-radius: 0;
-  height: 170px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
 
   &.open,
   &.root {
@@ -80,6 +75,10 @@ const CardFooter = styled.div<{ $active: boolean; $hovered: boolean; $state: 'op
 `;
 
 const CardContainer = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
   &.active.open,
   &.root {
     box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
