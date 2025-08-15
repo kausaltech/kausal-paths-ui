@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useTheme } from '@emotion/react';
-
+import ScenarioChip from '@/components/general/ScenarioChip';
 import { ActionLink } from '@/common/links';
 import {
   findActionEnabledParam,
@@ -284,13 +284,10 @@ const originalIndex = useMemo(
                       </Typography>
                     </ActionLink>
                   </TableCell>
-                  <TableCell>
-                    <Checkbox 
-                    checked={isIncluded} 
-                    disabled
-                    />
-                  </TableCell>
-
+                  <ScenarioChip
+                    checked={isIncluded}
+                    label={t('included-in-scenario')}
+                  />
                   {columns.map((col) => {
                     const val = col.getValue(action);
                     const total = totals[col.key] || 0;
