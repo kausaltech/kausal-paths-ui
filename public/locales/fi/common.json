@@ -84,6 +84,7 @@
   "table": "Taulukko",
   "details": "Tarkemmat tiedot",
   "active-actions": "{{count}}/{{total}} aktiivista toimenpidettä",
+  "sort-direction": "Järjestys",
   "sort-ascending": "Lajittele nousevassa järjestyksessä",
   "sort-descending": "Lajittele laskevassa järjestyksessä",
   "skip-to-main-content": "Siirry pääsisältöön",
