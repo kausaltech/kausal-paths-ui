@@ -100,11 +100,11 @@
       "count": 1,
       "message": "Argument of type 'null' is not assignable to parameter of type 'ElementRef | undefined'."
     },
-    "6c222f0c4e88331ca0240cbb52feadc11d25e4ed": {
+    "05ab1e02e83c59376151d802d7289c3a6c7a395c": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"actions\" | ... 131 more ... | (TemplateStringsArray | ... 140 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "1484f806f69e92e870e04470aab2e62401c4c6bf": {
       "file": "src/components/common/GraphQLError.tsx",
@@ -274,11 +274,11 @@
       "count": 3,
       "message": "Object is possibly 'null'."
     },
-    "1abeb5c7ee1f75e6709e25257a58c92798e8b5e3": {
+    "aab0774a5531662965a7ab6b1f16a6372a1c7c47": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"actions\" | ... 131 more ... | (TemplateStringsArray | ... 140 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
       "file": "src/components/general/BarGraph.tsx",
@@ -364,11 +364,11 @@
       "count": 2,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "975981a4509db6249b28052dc338cb72a8ca61ce": {
+    "f09f8c4d045c9ee4f3dd91121e56c2987bf88464": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"actions\" | ... 131 more ... | (TemplateStringsArray | ... 140 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "3186d64cd5707a556087f33ee127a5a37c67d25b": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -532,11 +532,11 @@
       "count": 6,
       "message": "Argument of type 'OutcomeNodeFieldsFragment' is not assignable to parameter of type '{ metric: NodeMetric; }'."
     },
-    "2096af17ec61bbc6ba6cf7bbc3e4f077c2c5caaf": {
+    "98094abccc147db449bc28e76a5131228ac839e6": {
       "file": "src/components/general/OutcomeCardSet.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"actions\" | ... 131 more ... | (TemplateStringsArray | ... 140 more ... | \"below-target\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "1344e7affcf6ca4a1ab90dd81bb334ff0a1ef45b": {
       "file": "src/components/general/OutcomeCardSet.tsx",
@@ -634,6 +634,12 @@
       "count": 1,
       "message": "No overload matches this call."
     },
+    "ad38607a9c6e1dfa18c8c0d63dd00215d3129ae5": {
+      "file": "src/components/general/ReturnOnInvestment.tsx",
+      "code": "TS18047",
+      "count": 1,
+      "message": "'action.costDim' is possibly 'null'."
+    },
     "7a8be1dc6140e173bc2bf6ea3f305e6f9924d3af": {
       "file": "src/components/general/ReturnOnInvestment.tsx",
       "code": "TS18047",
@@ -670,29 +676,17 @@
       "count": 1,
       "message": "No overload matches this call."
     },
-    "6e7b62a0436a15292b3c9e6e3045d49a8f544f14": {
+    "2ad49c0ad6f85d58f3b0330085686d97ee2afb2d": {
       "file": "src/components/pages/ActionListPage.tsx",
       "code": "TS2345",
       "count": 2,
-      "message": "Argument of type '(({ value: number; year: number; } & { __typename: \"YearlyValue\"; }) | null)[]' is not assignable to parameter of type 'NodeMetric'."
+      "message": "Argument of type '(({ value: number; year: number; } & { __typename: \"YearlyValue\"; }) | null)[] | null' is not assignable to parameter of type 'NodeMetric'."
     },
-    "0142106a21141cad7ffd52757d431e1f522ffb25": {
+    "a08752db7d8d5060835d92e98d05f5e0b88adaee": {
       "file": "src/components/pages/ActionListPage.tsx",
       "code": "TS2339",
       "count": 1,
-      "message": "Property 'invertImpact' does not exist on type '{ id: string; label: string; plotLimitForIndicator: number | null; indicatorUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; costUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; effectUnit: { ...; } & { ...; }; costNode?: ({ ...; } & { ...; }) | undefined; effectNode: { ...; } & { ...; }; actio...'."
-    },
-    "d5bccdcb37ce946aa597a22b4a4abcd8996e7c16": {
-      "file": "src/components/pages/ActionListPage.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"sort-direction\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
-    "3090ef9924fdd60d9acb8538c3358559a9427982": {
-      "file": "src/components/pages/CustomDashboardPage.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ title: string; chartLabel: string; color: string; value: number; targetValue: number | null; min: number; max: number; unit: string; description: string; }[] | undefined' is not assignable to type 'DashboardProgressItem[] | undefined'."
+      "message": "Property 'invertImpact' does not exist on type '{ id: string; label: string; plotLimitForIndicator: number | null; indicatorUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; costUnit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; effectUnit: ({ ...; } & { ...; }) | null; costNode: ({ ...; } & { ...; }) | null; effectNode: { ...; } & { ....'."
     },
     "1513ea577f1e140519298dffbc080c8bfb87a7b0": {
       "file": "src/components/pages/OutcomePage.tsx",

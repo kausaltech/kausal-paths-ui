@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'next-i18next';
-import { ChevronDown } from 'react-bootstrap-icons';
+
+import { useTheme } from '@emotion/react';
 import {
   Box,
   Checkbox,
@@ -14,8 +14,9 @@ import {
   TableRow,
   TableSortLabel,
   Typography,
-  useTheme,
 } from '@mui/material';
+import { useTranslation } from 'next-i18next';
+import { ChevronDown } from 'react-bootstrap-icons';
 
 import { ActionLink } from '@/common/links';
 import {
@@ -23,6 +24,7 @@ import {
   formatNumber,
   summarizeYearlyValuesBetween,
 } from '@/common/preprocess';
+import ScenarioChip from '@/components/general/ScenarioChip';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
 type ActionsListProps = {
@@ -65,9 +67,20 @@ const getValueForSorting = (
   return 0;
 };
 
+const formatEfficiencyForDisplay = (
+  eff: number | null | undefined,
+  cap: number | null | undefined,
+  lang: string
+) => {
+  const value = eff ?? 0;
+  const limit = cap ?? Infinity;
+  return Math.abs(value) < limit ? formatNumber(value, lang) : '-';
+};
+
 const ActionsList = ({
   id,
   actions,
+  actionGroups,
   yearRange,
   sortBy,
   sortAscending,
@@ -75,9 +88,28 @@ const ActionsList = ({
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+
+  const cardBgPrimary = theme.cardBackground?.primary ?? theme.palette.background.paper;
+  const cardBgSecondary = theme.cardBackground?.secondary ?? theme.palette.background.default;
+  const textPrimary = theme.textColor?.primary ?? theme.palette.text.primary;
+  const textSecondary = theme.textColor?.secondary ?? theme.palette.text.primary;
+  const textTertiary = theme.textColor?.tertiary ?? theme.palette.text.secondary;
+
+  // hide ungrouped actions if at least one group exists
+  const filteredActions = useMemo(() => {
+    const hasAnyGroup = actions.some((a) => a.group);
+    return hasAnyGroup ? actions.filter((a) => a.group) : actions;
+  }, [actions]);
+
+  const groupOrder = useMemo(() => new Map(actionGroups.map((g, i) => [g.id, i])), [actionGroups]);
+
+  const originalIndex = useMemo(
+    () => new Map(filteredActions.map((a, i) => [a.id, i])),
+    [filteredActions]
+  );
 
   const columns: ColumnDef[] = useMemo(() => {
     const base: ColumnDef[] = [
@@ -99,7 +131,7 @@ const ActionsList = ({
       },
     ];
 
-    if (actions.some((a) => typeof a.cumulativeCost === 'number')) {
+    if (filteredActions.some((a) => typeof a.cumulativeCost === 'number')) {
       base.push({
         key: 'CUM_COST',
         label: `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
@@ -109,7 +141,7 @@ const ActionsList = ({
       });
     }
 
-    if (actions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
+    if (filteredActions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
       base.push({
         key: 'CUM_EFFICIENCY',
         label: t('cost-efficiency'),
@@ -119,16 +151,29 @@ const ActionsList = ({
       });
     }
     return base;
-  }, [actions, yearRange]);
+  }, [filteredActions, yearRange, t]);
 
   const sortedActions = useMemo(() => {
-    return [...actions].sort((a, b) => {
-      if (sortBy.key === 'STANDARD') return 0;
-      const aVal = getValueForSorting(a, sortBy, yearRange);
-      const bVal = getValueForSorting(b, sortBy, yearRange);
-      return sortAscending ? aVal - bVal : bVal - aVal;
+    const arr = [...filteredActions];
+
+    if (sortBy.key === 'STANDARD') {
+      arr.sort((a, b) => {
+        const ga = groupOrder.get(a.group?.id ?? '') ?? Number.MAX_SAFE_INTEGER;
+        const gb = groupOrder.get(b.group?.id ?? '') ?? Number.MAX_SAFE_INTEGER;
+        if (ga !== gb) return ga - gb;
+        return (originalIndex.get(a.id) ?? 0) - (originalIndex.get(b.id) ?? 0);
+      });
+      return arr;
+    }
+
+    arr.sort((a, b) => {
+      const av = getValueForSorting(a, sortBy, yearRange);
+      const bv = getValueForSorting(b, sortBy, yearRange);
+      return sortAscending ? av - bv : bv - av;
     });
-  }, [actions, sortBy, sortAscending, yearRange]);
+
+    return arr;
+  }, [filteredActions, sortBy, sortAscending, yearRange, groupOrder, originalIndex]);
 
   const handleSortClick = (key: SortActionsConfig['key']) => {
     if (sortBy.key === key) {
@@ -142,34 +187,32 @@ const ActionsList = ({
   const totals = useMemo(() => {
     return columns.reduce(
       (acc, col) => {
-        acc[col.key] = actions.reduce((sum, a) => sum + col.getValue(a), 0);
+        acc[col.key] = filteredActions.reduce((sum, a) => sum + col.getValue(a), 0);
         return acc;
       },
       {} as Record<SortActionsConfig['key'], number>
     );
-  }, [actions, columns]);
+  }, [filteredActions, columns]);
 
   const COLSPAN = 4 + columns.length;
   const ROW_GAP = 0.5;
-  
+
   return (
-    <TableContainer
-      id={id}
-      sx={{ borderRadius: 1, overflow: 'hidden' }}
-    >
+    <TableContainer id={id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
       <Table sx={{ borderCollapse: 'collapse' }}>
-        <TableHead >
-          <TableRow 
+        <TableHead>
+          <TableRow
             sx={{
               backgroundColor: theme.graphColors.blue010,
               '& .MuiTableCell-root': {
-                py: 0.6,     
+                py: 0.6,
                 lineHeight: 1.2,
               },
               '& .MuiTableSortLabel-root': {
                 lineHeight: 1.2,
               },
-            }}>
+            }}
+          >
             <TableCell>{t('actions-group-type')}</TableCell>
             <TableCell>{t('action-name')}</TableCell>
             <TableCell>{t('included-in-scenario')}</TableCell>
@@ -201,15 +244,24 @@ const ActionsList = ({
             const enabledParam = findActionEnabledParam(action.parameters);
             const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
 
-            const rowBg = isOpen ? theme.palette.action.hover : 'transparent';
+            const colors = {
+              bg: isIncluded ? cardBgPrimary : cardBgSecondary,
+              text: isIncluded ? textSecondary : textTertiary,
+              title: isIncluded ? textPrimary : textTertiary,
+            };
+            const rowBg = colors.bg;
 
             return (
               <React.Fragment key={action.id}>
                 <TableRow
                   sx={{
                     bgcolor: rowBg,
-                    '& > .MuiTableCell-root': { borderBottom: isOpen ? 'none' : undefined },
-
+                    color: colors.text,
+                    '& > .MuiTableCell-root': {
+                      backgroundColor: 'inherit',
+                      color: 'inherit',
+                      borderBottom: isOpen ? 'none' : undefined,
+                    },
                   }}
                 >
                   <TableCell
@@ -225,29 +277,44 @@ const ActionsList = ({
                       <Typography
                         component="a"
                         variant="h6"
-                        sx={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                        sx={{ color: colors.title, textDecoration: 'none', cursor: 'pointer' }}
                       >
                         {action.name}
                       </Typography>
                     </ActionLink>
                   </TableCell>
-                  <TableCell>
-                    <Checkbox checked={isIncluded} disabled />
-                  </TableCell>
-
+                  <ScenarioChip checked={isIncluded} label={t('included-in-scenario')} />
                   {columns.map((col) => {
                     const val = col.getValue(action);
-                    const display = formatNumber(val);
-                    const unit = col.getUnit(action);
                     const total = totals[col.key] || 0;
                     const percent = total ? (val / total) * 100 : 0;
+
+                    let display: string;
+                    let unit: string | undefined;
+
+                    if (col.key === 'CUM_EFFICIENCY') {
+                      display = formatEfficiencyForDisplay(
+                        action.cumulativeEfficiency,
+                        action.efficiencyCap,
+                        i18n.language
+                      );
+                      unit = action.cumulativeEfficiencyUnit;
+                    } else {
+                      display = formatNumber(val);
+                      unit = col.getUnit(action);
+                    }
+
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
-                        <Typography variant="h5" component="span">
-                           {display}
+                        <Typography variant="h5" component="span" sx={{ color: colors.title }}>
+                          {display}
                         </Typography>
                         {unit && (
-                          <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
+                          <Typography
+                            variant="body2"
+                            component="span"
+                            sx={{ ml: 0.5, color: colors.text }}
+                          >
                             {unit}
                           </Typography>
                         )}
@@ -265,7 +332,8 @@ const ActionsList = ({
                               sx={{
                                 width: `${Math.abs(percent)}%`,
                                 height: '100%',
-                                backgroundColor: val < 0 ? theme.palette.success.main : theme.palette.error.main,
+                                backgroundColor:
+                                  val < 0 ? theme.palette.success.main : theme.palette.error.main,
                                 position: 'absolute',
                                 left: val < 0 ? 'auto' : 0,
                                 right: val < 0 ? 0 : 'auto',
@@ -304,11 +372,16 @@ const ActionsList = ({
                       borderBottom: 'none',
                       borderLeft: `6px solid ${action.group?.color ?? theme.graphColors.grey090}`,
                       bgcolor: rowBg,
+                      color: colors.text,
+                      '& .MuiCollapse-root, & .MuiCollapse-root *': {
+                        backgroundColor: 'inherit',
+                        color: 'inherit',
+                      },
                     }}
                   >
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
                       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ color: colors.text }}>
                           {(action.goal || action.shortDescription)?.replace(/<[^>]+>/g, '')}
                         </Typography>
                         <ActionLink action={action}>
@@ -316,7 +389,7 @@ const ActionsList = ({
                             component="a"
                             variant="h6"
                             sx={{
-                              color: 'primary.main',
+                              color: colors.title,
                               textDecoration: 'none',
                               cursor: 'pointer',
                               '&:hover': { textDecoration: 'underline' },
@@ -330,12 +403,12 @@ const ActionsList = ({
                   </TableCell>
                 </TableRow>
                 {rowIndex < sortedActions.length - 1 && (
-                <TableRow aria-hidden>
-                  <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>
-                    <Box sx={{ height: theme.spacing(ROW_GAP) }} />
-                  </TableCell>
-                </TableRow>
-              )}
+                  <TableRow aria-hidden>
+                    <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>
+                      <Box sx={{ height: theme.spacing(ROW_GAP) }} />
+                    </TableCell>
+                  </TableRow>
+                )}
               </React.Fragment>
             );
           })}
