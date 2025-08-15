@@ -1,50 +1,8 @@
-import styled from '@emotion/styled';
+/* @deprecated */
+import { Alert } from '@mui/material';
 
-import { NodeLink } from '@/common/links';
-import Icon from '@/components/common/icon';
-import DashCard from '@/components/general/DashCard';
-
-const InputNodesWrapper = styled.div`
-  padding: 0.5rem;
-  margin: 0 0.5rem 0.5rem;
-  display: flex;
-  justify-content: center;
-  background-color: ${(props) => props.theme.graphColors.grey010};
-`;
-
-const NodeItem = styled.div`
-  position: relative;
-  padding: 0.5rem;
-`;
-
-const EffectIcon = styled.div`
-  position: absolute;
-  z-index: 44;
-  left: 50%;
-  top: -1.5rem;
-`;
-
-const InputNodeCards = (props) => {
-  const { nodes } = props;
-
-  return (
-    <InputNodesWrapper>
-      {nodes.map((input) => (
-        <NodeItem key={input.id}>
-          <EffectIcon>
-            <Icon name="arrowUp" width="32px" height="32px" />
-          </EffectIcon>
-          <DashCard>
-            <NodeLink node={input}>
-              <a>
-                <h5>{input.name}</h5>
-              </a>
-            </NodeLink>
-          </DashCard>
-        </NodeItem>
-      ))}
-    </InputNodesWrapper>
-  );
+const InputNodeCards = () => {
+  return <Alert severity="info">This list has been deprecated.</Alert>;
 };
 
 export default InputNodeCards;

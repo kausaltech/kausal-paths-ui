@@ -16,6 +16,7 @@ import {
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
+import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
 import { useFeatures, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import Icon from '@/components/common/icon';
@@ -65,23 +66,29 @@ const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) =>
 };
 
 type DimensionalNodeVisualisationProps = {
+  title: string;
   baselineForecast?: BaselineForecast[];
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   startYear: number;
   endYear: number;
   withControls?: boolean;
   withTools?: boolean;
+  color?: string | null;
   onClickMeasuredEmissions?: (year: number) => void;
+  forecastTitle?: string;
 };
 
 export default function DimensionalNodeVisualisation({
+  title,
   metric,
   startYear,
   withControls = true,
   withTools = true,
   endYear,
   baselineForecast,
+  color,
   onClickMeasuredEmissions,
+  forecastTitle,
 }: DimensionalNodeVisualisationProps) {
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
@@ -91,7 +98,6 @@ export default function DimensionalNodeVisualisation({
 
   const scenarios = site?.scenarios ?? [];
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, scenarios);
-
   const metrics = useMemo(() => {
     const defaultMetric = new DimensionalMetric(metric);
 
@@ -295,12 +301,33 @@ export default function DimensionalNodeVisualisation({
     : null;
 
   // Define colors for the categories
-  const categoryColors: string[] = dataCategories.map(
-    (row) => row.color ?? theme.graphColors.blue070
-  );
 
+  const defaultColor = color || theme.graphColors.blue070;
+  const categoryColors: string[] = [];
+  const nrCats = slice.categoryValues.length;
+
+  if (nrCats > 1) {
+    // If we were asked to use a specific color, we generate the color scheme around it.
+    if (color) {
+      setUniqueColors(
+        slice.categoryValues,
+        (cv) => cv.color,
+        (cv, color) => {
+          cv.color = color;
+        },
+        defaultColor
+      );
+      categoryColors.push(...slice.categoryValues.map((cv) => cv.color ?? defaultColor));
+    } else {
+      categoryColors.push(...genColorsFromTheme(theme, slice.categoryValues.length));
+    }
+  } else {
+    categoryColors[0] = defaultColor;
+  }
+
+  console.log(categoryColors);
   // Check if the data has any negative values, in order to decide if we want to show the total line
-  // We could use filtered year range here only, but let's show the total line even if negative values are filtered out
+  // We could use the user selected year range here only, but let's show the total line even if negative values are filtered out
   const hasNegativeValues = slice.categoryValues.some(
     (cv) =>
       cv.historicalValues.some((value) => Number(value) < 0) ||
@@ -363,8 +390,9 @@ export default function DimensionalNodeVisualisation({
     <>
       {controls}
 
-      <div className="mt-3">
+      <div>
         <NodeGraph
+          title={title}
           dataTable={datasetTable}
           goalTable={goalTable}
           baselineTable={baselineTable}
@@ -378,6 +406,7 @@ export default function DimensionalNodeVisualisation({
           baselineLabel={site?.baselineName}
           showTotalLine={hasNegativeValues}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
+          forecastTitle={forecastTitle}
         />
       </div>
 

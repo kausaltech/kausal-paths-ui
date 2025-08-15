@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import styled from '@emotion/styled';
-import { CircularProgress } from '@mui/material';
 import { useTranslation } from 'next-i18next';
+
+import { KausalProgress } from './Loader';
 
 const Loader = styled.div`
   display: flex;
@@ -30,7 +31,7 @@ const ContentLoader = ({ fullPage = false }: ContentLoaderProps) => {
 
   return (
     <Loader aria-busy="true" style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}>
-      <CircularProgress />
+      <KausalProgress />
       <div className="visually-hidden">{t('loading')}</div>
     </Loader>
   );

@@ -15,7 +15,7 @@ const getGlobalStyles = (theme: Theme) => css`
     font-size: ${theme.fontSizeBase};
     line-height: ${theme.lineHeightBase};
     text-rendering: optimizeLegibility;
-    background: ${theme.themeColors.white};
+    background-color: ${theme.themeColors.light};
     color: ${theme.themeColors.black};
   }
 

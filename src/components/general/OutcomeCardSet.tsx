@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 
-//import useScrollTo from 'react-spring-scroll-to-hook';
 import styled from '@emotion/styled';
-//import { animated, config, useSpring } from '@react-spring/web';
-import { useTranslation } from 'next-i18next';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { setUniqueColors } from '@/common/colors';
@@ -21,152 +20,37 @@ type CardSetProps = {
 
 const CardSet = styled.div<CardSetProps>`
   position: relative;
-  padding-bottom: ${(props) => (props.$haschildren ? '190px' : '1rem')};
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
-  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+  background-color: transparent;
 
-  &:not(:first-of-type) {
-    margin-top: 1rem;
+  .os-top-scrollbar {
+    // Move the horizontal scrollbar to the top
+    .os-scrollbar-horizontal {
+      top: 0;
+      bottom: auto;
+    }
   }
 `;
 
-const SubNodes = styled.div`
-  padding: 0.5rem;
-`;
 const CardDeck = styled.div`
-  position: absolute;
   display: flex;
-  overflow-x: auto;
-  overflow-y: visible;
-  width: calc(100% - 1rem);
-  bottom: -1rem;
-  height: 206px;
-  z-index: 1;
-  scroll-behavior: smooth;
+  gap: 0.75rem;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  // Make space for the horizontal scrollbar
+  // TODO: Only apply when os-scrollbar-horizontal is visible
+  padding-top: 0.75rem;
 `;
 
 const ContentArea = styled.div`
-  padding: 0.5rem;
-`;
-
-const Bar = styled.div`
-  display: flex;
-  margin: 0.5rem 0 1.5rem;
-  height: 1rem;
-  border: ${(props) => props.color} solid;
-  border-width: 0;
-  border-top: 0;
-  cursor: pointer;
+  margin-bottom: 1rem;
 `;
 
 const BarHeader = styled.h5`
   font-size: 1rem;
   color: ${({ theme }) => theme.textColor.tertiary};
+  margin-bottom: 0.25rem;
 `;
-
-const Segment = styled.div`
-  display: inline-block;
-  position: relative;
-  border: ${(props) => props.theme.themeColors.white} solid;
-  border-width: 2px;
-  height: 1.5rem;
-
-  &.hovered::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 0.25rem;
-    background-color: ${(props) => props.theme.graphColors.grey050};
-    bottom: -0.5rem;
-  }
-
-  &.active::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 0.25rem;
-    background-color: ${(props) => props.theme.graphColors.grey090};
-    bottom: -0.5rem;
-  }
-`;
-
-const BarSeparator = styled.div`
-  display: inline-block;
-  position: relative;
-  height: 2rem;
-  width: 2px;
-  background-color: ${(props) => props.theme.graphColors.grey070};
-`;
-
-type OutcomeBarProps = {
-  nodes: OutcomeNodeFieldsFragment[];
-  date: number;
-  hovered: string | undefined;
-  onHover: (evt: string | undefined) => void;
-  handleClick: (evt: string) => void;
-  activeNode: string | undefined;
-  parentColor: string;
-};
-
-const OutcomeBar = (props: OutcomeBarProps) => {
-  const { nodes, date, hovered, onHover, handleClick, activeNode, parentColor } = props;
-  const { t } = useTranslation();
-  const nodesTotal = getOutcomeTotal(nodes, date);
-  // Let's get the outcome type from first node and use it with translate to give bar a title
-  // TODO: get title from API
-  const outcomeType = nodes[0].quantity;
-  const negativeNodes = nodes.filter((node) => getMetricValue(node, date) < 0);
-  const positiveNodes = nodes.filter((node) => getMetricValue(node, date) >= 0);
-
-  return (
-    <>
-      <BarHeader>{`${t(outcomeType)} ${date}`}</BarHeader>
-      <Bar color={parentColor}>
-        {positiveNodes.map((node) => (
-          <Segment
-            key={node.id}
-            style={{
-              width: `${(getMetricValue(node, date) / nodesTotal) * 100 || 0}%`,
-              backgroundColor: node.color || parentColor,
-              display: `${getMetricValue(node, date) ? '' : 'none'}`,
-            }}
-            className={`${hovered === node.id ? 'hovered' : ''} ${
-              activeNode === node.id ? 'active' : ''
-            }`}
-            onMouseEnter={() => onHover(node.id)}
-            onMouseLeave={() => onHover(undefined)}
-            onClick={() => handleClick(node.id)}
-          />
-        ))}
-        {negativeNodes?.length > 0 && <BarSeparator />}
-        {negativeNodes.map((node) => (
-          <Segment
-            key={node.id}
-            style={{
-              width: `${(-getMetricValue(node, date) / nodesTotal) * 100 || 0}%`,
-              backgroundColor: node.color || parentColor,
-              display: `${getMetricValue(node, date) ? '' : 'none'}`,
-            }}
-            className={`${hovered === node.id ? 'hovered' : ''} ${
-              activeNode === node.id ? 'active' : ''
-            }`}
-            onMouseEnter={() => onHover(node.id)}
-            onMouseLeave={() => onHover(undefined)}
-            onClick={() => handleClick(node.id)}
-          />
-        ))}
-        {nodes.length < 2 && (
-          <Segment
-            style={{
-              width: '100%',
-              backgroundColor: parentColor,
-            }}
-          />
-        )}
-      </Bar>
-    </>
-  );
-};
 
 const DEFAULT_NODE_ORDER = 100;
 
@@ -224,10 +108,10 @@ const OutcomeCardSet = ({
   isRootNode,
   refetching,
 }: OutcomeCardSetProps) => {
-  const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>(undefined);
   //const { scrollTo } = useScrollTo(config.molasses);
   const showRefreshPrompt = useFeatures().showRefreshPrompt;
-  const { cardNodes, subNodeMap } = useMemo(() => {
+  const { cardNodes } = useMemo(() => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()]
       .filter((node) => inputNodeIds.indexOf(node.id) >= 0)
@@ -250,28 +134,17 @@ const OutcomeCardSet = ({
       cardNodes,
       subNodeMap,
     };
-  }, [nodeMap]);
-
-  const inputNodes = rootNode.inputNodes.filter((node) => !nodeMap.has(node.id));
-  // Hide outcome bar. TODO: make this configurable
-  const showOutcomeBar = false;
-
-  /*
-  const fadeIn = useSpring({
-    to: { opacity: 1 },
-    from: { opacity: 0 },
-  });
-  */
+  }, [nodeMap, rootNode.inputNodes]);
 
   const handleHover = useCallback(
-    (evt) => {
+    (evt: string | undefined) => {
       setHoveredNodeId(evt);
     },
     [setHoveredNodeId]
   );
 
   const handleClick = useCallback(
-    (segmentId) => {
+    (segmentId: string) => {
       // if active node clicked, make its parent active node
       const newActiveNode = segmentId === activeNodeId ? rootNode.id : segmentId;
       setLastActiveNodeId(newActiveNode);
@@ -279,19 +152,42 @@ const OutcomeCardSet = ({
     [activeNodeId, rootNode.id, setLastActiveNodeId]
   );
 
-  const negativeNodesTotal = getOutcomeTotal(
-    cardNodes.filter((node) => getMetricValue(node, endYear) < 0),
-    endYear
-  );
+  // Slightly more complex than needed due to typing in preprocess.ts
+  const allNegativeNodes = cardNodes
+    .filter((node) =>
+      node.metric ? Number(getMetricValue({ metric: node.metric }, endYear)) < 0 : false
+    )
+    .map((node) => ({ metric: node.metric! }));
 
-  const positiveNodesTotal = getOutcomeTotal(
-    cardNodes.filter((node) => getMetricValue(node, endYear) >= 0),
-    endYear
-  );
+  const negativeNodesTotal = getOutcomeTotal(allNegativeNodes, endYear);
+
+  const allPositiveNodes = cardNodes
+    .filter((node) =>
+      node.metric ? Number(getMetricValue({ metric: node.metric }, endYear)) >= 0 : false
+    )
+    .map((node) => ({ metric: node.metric! }));
+
+  const positiveNodesTotal = getOutcomeTotal(allPositiveNodes, endYear);
 
   // console.log("card nodes" , cardNodes);
   return (
     <>
+      {isRootNode && (
+        <OutcomeCard
+          startYear={startYear}
+          endYear={endYear}
+          node={rootNode}
+          state="open"
+          hovered={false}
+          active={true}
+          onHover={undefined}
+          handleClick={undefined}
+          color={rootNode.color || parentColor}
+          positiveTotal={undefined}
+          negativeTotal={negativeNodesTotal}
+          refetching={refetching}
+        />
+      )}
       <CardSet id={rootNode.id} $color={rootNode.color!} $haschildren={cardNodes.length > 0}>
         <ContentArea>
           <OutcomeNodeContent
@@ -307,43 +203,40 @@ const OutcomeCardSet = ({
             outcomeGraphSlot={showRefreshPrompt ? <NZPOutcomeHelpText /> : null}
           />
         </ContentArea>
-        {showOutcomeBar && (
-          <>
-            <OutcomeBar
-              nodes={cardNodes}
-              date={endYear}
-              hovered={hoveredNodeId}
-              onHover={handleHover}
-              handleClick={handleClick}
-              activeNode={activeNodeId}
-              parentColor={parentColor}
-            />
-          </>
-        )}
         {cardNodes.length > 0 && (
-          <SubNodes>
-            <BarHeader>{subNodesTitle}</BarHeader>
-            <CardDeck role="tablist">
-              {cardNodes.map((node, indx) => (
-                <OutcomeCard
-                  key={node.id}
-                  startYear={startYear}
-                  endYear={endYear}
-                  node={node}
-                  state={activeNodeId === undefined ? 'closed' : 'open'}
-                  hovered={hoveredNodeId === node.id}
-                  active={activeNodeId === node.id}
-                  onHover={handleHover}
-                  handleClick={handleClick}
-                  color={node.color || parentColor}
-                  total={positiveNodesTotal - negativeNodesTotal}
-                  positiveTotal={positiveNodesTotal}
-                  negativeTotal={negativeNodesTotal}
-                  refetching={refetching}
-                />
-              ))}
-            </CardDeck>
-          </SubNodes>
+          <div>
+            <BarHeader>
+              {subNodesTitle} ({endYear})
+            </BarHeader>
+            <OverlayScrollbarsComponent
+              defer
+              className="os-top-scrollbar"
+              options={{
+                scrollbars: { autoHide: 'never' },
+                overflow: { x: 'scroll', y: 'visible' },
+              }}
+            >
+              <CardDeck role="tablist">
+                {cardNodes.map((node) => (
+                  <OutcomeCard
+                    key={node.id}
+                    startYear={startYear}
+                    endYear={endYear}
+                    node={node}
+                    state={activeNodeId === undefined ? 'closed' : 'open'}
+                    hovered={hoveredNodeId === node.id}
+                    active={activeNodeId === node.id}
+                    onHover={handleHover}
+                    handleClick={handleClick}
+                    color={node.color || parentColor}
+                    positiveTotal={positiveNodesTotal}
+                    negativeTotal={negativeNodesTotal}
+                    refetching={refetching}
+                  />
+                ))}
+              </CardDeck>
+            </OverlayScrollbarsComponent>
+          </div>
         )}
       </CardSet>
     </>

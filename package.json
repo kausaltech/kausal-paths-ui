@@ -81,6 +81,7 @@
     "next": "^15.5.0",
     "next-i18next": "^15.4.2",
     "numbro": "^2.5.0",
+    "overlayscrollbars-react": "^0.5.6",
     "pino": "^9.7.0",
     "plotly.js": "^3.0.1",
     "plotly.js-locales": "^3.0.1",

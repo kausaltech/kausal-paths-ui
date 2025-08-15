@@ -9,7 +9,7 @@ export const StyledContentContainer = styled(Container)<{ $overlap: boolean }>`
 const StyledHeroContainer = styled.div<{ $overlap: boolean }>`
   padding: 4rem 0 2rem;
   margin-bottom: 1rem;
-  background: ${({ theme }) => theme.brandDark};
+  background-color: ${({ theme }) => theme.brandDark};
   color: ${(props) => props.theme.themeColors.white};
   padding-bottom: ${({ $overlap }) => ($overlap ? '10rem' : '0')};
 `;
@@ -63,13 +63,7 @@ type Props = {
   children?: React.ReactNode;
 };
 
-export const PageHero = ({
-  title,
-  leadTitle,
-  leadDescription,
-  overlap = false,
-  children,
-}: Props) => {
+export const PageHero = ({ leadTitle, leadDescription, overlap = false, children }: Props) => {
   const hasHeroCard = !!(leadTitle || leadDescription);
 
   return (
@@ -88,8 +82,6 @@ export const PageHero = ({
               </Container>
             </Row>
           )}
-
-          <StyledTitle as={!!leadTitle ? 'h2' : undefined}>{title}</StyledTitle>
         </Container>
       </StyledHeroContainer>
 

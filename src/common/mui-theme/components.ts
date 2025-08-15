@@ -100,11 +100,9 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: theme.badgeBorderRadius,
-          padding: `${theme.badgePaddingY} ${theme.badgePaddingX}`,
-          fontWeight: theme.badgeFontWeight,
-          backgroundColor: theme.badgeColor,
-          color: theme.themeColors.white,
+          '&.MuiChip-sizeSmall': {
+            height: 20,
+          },
         },
       },
     },

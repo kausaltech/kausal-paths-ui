@@ -152,11 +152,6 @@
       "count": 13
     }
   },
-  "src/components/general/InputNodeCards.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    }
-  },
   "src/components/general/LanguageSelector.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 3
@@ -170,14 +165,6 @@
       "count": 2
     },
     "react-compiler/react-compiler": {
-      "count": 1
-    }
-  },
-  "src/components/general/OutcomeCardSet.tsx": {
-    "@typescript-eslint/no-unsafe-unary-minus": {
-      "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
       "count": 1
     }
   },
@@ -237,11 +224,6 @@
     },
     "react-compiler/react-compiler": {
       "count": 1
-    }
-  },
-  "src/components/pages/OutcomePage.tsx": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 2
     }
   },
   "src/data/metric.ts": {
