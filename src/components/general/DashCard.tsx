@@ -1,5 +1,4 @@
 import styled from '@emotion/styled';
-import { Box } from '@mui/material';
 import { ChevronCompactDown, ChevronCompactUp } from 'react-bootstrap-icons';
 
 const CardWithState = styled.div`
@@ -17,7 +16,7 @@ const CardWithState = styled.div`
   &.root {
     color: ${({ theme }) => theme.textColor.tertiary};
     background-color: ${({ theme }) => theme.graphColors.grey020};
-    border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey040};
+    //border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey030};
     h2 {
       color: ${({ theme }) => theme.textColor.tertiary};
     }
@@ -27,7 +26,7 @@ const CardWithState = styled.div`
   &.closed {
     color: ${({ theme }) => theme.textColor.primary};
     background-color: ${({ theme }) => theme.cardBackground.primary};
-    border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey030};
+    //border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey005};
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
     }
@@ -50,7 +49,7 @@ const CardWithState = styled.div`
   &.root {
     color: ${({ theme }) => theme.textColor.primary};
     background-color: ${({ theme }) => theme.cardBackground.primary};
-    border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey020};
+    //border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey020};
     h2 {
       color: ${({ theme }) => theme.textColor.secondary};
     }
@@ -75,7 +74,8 @@ const CardFooter = styled.div<{ $active: boolean; $hovered: boolean; $state: 'op
     if ($hovered) {
       return theme.cardBackground.secondary;
     }
-    return theme.graphColors.grey010;
+    // When all cards are closed
+    return theme.graphColors.grey005;
   }};
 `;
 
@@ -93,10 +93,11 @@ type DashCardProps = {
   color: string;
   refProp: React.RefObject<HTMLDivElement | null>;
   children: React.ReactNode;
+  interactive?: boolean;
 };
 
 const DashCard = (props: DashCardProps) => {
-  const { children, state, hovered, active, color, refProp } = props;
+  const { children, state, hovered, active, color, refProp, interactive = true } = props;
 
   return (
     <CardContainer>
@@ -107,9 +108,11 @@ const DashCard = (props: DashCardProps) => {
       >
         {children}
       </CardWithState>
-      <CardFooter $active={active} $hovered={hovered} $state={state}>
-        {active ? <ChevronCompactUp /> : <ChevronCompactDown />}
-      </CardFooter>
+      {interactive && (
+        <CardFooter $active={active} $hovered={hovered} $state={state}>
+          {active ? <ChevronCompactUp /> : <ChevronCompactDown />}
+        </CardFooter>
+      )}
     </CardContainer>
   );
 };

@@ -119,7 +119,7 @@ export default function OutcomePage(props: OutcomePageProps) {
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
 
   return (
-    <Box sx={{ backgroundColor: theme.graphColors.grey040, paddingBottom: 2 }}>
+    <Box sx={{ backgroundColor: theme.graphColors.grey010, paddingBottom: 2 }}>
       <PageHero
         title={getTitle(t, outcomeType)}
         leadTitle={pageLeadTitle ?? undefined}
@@ -143,7 +143,7 @@ export default function OutcomePage(props: OutcomePageProps) {
               startYear={yearRange[0]}
               endYear={yearRange[1]}
               activeScenario={activeScenario?.name}
-              parentColor="#666"
+              parentColor={theme.graphColors.blue050}
               activeNodeId={
                 index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined
               }

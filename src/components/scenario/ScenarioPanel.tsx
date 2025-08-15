@@ -76,7 +76,7 @@ const ScenarioPanel = () => {
       .map((value) => value.year) ?? [];
 
   return (
-    <Box>
+    <Box sx={{ boxShadow: 2 }}>
       <Box sx={{ p: 1, backgroundColor: theme.graphColors.blue010 }}>
         <Typography variant="h4" sx={{ lineHeight: 1, m: 0, p: 0, mb: 1 }}>
           {t('scenario')}

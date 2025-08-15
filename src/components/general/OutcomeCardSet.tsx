@@ -39,7 +39,7 @@ const CardDeck = styled.div`
 `;
 
 const ContentArea = styled.div`
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 `;
 
 const BarHeader = styled.h5`
@@ -167,6 +167,26 @@ const OutcomeCardSet = ({
   // console.log("card nodes" , cardNodes);
   return (
     <>
+      {isRootNode && (
+        <SubNodes>
+          <CardDeck>
+            <OutcomeCard
+              startYear={startYear}
+              endYear={endYear}
+              node={rootNode}
+              state="open"
+              hovered={false}
+              active={true}
+              onHover={() => {}}
+              handleClick={undefined}
+              color={rootNode.color || parentColor}
+              positiveTotal={undefined}
+              negativeTotal={negativeNodesTotal}
+              refetching={refetching}
+            />
+          </CardDeck>
+        </SubNodes>
+      )}
       <CardSet id={rootNode.id} $color={rootNode.color!} $haschildren={cardNodes.length > 0}>
         <ContentArea>
           <OutcomeNodeContent
@@ -206,7 +226,6 @@ const OutcomeCardSet = ({
                     onHover={handleHover}
                     handleClick={handleClick}
                     color={node.color || parentColor}
-                    total={positiveNodesTotal - negativeNodesTotal}
                     positiveTotal={positiveNodesTotal}
                     negativeTotal={negativeNodesTotal}
                     refetching={refetching}

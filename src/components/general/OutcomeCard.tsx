@@ -55,7 +55,7 @@ const Body = styled.div`
   margin-top: 0.5rem;
 `;
 
-const MainValue = styled.div`
+const MainValueWrapper = styled.div`
   text-align: left;
 `;
 
@@ -147,6 +147,49 @@ const ChangeValue = ({ change }: { change: number | undefined }) => {
   );
 };
 
+type SectorSummaryProps = {
+  active: boolean;
+  isForecast: boolean;
+  goalOutcomeValue: number;
+  maximumFractionDigits: number | null;
+  unit: string | undefined;
+  change: number | undefined;
+  startYear: number;
+  endYear: number;
+};
+
+export const SectorSummary = ({
+  active,
+  isForecast,
+  goalOutcomeValue,
+  maximumFractionDigits,
+  unit,
+  change,
+  startYear,
+  endYear,
+}: SectorSummaryProps) => {
+  const { t } = useTranslation();
+  return (
+    <MainValueWrapper>
+      <Label $active={active}>
+        {isForecast ? t('table-scenario-forecast') : t('table-historical')}
+      </Label>
+      {goalOutcomeValue !== undefined ? (
+        <TotalValue>
+          {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
+          <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
+        </TotalValue>
+      ) : (
+        <NoValue />
+      )}
+      {change !== undefined && (
+        <Status $active={active}>
+          <ChangeValue change={change} /> ({startYear} - {endYear})
+        </Status>
+      )}
+    </MainValueWrapper>
+  );
+};
 type OutcomeCardProps = {
   node: OutcomeNodeFieldsFragment;
   startYear: number;
@@ -155,12 +198,11 @@ type OutcomeCardProps = {
   state: 'open' | 'closed';
   hovered: boolean;
   active: boolean;
-  onHover: (evt) => void;
-  handleClick: (segmentId: string) => void;
+  onHover: (evt: string | undefined) => void;
+  handleClick: ((segmentId: string) => void) | undefined;
   color: string;
-  total: number;
-  positiveTotal: number;
-  negativeTotal: number;
+  positiveTotal?: number;
+  negativeTotal?: number;
   refetching: boolean;
 };
 
@@ -175,8 +217,8 @@ const OutcomeCard = (props: OutcomeCardProps) => {
     color,
     startYear,
     endYear,
-    total,
     negativeTotal,
+    positiveTotal,
     refetching,
   } = props;
 
@@ -190,8 +232,8 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       });
   }, [active]);
 
-  //console.log(state);
-  const { t } = useTranslation();
+  const isCompared = positiveTotal !== undefined && negativeTotal !== undefined;
+  const siblingsTotal = isCompared ? positiveTotal - negativeTotal : undefined;
   const baseOutcomeValue = node.metric
     ? getMetricValue({ metric: node.metric }, startYear) || 0
     : 0;
@@ -208,12 +250,12 @@ const OutcomeCard = (props: OutcomeCardProps) => {
 
   const unit = node.metric?.unit?.htmlShort;
 
-  const handleClickTab = () => handleClick(node.id);
+  const handleClickTab = () => handleClick && handleClick(node.id);
 
   const handleKeyDownOnTab = (e: React.KeyboardEvent) => {
     if (e.code === 'Enter' || e.code === 'Space') {
       e.preventDefault();
-      handleClick(node.id);
+      if (handleClick !== undefined) handleClick(node.id);
     }
   };
 
@@ -229,16 +271,24 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       aria-selected={active}
       aria-controls={`tabpanel-${node.id}`}
     >
-      <DashCard state={state} hovered={hovered} active={active} color={color} refProp={cardRef}>
+      <DashCard
+        state={state}
+        hovered={hovered}
+        active={active}
+        color={color}
+        refProp={cardRef}
+        interactive={handleClick !== undefined}
+      >
         {refetching && <Loader />}
-
-        <ProportionBar
-          size={goalOutcomeValue ? goalOutcomeValue / total : 0}
-          color={color}
-          active={active}
-          isOpen={state === 'open'}
-          offset={negativeTotal < 0 ? Math.abs(negativeTotal / total) : 0}
-        />
+        {isCompared && siblingsTotal && (
+          <ProportionBar
+            size={goalOutcomeValue ? goalOutcomeValue / siblingsTotal : 0}
+            color={color}
+            active={active}
+            isOpen={state === 'open'}
+            offset={negativeTotal < 0 ? Math.abs(negativeTotal / siblingsTotal) : 0}
+          />
+        )}
         <Header className={state}>
           <Title color={color}>
             <Name>{node.shortName || node.name}</Name>
@@ -247,24 +297,16 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         </Header>
 
         <Body>
-          <MainValue>
-            <Label $active={active}>
-              {isForecast ? t('table-scenario-forecast') : t('table-historical')}
-            </Label>
-            {goalOutcomeValue !== undefined ? (
-              <TotalValue>
-                {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
-                <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
-              </TotalValue>
-            ) : (
-              <NoValue />
-            )}
-            {change !== undefined && (
-              <Status $active={active}>
-                <ChangeValue change={change} /> ({startYear} - {endYear})
-              </Status>
-            )}
-          </MainValue>
+          <SectorSummary
+            active={active}
+            isForecast={isForecast}
+            goalOutcomeValue={goalOutcomeValue}
+            maximumFractionDigits={maximumFractionDigits}
+            unit={unit}
+            change={change}
+            startYear={startYear}
+            endYear={endYear}
+          />
         </Body>
       </DashCard>
     </StyledTab>
