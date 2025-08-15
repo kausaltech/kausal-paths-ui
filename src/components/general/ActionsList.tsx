@@ -14,8 +14,8 @@ import {
   TableRow,
   TableSortLabel,
   Typography,
-  useTheme,
 } from '@mui/material';
+import { useTheme } from '@emotion/react';
 
 import { ActionLink } from '@/common/links';
 import {
@@ -90,6 +90,12 @@ const ActionsList = ({
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
+  const cardBgPrimary   = theme.cardBackground?.primary ?? theme.palette.background.paper;
+  const cardBgSecondary = theme.cardBackground?.secondary ?? theme.palette.background.default;
+  const textPrimary     = theme.textColor?.primary ?? theme.palette.text.primary;
+  const textSecondary   = theme.textColor?.secondary ?? theme.palette.text.primary;
+  const textTertiary    = theme.textColor?.tertiary ?? theme.palette.text.secondary;
+  
  // hide ungrouped actions if at least one group exists
   const filteredActions = useMemo(() => {
     const hasAnyGroup = actions.some((a) => a.group);
@@ -241,14 +247,21 @@ const originalIndex = useMemo(
             const enabledParam = findActionEnabledParam(action.parameters);
             const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
 
-            const rowBg = isOpen ? theme.palette.action.hover : 'transparent';
+            const colors = {
+              bg:    isIncluded ? cardBgPrimary : cardBgSecondary,
+              text:  isIncluded ? textSecondary : textTertiary,
+              title: isIncluded ? textPrimary   : textTertiary,
+
+            };
+            const rowBg = colors.bg;
 
             return (
               <React.Fragment key={action.id}>
                 <TableRow
                   sx={{
                     bgcolor: rowBg,
-                    '& > .MuiTableCell-root': { borderBottom: isOpen ? 'none' : undefined },
+                    color: colors.text,
+                    '& > .MuiTableCell-root': { backgroundColor: 'inherit', color: 'inherit', borderBottom: isOpen ? 'none' : undefined },
 
                   }}
                 >
@@ -265,14 +278,17 @@ const originalIndex = useMemo(
                       <Typography
                         component="a"
                         variant="h6"
-                        sx={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                        sx={{ color: colors.title, textDecoration: 'none', cursor: 'pointer' }}
                       >
                         {action.name}
                       </Typography>
                     </ActionLink>
                   </TableCell>
                   <TableCell>
-                    <Checkbox checked={isIncluded} disabled />
+                    <Checkbox 
+                    checked={isIncluded} 
+                    disabled
+                    />
                   </TableCell>
 
                   {columns.map((col) => {
@@ -297,11 +313,11 @@ const originalIndex = useMemo(
 
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
-                        <Typography variant="h5" component="span">
+                        <Typography variant="h5" component="span" sx={{ color: colors.title }}>
                            {display}
                         </Typography>
                         {unit && (
-                          <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
+                          <Typography variant="body2" component="span" sx={{ ml: 0.5, color: colors.text }}>
                             {unit}
                           </Typography>
                         )}
@@ -358,11 +374,16 @@ const originalIndex = useMemo(
                       borderBottom: 'none',
                       borderLeft: `6px solid ${action.group?.color ?? theme.graphColors.grey090}`,
                       bgcolor: rowBg,
+                      color: colors.text,
+                      '& .MuiCollapse-root, & .MuiCollapse-root *': {
+                      backgroundColor: 'inherit',
+                      color: 'inherit',
+                     },
                     }}
                   >
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
                       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ color: colors.text }}>
                           {(action.goal || action.shortDescription)?.replace(/<[^>]+>/g, '')}
                         </Typography>
                         <ActionLink action={action}>
@@ -370,7 +391,7 @@ const originalIndex = useMemo(
                             component="a"
                             variant="h6"
                             sx={{
-                              color: 'primary.main',
+                              color: colors.title,
                               textDecoration: 'none',
                               cursor: 'pointer',
                               '&:hover': { textDecoration: 'underline' },
