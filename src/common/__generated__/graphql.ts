@@ -12,8 +12,10 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Date: { input: any; output: any; }
   DateTime: { input: string; output: string; }
   JSONString: { input: string; output: string; }
+  PointScalar: { input: any; output: any; }
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -29,6 +31,20 @@ export enum ActionSortOrder {
   /** Standard */
   Standard = 'STANDARD'
 }
+
+export type CreateOrganizationMutationInput = {
+  /** A simplified short version of name for the general public */
+  abbreviation: InputMaybe<Scalars['String']['input']>;
+  classification: InputMaybe<Scalars['ID']['input']>;
+  clientMutationId: InputMaybe<Scalars['String']['input']>;
+  /** A date of dissolution */
+  dissolutionDate: InputMaybe<Scalars['Date']['input']>;
+  /** A date of founding */
+  foundingDate: InputMaybe<Scalars['Date']['input']>;
+  /** A primary name, e.g. a legally recognized name */
+  name: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['ID']['input']>;
+};
 
 /** An enumeration. */
 export enum DecisionLevel {
@@ -130,6 +146,21 @@ export enum SearchOperatorEnum {
   And = 'AND',
   Or = 'OR'
 }
+
+export type UpdateOrganizationMutationInput = {
+  /** A simplified short version of name for the general public */
+  abbreviation: InputMaybe<Scalars['String']['input']>;
+  classification: InputMaybe<Scalars['ID']['input']>;
+  clientMutationId: InputMaybe<Scalars['String']['input']>;
+  /** A date of dissolution */
+  dissolutionDate: InputMaybe<Scalars['Date']['input']>;
+  /** A date of founding */
+  foundingDate: InputMaybe<Scalars['Date']['input']>;
+  id: InputMaybe<Scalars['ID']['input']>;
+  /** A primary name, e.g. a legally recognized name */
+  name: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['ID']['input']>;
+};
 
 export enum VisualizationKind {
   Group = 'group',
@@ -334,6 +365,20 @@ export type SetParameterMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type DimensionalPlotFragment = (
+  { id: string, sources: Array<string>, unit: (
+    { htmlLong: string }
+    & { __typename: 'UnitType' }
+  ), nodes: Array<(
+    { id: string, label: string, color: string | null }
+    & { __typename: 'FlowNodeType' }
+  )>, links: Array<(
+    { year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null>, absoluteSourceValues: Array<number> }
+    & { __typename: 'FlowLinksType' }
+  )> }
+  & { __typename: 'DimensionalFlowType' }
+);
+
 export type ActivateScenarioMutationVariables = Exact<{
   scenarioId: Scalars['ID']['input'];
 }>;
@@ -348,20 +393,6 @@ export type ActivateScenarioMutation = (
     & { __typename: 'ActivateScenarioMutation' }
   ) | null }
   & { __typename: 'Mutation' }
-);
-
-export type DimensionalPlotFragment = (
-  { id: string, sources: Array<string>, unit: (
-    { htmlLong: string }
-    & { __typename: 'UnitType' }
-  ), nodes: Array<(
-    { id: string, label: string, color: string | null }
-    & { __typename: 'FlowNodeType' }
-  )>, links: Array<(
-    { year: number, sources: Array<string>, targets: Array<string>, values: Array<number | null>, absoluteSourceValues: Array<number> }
-    & { __typename: 'FlowLinksType' }
-  )> }
-  & { __typename: 'DimensionalFlowType' }
 );
 
 export type DimensionalMetricFragment = (
@@ -1619,7 +1650,7 @@ export type ScenarioActionImpactsFieldsFragment = (
     & { __typename: 'ScenarioType' }
   ), impacts: Array<(
     { value: number, year: number, action: (
-      { id: string, name: string, shortName: string | null, color: string | null, group: (
+      { id: string, name: string, shortName: string | null, color: string | null, isEnabled: boolean, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null }
@@ -1696,7 +1727,7 @@ export type DashboardPageFieldsFragment = (
         & { __typename: 'ScenarioType' }
       ), impacts: Array<(
         { value: number, year: number, action: (
-          { id: string, name: string, shortName: string | null, color: string | null, group: (
+          { id: string, name: string, shortName: string | null, color: string | null, isEnabled: boolean, group: (
             { id: string, name: string, color: string | null }
             & { __typename: 'ActionGroupType' }
           ) | null }
@@ -1852,7 +1883,7 @@ export type GetPageQuery = (
           & { __typename: 'ScenarioType' }
         ), impacts: Array<(
           { value: number, year: number, action: (
-            { id: string, name: string, shortName: string | null, color: string | null, group: (
+            { id: string, name: string, shortName: string | null, color: string | null, isEnabled: boolean, group: (
               { id: string, name: string, color: string | null }
               & { __typename: 'ActionGroupType' }
             ) | null }
