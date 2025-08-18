@@ -22,6 +22,7 @@ type Action = {
   value: number;
   group?: ActionGroup;
   year: number;
+  isEnabled: boolean;
 };
 
 type Datum = {
@@ -64,16 +65,18 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
   const { t } = useTranslation();
   const fallbackColor = theme.graphColors.grey030;
   const year = actions[0]?.year;
-  const dataWithColors = actions.map((action) => ({
-    ...action,
-    // Note: color could be an empty string
-    color: action.group?.color || action.color || fallbackColor,
-  }));
+  const filteredActions = actions
+    .filter((action) => action.isEnabled)
+    .map((action) => ({
+      ...action,
+      // Note: color could be an empty string
+      color: action.group?.color || action.color || fallbackColor,
+    }));
 
   // Used to separate actions typically by sector e.g. "Energy", "Transport" etc
   const groups = new Map(
-    actions
-      .filter((action): action is Action & { group: ActionGroup } => !!action.group)
+    filteredActions
+      .filter((action): action is Action & { color: string; group: ActionGroup } => !!action.group)
       .map((action) => [action.group?.id, { ...action.group }])
   );
 
@@ -81,7 +84,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
     dataset: [
       {
         dimensions: ['action', 'value', 'group'],
-        source: dataWithColors.map((action) => ({
+        source: filteredActions.map((action) => ({
           action: action.name,
           value: action.value,
           color: action.color,
@@ -154,8 +157,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
     ],
   };
 
-  const totalImpact = dataWithColors.reduce((sum, action) => sum + action.value, 0);
-  const chartHeight = actions ? actions.length * 28 + 110 : 400;
+  const totalImpact = filteredActions.reduce((sum, action) => sum + action.value, 0);
+  const chartHeight = filteredActions ? filteredActions.length * 28 + 110 : 400;
 
   return (
     <Box sx={{ my: 2 }}>
