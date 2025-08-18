@@ -12,8 +12,10 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Date: { input: any; output: any; }
   DateTime: { input: any; output: any; }
   JSONString: { input: any; output: any; }
+  PointScalar: { input: any; output: any; }
   PositiveInt: { input: any; output: any; }
   RichText: { input: any; output: any; }
   UUID: { input: any; output: any; }
@@ -29,6 +31,20 @@ export enum ActionSortOrder {
   /** Standard */
   Standard = 'STANDARD'
 }
+
+export type CreateOrganizationMutationInput = {
+  /** A simplified short version of name for the general public */
+  abbreviation?: InputMaybe<Scalars['String']['input']>;
+  classification?: InputMaybe<Scalars['ID']['input']>;
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** A date of dissolution */
+  dissolutionDate?: InputMaybe<Scalars['Date']['input']>;
+  /** A date of founding */
+  foundingDate?: InputMaybe<Scalars['Date']['input']>;
+  /** A primary name, e.g. a legally recognized name */
+  name: Scalars['String']['input'];
+  parent?: InputMaybe<Scalars['ID']['input']>;
+};
 
 /** An enumeration. */
 export enum DecisionLevel {
@@ -130,6 +146,21 @@ export enum SearchOperatorEnum {
   And = 'AND',
   Or = 'OR'
 }
+
+export type UpdateOrganizationMutationInput = {
+  /** A simplified short version of name for the general public */
+  abbreviation?: InputMaybe<Scalars['String']['input']>;
+  classification?: InputMaybe<Scalars['ID']['input']>;
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** A date of dissolution */
+  dissolutionDate?: InputMaybe<Scalars['Date']['input']>;
+  /** A date of founding */
+  foundingDate?: InputMaybe<Scalars['Date']['input']>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  /** A primary name, e.g. a legally recognized name */
+  name: Scalars['String']['input'];
+  parent?: InputMaybe<Scalars['ID']['input']>;
+};
 
 export enum VisualizationKind {
   Group = 'group',

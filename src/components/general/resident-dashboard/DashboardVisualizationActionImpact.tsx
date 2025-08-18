@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useTheme } from '@emotion/react';
-import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, Grid, Stack, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 
@@ -22,6 +22,7 @@ type Action = {
   value: number;
   group?: ActionGroup;
   year: number;
+  isEnabled: boolean;
 };
 
 type Datum = {
@@ -35,21 +36,26 @@ const Legend = ({ groups }: { groups: ActionGroup[] }) => {
   const theme = useTheme();
 
   return (
-    <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1 }}>
+    <Grid container sx={{ mt: 2, mb: 1, alignItems: 'center' }} rowSpacing={0.5} columnSpacing={1}>
       {groups.map((group) => (
-        <Stack key={group.id} direction="row" spacing={0.5} alignItems="center">
-          <Box
-            sx={{
-              backgroundColor: group.color,
-              width: 20,
-              height: 20,
-              borderRadius: theme.badgeBorderRadius,
-            }}
-          />
-          <Typography color="text.secondary">{group.name}</Typography>
-        </Stack>
+        <Grid key={group.id} size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Box
+              sx={{
+                flexShrink: 0,
+                backgroundColor: group.color,
+                width: 16,
+                height: 16,
+                borderRadius: theme.badgeBorderRadius,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {group.name}
+            </Typography>
+          </Stack>
+        </Grid>
       ))}
-    </Stack>
+    </Grid>
   );
 };
 
@@ -64,16 +70,18 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
   const { t } = useTranslation();
   const fallbackColor = theme.graphColors.grey030;
   const year = actions[0]?.year;
-  const dataWithColors = actions.map((action) => ({
-    ...action,
-    // Note: color could be an empty string
-    color: action.group?.color || action.color || fallbackColor,
-  }));
+  const filteredActions = actions
+    .filter((action) => action.isEnabled)
+    .map((action) => ({
+      ...action,
+      // Note: color could be an empty string
+      color: action.group?.color || action.color || fallbackColor,
+    }));
 
   // Used to separate actions typically by sector e.g. "Energy", "Transport" etc
   const groups = new Map(
-    actions
-      .filter((action): action is Action & { group: ActionGroup } => !!action.group)
+    filteredActions
+      .filter((action): action is Action & { color: string; group: ActionGroup } => !!action.group)
       .map((action) => [action.group?.id, { ...action.group }])
   );
 
@@ -81,7 +89,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
     dataset: [
       {
         dimensions: ['action', 'value', 'group'],
-        source: dataWithColors.map((action) => ({
+        source: filteredActions.map((action) => ({
           action: action.name,
           value: action.value,
           color: action.color,
@@ -154,8 +162,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
     ],
   };
 
-  const totalImpact = dataWithColors.reduce((sum, action) => sum + action.value, 0);
-  const chartHeight = actions ? actions.length * 28 + 110 : 400;
+  const totalImpact = filteredActions.reduce((sum, action) => sum + action.value, 0);
+  const chartHeight = filteredActions ? filteredActions.length * 28 + 110 : 400;
 
   return (
     <Box sx={{ my: 2 }}>

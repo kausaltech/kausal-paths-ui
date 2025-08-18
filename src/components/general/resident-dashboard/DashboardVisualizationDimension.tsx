@@ -46,6 +46,10 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
       orient: 'vertical',
       left: 'right',
       top: 'center',
+      textStyle: {
+        width: 200,
+        overflow: 'break',
+      },
       data: dataWithColors.map((src) => src.name),
     },
     series: [
