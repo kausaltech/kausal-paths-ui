@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useTheme } from '@emotion/react';
-import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, Grid, Stack, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 
@@ -36,21 +36,26 @@ const Legend = ({ groups }: { groups: ActionGroup[] }) => {
   const theme = useTheme();
 
   return (
-    <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1 }}>
+    <Grid container sx={{ mt: 2, mb: 1, alignItems: 'center' }} rowSpacing={0.5} columnSpacing={1}>
       {groups.map((group) => (
-        <Stack key={group.id} direction="row" spacing={0.5} alignItems="center">
-          <Box
-            sx={{
-              backgroundColor: group.color,
-              width: 20,
-              height: 20,
-              borderRadius: theme.badgeBorderRadius,
-            }}
-          />
-          <Typography color="text.secondary">{group.name}</Typography>
-        </Stack>
+        <Grid key={group.id} size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Box
+              sx={{
+                flexShrink: 0,
+                backgroundColor: group.color,
+                width: 16,
+                height: 16,
+                borderRadius: theme.badgeBorderRadius,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {group.name}
+            </Typography>
+          </Stack>
+        </Grid>
       ))}
-    </Stack>
+    </Grid>
   );
 };
 
