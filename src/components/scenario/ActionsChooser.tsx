@@ -144,9 +144,14 @@ const ActionsChooser = () => {
     );
   }
 
+  /* Filter actions that have no group. This is a way for admin to have hidden actions */
+  const actions = (data?.actions ?? []).filter((action) => action.group !== null);
+  /*
+  // TODO: Uncomment this when we have a global setting for decisionlevel
   const actions = (data?.actions ?? []).filter(
     (action) => action.decisionLevel === ('MUNICIPALITY' as DecisionLevel)
   );
+  */
   const activeActions = actions.filter((action) => {
     const { parameters } = action;
     const enabledParam = parameters.find(
