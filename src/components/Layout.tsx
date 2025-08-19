@@ -7,6 +7,7 @@ import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, Drawer } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -15,7 +16,7 @@ import { getThemeStaticURL } from '@/common/theme';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 
 import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
@@ -51,8 +52,9 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
   const theme = useTheme();
-  const site = useSite();
+  const [site] = useSiteWithSetter();
   const { t } = useTranslation();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
@@ -137,30 +139,28 @@ const Layout = ({ children }: React.PropsWithChildren) => {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
-            '& .MuiDrawer-paper': {
-              width: DRAWER_WIDTH,
-              boxSizing: 'border-box',
-              backgroundColor: theme.graphColors.blue010,
-            },
           }}
           variant="persistent"
           anchor="left"
-          open={drawerOpen}
+          open={!isMobile && drawerOpen}
           slotProps={{
             paper: {
               sx: {
+                width: DRAWER_WIDTH,
+                boxSizing: 'border-box',
+                backgroundColor: theme.graphColors.blue010,
                 borderRadius: 0,
                 boxShadow: 10,
               },
             },
           }}
         >
-          <ScenarioEditor handleDrawerClose={handleDrawerClose} />
+          {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {/* Temporary drawer for mobile */}
         <Drawer
           variant="temporary"
-          open={drawerOpen}
+          open={isMobile && drawerOpen}
           onClose={handleDrawerClose}
           sx={{
             display: { xs: 'block', md: 'none' },
@@ -168,6 +168,8 @@ const Layout = ({ children }: React.PropsWithChildren) => {
               width: DRAWER_WIDTH,
               boxSizing: 'border-box',
               backgroundColor: theme.graphColors.blue010,
+              borderRadius: 0,
+              boxShadow: 10,
             },
           }}
           slotProps={{
@@ -176,7 +178,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             },
           }}
         >
-          <ScenarioEditor handleDrawerClose={handleDrawerClose} />
+          {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
         <Box sx={{ flexGrow: 1 }}>
