@@ -295,6 +295,11 @@ function ActionListPage({ page }: ActionListPageProps) {
     [data, actionGroup, activeEfficiency, yearRange, filteredActions, t]
   );
 
+  const displayedActionsCount = useMemo(() => {
+    const hasAnyGroup = usableActions.some((a) => a.group);
+    return hasAnyGroup ? usableActions.filter((a) => a.group).length : usableActions.length;
+  }, [usableActions]);
+
   const actionGroups = filteredActions.reduce(
     (groups: NonNullable<ActionWithEfficiency['group']>[], action) =>
       !action.group || groups.find((group) => group.id === action.group?.id)
@@ -424,7 +429,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           </Row>
         </SettingsForm>
         <ActionCount>
-          <div>{t('actions-count', { count: usableActions.length })}</div>
+          <div>{t('actions-count', { count: displayedActionsCount })}</div>
         </ActionCount>
       </PageHero>
       <ActionsViewTabs>
