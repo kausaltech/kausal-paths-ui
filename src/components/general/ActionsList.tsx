@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { useTheme } from '@emotion/react';
 import {
   Box,
-  Checkbox,
+  Chip,
   Collapse,
   IconButton,
   Table,
@@ -18,6 +18,7 @@ import {
 import { useTranslation } from 'next-i18next';
 import { ChevronDown } from 'react-bootstrap-icons';
 
+import { DecisionLevel } from '@/common/__generated__/graphql';
 import { ActionLink } from '@/common/links';
 import {
   findActionEnabledParam,
@@ -273,15 +274,31 @@ const ActionsList = ({
                     {action.group?.name}
                   </TableCell>
                   <TableCell>
-                    <ActionLink action={action}>
-                      <Typography
-                        component="a"
-                        variant="h6"
-                        sx={{ color: colors.title, textDecoration: 'none', cursor: 'pointer' }}
-                      >
-                        {action.name}
-                      </Typography>
-                    </ActionLink>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ActionLink action={action}>
+                        <Typography
+                          component="a"
+                          variant="h6"
+                          sx={{ color: colors.title, textDecoration: 'none', cursor: 'pointer' }}
+                        >
+                          {action.name}
+                        </Typography>
+                      </ActionLink>
+                      {action.decisionLevel === DecisionLevel.Nation && (
+                        <Chip
+                          size="small"
+                          label={t('decision-national')}
+                          sx={{
+                            height: 24,
+                            borderRadius: 0,
+                            bgcolor: theme.graphColors?.blue010 ?? theme.palette.action.selected,
+                            color: theme.graphColors?.blue090 ?? theme.palette.primary.main,
+                            border: `1px solid ${theme.graphColors?.blue030 ?? 'transparent'}`,
+                            '& .MuiChip-label': { px: 0.75, py: 0 },
+                          }}
+                        />
+                      )}
+                    </Box>
                   </TableCell>
                   <ScenarioChip checked={isIncluded} label={t('included-in-scenario')} />
                   {columns.map((col) => {
