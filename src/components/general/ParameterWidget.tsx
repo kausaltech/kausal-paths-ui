@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { gql, useMutation, useReactiveVar } from '@apollo/client';
+import { gql, useMutation } from '@apollo/client';
 import styled from '@emotion/styled';
 import {
   CircularProgress,
@@ -21,6 +21,7 @@ import type {
   SetParameterMutationVariables,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
+import { useSiteWithSetter } from '@/context/site';
 
 const WidgetWrapper = styled.div`
   font-size: 0.8rem;
@@ -217,7 +218,7 @@ type BoolWidgetProps = {
 
 export const BoolWidget = (props: BoolWidgetProps) => {
   const { parameter, handleChange, loading, WidgetWrapper, disabled } = props;
-  const { id, boolValue, isCustomized, isCustomizable } = parameter;
+  const { id, boolValue, isCustomizable } = parameter;
   const { t } = useTranslation();
 
   const label = parameter.label || parameter.description || t('will_be_implemented');
@@ -257,7 +258,7 @@ type ParameterWidgetProps = {
 
 const ParameterWidget = (props: ParameterWidgetProps) => {
   const { parameter, disabled = false } = props;
-  const activeScenario = useReactiveVar(activeScenarioVar);
+  const [site] = useSiteWithSetter();
 
   const [setParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
     SetParameterMutation,
@@ -265,12 +266,28 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   >(SET_PARAMETER, {
     refetchQueries: 'active',
     onCompleted: () => {
-      activeScenarioVar({ ...activeScenario });
+      const customScenario = site.scenarios.find((scen) => scen.id === 'custom');
+      // NOTE: We KNOW this mutation results in active scenario to be set to custom in backend
+      // Although the mutation does not return the active scenario, so we need to set it manually
+      // We  want to update activeScenarioVar only in onCompleted mutations
+      if (customScenario) {
+        activeScenarioVar({ ...customScenario, isUserSelected: false });
+      }
     },
   });
 
-  const handleUserSelection = (evt) => {
-    void startInteraction(() => setParameter({ variables: evt }), {
+  type UserSelection =
+    | { parameterId: string; numberValue: number }
+    | { parameterId: string; boolValue: boolean }
+    | { parameterId: string; stringValue: string };
+  const handleUserSelection = (evt: UserSelection) => {
+    const variables: SetParameterMutationVariables = {
+      parameterId: evt.parameterId,
+      numberValue: 'numberValue' in evt ? evt.numberValue : null,
+      boolValue: 'boolValue' in evt ? evt.boolValue : null,
+      stringValue: 'stringValue' in evt ? evt.stringValue : null,
+    };
+    void startInteraction(() => setParameter({ variables: variables }), {
       name: 'setParameter',
       componentName: 'ParameterWidget',
       attributes: { parameter_id: parameter.id },

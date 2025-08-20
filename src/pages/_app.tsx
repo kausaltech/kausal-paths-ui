@@ -48,10 +48,15 @@ import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/contex
 
 import '../../styles/default/main.scss';
 
-type WatchLink = { title: string; url: string } | null;
+type WatchLink = {
+  title: string | { [key: string]: string };
+  url: string | { [key: string]: string };
+} | null;
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
 
-const defaultSiteContext: { [key: string]: { watchLink: WatchLink; demoPages?: DemoPage[] } } = {
+const defaultSiteContext: {
+  [key: string]: { instanceId?: string; watchLink: WatchLink; demoPages?: DemoPage[] };
+} = {
   sunnydale: {
     watchLink: null,
     demoPages: [
@@ -218,8 +223,8 @@ function PathsApp(props: PathsAppProps) {
     activeGoalVar(defaultGoal ?? null);
   }
 
-  if (!activeScenarioVar()) {
-    activeScenarioVar(activeScenario);
+  if (!activeScenarioVar() && activeScenario) {
+    activeScenarioVar({ ...activeScenario, isUserSelected: true });
   }
 
   if (!yearRangeVar()) {

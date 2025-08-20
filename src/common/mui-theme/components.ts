@@ -382,8 +382,8 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
       styleOverrides: {
         root: {
           '& .MuiSnackbarContent-root': {
-            backgroundColor: theme.cardBackground.primary,
-            color: theme.textColor.primary,
+            backgroundColor: theme.themeColors.dark,
+            color: theme.themeColors.white,
             borderRadius: theme.cardBorderRadius,
             border: `${theme.cardBorderWidth} solid ${theme.graphColors.grey020}`,
           },
