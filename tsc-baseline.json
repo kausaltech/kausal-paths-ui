@@ -4,6 +4,18 @@
     "ignoreMessages": false
   },
   "errors": {
+    "510c2498501e9565e6f126528b55114fde3f47b0": {
+      "file": "kausal_common/src/logging/init.ts",
+      "code": "TS2503",
+      "count": 1,
+      "message": "Cannot find namespace 'pino'."
+    },
+    "9708af7d928de056f96362050a53d039370698ca": {
+      "file": "kausal_common/src/sentry/server-init.ts",
+      "code": "TS2769",
+      "count": 1,
+      "message": "No overload matches this call."
+    },
     "d7b48510ef99dd1b8cbe48783e60f9131839eb0d": {
       "file": "src/common/preprocess.ts",
       "code": "TS2339",
@@ -88,11 +100,11 @@
       "count": 1,
       "message": "Argument of type 'null' is not assignable to parameter of type 'ElementRef | undefined'."
     },
-    "ee795aa0e8ff9ef0de663341e9c2d8f40c88d1f6": {
+    "6ac87bb79c39753f4313c97520e67d8fc05e889b": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 137 more ... | (TemplateStringsArray | ... 146 more ... | \"impact-compared-to-baseline\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...'."
+      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 137 more ... | (\"details\" | ... 146 more ... | \"impact-compared-to-baseline\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key...'."
     },
     "1484f806f69e92e870e04470aab2e62401c4c6bf": {
       "file": "src/components/common/GraphQLError.tsx",
@@ -268,11 +280,11 @@
       "count": 3,
       "message": "Object is possibly 'null'."
     },
-    "2168a3932184c85f5e03e92ff2f149f23fd5c048": {
+    "b88ae5ea58fe9e5b6bfccfc8c0653deb4dc7f8c6": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 137 more ... | (TemplateStringsArray | ... 146 more ... | \"impact-compared-to-baseline\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 137 more ... | (\"details\" | ... 146 more ... | \"impact-compared-to-baseline\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key...'."
     },
     "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
       "file": "src/components/general/BarGraph.tsx",
@@ -316,18 +328,6 @@
       "count": 1,
       "message": "Type 'string | null' is not assignable to type 'string | undefined'."
     },
-    "be5c007ec4e7d127e5225d58cddcb7dcac13019f": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '({ id: string; name: string; shortDescription: string | null; color: string | null; targetYearGoal: number | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ .....' is not assignable to parameter of type 'List<unknown>'."
-    },
-    "c2e78f882f28fa3b565130aa794fe9bfbbec6a20": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS18046",
-      "count": 1,
-      "message": "'item' is of type 'unknown'."
-    },
     "76d657496a56298930c54d5919c711e931d17169": {
       "file": "src/components/general/CausalGrid.tsx",
       "code": "TS2345",
@@ -358,11 +358,11 @@
       "count": 1,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "aae4e22e4c4a846e66ecab956a60b66fdabd06ae": {
+    "daa036ea2faaf0d9a6f51d61694b6d78d83c5361": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: TemplateStringsArray | \"details\" | \"table\" | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 137 more ... | (TemplateStringsArray | ... 146 more ... | \"impact-compared-to-baseline\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 137 more ... | (\"details\" | ... 146 more ... | \"impact-compared-to-baseline\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key...'."
     },
     "3186d64cd5707a556087f33ee127a5a37c67d25b": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -621,6 +621,18 @@
       "code": "TS2322",
       "count": 2,
       "message": "Type '{ en: string; de: string; }' is not assignable to type 'string'."
+    },
+    "a4057799a97d6f94bd0a33586c727a65ab228a53": {
+      "file": "src/pages/api/graphql.ts",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '{ field: string; val: string[]; }' is not assignable to parameter of type 'undefined'."
+    },
+    "0b0d94a5b62fb6c6cb91a366d3fb716b2ce83699": {
+      "file": "src/pages/api/sentry-event.ts",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type 'Buffer<ArrayBufferLike>' is not assignable to parameter of type 'ArrayBuffer'."
     },
     "258ef5e1c027b84dbd8936956c2ba73aa4af1e73": {
       "file": "src/pages/demo/about.tsx",
