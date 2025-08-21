@@ -77,7 +77,7 @@ jobs:
           submodules: recursive
 
       - name: Install dependencies for e2e tests
-        run: npm ci
+        run: corepack enable pnpm && pnpm install --frozen-lockfile
         working-directory: ./e2e-tests
 
       - name: Running Playwright e2e tests
