@@ -131,7 +131,7 @@
   "emission-drivers": "Οδηγοί εκπομπών",
   "emissions-by-sector": "Εκπομπές ανά τομέα ({{year}})",
   "outcomes": "Αποτελέσματα",
-  "impact-compared-to-baseline": "Συνολική επίπτωση {{impact}} {{unit}} σε σύγκριση με το σενάριο συνήθους πορείας",
+  "impact-compared-to-baseline": "<strong>Συνολική επίπτωση {{impact}} {{unit}}</strong> σε σύγκριση με το σενάριο συνήθους πορείας",
   "above-target": "πάνω από τον στόχο",
   "below-target": "κάτω από τον στόχο"
 }

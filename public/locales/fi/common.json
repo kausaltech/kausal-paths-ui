@@ -108,7 +108,7 @@
   "reset-button": "Nollaa",
   "plot-choose-dimension": "Valitse dimensio",
   "outcomes": "Lopputulemat",
-  "impact-compared-to-baseline": "Kokonaisvaikutus {{impact}} {{unit}} verrattuna jatkuvuusskenaarioon",
+  "impact-compared-to-baseline": "<strong>Kokonaisvaikutus {{impact}} {{unit}}</strong> verrattuna jatkuvuusskenaarioon",
   "above-target": "yli tavoitteen",
   "below-target": "alle tavoitteen"
 }

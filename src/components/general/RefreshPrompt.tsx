@@ -165,12 +165,17 @@ export function RefreshPrompt() {
             </p>
           </StyledCardContent>
           <StyledCardActions>
-            <Button size="small" onClick={handleRefresh} color="primary">
-              <ArrowClockwise size={18} />
-              <span className="m-2">Reload</span>
-            </Button>
             <Button size="small" onClick={handleDisable}>
               Don&apos;t show this again
+            </Button>
+            <Button
+              size="small"
+              onClick={handleRefresh}
+              color="primary"
+              variant="contained"
+              startIcon={<ArrowClockwise size={18} />}
+            >
+              Reload
             </Button>
           </StyledCardActions>
         </StyledCard>

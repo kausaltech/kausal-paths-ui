@@ -104,7 +104,7 @@
   "tco2-e-inhabitant": "t CO<sub>2</sub>eq/iedzīvotājs/g",
   "ktco2-e": "kt CO<sub>2</sub>eq/g",
   "outcomes": "Rezultāti",
-  "impact-compared-to-baseline": "Kopējā ietekme {{impact}} {{unit}} salīdzinājumā ar ierasto attīstības scenāriju",
+  "impact-compared-to-baseline": "<strong>Kopējā ietekme {{impact}} {{unit}}</strong> salīdzinājumā ar ierasto attīstības scenāriju",
   "above-target": "pārsniedz mērķi",
   "below-target": "nepārsniedz mērķi"
 }

@@ -16,7 +16,7 @@ import type { CallbackDataParams } from 'echarts/types/dist/shared';
 
 import { Chart } from '@common/components/Chart';
 
-import { useTranslation } from '@/common/i18n';
+import { Trans, useTranslation } from '@/common/i18n';
 
 type ActionGroup = {
   id: string;
@@ -238,14 +238,17 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
 
           <Divider sx={{ my: 2 }} />
 
-          <Typography variant="subtitle1">
-            {t('impact-compared-to-baseline', {
-              impact:
-                totalImpact > 0
-                  ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                  : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
-              unit: unit || '',
-            })}
+          <Typography variant="subtitle1" sx={{ textAlign: 'right' }}>
+            <Trans
+              i18nKey="impact-compared-to-baseline"
+              values={{
+                impact:
+                  totalImpact > 0
+                    ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                    : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+                unit: unit || '',
+              }}
+            />
           </Typography>
         </CardContent>
       </Card>
