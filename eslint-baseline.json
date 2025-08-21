@@ -1,9 +1,4 @@
 {
-  "kausal_common/src/utils/lru-cache.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    }
-  },
   "src/common/fonts.js": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
