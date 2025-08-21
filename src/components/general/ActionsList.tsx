@@ -399,7 +399,7 @@ const ActionsList = ({
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
                       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <Typography variant="body2" sx={{ color: colors.text }}>
-                          {(action.goal || action.shortDescription)?.replace(/<[^>]+>/g, '')}
+                          {(action.goal || action.shortDescription)?.replace(/(<([^>]+)>)/gi, '')}
                         </Typography>
                         <ActionLink action={action}>
                           <Typography
