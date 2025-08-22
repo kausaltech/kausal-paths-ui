@@ -5,7 +5,14 @@ import type { SiteContextScenario } from '@/context/site';
 import type { InstanceGoal } from './instance';
 
 export const yearRangeVar = makeVar<[number, number]>(null!);
-export const activeScenarioVar = makeVar<SiteContextScenario>(null!);
+
+// When active scenario changes, we want to be aware if it is user intitated or automatic change
+export const activeScenarioVar = makeVar<
+  SiteContextScenario & {
+    isUserSelected?: boolean;
+  }
+>(null!);
+
 export const activeGoalVar = makeVar<InstanceGoal | null>(null);
 export const scenarioEditorDrawerOpenVar = makeVar<boolean>(false);
 

@@ -15,7 +15,6 @@ import {
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
-import type { DecisionLevel } from '@/common/__generated__/graphql';
 import type {
   GetActionListQuery,
   GetActionListQueryVariables,
@@ -144,9 +143,14 @@ const ActionsChooser = () => {
     );
   }
 
+  /* Filter actions that have no group. This is a way for admin to have hidden actions */
+  const actions = (data?.actions ?? []).filter((action) => action.group !== null);
+  /*
+  // TODO: Uncomment this when we have a global setting for decisionlevel
   const actions = (data?.actions ?? []).filter(
     (action) => action.decisionLevel === ('MUNICIPALITY' as DecisionLevel)
   );
+  */
   const activeActions = actions.filter((action) => {
     const { parameters } = action;
     const enabledParam = parameters.find(
