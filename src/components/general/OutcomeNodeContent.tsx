@@ -70,12 +70,22 @@ const ViewSelector = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { t } = useTranslation();
+  const instance = useInstance();
+  const showDetailsLink = !instance.features?.hideNodeDetails;
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const createHandleMenuItemClick = (tabId: string) => () => {
+    setActiveTabId(tabId);
+    handleClose();
+  };
+
   return (
     <Box display="flex" justifyContent="flex-end">
       <IconButton
@@ -99,20 +109,22 @@ const ViewSelector = ({
         }}
       >
         {showDistribution && (
-          <MenuItem onClick={() => setActiveTabId('year')} selected={activeTabId === 'year'}>
+          <MenuItem onClick={createHandleMenuItemClick('year')} selected={activeTabId === 'year'}>
             {t('distribution')}
           </MenuItem>
         )}
-        <MenuItem onClick={() => setActiveTabId('graph')} selected={activeTabId === 'graph'}>
+        <MenuItem onClick={createHandleMenuItemClick('graph')} selected={activeTabId === 'graph'}>
           {t('time-series')}
         </MenuItem>
-        <MenuItem onClick={() => setActiveTabId('table')} selected={activeTabId === 'table'}>
+        <MenuItem onClick={createHandleMenuItemClick('table')} selected={activeTabId === 'table'}>
           {' '}
           {t('table')}
         </MenuItem>
-        <MenuItem onClick={() => setActiveTabId('info')} selected={activeTabId === 'info'}>
-          {t('details')}
-        </MenuItem>
+        {showDetailsLink && (
+          <MenuItem onClick={createHandleMenuItemClick('info')} selected={activeTabId === 'info'}>
+            {t('details')}
+          </MenuItem>
+        )}
       </Menu>
     </Box>
   );
