@@ -14,25 +14,24 @@ import {
   type GetImpactOverviewsQuery,
   type GetPageQuery,
 } from '@/common/__generated__/graphql';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { activeGoalVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
 import { PageHero } from '@/components/common/PageHero';
-import ScenarioBadge from '@/components/common/ScenarioBadge';
 import Icon from '@/components/common/icon';
 import ActionsComparison from '@/components/general/ActionsComparison';
 import ActionsList from '@/components/general/ActionsList';
 import ActionsMac from '@/components/general/ActionsMac';
 import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
 import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
-import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
 import { SimpleEffect } from '../general/SimpleEffect';
+import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
 
 const SettingsForm = styled.form`
@@ -215,7 +214,6 @@ function ActionListPage({ page }: ActionListPageProps) {
   const error = actionListResp.error || impactResp.error;
 
   const { loading: areActionsLoading, previousData } = actionListResp;
-  const activeScenario = useReactiveVar(activeScenarioVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
   const data = actionListResp.data ?? previousData;
@@ -280,11 +278,11 @@ function ActionListPage({ page }: ActionListPageProps) {
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
             cumulativeImpactId: efficiencyType?.effectNode?.id,
-            cumulativeImpactUnit: efficiencyType?.effectUnit.htmlShort,
+            cumulativeImpactUnit: efficiencyType?.effectUnit?.htmlShort,
             cumulativeImpactName: `${efficiencyType?.effectNode?.name} ${
               data.impactOverviews[activeEfficiency]?.invertImpact ? reductionText : ''
             }`,
-            cumulativeCostUnit: efficiencyType?.costUnit.htmlShort,
+            cumulativeCostUnit: efficiencyType?.costUnit?.htmlShort,
             cumulativeCostName: efficiencyType?.costNode?.name,
             cumulativeEfficiencyUnit: efficiencyType?.indicatorUnit.htmlShort,
             cumulativeEfficiencyName: efficiencyType?.label,
@@ -296,6 +294,11 @@ function ActionListPage({ page }: ActionListPageProps) {
         .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
     [data, actionGroup, activeEfficiency, yearRange, filteredActions, t]
   );
+
+  const displayedActionsCount = useMemo(() => {
+    const hasAnyGroup = usableActions.some((a) => a.group);
+    return hasAnyGroup ? usableActions.filter((a) => a.group).length : usableActions.length;
+  }, [usableActions]);
 
   const actionGroups = filteredActions.reduce(
     (groups: NonNullable<ActionWithEfficiency['group']>[], action) =>
@@ -338,6 +341,7 @@ function ActionListPage({ page }: ActionListPageProps) {
         leadTitle={page.actionListLeadTitle ?? undefined}
         leadDescription={page.actionListLeadParagraph ?? undefined}
       >
+        <ScenarioPanel />
         <SettingsForm className="text-light mt-4">
           <Row>
             {hasEfficiency && (
@@ -425,10 +429,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           </Row>
         </SettingsForm>
         <ActionCount>
-          <ScenarioBadge>
-            {t('scenario')}: {activeScenario?.name}
-          </ScenarioBadge>
-          <div>{t('actions-count', { count: usableActions.length })}</div>
+          <div>{t('actions-count', { count: displayedActionsCount })}</div>
         </ActionCount>
       </PageHero>
       <ActionsViewTabs>
@@ -499,11 +500,19 @@ function ActionListPage({ page }: ActionListPageProps) {
               <ActionsList
                 id="list-view"
                 actions={usableActions}
+                actionGroups={actionGroups}
                 displayType="displayTypeYearly"
                 yearRange={yearRange}
                 sortBy={sortBy}
                 sortAscending={ascending}
                 refetching={areActionsLoading}
+                onChangeSort={(key) => {
+                  handleChangeSort(key);
+                  setAscending(true);
+                }}
+                onToggleSortDirection={() => {
+                  setAscending((prev) => !prev);
+                }}
               />
             )}
             {listType === 'mac' && (
@@ -541,7 +550,6 @@ function ActionListPage({ page }: ActionListPageProps) {
           </Col>
         </Row>
       </Container>
-      <SettingsPanelFull />
     </>
   );
 }

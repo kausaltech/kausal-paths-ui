@@ -29,6 +29,9 @@ importers:
       '@kausal/themes':
         specifier: ^0.8.4
         version: 0.8.4
+      '@mui/icons-material':
+        specifier: ^7.3.1
+        version: 7.3.1(@mui/material@7.3.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react@19.1.1)
       '@mui/material':
         specifier: ^7.2.0
         version: 7.3.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -182,6 +185,9 @@ importers:
       numbro:
         specifier: ^2.5.0
         version: 2.5.0
+      overlayscrollbars-react:
+        specifier: ^0.5.6
+        version: 0.5.6(overlayscrollbars@2.11.5)(react@19.1.1)
       pino:
         specifier: ^9.7.0
         version: 9.9.0
@@ -1981,6 +1987,17 @@ packages:
 
   '@mui/core-downloads-tracker@7.3.1':
     resolution: {integrity: sha512-+mIK1Z0BhOaQ0vCgOkT1mSrIpEHLo338h4/duuL4TBLXPvUMit732mnwJY3W40Avy30HdeSfwUAAGRkKmwRaEQ==}
+
+  '@mui/icons-material@7.3.1':
+    resolution: {integrity: sha512-upzCtG6awpL6noEZlJ5Z01khZ9VnLNLaj7tb6iPbN6G97eYfUTs8e9OyPKy3rEms3VQWmVBfri7jzeaRxdFIzA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@mui/material': ^7.3.1
+      '@types/react': ^17.0.0 || ^18.0.0 || ^19.0.0
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@mui/material-nextjs@7.3.0':
     resolution: {integrity: sha512-QmhITSmQSPCMgAr/BD+gcPwAPGQKp8ujU8HQG6JLPOCIRwne2YMfcuJYHgrTiR8vl/X0lRJIRU/8z4SBwcLjew==}
@@ -6269,6 +6286,15 @@ packages:
     resolution: {integrity: sha512-5b6Y85tPxZZ7QytO+BQzysW31HJku27cRIlkbAXaNx+BdcVi+LlRFmVXzeF6a7JCwJpyw5c4b+YSVImQIrBpuQ==}
     engines: {node: '>=10'}
 
+  overlayscrollbars-react@0.5.6:
+    resolution: {integrity: sha512-E5To04bL5brn9GVCZ36SnfGanxa2I2MDkWoa4Cjo5wol7l+diAgi4DBc983V7l2nOk/OLJ6Feg4kySspQEGDBw==}
+    peerDependencies:
+      overlayscrollbars: ^2.0.0
+      react: '>=16.8.0'
+
+  overlayscrollbars@2.11.5:
+    resolution: {integrity: sha512-vTUfCtjJbTjiarrxl9qdK04ZxlQdB4ugXfiqctVZytYDXH259OM4whROMGDE6T8uCYmSYPqiOFIKZ1erVkJnFg==}
+
   own-keys@1.0.1:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
     engines: {node: '>= 0.4'}
@@ -9847,6 +9873,14 @@ snapshots:
       tinyqueue: 3.0.0
 
   '@mui/core-downloads-tracker@7.3.1': {}
+
+  '@mui/icons-material@7.3.1(@mui/material@7.3.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react@19.1.1)':
+    dependencies:
+      '@babel/runtime': 7.28.3
+      '@mui/material': 7.3.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react: 19.1.1
+    optionalDependencies:
+      '@types/react': 19.1.10
 
   '@mui/material-nextjs@7.3.0(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/server@11.11.0)(@types/react@19.1.10)(next@15.5.0(@babel/core@7.28.3)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.90.0))(react@19.1.1)':
     dependencies:
@@ -14855,6 +14889,13 @@ snapshots:
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
+
+  overlayscrollbars-react@0.5.6(overlayscrollbars@2.11.5)(react@19.1.1):
+    dependencies:
+      overlayscrollbars: 2.11.5
+      react: 19.1.1
+
+  overlayscrollbars@2.11.5: {}
 
   own-keys@1.0.1:
     dependencies:

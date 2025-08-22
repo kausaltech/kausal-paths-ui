@@ -7,14 +7,13 @@ import type { Theme } from '@kausal/themes/types';
 import type { EChartsCoreOption } from 'echarts';
 import { useTranslation } from 'next-i18next';
 
+import { Chart } from '@common/components/Chart';
+
 import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
-import { Chart } from '@/components/charts/Chart';
 import { useSiteWithSetter } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
-
-import { getDefaultSliceConfig } from '../DimensionalNodePlot';
 
 const X_SYMBOL =
   'path://M0.979266 20.7782C-0.192306 21.9497 -0.192307 23.8492 0.979266 25.0208C2.15084 26.1924 4.05033 26.1924 5.22191 ' +
@@ -118,7 +117,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
     }
 
     const dimensionalMetric = new DimensionalMetric(metric, DimensionalMetric.ALL_SCENARIOS);
-    const defaultConfig = getDefaultSliceConfig(dimensionalMetric, activeGoal);
+    const defaultConfig = dimensionalMetric.getDefaultSliceConfig(activeGoal);
 
     const slicedDim = dimensionalMetric.dimensions.find(
       (dim) => dim.id === defaultConfig.dimensionId

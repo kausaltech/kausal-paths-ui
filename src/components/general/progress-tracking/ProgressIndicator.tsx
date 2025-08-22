@@ -17,8 +17,9 @@ import {
   ModalHeader,
 } from 'reactstrap';
 
+import { Chart } from '@common/components/Chart';
+
 import { useTranslation } from '@/common/i18n';
-import { Chart } from '@/components/charts/Chart';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useSite } from '@/context/site';
 
@@ -429,8 +430,8 @@ export const ProgressIndicator = ({
     onSelectedYearChange(year);
   }
 
-  function handleChartClick(dataIndex: number) {
-    const clickedCategory = selectedEmissions?.expected[dataIndex];
+  function handleChartClick(dataPoint: [number, number]) {
+    const clickedCategory = selectedEmissions?.expected[dataPoint[1]];
 
     if (clickedCategory) {
       setDrillDownState({ categoryId: clickedCategory.id, label: clickedCategory.label });

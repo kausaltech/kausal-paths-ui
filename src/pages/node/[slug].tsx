@@ -10,7 +10,7 @@ import { CardBody, Col, Container, Row } from 'reactstrap';
 
 import { logApolloError } from '@common/logging/apollo';
 
-import { GetNodePageQuery } from '@/common/__generated__/graphql';
+import type { GetNodePageQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionLink } from '@/common/links';
 import { Card } from '@/components/common/Card';
@@ -18,10 +18,9 @@ import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
 import Icon from '@/components/common/icon';
-import DimensionalNodePlot from '@/components/general/DimensionalNodePlot';
+import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
 import NodePlot from '@/components/general/NodePlot';
-import SettingsPanelFull from '@/components/general/SettingsPanelFull';
 import { useSite } from '@/context/site';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
@@ -152,19 +151,17 @@ export default function NodePage() {
 
   useEffect(() => {
     if (!activeScenario?.id) return;
-    refetch();
+    void refetch();
   }, [activeScenario?.id, refetch]);
 
   if (loading) {
     return <ContentLoader fullPage />;
   }
   if (error || !data) {
-    logApolloError(error, { query: GET_NODE_PAGE_CONTENT });
-    return (
-      <Container className="pt-5">
-        <GraphQLError error={error} />
-      </Container>
-    );
+    if (error) {
+      logApolloError(error);
+    }
+    return <Container className="pt-5">{error && <GraphQLError error={error} />}</Container>;
   }
 
   const { node } = data;
@@ -175,10 +172,6 @@ export default function NodePage() {
       </Container>
     );
   }
-
-  const hasNegativeValues =
-    node.metric?.historicalValues.some((v) => v.value < 0) ||
-    node.metric?.forecastValues.some((v) => v.value < 0);
 
   return (
     <>
@@ -209,14 +202,13 @@ export default function NodePage() {
               </div>
               {node.metricDim ? (
                 <ContentWrapper>
-                  <DimensionalNodePlot
+                  <DimensionalNodeVisualisation
+                    title={node.name}
                     key={node.id}
-                    node={node}
                     metric={node.metricDim}
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
-                    color={node.color}
-                    hasNegativeValues={hasNegativeValues}
+                    // color={node.color}
                   />
                 </ContentWrapper>
               ) : (
@@ -258,7 +250,6 @@ export default function NodePage() {
       <Container fluid="lg">
         <NodeLinks outputNodes={node.outputNodes} inputNodes={node.inputNodes} />
       </Container>
-      <SettingsPanelFull />
     </>
   );
 }

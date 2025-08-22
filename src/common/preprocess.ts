@@ -34,6 +34,9 @@ export const beautifyValue = (x: number, significantDigits?: number, fractionDig
 
 // Use Format number to locale and round to 3 decimals
 export const formatNumber = (value: number, language = 'en', maximumFractionDigits?: number) => {
+  if (value == null || !Number.isFinite(value)) {
+    return '–';
+  }
   if (typeof maximumFractionDigits === 'number') {
     return value.toLocaleString(language, { maximumFractionDigits });
   }

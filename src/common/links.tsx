@@ -36,6 +36,8 @@ export function chompBasePath(site: SiteContextType, path: string) {
 
 type OtherLinkProps = Omit<LinkProps, 'href' | 'as'> & {
   children?: React.ReactNode;
+  target?: string;
+  rel?: string;
 };
 
 export function Link(props: OtherLinkProps & { href: string }) {
@@ -78,6 +80,7 @@ function getLinkProps(
 }
 
 type NodeLinkProps = OtherLinkProps & {
+  className?: string;
   node: {
     id: string;
   };

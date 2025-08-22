@@ -20,6 +20,7 @@
   "display-yearly-effect": "na roční emise",
   "distribution": "Distribuce",
   "download-data": "Stáhnout",
+  "edit": "Upravit",
   "edit-scenario": "Upravit scénář",
   "emissions": "Emise",
   "emissions-forecast": "Prognóza emisí",
@@ -92,6 +93,7 @@
   "watch-action-list-title": "Jak toho dosáhneme?",
   "hide-calculation": "Skrýt výpočet",
   "show-calculation": "Zobrazit výpočet",
+  "sort-direction": "Řazení",
   "sort-ascending": "Řadit vzestupně",
   "sort-descending": "Řadit sestupně",
   "skip-to-main-content": "Přeskočit na hlavní obsah",
@@ -108,8 +110,12 @@
   "do-not-show-again": "Již nezobrazovat",
   "close": "Zavřít",
   "coming-soon": "Připravujeme",
+  "page-not-found": "Stránka nebyla nalezena",
   "error-with-code": "Chybový kód {{code}}",
   "thumbSliderLabel": "Upravit",
   "reset-button": "Resetovat",
-  "outcomes": "Výsledky"
+  "outcomes": "Výsledky",
+  "impact-compared-to-baseline": "<strong>Celkový dopad {{impact}} {{unit}}</strong> ve srovnání se scénářem běžného vývoje",
+  "above-target": "nad cílem",
+  "below-target": "pod cílem"
 }

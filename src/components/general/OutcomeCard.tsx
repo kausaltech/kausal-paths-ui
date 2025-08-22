@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 
+import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import Chip from '@mui/material/Chip';
 import { useTranslation } from 'next-i18next';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -14,42 +16,45 @@ import { getHelpText } from './progress-tracking/utils';
 
 const StyledTab = styled.div`
   flex: 0 0 175px;
-  margin: 0 0.25rem 0;
   cursor: pointer;
+`;
 
-  &:first-child {
-    margin-left: 0;
-  }
+const ContentArea = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100%;
+`;
+
+const CardContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
+  flex: 1;
+  margin-bottom: 0.25rem;
   &.root h2 {
     font-size: 1.5rem;
   }
 `;
 
-const Title = styled.div`
-  // border-left: 6px solid ${(props) => props.color};
-  // padding-left: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-`;
+const Title = styled.div``;
 
 const Name = styled.h2`
   margin-bottom: 0;
   font-size: 1rem;
 `;
 
-const Status = styled.div`
-  margin-top: 0.5rem;
+const Status = styled.div<{ $active: boolean | undefined }>`
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  color: ${({ theme, $active }) => ($active ? theme.textColor.primary : theme.textColor.tertiary)};
+  line-height: 1.2;
   white-space: nowrap;
-  font-size: 1rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.textColor.tertiary};
 `;
 
 const Body = styled.div`
@@ -59,11 +64,15 @@ const Body = styled.div`
   margin-top: 0.5rem;
 `;
 
-const MainValue = styled.div`
+const MainValueWrapper = styled.div`
   text-align: left;
-  font-size: 1.25rem;
+`;
+
+const TotalValue = styled.div`
+  font-size: 1.5rem;
   line-height: 1.2;
   font-weight: 700;
+  margin-bottom: 0.25rem;
 `;
 
 const NoValue = styled.div`
@@ -76,8 +85,8 @@ const NoValue = styled.div`
 `;
 
 const Label = styled.div<{ $active?: boolean }>`
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  line-height: 1.2;
   color: ${({ theme, $active }) => ($active ? theme.textColor.primary : theme.textColor.tertiary)};
 `;
 
@@ -89,41 +98,138 @@ const MainUnit = styled.span`
 // bottom: ${(props) => props.$size > 0 ? props.offset * 100 : 0}%;
 const ProportionBarBar = styled.div<{ $size: number; $color: string }>`
   position: absolute;
-  bottom: ${(props) => (props.$size > 0 ? '0' : 'auto')}%;
+  bottom: 0;
   //bottom: 0;
   top: ${(props) => (props.$size > 0 ? 'auto' : '0')}%;
   left: 0;
   height: ${(props) => Math.abs(props.$size) * 100}%;
-  width: 14px;
+  width: 12px;
   background-color: ${(props) => props.$color};
 `;
 
 const ProportionBarContainer = styled.div<{ $active: boolean }>`
-  position: absolute;
-  height: 170px;
-  bottom: ${(props) => (props.$active ? '36px' : '0')};
-  left: 0;
-  width: 12px;
+  position: relative;
+  flex: 0 0 12px;
+  background-color: ${({ theme, $active }) =>
+    $active ? theme.graphColors.grey005 : theme.graphColors.grey030};
 `;
 
 const ProportionBar = ({
   size,
   color,
   active,
-  offset,
+  isOpen,
 }: {
   size: number;
   color: string;
   active: boolean;
+  isOpen: boolean;
   offset?: number;
 }) => {
   return (
-    <ProportionBarContainer $active={active}>
+    <ProportionBarContainer $active={active || !isOpen}>
       <ProportionBarBar $size={size} $color={color} />
     </ProportionBarContainer>
   );
 };
 
+const ChangeValue = ({ change }: { change: number | undefined }) => {
+  const theme = useTheme();
+  const chipColor = change
+    ? change > 0
+      ? theme.graphColors.red010
+      : theme.graphColors.green010
+    : theme.graphColors.grey010;
+
+  const changeDisplay = change !== undefined ? (change > 0 ? `+${change}%` : `${change}%`) : '-';
+
+  return (
+    <Chip
+      label={changeDisplay}
+      size="small"
+      variant="outlined"
+      sx={{ backgroundColor: chipColor, borderColor: chipColor }}
+    />
+  );
+};
+
+type SectorSummaryProps = {
+  active: boolean;
+  isForecast: boolean;
+  goalOutcomeValue: number;
+  maximumFractionDigits: number | null;
+  unit: string | undefined;
+  change: number | undefined;
+  startYear: number;
+  endYear: number;
+};
+
+export const SectorSummary = ({
+  active,
+  isForecast,
+  goalOutcomeValue,
+  maximumFractionDigits,
+  unit,
+  change,
+  startYear,
+  endYear,
+}: SectorSummaryProps) => {
+  const { t } = useTranslation();
+  return (
+    <MainValueWrapper>
+      <Label $active={active}>
+        {isForecast ? t('table-scenario-forecast') : t('table-historical')} {endYear}
+      </Label>
+      {goalOutcomeValue !== undefined ? (
+        <TotalValue>
+          {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
+          <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
+        </TotalValue>
+      ) : (
+        <NoValue />
+      )}
+      {change !== undefined && (
+        <Status $active={active}>
+          <ChangeValue change={change} /> ({startYear} - {endYear})
+        </Status>
+      )}
+    </MainValueWrapper>
+  );
+};
+
+const TabWrapper = ({
+  children,
+  nodeId,
+  onHover,
+  handleClick,
+  active,
+  handleKeyDownOnTab,
+}: {
+  children: React.ReactNode;
+  nodeId: string;
+  onHover: ((evt: string | undefined) => void) | undefined;
+  handleClick: ((segmentId: string) => void) | undefined;
+  active: boolean;
+  handleKeyDownOnTab: (e: React.KeyboardEvent) => void;
+}) => {
+  if (onHover && handleClick)
+    return (
+      <StyledTab
+        key={nodeId}
+        role="tab"
+        tabIndex={0}
+        onMouseEnter={() => onHover(nodeId)}
+        onMouseLeave={() => onHover(undefined)}
+        onClick={() => handleClick(nodeId)}
+        onKeyDown={handleKeyDownOnTab}
+        aria-selected={active}
+        aria-controls={`tabpanel-${nodeId}`}
+      >
+        {children}
+      </StyledTab>
+    );
+  return <div>{children}</div>;
+};
 type OutcomeCardProps = {
   node: OutcomeNodeFieldsFragment;
   startYear: number;
@@ -132,12 +238,11 @@ type OutcomeCardProps = {
   state: 'open' | 'closed';
   hovered: boolean;
   active: boolean;
-  onHover: (evt) => void;
-  handleClick: (segmentId: string) => void;
+  onHover: ((evt: string | undefined) => void) | undefined;
+  handleClick: ((segmentId: string) => void) | undefined;
   color: string;
-  total: number;
-  positiveTotal: number;
-  negativeTotal: number;
+  positiveTotal?: number;
+  negativeTotal?: number;
   refetching: boolean;
 };
 
@@ -152,9 +257,8 @@ const OutcomeCard = (props: OutcomeCardProps) => {
     color,
     startYear,
     endYear,
-    total,
-    positiveTotal,
     negativeTotal,
+    positiveTotal,
     refetching,
   } = props;
 
@@ -168,13 +272,16 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       });
   }, [active]);
 
-  //console.log(state);
-  const { t } = useTranslation();
-  const baseOutcomeValue = getMetricValue(node, startYear) || 0;
-  const goalOutcomeValue = getMetricValue(node, endYear);
+  const isCompared = positiveTotal !== undefined && negativeTotal !== undefined;
+  const siblingsTotal = isCompared ? positiveTotal - negativeTotal : undefined;
+  const baseOutcomeValue = node.metric
+    ? getMetricValue({ metric: node.metric }, startYear) || 0
+    : 0;
+  const goalOutcomeValue = node.metric ? getMetricValue({ metric: node.metric }, endYear) || 0 : 0;
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
+
   const lastMeasuredYear =
-    node?.metric.historicalValues[node.metric.historicalValues.length - 1]?.year;
+    node?.metric?.historicalValues[node.metric.historicalValues.length - 1]?.year;
   const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
   const { maximumFractionDigits, showRefreshPrompt } = useFeatures();
 
@@ -183,74 +290,64 @@ const OutcomeCard = (props: OutcomeCardProps) => {
 
   const unit = node.metric?.unit?.htmlShort;
 
-  const handleClickTab = () => handleClick(node.id);
-
   const handleKeyDownOnTab = (e: React.KeyboardEvent) => {
     if (e.code === 'Enter' || e.code === 'Space') {
       e.preventDefault();
-      handleClick(node.id);
+      if (handleClick !== undefined) handleClick(node.id);
     }
   };
 
   return (
-    <StyledTab
-      key={node.id}
-      role="tab"
-      tabIndex={0}
-      onMouseEnter={() => onHover(node.id)}
-      onMouseLeave={() => onHover(undefined)}
-      onClick={handleClickTab}
-      onKeyDown={handleKeyDownOnTab}
-      aria-selected={active}
-      aria-controls={`tabpanel-${node.id}`}
+    <TabWrapper
+      nodeId={node.id}
+      onHover={onHover}
+      handleClick={handleClick}
+      active={active}
+      handleKeyDownOnTab={handleKeyDownOnTab}
     >
-      <DashCard state={state} hovered={hovered} active={active} color={color} refProp={cardRef}>
-        {refetching && <Loader />}
+      <DashCard
+        state={state}
+        hovered={hovered}
+        active={active}
+        color={color}
+        refProp={cardRef}
+        interactive={handleClick !== undefined}
+      >
+        <ContentArea>
+          {refetching && <Loader />}
+          {isCompared && siblingsTotal && (
+            <ProportionBar
+              size={goalOutcomeValue ? goalOutcomeValue / siblingsTotal : 0}
+              color={color}
+              active={active}
+              isOpen={state === 'open'}
+              offset={negativeTotal < 0 ? Math.abs(negativeTotal / siblingsTotal) : 0}
+            />
+          )}
+          <CardContent>
+            <Header className={state}>
+              <Title color={color}>
+                <Name>{node.shortName || node.name}</Name>
+              </Title>
+              {helpText && <PopoverTip content={helpText} />}
+            </Header>
 
-        <ProportionBar
-          size={goalOutcomeValue / total}
-          color={color}
-          active={active}
-          offset={negativeTotal < 0 ? Math.abs(negativeTotal / total) : 0}
-        />
-        <Header className={state}>
-          <Title color={color}>
-            <Name>{node.shortName || node.name}</Name>
-          </Title>
-          {helpText && <PopoverTip content={helpText} />}
-        </Header>
-
-        <Body>
-          <MainValue>
-            <Label $active={active}>
-              {isForecast ? t('table-scenario-forecast') : t('table-historical')} {endYear}
-            </Label>
-            {goalOutcomeValue ? (
-              <>
-                {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
-                <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
-              </>
-            ) : (
-              <NoValue />
-            )}
-
-            <Status>
-              <Label>
-                {t('change-over-time')} {startYear} - {endYear}
-              </Label>
-              {change ? (
-                <>
-                  {change > 0 && <span>+</span>}
-                  {change ? <span>{`${change}%`}</span> : <span>-</span>}
-                </>
-              ) : (
-                <NoValue />
-              )}
-            </Status>
-          </MainValue>
-        </Body>
+            <Body>
+              <SectorSummary
+                active={active}
+                isForecast={isForecast}
+                goalOutcomeValue={goalOutcomeValue}
+                maximumFractionDigits={maximumFractionDigits}
+                unit={unit}
+                change={change}
+                startYear={startYear}
+                endYear={endYear}
+              />
+            </Body>
+          </CardContent>
+        </ContentArea>
       </DashCard>
-    </StyledTab>
+    </TabWrapper>
   );
 };
 

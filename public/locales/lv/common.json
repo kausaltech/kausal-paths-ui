@@ -19,6 +19,7 @@
   "display-yearly-effect": "uz gada emisijām",
   "distribution": "Sadalījums",
   "download-data": "Lejupielādēt",
+  "edit": "Rediģēt",
   "edit-scenario": "Rediģēt scenāriju",
   "emissions": "Emisijas",
   "emissions-forecast": "Emisiju prognoze",
@@ -89,6 +90,7 @@
   "watch-action-list-title": "Kā mēs to panāksim?",
   "hide-calculation": "Slēpt aprēķinu",
   "show-calculation": "Rādīt aprēķinu",
+  "sort-direction": "Kārtot",
   "sort-ascending": "Kārtot augošā secībā",
   "sort-descending": "Kārtot dilstošā secībā",
   "skip-to-main-content": "Pāriet uz galveno saturu",
@@ -101,5 +103,8 @@
   "outcome-tabs-label": "Attēlošanas opcijas",
   "tco2-e-inhabitant": "t CO<sub>2</sub>eq/iedzīvotājs/g",
   "ktco2-e": "kt CO<sub>2</sub>eq/g",
-  "outcomes": "Rezultāti"
+  "outcomes": "Rezultāti",
+  "impact-compared-to-baseline": "<strong>Kopējā ietekme {{impact}} {{unit}}</strong> salīdzinājumā ar ierasto attīstības scenāriju",
+  "above-target": "pārsniedz mērķi",
+  "below-target": "nepārsniedz mērķi"
 }

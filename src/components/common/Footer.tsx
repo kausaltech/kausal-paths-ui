@@ -304,6 +304,7 @@ function SiteFooter() {
   const ownerName = site.owner;
   const siteTitle = site.title;
   const ownerUrl = undefined;
+  //@ts-ignore TODO: Remove this once the updated theme types are deployed
   const ownerLinks = theme.settings?.footerOwnerLinks;
   const { fundingInstruments, otherLogos, footerStatement } = theme.settings;
 
@@ -318,7 +319,7 @@ function SiteFooter() {
     );
   };
 
-  function scrollToTop(e) {
+  function scrollToTop(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     window.scrollTo(0, 0);
   }
@@ -332,10 +333,10 @@ function SiteFooter() {
               <Logo>
                 {theme?.footerLogoLink ? (
                   <a href={theme.footerLogoLink} target="_blank" rel="noreferrer">
-                    <OrgLogo aria-hidden="true" className="footer-org-logo" />
+                    <OrgLogo aria-hidden="true" />
                   </a>
                 ) : (
-                  <OrgLogo aria-hidden="true" className="footer-org-logo" />
+                  <OrgLogo aria-hidden="true" />
                 )}
               </Logo>
             ) : null}
@@ -367,7 +368,7 @@ function SiteFooter() {
                 )}
               </OrgTitle>
             </UtilityItem>
-            {ownerLinks &&
+            {ownerLinks instanceof Array &&
               ownerLinks.map((page) => (
                 <UtilityItem key={page.id}>
                   <Link href={page.url}>

@@ -1,3 +1,4 @@
+/* @deprecated Use scenario/GlobalParameters.tsx instead */
 import { useEffect, useState } from 'react';
 
 import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
@@ -265,8 +266,8 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
             <Input
               type="switch"
               role="switch"
-              id={param.id!}
-              name={param.id!}
+              id={param.id}
+              name={param.id}
               checked={param.boolValue!}
               onChange={(e) =>
                 handleUserSelection({

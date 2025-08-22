@@ -23,10 +23,10 @@ export function getTypography(theme: Theme): ThemeOptions['typography'] {
       theme.fontFamily !== ''
         ? `${theme.fontFamily}, ${theme.fontFamilyFallback}`
         : theme.fontFamilyFallback,
-    h1: getHeadingFontConfig(theme, theme.fontSizeXxl),
-    h2: getHeadingFontConfig(theme, theme.fontSizeXl),
-    h3: getHeadingFontConfig(theme, theme.fontSizeLg),
-    h4: getHeadingFontConfig(theme, theme.fontSizeMd),
+    h1: getHeadingFontConfig(theme, theme.fontSizeXl),
+    h2: getHeadingFontConfig(theme, theme.fontSizeLg),
+    h3: getHeadingFontConfig(theme, theme.fontSizeMd),
+    h4: getHeadingFontConfig(theme, theme.fontSizeBase),
     h5: getHeadingFontConfig(theme, theme.fontSizeBase),
     h6: getHeadingFontConfig(theme, theme.fontSizeSm),
     body1: {

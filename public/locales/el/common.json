@@ -12,6 +12,7 @@
   "comparing-years": "Σύγκριση ετών",
   "comparison-year": "Έτος αναφοράς",
   "decision-national": "Εθνική",
+  "page-not-found": "Η σελίδα δεν βρέθηκε",
   "error-with-code": "Κωδικός σφάλματος {{code}}",
   "thumbSliderLabel": "Ρύθμιση",
   "reset-button": "Επαναφορά",
@@ -31,6 +32,7 @@
   "display-yearly-effect": "για τις ετήσιες εκπομπές",
   "distribution": "Διανομή",
   "download-data": "Λήψη",
+  "edit": "Επεξεργασία",
   "edit-scenario": "Επεξεργασία σεναρίου",
   "emissions": "Εκπομπές",
   "emissions-forecast": "Πρόβλεψη εκπομπών",
@@ -103,6 +105,7 @@
   "watch-action-list-title": "Πώς θα το κάνουμε να συμβεί αυτό;",
   "hide-calculation": "Απόκρυψη υπολογισμού",
   "show-calculation": "Εμφάνιση υπολογισμού",
+  "sort-direction": "Ταξινόμηση",
   "sort-ascending": "Ταξινόμηση αύξουσα",
   "sort-descending": "Ταξινόμηση φθίνουσα",
   "skip-to-main-content": "Μετάβαση στο κύριο περιεχόμενο",
@@ -127,5 +130,8 @@
   "observed-emissions": "Παρατηρούμενες εκπομπές",
   "emission-drivers": "Οδηγοί εκπομπών",
   "emissions-by-sector": "Εκπομπές ανά τομέα ({{year}})",
-  "outcomes": "Αποτελέσματα"
+  "outcomes": "Αποτελέσματα",
+  "impact-compared-to-baseline": "<strong>Συνολική επίπτωση {{impact}} {{unit}}</strong> σε σύγκριση με το σενάριο συνήθους πορείας",
+  "above-target": "πάνω από τον στόχο",
+  "below-target": "κάτω από τον στόχο"
 }
