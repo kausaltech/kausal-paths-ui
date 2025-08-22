@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import {
   CircularProgress,
@@ -29,6 +29,9 @@ const ACTIVATE_SCENARIO = gql`
       activeScenario {
         id
         name
+        isActive
+        isDefault
+        isSelectable
       }
     }
   }
@@ -73,21 +76,18 @@ const StyledMenuItem = styled(MenuItem)<{ $custom?: boolean }>`
     props.$custom ? props.theme.graphColors.yellow010 : 'transparent'};
 `;
 
-const isCustomScenario = (scenario: SiteContextScenario) => {
+const isCustomScenario = (scenario: { id: string }) => {
   return scenario.id === 'custom';
 };
 
 const ScenarioSelector = () => {
   const { t } = useTranslation();
   const instance = useInstance();
+  const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const { loading, error, data } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
+  const { loading, error, data, previousData } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
-    onCompleted: (dat) =>
-      activeScenarioVar(
-        dat.scenarios.find((scen) => scen.isActive) as unknown as SiteContextScenario
-      ),
     context: {
       componentName: 'ScenarioSelector',
     },
@@ -98,9 +98,21 @@ const ScenarioSelector = () => {
     ActivateScenarioMutationVariables
   >(ACTIVATE_SCENARIO, {
     refetchQueries: 'active',
+    onCompleted: (dat) => {
+      const newScenario = dat.activateScenario?.activeScenario;
+      // We  want to update activeScenarioVar only in onCompleted mutations
+      if (newScenario) {
+        activeScenarioVar({
+          ...newScenario,
+          kind: null,
+          actualHistoricalYears: null,
+          isUserSelected: true,
+        });
+      }
+    },
   });
 
-  if (loading || mutationLoading) {
+  if (loading && !previousData) {
     return (
       <StyledFormControl>
         <StyledInputLabel>{t('plot-scenario')}</StyledInputLabel>
@@ -124,7 +136,6 @@ const ScenarioSelector = () => {
     data?.scenarios.filter(
       (scen) => scen.isSelectable && (hideBaseScenario ? scen.id !== 'baseline' : true)
     ) ?? [];
-  const activeScenario = scenarios.find((scen) => scen.isActive) as unknown as SiteContextScenario;
 
   const handleChange = (event: SelectChangeEvent) => {
     void startInteraction(
@@ -138,7 +149,7 @@ const ScenarioSelector = () => {
   };
 
   return (
-    <StyledFormControl>
+    <StyledFormControl disabled={loading || mutationLoading}>
       <StyledInputLabel>{t('plot-scenario')}</StyledInputLabel>
       <StyledSelect
         value={activeScenario.id}

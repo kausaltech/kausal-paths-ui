@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -6,8 +6,8 @@ import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Box, Drawer, IconButton, Typography } from '@mui/material';
-import { XLg } from 'react-bootstrap-icons';
+import { Box, Drawer } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -16,24 +16,13 @@ import { getThemeStaticURL } from '@/common/theme';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 
 import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
 
 const DRAWER_WIDTH = 320;
-
-const Content = styled.div`
-  flex-grow: 1;
-`;
-
-const DrawerHeader = styled.div`
-  display: flex;
-  align-items: center;
-  padding: ${({ theme }) => theme.spaces.s050};
-  justify-content: space-between;
-`;
 
 const StyledSkipToContent = styled.a`
   position: absolute;
@@ -63,8 +52,9 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
   const theme = useTheme();
-  const site = useSite();
+  const [site] = useSiteWithSetter();
   const { t } = useTranslation();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
@@ -139,41 +129,59 @@ const Layout = ({ children }: React.PropsWithChildren) => {
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
 
       <Box sx={{ display: 'flex' }}>
+        {/* Persistent drawer for desktop */}
         <Drawer
           sx={{
+            display: { xs: 'none', md: 'block' },
             width: drawerOpen ? DRAWER_WIDTH : 0,
             flexShrink: 0,
             transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
+          }}
+          variant="persistent"
+          anchor="left"
+          open={!isMobile && drawerOpen}
+          slotProps={{
+            paper: {
+              sx: {
+                width: DRAWER_WIDTH,
+                boxSizing: 'border-box',
+                backgroundColor: theme.graphColors.blue010,
+                borderRadius: 0,
+                boxShadow: 10,
+              },
+            },
+          }}
+        >
+          {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
+        </Drawer>
+        {/* Temporary drawer for mobile */}
+        <Drawer
+          variant="temporary"
+          open={isMobile && drawerOpen}
+          onClose={handleDrawerClose}
+          sx={{
+            display: { xs: 'block', md: 'none' },
             '& .MuiDrawer-paper': {
               width: DRAWER_WIDTH,
               boxSizing: 'border-box',
               backgroundColor: theme.graphColors.blue010,
+              borderRadius: 0,
+              boxShadow: 10,
             },
           }}
-          variant="persistent"
-          anchor="left"
-          open={drawerOpen}
           slotProps={{
-            paper: {
-              elevation: 5,
+            root: {
+              keepMounted: true,
             },
           }}
         >
-          <DrawerHeader>
-            <Typography variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
-              {t('edit-scenario')}
-            </Typography>
-            <IconButton onClick={handleDrawerClose} size="small">
-              <XLg />
-            </IconButton>
-          </DrawerHeader>
-          {drawerOpen && <ScenarioEditor />}
+          {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <Content>
+        <Box sx={{ flexGrow: 1 }}>
           <NavComponent
             siteTitle={site.title}
             ownerName={site.owner ?? undefined}
@@ -183,7 +191,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             {children}
           </main>
           <FooterComponent />
-        </Content>
+        </Box>
       </Box>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
     </>

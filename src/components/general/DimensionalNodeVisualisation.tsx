@@ -325,7 +325,6 @@ export default function DimensionalNodeVisualisation({
     categoryColors[0] = defaultColor;
   }
 
-  console.log(categoryColors);
   // Check if the data has any negative values, in order to decide if we want to show the total line
   // We could use the user selected year range here only, but let's show the total line even if negative values are filtered out
   const hasNegativeValues = slice.categoryValues.some(

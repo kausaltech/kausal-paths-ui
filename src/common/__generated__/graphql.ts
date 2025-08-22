@@ -387,7 +387,7 @@ export type ActivateScenarioMutationVariables = Exact<{
 export type ActivateScenarioMutation = (
   { activateScenario: (
     { ok: boolean | null, activeScenario: (
-      { id: string, name: string }
+      { id: string, name: string, isActive: boolean, isDefault: boolean, isSelectable: boolean }
       & { __typename: 'ScenarioType' }
     ) | null }
     & { __typename: 'ActivateScenarioMutation' }
