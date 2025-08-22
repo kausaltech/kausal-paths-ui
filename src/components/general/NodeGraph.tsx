@@ -485,6 +485,7 @@ function createGoalSeries(theme: Theme, datasetIndex: number, name: string) {
     lineStyle: {
       color: 'rgba(0, 0, 0, 0)',
     },
+    animation: false,
   };
 }
 
@@ -501,6 +502,7 @@ function createBaselineSeries(theme: Theme, datasetIndex: number, name: string) 
       type: 'dashed',
     },
     color: theme.graphColors.grey060,
+    animation: false,
   };
 }
 
