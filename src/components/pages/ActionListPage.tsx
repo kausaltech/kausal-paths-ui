@@ -2,10 +2,19 @@ import { useMemo, useState } from 'react';
 
 import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  Box,
+  FormControl,
+  FormLabel,
+  Select,
+  MenuItem,
+  Typography,
+} from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
-import { Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
+import { Col, Container, Row } from 'reactstrap';
 
 import {
   DecisionLevel,
@@ -51,8 +60,34 @@ const ActionCount = styled.div`
   }
 `;
 
-const StyledFormGroup = styled(FormGroup)`
+const StyledFormControl = styled(FormControl)`
   width: 100%;
+`;
+
+const StyledFormLabel = styled(FormLabel)`
+  color: inherit;
+  margin-bottom: 0.25rem;
+
+  &.Mui-focused,
+  &.Mui-disabled,
+  &.Mui-error,
+  &.MuiFormLabel-colorPrimary,
+  &.MuiFormLabel-colorSecondary {
+    color: inherit;
+  }
+`;
+
+const ShowLabel = styled(Typography)`
+  color: ${(p) => p.theme.brandDark};
+`;
+
+const StyledSelect = styled(Select)<{ $custom?: boolean }>`
+  .MuiSelect-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    background-color: ${(props) => props.theme.inputBg};
+  }
 `;
 
 const SortButtons = styled(ToggleButtonGroup)`
@@ -85,40 +120,9 @@ const SortButtons = styled(ToggleButtonGroup)`
   }
 `;
 
-const ActionsViewTabs = styled.div`
-  background-color: ${(props) => props.theme.brandDark};
-  margin-bottom: ${(props) => props.theme.spaces.s400};
-`;
-
-const Tab = styled.button`
-  background: ${(props) => props.theme.brandDark};
-  color: ${(props) => props.theme.themeColors.white};
-  display: inline-block;
-  border: none;
-  margin: 0;
-  padding: ${(props) =>
-    `${props.theme.spaces.s050} ${props.theme.spaces.s150} ${props.theme.spaces.s100}`};
-  text-decoration: none;
-  cursor: pointer;
-  text-align: center;
-
-  &:hover,
-  &:focus {
-    color: ${(props) => props.theme.brandLight};
-  }
-  &.active {
-    color: ${(props) => props.theme.graphColors.blue070};
-    background: ${(props) => props.theme.graphColors.grey030};
-    &:hover {
-      color: ${(props) => props.theme.themeColors.black};
-    }
-  }
-
-  .icon {
-    width: 1.5rem !important;
-    height: 1.5rem !important;
-    vertical-align: middle;
-  }
+const ViewSelectorBar = styled.div`
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 `;
 
 const getSortOptions = (
@@ -126,10 +130,9 @@ const getSortOptions = (
   hasEfficiency: boolean,
   showAccumulatedEffects: boolean
 ): SortActionsConfig[] => [
-  {
-    key: 'STANDARD',
-    label: t('actions-sort-default'),
-  },
+  { 
+    key: 'STANDARD', 
+    label: t('actions-sort-default') },
   {
     isHidden: !hasEfficiency,
     key: 'CUM_EFFICIENCY',
@@ -141,11 +144,10 @@ const getSortOptions = (
     key: 'CUM_IMPACT',
     label: t('actions-sort-cumulative-impact'),
   },
-  {
-    key: 'IMPACT',
-    label: t('actions-sort-impact'),
-    sortKey: 'impactOnTargetYear',
-  },
+  { 
+    key: 'IMPACT', 
+    label: t('actions-sort-impact'), 
+    sortKey: 'impactOnTargetYear' },
   {
     isHidden: !hasEfficiency,
     key: 'CUM_COST',
@@ -156,6 +158,13 @@ const getSortOptions = (
 
 type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi' | 'simple';
 
+type ViewOption = { value: ViewType; label: string; icon: string };
+const VO = <V extends ViewType>(value: V, label: string, icon: string): ViewOption => ({
+  value,
+  label,
+  icon,
+});
+
 type ActionListPageProps = {
   page: NonNullable<GetPageQuery['page']> & {
     __typename: 'ActionListPage';
@@ -163,33 +172,9 @@ type ActionListPageProps = {
   refetch: PageRefetchCallback;
 };
 
-type ActionPageTabProps = {
-  tabId: ViewType;
-  label: string;
-  isActive: boolean;
-  onSelectTab: (id: string) => void;
-  icon: string;
-};
-
 function hasGraph(impactResponse: QueryResult<GetImpactOverviewsQuery>, graphType: string) {
   return !!impactResponse.data?.impactOverviews.find(
     (overview) => overview.graphType === graphType
-  );
-}
-
-function ActionPageTab({ tabId, label, isActive, onSelectTab, icon }: ActionPageTabProps) {
-  return (
-    <Tab
-      className={`nav-link ${isActive ? 'active' : ''}`}
-      onClick={() => onSelectTab(tabId)}
-      role="tab"
-      tabIndex={0}
-      aria-selected={isActive}
-      aria-controls="tabId"
-      id="list-tab"
-    >
-      <Icon name={icon} /> {label}
-    </Tab>
   );
 }
 
@@ -205,14 +190,13 @@ function ActionListPage({ page }: ActionListPageProps) {
   const actionListResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
     GET_ACTION_LIST,
     {
-      variables: {
-        goal: activeGoal?.id ?? null,
+      variables: { 
+        goal: activeGoal?.id ?? null 
       },
       fetchPolicy: 'cache-and-network',
     }
   );
   const error = actionListResp.error || impactResp.error;
-
   const { loading: areActionsLoading, previousData } = actionListResp;
   const yearRange = useReactiveVar(yearRangeVar);
 
@@ -257,7 +241,8 @@ function ActionListPage({ page }: ActionListPageProps) {
           };
 
           const efficiencyType = data?.impactOverviews[activeEfficiency];
-          const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
+          const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id
+          );
 
           if (!efficiencyType || !efficiencyAction) return out;
 
@@ -273,8 +258,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           );
           out.unitAdjustmentMultiplier = efficiencyAction.unitAdjustmentMultiplier ?? undefined;
           if (out.unitAdjustmentMultiplier !== undefined)
-            out.cumulativeEfficiency =
-              (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
+            out.cumulativeEfficiency = (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
             cumulativeImpactId: efficiencyType?.effectNode?.id,
@@ -310,17 +294,25 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   const handleChangeSort = (sortBy: SortActionsBy) => {
     const selectedSorter = sortOptions.find((option) => option.key === sortBy);
-
     setSortBy(selectedSorter ?? sortOptions[0]);
   };
-
   const handleSortDirectionChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newDirection: string
   ) => {
     if (newDirection === null) return;
     setAscending(newDirection === 'asc');
   };
+
+  const viewOptions: ViewOption[] = [
+    VO('list', t('actions-as-list'), 'list'),
+    hasEfficiency
+      ? VO('mac', t('actions-as-efficiency'), 'chartColumn')
+      : VO('comparison', t('actions-as-comparison'), 'chartColumn'),
+    ...(showCostBenefitAnalysis ? [VO('cost-benefit', t('cost-benefit'), 'chartColumn')] : []),
+    ...(showReturnOnInvestment ? [VO('roi', t('return-on-investment'), 'chartColumn')] : []),
+    ...(showSimpleEffect ? [VO('simple', t('simple-effect'), 'chartColumn')] : []),
+  ];
 
   if (error) {
     return (
@@ -346,70 +338,75 @@ function ActionListPage({ page }: ActionListPageProps) {
           <Row>
             {hasEfficiency && (
               <Col md={4} className="d-flex">
-                <StyledFormGroup>
-                  <Label for="impact">{t('actions-impact-on')}</Label>
-                  <Input
+                <StyledFormControl>
+                  <StyledFormLabel htmlFor="impact">
+                    {t('actions-impact-on')}
+                  </StyledFormLabel>
+                  <StyledSelect
                     id="impact"
-                    name="select"
-                    type="select"
+                    value={activeEfficiency}
                     onChange={(e) => setActiveEfficiency(Number(e.target.value))}
+                    size="small"
                   >
                     {data.impactOverviews.map((impactGroup, indx) => (
-                      <option value={indx} key={indx}>
+                      <MenuItem value={indx} key={indx}>
                         {impactGroup.label}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </Input>
-                </StyledFormGroup>
+                  </StyledSelect>
+                </StyledFormControl>
               </Col>
             )}
+
             {actionGroups.length > 1 && (
               <Col md={4} className="d-flex">
-                <StyledFormGroup>
-                  <Label for="type">{t('actions-group-type')}</Label>
-                  <Input
+                <StyledFormControl>
+                  <StyledFormLabel htmlFor="type">
+                    {t('actions-group-type')}
+                  </StyledFormLabel>
+                  <StyledSelect
                     id="type"
-                    name="select"
-                    type="select"
-                    onChange={(e) => setActionGroup(e.target.value)}
+                    value={actionGroup}
+                    onChange={(e) => setActionGroup(e.target.value as string)}
+                    size="small"
                   >
-                    <option value="ALL_ACTIONS">{t('action-groups-all')}</option>
-                    {actionGroups.map((actionGroup) => (
-                      <option value={actionGroup.id} key={actionGroup.id}>
-                        {actionGroup.name}
-                      </option>
+                    <MenuItem value="ALL_ACTIONS">{t('action-groups-all')}</MenuItem>
+                    {actionGroups.map((group) => (
+                      <MenuItem value={group.id} key={group.id}>
+                        {group.name}
+                      </MenuItem>
                     ))}
-                  </Input>
-                </StyledFormGroup>
+                  </StyledSelect>
+                </StyledFormControl>
               </Col>
             )}
+
             <Col md={4} className="d-flex">
-              <div className="d-flex align-items-end me-3">
-                <FormGroup>
-                  <Label for="sort">{t('actions-sort-by')}</Label>
-                  <Input
+              <Box className="d-flex align-items-end" sx={{ marginRight: '0.75rem' }}>
+                <StyledFormControl>
+                  <StyledFormLabel htmlFor="sort">
+                    {t('actions-sort-by')}
+                  </StyledFormLabel>
+                  <StyledSelect
                     id="sort"
-                    name="select"
-                    type="select"
+                    value={sortBy.key}
                     onChange={(e) => handleChangeSort(e.target.value as SortActionsBy)}
+                    size="small"
                   >
-                    {sortOptions.map(
-                      (sortOption) =>
-                        !sortOption.isHidden && (
-                          <option
-                            key={sortOption.key}
-                            value={sortOption.key}
-                            selected={sortBy.key === sortOption.key}
-                          >
-                            {sortOption.label}
-                          </option>
-                        )
-                    )}
-                  </Input>
-                </FormGroup>
-              </div>
-              <div className="d-flex align-items-end">
-                <FormGroup>
+                    {sortOptions
+                      .filter((opt) => !opt.isHidden)
+                      .map((opt) => (
+                        <MenuItem key={opt.key} value={opt.key}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                  </StyledSelect>
+                </StyledFormControl>
+              </Box>
+
+              <Box className="d-flex align-items-end">
+                <StyledFormControl>
+                  <StyledFormLabel>{t('sort-direction')}</StyledFormLabel>
                   <SortButtons
                     value={ascending ? 'asc' : 'desc'}
                     exclusive
@@ -423,8 +420,8 @@ function ActionListPage({ page }: ActionListPageProps) {
                       <Icon name="arrowDownShortWide" width="1.5rem" height="1.5rem" />
                     </ToggleButton>
                   </SortButtons>
-                </FormGroup>
-              </div>
+                </StyledFormControl>
+              </Box>
             </Col>
           </Row>
         </SettingsForm>
@@ -432,67 +429,37 @@ function ActionListPage({ page }: ActionListPageProps) {
           <div>{t('actions-count', { count: displayedActionsCount })}</div>
         </ActionCount>
       </PageHero>
-      <ActionsViewTabs>
+
+      <ViewSelectorBar className="text-light">
         <Container fluid="lg">
-          <div role="tablist">
-            <ActionPageTab
-              tabId="list"
-              isActive={listType === 'list'}
-              label={t('actions-as-list')}
-              onSelectTab={() => setListType('list')}
-              icon="grid"
-            />
+          <Box display="flex" justifyContent="flex-end" alignItems="center" gap="0.5rem">
+            {/* Use Typography as a label element so htmlFor is valid */}
+            <ShowLabel component="label" htmlFor="view-select" sx={{ whiteSpace: 'nowrap' }}>
+              {t('show')}
+            </ShowLabel>
 
-            {hasEfficiency ? (
-              <ActionPageTab
-                tabId="mac"
-                isActive={listType === 'mac'}
-                label={t('actions-as-efficiency')}
-                onSelectTab={() => setListType('mac')}
-                icon="chartColumn"
-              />
-            ) : (
-              <ActionPageTab
-                tabId="comparison"
-                isActive={listType === 'comparison'}
-                label={t('actions-as-comparison')}
-                onSelectTab={() => setListType('comparison')}
-                icon="chartColumn"
-              />
-            )}
-
-            {showCostBenefitAnalysis && (
-              <ActionPageTab
-                tabId="cost-benefit"
-                isActive={listType === 'cost-benefit'}
-                label={t('cost-benefit')}
-                onSelectTab={() => setListType('cost-benefit')}
-                icon="chartColumn"
-              />
-            )}
-
-            {showReturnOnInvestment && (
-              <ActionPageTab
-                tabId="roi"
-                isActive={listType === 'roi'}
-                label={t('return-on-investment')}
-                onSelectTab={() => setListType('roi')}
-                icon="chartColumn"
-              />
-            )}
-
-            {showSimpleEffect && (
-              <ActionPageTab
-                tabId="simple"
-                isActive={listType === 'simple'}
-                label={t('simple-effect')}
-                onSelectTab={() => setListType('simple')}
-                icon="chartColumn"
-              />
-            )}
-          </div>
+            <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
+              <Select
+                id="view-select"
+                value={listType}
+                onChange={(e) => setListType(e.target.value as ViewType)}
+                size="small"
+              >
+                {viewOptions.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    <span className="d-inline-flex align-items-center">
+                      {/* Keep existing bootstrap icons */}
+                      <Icon name={opt.icon} width="1.25rem" height="1.25rem" className="me-2" />
+                      {opt.label}
+                    </span>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Container>
-      </ActionsViewTabs>
+      </ViewSelectorBar>
+
       <Container fluid="lg" className="mb-5">
         <Row>
           <Col>
@@ -555,3 +522,4 @@ function ActionListPage({ page }: ActionListPageProps) {
 }
 
 export default ActionListPage;
+
