@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
-import { Box, useTheme } from '@mui/material';
+import { Box, Container, useTheme } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 
@@ -119,7 +119,9 @@ export default function OutcomePage(props: OutcomePageProps) {
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
 
   return (
-    <Box sx={{ backgroundColor: theme.graphColors.grey010, paddingBottom: 2 }}>
+    <Box
+      sx={{ backgroundColor: theme.graphColors.grey010, paddingBottom: 2, position: 'relative' }}
+    >
       <PageHero
         title={getTitle(t, outcomeType)}
         leadTitle={pageLeadTitle ?? undefined}
@@ -127,7 +129,8 @@ export default function OutcomePage(props: OutcomePageProps) {
         overlap
       >
         {showSettingsPanel && <ScenarioPanel />}
-
+      </PageHero>
+      <Container maxWidth="xl" sx={{ p: 4 }}>
         <Box my={3}>
           <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
           {visibleNodes.map((node, index) => (
@@ -152,7 +155,7 @@ export default function OutcomePage(props: OutcomePageProps) {
             />
           ))}
         </Box>
-      </PageHero>
+      </Container>
     </Box>
   );
 }
