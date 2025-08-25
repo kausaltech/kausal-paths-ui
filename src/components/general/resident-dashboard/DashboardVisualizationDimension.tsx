@@ -46,6 +46,7 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
       orient: 'vertical',
       left: 'right',
       top: 'center',
+      type: 'scroll',
       textStyle: {
         width: 200,
         overflow: 'break',
