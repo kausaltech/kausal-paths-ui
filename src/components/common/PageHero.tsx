@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Container, Row } from 'reactstrap';
+import { Container } from '@mui/material';
 
 export const StyledContentContainer = styled(Container)<{ $overlap: boolean }>`
   /* Pull content to overlap the header section */
@@ -69,24 +69,20 @@ export const PageHero = ({ leadTitle, leadDescription, overlap = false, children
   return (
     <StyledHero $overlap={overlap}>
       <StyledHeroContainer $overlap={overlap}>
-        <Container fluid="lg">
+        <Container fixed maxWidth="xl" sx={{ p: 4 }}>
           {hasHeroCard && (
-            <Row>
-              <Container fluid="lg">
-                <StyledHeroCard>
-                  {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
-                  {!!leadDescription && (
-                    <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
-                  )}
-                </StyledHeroCard>
-              </Container>
-            </Row>
+            <StyledHeroCard>
+              {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
+              {!!leadDescription && (
+                <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
+              )}
+            </StyledHeroCard>
           )}
         </Container>
       </StyledHeroContainer>
 
       {!!children && (
-        <StyledContentContainer $overlap={overlap} fluid="lg">
+        <StyledContentContainer $overlap={overlap} maxWidth="xl" sx={{ p: 4 }}>
           {children}
         </StyledContentContainer>
       )}

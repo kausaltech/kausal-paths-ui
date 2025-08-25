@@ -82,7 +82,7 @@ const ScenarioPanel = () => {
           {t('scenario')}
         </Typography>
         <Grid container spacing={2} sx={{ alignItems: 'flex-end' }}>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
               <ScenarioSelector />
               <Button
@@ -96,12 +96,12 @@ const ScenarioPanel = () => {
             </Box>
           </Grid>
           {nrGoals > 1 && (
-            <Grid size={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <GoalSelector />
             </Grid>
           )}
           {activeGoal && data?.instance?.goals?.[0] && (
-            <Grid size={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <ScenarioOutcome
                 goalOutcome={data?.instance?.goals?.[0]}
                 activeGoal={activeGoal}

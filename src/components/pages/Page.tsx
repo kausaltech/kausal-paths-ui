@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import Head from 'next/head';
 
 import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import { Box, Container, Skeleton } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 
 import { isLocalDev } from '@common/env';
@@ -24,7 +25,20 @@ import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
 const PageLoader = () => {
-  return <ContentLoader fullPage />;
+  return (
+    <Container maxWidth="xl" sx={{ p: 4 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          height: 'calc(100vh - 24rem)',
+        }}
+      >
+        <Skeleton variant="rectangular" width="100%" height="160px" />
+      </Box>
+    </Container>
+  );
 };
 
 type PageProps = {
