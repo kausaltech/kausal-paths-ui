@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { useTranslation } from 'next-i18next';
 
@@ -228,7 +229,7 @@ const TabWrapper = ({
         {children}
       </StyledTab>
     );
-  return <div>{children}</div>;
+  return <Box sx={{ maxWidth: '240px' }}>{children}</Box>;
 };
 type OutcomeCardProps = {
   node: OutcomeNodeFieldsFragment;
