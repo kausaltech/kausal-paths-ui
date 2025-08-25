@@ -85,7 +85,7 @@
   "active-actions": "{{count}}/{{total}} aktive Maßnahmen",
   "hide-calculation": "Berechnung verbergen",
   "nav-footer": "Fußzeile",
-  "de": "Anzeigen:",
+  "show": "Anzeigen:",
   "show-calculation": "Berechnungsweg einblenden",
   "sort-direction": "Sortierung",
   "sort-ascending": "Aufsteigend sortieren",
