@@ -77,8 +77,9 @@ const StyledFormLabel = styled(FormLabel)`
   }
 `;
 
-const ShowLabel = styled(Typography)`
+const ShowLabel = styled(FormLabel)`
   color: ${(p) => p.theme.brandDark};
+  margin: 0;
 `;
 
 const StyledSelect = styled(Select)<{ $custom?: boolean }>`
@@ -132,7 +133,8 @@ const getSortOptions = (
 ): SortActionsConfig[] => [
   { 
     key: 'STANDARD', 
-    label: t('actions-sort-default') },
+    label: t('actions-sort-default')
+   },
   {
     isHidden: !hasEfficiency,
     key: 'CUM_EFFICIENCY',
@@ -147,7 +149,8 @@ const getSortOptions = (
   { 
     key: 'IMPACT', 
     label: t('actions-sort-impact'), 
-    sortKey: 'impactOnTargetYear' },
+    sortKey: 'impactOnTargetYear' 
+  },
   {
     isHidden: !hasEfficiency,
     key: 'CUM_COST',
@@ -191,7 +194,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     GET_ACTION_LIST,
     {
       variables: { 
-        goal: activeGoal?.id ?? null 
+        goal: activeGoal?.id ?? null,
       },
       fetchPolicy: 'cache-and-network',
     }
@@ -241,8 +244,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           };
 
           const efficiencyType = data?.impactOverviews[activeEfficiency];
-          const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id
-          );
+          const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
 
           if (!efficiencyType || !efficiencyAction) return out;
 
@@ -258,7 +260,8 @@ function ActionListPage({ page }: ActionListPageProps) {
           );
           out.unitAdjustmentMultiplier = efficiencyAction.unitAdjustmentMultiplier ?? undefined;
           if (out.unitAdjustmentMultiplier !== undefined)
-            out.cumulativeEfficiency = (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
+            out.cumulativeEfficiency = 
+              (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
             cumulativeImpactId: efficiencyType?.effectNode?.id,
@@ -433,9 +436,11 @@ function ActionListPage({ page }: ActionListPageProps) {
       <ViewSelectorBar className="text-light">
         <Container fluid="lg">
           <Box display="flex" justifyContent="flex-end" alignItems="center" gap="0.5rem">
-            {/* Use Typography as a label element so htmlFor is valid */}
-            <ShowLabel component="label" htmlFor="view-select" sx={{ whiteSpace: 'nowrap' }}>
-              {t('show')}
+            <ShowLabel
+              id="view-select-label"
+              sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
+            >
+             {t('show')}
             </ShowLabel>
 
             <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
@@ -522,4 +527,3 @@ function ActionListPage({ page }: ActionListPageProps) {
 }
 
 export default ActionListPage;
-
