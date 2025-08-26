@@ -52,6 +52,10 @@ type Props = {
 export const PageHero = ({ leadTitle, leadDescription, overlap = false, children }: Props) => {
   const hasHeroCard = !!(leadTitle || leadDescription);
 
+  if (!hasHeroCard && !children) {
+    return null;
+  }
+
   return (
     <StyledHeroSection>
       <Container fixed maxWidth="xl" sx={{ p: 3 }}>
