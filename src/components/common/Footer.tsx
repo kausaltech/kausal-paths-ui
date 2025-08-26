@@ -29,13 +29,13 @@ const StyledFooter = styled.footer`
   }
 
   .footer-column {
-    @media (max-width: ${(props) => props.theme.breakpointMd}) {
+    @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
       margin-bottom: ${(props) => props.theme.spaces.s300};
       text-align: center;
     }
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     text-align: center;
   }
 
@@ -62,7 +62,7 @@ const Branding = styled.div`
   }};
   margin-bottom: ${(props) => props.theme.spaces.s300};
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     flex-direction: column;
     width: 100%;
   }
@@ -80,7 +80,7 @@ const Logo = styled.div`
     max-width: 100%;
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     margin: 0 auto ${(props) => props.theme.spaces.s200};
   }
 `;
@@ -93,7 +93,7 @@ const ServiceTitle = styled.div`
   font-size: ${(props) => props.theme.fontSizeMd};
   font-weight: ${(props) => props.theme.fontWeightBold};
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     flex-direction: column;
   }
 `;
@@ -115,7 +115,7 @@ const UtilitySection = styled.div`
   border-top: 1px solid ${(props) => transparentize(0.8, props.theme.footerColor)};
   line-height: ${(props) => props.theme.lineHeightSm};
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     flex-direction: column;
     align-items: center;
     width: 100%;
@@ -128,7 +128,7 @@ const UtilityColumn = styled.ul`
   padding: 0;
   margin: 0;
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     flex-direction: column;
     align-items: center;
     width: 100%;
@@ -148,7 +148,7 @@ const UtilityItem = styled.li`
     margin-left: 0;
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     margin-left: 0;
 
     &:before {
@@ -184,7 +184,7 @@ const BaseSection = styled.div`
   border-top: 1px solid ${(props) => transparentize(0.8, props.theme.footerColor)};
   line-height: ${(props) => props.theme.lineHeightSm};
 
-  @media (max-width: ${(props) => props.theme.breakpointLg}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.lg}px) {
     flex-direction: column;
     align-items: left;
   }
@@ -196,12 +196,12 @@ const BaseColumn = styled.ul`
   list-style: none;
   padding: 0;
 
-  @media (max-width: ${(props) => props.theme.breakpointLg}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.lg}px) {
     justify-content: left;
     flex-basis: 100%;
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     justify-content: center;
   }
 `;
@@ -217,13 +217,13 @@ const BaseLink = styled.li`
     }
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointLg}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.lg}px) {
     &:first-child {
       margin-left: 0;
     }
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     margin: 0 0 ${(props) => props.theme.spaces.s200};
     max-width: 100%;
     width: 50%;
@@ -251,7 +251,7 @@ const FooterStatement = styled.div`
     color: ${(props) => props.theme.footerColor};
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     margin-right: ${(props) => props.theme.spaces.s200};
   }
 `;
@@ -270,7 +270,7 @@ const FundingHeader = styled.div`
   flex-basis: 100%;
   text-align: right;
   margin-bottom: ${(props) => props.theme.spaces.s100};
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     text-align: center;
   }
 `;
@@ -286,7 +286,7 @@ const FundingInstrumentContainer = styled.div<{ $small?: boolean }>`
     max-width: 100%;
   }
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     margin: ${(props) => props.theme.spaces.s200};
     text-align: center;
   }

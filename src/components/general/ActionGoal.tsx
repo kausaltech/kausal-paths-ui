@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
  * not clash with the concept of "goals" e.g. as a custom field.
  */
 export const ActionGoal = styled.div`
-  max-width: ${({ theme }) => theme.breakpointSm};
+  max-width: ${({ theme }) => theme.breakpoints.values.sm}px;
   background-color: ${({ theme }) => theme.graphColors.blue010};
   border-radius: ${({ theme }) => theme.cardBorderRadius};
   padding: ${({ theme }) => theme.spaces.s100};

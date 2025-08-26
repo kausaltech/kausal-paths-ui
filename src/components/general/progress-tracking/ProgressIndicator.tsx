@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
+import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { Theme } from '@kausal/themes/types';
 import type { EChartsOption } from 'echarts';
 import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 import type { TFunction } from 'i18next';

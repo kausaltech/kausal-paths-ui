@@ -26,7 +26,7 @@ const StyledTitle = styled.h1`
   margin-bottom: ${(props) => props.theme.spaces.s200};
   color: inherit;
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     font-size: ${(props) => props.theme.fontSizeLg};
   }
 `;

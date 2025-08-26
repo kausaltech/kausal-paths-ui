@@ -9,20 +9,20 @@ const StyledTitle = styled.h1`
   font-size: ${(props) => props.theme.fontSizeLg};
   color: inherit;
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     font-size: ${(props) => props.theme.fontSizeXl};
   }
 `;
 
 const StyledHeroCard = styled.div`
-  max-width: ${({ theme }) => theme.breakpointMd};
+  max-width: ${({ theme }) => theme.breakpoints.values.md}px;
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   color: ${(props) => props.theme.textColor.primary};
   padding: ${(props) => props.theme.spaces.s100};
   margin-bottom: ${({ theme }) => theme.spaces.s200};
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     padding: ${(props) => props.theme.spaces.s200};
   }
 `;

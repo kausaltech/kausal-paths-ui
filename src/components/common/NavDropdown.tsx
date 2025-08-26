@@ -21,7 +21,7 @@ const NavLink = styled.div`
       }
     }
 
-    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
       align-self: flex-end;
       margin: 0 ${(props) => props.theme.spaces.s100} 0;
     }
@@ -38,7 +38,7 @@ const NavHighlighter = styled.span`
     border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     padding: ${(props) => props.theme.spaces.s150} 0
       calc(${(props) => props.theme.spaces.s150} - 5px);
   }
@@ -59,7 +59,7 @@ const StyledDropdownToggle = styled(DropdownToggle)`
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     align-self: flex-end;
     margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
   }
@@ -91,7 +91,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
       box-shadow: 3px 3px 6px 2px ${(props) =>

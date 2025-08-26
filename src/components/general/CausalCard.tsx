@@ -71,7 +71,7 @@ const CardHeader = styled.div`
     margin-right: 1rem;
     fill: ${(props) => props.theme.graphColors.grey050};
 
-    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
       display: block;
     }
   }
@@ -91,7 +91,7 @@ const CardHeader = styled.div`
     font-size: ${(props) => props.theme.fontSizeBase};
     hyphens: none;
 
-    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
       font-size: ${(props) => props.theme.fontSizeMd};
     }
   }
@@ -113,7 +113,7 @@ const PlotWrapper = styled.div`
     text-anchor: end !important;
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: block;
   }
 `;

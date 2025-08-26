@@ -9,7 +9,7 @@ import { yearRangeVar } from '@/common/cache';
 
 const StyledFormControl = styled(Box)`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   gap: ${(props) => props.theme.spacing(1)};
   border-right: 1px solid ${(props) => props.theme.graphColors.grey040};

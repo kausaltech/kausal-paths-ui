@@ -87,7 +87,7 @@ const BotNav = styled(Navbar)`
     flex-direction: column;
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .navbar-nav {
       padding: 0;
     }
@@ -104,7 +104,7 @@ const SiteTitle = styled.div`
   line-height: 1;
   padding: ${(props) => props.theme.spaces.s150} 0 ${(props) => props.theme.spaces.s150};
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     font-size: ${(props) => props.theme.fontSizeMd};
   }
 `;
@@ -131,7 +131,7 @@ const HomeLink = styled.a`
       ${(props) => props.theme.spaces.s050} 0;
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     svg {
       display: block;
       max-width: 18em;
@@ -147,7 +147,7 @@ const EmptyLogo = styled.div`
   height: ${(props) => props.theme.spaces.s200};
   margin: ${(props) => props.theme.spaces.s050} 0 ${(props) => props.theme.spaces.s050} 0;
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     width: 0;
     height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
     margin: ${(props) => props.theme.spaces.s050} 0 ${(props) => props.theme.spaces.s050} 0;
@@ -169,7 +169,7 @@ const NavLink = styled.div`
       }
     }
 
-    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
       align-self: flex-end;
       margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
     }
@@ -186,7 +186,7 @@ const NavHighlighter = styled.span`
     border-bottom: 5px solid ${(props) => props.theme.brandDark};
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     padding: ${(props) => props.theme.spaces.s150} 0
       calc(${(props) => props.theme.spaces.s150} - 5px);
   }
@@ -207,7 +207,7 @@ const StyledDropdownToggle = styled(DropdownToggle)`
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     align-self: flex-end;
     margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
   }
@@ -243,7 +243,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
       box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
@@ -271,7 +271,7 @@ const NavbarToggler = styled.button`
   border-radius: 0;
   -webkit-appearance: none;
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: none;
   }
 `;

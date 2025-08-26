@@ -11,7 +11,7 @@ const StyledFooter = styled.div`
   stzh-link.stzh-footer__link .stzh-link {
     font-size: inherit;
   }
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     &.stzh-footer {
       padding-bottom: var(--stzh-space-xxxlarge);
     }
