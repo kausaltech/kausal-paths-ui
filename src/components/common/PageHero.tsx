@@ -58,7 +58,7 @@ export const PageHero = ({ leadTitle, leadDescription, overlap = false, children
 
   return (
     <StyledHeroSection>
-      <Container fixed maxWidth="xl" sx={{ p: 3 }}>
+      <Container fixed maxWidth="xl" sx={{ py: 3 }}>
         {hasHeroCard && (
           <StyledHeroCard>
             {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}

@@ -26,7 +26,7 @@ export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
 const PageLoader = () => {
   return (
-    <Container fixed maxWidth="xl" sx={{ p: 4 }}>
+    <Container fixed maxWidth="xl" sx={{ py: 4 }}>
       <Box
         sx={{
           display: 'flex',

@@ -130,7 +130,7 @@ export default function OutcomePage(props: OutcomePageProps) {
       >
         {showSettingsPanel && <ScenarioPanel />}
       </PageHero>
-      <Container fixed maxWidth="xl" sx={{ p: 1 }}>
+      <Container fixed maxWidth="xl" sx={{ py: 1 }}>
         <Box my={3}>
           <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
           {visibleNodes.map((node, index) => (
