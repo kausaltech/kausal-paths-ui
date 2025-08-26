@@ -96,6 +96,7 @@
   "active-actions": "{{count}}/{{total, number}} active actions",
   "watch-action-list-title": "How do we make this happen?",
   "hide-calculation": "Hide calculation",
+  "show": "Show:",
   "show-calculation": "Show calculation",
   "sort-direction": "Sort direction",
   "sort-ascending": "Sort Ascending",
