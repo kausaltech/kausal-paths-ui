@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Box, Container } from '@mui/material';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { useTranslation } from 'next-i18next';
 import { transparentize } from 'polished';
@@ -27,10 +28,24 @@ import Icon from '@/components/common/icon';
 import LanguageSelector from '@/components/general/LanguageSelector';
 import { useSite } from '@/context/site';
 
-const TopNav = styled(Navbar)`
-  padding: 0 ${(props) => props.theme.spaces.s100};
+const BrandNavWrapper = styled(Box)`
   background-color: ${(props) => props.theme.brandNavBackground};
   border-bottom: 1px solid ${(props) => props.theme.themeColors.light};
+
+  .container {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+  }
+`;
+
+const BotNavWrapper = styled(Box)`
+  background-color: ${(props) => props.theme.themeColors.white};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
+`;
+
+const TopNav = styled(Navbar)`
+  padding: 0;
+  background-color: ${(props) => props.theme.brandNavBackground};
 
   .nav-item a,
   .nav-item a:hover {
@@ -54,7 +69,6 @@ const TopNav = styled(Navbar)`
 const BotNav = styled(Navbar)`
   background-color: ${(props) => props.theme.themeColors.white};
   padding: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
 
   &.show {
     padding: 0 0 ${(props) => props.theme.spaces.s150} 0;
@@ -350,89 +364,102 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
     );
   }
   return (
-    <div>
-      <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container="lg">
-        <Link href="/" passHref>
-          <HomeLink href="dummy">
-            {orgLogo}
-            <SiteTitle>{siteTitle}</SiteTitle>
-          </HomeLink>
-        </Link>
-        {false /* FIXME */ && (
-          <Nav navbar className="ml-auto">
-            <NavItem>
-              <NavLink>
-                <Link href="#admin" passHref>
-                  <a href="dummy">
-                    <NavHighlighter className="highlighter">
-                      <Icon name="user" size={20} color={theme.brandNavColor} /> Log in
-                    </NavHighlighter>
-                  </a>
-                </Link>
-              </NavLink>
-            </NavItem>
-          </Nav>
-        )}
-        <Nav navbar className="ml-auto d-none d-md-flex">
-          <LanguageSelector mobile={false} />
-        </Nav>
-        <NavbarToggler
-          onClick={() => toggleOpen(!isOpen)}
-          aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
-          aria-controls="global-navigation-bar"
-          aria-expanded={isOpen}
-          type="button"
-        >
-          {isOpen ? (
-            <Icon name="times" color={theme.brandNavColor} />
-          ) : (
-            <Icon name="bars" color={theme.brandNavColor} />
-          )}
-        </NavbarToggler>
-      </TopNav>
-      <BotNav expand="md" fixed={navIsFixed ? 'top' : ''} id="global-navigation-bar" container="lg">
-        <Collapse isOpen={isOpen} navbar>
-          <Nav navbar className="me-auto">
-            {navItems &&
-              navItems.map((page) =>
-                page.children ? (
-                  <NavDropdown items={page.children} active={page.active} key={page.slug}>
-                    {page.name}
-                  </NavDropdown>
-                ) : (
-                  <NavItem key={page.slug} active={page.active}>
+    <Fragment>
+      <BrandNavWrapper>
+        <Container fixed maxWidth="xl" sx={{ backgroundColor: 'theme.brandNavBackground' }}>
+          <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container={false}>
+            <Link href="/" passHref>
+              <HomeLink href="dummy">
+                {orgLogo}
+                <SiteTitle>{siteTitle}</SiteTitle>
+              </HomeLink>
+            </Link>
+            {false /* FIXME */ && (
+              <Nav navbar className="ml-auto">
+                <NavItem>
+                  <NavLink>
+                    <Link href="#admin" passHref>
+                      <a href="dummy">
+                        <NavHighlighter className="highlighter">
+                          <Icon name="user" size={20} color={theme.brandNavColor} /> Log in
+                        </NavHighlighter>
+                      </a>
+                    </Link>
+                  </NavLink>
+                </NavItem>
+              </Nav>
+            )}
+            <Nav navbar className="ml-auto d-none d-md-flex">
+              <LanguageSelector mobile={false} />
+            </Nav>
+            <NavbarToggler
+              onClick={() => toggleOpen(!isOpen)}
+              aria-label={isOpen ? t('nav-menu-close') : t('nav-menu-open')}
+              aria-controls="global-navigation-bar"
+              aria-expanded={isOpen}
+              type="button"
+            >
+              {isOpen ? (
+                <Icon name="times" color={theme.brandNavColor} />
+              ) : (
+                <Icon name="bars" color={theme.brandNavColor} />
+              )}
+            </NavbarToggler>
+          </TopNav>
+        </Container>
+      </BrandNavWrapper>
+      <BotNavWrapper>
+        <Container fixed maxWidth="xl">
+          <BotNav
+            expand="md"
+            fixed={navIsFixed ? 'top' : ''}
+            id="global-navigation-bar"
+            container={false}
+          >
+            <Collapse isOpen={isOpen} navbar>
+              <Nav navbar className="me-auto">
+                {navItems &&
+                  navItems.map((page) =>
+                    page.children ? (
+                      <NavDropdown items={page.children} active={page.active} key={page.slug}>
+                        {page.name}
+                      </NavDropdown>
+                    ) : (
+                      <NavItem key={page.slug} active={page.active}>
+                        <NavLink>
+                          <Link href={page.urlPath}>
+                            <a>
+                              <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
+                                {page.name}
+                              </NavHighlighter>
+                            </a>
+                          </Link>
+                        </NavLink>
+                      </NavItem>
+                    )
+                  )}
+              </Nav>
+              <Nav navbar className="d-md-none">
+                <LanguageSelector mobile />
+              </Nav>
+              {site.watchLink ? (
+                <Nav navbar>
+                  <NavItem>
                     <NavLink>
-                      <Link href={page.urlPath}>
+                      <Link href={watchLinkUrl}>
                         <a>
-                          <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
-                            {page.name}
-                          </NavHighlighter>
+                          <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
                         </a>
                       </Link>
                     </NavLink>
                   </NavItem>
-                )
-              )}
-          </Nav>
-          <Nav navbar className="d-md-none">
-            <LanguageSelector mobile />
-          </Nav>
-          {site.watchLink ? (
-            <Nav navbar>
-              <NavItem>
-                <NavLink>
-                  <Link href={watchLinkUrl}>
-                    <a>
-                      <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
-                    </a>
-                  </Link>
-                </NavLink>
-              </NavItem>
-            </Nav>
-          ) : null}
-        </Collapse>
-      </BotNav>
-    </div>
+                </Nav>
+              ) : null}
+            </Collapse>
+          </BotNav>
+        </Container>
+      </BotNavWrapper>
+    </Fragment>
   );
 }
 

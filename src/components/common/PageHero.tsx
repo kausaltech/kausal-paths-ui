@@ -1,21 +1,8 @@
 import styled from '@emotion/styled';
 import { Container } from '@mui/material';
 
-export const StyledContentContainer = styled(Container)<{ $overlap: boolean }>`
-  /* Pull content to overlap the header section */
-  margin-top: ${({ $overlap }) => ($overlap ? '-10rem' : '0')};
-`;
-
-const StyledHeroContainer = styled.div<{ $overlap: boolean }>`
-  padding: 4rem 0 2rem;
-  margin-bottom: 1rem;
-  background-color: ${({ theme }) => theme.brandDark};
-  color: ${(props) => props.theme.themeColors.white};
-  padding-bottom: ${({ $overlap }) => ($overlap ? '10rem' : '0')};
-`;
-
-const StyledHero = styled.div<{ $overlap: boolean }>`
-  background: ${({ $overlap, theme }) => (!$overlap ? theme.brandDark : undefined)};
+const StyledHeroSection = styled.div`
+  background: ${({ theme }) => theme.brandDark};
 `;
 
 const StyledTitle = styled.h1`
@@ -27,12 +14,13 @@ const StyledTitle = styled.h1`
   }
 `;
 
-const StyledHeroCard = styled(Container)`
+const StyledHeroCard = styled.div`
+  max-width: ${({ theme }) => theme.breakpointMd};
   border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   color: ${(props) => props.theme.textColor.primary};
   padding: ${(props) => props.theme.spaces.s100};
-  margin-bottom: ${({ theme }) => theme.spaces.s400};
+  margin-bottom: ${({ theme }) => theme.spaces.s200};
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
     padding: ${(props) => props.theme.spaces.s200};
@@ -40,8 +28,6 @@ const StyledHeroCard = styled(Container)`
 `;
 
 const Description = styled.div`
-  max-width: ${({ theme }) => theme.breakpointSm};
-
   p:last-child {
     margin-bottom: 0;
   }
@@ -58,7 +44,7 @@ type Props = {
   title: string;
   leadTitle?: string;
   leadDescription?: string;
-  /** Whether the children container overlaps part of the hero background, purely aesthetic */
+  /** @deprecated Whether the children container overlaps part of the hero background, purely aesthetic */
   overlap?: boolean;
   children?: React.ReactNode;
 };
@@ -67,25 +53,18 @@ export const PageHero = ({ leadTitle, leadDescription, overlap = false, children
   const hasHeroCard = !!(leadTitle || leadDescription);
 
   return (
-    <StyledHero $overlap={overlap}>
-      <StyledHeroContainer $overlap={overlap}>
-        <Container fixed maxWidth="xl" sx={{ p: 4 }}>
-          {hasHeroCard && (
-            <StyledHeroCard>
-              {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
-              {!!leadDescription && (
-                <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
-              )}
-            </StyledHeroCard>
-          )}
-        </Container>
-      </StyledHeroContainer>
-
-      {!!children && (
-        <StyledContentContainer $overlap={overlap} maxWidth="xl" sx={{ p: 4 }}>
-          {children}
-        </StyledContentContainer>
-      )}
-    </StyledHero>
+    <StyledHeroSection>
+      <Container fixed maxWidth="xl" sx={{ p: 3 }}>
+        {hasHeroCard && (
+          <StyledHeroCard>
+            {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
+            {!!leadDescription && (
+              <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
+            )}
+          </StyledHeroCard>
+        )}
+        {children}
+      </Container>
+    </StyledHeroSection>
   );
 };

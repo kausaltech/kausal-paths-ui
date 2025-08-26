@@ -22,11 +22,12 @@ import type { PageRefetchCallback } from './Page';
 type OutcomeNode = OutcomeNodeFieldsFragment;
 
 const StyledTitle = styled.h1`
-  font-size: ${(props) => props.theme.fontSizeLg};
+  font-size: ${(props) => props.theme.fontSizeMd};
+  margin-bottom: ${(props) => props.theme.spaces.s200};
   color: inherit;
 
   @media (min-width: ${(props) => props.theme.breakpointMd}) {
-    font-size: ${(props) => props.theme.fontSizeXl};
+    font-size: ${(props) => props.theme.fontSizeLg};
   }
 `;
 
@@ -126,11 +127,10 @@ export default function OutcomePage(props: OutcomePageProps) {
         title={getTitle(t, outcomeType)}
         leadTitle={pageLeadTitle ?? undefined}
         leadDescription={pageLeadParagraph ?? undefined}
-        overlap
       >
         {showSettingsPanel && <ScenarioPanel />}
       </PageHero>
-      <Container maxWidth="xl" sx={{ p: 4 }}>
+      <Container fixed maxWidth="xl" sx={{ p: 1 }}>
         <Box my={3}>
           <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
           {visibleNodes.map((node, index) => (

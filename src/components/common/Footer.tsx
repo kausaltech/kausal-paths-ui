@@ -1,8 +1,8 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Container } from '@mui/material';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
-import { Container } from 'reactstrap';
 
 import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
@@ -70,9 +70,7 @@ const Branding = styled.div`
 
 const Logo = styled.div`
   height: calc(${(props) => props.theme.footerLogoSize} * ${(props) => props.theme.spaces.s400});
-  max-width: calc(
-    ${(props) => props.theme.footerLogoSize} * 4 * ${(props) => props.theme.spaces.s300}
-  );
+  max-width: calc(${({ theme }) => theme.footerLogoSize} * 4 * ${({ theme }) => theme.spaces.s300});
   margin-right: ${(props) => props.theme.spaces.s200};
   margin: ${(props) => props.theme.spaces.s150} ${(props) => props.theme.spaces.s200}
     ${(props) => props.theme.spaces.s150} 0;
@@ -299,8 +297,8 @@ function SiteFooter() {
   const theme = useTheme();
   const site = useSite();
 
-  const utilityLinks = [];
-  const additionalLinks = [];
+  const utilityLinks: { id: string; name: string; slug: string; icon?: string }[] = [];
+  const additionalLinks: { slug: string; name: string }[] = [];
   const ownerName = site.owner;
   const siteTitle = site.title;
   const ownerUrl = undefined;
@@ -326,7 +324,7 @@ function SiteFooter() {
 
   return (
     <StyledFooter className="site-footer">
-      <Container>
+      <Container fixed maxWidth="xl">
         <FooterNav aria-label={t('nav-footer')}>
           <Branding>
             {theme.themeLogoWhiteUrl ? (
