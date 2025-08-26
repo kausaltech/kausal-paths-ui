@@ -67,7 +67,7 @@ const testInstance = (instanceId: string) =>
       await link.click();
       await ctx.checkMeta(page);
 
-      await expect.configure({ timeout: 45000 })(page.getByRole('tab').first()).toBeVisible();
+      await expect.configure({ timeout: 45000 })(page.getByTestId('actions-list')).toBeVisible();
 
       await ctx.waitForLoaded(page);
     });
@@ -79,9 +79,7 @@ const testInstance = (instanceId: string) =>
       await expect(page).toHaveURL(`${ctx.baseURL}${listItem.urlPath}`, { timeout: 3000 }); // Fix NS_BINDING_ABORTED error in Firefox
       await ctx.checkMeta(page);
       await ctx.waitForLoaded(page);
-      await expect
-        .configure({ timeout: 15000 })(page.getByRole('tab').locator('visible=true').first())
-        .toBeVisible();
+      await expect.configure({ timeout: 15000 })(page.getByTestId('actions-list')).toBeVisible();
     });
     test('action details page', async ({ page, ctx }) => {
       test.skip(ctx.instance.actions.length == 0, 'No actions defined in instance');

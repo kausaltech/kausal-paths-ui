@@ -199,7 +199,7 @@ const ActionsList = ({
   const ROW_GAP = 0.5;
 
   return (
-    <TableContainer id={id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
+    <TableContainer data-testid="actions-list" id={id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
       <Table sx={{ borderCollapse: 'collapse' }}>
         <TableHead>
           <TableRow
