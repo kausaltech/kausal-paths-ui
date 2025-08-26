@@ -162,7 +162,7 @@ const getSortOptions = (
 type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi' | 'simple';
 
 type ViewOption = { value: ViewType; label: string; icon: string };
-const VO = <V extends ViewType>(value: V, label: string, icon: string): ViewOption => ({
+const getViewOption = <V extends ViewType>(value: V, label: string, icon: string): ViewOption => ({
   value,
   label,
   icon,
@@ -308,13 +308,13 @@ function ActionListPage({ page }: ActionListPageProps) {
   };
 
   const viewOptions: ViewOption[] = [
-    VO('list', t('actions-as-list'), 'list'),
+    getViewOption('list', t('actions-as-list'), 'list'),
     hasEfficiency
-      ? VO('mac', t('actions-as-efficiency'), 'chartColumn')
-      : VO('comparison', t('actions-as-comparison'), 'chartColumn'),
-    ...(showCostBenefitAnalysis ? [VO('cost-benefit', t('cost-benefit'), 'chartColumn')] : []),
-    ...(showReturnOnInvestment ? [VO('roi', t('return-on-investment'), 'chartColumn')] : []),
-    ...(showSimpleEffect ? [VO('simple', t('simple-effect'), 'chartColumn')] : []),
+      ? getViewOption('mac', t('actions-as-efficiency'), 'chartColumn')
+      : getViewOption('comparison', t('actions-as-comparison'), 'chartColumn'),
+    ...(showCostBenefitAnalysis ? [getViewOption('cost-benefit', t('cost-benefit'), 'chartColumn')] : []),
+    ...(showReturnOnInvestment ? [getViewOption('roi', t('return-on-investment'), 'chartColumn')] : []),
+    ...(showSimpleEffect ? [getViewOption('simple', t('simple-effect'), 'chartColumn')] : []),
   ];
 
   if (error) {
@@ -385,7 +385,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             )}
 
             <Col md={4} className="d-flex">
-              <Box className="d-flex align-items-end" sx={{ marginRight: '0.75rem' }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-end', mr: 1.5 }}>
                 <StyledFormControl>
                   <StyledFormLabel htmlFor="sort">
                     {t('actions-sort-by')}
@@ -407,7 +407,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 </StyledFormControl>
               </Box>
 
-              <Box className="d-flex align-items-end">
+              <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                 <StyledFormControl>
                   <StyledFormLabel>{t('sort-direction')}</StyledFormLabel>
                   <SortButtons
@@ -435,7 +435,7 @@ function ActionListPage({ page }: ActionListPageProps) {
 
       <ViewSelectorBar className="text-light">
         <Container fluid="lg">
-          <Box display="flex" justifyContent="flex-end" alignItems="center" gap="0.5rem">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
             <ShowLabel
               id="view-select-label"
               sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
