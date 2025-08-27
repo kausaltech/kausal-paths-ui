@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { useTheme } from '@emotion/react';
+import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { Theme } from '@kausal/themes/types';
 import Highlighter from 'react-highlight-words';
 import Select, {
   type GroupBase,

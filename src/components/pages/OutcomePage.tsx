@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
-import { Box, useTheme } from '@mui/material';
+import { Box, Container, useTheme } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 
@@ -22,11 +22,12 @@ import type { PageRefetchCallback } from './Page';
 type OutcomeNode = OutcomeNodeFieldsFragment;
 
 const StyledTitle = styled.h1`
-  font-size: ${(props) => props.theme.fontSizeLg};
+  font-size: ${(props) => props.theme.fontSizeMd};
+  margin-bottom: ${(props) => props.theme.spaces.s200};
   color: inherit;
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
-    font-size: ${(props) => props.theme.fontSizeXl};
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    font-size: ${(props) => props.theme.fontSizeLg};
   }
 `;
 
@@ -119,15 +120,17 @@ export default function OutcomePage(props: OutcomePageProps) {
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
 
   return (
-    <Box sx={{ backgroundColor: theme.graphColors.grey010, paddingBottom: 2 }}>
+    <Box
+      sx={{ backgroundColor: theme.graphColors.grey010, paddingBottom: 2, position: 'relative' }}
+    >
       <PageHero
         title={getTitle(t, outcomeType)}
         leadTitle={pageLeadTitle ?? undefined}
         leadDescription={pageLeadParagraph ?? undefined}
-        overlap
       >
         {showSettingsPanel && <ScenarioPanel />}
-
+      </PageHero>
+      <Container fixed maxWidth="xl" sx={{ py: 1 }}>
         <Box my={3}>
           <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
           {visibleNodes.map((node, index) => (
@@ -152,7 +155,7 @@ export default function OutcomePage(props: OutcomePageProps) {
             />
           ))}
         </Box>
-      </PageHero>
+      </Container>
     </Box>
   );
 }

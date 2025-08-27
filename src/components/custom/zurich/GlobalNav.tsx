@@ -49,7 +49,7 @@ const SecondaryNav = styled(Navbar)`
     flex-direction: column;
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .navbar-nav {
       padding: 0;
     }
@@ -82,13 +82,13 @@ const HomeLink = styled.a`
       ${(props) => props.theme.spaces.s050} 0;
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     svg {
       width: 180px;
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointXl}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.xl}px) {
     svg {
       width: 242px;
     }
@@ -110,7 +110,7 @@ const NavLink = styled.div`
       }
     }
 
-    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
       align-self: flex-end;
       margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
     }
@@ -141,7 +141,7 @@ const StyledDropdownToggle = styled(DropdownToggle)`
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     align-self: flex-end;
     margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
   }
@@ -175,7 +175,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
     }
   }
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
       box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
@@ -205,13 +205,13 @@ const NavbarToggler = styled.button`
   border-radius: 0;
   -webkit-appearance: none;
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: none;
   }
 `;
 
 const StyledCollapse = styled(Collapse)`
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: flex;
     background-color: var(--stzh-color-white);
     height: 4rem;
@@ -222,7 +222,7 @@ const StyledCollapse = styled(Collapse)`
 `;
 
 const SiteTitle = styled.span`
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: none;
   }
 `;

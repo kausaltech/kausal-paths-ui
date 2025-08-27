@@ -1,6 +1,8 @@
-import { MuiThemeExample } from '@/components/common/MuiThemeExample';
-import { Card, Container } from '@mui/material';
 import Head from 'next/head';
+
+import { Card, Container } from '@mui/material';
+
+import { MuiThemeExample } from '@/components/common/MuiThemeExample';
 
 function MuiDemoPage() {
   return (
@@ -8,7 +10,7 @@ function MuiDemoPage() {
       <Head>
         <meta name="robots" content="noindex,nofollow" />
       </Head>
-      <Container maxWidth="lg" sx={{ p: 4 }}>
+      <Container fixed maxWidth="lg" sx={{ py: 4 }}>
         <Card>
           <MuiThemeExample />
         </Card>

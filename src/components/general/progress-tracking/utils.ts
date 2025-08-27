@@ -1,4 +1,4 @@
-import type { Theme } from '@kausal/themes/types';
+import type { Theme } from '@emotion/react';
 import type { TFunction } from 'i18next';
 
 type Status = {

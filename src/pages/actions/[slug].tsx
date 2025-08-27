@@ -67,7 +67,7 @@ const Breadcrumb = styled.nav`
 `;
 
 const ActionDescription = styled.div`
-  max-width: ${({ theme }) => theme.breakpointSm};
+  max-width: ${({ theme }) => theme.breakpoints.values.sm}px;
 `;
 
 const ActionCategory = styled.div`
@@ -83,7 +83,7 @@ const ActionMetrics = styled.div`
   border-top: 1px solid ${(props) => props.theme.graphColors.grey020};
   border-bottom: 1px solid ${(props) => props.theme.graphColors.grey020};
 
-  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     height: 100%;
     border-top: 0;
     border-bottom: 0;

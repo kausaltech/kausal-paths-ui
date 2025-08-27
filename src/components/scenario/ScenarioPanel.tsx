@@ -82,7 +82,7 @@ const ScenarioPanel = () => {
           {t('scenario')}
         </Typography>
         <Grid container spacing={2} sx={{ alignItems: 'flex-end' }}>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
               <ScenarioSelector />
               <Button
@@ -96,12 +96,12 @@ const ScenarioPanel = () => {
             </Box>
           </Grid>
           {nrGoals > 1 && (
-            <Grid size={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <GoalSelector />
             </Grid>
           )}
           {activeGoal && data?.instance?.goals?.[0] && (
-            <Grid size={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <ScenarioOutcome
                 goalOutcome={data?.instance?.goals?.[0]}
                 activeGoal={activeGoal}
@@ -112,27 +112,33 @@ const ScenarioPanel = () => {
           )}
         </Grid>
       </Box>
-      <Box sx={{ p: 1, backgroundColor: theme.graphColors.grey010 }}>
-        <Grid container spacing={1}>
-          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
-              {t('display')}:
-            </Typography>
-          </Grid>
-          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-            <YearRangeSelector
-              minYear={minYear}
-              maxYear={maxYear}
-              maxHistoricalYear={maxHistoricalYear}
-              yearsWithGoals={yearsWithGoals}
-            />
-          </Grid>
-          {availableNormalizations.length > 0 && (
-            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-              <NormalizationWidget />
-            </Grid>
-          )}
-        </Grid>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 1,
+          p: 1,
+          backgroundColor: theme.graphColors.grey010,
+          [theme.breakpoints.down('md')]: {
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 0.5,
+          },
+        }}
+      >
+        <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+          {t('display')}:
+        </Typography>
+
+        <YearRangeSelector
+          minYear={minYear}
+          maxYear={maxYear}
+          maxHistoricalYear={maxHistoricalYear}
+          yearsWithGoals={yearsWithGoals}
+        />
+
+        {availableNormalizations.length > 0 && <NormalizationWidget />}
       </Box>
     </Box>
   );

@@ -128,7 +128,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
 
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex', maxWidth: '100%', minWidth: 0 }}>
         {/* Persistent drawer for desktop */}
         <Drawer
           sx={{
@@ -181,7 +181,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{ flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
           <NavComponent
             siteTitle={site.title}
             ownerName={site.owner ?? undefined}

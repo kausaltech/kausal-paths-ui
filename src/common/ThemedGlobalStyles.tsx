@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
-import type { Theme } from '@kausal/themes/types';
+import type { Theme } from '@emotion/react';
 
 const getGlobalStyles = (theme: Theme) => css`
   html {
@@ -50,7 +50,7 @@ const getGlobalStyles = (theme: Theme) => css`
     hyphens: auto;
 
     // Allow hyphenation only on small screens
-    @media (min-width: ${theme.breakpointSm}) {
+    @media (min-width: ${theme.breakpoints.values.sm}px) {
       hyphens: none;
     }
   }
