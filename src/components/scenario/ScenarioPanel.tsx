@@ -112,27 +112,33 @@ const ScenarioPanel = () => {
           )}
         </Grid>
       </Box>
-      <Box sx={{ p: 1, backgroundColor: theme.graphColors.grey010 }}>
-        <Grid container spacing={1}>
-          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
-              {t('display')}:
-            </Typography>
-          </Grid>
-          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-            <YearRangeSelector
-              minYear={minYear}
-              maxYear={maxYear}
-              maxHistoricalYear={maxHistoricalYear}
-              yearsWithGoals={yearsWithGoals}
-            />
-          </Grid>
-          {availableNormalizations.length > 0 && (
-            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-              <NormalizationWidget />
-            </Grid>
-          )}
-        </Grid>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 1,
+          p: 1,
+          backgroundColor: theme.graphColors.grey010,
+          [theme.breakpoints.down('md')]: {
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 0.5,
+          },
+        }}
+      >
+        <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+          {t('display')}:
+        </Typography>
+
+        <YearRangeSelector
+          minYear={minYear}
+          maxYear={maxYear}
+          maxHistoricalYear={maxHistoricalYear}
+          yearsWithGoals={yearsWithGoals}
+        />
+
+        {availableNormalizations.length > 0 && <NormalizationWidget />}
       </Box>
     </Box>
   );
