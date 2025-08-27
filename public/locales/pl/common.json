@@ -118,5 +118,9 @@
   "outcomes": "Wyniki",
   "impact-compared-to-baseline": "<strong>Całkowity wpływ {{impact}} {{unit}}</strong> w porównaniu ze scenariuszem kontynuacji",
   "above-target": "powyżej celu",
-  "below-target": "poniżej celu"
+  "below-target": "poniżej celu",
+  "action-name": "Nazwa",
+  "annual-impact": "Roczny wpływ",
+  "how-calculated": "Jak to jest obliczane?",
+  "included-in-scenario": "Uwzględnione w scenariuszu"
 }
