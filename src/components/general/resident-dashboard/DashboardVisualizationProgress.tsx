@@ -21,21 +21,35 @@ import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
-import type { UnitFieldsFragment } from '@/common/__generated__/graphql';
+import type {
+  ScenarioValueFieldsFragment,
+  UnitFieldsFragment,
+} from '@/common/__generated__/graphql';
+import { type InstanceContextType, useInstance } from '@/common/instance';
+
+export enum ProgressType {
+  SCENARIO = 'ScenarioProgressBarBlock',
+  CURRENT = 'CurrentProgressBarBlock',
+  GOAL = 'GoalProgressBarBlock',
+  REFERENCE = 'ReferenceProgressBarBlock',
+}
 
 export type DashboardProgressItem = {
+  type: ProgressType;
   title: string;
   chartLabel?: string;
   color?: string;
   value?: number;
   goalValue?: number;
-  max?: number;
-  unit?: Omit<UnitFieldsFragment, '__typename'>;
   description?: string;
+  scenarioId?: string;
 };
 
 type Props = {
   items?: DashboardProgressItem[];
+  scenarioValues?: ScenarioValueFieldsFragment[];
+  maxValue: number;
+  unit?: Omit<UnitFieldsFragment, '__typename'>;
 };
 
 function getBarColor(
@@ -52,10 +66,9 @@ function getBarColor(
   return defaultColor ? defaultColor : theme.graphColors.blue050;
 }
 
-const getBarOption = (item: DashboardProgressItem, theme: Theme) => {
+const getBarOption = (item: DashboardProgressItem, theme: Theme, max: number) => {
   const value = item.value;
   const min = 0;
-  const { max = value } = item;
   const target = item.goalValue;
   const barColor = getBarColor(item.color, theme, value, target);
 
@@ -178,9 +191,33 @@ function TargetVariation({ item }: { item: DashboardProgressItem }) {
   );
 }
 
-const DashboardVisualizationProgress = ({ items = [] }: Props) => {
+function getYear(
+  item: DashboardProgressItem,
+  instance: InstanceContextType,
+  scenarioValues: ScenarioValueFieldsFragment[]
+) {
+  if (item.type === ProgressType.SCENARIO) {
+    return scenarioValues.find((scenario) => scenario.scenario.id === item.scenarioId)?.year;
+  }
+
+  if (item.type === ProgressType.CURRENT) {
+    return instance.maximumHistoricalYear;
+  }
+
+  // TODO: Pending backend implementation
+  if (item.type === ProgressType.GOAL) {
+    return undefined;
+  }
+
+  if (item.type === ProgressType.REFERENCE) {
+    return instance.referenceYear;
+  }
+}
+
+const DashboardVisualizationProgress = ({ items = [], scenarioValues, unit, maxValue }: Props) => {
   const [expanded, setExpanded] = useState<number[]>([]);
 
+  const instance = useInstance();
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -226,6 +263,7 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
       <Stack>
         {items.map((item, idx) => {
           const isItemExpanded = expanded.includes(idx);
+          const year = getYear(item, instance, scenarioValues ?? []);
 
           return (
             <Accordion
@@ -253,7 +291,7 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
                         {item.value.toLocaleString()}{' '}
                       </Typography>
 
-                      {item.unit && <span>{item.unit.short}</span>}
+                      {unit && <span>{unit.short}</span>}
                     </Typography>
                   )}
                 </Box>
@@ -263,20 +301,22 @@ const DashboardVisualizationProgress = ({ items = [] }: Props) => {
                 <Card sx={{ backgroundColor: 'background.default' }}>
                   <CardContent>
                     <Typography variant="h5" component="p" sx={{ color: 'text.primary' }}>
-                      {item.chartLabel}
+                      {item.chartLabel} {year ? `(${year})` : ''}
                     </Typography>
 
-                    {!!item.unit && (
+                    {!!unit && (
                       <Typography variant="body2" color="text.secondary">
-                        {item.unit.short}
+                        {unit.short}
                       </Typography>
                     )}
+
                     <Chart
                       isLoading={false}
-                      data={getBarOption(item, theme)}
+                      data={getBarOption(item, theme, maxValue)}
                       height="80px"
                       withResizeLegend={false}
                     />
+
                     <TargetVariation item={item} />
                   </CardContent>
                 </Card>

@@ -1695,6 +1695,14 @@ export type MetricDimensionCategoryValueFieldsFragment = (
   & { __typename: 'MetricDimensionCategoryValue' }
 );
 
+export type ScenarioValueFieldsFragment = (
+  { value: number | null, year: number, scenario: (
+    { id: string, name: string }
+    & { __typename: 'ScenarioType' }
+  ) }
+  & { __typename: 'ScenarioValue' }
+);
+
 export type DashboardPageFieldsFragment = (
   { backgroundColor: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
     { title: string, description: string, goalValue: number | null, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
