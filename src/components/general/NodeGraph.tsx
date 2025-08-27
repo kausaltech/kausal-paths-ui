@@ -274,9 +274,10 @@ export default function NodeGraph(props: NodeGraphProps) {
   const option: echarts.EChartsCoreOption = {
     title: {
       text: title,
-      left: '10%',
+      left: '75',
       top: 10,
-      padding: 0,
+      padding: [0, 0, 24, 0],
+      itemGap: 15,
       textStyle: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -284,7 +285,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       },
     },
     aria: {
-      enabled: true,
+      show: true,
     },
     legend: {
       orient: 'horizontal',
@@ -296,7 +297,8 @@ export default function NodeGraph(props: NodeGraphProps) {
       },
     },
     grid: {
-      left: '10%',
+      left: '75',
+      right: '24',
       bottom: 100,
       top: 60,
     },

@@ -9,11 +9,22 @@ import { yearRangeVar } from '@/common/cache';
 
 const StyledFormControl = styled(Box)`
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: ${(props) => props.theme.spacing(1)};
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
   border-right: 1px solid ${(props) => props.theme.graphColors.grey040};
   padding-right: ${(props) => props.theme.spacing(1)};
+
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    flex-direction: row;
+    gap: ${(props) => props.theme.spacing(1)};
+    align-items: center;
+  }
+
+  &:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
 
   label {
     font-size: 0.8rem;

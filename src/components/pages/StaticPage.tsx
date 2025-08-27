@@ -22,7 +22,7 @@ type StaticPageProps = {
 
 function StaticPage({ page }: StaticPageProps) {
   return (
-    <PageHero title={page.title} overlap>
+    <PageHero title={page.title}>
       <BodyCard>
         {page?.body?.map((block) => (block ? <StreamField key={block.id} block={block} /> : null))}
       </BodyCard>

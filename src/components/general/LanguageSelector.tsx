@@ -25,7 +25,7 @@ const Selector = styled(UncontrolledDropdown)<{ $mobile: boolean }>`
       }
     }
 
-    @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
       align-self: center;
       margin: 0;
     }

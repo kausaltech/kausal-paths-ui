@@ -4,7 +4,13 @@ import styled from '@emotion/styled';
 import { Box, IconButton, MenuItem } from '@mui/material';
 import { Menu } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { ThreeDotsVertical } from 'react-bootstrap-icons';
+import {
+  BarChartLineFill,
+  InfoCircleFill,
+  PieChartFill,
+  Table,
+  ThreeDotsVertical,
+} from 'react-bootstrap-icons';
 import { TabContent } from 'reactstrap';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -31,13 +37,6 @@ const ContentWrapper = styled.div`
   border-radius: 0;
   border: 1px solid ${(props) => props.theme.graphColors.grey010};
   border-top: 0;
-  &:focus {
-    outline: 2px solid ${(props) => props.theme.graphColors.grey010};
-  }
-  .x2sstick text,
-  .xtick text {
-    text-anchor: end !important;
-  }
 `;
 
 const CardContent = styled.div`
@@ -55,6 +54,15 @@ const CardContent = styled.div`
 
   .nav-pills .nav-link.active {
     background-color: ${(props) => props.theme.graphColors.grey050};
+  }
+`;
+
+const StyledMenuItem = styled(MenuItem)`
+  padding: 0.5rem 1rem;
+
+  svg.bi {
+    margin-right: 0.5rem;
+    fill: ${({ theme }) => theme.textColor.tertiary};
   }
 `;
 
@@ -87,7 +95,7 @@ const ViewSelector = ({
   };
 
   return (
-    <Box display="flex" justifyContent="flex-end">
+    <Box>
       <IconButton
         id="basic-button"
         aria-controls={open ? 'basic-menu' : undefined}
@@ -100,6 +108,14 @@ const ViewSelector = ({
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
         open={open}
         onClose={handleClose}
         slotProps={{
@@ -109,21 +125,33 @@ const ViewSelector = ({
         }}
       >
         {showDistribution && (
-          <MenuItem onClick={createHandleMenuItemClick('year')} selected={activeTabId === 'year'}>
-            {t('distribution')}
-          </MenuItem>
+          <StyledMenuItem
+            onClick={createHandleMenuItemClick('year')}
+            selected={activeTabId === 'year'}
+          >
+            <PieChartFill /> {t('distribution')}
+          </StyledMenuItem>
         )}
-        <MenuItem onClick={createHandleMenuItemClick('graph')} selected={activeTabId === 'graph'}>
-          {t('time-series')}
-        </MenuItem>
-        <MenuItem onClick={createHandleMenuItemClick('table')} selected={activeTabId === 'table'}>
-          {' '}
-          {t('table')}
-        </MenuItem>
+        <StyledMenuItem
+          onClick={createHandleMenuItemClick('graph')}
+          selected={activeTabId === 'graph'}
+        >
+          <BarChartLineFill /> {t('time-series')}
+        </StyledMenuItem>
+        <StyledMenuItem
+          onClick={createHandleMenuItemClick('table')}
+          selected={activeTabId === 'table'}
+        >
+          <Table /> {t('table')}
+        </StyledMenuItem>
         {showDetailsLink && (
-          <MenuItem onClick={createHandleMenuItemClick('info')} selected={activeTabId === 'info'}>
+          <StyledMenuItem
+            onClick={createHandleMenuItemClick('info')}
+            selected={activeTabId === 'info'}
+          >
+            <InfoCircleFill />
             {t('details')}
-          </MenuItem>
+          </StyledMenuItem>
         )}
       </Menu>
     </Box>
@@ -231,22 +259,31 @@ const OutcomeNodeContent = ({
       <CardContent>
         {refetching && <Loader />}
         <ContentWrapper>
-          {showProgressTrackingStatus && selectedProgressYear && node.metricDim && (
-            <ProgressIndicator
-              color={node.color ?? undefined}
-              metric={node.metricDim}
-              isModalOpen={progressModalOpen}
-              onModalOpenChange={setProgressModalOpen}
-              selectedYear={selectedProgressYear}
-              onSelectedYearChange={setSelectedProgressYear}
-              showViewDetails={isRootNode}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'flex-end',
+              gap: 2,
+            }}
+          >
+            {showProgressTrackingStatus && selectedProgressYear && node.metricDim && (
+              <ProgressIndicator
+                color={node.color ?? undefined}
+                metric={node.metricDim}
+                isModalOpen={progressModalOpen}
+                onModalOpenChange={setProgressModalOpen}
+                selectedYear={selectedProgressYear}
+                onSelectedYearChange={setSelectedProgressYear}
+                showViewDetails={isRootNode}
+              />
+            )}
+            <ViewSelector
+              activeTabId={activeTabId}
+              setActiveTabId={setActiveTabId}
+              showDistribution={showDistribution}
             />
-          )}
-          <ViewSelector
-            activeTabId={activeTabId}
-            setActiveTabId={setActiveTabId}
-            showDistribution={showDistribution}
-          />
+          </Box>
           <TabContent
             activeTab={activeTabId}
             id={`${node.id}-panel-${activeTabId}`}

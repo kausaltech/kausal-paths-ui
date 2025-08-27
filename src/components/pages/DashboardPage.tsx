@@ -241,7 +241,7 @@ function DashboardPage({ page }: Props) {
 
   return (
     <Box sx={{ py: 4, backgroundColor: backgroundColor }}>
-      <Container maxWidth="lg">
+      <Container fixed maxWidth="lg">
         <Stack spacing={2}>
           {!!page.title && (
             <Typography variant="h1" color={textColor}>

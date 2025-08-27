@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
-import type { Theme } from '@kausal/themes/types';
+import type { Theme } from '@emotion/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';

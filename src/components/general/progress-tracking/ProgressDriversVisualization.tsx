@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
+import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { Theme } from '@kausal/themes/types';
 import type { EChartsCoreOption } from 'echarts';
 import { useTranslation } from 'next-i18next';
 

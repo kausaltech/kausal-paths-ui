@@ -39,7 +39,7 @@ const StyledInputLabel = styled(InputLabel)`
 const StyledRow = styled(Row)`
   --bs-gutter-x: ${({ theme }) => theme.spaces.s100};
 
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     --bs-gutter-x: ${({ theme }) => theme.spaces.s050};
   }
 `;
@@ -55,7 +55,7 @@ const StyledDropdownCol = styled(Col)`
 `;
 
 const StyledOutcomeCol = styled(Col)`
-  @media (max-width: ${(props) => props.theme.breakpointMd}) {
+  @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: none;
   }
 `;
