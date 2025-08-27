@@ -88,6 +88,8 @@ const headerText = {
   width: 1,
 };
 
+const COL1_XS = '18ch';
+
 const ActionsList = ({
   id,
   actions,
@@ -228,6 +230,7 @@ const ActionsList = ({
             lineHeight: { xs: 1.2, md: 1.25 },
             verticalAlign: 'middle',
           },
+          '--col1-xs': COL1_XS,
         }}
       >
         <TableHead>
@@ -235,6 +238,15 @@ const ActionsList = ({
             sx={{
               backgroundColor: theme.graphColors.blue010,
               '& .MuiTableSortLabel-root': { lineHeight: 'inherit', whiteSpace: 'normal' },
+              '& > .MuiTableCell-head:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
+              '& > .MuiTableCell-root:nth-of-type(3)': { minWidth: { xs: '22ch', md: 160 }, width: { md: 160 } },
+              '& > .MuiTableCell-head:nth-of-type(2)': {
+                position: { xs: 'sticky', md: 'static' },
+                left:     { xs: 0, md: 'auto' },
+                zIndex:   { xs: 3, md: 'auto' },
+                backgroundColor: theme.graphColors.blue010,
+                boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
+              },
             }}
           >
             <TableCell >
@@ -306,8 +318,13 @@ const ActionsList = ({
                       color: 'inherit',
                       borderBottom: isOpen ? 'none' : undefined,
                     },
-                    '& > .MuiTableCell-root:nth-of-type(3)': {
-                      minWidth: { xs: '22ch', md: 160 },
+                    '& > .MuiTableCell-root:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
+                    '& > .MuiTableCell-root:nth-of-type(2)': {
+                      position: { xs: 'sticky', md: 'static' },
+                      left:     { xs: 0, md: 'auto' },
+                      zIndex:   { xs: 2, md: 'auto' },
+                      backgroundColor: rowBg,
+                      boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
                     },
                   }}
                 >
