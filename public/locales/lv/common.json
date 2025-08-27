@@ -107,5 +107,9 @@
   "outcomes": "Rezultāti",
   "impact-compared-to-baseline": "<strong>Kopējā ietekme {{impact}} {{unit}}</strong> salīdzinājumā ar ierasto attīstības scenāriju",
   "above-target": "pārsniedz mērķi",
-  "below-target": "nepārsniedz mērķi"
+  "below-target": "nepārsniedz mērķi",
+  "action-name": "Nosaukums",
+  "annual-impact": "Gada ietekme",
+  "how-calculated": "Kā tas tiek aprēķināts?",
+  "included-in-scenario": "Iekļauts scenārijā"
 }

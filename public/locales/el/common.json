@@ -134,5 +134,9 @@
   "outcomes": "Αποτελέσματα",
   "impact-compared-to-baseline": "<strong>Συνολική επίπτωση {{impact}} {{unit}}</strong> σε σύγκριση με το σενάριο συνήθους πορείας",
   "above-target": "πάνω από τον στόχο",
-  "below-target": "κάτω από τον στόχο"
+  "below-target": "κάτω από τον στόχο",
+  "action-name": "Όνομα",
+  "annual-impact": "Ετήσια επίδραση",
+  "how-calculated": "Πώς υπολογίζεται αυτό;",
+  "included-in-scenario": "Περιλαμβάνεται στο σενάριο"
 }

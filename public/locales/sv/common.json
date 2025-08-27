@@ -103,5 +103,9 @@
   "outcomes": "Resultat",
   "impact-compared-to-baseline": "<strong>Total påverkan {{impact}} {{unit}}</strong> jämfört med referensscenariot",
   "above-target": "över målet",
-  "below-target": "under målet"
+  "below-target": "under målet",
+  "action-name": "Namn",
+  "annual-impact": "Årlig påverkan",
+  "how-calculated": "Hur beräknas detta?",
+  "included-in-scenario": "Ingår i scenariot"
 }

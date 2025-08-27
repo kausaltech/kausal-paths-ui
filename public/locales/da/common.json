@@ -117,5 +117,9 @@
   "outcomes": "Resultater",
   "impact-compared-to-baseline": "<strong>Samlet påvirkning {{impact}} {{unit}}</strong> sammenlignet med business-as-usual scenarie",
   "above-target": "over målet",
-  "below-target": "under målet"
+  "below-target": "under målet",
+  "action-name": "Navn",
+  "annual-impact": "Årlig effekt",
+  "how-calculated": "Hvordan beregnes dette?",
+  "included-in-scenario": "Inkluderet i scenariet"
 }
