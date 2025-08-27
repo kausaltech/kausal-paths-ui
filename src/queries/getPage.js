@@ -40,24 +40,28 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
       __typename
       id
       ... on GoalProgressBarBlock {
+        __typename
         title
         description
         chartLabel
         color
       }
       ... on CurrentProgressBarBlock {
+        __typename
         title
         description
         chartLabel
         color
       }
       ... on ReferenceProgressBarBlock {
+        __typename
         title
         description
         chartLabel
         color
       }
       ... on ScenarioProgressBarBlock {
+        __typename
         title
         description
         chartLabel
@@ -92,6 +96,15 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
     year
   }
 
+  fragment ScenarioValueFields on ScenarioValue {
+    scenario {
+      id
+      name
+    }
+    value
+    year
+  }
+
   fragment DashboardPageFields on DashboardPage {
     backgroundColor
     dashboardCards {
@@ -112,12 +125,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         referenceYearValue
         lastHistoricalYearValue
         scenarioValues {
-          scenario {
-            id
-            name
-          }
-          value
-          year
+          ...ScenarioValueFields
         }
         metricDimensionCategoryValues {
           ...MetricDimensionCategoryValueFields

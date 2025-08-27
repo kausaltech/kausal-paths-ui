@@ -8,13 +8,17 @@ import {
   DimensionKind,
   type GetPageQuery,
   type ScenarioActionImpactsFieldsFragment,
+  type ScenarioValueFieldsFragment,
 } from '@/common/__generated__/graphql';
 
 import CallToActionCard from '../common/CallToActionCard';
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
 import DashboardVisualizationActionImpact from '../general/resident-dashboard/DashboardVisualizationActionImpact';
 import DashboardVisualizationDimension from '../general/resident-dashboard/DashboardVisualizationDimension';
-import DashboardVisualizationProgress from '../general/resident-dashboard/DashboardVisualizationProgress';
+import DashboardVisualizationProgress, {
+  type DashboardProgressItem,
+  type ProgressType,
+} from '../general/resident-dashboard/DashboardVisualizationProgress';
 
 const PROGRESS_BAR_TYPES = [
   'ScenarioProgressBarBlock',
@@ -40,7 +44,7 @@ type DashboardVisualizationProps = {
   referenceYearValue?: number | null;
   lastHistoricalYearValue?: number | null;
   goalValue?: number | null;
-  scenarioValues?: ({ value: number | null; scenario: { id: string; name: string } } | null)[];
+  scenarioValues?: ScenarioValueFieldsFragment[];
   unit?: {
     short: string;
     htmlShort: string;
@@ -63,9 +67,9 @@ const isProgressBar = (
 
 function getBarValue(
   bar: ProgressBarVisualization,
-  values: Pick<
+  values: { scenarioValues: ScenarioValueFieldsFragment[] | undefined } & Pick<
     DashboardVisualizationProps,
-    'goalValue' | 'lastHistoricalYearValue' | 'referenceYearValue' | 'scenarioValues'
+    'goalValue' | 'lastHistoricalYearValue' | 'referenceYearValue'
   >
 ) {
   if (bar.__typename === 'CurrentProgressBarBlock') {
@@ -125,9 +129,10 @@ function DashboardVisualization({
   const values = {
     referenceYearValue: roundValue(referenceYearValue),
     goalValue: roundValue(goalValue),
-    scenarioValues: scenarioValues?.map((scenario) =>
-      scenario?.value ? { ...scenario, value: roundValue(scenario.value) } : scenario
-    ),
+    scenarioValues: scenarioValues?.map((scenario) => ({
+      ...scenario,
+      value: roundValue(scenario.value),
+    })),
     lastHistoricalYearValue: roundValue(lastHistoricalYearValue),
   };
 
@@ -146,16 +151,21 @@ function DashboardVisualization({
 
   const progressVisualization = hasProgressVisualizations ? (
     <DashboardVisualizationProgress
-      items={progressVisualizations.map((viz) => ({
-        title: viz.title,
-        chartLabel: viz.chartLabel,
-        color: viz.color ?? undefined,
-        value: getBarValue(viz, values) ?? undefined,
-        goalValue: getBarGoalValue(viz, values),
-        max: maxValue,
-        unit: unit ?? undefined,
-        description: viz.description ?? undefined,
-      }))}
+      scenarioValues={scenarioValues ?? undefined}
+      unit={unit ?? undefined}
+      maxValue={maxValue}
+      items={progressVisualizations.map(
+        (viz): DashboardProgressItem => ({
+          type: viz.__typename as ProgressType,
+          title: viz.title,
+          chartLabel: viz.chartLabel,
+          color: viz.color ?? undefined,
+          value: getBarValue(viz, values) ?? undefined,
+          goalValue: getBarGoalValue(viz, values),
+          description: viz.description ?? undefined,
+          scenarioId: viz.__typename === 'ScenarioProgressBarBlock' ? viz.scenarioId : undefined,
+        })
+      )}
     />
   ) : null;
 
@@ -274,7 +284,9 @@ function DashboardPage({ page }: Props) {
                         referenceYearValue={card.referenceYearValue}
                         lastHistoricalYearValue={card.lastHistoricalYearValue}
                         goalValue={card.goalValue}
-                        scenarioValues={card.scenarioValues ?? undefined}
+                        scenarioValues={
+                          card.scenarioValues?.filter((scenario) => scenario !== null) ?? undefined
+                        }
                         visualizations={card.visualizations}
                         unit={card.unit}
                         metricDimensionCategoryValues={card.metricDimensionCategoryValues ?? []}
