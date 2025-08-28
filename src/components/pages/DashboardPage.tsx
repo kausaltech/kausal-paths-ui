@@ -43,7 +43,7 @@ type DashboardVisualizationProps = {
   visualizations: DashboardCardVisualizations;
   referenceYearValue?: number | null;
   lastHistoricalYearValue?: number | null;
-  goalValue?: number | null;
+  goalValues?: ({ year: number; value: number } | null)[];
   scenarioValues?: ScenarioValueFieldsFragment[];
   unit?: {
     short: string;
@@ -60,18 +60,19 @@ type CategoryBreakdownVisualization = Visualization & {
   __typename: 'CategoryBreakdownBlock';
 };
 
+type BarValues = {
+  scenarioValues: ScenarioValueFieldsFragment[] | undefined;
+  goalValue: number | null;
+  lastHistoricalYearValue: number | null;
+  referenceYearValue: number | null;
+};
+
 const isProgressBar = (
   visualization: DashboardCardVisualizations[number]
 ): visualization is ProgressBarVisualization =>
   PROGRESS_BAR_TYPES.includes(visualization?.__typename ?? '');
 
-function getBarValue(
-  bar: ProgressBarVisualization,
-  values: { scenarioValues: ScenarioValueFieldsFragment[] | undefined } & Pick<
-    DashboardVisualizationProps,
-    'goalValue' | 'lastHistoricalYearValue' | 'referenceYearValue'
-  >
-) {
+function getBarValue(bar: ProgressBarVisualization, values: BarValues) {
   if (bar.__typename === 'CurrentProgressBarBlock') {
     return values.lastHistoricalYearValue;
   }
@@ -90,13 +91,7 @@ function getBarValue(
   }
 }
 
-function getBarGoalValue(
-  bar: ProgressBarVisualization,
-  values: Pick<
-    DashboardVisualizationProps,
-    'goalValue' | 'lastHistoricalYearValue' | 'referenceYearValue' | 'scenarioValues'
-  >
-) {
+function getBarGoalValue(bar: ProgressBarVisualization, values: BarValues) {
   if (bar.__typename === 'ScenarioProgressBarBlock') {
     return values.goalValue ?? undefined;
   }
@@ -120,12 +115,17 @@ function DashboardVisualization({
   visualizations,
   referenceYearValue,
   lastHistoricalYearValue,
-  goalValue,
+  goalValues,
   scenarioValues,
   unit,
   metricDimensionCategoryValues,
   scenarioActionImpacts,
 }: DashboardVisualizationProps) {
+  const goalCount = goalValues?.length ?? 0;
+  // In cases where there are multiple goal values, we display the last one
+  const goal = goalCount > 0 ? goalValues?.[goalCount - 1] : undefined;
+  const goalValue = goal?.value;
+
   const values = {
     referenceYearValue: roundValue(referenceYearValue),
     goalValue: roundValue(goalValue),
@@ -154,6 +154,7 @@ function DashboardVisualization({
       scenarioValues={scenarioValues ?? undefined}
       unit={unit ?? undefined}
       maxValue={maxValue}
+      goalYear={goal?.year}
       items={progressVisualizations.map(
         (viz): DashboardProgressItem => ({
           type: viz.__typename as ProgressType,
@@ -283,7 +284,7 @@ function DashboardPage({ page }: Props) {
                         key={i}
                         referenceYearValue={card.referenceYearValue}
                         lastHistoricalYearValue={card.lastHistoricalYearValue}
-                        goalValue={card.goalValue}
+                        goalValues={card.goalValues ?? undefined}
                         scenarioValues={
                           card.scenarioValues?.filter((scenario) => scenario !== null) ?? undefined
                         }
