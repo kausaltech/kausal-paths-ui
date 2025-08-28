@@ -1705,7 +1705,7 @@ export type ScenarioValueFieldsFragment = (
 
 export type DashboardPageFieldsFragment = (
   { backgroundColor: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
-    { title: string, description: string, goalValue: number | null, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
+    { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
       { url: string }
       & { __typename: 'ImageObjectType' }
     ) | null, node: (
@@ -1714,7 +1714,10 @@ export type DashboardPageFieldsFragment = (
     ), unit: (
       { short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
-    ), scenarioValues: Array<(
+    ), goalValues: Array<(
+      { year: number, value: number }
+      & { __typename: 'MetricYearlyGoalType' }
+    ) | null> | null, scenarioValues: Array<(
       { value: number | null, year: number, scenario: (
         { id: string, name: string }
         & { __typename: 'ScenarioType' }
@@ -1861,7 +1864,7 @@ export type GetPageQuery = (
     & { __typename: 'ActionListPage' }
   ) | (
     { id: string | null, title: string, backgroundColor: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
-      { title: string, description: string, goalValue: number | null, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
+      { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
         { url: string }
         & { __typename: 'ImageObjectType' }
       ) | null, node: (
@@ -1870,7 +1873,10 @@ export type GetPageQuery = (
       ), unit: (
         { short: string, htmlShort: string, htmlLong: string }
         & { __typename: 'UnitType' }
-      ), scenarioValues: Array<(
+      ), goalValues: Array<(
+        { year: number, value: number }
+        & { __typename: 'MetricYearlyGoalType' }
+      ) | null> | null, scenarioValues: Array<(
         { value: number | null, year: number, scenario: (
           { id: string, name: string }
           & { __typename: 'ScenarioType' }
