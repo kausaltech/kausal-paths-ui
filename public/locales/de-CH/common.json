@@ -21,5 +21,10 @@
   "net-cost": "Nettokosten",
   "outcomes": "Ergebnisse",
   "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum Referenzszenario",
-  "show": "Anzeigen:"
+  "show": "Anzeigen:",
+  "action-name": "Name",
+  "annual-impact": "Jährliche Wirkung",
+  "how-calculated": "Wie das berechnet wird",
+  "included-in-scenario": "Wird in Szenario berücksichtigt",
+  "actions-sort-cumulative-impact": "Kumulative Wirkung"
 }

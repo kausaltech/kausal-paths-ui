@@ -78,6 +78,18 @@ const formatEfficiencyForDisplay = (
   return Math.abs(value) < limit ? formatNumber(value, lang) : '-';
 };
 
+const headerText = {
+  fontSize: 12,
+  lineHeight: 1.2,
+  whiteSpace: 'normal' as const,
+  wordBreak: 'break-word' as const,
+  hyphens: 'auto' as const,
+  display: 'block',
+  width: 1,
+};
+
+const COL1_XS = '18ch';
+
 const ActionsList = ({
   id,
   actions,
@@ -199,33 +211,75 @@ const ActionsList = ({
   const ROW_GAP = 0.5;
 
   return (
-    <TableContainer data-testid="actions-list" id={id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
-      <Table sx={{ borderCollapse: 'collapse' }}>
+    <TableContainer
+      data-testid="actions-list"
+      id={id}
+      sx={{
+        borderRadius: 1,
+        overflowX: { xs: 'auto', md: 'visible' },
+        overflowY: 'hidden',
+        maxWidth: '100%',
+      }}
+    >
+      <Table
+        sx={{
+          borderCollapse: 'collapse',
+          minWidth: { xs: 880, md: 'auto' },
+          '& .MuiTableCell-head': {
+            py: { xs: 0.5, md: 0.6 },
+            lineHeight: { xs: 1.2, md: 1.25 },
+            verticalAlign: 'middle',
+          },
+          '--col1-xs': COL1_XS,
+        }}
+      >
         <TableHead>
           <TableRow
             sx={{
               backgroundColor: theme.graphColors.blue010,
-              '& .MuiTableCell-root': {
-                py: 0.6,
-                lineHeight: 1.2,
-              },
-              '& .MuiTableSortLabel-root': {
-                lineHeight: 1.2,
+              '& .MuiTableSortLabel-root': { lineHeight: 'inherit', whiteSpace: 'normal' },
+              '& > .MuiTableCell-head:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
+              '& > .MuiTableCell-root:nth-of-type(3)': { minWidth: { xs: '22ch', md: 160 }, width: { md: 160 } },
+              '& > .MuiTableCell-head:nth-of-type(2)': {
+                position: { xs: 'sticky', md: 'static' },
+                left:     { xs: 0, md: 'auto' },
+                zIndex:   { xs: 3, md: 'auto' },
+                backgroundColor: theme.graphColors.blue010,
+                boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
               },
             }}
           >
-            <TableCell>{t('actions-group-type')}</TableCell>
-            <TableCell>{t('action-name')}</TableCell>
-            <TableCell>{t('included-in-scenario')}</TableCell>
+            <TableCell >
+              <Box component="span" sx={headerText}>
+                {t('actions-group-type')}
+              </Box>
+            </TableCell>
+
+            <TableCell>
+              <Box component="span" sx={headerText}>
+                {t('action-name')}
+              </Box>
+            </TableCell>
+
+            <TableCell>
+              <Box component="span" sx={headerText}>
+                {t('included-in-scenario')}
+              </Box>
+            </TableCell>
 
             {columns.map((col) => (
-              <TableCell key={col.key}>
+              <TableCell
+                key={col.key}
+                sx={{ minWidth: { xs: '16ch', md: 'auto' } }}
+              >
                 <TableSortLabel
                   active={sortBy.key === col.key}
                   direction={sortBy.key === col.key ? (sortAscending ? 'asc' : 'desc') : 'asc'}
                   onClick={() => handleSortClick(col.key)}
                 >
-                  {col.label}
+                  <Box component="span" sx={headerText}>
+                    {col.label}
+                  </Box>
                 </TableSortLabel>
               </TableCell>
             ))}
@@ -240,6 +294,7 @@ const ActionsList = ({
               <Box sx={{ height: theme.spacing(ROW_GAP) }} />
             </TableCell>
           </TableRow>
+
           {sortedActions.map((action, rowIndex) => {
             const isOpen = Boolean(openRows[action.id]);
             const enabledParam = findActionEnabledParam(action.parameters);
@@ -263,6 +318,14 @@ const ActionsList = ({
                       color: 'inherit',
                       borderBottom: isOpen ? 'none' : undefined,
                     },
+                    '& > .MuiTableCell-root:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
+                    '& > .MuiTableCell-root:nth-of-type(2)': {
+                      position: { xs: 'sticky', md: 'static' },
+                      left:     { xs: 0, md: 'auto' },
+                      zIndex:   { xs: 2, md: 'auto' },
+                      backgroundColor: rowBg,
+                      boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
+                    },
                   }}
                 >
                   <TableCell
@@ -273,6 +336,7 @@ const ActionsList = ({
                   >
                     {action.group?.name}
                   </TableCell>
+
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <ActionLink action={action}>
@@ -300,7 +364,9 @@ const ActionsList = ({
                       )}
                     </Box>
                   </TableCell>
+
                   <ScenarioChip checked={isIncluded} label={t('included-in-scenario')} />
+
                   {columns.map((col) => {
                     const val = col.getValue(action);
                     const total = totals[col.key] || 0;
@@ -419,6 +485,7 @@ const ActionsList = ({
                     </Collapse>
                   </TableCell>
                 </TableRow>
+
                 {rowIndex < sortedActions.length - 1 && (
                   <TableRow aria-hidden>
                     <TableCell colSpan={COLSPAN} sx={{ p: 0, border: 0 }}>

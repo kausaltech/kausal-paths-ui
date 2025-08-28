@@ -111,5 +111,9 @@
   "outcomes": "Lopputulemat",
   "impact-compared-to-baseline": "<strong>Kokonaisvaikutus {{impact}} {{unit}}</strong> verrattuna jatkuvuusskenaarioon",
   "above-target": "yli tavoitteen",
-  "below-target": "alle tavoitteen"
+  "below-target": "alle tavoitteen",
+  "action-name": "Nimi",
+  "annual-impact": "Vuosittainen vaikutus",
+  "how-calculated": "Miten tämä lasketaan?",
+  "included-in-scenario": "Sisältyy skenaarioon"
 }
