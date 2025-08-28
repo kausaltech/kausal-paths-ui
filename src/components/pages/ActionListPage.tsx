@@ -10,8 +10,8 @@ import {
   FormLabel,
   Select,
   MenuItem,
+  Container,
 } from '@mui/material';
-import { Container as MUIContainer } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
 import { Col, Row } from 'reactstrap';
@@ -319,9 +319,9 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   if (error) {
     return (
-      <MUIContainer fixed maxWidth="lg" sx={{ pt: 5 }}>
+      <Container fixed maxWidth="xl" sx={{ pt: 5 }}>
         <GraphQLError error={error} />
-      </MUIContainer>
+      </Container>
     );
   }
 
@@ -434,7 +434,7 @@ function ActionListPage({ page }: ActionListPageProps) {
       </PageHero>
 
       <ViewSelectorBar className="text-light">
-        <MUIContainer fixed maxWidth="lg">
+        <Container fixed maxWidth="xl">
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
             <ShowLabel
               id="view-select-label"
@@ -462,10 +462,10 @@ function ActionListPage({ page }: ActionListPageProps) {
               </Select>
             </FormControl>
           </Box>
-        </MUIContainer>
+        </Container>
       </ViewSelectorBar>
 
-      <MUIContainer fixed maxWidth="lg" sx={{ mb: 5 }}>
+      <Container fixed maxWidth="xl" sx={{ mb: 5 }}>
         <Row>
           <Col>
             {listType === 'list' && (
@@ -521,7 +521,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             )}
           </Col>
         </Row>
-      </MUIContainer>
+      </Container>
     </>
   );
 }
