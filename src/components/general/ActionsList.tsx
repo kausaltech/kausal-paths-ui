@@ -383,7 +383,7 @@ const ActionsList = ({
                       );
                       unit = action.cumulativeEfficiencyUnit;
                     } else {
-                      display = formatNumber(val);
+                      display = formatNumber(val, i18n.language);
                       unit = col.getUnit(action);
                     }
 
