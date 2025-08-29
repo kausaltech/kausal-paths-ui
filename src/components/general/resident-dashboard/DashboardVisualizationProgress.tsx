@@ -50,6 +50,7 @@ type Props = {
   scenarioValues?: ScenarioValueFieldsFragment[];
   maxValue: number;
   unit?: Omit<UnitFieldsFragment, '__typename'>;
+  goalYear?: number;
 };
 
 function getBarColor(
@@ -194,7 +195,8 @@ function TargetVariation({ item }: { item: DashboardProgressItem }) {
 function getYear(
   item: DashboardProgressItem,
   instance: InstanceContextType,
-  scenarioValues: ScenarioValueFieldsFragment[]
+  scenarioValues: ScenarioValueFieldsFragment[],
+  goalYear?: number
 ) {
   if (item.type === ProgressType.SCENARIO) {
     return scenarioValues.find((scenario) => scenario.scenario.id === item.scenarioId)?.year;
@@ -204,9 +206,8 @@ function getYear(
     return instance.maximumHistoricalYear;
   }
 
-  // TODO: Pending backend implementation
   if (item.type === ProgressType.GOAL) {
-    return undefined;
+    return goalYear;
   }
 
   if (item.type === ProgressType.REFERENCE) {
@@ -214,7 +215,13 @@ function getYear(
   }
 }
 
-const DashboardVisualizationProgress = ({ items = [], scenarioValues, unit, maxValue }: Props) => {
+const DashboardVisualizationProgress = ({
+  items = [],
+  scenarioValues,
+  unit,
+  maxValue,
+  goalYear,
+}: Props) => {
   const [expanded, setExpanded] = useState<number[]>([]);
 
   const instance = useInstance();
@@ -263,7 +270,7 @@ const DashboardVisualizationProgress = ({ items = [], scenarioValues, unit, maxV
       <Stack>
         {items.map((item, idx) => {
           const isItemExpanded = expanded.includes(idx);
-          const year = getYear(item, instance, scenarioValues ?? []);
+          const year = getYear(item, instance, scenarioValues ?? [], goalYear);
 
           return (
             <Accordion

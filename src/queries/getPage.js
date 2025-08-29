@@ -121,7 +121,10 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
         unit {
           ...UnitFields
         }
-        goalValue
+        goalValues {
+          year
+          value
+        }
         referenceYearValue
         lastHistoricalYearValue
         scenarioValues {
