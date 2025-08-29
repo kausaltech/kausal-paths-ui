@@ -151,8 +151,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
       containLabel: true,
       top: 0,
       bottom: 0,
-      left: 0,
-      right: 0,
+      left: 40,
+      right: 40,
     },
     legend: {
       show: false,
