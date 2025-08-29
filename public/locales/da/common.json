@@ -115,7 +115,7 @@
   "thumbSliderLabel": "Juster",
   "reset-button": "Nulstil",
   "outcomes": "Resultater",
-  "impact-compared-to-baseline": "<strong>Samlet påvirkning {{impact}} {{unit}}</strong> sammenlignet med business-as-usual scenarie",
+  "impact-compared-to-baseline": "<strong>Samlet påvirkning {{impact}} {{unit}}</strong> sammenlignet med {{baseline}} scenarie",
   "above-target": "over målet",
   "below-target": "under målet",
   "action-name": "Navn",

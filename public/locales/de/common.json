@@ -114,7 +114,7 @@
   "financial-impact": "Finanzielle Auswirkungen",
   "net-cost": "Nettokosten",
   "reduction": "Reduzierung",
-  "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum Referenzszenario",
+  "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum {{baseline}} Szenario",
   "above-target": "über dem Ziel",
   "below-target": "unter dem Ziel"
 }

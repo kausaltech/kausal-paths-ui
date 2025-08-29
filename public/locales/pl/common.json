@@ -116,7 +116,7 @@
   "thumbSliderLabel": "Dostosuj",
   "reset-button": "Resetuj",
   "outcomes": "Wyniki",
-  "impact-compared-to-baseline": "<strong>Całkowity wpływ {{impact}} {{unit}}</strong> w porównaniu ze scenariuszem kontynuacji",
+  "impact-compared-to-baseline": "<strong>Całkowity wpływ {{impact}} {{unit}}</strong> w porównaniu ze {{baseline}} scenariuszem",
   "above-target": "powyżej celu",
   "below-target": "poniżej celu",
   "action-name": "Nazwa",

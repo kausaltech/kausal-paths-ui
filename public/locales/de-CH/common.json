@@ -20,7 +20,7 @@
   "ktco2-e": "kt CO<sub>2</sub>-Äquivalente/a",
   "net-cost": "Nettokosten",
   "outcomes": "Ergebnisse",
-  "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum Referenzszenario",
+  "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum {{baseline}} Szenario",
   "show": "Anzeigen:",
   "action-name": "Name",
   "annual-impact": "Jährliche Wirkung",
