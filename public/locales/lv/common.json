@@ -111,5 +111,6 @@
   "action-name": "Nosaukums",
   "annual-impact": "Gada ietekme",
   "how-calculated": "Kā tas tiek aprēķināts?",
-  "included-in-scenario": "Iekļauts scenārijā"
+  "included-in-scenario": "Iekļauts scenārijā",
+  "custom-scenario-selected-message": "Pielāgotais scenārijs tiek automātiski izvēlēts, kad rediģējat scenāriju."
 }

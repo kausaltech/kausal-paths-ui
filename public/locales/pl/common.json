@@ -122,5 +122,6 @@
   "action-name": "Nazwa",
   "annual-impact": "Roczny wpływ",
   "how-calculated": "Jak to jest obliczane?",
-  "included-in-scenario": "Uwzględnione w scenariuszu"
+  "included-in-scenario": "Uwzględnione w scenariuszu",
+  "custom-scenario-selected-message": "Własny scenariusz jest automatycznie wybierany, gdy edytujesz scenariusz." 
 }

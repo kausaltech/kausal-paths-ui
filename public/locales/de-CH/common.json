@@ -26,5 +26,6 @@
   "annual-impact": "Jährliche Wirkung",
   "how-calculated": "Wie das berechnet wird",
   "included-in-scenario": "Wird in Szenario berücksichtigt",
-  "actions-sort-cumulative-impact": "Kumulative Wirkung"
+  "actions-sort-cumulative-impact": "Kumulative Wirkung",
+  "custom-scenario-selected-message": "Das angepasste Szenario wird automatisch ausgewählt, wenn Sie das Szenario bearbeiten."
 }
