@@ -221,7 +221,7 @@ export const BoolWidget = (props: BoolWidgetProps) => {
   const { id, boolValue, isCustomizable } = parameter;
   const { t } = useTranslation();
 
-  const label = parameter.label || parameter.description || t('will_be_implemented');
+  const label = parameter.label || parameter.description || t('included-in-scenario');
 
   return (
     <WidgetWrapper>
