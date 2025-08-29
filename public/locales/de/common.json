@@ -114,7 +114,7 @@
   "financial-impact": "Finanzielle Auswirkungen",
   "net-cost": "Nettokosten",
   "reduction": "Reduzierung",
-  "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum Referenzszenario",
+  "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum {{baseline}} Szenario",
   "actions-as-efficiency": "Effizienz",
   "watch-action-list-title": "Wie können wir dies erreichen?",
   "on-track": "Im Plan",

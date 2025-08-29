@@ -101,7 +101,7 @@
   "table-unit": "Enhet",
   "plot-choose-dimension": "Välj dimension",
   "outcomes": "Resultat",
-  "impact-compared-to-baseline": "<strong>Total påverkan {{impact}} {{unit}}</strong> jämfört med referensscenariot",
+  "impact-compared-to-baseline": "<strong>Total påverkan {{impact}} {{unit}}</strong> jämfört med {{baseline}} scenariot",
   "above-target": "över målet",
   "below-target": "under målet",
   "action-name": "Namn",
