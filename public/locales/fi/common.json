@@ -115,5 +115,6 @@
   "action-name": "Nimi",
   "annual-impact": "Vuosittainen vaikutus",
   "how-calculated": "Miten tämä lasketaan?",
-  "included-in-scenario": "Sisältyy skenaarioon"
+  "included-in-scenario": "Sisältyy skenaarioon",
+  "custom-scenario-selected-message": "Räätälöity skenaario valitaan automaattisesti, kun muokkaat skenaariota."
 }
