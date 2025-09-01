@@ -80,7 +80,7 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
       </Box>
       <Snackbar
         open={showCustomScenarioSnackbar}
-        message="Custom scenario is automatically selected when you edit the scenario."
+        message={t('custom-scenario-selected-message')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         autoHideDuration={5000}
         onClose={handleSnackClose}

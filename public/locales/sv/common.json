@@ -107,5 +107,6 @@
   "action-name": "Namn",
   "annual-impact": "Årlig påverkan",
   "how-calculated": "Hur beräknas detta?",
-  "included-in-scenario": "Ingår i scenariot"
+  "included-in-scenario": "Ingår i scenariot",
+  "custom-scenario-selected-message": "Det anpassade scenariot väljs automatiskt när du redigerar scenariot."
 }
