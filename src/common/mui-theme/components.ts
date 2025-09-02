@@ -3,6 +3,18 @@ import type { ThemeOptions } from '@mui/material/styles';
 
 export function getComponents(theme: Theme): ThemeOptions['components'] {
   return {
+    MuiContainer: {
+      styleOverrides: {
+        root: ({ theme: muiTheme }) => ({
+          paddingLeft: theme.spaces.s100,
+          paddingRight: theme.spaces.s100,
+          [muiTheme.breakpoints.up('sm')]: {
+            paddingLeft: theme.spaces.s200,
+            paddingRight: theme.spaces.s200,
+          },
+        }),
+      },
+    },
     MuiButtonBase: {
       defaultProps: {
         disableRipple: true,
