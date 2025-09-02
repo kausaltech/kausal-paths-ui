@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import type {
   GetOutcomeNodeQuery,
   OutcomeNodeFieldsFragment,
+  ScenarioFragmentFragment,
 } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 
@@ -56,7 +57,7 @@ const findVisibleNodes = (
 
 type OutcomeBlockProps = {
   outcomeNode: GetOutcomeNodeQuery['node'] | null | undefined;
-  activeScenario: any;
+  activeScenario: ScenarioFragmentFragment | null;
   loading: boolean;
 };
 
@@ -106,8 +107,6 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
   // TODO: filtering out empty nodes, in some instances there are some -> investigate why
   const visibleNodes = findVisibleNodes(allNodes, activeNodeId, []).filter((node) => node?.id);
 
-  const outcomeType = visibleNodes[0].quantity;
-
   return (
     <Fragment>
       {visibleNodes.map((node, index) => (
@@ -120,7 +119,7 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
           isRootNode={node.id === (outcomeNode as OutcomeNodeFieldsFragment).id}
           startYear={yearRange[0]}
           endYear={yearRange[1]}
-          activeScenario={activeScenario?.name}
+          activeScenario={activeScenario?.name ?? ''}
           parentColor={theme.graphColors.blue050}
           activeNodeId={index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined}
           setLastActiveNodeId={setLastActiveNodeId}
