@@ -4,10 +4,13 @@ import { useTheme } from '@emotion/react';
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
+import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
-import { Trans, useTranslation } from '@/common/i18n';
+import { ScenarioKind } from '@/common/__generated__/graphql';
+import { Trans } from '@/common/i18n';
+import { useSiteWithSetter } from '@/context/site';
 
 type ActionGroup = {
   id: string;
@@ -102,7 +105,9 @@ function getGroupColor(group: ActionGroup, theme: Theme, index: number) {
 const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props) => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const [site] = useSiteWithSetter();
   const year = actions[0]?.year;
+  const baselineScenario = site.scenarios.find(({ kind }) => kind === ScenarioKind.Baseline);
 
   const filteredActions = actions
     .filter((action) => action.isEnabled)
@@ -247,6 +252,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
                     ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
                     : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
                 unit: unit || '',
+                baseline: baselineScenario?.name || t('plot-baseline'),
               }}
             />
           </Typography>

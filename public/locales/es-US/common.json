@@ -120,7 +120,7 @@
   "close": "Cerrar",
   "coming-soon": "Próximamente",
   "outcomes": "Resultados",
-  "impact-compared-to-baseline": "<strong>Impacto total {{impact}} {{unit}}</strong> comparado con el escenario de continuidad",
+  "impact-compared-to-baseline": "<strong>Impacto total {{impact}} {{unit}}</strong> comparado con el {{baseline}} escenario",
   "above-target": "por encima del objetivo",
   "below-target": "por debajo del objetivo",
   "action-name": "Nombre",

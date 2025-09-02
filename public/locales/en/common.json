@@ -146,6 +146,6 @@
   "values-per": "Values per {{normalization}}",
   "above-target": "above the target",
   "below-target": "below the target",
-  "impact-compared-to-baseline": "<strong>Total impact {{impact}} {{unit}}</strong> compared to business as usual scenario",
+  "impact-compared-to-baseline": "<strong>Total impact {{impact}} {{unit}}</strong> compared to {{baseline}} scenario",
   "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario."
 }
