@@ -3,7 +3,9 @@ import { Suspense } from 'react';
 import Head from 'next/head';
 
 import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import type { Theme } from '@kausal/themes/types';
 import { Box, Container, Skeleton } from '@mui/material';
+import { useTheme } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 
 import { isLocalDev } from '@common/env';
@@ -11,7 +13,6 @@ import { logApolloError } from '@common/logging/apollo';
 
 import type { GetPageQuery, GetPageQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
-import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ActionListPage from '@/components/pages/ActionListPage';
 import DashboardPage from '@/components/pages/DashboardPage';
@@ -24,20 +25,24 @@ import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
 
-const PageLoader = () => {
+const PageLoader = ({ theme }: { theme: Theme }) => {
   return (
-    <Container fixed maxWidth="xl" sx={{ py: 4 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          height: 'calc(100vh - 24rem)',
-        }}
-      >
-        <Skeleton variant="rectangular" width="100%" height="160px" />
-      </Box>
-    </Container>
+    <Box sx={{ py: 4, backgroundColor: theme.brandDark }}>
+      <Container fixed maxWidth="xl">
+        <Box
+          sx={{
+            height: '400px',
+          }}
+        >
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height="240px"
+            sx={{ backgroundColor: theme.graphColors.grey050, mb: 2 }}
+          />
+        </Box>
+      </Container>
+    </Box>
   );
 };
 
@@ -56,8 +61,6 @@ function Page(props: PageProps) {
   const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
     variables: {
       path,
-      goal: activeGoal?.id ?? null,
-      scenarios,
     },
     context: {
       componentName: 'Page',
@@ -69,6 +72,7 @@ function Page(props: PageProps) {
 
   const data = queryResp.data ?? previousData;
   const { t } = useTranslation();
+  const theme = useTheme();
 
   if (error) {
     logApolloError(error, { component: 'Page' });
@@ -79,7 +83,7 @@ function Page(props: PageProps) {
     }
   }
   if (!data) {
-    return <PageLoader />;
+    return <PageLoader theme={theme} />;
   }
   const { page, activeScenario } = data;
   let pageContent: React.ReactNode;
@@ -94,6 +98,9 @@ function Page(props: PageProps) {
     pageContent = (
       <OutcomePage
         page={page}
+        outcomeNodeId={page.outcomeNode.id}
+        scenarios={scenarios}
+        activeGoalId={activeGoal?.id ?? null}
         refetch={refetch}
         activeScenario={activeScenario}
         refetching={loading}
@@ -117,7 +124,7 @@ function Page(props: PageProps) {
         ) : null}
       </Head>
       {headerExtra}
-      <Suspense fallback={<PageLoader />}>{pageContent}</Suspense>
+      <Suspense fallback={<PageLoader theme={theme} />}>{pageContent}</Suspense>
     </>
   );
 }

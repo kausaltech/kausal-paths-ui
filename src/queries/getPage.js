@@ -2,8 +2,6 @@ import { gql } from '@apollo/client';
 
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 
-import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
-
 const UNIT_FRAGMENT = gql`
   fragment UnitFields on UnitType {
     short
@@ -154,85 +152,9 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
   ${UNIT_FRAGMENT}
 `;
 
-const OUTCOME_NODE_FIELDS = gql`
-  fragment OutcomeNodeFields on Node {
-    id
-    name
-    color
-    order
-    shortName
-    shortDescription
-    metric(goalId: $goal) {
-      id
-      name
-      unit {
-        ...UnitFields
-      }
-      forecastValues {
-        year
-        value
-      }
-      baselineForecastValues {
-        year
-        value
-      }
-      historicalValues {
-        year
-        value
-      }
-    }
-    targetYearGoal
-    goals(activeGoal: $goal) {
-      year
-      value
-    }
-    unit {
-      ...UnitFields
-    }
-    quantity
-    shortDescription
-    inputNodes {
-      id
-      name
-    }
-    outputNodes {
-      id
-    }
-    upstreamActions(onlyRoot: true, decisionLevel: MUNICIPALITY) {
-      id
-      name
-      goal
-      shortName
-      shortDescription
-      parameters {
-        __typename
-        id
-        nodeRelativeId
-        node {
-          id
-        }
-        isCustomized
-        ... on BoolParameterType {
-          boolValue: value
-          boolDefaultValue: defaultValue
-        }
-      }
-      group {
-        id
-        name
-        color
-      }
-    }
-    ...DimensionalNodeMetric
-  }
-  ${dimensionalNodePlotFragment}
-  ${UNIT_FRAGMENT}
-`;
-
 const GET_PAGE = gql`
   ${DASHBOARD_PAGE_FRAGMENT}
-  ${OUTCOME_NODE_FIELDS}
-  query GetPage($path: String!, $goal: ID, $scenarios: [String!]) {
+  query GetPage($path: String!) {
     activeScenario {
       id
     }
@@ -247,10 +169,7 @@ const GET_PAGE = gql`
         leadTitle
         leadParagraph
         outcomeNode {
-          ...OutcomeNodeFields
-          upstreamNodes(sameQuantity: true, sameUnit: true, includeActions: false) {
-            ...OutcomeNodeFields
-          }
+          id
         }
       }
       ... on ActionListPage {

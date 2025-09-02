@@ -40,16 +40,13 @@ const Description = styled.div`
   }
 `;
 
-type Props = {
-  title: string;
+type PageHeroProps = {
   leadTitle?: string;
   leadDescription?: string;
-  /** @deprecated Whether the children container overlaps part of the hero background, purely aesthetic */
-  overlap?: boolean;
   children?: React.ReactNode;
 };
 
-export const PageHero = ({ leadTitle, leadDescription, overlap = false, children }: Props) => {
+export const PageHero = ({ leadTitle, leadDescription, children }: PageHeroProps) => {
   const hasHeroCard = !!(leadTitle || leadDescription);
 
   if (!hasHeroCard && !children) {
