@@ -122,5 +122,6 @@
   "action-name": "Název",
   "annual-impact": "Roční dopad",
   "how-calculated": "Jak se to počítá",
-  "included-in-scenario": "Zahrnuto ve scénáři"
+  "included-in-scenario": "Zahrnuto ve scénáři",
+  "custom-scenario-selected-message": "Při úpravě scénáře se automaticky zvolí vlastní scénář."
 }

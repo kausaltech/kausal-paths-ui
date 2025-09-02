@@ -126,5 +126,6 @@
   "action-name": "Nombre",
   "annual-impact": "Impacto anual",
   "how-calculated": "¿Cómo se calcula?",
-  "included-in-scenario": "Incluido en el escenario"
+  "included-in-scenario": "Incluido en el escenario",
+  "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario."
 }

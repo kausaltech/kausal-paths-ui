@@ -138,5 +138,6 @@
   "action-name": "Όνομα",
   "annual-impact": "Ετήσια επίδραση",
   "how-calculated": "Πώς υπολογίζεται αυτό;",
-  "included-in-scenario": "Περιλαμβάνεται στο σενάριο"
+  "included-in-scenario": "Περιλαμβάνεται στο σενάριο",
+  "custom-scenario-selected-message": "Το προσαρμοσμένο σενάριο επιλέγεται αυτόματα όταν επεξεργάζεστε το σενάριο."
 }
