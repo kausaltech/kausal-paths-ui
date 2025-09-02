@@ -91,7 +91,7 @@ const ScenarioPanel = () => {
                 onClick={handleEditClick}
                 startIcon={<Sliders />}
               >
-                {t('edit')}
+                {t('edit-scenario')}
               </Button>
             </Box>
           </Grid>
