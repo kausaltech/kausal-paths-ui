@@ -1,108 +1,72 @@
 import React from 'react';
 
-import styled from '@emotion/styled';
+import {
+  Card,
+  CardContent,
+  Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Col, Container, ListGroup, Row } from 'reactstrap';
+import { BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
 
 import { NodeLink } from '@/common/links';
-
-const InputNodes = styled.div`
-  margin-bottom: 4rem;
-  padding: 0.5rem;
-  border-radius: 0;
-  font-size: 1rem;
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
-
-  .list-group-item {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  svg {
-    margin-left: 1rem;
-  }
-`;
-
-const OutputNodes = styled.div`
-  margin-bottom: 4rem;
-  text-align: right;
-  padding: 0.5rem;
-  border-radius: 0;
-  font-size: 1rem;
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
-  .list-group-item {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-    text-align: right;
-  }
-
-  svg {
-    margin-right: 1rem;
-  }
-`;
-
-type ListGroupItemProps = React.PropsWithChildren &
-  (
-    | ({ tag: 'a' } & React.JSX.IntrinsicElements['a'])
-    | ({ tag: 'h5' } & React.JSX.IntrinsicElements['h5'])
-  );
-
-function ListGroupItemInner(props: ListGroupItemProps, ref: React.ForwardedRef<any>) {
-  const className = 'list-group-item';
-  if (props.tag === 'a') {
-    const { tag, ...rest } = props;
-    rest.className = className;
-    return <a ref={ref} {...rest} />;
-  } else {
-    const { tag, ...rest } = props;
-    rest.className = className;
-    return <h5 ref={ref} {...rest} />;
-  }
-}
-
-const ListGroupItem = React.forwardRef(ListGroupItemInner);
 
 const NodeLinks = (props) => {
   const { inputNodes, outputNodes } = props;
   const { t } = useTranslation();
   return (
-    <Container fluid="lg">
-      <Row>
-        <Col md={{ size: 5 }}>
-          {inputNodes.length > 0 && (
-            <InputNodes>
-              <ListGroup>
-                <ListGroupItem tag="h5">{t('affected-by')}</ListGroupItem>
+    <Grid container spacing={2} sx={{ marginBottom: 2 }}>
+      <Grid size={{ xs: 12, md: 6, lg: 5 }}>
+        {inputNodes.length > 0 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h5">{t('affected-by')}</Typography>
+              <List>
                 {inputNodes.map((inputNode, index) => (
-                  <NodeLink key={inputNode.id} node={inputNode}>
-                    <ListGroupItem tag="a">
-                      <span>{inputNode.name}</span>
-                    </ListGroupItem>
-                  </NodeLink>
+                  <ListItem>
+                    <ListItemIcon>
+                      <BoxArrowInRight size={24} />
+                    </ListItemIcon>
+                    <ListItemText>
+                      <NodeLink key={inputNode.id} node={inputNode}>
+                        {inputNode.name}
+                      </NodeLink>
+                    </ListItemText>
+                  </ListItem>
                 ))}
-              </ListGroup>
-            </InputNodes>
-          )}
-        </Col>
-        <Col md={{ size: 5, offset: 2 }}>
-          {outputNodes.length > 0 && (
-            <OutputNodes>
-              <ListGroup>
-                <ListGroupItem tag="h5">{t('has-effect-on')}</ListGroupItem>
+              </List>
+            </CardContent>
+          </Card>
+        )}
+      </Grid>
+      <Grid size={{ xs: 12, md: 6, lg: 5 }} offset={{ md: 0, lg: 2 }}>
+        {outputNodes.length > 0 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h5">{t('has-effect-on')}</Typography>
+              <List>
                 {outputNodes.map((outputNode, index) => (
-                  <NodeLink key={outputNode.id} node={outputNode}>
-                    <ListGroupItem tag="a">
-                      <span>{outputNode.name}</span>
-                    </ListGroupItem>
-                  </NodeLink>
+                  <ListItem>
+                    <ListItemIcon>
+                      <BoxArrowRight size={24} />
+                    </ListItemIcon>
+                    <ListItemText>
+                      <NodeLink key={outputNode.id} node={outputNode}>
+                        {outputNode.name}
+                      </NodeLink>
+                    </ListItemText>
+                  </ListItem>
                 ))}
-              </ListGroup>
-            </OutputNodes>
-          )}
-        </Col>
-      </Row>
-    </Container>
+              </List>
+            </CardContent>
+          </Card>
+        )}
+      </Grid>
+    </Grid>
   );
 };
 
