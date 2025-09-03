@@ -176,7 +176,7 @@
   },
   "type": "module",
   "optionalDependencies": {
-    "@kausal-private/themes-private": "^0.5.49"
+    "@kausal-private/themes-private": "^0.5.56"
   },
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
