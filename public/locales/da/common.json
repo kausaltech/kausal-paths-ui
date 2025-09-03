@@ -122,5 +122,7 @@
   "annual-impact": "Årlig effekt",
   "how-calculated": "Hvordan beregnes dette?",
   "included-in-scenario": "Inkluderet i scenariet",
-  "custom-scenario-selected-message": "Det brugerdefinerede scenarie vælges automatisk, når du redigerer scenariet."
+  "custom-scenario-selected-message": "Det brugerdefinerede scenarie vælges automatisk, når du redigerer scenariet.",
+  "expand-all": "Vis alle",
+  "collapse-all": "Skjul alle"
 }
