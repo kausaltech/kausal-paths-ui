@@ -116,5 +116,7 @@
   "annual-impact": "Vuosittainen vaikutus",
   "how-calculated": "Miten tämä lasketaan?",
   "included-in-scenario": "Sisältyy skenaarioon",
-  "custom-scenario-selected-message": "Räätälöity skenaario valitaan automaattisesti, kun muokkaat skenaariota."
+  "custom-scenario-selected-message": "Räätälöity skenaario valitaan automaattisesti, kun muokkaat skenaariota.",
+  "expand-all": "Avaa kaikki",
+  "collapse-all": "Sulje kaikki"
 }
