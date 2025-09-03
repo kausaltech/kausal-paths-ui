@@ -1,8 +1,6 @@
 import { useQuery } from '@apollo/client';
-import styled from '@emotion/styled';
-import { Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { Row } from 'reactstrap';
 
 import type {
   GetParametersQuery,
@@ -11,21 +9,6 @@ import type {
 import ContentLoader from '@/components/common/ContentLoader';
 import ParameterWidget from '@/components/general/ParameterWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
-
-const GlobalParametersPanel = styled(Row)`
-  .form-group {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  label {
-    font-size: ${(props) => props.theme.fontSizeSm};
-    line-height: 1;
-    overflow-wrap: break-word;
-    max-width: 100%;
-  }
-`;
 
 const GlobalParameters = () => {
   const { loading, error, data, previousData } = useQuery<
@@ -59,16 +42,16 @@ const GlobalParameters = () => {
   const { parameters } = data;
 
   return (
-    <GlobalParametersPanel>
-      <Typography variant="h5" component="h2" sx={{ mb: 0.5 }}>
+    <Box sx={{ mb: 2, mt: 2 }}>
+      <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
         {t('all-settings')}
       </Typography>
-      <Grid container spacing={1} sx={{ mt: 1 }}>
+      <Grid container spacing={1.5} sx={{ mt: 1, ml: 0.5, mr: 0.5 }}>
         {parameters.map(
           (param) => param.isCustomizable && <ParameterWidget key={param.id} parameter={param} />
         )}
       </Grid>
-    </GlobalParametersPanel>
+    </Box>
   );
 };
 

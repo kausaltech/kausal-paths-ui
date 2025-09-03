@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Card, CardText, CardTitle } from 'reactstrap';
+import { Card, CardContent } from '@mui/material';
 
 type Props = {
   title?: string;
@@ -15,14 +15,7 @@ const StyledCardContainer = styled.div`
   gap: ${({ theme }) => theme.spaces.s100};
 `;
 
-const StyledCard = styled(Card)`
-  border-radius: ${({ theme }) => theme.cardBorderRadius};
-  border: none;
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
-  padding: ${({ theme }) => theme.spaces.s100};
-`;
-
-const StyledCardTitle = styled(CardTitle)`
+const StyledCardTitle = styled.p`
   line-height: ${({ theme }) => theme.lineHeightMd};
   color: ${({ theme }) => theme.textColor.secondary};
 `;
@@ -34,10 +27,12 @@ export function CardListBlock({ title, cards }: Props) {
 
       <StyledCardContainer>
         {cards.map((card, i) => (
-          <StyledCard key={i}>
-            <StyledCardTitle tag="p">{card.title}</StyledCardTitle>
-            {!!card.shortDescription && <CardText>{card.shortDescription}</CardText>}
-          </StyledCard>
+          <Card key={i}>
+            <CardContent>
+              <StyledCardTitle>{card.title}</StyledCardTitle>
+              {!!card.shortDescription && <div>{card.shortDescription}</div>}
+            </CardContent>
+          </Card>
         ))}
       </StyledCardContainer>
     </>

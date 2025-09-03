@@ -3,6 +3,7 @@ import React from 'react';
 import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { FormControl, InputLabel } from '@mui/material';
 import Highlighter from 'react-highlight-words';
 import Select, {
   type GroupBase,
@@ -12,13 +13,14 @@ import Select, {
   type ValueContainerProps as SelectValueContainerProps,
   components,
 } from 'react-select';
-import { Label as BSLabel, FormGroup } from 'reactstrap';
 
 import PopoverTip from '@/components/common/PopoverTip';
 
-const Label = styled(BSLabel)`
-  font-weight: ${(props) => props.theme.formLabelFontWeight};
-  line-height: ${(props) => props.theme.lineHeightSm};
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  font-weight: ${({ theme }) => theme.formLabelFontWeight};
+  line-height: ${({ theme }) => theme.lineHeightMd};
+  margin-bottom: ${({ theme }) => theme.spaces.s050};
 `;
 
 function getSelectStyles<
@@ -218,9 +220,9 @@ function SelectDropdown<
   const theme = useTheme();
   const styles = getSelectStyles<Option, IsMulti, Group>(theme, props.isMulti === true, size);
   return (
-    <FormGroup className={className}>
+    <FormControl className={className}>
       {label && (
-        <Label for={id}>
+        <Label htmlFor={id}>
           {label}
           {helpText && <PopoverTip content={helpText} />}
         </Label>
@@ -241,7 +243,7 @@ function SelectDropdown<
             <Highlighter highlightTag="b" searchWords={[inputValue]} textToHighlight={label} />
           );
           if (context === 'value' || !indent) return highlighted;
-          const spans: JSX.Element[] = [];
+          const spans: React.JSX.Element[] = [];
           for (let i = 0; i < indent; i++) {
             spans.push(
               <span
@@ -260,7 +262,7 @@ function SelectDropdown<
         onChange={onChange}
         {...rest}
       />
-    </FormGroup>
+    </FormControl>
   );
 }
 export default SelectDropdown;

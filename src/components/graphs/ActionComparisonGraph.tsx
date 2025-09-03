@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Grid } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Col, Row } from 'reactstrap';
 
 import Icon from '@/components/common/icon';
 
@@ -165,8 +165,8 @@ function ActionComparisonGraph(props) {
               {data.actions[hoverId]} <Icon name="arrowRight" />
             </h4>
           </a>
-          <Row>
-            <Col md={3} className="d-flex align-items-end">
+          <Grid container spacing={2}>
+            <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{impactName}</HoverValueTitle>
                 <HoverValueValue>
@@ -174,10 +174,10 @@ function ActionComparisonGraph(props) {
                 </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
-            </Col>
-            <Col md={3} className="d-flex align-items-end"></Col>
-            <Col md={3} className="d-flex align-items-end"></Col>
-          </Row>
+            </Grid>
+            <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }} />
+            <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }} />
+          </Grid>
         </ActionDescription>
       )}
     </GraphContainer>

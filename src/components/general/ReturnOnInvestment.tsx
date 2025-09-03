@@ -131,7 +131,7 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const bars = d?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
   const title = d.label || t('return-on-investment');
-  const subtitle = d.indicatorLabel || t('return-on-invetment-subtitle');
+  const subtitle = d.indicatorLabel || t('return-on-investment-subtitle');
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

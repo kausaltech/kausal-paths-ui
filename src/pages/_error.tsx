@@ -4,10 +4,9 @@ import Head from 'next/head';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
+import { Button, Card, CardContent, Container, Grid } from '@mui/material';
 import * as Sentry from '@sentry/nextjs';
 import type { NextPageContext } from 'next';
-import { Card, CardBody, Col, Container, Row } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
 import { getLogger } from '@common/logging';
@@ -125,11 +124,11 @@ const PathsError = (props: AppErrorProps) => {
 
   return (
     <ErrorBackground className="mb-5">
-      <Container>
-        <Row>
-          <Col md={{ size: 6, offset: 3 }}>
+      <Container fixed maxWidth="xl">
+        <Grid container spacing={2}>
+          <Grid size={{ md: 6 }} offset={{ md: 3 }}>
             <StyledCard>
-              <CardBody>
+              <CardContent>
                 {errorIcon}
                 <h2>{title}</h2>
                 <p>{intro}</p>
@@ -141,10 +140,10 @@ const PathsError = (props: AppErrorProps) => {
                     </Button>
                   </a>
                 </Link>
-              </CardBody>
+              </CardContent>
             </StyledCard>
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
       </Container>
     </ErrorBackground>
   );

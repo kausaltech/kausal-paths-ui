@@ -2,9 +2,8 @@ import { forwardRef } from 'react';
 
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Card } from '@mui/material';
 import { CardBody, CardTitle } from 'reactstrap';
-
-import { Card } from '../common/Card';
 
 type Props = {
   title: string;
