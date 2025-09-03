@@ -3,23 +3,25 @@ import { useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import {
+  Box,
+  Grid,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Menu,
+  MenuItem,
+} from '@mui/material';
 import { isEqual } from 'lodash';
 import { type TFunction, useTranslation } from 'next-i18next';
-import {
-  Col,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  Row,
-  UncontrolledDropdown,
-} from 'reactstrap';
+import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
 import { useFeatures, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
-import Icon from '@/components/common/icon';
 import { useSiteWithSetter } from '@/context/site';
 import {
   DimensionalMetric,
@@ -36,16 +38,9 @@ import {
 import NodeGraph from './NodeGraph';
 
 const Tools = styled.div`
-  padding: 0 1rem 0.5rem;
-  text-align: right;
-  .btn-link {
-    text-decoration: none;
-  }
-  .icon {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    vertical-align: -0.2rem;
-  }
+  position: absolute;
+  right: 0;
+  top: 0;
 `;
 
 type BaselineForecast = { year: number; value: number };
@@ -63,6 +58,74 @@ const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) =>
   }
 
   return longUnit;
+};
+
+const ToolsMenu = ({
+  cube,
+  sliceConfig,
+}: {
+  cube: DimensionalMetricType;
+  sliceConfig: SliceConfig;
+}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const { t } = useTranslation();
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Tools>
+      <IconButton
+        id="tools-button"
+        aria-controls={open ? 'tools-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+        onClick={handleClick}
+        aria-label={t('download-data')}
+      >
+        <ThreeDotsVertical />
+      </IconButton>
+      <Menu
+        id="tools-menu"
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          list: {
+            'aria-labelledby': 'tools-button',
+          },
+        }}
+      >
+        <ListSubheader> {` ${t('download-data')}`}</ListSubheader>
+        <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'xlsx')}>
+          <ListItemIcon>
+            <FiletypeXls />
+          </ListItemIcon>
+          <ListItemText>XLS</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'csv')}>
+          <ListItemIcon>
+            <FiletypeCsv />
+          </ListItemIcon>
+          <ListItemText>CSV</ListItemText>
+        </MenuItem>
+      </Menu>
+    </Tools>
+  );
 };
 
 type DimensionalNodeVisualisationProps = {
@@ -339,9 +402,9 @@ export default function DimensionalNodeVisualisation({
   const controls =
     withControls && (metric.dimensions.length > 1 || hasGroups) ? (
       <>
-        <Row>
+        <Grid container spacing={1}>
           {metric.dimensions.length > 1 && (
-            <Col md={3} className="d-flex" key="dimension">
+            <Grid size={{ md: 3 }} sx={{ display: 'flex' }} key="dimension">
               <SelectDropdown
                 id="dimension"
                 className="flex-grow-1"
@@ -357,12 +420,12 @@ export default function DimensionalNodeVisualisation({
                 isMulti={false}
                 isClearable={false}
               />
-            </Col>
+            </Grid>
           )}
           {cube.dimensions.map((dim) => {
             const options = cube.getOptionsForDimension(dim.id, sliceConfig.categories);
             return (
-              <Col md={4} className="d-flex" key={dim.id}>
+              <Grid size={{ md: 4 }} sx={{ display: 'flex' }} key={dim.id}>
                 <SelectDropdown
                   id={`dim-${dim.id.replaceAll(':', '-')}`}
                   className="flex-grow-1"
@@ -378,10 +441,10 @@ export default function DimensionalNodeVisualisation({
                     });
                   }}
                 />
-              </Col>
+              </Grid>
             );
           })}
-        </Row>
+        </Grid>
       </>
     ) : null;
 
@@ -389,7 +452,7 @@ export default function DimensionalNodeVisualisation({
     <>
       {controls}
 
-      <div>
+      <Box sx={{ position: 'relative' }}>
         <NodeGraph
           title={title}
           dataTable={datasetTable}
@@ -407,26 +470,8 @@ export default function DimensionalNodeVisualisation({
           onClickMeasuredEmissions={onClickMeasuredEmissions}
           forecastTitle={forecastTitle}
         />
-      </div>
-
-      {withTools && (
-        <Tools>
-          <UncontrolledDropdown size="sm">
-            <DropdownToggle caret color="link">
-              <Icon name="download" />
-              {` ${t('download-data')}`}
-            </DropdownToggle>
-            <DropdownMenu>
-              <DropdownItem onClick={() => void cube.downloadData(sliceConfig, 'xlsx')}>
-                <Icon name="file" /> XLS
-              </DropdownItem>
-              <DropdownItem onClick={() => void cube.downloadData(sliceConfig, 'csv')}>
-                <Icon name="file" /> CSV
-              </DropdownItem>
-            </DropdownMenu>
-          </UncontrolledDropdown>
-        </Tools>
-      )}
+        {withTools && <ToolsMenu cube={cube} sliceConfig={sliceConfig} />}
+      </Box>
     </>
   );
 }
