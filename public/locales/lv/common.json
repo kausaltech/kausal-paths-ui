@@ -112,5 +112,7 @@
   "annual-impact": "Gada ietekme",
   "how-calculated": "Kā tas tiek aprēķināts?",
   "included-in-scenario": "Iekļauts scenārijā",
-  "custom-scenario-selected-message": "Pielāgotais scenārijs tiek automātiski izvēlēts, kad rediģējat scenāriju."
+  "custom-scenario-selected-message": "Pielāgotais scenārijs tiek automātiski izvēlēts, kad rediģējat scenāriju.",
+  "expand-all": "Izvērst visu",
+  "collapse-all": "Sakļaut visu"
 }

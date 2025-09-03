@@ -123,5 +123,7 @@
   "annual-impact": "Roční dopad",
   "how-calculated": "Jak se to počítá",
   "included-in-scenario": "Zahrnuto ve scénáři",
-  "custom-scenario-selected-message": "Při úpravě scénáře se automaticky zvolí vlastní scénář."
+  "custom-scenario-selected-message": "Při úpravě scénáře se automaticky zvolí vlastní scénář.",
+  "expand-all": "Rozbalit vše",
+  "collapse-all": "Sbalit vše"
 }

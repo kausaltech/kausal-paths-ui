@@ -108,5 +108,7 @@
   "annual-impact": "Årlig påverkan",
   "how-calculated": "Hur beräknas detta?",
   "included-in-scenario": "Ingår i scenariot",
-  "custom-scenario-selected-message": "Det anpassade scenariot väljs automatiskt när du redigerar scenariot."
+  "custom-scenario-selected-message": "Det anpassade scenariot väljs automatiskt när du redigerar scenariot.",
+  "expand-all": "Visa alla",
+  "collapse-all": "Dölj alla"
 }

@@ -127,5 +127,7 @@
   "annual-impact": "Impacto anual",
   "how-calculated": "¿Cómo se calcula?",
   "included-in-scenario": "Incluido en el escenario",
-  "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario."
+  "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario.",
+  "expand-all": "Expandir todo",
+  "collapse-all": "Contraer todo"
 }

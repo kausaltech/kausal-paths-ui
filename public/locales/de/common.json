@@ -117,6 +117,7 @@
   "impact-compared-to-baseline": "<strong>Gesamtauswirkung {{impact}} {{unit}}</strong> im Vergleich zum {{baseline}} Szenario",
   "above-target": "über dem Ziel",
   "below-target": "unter dem Ziel",
-  "custom-scenario-selected-message": "Das angepasste Szenario wird automatisch ausgewählt, wenn Sie das Szenario bearbeiten."
-
+  "custom-scenario-selected-message": "Das angepasste Szenario wird automatisch ausgewählt, wenn Sie das Szenario bearbeiten.",
+  "expand-all": "Alle ausklappen",
+  "collapse-all": "Alle einklappen"
 }
