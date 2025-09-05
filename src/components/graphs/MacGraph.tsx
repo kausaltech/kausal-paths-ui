@@ -109,11 +109,11 @@ function MacGraph(props) {
       negativeSideWidth > 0
         ? [
             {
-              type: 'rect',
+              type: 'rect' as const,
               // x-reference is assigned to the x-values
-              xref: 'x',
+              xref: 'x' as const,
               // y-reference is assigned to the plot paper [0,1]
-              yref: 'paper',
+              yref: 'paper' as const,
               x0: -negativeSideWidth,
               y0: 0,
               x1: 0,
@@ -125,9 +125,9 @@ function MacGraph(props) {
               },
             },
             {
-              type: 'line',
-              xref: 'x',
-              yref: 'paper',
+              type: 'line' as const,
+              xref: 'x' as const,
+              yref: 'paper' as const,
               x0: 0,
               y0: 0,
               x1: 0,
@@ -145,7 +145,7 @@ function MacGraph(props) {
   const layout = useMemo(
     () => ({
       height: 450,
-      barmode: 'relative',
+      barmode: 'relative' as const,
       hoverlabel: {
         bgcolor: theme.themeColors.white,
         bordercolor: theme.graphColors.grey030,
@@ -154,7 +154,7 @@ function MacGraph(props) {
           color: theme.graphColors.grey090,
         },
       },
-      hovermode: 'x unified',
+      hovermode: 'x unified' as const,
       hoverdistance: 10,
       yaxis: {
         title: {
@@ -175,7 +175,7 @@ function MacGraph(props) {
         t: 10,
         pad: 0,
       },
-      shapes: negativeSide,
+      shapes: negativeSide as any,
       paper_bgcolor: theme.themeColors.white,
       plot_bgcolor: theme.themeColors.white,
     }),

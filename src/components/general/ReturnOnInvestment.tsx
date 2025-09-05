@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
+import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import round from 'lodash/round';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +39,7 @@ function getChartConfig(
                     }
 
                     return {
-                      totalCost: totalCost + (action.costDim.values[index] ?? 0),
+                      totalCost: totalCost + (action.costDim?.values[index] ?? 0),
                       totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
                     };
                   },
@@ -47,7 +48,8 @@ function getChartConfig(
 
                 const roi =
                   totals.totalCost > 0
-                    ? (totals.totalEffect / totals.totalCost) * action.unitAdjustmentMultiplier
+                    ? (totals.totalEffect / totals.totalCost) *
+                      (action.unitAdjustmentMultiplier ?? 1)
                     : null;
 
                 return {
@@ -103,9 +105,9 @@ function getChartConfig(
           show: true,
           align: 'left',
           position: 'right',
-          formatter(params) {
-            const activeIndex = params.encode?.x[0];
-            const value = activeIndex ? params.value?.[activeIndex] : null;
+          formatter(params: CallbackDataParams) {
+            const activeIndex: number | undefined = params.encode?.x[0];
+            const value: number = activeIndex ? params.value?.[activeIndex] : null;
 
             return value ? formatValue(value, unit) : '';
           },

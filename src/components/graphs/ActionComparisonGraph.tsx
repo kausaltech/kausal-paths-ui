@@ -74,7 +74,7 @@ function ActionComparisonGraph(props) {
   const layout = useMemo(
     () => ({
       height: 300,
-      barmode: 'relative',
+      barmode: 'relative' as const,
       hoverlabel: {
         bgcolor: theme.themeColors.white,
         bordercolor: theme.graphColors.grey030,
@@ -83,13 +83,17 @@ function ActionComparisonGraph(props) {
           color: theme.graphColors.grey090,
         },
       },
-      hovermode: 'x unified',
+      hovermode: 'x unified' as const,
       hoverdistance: 10,
       yaxis: {
-        title: `${impactName} (${effectUnit})`,
+        title: {
+          text: `${impactName} (${effectUnit})`,
+        },
       },
       xaxis: {
-        title: t('actions'),
+        title: {
+          text: t('actions'),
+        },
         showgrid: true,
         showticklabels: false,
       },

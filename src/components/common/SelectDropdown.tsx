@@ -149,7 +149,7 @@ function ValueContainer<
   const { children, ...rest } = props;
   let realChildren = children;
   if (Array.isArray(children)) {
-    const [firstChild, ...remainingChildren] = children;
+    const [firstChild, ...remainingChildren] = children as React.ReactNode[];
     /**
      * For multi-selections, we only show the first selection as
      * a label and the other selections just as "+ <n>".

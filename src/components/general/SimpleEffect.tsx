@@ -123,8 +123,8 @@ export function SimpleEffect({ data, isLoading }: Props) {
   const d = data?.impactOverviews.find(({ graphType }) => graphType === 'simple_effect');
   const bars = d?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = d.label || t('simple-effect');
-  const subtitle = d.indicatorLabel || t('simple-effect-subtitle');
+  const title = d?.label || t('simple-effect');
+  const subtitle = d?.indicatorLabel || t('simple-effect-subtitle');
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

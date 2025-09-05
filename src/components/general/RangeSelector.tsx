@@ -114,6 +114,7 @@ const RangeSelector = (props: RangeSelectorProps) => {
         <ActiveYear>{referenceYearActive ? referenceYear : values[0]}</ActiveYear>
         {referenceYear && (
           <ToggleButton
+            value="reference-year"
             size="small"
             selected={referenceYearActive}
             onChange={() => handleReferenceYear(!referenceYearActive)}
