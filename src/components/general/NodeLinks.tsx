@@ -13,9 +13,15 @@ import {
 import { useTranslation } from 'next-i18next';
 import { BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
 
+import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { NodeLink } from '@/common/links';
 
-const NodeLinks = (props) => {
+type NodeLinksProps = {
+  inputNodes: OutcomeNodeFieldsFragment[];
+  outputNodes: OutcomeNodeFieldsFragment[];
+};
+
+const NodeLinks = (props: NodeLinksProps) => {
   const { inputNodes, outputNodes } = props;
   const { t } = useTranslation();
   return (
@@ -26,8 +32,8 @@ const NodeLinks = (props) => {
             <CardContent>
               <Typography variant="h5">{t('affected-by')}</Typography>
               <List>
-                {inputNodes.map((inputNode, index) => (
-                  <ListItem>
+                {inputNodes.map((inputNode) => (
+                  <ListItem key={inputNode.id}>
                     <ListItemIcon>
                       <BoxArrowInRight size={24} />
                     </ListItemIcon>
@@ -49,8 +55,8 @@ const NodeLinks = (props) => {
             <CardContent>
               <Typography variant="h5">{t('has-effect-on')}</Typography>
               <List>
-                {outputNodes.map((outputNode, index) => (
-                  <ListItem>
+                {outputNodes.map((outputNode) => (
+                  <ListItem key={outputNode.id}>
                     <ListItemIcon>
                       <BoxArrowRight size={24} />
                     </ListItemIcon>

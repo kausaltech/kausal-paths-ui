@@ -3,7 +3,7 @@ import React from 'react';
 import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { FormControl, InputLabel } from '@mui/material';
+import { FormControl } from '@mui/material';
 import Highlighter from 'react-highlight-words';
 import Select, {
   type GroupBase,
@@ -58,12 +58,12 @@ function getSelectStyles<
       maxWidth: `${multi ? '80%' : '100%'}`,
       color: `var(--bs-select${isDisabled ? '-disabled' : ''}-color)`,
     }),
-    valueContainer: (provided, state) => ({
+    valueContainer: (provided) => ({
       ...provided,
       padding:
         `calc(var(--bs-select-padding-y${suffix})) ` + `calc(var(--bs-select-padding-x${suffix}))`,
     }),
-    dropdownIndicator: (provided, state) => ({
+    dropdownIndicator: () => ({
       height: '100%',
       width: 'var(--bs-select-indicator-padding)',
       backgroundImage: 'var(--bs-select-indicator)',
@@ -71,12 +71,12 @@ function getSelectStyles<
       backgroundPosition: `right var(--bs-select-padding-x) center`,
       backgroundSize: 'var(--bs-select-bg-size)',
     }),
-    input: ({ margin, paddingTop, paddingBottom, ...provided }, state) => ({
+    input: ({ margin, paddingTop, paddingBottom, ...provided }) => ({
       ...provided,
     }),
     option: (provided, state) => {
-      const { isSelected, isFocused, data } = state;
-      const { indent } = data;
+      const { isSelected, isFocused } = state;
+      //const { indent } = data;
       const ret = {
         ...provided,
         color: theme.themeColors.black,
@@ -90,21 +90,21 @@ function getSelectStyles<
       };
       return ret;
     },
-    menu: ({ marginTop, ...provided }, state) => ({
+    menu: ({ marginTop, ...provided }) => ({
       ...provided,
     }),
-    multiValue: (provided, state) => ({
+    multiValue: (provided) => ({
       ...provided,
       margin: `calc(var(--bs-select-padding-y${suffix})/2) calc(var(--bs-select-padding-x${suffix})/2)`,
     }),
-    clearIndicator: ({ padding, ...provided }, state) => ({
+    clearIndicator: ({ padding, ...provided }) => ({
       ...provided,
       alignItems: 'center',
       justifyContent: 'center',
       height: '100%',
       width: 'var(--bs-select-indicator-padding)',
     }),
-    multiValueLabel: ({ padding, paddingLeft, fontSize, ...provided }, state) => ({
+    multiValueLabel: ({ padding, paddingLeft, fontSize, ...provided }) => ({
       ...provided,
       padding: `0 var(--bs-select-padding-y${suffix})`,
       whiteSpace: 'normal',
@@ -124,7 +124,6 @@ const DropdownIndicator: typeof components.DropdownIndicator = (props) => {
 function getSelectTheme(theme: SelectTheme) {
   const ret: SelectTheme = {
     ...theme,
-    // @ts-ignore
     colors: {
       ...theme.colors,
       primary: 'var(--bs-light)',

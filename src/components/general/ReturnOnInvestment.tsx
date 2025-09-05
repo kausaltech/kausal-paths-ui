@@ -130,8 +130,9 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const d = data?.impactOverviews.find(({ graphType }) => graphType === 'return_on_investment');
   const bars = d?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = d.label || t('return-on-investment');
-  const subtitle = d.indicatorLabel || t('return-on-investment-subtitle');
+  const title = d?.label || t('return-on-investment');
+  // TODO: Add subtitle translation return-on-investment-subtitle
+  const subtitle = d?.indicatorLabel || '';
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
