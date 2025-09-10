@@ -6,11 +6,13 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
     MuiContainer: {
       styleOverrides: {
         root: ({ theme: muiTheme }) => ({
-          paddingLeft: theme.spaces.s100,
-          paddingRight: theme.spaces.s100,
-          [muiTheme.breakpoints.up('sm')]: {
-            paddingLeft: theme.spaces.s200,
-            paddingRight: theme.spaces.s200,
+          '&:not(.MuiContainer-disableGutters)': {
+            paddingLeft: theme.spaces.s100,
+            paddingRight: theme.spaces.s100,
+            [muiTheme.breakpoints.up('sm')]: {
+              paddingLeft: theme.spaces.s200,
+              paddingRight: theme.spaces.s200,
+            },
           },
         }),
       },

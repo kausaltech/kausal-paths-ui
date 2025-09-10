@@ -1,5 +1,6 @@
+import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Container } from '@mui/material';
+import { Card, Container, type SxProps } from '@mui/material';
 
 const StyledHeroSection = styled.div`
   background: ${({ theme }) => theme.brandDark};
@@ -14,9 +15,8 @@ const StyledTitle = styled.h1`
   }
 `;
 
-const StyledHeroCard = styled.div`
+const StyledHeroCard = styled(Card)`
   max-width: ${({ theme }) => theme.breakpoints.values.md}px;
-  border-radius: 0;
   background-color: ${(props) => props.theme.themeColors.white};
   color: ${(props) => props.theme.textColor.primary};
   padding: ${(props) => props.theme.spaces.s100};
@@ -44,9 +44,15 @@ type PageHeroProps = {
   leadTitle?: string;
   leadDescription?: string;
   children?: React.ReactNode;
+  CardStyles?: SxProps<Theme>;
 };
 
-export const PageHero = ({ leadTitle, leadDescription, children }: PageHeroProps) => {
+export const PageHero = ({
+  leadTitle,
+  leadDescription,
+  children,
+  CardStyles = {},
+}: PageHeroProps) => {
   const hasHeroCard = !!(leadTitle || leadDescription);
 
   if (!hasHeroCard && !children) {
@@ -57,7 +63,7 @@ export const PageHero = ({ leadTitle, leadDescription, children }: PageHeroProps
     <StyledHeroSection>
       <Container fixed maxWidth="xl" sx={{ py: 3 }}>
         {hasHeroCard && (
-          <StyledHeroCard>
+          <StyledHeroCard sx={CardStyles}>
             {!!leadTitle && <StyledTitle>{leadTitle}</StyledTitle>}
             {!!leadDescription && (
               <Description dangerouslySetInnerHTML={{ __html: leadDescription }} />
