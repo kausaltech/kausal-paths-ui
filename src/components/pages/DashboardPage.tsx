@@ -12,6 +12,7 @@ import {
 } from '@/common/__generated__/graphql';
 
 import CallToActionCard from '../common/CallToActionCard';
+import { PageHero } from '../common/PageHero';
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';
 import DashboardVisualizationActionImpact from '../general/resident-dashboard/DashboardVisualizationActionImpact';
 import DashboardVisualizationDimension from '../general/resident-dashboard/DashboardVisualizationDimension';
@@ -245,70 +246,82 @@ function DashboardPage({ page }: Props) {
     return null;
   }
 
+  const title = page.introTitle || page.title;
   const backgroundColor: string = page.backgroundColor ?? 'primary.light';
   const textColor = page.backgroundColor
     ? readableColor(page.backgroundColor, theme.textColor.primary, theme.themeColors.white)
     : 'primary.contrastText';
 
   return (
-    <Box sx={{ py: 4, backgroundColor: backgroundColor }}>
-      <Container fixed maxWidth="lg">
-        <Stack spacing={2}>
-          {!!page.title && (
-            <Typography variant="h1" color={textColor}>
-              {page.title}
-            </Typography>
-          )}
+    <>
+      {!!page.introParagraph && (
+        <PageHero
+          CardStyles={{ mb: '0 !important' }}
+          leadTitle={title}
+          leadDescription={page.introParagraph}
+        />
+      )}
 
-          <DashboardNormalizationBar />
+      <Box sx={{ py: 3, backgroundColor: backgroundColor }}>
+        <Container fixed maxWidth="lg">
+          <Stack spacing={3}>
+            {!page.introParagraph && (
+              <Typography variant="h1" color={textColor}>
+                {title}
+              </Typography>
+            )}
 
-          {page.dashboardCards?.map(
-            (card, i) =>
-              card?.__typename === 'DashboardCardBlock' && (
-                <Card key={i}>
-                  {!!card.image?.url && <CardMedia sx={{ height: 300 }} image={card.image.url} />}
+            <DashboardNormalizationBar />
 
-                  <CardContent>
-                    {!!card.title && (
-                      <Typography variant="h2" gutterBottom>
-                        {card.title}
-                      </Typography>
-                    )}
+            {page.dashboardCards?.map(
+              (card, i) =>
+                card?.__typename === 'DashboardCardBlock' && (
+                  <Card key={i}>
+                    {!!card.image?.url && <CardMedia sx={{ height: 300 }} image={card.image.url} />}
 
-                    {!!card.description && (
-                      <Typography sx={{ my: 2 }}>{card.description}</Typography>
-                    )}
+                    <CardContent>
+                      {!!card.title && (
+                        <Typography variant="h2" gutterBottom>
+                          {card.title}
+                        </Typography>
+                      )}
 
-                    {!!card.visualizations && (
-                      <DashboardVisualization
-                        key={i}
-                        referenceYearValue={card.referenceYearValue}
-                        lastHistoricalYearValue={card.lastHistoricalYearValue}
-                        goalValues={card.goalValues ?? undefined}
-                        scenarioValues={
-                          card.scenarioValues?.filter((scenario) => scenario !== null) ?? undefined
-                        }
-                        visualizations={card.visualizations}
-                        unit={card.unit}
-                        metricDimensionCategoryValues={card.metricDimensionCategoryValues ?? []}
-                        scenarioActionImpacts={card.scenarioActionImpacts ?? []}
-                      />
-                    )}
+                      {!!card.description && (
+                        <Typography sx={{ my: 2 }}>{card.description}</Typography>
+                      )}
 
-                    {!!card.callToAction && (
-                      <CallToActionCard
-                        title={card.callToAction.title}
-                        content={card.callToAction.content}
-                        linkUrl={card.callToAction.linkUrl}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              )
-          )}
-        </Stack>
-      </Container>
-    </Box>
+                      {!!card.visualizations && (
+                        <DashboardVisualization
+                          key={i}
+                          referenceYearValue={card.referenceYearValue}
+                          lastHistoricalYearValue={card.lastHistoricalYearValue}
+                          goalValues={card.goalValues ?? undefined}
+                          scenarioValues={
+                            card.scenarioValues?.filter((scenario) => scenario !== null) ??
+                            undefined
+                          }
+                          visualizations={card.visualizations}
+                          unit={card.unit}
+                          metricDimensionCategoryValues={card.metricDimensionCategoryValues ?? []}
+                          scenarioActionImpacts={card.scenarioActionImpacts ?? []}
+                        />
+                      )}
+
+                      {!!card.callToAction && (
+                        <CallToActionCard
+                          title={card.callToAction.title}
+                          content={card.callToAction.content}
+                          linkUrl={card.callToAction.linkUrl}
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+            )}
+          </Stack>
+        </Container>
+      </Box>
+    </>
   );
 }
 

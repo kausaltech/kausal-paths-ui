@@ -104,6 +104,8 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
   }
 
   fragment DashboardPageFields on DashboardPage {
+    introTitle: leadTitle
+    introParagraph: leadParagraph
     backgroundColor
     dashboardCards {
       ... on DashboardCardBlock {
