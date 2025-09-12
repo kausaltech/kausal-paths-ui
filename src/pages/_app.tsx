@@ -139,7 +139,7 @@ const defaultSiteContext: {
   },
   'potsdam-gpc': {
     watchLink: {
-      title: 'Klimaschutz-Monitor-Potsdam',
+      title: 'Klima-Monitor-Potsdam',
       url: 'https://klima-potsdam.watch-test.kausal.tech/',
     },
   },
