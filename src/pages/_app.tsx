@@ -140,7 +140,7 @@ const defaultSiteContext: {
   'potsdam-gpc': {
     watchLink: {
       title: 'Klima-Monitor-Potsdam',
-      url: 'https://klima-potsdam.watch-test.kausal.tech/',
+      url: 'https://klima-monitor.potsdam.de/',
     },
   },
   longmont: {
