@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
-import round from 'lodash/round';
 import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
@@ -12,7 +11,7 @@ import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
-const formatValue = (value: number, unit: string) => `${round(value, 2)} ${unit}`;
+const formatValue = (value: number | null, unit: string) => `${(value || 0).toFixed(2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
@@ -107,7 +106,7 @@ function getChartConfig(
           position: 'right',
           formatter(params: CallbackDataParams) {
             const activeIndex: number | undefined = params.encode?.x[0];
-            const value: number = activeIndex ? params.value?.[activeIndex] : null;
+            const value: number | null = activeIndex ? Number(params.value?.[activeIndex]) : null;
 
             return value ? formatValue(value, unit) : '';
           },

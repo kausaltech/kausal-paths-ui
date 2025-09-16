@@ -166,14 +166,6 @@
       "count": 1
     }
   },
-  "src/components/graphs/MacGraph.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "react-compiler/react-compiler": {
-      "count": 1
-    }
-  },
   "src/components/graphs/Plot.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 4
