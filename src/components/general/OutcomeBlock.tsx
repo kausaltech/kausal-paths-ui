@@ -70,20 +70,23 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
   useEffect(() => {
-    if (router.query?.node === lastActiveNodeId) return;
-    const query: ParsedUrlQuery = {};
-    if (lastActiveNodeId) {
-      query.node = lastActiveNodeId;
-    }
+    if (!router.isReady) return;
+    
+    const currentNode =
+      Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+    if (currentNode === lastActiveNodeId) return;
+    
+    const nextQuery: ParsedUrlQuery = { ...router.query };
+    if (lastActiveNodeId) nextQuery.node = lastActiveNodeId;
+    else delete nextQuery.node;
+
     void router.replace(
-      {
-        query,
-      },
+      { pathname: router.pathname, query: nextQuery },
       undefined,
       { shallow: true }
     );
-  }, [lastActiveNodeId, router]);
-
+  }, [lastActiveNodeId, router.isReady, router.pathname, router.query]);
+    
   if (loading || !outcomeNode) {
     return <OutcomeBlockLoader />;
   }
