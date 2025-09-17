@@ -40,6 +40,12 @@
       "count": 1,
       "message": "Cannot find name 'darken'."
     },
+    "a03ad844b02c54a3c510c0cf39a1ce03a306444c": {
+      "file": "src/components/common/Card.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type 'ForwardedRef<unknown>' is not assignable to type 'Ref<HTMLElement> | undefined'."
+    },
     "24283e56ea064799ed72c36552a1aecd9ee375a0": {
       "file": "src/components/common/GlobalNav.tsx",
       "code": "TS2339",
@@ -71,9 +77,11 @@
       "message": "Argument of type 'null' is not assignable to parameter of type 'ElementRef | undefined'."
     },
     "a7d356fc0d23c9d6f67df72550cfc455e68d6e11": {
+    "a7d356fc0d23c9d6f67df72550cfc455e68d6e11": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
       "count": 1,
+      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
       "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
     },
     "1484f806f69e92e870e04470aab2e62401c4c6bf": {
@@ -155,9 +163,11 @@
       "message": "Property 'watchLink' does not exist on type 'SiteContextType'."
     },
     "1352e7c87632cca339d7a1adb9d6066f1464df56": {
+    "1352e7c87632cca339d7a1adb9d6066f1464df56": {
       "file": "src/components/CytoGraph.tsx",
       "code": "TS2345",
       "count": 1,
+      "message": "Argument of type 'import(\"/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/@types+cytoscape@3.21.9/node_modules/@types/cytoscape/index\").Ext' is not assignable to parameter of type 'cytoscape.Ext'."
       "message": "Argument of type 'import(\"/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/@types+cytoscape@3.21.9/node_modules/@types/cytoscape/index\").Ext' is not assignable to parameter of type 'cytoscape.Ext'."
     },
     "1b4bfa44097ae8240c85ac1f3d43d3a7072059c2": {
@@ -245,9 +255,11 @@
       "message": "Object is possibly 'null'."
     },
     "a639c28a45e02db76c9cc29e627290a753155f0f": {
+    "a639c28a45e02db76c9cc29e627290a753155f0f": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
       "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
     },
     "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
@@ -323,9 +335,11 @@
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
     "198fb6c5959deb5a237700818fe8dea2b957c030": {
+    "198fb6c5959deb5a237700818fe8dea2b957c030": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
       "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
     },
     "3186d64cd5707a556087f33ee127a5a37c67d25b": {
@@ -453,6 +467,18 @@
       "code": "TS2339",
       "count": 1,
       "message": "Property 'invertImpact' does not exist on type '{ id: string; label: string; plotLimitForIndicator: number | null; indicatorUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; costUnit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; effectUnit: ({ ...; } & { ...; }) | null; costNode: ({ ...; } & { ...; }) | null; effectNode: { ...; } & { ....'."
+    },
+    "c194b51408f9d380646d403bba8cee0b026a0f57": {
+      "file": "src/components/pages/ActionListPage.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ children: Element[]; title: string; leadTitle: string | undefined; leadDescription: string | undefined; }' is not assignable to type 'IntrinsicAttributes & PageHeroProps'."
+    },
+    "206816150b003a0388def0ce44f1a17572e94da6": {
+      "file": "src/components/pages/StaticPage.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ children: Element; title: string; }' is not assignable to type 'IntrinsicAttributes & PageHeroProps'."
     },
     "c194b51408f9d380646d403bba8cee0b026a0f57": {
       "file": "src/components/pages/ActionListPage.tsx",
