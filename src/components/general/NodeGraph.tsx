@@ -13,7 +13,7 @@ import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
 
-import { beautifyValue } from '@/common/preprocess';
+import { beautifyValue, sanitizeHtmlUnit } from '@/common/preprocess';
 
 /**
  * Receives filtered node data as tables and plots them in a chart.
@@ -34,6 +34,7 @@ import { beautifyValue } from '@/common/preprocess';
 
 type NodeGraphProps = {
   title: string;
+  subtitle: string | null | undefined;
   dataTable: DataTable;
   goalTable: DataTable | null;
   baselineTable: DataTable | null;
@@ -48,12 +49,13 @@ type NodeGraphProps = {
   showTotalLine?: boolean;
   onClickMeasuredEmissions?: (year: number) => void;
   forecastTitle?: string;
+  stackable?: boolean;
 };
 
 type DataTable = (string | number | null | undefined)[][];
 
 // Constants
-const CHART_HEIGHT = '350px';
+const CHART_HEIGHT = '360px';
 const BAR_WIDTH = '85%';
 const BAR_MAX_WIDTH = '50';
 const BAR_CATEGORY_GAP = '20%';
@@ -65,6 +67,7 @@ export default function NodeGraph(props: NodeGraphProps) {
 
   const {
     title,
+    subtitle,
     dataTable,
     goalTable,
     baselineTable,
@@ -79,6 +82,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     showTotalLine = false,
     onClickMeasuredEmissions,
     forecastTitle,
+    stackable,
   } = props;
 
   // Figure out the start year of the dataset sans reference year
@@ -248,7 +252,14 @@ export default function NodeGraph(props: NodeGraphProps) {
   };
 
   const series = [
-    ...(createBarSeries(fullDataset, datasetIndices, categoryColors, theme, isForecastYear) || []),
+    ...(createBarSeries(
+      fullDataset,
+      datasetIndices,
+      categoryColors,
+      theme,
+      isForecastYear,
+      stackable
+    ) || []),
     hasGoalData && datasetIndices.goal >= 0
       ? createGoalSeries(theme, datasetIndices.goal, specialSeriesLabels.Goal)
       : null,
@@ -274,10 +285,11 @@ export default function NodeGraph(props: NodeGraphProps) {
   const option: echarts.EChartsCoreOption = {
     title: {
       text: title,
+      subtext: subtitle,
       left: '75',
       top: 10,
-      padding: [0, 0, 24, 0],
-      itemGap: 15,
+      padding: [0, 0, 48, 0],
+      itemGap: 5,
       textStyle: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -300,7 +312,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       left: '75',
       right: '24',
       bottom: 100,
-      top: 60,
+      top: subtitle ? 90 : 65,
     },
     tooltip: {
       trigger: 'axis',
@@ -321,7 +333,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     },
     yAxis: {
       type: 'value',
-      name: unit,
+      name: sanitizeHtmlUnit(unit),
       nameLocation: 'end',
       nameTextStyle: {
         align: 'left',
@@ -436,7 +448,8 @@ function createBarSeries(
   },
   categoryColors: string[],
   theme: Theme,
-  isForecastYear: (year: number | undefined) => boolean
+  isForecastYear: (year: number | undefined) => boolean,
+  stackable?: boolean
 ) {
   if (
     datasetIndices.data < 0 ||
@@ -449,9 +462,9 @@ function createBarSeries(
   return dataset[datasetIndices.data]
     .source!.slice(1) // Remove header row
     .map((row, idx) => ({
-      type: 'bar',
+      type: stackable ? 'bar' : 'line',
       seriesLayoutBy: 'row',
-      stack: 'x',
+      stack: stackable ? 'x' : undefined,
       name: row[0],
       stackStrategy: 'samesign',
       datasetIndex: datasetIndices.data,

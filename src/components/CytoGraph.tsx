@@ -18,6 +18,7 @@ import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from
 
 import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
+import { sanitizeHtmlUnit } from '@/common/preprocess';
 
 import SelectDropdown from './common/SelectDropdown';
 import Icon from './common/icon';
@@ -313,27 +314,7 @@ const nodeToElement = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
     year: undefined,
     value: '',
     unit: (() => {
-      // Minimal sanitization to satisfy CodeQL warning about incomplete tags
-      let text = node.unit?.htmlShort || '';
-
-      // Keep removing tags until none remain (prevents pattern re-emergence)
-      let previousLength;
-      do {
-        previousLength = text.length;
-        // Remove both complete tags and incomplete tags (missing closing >)
-        text = text.replace(/<[^>]*>?/g, '');
-      } while (text.length !== previousLength);
-
-      // Basic entity decoding for common unit symbols
-      return text
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&deg;/g, '°')
-        .replace(/&sup2;/g, '²')
-        .replace(/&sup3;/g, '³')
-        .replace(/&micro;/g, 'µ')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&');
+      return sanitizeHtmlUnit(node.unit?.htmlShort || '');
     })(),
   };
   if (latestHistorical) {

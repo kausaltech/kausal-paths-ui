@@ -292,6 +292,24 @@ export default function DimensionalNodeVisualisation({
   const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
 
+  const activeDimensionLabel = metrics.default.getDimensionLabel(sliceConfig.dimensionId);
+
+  // If we have category filters active, let's add them to the viz subtitle
+  const activeCategoryLabels: { dimension: string; categories: string[] }[] = [];
+  for (const [key, value] of Object.entries(sliceConfig.categories)) {
+    if (value?.categories?.length && value.categories.length > 0) {
+      activeCategoryLabels.push({
+        dimension: metrics.default.getDimensionLabel(key) ?? '',
+        categories:
+          value?.categories?.map((cat) => metrics.default.getCategoryLabel(cat) ?? '') ?? [],
+      });
+    }
+  }
+  const subtitle = activeCategoryLabels
+    .map((dim) => `${dim.dimension}: ${dim.categories.join(' & ')}`)
+    .join(', ')
+    .trim();
+
   /* DO WE NEED THE UseEffect HERE? REMOVED FOR NOW */
 
   // Get all sliceable dimensions for the current slice config
@@ -423,18 +441,19 @@ export default function DimensionalNodeVisualisation({
         ]
       : null;
 
-  const totalTable = slice.totalValues
-    ? [
-        headerRow,
-        [
-          'Total',
-          ...yearIndices.map(
-            (idx) =>
-              [...slice.totalValues!.historicalValues, ...slice.totalValues!.forecastValues][idx]
-          ),
-        ],
-      ]
-    : null;
+  const totalTable =
+    slice.totalValues && metric.stackable
+      ? [
+          headerRow,
+          [
+            'Total',
+            ...yearIndices.map(
+              (idx) =>
+                [...slice.totalValues!.historicalValues, ...slice.totalValues!.forecastValues][idx]
+            ),
+          ],
+        ]
+      : null;
 
   // Define colors for the categories
   const defaultColor = color || theme.graphColors.blue070;
@@ -517,7 +536,10 @@ export default function DimensionalNodeVisualisation({
 
       <Box sx={{ position: 'relative' }}>
         <NodeGraph
-          title={title}
+          title={
+            `${title}` + (subtitle && activeDimensionLabel ? ` per ${activeDimensionLabel}` : '')
+          }
+          subtitle={subtitle}
           dataTable={datasetTable}
           goalTable={goalTable}
           baselineTable={baselineTable}
@@ -529,9 +551,10 @@ export default function DimensionalNodeVisualisation({
           categoryColors={categoryColors}
           maximumFractionDigits={useFeatures().maximumFractionDigits ?? undefined}
           baselineLabel={site?.baselineName}
-          showTotalLine={hasNegativeValues}
+          showTotalLine={hasNegativeValues && metric.stackable}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
           forecastTitle={forecastTitle}
+          stackable={metric.stackable}
         />
         {withTools && <ToolsMenu cube={cube} sliceConfig={sliceConfig} />}
       </Box>
