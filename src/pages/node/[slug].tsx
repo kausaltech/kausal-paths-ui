@@ -20,6 +20,7 @@ import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
 import NodePlot from '@/components/general/NodePlot';
+import ScenarioPanel from '@/components/scenario/ScenarioPanel';
 import { useSiteWithSetter } from '@/context/site';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
@@ -30,7 +31,7 @@ const HeaderSection = styled.div<{ $color?: string }>`
 `;
 
 const PageHeader = styled.div`
-  margin-bottom: 2rem;
+  margin: 1rem 02rem;
 
   h1 {
     font-size: 2rem;
@@ -45,7 +46,7 @@ const NodeDescription = styled.div`
 `;
 
 const HeaderCard = styled.div`
-  margin: 3rem 0 -8rem;
+  margin: 1rem 0 0;
   padding: 2rem;
   border-radius: ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
@@ -182,6 +183,7 @@ export default function NodePage() {
       <HeaderSection $color={node.color || undefined}>
         <Container fixed maxWidth="xl">
           <PageHeader>
+            <ScenarioPanel />
             <HeaderCard>
               <div>{node.isAction && <span>{t('action')}</span>}</div>
               <h1>{node.name}</h1>
