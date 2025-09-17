@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
@@ -19,8 +19,8 @@ import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-ico
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
-import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
-import { useFeatures, useInstance } from '@/common/instance';
+import { setUniqueColors } from '@/common/colors';
+import { type InstanceContextType, useFeatures, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import { useSiteWithSetter } from '@/context/site';
 import {
@@ -241,6 +241,80 @@ export default function DimensionalNodeVisualisation({
   }
   // Create indices for filtering values
   const yearIndices = filteredYears.map((year) => allYears.indexOf(year));
+  return { filteredYears, yearIndices, referenceYear, visibleForecastRange };
+};
+
+type DimensionalNodeVisualisationProps = {
+  title: string;
+  baselineForecast?: BaselineForecast[];
+  metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
+  startYear: number;
+  endYear: number;
+  withControls?: boolean;
+  withTools?: boolean;
+  color?: string | null;
+  onClickMeasuredEmissions?: (year: number) => void;
+  forecastTitle?: string;
+};
+
+export default function DimensionalNodeVisualisation({
+  title,
+  metric,
+  startYear,
+  withControls = true,
+  withTools = true,
+  endYear,
+  baselineForecast,
+  color,
+  onClickMeasuredEmissions,
+  forecastTitle,
+}: DimensionalNodeVisualisationProps) {
+  const { t } = useTranslation();
+  const activeGoal = useReactiveVar(activeGoalVar);
+  const theme = useTheme();
+  const [site] = useSiteWithSetter();
+  const instance = useInstance();
+
+  const scenarios = site?.scenarios ?? [];
+  const hasProgressTracking = metricHasProgressTrackingScenario(metric, scenarios);
+  const metrics = useMemo(() => {
+    // Create DimensionalMetric class instances for the default and progress tracking
+    const defaultMetric = new DimensionalMetric(metric);
+
+    return {
+      default: defaultMetric,
+      progress: hasProgressTracking ? new DimensionalMetric(metric, 'progress_tracking') : null,
+    };
+  }, [metric, hasProgressTracking]);
+
+  // Slice config defines the dimension (dimensionId) and categories (categories[]) we are currently visualizing
+  // Slice config is affected by the active goal and user selections
+  const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
+  const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
+
+  /* DO WE NEED THE UseEffect HERE? REMOVED FOR NOW */
+
+  // Get all sliceable dimensions for the current slice config
+  const sliceableDims = metrics.default.dimensions.filter((dim) => !sliceConfig.categories[dim.id]);
+  // Get the dimension that is currently sliced by
+  const slicedDim = metrics.default.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
+
+  const slice: MetricSlice = slicedDim
+    ? metrics.default.sliceBy(slicedDim.id, true, sliceConfig.categories)
+    : metrics.default.flatten(sliceConfig.categories);
+
+  const goals = metrics.default.getGoalsForChoice(sliceConfig.categories);
+  const showBaseline =
+    baselineForecast && site?.baselineName && instance.features?.baselineVisibleInGraphs;
+
+  // Define current year setup
+  const { filteredYears, yearIndices, referenceYear, visibleForecastRange } = getFilteredYears(
+    slice,
+    metric,
+    instance,
+    startYear,
+    endYear
+  );
 
   const filteredProgressValues: number[] = [];
   const filteredProgressYears: number[] = [];
@@ -363,29 +437,18 @@ export default function DimensionalNodeVisualisation({
     : null;
 
   // Define colors for the categories
-
   const defaultColor = color || theme.graphColors.blue070;
   const categoryColors: string[] = [];
-  const nrCats = slice.categoryValues.length;
 
-  if (nrCats > 1) {
-    // If we were asked to use a specific color, we generate the color scheme around it.
-    if (color) {
-      setUniqueColors(
-        slice.categoryValues,
-        (cv) => cv.color,
-        (cv, color) => {
-          cv.color = color;
-        },
-        defaultColor
-      );
-      categoryColors.push(...slice.categoryValues.map((cv) => cv.color ?? defaultColor));
-    } else {
-      categoryColors.push(...genColorsFromTheme(theme, slice.categoryValues.length));
-    }
-  } else {
-    categoryColors[0] = defaultColor;
-  }
+  setUniqueColors(
+    slice.categoryValues,
+    (cv) => cv.color,
+    (cv, color) => {
+      cv.color = color;
+    },
+    defaultColor
+  );
+  categoryColors.push(...slice.categoryValues.map((cv) => cv.color ?? defaultColor));
 
   // Check if the data has any negative values, in order to decide if we want to show the total line
   // We could use the user selected year range here only, but let's show the total line even if negative values are filtered out
@@ -396,7 +459,7 @@ export default function DimensionalNodeVisualisation({
   );
 
   // Let's create UI for selecting dimensions and categories
-  const hasGroups = cube.dimensions.some((dim) => dim.groups.length); // Typically direct & indirect emissions
+  const hasGroups = metrics.default.dimensions.some((dim) => dim.groups.length); // Typically direct & indirect emissions
 
   const controls =
     withControls && (metric.dimensions.length > 1 || hasGroups) ? (
@@ -408,12 +471,12 @@ export default function DimensionalNodeVisualisation({
                 id="dimension"
                 className="flex-grow-1"
                 label={t('plot-choose-dimension')}
-                onChange={(val) =>
+                onChange={(val) => {
                   setSliceConfig((old) => ({
                     ...old,
                     dimensionId: val?.id || undefined,
-                  }))
-                }
+                  }));
+                }}
                 options={sliceableDims}
                 value={sliceableDims.find((dim) => sliceConfig.dimensionId === dim.id) || null}
                 isMulti={false}
@@ -421,8 +484,9 @@ export default function DimensionalNodeVisualisation({
               />
             </Grid>
           )}
-          {cube.dimensions.map((dim) => {
-            const options = cube.getOptionsForDimension(dim.id, sliceConfig.categories);
+
+          {metrics.default.dimensions.map((dim) => {
+            const options = metrics.default.getOptionsForDimension(dim.id, sliceConfig.categories);
             return (
               <Grid size={{ md: 4 }} sx={{ display: 'flex' }} key={dim.id}>
                 <SelectDropdown
@@ -436,7 +500,7 @@ export default function DimensionalNodeVisualisation({
                   isClearable={true}
                   onChange={(newValues) => {
                     setSliceConfig((old) => {
-                      return cube.updateChoice(dim, old, newValues);
+                      return metrics.default.updateChoice(dim, old, newValues);
                     });
                   }}
                 />
@@ -459,7 +523,7 @@ export default function DimensionalNodeVisualisation({
           baselineTable={baselineTable}
           progressTable={progressTable}
           totalTable={totalTable}
-          unit={getLongUnit(cube, metric.unit.htmlShort, t)}
+          unit={getLongUnit(metrics.default, metric.unit.htmlShort, t)}
           referenceYear={referenceYear}
           forecastRange={visibleForecastRange}
           categoryColors={categoryColors}
