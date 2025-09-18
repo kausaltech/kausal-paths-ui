@@ -209,7 +209,7 @@ export default function NodePage() {
                     metric={node.metricDim}
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
-                    // color={node.color}
+                    color={node.color}
                   />
                 </ContentWrapper>
               ) : (

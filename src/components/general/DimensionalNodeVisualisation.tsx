@@ -19,7 +19,7 @@ import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-ico
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
-import { setUniqueColors } from '@/common/colors';
+import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
 import { type InstanceContextType, useFeatures, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import { useSiteWithSetter } from '@/context/site';
@@ -274,7 +274,6 @@ export default function DimensionalNodeVisualisation({
   const theme = useTheme();
   const [site] = useSiteWithSetter();
   const instance = useInstance();
-
   const scenarios = site?.scenarios ?? [];
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, scenarios);
   const metrics = useMemo(() => {
@@ -456,18 +455,32 @@ export default function DimensionalNodeVisualisation({
       : null;
 
   // Define colors for the categories
-  const defaultColor = color || theme.graphColors.blue070;
+  const defaultColor = color || theme.graphColors.blue050;
   const categoryColors: string[] = [];
+  const someCategoriesHaveColorSet = slice.categoryValues.some((cv) => cv.color);
 
-  setUniqueColors(
-    slice.categoryValues,
-    (cv) => cv.color,
-    (cv, color) => {
-      cv.color = color;
-    },
-    defaultColor
-  );
-  categoryColors.push(...slice.categoryValues.map((cv) => cv.color ?? defaultColor));
+  if (dataCategories.length > 1) {
+    // If we were asked to use a specific color, we generate the color scheme around it.
+    // But always use category set color if available
+    if (color || someCategoriesHaveColorSet) {
+      // This mutates the slice.categoryValues array!!
+      setUniqueColors(
+        slice.categoryValues,
+        (cv) => cv.color,
+        (cv, color) => {
+          cv.color = color;
+        },
+        defaultColor
+      );
+      categoryColors.push(...slice.categoryValues.map((cv) => cv.color ?? defaultColor));
+    } else {
+      // If no specific color was provided, we generate a color scheme from the theme
+      categoryColors.push(...genColorsFromTheme(theme, dataCategories.length));
+    }
+  } else {
+    // If there is only one category, we use the default color
+    categoryColors.push(defaultColor);
+  }
 
   // Check if the data has any negative values, in order to decide if we want to show the total line
   // We could use the user selected year range here only, but let's show the total line even if negative values are filtered out
@@ -551,7 +564,7 @@ export default function DimensionalNodeVisualisation({
           categoryColors={categoryColors}
           maximumFractionDigits={useFeatures().maximumFractionDigits ?? undefined}
           baselineLabel={site?.baselineName}
-          showTotalLine={hasNegativeValues && metric.stackable}
+          showTotalLine={hasNegativeValues && metric.stackable && dataCategories.length > 1}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
           forecastTitle={forecastTitle}
           stackable={metric.stackable}
