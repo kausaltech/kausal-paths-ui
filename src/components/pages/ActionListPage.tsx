@@ -3,18 +3,18 @@ import { useMemo, useState } from 'react';
 import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import {
-  ToggleButton,
-  ToggleButtonGroup,
   Box,
+  Container,
   FormControl,
   FormLabel,
-  Select,
+  Grid,
   MenuItem,
-  Container,
+  Select,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'next-i18next';
-import { Col, Row } from 'reactstrap';
 
 import {
   DecisionLevel,
@@ -131,10 +131,10 @@ const getSortOptions = (
   hasEfficiency: boolean,
   showAccumulatedEffects: boolean
 ): SortActionsConfig[] => [
-  { 
-    key: 'STANDARD', 
-    label: t('actions-sort-default')
-   },
+  {
+    key: 'STANDARD',
+    label: t('actions-sort-default'),
+  },
   {
     isHidden: !hasEfficiency,
     key: 'CUM_EFFICIENCY',
@@ -146,10 +146,10 @@ const getSortOptions = (
     key: 'CUM_IMPACT',
     label: t('actions-sort-cumulative-impact'),
   },
-  { 
-    key: 'IMPACT', 
-    label: t('actions-sort-impact'), 
-    sortKey: 'impactOnTargetYear' 
+  {
+    key: 'IMPACT',
+    label: t('actions-sort-impact'),
+    sortKey: 'impactOnTargetYear',
   },
   {
     isHidden: !hasEfficiency,
@@ -193,7 +193,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   const actionListResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
     GET_ACTION_LIST,
     {
-      variables: { 
+      variables: {
         goal: activeGoal?.id ?? null,
       },
       fetchPolicy: 'cache-and-network',
@@ -260,7 +260,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           );
           out.unitAdjustmentMultiplier = efficiencyAction.unitAdjustmentMultiplier ?? undefined;
           if (out.unitAdjustmentMultiplier !== undefined)
-            out.cumulativeEfficiency = 
+            out.cumulativeEfficiency =
               (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
 
           const efficiencyProps: Partial<ActionWithEfficiency> = {
@@ -312,8 +312,12 @@ function ActionListPage({ page }: ActionListPageProps) {
     hasEfficiency
       ? getViewOption('mac', t('actions-as-efficiency'), 'chartColumn')
       : getViewOption('comparison', t('actions-as-comparison'), 'chartColumn'),
-    ...(showCostBenefitAnalysis ? [getViewOption('cost-benefit', t('cost-benefit'), 'chartColumn')] : []),
-    ...(showReturnOnInvestment ? [getViewOption('roi', t('return-on-investment'), 'chartColumn')] : []),
+    ...(showCostBenefitAnalysis
+      ? [getViewOption('cost-benefit', t('cost-benefit'), 'chartColumn')]
+      : []),
+    ...(showReturnOnInvestment
+      ? [getViewOption('roi', t('return-on-investment'), 'chartColumn')]
+      : []),
     ...(showSimpleEffect ? [getViewOption('simple', t('simple-effect'), 'chartColumn')] : []),
   ];
 
@@ -338,13 +342,11 @@ function ActionListPage({ page }: ActionListPageProps) {
       >
         <ScenarioPanel />
         <SettingsForm className="text-light mt-4">
-          <Row>
+          <Grid container spacing={2}>
             {hasEfficiency && (
-              <Col md={4} className="d-flex">
+              <Grid size={{ md: 4 }} sx={{ display: 'flex' }}>
                 <StyledFormControl>
-                  <StyledFormLabel htmlFor="impact">
-                    {t('actions-impact-on')}
-                  </StyledFormLabel>
+                  <StyledFormLabel htmlFor="impact">{t('actions-impact-on')}</StyledFormLabel>
                   <StyledSelect
                     id="impact"
                     value={activeEfficiency}
@@ -358,15 +360,13 @@ function ActionListPage({ page }: ActionListPageProps) {
                     ))}
                   </StyledSelect>
                 </StyledFormControl>
-              </Col>
+              </Grid>
             )}
 
             {actionGroups.length > 1 && (
-              <Col md={4} className="d-flex">
+              <Grid size={{ md: 4 }} sx={{ display: 'flex' }}>
                 <StyledFormControl>
-                  <StyledFormLabel htmlFor="type">
-                    {t('actions-group-type')}
-                  </StyledFormLabel>
+                  <StyledFormLabel htmlFor="type">{t('actions-group-type')}</StyledFormLabel>
                   <StyledSelect
                     id="type"
                     value={actionGroup}
@@ -381,15 +381,13 @@ function ActionListPage({ page }: ActionListPageProps) {
                     ))}
                   </StyledSelect>
                 </StyledFormControl>
-              </Col>
+              </Grid>
             )}
 
-            <Col md={4} className="d-flex">
+            <Grid size={{ md: 4 }} sx={{ display: 'flex' }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-end', mr: 1.5 }}>
                 <StyledFormControl>
-                  <StyledFormLabel htmlFor="sort">
-                    {t('actions-sort-by')}
-                  </StyledFormLabel>
+                  <StyledFormLabel htmlFor="sort">{t('actions-sort-by')}</StyledFormLabel>
                   <StyledSelect
                     id="sort"
                     value={sortBy.key}
@@ -425,8 +423,8 @@ function ActionListPage({ page }: ActionListPageProps) {
                   </SortButtons>
                 </StyledFormControl>
               </Box>
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
         </SettingsForm>
         <ActionCount>
           <div>{t('actions-count', { count: displayedActionsCount })}</div>
@@ -440,7 +438,7 @@ function ActionListPage({ page }: ActionListPageProps) {
               id="view-select-label"
               sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
             >
-             {t('show')}
+              {t('show')}
             </ShowLabel>
 
             <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
@@ -466,61 +464,57 @@ function ActionListPage({ page }: ActionListPageProps) {
       </ViewSelectorBar>
 
       <Container fixed maxWidth="xl" sx={{ mb: 5 }}>
-        <Row>
-          <Col>
-            {listType === 'list' && (
-              <ActionsList
-                id="list-view"
-                actions={usableActions}
-                actionGroups={actionGroups}
-                displayType="displayTypeYearly"
-                yearRange={yearRange}
-                sortBy={sortBy}
-                sortAscending={ascending}
-                refetching={areActionsLoading}
-                onChangeSort={(key) => {
-                  handleChangeSort(key);
-                  setAscending(true);
-                }}
-                onToggleSortDirection={() => {
-                  setAscending((prev) => !prev);
-                }}
-              />
-            )}
-            {listType === 'mac' && (
-              <ActionsMac
-                id="efficiency-view"
-                actions={usableActions}
-                impactOverviews={data.impactOverviews[activeEfficiency]}
-                t={t}
-                actionGroups={data.instance.actionGroups}
-                sortBy={sortBy.sortKey}
-                sortAscending={ascending}
-                refetching={areActionsLoading}
-              />
-            )}
-            {listType === 'cost-benefit' && (
-              <CostBenefitAnalysis data={impactResp.data} isLoading={impactResp.loading} />
-            )}
-            {listType === 'roi' && (
-              <ReturnOnInvestment data={impactResp.data} isLoading={impactResp.loading} />
-            )}
-            {listType === 'simple' && (
-              <SimpleEffect data={impactResp.data} isLoading={impactResp.loading} />
-            )}
-            {listType === 'comparison' && (
-              <ActionsComparison
-                id="comparison-view"
-                actions={usableActions}
-                actionGroups={data.instance.actionGroups}
-                sortBy={sortBy.sortKey}
-                sortAscending={ascending}
-                refetching={areActionsLoading}
-                displayYears={yearRange}
-              />
-            )}
-          </Col>
-        </Row>
+        {listType === 'list' && (
+          <ActionsList
+            id="list-view"
+            actions={usableActions}
+            actionGroups={actionGroups}
+            displayType="displayTypeYearly"
+            yearRange={yearRange}
+            sortBy={sortBy}
+            sortAscending={ascending}
+            refetching={areActionsLoading}
+            onChangeSort={(key) => {
+              handleChangeSort(key);
+              setAscending(true);
+            }}
+            onToggleSortDirection={() => {
+              setAscending((prev) => !prev);
+            }}
+          />
+        )}
+        {listType === 'mac' && (
+          <ActionsMac
+            id="efficiency-view"
+            actions={usableActions}
+            impactOverviews={data.impactOverviews[activeEfficiency]}
+            t={t}
+            actionGroups={data.instance.actionGroups}
+            sortBy={sortBy.sortKey}
+            sortAscending={ascending}
+            refetching={areActionsLoading}
+          />
+        )}
+        {listType === 'cost-benefit' && (
+          <CostBenefitAnalysis data={impactResp.data} isLoading={impactResp.loading} />
+        )}
+        {listType === 'roi' && (
+          <ReturnOnInvestment data={impactResp.data} isLoading={impactResp.loading} />
+        )}
+        {listType === 'simple' && (
+          <SimpleEffect data={impactResp.data} isLoading={impactResp.loading} />
+        )}
+        {listType === 'comparison' && (
+          <ActionsComparison
+            id="comparison-view"
+            actions={usableActions}
+            actionGroups={data.instance.actionGroups}
+            sortBy={sortBy.sortKey}
+            sortAscending={ascending}
+            refetching={areActionsLoading}
+            displayYears={yearRange}
+          />
+        )}
       </Container>
     </>
   );

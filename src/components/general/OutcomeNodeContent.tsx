@@ -11,7 +11,6 @@ import {
   Table,
   ThreeDotsVertical,
 } from 'react-bootstrap-icons';
-import { TabContent } from 'reactstrap';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
@@ -30,7 +29,7 @@ import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 
 const ContentWrapper = styled.div`
   min-height: 300px;
-  max-height: 1000px;
+  max-height: 600px;
   overflow-y: auto;
   padding: 1rem;
   background-color: ${({ theme }) => theme.cardBackground.primary};
@@ -284,8 +283,8 @@ const OutcomeNodeContent = ({
               showDistribution={showDistribution}
             />
           </Box>
-          <TabContent
-            activeTab={activeTabId}
+
+          <div
             id={`${node.id}-panel-${activeTabId}`}
             role="tabpanel"
             tabIndex={0}
@@ -309,7 +308,7 @@ const OutcomeNodeContent = ({
                 endYear={endYear}
               />
             )}
-          </TabContent>
+          </div>
         </ContentWrapper>
       </CardContent>
     </div>

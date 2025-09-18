@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
-import round from 'lodash/round';
+import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
@@ -11,7 +11,7 @@ import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
-const formatValue = (value: number, unit: string) => `${round(value, 2)} ${unit}`;
+const formatValue = (value: number | null, unit: string) => `${(value || 0).toFixed(2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
@@ -38,7 +38,7 @@ function getChartConfig(
                     }
 
                     return {
-                      totalCost: totalCost + (action.costDim.values[index] ?? 0),
+                      totalCost: totalCost + (action.costDim?.values[index] ?? 0),
                       totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
                     };
                   },
@@ -47,7 +47,8 @@ function getChartConfig(
 
                 const roi =
                   totals.totalCost > 0
-                    ? (totals.totalEffect / totals.totalCost) * action.unitAdjustmentMultiplier
+                    ? (totals.totalEffect / totals.totalCost) *
+                      (action.unitAdjustmentMultiplier ?? 1)
                     : null;
 
                 return {
@@ -103,9 +104,9 @@ function getChartConfig(
           show: true,
           align: 'left',
           position: 'right',
-          formatter(params) {
-            const activeIndex = params.encode?.x[0];
-            const value = activeIndex ? params.value?.[activeIndex] : null;
+          formatter(params: CallbackDataParams) {
+            const activeIndex: number | undefined = params.encode?.x[0];
+            const value: number | null = activeIndex ? Number(params.value?.[activeIndex]) : null;
 
             return value ? formatValue(value, unit) : '';
           },
@@ -130,8 +131,9 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const d = data?.impactOverviews.find(({ graphType }) => graphType === 'return_on_investment');
   const bars = d?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = d.label || t('return-on-investment');
-  const subtitle = d.indicatorLabel || t('return-on-invetment-subtitle');
+  const title = d?.label || t('return-on-investment');
+  // TODO: Add subtitle translation return-on-investment-subtitle
+  const subtitle = d?.indicatorLabel || '';
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

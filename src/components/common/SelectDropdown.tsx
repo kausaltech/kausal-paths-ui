@@ -3,6 +3,7 @@ import React from 'react';
 import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { FormControl } from '@mui/material';
 import Highlighter from 'react-highlight-words';
 import Select, {
   type GroupBase,
@@ -12,13 +13,14 @@ import Select, {
   type ValueContainerProps as SelectValueContainerProps,
   components,
 } from 'react-select';
-import { Label as BSLabel, FormGroup } from 'reactstrap';
 
 import PopoverTip from '@/components/common/PopoverTip';
 
-const Label = styled(BSLabel)`
-  font-weight: ${(props) => props.theme.formLabelFontWeight};
-  line-height: ${(props) => props.theme.lineHeightSm};
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizeSm};
+  font-weight: ${({ theme }) => theme.formLabelFontWeight};
+  line-height: ${({ theme }) => theme.lineHeightMd};
+  margin-bottom: ${({ theme }) => theme.spaces.s050};
 `;
 
 function getSelectStyles<
@@ -56,12 +58,12 @@ function getSelectStyles<
       maxWidth: `${multi ? '80%' : '100%'}`,
       color: `var(--bs-select${isDisabled ? '-disabled' : ''}-color)`,
     }),
-    valueContainer: (provided, state) => ({
+    valueContainer: (provided) => ({
       ...provided,
       padding:
         `calc(var(--bs-select-padding-y${suffix})) ` + `calc(var(--bs-select-padding-x${suffix}))`,
     }),
-    dropdownIndicator: (provided, state) => ({
+    dropdownIndicator: () => ({
       height: '100%',
       width: 'var(--bs-select-indicator-padding)',
       backgroundImage: 'var(--bs-select-indicator)',
@@ -69,12 +71,12 @@ function getSelectStyles<
       backgroundPosition: `right var(--bs-select-padding-x) center`,
       backgroundSize: 'var(--bs-select-bg-size)',
     }),
-    input: ({ margin, paddingTop, paddingBottom, ...provided }, state) => ({
+    input: ({ margin, paddingTop, paddingBottom, ...provided }) => ({
       ...provided,
     }),
     option: (provided, state) => {
-      const { isSelected, isFocused, data } = state;
-      const { indent } = data;
+      const { isSelected, isFocused } = state;
+      //const { indent } = data;
       const ret = {
         ...provided,
         color: theme.themeColors.black,
@@ -88,21 +90,21 @@ function getSelectStyles<
       };
       return ret;
     },
-    menu: ({ marginTop, ...provided }, state) => ({
+    menu: ({ marginTop, ...provided }) => ({
       ...provided,
     }),
-    multiValue: (provided, state) => ({
+    multiValue: (provided) => ({
       ...provided,
       margin: `calc(var(--bs-select-padding-y${suffix})/2) calc(var(--bs-select-padding-x${suffix})/2)`,
     }),
-    clearIndicator: ({ padding, ...provided }, state) => ({
+    clearIndicator: ({ padding, ...provided }) => ({
       ...provided,
       alignItems: 'center',
       justifyContent: 'center',
       height: '100%',
       width: 'var(--bs-select-indicator-padding)',
     }),
-    multiValueLabel: ({ padding, paddingLeft, fontSize, ...provided }, state) => ({
+    multiValueLabel: ({ padding, paddingLeft, fontSize, ...provided }) => ({
       ...provided,
       padding: `0 var(--bs-select-padding-y${suffix})`,
       whiteSpace: 'normal',
@@ -122,7 +124,6 @@ const DropdownIndicator: typeof components.DropdownIndicator = (props) => {
 function getSelectTheme(theme: SelectTheme) {
   const ret: SelectTheme = {
     ...theme,
-    // @ts-ignore
     colors: {
       ...theme.colors,
       primary: 'var(--bs-light)',
@@ -148,7 +149,7 @@ function ValueContainer<
   const { children, ...rest } = props;
   let realChildren = children;
   if (Array.isArray(children)) {
-    const [firstChild, ...remainingChildren] = children;
+    const [firstChild, ...remainingChildren] = children as React.ReactNode[];
     /**
      * For multi-selections, we only show the first selection as
      * a label and the other selections just as "+ <n>".
@@ -218,9 +219,9 @@ function SelectDropdown<
   const theme = useTheme();
   const styles = getSelectStyles<Option, IsMulti, Group>(theme, props.isMulti === true, size);
   return (
-    <FormGroup className={className}>
+    <FormControl className={className}>
       {label && (
-        <Label for={id}>
+        <Label htmlFor={id}>
           {label}
           {helpText && <PopoverTip content={helpText} />}
         </Label>
@@ -241,7 +242,7 @@ function SelectDropdown<
             <Highlighter highlightTag="b" searchWords={[inputValue]} textToHighlight={label} />
           );
           if (context === 'value' || !indent) return highlighted;
-          const spans: JSX.Element[] = [];
+          const spans: React.JSX.Element[] = [];
           for (let i = 0; i < indent; i++) {
             spans.push(
               <span
@@ -260,7 +261,7 @@ function SelectDropdown<
         onChange={onChange}
         {...rest}
       />
-    </FormGroup>
+    </FormControl>
   );
 }
 export default SelectDropdown;

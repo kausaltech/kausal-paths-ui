@@ -101,11 +101,6 @@
       "count": 3
     }
   },
-  "src/components/general/DataTable.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 13
-    }
-  },
   "src/components/general/DimensionalBarGraph.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
@@ -119,34 +114,6 @@
       "count": 2
     }
   },
-  "src/components/general/GlobalParameters.tsx": {
-    "@typescript-eslint/no-empty-object-type": {
-      "count": 1
-    },
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    }
-  },
-  "src/components/general/GoalOutcomeBar.tsx": {
-    "@typescript-eslint/no-empty-object-type": {
-      "count": 1
-    },
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 7
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 8
-    },
-    "react-compiler/react-compiler": {
-      "count": 2
-    },
-    "react-hooks/rules-of-hooks": {
-      "count": 2
-    }
-  },
   "src/components/general/IcicleGraph.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 13
@@ -155,14 +122,6 @@
   "src/components/general/LanguageSelector.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 3
-    },
-    "react-compiler/react-compiler": {
-      "count": 1
-    }
-  },
-  "src/components/general/NodeLinks.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
     },
     "react-compiler/react-compiler": {
       "count": 1
@@ -207,14 +166,6 @@
   },
   "src/components/graphs/DimensionalFlow.tsx": {
     "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/components/graphs/MacGraph.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "react-compiler/react-compiler": {
       "count": 1
     }
   },

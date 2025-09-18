@@ -6,8 +6,8 @@ import { useRouter } from 'next/router';
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Container, Grid } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Col, Container, Row } from 'reactstrap';
 
 import type {
   GetActionContentQuery,
@@ -246,7 +246,7 @@ export default function ActionPage() {
         </title>
       </Head>
       <HeaderSection>
-        <Container fluid="lg">
+        <Container fixed maxWidth="xl">
           <PageHeader>
             <HeaderCard>
               <Breadcrumb aria-label="breadcrumb">
@@ -267,8 +267,8 @@ export default function ActionPage() {
                   </ActionCategory>
                 )}
               </div>
-              <Row>
-                <Col xs={12} md={7} className="mb-4">
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 7 }} sx={{ mb: 2 }}>
                   {!!action.goal && (
                     <ActionGoal
                       dangerouslySetInnerHTML={{
@@ -288,26 +288,26 @@ export default function ActionPage() {
                       </a>
                     </NodeLink>
                   </ActionDescription>
-                </Col>
-                <Col xs={12} md={5} className="mb-md-4">
+                </Grid>
+                <Grid size={{ xs: 12, md: 5 }} sx={{ mb: 2 }}>
                   <ActionMetrics>
                     <MetricsParameters>
                       <ActionParameters parameters={action.parameters} />
                     </MetricsParameters>
                   </ActionMetrics>
-                </Col>
-              </Row>
+                </Grid>
+              </Grid>
             </HeaderCard>
           </PageHeader>
         </Container>
       </HeaderSection>
-      <Container fluid="lg" style={{ position: 'relative' }}>
+      <Container fixed maxWidth="xl" sx={{ position: 'relative' }}>
         {loading && <Loader />}
         {!!actionPlot && <ActionPlotCard>{actionPlot}</ActionPlotCard>}
       </Container>
 
       {!!action.body?.length && (
-        <Container fluid="lg">
+        <Container fixed maxWidth="xl">
           <ActionBodyContainer>
             {action.body.map((block, i) => (
               <StreamField key={i} block={block} />

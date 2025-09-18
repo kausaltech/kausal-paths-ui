@@ -7,8 +7,6 @@
     "dev:inspect": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
     "graphql-codegen": "graphql-codegen --config codegen.ts",
     "prettier:fix": "prettier ./ --write",
     "typecheck": "tsc --noEmit",
@@ -122,10 +120,6 @@
     "@graphql-eslint/eslint-plugin": "^4.4.0",
     "@next/eslint-plugin-next": "^15.5.2",
     "@sentry/cli": "^2.52.0",
-    "@storybook/addon-actions": "^9.0.8",
-    "@storybook/addon-essentials": "^9.0.0-alpha.12",
-    "@storybook/addon-links": "^9.0.13",
-    "@storybook/react": "^9.0.13",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/chroma-js": "^3.1.1",
     "@types/cookie-parser": "^1.4.9",
@@ -161,7 +155,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-storybook": "^9.0.13",
     "graphql-config": "^5.1.5",
     "husky": "^9.1.7",
     "monocart-coverage-reports": "^2.12.6",
@@ -182,8 +175,8 @@
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
       "prettier --write",
-      "pnpm lint:baseline --",
-      "pnpm typecheck:baseline --"
+      "pnpm run lint:baseline --",
+      "pnpm run typecheck:baseline --"
     ],
     "*.{css,scss,md,json}": "prettier --write"
   },

@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { CircularProgress } from '@mui/material';
+import { Alert, CircularProgress, Container } from '@mui/material';
 import { remove } from 'lodash';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
-import { Alert, Container } from 'reactstrap';
 
 import type { GetActionContentQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -214,7 +213,7 @@ const CausalGrid = ({
 
   if (nodes.length === 0) {
     return (
-      <Container fluid="lg" className="pt-5">
+      <Container fixed maxWidth="xl" className="pt-5">
         <Alert color="warning">Action has no nodes</Alert>
       </Container>
     );
@@ -304,7 +303,7 @@ const CausalGrid = ({
     >
       <GridSection>
         {!!nodeOutcomeCards && nodeOutcomeCards.length > 1 && (
-          <StyledImpactsContainer fluid="lg">
+          <StyledImpactsContainer fixed>
             <StyledOutcomeCardContainer>
               <hr />
               <h5>{t('outcomes')}</h5>
@@ -421,7 +420,7 @@ const CausalGrid = ({
         </div>
       </GridSection>
       <GoalSection>
-        <Container fluid="lg">
+        <Container fixed maxWidth="xl">
           <ArcherElement id={lastNode.id}>
             <div>
               <GoalCard>
@@ -452,7 +451,7 @@ const CausalGrid = ({
             </div>
           </ArcherElement>
         </Container>
-        <Container fluid="lg">
+        <Container fixed maxWidth="xl" sx={{ mb: 5 }}>
           {lastNode.metric && (
             <NodePlotCard>
               <NodePlot
