@@ -4,9 +4,11 @@ import dynamic from 'next/dynamic';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import { Grid } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { Col, Row } from 'reactstrap';
+import type Plotly from 'plotly.js';
 
+import type { GetActionListQuery } from '@/common/__generated__/graphql';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
@@ -58,11 +60,42 @@ const EmptyPlot = styled.div`
   margin: 0 0 2rem;
 `;
 
-const formatNumber = (value, language) => {
+const formatNumber = (value, language: string) => {
   return parseFloat(Number(value).toPrecision(3)).toLocaleString(language);
 };
 
-function MacGraph(props) {
+/*
+  const macData = {
+    ids: sortedActions.map((action) => action.id),
+    actions: sortedActions.map((action) => action.name),
+    colors: sortedActions.map((action) => action.color || action.group?.color),
+    groups: sortedActions.map((action) => action.group?.id),
+    cost: sortedActions.map((action) => action.cumulativeCost),
+    efficiency: sortedActions.map((action) => action.cumulativeEfficiency),
+    impact: sortedActions.map((action) => action.cumulativeImpact),
+  };
+*/
+type MacGraphProps = {
+  data: {
+    ids: string[];
+    actions: string[];
+    colors: string[];
+    groups: string[];
+    cost: number[];
+    efficiency: number[];
+    impact: number[];
+  };
+  effectUnit: string;
+  impactName: string;
+  indicatorUnit: string;
+  efficiencyName: string;
+  actionIds: string[];
+  costName: string;
+  costUnit: string;
+  actionGroups: GetActionListQuery['instance']['actionGroups'];
+};
+
+function MacGraph(props: MacGraphProps) {
   const {
     data,
     effectUnit,
@@ -77,10 +110,7 @@ function MacGraph(props) {
   const theme = useTheme();
   const { i18n, t } = useTranslation();
 
-  const barHoverColor = theme.graphColors.green090;
-
-  const [barColors, setBarColors] = useState(data.colors);
-  const [hoverId, setHoverId] = useState(null);
+  const [hoverId, setHoverId] = useState<number | null>(null);
 
   useEffect(() => {
     // Update the document title using the browser API
@@ -92,28 +122,37 @@ function MacGraph(props) {
 
   const isEmpty = data.actions?.length < 1;
 
-  let totalSaving = 0;
-  let negativeSideWidth = 0;
-  const xPlacement = data['impact'].map((bar) => {
-    const barWidth = Math.abs(bar);
-    if (bar < 0) {
-      negativeSideWidth += barWidth;
-      return -negativeSideWidth + barWidth - barWidth / 2;
-    }
-    totalSaving += barWidth;
-    return totalSaving - barWidth + barWidth / 2;
-  });
+  const { xPlacement, negativeSideWidth } = useMemo(() => {
+    const result = data['impact'].reduce(
+      (acc, bar) => {
+        const barWidth = Math.abs(bar);
+        if (bar < 0) {
+          const newNegativeSideWidth = acc.negativeSideWidth + barWidth;
+          acc.xPlacement.push(-newNegativeSideWidth + barWidth - barWidth / 2);
+          acc.negativeSideWidth = newNegativeSideWidth;
+        } else {
+          const newTotalSaving = acc.totalSaving + barWidth;
+          acc.xPlacement.push(newTotalSaving - barWidth + barWidth / 2);
+          acc.totalSaving = newTotalSaving;
+        }
+        return acc;
+      },
+      { xPlacement: [] as number[], negativeSideWidth: 0, totalSaving: 0 }
+    );
 
-  const negativeSide = useMemo(
+    return { xPlacement: result.xPlacement, negativeSideWidth: result.negativeSideWidth };
+  }, [data]);
+
+  const negativeSide = useMemo<Partial<Plotly.Shape>[]>(
     () =>
       negativeSideWidth > 0
         ? [
             {
-              type: 'rect',
+              type: 'rect' as const,
               // x-reference is assigned to the x-values
-              xref: 'x',
+              xref: 'x' as const,
               // y-reference is assigned to the plot paper [0,1]
-              yref: 'paper',
+              yref: 'paper' as const,
               x0: -negativeSideWidth,
               y0: 0,
               x1: 0,
@@ -125,9 +164,9 @@ function MacGraph(props) {
               },
             },
             {
-              type: 'line',
-              xref: 'x',
-              yref: 'paper',
+              type: 'line' as const,
+              xref: 'x' as const,
+              yref: 'paper' as const,
               x0: 0,
               y0: 0,
               x1: 0,
@@ -145,7 +184,7 @@ function MacGraph(props) {
   const layout = useMemo(
     () => ({
       height: 450,
-      barmode: 'relative',
+      barmode: 'relative' as const,
       hoverlabel: {
         bgcolor: theme.themeColors.white,
         bordercolor: theme.graphColors.grey030,
@@ -154,7 +193,7 @@ function MacGraph(props) {
           color: theme.graphColors.grey090,
         },
       },
-      hovermode: 'x unified',
+      hovermode: 'x unified' as const,
       hoverdistance: 10,
       yaxis: {
         title: {
@@ -183,9 +222,9 @@ function MacGraph(props) {
   );
 
   const handleHover = useCallback(
-    (evt) => {
+    (evt: Plotly.PlotHoverEvent) => {
       // console.log("HOVERED", evt);
-      const hoveredIndex = evt.points[0].pointIndex;
+      const hoveredIndex: number = evt.points[0].pointIndex;
       //const hoverColors = data.colors;
       //hoverColors[hoveredIndex] = "#333";
       //setBarColors(hoverColors);
@@ -234,7 +273,7 @@ function MacGraph(props) {
           onHover={(evt) => handleHover(evt)}
         />
       ),
-    [data, theme, layout, handleHover]
+    [isEmpty, t, xPlacement, data, theme.themeColors.white, layout, handleHover]
   );
 
   return (
@@ -250,8 +289,8 @@ function MacGraph(props) {
               {data.actions[hoverId]} <Icon name="arrowRight" />
             </h4>
           </a>
-          <Row>
-            <Col md={3} className="d-flex align-items-end">
+          <Grid container spacing={2}>
+            <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{impactName}</HoverValueTitle>
                 <HoverValueValue>
@@ -259,15 +298,15 @@ function MacGraph(props) {
                 </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
-            </Col>
-            <Col md={3} className="d-flex align-items-end">
+            </Grid>
+            <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{costName}</HoverValueTitle>
                 <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: costUnit }} />
               </HoverValue>
-            </Col>
-            <Col md={3} className="d-flex align-items-end">
+            </Grid>
+            <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{efficiencyName}</HoverValueTitle>
                 <HoverValueValue>
@@ -275,8 +314,8 @@ function MacGraph(props) {
                 </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: indicatorUnit }} />
               </HoverValue>
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
         </ActionDescription>
       )}
     </GraphContainer>

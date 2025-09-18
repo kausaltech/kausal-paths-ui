@@ -5,15 +5,14 @@ import { useRouter } from 'next/router';
 
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
+import { Card, CardContent, Container } from '@mui/material';
 import { useTranslation } from 'next-i18next';
-import { CardBody, Col, Container, Row } from 'reactstrap';
 
 import { logApolloError } from '@common/logging/apollo';
 
 import type { GetNodePageQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionLink } from '@/common/links';
-import { Card } from '@/components/common/Card';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -21,7 +20,7 @@ import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
 import NodePlot from '@/components/general/NodePlot';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
 const HeaderSection = styled.div<{ $color?: string }>`
@@ -135,7 +134,7 @@ const GET_NODE_PAGE_CONTENT = gql`
 
 export default function NodePage() {
   const router = useRouter();
-  const site = useSite();
+  const [site] = useSiteWithSetter();
   const { t } = useTranslation();
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
@@ -181,7 +180,7 @@ export default function NodePage() {
         </title>
       </Head>
       <HeaderSection $color={node.color || undefined}>
-        <Container fluid="lg">
+        <Container fixed maxWidth="xl">
           <PageHeader>
             <HeaderCard>
               <div>{node.isAction && <span>{t('action')}</span>}</div>
@@ -234,20 +233,16 @@ export default function NodePage() {
       </HeaderSection>
       {node.description && (
         <NodeBodyText>
-          <Container fluid="lg">
-            <Row>
-              <Col lg={{ size: 10, offset: 1 }}>
-                <Card>
-                  <CardBody>
-                    <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
+          <Container fixed maxWidth="xl">
+            <Card>
+              <CardContent>
+                <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
+              </CardContent>
+            </Card>
           </Container>
         </NodeBodyText>
       )}
-      <Container fluid="lg">
+      <Container fixed maxWidth="xl">
         <NodeLinks outputNodes={node.outputNodes} inputNodes={node.inputNodes} />
       </Container>
     </>

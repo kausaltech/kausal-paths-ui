@@ -1,9 +1,11 @@
-import { Container } from 'reactstrap';
+import { Container, Typography } from '@mui/material';
 
 export default function ErrorMessage({ message }) {
   return (
-    <Container>
-      <h2 className="p-5">{message}</h2>
+    <Container fixed maxWidth="xl">
+      <Typography variant="h2" className="p-5">
+        {message}
+      </Typography>
     </Container>
   );
 }

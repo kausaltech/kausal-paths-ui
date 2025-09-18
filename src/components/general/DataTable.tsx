@@ -1,30 +1,35 @@
-import styled from '@emotion/styled';
-import { Table } from 'reactstrap';
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 
+import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 import { formatNumber } from '@/common/preprocess';
 
-const TableWrapper = styled.div`
-  margin: 0 auto;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
-  width: calc(100% - 1rem);
-  bottom: -1rem;
-  max-height: 100%;
-  z-index: 1;
-  scroll-behavior: smooth;
-  font-size: 70%;
-`;
+type DataTableProps = {
+  node: OutcomeNodeFieldsFragment;
+  subNodes: OutcomeNodeFieldsFragment[];
+  startYear: number;
+  endYear: number;
+};
 
-const DataTable = (props) => {
+const DataTable = (props: DataTableProps) => {
   const { node, subNodes, startYear, endYear } = props;
   const { t, i18n } = useTranslation();
-  const totalHistoricalValues = node.metric.historicalValues.filter(
+
+  const metric = node.metric!;
+
+  const totalHistoricalValues = metric.historicalValues.filter(
     (value) => value.year >= startYear && value.year <= endYear
   );
-  const totalForecastValues = node.metric.forecastValues.filter(
+  const totalForecastValues = metric.forecastValues.filter(
     (value) => value.year >= startYear && value.year <= endYear
   );
   const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
@@ -34,78 +39,83 @@ const DataTable = (props) => {
     totalForecastValues.some((val) => val.value !== null);
 
   return (
-    <TableWrapper>
+    <TableContainer component={Paper}>
       <h5>
         {node.name} ({startYear} - {endYear})
       </h5>
-      <Table bordered size="sm" responsive>
-        <thead>
-          <tr>
-            <th>{t('table-year')}</th>
-            <th>{t('table-measure-type')}</th>
+      <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+        <TableHead>
+          <TableRow>
+            <TableCell>{t('table-year')}</TableCell>
+            <TableCell>{t('table-measure-type')}</TableCell>
             {subNodes?.map((subNode) => (
-              <th key={subNode.id}>{subNode.name}</th>
+              <TableCell key={subNode.id}>{subNode.name}</TableCell>
             ))}
-            {hasTotalValues && <th>{node.metric.name}</th>}
-            <th>{t('table-unit')}</th>
-          </tr>
-        </thead>
-        <tbody>
+            {hasTotalValues && <TableCell>{metric.name}</TableCell>}
+            <TableCell>{t('table-unit')}</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {totalHistoricalValues.map((metric) => (
-            <tr key={`h-${metric.year}`}>
-              <td>{metric.year}</td>
-              <td>{t('table-historical')}</td>
+            <TableRow key={`h-${metric.year}`}>
+              <TableCell>{metric.year}</TableCell>
+              <TableCell>{t('table-historical')}</TableCell>
               {subNodes?.map((subNode) => (
-                <td key={`${subNode.id}-${metric.year}`}>
-                  {subNode.metric.historicalValues.find((value) => value.year === metric.year)
+                <TableCell key={`${subNode.id}-${metric.year}`}>
+                  {subNode?.metric?.historicalValues.find((value) => value.year === metric.year)
                     ? formatNumber(
-                        subNode.metric.historicalValues.find((value) => value.year === metric.year)
-                          .value,
+                        subNode?.metric?.historicalValues.find(
+                          (value) => value.year === metric.year
+                        )?.value ?? 0,
                         i18n.language,
                         maximumFractionDigits
                       )
                     : '-'}
-                </td>
+                </TableCell>
               ))}
               {hasTotalValues && (
-                <td>{formatNumber(metric.value, i18n.language, maximumFractionDigits)}</td>
+                <TableCell>
+                  {formatNumber(metric.value, i18n.language, maximumFractionDigits)}
+                </TableCell>
               )}
-              <td
+              <TableCell
                 dangerouslySetInnerHTML={{
-                  __html: node.metric?.unit?.htmlShort,
+                  __html: node?.metricDim?.unit?.htmlShort ?? '',
                 }}
               />
-            </tr>
+            </TableRow>
           ))}
           {totalForecastValues.map((metric) => (
-            <tr key={`f-${metric.year}`}>
-              <td>{metric.year}</td>
-              <td>{t('table-scenario-forecast')}</td>
+            <TableRow key={`f-${metric.year}`}>
+              <TableCell>{metric.year}</TableCell>
+              <TableCell>{t('table-scenario-forecast')}</TableCell>
               {subNodes?.map((subNode) => (
-                <td key={`${subNode.id}-${metric.year}`}>
-                  {subNode.metric.forecastValues.find((value) => value.year === metric.year)
+                <TableCell key={`${subNode.id}-${metric.year}`}>
+                  {subNode?.metric?.forecastValues.find((value) => value.year === metric.year)
                     ? formatNumber(
-                        subNode.metric.forecastValues.find((value) => value.year === metric.year)
-                          .value,
+                        subNode?.metric?.forecastValues.find((value) => value.year === metric.year)
+                          ?.value ?? 0,
                         i18n.language,
                         maximumFractionDigits
                       )
                     : '-'}
-                </td>
+                </TableCell>
               ))}
               {hasTotalValues && (
-                <td>{formatNumber(metric.value, i18n.language, maximumFractionDigits)}</td>
+                <TableCell>
+                  {formatNumber(metric.value, i18n.language, maximumFractionDigits)}
+                </TableCell>
               )}
-              <td
+              <TableCell
                 dangerouslySetInnerHTML={{
-                  __html: node.metric?.unit?.htmlShort,
+                  __html: node?.metricDim?.unit?.htmlShort ?? '',
                 }}
               />
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
+        </TableBody>
       </Table>
-    </TableWrapper>
+    </TableContainer>
   );
 };
 

@@ -90,7 +90,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
                 i18n.language
               )}`}
               header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
-              unit={unitCumulative}
+              unit={unitCumulative || ''}
               muted={muted}
               size={size}
             />
@@ -100,7 +100,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
           <HighlightValue
             displayValue={`${yearlyPrefix}${formatNumber(effectYearly || 0, i18n.language)}`}
             header={`${t('impact-on-year')} ${yearRange[1]}`}
-            unit={unitYearly}
+            unit={unitYearly || ''}
             muted={muted}
             size={size}
           />
