@@ -221,7 +221,6 @@ export default function DimensionalNodeVisualisation({
   // And user has selected the reference year as the start year of the chart
   const showReferenceYear =
     !!instance?.referenceYear &&
-    startYear === instance.referenceYear &&
     instance.referenceYear !== instance.minimumHistoricalYear;
   const referenceYear = showReferenceYear ? instance.referenceYear : undefined;
 
