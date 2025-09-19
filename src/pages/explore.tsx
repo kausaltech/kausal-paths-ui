@@ -2,9 +2,9 @@ import { ApolloError, gql, useQuery } from '@apollo/client';
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react';
 
 import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
-import FlowGraph from '@/components/FlowGraph';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
+import FlowGraph from '@/components/flow/FlowGraph';
 
 const GET_NODES = gql`
   query GetCytoscapeNodes {
@@ -46,7 +46,12 @@ const GET_NODES = gql`
 `;
 
 const nodeToReactFlowNode: (node: GetCytoscapeNodesQuery['nodes'][0]) => Node = (node) => {
-  return { id: node.id, position: { x: 0, y: 0 }, data: { label: node.name } };
+  return {
+    id: node.id,
+    position: { x: 0, y: 0 },
+    data: { label: node.name },
+    type: node.__typename == 'ActionNode' ? 'actionNode' : 'standard',
+  };
 };
 
 const createNodeEdges: (node: GetCytoscapeNodesQuery['nodes'][0]) => Edge[] = (node) => {
@@ -87,6 +92,7 @@ export default function Graph() {
   const reactFlowNodes = nodes.map(nodeToReactFlowNode);
   const reactFlowEdges = createAllEdges(nodes);
 
+  console.log(nodes);
   return (
     <ReactFlowProvider>
       <FlowGraph nodes={reactFlowNodes} edges={reactFlowEdges} />

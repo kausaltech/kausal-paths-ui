@@ -1,8 +1,12 @@
 import { useCallback, useLayoutEffect, useState } from 'react';
 
 import {
+  Background,
+  BackgroundVariant,
+  Controls,
   type Edge,
   type Node,
+  type NodeTypes,
   type OnConnect,
   type OnEdgesChange,
   type OnNodesChange,
@@ -16,6 +20,9 @@ import '@xyflow/react/dist/style.css';
 import type { ElkExtendedEdge, ElkNode } from 'elkjs';
 import ELK from 'elkjs/lib/elk.bundled.js';
 
+import ActionNode from '@/components/flow/ActionNode';
+import DefaultNode from '@/components/flow/DefaultNode';
+
 const elk = new ELK();
 
 // Elk has a *huge* amount of options to configure. To see everything you can
@@ -27,6 +34,11 @@ const ELK_OPTIONS = {
   'elk.algorithm': 'layered',
   'elk.layered.spacing.nodeNodeBetweenLayers': '100',
   'elk.spacing.nodeNode': '80',
+};
+
+const nodeTypes: NodeTypes = {
+  standard: DefaultNode,
+  actionNode: ActionNode,
 };
 
 const getLayoutedElements = (
@@ -46,8 +58,8 @@ const getLayoutedElements = (
       sourcePosition: isHorizontal ? 'right' : 'bottom',
 
       // Hardcode a width and height for elk to use when layouting.
-      width: 150,
-      height: 50,
+      width: 100,
+      height: 100,
     })) as ElkNode[],
     edges: edges as unknown as ElkExtendedEdge[],
   };
@@ -127,7 +139,11 @@ const FlowGraph = (props: FlowGraphProps) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-      />
+        nodeTypes={nodeTypes}
+      >
+        <Controls />
+        <Background color="skyblue" variant={BackgroundVariant.Cross} />
+      </ReactFlow>
     </div>
   );
 };
