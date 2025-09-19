@@ -42,16 +42,19 @@ const OutcomeBlockLoader = () => {
 
 const findVisibleNodes = (
   allNodes: Map<string, OutcomeNodeFieldsFragment>,
-  lastNodeId: string,
-  visibleNodes: OutcomeNodeFieldsFragment[]
+  startNodeId: string,
+  visibleNodes: OutcomeNodeFieldsFragment[],
+  visited = new Set<string>()
 ) => {
-  // Using last active node Id, create an array of all visible nodes
-  const lastNode = allNodes.get(lastNodeId)!;
-  visibleNodes.unshift(lastNode);
-  if (lastNode.outputNodes?.length) {
-    if (!allNodes.has(lastNode.outputNodes[0].id)) return visibleNodes;
-    findVisibleNodes(allNodes, lastNode.outputNodes[0].id, visibleNodes);
-  }
+  const node = allNodes.get(startNodeId)!;
+  if (!node || visited.has(startNodeId)) return visibleNodes;
+  visited.add(startNodeId);
+
+  // Prepend so parent is displayed before children
+  visibleNodes.unshift(node);
+  const outputs = node.outputNodes?.map((n) => n.id) ?? [];
+  const parentId = outputs.find((id) => allNodes.has(id));
+  if (parentId) return findVisibleNodes(allNodes, parentId, visibleNodes, visited);
   return visibleNodes;
 };
 
@@ -70,20 +73,23 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
   useEffect(() => {
-    if (router.query?.node === lastActiveNodeId) return;
-    const query: ParsedUrlQuery = {};
-    if (lastActiveNodeId) {
-      query.node = lastActiveNodeId;
-    }
+    if (!router.isReady) return;
+
+    const currentNode =
+      Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+    if (currentNode === lastActiveNodeId) return;
+    
+    const nextQuery: ParsedUrlQuery = { ...router.query };
+    if (lastActiveNodeId) nextQuery.node = lastActiveNodeId;
+    else delete nextQuery.node;
+
     void router.replace(
-      {
-        query,
-      },
+      { pathname: router.pathname, query: nextQuery },
       undefined,
       { shallow: true }
     );
-  }, [lastActiveNodeId, router]);
-
+  }, [lastActiveNodeId, router.isReady, router.pathname, router.query]);
+    
   if (loading || !outcomeNode) {
     return <OutcomeBlockLoader />;
   }
