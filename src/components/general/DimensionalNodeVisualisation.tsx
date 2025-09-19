@@ -13,7 +13,6 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import { isEqual } from 'lodash';
 import { type TFunction, useTranslation } from 'next-i18next';
 import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
 
@@ -39,8 +38,17 @@ import NodeGraph from './NodeGraph';
 
 const Tools = styled.div`
   position: absolute;
-  right: 0;
   top: 0;
+  right: 0;
+  text-align: right;
+  .btn-link {
+    text-decoration: none;
+  }
+  .icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    vertical-align: -0.2rem;
+  }
 `;
 
 type BaselineForecast = { year: number; value: number };
@@ -58,6 +66,56 @@ const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) =>
   }
 
   return longUnit;
+};
+
+const getFilteredYears = (
+  slice: MetricSlice,
+  metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>,
+  instance: InstanceContextType,
+  startYear: number,
+  endYear: number
+) => {
+  // Create an array of visualizable years that takes into account the user selected range and the reference year
+  const lastMetricYear = metric.years.slice(-1)[0];
+  const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
+
+  // Check if forecast range overlaps with visible range [startYear, usableEndYear]
+  const forecastStart = slice.forecastYears[0];
+  const forecastEnd = slice.forecastYears[slice.forecastYears.length - 1];
+  const hasOverlap = forecastStart <= usableEndYear && startYear <= forecastEnd;
+
+  // Define visible forecast range (intersection of forecast range and visible range)
+  const visibleForecastRange: [number, number] | null = hasOverlap
+    ? [Math.max(forecastStart, startYear), Math.min(forecastEnd, usableEndYear)]
+    : null;
+
+  // Let's check if there is a gap between the minimum historical year and the reference year
+  // And double check if we actually want to show the reference year (plan setting)
+  // And user has selected the reference year as the start year of the chart
+  const showReferenceYear =
+    !!instance?.referenceYear &&
+    startYear === instance.referenceYear &&
+    instance.referenceYear !== instance.minimumHistoricalYear;
+  const referenceYear = showReferenceYear ? instance.referenceYear : undefined;
+
+  // Filter years to only include those between startYear and usableEndYear
+  // Make sure the years between referenceYear and minimumHistoricalYear are not included
+  const filteredHistoricalYears = slice.historicalYears.filter(
+    (year) => year >= startYear && year <= usableEndYear && year >= instance.minimumHistoricalYear
+  );
+  const filteredForecastYears = slice.forecastYears.filter(
+    (year) => year >= startYear && year <= usableEndYear && year >= instance.minimumHistoricalYear
+  );
+  const allYears = [...slice.historicalYears, ...slice.forecastYears];
+  const filteredYears = [...filteredHistoricalYears, ...filteredForecastYears];
+
+  // If we are showing the reference year, add it to the beginning of the filtered years
+  if (referenceYear) {
+    filteredYears.unshift(referenceYear);
+  }
+  // Create indices for filtering values
+  const yearIndices = filteredYears.map((year) => allYears.indexOf(year));
+  return { filteredYears, yearIndices, referenceYear, visibleForecastRange };
 };
 
 const ToolsMenu = ({
@@ -126,122 +184,6 @@ const ToolsMenu = ({
       </Menu>
     </Tools>
   );
-};
-
-type DimensionalNodeVisualisationProps = {
-  title: string;
-  baselineForecast?: BaselineForecast[];
-  metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
-  startYear: number;
-  endYear: number;
-  withControls?: boolean;
-  withTools?: boolean;
-  color?: string | null;
-  onClickMeasuredEmissions?: (year: number) => void;
-  forecastTitle?: string;
-};
-
-export default function DimensionalNodeVisualisation({
-  title,
-  metric,
-  startYear,
-  withControls = true,
-  withTools = true,
-  endYear,
-  baselineForecast,
-  color,
-  onClickMeasuredEmissions,
-  forecastTitle,
-}: DimensionalNodeVisualisationProps) {
-  const { t } = useTranslation();
-  const activeGoal = useReactiveVar(activeGoalVar);
-  const theme = useTheme();
-  const [site] = useSiteWithSetter();
-  const instance = useInstance();
-
-  const scenarios = site?.scenarios ?? [];
-  const hasProgressTracking = metricHasProgressTrackingScenario(metric, scenarios);
-  const metrics = useMemo(() => {
-    const defaultMetric = new DimensionalMetric(metric);
-
-    return {
-      default: defaultMetric,
-      progress: hasProgressTracking ? new DimensionalMetric(metric, 'progress_tracking') : null,
-    };
-  }, [metric, hasProgressTracking]);
-
-  const cube = metrics.default;
-
-  const defaultConfig = cube.getDefaultSliceConfig(activeGoal);
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
-
-  useEffect(() => {
-    /**
-     * If the active goal changes, we will reset the grouping + filtering
-     * to be compatible with the new choices (if the new goal has common
-     * dimensions with our metric).
-     */
-    if (!activeGoal) return;
-    const newDefault = cube.getDefaultSliceConfig(activeGoal);
-    if (!newDefault || isEqual(sliceConfig, newDefault)) return;
-    setSliceConfig(newDefault);
-  }, [activeGoal, cube, sliceConfig]);
-
-  const sliceableDims = cube.dimensions.filter((dim) => !sliceConfig.categories[dim.id]);
-  const slicedDim = cube.dimensions.find((dim) => dim.id === sliceConfig.dimensionId);
-
-  let slice: MetricSlice;
-
-  if (slicedDim) {
-    slice = cube.sliceBy(slicedDim.id, true, sliceConfig.categories);
-  } else {
-    slice = cube.flatten(sliceConfig.categories);
-  }
-
-  const goals = cube.getGoalsForChoice(sliceConfig.categories);
-  const showBaseline =
-    baselineForecast && site?.baselineName && instance.features?.baselineVisibleInGraphs;
-
-  // Create an array of visualizable years that takes into account the user selected range and the reference year
-  const lastMetricYear = metric.years.slice(-1)[0];
-  const usableEndYear = lastMetricYear && endYear > lastMetricYear ? lastMetricYear : endYear;
-
-  // Check if forecast range overlaps with visible range [startYear, usableEndYear]
-  const forecastStart = slice.forecastYears[0];
-  const forecastEnd = slice.forecastYears[slice.forecastYears.length - 1];
-  const hasOverlap = forecastStart <= usableEndYear && startYear <= forecastEnd;
-
-  // Define visible forecast range (intersection of forecast range and visible range)
-  const visibleForecastRange: [number, number] | null = hasOverlap
-    ? [Math.max(forecastStart, startYear), Math.min(forecastEnd, usableEndYear)]
-    : null;
-
-  // Let's check if there is a gap between the minimum historical year and the reference year
-  // And double check if we actually want to show the reference year (plan setting)
-  // And user has selected the reference year as the start year of the chart
-  const showReferenceYear =
-    !!instance?.referenceYear &&
-    instance.referenceYear !== instance.minimumHistoricalYear;
-  const referenceYear = showReferenceYear ? instance.referenceYear : undefined;
-
-  // Filter years to only include those between startYear and usableEndYear
-  // Make sure the years between referenceYear and minimumHistoricalYear are not included
-  const filteredHistoricalYears = slice.historicalYears.filter(
-    (year) => year >= startYear && year <= usableEndYear && year >= instance.minimumHistoricalYear
-  );
-  const filteredForecastYears = slice.forecastYears.filter(
-    (year) => year >= startYear && year <= usableEndYear && year >= instance.minimumHistoricalYear
-  );
-  const allYears = [...slice.historicalYears, ...slice.forecastYears];
-  const filteredYears = [...filteredHistoricalYears, ...filteredForecastYears];
-
-  // If we are showing the reference year, add it to the beginning of the filtered years
-  if (referenceYear) {
-    filteredYears.unshift(referenceYear);
-  }
-  // Create indices for filtering values
-  const yearIndices = filteredYears.map((year) => allYears.indexOf(year));
-  return { filteredYears, yearIndices, referenceYear, visibleForecastRange };
 };
 
 type DimensionalNodeVisualisationProps = {
@@ -495,58 +437,55 @@ export default function DimensionalNodeVisualisation({
 
   const controls =
     withControls && (metric.dimensions.length > 1 || hasGroups) ? (
-      <>
-        <Grid container spacing={1}>
-          {metric.dimensions.length > 1 && (
-            <Grid size={{ md: 3 }} sx={{ display: 'flex' }} key="dimension">
+      <Grid container spacing={1} sx={{ marginBottom: 2 }}>
+        {metric.dimensions.length > 1 && (
+          <Grid size={{ md: 3 }} sx={{ display: 'flex' }} key="dimension">
+            <SelectDropdown
+              id="dimension"
+              className="flex-grow-1"
+              label={t('plot-choose-dimension')}
+              onChange={(val) => {
+                setSliceConfig((old) => ({
+                  ...old,
+                  dimensionId: val?.id || undefined,
+                }));
+              }}
+              options={sliceableDims}
+              value={sliceableDims.find((dim) => sliceConfig.dimensionId === dim.id) || null}
+              isMulti={false}
+              isClearable={false}
+            />
+          </Grid>
+        )}
+
+        {metrics.default.dimensions.map((dim) => {
+          const options = metrics.default.getOptionsForDimension(dim.id, sliceConfig.categories);
+          return (
+            <Grid size={{ md: 4 }} sx={{ display: 'flex' }} key={dim.id}>
               <SelectDropdown
-                id="dimension"
+                id={`dim-${dim.id.replaceAll(':', '-')}`}
                 className="flex-grow-1"
-                label={t('plot-choose-dimension')}
-                onChange={(val) => {
-                  setSliceConfig((old) => ({
-                    ...old,
-                    dimensionId: val?.id || undefined,
-                  }));
+                helpText={dim.helpText ?? undefined}
+                label={dim.label}
+                options={options}
+                value={options.filter((opt) => opt.selected)}
+                isMulti={true}
+                isClearable={true}
+                onChange={(newValues) => {
+                  setSliceConfig((old) => {
+                    return metrics.default.updateChoice(dim, old, newValues);
+                  });
                 }}
-                options={sliceableDims}
-                value={sliceableDims.find((dim) => sliceConfig.dimensionId === dim.id) || null}
-                isMulti={false}
-                isClearable={false}
               />
             </Grid>
-          )}
-
-          {metrics.default.dimensions.map((dim) => {
-            const options = metrics.default.getOptionsForDimension(dim.id, sliceConfig.categories);
-            return (
-              <Grid size={{ md: 4 }} sx={{ display: 'flex' }} key={dim.id}>
-                <SelectDropdown
-                  id={`dim-${dim.id.replaceAll(':', '-')}`}
-                  className="flex-grow-1"
-                  helpText={dim.helpText ?? undefined}
-                  label={dim.label}
-                  options={options}
-                  value={options.filter((opt) => opt.selected)}
-                  isMulti={true}
-                  isClearable={true}
-                  onChange={(newValues) => {
-                    setSliceConfig((old) => {
-                      return metrics.default.updateChoice(dim, old, newValues);
-                    });
-                  }}
-                />
-              </Grid>
-            );
-          })}
-        </Grid>
-      </>
+          );
+        })}
+      </Grid>
     ) : null;
 
   return (
     <>
       {controls}
-
       <Box sx={{ position: 'relative' }}>
         <NodeGraph
           title={
@@ -569,7 +508,7 @@ export default function DimensionalNodeVisualisation({
           forecastTitle={forecastTitle}
           stackable={metric.stackable}
         />
-        {withTools && <ToolsMenu cube={cube} sliceConfig={sliceConfig} />}
+        {withTools && <ToolsMenu cube={metrics.default} sliceConfig={sliceConfig} />}
       </Box>
     </>
   );
