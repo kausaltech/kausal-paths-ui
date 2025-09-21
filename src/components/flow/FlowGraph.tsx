@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useState } from 'react';
 
+import { Box } from '@mui/material';
 import {
   Background,
   BackgroundVariant,
@@ -10,6 +11,7 @@ import {
   type OnConnect,
   type OnEdgesChange,
   type OnNodesChange,
+  type OnSelectionChangeParams,
   ReactFlow,
   addEdge,
   applyEdgeChanges,
@@ -20,7 +22,7 @@ import '@xyflow/react/dist/style.css';
 import type { ElkExtendedEdge, ElkNode } from 'elkjs';
 import ELK from 'elkjs/lib/elk.bundled.js';
 
-import ActionNode from '@/components/flow/ActionNode';
+//import ActionNode from '@/components/flow/ActionNode';
 import DefaultNode from '@/components/flow/DefaultNode';
 
 const elk = new ELK();
@@ -32,14 +34,16 @@ const elk = new ELK();
 // - https://www.eclipse.org/elk/reference/options.html
 const ELK_OPTIONS = {
   'elk.algorithm': 'layered',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
-  'elk.spacing.nodeNode': '80',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '50',
+  'elk.spacing.nodeNode': '25',
 };
 
 const nodeTypes: NodeTypes = {
   standard: DefaultNode,
-  actionNode: ActionNode,
 };
+
+const NODE_WIDTH = 100;
+const NODE_HEIGHT = 50;
 
 const getLayoutedElements = (
   nodes: Node[],
@@ -58,8 +62,8 @@ const getLayoutedElements = (
       sourcePosition: isHorizontal ? 'right' : 'bottom',
 
       // Hardcode a width and height for elk to use when layouting.
-      width: 100,
-      height: 100,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
     })) as ElkNode[],
     edges: edges as unknown as ElkExtendedEdge[],
   };
@@ -90,6 +94,7 @@ const FlowGraph = (props: FlowGraphProps) => {
 
   const [nodes, setNodes] = useState<Node[]>(modelNodes);
   const [edges, setEdges] = useState<Edge[]>(modelEdges);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
@@ -104,6 +109,33 @@ const FlowGraph = (props: FlowGraphProps) => {
     [setEdges]
   );
 
+  const updateEdgesAnimation = useCallback((selectedIds: string[]) => {
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) => {
+        const isConnectedToSelectedNode =
+          selectedIds.includes(edge.source) || selectedIds.includes(edge.target);
+        return {
+          ...edge,
+          animated: isConnectedToSelectedNode,
+          style: {
+            strokeWidth: isConnectedToSelectedNode ? 3 : 1,
+            stroke: isConnectedToSelectedNode ? '#FF0072' : '#888',
+          },
+        };
+      })
+    );
+  }, []);
+
+  const onSelectionChange = useCallback(
+    ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
+      const selectedIds = selectedNodes.map((node) => node.id);
+      setSelectedNodeIds(selectedIds);
+      updateEdgesAnimation(selectedIds);
+    },
+    [updateEdgesAnimation]
+  );
+
+  /*
   const onLayout = useCallback(
     ({ direction }: { direction: 'DOWN' | 'UP' | 'LEFT' | 'RIGHT' }) => {
       const opts = { 'elk.direction': direction, ...ELK_OPTIONS };
@@ -124,14 +156,46 @@ const FlowGraph = (props: FlowGraphProps) => {
     },
     [nodes, edges]
   );
-
+*/
   // Calculate the initial layout on mount.
+  const initialLayout = useCallback(() => {
+    const opts = { 'elk.direction': 'RIGHT', ...ELK_OPTIONS };
+
+    getLayoutedElements(modelNodes, modelEdges, opts)
+      .then((result) => {
+        if (result) {
+          setNodes(result.nodes as Node[]);
+          if (result.edges && result.edges.length > 0) {
+            setEdges(result.edges as unknown as Edge[]);
+          }
+          void fitView();
+        }
+      })
+      .catch(console.error);
+  }, [modelNodes, modelEdges, fitView]);
+
   useLayoutEffect(() => {
-    onLayout({ direction: 'DOWN' });
-  }, []);
+    initialLayout();
+  }, [initialLayout]);
+
+  // Update edge animation when edges change (e.g., after layout)
+  useLayoutEffect(() => {
+    if (selectedNodeIds.length > 0) {
+      updateEdgesAnimation(selectedNodeIds);
+    }
+  }, [selectedNodeIds, updateEdgesAnimation]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <Box
+      sx={{
+        width: '100vw',
+        height: 'calc(100vh - 120px)',
+        top: 0,
+        left: 0,
+        backgroundColor: 'white',
+        boxShadow: 'inset 0 1em #f9f9f9',
+      }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -139,12 +203,13 @@ const FlowGraph = (props: FlowGraphProps) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
       >
         <Controls />
-        <Background color="skyblue" variant={BackgroundVariant.Cross} />
+        <Background variant={BackgroundVariant.Dots} color="#77777" />
       </ReactFlow>
-    </div>
+    </Box>
   );
 };
 
