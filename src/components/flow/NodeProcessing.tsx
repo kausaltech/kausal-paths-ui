@@ -51,36 +51,39 @@ export const getLocalizedDescription = (
 };
 
 // Helper function to get icon for node type
-export const getNodeTypeIcon = (nodeType: string) => {
+export const NodeTypeIcon = (props: { nodeType: string | undefined; size?: number }) => {
+  const { nodeType, size } = props;
+  if (!nodeType) return <QuestionCircle color="#9e9e9e" size={size} />;
+
   const type = nodeType.toLowerCase();
 
   // Simple mathematical operations
-  if (type.includes('additive')) return <Plus color="#2196f3" size={20} />;
+  if (type.includes('additive')) return <Plus color="#2196f3" size={size} />;
   if (type.includes('multiplicative') || type.includes('multiplylast'))
-    return <X color="#9c27b0" size={20} />;
-  if (type.includes('subtractive')) return <Dash color="#f44336" size={20} />;
-  if (type.includes('divisive')) return <Calculator color="#ff9800" size={20} />;
+    return <X color="#9c27b0" size={size} />;
+  if (type.includes('subtractive')) return <Dash color="#f44336" size={size} />;
+  if (type.includes('divisive')) return <Calculator color="#ff9800" size={size} />;
 
   // Action types
-  if (type.includes('action')) return <Gear color="#4caf50" size={20} />;
-  if (type.includes('cumulative')) return <GraphUp color="#03a9f4" size={20} />;
+  if (type.includes('action')) return <Gear color="#4caf50" size={size} />;
+  if (type.includes('cumulative')) return <GraphUp color="#03a9f4" size={size} />;
 
   // Improvement types
-  if (type.includes('improvement')) return <GraphUpArrow color="#009688" size={20} />;
+  if (type.includes('improvement')) return <GraphUpArrow color="#009688" size={size} />;
 
   // Emission and activity types
   if (type.includes('emission') || type.includes('activity'))
-    return <Activity color="#ff5722" size={20} />;
+    return <Activity color="#ff5722" size={size} />;
 
   // Sector-specific types
-  if (type.includes('sector')) return <Building color="#795548" size={20} />;
+  if (type.includes('sector')) return <Building color="#795548" size={size} />;
 
   // Generic types
-  if (type.includes('generic')) return <Diagram3 color="#607d8b" size={20} />;
-  if (type.includes('dimensional')) return <Grid color="#9c27b0" size={20} />;
+  if (type.includes('generic')) return <Diagram3 color="#607d8b" size={size} />;
+  if (type.includes('dimensional')) return <Grid color="#9c27b0" size={size} />;
 
   // Default fallback
-  return <QuestionCircle color="#9e9e9e" size={20} />;
+  return <QuestionCircle color="#9e9e9e" size={size} />;
 };
 
 // Helper function to get color scheme for node type
@@ -98,4 +101,24 @@ export const getNodeTypeColor = (nodeType: string) => {
   if (type.includes('generic')) return { bg: '#f5f5f5', border: '#607d8b' };
 
   return { bg: '#fafafa', border: '#bdbdbd' };
+};
+
+export const getNodeTypeLabel = (nodeType: string | undefined) => {
+  if (!nodeType) return '-';
+
+  const type = nodeType.toLowerCase();
+
+  if (type.includes('genericaction')) return 'Action';
+  if (type.includes('genericnode')) return 'Node';
+  if (type.includes('emissionfactor')) return 'Emission Factor';
+
+  if (type.includes('additive')) return 'Additive';
+  if (type.includes('multiplicative') || type.includes('multiplylast')) return 'Multiplicative';
+  if (type.includes('subtractive')) return 'Subtractive';
+  if (type.includes('divisive')) return 'Divisive';
+  if (type.includes('action')) return 'Action';
+
+  if (type.includes('finland')) return 'Finland';
+
+  return nodeType;
 };

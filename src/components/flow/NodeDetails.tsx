@@ -3,10 +3,10 @@ import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material';
 import type { Action, ConfigNode } from '@/types/config.types';
 
 import {
+  NodeTypeIcon,
   getLocalizedDescription,
   getLocalizedName,
   getNodeTypeColor,
-  getNodeTypeIcon,
 } from './NodeProcessing';
 
 export interface NodeDetailsProps {
@@ -21,7 +21,7 @@ const NodeDetails = ({ node, defaultLanguage }: NodeDetailsProps) => {
 
   const nodeName = getLocalizedName(node, defaultLanguage);
   const nodeDescription = getLocalizedDescription(node, defaultLanguage);
-  const nodeTypeIcon = node?.type ? getNodeTypeIcon(node.type) : null;
+  const nodeTypeIcon = node?.type ? <NodeTypeIcon nodeType={node.type} size={20} /> : null;
   const nodeTypeColor = node?.type
     ? getNodeTypeColor(node.type)
     : { bg: '#fafafa', border: '#bdbdbd' };

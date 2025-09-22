@@ -194,7 +194,7 @@ const FlowGraph = (props: FlowGraphProps) => {
     <Box
       sx={{
         width: '100vw',
-        height: '100vw',
+        height: '100vh',
         top: 0,
         left: 0,
         backgroundColor: 'white',

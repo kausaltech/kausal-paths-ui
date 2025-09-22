@@ -3,7 +3,12 @@ import { memo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
 
-import { getNodeTypeColor } from './NodeProcessing';
+import {
+  NodeTypeIcon,
+  getNodeTypeColor,
+  getNodeTypeIcon,
+  getNodeTypeLabel,
+} from './NodeProcessing';
 
 type DefaultNode = Node<
   { isVisible?: boolean; label?: string; nodeType?: string; typeLabel?: string },
@@ -39,7 +44,7 @@ const DefaultNode = (props: NodeProps<DefaultNode>) => {
           variant="body2"
           sx={{ fontSize: '10px', lineHeight: '1.1', hyphens: 'auto', maxWidth: '100%' }}
         >
-          {data.nodeType}
+          <NodeTypeIcon nodeType={data.nodeType} size={10} /> {getNodeTypeLabel(data.nodeType)}
         </Typography>
       </Box>
       <Box
