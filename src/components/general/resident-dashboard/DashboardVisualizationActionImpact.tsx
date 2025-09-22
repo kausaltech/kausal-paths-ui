@@ -209,6 +209,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
   const totalImpact = filteredActions.reduce((sum, action) => sum + action.value, 0);
   const chartHeight = filteredActions ? filteredActions.length * 28 + 110 : 400;
 
+  const MIN_WIDTH_XS = 820;
+
   return (
     <Box sx={{ my: 2 }}>
       <Card sx={{ backgroundColor: 'background.default' }}>
@@ -233,13 +235,23 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
               }))}
             />
           )}
-
-          <Chart
-            isLoading={false}
-            data={chartData}
-            height={`${chartHeight}px`}
-            withResizeLegend={false}
-          />
+          <Box
+            sx={{
+              overflowX: { xs: 'auto', md: 'visible' },
+              overflowY: 'hidden',
+              width: '100%',
+            }}
+          >
+            <Box sx={{ minWidth: { xs: MIN_WIDTH_XS, md: 'auto' } }}>
+              <Chart
+                isLoading={false}
+                data={chartData}
+                height={`${chartHeight}px`}
+                withResizeLegend={false}
+              />
+            </Box>
+          </Box>
+          
 
           <Divider sx={{ my: 2 }} />
 
