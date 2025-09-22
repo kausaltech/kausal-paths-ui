@@ -39,11 +39,14 @@ const ELK_OPTIONS = {
 };
 
 const nodeTypes: NodeTypes = {
+  node: DefaultNode,
+  default: DefaultNode,
   standard: DefaultNode,
+  action: DefaultNode,
 };
 
 const NODE_WIDTH = 100;
-const NODE_HEIGHT = 50;
+const NODE_HEIGHT = 60;
 
 const getLayoutedElements = (
   nodes: Node[],
@@ -132,7 +135,6 @@ const FlowGraph = (props: FlowGraphProps) => {
       const selectedIds = selectedNodes.map((node) => node.id);
       setSelectedNodeIds(selectedIds);
       updateEdgesAnimation(selectedIds);
-      console.log('Selected nodes:', selectedIds);
       onNodeSelect(selectedNodes[0]?.id || null);
     },
     [updateEdgesAnimation, onNodeSelect]
@@ -192,11 +194,10 @@ const FlowGraph = (props: FlowGraphProps) => {
     <Box
       sx={{
         width: '100vw',
-        height: 'calc(100vh - 120px)',
+        height: '100vw',
         top: 0,
         left: 0,
         backgroundColor: 'white',
-        boxShadow: 'inset 0 1em #f9f9f9',
       }}
     >
       <ReactFlow
