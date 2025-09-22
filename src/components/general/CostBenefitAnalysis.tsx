@@ -6,6 +6,7 @@ import type { Theme } from '@emotion/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { Box } from '@mui/material'; 
 
 import { Chart } from '@common/components/Chart';
 
@@ -235,9 +236,21 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const barCount = metricsWithTotals.length;
   const chartHeight = barCount ? barCount * 50 + 150 : 400;
 
+  const MIN_WIDTH_XS = 820;
+
   return (
     <ChartWrapper title={t('cost-benefit-analysis')} isLoading={isLoading}>
-      <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+      <Box
+        sx={{
+          overflowX: { xs: 'auto', md: 'visible' },
+          overflowY: 'hidden',
+          width: '100%',
+        }}
+      >
+        <Box sx={{ minWidth: { xs: MIN_WIDTH_XS, md: 'auto' } }}>
+          <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+        </Box>
+      </Box>
     </ChartWrapper>
   );
 }
