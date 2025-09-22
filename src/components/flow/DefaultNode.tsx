@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { Box, Typography } from '@mui/material';
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
 
@@ -13,9 +15,6 @@ const DefaultNode = (props: NodeProps<DefaultNode>) => {
   };
   return (
     <Box
-      onClick={() => {
-        console.log('DefaultNode clicked', props);
-      }}
       sx={{
         width,
         height,
@@ -41,4 +40,4 @@ const DefaultNode = (props: NodeProps<DefaultNode>) => {
   );
 };
 
-export default DefaultNode;
+export default memo(DefaultNode);

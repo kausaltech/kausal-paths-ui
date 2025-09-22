@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ApolloError, gql, useQuery } from '@apollo/client';
+import { Box, Drawer } from '@mui/material';
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react';
 
 import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
 import FlowGraph from '@/components/flow/FlowGraph';
+import NodeDetails from '@/components/flow/NodeDetails';
+import type { NodeDetailsType } from '@/components/flow/NodeDetails';
+import type { PathsConfig } from '@/types/config.types';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const yaml = require('js-yaml');
@@ -14,36 +18,7 @@ const yaml = require('js-yaml');
 const CONFIG_URL =
   'https://raw.githubusercontent.com/kausaltech/kausal-paths/refs/heads/main/configs/longmont.yaml';
 
-type ActionGroup = {
-  id: string;
-  name: string;
-  [key: string]: unknown;
-};
-
-type Dimension = {
-  id: string;
-  label: string;
-  categories?: unknown[];
-  [key: string]: unknown;
-};
-
-type Action = {
-  id: string;
-  name: string;
-  type: string;
-  [key: string]: unknown;
-};
-
-type LongmontConfig = {
-  id: string;
-  name: string;
-  owner: string;
-  target_year: number;
-  actions?: Action[];
-  action_groups?: ActionGroup[];
-  dimensions?: Dimension[];
-  [key: string]: unknown;
-};
+// Config types are now imported from @/types/config.types
 
 const GET_NODES = gql`
   query GetCytoscapeNodes {
@@ -132,12 +107,36 @@ const createAllEdges: (nodes: GetCytoscapeNodesQuery['nodes']) => Edge[] = (node
   return allEdges;
 };
 
-export default function Graph() {
-  const [config, setConfig] = useState<LongmontConfig | null>(null);
+export default function ExploreView() {
+  const [_config, setConfig] = useState<PathsConfig | null>(null);
   const [configLoading, setConfigLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  const toggleDrawer = useCallback(
+    (newOpen: boolean) => () => {
+      setPanelOpen(newOpen);
+    },
+    []
+  );
 
   const { loading, error, data } = useQuery<GetCytoscapeNodesQuery>(GET_NODES);
+
+  // Memoize data transformations before any early returns
+  const reactFlowNodes = useMemo(() => {
+    return data?.nodes ? data.nodes.map(nodeToReactFlowNode) : [];
+  }, [data?.nodes]);
+
+  const reactFlowEdges = useMemo(() => {
+    return data?.nodes ? createAllEdges(data.nodes) : [];
+  }, [data?.nodes]);
+
+  const showNodeDetails = useCallback((nodeId: string | null) => {
+    setSelectedNodeId(nodeId);
+    console.log('Selected node:', nodeId);
+    setPanelOpen(nodeId !== null);
+  }, []);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -149,7 +148,7 @@ export default function Graph() {
         }
         const yamlText = await response.text();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        const parsedConfig = yaml.load(yamlText) as LongmontConfig;
+        const parsedConfig = yaml.load(yamlText) as PathsConfig;
         setConfig(parsedConfig);
         setConfigError(null);
       } catch (err) {
@@ -175,17 +174,44 @@ export default function Graph() {
   if (!data) {
     return <GraphQLError error={new ApolloError({ graphQLErrors: [{ message: 'No data' }] })} />;
   }
-  const { nodes } = data;
 
-  const reactFlowNodes = nodes.map(nodeToReactFlowNode);
-  const reactFlowEdges = createAllEdges(nodes);
+  const getNodeDetails = (nodeId: string | null): NodeDetailsType | null => {
+    if (!nodeId || !_config) return null;
 
-  console.log('GraphQL nodes:', nodes);
-  console.log('Longmont config:', config);
+    // First try to find in nodes
+    const node = _config.nodes?.find((node) => node.id === nodeId);
+    if (node) return node as NodeDetailsType;
+
+    // Then try to find in actions
+    const action = _config.actions?.find((action) => action.id === nodeId);
+    if (action) return action as NodeDetailsType;
+
+    return null;
+  };
+
+  //console.log('GraphQL nodes:', data.nodes);
+  console.log('Longmont config:', _config);
 
   return (
-    <ReactFlowProvider>
-      <FlowGraph nodes={reactFlowNodes} edges={reactFlowEdges} />
-    </ReactFlowProvider>
+    <div>
+      <Drawer
+        open={panelOpen}
+        onClose={toggleDrawer(false)}
+        hideBackdrop={true}
+        variant="persistent"
+        anchor="right"
+      >
+        <Box sx={{ width: 300 }} role="presentation">
+          <NodeDetails node={getNodeDetails(selectedNodeId)} />
+        </Box>
+      </Drawer>
+      <ReactFlowProvider>
+        <FlowGraph
+          nodes={reactFlowNodes}
+          edges={reactFlowEdges}
+          onNodeSelect={(nodeId) => showNodeDetails(nodeId)}
+        />
+      </ReactFlowProvider>
+    </div>
   );
 }

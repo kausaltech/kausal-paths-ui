@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { memo, useCallback, useLayoutEffect, useState } from 'react';
 
 import { Box } from '@mui/material';
 import {
@@ -86,10 +86,11 @@ const getLayoutedElements = (
 type FlowGraphProps = {
   nodes: Node[];
   edges: Edge[];
+  onNodeSelect: (nodeId: string | null) => void;
 };
 
 const FlowGraph = (props: FlowGraphProps) => {
-  const { nodes: modelNodes, edges: modelEdges } = props;
+  const { nodes: modelNodes, edges: modelEdges, onNodeSelect } = props;
   const { fitView } = useReactFlow();
 
   const [nodes, setNodes] = useState<Node[]>(modelNodes);
@@ -131,8 +132,10 @@ const FlowGraph = (props: FlowGraphProps) => {
       const selectedIds = selectedNodes.map((node) => node.id);
       setSelectedNodeIds(selectedIds);
       updateEdgesAnimation(selectedIds);
+      console.log('Selected nodes:', selectedIds);
+      onNodeSelect(selectedNodes[0]?.id || null);
     },
-    [updateEdgesAnimation]
+    [updateEdgesAnimation, onNodeSelect]
   );
 
   /*
@@ -213,4 +216,4 @@ const FlowGraph = (props: FlowGraphProps) => {
   );
 };
 
-export default FlowGraph;
+export default memo(FlowGraph);
