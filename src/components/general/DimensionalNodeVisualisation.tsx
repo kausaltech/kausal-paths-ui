@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
@@ -232,6 +232,17 @@ export default function DimensionalNodeVisualisation({
   // Slice config is affected by the active goal and user selections
   const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
   const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
+
+  useEffect(() => {
+    /**
+     * If the active goal changes, we will reset the grouping + filtering
+     * to be compatible with the new choices (if the new goal has common
+     * dimensions with our metric).
+     */
+    if (!activeGoal) return;
+    const newDefault = metrics.default.getDefaultSliceConfig(activeGoal);
+    setSliceConfig(newDefault);
+  }, [activeGoal, metrics.default]);
 
   const activeDimensionLabel = metrics.default.getDimensionLabel(sliceConfig.dimensionId);
 
