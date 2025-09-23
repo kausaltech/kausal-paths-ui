@@ -102,6 +102,8 @@ export default function NodeGraph(props: NodeGraphProps) {
   const handleChartClick = (dataPoint: [number, number]) => {
     // If no callback is provided, no point in going further
     if (!onClickMeasuredEmissions || !startYear) return;
+    // If the user clicks below the x axis, we do nothing
+    if (dataPoint[1] < 0) return;
     // If the clicked year is the reference year, we do nothing
     // By definition reference year has no progress data
     if (dataPoint[0] === 0 && referenceYear) return;
