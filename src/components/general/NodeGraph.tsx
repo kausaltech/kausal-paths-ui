@@ -480,7 +480,7 @@ function createMainSeries(
     };
   };
 
-  const createLineSeries = (row: (string | number | null | undefined)[], idx: number) => {
+  const createLineSeries = (row: (string | number | null | undefined)[]) => {
     return {
       type: 'line',
       seriesLayoutBy: 'row',
@@ -520,7 +520,7 @@ function createMainSeries(
   return dataset[datasetIndices.data]
     .source!.slice(1) // Remove header row
     .map((row, idx) => ({
-      ...(stackable ? createBarSeries(row, idx) : createLineSeries(row, idx)),
+      ...(stackable ? createBarSeries(row, idx) : createLineSeries(row)),
       ...createForecastBackground(idx),
     }));
 }
