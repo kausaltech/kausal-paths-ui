@@ -1,23 +1,34 @@
 import { memo } from 'react';
 
-import { Box, Typography } from '@mui/material';
-import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
-
+import { Badge, Box, Typography } from '@mui/material';
 import {
-  NodeTypeIcon,
-  getNodeTypeColor,
-  getNodeTypeIcon,
-  getNodeTypeLabel,
-} from './NodeProcessing';
+  Handle,
+  type Node,
+  type NodeProps,
+  Position,
+  type ReactFlowState,
+  useStore,
+} from '@xyflow/react';
+
+import { NodeTypeIcon, getNodeTypeColor, getNodeTypeLabel } from './NodeProcessing';
+
+const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.9;
 
 type DefaultNode = Node<
-  { isVisible?: boolean; label?: string; nodeType?: string; typeLabel?: string },
-  'isVisible' | 'label' | 'nodeType' | 'typeLabel'
+  {
+    isVisible?: boolean;
+    label?: string;
+    nodeType?: string;
+    typeLabel?: string;
+    inputDatasets?: number;
+  },
+  'isVisible' | 'label' | 'nodeType' | 'typeLabel' | 'inputDatasets'
 >;
 
 const DefaultNode = (props: NodeProps<DefaultNode>) => {
   const { data, width, height, selected } = props;
   const { label, nodeType } = data;
+  const showContent = useStore(zoomSelector);
 
   const isActionNode = nodeType?.toLowerCase().includes('action');
   const truncateText = (text: string | undefined, maxLength: number = 40): string => {
@@ -25,45 +36,56 @@ const DefaultNode = (props: NodeProps<DefaultNode>) => {
     return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
   };
   return (
-    <Box
-      sx={{
-        width,
-        height,
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: '3px',
-        boxShadow: selected ? 4 : 2,
-        border: selected ? '1px solid #3c2a2a' : 'none',
-        backgroundColor: isActionNode ? 'grey.200' : 'white',
+    <Badge
+      color="secondary"
+      badgeContent={data.inputDatasets}
+      invisible={data.inputDatasets === 0}
+      variant={showContent ? 'standard' : 'dot'}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
       }}
     >
-      <Handle type="target" position={Position.Left} />
-      <Box sx={{ padding: '3px', backgroundColor: getNodeTypeColor(data.nodeType || '').bg }}>
-        {' '}
-        <Typography
-          variant="body2"
-          sx={{ fontSize: '10px', lineHeight: '1.1', hyphens: 'auto', maxWidth: '100%' }}
-        >
-          <NodeTypeIcon nodeType={data.nodeType} size={10} /> {getNodeTypeLabel(data.nodeType)}
-        </Typography>
-      </Box>
       <Box
         sx={{
+          width,
+          height,
           display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start',
-          padding: '3px',
+          flexDirection: 'column',
+          borderRadius: '3px',
+          boxShadow: selected ? 4 : 2,
+          border: selected ? '1px solid #3c2a2a' : 'none',
+          backgroundColor: isActionNode ? 'grey.200' : 'white',
         }}
       >
-        <Typography
-          variant="body2"
-          sx={{ fontSize: '10px', lineHeight: '1.1', hyphens: 'auto', maxWidth: '100%' }}
+        <Handle type="target" position={Position.Left} />
+        <Box sx={{ padding: '3px', backgroundColor: getNodeTypeColor(data.nodeType || '').bg }}>
+          {' '}
+          <Typography
+            variant="body2"
+            sx={{ fontSize: '10px', lineHeight: '1.1', hyphens: 'auto', maxWidth: '100%' }}
+          >
+            <NodeTypeIcon nodeType={data.nodeType} size={10} /> {getNodeTypeLabel(data.nodeType)}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
+            padding: '3px',
+          }}
         >
-          {truncateText(label)}
-        </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: '10px', lineHeight: '1.1', hyphens: 'auto', maxWidth: '100%' }}
+          >
+            {truncateText(label)}
+          </Typography>
+        </Box>
+        <Handle type="source" position={Position.Right} />
       </Box>
-      <Handle type="source" position={Position.Right} />
-    </Box>
+    </Badge>
   );
 };
 

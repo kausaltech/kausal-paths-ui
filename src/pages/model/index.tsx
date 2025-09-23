@@ -76,6 +76,7 @@ const nodeToReactFlowNode: (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   const actionNode = isActionNode ? (node as any) : null;
 
+  const nodeDatasetsCount = nodeDataFromConfig?.input_datasets?.length || 0;
   return {
     id: node.id,
     position: { x: 0, y: 0 },
@@ -86,6 +87,7 @@ const nodeToReactFlowNode: (
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       color: node.color || actionNode?.group?.color,
       nodeType: nodeDataFromConfig?.type || node.__typename,
+      inputDatasets: nodeDatasetsCount,
     },
     type: isActionNode ? 'action' : 'standard',
   };
