@@ -30,6 +30,7 @@ import ActionParameters from '@/components/general/ActionParameters';
 import CausalGrid, { type CausalGridNode } from '@/components/general/CausalGrid';
 import NodePlot from '@/components/general/NodePlot';
 import DimensionalPlot from '@/components/graphs/DimensionalFlow';
+import ScenarioPanel from '@/components/scenario/ScenarioPanel';
 import { useSite } from '@/context/site';
 import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from '@/queries/getActionContent';
 
@@ -248,6 +249,7 @@ export default function ActionPage() {
       <HeaderSection>
         <Container fixed maxWidth="xl">
           <PageHeader>
+            <ScenarioPanel />
             <HeaderCard>
               <Breadcrumb aria-label="breadcrumb">
                 <ol className="breadcrumb">
