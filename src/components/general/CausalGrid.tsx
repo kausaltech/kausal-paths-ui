@@ -28,15 +28,16 @@ const StyledShowCalculationButton = styled.button`
   height: 3rem;
   border-radius: 1.5rem;
   border: none;
-  margin: -1rem auto 0;
+  margin: 0.25rem auto 0.5rem;
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
   background-color: ${(props) => props.theme.graphColors.grey005};
-  box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
+  box-shadow: 2px 2px 8px rgba(33, 33, 33, 0.15);
   gap: 1rem;
 `;
 
 const GridSection = styled.div`
   width: 100%;
+  margin-top: -2rem; // Overlap the "expand calculation" button with the action card
   overflow-x: hidden;
 `;
 
