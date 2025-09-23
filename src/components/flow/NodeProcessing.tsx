@@ -3,6 +3,7 @@ import {
   Building,
   Calculator,
   Dash,
+  Database,
   Diagram3,
   Gear,
   GraphUp,
@@ -81,6 +82,7 @@ export const NodeTypeIcon = (props: { nodeType: string | undefined; size?: numbe
   // Generic types
   if (type.includes('generic')) return <Diagram3 color="#607d8b" size={size} />;
   if (type.includes('dimensional')) return <Grid color="#9c27b0" size={size} />;
+  if (type.includes('dataset')) return <Database color="gold" size={size} />;
 
   // Default fallback
   return <QuestionCircle color="#9e9e9e" size={size} />;
@@ -99,7 +101,7 @@ export const getNodeTypeColor = (nodeType: string) => {
   if (type.includes('improvement')) return { bg: '#e0f2f1', border: '#009688' };
   if (type.includes('emission')) return { bg: '#fce4ec', border: '#e91e63' };
   if (type.includes('generic')) return { bg: '#f5f5f5', border: '#607d8b' };
-
+  if (type.includes('dataset')) return { bg: '#f9f6d7', border: 'gold' };
   return { bg: '#fafafa', border: '#bdbdbd' };
 };
 
@@ -120,5 +122,6 @@ export const getNodeTypeLabel = (nodeType: string | undefined) => {
 
   if (type.includes('finland')) return 'Finland';
 
+  if (type.includes('gpc')) return 'GPC';
   return nodeType;
 };
