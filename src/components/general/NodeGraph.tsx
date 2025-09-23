@@ -114,7 +114,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       // Find the index of the clicked year in the progress table
       const progressDataPoint = progressTable[0].indexOf(clickedYear);
       // Check if the clicked year has progress data
-      if (progressDataPoint && progressTable[1][progressDataPoint] !== undefined) {
+      if (progressDataPoint && progressTable[1][progressDataPoint] != null) {
         onClickMeasuredEmissions(clickedYear);
       }
     }
