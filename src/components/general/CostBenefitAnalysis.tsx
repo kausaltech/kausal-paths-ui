@@ -7,6 +7,7 @@ import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import styled from '@emotion/styled';
+import { Box } from '@mui/material';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css'; 
 
@@ -256,9 +257,11 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
             overflow: { x: 'scroll', y: 'hidden' },
           }}
         >
-          <div style={{ minWidth: MIN_WIDTH_XS, width: '100%' }}>
-            <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
-          </div>
+          <ChartRow>
+            <Box sx={{ minWidth: { xs: MIN_WIDTH_XS, md: 'auto' }, width: '100%' }}>
+              <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+            </Box>
+          </ChartRow>
         </OverlayScrollbarsComponent>
       </ScrollArea>
     </ChartWrapper>
