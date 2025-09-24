@@ -162,7 +162,7 @@ const ScenarioPanel = () => {
       <Box
         sx={{
           zIndex: 1,
-          boxShadow: 3,
+          boxShadow: 2,
           ...(isPanelFixed ? FIXED_STYLES : RELATIVE_STYLES),
           // Background overlay so that the panel stretches to the full window width while fixed
           '&::after': {
