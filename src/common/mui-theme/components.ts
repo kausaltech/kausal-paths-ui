@@ -38,6 +38,9 @@ export function getComponents(theme: Theme): ThemeOptions['components'] {
             boxShadow: `0 0 0 0.25rem ${theme.inputBtnFocusColor}`,
           },
         },
+        sizeSmall: {
+          lineHeight: theme.lineHeightSm,
+        },
         contained: {
           '&:hover': {
             boxShadow: 'none',
