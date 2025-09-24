@@ -6,7 +6,9 @@ import type { Theme } from '@emotion/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Box } from '@mui/material'; 
+import styled from '@emotion/styled';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css'; 
 
 import { Chart } from '@common/components/Chart';
 
@@ -14,6 +16,21 @@ import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
+
+const ScrollArea = styled.div`
+  position: relative;
+  .os-top-scrollbar {
+    .os-scrollbar-horizontal {
+      top: 0;
+      bottom: auto;
+    }
+  }
+`;
+
+
+const ChartRow = styled.div`
+  padding-top: 0.75rem; 
+`;
 
 /**
  * For cost-benefit visualisations, only effectDim is used.
@@ -230,17 +247,20 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
 
   return (
     <ChartWrapper title={t('cost-benefit-analysis')} isLoading={isLoading}>
-      <Box
-        sx={{
-          overflowX: { xs: 'auto', md: 'visible' },
-          overflowY: 'hidden',
-          width: '100%',
-        }}
-      >
-        <Box sx={{ minWidth: { xs: MIN_WIDTH_XS, md: 'auto' } }}>
-          <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
-        </Box>
-      </Box>
+      <ScrollArea>
+        <OverlayScrollbarsComponent
+          defer
+          className="os-top-scrollbar"
+          options={{
+            scrollbars: { autoHide: 'never' },
+            overflow: { x: 'scroll', y: 'hidden' },
+          }}
+        >
+          <div style={{ minWidth: MIN_WIDTH_XS, width: '100%' }}>
+            <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+          </div>
+        </OverlayScrollbarsComponent>
+      </ScrollArea>
     </ChartWrapper>
   );
 }
