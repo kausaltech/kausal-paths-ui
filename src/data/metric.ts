@@ -314,6 +314,20 @@ export class DimensionalMetric {
     return goals.values;
   }
 
+  getDimensionLabel(dimId: string | undefined) {
+    if (!dimId) return undefined;
+    return this.data.dimensions.find((dim) => dim.id === dimId)?.label;
+  }
+
+  getCategoryLabel(catId: string | undefined) {
+    if (!catId) return undefined;
+    for (const dim of this.data.dimensions) {
+      const cat = dim.categories.find((cat) => cat.id === catId);
+      if (cat) return cat.label;
+    }
+    return undefined;
+  }
+
   getOptionsForDimension(dimId: string, config: MetricCategoryChoice) {
     const dim = this.data.dimensions.find((dim) => dim.id === dimId)!;
     const choice = config[dimId];

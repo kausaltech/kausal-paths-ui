@@ -10,7 +10,7 @@ import { useTranslation } from 'next-i18next';
 
 import { logApolloError } from '@common/logging/apollo';
 
-import type { GetNodePageQuery } from '@/common/__generated__/graphql';
+import type { GetNodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
@@ -19,18 +19,17 @@ import GraphQLError from '@/components/common/GraphQLError';
 import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
-import NodePlot from '@/components/general/NodePlot';
+import ScenarioPanel from '@/components/scenario/ScenarioPanel';
 import { useSiteWithSetter } from '@/context/site';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
 const HeaderSection = styled.div<{ $color?: string }>`
   padding: 1rem 0 1rem;
-  margin-bottom: 7rem;
   background-color: ${(props) => props.$color || props.theme.graphColors.grey070};
 `;
 
 const PageHeader = styled.div`
-  margin-bottom: 2rem;
+  margin: 1rem 02rem;
 
   h1 {
     font-size: 2rem;
@@ -45,7 +44,7 @@ const NodeDescription = styled.div`
 `;
 
 const HeaderCard = styled.div`
-  margin: 3rem 0 -8rem;
+  margin: 1rem 0 0;
   padding: 2rem;
   border-radius: ${(props) => props.theme.cardBorderRadius};
   background-color: ${(props) => props.theme.themeColors.white};
@@ -85,25 +84,6 @@ const GET_NODE_PAGE_CONTENT = gql`
       }
       quantity
       isAction
-      metric {
-        name
-        id
-        unit {
-          htmlShort
-        }
-        historicalValues {
-          year
-          value
-        }
-        forecastValues {
-          value
-          year
-        }
-        baselineForecastValues {
-          year
-          value
-        }
-      }
       inputNodes {
         id
         name
@@ -182,6 +162,7 @@ export default function NodePage() {
       <HeaderSection $color={node.color || undefined}>
         <Container fixed maxWidth="xl">
           <PageHeader>
+            <ScenarioPanel />
             <HeaderCard>
               <div>{node.isAction && <span>{t('action')}</span>}</div>
               <h1>{node.name}</h1>
@@ -199,7 +180,7 @@ export default function NodePage() {
                   </ActionLink>
                 )}
               </div>
-              {node.metricDim ? (
+              {node.metricDim && (
                 <ContentWrapper>
                   <DimensionalNodeVisualisation
                     title={node.name}
@@ -207,25 +188,9 @@ export default function NodePage() {
                     metric={node.metricDim}
                     startYear={yearRange[0]}
                     endYear={yearRange[1]}
-                    // color={node.color}
+                    color={node.color}
                   />
                 </ContentWrapper>
-              ) : (
-                node.metric && (
-                  <ContentWrapper>
-                    <NodePlot
-                      metric={node.metric}
-                      impactMetric={node.impactMetric}
-                      year="2021"
-                      startYear={yearRange[0]}
-                      endYear={yearRange[1]}
-                      color={node.color}
-                      isAction={node.isAction}
-                      targetYearGoal={node.targetYearGoal}
-                      quantity={node.quantity}
-                    />
-                  </ContentWrapper>
-                )
               )}
             </HeaderCard>
           </PageHeader>
@@ -243,7 +208,10 @@ export default function NodePage() {
         </NodeBodyText>
       )}
       <Container fixed maxWidth="xl">
-        <NodeLinks outputNodes={node.outputNodes} inputNodes={node.inputNodes} />
+        <NodeLinks
+          outputNodes={node.outputNodes as unknown as OutcomeNodeFieldsFragment[]}
+          inputNodes={node.inputNodes as unknown as OutcomeNodeFieldsFragment[]}
+        />
       </Container>
     </>
   );

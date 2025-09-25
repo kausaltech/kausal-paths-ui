@@ -21,6 +21,11 @@ const Label = styled.label`
   font-weight: ${({ theme }) => theme.formLabelFontWeight};
   line-height: ${({ theme }) => theme.lineHeightMd};
   margin-bottom: ${({ theme }) => theme.spaces.s050};
+
+  > button {
+    margin-top: -6px;
+    margin-bottom: 0;
+  }
 `;
 
 function getSelectStyles<
