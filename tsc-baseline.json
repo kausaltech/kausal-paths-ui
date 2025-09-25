@@ -483,30 +483,6 @@
       "code": "TS2345",
       "count": 1,
       "message": "Argument of type 'Buffer<ArrayBufferLike>' is not assignable to parameter of type 'ArrayBuffer'."
-    },
-    "7025de8f2e55d076fd9673331071748bbe3da92b": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'impactMetric' does not exist on type '{ id: string; name: string; shortDescription: string | null; description: string | null; color: string | null; targetYearGoal: number | null; quantity: string | null; isAction: boolean; ... 4 more ...; metricDim: ({ ...; } & { ...; }) | null; } & { ...; }'."
-    },
-    "ab5b30780550b87785d2b2951c2f48cdcb128671": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'number | null' is not assignable to type 'number | undefined'."
-    },
-    "c74ce922bd47e2693dd07268456b1abb8f550acb": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'string | null' is not assignable to type 'string | undefined'."
-    },
-    "c3d3d623102f362e8b7b83da7aa0b2edb1f2d67c": {
-      "file": "src/pages/node/[slug].tsx",
-      "code": "TS2322",
-      "count": 2,
-      "message": "Type '({ id: string; name: string; shortDescription: string | null; color: string | null; quantity: string | null; isAction: boolean; unit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; } & { ...; })[]' is not assignable to type 'OutcomeNodeFieldsFragment[]'."
     }
   }
 }

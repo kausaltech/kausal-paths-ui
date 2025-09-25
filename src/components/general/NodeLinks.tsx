@@ -25,7 +25,7 @@ const NodeLinks = (props: NodeLinksProps) => {
   const { inputNodes, outputNodes } = props;
   const { t } = useTranslation();
   return (
-    <Grid container spacing={2} sx={{ marginBottom: 2 }}>
+    <Grid container spacing={2} sx={{ marginBottom: 2, paddingTop: 2 }}>
       <Grid size={{ xs: 12, md: 6, lg: 5 }}>
         {inputNodes.length > 0 && (
           <Card>

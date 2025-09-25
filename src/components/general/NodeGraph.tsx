@@ -13,7 +13,7 @@ import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
 
-import { beautifyValue } from '@/common/preprocess';
+import { beautifyValue, sanitizeHtmlUnit } from '@/common/preprocess';
 
 /**
  * Receives filtered node data as tables and plots them in a chart.
@@ -34,6 +34,7 @@ import { beautifyValue } from '@/common/preprocess';
 
 type NodeGraphProps = {
   title: string;
+  subtitle: string | null | undefined;
   dataTable: DataTable;
   goalTable: DataTable | null;
   baselineTable: DataTable | null;
@@ -48,12 +49,13 @@ type NodeGraphProps = {
   showTotalLine?: boolean;
   onClickMeasuredEmissions?: (year: number) => void;
   forecastTitle?: string;
+  stackable?: boolean;
 };
 
 type DataTable = (string | number | null | undefined)[][];
 
 // Constants
-const CHART_HEIGHT = '350px';
+const CHART_HEIGHT = '360px';
 const BAR_WIDTH = '85%';
 const BAR_MAX_WIDTH = '50';
 const BAR_CATEGORY_GAP = '20%';
@@ -65,6 +67,7 @@ export default function NodeGraph(props: NodeGraphProps) {
 
   const {
     title,
+    subtitle,
     dataTable,
     goalTable,
     baselineTable,
@@ -79,6 +82,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     showTotalLine = false,
     onClickMeasuredEmissions,
     forecastTitle,
+    stackable = true,
   } = props;
 
   // Figure out the start year of the dataset sans reference year
@@ -202,21 +206,15 @@ export default function NodeGraph(props: NodeGraphProps) {
   );
 
   // Calculate indices for the forecast range
-  const markAreaStartIndex =
+  const forecastAreaStartIndex =
     forecastRange && datasetIndices.data >= 0 && fullDataset[datasetIndices.data]?.source?.[0]
       ? fullDataset[datasetIndices.data].source![0].findIndex(
           (year) => Number(year) === forecastRange[0]
         ) - (referenceYear ? 2 : 1)
       : -1;
-  const markAreaEndIndex =
-    forecastRange && datasetIndices.data >= 0 && fullDataset[datasetIndices.data]?.source?.[0]
-      ? fullDataset[datasetIndices.data].source![0].findIndex(
-          (year) => Number(year) === forecastRange[1]
-        ) - (referenceYear ? 2 : 1)
-      : -1;
 
   // Check if forecast range years exist in the data
-  const hasForecastData = markAreaStartIndex > -1 && markAreaEndIndex > -1;
+  const hasForecastData = forecastAreaStartIndex > -1;
 
   const isForecastYear = (year: number | undefined): boolean => {
     if (!year) return false;
@@ -229,8 +227,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       const dataIndex: number | undefined = params[0]?.dataIndex;
       if (typeof dataIndex !== 'number') return '';
 
-      const isForecast =
-        hasForecastData && dataIndex >= markAreaStartIndex && dataIndex <= markAreaEndIndex;
+      const isForecast = hasForecastData && dataIndex >= forecastAreaStartIndex;
       const year =
         datasetIndices.data >= 0 && fullDataset[datasetIndices.data]?.source?.[0]?.[dataIndex + 1]; // +1 because first column is "Category"
       const isReferenceYear = Boolean(referenceYear && Number(year) === referenceYear);
@@ -250,7 +247,16 @@ export default function NodeGraph(props: NodeGraphProps) {
   };
 
   const series = [
-    ...(createBarSeries(fullDataset, datasetIndices, categoryColors, theme, isForecastYear) || []),
+    ...(createMainSeries(
+      fullDataset,
+      datasetIndices,
+      categoryColors,
+      theme,
+      isForecastYear,
+      stackable,
+      forecastTitle ?? t('table-scenario-forecast'),
+      forecastAreaStartIndex
+    ) || []),
     hasGoalData && datasetIndices.goal >= 0
       ? createGoalSeries(theme, datasetIndices.goal, specialSeriesLabels.Goal)
       : null,
@@ -261,25 +267,18 @@ export default function NodeGraph(props: NodeGraphProps) {
       ? createProgressSeries(theme, datasetIndices.progress, specialSeriesLabels.Progress)
       : null,
     datasetIndices.total >= 0
-      ? createTotalSeries(
-          theme,
-          forecastTitle ?? t('table-scenario-forecast'),
-          datasetIndices.total,
-          markAreaStartIndex,
-          markAreaEndIndex,
-          showTotalLine,
-          specialSeriesLabels.Total
-        )
+      ? createTotalSeries(theme, datasetIndices.total, showTotalLine, specialSeriesLabels.Total)
       : null,
   ].filter(Boolean);
 
   const option: echarts.EChartsCoreOption = {
     title: {
       text: title,
+      subtext: subtitle,
       left: '75',
       top: 10,
-      padding: [0, 0, 24, 0],
-      itemGap: 15,
+      padding: [0, 0, 48, 0],
+      itemGap: 5,
       textStyle: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -302,7 +301,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       left: '75',
       right: '24',
       bottom: 100,
-      top: 60,
+      top: subtitle ? 90 : 65,
     },
     tooltip: {
       trigger: 'axis',
@@ -323,7 +322,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     },
     yAxis: {
       type: 'value',
-      name: unit,
+      name: sanitizeHtmlUnit(unit),
       nameLocation: 'end',
       nameTextStyle: {
         align: 'left',
@@ -337,6 +336,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     barGap: 0,
     barCategoryGap: BAR_CATEGORY_GAP,
     series: series,
+    color: categoryColors,
   };
 
   return (
@@ -424,7 +424,7 @@ function createLegendData(
   return [...regularSeriesLegend, ...specialSeriesLegend];
 }
 
-function createBarSeries(
+function createMainSeries(
   dataset: {
     source: DataTable | undefined;
     sourceHeader: boolean;
@@ -438,7 +438,10 @@ function createBarSeries(
   },
   categoryColors: string[],
   theme: Theme,
-  isForecastYear: (year: number | undefined) => boolean
+  isForecastYear: (year: number | undefined) => boolean,
+  stackable: boolean,
+  forecastTitle: string,
+  forecastAreaStartIndex: number
 ) {
   if (
     datasetIndices.data < 0 ||
@@ -448,14 +451,57 @@ function createBarSeries(
     return [];
   }
 
-  return dataset[datasetIndices.data]
-    .source!.slice(1) // Remove header row
-    .map((row, idx) => ({
+  const createForecastBackground = (idx: number) => {
+    // If forecast is outside the visible range or indices are invalid, we don't color the forecast area
+    const hasForecastData = idx == 0 && forecastAreaStartIndex > -1;
+    return {
+      markArea: hasForecastData
+        ? {
+            silent: true,
+            itemStyle: {
+              color: theme.graphColors.blue030,
+              opacity: 0.1,
+            },
+            label: {
+              position: [0, -15],
+              fontSize: 11,
+            },
+            data: [
+              [
+                {
+                  name: forecastTitle,
+                  xAxis: forecastAreaStartIndex,
+                },
+                {
+                  x: '100%',
+                },
+              ],
+            ],
+          }
+        : undefined,
+    };
+  };
+
+  const createLineSeries = (row: (string | number | null | undefined)[]) => {
+    return {
+      type: 'line',
+      seriesLayoutBy: 'row',
+      name: row[0],
+      datasetIndex: datasetIndices.data,
+      lineStyle: {
+        width: 2,
+      },
+      // For simplification we do not color forecast line differently
+    };
+  };
+
+  const createBarSeries = (row: (string | number | null | undefined)[], idx: number) => {
+    return {
       type: 'bar',
       seriesLayoutBy: 'row',
       stack: 'x',
-      name: row[0],
       stackStrategy: 'samesign',
+      name: row[0],
       datasetIndex: datasetIndices.data,
       itemStyle: {
         color: (param: CallbackDataParams) => {
@@ -470,6 +516,14 @@ function createBarSeries(
       },
       barWidth: BAR_WIDTH,
       barMaxWidth: BAR_MAX_WIDTH,
+    };
+  };
+
+  return dataset[datasetIndices.data]
+    .source!.slice(1) // Remove header row
+    .map((row, idx) => ({
+      ...(stackable ? createBarSeries(row, idx) : createLineSeries(row)),
+      ...createForecastBackground(idx),
     }));
 }
 
@@ -532,16 +586,10 @@ function createProgressSeries(theme: Theme, datasetIndex: number, name: string) 
 
 function createTotalSeries(
   theme: Theme,
-  forecastTitle: string,
   datasetIndex: number,
-  markAreaStartIndex: number,
-  markAreaEndIndex: number,
   showTotalLine: boolean,
   name: string
 ) {
-  // If forecast is outside the visible range or indices are invalid, we don't color the forecast area
-  const hasForecastData =
-    markAreaStartIndex > -1 && markAreaEndIndex > -1 && markAreaStartIndex < markAreaEndIndex;
   return {
     type: 'line',
     seriesLayoutBy: 'row',
@@ -553,30 +601,6 @@ function createTotalSeries(
       opacity: showTotalLine ? 1 : 0,
     },
     color: theme.graphColors.red070,
-    markArea: hasForecastData
-      ? {
-          silent: true,
-          itemStyle: {
-            color: theme.graphColors.blue030,
-            opacity: 0.1,
-          },
-          label: {
-            position: [0, -15],
-            fontSize: 11,
-          },
-          data: [
-            [
-              {
-                name: forecastTitle,
-                xAxis: markAreaStartIndex,
-              },
-              {
-                xAxis: markAreaEndIndex,
-              },
-            ],
-          ],
-        }
-      : undefined,
   };
 }
 
@@ -618,7 +642,7 @@ function buildTooltipContent(
 
   // Add regular series data
   if (regularSeries.length > 0) {
-    tooltip += `<div style="border-top: 1px solid #ccc; margin: 8px 0 4px 0;"></div>`;
+    tooltip += `<div style="border-top: 1px solid #eee; margin: 8px 0 4px 0;"></div>`;
     [...regularSeries].reverse().forEach((param) => {
       tooltip += buildTooltipRow(param, unit, maximumFractionDigits);
     });
@@ -664,7 +688,7 @@ function buildTooltipRow(
     if (param?.dimensionNames?.[1] === 'Total')
       return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:2px;background-color:${showTotalLine ? color : 'transparent'};\"></span>`;
     else if (param?.componentSubType === 'line')
-      return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:2px;background-color:${color};\"></span>`;
+      return `<span style=\"display:inline-block;margin-right:4px;margin-bottom:3px;width:10px;height:4px;background-color:${color};\"></span>`;
     else
       return `<span style=\"display:inline-block;margin-right:4px;width:10px;height:10px;background-color:${color};\"></span>`;
   };
