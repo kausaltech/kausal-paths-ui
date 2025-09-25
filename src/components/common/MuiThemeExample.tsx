@@ -9,6 +9,7 @@ import {
   Chip,
   FormControl,
   FormControlLabel,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -201,9 +202,13 @@ export function MuiThemeExample() {
 
         {/* Colors */}
         <Box>
+          <Typography variant="h3" gutterBottom>
+            Colours
+          </Typography>
+
           <Stack spacing={1}>
             <Box>
-              <Typography variant="h3" gutterBottom>
+              <Typography variant="h4" gutterBottom>
                 Primary
               </Typography>
               <Stack direction="row" flexWrap="wrap">
@@ -214,7 +219,7 @@ export function MuiThemeExample() {
               </Stack>
             </Box>
             <Box>
-              <Typography variant="h3" gutterBottom>
+              <Typography variant="h4" gutterBottom>
                 Secondary
               </Typography>
               <Stack direction="row" flexWrap="wrap">
@@ -225,6 +230,23 @@ export function MuiThemeExample() {
               </Stack>
             </Box>
           </Stack>
+        </Box>
+
+        {/* Shadows */}
+        <Box>
+          <Typography variant="h3" gutterBottom>
+            Shadows
+          </Typography>
+
+          <Grid container spacing={2}>
+            {Array(20)
+              .fill(undefined)
+              .map((_, index) => (
+                <Grid key={index}>
+                  <Box sx={{ width: 100, height: 100, boxShadow: index, p: 2 }}>{index}</Box>
+                </Grid>
+              ))}
+          </Grid>
         </Box>
       </Stack>
     </Box>
