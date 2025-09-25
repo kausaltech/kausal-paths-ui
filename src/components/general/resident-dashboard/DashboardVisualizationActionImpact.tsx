@@ -2,6 +2,10 @@ import React from 'react';
 
 import { useTheme } from '@emotion/react';
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
+import styled from '@emotion/styled';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css';
+
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +38,21 @@ type Datum = {
   color: string;
   group: string | undefined;
 };
+
+const ScrollArea = styled.div`
+  position: relative;
+  .os-top-scrollbar {
+    .os-scrollbar-horizontal {
+      top: 0;
+      bottom: auto;
+    }
+  }
+`;
+
+const ChartRow = styled.div`
+  padding-top: 0.75rem;
+`;
+
 
 const Legend = ({ groups }: { groups: ActionGroup[] }) => {
   const theme = useTheme();
@@ -209,6 +228,8 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
   const totalImpact = filteredActions.reduce((sum, action) => sum + action.value, 0);
   const chartHeight = filteredActions ? filteredActions.length * 28 + 110 : 400;
 
+  const MIN_WIDTH_XS = 820;
+
   return (
     <Box sx={{ my: 2 }}>
       <Card sx={{ backgroundColor: 'background.default' }}>
@@ -233,13 +254,29 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
               }))}
             />
           )}
-
-          <Chart
-            isLoading={false}
-            data={chartData}
-            height={`${chartHeight}px`}
-            withResizeLegend={false}
-          />
+          <ScrollArea>
+            <OverlayScrollbarsComponent
+              defer
+              className="os-top-scrollbar"
+              options={{
+                scrollbars: { autoHide: 'never' },
+                overflow: { x: 'scroll', y: 'hidden' },
+              }}
+              style={{ width: '100%' }}
+            >
+              <ChartRow>
+                <Box sx={{ minWidth: { xs: MIN_WIDTH_XS, md: 'auto' } }}>
+                  <Chart
+                    isLoading={false}
+                    data={chartData}
+                    height={`${chartHeight}px`}
+                    withResizeLegend={false}
+                  />
+                </Box>
+              </ChartRow>
+            </OverlayScrollbarsComponent>
+          </ScrollArea>
+          
 
           <Divider sx={{ my: 2 }} />
 

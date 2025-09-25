@@ -6,6 +6,10 @@ import type { Theme } from '@emotion/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import styled from '@emotion/styled';
+import { Box } from '@mui/material';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css'; 
 
 import { Chart } from '@common/components/Chart';
 
@@ -13,6 +17,21 @@ import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
+
+const ScrollArea = styled.div`
+  position: relative;
+  .os-top-scrollbar {
+    .os-scrollbar-horizontal {
+      top: 0;
+      bottom: auto;
+    }
+  }
+`;
+
+
+const ChartRow = styled.div`
+  padding-top: 0.75rem; 
+`;
 
 /**
  * For cost-benefit visualisations, only effectDim is used.
@@ -225,9 +244,26 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const barCount = metricsWithTotals.length;
   const chartHeight = barCount ? barCount * 50 + 150 : 400;
 
+  const MIN_WIDTH_XS = 820;
+
   return (
     <ChartWrapper title={t('cost-benefit-analysis')} isLoading={isLoading}>
-      <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+      <ScrollArea>
+        <OverlayScrollbarsComponent
+          defer
+          className="os-top-scrollbar"
+          options={{
+            scrollbars: { autoHide: 'never' },
+            overflow: { x: 'scroll', y: 'hidden' },
+          }}
+        >
+          <ChartRow>
+            <Box sx={{ minWidth: { xs: MIN_WIDTH_XS, md: 'auto' }, width: '100%' }}>
+              <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+            </Box>
+          </ChartRow>
+        </OverlayScrollbarsComponent>
+      </ScrollArea>
     </ChartWrapper>
   );
 }
