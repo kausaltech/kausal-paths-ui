@@ -60,7 +60,7 @@ export const GET_INSTANCE_GOAL_OUTCOME = gql`
  * Also return the initial height of the relative panel to support rendering a
  * placeholder when the panel is fixed and prevent content jumping.
  */
-function useIsPanelStuck(ref) {
+function useIsPanelStuck(ref: React.RefObject<HTMLDivElement | null>) {
   const theme = useTheme();
   const [position, setPosition] = useState({ top: 0, initialHeight: 0 });
   const isScrollingDown = useScrollTrigger();
@@ -81,7 +81,7 @@ function useIsPanelStuck(ref) {
     if (ref.current) {
       setPosition((position) => ({
         ...position,
-        top: ref.current.getBoundingClientRect().top + window.pageYOffset,
+        top: ref.current?.getBoundingClientRect().top ?? position.top + window.pageYOffset,
       }));
     }
   }
