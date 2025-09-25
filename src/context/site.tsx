@@ -35,6 +35,10 @@ export type SiteContextType = {
   availableNormalizations: GetInstanceContextQuery['availableNormalizations'];
   parameters: GetInstanceContextQuery['parameters'];
   menuPages: GetInstanceContextQuery['menuPages'];
+  watchLink?: {
+    title: string | { [key: string]: string };
+    url: string | { [key: string]: string };
+  } | null;
 };
 
 export type SiteContextWithSetterType = [

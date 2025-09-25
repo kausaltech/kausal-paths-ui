@@ -42,14 +42,6 @@
       "count": 1
     }
   },
-  "src/components/common/GlobalNav.tsx": {
-    "react-compiler/react-compiler": {
-      "count": 1
-    },
-    "react-hooks/rules-of-hooks": {
-      "count": 1
-    }
-  },
   "src/components/common/GraphQLError.tsx": {
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
