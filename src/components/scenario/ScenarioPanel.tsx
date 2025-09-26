@@ -77,16 +77,16 @@ function useIsPanelStuck(ref: React.RefObject<HTMLDivElement | null>) {
   const isPanelFixed = !isMobile && hasScrolledPastPanelStart;
   const isPanelMini = isScrollingDown && isPanelFixed && hasScrolledPastPanelEnd;
 
-  function handleChangePosition() {
-    if (ref.current) {
-      setPosition((position) => ({
-        ...position,
-        top: ref.current?.getBoundingClientRect().top ?? position.top + window.pageYOffset,
-      }));
-    }
-  }
-
   useLayoutEffect(() => {
+    function handleChangePosition() {
+      if (ref.current) {
+        setPosition((position) => ({
+          ...position,
+          top: ref.current?.getBoundingClientRect().top ?? position.top + window.pageYOffset,
+        }));
+      }
+    }
+
     if (ref.current) {
       setPosition({
         top: ref.current.getBoundingClientRect().top + window.pageYOffset,
