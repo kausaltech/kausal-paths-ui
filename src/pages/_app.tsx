@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { type ReactNode, useState } from 'react';
 
 import App, { type AppContext, type AppProps } from 'next/app';
 
@@ -8,6 +8,7 @@ import type { Theme } from '@kausal/themes/types';
 import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
+import type { NextPage } from 'next';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
 
@@ -53,6 +54,10 @@ type WatchLink = {
   url: string | { [key: string]: string };
 } | null;
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
+
+type Page<P = object> = NextPage<P> & {
+  getLayout?: (page: ReactNode) => ReactNode;
+};
 
 const defaultSiteContext: {
   [key: string]: { instanceId?: string; watchLink: WatchLink; demoPages?: DemoPage[] };
@@ -177,6 +182,7 @@ const defaultSiteContext: {
 };
 
 export type PathsAppProps = AppProps<Record<string, unknown>> & {
+  Component: Page;
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
   themeProps: Theme;

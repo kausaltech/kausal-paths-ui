@@ -463,6 +463,59 @@ export type GetCytoscapeNodesQuery = (
   & { __typename: 'Query' }
 );
 
+export type GetModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetModelNodesQuery = (
+  { nodes: Array<(
+    { id: string, name: string, shortName: string | null, shortDescription: string | null, color: string | null, quantity: string | null, isVisible: boolean, explanation: string | null, nodeType: string, tags: Array<string | null> | null, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, parentAction: (
+      { id: string }
+      & { __typename: 'ActionNode' }
+    ) | null, subactions: Array<(
+      { id: string }
+      & { __typename: 'ActionNode' }
+    )>, group: (
+      { id: string, color: string | null, name: string }
+      & { __typename: 'ActionGroupType' }
+    ) | null, unit: (
+      { htmlShort: string }
+      & { __typename: 'UnitType' }
+    ) | null, inputNodes: Array<(
+      { id: string, shortName: string | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, outputNodes: Array<(
+      { id: string, shortName: string | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, metric: (
+      { historicalValues: Array<(
+        { year: number, value: number }
+        & { __typename: 'YearlyValue' }
+      )> }
+      & { __typename: 'ForecastMetricType' }
+    ) | null }
+    & { __typename: 'ActionNode' }
+  ) | (
+    { id: string, name: string, shortName: string | null, shortDescription: string | null, color: string | null, quantity: string | null, isVisible: boolean, explanation: string | null, nodeType: string, tags: Array<string | null> | null, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, unit: (
+      { htmlShort: string }
+      & { __typename: 'UnitType' }
+    ) | null, inputNodes: Array<(
+      { id: string, shortName: string | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, outputNodes: Array<(
+      { id: string, shortName: string | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, metric: (
+      { historicalValues: Array<(
+        { year: number, value: number }
+        & { __typename: 'YearlyValue' }
+      )> }
+      & { __typename: 'ForecastMetricType' }
+    ) | null }
+    & { __typename: 'Node' }
+  )> }
+  & { __typename: 'Query' }
+);
+
 export type GetNodePageQueryVariables = Exact<{
   node: Scalars['ID']['input'];
   scenarios: InputMaybe<Array<Scalars['String']['input']>>;
