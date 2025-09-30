@@ -7,8 +7,8 @@ import { startInteraction } from '@common/sentry/helpers';
 
 import type {
   GetParametersQuery,
-  SetNormalizationMutation,
-  SetNormalizationMutationVariables,
+  SetNormalizationFromWidgetMutation,
+  SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
@@ -21,7 +21,7 @@ const SwitchWrapper = styled.div`
   }
 `;
 
-const SET_NORMALIZATION_MUTATION = gql`
+export const SET_NORMALIZATION_MUTATION = gql`
   mutation SetNormalizationFromWidget($id: ID) {
     setNormalizer(id: $id) {
       ok
@@ -40,8 +40,8 @@ function NormalizationWidget() {
   );
 
   const [setNormalization, { loading: mutationLoading }] = useMutation<
-    SetNormalizationMutation,
-    SetNormalizationMutationVariables
+    SetNormalizationFromWidgetMutation,
+    SetNormalizationFromWidgetMutationVariables
   >(SET_NORMALIZATION_MUTATION, {
     refetchQueries: 'active',
   });

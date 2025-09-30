@@ -8,18 +8,11 @@ import { SettingsToggleBar } from '@common/components/SettingsToggleBar';
 
 import type {
   GetParametersQuery,
-  SetNormalizationMutation,
-  SetNormalizationMutationVariables,
+  SetNormalizationFromWidgetMutation,
+  SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
+import { SET_NORMALIZATION_MUTATION } from '@/components/general/NormalizationWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
-
-const SET_NORMALIZATION_MUTATION = gql`
-  mutation SetNormalizationFromWidget($id: ID) {
-    setNormalizer(id: $id) {
-      ok
-    }
-  }
-`;
 
 /**
  * Similar to NormalizationWidget, but based on the new custom dashboard page designs and using the common SettingsToggleBar component.
@@ -40,8 +33,8 @@ function DashboardNormalizationBar() {
 
   // Todo handle mutation error
   const [setNormalization, { loading: mutationLoading }] = useMutation<
-    SetNormalizationMutation,
-    SetNormalizationMutationVariables
+    SetNormalizationFromWidgetMutation,
+    SetNormalizationFromWidgetMutationVariables
   >(SET_NORMALIZATION_MUTATION, { refetchQueries: 'active' });
 
   useEffect(() => {

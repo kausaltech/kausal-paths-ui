@@ -286,63 +286,6 @@ export type SetNormalizationFromWidgetMutation = (
   & { __typename: 'Mutation' }
 );
 
-export type SetGlobalParameterMutationVariables = Exact<{
-  parameterId: Scalars['ID']['input'];
-  boolValue: InputMaybe<Scalars['Boolean']['input']>;
-  numberValue: InputMaybe<Scalars['Float']['input']>;
-  stringValue: InputMaybe<Scalars['String']['input']>;
-}>;
-
-
-export type SetGlobalParameterMutation = (
-  { setParameter: (
-    { ok: boolean | null, parameter: (
-      { isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null }
-      & { __typename: 'BoolParameterType' }
-    ) | (
-      { isCustomized: boolean, isCustomizable: boolean }
-      & { __typename: 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
-    ) | null }
-    & { __typename: 'SetParameterMutation' }
-  ) | null }
-  & { __typename: 'Mutation' }
-);
-
-export type SetNormalizationMutationVariables = Exact<{
-  id: InputMaybe<Scalars['ID']['input']>;
-}>;
-
-
-export type SetNormalizationMutation = (
-  { setNormalizer: (
-    { ok: boolean }
-    & { __typename: 'SetNormalizerMutation' }
-  ) }
-  & { __typename: 'Mutation' }
-);
-
-export type GetInstanceGoalOutcomeQueryVariables = Exact<{
-  goal: Scalars['ID']['input'];
-}>;
-
-
-export type GetInstanceGoalOutcomeQuery = (
-  { instance: (
-    { id: string, goals: Array<(
-      { values: Array<(
-        { year: number, goal: number | null, actual: number | null, isForecast: boolean, isInterpolated: boolean | null }
-        & { __typename: 'InstanceYearlyGoalType' }
-      )>, unit: (
-        { htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) }
-      & { __typename: 'InstanceGoalEntry' }
-    )> }
-    & { __typename: 'InstanceType' }
-  ) }
-  & { __typename: 'Query' }
-);
-
 export type SetParameterMutationVariables = Exact<{
   parameterId: Scalars['ID']['input'];
   boolValue: InputMaybe<Scalars['Boolean']['input']>;
@@ -377,6 +320,28 @@ export type DimensionalPlotFragment = (
     & { __typename: 'FlowLinksType' }
   )> }
   & { __typename: 'DimensionalFlowType' }
+);
+
+export type GetInstanceGoalOutcomeQueryVariables = Exact<{
+  goal: Scalars['ID']['input'];
+}>;
+
+
+export type GetInstanceGoalOutcomeQuery = (
+  { instance: (
+    { id: string, goals: Array<(
+      { values: Array<(
+        { year: number, goal: number | null, actual: number | null, isForecast: boolean, isInterpolated: boolean | null }
+        & { __typename: 'InstanceYearlyGoalType' }
+      )>, unit: (
+        { htmlShort: string }
+        & { __typename: 'UnitType' }
+      ) }
+      & { __typename: 'InstanceGoalEntry' }
+    )> }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
 );
 
 export type ActivateScenarioMutationVariables = Exact<{
@@ -509,21 +474,6 @@ export type GetNodePageQuery = (
     { id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ) | null, metric: (
-      { name: string | null, id: string | null, unit: (
-        { htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null, historicalValues: Array<(
-        { year: number, value: number }
-        & { __typename: 'YearlyValue' }
-      )>, forecastValues: Array<(
-        { value: number, year: number }
-        & { __typename: 'YearlyValue' }
-      )>, baselineForecastValues: Array<(
-        { year: number, value: number }
-        & { __typename: 'YearlyValue' }
-      )> | null }
-      & { __typename: 'ForecastMetricType' }
     ) | null, inputNodes: Array<(
       { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
         { htmlShort: string }
