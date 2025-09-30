@@ -159,7 +159,7 @@ const defaultSiteContext: {
   surrey: {
     watchLink: {
       title: "Surrey's Climate Action Tracker",
-      url: 'https://surrey-ccas.watch-test.kausal.tech/',
+      url: 'https://climateactiontracker.surrey.ca/',
     },
   },
   'demo-stadt-bisko': {
