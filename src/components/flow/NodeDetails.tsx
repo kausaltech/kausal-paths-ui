@@ -1,29 +1,109 @@
+import { gql, useQuery } from '@apollo/client';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
   Chip,
-  Divider,
+  Container,
   Paper,
   Stack,
   Typography,
 } from '@mui/material';
-import { PlusLg } from 'react-bootstrap-icons';
+import { Dash, PlusLg } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 
+import { logApolloError } from '@common/logging/apollo';
+
+import type { GetNodeDetailsQuery } from '@/common/__generated__/graphql';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import GraphQLError from '@/components/common/GraphQLError';
+import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 import type { Action, ConfigNode, Dataset, NodeReference } from '@/types/config.types';
 
-import {
-  NodeTypeIcon,
-  getLocalizedDescription,
-  getLocalizedName,
-  getNodeTypeColor,
-} from './NodeProcessing';
+import ContentLoader from '../common/ContentLoader';
+import { NodeTypeIcon, getNodeTypeColor } from './NodeProcessing';
+
+const GET_NODE_DETAILS = gql`
+  query GetNodeDetails($node: ID!, $scenarios: [String!]) {
+    node(id: $node) {
+      id
+      nodeType
+      name
+      shortDescription
+      description
+      explanation
+      tags
+      color
+      targetYearGoal
+      unit {
+        htmlShort
+      }
+      quantity
+      isAction
+      inputDimensions
+      inputNodes {
+        id
+        name
+        shortDescription
+        color
+        unit {
+          htmlShort
+        }
+        quantity
+        isAction
+      }
+      outputDimensions
+      outputNodes {
+        id
+        name
+        shortDescription
+        color
+        unit {
+          htmlShort
+        }
+        quantity
+        isAction
+      }
+      ...DimensionalNodeMetric
+    }
+  }
+  ${dimensionalNodePlotFragment}
+`;
+
+const CustomExpandIcon = () => {
+  return (
+    <Box
+      sx={{
+        '.Mui-expanded & > .collapsIconWrapper': {
+          display: 'none',
+        },
+        '.expandIconWrapper': {
+          display: 'none',
+        },
+        '.Mui-expanded & > .expandIconWrapper': {
+          display: 'block',
+        },
+      }}
+    >
+      <div className="expandIconWrapper">
+        <Dash />
+      </div>
+      <div className="collapsIconWrapper">
+        <PlusLg />
+      </div>
+    </Box>
+  );
+};
 
 const InputDatasets = ({ datasets }: { datasets: Dataset[] }) => {
   return (
     <Accordion>
-      <AccordionSummary expandIcon={<PlusLg />} aria-controls="panel1-content" id="panel1-header">
+      <AccordionSummary
+        expandIcon={<CustomExpandIcon />}
+        aria-controls="input-datasets-content"
+        id="input-datasets-header"
+      >
         Input Datasets ({datasets.length})
       </AccordionSummary>
       <AccordionDetails>
@@ -87,34 +167,61 @@ const ConnectedNode = ({ nodeConnection }: { nodeConnection: NodeReference }) =>
 };
 
 export interface NodeDetailsProps {
-  node: ConfigNode | Action | null;
+  nodeExtras: ConfigNode | Action | null;
+  nodeId: string | null;
   defaultLanguage?: string;
 }
 
-const NodeDetails = ({ node, defaultLanguage }: NodeDetailsProps) => {
-  if (!node) {
-    return <Box sx={{ padding: 2 }}>No details available</Box>;
+const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) => {
+  const { t } = useTranslation();
+  const { loading, error, data } = useQuery<GetNodeDetailsQuery>(GET_NODE_DETAILS, {
+    variables: {
+      node: nodeId,
+      scenarios: null,
+    },
+  });
+
+  if (loading) {
+    return <ContentLoader />;
   }
 
-  const nodeName = getLocalizedName(node, defaultLanguage);
-  const nodeDescription = getLocalizedDescription(node, defaultLanguage);
-  const nodeTypeIcon = node?.type ? <NodeTypeIcon nodeType={node.type} size={20} /> : null;
-  const nodeTypeColor = node?.type
-    ? getNodeTypeColor(node.type)
+  if (error || !data) {
+    if (error) {
+      logApolloError(error);
+    }
+    return <Container className="pt-5">{error && <GraphQLError error={error} />}</Container>;
+  }
+
+  const { node } = data;
+
+  if (!node) {
+    return (
+      <Container className="pt-5">
+        <ErrorMessage message={t('page-not-found')} />
+      </Container>
+    );
+  }
+
+  const nodeName = node.name;
+  const nodeDescription = node.description || node.shortDescription;
+  const nodeTypeIcon = node?.nodeType ? (
+    <NodeTypeIcon nodeType={node.nodeType} size={16} style={{ margin: '0 -0.25rem 0 0.5rem' }} />
+  ) : null;
+  const nodeTypeColor = node?.nodeType
+    ? getNodeTypeColor(node.nodeType)
     : { bg: '#fafafa', border: '#bdbdbd' };
 
   console.log('NodeDetails', { node, defaultLanguage, nodeName });
 
   return (
     <Box sx={{ padding: 1 }}>
-      {node?.type && (
+      {node?.nodeType && (
         <Chip
-          label={node.type}
-          size="small"
+          label={node.nodeType.replace('nodes.', '').replace('actions.', '').replace('.', ' ')}
+          icon={nodeTypeIcon ? nodeTypeIcon : undefined}
           sx={{
             backgroundColor: nodeTypeColor.bg,
-            borderColor: nodeTypeColor.border,
-            border: `1px solid ${nodeTypeColor.border}`,
+            mb: 1,
             '& .MuiChip-label': {
               color: nodeTypeColor.border,
               fontWeight: 500,
@@ -122,67 +229,92 @@ const NodeDetails = ({ node, defaultLanguage }: NodeDetailsProps) => {
           }}
         />
       )}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        {nodeTypeIcon}
-        <Typography variant="h5" sx={{ flexGrow: 1 }}>
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h3" sx={{ mb: 1 }}>
           {nodeName}
         </Typography>
         {node.tags && node.tags.length > 0 && (
           <Box sx={{ fontSize: '0.8rem' }}>{node.tags.map((tag) => `#${tag}`).join(' ')}</Box>
         )}
+        {node?.unit && <Chip label={`${node.unit.htmlShort} (${node.quantity})`} size="small" />}
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      {/*----- Description -----*/}
       {nodeDescription && (
-        <Typography variant="body2" dangerouslySetInnerHTML={{ __html: nodeDescription }} />
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<CustomExpandIcon />}
+            aria-controls="input-dimensions-content"
+            id="input-dimensions-header"
+          >
+            Description
+          </AccordionSummary>
+          <AccordionDetails>
+            <Paper
+              sx={{ p: 1, fontSize: '0.7rem', overflow: 'auto' }}
+              dangerouslySetInnerHTML={{ __html: nodeDescription }}
+            />
+          </AccordionDetails>
+        </Accordion>
       )}
-      <Divider sx={{ my: 2 }} />
-      <Stack direction="column" spacing={1}>
-        {node?.quantity && <Paper sx={{ p: 1 }}>Quantity: {node.quantity}</Paper>}
-        {node?.unit && <Paper sx={{ p: 1 }}>Unit: {node.unit}</Paper>}
-        {'group' in node && (node as Action).group && (
-          <Paper sx={{ p: 1 }}>Group: {(node as Action).group}</Paper>
-        )}
-      </Stack>
-      <Divider sx={{ my: 2 }} />
-      <Stack direction="column" spacing={1}>
-        <Typography variant="h4">Input</Typography>
-        {node?.input_dimensions && node.input_dimensions.length > 0 && (
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<PlusLg />}
-              aria-controls="panel1-content"
-              id="panel1-header"
-            >
-              Input Dimensions ({node.input_dimensions.length})
-            </AccordionSummary>
-            <AccordionDetails>
-              {node.input_dimensions.map((inputDimension) => (
-                <Chip key={inputDimension} label={inputDimension} size="small" />
-              ))}
-            </AccordionDetails>
-          </Accordion>
-        )}
-        {node?.input_nodes && node.input_nodes.length > 0 && (
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<PlusLg />}
-              aria-controls="panel1-content"
-              id="panel1-header"
-            >
-              Input Nodes ({node.input_nodes.length})
-            </AccordionSummary>
-            <AccordionDetails>
-              {node.input_nodes.map((inputNode) => (
-                <ConnectedNode nodeConnection={inputNode} key={inputNode.id} />
-              ))}
-            </AccordionDetails>
-          </Accordion>
-        )}
-        {node?.input_datasets && node.input_datasets.length > 0 && (
-          <InputDatasets datasets={node.input_datasets} />
-        )}
-      </Stack>
+      {node.explanation && (
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<CustomExpandIcon />}
+            aria-controls="explanation-content"
+            id="explanation-header"
+          >
+            Explanation
+          </AccordionSummary>
+          <AccordionDetails>
+            <Paper
+              sx={{ p: 1, fontSize: '0.7rem', overflow: 'auto' }}
+              dangerouslySetInnerHTML={{ __html: node.explanation }}
+            />
+          </AccordionDetails>
+        </Accordion>
+      )}
+
+      {/*----- Input -----*/}
+
+      <Typography variant="h5" sx={{ mb: 1, mt: 2 }}>
+        Input
+      </Typography>
+      {nodeExtras?.input_dimensions && nodeExtras.input_dimensions.length > 0 && (
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<CustomExpandIcon />}
+            aria-controls="input-nodes-content"
+            id="input-nodes-header"
+          >
+            Input Dimensions ({nodeExtras.input_dimensions.length})
+          </AccordionSummary>
+          <AccordionDetails>
+            {nodeExtras.input_dimensions.map((inputDimension) => (
+              <Chip key={inputDimension} label={inputDimension} size="small" />
+            ))}
+          </AccordionDetails>
+        </Accordion>
+      )}
+      {nodeExtras?.input_nodes && nodeExtras.input_nodes.length > 0 && (
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<CustomExpandIcon />}
+            aria-controls="input-nodes-content"
+            id="input-nodes-header"
+          >
+            Input Nodes ({nodeExtras.input_nodes.length})
+          </AccordionSummary>
+          <AccordionDetails>
+            {nodeExtras?.input_nodes.map((inputNode) => (
+              <ConnectedNode nodeConnection={inputNode} key={inputNode.id} />
+            ))}
+          </AccordionDetails>
+        </Accordion>
+      )}
+      {nodeExtras?.input_datasets && nodeExtras.input_datasets.length > 0 && (
+        <InputDatasets datasets={nodeExtras.input_datasets} />
+      )}
     </Box>
   );
 };

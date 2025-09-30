@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react';
+
 import {
   Activity,
   Building,
@@ -51,41 +53,49 @@ export const getLocalizedDescription = (
   );
 };
 
+// Define props interface that extends standard React component props
+interface NodeTypeIconProps extends React.SVGProps<SVGSVGElement> {
+  nodeType: string | undefined;
+  size?: number;
+}
+
 // Helper function to get icon for node type
-export const NodeTypeIcon = (props: { nodeType: string | undefined; size?: number }) => {
-  const { nodeType, size } = props;
-  if (!nodeType) return <QuestionCircle color="#9e9e9e" size={size} />;
+export const NodeTypeIcon = (props: NodeTypeIconProps): ReactElement => {
+  const { nodeType, size, ...restProps } = props;
+
+  if (!nodeType) return <QuestionCircle color="#9e9e9e" size={size} {...restProps} />;
 
   const type = nodeType.toLowerCase();
 
   // Simple mathematical operations
-  if (type.includes('additive')) return <Plus color="#2196f3" size={size} />;
+  if (type.includes('additive')) return <Plus color="#2196f3" size={size} {...restProps} />;
   if (type.includes('multiplicative') || type.includes('multiplylast'))
-    return <X color="#9c27b0" size={size} />;
-  if (type.includes('subtractive')) return <Dash color="#f44336" size={size} />;
-  if (type.includes('divisive')) return <Calculator color="#ff9800" size={size} />;
+    return <X color="#9c27b0" size={size} {...restProps} />;
+  if (type.includes('subtractive')) return <Dash color="#f44336" size={size} {...restProps} />;
+  if (type.includes('divisive')) return <Calculator color="#ff9800" size={size} {...restProps} />;
 
   // Action types
-  if (type.includes('action')) return <Gear color="#4caf50" size={size} />;
-  if (type.includes('cumulative')) return <GraphUp color="#03a9f4" size={size} />;
+  if (type.includes('action')) return <Gear color="#4caf50" size={size} {...restProps} />;
+  if (type.includes('cumulative')) return <GraphUp color="#03a9f4" size={size} {...restProps} />;
 
   // Improvement types
-  if (type.includes('improvement')) return <GraphUpArrow color="#009688" size={size} />;
+  if (type.includes('improvement'))
+    return <GraphUpArrow color="#009688" size={size} {...restProps} />;
 
   // Emission and activity types
   if (type.includes('emission') || type.includes('activity'))
-    return <Activity color="#ff5722" size={size} />;
+    return <Activity color="#ff5722" size={size} {...restProps} />;
 
   // Sector-specific types
-  if (type.includes('sector')) return <Building color="#795548" size={size} />;
+  if (type.includes('sector')) return <Building color="#795548" size={size} {...restProps} />;
 
   // Generic types
-  if (type.includes('generic')) return <Diagram3 color="#607d8b" size={size} />;
-  if (type.includes('dimensional')) return <Grid color="#9c27b0" size={size} />;
-  if (type.includes('dataset')) return <Database color="gold" size={size} />;
+  if (type.includes('generic')) return <Diagram3 color="#607d8b" size={size} {...restProps} />;
+  if (type.includes('dimensional')) return <Grid color="#9c27b0" size={size} {...restProps} />;
+  if (type.includes('dataset')) return <Database color="gold" size={size} {...restProps} />;
 
   // Default fallback
-  return <QuestionCircle color="#9e9e9e" size={size} />;
+  return <QuestionCircle color="#9e9e9e" size={size} {...restProps} />;
 };
 
 // Helper function to get color scheme for node type

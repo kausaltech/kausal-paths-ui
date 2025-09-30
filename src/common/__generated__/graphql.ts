@@ -214,6 +214,59 @@ type StreamFieldFragment_TextBlock_Fragment = (
 
 export type StreamFieldFragmentFragment = StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment | StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
 
+export type GetNodeDetailsQueryVariables = Exact<{
+  node: Scalars['ID']['input'];
+  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
+}>;
+
+
+export type GetNodeDetailsQuery = (
+  { node: (
+    { id: string, nodeType: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, tags: Array<string | null> | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, unit: (
+      { htmlShort: string }
+      & { __typename: 'UnitType' }
+    ) | null, inputNodes: Array<(
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+        { htmlShort: string }
+        & { __typename: 'UnitType' }
+      ) | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, outputNodes: Array<(
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+        { htmlShort: string }
+        & { __typename: 'UnitType' }
+      ) | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, metricDim: (
+      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
+          { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+          & { __typename: 'MetricDimensionCategoryType' }
+        )>, groups: Array<(
+          { id: string, originalId: string, label: string, color: string | null, order: number | null }
+          & { __typename: 'MetricDimensionCategoryGroupType' }
+        )> }
+        & { __typename: 'MetricDimensionType' }
+      )>, goals: Array<(
+        { categories: Array<string>, groups: Array<string>, values: Array<(
+          { year: number, value: number, isInterpolated: boolean }
+          & { __typename: 'MetricYearlyGoalType' }
+        )> }
+        & { __typename: 'DimensionalMetricGoalEntry' }
+      )>, unit: (
+        { htmlShort: string, short: string, htmlLong: string, long: string }
+        & { __typename: 'UnitType' }
+      ), normalizedBy: (
+        { id: string, name: string }
+        & { __typename: 'NormalizerNodeType' }
+      ) | null }
+      & { __typename: 'DimensionalMetricType' }
+    ) | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 type ActionParameter_BoolParameterType_Fragment = (
   { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
     { id: string }
@@ -468,7 +521,7 @@ export type GetModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetModelNodesQuery = (
   { nodes: Array<(
-    { id: string, name: string, shortName: string | null, shortDescription: string | null, color: string | null, quantity: string | null, isVisible: boolean, explanation: string | null, nodeType: string, tags: Array<string | null> | null, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, parentAction: (
+    { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, nodeType: string, parentAction: (
       { id: string }
       & { __typename: 'ActionNode' }
     ) | null, subactions: Array<(
@@ -481,10 +534,10 @@ export type GetModelNodesQuery = (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
-      { id: string, shortName: string | null }
+      { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
-      { id: string, shortName: string | null }
+      { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metric: (
       { historicalValues: Array<(
@@ -495,14 +548,14 @@ export type GetModelNodesQuery = (
     ) | null }
     & { __typename: 'ActionNode' }
   ) | (
-    { id: string, name: string, shortName: string | null, shortDescription: string | null, color: string | null, quantity: string | null, isVisible: boolean, explanation: string | null, nodeType: string, tags: Array<string | null> | null, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, unit: (
+    { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, nodeType: string, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
-      { id: string, shortName: string | null }
+      { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
-      { id: string, shortName: string | null }
+      { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metric: (
       { historicalValues: Array<(

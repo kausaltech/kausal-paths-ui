@@ -28,25 +28,18 @@ const GET_NODES = gql`
       id
       name
       shortName
-      shortDescription
       color
       quantity
       isVisible
-      explanation
       nodeType
-      tags
       unit {
         htmlShort
       }
       inputNodes {
         id
-        shortName
       }
-      inputDimensions
-      outputDimensions
       outputNodes {
         id
-        shortName
       }
       metric {
         historicalValues(latest: 1) {
@@ -235,7 +228,8 @@ function ModelPage() {
         }}
       >
         <NodeDetails
-          node={getNodeDetails(selectedNodeId)}
+          nodeId={selectedNodeId}
+          nodeExtras={getNodeDetails(selectedNodeId)}
           defaultLanguage={_config?.default_language}
         />
       </Drawer>
