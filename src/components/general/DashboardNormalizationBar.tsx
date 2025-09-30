@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Fade } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -22,7 +22,7 @@ import { GET_PARAMETERS } from '@/queries/getParameters';
 function DashboardNormalizationBar() {
   const { t } = useTranslation();
 
-  const { loading, error, data, previousData } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
+  const { loading, data, previousData } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
   });
 
