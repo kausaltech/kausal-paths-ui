@@ -3,13 +3,13 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
-import type { EChartsCoreOption } from 'echarts/core';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
+import type { EChartsCoreOption } from 'echarts/core';
+import type { TFunction } from 'i18next';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
-import 'overlayscrollbars/styles/overlayscrollbars.css'; 
+import 'overlayscrollbars/styles/overlayscrollbars.css';
+import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
@@ -28,9 +28,8 @@ const ScrollArea = styled.div`
   }
 `;
 
-
 const ChartRow = styled.div`
-  padding-top: 0.75rem; 
+  padding-top: 0.75rem;
 `;
 
 /**
@@ -70,7 +69,7 @@ function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOpt
       ],
       source: sortedData.map((item) => {
         return {
-          action: item.actionName,
+          action: item.actionName || item.metric.data.name || '',
           cost: item.totals.cost,
           benefit: item.totals.benefit,
           netBenefit: item.totals.netBenefit,
@@ -209,13 +208,11 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
       .map((action) => {
         if (!action?.effectDim) return undefined;
         const metric = new DimensionalMetric(action.effectDim);
-        const actionName = action.action?.name ?? '';
+        const actionName = action.action?.name ?? metric.data?.name ?? '';
         if (!actionName) return undefined;
         return { metric, actionName };
       })
-      .filter(
-        (v): v is { metric: DimensionalMetric; actionName: string } => v !== undefined
-      );
+      .filter((v): v is { metric: DimensionalMetric; actionName: string } => v !== undefined);
   }, [data]);
 
   // Calculate the cost, benefit and net benefit for each metric
