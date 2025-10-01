@@ -70,7 +70,7 @@ function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOpt
       ],
       source: sortedData.map((item) => {
         return {
-          action: item.actionName || item.metric.data.name || '',
+          action: item.actionName,
           cost: item.totals.cost,
           benefit: item.totals.benefit,
           netBenefit: item.totals.netBenefit,
@@ -202,14 +202,14 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
     );
 
     if (!costBenefitData) {
-      return [];
+      return [] as { metric: DimensionalMetric; actionName: string }[];
     }
 
     return costBenefitData.actions
       .map((action) => {
         if (!action?.effectDim) return undefined;
         const metric = new DimensionalMetric(action.effectDim);
-        const actionName = action.action?.name ?? metric.data?.name ?? '';
+        const actionName = action.action?.name ?? '';
         if (!actionName) return undefined;
         return { metric, actionName };
       })
