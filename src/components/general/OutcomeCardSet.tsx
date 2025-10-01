@@ -7,9 +7,11 @@ import { useTranslation } from 'next-i18next';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { setUniqueColors } from '@/common/colors';
+import { useFeatures } from '@/common/instance';
 import { getMetricValue, getOutcomeTotal } from '@/common/preprocess';
 import OutcomeNodeContent from '@/components/general/OutcomeNodeContent';
 
+import NZPOutcomeHelpText from './NZPOutcomeHelpText';
 import OutcomeCard from './OutcomeCard';
 
 type CardSetProps = {
@@ -224,6 +226,7 @@ const OutcomeCardSet = ({
 }: OutcomeCardSetProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState(undefined);
   //const { scrollTo } = useScrollTo(config.molasses);
+  const showRefreshPrompt = useFeatures().showRefreshPrompt;
   const { cardNodes, subNodeMap } = useMemo(() => {
     const inputNodeIds = rootNode.inputNodes.map((node) => node.id);
     const cardNodes = [...nodeMap.values()]
@@ -300,6 +303,8 @@ const OutcomeCardSet = ({
             endYear={endYear}
             activeScenario={activeScenario}
             refetching={refetching}
+            // Naughtily use showRefreshPrompt to determine if this is a NZP instance
+            outcomeGraphSlot={showRefreshPrompt ? <NZPOutcomeHelpText /> : null}
           />
         </ContentArea>
         {showOutcomeBar && (

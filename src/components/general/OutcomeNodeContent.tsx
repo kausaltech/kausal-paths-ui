@@ -127,6 +127,7 @@ type OutcomeNodeContentProps = {
   endYear: number;
   activeScenario: string;
   refetching: boolean;
+  outcomeGraphSlot?: React.ReactNode;
 };
 
 const OutcomeNodeContent = ({
@@ -138,6 +139,7 @@ const OutcomeNodeContent = ({
   endYear,
   activeScenario,
   refetching,
+  outcomeGraphSlot,
 }: OutcomeNodeContentProps) => {
   const { t } = useTranslation();
   const [progressModalOpen, setProgressModalOpen] = useState(false);
@@ -343,7 +345,13 @@ const OutcomeNodeContent = ({
           aria-labelledby={`${node.id}-tab-${activeTabId}}`}
         >
           {activeTabId === 'year' && <ContentWrapper>{singleYearGraph}</ContentWrapper>}
-          {activeTabId === 'graph' && <ContentWrapper>{outcomeGraph}</ContentWrapper>}
+          {activeTabId === 'graph' && (
+            <ContentWrapper>
+              {outcomeGraph}
+
+              {outcomeGraphSlot ? <>{outcomeGraphSlot}</> : null}
+            </ContentWrapper>
+          )}
           {activeTabId === 'info' && (
             <ContentWrapper>
               <OutcomeNodeDetails node={node} t={t} />
