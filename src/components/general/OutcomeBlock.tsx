@@ -75,21 +75,18 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const currentNode =
-      Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+    const currentNode = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
     if (currentNode === lastActiveNodeId) return;
-    
+
     const nextQuery: ParsedUrlQuery = { ...router.query };
     if (lastActiveNodeId) nextQuery.node = lastActiveNodeId;
     else delete nextQuery.node;
 
-    void router.replace(
-      { pathname: router.pathname, query: nextQuery },
-      undefined,
-      { shallow: true }
-    );
-  }, [lastActiveNodeId, router.isReady, router.pathname, router.query]);
-    
+    void router.replace({ pathname: router.pathname, query: nextQuery }, undefined, {
+      shallow: true,
+    });
+  }, [lastActiveNodeId, router]);
+
   if (loading || !outcomeNode) {
     return <OutcomeBlockLoader />;
   }

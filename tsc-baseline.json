@@ -40,36 +40,6 @@
       "count": 1,
       "message": "Cannot find name 'darken'."
     },
-    "24283e56ea064799ed72c36552a1aecd9ee375a0": {
-      "file": "src/components/common/GlobalNav.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'parentName' does not exist on type 'NavDropdownProps'."
-    },
-    "5129cc01c76b700d4258818e13b5b5485b7bc45f": {
-      "file": "src/components/common/GlobalNav.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'false | \"active\" | undefined' is not assignable to type 'string | undefined'."
-    },
-    "f6725839b7a3bd6c1e8c9c2379cec1c71d788a0e": {
-      "file": "src/components/common/GlobalNav.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'instanceContext' does not exist on type 'SiteContextType'."
-    },
-    "f5c2fcaf4dabfa2968e9fd2588e5b6a80792979e": {
-      "file": "src/components/common/GlobalNav.tsx",
-      "code": "TS2339",
-      "count": 11,
-      "message": "Property 'watchLink' does not exist on type 'SiteContextType'."
-    },
-    "aa867160f060ae87ddac2b6c62a95c73dd7ead32": {
-      "file": "src/components/common/GlobalNav.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'null' is not assignable to parameter of type 'ElementRef | undefined'."
-    },
     "a7d356fc0d23c9d6f67df72550cfc455e68d6e11": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
@@ -141,18 +111,6 @@
       "code": "TS2339",
       "count": 6,
       "message": "Property 'stzh-link' does not exist on type 'JSX.IntrinsicElements'."
-    },
-    "65c432e72a507e9356b510e926f00e88db9a24e2": {
-      "file": "src/components/custom/zurich/GlobalNav.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'false | \"active\" | undefined' is not assignable to type 'string | undefined'."
-    },
-    "75f1f78bc8ff5aecea8dcf959e55f3646190e2d6": {
-      "file": "src/components/custom/zurich/GlobalNav.tsx",
-      "code": "TS2339",
-      "count": 3,
-      "message": "Property 'watchLink' does not exist on type 'SiteContextType'."
     },
     "1352e7c87632cca339d7a1adb9d6066f1464df56": {
       "file": "src/components/CytoGraph.tsx",
@@ -244,11 +202,11 @@
       "count": 3,
       "message": "Object is possibly 'null'."
     },
-    "a639c28a45e02db76c9cc29e627290a753155f0f": {
+    "aab0774a5531662965a7ab6b1f16a6372a1c7c47": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
       "file": "src/components/general/BarGraph.tsx",
@@ -322,11 +280,11 @@
       "count": 1,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "198fb6c5959deb5a237700818fe8dea2b957c030": {
+    "f09f8c4d045c9ee4f3dd91121e56c2987bf88464": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "3186d64cd5707a556087f33ee127a5a37c67d25b": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",

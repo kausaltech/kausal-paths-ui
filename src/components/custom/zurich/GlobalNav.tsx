@@ -5,26 +5,16 @@ import Head from 'next/head';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
-import { transparentize } from 'polished';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
-import {
-  Collapse,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  Nav,
-  NavItem,
-  Navbar,
-  UncontrolledDropdown,
-} from 'reactstrap';
+import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
 
 import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
-import NavDropdown, { type NavDropdownProps } from '@/components/common/NavDropdown';
+import NavDropdown from '@/components/common/NavDropdown';
 import LanguageSelector from '@/components/general/LanguageSelector';
 import { useSite } from '@/context/site';
 
@@ -126,67 +116,6 @@ const NavHighlighter = styled.span`
   }
 `;
 
-const StyledDropdownToggle = styled(DropdownToggle)`
-  display: block;
-  padding: 0;
-  margin: 0 0 ${(props) => props.theme.spaces.s100} ${(props) => props.theme.spaces.s100};
-  color: ${(props) => props.theme.neutralDark};
-
-  &:hover {
-    text-decoration: none;
-    color: ${(props) => props.theme.neutralDark};
-
-    .highlighter {
-      color: var(--hover-color);
-    }
-  }
-
-  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    align-self: flex-end;
-    margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
-  }
-`;
-
-const StyledDropdown = styled(UncontrolledDropdown)`
-  .dropdown-toggle.nav-link {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .dropdown-menu {
-    border: 0px;
-    padding-top: 0;
-    box-shadow: none;
-  }
-  .dropdown-item {
-    margin: 0 0 0 ${(props) => props.theme.spaces.s150};
-    color: ${(props) => props.theme.neutralDark};
-
-    .highlighter {
-      display: inline-block;
-    }
-
-    &:hover {
-      background-color: transparent;
-
-      .highlighter {
-        color: var(--hover-color);
-      }
-    }
-  }
-
-  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    .dropdown-menu {
-      background-color: ${(props) => props.theme.themeColors.white};
-      box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
-    }
-
-    .dropdown-item {
-      margin: 0;
-    }
-  }
-`;
-
 const NavbarToggler = styled.button`
   flex: 1;
   display: flex;
@@ -203,7 +132,7 @@ const NavbarToggler = styled.button`
   overflow: visible;
   background: transparent;
   border-radius: 0;
-  -webkit-appearance: none;
+  appearance: none;
 
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: none;
@@ -237,37 +166,27 @@ const StyledHeaderMain = styled.div`
   }
 `;
 
-function DropdownList(props: NavDropdownProps & { parentName: string }) {
-  const { parentName, items, active } = props;
-  return (
-    <StyledDropdown nav inNavbar className={active && 'active'}>
-      <StyledDropdownToggle nav caret>
-        <NavHighlighter className={`highlighter ${active && 'active'}`}>
-          {parentName}
-        </NavHighlighter>
-      </StyledDropdownToggle>
-      <DropdownMenu direction="left">
-        {items &&
-          items.map((child) => (
-            <DropdownItem key={child.id}>
-              <NavLink>
-                <Link href={child.urlPath}>
-                  <NavHighlighter className="highlighter">{child.name}</NavHighlighter>
-                </Link>
-              </NavLink>
-            </DropdownItem>
-          ))}
-      </DropdownMenu>
-    </StyledDropdown>
-  );
-}
-
 function GlobalNav(props: GlobalNavProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const site = useSite();
   const theme = useTheme();
   const [isOpen, toggleOpen] = useState(false);
-  const { siteTitle, ownerName, navItems, sticky } = props;
+  const { siteTitle, ownerName, navItems } = props;
+
+  const watchLinkTitle = site.watchLink
+    ? t(`watchLink.${site.instanceId}.${i18n.language}`, {
+        defaultValue:
+          typeof site.watchLink.title === 'string'
+            ? site.watchLink.title
+            : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0],
+      })
+    : null;
+
+  const watchLinkUrl = site.watchLink
+    ? typeof site.watchLink.url === 'string'
+      ? site.watchLink.url
+      : site.watchLink.url[i18n.language] || Object.values(site.watchLink.url)[0]
+    : '';
 
   const orgLogo = useMemo(() => {
     const url = getThemeStaticURL(theme.themeLogoUrl);
@@ -364,14 +283,14 @@ function GlobalNav(props: GlobalNavProps) {
                 <Nav navbar className="d-md-none">
                   <LanguageSelector mobile />
                 </Nav>
-                {site.watchLink ? (
+                {watchLinkUrl && watchLinkTitle ? (
                   <Nav navbar>
                     <NavItem>
                       <NavLink>
-                        <Link href={site.watchLink.url}>
+                        <Link href={watchLinkUrl}>
                           <a>
                             <NavHighlighter className="highlighter">
-                              {site.watchLink.title}
+                              {watchLinkTitle}
                             </NavHighlighter>
                           </a>
                         </Link>

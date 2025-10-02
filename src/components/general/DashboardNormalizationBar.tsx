@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Fade } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -8,12 +8,11 @@ import { SettingsToggleBar } from '@common/components/SettingsToggleBar';
 
 import type {
   GetParametersQuery,
-  SetNormalizationMutation,
-  SetNormalizationMutationVariables,
+  SetNormalizationFromWidgetMutation,
+  SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
+import { SET_NORMALIZATION_MUTATION } from '@/components/general/NormalizationWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
-
-import { SET_NORMALIZATION_MUTATION } from './NormalizationWidget';
 
 /**
  * Similar to NormalizationWidget, but based on the new custom dashboard page designs and using the common SettingsToggleBar component.
@@ -23,7 +22,7 @@ import { SET_NORMALIZATION_MUTATION } from './NormalizationWidget';
 function DashboardNormalizationBar() {
   const { t } = useTranslation();
 
-  const { loading, error, data, previousData } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
+  const { loading, data, previousData } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
   });
 
@@ -34,8 +33,8 @@ function DashboardNormalizationBar() {
 
   // Todo handle mutation error
   const [setNormalization, { loading: mutationLoading }] = useMutation<
-    SetNormalizationMutation,
-    SetNormalizationMutationVariables
+    SetNormalizationFromWidgetMutation,
+    SetNormalizationFromWidgetMutationVariables
   >(SET_NORMALIZATION_MUTATION, { refetchQueries: 'active' });
 
   useEffect(() => {
