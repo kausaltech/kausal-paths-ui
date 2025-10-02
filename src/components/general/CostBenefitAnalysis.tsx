@@ -27,6 +27,7 @@ type Props = {
 
 type Cubes = {
   metric: DimensionalMetric;
+  actionName: string;
   totals: {
     cost: number;
     benefit: number;
@@ -49,7 +50,7 @@ function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOpt
       ],
       source: sortedData.map((item) => {
         return {
-          action: item.metric.data.name,
+          action: item.actionName,
           cost: item.totals.cost,
           benefit: item.totals.benefit,
           netBenefit: item.totals.netBenefit,
@@ -181,17 +182,25 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
     );
 
     if (!costBenefitData) {
-      return [];
+      return [] as { metric: DimensionalMetric; actionName: string }[];
     }
 
     return costBenefitData.actions
-      .map((action) => (action.effectDim ? new DimensionalMetric(action.effectDim) : undefined))
-      .filter((metric): metric is DimensionalMetric => metric !== undefined);
+      .map((action) => {
+        if (!action?.effectDim) return undefined;
+        const metric = new DimensionalMetric(action.effectDim);
+        const actionName = action.action?.name ?? '';
+        if (!actionName) return undefined;
+        return { metric, actionName };
+      })
+      .filter(
+        (v): v is { metric: DimensionalMetric; actionName: string } => v !== undefined
+      );
   }, [data]);
 
   // Calculate the cost, benefit and net benefit for each metric
   const metricsWithTotals = useMemo(() => {
-    const metrics = dimensionalMetrics.map((metric) => {
+    const metrics: Cubes[] = dimensionalMetrics.map(({ metric, actionName }) => {
       const [cost, benefit] = metric.rows.reduce(
         ([cost, benefit], row) => {
           if (row.value === 0 || row.value == null || row.year < startYear || row.year > endYear) {
@@ -210,6 +219,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
 
       return {
         metric,
+        actionName,
         totals: { cost, benefit, netBenefit: benefit - cost },
       };
     });
