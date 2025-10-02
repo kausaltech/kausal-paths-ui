@@ -3,30 +3,16 @@ import React, { Fragment, useMemo, useState } from 'react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, Container } from '@mui/material';
-import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { useTranslation } from 'next-i18next';
-import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
-import {
-  Collapse,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  Nav,
-  NavItem,
-  Navbar,
-  UncontrolledDropdown,
-} from 'reactstrap';
+import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 
 import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
-import NavDropdown, {
-  type NavDropdownListItem,
-  type NavDropdownProps,
-} from '@/components/common/NavDropdown';
+import NavDropdown, { type NavDropdownListItem } from '@/components/common/NavDropdown';
 import Icon from '@/components/common/icon';
 import LanguageSelector from '@/components/general/LanguageSelector';
-import { useSite } from '@/context/site';
+import { useSiteWithSetter } from '@/context/site';
 
 const BrandNavWrapper = styled(Box)`
   background-color: ${(props) => props.theme.brandNavBackground};
@@ -142,18 +128,6 @@ const HomeLink = styled.a`
   }
 `;
 
-const EmptyLogo = styled.div`
-  width: 0;
-  height: ${(props) => props.theme.spaces.s200};
-  margin: ${(props) => props.theme.spaces.s050} 0 ${(props) => props.theme.spaces.s050} 0;
-
-  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    width: 0;
-    height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
-    margin: ${(props) => props.theme.spaces.s050} 0 ${(props) => props.theme.spaces.s050} 0;
-  }
-`;
-
 const NavLink = styled.div`
   a {
     display: block;
@@ -192,69 +166,6 @@ const NavHighlighter = styled.span`
   }
 `;
 
-const StyledDropdownToggle = styled(DropdownToggle)`
-  display: block;
-  padding: 0;
-  margin: 0 0 ${(props) => props.theme.spaces.s100} ${(props) => props.theme.spaces.s100};
-  color: ${(props) => props.theme.neutralDark};
-
-  &:hover {
-    text-decoration: none;
-    color: ${(props) => props.theme.neutralDark};
-
-    .highlighter {
-      border-bottom: 5px solid ${(props) => props.theme.brandDark};
-    }
-  }
-
-  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    align-self: flex-end;
-    margin: 0 ${(props) => props.theme.spaces.s200} 0 0;
-  }
-`;
-
-const StyledDropdown = styled(UncontrolledDropdown)`
-  .dropdown-toggle.nav-link {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .dropdown-menu {
-    border: 0px;
-    padding-top: 0;
-    box-shadow: none;
-  }
-  .dropdown-item {
-    margin: 0 0 0 ${(props) => props.theme.spaces.s150};
-    color: ${(props) => props.theme.neutralDark};
-
-    .highlighter {
-      display: inline-block;
-      padding: ${(props) => props.theme.spaces.s050} 0
-        calc(${(props) => props.theme.spaces.s050} - 5px);
-    }
-
-    &:hover {
-      background-color: transparent;
-
-      .highlighter {
-        border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
-      }
-    }
-  }
-
-  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    .dropdown-menu {
-      background-color: ${(props) => props.theme.themeColors.white};
-      box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
-    }
-
-    .dropdown-item {
-      margin: 0;
-    }
-  }
-`;
-
 const NavbarToggler = styled.button`
   display: inline-block;
   padding: 0;
@@ -269,37 +180,12 @@ const NavbarToggler = styled.button`
   overflow: visible;
   background: transparent;
   border-radius: 0;
-  -webkit-appearance: none;
+  appearance: none;
 
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     display: none;
   }
 `;
-
-function DropdownList(props: NavDropdownProps) {
-  const { parentName, items, active } = props;
-  return (
-    <StyledDropdown nav inNavbar className={active && 'active'}>
-      <StyledDropdownToggle nav caret>
-        <NavHighlighter className={`highlighter ${active && 'active'}`}>
-          {parentName}
-        </NavHighlighter>
-      </StyledDropdownToggle>
-      <DropdownMenu direction="left">
-        {items &&
-          items.map((child) => (
-            <DropdownItem key={child.id}>
-              <NavLink>
-                <Link href={child.urlPath}>
-                  <NavHighlighter className="highlighter">{child.name}</NavHighlighter>
-                </Link>
-              </NavLink>
-            </DropdownItem>
-          ))}
-      </DropdownMenu>
-    </StyledDropdown>
-  );
-}
 
 export type GlobalNavProps = {
   siteTitle: string;
@@ -317,12 +203,11 @@ export type GlobalNavProps = {
 
 function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   const { t, i18n } = useTranslation();
-  const site = useSite();
+  const [site] = useSiteWithSetter();
   const theme = useTheme();
-  const [navIsFixed, setnavIsFixed] = useState(false);
   const [isOpen, toggleOpen] = useState(false);
-  const { siteTitle, ownerName, navItems, sticky } = props;
-  const instanceId = site.instanceId || site.instanceContext?.id || 'default';
+  const { siteTitle, ownerName, navItems } = props;
+  //const instanceId = site.instanceId || site.instanceContext?.id || 'default';
 
   const watchLinkTitle = site.watchLink
     ? t(`watchLink.${site.instanceId}.${i18n.language}`, {
@@ -351,44 +236,19 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
     );
   }, [theme.themeLogoUrl, ownerName, siteTitle, t]);
 
-  if (sticky) {
-    useScrollPosition(
-      ({ prevPos, currPos }) => {
-        const goingUp = currPos.y > prevPos.y && currPos.y < -70;
-        if (goingUp !== navIsFixed) setnavIsFixed(goingUp);
-      },
-      [navIsFixed],
-      null,
-      false,
-      300
-    );
-  }
   return (
     <Fragment>
       <BrandNavWrapper>
         <Container fixed maxWidth="xl" sx={{ backgroundColor: 'theme.brandNavBackground' }}>
           <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container={false}>
-            <Link href="/" passHref>
-              <HomeLink href="dummy">
-                {orgLogo}
-                <SiteTitle>{siteTitle}</SiteTitle>
-              </HomeLink>
-            </Link>
-            {false /* FIXME */ && (
-              <Nav navbar className="ml-auto">
-                <NavItem>
-                  <NavLink>
-                    <Link href="#admin" passHref>
-                      <a href="dummy">
-                        <NavHighlighter className="highlighter">
-                          <Icon name="user" size={20} color={theme.brandNavColor} /> Log in
-                        </NavHighlighter>
-                      </a>
-                    </Link>
-                  </NavLink>
-                </NavItem>
-              </Nav>
-            )}
+            <Nav navbar className="me-auto">
+              <Link href="/" passHref>
+                <HomeLink href="dummy">
+                  {orgLogo}
+                  <SiteTitle>{siteTitle}</SiteTitle>
+                </HomeLink>
+              </Link>
+            </Nav>
             <Nav navbar className="ml-auto d-none d-md-flex">
               <LanguageSelector mobile={false} />
             </Nav>
@@ -410,12 +270,7 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
       </BrandNavWrapper>
       <BotNavWrapper>
         <Container fixed maxWidth="xl">
-          <BotNav
-            expand="md"
-            fixed={navIsFixed ? 'top' : ''}
-            id="global-navigation-bar"
-            container={false}
-          >
+          <BotNav expand="md" id="global-navigation-bar" container={false}>
             <Collapse isOpen={isOpen} navbar>
               <Nav navbar className="me-auto">
                 {navItems &&
