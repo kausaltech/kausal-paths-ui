@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { type Edge, type Node, getIncomers, getOutgoers } from '@xyflow/react';
 import {
   Activity,
   Building,
@@ -134,4 +135,29 @@ export const getNodeTypeLabel = (nodeType: string | undefined) => {
 
   if (type.includes('gpc')) return 'GPC';
   return nodeType;
+};
+
+/* Recursive functions to get downstream and upstream nodes */
+
+export const getDownstreamNodes = (node: Node, nodes: Node[], edges: Edge[]) => {
+  if (!node) return [];
+  const downstreamNodes: Node[] = [];
+  const outgoers: Node[] = getOutgoers(node, nodes, edges);
+  downstreamNodes.push(...outgoers);
+  outgoers.forEach((outgoer) => {
+    downstreamNodes.push(...getDownstreamNodes(outgoer, nodes, edges));
+  });
+
+  return downstreamNodes;
+};
+
+export const getUpstreamNodes = (node: Node, nodes: Node[], edges: Edge[]) => {
+  if (!node) return [];
+  const upstreamNodes: Node[] = [];
+  const incomers: Node[] = getIncomers(node, nodes, edges);
+  upstreamNodes.push(...incomers);
+  incomers.forEach((incomer) => {
+    upstreamNodes.push(...getUpstreamNodes(incomer, nodes, edges));
+  });
+  return upstreamNodes;
 };

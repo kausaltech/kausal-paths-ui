@@ -98,7 +98,7 @@ const CustomExpandIcon = () => {
 
 const InputDatasets = ({ datasets }: { datasets: Dataset[] }) => {
   return (
-    <Accordion>
+    <Accordion defaultExpanded>
       <AccordionSummary
         expandIcon={<CustomExpandIcon />}
         aria-controls="input-datasets-content"
@@ -241,7 +241,7 @@ const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) 
 
       {/*----- Description -----*/}
       {nodeDescription && (
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary
             expandIcon={<CustomExpandIcon />}
             aria-controls="input-dimensions-content"
@@ -258,7 +258,7 @@ const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) 
         </Accordion>
       )}
       {node.explanation && (
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary
             expandIcon={<CustomExpandIcon />}
             aria-controls="explanation-content"
@@ -281,7 +281,7 @@ const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) 
         Input
       </Typography>
       {nodeExtras?.input_dimensions && nodeExtras.input_dimensions.length > 0 && (
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary
             expandIcon={<CustomExpandIcon />}
             aria-controls="input-nodes-content"
@@ -297,7 +297,7 @@ const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) 
         </Accordion>
       )}
       {nodeExtras?.input_nodes && nodeExtras.input_nodes.length > 0 && (
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary
             expandIcon={<CustomExpandIcon />}
             aria-controls="input-nodes-content"

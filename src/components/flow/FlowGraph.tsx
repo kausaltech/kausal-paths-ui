@@ -25,6 +25,8 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 //import ActionNode from '@/components/flow/ActionNode';
 import DefaultNode from '@/components/flow/DefaultNode';
 
+import { getDownstreamNodes, getUpstreamNodes } from './NodeProcessing';
+
 const elk = new ELK();
 
 // Elk has a *huge* amount of options to configure. To see everything you can
@@ -130,11 +132,42 @@ const FlowGraph = (props: FlowGraphProps) => {
     );
   }, []);
 
+  const muteUnselectedNodes = useCallback((selectedIds: string[]) => {
+    /* let's assume only 1 node selected at a time */
+    const selectedId = selectedIds[0];
+    const selectedNode: Node | undefined = nodes.find((node) => selectedId === node.id);
+    if (!selectedNode) {
+      showAllNodes();
+      return;
+    }
+    const downstreamNodes = getDownstreamNodes(selectedNode, nodes, edges);
+    const upstreamNodes = getUpstreamNodes(selectedNode, nodes, edges);
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          muted:
+            !downstreamNodes.some((n) => n.id === node.id) &&
+            !upstreamNodes.some((n) => n.id === node.id) &&
+            node.id !== selectedNode.id,
+        },
+      }))
+    );
+  }, []);
+
+  const showAllNodes = useCallback(() => {
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({ ...node, data: { ...node.data, muted: false } }))
+    );
+  }, []);
+
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
       const selectedIds = selectedNodes.map((node) => node.id);
       setSelectedNodeIds(selectedIds);
       updateEdgesAnimation(selectedIds);
+      muteUnselectedNodes(selectedIds);
       onNodeSelect(selectedNodes[0]?.id || null);
     },
     [updateEdgesAnimation, onNodeSelect]

@@ -20,14 +20,15 @@ type DefaultNode = Node<
     label?: string;
     nodeType?: string;
     typeLabel?: string;
+    muted?: boolean;
     inputDatasets?: number;
   },
-  'isVisible' | 'label' | 'nodeType' | 'typeLabel' | 'inputDatasets'
+  'isVisible' | 'label' | 'nodeType' | 'typeLabel' | 'inputDatasets' | 'muted'
 >;
 
 const DefaultNode = (props: NodeProps<DefaultNode>) => {
   const { data, width, height, selected } = props;
-  const { label, nodeType } = data;
+  const { label, nodeType, muted } = data;
   const showContent = useStore(zoomSelector);
 
   const isActionNode = nodeType?.toLowerCase().includes('action');
@@ -56,6 +57,7 @@ const DefaultNode = (props: NodeProps<DefaultNode>) => {
           boxShadow: selected ? 4 : 2,
           border: selected ? '1px solid #3c2a2a' : 'none',
           backgroundColor: isActionNode ? 'grey.200' : 'white',
+          opacity: muted ? 0.25 : 1,
         }}
       >
         <Handle type="target" position={Position.Left} />
