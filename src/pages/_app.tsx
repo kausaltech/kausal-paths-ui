@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { type ReactNode, useState } from 'react';
 
 import App, { type AppContext, type AppProps } from 'next/app';
 
@@ -8,6 +8,7 @@ import type { Theme } from '@kausal/themes/types';
 import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
+import type { NextPage } from 'next';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import numbro from 'numbro';
 
@@ -53,6 +54,10 @@ type WatchLink = {
   url: string | { [key: string]: string };
 } | null;
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
+
+type Page<P = object> = NextPage<P> & {
+  getLayout?: (page: ReactNode) => ReactNode;
+};
 
 const defaultSiteContext: {
   [key: string]: { instanceId?: string; watchLink: WatchLink; demoPages?: DemoPage[] };
@@ -177,6 +182,7 @@ const defaultSiteContext: {
 };
 
 export type PathsAppProps = AppProps<Record<string, unknown>> & {
+  Component: Page;
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
   themeProps: Theme;
@@ -196,12 +202,15 @@ function PathsApp(props: PathsAppProps) {
   const logger = getLogger({ name: 'app-component' });
   const muiTheme = initializeMuiTheme(themeProps);
 
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout ?? ((page) => <Layout>{page}</Layout>);
+
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
     i18n.language,
     i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined
   );
-  const component = <Component {...pageProps} />;
+  const component = getLayout(<Component {...pageProps} />);
   if (!instanceContext || !siteContext) {
     // getInitialProps errored, return with a very simple layout
     logger.error('no site context');
@@ -245,7 +254,7 @@ function PathsApp(props: PathsAppProps) {
               <CommonThemeProvider theme={themeProps}>
                 <ThemedGlobalStyles />
                 <LocalizedNumbersContext.Provider value={numbersContext}>
-                  <Layout>{component}</Layout>
+                  {component}
                 </LocalizedNumbersContext.Provider>
               </CommonThemeProvider>
             </ThemeProvider>

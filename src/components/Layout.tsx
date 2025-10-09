@@ -197,5 +197,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     </>
   );
 };
+export const getLayout = (page) => <Layout>{page}</Layout>;
 
 export default Layout;
