@@ -112,6 +112,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
               title={`${metricDim.name} (${metricDim.unit.short})`}
               metric={metricDim}
               desiredOutcome={DesiredOutcome.Decreasing}
+              forceObservedValues
             />
           </StyledCard>
         )}

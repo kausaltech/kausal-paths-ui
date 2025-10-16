@@ -57,6 +57,9 @@ type Props = {
   metric: NonNullable<NonNullable<GetNodeVisualizationsQuery['node']>['metricDim']>;
   desiredOutcome: DesiredOutcome;
   title?: string;
+  // observed values depend on the node having measure datapoint years, in cases where the node
+  // observed values are computed from other nodes, we need to force the observed values to be displayed.
+  forceObservedValues?: boolean;
 };
 
 /**
@@ -103,7 +106,12 @@ function interpolateProgressValues(progressData: (number | null)[]): (number | n
   return result;
 }
 
-export function ProgressDriversVisualization({ metric, desiredOutcome, title }: Props) {
+export function ProgressDriversVisualization({
+  metric,
+  desiredOutcome,
+  title,
+  forceObservedValues = false,
+}: Props) {
   const [site] = useSiteWithSetter();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -155,7 +163,9 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
     // If the node has observed values, filter progress years to only render these
     const filteredProgressYears = metric.measureDatapointYears.length
       ? progressYears.filter((year) => metric.measureDatapointYears.includes(year))
-      : progressYears;
+      : forceObservedValues
+        ? progressYears
+        : [];
 
     const allYears = [...slice.historicalYears, ...slice.forecastYears];
     const allDefaultData = [...defaultScenario.historicalValues, ...defaultScenario.forecastValues];
