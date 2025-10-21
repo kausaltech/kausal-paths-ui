@@ -191,7 +191,7 @@ const ScenarioPanel = () => {
               appear={false}
               in={!isPanelFixed || !isPanelMini}
             >
-              <Typography variant="h4" sx={{ lineHeight: 1, m: 0, p: 0, mb: 1 }}>
+              <Typography variant="h4" component="h2" sx={{ lineHeight: 1, m: 0, p: 0, mb: 1 }}>
                 {t('scenario')}
               </Typography>
             </Collapse>
@@ -246,7 +246,7 @@ const ScenarioPanel = () => {
                 },
               }}
             >
-              <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+              <Typography variant="h6" component="h3" sx={{ lineHeight: 1, m: 0, p: 0 }}>
                 {t('display')}:
               </Typography>
 

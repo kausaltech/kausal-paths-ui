@@ -147,7 +147,7 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
         <CompactOutcome>
           {icon}
           <Box>
-            <Typography variant="h6" sx={{ lineHeight: 1, m: 0, p: 0 }}>
+            <Typography variant="h6" component="h3" sx={{ lineHeight: 1, m: 0, p: 0 }}>
               {isForecastOnGoalYear
                 ? t('scenario-outcome')
                 : `${t('table-historical')} ${comparisonGoal.year}`} 
