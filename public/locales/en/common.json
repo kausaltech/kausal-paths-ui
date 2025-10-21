@@ -144,6 +144,7 @@
   "expand-all": "Expand all",
   "collapse-all": "Collapse all",
   "values-per": "Values per {{normalization}}",
+  "view-options": "View options",
   "above-target": "above the target",
   "below-target": "below the target",
   "impact-compared-to-baseline": "<strong>Total impact {{impact}} {{unit}}</strong> compared to {{baseline}} scenario",
