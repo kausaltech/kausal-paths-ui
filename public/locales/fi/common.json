@@ -118,5 +118,6 @@
   "included-in-scenario": "Sisältyy skenaarioon",
   "custom-scenario-selected-message": "Räätälöity skenaario valitaan automaattisesti, kun muokkaat skenaariota.",
   "expand-all": "Avaa kaikki",
-  "collapse-all": "Sulje kaikki"
+  "collapse-all": "Sulje kaikki",
+  "view-options": "Näkymäasetukset"
 }

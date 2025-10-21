@@ -110,5 +110,6 @@
   "included-in-scenario": "Ingår i scenariot",
   "custom-scenario-selected-message": "Det anpassade scenariot väljs automatiskt när du redigerar scenariot.",
   "expand-all": "Visa alla",
-  "collapse-all": "Dölj alla"
+  "collapse-all": "Dölj alla",
+  "view-options": "Visningsalternativ"
 }

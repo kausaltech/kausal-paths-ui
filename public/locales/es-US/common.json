@@ -129,5 +129,6 @@
   "included-in-scenario": "Incluido en el escenario",
   "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario.",
   "expand-all": "Expandir todo",
-  "collapse-all": "Contraer todo"
+  "collapse-all": "Contraer todo",
+  "view-options": "Opciones de vista"
 }

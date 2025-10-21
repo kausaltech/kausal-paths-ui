@@ -141,5 +141,6 @@
   "included-in-scenario": "Περιλαμβάνεται στο σενάριο",
   "custom-scenario-selected-message": "Το προσαρμοσμένο σενάριο επιλέγεται αυτόματα όταν επεξεργάζεστε το σενάριο.",
   "expand-all": "Επέκταση όλων",
-  "collapse-all": "Σύμπτυξη όλων"
+  "collapse-all": "Σύμπτυξη όλων",
+  "view-options": "Επιλογές προβολής"
 }
