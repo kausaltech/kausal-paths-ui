@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useId } from 'react';
 
 import styled from '@emotion/styled';
 import { Box, IconButton, MenuItem } from '@mui/material';
@@ -74,6 +74,9 @@ const ViewSelector = ({
   setActiveTabId: (tabId: string) => void;
   showDistribution: boolean;
 }) => {
+  const id = useId();
+  const buttonId = `view-menu-button-${id}`;
+  const menuId = `view-menu-${id}`;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { t } = useTranslation();
@@ -96,16 +99,17 @@ const ViewSelector = ({
   return (
     <Box>
       <IconButton
-        id="basic-button"
-        aria-controls={open ? 'basic-menu' : undefined}
-        aria-haspopup="true"
+        id={buttonId}
+        aria-controls={open ? menuId : undefined}
+        aria-haspopup="menu"
         aria-expanded={open ? 'true' : undefined}
+        aria-label={t('view-options')}
         onClick={handleClick}
       >
-        <ThreeDotsVertical />
+        <ThreeDotsVertical  aria-hidden="true" focusable="false"/>
       </IconButton>
       <Menu
-        id="basic-menu"
+        id={menuId}
         anchorEl={anchorEl}
         anchorOrigin={{
           vertical: 'bottom',
@@ -119,7 +123,7 @@ const ViewSelector = ({
         onClose={handleClose}
         slotProps={{
           list: {
-            'aria-labelledby': 'basic-button',
+            'aria-labelledby': buttonId,
           },
         }}
       >
@@ -128,27 +132,27 @@ const ViewSelector = ({
             onClick={createHandleMenuItemClick('year')}
             selected={activeTabId === 'year'}
           >
-            <PieChartFill /> {t('distribution')}
+            <PieChartFill aria-hidden="true" focusable="false" /> {t('distribution')}
           </StyledMenuItem>
         )}
         <StyledMenuItem
           onClick={createHandleMenuItemClick('graph')}
           selected={activeTabId === 'graph'}
         >
-          <BarChartLineFill /> {t('time-series')}
+          <BarChartLineFill aria-hidden="true" focusable="false" /> {t('time-series')}
         </StyledMenuItem>
         <StyledMenuItem
           onClick={createHandleMenuItemClick('table')}
           selected={activeTabId === 'table'}
         >
-          <Table /> {t('table')}
+          <Table aria-hidden="true" focusable="false" /> {t('table')}
         </StyledMenuItem>
         {showDetailsLink && (
           <StyledMenuItem
             onClick={createHandleMenuItemClick('info')}
             selected={activeTabId === 'info'}
           >
-            <InfoCircleFill />
+            <InfoCircleFill aria-hidden="true" focusable="false" />
             {t('details')}
           </StyledMenuItem>
         )}
@@ -288,7 +292,7 @@ const OutcomeNodeContent = ({
             id={`${node.id}-panel-${activeTabId}`}
             role="tabpanel"
             tabIndex={0}
-            aria-labelledby={`${node.id}-tab-${activeTabId}}`}
+            aria-labelledby={`${node.id}-tab-${activeTabId}`}
           >
             {activeTabId === 'year' && singleYearGraph}
             {activeTabId === 'graph' && (
