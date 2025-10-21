@@ -200,7 +200,7 @@ const OutcomeCardSet = ({
         </ContentArea>
         {cardNodes.length > 0 && (
           <div>
-            <BarHeader>
+            <BarHeader as="h3">
               {subNodesTitle} ({endYear})
             </BarHeader>
             <OverlayScrollbarsComponent
