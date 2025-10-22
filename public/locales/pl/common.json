@@ -126,5 +126,6 @@
   "custom-scenario-selected-message": "Własny scenariusz jest automatycznie wybierany, gdy edytujesz scenariusz.",
   "expand-all": "Rozwiń wszystko",
   "collapse-all": "Zwiń wszystko",
-  "view-options": "Opcje widoku"
+  "view-options": "Opcje widoku",
+  "close-scenario-editor": "Zamknij edytor scenariusza"
 }

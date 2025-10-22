@@ -119,5 +119,6 @@
   "custom-scenario-selected-message": "Räätälöity skenaario valitaan automaattisesti, kun muokkaat skenaariota.",
   "expand-all": "Avaa kaikki",
   "collapse-all": "Sulje kaikki",
-  "view-options": "Näkymäasetukset"
+  "view-options": "Näkymäasetukset",
+  "close-scenario-editor": "Sulje skenaariomuokkain"
 }
