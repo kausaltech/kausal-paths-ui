@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import styled from '@emotion/styled';
-
+import { Typography } from '@mui/material';
 import { ActionLink, NodeLink } from '@/common/links';
 
 const ActionsList = styled.ul`
@@ -40,10 +40,17 @@ const ActionsListCard = styled.li<{ active: boolean; $groupColor: string }>`
   }
 
   a,
-  a > h6 {
+  a > .action-title {
     color: ${(props) =>
       props.active ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050};
   }
+
+  a > .action-title { 
+    display: block; 
+    font-size: 0.875rem; 
+    font-weight: 600; 
+    line-height: 1.2; 
+    margin: 0.1rem 0 0; }
 `;
 
 const ActionListItem = (props) => {
@@ -59,7 +66,7 @@ const ActionListItem = (props) => {
       <ActionLink action={action}>
         <a>
           {action.group && <ActionGroup>{action.group.name}</ActionGroup>}
-          <h6>{action.name}</h6>
+          <span className="action-title">{action.name}</span>
         </a>
       </ActionLink>
     </ActionsListCard>
@@ -80,9 +87,9 @@ const OutcomeNodeDetails = (props) => {
     <div>
       {node.shortDescription && <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />}
       {actions.length > 0 && (
-        <h5>
+        <Typography variant="h5" component="h3" sx={{ mt: 1, mb: 1 }}>
           {t('actions-influencing-this', { sector: node.name })} ({actions.length})
-        </h5>
+        </Typography>
       )}
       <ActionsList>
         {actions.map((action) => (
