@@ -170,7 +170,7 @@ const NumberWidget = (props: NumberWidgetProps) => {
   return (
     <WidgetWrapper>
       <Stack spacing={0.5} direction="column" sx={{ alignItems: 'flex-start', width: '100%' }}>
-        <div>
+        <div id={`${id}-field-label`}>
           {description || label} {isReallyCustomized ? '*' : null}
         </div>
         <TextField
@@ -180,7 +180,10 @@ const NumberWidget = (props: NumberWidgetProps) => {
           onBlur={handleBlur}
           slotProps={{
             input: {
-              endAdornment: <InputAdornment position="start">{unit}</InputAdornment>,
+              inputProps: {
+                'aria-labelledby': `${id}-field-label`,
+              },
+              endAdornment: <InputAdornment position="start" aria-hidden="true">{unit}</InputAdornment>,
             },
           }}
           error={error}
@@ -191,7 +194,7 @@ const NumberWidget = (props: NumberWidgetProps) => {
           }}
         />
         <Slider
-          aria-label={description || label}
+          aria-labelledby={`${id}-field-label`}
           value={value}
           onChangeCommitted={handleSlideCommitted}
           onChange={handleSlide}

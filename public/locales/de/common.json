@@ -155,5 +155,6 @@
   "custom-scenario-selected-message": "Das angepasste Szenario wird automatisch ausgewählt, wenn Sie das Szenario bearbeiten.",
   "expand-all": "Alle ausklappen",
   "collapse-all": "Alle einklappen",
-  "view-options": "Ansichtsoptionen"
+  "view-options": "Ansichtsoptionen",
+  "close-scenario-editor": "Szenario-Editor schließen"
 }

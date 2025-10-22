@@ -60,8 +60,11 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
         <Typography variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
           {t('edit-scenario')}
         </Typography>
-        <IconButton onClick={handleDrawerClose} size="small">
-          <XLg />
+        <IconButton 
+          onClick={handleDrawerClose} 
+          size="small"
+          aria-label={t('close-scenario-editor')}>
+          <XLg aria-hidden="true" focusable="false" />
         </IconButton>
       </DrawerHeader>
       <Box sx={{ p: 1 }}>

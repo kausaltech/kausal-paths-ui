@@ -126,5 +126,6 @@
   "custom-scenario-selected-message": "Při úpravě scénáře se automaticky zvolí vlastní scénář.",
   "expand-all": "Rozbalit vše",
   "collapse-all": "Sbalit vše",
-  "view-options": "Možnosti zobrazení"
+  "view-options": "Možnosti zobrazení",
+  "close-scenario-editor": "Zavřít editor scénáře"
 }

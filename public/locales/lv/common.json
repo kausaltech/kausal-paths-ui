@@ -115,5 +115,6 @@
   "custom-scenario-selected-message": "Pielāgotais scenārijs tiek automātiski izvēlēts, kad rediģējat scenāriju.",
   "expand-all": "Izvērst visu",
   "collapse-all": "Sakļaut visu",
-  "view-options": "Skata opcijas"
+  "view-options": "Skata opcijas",
+  "close-scenario-editor": "Aizvērt scenāriju redaktoru"
 }

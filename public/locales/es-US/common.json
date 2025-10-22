@@ -130,5 +130,6 @@
   "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario.",
   "expand-all": "Expandir todo",
   "collapse-all": "Contraer todo",
-  "view-options": "Opciones de vista"
+  "view-options": "Opciones de vista",
+  "close-scenario-editor": "Cerrar editor de escenarios"
 }
