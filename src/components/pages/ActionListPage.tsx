@@ -1,6 +1,45 @@
-import { useMemo, useState } from 'react';
+import {
+  useMemo,
+  useState,
+} from 'react';
 
-import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'next-i18next';
+
+import {
+  DecisionLevel,
+  type GetActionListQuery,
+  type GetActionListQueryVariables,
+  type GetImpactOverviewsQuery,
+  type GetPageQuery,
+} from '@/common/__generated__/graphql';
+import {
+  activeGoalVar,
+  yearRangeVar,
+} from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import { summarizeYearlyValuesBetween } from '@/common/preprocess';
+import ContentLoader from '@/components/common/ContentLoader';
+import GraphQLError from '@/components/common/GraphQLError';
+import Icon from '@/components/common/icon';
+import { PageHero } from '@/components/common/PageHero';
+import ActionsComparison from '@/components/general/ActionsComparison';
+import ActionsList from '@/components/general/ActionsList';
+import ActionsMac from '@/components/general/ActionsMac';
+import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
+import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
+import { GET_ACTION_LIST } from '@/queries/getActionList';
+import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
+import type {
+  ActionWithEfficiency,
+  SortActionsBy,
+  SortActionsConfig,
+} from '@/types/actions.types';
+import {
+  type QueryResult,
+  useQuery,
+  useReactiveVar,
+} from '@apollo/client';
 import styled from '@emotion/styled';
 import {
   Box,
@@ -13,31 +52,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'next-i18next';
-
-import {
-  DecisionLevel,
-  type GetActionListQuery,
-  type GetActionListQueryVariables,
-  type GetImpactOverviewsQuery,
-  type GetPageQuery,
-} from '@/common/__generated__/graphql';
-import { activeGoalVar, yearRangeVar } from '@/common/cache';
-import { useInstance } from '@/common/instance';
-import { summarizeYearlyValuesBetween } from '@/common/preprocess';
-import ContentLoader from '@/components/common/ContentLoader';
-import GraphQLError from '@/components/common/GraphQLError';
-import { PageHero } from '@/components/common/PageHero';
-import Icon from '@/components/common/icon';
-import ActionsComparison from '@/components/general/ActionsComparison';
-import ActionsList from '@/components/general/ActionsList';
-import ActionsMac from '@/components/general/ActionsMac';
-import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
-import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
-import { GET_ACTION_LIST } from '@/queries/getActionList';
-import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
-import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
 import { SimpleEffect } from '../general/SimpleEffect';
 import ScenarioPanel from '../scenario/ScenarioPanel';
@@ -496,13 +510,22 @@ function ActionListPage({ page }: ActionListPageProps) {
           />
         )}
         {listType === 'cost-benefit' && (
-          <CostBenefitAnalysis data={impactResp.data} isLoading={impactResp.loading} />
+          <CostBenefitAnalysis 
+            data={impactResp.data?.impactOverviews[activeEfficiency]}  // Pass the selected one
+            isLoading={impactResp.loading} 
+          />
         )}
         {listType === 'roi' && (
-          <ReturnOnInvestment data={impactResp.data} isLoading={impactResp.loading} />
+          <ReturnOnInvestment 
+            data={impactResp.data?.impactOverviews[activeEfficiency]}  // Pass the selected one
+            isLoading={impactResp.loading} 
+          />
         )}
         {listType === 'simple' && (
-          <SimpleEffect data={impactResp.data} isLoading={impactResp.loading} />
+          <SimpleEffect 
+            data={impactResp.data?.impactOverviews[activeEfficiency]}  // Pass the selected one
+            isLoading={impactResp.loading} 
+          />
         )}
         {listType === 'comparison' && (
           <ActionsComparison

@@ -1,22 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import 'overlayscrollbars/styles/overlayscrollbars.css';
+
 import { useMemo } from 'react';
 
-import { useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import type { Theme } from '@emotion/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
-import styled from '@emotion/styled';
-import { Box } from '@mui/material';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
-import 'overlayscrollbars/styles/overlayscrollbars.css'; 
-
-import { Chart } from '@common/components/Chart';
+import { useTranslation } from 'react-i18next';
 
 import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
+import { useReactiveVar } from '@apollo/client';
+import { Chart } from '@common/components/Chart';
+import type { Theme } from '@emotion/react';
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
+import { Box } from '@mui/material';
 
 const ScrollArea = styled.div`
   position: relative;
@@ -41,7 +42,7 @@ const ChartRow = styled.div`
  */
 
 type Props = {
-  data?: GetImpactOverviewsQuery;
+  data: GetImpactOverviewsQuery['impactOverviews'][0] | undefined;  // Single overview
   isLoading: boolean;
 };
 
@@ -57,7 +58,7 @@ type Cubes = {
 function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOption {
   const sortedData = data.sort((a, b) => a.totals.netBenefit - b.totals.netBenefit);
   const unit = sortedData.length > 0 ? sortedData[0].metric?.data.unit.short : undefined;
-  const unitLabel = typeof unit === 'string' ? t(unit) : '';
+  const unitLabel = unit ? (typeof unit === 'string' ? t(unit) : unit) : '';
 
   const config: EChartsCoreOption = {
     dataset: {
@@ -196,22 +197,26 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
 
   const dimensionalMetrics = useMemo(() => {
-    const costBenefitData = data?.impactOverviews.find(
-      (dataset) => dataset.graphType === 'cost_benefit'
-    );
-
-    if (!costBenefitData) {
-      return [];
+    if (!data || data.graphType !== 'cost_benefit') {
+      return [] as { metric: DimensionalMetric; actionName: string }[];
     }
 
-    return costBenefitData.actions
-      .map((action) => (action.effectDim ? new DimensionalMetric(action.effectDim) : undefined))
-      .filter((metric): metric is DimensionalMetric => metric !== undefined);
+    return data.actions
+      .map((action) => {
+        if (!action?.effectDim) return undefined;
+        const metric = new DimensionalMetric(action.effectDim);
+        const actionName = action.action?.name ?? '';
+        if (!actionName) return undefined;
+        return { metric, actionName };
+      })
+      .filter(
+        (v): v is { metric: DimensionalMetric; actionName: string } => v !== undefined
+      );
   }, [data]);
 
   // Calculate the cost, benefit and net benefit for each metric
   const metricsWithTotals = useMemo(() => {
-    const metrics = dimensionalMetrics.map((metric) => {
+    const metrics: Cubes[] = dimensionalMetrics.map(({ metric, actionName }) => {
       const [cost, benefit] = metric.rows.reduce(
         ([cost, benefit], row) => {
           if (row.value === 0 || row.value == null || row.year < startYear || row.year > endYear) {
@@ -230,6 +235,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
 
       return {
         metric,
+        actionName,
         totals: { cost, benefit, netBenefit: benefit - cost },
       };
     });
