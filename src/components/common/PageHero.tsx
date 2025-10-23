@@ -1,6 +1,6 @@
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Card, Container, type SxProps } from '@mui/material';
+import { Card, Container, Typography, type SxProps } from '@mui/material';
 
 const StyledHeroSection = styled.div`
   background: ${({ theme }) => theme.brandDark};
@@ -40,7 +40,21 @@ const Description = styled.div`
   }
 `;
 
+const visuallyHiddenSx = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap' as const,
+  border: 0,
+};
+
 type PageHeroProps = {
+  /** use title as fallback h1 if no leadTitle for accessibility */
+  title?: string;
   leadTitle?: string;
   leadDescription?: string;
   children?: React.ReactNode;
@@ -48,6 +62,7 @@ type PageHeroProps = {
 };
 
 export const PageHero = ({
+  title,
   leadTitle,
   leadDescription,
   children,
@@ -70,6 +85,12 @@ export const PageHero = ({
             )}
           </StyledHeroCard>
         )}
+        {!hasHeroCard && !!title && (
+          <Typography component="h1" sx={visuallyHiddenSx}>
+            {title}
+          </Typography>
+        )}
+
         {children}
       </Container>
     </StyledHeroSection>
