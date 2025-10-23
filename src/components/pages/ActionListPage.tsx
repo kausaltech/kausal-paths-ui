@@ -173,7 +173,7 @@ const getSortOptions = (
   },
 ];
 
-type ViewType = 'list' | 'mac' | 'comparison' | 'cost-benefit' | 'roi' | 'simple';
+type ViewType = 'list' | 'graph';
 
 type ViewOption = { value: ViewType; label: string; icon: string };
 const getViewOption = <V extends ViewType>(value: V, label: string, icon: string): ViewOption => ({
@@ -323,16 +323,9 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   const viewOptions: ViewOption[] = [
     getViewOption('list', t('actions-as-list'), 'list'),
-    hasEfficiency
-      ? getViewOption('mac', t('actions-as-efficiency'), 'chartColumn')
-      : getViewOption('comparison', t('actions-as-comparison'), 'chartColumn'),
-    ...(showCostBenefitAnalysis
-      ? [getViewOption('cost-benefit', t('cost-benefit'), 'chartColumn')]
+    ...(hasEfficiency || showCostBenefitAnalysis || showReturnOnInvestment || showSimpleEffect
+      ? [getViewOption('graph', t('actions-as-graph'), 'chartColumn')]
       : []),
-    ...(showReturnOnInvestment
-      ? [getViewOption('roi', t('return-on-investment'), 'chartColumn')]
-      : []),
-    ...(showSimpleEffect ? [getViewOption('simple', t('simple-effect'), 'chartColumn')] : []),
   ];
 
   if (error) {
@@ -478,7 +471,7 @@ function ActionListPage({ page }: ActionListPageProps) {
       </ViewSelectorBar>
 
       <Container fixed maxWidth="xl" sx={{ mb: 5 }}>
-        {listType === 'list' && (
+        {listType === 'list' ? (
           <ActionsList
             id="list-view"
             actions={usableActions}
@@ -496,48 +489,59 @@ function ActionListPage({ page }: ActionListPageProps) {
               setAscending((prev) => !prev);
             }}
           />
-        )}
-        {listType === 'mac' && (
-          <ActionsMac
-            id="efficiency-view"
-            actions={usableActions}
-            impactOverviews={data.impactOverviews[activeEfficiency]}
-            t={t}
-            actionGroups={data.instance.actionGroups}
-            sortBy={sortBy.sortKey}
-            sortAscending={ascending}
-            refetching={areActionsLoading}
-          />
-        )}
-        {listType === 'cost-benefit' && (
-          <CostBenefitAnalysis 
-            data={impactResp.data?.impactOverviews[activeEfficiency]}  // Pass the selected one
-            isLoading={impactResp.loading} 
-          />
-        )}
-        {listType === 'roi' && (
-          <ReturnOnInvestment 
-            data={impactResp.data?.impactOverviews[activeEfficiency]}  // Pass the selected one
-            isLoading={impactResp.loading} 
-          />
-        )}
-        {listType === 'simple' && (
-          <SimpleEffect 
-            data={impactResp.data?.impactOverviews[activeEfficiency]}  // Pass the selected one
-            isLoading={impactResp.loading} 
-          />
-        )}
-        {listType === 'comparison' && (
-          <ActionsComparison
-            id="comparison-view"
-            actions={usableActions}
-            actionGroups={data.instance.actionGroups}
-            sortBy={sortBy.sortKey}
-            sortAscending={ascending}
-            refetching={areActionsLoading}
-            displayYears={yearRange}
-          />
-        )}
+        ) : (() => {
+          const selectedOverview = impactResp.data?.impactOverviews[activeEfficiency];
+          const graphType = selectedOverview?.graphType;
+
+          switch (graphType) {
+            case 'cost_efficiency':
+              return (
+                <ActionsMac
+                  id="efficiency-view"
+                  actions={usableActions}
+                  impactOverviews={selectedOverview}
+                  t={t}
+                  actionGroups={data.instance.actionGroups}
+                  sortBy={sortBy.sortKey}
+                  sortAscending={ascending}
+                  refetching={areActionsLoading}
+                />
+              );
+            case 'cost_benefit':
+              return (
+                <CostBenefitAnalysis 
+                  data={selectedOverview}
+                  isLoading={impactResp.loading} 
+                />
+              );
+            case 'return_on_investment':
+              return (
+                <ReturnOnInvestment 
+                  data={selectedOverview}
+                  isLoading={impactResp.loading} 
+                />
+              );
+            case 'simple_effect':
+              return (
+                <SimpleEffect 
+                  data={selectedOverview}
+                  isLoading={impactResp.loading} 
+                />
+              );
+            default:
+              return (
+                <ActionsComparison
+                  id="comparison-view"
+                  actions={usableActions}
+                  actionGroups={data.instance.actionGroups}
+                  sortBy={sortBy.sortKey}
+                  sortAscending={ascending}
+                  refetching={areActionsLoading}
+                  displayYears={yearRange}
+                />
+              );
+          }
+        })()}
       </Container>
     </>
   );
