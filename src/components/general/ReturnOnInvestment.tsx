@@ -1,27 +1,22 @@
 import { useMemo } from 'react';
 
-import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { useTranslation } from 'react-i18next';
 
-import { Chart } from '@common/components/Chart';
-
 import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { useReactiveVar } from '@apollo/client';
+import { Chart } from '@common/components/Chart';
 
 const formatValue = (value: number | null, unit: string) => `${(value || 0).toFixed(2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
   endYear: number,
-  data?: GetImpactOverviewsQuery
+  dataset?: GetImpactOverviewsQuery['impactOverviews'][0]
 ): EChartsCoreOption {
-  const dataset = data?.impactOverviews.find(
-    (dataset) => dataset.graphType === 'return_on_investment'
-  );
-
   const unit = dataset?.indicatorUnit?.short || '';
 
   return {
@@ -117,7 +112,7 @@ function getChartConfig(
 }
 
 type Props = {
-  data?: GetImpactOverviewsQuery;
+  data: GetImpactOverviewsQuery['impactOverviews'][0] | undefined;  // Single overview
   isLoading: boolean;
 };
 
@@ -128,12 +123,11 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
     () => getChartConfig(startYear, endYear, data),
     [data, startYear, endYear]
   );
-  const d = data?.impactOverviews.find(({ graphType }) => graphType === 'return_on_investment');
-  const bars = d?.actions.length;
+  const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = d?.label || t('return-on-investment');
+  const title = data?.label || t('return-on-investment');
   // TODO: Add subtitle translation return-on-investment-subtitle
-  const subtitle = d?.indicatorLabel || '';
+  const subtitle = data?.indicatorLabel || '';
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

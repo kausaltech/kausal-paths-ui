@@ -1,26 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { useMemo } from 'react';
 
-import { useReactiveVar } from '@apollo/client';
 import type { BarSeriesOption } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
 import round from 'lodash/round';
 import { useTranslation } from 'react-i18next';
 
-import { Chart } from '@common/components/Chart';
-
 import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { useReactiveVar } from '@apollo/client';
+import { Chart } from '@common/components/Chart';
 
 const formatValue = (value: number, unit: string) => `${round(value, 2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
   endYear: number,
-  data?: GetImpactOverviewsQuery
+  dataset?: GetImpactOverviewsQuery['impactOverviews'][0]
 ): EChartsCoreOption {
-  const dataset = data?.impactOverviews.find((dataset) => dataset.graphType === 'simple_effect');
-
   const unit = dataset?.indicatorUnit?.short || '';
 
   return {
@@ -109,7 +107,7 @@ function getChartConfig(
 }
 
 type Props = {
-  data?: GetImpactOverviewsQuery;
+  data: GetImpactOverviewsQuery['impactOverviews'][0] | undefined;  // Single overview
   isLoading: boolean;
 };
 
@@ -120,11 +118,10 @@ export function SimpleEffect({ data, isLoading }: Props) {
     () => getChartConfig(startYear, endYear, data),
     [data, startYear, endYear]
   );
-  const d = data?.impactOverviews.find(({ graphType }) => graphType === 'simple_effect');
-  const bars = d?.actions.length;
+  const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = d?.label || t('simple-effect');
-  const subtitle = d?.indicatorLabel || t('simple-effect-subtitle');
+  const title = data?.label || t('simple-effect');
+  const subtitle = data?.indicatorLabel || t('simple-effect-subtitle');
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

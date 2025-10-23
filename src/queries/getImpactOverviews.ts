@@ -34,10 +34,7 @@ export const GET_IMPACT_OVERVIEWS = gql`
         }
         unitAdjustmentMultiplier
         effectDim {
-          # TODO: There's an issue with the API where dimension ids
-          #       are the same as action ids and causes cache issues.
-          #       Once fixed, we should use the DimensionalMetric fragment here.
-          # id
+          id
           name
           dimensions {
             id
