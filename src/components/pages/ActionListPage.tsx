@@ -346,9 +346,12 @@ function ActionListPage({ page }: ActionListPageProps) {
             {hasEfficiency && (
               <Grid size={{ md: 4 }} sx={{ display: 'flex' }}>
                 <StyledFormControl>
-                  <StyledFormLabel htmlFor="impact">{t('actions-impact-on')}</StyledFormLabel>
+                  <StyledFormLabel id="impact-label" htmlFor="impact">
+                    {t('actions-impact-on')}
+                  </StyledFormLabel>
                   <StyledSelect
                     id="impact"
+                    labelId="impact-label"
                     value={activeEfficiency}
                     onChange={(e) => setActiveEfficiency(Number(e.target.value))}
                     size="small"
@@ -366,9 +369,12 @@ function ActionListPage({ page }: ActionListPageProps) {
             {actionGroups.length > 1 && (
               <Grid size={{ md: 4 }} sx={{ display: 'flex' }}>
                 <StyledFormControl>
-                  <StyledFormLabel htmlFor="type">{t('actions-group-type')}</StyledFormLabel>
+                  <StyledFormLabel id="type-label" htmlFor="type">
+                    {t('actions-group-type')}
+                  </StyledFormLabel>
                   <StyledSelect
                     id="type"
+                    labelId="type-label"
                     value={actionGroup}
                     onChange={(e) => setActionGroup(e.target.value as string)}
                     size="small"
@@ -387,9 +393,12 @@ function ActionListPage({ page }: ActionListPageProps) {
             <Grid size={{ md: 4 }} sx={{ display: 'flex' }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-end', mr: 1.5 }}>
                 <StyledFormControl>
-                  <StyledFormLabel htmlFor="sort">{t('actions-sort-by')}</StyledFormLabel>
+                  <StyledFormLabel id="sort-label" htmlFor="sort">
+                    {t('actions-sort-by')}
+                  </StyledFormLabel>
                   <StyledSelect
                     id="sort"
+                    labelId="sort-label"
                     value={sortBy.key}
                     onChange={(e) => handleChangeSort(e.target.value as SortActionsBy)}
                     size="small"
@@ -444,6 +453,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
               <Select
                 id="view-select"
+                labelId="view-select-label"
                 value={listType}
                 onChange={(e) => setListType(e.target.value as ViewType)}
                 size="small"
