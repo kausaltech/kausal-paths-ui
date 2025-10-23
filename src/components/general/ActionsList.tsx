@@ -299,6 +299,7 @@ const ActionsList = ({
             const isOpen = Boolean(openRows[action.id]);
             const enabledParam = findActionEnabledParam(action.parameters);
             const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
+            const detailsId = `action-details-${action.id}`;
 
             const colors = {
               bg: isIncluded ? cardBgPrimary : cardBgSecondary,
@@ -435,9 +436,18 @@ const ActionsList = ({
                       onClick={() =>
                         setOpenRows((prev) => ({ ...prev, [action.id]: !prev[action.id] }))
                       }
+                      aria-label={
+                        isOpen
+                          ? t('hide-details', { action: action.name })
+                          : t('show-details', { action: action.name })
+                      }
+                      aria-expanded={isOpen ? true : false}
+                      aria-controls={detailsId}
                     >
                       <ChevronDown
                         size={20}
+                        aria-hidden="true"
+                        focusable="false"
                         style={{
                           transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                           transition: 'transform 0.2s',
@@ -462,7 +472,14 @@ const ActionsList = ({
                       },
                     }}
                   >
-                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                    <Collapse 
+                      id={detailsId}
+                      in={isOpen} 
+                      timeout="auto" 
+                      unmountOnExit
+                      role="region"
+                      aria-label={t('action-details-for', { action: action.name })}
+                    >
                       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <Typography variant="body2" sx={{ color: colors.text }}>
                           {(action.goal || action.shortDescription)?.replace(/(<([^>]+)>)/gi, '')}
