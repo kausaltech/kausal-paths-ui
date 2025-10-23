@@ -127,5 +127,8 @@
   "expand-all": "Rozwiń wszystko",
   "collapse-all": "Zwiń wszystko",
   "view-options": "Opcje widoku",
-  "close-scenario-editor": "Zamknij edytor scenariusza"
+  "close-scenario-editor": "Zamknij edytor scenariusza",
+  "show-details": "Pokaż szczegóły dotyczące {{action}}",
+  "hide-details": "Ukryj szczegóły dotyczące {{action}}",
+  "action-details-for": "Szczegóły dotyczące {{action}}"
 }

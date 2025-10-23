@@ -121,5 +121,8 @@
   "expand-all": "Alle ausklappen",
   "collapse-all": "Alle einklappen",
   "view-options": "Ansichtsoptionen",
-  "close-scenario-editor": "Szenario-Editor schließen"
+  "close-scenario-editor": "Szenario-Editor schließen",
+  "show-details": "Details zu {{action}} anzeigen",
+  "hide-details": "Details zu {{action}} ausblenden",
+  "action-details-for": "Details zu {{action}}"
 }

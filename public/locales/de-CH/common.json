@@ -29,5 +29,8 @@
   "actions-sort-cumulative-impact": "Kumulative Wirkung",
   "custom-scenario-selected-message": "Das angepasste Szenario wird automatisch ausgewählt, wenn Sie das Szenario bearbeiten.",
   "view-options": "Ansichtsoptionen",
-  "close-scenario-editor": "Szenario-Editor schliessen"
+  "close-scenario-editor": "Szenario-Editor schliessen",
+  "show-details": "Details zu {{action}} anzeigen",
+  "hide-details": "Details zu {{action}} ausblenden",
+  "action-details-for": "Details zu {{action}}"
 }

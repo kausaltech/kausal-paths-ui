@@ -149,5 +149,8 @@
   "below-target": "below the target",
   "impact-compared-to-baseline": "<strong>Total impact {{impact}} {{unit}}</strong> compared to {{baseline}} scenario",
   "custom-scenario-selected-message": "Custom scenario is automatically selected when you edit the scenario.",
-  "close-scenario-editor": "Close scenario editor"
+  "close-scenario-editor": "Close scenario editor",
+  "show-details": "Show details for {{action}}",
+  "hide-details": "Hide details for {{action}}",
+  "action-details-for": "Details for {{action}}"
 }

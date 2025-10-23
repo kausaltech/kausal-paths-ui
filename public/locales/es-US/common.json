@@ -131,5 +131,8 @@
   "expand-all": "Expandir todo",
   "collapse-all": "Contraer todo",
   "view-options": "Opciones de vista",
-  "close-scenario-editor": "Cerrar editor de escenarios"
+  "close-scenario-editor": "Cerrar editor de escenarios",
+  "show-details": "Mostrar detalles de {{action}}",
+  "hide-details": "Ocultar detalles de {{action}}",
+  "action-details-for": "Detalles de {{action}}"
 }

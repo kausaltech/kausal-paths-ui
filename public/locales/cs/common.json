@@ -127,5 +127,8 @@
   "expand-all": "Rozbalit vše",
   "collapse-all": "Sbalit vše",
   "view-options": "Možnosti zobrazení",
-  "close-scenario-editor": "Zavřít editor scénáře"
+  "close-scenario-editor": "Zavřít editor scénáře",
+  "show-details": "Zobrazit podrobnosti pro {{action}}",
+  "hide-details": "Skrýt podrobnosti pro {{action}}",
+  "action-details-for": "Podrobnosti pro {{action}}"
 }

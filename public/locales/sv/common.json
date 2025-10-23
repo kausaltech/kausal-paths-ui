@@ -112,5 +112,8 @@
   "expand-all": "Visa alla",
   "collapse-all": "Dölj alla",
   "view-options": "Visningsalternativ",
-  "close-scenario-editor": "Stäng scenarioredigeraren"
+  "close-scenario-editor": "Stäng scenarioredigeraren",
+  "show-details": "Visa detaljer för {{action}}",
+  "hide-details": "Dölj detaljer för {{action}}",
+  "action-details-for": "Detaljer för {{action}}"
 }

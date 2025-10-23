@@ -126,5 +126,8 @@
   "expand-all": "Vis alle",
   "collapse-all": "Skjul alle",
   "view-options": "Visningsindstillinger",
-  "close-scenario-editor": "Luk scenarieredigerer"
+  "close-scenario-editor": "Luk scenarieredigerer",
+  "show-details": "Vis detaljer for {{action}}",
+  "hide-details": "Skjul detaljer for {{action}}",
+  "action-details-for": "Detaljer for {{action}}"
 }
