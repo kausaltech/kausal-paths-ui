@@ -355,6 +355,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={activeEfficiency}
                     onChange={(e) => setActiveEfficiency(Number(e.target.value))}
                     size="small"
+                    MenuProps={{ disablePortal: true }}
                   >
                     {data.impactOverviews.map((impactGroup, indx) => (
                       <MenuItem value={indx} key={indx}>
@@ -378,6 +379,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={actionGroup}
                     onChange={(e) => setActionGroup(e.target.value as string)}
                     size="small"
+                    MenuProps={{ disablePortal: true }}
                   >
                     <MenuItem value="ALL_ACTIONS">{t('action-groups-all')}</MenuItem>
                     {actionGroups.map((group) => (
@@ -402,6 +404,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={sortBy.key}
                     onChange={(e) => handleChangeSort(e.target.value as SortActionsBy)}
                     size="small"
+                    MenuProps={{ disablePortal: true }}
                   >
                     {sortOptions
                       .filter((opt) => !opt.isHidden)
@@ -457,6 +460,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                 value={listType}
                 onChange={(e) => setListType(e.target.value as ViewType)}
                 size="small"
+                MenuProps={{ disablePortal: true }}
               >
                 {viewOptions.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
