@@ -48,6 +48,18 @@ const StyledSkipToContent = styled.a`
   }
 `;
 
+const visuallyHiddenSx = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap' as const,
+  border: 0,
+};
+
 const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
@@ -188,6 +200,10 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             navItems={navItems}
           />
           <main className="main" id="main">
+            {/* hidden H1 fallback for accessibility */}
+            <Box component="h1" sx={visuallyHiddenSx}>
+              {activePage?.title || site.title}
+            </Box>
             {children}
           </main>
           <FooterComponent />
