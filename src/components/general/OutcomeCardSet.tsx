@@ -48,7 +48,7 @@ const ContentArea = styled.div`
 
 const BarHeader = styled.h5`
   font-size: 1rem;
-  color: ${({ theme }) => theme.textColor.tertiary};
+  color: ${({ theme }) => theme.textColor.primary};
   margin-bottom: 0.25rem;
 `;
 
