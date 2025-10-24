@@ -280,7 +280,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
 
           <Divider sx={{ my: 2 }} />
 
-          <Typography variant="subtitle1" sx={{ textAlign: 'right' }}>
+          <Typography variant="subtitle1" component="p" sx={{ textAlign: 'right' }}>
             <Trans
               i18nKey="impact-compared-to-baseline"
               values={{
