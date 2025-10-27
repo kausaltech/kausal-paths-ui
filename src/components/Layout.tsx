@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -60,6 +60,24 @@ const visuallyHiddenSx = {
   border: 0,
 };
 
+type MenuPage = {
+  id?: string | null;
+  title: string;
+  urlPath: string;
+};
+
+function isMenuPage(
+  page: unknown
+): page is { id?: unknown; title?: unknown; urlPath?: unknown } {
+  if (typeof page !== 'object' || page === null) return false;
+  const p = page as Record<string, unknown>;
+  return (
+    ('id' in p ? (typeof p.id === 'string' || p.id === null || typeof p.id === 'undefined') : true) &&
+    typeof p.title === 'string' &&
+    typeof p.urlPath === 'string'
+  );
+}
+
 const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
@@ -74,11 +92,18 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     scenarioEditorDrawerOpenVar(false);
   };
 
-  let activePage;
+  let activePage: MenuPage | undefined;
 
   const iconBase = theme.name ? `/static/themes/${theme.name}/images/favicon` : fallbackIconBase;
 
-  const menuItems = [...menuPages];
+  const rawMenu = Array.isArray(menuPages) ? menuPages : [];
+  const menuItems: MenuPage[] = rawMenu
+  .filter(isMenuPage)
+  .map((page) => ({
+    id: typeof page.id === 'string' ? page.id : null,
+    title: page.title,
+    urlPath: page.urlPath,
+  }));
 
   menuItems.forEach((page) => {
     if (pathname === page.urlPath) {
@@ -99,7 +124,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     name: page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
-    active: page == activePage,
+    active: page === activePage,
   }));
 
   const NavComponent = useCustomComponent('GlobalNav', GlobalNav);
