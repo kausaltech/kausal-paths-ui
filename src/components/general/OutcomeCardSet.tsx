@@ -46,7 +46,7 @@ const ContentArea = styled.div`
 
 const BarHeader = styled.h5`
   font-size: 1rem;
-  color: ${({ theme }) => theme.textColor.tertiary};
+  color: ${({ theme }) => theme.textColor.primary};
   margin-bottom: 0.25rem;
 `;
 
@@ -200,7 +200,7 @@ const OutcomeCardSet = ({
         </ContentArea>
         {cardNodes.length > 0 && (
           <div>
-            <BarHeader>
+            <BarHeader as="h3">
               {subNodesTitle} ({endYear})
             </BarHeader>
             <OverlayScrollbarsComponent

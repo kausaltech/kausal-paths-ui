@@ -440,11 +440,18 @@ function SiteFooter() {
                 <FundingHeader>{t('supported-by')}</FundingHeader>
                 {fundingInstruments.map((funder) => (
                   <FundingInstrumentContainer key={funder.id}>
-                    <a href={funder.link} target="_blank" rel="noreferrer">
+                    <a 
+                      href={funder.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      aria-label={funder.name}
+                    >  
                       <SVG
                         src={funder.logo}
                         preserveAspectRatio="xMidYMid meet"
                         title={funder.name}
+                        aria-hidden="true"
+                        focusable="false"
                       />
                     </a>
                   </FundingInstrumentContainer>
@@ -456,18 +463,32 @@ function SiteFooter() {
               <FundingInstruments $wrap={otherLogos.length > 4}>
                 {otherLogos.map((logo) => (
                   <FundingInstrumentContainer key={logo.id} $small={otherLogos.length > 4}>
-                    <a
-                      href={logo.link ? logo.link : '#'}
-                      target={logo.link ? '_blank' : '_self'}
-                      rel={logo.link ? 'noreferrer' : ''}
-                    >
+                    {logo.link ? (
+                      <a
+                        href={logo.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={logo.name}
+                      >
+                        <SVG
+                          src={logo.logo}
+                          preserveAspectRatio="xMidYMid meet"
+                          title={logo.name}
+                          style={{ display: 'block' }}
+                          aria-hidden="true"
+                          focusable="false"
+                        />
+                      </a>
+                    ) : (
                       <SVG
                         src={logo.logo}
                         preserveAspectRatio="xMidYMid meet"
                         title={logo.name}
+                        aria-hidden="true"
+                        focusable="false"
                         style={{ display: 'block' }}
                       />
-                    </a>
+                    )}
                   </FundingInstrumentContainer>
                 ))}
               </FundingInstruments>

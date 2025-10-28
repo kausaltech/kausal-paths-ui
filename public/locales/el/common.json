@@ -141,5 +141,10 @@
   "included-in-scenario": "Περιλαμβάνεται στο σενάριο",
   "custom-scenario-selected-message": "Το προσαρμοσμένο σενάριο επιλέγεται αυτόματα όταν επεξεργάζεστε το σενάριο.",
   "expand-all": "Επέκταση όλων",
-  "collapse-all": "Σύμπτυξη όλων"
+  "collapse-all": "Σύμπτυξη όλων",
+  "view-options": "Επιλογές προβολής",
+  "close-scenario-editor": "Κλείσιμο επεξεργαστή σεναρίου",
+  "show-details": "Εμφάνιση λεπτομερειών για {{action}}",
+  "hide-details": "Απόκρυψη λεπτομερειών για {{action}}",
+  "action-details-for": "Λεπτομέρειες για {{action}}"
 }

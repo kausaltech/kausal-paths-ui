@@ -58,7 +58,7 @@ export const PageHero = ({
   if (!hasHeroCard && !children) {
     return null;
   }
-
+  
   return (
     <StyledHeroSection>
       <Container fixed maxWidth="xl" sx={{ py: 3 }}>

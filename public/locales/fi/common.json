@@ -118,5 +118,10 @@
   "included-in-scenario": "Sisältyy skenaarioon",
   "custom-scenario-selected-message": "Räätälöity skenaario valitaan automaattisesti, kun muokkaat skenaariota.",
   "expand-all": "Avaa kaikki",
-  "collapse-all": "Sulje kaikki"
+  "collapse-all": "Sulje kaikki",
+  "view-options": "Näkymäasetukset",
+  "close-scenario-editor": "Sulje skenaariomuokkain",
+  "show-details": "Näytä lisätiedot kohteesta {{action}}",
+  "hide-details": "Piilota lisätiedot kohteesta {{action}}",
+  "action-details-for": "Lisätiedot kohteesta {{action}}"
 }

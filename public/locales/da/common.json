@@ -124,5 +124,10 @@
   "included-in-scenario": "Inkluderet i scenariet",
   "custom-scenario-selected-message": "Det brugerdefinerede scenarie vælges automatisk, når du redigerer scenariet.",
   "expand-all": "Vis alle",
-  "collapse-all": "Skjul alle"
+  "collapse-all": "Skjul alle",
+  "view-options": "Visningsindstillinger",
+  "close-scenario-editor": "Luk scenarieredigerer",
+  "show-details": "Vis detaljer for {{action}}",
+  "hide-details": "Skjul detaljer for {{action}}",
+  "action-details-for": "Detaljer for {{action}}"
 }

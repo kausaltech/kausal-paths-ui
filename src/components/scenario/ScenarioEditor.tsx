@@ -55,23 +55,26 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
 
   const hasGlobalParameters = site.parameters.length > 0;
   return (
-    <Fragment>
+    <Box role="dialog" aria-modal="true" aria-labelledby="scenario-editor-title">
       <DrawerHeader>
-        <Typography variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
+        <Typography id="scenario-editor-title" variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
           {t('edit-scenario')}
         </Typography>
-        <IconButton onClick={handleDrawerClose} size="small">
-          <XLg />
+        <IconButton 
+          onClick={handleDrawerClose} 
+          size="small"
+          aria-label={t('close-scenario-editor')}>
+          <XLg aria-hidden="true" focusable="false" />
         </IconButton>
       </DrawerHeader>
       <Box sx={{ p: 1 }}>
-        <Box sx={{ mb: 2 }}>
+        <Box component="section" aria-label={t('scenario')} sx={{ mb: 2 }}>
           <ScenarioSelector />
         </Box>
-        <Box sx={{ mb: 3 }}>
+        <Box component="section" aria-label={t('actions')} sx={{ mb: 3 }}>
           <ActionsChooser />
           {hasGlobalParameters && (
-            <Box sx={{ mb: 3 }}>
+            <Box component="section" aria-label={t('all-settings')} sx={{ mb: 3 }}>
               <Divider />
               <GlobalParameters />
             </Box>
@@ -92,7 +95,7 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
         }
         sx={{ boxShadow: 3 }}
       />
-    </Fragment>
+    </Box>
   );
 };
 

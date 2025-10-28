@@ -85,6 +85,9 @@ const ScenarioSelector = () => {
   const instance = useInstance();
   const activeScenario = useReactiveVar(activeScenarioVar);
 
+  const selectId = 'scenario-select';
+  const labelId = 'scenario-select-label';
+
   const { loading, error, data, previousData } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
@@ -115,8 +118,16 @@ const ScenarioSelector = () => {
   if (loading && !previousData) {
     return (
       <StyledFormControl>
-        <StyledInputLabel>{t('plot-scenario')}</StyledInputLabel>
-        <StyledSelect value={t('loading')} id="scenario-select" $custom={false}>
+        <StyledInputLabel id={labelId} htmlFor={selectId}>
+          {t('plot-scenario')}
+        </StyledInputLabel>
+        <StyledSelect 
+          value={t('loading')} 
+          id={selectId}
+          labelId={labelId}
+          name="scenario"
+          $custom={false} 
+          >
           <MenuItem disabled value={t('loading')}>
             <span>
               <CircularProgress size={16} />
@@ -150,11 +161,15 @@ const ScenarioSelector = () => {
 
   return (
     <StyledFormControl disabled={loading || mutationLoading}>
-      <StyledInputLabel>{t('plot-scenario')}</StyledInputLabel>
+      <StyledInputLabel id={labelId} htmlFor={selectId}>
+        {t('plot-scenario')}
+      </StyledInputLabel>
       <StyledSelect
         value={activeScenario.id}
         onChange={handleChange}
-        id="scenario-select"
+        id={selectId}
+        labelId={labelId}
+        name="scenario"
         $custom={isCustomScenario(activeScenario)}
       >
         <MenuItem disabled value="">

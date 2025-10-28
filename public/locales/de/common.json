@@ -119,5 +119,10 @@
   "below-target": "unter dem Ziel",
   "custom-scenario-selected-message": "Das angepasste Szenario wird automatisch ausgewählt, wenn Sie das Szenario bearbeiten.",
   "expand-all": "Alle ausklappen",
-  "collapse-all": "Alle einklappen"
+  "collapse-all": "Alle einklappen",
+  "view-options": "Ansichtsoptionen",
+  "close-scenario-editor": "Szenario-Editor schließen",
+  "show-details": "Details zu {{action}} anzeigen",
+  "hide-details": "Details zu {{action}} ausblenden",
+  "action-details-for": "Details zu {{action}}"
 }

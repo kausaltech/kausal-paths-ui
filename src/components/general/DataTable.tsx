@@ -1,5 +1,6 @@
 import {
   Paper,
+  Typography,
   Table,
   TableBody,
   TableCell,
@@ -38,11 +39,18 @@ const DataTable = (props: DataTableProps) => {
     totalHistoricalValues.some((val) => val.value !== null) ||
     totalForecastValues.some((val) => val.value !== null);
 
+  const titleId = `${node.id}-datatable-title`;  
+
   return (
-    <TableContainer component={Paper}>
-      <h5>
+    <TableContainer 
+      component={Paper}
+      role="region"
+      aria-labelledby={titleId}
+      tabIndex={0}
+    >
+      <Typography id={titleId} variant="h5" component="h3" sx={{ px: 2, pt: 2 }}>
         {node.name} ({startYear} - {endYear})
-      </h5>
+      </Typography>
       <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
