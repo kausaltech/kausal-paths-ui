@@ -9,9 +9,28 @@ type CallToActionCardProps = {
   linkUrl: string;
 };
 
+const CtaArrow = ({ size }: { size: number }) => (
+  <ArrowRight
+    className="cta-arrow"
+    size={size}
+    aria-hidden="true"
+    focusable="false"
+    role="presentation"
+  />
+);
+
 export default function CallToActionCard({ title, content, linkUrl }: CallToActionCardProps) {
+  const ariaLabel = content ? `${title}. ${content}` : title;
+
   return (
-    <MuiLink component={Link} href={linkUrl}>
+    <MuiLink 
+      component={Link} 
+      href={linkUrl}
+      underline="none"
+      sx={{ display: 'block' }}
+      aria-label={ariaLabel}
+      role="link"
+    >
       <Card
         sx={{
           backgroundColor: 'primary.main',
@@ -42,11 +61,11 @@ export default function CallToActionCard({ title, content, linkUrl }: CallToActi
             }}
           >
             {title}
-            {!content && <ArrowRight className="cta-arrow" size={24} />}
+            {!content && <CtaArrow size={24} />}
           </Typography>
           {content && (
             <Typography>
-              {content} <ArrowRight className="cta-arrow" size={16} />
+              {content} <CtaArrow size={16} />
             </Typography>
           )}
         </CardContent>
