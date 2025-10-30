@@ -12,8 +12,10 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Date: { input: any; output: any; }
   DateTime: { input: string; output: string; }
   JSONString: { input: string; output: string; }
+  PointScalar: { input: any; output: any; }
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -29,6 +31,20 @@ export enum ActionSortOrder {
   /** Standard */
   Standard = 'STANDARD'
 }
+
+export type CreateOrganizationMutationInput = {
+  /** A simplified short version of name for the general public */
+  abbreviation: InputMaybe<Scalars['String']['input']>;
+  classification: InputMaybe<Scalars['ID']['input']>;
+  clientMutationId: InputMaybe<Scalars['String']['input']>;
+  /** A date of dissolution */
+  dissolutionDate: InputMaybe<Scalars['Date']['input']>;
+  /** A date of founding */
+  foundingDate: InputMaybe<Scalars['Date']['input']>;
+  /** A primary name, e.g. a legally recognized name */
+  name: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['ID']['input']>;
+};
 
 /** An enumeration. */
 export enum DecisionLevel {
@@ -131,6 +147,21 @@ export enum SearchOperatorEnum {
   Or = 'OR'
 }
 
+export type UpdateOrganizationMutationInput = {
+  /** A simplified short version of name for the general public */
+  abbreviation: InputMaybe<Scalars['String']['input']>;
+  classification: InputMaybe<Scalars['ID']['input']>;
+  clientMutationId: InputMaybe<Scalars['String']['input']>;
+  /** A date of dissolution */
+  dissolutionDate: InputMaybe<Scalars['Date']['input']>;
+  /** A date of founding */
+  foundingDate: InputMaybe<Scalars['Date']['input']>;
+  id: InputMaybe<Scalars['ID']['input']>;
+  /** A primary name, e.g. a legally recognized name */
+  name: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['ID']['input']>;
+};
+
 export enum VisualizationKind {
   Group = 'group',
   Node = 'node'
@@ -153,14 +184,14 @@ export type AllMetricFieldsFragment = (
   & { __typename: 'ForecastMetricType' }
 );
 
-type StreamFieldFragment_2m1XrLdHtcnFwYiEmWiF8KhHi8avcR6fifz3urm8_Fragment = (
+type StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment = (
   { id: string | null, blockType: string, field: string }
-  & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' }
+  & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
 );
 
-type StreamFieldFragment_MUuwV54Y89O0mQBjkeqgeZHwZkJ0na4UyckrUfxlWpY_Fragment = (
+type StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment = (
   { id: string | null, blockType: string, field: string }
-  & { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+  & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
 );
 
 type StreamFieldFragment_CardListBlock_Fragment = (
@@ -181,7 +212,7 @@ type StreamFieldFragment_TextBlock_Fragment = (
   & { __typename: 'TextBlock' }
 );
 
-export type StreamFieldFragmentFragment = StreamFieldFragment_2m1XrLdHtcnFwYiEmWiF8KhHi8avcR6fifz3urm8_Fragment | StreamFieldFragment_MUuwV54Y89O0mQBjkeqgeZHwZkJ0na4UyckrUfxlWpY_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
+export type StreamFieldFragmentFragment = StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment | StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
 
 type ActionParameter_BoolParameterType_Fragment = (
   { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
@@ -242,6 +273,19 @@ export type SetGlobalParameterFromActionSummaryMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type SetNormalizationFromWidgetMutationVariables = Exact<{
+  id: InputMaybe<Scalars['ID']['input']>;
+}>;
+
+
+export type SetNormalizationFromWidgetMutation = (
+  { setNormalizer: (
+    { ok: boolean }
+    & { __typename: 'SetNormalizerMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type SetGlobalParameterMutationVariables = Exact<{
   parameterId: Scalars['ID']['input'];
   boolValue: InputMaybe<Scalars['Boolean']['input']>;
@@ -299,19 +343,6 @@ export type GetInstanceGoalOutcomeQuery = (
   & { __typename: 'Query' }
 );
 
-export type SetNormalizationFromWidgetMutationVariables = Exact<{
-  id: InputMaybe<Scalars['ID']['input']>;
-}>;
-
-
-export type SetNormalizationFromWidgetMutation = (
-  { setNormalizer: (
-    { ok: boolean }
-    & { __typename: 'SetNormalizerMutation' }
-  ) }
-  & { __typename: 'Mutation' }
-);
-
 export type SetParameterMutationVariables = Exact<{
   parameterId: Scalars['ID']['input'];
   boolValue: InputMaybe<Scalars['Boolean']['input']>;
@@ -365,7 +396,7 @@ export type DimensionalPlotFragment = (
 );
 
 export type DimensionalMetricFragment = (
-  { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+  { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
     { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
       { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
       & { __typename: 'MetricDimensionCategoryType' }
@@ -506,7 +537,7 @@ export type GetNodePageQuery = (
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metricDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+      { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -537,7 +568,7 @@ export type GetNodePageQuery = (
 
 export type DimensionalNodeMetricFragment = (
   { metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+    { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -596,7 +627,7 @@ type CausalGridNode_ActionNode_Fragment = (
     ) | null }
     & { __typename: 'ForecastMetricType' }
   ) | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+    { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -694,7 +725,7 @@ type CausalGridNode_Node_Fragment = (
     ) | null }
     & { __typename: 'ForecastMetricType' }
   ) | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+    { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -806,7 +837,7 @@ export type GetCausalChainQuery = (
         ) | null }
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -902,7 +933,7 @@ export type GetCausalChainQuery = (
         ) | null }
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1028,7 +1059,7 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1124,7 +1155,7 @@ export type GetActionContentQuery = (
         ) | null }
         & { __typename: 'ForecastMetricType' }
       ) | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1193,10 +1224,10 @@ export type GetActionContentQuery = (
       & { __typename: 'Node' }
     )>, body: Array<(
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
     ) | (
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
         { title: string | null, shortDescription: string | null }
@@ -1240,7 +1271,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'ForecastMetricType' }
     ) | null, metricDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+      { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -1330,7 +1361,7 @@ export type GetActionImpactsQuery = (
       & { __typename: 'ForecastMetricType' }
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
-  ) | null, effectNode: (
+  ) | null, costNode: (
     { metric: (
       { id: string | null, unit: (
         { short: string }
@@ -1434,16 +1465,16 @@ export type GetActionListQuery = (
     ), costUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ), effectUnit: (
+    ) | null, effectUnit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
-    ), costNode?: (
+    ) | null, costNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
-    ), effectNode: (
+    ) | null, effectNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
@@ -1459,10 +1490,10 @@ export type GetActionListQuery = (
       ), costValues: Array<(
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
-      ) | null>, impactValues: Array<(
+      ) | null> | null, impactValues: Array<(
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
-      ) | null> }
+      ) | null> | null }
       & { __typename: 'ActionImpact' }
     )> }
     & { __typename: 'ImpactOverviewType' }
@@ -1481,13 +1512,13 @@ export type GetImpactOverviewsQuery = (
     ), effectUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
-    ), indicatorUnit: (
+    ) | null, indicatorUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
       { short: string, long: string }
       & { __typename: 'UnitType' }
-    ), actions: Array<(
+    ) | null, actions: Array<(
       { unitAdjustmentMultiplier: number | null, action: (
         { id: string, name: string }
         & { __typename: 'ActionNode' }
@@ -1521,7 +1552,7 @@ export type GetImpactOverviewsQuery = (
           & { __typename: 'MetricDimensionType' }
         )> }
         & { __typename: 'DimensionalMetricType' }
-      ) }
+      ) | null }
       & { __typename: 'ActionImpact' }
     )> }
     & { __typename: 'ImpactOverviewType' }
@@ -1655,7 +1686,7 @@ export type OutcomeNodeFieldsFragment = (
     ) | null }
     & { __typename: 'ActionNode' }
   )> | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+    { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -1698,7 +1729,7 @@ export type GetPageQuery = (
     & { __typename: 'ActionListPage' }
   ) | (
     { id: string | null, title: string }
-    & { __typename: 'InstanceRootPage' | 'Page' }
+    & { __typename: 'DashboardPage' | 'InstanceRootPage' | 'Page' }
   ) | (
     { leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: (
       { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
@@ -1748,7 +1779,7 @@ export type GetPageQuery = (
           ) | null }
           & { __typename: 'ActionNode' }
         )> | null, metricDim: (
-          { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+          { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
             { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
               { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
               & { __typename: 'MetricDimensionCategoryType' }
@@ -1819,7 +1850,7 @@ export type GetPageQuery = (
         ) | null }
         & { __typename: 'ActionNode' }
       )> | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1849,10 +1880,10 @@ export type GetPageQuery = (
   ) | (
     { id: string | null, title: string, body: Array<(
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' | 'StaticBlock' }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
     ) | (
       { id: string | null, blockType: string, field: string }
-      & { __typename: 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
     ) | (
       { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
         { title: string | null, shortDescription: string | null }
@@ -1933,7 +1964,7 @@ export type GetInstanceContextQuery = (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
       { hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null, showRefreshPrompt: boolean }
       & { __typename: 'InstanceFeaturesType' }
-    ), introContent: Array<{ __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'RegexBlock' | 'SnippetChooserBlock' } | { __typename: 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
+    ), introContent: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' } | { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
       { field: string, value: string }
       & { __typename: 'RichTextBlock' }
     )> | null, goals: Array<(
@@ -1959,9 +1990,9 @@ export type GetInstanceContextQuery = (
   )>, menuPages: Array<(
     { id: string | null, title: string, urlPath: string, parent: (
       { id: string | null }
-      & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+      & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
     ) | null }
-    & { __typename: 'ActionListPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+    & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
   )>, parameters: Array<(
     { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }
