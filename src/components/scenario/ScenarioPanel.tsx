@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
@@ -123,6 +123,7 @@ const ScenarioPanel = () => {
   const { t } = useTranslation();
   const [site] = useSiteWithSetter();
   const instance = useInstance();
+  const editBtnRef = useRef<HTMLButtonElement>(null);
   const scenarioEditorDrawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
   const yearRange = useReactiveVar(yearRangeVar);
   const activeGoal = useReactiveVar(activeGoalVar);
@@ -130,6 +131,12 @@ const ScenarioPanel = () => {
     scenarioEditorDrawerOpenVar(!scenarioEditorDrawerOpen);
   };
 
+  useEffect(() => {
+  if (!scenarioEditorDrawerOpen) {
+    editBtnRef.current?.focus();
+  }
+}, [scenarioEditorDrawerOpen]);
+  
   // Get the goal outcome for the active goal
   const { error, data } = useQuery<
     GetInstanceGoalOutcomeQuery,
@@ -200,10 +207,14 @@ const ScenarioPanel = () => {
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                   <ScenarioSelector />
                   <Button
+                    ref={editBtnRef}
                     size="small"
                     color="primary"
                     onClick={handleEditClick}
                     startIcon={<Sliders />}
+                    aria-haspopup="dialog"
+                    aria-controls="scenario-editor"
+                    aria-expanded={scenarioEditorDrawerOpen ? 'true' : 'false'}
                   >
                     {t('edit-scenario')}
                   </Button>
