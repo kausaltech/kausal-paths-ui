@@ -135,14 +135,18 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
 
       // TODO: We always assume that under the target is better
       const sentiment = missingOnGoalYear > 0 ? 'negative' : 'positive';
-      const icon =
-        sentiment === 'negative' ? (
-          <PatchExclamationFill className="icon-negative" />
-        ) : (
-          <PatchCheckFill className="icon-positive" />
-        );
+      const Icon = sentiment === 'negative' ? PatchExclamationFill : PatchCheckFill;
+      const iconClass = sentiment === 'negative' ? 'icon-negative' : 'icon-positive';
+
+      const icon = (
+        <Icon
+          className={iconClass}
+          aria-hidden="true"
+          focusable="false"
+          role="presentation"
+        />
+      );
         
-      // TODO: A11y: Add aria-label to the icon
       return (
         <CompactOutcome>
           {icon}
