@@ -1,13 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
+import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { TFunction } from 'i18next';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { useTranslation } from 'react-i18next';
 
@@ -40,7 +42,7 @@ const ChartRow = styled.div`
  */
 
 type Props = {
-  data?: GetImpactOverviewsQuery;
+  data: GetImpactOverviewsQuery['impactOverviews'][0] | undefined; // Single overview
   isLoading: boolean;
 };
 
@@ -57,7 +59,7 @@ type Cubes = {
 function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOption {
   const sortedData = data.sort((a, b) => a.totals.netBenefit - b.totals.netBenefit);
   const unit = sortedData.length > 0 ? sortedData[0].metric?.data.unit.short : undefined;
-  const unitLabel = typeof unit === 'string' ? t(unit) : '';
+  const unitLabel = unit ? (typeof unit === 'string' ? t(unit) : unit) : '';
 
   const config: EChartsCoreOption = {
     dataset: {
@@ -196,15 +198,11 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
 
   const dimensionalMetrics = useMemo(() => {
-    const costBenefitData = data?.impactOverviews.find(
-      (dataset) => dataset.graphType === 'cost_benefit'
-    );
-
-    if (!costBenefitData) {
+    if (!data || data.graphType !== 'cost_benefit') {
       return [] as { metric: DimensionalMetric; actionName: string }[];
     }
 
-    return costBenefitData.actions
+    return data.actions
       .map((action) => {
         if (!action?.effectDim) return undefined;
         const metric = new DimensionalMetric(action.effectDim);
