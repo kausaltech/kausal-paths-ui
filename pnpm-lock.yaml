@@ -27,8 +27,8 @@ importers:
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1)
       '@kausal/themes':
-        specifier: ^0.8.4
-        version: 0.8.4
+        specifier: ^0.8.7
+        version: 0.8.7
       '@mui/icons-material':
         specifier: ^7.3.1
         version: 7.3.1(@mui/material@7.3.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react@19.1.1)
@@ -446,8 +446,8 @@ importers:
         version: 5.101.3
     optionalDependencies:
       '@kausal-private/themes-private':
-        specifier: ^0.5.56
-        version: 0.5.56
+        specifier: ^0.5.63
+        version: 0.5.63
 
 packages:
 
@@ -1766,11 +1766,11 @@ packages:
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
 
-  '@kausal-private/themes-private@0.5.56':
-    resolution: {integrity: sha512-1+JOPK44Nn1cyHA3GwFYpvRy+MVQoqT8JcbbrJckJ/p9rkKLdDKUfEGZaZi+pp6H8JUg4zsoB4m7ccbUT38+Ag==}
+  '@kausal-private/themes-private@0.5.63':
+    resolution: {integrity: sha512-/H2CONp8sHRb7myKPDoiiMLVmRmhYzpFNssfz+cF8HuhHulpdZCiSGB7nWP8HYmxXWsghxfGHsGbrAWp7VGUCg==}
 
-  '@kausal/themes@0.8.4':
-    resolution: {integrity: sha512-FrZDLaTUuSLF+VNCgGpsPbR9+HkqnzquPYt4Ay3jfMpR0ca7io44dF3RvNed5ry/on1Pxwcnly2PFb5G+Qrrxw==}
+  '@kausal/themes@0.8.7':
+    resolution: {integrity: sha512-V+vtXbtNRW0lok2cL9rkpona5Gnq/hrkVqWTJ1PlNxx40cxlisQVSu+F3LgvTcFR9s9B1Sccx9zey16OJokjSg==}
 
   '@mapbox/geojson-rewind@0.5.2':
     resolution: {integrity: sha512-tJaT+RbYGJYStt7wI3cq4Nl4SXxG8W7JDG5DMJu97V25RnbNg3QtQtf+KD+VLjNpWKYsRvXDNmNrBgEETr1ifA==}
@@ -9330,10 +9330,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kausal-private/themes-private@0.5.56':
+  '@kausal-private/themes-private@0.5.63':
     optional: true
 
-  '@kausal/themes@0.8.4': {}
+  '@kausal/themes@0.8.7': {}
 
   '@mapbox/geojson-rewind@0.5.2':
     dependencies:

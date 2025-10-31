@@ -40,11 +40,11 @@
       "count": 1,
       "message": "Cannot find name 'darken'."
     },
-    "a7d356fc0d23c9d6f67df72550cfc455e68d6e11": {
+    "240cb229b6ddf9467f7ebe292a1445020288e8d1": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 139 more ... | (\"details\" | ... 148 more ... | \"custom-scenario-selected-message\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] |...'."
+      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 144 more ... | (\"details\" | ... 153 more ... | \"action-details-for\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "1484f806f69e92e870e04470aab2e62401c4c6bf": {
       "file": "src/components/common/GraphQLError.tsx",
@@ -202,11 +202,11 @@
       "count": 3,
       "message": "Object is possibly 'null'."
     },
-    "aab0774a5531662965a7ab6b1f16a6372a1c7c47": {
+    "0680d7a35c174cc0b9d6661b770e223522e998d5": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 144 more ... | (\"details\" | ... 153 more ... | \"action-details-for\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
       "file": "src/components/general/BarGraph.tsx",
@@ -277,14 +277,14 @@
     "5b6453f07542be6d7bfec4d26b70f9f8cf392d97": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2341",
-      "count": 2,
+      "count": 1,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "f09f8c4d045c9ee4f3dd91121e56c2987bf88464": {
+    "7a5c736e05c9cc3bd5cd6dca576a3c3a5a0bfa0d": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 144 more ... | (\"details\" | ... 153 more ... | \"action-details-for\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "3186d64cd5707a556087f33ee127a5a37c67d25b": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -376,23 +376,17 @@
       "count": 2,
       "message": "'parentNode.metric' is possibly 'null'."
     },
+    "f39dcc04257662db9479f27f03b89384f6d87e8e": {
+      "file": "src/components/general/OutcomeNodeContent.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type 'OutcomeNodeFieldsFragment' is not assignable to type 'OutcomeNode'."
+    },
     "e9defc3dc196aa17226558a6ad265b9da1f5ee28": {
       "file": "src/components/general/OutcomeNodeContent.tsx",
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ node: OutcomeNodeFieldsFragment; subNodes: OutcomeNodeFieldsFragment[]; color: string | null | undefined; startYear: number; endYear: number; }' is not assignable to type 'IntrinsicAttributes & DataTableProps'."
-    },
-    "791fd92d417103c3a38194c36470dcbc3acb2724": {
-      "file": "src/components/general/OutcomeNodeDetails.tsx",
-      "code": "TS2339",
-      "count": 2,
-      "message": "Property 'group' does not exist on type 'never'."
-    },
-    "7bca6e69bd8e273230632a296f869865555ce1e0": {
-      "file": "src/components/general/OutcomeNodeDetails.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'id' does not exist on type 'never'."
     },
     "8a210e71a1b54d2c6c86264ecfa4297154897f9d": {
       "file": "src/components/general/progress-tracking/useProgressData.ts",

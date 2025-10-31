@@ -26,7 +26,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.1",
-    "@kausal/themes": "^0.8.4",
+    "@kausal/themes": "^0.8.7",
     "@mui/icons-material": "^7.3.1",
     "@mui/material": "^7.2.0",
     "@mui/material-nextjs": "^7.2.0",
@@ -170,7 +170,7 @@
   },
   "type": "module",
   "optionalDependencies": {
-    "@kausal-private/themes-private": "^0.5.56"
+    "@kausal-private/themes-private": "^0.5.63"
   },
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
