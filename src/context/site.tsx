@@ -35,6 +35,8 @@ export type SiteContextType = {
   availableNormalizations: GetInstanceContextQuery['availableNormalizations'];
   parameters: GetInstanceContextQuery['parameters'];
   menuPages: GetInstanceContextQuery['menuPages'];
+  footerPages: GetInstanceContextQuery['footerPages'];
+  additionalLinkPages: GetInstanceContextQuery['additionalLinkPages'];
   watchLink?: {
     title: string | { [key: string]: string };
     url: string | { [key: string]: string };

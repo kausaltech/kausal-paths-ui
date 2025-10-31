@@ -66,13 +66,11 @@ type MenuPage = {
   urlPath: string;
 };
 
-function isMenuPage(
-  page: unknown
-): page is { id?: unknown; title?: unknown; urlPath?: unknown } {
+function isMenuPage(page: unknown): page is { id?: unknown; title?: unknown; urlPath?: unknown } {
   if (typeof page !== 'object' || page === null) return false;
   const p = page as Record<string, unknown>;
   return (
-    ('id' in p ? (typeof p.id === 'string' || p.id === null || typeof p.id === 'undefined') : true) &&
+    ('id' in p ? typeof p.id === 'string' || p.id === null || typeof p.id === 'undefined' : true) &&
     typeof p.title === 'string' &&
     typeof p.urlPath === 'string'
   );
@@ -85,7 +83,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const [site] = useSiteWithSetter();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { menuPages, iconBase: fallbackIconBase, ogImage } = site;
+  const { menuPages, iconBase: fallbackIconBase, ogImage, additionalLinkPages } = site;
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
   const handleDrawerClose = () => {
@@ -97,9 +95,14 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const iconBase = theme.name ? `/static/themes/${theme.name}/images/favicon` : fallbackIconBase;
 
   const rawMenu = Array.isArray(menuPages) ? menuPages : [];
-  const menuItems: MenuPage[] = rawMenu
-  .filter(isMenuPage)
-  .map((page) => ({
+  const menuItems: MenuPage[] = rawMenu.filter(isMenuPage).map((page) => ({
+    id: typeof page.id === 'string' ? page.id : null,
+    title: page.title,
+    urlPath: page.urlPath,
+  }));
+
+  const rawAdditionalLinkPages = Array.isArray(additionalLinkPages) ? additionalLinkPages : [];
+  const additionalLinkItems: MenuPage[] = rawAdditionalLinkPages.filter(isMenuPage).map((page) => ({
     id: typeof page.id === 'string' ? page.id : null,
     title: page.title,
     urlPath: page.urlPath,
@@ -231,7 +234,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             </Box>
             {children}
           </main>
-          <FooterComponent />
+          <FooterComponent additionalLinks={additionalLinkItems} />
         </Box>
       </Box>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
