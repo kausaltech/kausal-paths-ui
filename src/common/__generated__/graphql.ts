@@ -2235,6 +2235,18 @@ export type GetInstanceContextQuery = (
       & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
     ) | null }
     & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+  )>, footerPages: Array<(
+    { id: string | null, title: string, urlPath: string, parent: (
+      { id: string | null }
+      & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+    ) | null }
+    & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+  )>, additionalLinkPages: Array<(
+    { id: string | null, title: string, urlPath: string, parent: (
+      { id: string | null }
+      & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
+    ) | null }
+    & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
   )>, parameters: Array<(
     { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
       { id: string }

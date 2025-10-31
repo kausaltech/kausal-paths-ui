@@ -314,6 +314,8 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
     scenarios: data.scenarios,
     parameters: data.parameters,
     menuPages: data.menuPages,
+    footerPages: data.footerPages,
+    additionalLinkPages: data.additionalLinkPages,
     title: instance.name,
     owner: instance.owner!,
     apolloConfig,

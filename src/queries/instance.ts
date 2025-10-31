@@ -79,6 +79,22 @@ const GET_INSTANCE_CONTEXT = gql`
         id
       }
     }
+    footerPages: pages(inFooter: true) {
+      id
+      title
+      urlPath
+      parent {
+        id
+      }
+    }
+    additionalLinkPages: pages(inAdditionalLinks: true) {
+      id
+      title
+      urlPath
+      parent {
+        id
+      }
+    }
     parameters {
       ...ActionParameter
     }

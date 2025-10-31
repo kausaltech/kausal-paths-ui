@@ -1,5 +1,6 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
+import type { Theme } from '@kausal/themes/types';
 import { Container } from '@mui/material';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
@@ -47,7 +48,7 @@ const StyledFooter = styled.footer`
 const Branding = styled.div`
   display: flex;
   flex-direction: ${(props) => {
-    let direction;
+    let direction: 'row' | 'column' = 'row';
     switch (props.theme.footerLogoPlacement) {
       case 'left':
         direction = 'row';
@@ -292,17 +293,27 @@ const FundingInstrumentContainer = styled.div<{ $small?: boolean }>`
   }
 `;
 
-function SiteFooter() {
+type MenuPage = {
+  id?: string | null;
+  title: string;
+  urlPath: string;
+};
+
+interface SiteFooterProps {
+  additionalLinks: MenuPage[];
+}
+
+function SiteFooter(props: SiteFooterProps) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const theme = useTheme() as Theme;
   const site = useSite();
 
+  const { additionalLinks } = props;
   const utilityLinks: { id: string; name: string; slug: string; icon?: string }[] = [];
-  const additionalLinks: { slug: string; name: string }[] = [];
+
   const ownerName = site.owner;
   const siteTitle = site.title;
   const ownerUrl = undefined;
-  //@ts-ignore TODO: Remove this once the updated theme types are deployed
   const ownerLinks = theme.settings?.footerOwnerLinks;
   const { fundingInstruments, otherLogos, footerStatement } = theme.settings;
 
@@ -367,8 +378,8 @@ function SiteFooter() {
               </OrgTitle>
             </UtilityItem>
             {ownerLinks instanceof Array &&
-              ownerLinks.map((page) => (
-                <UtilityItem key={page.id}>
+              ownerLinks.map((page, index) => (
+                <UtilityItem key={index}>
                   <Link href={page.url}>
                     {theme?.navLinkIcons && (
                       <Icon
@@ -419,8 +430,8 @@ function SiteFooter() {
           <BaseColumn>
             {additionalLinks &&
               additionalLinks.map((page) => (
-                <BaseLink key={page.slug}>
-                  <Link href={page.slug}>{page.name}</Link>
+                <BaseLink key={page.id}>
+                  <Link href={page.urlPath}>{page.title}</Link>
                 </BaseLink>
               ))}
             <BaseLink>
@@ -440,12 +451,12 @@ function SiteFooter() {
                 <FundingHeader>{t('supported-by')}</FundingHeader>
                 {fundingInstruments.map((funder) => (
                   <FundingInstrumentContainer key={funder.id}>
-                    <a 
-                      href={funder.link} 
-                      target="_blank" 
+                    <a
+                      href={funder.link}
+                      target="_blank"
                       rel="noopener noreferrer"
                       aria-label={funder.name}
-                    >  
+                    >
                       <SVG
                         src={funder.logo}
                         preserveAspectRatio="xMidYMid meet"
