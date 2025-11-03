@@ -145,6 +145,25 @@ const OutcomeCardSet = ({
       // if active node clicked, make its parent active node
       const newActiveNode = segmentId === activeNodeId ? rootNode.id : segmentId;
       setLastActiveNodeId(newActiveNode);
+      // a11y: focus on view options button when a card selected
+      const targetBtnId = `${newActiveNode}-view-options-btn`;
+      const fallbackRegionId = `${newActiveNode}-panel-graph`;
+
+      let attempts = 0;
+      const tryFocus = () => {
+        attempts += 1;
+        const btn = document.getElementById(targetBtnId) as HTMLButtonElement | null;
+        if (btn) {
+          btn.focus();
+          return;
+        }
+        if (attempts < 12) {
+          requestAnimationFrame(tryFocus);
+        } else {
+          document.getElementById(fallbackRegionId)?.focus();
+        }
+      };
+      requestAnimationFrame(tryFocus);
     },
     [activeNodeId, rootNode.id, setLastActiveNodeId]
   );
@@ -196,6 +215,7 @@ const OutcomeCardSet = ({
             endYear={endYear}
             activeScenario={activeScenario}
             refetching={refetching}
+            idPrefix={rootNode.id}
           />
         </ContentArea>
         {cardNodes.length > 0 && (

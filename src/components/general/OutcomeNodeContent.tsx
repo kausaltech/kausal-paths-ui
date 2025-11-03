@@ -1,4 +1,4 @@
-import { useMemo, useState, useId } from 'react';
+import { useMemo, useState } from 'react';
 
 import styled from '@emotion/styled';
 import { Box, IconButton, MenuItem } from '@mui/material';
@@ -66,17 +66,18 @@ const StyledMenuItem = styled(MenuItem)`
 `;
 
 const ViewSelector = ({
+  idPrefix,
   activeTabId,
   setActiveTabId,
   showDistribution,
 }: {
+  idPrefix: string;
   activeTabId: string;
   setActiveTabId: (tabId: string) => void;
   showDistribution: boolean;
 }) => {
-  const id = useId();
-  const buttonId = `view-menu-button-${id}`;
-  const menuId = `view-menu-${id}`;
+  const buttonId = `${idPrefix}-view-options-btn`;
+  const menuId = `${idPrefix}-view-options-menu`;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { t } = useTranslation();
@@ -94,8 +95,13 @@ const ViewSelector = ({
   const createHandleMenuItemClick = (tabId: string) => () => {
     setActiveTabId(tabId);
     handleClose();
+    // A11y: After switching the view, move focus to the new region
+    const targetRegionId = `${idPrefix}-panel-${tabId}`;
+    requestAnimationFrame(() => {
+      document.getElementById(targetRegionId)?.focus();
+    });
   };
-
+  
   return (
     <Box>
       <IconButton
@@ -162,6 +168,7 @@ const ViewSelector = ({
 };
 
 type OutcomeNodeContentProps = {
+  idPrefix: string;
   isRootNode: boolean;
   node: OutcomeNodeFieldsFragment;
   subNodes: OutcomeNodeFieldsFragment[];
@@ -173,6 +180,7 @@ type OutcomeNodeContentProps = {
 };
 
 const OutcomeNodeContent = ({
+  idPrefix,
   isRootNode,
   node,
   subNodes,
@@ -280,6 +288,7 @@ const OutcomeNodeContent = ({
               />
             )}
             <ViewSelector
+              idPrefix={idPrefix}
               activeTabId={activeTabId}
               setActiveTabId={setActiveTabId}
               showDistribution={showDistribution}
