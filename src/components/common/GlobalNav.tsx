@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 import { Box, Container } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import SVG from 'react-inlinesvg';
-import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
+import { Collapse, Nav, NavItem, Navbar, NavbarBrand } from 'reactstrap';
 
 import { Link } from '@/common/links';
 import { getThemeStaticURL } from '@/common/theme';
@@ -241,14 +241,14 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
       <BrandNavWrapper>
         <Container fixed maxWidth="xl" sx={{ backgroundColor: 'theme.brandNavBackground' }}>
           <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container={false}>
-            <Nav navbar className="me-auto">
+            <NavbarBrand tag="span" className="me-auto">
               <Link href="/" passHref>
                 <HomeLink href="dummy">
                   {orgLogo}
                   <SiteTitle>{siteTitle}</SiteTitle>
                 </HomeLink>
               </Link>
-            </Nav>
+            </NavbarBrand>
             <Nav navbar className="ml-auto d-none d-md-flex">
               <LanguageSelector mobile={false} />
             </Nav>
