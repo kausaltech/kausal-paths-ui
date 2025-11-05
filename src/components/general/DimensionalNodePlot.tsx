@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import dynamic from 'next/dynamic';
 
@@ -29,13 +29,10 @@ import { useSite } from '@/context/site';
 import {
   DimensionalMetric,
   type MetricCategoryValues,
-  MetricSlice,
+  type MetricSlice,
   type SliceConfig,
 } from '@/data/metric';
-import {
-  getProgressTrackingScenario,
-  metricHasProgressTrackingScenario,
-} from '@/utils/progress-tracking';
+import { metricHasProgressTrackingScenario } from '@/utils/progress-tracking';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
@@ -517,12 +514,9 @@ export default function DimensionalNodePlot({
     }
 
     if (hasProgressTracking && metrics.progress && slicedDim) {
-      const progressScenario = getProgressTrackingScenario(site.scenarios);
       const progressSlice = metrics.progress.sliceBy(slicedDim.id, true, sliceConfig.categories);
       const progressYears =
-        progressScenario?.actualHistoricalYears?.filter(
-          (year) => year !== instance.referenceYear
-        ) ?? [];
+        metric.measureDatapointYears?.filter((year) => year !== instance.referenceYear) ?? [];
 
       const referenceYearIndex = slice.historicalYears.findIndex(
         (year) => year === instance.referenceYear

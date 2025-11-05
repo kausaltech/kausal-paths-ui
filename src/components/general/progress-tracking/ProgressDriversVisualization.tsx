@@ -155,7 +155,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
     // If the node has observed values, filter progress years to only render these
     const filteredProgressYears = metric.measureDatapointYears.length
       ? progressYears.filter((year) => metric.measureDatapointYears.includes(year))
-      : progressYears;
+      : [];
 
     const allYears = [...slice.historicalYears, ...slice.forecastYears];
     const allDefaultData = [...defaultScenario.historicalValues, ...defaultScenario.forecastValues];
