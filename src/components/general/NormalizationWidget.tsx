@@ -21,7 +21,7 @@ const SwitchWrapper = styled.div`
   }
 `;
 
-const SET_NORMALIZATION_MUTATION = gql`
+export const SET_NORMALIZATION_MUTATION = gql`
   mutation SetNormalizationFromWidget($id: ID) {
     setNormalizer(id: $id) {
       ok

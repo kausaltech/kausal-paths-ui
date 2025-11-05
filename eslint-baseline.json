@@ -1,4 +1,22 @@
 {
+  "e2e-tests/global-setup.ts": {
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    }
+  },
+  "kausal_common/configs/eslint.mjs": {
+    "prefer-const": {
+      "count": 1
+    }
+  },
+  "kausal_common/src/logging/init.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    }
+  },
   "src/common/fonts.js": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
@@ -11,6 +29,11 @@
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 3
+    }
+  },
+  "src/common/fragments.js": {
+    "@graphql-eslint/no-unused-fragments": {
+      "count": 1
     }
   },
   "src/common/preprocess.ts": {
@@ -96,10 +119,13 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
+      "count": 8
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 2
@@ -169,6 +195,11 @@
       "count": 2
     }
   },
+  "src/components/common/StreamField.tsx": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    }
+  },
   "src/components/common/icon.tsx": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
@@ -232,6 +263,9 @@
     }
   },
   "src/components/general/ActionsSummary.tsx": {
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    },
     "@typescript-eslint/no-unsafe-enum-comparison": {
       "count": 1
     }
@@ -322,9 +356,6 @@
     }
   },
   "src/components/general/DimensionalNodePlot.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
     "@typescript-eslint/no-misused-promises": {
       "count": 2
     },
@@ -336,6 +367,9 @@
     }
   },
   "src/components/general/GlobalParameters.tsx": {
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    },
     "@typescript-eslint/no-empty-object-type": {
       "count": 1
     },
@@ -359,6 +393,12 @@
     }
   },
   "src/components/general/GoalOutcomeBar.tsx": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    },
     "@typescript-eslint/no-empty-object-type": {
       "count": 1
     },
@@ -492,6 +532,9 @@
     }
   },
   "src/components/general/ParameterWidget.tsx": {
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 13
     },
@@ -666,6 +709,14 @@
       "count": 3
     }
   },
+  "src/middleware/context.ts": {
+    "@graphql-eslint/fields-on-correct-type": {
+      "count": 1
+    },
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    }
+  },
   "src/middleware/lru-cache.ts": {
     "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 2
@@ -691,11 +742,23 @@
     }
   },
   "src/pages/graph.tsx": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 3
     }
   },
   "src/pages/node/[slug].tsx": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/no-deprecated": {
+      "count": 4
+    },
     "@typescript-eslint/consistent-type-imports": {
       "count": 1
     },
@@ -703,6 +766,159 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    }
+  },
+  "src/queries/dimensionalNodePlot.ts": {
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    }
+  },
+  "src/queries/getActionContent.js": {
+    "@graphql-eslint/naming-convention": {
+      "count": 2
+    },
+    "@graphql-eslint/no-deprecated": {
+      "count": 1
+    }
+  },
+  "src/queries/getActionImpacts.js": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/require-selections": {
+      "count": 4
+    }
+  },
+  "src/queries/getActionList.js": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/no-deprecated": {
+      "count": 2
+    }
+  },
+  "src/queries/getImpactOverviews.ts": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/require-selections": {
+      "count": 2
+    }
+  },
+  "src/queries/getNodeVisualizations.ts": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/require-selections": {
+      "count": 1
+    }
+  },
+  "src/queries/getPage.js": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    },
+    "@graphql-eslint/no-deprecated": {
+      "count": 1
+    },
+    "@graphql-eslint/no-duplicate-fields": {
+      "count": 1
+    }
+  },
+  "src/queries/getParameters.js": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    }
+  },
+  "src/queries/getScenarios.js": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    }
+  },
+  "src/queries/instance.ts": {
+    "@graphql-eslint/naming-convention": {
+      "count": 2
+    },
+    "@graphql-eslint/require-selections": {
+      "count": 2
+    }
+  },
+  "src/queries/visualizationEntryFragment.ts": {
+    "@graphql-eslint/naming-convention": {
+      "count": 1
+    }
+  },
+  "stories/Button.stories.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    }
+  },
+  "stories/Button.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "storybook/default-exports": {
+      "count": 1
+    }
+  },
+  "stories/EmissionsCard.stories.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    }
+  },
+  "stories/Header.stories.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    }
+  },
+  "stories/Header.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "storybook/default-exports": {
+      "count": 1
+    }
+  },
+  "stories/Page.stories.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    }
+  },
+  "stories/Page.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "storybook/default-exports": {
       "count": 1
     }
   }

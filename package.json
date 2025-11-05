@@ -118,6 +118,7 @@
     "@graphql-codegen/typescript-operations": "^4.6.1",
     "@graphql-codegen/typescript-react-apollo": "^4.3.3",
     "@graphql-eslint/eslint-plugin": "^4.4.0",
+    "@next/eslint-plugin-next": "^15.5.0",
     "@sentry/cli": "^2.52.0",
     "@storybook/addon-actions": "^9.0.8",
     "@storybook/addon-essentials": "^9.0.0-alpha.12",
@@ -179,8 +180,8 @@
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
       "prettier --write",
-      "npm run lint:baseline --",
-      "npm run typecheck:baseline --"
+      "pnpm lint:baseline --",
+      "pnpm typecheck:baseline --"
     ],
     "*.{css,scss,md,json}": "prettier --write"
   },

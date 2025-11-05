@@ -13,13 +13,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
-const SET_NORMALIZATION_MUTATION = gql`
-  mutation SetNormalizationFromWidget($id: ID) {
-    setNormalizer(id: $id) {
-      ok
-    }
-  }
-`;
+import { SET_NORMALIZATION_MUTATION } from './NormalizationWidget';
 
 /**
  * Similar to NormalizationWidget, but based on the new custom dashboard page designs and using the common SettingsToggleBar component.

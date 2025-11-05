@@ -16,6 +16,6 @@
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["tests/**/*.ts", "common/**/*.ts"],
+  "include": ["tests/**/*.ts", "common/**/*.ts", "*.ts"],
   "exclude": ["node_modules"]
 }
