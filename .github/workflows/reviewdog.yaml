@@ -36,7 +36,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Running eslint"
-          reviewdog -reporter=github-check -runners eslint
+          reviewdog -reporter=github-check -tee -runners eslint
           echo "Running typecheck"
           reviewdog -reporter=github-check -runners typecheck -filter-mode nofilter
 
