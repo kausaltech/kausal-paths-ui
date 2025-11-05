@@ -136,7 +136,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       (cv) => cv.category.originalId === 'progress_tracking'
     );
 
-    if (!defaultScenario || !progressScenario) return undefined;
+    if (!defaultScenario) return undefined;
 
     type Acc = {
       years: number[];
@@ -160,8 +160,8 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
     const allYears = [...slice.historicalYears, ...slice.forecastYears];
     const allDefaultData = [...defaultScenario.historicalValues, ...defaultScenario.forecastValues];
     const allProgressData = [
-      ...progressScenario.historicalValues,
-      ...progressScenario.forecastValues,
+      ...(progressScenario?.historicalValues ?? []),
+      ...(progressScenario?.forecastValues ?? []),
     ];
 
     const combinedData = allYears
