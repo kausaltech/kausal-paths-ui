@@ -710,9 +710,6 @@
     }
   },
   "src/middleware/context.ts": {
-    "@graphql-eslint/fields-on-correct-type": {
-      "count": 1
-    },
     "@graphql-eslint/naming-convention": {
       "count": 1
     }

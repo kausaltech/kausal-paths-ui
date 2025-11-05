@@ -32,7 +32,6 @@ const GET_AVAILABLE_INSTANCES = gql`
     }
   }
   fragment AvailableInstance on InstanceBasicConfiguration {
-    id
     identifier
     isProtected
     defaultLanguage
