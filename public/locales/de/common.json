@@ -135,5 +135,11 @@
     "table-measure-type": "Typ",
     "ktco2-e": "kt CO<sub>2</sub>eq/a",
     "cost-benefit": "Kosten-Nutzen",
-    "cost-benefit-analysis": "Kosten-Nutzen-Analyse"
+    "cost-benefit-analysis": "Kosten-Nutzen-Analyse",
+    "collapse-all": "Alle einklappen",
+    "invalid-page-type": "Ungültiger Seitentyp",
+    "expand-all": "Alle ausklappen",
+    "values-per": "Werte pro {{normalization}}",
+    "above-target": "über dem Ziel",
+    "below-target": "unter dem Zielwert"
 }
