@@ -115,5 +115,9 @@
   "close-scenario-editor": "Stäng scenarioredigeraren",
   "show-details": "Visa detaljer för {{action}}",
   "hide-details": "Dölj detaljer för {{action}}",
-  "action-details-for": "Detaljer för {{action}}"
+  "action-details-for": "Detaljer för {{action}}",
+  "calculation": "Beräkning",
+  "calculation-visible": "Beräkningen är synlig",
+  "calculation-hidden": "Beräkningen är dold",
+  "loading-calculation": "Laddar beräkning…"
 }

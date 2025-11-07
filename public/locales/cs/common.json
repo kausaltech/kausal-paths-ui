@@ -130,5 +130,9 @@
   "close-scenario-editor": "Zavřít editor scénáře",
   "show-details": "Zobrazit podrobnosti pro {{action}}",
   "hide-details": "Skrýt podrobnosti pro {{action}}",
-  "action-details-for": "Podrobnosti pro {{action}}"
+  "action-details-for": "Podrobnosti pro {{action}}",
+  "calculation": "Výpočet",
+  "calculation-visible": "Výpočet je zobrazen",
+  "calculation-hidden": "Výpočet je skrytý",
+  "loading-calculation": "Načítání výpočtu…"
 }

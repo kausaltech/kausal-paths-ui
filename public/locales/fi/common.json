@@ -123,5 +123,9 @@
   "close-scenario-editor": "Sulje skenaariomuokkain",
   "show-details": "Näytä lisätiedot kohteesta {{action}}",
   "hide-details": "Piilota lisätiedot kohteesta {{action}}",
-  "action-details-for": "Lisätiedot kohteesta {{action}}"
+  "action-details-for": "Lisätiedot kohteesta {{action}}",
+   "calculation": "Laskelma",
+  "calculation-visible": "Laskelma näkyy",
+  "calculation-hidden": "Laskelma on piilotettu",
+  "loading-calculation": "Ladataan laskelmaa…"
 }

@@ -159,5 +159,9 @@
   "close-scenario-editor": "Szenario-Editor schließen",
   "show-details": "Details zu {{action}} anzeigen",
   "hide-details": "Details zu {{action}} ausblenden",
-  "action-details-for": "Details zu {{action}}"
+  "action-details-for": "Details zu {{action}}",
+  "calculation": "Berechnung",
+  "calculation-visible": "Berechnung sichtbar",
+  "calculation-hidden": "Berechnung ausgeblendet",
+  "loading-calculation": "Berechnung wird geladen…"
 }
