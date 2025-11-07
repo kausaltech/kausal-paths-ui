@@ -146,5 +146,9 @@
   "close-scenario-editor": "Κλείσιμο επεξεργαστή σεναρίου",
   "show-details": "Εμφάνιση λεπτομερειών για {{action}}",
   "hide-details": "Απόκρυψη λεπτομερειών για {{action}}",
-  "action-details-for": "Λεπτομέρειες για {{action}}"
+  "action-details-for": "Λεπτομέρειες για {{action}}",
+  "calculation": "Υπολογισμός",
+  "calculation-visible": "Ο υπολογισμός είναι ορατός",
+  "calculation-hidden": "Ο υπολογισμός είναι κρυφός",
+  "loading-calculation": "Φόρτωση υπολογισμού…"
 }

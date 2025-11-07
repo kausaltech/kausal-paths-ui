@@ -119,5 +119,9 @@
   "close-scenario-editor": "Aizvērt scenāriju redaktoru",
   "show-details": "Rādīt informāciju par {{action}}",
   "hide-details": "Slēpt informāciju par {{action}}",
-  "action-details-for": "Detalizēta informācija par {{action}}"
+  "action-details-for": "Detalizēta informācija par {{action}}",
+  "calculation": "Aprēķins",
+  "calculation-visible": "Aprēķins ir redzams",
+  "calculation-hidden": "Aprēķins ir paslēpts",
+  "loading-calculation": "Ielādē aprēķinu…"
 }

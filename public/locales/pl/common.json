@@ -130,5 +130,9 @@
   "close-scenario-editor": "Zamknij edytor scenariusza",
   "show-details": "Pokaż szczegóły dotyczące {{action}}",
   "hide-details": "Ukryj szczegóły dotyczące {{action}}",
-  "action-details-for": "Szczegóły dotyczące {{action}}"
+  "action-details-for": "Szczegóły dotyczące {{action}}",
+  "calculation": "Obliczenia",
+  "calculation-visible": "Obliczenia są widoczne",
+  "calculation-hidden": "Obliczenia są ukryte",
+  "loading-calculation": "Wczytywanie obliczeń…"
 }
