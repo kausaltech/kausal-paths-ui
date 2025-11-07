@@ -200,6 +200,7 @@ const CausalGrid = ({
   const gridCanvas = useRef<ArcherContainerRef>(null);
 
   const [gridExpanded, setGridExpanded] = useState(false);
+  const [pendingFocus, setPendingFocus] = useState(false);
 
   const { t } = useTranslation();
 
@@ -210,6 +211,7 @@ const CausalGrid = ({
 
     // Close the grid when the selected outcome is changed
     setGridExpanded(false);
+    setPendingFocus(false);
   }, [selectedOutcomeNode]);
 
   if (nodes.length === 0) {
@@ -284,19 +286,49 @@ const CausalGrid = ({
   // We use this to filter out outputnodes that are not visible when drawing the arrows
   const visibleNodesIds = causalGridNodes.flat().map((node) => node.id);
 
+  const gridRegionRef = useRef<HTMLDivElement>(null);
+  
+  //focusable control for screen-readers
+  function focusInsideRegion() {
+  
+    const firstFocusable = gridRegionRef.current?.querySelector<HTMLElement>(
+      'a, button, [tabindex]:not([tabindex="-1"]), input, select, textarea, summary'
+    );
+    if (firstFocusable) {
+      firstFocusable.focus();
+      return;
+    }
+    const firstHeading = gridRegionRef.current?.querySelector<HTMLElement>('h1,h2,h3,h4,h5,h6');
+    if (firstHeading) {
+      if (!firstHeading.hasAttribute('tabindex')) firstHeading.setAttribute('tabindex', '-1');
+      firstHeading.focus();
+    }
+  }
+
   function handleToggleCalculationVisible() {
     const nextGridOpen = !gridExpanded;
 
     setGridExpanded(nextGridOpen);
 
     if (nextGridOpen) {
+      setPendingFocus(true);
       onClickExpandGrid();
     }
   }
 
+  useEffect(() => {
+  if (gridExpanded && !expandedGridLoading && pendingFocus) {
+    requestAnimationFrame(() => {
+      focusInsideRegion();
+      setPendingFocus(false);
+    });
+  }
+}, [gridExpanded, expandedGridLoading, pendingFocus, causalGridNodes.length]);
+
+
   return (
     <ArcherContainer
-      key={`${selectedOutcomeNode}-${gridExpanded ? 'open' : 'closed'}`}
+      key={selectedOutcomeNode}
       strokeColor={theme?.graphColors.grey060}
       strokeWidth={6}
       endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
@@ -364,11 +396,13 @@ const CausalGrid = ({
                 ]
           }
         >
+          <div>
           <StyledShowCalculationButton
             onClick={handleToggleCalculationVisible}
             aria-expanded={gridExpanded}
             aria-controls="causal-grid"
             disabled={expandedGridLoading}
+            aria-busy={expandedGridLoading || undefined}
           >
             {!expandedGridLoading && gridExpanded ? (
               <>
@@ -386,40 +420,64 @@ const CausalGrid = ({
               </>
             )}
           </StyledShowCalculationButton>
-        </ArcherElement>
-        <div id="causal-grid" aria-hidden={!gridExpanded}>
-          {causalGridNodes?.map((row, rowIndex) => (
-            <GridRowWrapper onScroll={() => gridCanvas.current?.refreshScreen()} key={rowIndex}>
-              <GridRow>
-                {row.map((col) => (
-                  <GridCol key={col.id}>
-                    <ArcherElement
-                      id={col.id}
-                      relations={col.outputNodes
-                        .filter((outnode) => [lastNode.id, ...visibleNodesIds].includes(outnode.id))
-                        .map((node) => ({
-                          targetId: node.id,
-                          targetAnchor: 'top',
-                          sourceAnchor: 'bottom',
-                        }))}
-                    >
-                      <div>
-                        <CausalCard
-                          node={col}
-                          compact={false}
-                          startYear={yearRange[0]}
-                          endYear={yearRange[1]}
-                          noEffect={actionIsOff}
-                        />
-                      </div>
-                    </ArcherElement>
-                  </GridCol>
-                ))}
-              </GridRow>
-            </GridRowWrapper>
-          ))}
+          {/* Visually hidden region to announce state by screen-readers*/}
+          <span style={{position:'absolute',clip:'rect(1px,1px,1px,1px)'}} aria-live="polite">
+            {gridExpanded ? t('calculation-visible') : t('calculation-hidden')}
+          </span>
         </div>
-      </GridSection>
+        </ArcherElement>
+        {gridExpanded && (
+          <div
+            id="causal-grid"
+            ref={gridRegionRef}
+            role="region"
+            aria-label={t('calculation')}
+            aria-busy={expandedGridLoading || undefined}
+          >
+            {expandedGridLoading ? (
+              <div role="status" aria-live="polite">
+                {t('loading-calculation')}
+              </div>
+            ) : (
+              causalGridNodes?.map((row, rowIndex) => (
+                <GridRowWrapper
+                  onScroll={() => gridCanvas.current?.refreshScreen()}
+                  key={rowIndex}
+                >
+                  <GridRow>
+                    {row.map((col) => (
+                      <GridCol key={col.id}>
+                        <ArcherElement
+                          id={col.id}
+                          relations={col.outputNodes
+                            .filter((outnode) =>
+                              [lastNode.id, ...visibleNodesIds].includes(outnode.id)
+                            )
+                            .map((node) => ({
+                              targetId: node.id,
+                              targetAnchor: 'top',
+                              sourceAnchor: 'bottom',
+                            }))}
+                        >
+                          <div>
+                            <CausalCard
+                              node={col}
+                              compact={false}
+                              startYear={yearRange[0]}
+                              endYear={yearRange[1]}
+                              noEffect={actionIsOff}
+                            />
+                          </div>
+                        </ArcherElement>
+                      </GridCol>
+                    ))}
+                  </GridRow>
+                </GridRowWrapper>
+              ))
+            )}
+          </div>
+        )}
+      </GridSection>           
       <GoalSection>
         <Container fixed maxWidth="xl">
           <ArcherElement id={lastNode.id}>

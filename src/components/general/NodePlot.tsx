@@ -363,7 +363,10 @@ const NodePlot = (props: NodePlotProps) => {
 
   return (
     <>
-      <PlotWrapper $compact={compact}>
+      <PlotWrapper 
+        $compact={compact}
+        aria-hidden="true"
+      >
         <Plot
           data={plotData}
           layout={layout}
