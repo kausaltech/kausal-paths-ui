@@ -35,7 +35,7 @@ const NodeLinks = (props: NodeLinksProps) => {
                 {inputNodes.map((inputNode) => (
                   <ListItem key={inputNode.id}>
                     <ListItemIcon>
-                      <BoxArrowInRight size={24} />
+                      <BoxArrowInRight size={24} aria-hidden="true" focusable="false" />
                     </ListItemIcon>
                     <ListItemText>
                       <NodeLink key={inputNode.id} node={inputNode}>
@@ -58,7 +58,7 @@ const NodeLinks = (props: NodeLinksProps) => {
                 {outputNodes.map((outputNode) => (
                   <ListItem key={outputNode.id}>
                     <ListItemIcon>
-                      <BoxArrowRight size={24} />
+                      <BoxArrowRight size={24} aria-hidden="true" focusable="false" />
                     </ListItemIcon>
                     <ListItemText>
                       <NodeLink key={outputNode.id} node={outputNode}>
