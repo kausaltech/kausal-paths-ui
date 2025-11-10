@@ -51,6 +51,12 @@ type WatchLink = { title: string; url: string } | null;
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
 
 const defaultSiteContext: { [key: string]: { watchLink: WatchLink; demoPages?: DemoPage[] } } = {
+  'cork-nzc': {
+    watchLink: {
+      title: 'Benefits Dashboard',
+      url: 'https://cork-planner.watch-test.kausal.tech/',
+    },
+  },
   sunnydale: {
     watchLink: null,
     demoPages: [
