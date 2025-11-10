@@ -20,6 +20,9 @@ function getChartConfig(
   const unit = dataset?.indicatorUnit?.short || '';
 
   return {
+    aria: {
+      enabled: true,
+    },
     dataset: dataset
       ? [
           {
