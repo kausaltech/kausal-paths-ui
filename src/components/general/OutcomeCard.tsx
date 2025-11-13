@@ -53,7 +53,7 @@ const Name = styled.h2`
 
 const Status = styled.div<{ $active: boolean | undefined }>`
   font-size: ${({ theme }) => theme.fontSizeSm};
-  color: ${({ theme }) => theme.textColor.primary};
+  color: ${({ theme }) => theme.textColor.secondary};
   line-height: 1.2;
   white-space: nowrap;
 `;
@@ -88,7 +88,7 @@ const NoValue = styled.div`
 const Label = styled.div<{ $active?: boolean }>`
   font-size: ${({ theme }) => theme.fontSizeSm};
   line-height: 1.2;
-  color: ${({ theme }) => theme.textColor.primary};
+  color: ${({ theme }) => theme.textColor.secondary};
 `;
 
 const MainUnit = styled.span`
