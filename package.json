@@ -14,8 +14,8 @@
     "typecheck:baseline:ci": "tsc --noEmit | tsc-baseline -p tsc-baseline.json check --error-format gitlab 2>&1 | node kausal_common/scripts/gitlab-to-rdjsonl.js",
     "typecheck:baseline:update": "tsc --noEmit | tsc-baseline -p tsc-baseline.json save",
     "lint": "eslint --cache",
-    "lint:baseline": "eslint --cache --suppressions-location eslint-baseline.json",
-    "lint:baseline:ci": "eslint --cache --suppressions-location eslint-baseline.json -f rdjson",
+    "lint:baseline": "eslint --cache --suppressions-location eslint-baseline.json --ignore-pattern 'e2e-tests/**' --ignore-pattern 'kausal_common' --ignore-pattern 'load-tests'",
+    "lint:baseline:ci": "eslint --cache --suppressions-location eslint-baseline.json -f rdjson  --ignore-pattern 'e2e-tests/**' --ignore-pattern 'kausal_common' --ignore-pattern 'load-tests'",
     "lint:baseline:update": "eslint --cache --suppressions-location eslint-baseline.json --prune-suppressions",
     "prepare": "husky || true"
   },
