@@ -111,10 +111,10 @@
   },
   "src/components/common/Footer.tsx": {
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
