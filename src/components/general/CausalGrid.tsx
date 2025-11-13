@@ -168,6 +168,15 @@ const StyledOutcomeCardContainer = styled.div`
   padding: ${({ theme }) => theme.spaces.s200};
 `;
 
+const VisuallyHidden = styled.span`
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+`;
+
 export type CausalGridNode = NonNullable<GetActionContentQuery['action']>['downstreamNodes'][0];
 
 type CausalGridProps = {
@@ -182,6 +191,28 @@ type CausalGridProps = {
   onClickExpandGrid: () => void;
   expandedGridLoading?: boolean;
 };
+
+// focusable control for screen-readers
+function focusInsideRegion(region: HTMLElement | null): boolean {
+  if (!region) return false;
+
+  const firstFocusable = region.querySelector<HTMLElement>(
+    'a, button, [tabindex]:not([tabindex="-1"]), input, select, textarea, summary'
+  );
+  if (firstFocusable) {
+    firstFocusable.focus();
+    return true;
+  }
+
+  const firstHeading = region.querySelector<HTMLElement>('h1,h2,h3,h4,h5,h6');
+  if (firstHeading) {
+    if (!firstHeading.hasAttribute('tabindex')) firstHeading.setAttribute('tabindex', '-1');
+    firstHeading.focus();
+    return true;
+  }
+
+  return false;
+}
 
 const CausalGrid = ({
   nodes,
@@ -201,6 +232,7 @@ const CausalGrid = ({
 
   const [gridExpanded, setGridExpanded] = useState(false);
   const [pendingFocus, setPendingFocus] = useState(false);
+  const gridRegionRef = useRef<HTMLDivElement>(null);
 
   const { t } = useTranslation();
 
@@ -213,6 +245,21 @@ const CausalGrid = ({
     setGridExpanded(false);
     setPendingFocus(false);
   }, [selectedOutcomeNode]);
+
+  useEffect(() => {
+    if (!gridExpanded || expandedGridLoading || !pendingFocus) return;
+    requestAnimationFrame(() => {
+      const didFocus = focusInsideRegion(gridRegionRef.current);
+      if (didFocus) {
+        setPendingFocus(false);
+      } else {
+        requestAnimationFrame(() => {
+          focusInsideRegion(gridRegionRef.current);
+          setPendingFocus(false);
+        });
+      }
+    });
+  }, [gridExpanded, expandedGridLoading, pendingFocus, selectedOutcomeNode]);
 
   if (nodes.length === 0) {
     return (
@@ -285,26 +332,7 @@ const CausalGrid = ({
 
   // We use this to filter out outputnodes that are not visible when drawing the arrows
   const visibleNodesIds = causalGridNodes.flat().map((node) => node.id);
-
-  const gridRegionRef = useRef<HTMLDivElement>(null);
   
-  //focusable control for screen-readers
-  function focusInsideRegion() {
-  
-    const firstFocusable = gridRegionRef.current?.querySelector<HTMLElement>(
-      'a, button, [tabindex]:not([tabindex="-1"]), input, select, textarea, summary'
-    );
-    if (firstFocusable) {
-      firstFocusable.focus();
-      return;
-    }
-    const firstHeading = gridRegionRef.current?.querySelector<HTMLElement>('h1,h2,h3,h4,h5,h6');
-    if (firstHeading) {
-      if (!firstHeading.hasAttribute('tabindex')) firstHeading.setAttribute('tabindex', '-1');
-      firstHeading.focus();
-    }
-  }
-
   function handleToggleCalculationVisible() {
     const nextGridOpen = !gridExpanded;
 
@@ -316,19 +344,9 @@ const CausalGrid = ({
     }
   }
 
-  useEffect(() => {
-  if (gridExpanded && !expandedGridLoading && pendingFocus) {
-    requestAnimationFrame(() => {
-      focusInsideRegion();
-      setPendingFocus(false);
-    });
-  }
-}, [gridExpanded, expandedGridLoading, pendingFocus, causalGridNodes.length]);
-
-
   return (
     <ArcherContainer
-      key={selectedOutcomeNode}
+      key={`${selectedOutcomeNode}-${gridExpanded ? 'open' : 'closed'}`}
       strokeColor={theme?.graphColors.grey060}
       strokeWidth={6}
       endShape={{ arrow: { arrowLength: 3, arrowThickness: 4 } }}
@@ -420,10 +438,9 @@ const CausalGrid = ({
               </>
             )}
           </StyledShowCalculationButton>
-          {/* Visually hidden region to announce state by screen-readers*/}
-          <span style={{position:'absolute',clip:'rect(1px,1px,1px,1px)'}} aria-live="polite">
+          <VisuallyHidden aria-live="polite">
             {gridExpanded ? t('calculation-visible') : t('calculation-hidden')}
-          </span>
+          </VisuallyHidden>
         </div>
         </ArcherElement>
         {gridExpanded && (
@@ -435,9 +452,9 @@ const CausalGrid = ({
             aria-busy={expandedGridLoading || undefined}
           >
             {expandedGridLoading ? (
-              <div role="status" aria-live="polite">
+              <VisuallyHidden role="status" aria-live="polite">
                 {t('loading-calculation')}
-              </div>
+              </VisuallyHidden>
             ) : (
               causalGridNodes?.map((row, rowIndex) => (
                 <GridRowWrapper
