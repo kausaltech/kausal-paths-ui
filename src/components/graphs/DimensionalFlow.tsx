@@ -162,7 +162,7 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
           idx,
           color: node.color ?? colors[colorIdx++],
         };
-        out.linkColor = transparentize(0.4, tint(0.5, out.color!));
+        out.linkColor = transparentize(0.4, tint(0.5, out.color));
         return [out.id, out];
       })
     );

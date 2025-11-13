@@ -148,6 +148,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
   );
 
   const chartData: EChartsCoreOption = {
+    aria: { enabled: true },
     dataset: [
       {
         dimensions: ['action', 'value', 'group'],
@@ -278,7 +279,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
           </ScrollArea>
           
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2 }} role="presentation" aria-hidden="true" />
 
           <Typography variant="subtitle1" component="p" sx={{ textAlign: 'right' }}>
             <Trans

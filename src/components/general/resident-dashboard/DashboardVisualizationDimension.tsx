@@ -37,6 +37,7 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
   }));
 
   const chartData = {
+    aria: { enabled: true },
     tooltip: {
       trigger: 'item',
       valueFormatter: (value: number) =>

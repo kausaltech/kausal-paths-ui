@@ -74,6 +74,7 @@ const getBarOption = (item: DashboardProgressItem, theme: Theme, max: number) =>
   const barColor = getBarColor(item.color, theme, value, target);
 
   const config: EChartsCoreOption = {
+    aria: { enabled: false },
     grid: { left: 5, right: 20, top: 40, bottom: 20 },
     xAxis: { min, max, axisTick: { show: false }, axisLabel: { customValues: [min, max] } },
     yAxis: {
@@ -316,13 +317,15 @@ const DashboardVisualizationProgress = ({
                         {unit.short}
                       </Typography>
                     )}
-
-                    <Chart
-                      isLoading={false}
-                      data={getBarOption(item, theme, maxValue)}
-                      height="80px"
-                      withResizeLegend={false}
-                    />
+      
+                    <Box aria-hidden="true" role="presentation" tabIndex={-1}>
+                      <Chart
+                        isLoading={false}
+                        data={getBarOption(item, theme, maxValue)}
+                        height="80px"
+                        withResizeLegend={false}
+                      />
+                    </Box>
 
                     <TargetVariation item={item} />
                   </CardContent>

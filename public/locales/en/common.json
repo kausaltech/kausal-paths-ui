@@ -152,5 +152,9 @@
   "close-scenario-editor": "Close scenario editor",
   "show-details": "Show details for {{action}}",
   "hide-details": "Hide details for {{action}}",
-  "action-details-for": "Details for {{action}}"
+  "action-details-for": "Details for {{action}}",
+  "calculation": "Calculation",
+  "calculation-visible": "Calculation visible",
+  "calculation-hidden": "Calculation hidden",
+  "loading-calculation": "Loading calculation…"
 }

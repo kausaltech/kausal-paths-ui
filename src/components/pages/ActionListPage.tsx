@@ -386,7 +386,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={actionGroup}
                     onChange={(e) => setActionGroup(e.target.value as string)}
                     size="small"
-                    MenuProps={{ disablePortal: true }}
+                    MenuProps={{ container: () => document.getElementById('main')!, }}
                   >
                     <MenuItem value="ALL_ACTIONS">{t('action-groups-all')}</MenuItem>
                     {actionGroups.map((group) => (
@@ -411,7 +411,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={sortBy.key}
                     onChange={(e) => handleChangeSort(e.target.value as SortActionsBy)}
                     size="small"
-                    MenuProps={{ disablePortal: true }}
+                     MenuProps={{ container: () => document.getElementById('main')!, }}
                   >
                     {sortOptions
                       .filter((opt) => !opt.isHidden)

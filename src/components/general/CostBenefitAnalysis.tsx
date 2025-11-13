@@ -62,6 +62,9 @@ function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOpt
   const unitLabel = unit ? (typeof unit === 'string' ? t(unit) : unit) : '';
 
   const config: EChartsCoreOption = {
+    aria: {
+      enabled: true,
+    },
     dataset: {
       dimensions: [
         { name: 'action', type: 'ordinal' },

@@ -134,5 +134,9 @@
   "close-scenario-editor": "Cerrar editor de escenarios",
   "show-details": "Mostrar detalles de {{action}}",
   "hide-details": "Ocultar detalles de {{action}}",
-  "action-details-for": "Detalles de {{action}}"
+  "action-details-for": "Detalles de {{action}}",
+  "calculation": "Cálculo",
+  "calculation-visible": "El cálculo está visible",
+  "calculation-hidden": "El cálculo está oculto",
+  "loading-calculation": "Cargando cálculo…"
 }

@@ -352,7 +352,7 @@ export default class LRUCache<K, V> implements NodeChain {
 
   /** Clear all the cache excluding permanent items */
   clearTemp() {
-    let el = this._prev as NodeChain;
+    let el = this._prev;
     const map = this._map;
     // @ts-ignore
     while (el !== this) {
@@ -433,7 +433,7 @@ export default class LRUCache<K, V> implements NodeChain {
       if (this._totalBytes < 0) this._totalBytes = 0;
       this._tmpBytes = this._tmpSize = 0;
       // Break ttl
-      clearInterval(this._ttlP!);
+      clearInterval(this._ttlP);
       this._ttlP = undefined;
     } else {
       this._prev = p;

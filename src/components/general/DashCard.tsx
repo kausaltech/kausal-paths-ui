@@ -7,13 +7,20 @@ const CardWithState = styled.div`
   border: 0;
   border-radius: 0;
 
-  &.open,
-  &.root {
-    color: ${({ theme }) => theme.textColor.tertiary};
+  &.open {
+    color: ${({ theme }) => theme.textColor.primary};
     background-color: ${({ theme }) => theme.graphColors.grey020};
     //border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey030};
     h2 {
-      color: ${({ theme }) => theme.textColor.tertiary};
+      color: ${({ theme }) => theme.textColor.primary};
+    }
+  }
+   
+  &.root {
+    color: ${({ theme }) => theme.textColor.primary};
+    background-color: ${({ theme }) => theme.cardBackground.primary};
+    h2 {
+      color: ${({ theme }) => theme.textColor.primary};
     }
   }
 
@@ -23,16 +30,16 @@ const CardWithState = styled.div`
     background-color: ${({ theme }) => theme.cardBackground.primary};
     //border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey005};
     h2 {
-      color: ${({ theme }) => theme.textColor.secondary};
+      color: ${({ theme }) => theme.textColor.primary};
     }
   }
 
   &.open.hovered {
-    color: ${({ theme }) => theme.textColor.secondary};
+    color: ${({ theme }) => theme.textColor.primary};
     //border-color: ${(props) => props.color};
 
     h2 {
-      color: ${({ theme }) => theme.textColor.secondary};
+      color: ${({ theme }) => theme.textColor.primary};
     }
   }
 
@@ -46,7 +53,7 @@ const CardWithState = styled.div`
     background-color: ${({ theme }) => theme.cardBackground.primary};
     //border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey020};
     h2 {
-      color: ${({ theme }) => theme.textColor.secondary};
+      color: ${({ theme }) => theme.textColor.primary};
     }
   }
 `;

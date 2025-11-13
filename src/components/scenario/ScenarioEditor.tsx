@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState, useRef } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
@@ -54,10 +54,28 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
   };
 
   const hasGlobalParameters = site.parameters.length > 0;
+
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
+
   return (
-    <Box role="dialog" aria-modal="true" aria-labelledby="scenario-editor-title">
+    <Box 
+      id="scenario-editor" 
+      role="dialog" 
+      aria-modal="true" 
+      aria-labelledby="scenario-editor-title"
+      >
       <DrawerHeader>
-        <Typography id="scenario-editor-title" variant="h4" component="h2" sx={{ m: 1, lineHeight: 1 }}>
+        <Typography 
+          id="scenario-editor-title" 
+          ref={titleRef} 
+          variant="h4" 
+          component="h2" 
+          sx={{ m: 1, lineHeight: 1 }} 
+          tabIndex={-1}
+        >
           {t('edit-scenario')}
         </Typography>
         <IconButton 
