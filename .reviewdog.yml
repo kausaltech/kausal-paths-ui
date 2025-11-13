@@ -1,7 +1,6 @@
 runner:
   eslint:
-    cmd: node_modules/.bin/eslint --cache --suppressions-location eslint-baseline.json --pass-on-unpruned-suppressions --ignore-pattern "e2e-tests/**" --ignore-pattern "kausal_common" --ignore-pattern "load-tests",
- -f rdjson
+    cmd: node_modules/.bin/eslint --cache --suppressions-location eslint-baseline.json --pass-on-unpruned-suppressions --ignore-pattern "e2e-tests/**" --ignore-pattern "kausal_common" --ignore-pattern "load-tests" -f rdjson
     format: rdjson
     filter-mode: added
   typecheck:
