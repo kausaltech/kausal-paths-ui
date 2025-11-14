@@ -40,11 +40,17 @@
       "count": 1,
       "message": "Cannot find name 'darken'."
     },
-    "240cb229b6ddf9467f7ebe292a1445020288e8d1": {
+    "27a9258334fb6405271acedd63b769b49e964aba": {
+      "file": "src/components/common/CallToActionCard.tsx",
+      "code": "TS2769",
+      "count": 1,
+      "message": "No overload matches this call."
+    },
+    "6f3179020c917ddd4bbf5485bf651d6668c74362": {
       "file": "src/components/common/GraphQLError.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 144 more ... | (\"details\" | ... 153 more ... | \"action-details-for\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 148 more ... | (\"details\" | ... 157 more ... | \"loading-calculation\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "1484f806f69e92e870e04470aab2e62401c4c6bf": {
       "file": "src/components/common/GraphQLError.tsx",
@@ -112,11 +118,11 @@
       "count": 6,
       "message": "Property 'stzh-link' does not exist on type 'JSX.IntrinsicElements'."
     },
-    "1352e7c87632cca339d7a1adb9d6066f1464df56": {
+    "983aa64447dda0298cd013ccc12e0c00f5553812": {
       "file": "src/components/CytoGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type 'import(\"/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/@types+cytoscape@3.21.9/node_modules/@types/cytoscape/index\").Ext' is not assignable to parameter of type 'cytoscape.Ext'."
+      "message": "Argument of type 'import(\"/Users/joesmallwood/Documents/repos/kausal-paths-ui/node_modules/.pnpm/@types+cytoscape@3.21.9/node_modules/@types/cytoscape/index\").Ext' is not assignable to parameter of type 'cytoscape.Ext'."
     },
     "1b4bfa44097ae8240c85ac1f3d43d3a7072059c2": {
       "file": "src/components/CytoGraph.tsx",
@@ -202,11 +208,11 @@
       "count": 3,
       "message": "Object is possibly 'null'."
     },
-    "0680d7a35c174cc0b9d6661b770e223522e998d5": {
+    "a4184ebf58de2dfed09d1184fbef4fade31497a1": {
       "file": "src/components/general/ActionsComparison.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 144 more ... | (\"details\" | ... 153 more ... | \"action-details-for\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string | null]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 148 more ... | (\"details\" | ... 157 more ... | \"loading-calculation\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
       "file": "src/components/general/BarGraph.tsx",
@@ -280,17 +286,17 @@
       "count": 1,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "7a5c736e05c9cc3bd5cd6dca576a3c3a5a0bfa0d": {
+    "a152f49c01b23c3af4ad31ab2d64ca40bc90d625": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 144 more ... | (\"details\" | ... 153 more ... | \"action-details-for\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | \"action-name\" | ... 148 more ... | (\"details\" | ... 157 more ... | \"loading-calculation\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
-    "3186d64cd5707a556087f33ee127a5a37c67d25b": {
+    "abb5815825b3902eabf28686d700768bb586b994": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '{ name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ id: string; label: string; originalId: string | null; helpText: string | null; categories: ({ ...; } & { ...; })[]; groups: ({ ...; } & { ...; })[]; } & { ...; })[]; goals: ({ ...; } & { ...; })[]; unit...' is not assignable to parameter of type 'Metric'."
+      "message": "Argument of type '{ id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ id: string; label: string; originalId: string | null; helpText: string | null; categories: ({ ...; } & { ...; })[]; groups: ({ ...; } & { ...; })[]; } & { ...; })[]; goals: ({ ...; } & { ......' is not assignable to parameter of type 'Metric'."
     },
     "aadefe92e779ac539fe3a291efa38593219b6f85": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -405,6 +411,12 @@
       "code": "TS2339",
       "count": 1,
       "message": "Property 'invertImpact' does not exist on type '{ id: string; label: string; plotLimitForIndicator: number | null; indicatorUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; costUnit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; effectUnit: ({ ...; } & { ...; }) | null; costNode: ({ ...; } & { ...; }) | null; effectNode: { ...; } & { ....'."
+    },
+    "f32a2e47400707607934bcdc4246d0289cbc19ed": {
+      "file": "src/components/pages/ActionListPage.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '[\"actions-as-graph\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
     },
     "c194b51408f9d380646d403bba8cee0b026a0f57": {
       "file": "src/components/pages/ActionListPage.tsx",

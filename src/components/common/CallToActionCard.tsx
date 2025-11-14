@@ -23,8 +23,8 @@ export default function CallToActionCard({ title, content, linkUrl }: CallToActi
   const ariaLabel = content ? `${title}. ${content}` : title;
 
   return (
-    <MuiLink 
-      component={Link} 
+    <MuiLink
+      component={Link}
       href={linkUrl}
       underline="none"
       sx={{ display: 'block' }}

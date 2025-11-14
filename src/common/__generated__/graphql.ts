@@ -15,7 +15,6 @@ export type Scalars = {
   Date: { input: any; output: any; }
   DateTime: { input: string; output: string; }
   JSONString: { input: string; output: string; }
-  PointScalar: { input: any; output: any; }
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -1641,7 +1640,7 @@ export type OutcomeNodeFieldsFragment = (
     ) | null }
     & { __typename: 'ActionNode' }
   )> | null, metricDim: (
-    { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+    { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
         & { __typename: 'MetricDimensionCategoryType' }
@@ -1724,7 +1723,7 @@ export type GetOutcomeNodeQuery = (
         ) | null }
         & { __typename: 'ActionNode' }
       )> | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1799,7 +1798,7 @@ export type GetOutcomeNodeQuery = (
         ) | null }
         & { __typename: 'ActionNode' }
       )> | null, metricDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -1870,7 +1869,7 @@ export type GetOutcomeNodeQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     )> | null, metricDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+      { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -2112,7 +2111,7 @@ export type GetPageQuery = (
     & { __typename: 'DashboardPage' }
   ) | (
     { id: string | null, title: string }
-    & { __typename: 'DashboardPage' | 'InstanceRootPage' | 'Page' }
+    & { __typename: 'InstanceRootPage' | 'Page' }
   ) | (
     { leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: (
       { id: string }
