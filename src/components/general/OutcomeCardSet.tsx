@@ -219,7 +219,7 @@ const OutcomeCardSet = ({
             activeScenario={activeScenario}
             refetching={refetching}
             // Naughtily use showRefreshPrompt to determine if this is a NZP instance
-            outcomeGraphSlot={showRefreshPrompt ? <NZPOutcomeHelpText /> : null}
+            outcomeGraphSlot={showRefreshPrompt && isRootNode ? <NZPOutcomeHelpText /> : null}
             idPrefix={rootNode.id}
           />
         </ContentArea>

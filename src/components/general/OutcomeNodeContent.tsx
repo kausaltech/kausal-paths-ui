@@ -27,9 +27,9 @@ import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 
 //import { getHelpText } from './progress-tracking/utils';
 
-const ContentWrapper = styled.div`
+const ContentWrapper = styled.div<{ $maxHeightPx?: number }>`
   min-height: 300px;
-  max-height: 600px;
+  max-height: ${({ $maxHeightPx = 600 }) => `${$maxHeightPx}px`};
   overflow-y: auto;
   padding: 1rem;
   background-color: ${({ theme }) => theme.cardBackground.primary};
@@ -101,7 +101,7 @@ const ViewSelector = ({
       document.getElementById(targetRegionId)?.focus();
     });
   };
-  
+
   return (
     <Box>
       <IconButton
@@ -112,7 +112,7 @@ const ViewSelector = ({
         aria-label={t('view-options')}
         onClick={handleClick}
       >
-        <ThreeDotsVertical  aria-hidden="true" focusable="false"/>
+        <ThreeDotsVertical aria-hidden="true" focusable="false" />
       </IconButton>
       <Menu
         id={menuId}
@@ -269,7 +269,10 @@ const OutcomeNodeContent = ({
     <div role="tabpanel" id={`tabpanel-${node.id}`}>
       <CardContent>
         {refetching && <Loader />}
-        <ContentWrapper>
+        <ContentWrapper
+          // Ensure plenty of space when showing additional content under the graph
+          $maxHeightPx={activeTabId === 'graph' && outcomeGraphSlot ? 900 : undefined}
+        >
           <Box
             sx={{
               display: 'flex',
