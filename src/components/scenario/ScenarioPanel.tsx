@@ -107,8 +107,6 @@ function useIsPanelStuck(ref: React.RefObject<HTMLDivElement | null>) {
 const FIXED_STYLES = {
   position: 'fixed',
   top: 0,
-  left: 0,
-  right: 0,
   zIndex: 1000,
 };
 
@@ -116,10 +114,13 @@ const RELATIVE_STYLES = {
   position: 'relative',
 };
 
+const DRAWER_WIDTH = 320;
+
 const ScenarioPanel = () => {
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isPanelFixed, isPanelMini, initialHeight } = useIsPanelStuck(containerRef);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { t } = useTranslation();
   const [site] = useSiteWithSetter();
   const instance = useInstance();
@@ -171,6 +172,11 @@ const ScenarioPanel = () => {
           zIndex: 1,
           boxShadow: 2,
           ...(isPanelFixed ? FIXED_STYLES : RELATIVE_STYLES),
+          // only when the panel is fixed we position it relative to the drawer
+          ...(isPanelFixed && {
+            left: !isMobile && scenarioEditorDrawerOpen ? DRAWER_WIDTH : 0,
+            right: 0,
+        }),
           // Background overlay so that the panel stretches to the full window width while fixed
           '&::after': {
             content: '""',
