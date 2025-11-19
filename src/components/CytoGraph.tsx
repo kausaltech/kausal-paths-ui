@@ -1,8 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import { useRouter } from 'next/router';
-
-import styled from '@emotion/styled';
 import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,
@@ -10,18 +13,24 @@ import Cytoscape, {
 } from 'cytoscape';
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
+import { useRouter } from 'next/router';
 // @ts-ignore
 //import pdfExport from 'cytoscape-pdf-export';
-
 import { readableColor } from 'polished';
-import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+import {
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+} from 'reactstrap';
 
 import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { sanitizeHtmlUnit } from '@/common/preprocess';
+import styled from '@emotion/styled';
 
-import SelectDropdown from './common/SelectDropdown';
 import Icon from './common/icon';
+import SelectDropdown from './common/SelectDropdown';
 
 const GraphContainer = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey005};
@@ -424,21 +433,47 @@ export default function CytoGraph(props: CytoGraphProps) {
     const nodeElements = allElements.filter((el) => el.group === 'nodes');
     const edgeElements = allElements.filter((el) => el.group === 'edges');
 
-    // Find predecessors (nodes with edges pointing to selectedNode)
-    const predecessorIds = new Set(
-      edgeElements
-        .filter((edge) => edge.data.target === selectedNode)
-        .map((edge) => edge.data.source)
-    );
+    // Recursively find all predecessors (upstream dependencies)
+    const findAllPredecessors = (nodeId: string, visited = new Set<string>()): Set<string> => {
+      if (visited.has(nodeId)) return visited;
+      visited.add(nodeId);
 
-    // Find successors (nodes that selectedNode points to)
-    const successorIds = new Set(
-      edgeElements
-        .filter((edge) => edge.data.source === selectedNode)
-        .map((edge) => edge.data.target)
-    );
+      const directPredecessors = edgeElements
+        .filter((edge) => edge.data.target === nodeId)
+        .map((edge) => edge.data.source);
 
-    // Keep only the selected node and its predecessors/successors
+      directPredecessors.forEach((predId) => {
+        findAllPredecessors(predId, visited);
+      });
+
+      return visited;
+    };
+
+    // Recursively find all successors (downstream dependencies)
+    const findAllSuccessors = (nodeId: string, visited = new Set<string>()): Set<string> => {
+      if (visited.has(nodeId)) return visited;
+      visited.add(nodeId);
+
+      const directSuccessors = edgeElements
+        .filter((edge) => edge.data.source === nodeId)
+        .map((edge) => edge.data.target);
+
+      directSuccessors.forEach((succId) => {
+        findAllSuccessors(succId, visited);
+      });
+
+      return visited;
+    };
+
+    // Get all upstream dependencies
+    const predecessorIds = findAllPredecessors(selectedNode);
+    predecessorIds.delete(selectedNode); // Remove the selected node itself
+
+    // Get all downstream dependencies
+    const successorIds = findAllSuccessors(selectedNode);
+    successorIds.delete(selectedNode); // Remove the selected node itself
+
+    // Keep only the selected node and its full dependency tree
     const keepNodeIds = new Set([selectedNode, ...predecessorIds, ...successorIds]);
     const filteredNodes = nodeElements.filter((node) => keepNodeIds.has(node.data.id));
 
