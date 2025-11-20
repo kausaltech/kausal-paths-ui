@@ -284,7 +284,11 @@ const ActionsList = ({
               </TableCell>
             ))}
 
-            <TableCell>
+            <TableCell
+              sx={{
+                position: 'relative',
+              }}
+              >
               <Box
                 component="span"
                 sx={{
@@ -292,7 +296,7 @@ const ActionsList = ({
                   width: '1px',
                   height: '1px',
                   p: 0,
-                  m: -1,
+                  m: '-1px',
                   overflow: 'hidden',
                   clip: 'rect(0 0 0 0)',
                   whiteSpace: 'nowrap',
