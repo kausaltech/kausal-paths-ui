@@ -1,0 +1,133 @@
+publiccodeYmlVersion: "0.4"
+name: "kausal-paths-ui"
+url: "https://github.com/kausaltech/kausal-paths-ui"
+landingURL: "https://kausal.tech"
+softwareVersion: "0.1.0"
+releaseDate: "2021-04-15"
+platforms:
+  - web
+usedBy:
+  - "Kausal"
+# add other clients here?
+categories:
+  - "data-visualization"
+  - "data-analytics"
+developmentStatus: stable
+softwareType: "standalone/web"
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - de
+    - en
+    - fi
+    - sv
+    - cs
+    - da
+    - el
+    - es-US
+    - lv
+    - pl
+intendedAudience:
+  countries:
+    - "de"
+    - "fi"
+    - "se"
+    - "ca"
+    - "us"
+    - "ch"
+    - "cz"
+    - "dk"
+    - "gr"
+    - "lv"
+    - "pl"
+  scope:
+    - "local-authorities"
+    - "environment"
+    - "government"
+description:
+  de:
+    genericName: "Klimaaktionsplanung"
+    shortDescription: >
+      Web-Anwendung für die Planung und Modellierung von Klimaschutzmaßnahmen
+      für Kommunen und lokale Behörden.
+    longDescription: >
+      Kausal Paths ist eine Open-Source-Web-Anwendung zur Planung und Modellierung
+      von Klimaschutzmaßnahmen für Städte und Kommunen. Die Software ermöglicht es
+      lokalen Behörden, verschiedene Szenarien für die Reduzierung von Treibhausgasemissionen
+      zu erstellen, zu vergleichen und zu analysieren.
+
+      Die Anwendung bietet umfassende Funktionen zur Visualisierung von kausalen Zusammenhängen
+      zwischen verschiedenen Klimaschutzmaßnahmen und ihren Auswirkungen auf Emissionen.
+      Benutzer können Aktionspläne erstellen, die Wirksamkeit von Maßnahmen bewerten und
+      verschiedene Szenarien durchspielen, um optimale Strategien zur Erreichung von
+      Klimazielen zu identifizieren.
+
+      Kausal Paths unterstützt die Modellierung von Emissionsreduktionen über verschiedene
+      Sektoren hinweg, einschließlich Verkehr, Energie, Gebäude und anderen relevanten
+      Bereichen. Die Software ermöglicht es, historische Daten zu analysieren, Prognosen
+      zu erstellen und die Fortschritte bei der Umsetzung von Klimaschutzmaßnahmen zu
+      verfolgen.
+
+      Die Anwendung wird bereits von mehreren Städten weltweit genutzt. Sie unterstützt mehrsprachige
+      Benutzeroberflächen und kann an die spezifischen Anforderungen verschiedener
+      Kommunen angepasst werden.
+
+      Kausal Paths ist Teil der Kausal-Softwarefamilie und arbeitet eng mit anderen
+      Kausal-Tools zusammen, um eine umfassende Lösung für die Klimaplanung zu bieten.
+    features:
+      - "Szenarien-Modellierung für Klimaschutzmaßnahmen"
+      - "Visualisierung kausaler Zusammenhänge zwischen Maßnahmen und Emissionen"
+      - "Analyse von Emissionsreduktionen über verschiedene Sektoren"
+      - "Vergleich verschiedener Klimaschutzstrategien"
+      - "Verfolgung historischer Daten und Prognosen"
+      - "Mehrsprachige Benutzeroberfläche"
+      - "Anpassbare Instanzen für verschiedene Kommunen"
+      - "GraphQL-basierte API-Integration"
+    screenshots: []
+  en:
+    genericName: "Climate Action Planning"
+    shortDescription: >
+      Web application for planning and modeling climate action measures
+      for municipalities and local authorities.
+    longDescription: >
+      Kausal Paths is an open-source web application for planning and modeling climate
+      action measures for cities and municipalities. The software enables local authorities
+      to create, compare, and analyze various scenarios for reducing greenhouse gas emissions.
+
+      The application provides comprehensive features for visualizing causal relationships
+      between different climate action measures and their impacts on emissions. Users can
+      create action plans, evaluate the effectiveness of measures, and explore different
+      scenarios to identify optimal strategies for achieving climate goals.
+
+      Kausal Paths supports modeling emission reductions across various sectors, including
+      transportation, energy, buildings, and other relevant areas. The software enables
+      analysis of historical data, creation of forecasts, and tracking of progress in
+      implementing climate action measures.
+
+      The application is already being used by several cities worldwide. It supports multilingual user interfaces
+      and can be customized to meet the specific requirements of different municipalities.
+
+      Kausal Paths is part of the Kausal software family and works closely with other
+      Kausal tools to provide a comprehensive solution for climate planning.
+    features:
+      - "Scenario modeling for climate action measures"
+      - "Visualization of causal relationships between actions and emissions"
+      - "Analysis of emission reductions across various sectors"
+      - "Comparison of different climate action strategies"
+      - "Tracking of historical data and forecasts"
+      - "Multilingual user interface"
+      - "Customizable instances for different municipalities"
+      - "GraphQL-based API integration"
+    screenshots: []
+legal:
+  license: AGPL-3.0-or-later
+maintenance:
+  type: "internal"
+  contacts:
+    - name: "Kausal Ltd"
+      email: "info@kausal.tech"
+  # contractors:
+  #   - name: "Kausal Tech"
+  #     email: "info@kausal.tech"
+  #     website: "https://kausal.tech"
+  #     until: "2026-12-31"
