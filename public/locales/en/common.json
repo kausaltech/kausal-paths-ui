@@ -66,6 +66,7 @@
   "nav-menu-close": "Close navigation",
   "front-page": "Front page",
   "actions-count": "Showing {{ count }} actions",
+  "actions-as-graph": "Graph",
   "actions-as-list": "List",
   "actions-as-efficiency": "Efficiency",
   "actions-impact-on": "Impact on",

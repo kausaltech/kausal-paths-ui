@@ -73,6 +73,7 @@
   "nav-menu-close": "Κλείστε την πλοήγηση",
   "front-page": "Πρώτη σελίδα",
   "actions-count": "Εμφάνιση ενεργειών {{ count }}",
+  "actions-as-graph": "Γράφημα",
   "actions-as-list": "Λίστα",
   "actions-as-efficiency": "Αποδοτικότητα",
   "actions-impact-on": "Επίδραση στην",

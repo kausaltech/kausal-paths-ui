@@ -58,6 +58,7 @@
   "nav-menu-close": "Aizvērt navigāciju",
   "front-page": "Sākumlapa",
   "actions-count": "Rāda {{ count }} darbības",
+  "actions-as-graph": "Diagramma",
   "actions-as-list": "Saraksts",
   "actions-as-efficiency": "Efektivitāte",
   "actions-impact-on": "Ietekme uz",
