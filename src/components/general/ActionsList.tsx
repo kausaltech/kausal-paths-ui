@@ -270,7 +270,7 @@ const ActionsList = ({
             {columns.map((col) => (
               <TableCell
                 key={col.key}
-                sx={{ minWidth: { xs: '16ch', md: 'auto' } }}
+                sx={{ minWidth: { xs: '16ch', md: '12' } }}
               >
                 <TableSortLabel
                   active={sortBy.key === col.key}
