@@ -75,8 +75,9 @@ const getBarOption = (item: DashboardProgressItem, theme: Theme, max: number) =>
 
   const config: EChartsCoreOption = {
     aria: { enabled: false },
-    grid: { left: 5, right: 20, top: 40, bottom: 20 },
+    grid: { left: 5, right: 40, top: 40, bottom: 20 },
     xAxis: { min, max, axisTick: { show: false }, axisLabel: { customValues: [min, max] } },
+    containLabel: true,
     yAxis: {
       type: 'category',
       axisLine: {
