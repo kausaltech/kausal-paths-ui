@@ -327,6 +327,7 @@ function ActionListPage({ page }: ActionListPageProps) {
       ? [getViewOption('graph', t('actions-as-graph'), 'chartColumn')]
       : []),
   ];
+  const hasMultipleViews = viewOptions.length > 1;
 
   if (error) {
     return (
@@ -450,41 +451,47 @@ function ActionListPage({ page }: ActionListPageProps) {
         </ActionCount>
       </PageHero>
 
-      <ViewSelectorBar className="text-light">
-        <Container fixed maxWidth="xl">
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
-            <ShowLabel
-              id="view-select-label"
-              sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
-            >
-              {t('show')}
-            </ShowLabel>
-
-            <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
-              <Select
-                id="view-select"
-                labelId="view-select-label"
-                value={listType}
-                onChange={(e) => setListType(e.target.value as ViewType)}
-                size="small"
-                MenuProps={{ disablePortal: true }}
+      {hasMultipleViews && (
+        <ViewSelectorBar className="text-light">
+          <Container fixed maxWidth="xl">
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+              <ShowLabel
+                id="view-select-label"
+                sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
               >
-                {viewOptions.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    <span className="d-inline-flex align-items-center">
-                      {/* Keep existing bootstrap icons */}
-                      <Icon name={opt.icon} width="1.25rem" height="1.25rem" className="me-2" />
-                      {opt.label}
-                    </span>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </Container>
-      </ViewSelectorBar>
+                {t('show')}
+              </ShowLabel>
 
-      <Container fixed maxWidth="xl" sx={{ mb: 5 }}>
+              <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
+                <Select
+                  id="view-select"
+                  labelId="view-select-label"
+                  value={listType}
+                  onChange={(e) => setListType(e.target.value as ViewType)}
+                  size="small"
+                  MenuProps={{ disablePortal: true }}
+                >
+                  {viewOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      <span className="d-inline-flex align-items-center">
+                        {/* Keep existing bootstrap icons */}
+                        <Icon name={opt.icon} width="1.25rem" height="1.25rem" className="me-2" />
+                        {opt.label}
+                      </span>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          </Container>
+        </ViewSelectorBar>
+      )}
+
+      <Container 
+        fixed 
+        maxWidth="xl" 
+        sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4, }}
+      >
         {listType === 'list' ? (
           <ActionsList
             id="list-view"
