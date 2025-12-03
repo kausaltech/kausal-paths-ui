@@ -1,35 +1,32 @@
+import '../../styles/default/main.scss';
+
 import React, { useState } from 'react';
 
-import App, { type AppContext, type AppProps } from 'next/app';
-
-import type { ApolloClient } from '@apollo/client';
-import { ApolloProvider } from '@apollo/client';
-import type { Theme } from '@kausal/themes/types';
-import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
-import { ThemeProvider } from '@mui/material/styles';
-import * as Sentry from '@sentry/nextjs';
-import { appWithTranslation, useTranslation } from 'next-i18next';
+import {
+  appWithTranslation,
+  useTranslation,
+} from 'next-i18next';
+import App, {
+  type AppContext,
+  type AppProps,
+} from 'next/app';
 import numbro from 'numbro';
 
-import {
-  getAssetPrefix,
-  getWildcardDomains,
-  isLocalDev,
-  isProductionDeployment,
-  printRuntimeConfig,
-} from '@common/env';
-import { getLogger } from '@common/logging/logger';
-import { CommonThemeProvider } from '@common/providers/CommonThemeProvider';
-import { getClientIP, getCurrentURL } from '@common/utils';
-
-import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
 import type {
   GetAvailableInstancesQuery,
   GetInstanceContextQuery,
   GetInstanceContextQueryVariables,
 } from '@/common/__generated__/graphql';
-import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from '@/common/apollo';
-import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
+import {
+  type ApolloClientOpts,
+  type ApolloClientType,
+  initializeApollo,
+} from '@/common/apollo';
+import {
+  activeGoalVar,
+  activeScenarioVar,
+  yearRangeVar,
+} from '@/common/cache';
 import {
   BASE_PATH_HEADER,
   DEFAULT_LANGUAGE_HEADER,
@@ -39,14 +36,38 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from '@/common/const';
 import { getI18n } from '@/common/i18n';
-import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
+import InstanceContext, {
+  GET_INSTANCE_CONTEXT,
+  type InstanceContextType,
+} from '@/common/instance';
 import { initializeMuiTheme } from '@/common/mui-theme/theme';
 import { loadTheme } from '@/common/theme';
+import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
 import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
-import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
-
-import '../../styles/default/main.scss';
+import SiteContext, {
+  type SiteContextType,
+  type SiteI18nConfig,
+} from '@/context/site';
+import type { ApolloClient } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client';
+import {
+  getAssetPrefix,
+  getWildcardDomains,
+  isLocalDev,
+  isProductionDeployment,
+  printRuntimeConfig,
+} from '@common/env';
+import { getLogger } from '@common/logging/logger';
+import { CommonThemeProvider } from '@common/providers/CommonThemeProvider';
+import {
+  getClientIP,
+  getCurrentURL,
+} from '@common/utils';
+import type { Theme } from '@kausal/themes/types';
+import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
+import { ThemeProvider } from '@mui/material/styles';
+import * as Sentry from '@sentry/nextjs';
 
 type WatchLink = {
   title: string | { [key: string]: string };
@@ -135,6 +156,12 @@ const defaultSiteContext: {
     watchLink: {
       title: 'Lappeenrannan ilmastovahti',
       url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
+    },
+  },
+  'muenchen-demo': {
+    watchLink: {
+      title: 'Maßnahmenplan',
+      url: 'https://demo-muenchen.watch-test.kausal.tech/',
     },
   },
   'potsdam-gpc': {
