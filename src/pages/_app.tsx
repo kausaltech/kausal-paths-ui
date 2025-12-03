@@ -84,6 +84,88 @@ const defaultSiteContext: {
       url: 'https://cork-planner.watch-test.kausal.tech/',
     },
   },
+  'demo-stadt-bisko': {
+    watchLink: {
+      title: {
+        en: 'Demo City climate action plan',
+        de: 'Klimaneutrales Demo-Stadt',
+      },
+      url: {
+        en: 'https://demo-duesseldorf.watch-test.kausal.tech/en/',
+        de: 'https://demo-duesseldorf.watch-test.kausal.tech',
+      },
+    },
+  },
+  espoo: {
+    instanceId: 'espoo',
+    watchLink: {
+      title: {
+        fi: 'Ilmastovahti',
+        en: 'Espoo Climate Watch',
+        sv: 'Esbo klimatvakt',
+      },
+      url: {
+        fi: 'https://ilmastovahti.espoo.fi',
+        en: 'https://ilmastovahti.espoo.fi/en',
+        sv: 'https://ilmastovahti.espoo.fi/sv',
+      },
+    },
+  },
+  gronlogik: {
+    watchLink: {
+      title: 'Sunnydale Climate Watch',
+      url: 'https://sunnydale.test.kausal.tech/climate',
+    },
+  },
+  healthimpact: {
+    watchLink: null,
+  },
+  ilmastoruoka: {
+    watchLink: null,
+  },
+  'lappeenranta-nzc': {
+    watchLink: {
+      title: 'Lappeenrannan ilmastovahti',
+      url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
+    },
+  },
+  'lappeenranta-syke': {
+    watchLink: {
+      title: 'Lappeenrannan ilmastovahti',
+      url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
+    },
+  },
+  longmont: {
+    instanceId: 'longmont',
+    watchLink: {
+      title: {
+        en: 'Longmont Indicators',
+        'es-US': 'Indicadores de Longmont',
+      },
+      url: {
+        en: 'https://indicators.longmontcolorado.gov',
+        'es-US': 'https://indicators.longmontcolorado.gov/es-US',
+      },
+    },
+  },
+  'muenchen-demo': {
+    watchLink: {
+      title: 'Maßnahmenplan',
+      url: 'https://demo-muenchen.watch-test.kausal.tech/',
+    },
+  },
+  'potsdam-gpc': {
+    watchLink: {
+      title: 'Klima-Monitor-Potsdam',
+      url: 'https://klima-monitor.potsdam.de/',
+    },
+  },
+  saskatoon: {
+    watchLink: {
+      title: "Saskatoon's Climate Dashboard",
+      url: 'https://saskatoon.ca/climatedashboard',
+    },
+  },
   sunnydale: {
     watchLink: null,
     demoPages: [
@@ -107,6 +189,12 @@ const defaultSiteContext: {
       },
     ],
   },
+  surrey: {
+    watchLink: {
+      title: "Surrey's Climate Action Tracker",
+      url: 'https://climateactiontracker.surrey.ca/',
+    },
+  },
   tampere: {
     /** Should user be able to choose reference year and end year */
     /** Should user be able to select different scenarios */
@@ -115,97 +203,8 @@ const defaultSiteContext: {
       url: 'https://ilmastovahti.tampere.fi',
     }, // remove, replace with instance.externalLinks[0]
   },
-  ilmastoruoka: {
-    watchLink: null,
-  },
-  healthimpact: {
-    watchLink: null,
-  },
-  gronlogik: {
-    watchLink: {
-      title: 'Sunnydale Climate Watch',
-      url: 'https://sunnydale.test.kausal.tech/climate',
-    },
-  },
-  espoo: {
-    instanceId: 'espoo',
-    watchLink: {
-      title: {
-        fi: 'Ilmastovahti',
-        en: 'Espoo Climate Watch',
-        sv: 'Esbo klimatvakt',
-      },
-      url: {
-        fi: 'https://ilmastovahti.espoo.fi',
-        en: 'https://ilmastovahti.espoo.fi/en',
-        sv: 'https://ilmastovahti.espoo.fi/sv',
-      },
-    },
-  },
-
   zuerich: {
     watchLink: null,
-  },
-  'lappeenranta-syke': {
-    watchLink: {
-      title: 'Lappeenrannan ilmastovahti',
-      url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
-    },
-  },
-  'lappeenranta-nzc': {
-    watchLink: {
-      title: 'Lappeenrannan ilmastovahti',
-      url: 'https://kestavyysvahti.lappeenranta.fi/ilmasto',
-    },
-  },
-  'muenchen-demo': {
-    watchLink: {
-      title: 'Maßnahmenplan',
-      url: 'https://demo-muenchen.watch-test.kausal.tech/',
-    },
-  },
-  'potsdam-gpc': {
-    watchLink: {
-      title: 'Klima-Monitor-Potsdam',
-      url: 'https://klima-monitor.potsdam.de/',
-    },
-  },
-  longmont: {
-    instanceId: 'longmont',
-    watchLink: {
-      title: {
-        en: 'Longmont Indicators',
-        'es-US': 'Indicadores de Longmont',
-      },
-      url: {
-        en: 'https://indicators.longmontcolorado.gov',
-        'es-US': 'https://indicators.longmontcolorado.gov/es-US',
-      },
-    },
-  },
-  saskatoon: {
-    watchLink: {
-      title: "Saskatoon's Climate Dashboard",
-      url: 'https://saskatoon.ca/climatedashboard',
-    },
-  },
-  surrey: {
-    watchLink: {
-      title: "Surrey's Climate Action Tracker",
-      url: 'https://climateactiontracker.surrey.ca/',
-    },
-  },
-  'demo-stadt-bisko': {
-    watchLink: {
-      title: {
-        en: 'Demo City climate action plan',
-        de: 'Klimaneutrales Demo-Stadt',
-      },
-      url: {
-        en: 'https://demo-duesseldorf.watch-test.kausal.tech/en/',
-        de: 'https://demo-duesseldorf.watch-test.kausal.tech',
-      },
-    },
   },
 };
 
