@@ -61,6 +61,7 @@
   "actions-group-type": "Åtgärdskategori",
   "actions-sort-efficiency": "Kostnadseffektivitet",
   "actions-sort-cost": "Kostnad",
+  "actions-as-graph": "Diagram över åtgärder",
   "actions-as-list": "Lista av åtgärder",
   "actions-count": "{{ count }} åtgärder",
   "actions-sort-impact": "Påverkan",

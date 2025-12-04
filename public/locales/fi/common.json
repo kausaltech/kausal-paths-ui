@@ -62,6 +62,7 @@
   "total-impact": "Kokonaisvaikutus",
   "will_be_implemented": "Toteutetaan",
   "actions-count": "Näytetään {{ count }} toimenpidettä",
+  "actions-as-graph": "Kaaviona",
   "actions-as-list": "Listana",
   "actions-as-efficiency": "Vaikuttavuus",
   "actions-impact-on": "Näytä vaikutus",

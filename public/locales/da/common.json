@@ -61,6 +61,7 @@
   "nav-menu-close": "Luk navigation",
   "front-page": "Forside",
   "actions-count": "Viser {{ count }} handlinger",
+  "actions-as-graph": "Graf",
   "actions-as-list": "Liste",
   "actions-as-efficiency": "Effektivitet",
   "actions-impact-on": "Påvirkning på",

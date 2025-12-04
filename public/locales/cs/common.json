@@ -61,6 +61,7 @@
   "nav-menu-close": "Zavřít navigaci",
   "front-page": "Úvodní stránka",
   "actions-count": "Zobrazeno {{ count }} akcí",
+  "actions-as-graph": "Graf",
   "actions-as-list": "Seznam",
   "actions-as-efficiency": "Efektivita",
   "actions-impact-on": "Dopad na",

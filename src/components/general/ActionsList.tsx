@@ -270,7 +270,7 @@ const ActionsList = ({
             {columns.map((col) => (
               <TableCell
                 key={col.key}
-                sx={{ minWidth: { xs: '16ch', md: 'auto' } }}
+                sx={{ minWidth: { xs: '16ch', md: '12' } }}
               >
                 <TableSortLabel
                   active={sortBy.key === col.key}
@@ -284,15 +284,19 @@ const ActionsList = ({
               </TableCell>
             ))}
 
-            <TableCell>
+            <TableCell
+              sx={{
+                position: 'relative',
+              }}
+              >
               <Box
                 component="span"
                 sx={{
                   position: 'absolute',
-                  width: 1,
-                  height: 1,
+                  width: '1px',
+                  height: '1px',
                   p: 0,
-                  m: -1,
+                  m: '-1px',
                   overflow: 'hidden',
                   clip: 'rect(0 0 0 0)',
                   whiteSpace: 'nowrap',

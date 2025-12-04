@@ -61,6 +61,7 @@
   "nav-menu-close": "Zamknij nawigację",
   "front-page": "Strona główna",
   "actions-count": "Wyświetlono {{ count }} działań",
+  "actions-as-graph": "Wykres",
   "actions-as-list": "Lista",
   "actions-as-efficiency": "Efektywność",
   "actions-impact-on": "Wpływ na",

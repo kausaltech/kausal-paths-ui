@@ -69,6 +69,7 @@
   "nav-menu-open": "Abrir navegación",
   "nav-menu-close": "Cerrar navegación",
   "actions-count": "Mostrar {{ count }} acción(es)",
+  "actions-as-graph": "Gráfico",
   "actions-as-list": "Lista",
   "actions-as-efficiency": "Eficacia",
   "actions-impact-on": "Impacto en",
