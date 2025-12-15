@@ -446,8 +446,8 @@ importers:
         version: 5.101.3
     optionalDependencies:
       '@kausal-private/themes-private':
-        specifier: ^0.5.56
-        version: 0.5.60
+        specifier: ^0.5.73
+        version: 0.5.73
 
 packages:
 
@@ -1784,8 +1784,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
 
-  '@kausal-private/themes-private@0.5.60':
-    resolution: {integrity: sha512-ggIbC838bEqVofKRlv4mTzuhiuQDmdcEcpT8zVnsZc6PbthLUmLbITYtFv0//yPC4QIt9xeTjyTDKrfFvdNISw==}
+  '@kausal-private/themes-private@0.5.73':
+    resolution: {integrity: sha512-mnCWKgtcLdpMjrK6dYKgXeN1AnW1DF+3GnzLS1td/d8viKWinyrllGiCAX2kA9iwPjYK/n6TbLqVHHNa0aBCKg==}
 
   '@kausal/themes@0.8.7':
     resolution: {integrity: sha512-V+vtXbtNRW0lok2cL9rkpona5Gnq/hrkVqWTJ1PlNxx40cxlisQVSu+F3LgvTcFR9s9B1Sccx9zey16OJokjSg==}
@@ -9363,7 +9363,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kausal-private/themes-private@0.5.60':
+  '@kausal-private/themes-private@0.5.73':
     optional: true
 
   '@kausal/themes@0.8.7': {}
