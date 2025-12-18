@@ -123,6 +123,12 @@ const defaultSiteContext: {
   ilmastoruoka: {
     watchLink: null,
   },
+  'koeln-dev': {
+    watchLink: {
+      title: 'Klimaschutz-Monioring Köln',
+      url: 'https://koeln-klima-copy1.watch-test.kausal.tech',
+    },
+  },
   'lappeenranta-nzc': {
     watchLink: {
       title: 'Lappeenrannan ilmastovahti',
