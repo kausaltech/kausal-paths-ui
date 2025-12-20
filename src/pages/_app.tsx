@@ -125,7 +125,7 @@ const defaultSiteContext: {
   },
   'koeln-dev': {
     watchLink: {
-      title: 'Klimaschutz-Monioring Köln',
+      title: 'Klimaschutz-Monitoring',
       url: 'https://koeln-klima-copy1.watch-test.kausal.tech',
     },
   },
