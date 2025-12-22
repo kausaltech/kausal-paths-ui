@@ -27,8 +27,8 @@ importers:
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1)
       '@kausal/themes':
-        specifier: ^0.8.4
-        version: 0.8.7
+        specifier: ^0.8.13
+        version: 0.8.13
       '@mui/icons-material':
         specifier: ^7.3.1
         version: 7.3.1(@mui/material@7.3.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react@19.1.1))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react@19.1.1)
@@ -446,8 +446,8 @@ importers:
         version: 5.101.3
     optionalDependencies:
       '@kausal-private/themes-private':
-        specifier: ^0.5.73
-        version: 0.5.73
+        specifier: ^0.5.77
+        version: 0.5.77
 
 packages:
 
@@ -1784,11 +1784,11 @@ packages:
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
 
-  '@kausal-private/themes-private@0.5.73':
-    resolution: {integrity: sha512-mnCWKgtcLdpMjrK6dYKgXeN1AnW1DF+3GnzLS1td/d8viKWinyrllGiCAX2kA9iwPjYK/n6TbLqVHHNa0aBCKg==}
+  '@kausal-private/themes-private@0.5.77':
+    resolution: {integrity: sha512-e+L0aR2VjKQ9AvHpjj9nwyNKZ1wCyA+70SFoeQfsdbSzrCeaW2JX4hDpz0pbfOYFBdzZhtwurBaEQk/m6/rzaA==}
 
-  '@kausal/themes@0.8.7':
-    resolution: {integrity: sha512-V+vtXbtNRW0lok2cL9rkpona5Gnq/hrkVqWTJ1PlNxx40cxlisQVSu+F3LgvTcFR9s9B1Sccx9zey16OJokjSg==}
+  '@kausal/themes@0.8.13':
+    resolution: {integrity: sha512-AgP60oqShpkSxHGU65AdWvoyERkbDt671kPdXZrHjs4XQa8iquamHzH62li/yKrmXBKU8ZfM1k2MrouRNRFFJQ==}
 
   '@mapbox/geojson-rewind@0.5.2':
     resolution: {integrity: sha512-tJaT+RbYGJYStt7wI3cq4Nl4SXxG8W7JDG5DMJu97V25RnbNg3QtQtf+KD+VLjNpWKYsRvXDNmNrBgEETr1ifA==}
@@ -9363,10 +9363,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kausal-private/themes-private@0.5.73':
+  '@kausal-private/themes-private@0.5.77':
     optional: true
 
-  '@kausal/themes@0.8.7': {}
+  '@kausal/themes@0.8.13': {}
 
   '@mapbox/geojson-rewind@0.5.2':
     dependencies:
