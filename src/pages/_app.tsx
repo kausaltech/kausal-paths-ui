@@ -1,56 +1,16 @@
-import '../../styles/default/main.scss';
+import React, { type ReactNode, useState } from 'react';
 
-import React, { useState } from 'react';
+import App, { type AppContext, type AppProps } from 'next/app';
 
-import {
-  appWithTranslation,
-  useTranslation,
-} from 'next-i18next';
-import App, {
-  type AppContext,
-  type AppProps,
-} from 'next/app';
-import numbro from 'numbro';
-
-import type {
-  GetAvailableInstancesQuery,
-  GetInstanceContextQuery,
-  GetInstanceContextQueryVariables,
-} from '@/common/__generated__/graphql';
-import {
-  type ApolloClientOpts,
-  type ApolloClientType,
-  initializeApollo,
-} from '@/common/apollo';
-import {
-  activeGoalVar,
-  activeScenarioVar,
-  yearRangeVar,
-} from '@/common/cache';
-import {
-  BASE_PATH_HEADER,
-  DEFAULT_LANGUAGE_HEADER,
-  INSTANCE_HOSTNAME_HEADER,
-  INSTANCE_IDENTIFIER_HEADER,
-  SUPPORTED_LANGUAGES_HEADER,
-  THEME_IDENTIFIER_HEADER,
-} from '@/common/const';
-import { getI18n } from '@/common/i18n';
-import InstanceContext, {
-  GET_INSTANCE_CONTEXT,
-  type InstanceContextType,
-} from '@/common/instance';
-import { initializeMuiTheme } from '@/common/mui-theme/theme';
-import { loadTheme } from '@/common/theme';
-import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
-import Layout from '@/components/Layout';
-import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
-import SiteContext, {
-  type SiteContextType,
-  type SiteI18nConfig,
-} from '@/context/site';
 import type { ApolloClient } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client';
+import type { Theme } from '@kausal/themes/types';
+import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
+import { ThemeProvider } from '@mui/material/styles';
+import * as Sentry from '@sentry/nextjs';
+import { appWithTranslation, useTranslation } from 'next-i18next';
+import numbro from 'numbro';
+
 import {
   getAssetPrefix,
   getWildcardDomains,
@@ -60,20 +20,42 @@ import {
 } from '@common/env';
 import { getLogger } from '@common/logging/logger';
 import { CommonThemeProvider } from '@common/providers/CommonThemeProvider';
+import { getClientIP, getCurrentURL } from '@common/utils';
+
+import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
+import type {
+  GetAvailableInstancesQuery,
+  GetInstanceContextQuery,
+  GetInstanceContextQueryVariables,
+} from '@/common/__generated__/graphql';
+import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from '@/common/apollo';
+import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import {
-  getClientIP,
-  getCurrentURL,
-} from '@common/utils';
-import type { Theme } from '@kausal/themes/types';
-import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
-import { ThemeProvider } from '@mui/material/styles';
-import * as Sentry from '@sentry/nextjs';
+  BASE_PATH_HEADER,
+  DEFAULT_LANGUAGE_HEADER,
+  INSTANCE_HOSTNAME_HEADER,
+  INSTANCE_IDENTIFIER_HEADER,
+  SUPPORTED_LANGUAGES_HEADER,
+  THEME_IDENTIFIER_HEADER,
+} from '@/common/const';
+import { getI18n } from '@/common/i18n';
+import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
+import { initializeMuiTheme } from '@/common/mui-theme/theme';
+import { loadTheme } from '@/common/theme';
+import Layout from '@/components/Layout';
+import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
+import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
+
+import '../../styles/default/main.scss';
 
 type WatchLink = {
   title: string | { [key: string]: string };
   url: string | { [key: string]: string };
 } | null;
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
+type Page<P = object> = React.ComponentType<P> & {
+  getLayout?: (page: ReactNode) => ReactNode;
+};
 
 const defaultSiteContext: {
   [key: string]: { instanceId?: string; watchLink: WatchLink; demoPages?: DemoPage[] };
@@ -215,6 +197,7 @@ const defaultSiteContext: {
 };
 
 export type PathsAppProps = AppProps<Record<string, unknown>> & {
+  Component: Page;
   siteContext: SiteContextType;
   instanceContext: InstanceContextType;
   themeProps: Theme;
@@ -234,12 +217,15 @@ function PathsApp(props: PathsAppProps) {
   const logger = getLogger({ name: 'app-component' });
   const muiTheme = initializeMuiTheme(themeProps);
 
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout ?? ((page) => <Layout>{page}</Layout>);
+
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(
     i18n.language,
     i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined
   );
-  const component = <Component {...pageProps} />;
+  const component = getLayout(<Component {...pageProps} />);
   if (!instanceContext || !siteContext) {
     // getInitialProps errored, return with a very simple layout
     logger.error('no site context');
@@ -283,7 +269,7 @@ function PathsApp(props: PathsAppProps) {
               <CommonThemeProvider theme={themeProps}>
                 <ThemedGlobalStyles />
                 <LocalizedNumbersContext.Provider value={numbersContext}>
-                  <Layout>{component}</Layout>
+                  {component}
                 </LocalizedNumbersContext.Provider>
               </CommonThemeProvider>
             </ThemeProvider>
