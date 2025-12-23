@@ -23,7 +23,7 @@ const StyledCard = styled(Card)<{ $selected?: boolean }>`
   & .card-body {
     position: relative;
     z-index: 1;
-    padding: 1rem 1.75rem 1.5rem;
+    padding: ${({ theme }) => theme.spaces.s050};
   }
 
   & .card-title {
