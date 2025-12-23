@@ -17,7 +17,7 @@ const StyledCard = styled(Card)<{ $selected?: boolean }>`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: ${({ theme }) => theme.cardBorderRadius};
   background-color: ${({ theme }) => theme.themeColors.white};
 
   & .card-body {
