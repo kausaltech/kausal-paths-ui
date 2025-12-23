@@ -73,6 +73,10 @@ const BotNav = styled(Navbar)`
     flex-direction: column;
   }
 
+  .navbar-collapse {
+    align-items: stretch;
+  }
+
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .navbar-nav {
       padding: 0;
@@ -129,8 +133,11 @@ const HomeLink = styled.a`
 `;
 
 const NavLink = styled.div`
+  height: 100%;
+
   a {
-    display: block;
+    height: 100%;
+    display: flex;
     margin: 0 0 ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100};
     color: ${(props) => props.theme.neutralDark};
 
@@ -151,6 +158,7 @@ const NavLink = styled.div`
 `;
 
 const NavHighlighter = styled.span`
+  height: 100%;
   display: inline-block;
   padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) => props.theme.spaces.s050} - 5px);
   border-bottom: 5px solid transparent;

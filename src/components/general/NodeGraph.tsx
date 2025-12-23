@@ -541,7 +541,9 @@ function createGoalSeries(theme: Theme, datasetIndex: number, name: string) {
       color: theme.graphColors.red090,
     },
     lineStyle: {
-      color: 'rgba(0, 0, 0, 0)',
+      color: theme.graphColors.red090,
+      type: 'dashed',
+      width: 2,
     },
     animation: false,
   };

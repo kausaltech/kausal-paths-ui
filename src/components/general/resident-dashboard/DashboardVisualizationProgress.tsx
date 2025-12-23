@@ -54,17 +54,21 @@ type Props = {
 };
 
 function getBarColor(
-  defaultColor: string | undefined,
+  customColor: string | undefined,
   theme: Theme,
   value?: number,
   target?: number
 ) {
+  const hasCustomColor = !!customColor;
+  if (hasCustomColor) {
+    return customColor;
+  }
   if (typeof value === 'number' && typeof target === 'number') {
     return value > target ? theme.graphColors.red030 : theme.graphColors.green010;
   }
 
   // defaultColor may be an empty string
-  return defaultColor ? defaultColor : theme.graphColors.blue050;
+  return theme.graphColors.blue050;
 }
 
 const getBarOption = (item: DashboardProgressItem, theme: Theme, max: number) => {

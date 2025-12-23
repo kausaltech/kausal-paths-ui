@@ -17,18 +17,36 @@ const StyledCard = styled(Card)<{ $selected?: boolean }>`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
   position: relative;
   overflow: hidden;
+  border-radius: ${({ theme }) => theme.cardBorderRadius};
+  background-color: ${({ theme }) => theme.themeColors.white};
+
+  & .card-body {
+    position: relative;
+    z-index: 1;
+    padding: ${({ theme }) => theme.spaces.s050};
+  }
+
+  & .card-title {
+    margin-bottom: 1.75rem;
+  }
 
   &::after {
-    width: 100%;
-    background-color: ${({ $selected, theme }) => ($selected ? theme.brandDark : theme.brandLight)};
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: 30px;
-    text-align: center;
-    padding: 4px 0;
+    background-color: ${({ $selected, theme }) =>
+      $selected ? theme.brandDark : theme.brandLight};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+
     content: ${({ $selected }) =>
       $selected
         ? '""'
-        : // chevron down icon
-          css`url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' 
+        : css`url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' 
       fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath 
       d='M7.0406 8.29289C6.65008 7.90237 6.01691 7.90237 5.62639 8.29289C5.23586 8.68342 
       5.23586 9.31658 5.62639 9.70711L11.6264 15.7071C12.0169 16.0976 12.6501 16.0976 
