@@ -121,7 +121,7 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
 
         const missingText =
           goalVal !== 0
-            ? `${Math.abs((missing/goalVal) * 100).toFixed(0)}%`
+            ? `${Math.abs((missing / goalVal) * 100).toFixed(0)}%`
             : `${beautifyValue(missing, undefined, maximumFractionDigits)} ${unit}`;
 
         // TODO: Verbalise case "exactly on target"
@@ -139,14 +139,9 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
       const iconClass = sentiment === 'negative' ? 'icon-negative' : 'icon-positive';
 
       const icon = (
-        <Icon
-          className={iconClass}
-          aria-hidden="true"
-          focusable="false"
-          role="presentation"
-        />
+        <Icon className={iconClass} aria-hidden="true" focusable="false" role="presentation" />
       );
-        
+
       return (
         <CompactOutcome>
           {icon}
@@ -154,7 +149,7 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
             <Typography variant="h6" component="h3" sx={{ lineHeight: 1, m: 0, p: 0 }}>
               {isForecastOnGoalYear
                 ? t('scenario-outcome')
-                : `${t('table-historical')} ${comparisonGoal.year}`} 
+                : `${t('table-historical')} ${comparisonGoal.year}`}
             </Typography>
             <Typography variant="body2" sx={{ lineHeight: 1, m: 0, p: 0 }}>
               {activeGoal.label} {differenceToGoal(missingOnGoalYear)}
