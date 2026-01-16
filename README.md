@@ -5,7 +5,11 @@ Make sure you have installed the following:
 - a package manager (e.g., homebrew for macOS, apt for Ubuntu, etc.)
 - git
 - nvm (Node Version Manager)
-- direnv (auto-loads environment variables)
+- *direnv* (auto-loads environment variables)
+   - *Beginner Hints*: before `direnv` works you need to hook it into your shell: depending on which shell you're using (find out with `echo $SHELL`)
+   - add `eval "$(direnv hook bash)"` to your `~/.bashrc`  OR  `eval "$(direnv hook zsh)"` to your `~/.zshrc` (create those files if they don't exist yet).
+   - After that, restart the terminal or run `source ~/.bashrc` OR `source ~/.zshrc`.
+    
 
 
 ### Initial setup
@@ -20,7 +24,7 @@ If you already have a pre-existing clone, you can update the submodule with:
 git submodule update --init
 ```
 
-Navigate to the folder. Allow loading environment variables:
+Navigate to the paths-ui folder. Allow loading environment variables:
 ```bash
 direnv allow
 ```
