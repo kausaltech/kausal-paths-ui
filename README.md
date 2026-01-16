@@ -5,8 +5,8 @@ Make sure you have installed the following:
 - a package manager (e.g., homebrew for macOS, apt for Ubuntu, etc.)
 - git
 - nvm (Node Version Manager)
-- *direnv* (auto-loads environment variables)
-   - *Beginner Hints*: before `direnv` works you need to hook it into your shell: depending on which shell you're using (find out with `echo $SHELL`)
+- direnv (auto-loads environment variables)
+   - **Beginner Hints**: before `direnv` works you need to hook it into your shell: depending on which shell you're using (find out with `echo $SHELL`)
    - add `eval "$(direnv hook bash)"` to your `~/.bashrc`  OR  `eval "$(direnv hook zsh)"` to your `~/.zshrc` (create those files if they don't exist yet).
    - After that, restart the terminal or run `source ~/.bashrc` OR `source ~/.zshrc`.
     
