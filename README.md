@@ -1,8 +1,16 @@
 ## Getting Started
 
-### Initial setup and subsequent updates
+### Prerequisites
+Make sure you have installed the following: 
+- a package manager (e.g., homebrew for macOS, apt for Ubuntu, etc.)
+- git
+- nvm (Node Version Manager)
+- direnv (auto-loads environment variables)
 
-0. When cloning the repo, you should pass `--recurse-submodules` to the `git clone` invocation to ensure you also
+
+### Initial setup
+
+1. When cloning the repo, you should pass `--recurse-submodules` to the `git clone` invocation to ensure you also
    get the `kausal_common` submodule checked out. 
 ```bash
 git clone --recurse-submodules
@@ -12,11 +20,21 @@ If you already have a pre-existing clone, you can update the submodule with:
 git submodule update --init
 ```
 
-1. Install nvm if you don't have it yet.
-2. Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
-
+Navigate to the folder. Allow loading environment variables:
 ```bash
-nvm use
+direnv allow
+```
+
+
+2. Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
+The right node version should show with the command
+```bash
+cat .nvmrc
+```
+Install the number the .nvmrc file says and activate it
+```bash
+nvm install [insert node number]
+nvm use [insert node number]
 ```
 
 3. Make sure the npm version is controlled with corepack:
@@ -55,6 +73,26 @@ pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Note: The address mentioned may differ depending on the instance you are using. For example, it could be something like `http://sunnydale.localhost:3000`.
+
+#### Useful Commands
+```bash
+# Start development server
+pnpm run dev
+
+# Build for production
+pnpm run build
+
+# Run tests
+pnpm test
+
+# Update dependencies
+pnpm update
+
+# Switch to project's Node version
+nvm use [other node number]
+```
+
+
 
 ## Development
 
