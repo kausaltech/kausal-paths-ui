@@ -9,8 +9,8 @@ Make sure you have installed the following:
 
 
 ### Initial setup
-
-1. When cloning the repo, you should pass `--recurse-submodules` to the `git clone` invocation to ensure you also
+#### 1.)
+When cloning the repo, you should pass `--recurse-submodules` to the `git clone` invocation to ensure you also
    get the `kausal_common` submodule checked out. 
 ```bash
 git clone --recurse-submodules
@@ -25,8 +25,8 @@ Navigate to the folder. Allow loading environment variables:
 direnv allow
 ```
 
-
-2. Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
+#### 2.)
+Activate the right node version (you can do all steps from 2 to 5 to make sure that the update does not fail).
 The right node version should show with the command
 ```bash
 cat .nvmrc
@@ -37,20 +37,23 @@ nvm install [insert node number]
 nvm use [insert node number]
 ```
 
-3. Make sure the npm version is controlled with corepack:
+#### 3.)
+Make sure the pnpm version is controlled with corepack:
 
 ```bash
 corepack enable npm
 ```
 
-4. If you need access to the Kausal private themes:
+#### 4.)
+If you need access to the Kausal private themes:
 
 ```
 npx verdaccio-openid@latest --registry https://npm.kausal.tech
 pnpm config set @kausal-private:registry https://npm.kausal.tech
 ```
 
-5. Install dependencies:
+#### 5.)
+Install dependencies:
 
 ```bash
 pnpm i
@@ -58,7 +61,8 @@ pnpm i
 
 Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
 
-6. To run local development against a Kausal Paths backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+#### 6.)
+To run local development against a Kausal Paths backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
 
 ```
 PATHS_BACKEND_URL=
