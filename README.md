@@ -3,8 +3,11 @@
 ### Initial setup and subsequent updates
 
 0. When cloning the repo, you should pass `--recurse-submodules` to the `git clone` invocation to ensure you also
-   get the `kausal_common` submodule checked out. If you have a pre-existing clone, you can update the submodule with:
-
+   get the `kausal_common` submodule checked out. 
+```bash
+git clone --recurse-submodules
+```
+If you already have a pre-existing clone, you can update the submodule with:
 ```bash
 git submodule update --init
 ```
