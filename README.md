@@ -26,13 +26,13 @@ corepack enable npm
 
 ```
 npx verdaccio-openid@latest --registry https://npm.kausal.tech
-npm config set @kausal-private:registry https://npm.kausal.tech
+pnpm config set @kausal-private:registry https://npm.kausal.tech
 ```
 
 5. Install dependencies:
 
 ```bash
-npm i
+pnpm i
 ```
 
 Make sure that your installation does not give errors about missing files. If it does, there is probably something wrong in step 4.
@@ -48,7 +48,7 @@ PATHS_BACKEND_URL=
 Start the development server with:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Note: The address mentioned may differ depending on the instance you are using. For example, it could be something like `http://sunnydale.localhost:3000`.
