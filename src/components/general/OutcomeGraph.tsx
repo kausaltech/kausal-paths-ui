@@ -5,19 +5,26 @@ import dynamic from 'next/dynamic';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
-import { useTranslation } from 'next-i18next';
+import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 import type { PlotParams } from 'react-plotly.js';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { useInstance } from '@/common/instance';
+import { type InstanceContextType, useInstance } from '@/common/instance';
 import { getRange, metricToPlot } from '@/common/preprocess';
 import { useSite } from '@/context/site';
-import SiteContext from '@/context/site';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 
 const smoothingFactor = 0.8;
+
+export function getPredictionLabel(t: TFunction, instance: InstanceContextType) {
+  // Naughtily use showRefreshPrompt to determine if this is a NZP instance
+  const isNZPInstance = !!instance.features.showRefreshPrompt;
+  const predLabel = isNZPInstance ? t('planned') : t('pred');
+
+  return predLabel;
+}
 
 const PlotLoader = styled.div`
   position: relative;
@@ -194,7 +201,7 @@ const generatePlotFromNode = (
     customdata: parentForecastValues,
     xaxis: 'x2',
     yaxis: 'y',
-    name: `${n.shortName || n.name} (${t('pred')})`,
+    name: `${n.shortName || n.name} (${predLabel})`,
     showlegend: false,
     type: 'scatter',
     fill: 'tonexty',
@@ -237,7 +244,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     metric.baselineForecastValues &&
     metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
   const goals = parentNode.goals;
-  const targetYearGoal = parentNode.targetYearGoal;
+  const predLabel = getPredictionLabel(t, instance);
 
   const systemFont =
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
@@ -247,7 +254,6 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   );
   const shortUnit = metric.unit?.short;
   const longUnit = metric.unit?.htmlLong;
-  const predLabel = t('pred');
 
   // Find the lowes forecast year
   const forecastYears = displayNodes.map((node) => node.metric.forecastValues[0]?.year);
@@ -263,7 +269,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
   const positiveDisplayNodes = displayNodes?.filter((node) => !hasNegativeValues(node));
 
   // generate separate stacks for positive and negative side
-  positiveDisplayNodes?.forEach((node, index) => {
+  positiveDisplayNodes?.forEach((node) => {
     const trace = generatePlotFromNode(
       node,
       startYear,
@@ -281,7 +287,7 @@ const OutcomeGraph = (props: OutcomeGraphProps) => {
     );
     if (trace) plotData.push(...trace);
   });
-  negativeDisplayNodes?.forEach((node, index) => {
+  negativeDisplayNodes?.forEach((node) => {
     plotData.push(
       ...generatePlotFromNode(
         node,

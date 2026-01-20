@@ -240,9 +240,6 @@
     }
   },
   "src/components/general/DimensionalNodePlot.tsx": {
-    "@typescript-eslint/no-misused-promises": {
-      "count": 2
-    },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
     },
@@ -292,7 +289,7 @@
       "count": 6
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 7
+      "count": 6
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 19
