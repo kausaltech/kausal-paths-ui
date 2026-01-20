@@ -4,7 +4,11 @@ import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { EChartsCoreOption } from 'echarts';
+import type {
+  DefaultLabelFormatterCallbackParams,
+  EChartsCoreOption,
+  EChartsOption,
+} from 'echarts';
 import { useTranslation } from 'next-i18next';
 
 import { Chart } from '@common/components/Chart';
@@ -21,6 +25,8 @@ const X_SYMBOL =
   '25.0209 20.7782L17.2427 13L25.0209 5.22181C26.1925 4.05024 26.1925 2.15075 25.0209 0.979174C23.8493 -0.192399 21.9498 ' +
   '-0.192399 20.7783 0.979174L13.0001 8.75735L5.22191 0.979175C4.05033 -0.192398 2.15084 -0.192398 0.979266 0.979175C-0.192307 ' +
   '2.15075 -0.192307 4.05024 0.979266 5.22182L8.75744 13L0.979266 20.7782Z';
+
+const TRIANGLE_SYMBOL = 'path://M13 2L23.2583 21.25H2.74167L13 2Z';
 
 const COMMON_AREA_CONFIG = {
   stack: 'expected',
@@ -56,6 +62,8 @@ type Props = {
   metric: NonNullable<NonNullable<GetNodeVisualizationsQuery['node']>['metricDim']>;
   desiredOutcome: DesiredOutcome;
   title?: string;
+  /** Show progress tracker values as observed rather than calculated */
+  isDirectlyObserved?: boolean;
 };
 
 /**
@@ -102,11 +110,22 @@ function interpolateProgressValues(progressData: (number | null)[]): (number | n
   return result;
 }
 
-export function ProgressDriversVisualization({ metric, desiredOutcome, title }: Props) {
+export function ProgressDriversVisualization({
+  metric,
+  desiredOutcome,
+  title,
+  isDirectlyObserved = false,
+}: Props) {
   const [site] = useSiteWithSetter();
   const theme = useTheme();
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
+
+  type Acc = {
+    years: number[];
+    defaultData: (number | null)[];
+    progressData: (number | null)[];
+  };
 
   const chartData = useMemo<EChartsCoreOption | undefined>(() => {
     const negativeAreaStyle = getNegativeAreaStyle(theme);
@@ -137,12 +156,6 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
 
     if (!defaultScenario) return undefined;
 
-    type Acc = {
-      years: number[];
-      defaultData: number[];
-      progressData: number[];
-    };
-
     const progressYears = [
       ...(getProgressTrackingScenario(site.scenarios)?.actualHistoricalYears ?? []),
     ];
@@ -151,7 +164,7 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       .sort()
       .filter((_, i) => i === 0 || i === progressYears.length - 1);
 
-    // If the node has observed values, filter progress years to only render these
+    // Filter progress years to only render years with data
     const filteredProgressYears = metric.measureDatapointYears.length
       ? progressYears.filter((year) => metric.measureDatapointYears.includes(year))
       : [];
@@ -230,23 +243,58 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       }
     });
 
-    const option: EChartsCoreOption = {
+    enum SeriesType {
+      PLANNED = 'PLANNED',
+      OBSERVED = 'OBSERVED',
+      CALCULATED = 'CALCULATED',
+    }
+
+    // Helper function to create custom tooltip markers
+    const getTooltipMarker = (seriesId: string | undefined, color: string) => {
+      const circleMarker = `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+
+      if (seriesId === SeriesType.PLANNED) {
+        // Circle marker for planned
+        return circleMarker;
+      } else if (seriesId === SeriesType.OBSERVED) {
+        // Triangle marker for observed
+        return `<span style="display:inline-block;margin-right:5px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid ${color};"></span>`;
+      } else if (seriesId === SeriesType.CALCULATED) {
+        // X marker for calculated
+        return `<span style="display:inline-block;margin-right:5px;position:relative;width:10px;height:10px;">
+          <span style="position:absolute;top:50%;left:0;width:100%;height:2px;background-color:${color};transform:translateY(-50%) rotate(45deg);"></span>
+          <span style="position:absolute;top:50%;left:0;width:100%;height:2px;background-color:${color};transform:translateY(-50%) rotate(-45deg);"></span>
+        </span>`;
+      }
+
+      // Default circle marker
+      return circleMarker;
+    };
+
+    const option: EChartsOption = {
       tooltip: {
         trigger: 'axis',
-        formatter: (params) => {
+        formatter: function (params: DefaultLabelFormatterCallbackParams[]) {
+          if (!(params instanceof Array)) {
+            return '';
+          }
+
           const year = params[0].axisValue;
           const noDataColor = theme.graphColors.red030 || '#ef9a9a';
           const noDataText = t('no-data-reported');
           const items = params.map((param) => {
+            const color = param.color as string;
+            const marker = getTooltipMarker(param.seriesId, color);
+
             if (param.value == null || isNaN(param.value)) {
-              return `${param.marker} ${param.seriesName}:
+              return `${marker} ${param.seriesName}:
                 <span style="color: ${noDataColor}; font-style: italic;">${noDataText}</span>`;
             }
             const value = param.value.toLocaleString(undefined, {
               maximumFractionDigits: 0,
             });
 
-            return `${param.marker} ${param.seriesName}: ${value} ${metric.unit.short}`;
+            return `${marker} ${param.seriesName}: ${value} ${metric.unit.short}`;
           });
 
           return `${year}<br/>${items.join('<br/>')}`;
@@ -280,9 +328,10 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       },
       series: [
         {
+          id: SeriesType.PLANNED,
           stack: COMMON_AREA_CONFIG.stack,
-          name: 'Expected',
-          type: 'line',
+          name: t('planned'),
+          type: 'line' as const,
           symbol: 'circle',
           symbolSize: 8,
           data: defaultData,
@@ -310,9 +359,10 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
           ...COMMON_AREA_CONFIG,
         },
         {
-          name: 'Observed',
+          id: isDirectlyObserved ? SeriesType.OBSERVED : SeriesType.CALCULATED,
+          name: isDirectlyObserved ? t('observed') : t('calculated'),
           type: 'line',
-          symbol: X_SYMBOL,
+          symbol: isDirectlyObserved ? TRIANGLE_SYMBOL : X_SYMBOL,
           symbolSize: 10,
           data: progressData,
           connectNulls: true,
@@ -328,7 +378,16 @@ export function ProgressDriversVisualization({ metric, desiredOutcome, title }: 
       ],
     };
     return option;
-  }, [t, metric, theme, activeGoal, site.minYear, site.scenarios, desiredOutcome]);
+  }, [
+    t,
+    metric,
+    theme,
+    activeGoal,
+    site.minYear,
+    site.scenarios,
+    desiredOutcome,
+    isDirectlyObserved,
+  ]);
 
   if (!chartData) {
     return null;

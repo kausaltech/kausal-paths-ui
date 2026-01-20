@@ -112,6 +112,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
               title={`${metricDim.name} (${metricDim.unit.short})`}
               metric={metricDim}
               desiredOutcome={DesiredOutcome.Decreasing}
+              isDirectlyObserved={false}
             />
           </StyledCard>
         )}
@@ -143,6 +144,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                             }
                             metric={child.metricDim}
                             desiredOutcome={child.desiredOutcome}
+                            isDirectlyObserved={true}
                           />
                         </StyledChartContainer>
                       )
