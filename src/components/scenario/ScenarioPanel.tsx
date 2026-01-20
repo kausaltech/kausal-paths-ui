@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
@@ -133,11 +133,11 @@ const ScenarioPanel = () => {
   };
 
   useEffect(() => {
-  if (!scenarioEditorDrawerOpen) {
-    editBtnRef.current?.focus();
-  }
-}, [scenarioEditorDrawerOpen]);
-  
+    if (!scenarioEditorDrawerOpen) {
+      editBtnRef.current?.focus();
+    }
+  }, [scenarioEditorDrawerOpen]);
+
   // Get the goal outcome for the active goal
   const { error, data } = useQuery<
     GetInstanceGoalOutcomeQuery,
@@ -163,6 +163,10 @@ const ScenarioPanel = () => {
       .filter((value) => value.goal !== null)
       .map((value) => value.year) ?? [];
 
+  const colors = theme.section.pathsScenarioBar;
+  const panelBackground = colors?.background ?? theme.graphColors.blue010;
+  const panelYearRangeBackground = colors?.yearBarBackground ?? theme.graphColors.grey010;
+
   return (
     <div ref={containerRef}>
       {/* Placeholder to avoid content shifting when the panel is fixed */}
@@ -176,7 +180,7 @@ const ScenarioPanel = () => {
           ...(isPanelFixed && {
             left: !isMobile && scenarioEditorDrawerOpen ? DRAWER_WIDTH : 0,
             right: 0,
-        }),
+          }),
           // Background overlay so that the panel stretches to the full window width while fixed
           '&::after': {
             content: '""',
@@ -193,12 +197,12 @@ const ScenarioPanel = () => {
             width: '100vw',
             zIndex: -1,
             height: '100%',
-            backgroundColor: theme.graphColors.blue010,
+            backgroundColor: panelBackground,
           },
         }}
       >
         <Container fixed maxWidth="xl" disableGutters={!isPanelFixed}>
-          <Box sx={{ p: 1, backgroundColor: theme.graphColors.blue010 }}>
+          <Box sx={{ p: 1, backgroundColor: panelBackground }}>
             <Collapse
               key={isPanelFixed ? 'fixed' : 'relative'}
               appear={false}
@@ -255,7 +259,7 @@ const ScenarioPanel = () => {
                 alignItems: 'center',
                 gap: 1,
                 p: 1,
-                backgroundColor: theme.graphColors.grey010,
+                backgroundColor: panelYearRangeBackground,
                 [theme.breakpoints.down('md')]: {
                   flexDirection: 'column',
                   alignItems: 'flex-start',
