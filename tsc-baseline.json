@@ -406,18 +406,6 @@
       "count": 1,
       "message": "Property 'axisValue' does not exist on type 'CallbackDataParams'."
     },
-    "02a6659df00f82e92f7d4eddf5af3160f3becbcb": {
-      "file": "src/components/general/progress-tracking/ProgressDriversVisualization.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'string | number | Date | OptionDataItemObject<OptionDataValue> | Dictionary<OptionDataValue> | OptionDataValue[]' is not assignable to parameter of type 'number'."
-    },
-    "22bbe974e3d2e0c13a1711d4735d5fed42051b43": {
-      "file": "src/components/general/progress-tracking/ProgressDriversVisualization.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '({ id: SeriesType.PLANNED; stack: string; name: string; type: \"line\"; symbol: string; symbolSize: number; data: (number | null)[]; lineStyle: { width: number; color: string; }; itemStyle: { color: string; }; } | { ...; } | { ...; } | { ...; })[]' is not assignable to type 'SeriesOption$1 | SeriesOption$1[] | undefined'."
-    },
     "8a210e71a1b54d2c6c86264ecfa4297154897f9d": {
       "file": "src/components/general/progress-tracking/useProgressData.ts",
       "code": "TS2345",

@@ -30,7 +30,7 @@ const TRIANGLE_SYMBOL = 'path://M13 2L23.2583 21.25H2.74167L13 2Z';
 
 const COMMON_AREA_CONFIG = {
   stack: 'expected',
-  type: 'line',
+  type: 'line' as const,
   silent: true,
   tooltip: {
     show: false,
@@ -39,6 +39,33 @@ const COMMON_AREA_CONFIG = {
     opacity: 0,
   },
   symbol: 'none',
+};
+
+enum SeriesType {
+  PLANNED = 'PLANNED',
+  OBSERVED = 'OBSERVED',
+  CALCULATED = 'CALCULATED',
+  /**
+   * Inferred data points represent the latest measure datapoint from the parent node
+   * when this node doesn't have its own data for that year. Used to show a grey dashed
+   * line indicating what value was used in the parent's calculation.
+   */
+  INFERRED = 'INFERRED',
+}
+
+type Acc = {
+  years: number[];
+  defaultData: (number | null)[];
+  progressData: (number | null)[];
+  /**
+   * Data points for the inferred (grey) line series. Contains:
+   * 1. The latest measure datapoint from the parent node, if this node doesn't have
+   *    its own data for that year. Since the parent aggregates child nodes, this shows
+   *    the user what value was used in the calculation (even though they didn't input it).
+   * 2. The second-to-last progress data point (needed to draw the grey connecting
+   *    line in ECharts, but this point should not be displayed or shown in legend/tooltip)
+   */
+  inferredProgressData: (number | null)[];
 };
 
 const getNegativeAreaStyle = (theme: Theme) => ({
@@ -64,6 +91,7 @@ type Props = {
   title?: string;
   /** Show progress tracker values as observed rather than calculated */
   isDirectlyObserved?: boolean;
+  parentMeasureDatapointYears?: number[];
 };
 
 /**
@@ -110,24 +138,49 @@ function interpolateProgressValues(progressData: (number | null)[]): (number | n
   return result;
 }
 
+// Helper function to create custom tooltip markers
+const getTooltipMarker = (seriesId: string | undefined, color: string) => {
+  const circleMarker = `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+
+  if (seriesId === SeriesType.PLANNED) {
+    // Circle marker for planned
+    return circleMarker;
+  } else if (seriesId === SeriesType.OBSERVED || seriesId === SeriesType.INFERRED) {
+    // Triangle marker for observed
+    return `<span style="display:inline-block;margin-right:5px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid ${color};"></span>`;
+  } else if (seriesId === SeriesType.CALCULATED) {
+    // X marker for calculated
+    return `<span style="display:inline-block;margin-right:5px;position:relative;width:10px;height:10px;">
+          <span style="position:absolute;top:50%;left:0;width:100%;height:2px;background-color:${color};transform:translateY(-50%) rotate(45deg);"></span>
+          <span style="position:absolute;top:50%;left:0;width:100%;height:2px;background-color:${color};transform:translateY(-50%) rotate(-45deg);"></span>
+        </span>`;
+  }
+
+  // Default circle marker
+  return circleMarker;
+};
+
 export function ProgressDriversVisualization({
   metric,
   desiredOutcome,
   title,
   isDirectlyObserved = false,
+  parentMeasureDatapointYears,
 }: Props) {
   const [site] = useSiteWithSetter();
   const theme = useTheme();
   const { t } = useTranslation();
   const activeGoal = useReactiveVar(activeGoalVar);
 
-  type Acc = {
-    years: number[];
-    defaultData: (number | null)[];
-    progressData: (number | null)[];
-  };
-
   const chartData = useMemo<EChartsCoreOption | undefined>(() => {
+    /**
+     * The inferred year is the latest measure datapoint from the parent node,
+     * if this node doesn't have its own data for that year. Since the parent
+     * aggregates child nodes, this allows us to show the user what value was
+     * used in the calculation (even though they didn't input it for this node).
+     */
+    let inferredYear: number | null = null;
+
     const negativeAreaStyle = getNegativeAreaStyle(theme);
     const positiveAreaStyle = getPositiveAreaStyle(theme);
 
@@ -169,6 +222,17 @@ export function ProgressDriversVisualization({
       ? progressYears.filter((year) => metric.measureDatapointYears.includes(year))
       : [];
 
+    if (parentMeasureDatapointYears?.length) {
+      const latestYear = [...parentMeasureDatapointYears].sort()[
+        parentMeasureDatapointYears.length - 1
+      ];
+
+      if (!filteredProgressYears.includes(latestYear)) {
+        filteredProgressYears.push(latestYear);
+        inferredYear = latestYear;
+      }
+    }
+
     const allYears = [...slice.historicalYears, ...slice.forecastYears];
     const allDefaultData = [...defaultScenario.historicalValues, ...defaultScenario.forecastValues];
     const allProgressData = [
@@ -188,6 +252,7 @@ export function ProgressDriversVisualization({
             year,
             defaultValue: allDefaultData[i] ?? null,
             progressValue: allDefaultData[i] ?? null,
+            isProgressObserved: true,
           };
         }
 
@@ -198,22 +263,38 @@ export function ProgressDriversVisualization({
             year !== site.minYear && filteredProgressYears.includes(year)
               ? (allProgressData[i] ?? null)
               : null,
+          isProgressObserved: year !== inferredYear,
         };
       })
       .filter(({ year }) => year >= firstProgressYear && year <= lastProgressYear);
 
+    const nonNullProgressIndices = combinedData
+      .map((data, i) => (typeof data.progressValue === 'number' ? i : -1))
+      .filter((i) => i !== -1);
+
+    const secondLastNonNullProgressIndex =
+      nonNullProgressIndices.length >= 2
+        ? nonNullProgressIndices[nonNullProgressIndices.length - 2]
+        : -1;
+
     /**
      * Convert the combined data back into separate arrays of years, default values, and progress values
      */
-    const { years, defaultData, progressData } = combinedData.reduce(
-      (acc: Acc, data) => {
+    const { years, defaultData, progressData, inferredProgressData } = combinedData.reduce(
+      (acc: Acc, data, i) => {
         return {
           years: [...acc.years, data.year],
           defaultData: [...acc.defaultData, data.defaultValue],
-          progressData: [...acc.progressData, data.progressValue],
+          progressData: [...acc.progressData, data.isProgressObserved ? data.progressValue : null],
+          inferredProgressData: [
+            ...acc.inferredProgressData,
+            !data.isProgressObserved || i === secondLastNonNullProgressIndex
+              ? data.progressValue
+              : null,
+          ],
         };
       },
-      { years: [], defaultData: [], progressData: [] }
+      { years: [], defaultData: [], progressData: [], inferredProgressData: [] }
     );
 
     const interpolatedProgressData = interpolateProgressValues(progressData);
@@ -243,37 +324,12 @@ export function ProgressDriversVisualization({
       }
     });
 
-    enum SeriesType {
-      PLANNED = 'PLANNED',
-      OBSERVED = 'OBSERVED',
-      CALCULATED = 'CALCULATED',
-    }
-
-    // Helper function to create custom tooltip markers
-    const getTooltipMarker = (seriesId: string | undefined, color: string) => {
-      const circleMarker = `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
-
-      if (seriesId === SeriesType.PLANNED) {
-        // Circle marker for planned
-        return circleMarker;
-      } else if (seriesId === SeriesType.OBSERVED) {
-        // Triangle marker for observed
-        return `<span style="display:inline-block;margin-right:5px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid ${color};"></span>`;
-      } else if (seriesId === SeriesType.CALCULATED) {
-        // X marker for calculated
-        return `<span style="display:inline-block;margin-right:5px;position:relative;width:10px;height:10px;">
-          <span style="position:absolute;top:50%;left:0;width:100%;height:2px;background-color:${color};transform:translateY(-50%) rotate(45deg);"></span>
-          <span style="position:absolute;top:50%;left:0;width:100%;height:2px;background-color:${color};transform:translateY(-50%) rotate(-45deg);"></span>
-        </span>`;
-      }
-
-      // Default circle marker
-      return circleMarker;
-    };
-
     const option: EChartsOption = {
       tooltip: {
         trigger: 'axis',
+        textStyle: {
+          width: 20,
+        },
         formatter: function (params: DefaultLabelFormatterCallbackParams[]) {
           if (!(params instanceof Array)) {
             return '';
@@ -285,14 +341,28 @@ export function ProgressDriversVisualization({
           const items = params.map((param) => {
             const color = param.color as string;
             const marker = getTooltipMarker(param.seriesId, color);
+            const isInferredSeries = param.seriesId === SeriesType.INFERRED;
 
-            if (param.value == null || isNaN(param.value)) {
+            if (param.value == null || typeof param.value !== 'number') {
+              if (isInferredSeries) {
+                return null;
+              }
+
               return `${marker} ${param.seriesName}:
                 <span style="color: ${noDataColor}; font-style: italic;">${noDataText}</span>`;
             }
+
             const value = param.value.toLocaleString(undefined, {
               maximumFractionDigits: 0,
             });
+
+            if (isInferredSeries) {
+              if (color === 'transparent') {
+                return null;
+              }
+
+              return `<p style="padding-left: 18px; font-style: italic; color: ${theme.graphColors.grey050};">The latest observed value of ${value}${metric.unit.short} was used <br>to calculate GHG emissions for this year</p>`;
+            }
 
             return `${marker} ${param.seriesName}: ${value} ${metric.unit.short}`;
           });
@@ -304,6 +374,7 @@ export function ProgressDriversVisualization({
         bottom: 0,
         left: 'center',
         selectedMode: false,
+        data: [t('planned'), t('observed'), t('calculated')],
       },
       grid: {
         left: '2%',
@@ -375,8 +446,29 @@ export function ProgressDriversVisualization({
             color: theme.graphColors.blue050,
           },
         },
+        {
+          id: SeriesType.INFERRED,
+          type: 'line',
+          symbol: TRIANGLE_SYMBOL,
+          symbolSize: 10,
+          data: typeof inferredYear === 'number' ? inferredProgressData : [],
+          connectNulls: true,
+          lineStyle: {
+            type: 'dashed',
+            width: 1,
+            color: theme.graphColors.grey040,
+          },
+          itemStyle: {
+            color: ({ dataIndex }) => {
+              return dataIndex === progressData.length - 1
+                ? theme.graphColors.grey050
+                : 'transparent';
+            },
+          },
+        },
       ],
     };
+
     return option;
   }, [
     t,
@@ -387,6 +479,7 @@ export function ProgressDriversVisualization({
     site.scenarios,
     desiredOutcome,
     isDirectlyObserved,
+    parentMeasureDatapointYears, // TODO: Check this array isn't created on each render in parent
   ]);
 
   if (!chartData) {
