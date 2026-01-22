@@ -138,6 +138,7 @@
   "tco2-e-inhabitant": "t CO<sub>2</sub>eq/Einwohner/a",
   "emissions-by-sector": "Emissionen nach Sektor ({{year}})",
   "no-data-reported": "Keine Daten gemeldet",
+  "inferred-value-note": "Der zuletzt beobachtete Wert von {{value}} {{unit}} wurde zur Berechnung der Treibhausgasemissionen für dieses Jahr verwendet.",
   "return-on-investment": "Rentabilität der Investition",
   "megaEUR": "M €",
   "kiloSEK": "kSEK",

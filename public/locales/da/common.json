@@ -137,6 +137,7 @@
   "emission-drivers": "Emissionsdrivere",
   "emissions-by-sector": "Emissioner efter sektor ({{year}})",
   "no-data-reported": "Ingen data rapporteret",
+  "inferred-value-note": "Den senest observerede værdi på {{value}} {{unit}} blev brugt til at beregne drivhusgasemissioner for dette år.",
   "on-track": "På rette vej",
   "off-track": "Uden for plan",
   "deviating": "Afvigelse",

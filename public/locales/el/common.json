@@ -137,6 +137,8 @@
   "observed-emissions": "Παρατηρούμενες εκπομπές",
   "emission-drivers": "Οδηγοί εκπομπών",
   "emissions-by-sector": "Εκπομπές ανά τομέα ({{year}})",
+  "no-data-reported": "Δεν αναφέρθηκαν δεδομένα",
+  "inferred-value-note": "Η τελευταία παρατηρούμενη τιμή των {{value}} {{unit}} χρησιμοποιήθηκε για τον υπολογισμό των εκπομπών αερίων του θερμοκηπίου για αυτό το έτος.",
   "outcomes": "Αποτελέσματα",
   "impact-compared-to-baseline": "<strong>Συνολική επίπτωση {{impact}} {{unit}}</strong> σε σύγκριση με το {{baseline}} σενάριο",
   "above-target": "πάνω από τον στόχο",

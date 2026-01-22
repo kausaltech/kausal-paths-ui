@@ -30,7 +30,7 @@ const TRIANGLE_SYMBOL = 'path://M13 2L23.2583 21.25H2.74167L13 2Z';
 
 const COMMON_AREA_CONFIG = {
   stack: 'expected',
-  type: 'line',
+  type: 'line' as const,
   silent: true,
   tooltip: {
     show: false,
@@ -64,6 +64,8 @@ type Props = {
   title?: string;
   /** Show progress tracker values as observed rather than calculated */
   isDirectlyObserved?: boolean;
+  /** The most recent year in the parent node that has progress tracking data */
+  parentLastProgressYear?: number;
 };
 
 /**
@@ -115,6 +117,7 @@ export function ProgressDriversVisualization({
   desiredOutcome,
   title,
   isDirectlyObserved = false,
+  parentLastProgressYear,
 }: Props) {
   const [site] = useSiteWithSetter();
   const theme = useTheme();
@@ -125,6 +128,7 @@ export function ProgressDriversVisualization({
     years: number[];
     defaultData: (number | null)[];
     progressData: (number | null)[];
+    inferredFlags: boolean[];
   };
 
   const chartData = useMemo<EChartsCoreOption | undefined>(() => {
@@ -169,6 +173,20 @@ export function ProgressDriversVisualization({
       ? progressYears.filter((year) => metric.measureDatapointYears.includes(year))
       : [];
 
+    // Determine if we need to show an inferred data point for the most recent year
+    // This happens when the parent node has data for a year but this specific driver doesn't
+    const effectiveLastProgressYear = parentLastProgressYear ?? lastProgressYear;
+    const lastInputtedYear = filteredProgressYears.length
+      ? Math.max(...filteredProgressYears)
+      : null;
+    const showInferredDatapoint =
+      isDirectlyObserved &&
+      effectiveLastProgressYear &&
+      lastInputtedYear !== null &&
+      effectiveLastProgressYear > lastInputtedYear &&
+      metric.measureDatapointYears.length > 0;
+    const inferredYear = showInferredDatapoint ? effectiveLastProgressYear : null;
+
     const allYears = [...slice.historicalYears, ...slice.forecastYears];
     const allDefaultData = [...defaultScenario.historicalValues, ...defaultScenario.forecastValues];
     const allProgressData = [
@@ -188,35 +206,70 @@ export function ProgressDriversVisualization({
             year,
             defaultValue: allDefaultData[i] ?? null,
             progressValue: allDefaultData[i] ?? null,
+            isInferred: false,
           };
         }
+
+        // Check if this is an inferred data point (parent has data but this driver doesn't)
+        const isInferred = year === inferredYear;
 
         return {
           year,
           defaultValue: allDefaultData[i] ?? null,
           progressValue:
-            year !== site.minYear && filteredProgressYears.includes(year)
+            year !== site.minYear && (filteredProgressYears.includes(year) || isInferred)
               ? (allProgressData[i] ?? null)
               : null,
+          isInferred,
         };
       })
-      .filter(({ year }) => year >= firstProgressYear && year <= lastProgressYear);
+      .filter(
+        ({ year }) => year >= firstProgressYear && year <= (inferredYear ?? lastProgressYear)
+      );
 
     /**
      * Convert the combined data back into separate arrays of years, default values, and progress values
      */
-    const { years, defaultData, progressData } = combinedData.reduce(
+    const { years, defaultData, progressData, inferredFlags } = combinedData.reduce(
       (acc: Acc, data) => {
         return {
           years: [...acc.years, data.year],
           defaultData: [...acc.defaultData, data.defaultValue],
           progressData: [...acc.progressData, data.progressValue],
+          inferredFlags: [...acc.inferredFlags, data.isInferred],
         };
       },
-      { years: [], defaultData: [], progressData: [] }
+      { years: [], defaultData: [], progressData: [], inferredFlags: [] }
     );
 
     const interpolatedProgressData = interpolateProgressValues(progressData);
+
+    // Separate actual progress data from inferred data
+    const actualProgressData = progressData.map((value, i) => (inferredFlags[i] ? null : value));
+
+    // Find the index of the last actual (non-inferred) data point with a value
+    let lastActualIndex = -1;
+    for (let i = actualProgressData.length - 1; i >= 0; i--) {
+      if (actualProgressData[i] !== null) {
+        lastActualIndex = i;
+        break;
+      }
+    }
+
+    // Create data for the inferred line (connects last actual point to inferred point)
+    const inferredLineData: (number | null)[] = progressData.map((value, i) => {
+      if (inferredFlags[i]) {
+        return value; // The inferred point
+      }
+      if (i === lastActualIndex) {
+        return value; // The last actual point
+      }
+      return null;
+    });
+
+    // Find if there's an inferred point
+    const inferredIndex = inferredFlags.findIndex((flag) => flag);
+    const hasInferredPoint = inferredIndex !== -1;
 
     const areaData = defaultData.map((value, i) => {
       const progressValue = interpolatedProgressData[i];
@@ -247,6 +300,8 @@ export function ProgressDriversVisualization({
       PLANNED = 'PLANNED',
       OBSERVED = 'OBSERVED',
       CALCULATED = 'CALCULATED',
+      INFERRED = 'INFERRED',
+      INFERRED_LINE = 'INFERRED_LINE',
     }
 
     // Helper function to create custom tooltip markers
@@ -271,26 +326,59 @@ export function ProgressDriversVisualization({
       return circleMarker;
     };
 
+    // Get the inferred value for tooltip display
+    const inferredValue =
+      hasInferredPoint && lastActualIndex !== -1 ? actualProgressData[lastActualIndex] : null;
+    const formattedInferredValue =
+      inferredValue !== null
+        ? inferredValue.toLocaleString(undefined, { maximumFractionDigits: 0 })
+        : '';
+
     const option: EChartsOption = {
       tooltip: {
         trigger: 'axis',
+        extraCssText: 'max-width: 280px; white-space: normal;',
         formatter: function (params: DefaultLabelFormatterCallbackParams[]) {
           if (!(params instanceof Array)) {
             return '';
           }
 
-          const year = params[0].axisValue;
+          const year = (params[0] as { axisValue?: string | number }).axisValue;
+          const yearIndex = years.indexOf(Number(year));
+          const isInferredYear = yearIndex !== -1 && inferredFlags[yearIndex];
           const noDataColor = theme.graphColors.red030 || '#ef9a9a';
           const noDataText = t('no-data-reported');
-          const items = params.map((param) => {
+          const inferredValueText = t('inferred-value-note', {
+            value: formattedInferredValue,
+            unit: metric.unit.short,
+          });
+
+          // Filter out inferred series from tooltip
+          const filteredParams = params.filter(
+            (param) =>
+              param.seriesId !== SeriesType.INFERRED && param.seriesId !== SeriesType.INFERRED_LINE
+          );
+
+          const items = filteredParams.map((param) => {
             const color = param.color as string;
             const marker = getTooltipMarker(param.seriesId, color);
 
-            if (param.value == null || isNaN(param.value)) {
+            // For the observed/calculated series on an inferred year, show no data with special note
+            if (
+              isInferredYear &&
+              (param.seriesId === SeriesType.OBSERVED || param.seriesId === SeriesType.CALCULATED)
+            ) {
+              return `${marker} ${param.seriesName}:
+                <span style="color: ${noDataColor}; font-style: italic;">${noDataText}</span>
+                <div style="padding-left: 15px; color: ${theme.graphColors.grey050}; font-size: 0.95em; font-style: italic;">${inferredValueText}</div>`;
+            }
+
+            const numValue = typeof param.value === 'number' ? param.value : NaN;
+            if (param.value == null || isNaN(numValue)) {
               return `${marker} ${param.seriesName}:
                 <span style="color: ${noDataColor}; font-style: italic;">${noDataText}</span>`;
             }
-            const value = param.value.toLocaleString(undefined, {
+            const value = numValue.toLocaleString(undefined, {
               maximumFractionDigits: 0,
             });
 
@@ -304,6 +392,8 @@ export function ProgressDriversVisualization({
         bottom: 0,
         left: 'center',
         selectedMode: false,
+        // Only show the planned and observed/calculated series in the legend
+        data: [t('planned'), isDirectlyObserved ? t('observed') : t('calculated')],
       },
       grid: {
         left: '2%',
@@ -364,7 +454,7 @@ export function ProgressDriversVisualization({
           type: 'line',
           symbol: isDirectlyObserved ? TRIANGLE_SYMBOL : X_SYMBOL,
           symbolSize: 10,
-          data: progressData,
+          data: actualProgressData,
           connectNulls: true,
           lineStyle: {
             type: 'dashed',
@@ -375,6 +465,40 @@ export function ProgressDriversVisualization({
             color: theme.graphColors.blue050,
           },
         },
+        // Inferred line connecting last actual point to inferred point (grey dashed)
+        ...(hasInferredPoint
+          ? [
+              {
+                id: SeriesType.INFERRED_LINE,
+                type: 'line' as const,
+                data: inferredLineData,
+                connectNulls: true,
+                symbol: 'none',
+                lineStyle: {
+                  type: 'dashed' as const,
+                  width: 1,
+                  color: theme.graphColors.grey050,
+                },
+                tooltip: {
+                  show: false,
+                },
+              },
+              // Inferred point (grey triangle)
+              {
+                id: SeriesType.INFERRED,
+                type: 'line' as const,
+                data: inferredLineData.map((value, i) => (inferredFlags[i] ? value : null)),
+                symbol: TRIANGLE_SYMBOL,
+                symbolSize: 10,
+                lineStyle: {
+                  opacity: 0,
+                },
+                itemStyle: {
+                  color: theme.graphColors.grey050,
+                },
+              },
+            ]
+          : []),
       ],
     };
     return option;
@@ -387,6 +511,7 @@ export function ProgressDriversVisualization({
     site.scenarios,
     desiredOutcome,
     isDirectlyObserved,
+    parentLastProgressYear,
   ]);
 
   if (!chartData) {

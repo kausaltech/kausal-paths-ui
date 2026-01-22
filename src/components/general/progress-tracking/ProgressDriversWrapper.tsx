@@ -103,6 +103,9 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
     return null;
   }
 
+  // Get the most recent year with progress tracking data for this node
+  const lastProgressYear = observedYears.length ? Math.max(...observedYears) : undefined;
+
   return (
     <Fade>
       <VisualizationContainer>
@@ -145,6 +148,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                             metric={child.metricDim}
                             desiredOutcome={child.desiredOutcome}
                             isDirectlyObserved={true}
+                            parentLastProgressYear={lastProgressYear}
                           />
                         </StyledChartContainer>
                       )

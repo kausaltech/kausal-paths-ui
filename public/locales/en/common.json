@@ -145,6 +145,7 @@
   "emission-drivers": "Emission drivers",
   "emissions-by-sector": "Emissions by sector ({{year}})",
   "no-data-reported": "No data reported",
+  "inferred-value-note": "The latest observed value of {{value}} {{unit}} was used to calculate GHG emissions for this year.",
   "invalid-page-type": "Invalid page type",
   "outcomes": "Outcomes",
   "expand-all": "Expand all",

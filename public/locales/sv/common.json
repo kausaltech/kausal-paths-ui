@@ -123,6 +123,7 @@
   "emission-drivers": "Utsläppsdrivare",
   "emissions-by-sector": "Utsläpp per sektor ({{year}})",
   "no-data-reported": "Ingen data rapporterad",
+  "inferred-value-note": "Det senaste observerade värdet på {{value}} {{unit}} användes för att beräkna växthusgasutsläpp för detta år.",
   "on-track": "På rätt spår",
   "off-track": "Ur spår",
   "deviating": "Avvikande",

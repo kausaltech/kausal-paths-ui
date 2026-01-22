@@ -314,14 +314,6 @@
       "count": 7
     }
   },
-  "src/components/general/progress-tracking/ProgressDriversVisualization.tsx": {
-    "@typescript-eslint/no-base-to-string": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    }
-  },
   "src/components/general/progress-tracking/ProgressDriversWrapper.tsx": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1

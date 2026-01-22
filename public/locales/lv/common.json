@@ -127,6 +127,7 @@
   "emission-drivers": "Emisiju faktori",
   "emissions-by-sector": "Emisijas pa nozarēm ({{year}})",
   "no-data-reported": "Nav ziņotu datu",
+  "inferred-value-note": "Jaunākā novērotā vērtība {{value}} {{unit}} tika izmantota SEG emisiju aprēķināšanai šim gadam.",
   "on-track": "Uz pareizā ceļa",
   "off-track": "Ārpus plāna",
   "deviating": "Novirze",

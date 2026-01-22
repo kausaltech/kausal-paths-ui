@@ -142,6 +142,7 @@
   "emission-drivers": "Factores de emisión",
   "emissions-by-sector": "Emisiones por sector ({{year}})",
   "no-data-reported": "No se reportaron datos",
+  "inferred-value-note": "El último valor observado de {{value}} {{unit}} se utilizó para calcular las emisiones de GEI para este año.",
   "on-track": "En camino",
   "off-track": "Fuera de plan",
   "deviating": "Desviación",

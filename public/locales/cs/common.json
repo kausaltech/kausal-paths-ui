@@ -138,6 +138,7 @@
   "emission-drivers": "Faktory emisí",
   "emissions-by-sector": "Emise podle sektoru ({{year}})",
   "no-data-reported": "Žádná data nebyla nahlášena",
+  "inferred-value-note": "Nejnovější pozorovaná hodnota {{value}} {{unit}} byla použita k výpočtu emisí skleníkových plynů pro tento rok.",
   "on-track": "Na správné cestě",
   "off-track": "Mimo plán",
   "deviating": "Odchylka",

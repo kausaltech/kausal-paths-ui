@@ -138,6 +138,7 @@
   "emission-drivers": "Czynniki emisji",
   "emissions-by-sector": "Emisje według sektora ({{year}})",
   "no-data-reported": "Brak zgłoszonych danych",
+  "inferred-value-note": "Najnowsza zaobserwowana wartość {{value}} {{unit}} została użyta do obliczenia emisji gazów cieplarnianych za ten rok.",
   "on-track": "Na dobrej drodze",
   "off-track": "Poza planem",
   "deviating": "Odchylenie",
