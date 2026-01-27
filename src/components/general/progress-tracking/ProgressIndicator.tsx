@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { EChartsOption } from 'echarts';
-import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
+import type { DefaultLabelFormatterCallbackParams, EChartsOption } from 'echarts';
 import type { TFunction } from 'i18next';
 import {
   Dropdown,
@@ -210,7 +209,11 @@ function getChartConfig(
       axisPointer: {
         type: 'shadow',
       },
-      formatter: (params: TopLevelFormatterParams) => {
+      formatter: function (params: DefaultLabelFormatterCallbackParams) {
+        if (!(params instanceof Array)) {
+          return '';
+        }
+
         const firstParam = params[0];
         const label = firstParam.axisValue.split('\n')[0];
 
@@ -221,7 +224,7 @@ function getChartConfig(
         const colorBlocks = params
           .map((param) => {
             const style =
-              param.seriesName === t('observed-emissions')
+              param.seriesName === t('calculated-emissions')
                 ? getStripeGradient(param.color as string)
                 : `background-color: ${param.color};`;
 
@@ -246,7 +249,7 @@ function getChartConfig(
       },
     },
     legend: {
-      data: [t('expected-emissions'), t('observed-emissions')],
+      data: [t('planned-emissions'), t('calculated-emissions')],
       top: '0',
       itemStyle: {
         color: '#bbb',
@@ -341,7 +344,7 @@ function getChartConfig(
     ],
     series: [
       {
-        name: t('expected-emissions'),
+        name: t('planned-emissions'),
         type: 'bar',
         data: measuredEmissionsData.expected.map((f) => f.value),
         itemStyle: {
@@ -352,7 +355,7 @@ function getChartConfig(
         },
       },
       {
-        name: t('observed-emissions'),
+        name: t('calculated-emissions'),
         type: 'bar',
         data: measuredEmissionsData.observed.map((m) => m.value),
         itemStyle: {
@@ -447,7 +450,7 @@ export const ProgressIndicator = ({
       <Global styles={globalModalCss} />
       <StyledContainer>
         <StyledTitle>
-          {t('observed-emissions')} ({latestProgressData.year})
+          {t('calculated-emissions')} ({latestProgressData.year})
         </StyledTitle>
 
         {latestDeltaPercentage !== 0 && (
@@ -488,7 +491,7 @@ export const ProgressIndicator = ({
         <ModalHeader toggle={() => onModalOpenChange(false)}>
           {drillDownState
             ? drillDownState.label
-            : `${t('observed-emissions')} (${selectedEmissions?.year})`}
+            : `${t('calculated-emissions')} (${selectedEmissions?.year ?? ''})`}
         </ModalHeader>
         <ModalBody>
           <Fade key={drillDownState?.categoryId ?? 'default'}>
@@ -522,14 +525,14 @@ export const ProgressIndicator = ({
                     <StyledFlexContainer>
                       {totalExpected != null && (
                         <EmissionsCard
-                          title={`${t('expected-emissions')} (${selectedEmissions.year})`}
+                          title={`${t('planned-emissions')} (${selectedEmissions.year})`}
                           value={totalExpected}
                           unit={selectedEmissions.unit}
                         />
                       )}
-                      {totalObserved != null && (
+                      {totalObserved != null && selectedEmissions && (
                         <EmissionsCard
-                          title={`${t('observed-emissions')} (${selectedEmissions.year})`}
+                          title={`${t('calculated-emissions')} (${selectedEmissions.year})`}
                           value={totalObserved}
                           unit={selectedEmissions.unit}
                           deltaPercentage={getDeltaPercentage(

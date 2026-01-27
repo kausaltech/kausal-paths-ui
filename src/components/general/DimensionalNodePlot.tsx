@@ -133,7 +133,7 @@ export default function DimensionalNodePlot({
   const site = useSite();
   const instance = useInstance();
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, site.scenarios);
-  const observedEmissionsLabel = t('observed-emissions');
+  const observedEmissionsLabel = t('calculated-emissions');
 
   const metrics = useMemo(() => {
     const defaultMetric = new DimensionalMetric(metric);
@@ -558,6 +558,16 @@ export default function DimensionalNodePlot({
 
   const nrYears = usableEndYear - startYear;
 
+  function handleClickDownload(type: 'csv' | 'xlsx') {
+    async function download() {
+      await cube.downloadData(sliceConfig, type);
+    }
+
+    try {
+      void download();
+    } catch {}
+  }
+
   const handlePlotClick = (event: Plotly.PlotMouseEvent) => {
     const observedDataPoint = event.points?.find(
       (point) => point.data.name === observedEmissionsLabel
@@ -782,10 +792,10 @@ export default function DimensionalNodePlot({
               {` ${t('download-data')}`}
             </DropdownToggle>
             <DropdownMenu>
-              <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'xlsx')}>
+              <DropdownItem onClick={() => handleClickDownload('xlsx')}>
                 <Icon name="file" /> XLS
               </DropdownItem>
-              <DropdownItem onClick={async (ev) => await cube.downloadData(sliceConfig, 'csv')}>
+              <DropdownItem onClick={() => handleClickDownload('csv')}>
                 <Icon name="file" /> CSV
               </DropdownItem>
             </DropdownMenu>

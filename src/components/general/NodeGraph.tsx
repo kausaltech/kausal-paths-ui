@@ -13,7 +13,10 @@ import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
 
+import { type InstanceContextType, useInstance } from '@/common/instance';
 import { beautifyValue, sanitizeHtmlUnit } from '@/common/preprocess';
+
+import { getPredictionLabel } from './OutcomeGraph';
 
 /**
  * Receives filtered node data as tables and plots them in a chart.
@@ -64,6 +67,7 @@ const FORECAST_TINT_AMOUNT = 0.35;
 export default function NodeGraph(props: NodeGraphProps) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const instance = useInstance();
 
   const {
     title,
@@ -189,7 +193,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     Total: t('plot-total'),
     Goal: t('target'),
     Baseline: baselineLabel || t('plot-baseline'),
-    Progress: t('observed-emissions'),
+    Progress: t('calculated-emissions'),
   };
 
   const hasGoalData = goalTable !== null;
@@ -241,7 +245,8 @@ export default function NodeGraph(props: NodeGraphProps) {
         maximumFractionDigits,
         specialSeriesLabels,
         t,
-        showTotalLine
+        showTotalLine,
+        instance
       );
     };
   };
@@ -615,11 +620,12 @@ function buildTooltipContent(
   maximumFractionDigits: number | undefined,
   specialSeriesLabels: Record<string, string>,
   t: TFunction,
-  showTotalLine: boolean
+  showTotalLine: boolean,
+  instance: InstanceContextType
 ) {
   if (!year) return '';
   const yearLabel = isForecast
-    ? t('pred')
+    ? getPredictionLabel(t, instance)
     : isReferenceYear
       ? t('comparison-year')
       : t('plot-measured');
