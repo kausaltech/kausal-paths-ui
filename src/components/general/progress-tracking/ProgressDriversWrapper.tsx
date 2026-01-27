@@ -103,6 +103,8 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
     return null;
   }
 
+  const emissionsMeasureDatapointYears = metricDim?.measureDatapointYears ?? [];
+
   return (
     <Fade>
       <VisualizationContainer>
@@ -145,6 +147,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                             metric={child.metricDim}
                             desiredOutcome={child.desiredOutcome}
                             isDirectlyObserved={true}
+                            parentMeasureDatapointYears={emissionsMeasureDatapointYears}
                           />
                         </StyledChartContainer>
                       )
