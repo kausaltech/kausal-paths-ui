@@ -290,12 +290,23 @@ export default function DimensionalNodeVisualisation({
   const filteredProgressYears: number[] = [];
 
   // Create filtered data for progress tracking
-  if (hasProgressTracking && metrics.progress && slicedDim) {
+  // Only show progress data for years where the metric has actual measured data
+  const measureDatapointYears = metric.measureDatapointYears ?? [];
+  const hasMeasuredYearsBeyondBaseline = measureDatapointYears.some(
+    (year) => year !== instance.referenceYear && year !== site?.minYear
+  );
+
+  if (hasProgressTracking && metrics.progress && slicedDim && hasMeasuredYearsBeyondBaseline) {
     const progressScenario = getProgressTrackingScenario(site.scenarios);
     const progressSlice = metrics.progress.sliceBy(slicedDim.id, true, sliceConfig.categories);
+    // Filter progress years to only include years where this specific metric has measured data
     const progressYears =
-      progressScenario?.actualHistoricalYears?.filter((year) => year !== instance.referenceYear) ??
-      [];
+      progressScenario?.actualHistoricalYears?.filter(
+        (year) =>
+          year !== instance.referenceYear &&
+          measureDatapointYears.includes(year) &&
+          year !== site?.minYear
+      ) ?? [];
 
     const referenceYearIndex = slice.historicalYears.findIndex(
       (year) => year === instance.referenceYear
