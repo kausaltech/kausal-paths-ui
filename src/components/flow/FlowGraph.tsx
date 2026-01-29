@@ -1,11 +1,12 @@
 import { memo, useCallback, useLayoutEffect, useState } from 'react';
 
-import { Box } from '@mui/material';
+import { Box, ListSubheader, Menu, MenuItem, MenuList } from '@mui/material';
 import {
   Background,
-  BackgroundVariant,
+  ControlButton,
   Controls,
   type Edge,
+  MiniMap,
   type Node,
   type NodeTypes,
   type OnConnect,
@@ -101,6 +102,8 @@ const FlowGraph = (props: FlowGraphProps) => {
   const [nodes, setNodes] = useState<Node[]>(modelNodes);
   const [edges, setEdges] = useState<Edge[]>(modelEdges);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+  const [layoutDirectionButton, setLayoutDirectionButton] = useState<null | HTMLElement>(null);
+  const [layoutDirection, setLayoutDirection] = useState<'RIGHT' | 'DOWN'>('RIGHT');
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
@@ -156,6 +159,14 @@ const FlowGraph = (props: FlowGraphProps) => {
     );
   }, []);
 
+  const open = Boolean(layoutDirectionButton);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setLayoutDirectionButton(event.currentTarget);
+  };
+  const handleClose = () => {
+    setLayoutDirectionButton(null);
+  };
+
   const showAllNodes = useCallback(() => {
     setNodes((currentNodes) =>
       currentNodes.map((node) => ({ ...node, data: { ...node.data, muted: false } }))
@@ -197,7 +208,7 @@ const FlowGraph = (props: FlowGraphProps) => {
 */
   // Calculate the initial layout on mount.
   const initialLayout = useCallback(() => {
-    const opts = { 'elk.direction': 'RIGHT', ...ELK_OPTIONS };
+    const opts = { 'elk.direction': layoutDirection, ...ELK_OPTIONS };
 
     getLayoutedElements(modelNodes, modelEdges, opts)
       .then((result) => {
@@ -210,7 +221,7 @@ const FlowGraph = (props: FlowGraphProps) => {
         }
       })
       .catch(console.error);
-  }, [modelNodes, modelEdges, fitView]);
+  }, [modelNodes, modelEdges, fitView, layoutDirection]);
 
   useLayoutEffect(() => {
     initialLayout();
@@ -230,7 +241,7 @@ const FlowGraph = (props: FlowGraphProps) => {
         height: '100vh',
         top: 0,
         left: 0,
-        backgroundColor: 'white',
+        backgroundColor: '#ffffff',
       }}
     >
       <ReactFlow
@@ -243,9 +254,55 @@ const FlowGraph = (props: FlowGraphProps) => {
         onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
       >
-        <Controls />
-        <Background variant={BackgroundVariant.Dots} color="#77777" />
+        <Controls>
+          <ControlButton
+            id="layout-direction-button"
+            aria-controls={open ? 'layout-direction-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+            onClick={handleClick}
+          >
+            B
+          </ControlButton>
+        </Controls>
+        <MiniMap nodeStrokeWidth={3} />
+        <Background color="#ffffff" bgColor="#ffffff" />
       </ReactFlow>
+      <Menu
+        id="layout-direction-menu"
+        anchorEl={layoutDirectionButton}
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          list: {
+            'aria-labelledby': 'layout-direction-button',
+          },
+        }}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <MenuList dense>
+          <ListSubheader>Layout direction</ListSubheader>
+          <MenuItem
+            onClick={() => setLayoutDirection('RIGHT')}
+            selected={layoutDirection === 'RIGHT'}
+          >
+            Horizontal
+          </MenuItem>
+          <MenuItem
+            onClick={() => setLayoutDirection('DOWN')}
+            selected={layoutDirection === 'DOWN'}
+          >
+            Vertical
+          </MenuItem>
+        </MenuList>
+      </Menu>
     </Box>
   );
 };

@@ -54,8 +54,8 @@ const DefaultNode = (props: NodeProps<DefaultNode>) => {
           display: 'flex',
           flexDirection: 'column',
           borderRadius: '3px',
-          boxShadow: selected ? 4 : 2,
-          border: selected ? '1px solid #3c2a2a' : 'none',
+          boxShadow: selected ? 4 : 1,
+          border: selected ? '1px solid #e0e0e0' : 'none',
           backgroundColor: isActionNode ? 'grey.200' : 'white',
           opacity: muted ? 0.25 : 1,
         }}

@@ -175,7 +175,7 @@ function ModelPage() {
     };
 
     void loadConfig();
-  }, []);
+  }, [instance.id]);
 
   if (loading || configLoading || typeof window === 'undefined') {
     return <ContentLoader />;
