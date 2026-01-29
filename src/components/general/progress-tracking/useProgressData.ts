@@ -90,7 +90,12 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
     }
 
     const progressScenario = getProgressTrackingScenario(site.scenarios);
-    const progressYears = progressScenario?.actualHistoricalYears ?? [];
+    const measureDatapointYears = metric.measureDatapointYears ?? [];
+
+    // Filter progress years to only include years where this metric has measured data
+    const progressYears = (progressScenario?.actualHistoricalYears ?? []).filter(
+      (year) => measureDatapointYears.includes(year) && year !== site.minYear
+    );
 
     return progressYears.map((year) => {
       const yearIndex = [...defaultSlice.historicalYears, ...defaultSlice.forecastYears].indexOf(
@@ -139,5 +144,5 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
         }),
       };
     });
-  }, [metric, site.scenarios, activeGoal, defaultColor]);
+  }, [metric, site.scenarios, site.minYear, activeGoal, defaultColor]);
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
@@ -111,6 +111,8 @@ const StyledChart = styled(Chart)`
   }
 `;
 
+export type CategoryMeasureYearsMap = Map<string, number[]>;
+
 export type ProgressIndicatorProps = {
   color?: string;
   metric: MetricDim;
@@ -119,6 +121,8 @@ export type ProgressIndicatorProps = {
   selectedYear: number;
   onSelectedYearChange: (year: number) => void;
   showViewDetails?: boolean;
+  /** Map of category/node ID -> measureDatapointYears from upstream nodes */
+  categoryMeasureYears?: CategoryMeasureYearsMap;
 };
 
 const StyledChartWrapper = styled.div`
@@ -198,7 +202,8 @@ function getChartConfig(
   measuredEmissionsData: ProgressData,
   t: TFunction,
   theme: Theme,
-  iconPath: string
+  iconPath: string,
+  categoriesWithMeasuredData?: Set<string>
 ): EChartsOption {
   return {
     title: {
@@ -209,24 +214,37 @@ function getChartConfig(
       axisPointer: {
         type: 'shadow',
       },
-      formatter: function (params: DefaultLabelFormatterCallbackParams) {
-        if (!(params instanceof Array)) {
+      formatter: function (params: DefaultLabelFormatterCallbackParams[]) {
+        if (!Array.isArray(params) || params.length === 0) {
           return '';
         }
 
         const firstParam = params[0];
-        const label = firstParam.axisValue.split('\n')[0];
+        // axisValue is available at runtime for axis-triggered tooltips
+        const axisValue = (firstParam as { axisValue?: string | number }).axisValue;
+        const label = String(axisValue ?? '').split('\n')[0];
 
-        if (!Array.isArray(params)) {
-          return '';
-        }
+        // Get the category ID for the hovered item to check if it has measured data
+        const dataIndex = firstParam.dataIndex;
+        const categoryId = measuredEmissionsData.observed[dataIndex]?.id;
+        const hasMeasuredData =
+          !categoriesWithMeasuredData || categoriesWithMeasuredData.has(categoryId);
 
         const colorBlocks = params
+          .filter((param) => {
+            // Hide "Calculated emissions" row if category doesn't have measured data
+            if (!hasMeasuredData && param.seriesName === t('calculated-emissions')) {
+              return false;
+            }
+
+            return true;
+          })
           .map((param) => {
+            const color = typeof param.color === 'string' ? param.color : '';
             const style =
               param.seriesName === t('calculated-emissions')
-                ? getStripeGradient(param.color as string)
-                : `background-color: ${param.color};`;
+                ? getStripeGradient(color)
+                : `background-color: ${color};`;
 
             const roundedValue =
               typeof param.value === 'number'
@@ -239,7 +257,7 @@ function getChartConfig(
               style,
               param.seriesName ?? '',
               roundedValue,
-              (param.color as string) ?? '',
+              color,
               measuredEmissionsData.unit
             );
           })
@@ -272,12 +290,20 @@ function getChartConfig(
     yAxis: [
       {
         type: 'category',
-        data: measuredEmissionsData.observed.map((observed, i) => {
+        data: measuredEmissionsData.observed.map((observed) => {
           const expected = measuredEmissionsData.expected.find(
             (expected) => expected.id === observed.id
           );
 
           if (!expected) {
+            return observed.label;
+          }
+
+          // Only show status label if category has measured data
+          const hasMeasuredData =
+            !categoriesWithMeasuredData || categoriesWithMeasuredData.has(observed.id);
+
+          if (!hasMeasuredData) {
             return observed.label;
           }
 
@@ -383,6 +409,7 @@ export const ProgressIndicator = ({
   selectedYear,
   onSelectedYearChange,
   showViewDetails = true,
+  categoryMeasureYears = new Map(),
 }: ProgressIndicatorProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -394,12 +421,79 @@ export const ProgressIndicator = ({
 
   const progressData = useProgressData(metric, color);
 
-  const observedYears = progressData
-    .sort((a, b) => b.year - a.year)
-    .filter((data) => data.observed.length > 0 && data.year !== site.minYear);
+  const observedYears = useMemo(
+    () =>
+      [...progressData]
+        .sort((a, b) => b.year - a.year)
+        .filter((data) => data.observed.length > 0 && data.year !== site.minYear),
+    [progressData, site.minYear]
+  );
 
   const latestProgressData = observedYears[0];
   const selectedEmissions = observedYears.find((d) => d.year === selectedYear);
+
+  // Filter emissions to only include categories that have measureDatapointYears for the selected year
+  // (excluding the baseline year)
+  const filteredEmissionsForChart = useMemo((): ProgressData | undefined => {
+    if (!selectedEmissions || categoryMeasureYears.size === 0) {
+      return selectedEmissions;
+    }
+
+    const filteredExpected: typeof selectedEmissions.expected = [];
+    const filteredObserved: typeof selectedEmissions.observed = [];
+
+    selectedEmissions.expected.forEach((exp, index) => {
+      const measureYears = categoryMeasureYears.get(exp.id) ?? [];
+      const hasMeasuredDataForYear = measureYears.some(
+        (year) => year === selectedEmissions.year && year !== site.minYear
+      );
+
+      // Always include expected, but only include observed if category has measured data
+      filteredExpected.push(exp);
+
+      if (hasMeasuredDataForYear) {
+        filteredObserved.push(selectedEmissions.observed[index]);
+      } else {
+        // Include a placeholder with zero value so indices align
+        filteredObserved.push({
+          ...selectedEmissions.observed[index],
+          value: 0,
+        });
+      }
+    });
+
+    return {
+      ...selectedEmissions,
+      expected: filteredExpected,
+      observed: filteredObserved,
+    };
+  }, [selectedEmissions, categoryMeasureYears, site.minYear]);
+
+  // Create a Set of category IDs that have measured data for the selected year
+  const categoriesWithMeasuredData = useMemo(() => {
+    const categoriesSet = new Set<string>();
+
+    if (!selectedEmissions || categoryMeasureYears.size === 0) {
+      return undefined;
+    }
+
+    selectedEmissions.expected.forEach((exp) => {
+      const measureYears = categoryMeasureYears.get(exp.id) ?? [];
+      const hasMeasuredDataForYear = measureYears.some(
+        (year) => year === selectedEmissions.year && year !== site.minYear
+      );
+
+      if (hasMeasuredDataForYear) {
+        categoriesSet.add(exp.id);
+      }
+    });
+    return categoriesSet;
+  }, [selectedEmissions, categoryMeasureYears, site.minYear]);
+
+  // If there are no observed years with measured data, don't render the progress indicator
+  if (observedYears.length === 0 || !latestProgressData) {
+    return null;
+  }
 
   const latestDeltaPercentage = getDeltaPercentage(
     latestProgressData.totalExpected,
@@ -441,8 +535,14 @@ export const ProgressIndicator = ({
     }
   }
 
-  const chartConfig = selectedEmissions
-    ? getChartConfig(selectedEmissions, t, theme, drillDownIconPath)
+  const chartConfig = filteredEmissionsForChart
+    ? getChartConfig(
+        filteredEmissionsForChart,
+        t,
+        theme,
+        drillDownIconPath,
+        categoriesWithMeasuredData
+      )
     : undefined;
 
   return (
