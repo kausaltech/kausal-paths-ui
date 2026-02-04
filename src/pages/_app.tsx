@@ -136,6 +136,13 @@ const defaultSiteContext: {
       },
     },
   },
+  'hollywood': {
+    watchLink: {
+      title: 'Sustainability Action Plan',
+      url: 'https://climateaction.hollywoodfl.org',
+    },
+  },
+
   'muenchen-demo': {
     watchLink: {
       title: 'Maßnahmenplan',
