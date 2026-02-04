@@ -617,7 +617,12 @@ export class DimensionalMetric {
     dimensionId: string,
     sort: boolean = false,
     categoryChoice: MetricCategoryChoice | undefined,
-    useGroups: boolean = true
+    useGroups: boolean = true,
+    /** Support preventing filtering zero values from the category.
+     * Previously we always filtered zeroes which caused issues
+     * in NZP progress tracking.
+     **/
+    filterZero: boolean = true
   ) {
     const byYear: Map<number, Map<string, number>> = new Map();
     const dim = this.dimensions.find((dim) => dim.id === dimensionId)!;
@@ -673,8 +678,8 @@ export class DimensionalMetric {
       color: totalColor,
     };
     const groupsOrCats = useGroups ? dim.groups : dim.categories;
-    const categoryValues: MetricCategoryValues[] = groupsOrCats
-      .map((cat: MetricCategoryGroup | MetricDimensionCategory) => {
+    const categoryValues: MetricCategoryValues[] = groupsOrCats.map(
+      (cat: MetricCategoryGroup | MetricDimensionCategory) => {
         const historicalValues: (number | null)[] = [];
         const forecastValues: (number | null)[] = [];
         this.data.years.forEach((year) => {
@@ -705,20 +710,23 @@ export class DimensionalMetric {
           isNegative,
           color: cat.color,
         };
-      })
-      .filter((cv) => {
-        const hasVals = [...cv.historicalValues, ...cv.forecastValues].find(
-          (val) => val !== null && val != 0
-        );
-        return hasVals !== undefined;
-      });
-
+      }
+    );
     const historicalYears = this.data.years.filter((year) => !this.isForecastYear(year));
     const forecastYears = this.data.years.filter((year) => this.isForecastYear(year));
-    const ordered = categoryValues
+
+    const filteredCategoryValues = categoryValues.filter((cv) => {
+      const hasVals = [...cv.historicalValues, ...cv.forecastValues].some(
+        (val) => val !== null && (filterZero ? val !== 0 : true)
+      );
+
+      return hasVals;
+    });
+
+    const ordered = filteredCategoryValues
       .filter((cv) => cv.category.order != null)
       .sort((a, b) => a.category.order! - b.category.order!);
-    const unordered = categoryValues.filter((cv) => cv.category.order == null);
+    const unordered = filteredCategoryValues.filter((cv) => cv.category.order == null);
     if (sort) {
       let idx = historicalYears.length - 1;
       let key = 'historicalValues';
