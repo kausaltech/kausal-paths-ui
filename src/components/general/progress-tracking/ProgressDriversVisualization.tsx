@@ -199,7 +199,13 @@ export function ProgressDriversVisualization({
       return undefined;
     }
 
-    const slice = dimensionalMetric.sliceBy(slicedDim.id, false, defaultConfig.categories);
+    const slice = dimensionalMetric.sliceBy(
+      slicedDim.id,
+      false,
+      defaultConfig.categories,
+      true,
+      false
+    );
 
     // Get years and values for both scenarios
     const defaultScenario = slice.categoryValues.find((cv) => cv.category.originalId === 'default');
