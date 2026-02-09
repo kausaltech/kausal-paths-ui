@@ -66,18 +66,6 @@ const defaultSiteContext: {
       url: 'https://cork-planner.watch-test.kausal.tech/',
     },
   },
-  'demo-stadt-bisko': {
-    watchLink: {
-      title: {
-        en: 'Demo City climate action plan',
-        de: 'Klimaneutrales Demo-Stadt',
-      },
-      url: {
-        en: 'https://demo-duesseldorf.watch-test.kausal.tech/en/',
-        de: 'https://demo-duesseldorf.watch-test.kausal.tech',
-      },
-    },
-  },
   espoo: {
     instanceId: 'espoo',
     watchLink: {
