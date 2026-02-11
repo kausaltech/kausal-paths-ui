@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 
 import { useTheme } from '@emotion/react';
 
-export const CUSTOM_COMPONENTS = {
+export const CUSTOM_COMPONENTS: Record<string, Record<string, ComponentType>> = {
   zurich: {
     GlobalNav: dynamic(() => import('@/components/custom/zurich/GlobalNav'), { ssr: true }),
     Footer: dynamic(() => import('@/components/custom/zurich/Footer'), { ssr: true }),

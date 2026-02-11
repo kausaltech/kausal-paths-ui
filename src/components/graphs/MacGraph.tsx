@@ -8,7 +8,7 @@ import { Grid } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 import type Plotly from 'plotly.js';
 
-import type { GetActionListQuery } from '@/common/__generated__/graphql';
+import type { ActionListQuery } from '@/common/__generated__/graphql';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
@@ -92,7 +92,7 @@ type MacGraphProps = {
   actionIds: string[];
   costName: string;
   costUnit: string;
-  actionGroups: GetActionListQuery['instance']['actionGroups'];
+  actionGroups: ActionListQuery['instance']['actionGroups'];
 };
 
 function MacGraph(props: MacGraphProps) {

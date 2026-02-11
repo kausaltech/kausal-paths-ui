@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
-import type { GetImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
@@ -42,7 +42,7 @@ const ChartRow = styled.div`
  */
 
 type Props = {
-  data: GetImpactOverviewsQuery['impactOverviews'][0] | undefined; // Single overview
+  data: ImpactOverviewsQuery['impactOverviews'][0] | undefined; // Single overview
   isLoading: boolean;
 };
 

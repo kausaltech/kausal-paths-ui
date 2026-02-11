@@ -11,7 +11,6 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
     name
     shortDescription
     color
-    targetYearGoal
     order
     unit {
       htmlShort
@@ -58,6 +57,10 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
     parameters {
       ...ActionParameter
     }
+    goals {
+      year
+      value
+    }
     metric(goalId: $goal) {
       name
       id
@@ -85,7 +88,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
  * This is used to render the causal chain on an action page.
  */
 export const GET_CAUSAL_CHAIN = gql`
-  query GetCausalChain($node: ID!, $goal: ID, $untilNode: ID) {
+  query CausalChain($node: ID!, $goal: ID, $untilNode: ID) {
     action(id: $node) {
       id
       downstreamNodes(untilNode: $untilNode) {
@@ -100,7 +103,7 @@ export const GET_CAUSAL_CHAIN = gql`
 `;
 
 const GET_ACTION_CONTENT = gql`
-  query GetActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {
+  query ActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {
     action(id: $node) {
       ...CausalGridNode
       goal
@@ -113,7 +116,7 @@ const GET_ACTION_CONTENT = gql`
       }
       decisionLevel
       body {
-        ...StreamFieldFragment
+        ...StreamField
       }
     }
   }

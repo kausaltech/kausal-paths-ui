@@ -46,7 +46,7 @@ const ActionsMac = ({
   };
 
   //const indicatorUnit = impactOverviews.indicatorUnit.htmlShort;
-  const efficiencyName = sortedActions[0]?.cumulativeEfficiencyName;
+  // const efficiencyName = sortedActions[0]?.cumulativeEfficiencyName;
   const indicatorUnit = sortedActions[0]?.cumulativeEfficiencyUnit;
 
   const impactName = sortedActions[0]?.cumulativeImpactName;

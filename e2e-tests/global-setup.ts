@@ -2,8 +2,8 @@ import { type FullConfig } from '@playwright/test';
 
 import { displayConfiguration } from './common/context';
 
-async function globalSetup(config: FullConfig) {
-  displayConfiguration();
+function globalSetup(_config: FullConfig) {
+  displayConfiguration(); // eslint-disable-line @typescript-eslint/no-unsafe-call
 }
 
 export default globalSetup;

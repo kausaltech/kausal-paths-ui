@@ -20,13 +20,15 @@ import {
 } from '@common/env';
 import { getLogger } from '@common/logging/logger';
 import { CommonThemeProvider } from '@common/providers/CommonThemeProvider';
+import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';
+import { initializeMuiTheme } from '@common/themes/mui-theme/theme';
+import { loadTheme } from '@common/themes/theme';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
-import ThemedGlobalStyles from '@/common/ThemedGlobalStyles';
 import type {
-  GetAvailableInstancesQuery,
-  GetInstanceContextQuery,
-  GetInstanceContextQueryVariables,
+  AvailableInstancesQuery,
+  InstanceContextQuery,
+  InstanceContextQueryVariables,
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, type ApolloClientType, initializeApollo } from '@/common/apollo';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
@@ -40,8 +42,6 @@ import {
 } from '@/common/const';
 import { getI18n } from '@/common/i18n';
 import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
-import { initializeMuiTheme } from '@/common/mui-theme/theme';
-import { loadTheme } from '@/common/theme';
 import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
@@ -124,7 +124,7 @@ const defaultSiteContext: {
       },
     },
   },
-  'hollywood': {
+  hollywood: {
     watchLink: {
       title: 'Sustainability Action Plan',
       url: 'https://climateaction.hollywoodfl.org',
@@ -308,10 +308,7 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
   const apolloClient: ApolloClient<object> = initializeApollo(null, apolloConfig);
 
   // Load the instance configuration from backend
-  const { data } = await apolloClient.query<
-    GetInstanceContextQuery,
-    GetInstanceContextQueryVariables
-  >({
+  const { data } = await apolloClient.query<InstanceContextQuery, InstanceContextQueryVariables>({
     query: GET_INSTANCE_CONTEXT,
     context: {
       'instance-hostname': apolloConfig.instanceHostname,
@@ -411,7 +408,7 @@ async function getI18nProps(ctx: PathsPageContext) {
   return i18nConfig;
 }
 
-type InstanceConfig = GetAvailableInstancesQuery['availableInstances'][0];
+type InstanceConfig = AvailableInstancesQuery['availableInstances'][0];
 
 type PathsAppRequest = AppContext['ctx']['req'] & {
   ip: string;

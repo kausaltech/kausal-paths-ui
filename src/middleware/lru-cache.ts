@@ -151,6 +151,7 @@ export default class LRUCache<K, V> implements NodeChain {
     // reload cleaner
     if (this._ttlP) {
       clearInterval(this._ttlP);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const interv = setInterval(this._ttlClean.bind(this), this._ttlInterval);
       this._ttlP = interv;
       interv.unref?.();
@@ -242,6 +243,7 @@ export default class LRUCache<K, V> implements NodeChain {
         this._delete(this._prev as Node<K, V>);
       }
       // Run TTL
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       if (!this._ttlP) this._ttlP = setInterval(this._ttlClean.bind(this), this._ttlInterval);
     }
     return ele;
@@ -319,9 +321,10 @@ export default class LRUCache<K, V> implements NodeChain {
     /** Cache key */
     key: K,
     /** Additional args for upsert callback */
-    ...args: any[]
+    ..._args: any[]
   ): V | Promise<V> {
-    return this.get(key, true, args)!;
+    return this.get(key)!;
+    // return this.get(key, true, args)! --- this caused lint error ---;
   }
 
   /** Delete element from the cache */
@@ -354,7 +357,6 @@ export default class LRUCache<K, V> implements NodeChain {
   clearTemp() {
     let el = this._prev;
     const map = this._map;
-    // @ts-ignore
     while (el !== this) {
       map.delete((el as Node<K, V>).key);
       el = el._next!;

@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 const GET_SCENARIOS = gql`
-  query GetScenarios {
+  query Scenarios {
     scenarios {
       id
       name

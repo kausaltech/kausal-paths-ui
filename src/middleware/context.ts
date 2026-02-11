@@ -18,15 +18,15 @@ import { getClientIP } from '@common/utils';
 
 import type {
   AvailableInstanceFragment,
-  GetAvailableInstancesQuery,
-  GetAvailableInstancesQueryVariables,
+  AvailableInstancesQuery,
+  AvailableInstancesQueryVariables,
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
 
 import LRUCache from './lru-cache';
 
 const GET_AVAILABLE_INSTANCES = gql`
-  query GetAvailableInstances($hostname: String!) {
+  query AvailableInstances($hostname: String!) {
     availableInstances(hostname: $hostname) {
       ...AvailableInstance
     }
@@ -93,7 +93,7 @@ function createApolloClient(req: NextRequest, logger: Logger) {
 }
 
 async function queryInstances(client: ApolloClientType, hostname: string, logger: Logger) {
-  const resp = await client.query<GetAvailableInstancesQuery, GetAvailableInstancesQueryVariables>({
+  const resp = await client.query<AvailableInstancesQuery, AvailableInstancesQueryVariables>({
     query: GET_AVAILABLE_INSTANCES,
     variables: {
       hostname: hostname,

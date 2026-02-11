@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import dynamic from 'next/dynamic';
 
+import type { Theme } from '@emotion/react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
@@ -26,11 +27,23 @@ const PlotLoader = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey020};
 `;
 
-const makeTrace = (parentNode, childNodes, year, theme, t) => {
-  const cats = childNodes.map((cat) => {
+type BarNode = OutcomeNodeFieldsFragment & {
+  name: string;
+  value: number;
+  parent: string;
+};
+
+const makeTrace = (
+  parentNode: OutcomeNodeFieldsFragment,
+  childNodes: OutcomeNodeFieldsFragment[],
+  year: number,
+  theme: Theme,
+  t: ReturnType<typeof useTranslation>['t']
+) => {
+  const cats: BarNode[] = childNodes.map((cat) => {
     const displayValue =
-      cat.metric.historicalValues.find((v) => v.year === year)?.value ||
-      cat.metric.forecastValues.find((v) => v.year === year)?.value ||
+      cat.metric?.historicalValues.find((v) => v.year === year)?.value ||
+      cat.metric?.forecastValues.find((v) => v.year === year)?.value ||
       0;
     return {
       ...cat,
@@ -43,8 +56,6 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
   let posCount = 0;
   let negCount = 0;
   let posTotal = 0;
-  let negTotal = 0;
-
   cats.forEach((cat) => {
     if (cat.value > 0) {
       posCount++;
@@ -52,7 +63,6 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
     }
     if (cat.value < 0) {
       negCount++;
-      negTotal += cat.value;
     }
   });
 
@@ -63,7 +73,7 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
   // If all sectors are negative we can use the parent node as a group label
   // Otherwise we have to use generic label for negative group
   const negGroupName = hasOnlyOneNegativeSector
-    ? cats.find((cat) => cat.value < 0).name
+    ? cats.find((cat) => cat.value < 0)!.name
     : hasPositiveSectors
       ? t('negative')
       : parentNode.shortName || parentNode.name;
@@ -76,14 +86,14 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
       negTraces.push({
         x: [negGroupName],
         y: [cat.value],
-        base: [-cat.value],
+        base: [-cat.value] as unknown[],
         name: cat.shortName || cat.name,
         type: 'bar',
         width: 0.5,
         marker: {
           color: cat.color || theme.graphColors.grey050,
         },
-      });
+      } as PlotParams['data'][number]);
     }
     if (cat.value > 0) {
       posTraces.push({
@@ -99,22 +109,23 @@ const makeTrace = (parentNode, childNodes, year, theme, t) => {
         marker: {
           color: cat.color || theme.graphColors.grey050,
         },
-      });
+      } as PlotParams['data'][number]);
     }
   });
 
   return posTraces.concat(negTraces);
 };
 
-const getLargestTotal = (traces) => {
+const getLargestTotal = (traces: PlotParams['data']) => {
   let posTotal = 0;
   let negTotal = 0;
   traces.forEach((trace) => {
-    if (trace.y[0] > 0) {
-      posTotal += trace.y[0];
+    const y = (trace as { y?: number[] }).y;
+    if (y && y[0] > 0) {
+      posTotal += y[0];
     }
-    if (trace.y[0] < 0) {
-      negTotal += trace.y[0];
+    if (y && y[0] < 0) {
+      negTotal += y[0];
     }
   });
   const maxTotal = Math.abs(negTotal) > posTotal ? Math.abs(negTotal) : posTotal;
@@ -129,7 +140,7 @@ type BarGraphProps = {
 
 const BarGraph = (props: BarGraphProps) => {
   const { node: parentNode, subNodes, endYear } = props;
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const theme = useTheme();
 
   const [loading, setLoading] = useState(true);

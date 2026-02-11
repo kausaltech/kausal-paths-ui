@@ -15,10 +15,7 @@ import {
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  GetActionListQuery,
-  GetActionListQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { ActionListQuery, ActionListQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { findActionEnabledParam } from '@/common/preprocess';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
@@ -115,12 +112,12 @@ const ActionListCard = (props: ActionListCardProps) => {
   );
 };
 
-type ActionsSummaryAction = GetActionListQuery['actions'][0];
+type ActionsSummaryAction = ActionListQuery['actions'][0];
 
 const ActionsChooser = () => {
   const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
-  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
+  const queryResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
     variables: {
       goal: activeGoal?.id ?? null,
     },

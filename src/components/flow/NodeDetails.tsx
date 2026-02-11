@@ -7,7 +7,6 @@ import {
   Chip,
   Container,
   Paper,
-  Stack,
   Typography,
 } from '@mui/material';
 import { Dash, PlusLg } from 'react-bootstrap-icons';
@@ -15,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import { logApolloError } from '@common/logging/apollo';
 
-import type { GetNodeDetailsQuery } from '@/common/__generated__/graphql';
+import type { NodeDetailsQuery } from '@/common/__generated__/graphql';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
@@ -25,7 +24,7 @@ import ContentLoader from '../common/ContentLoader';
 import { NodeTypeIcon, getNodeTypeColor } from './NodeProcessing';
 
 const GET_NODE_DETAILS = gql`
-  query GetNodeDetails($node: ID!, $scenarios: [String!]) {
+  query NodeDetails($node: ID!, $scenarios: [String!]) {
     node(id: $node) {
       id
       nodeType
@@ -35,12 +34,10 @@ const GET_NODE_DETAILS = gql`
       explanation
       tags
       color
-      targetYearGoal
       unit {
         htmlShort
       }
       quantity
-      isAction
       inputDimensions
       inputNodes {
         id
@@ -51,7 +48,6 @@ const GET_NODE_DETAILS = gql`
           htmlShort
         }
         quantity
-        isAction
       }
       outputDimensions
       outputNodes {
@@ -63,7 +59,6 @@ const GET_NODE_DETAILS = gql`
           htmlShort
         }
         quantity
-        isAction
       }
       ...DimensionalNodeMetric
     }
@@ -174,7 +169,7 @@ export interface NodeDetailsProps {
 
 const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) => {
   const { t } = useTranslation();
-  const { loading, error, data } = useQuery<GetNodeDetailsQuery>(GET_NODE_DETAILS, {
+  const { loading, error, data } = useQuery<NodeDetailsQuery>(GET_NODE_DETAILS, {
     variables: {
       node: nodeId,
       scenarios: null,

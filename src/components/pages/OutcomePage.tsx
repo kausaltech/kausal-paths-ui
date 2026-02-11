@@ -8,9 +8,9 @@ import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
 import type {
-  GetOutcomeNodeQuery,
-  GetOutcomeNodeQueryVariables,
-  GetPageQuery,
+  OutcomeNodeQuery,
+  OutcomeNodeQueryVariables,
+  PageQuery,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -33,12 +33,12 @@ const StyledTitle = styled.h1`
 `;
 
 type OutcomePageProps = {
-  page: GetPageQuery['page'] & { __typename: 'OutcomePage' };
+  page: PageQuery['page'] & { __typename: 'OutcomePage' };
   outcomeNodeId: string;
   scenarios: string[] | null;
   activeGoalId: string | null;
   refetch: PageRefetchCallback;
-  activeScenario: GetPageQuery['activeScenario'];
+  activeScenario: PageQuery['activeScenario'];
   refetching: boolean;
 };
 
@@ -66,7 +66,7 @@ export default function OutcomePage(props: OutcomePageProps) {
     }
   }, [activeScenario, refetch, queryActiveScenario]);
 
-  const queryResp = useQuery<GetOutcomeNodeQuery, GetOutcomeNodeQueryVariables>(GET_OUTCOME_NODE, {
+  const queryResp = useQuery<OutcomeNodeQuery, OutcomeNodeQueryVariables>(GET_OUTCOME_NODE, {
     variables: {
       id: outcomeNodeId,
       goal: activeGoalId,

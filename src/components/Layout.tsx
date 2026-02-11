@@ -9,10 +9,11 @@ import styled from '@emotion/styled';
 import { Box, Drawer } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
+import { getThemeStaticURL } from '@common/themes/theme';
+
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
-import { getThemeStaticURL } from '@/common/theme';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
@@ -136,12 +137,16 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const instance = useInstance();
 
   const title = instance.introContent?.find(
-    (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
+    (
+      block
+    ): block is { __typename: 'RichTextBlock'; id: string | null; field: string; value: string } =>
       block.__typename === 'RichTextBlock' && block.field === 'title'
   )?.value;
 
   const paragraph = instance.introContent?.find(
-    (block): block is { __typename: 'RichTextBlock'; field: string; value: string } =>
+    (
+      block
+    ): block is { __typename: 'RichTextBlock'; id: string | null; field: string; value: string } =>
       block.__typename === 'RichTextBlock' && block.field === 'paragraph'
   )?.value;
 
@@ -164,7 +169,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         )}
         {ogImage && <meta property="og:image" key="head-og-image" content={ogImage} />}
       </Head>
-      {/* <CombinedIconSymbols /> */}
 
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
 

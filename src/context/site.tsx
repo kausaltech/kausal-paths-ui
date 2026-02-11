@@ -1,8 +1,8 @@
 import React, { type Dispatch, type SetStateAction, useContext } from 'react';
 
-import type { GetInstanceContextQuery } from '@/common/__generated__/graphql';
+import type { InstanceContextQuery } from '@/common/__generated__/graphql';
 
-export type SiteContextScenario = GetInstanceContextQuery['scenarios'][0];
+export type SiteContextScenario = InstanceContextQuery['scenarios'][0];
 
 export type SiteI18nConfig = {
   locale: string;
@@ -32,11 +32,11 @@ export type SiteContextType = {
   owner: string | null;
 
   scenarios: SiteContextScenario[];
-  availableNormalizations: GetInstanceContextQuery['availableNormalizations'];
-  parameters: GetInstanceContextQuery['parameters'];
-  menuPages: GetInstanceContextQuery['menuPages'];
-  footerPages: GetInstanceContextQuery['footerPages'];
-  additionalLinkPages: GetInstanceContextQuery['additionalLinkPages'];
+  availableNormalizations: InstanceContextQuery['availableNormalizations'];
+  parameters: InstanceContextQuery['parameters'];
+  menuPages: InstanceContextQuery['menuPages'];
+  footerPages: InstanceContextQuery['footerPages'];
+  additionalLinkPages: InstanceContextQuery['additionalLinkPages'];
   watchLink?: {
     title: string | { [key: string]: string };
     url: string | { [key: string]: string };

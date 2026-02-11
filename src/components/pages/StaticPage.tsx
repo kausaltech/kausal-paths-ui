@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-import type { GetPageQuery } from '@/common/__generated__/graphql';
+import type { PageQuery } from '@/common/__generated__/graphql';
 import { PageHero } from '@/components/common/PageHero';
 import { StreamField } from '@/components/common/StreamField';
 
@@ -14,7 +14,7 @@ const BodyCard = styled.div`
 `;
 
 type StaticPageProps = {
-  page: NonNullable<GetPageQuery['page']> & {
+  page: NonNullable<PageQuery['page']> & {
     __typename: 'StaticPage';
   };
   refetch: PageRefetchCallback;

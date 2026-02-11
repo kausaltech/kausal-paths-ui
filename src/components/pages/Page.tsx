@@ -11,7 +11,7 @@ import { useTranslation } from 'next-i18next';
 import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
-import type { GetPageQuery, GetPageQueryVariables } from '@/common/__generated__/graphql';
+import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ActionListPage from '@/components/pages/ActionListPage';
@@ -23,7 +23,7 @@ import Error from '@/pages/_error';
 import GET_PAGE from '@/queries/getPage';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
-export type PageRefetchCallback = ObservableQuery<GetPageQuery>['refetch'];
+export type PageRefetchCallback = ObservableQuery<PageQuery>['refetch'];
 
 const PageLoader = ({ theme }: { theme: Theme }) => {
   return (
@@ -58,7 +58,7 @@ function Page(props: PageProps) {
   const scenarios =
     site && !!getProgressTrackingScenario(site.scenarios) ? ['default', 'progress_tracking'] : null;
   const activeGoal = useReactiveVar(activeGoalVar);
-  const queryResp = useQuery<GetPageQuery, GetPageQueryVariables>(GET_PAGE, {
+  const queryResp = useQuery<PageQuery, PageQueryVariables>(GET_PAGE, {
     variables: {
       path,
     },

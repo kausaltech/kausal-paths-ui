@@ -1,6 +1,5 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
-import type { ApolloClientHelpersConfig } from '@graphql-codegen/typescript-apollo-client-helpers/typings/config';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
 
 import apolloConfig from './apollo.config.cjs';

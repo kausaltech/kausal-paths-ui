@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 export const GET_IMPACT_OVERVIEWS = gql`
-  query GetImpactOverviews {
+  query ImpactOverviews {
     impactOverviews {
       id
       graphType
@@ -79,8 +79,8 @@ export const GET_IMPACT_OVERVIEWS = gql`
           years
           values
         }
+        # eslint-disable-next-line @graphql-eslint/require-selections -- id omitted intentionally to avoid cache issues
         costDim {
-          # id
           dimensions {
             id
           }

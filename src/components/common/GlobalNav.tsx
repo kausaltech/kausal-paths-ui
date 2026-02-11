@@ -7,8 +7,9 @@ import { useTranslation } from 'next-i18next';
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar, NavbarBrand } from 'reactstrap';
 
+import { getThemeStaticURL } from '@common/themes/theme';
+
 import { Link } from '@/common/links';
-import { getThemeStaticURL } from '@/common/theme';
 import NavDropdown, { type NavDropdownListItem } from '@/components/common/NavDropdown';
 import Icon from '@/components/common/icon';
 import LanguageSelector from '@/components/general/LanguageSelector';

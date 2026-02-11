@@ -44,6 +44,7 @@ const SET_PARAMETER = gql`
     ) {
       ok
       parameter {
+        id
         isCustomized
         ... on BoolParameterType {
           boolValue: value
@@ -183,7 +184,11 @@ const NumberWidget = (props: NumberWidgetProps) => {
               inputProps: {
                 'aria-labelledby': `${id}-field-label`,
               },
-              endAdornment: <InputAdornment position="start" aria-hidden="true">{unit}</InputAdornment>,
+              endAdornment: (
+                <InputAdornment position="start" aria-hidden="true">
+                  {unit}
+                </InputAdornment>
+              ),
             },
           }}
           error={error}
@@ -263,7 +268,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   const { parameter, disabled = false } = props;
   const [site] = useSiteWithSetter();
 
-  const [setParameter, { loading: mutationLoading, error: mutationError }] = useMutation<
+  const [setParameter, { loading: mutationLoading, error: _mutationError }] = useMutation<
     SetParameterMutation,
     SetParameterMutationVariables
   >(SET_PARAMETER, {

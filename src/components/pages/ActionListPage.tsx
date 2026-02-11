@@ -1,45 +1,6 @@
-import {
-  useMemo,
-  useState,
-} from 'react';
+import { useMemo, useState } from 'react';
 
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'next-i18next';
-
-import {
-  DecisionLevel,
-  type GetActionListQuery,
-  type GetActionListQueryVariables,
-  type GetImpactOverviewsQuery,
-  type GetPageQuery,
-} from '@/common/__generated__/graphql';
-import {
-  activeGoalVar,
-  yearRangeVar,
-} from '@/common/cache';
-import { useInstance } from '@/common/instance';
-import { summarizeYearlyValuesBetween } from '@/common/preprocess';
-import ContentLoader from '@/components/common/ContentLoader';
-import GraphQLError from '@/components/common/GraphQLError';
-import Icon from '@/components/common/icon';
-import { PageHero } from '@/components/common/PageHero';
-import ActionsComparison from '@/components/general/ActionsComparison';
-import ActionsList from '@/components/general/ActionsList';
-import ActionsMac from '@/components/general/ActionsMac';
-import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
-import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
-import { GET_ACTION_LIST } from '@/queries/getActionList';
-import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
-import type {
-  ActionWithEfficiency,
-  SortActionsBy,
-  SortActionsConfig,
-} from '@/types/actions.types';
-import {
-  type QueryResult,
-  useQuery,
-  useReactiveVar,
-} from '@apollo/client';
+import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import {
   Box,
@@ -52,6 +13,31 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'next-i18next';
+
+import {
+  type ActionListQuery,
+  type ActionListQueryVariables,
+  DecisionLevel,
+  type ImpactOverviewsQuery,
+  type PageQuery,
+} from '@/common/__generated__/graphql';
+import { activeGoalVar, yearRangeVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
+import { summarizeYearlyValuesBetween } from '@/common/preprocess';
+import ContentLoader from '@/components/common/ContentLoader';
+import GraphQLError from '@/components/common/GraphQLError';
+import { PageHero } from '@/components/common/PageHero';
+import Icon from '@/components/common/icon';
+import ActionsComparison from '@/components/general/ActionsComparison';
+import ActionsList from '@/components/general/ActionsList';
+import ActionsMac from '@/components/general/ActionsMac';
+import { CostBenefitAnalysis } from '@/components/general/CostBenefitAnalysis';
+import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
+import { GET_ACTION_LIST } from '@/queries/getActionList';
+import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
+import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
 
 import { SimpleEffect } from '../general/SimpleEffect';
 import ScenarioPanel from '../scenario/ScenarioPanel';
@@ -183,13 +169,13 @@ const getViewOption = <V extends ViewType>(value: V, label: string, icon: string
 });
 
 type ActionListPageProps = {
-  page: NonNullable<GetPageQuery['page']> & {
+  page: NonNullable<PageQuery['page']> & {
     __typename: 'ActionListPage';
   };
   refetch: PageRefetchCallback;
 };
 
-function hasGraph(impactResponse: QueryResult<GetImpactOverviewsQuery>, graphType: string) {
+function hasGraph(impactResponse: QueryResult<ImpactOverviewsQuery>, graphType: string) {
   return !!impactResponse.data?.impactOverviews.find(
     (overview) => overview.graphType === graphType
   );
@@ -200,19 +186,16 @@ function ActionListPage({ page }: ActionListPageProps) {
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
 
-  const impactResp = useQuery<GetImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
+  const impactResp = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const actionListResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(
-    GET_ACTION_LIST,
-    {
-      variables: {
-        goal: activeGoal?.id ?? null,
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const actionListResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
+    variables: {
+      goal: activeGoal?.id ?? null,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
   const error = actionListResp.error || impactResp.error;
   const { loading: areActionsLoading, previousData } = actionListResp;
   const yearRange = useReactiveVar(yearRangeVar);
@@ -244,10 +227,12 @@ function ActionListPage({ page }: ActionListPageProps) {
       filteredActions
         .map((act) => {
           // If we have impact overviews, we augment the actions with the cumulative values
-          const reductionText = `(${t('reduction')}, ${t(
-            'accumulated-between'
-          )} ${yearRange[0]}-${yearRange[1]})`;
-
+          /*
+            TODO: ReductionText is unused, intentionally?
+            const reductionText = `(${t('reduction')}, ${t(
+              'accumulated-between'
+            )} ${yearRange[0]}-${yearRange[1]})`;
+          */
           const out: ActionWithEfficiency = {
             ...act,
             impactOnTargetYear:
@@ -262,27 +247,45 @@ function ActionListPage({ page }: ActionListPageProps) {
 
           if (!efficiencyType || !efficiencyAction) return out;
 
-          out.cumulativeImpact = summarizeYearlyValuesBetween(
-            efficiencyAction.impactValues,
-            yearRange[0],
-            yearRange[1]
-          );
-          out.cumulativeCost = summarizeYearlyValuesBetween(
-            efficiencyAction.costValues,
-            yearRange[0],
-            yearRange[1]
-          );
+          out.cumulativeImpact = efficiencyAction.impactValues
+            ? summarizeYearlyValuesBetween(
+                {
+                  historicalValues: efficiencyAction.impactValues
+                    .filter((v): v is NonNullable<typeof v> => v != null)
+                    .map((v) => ({ year: v.year, value: v.value })),
+                  forecastValues: [],
+                },
+                yearRange[0],
+                yearRange[1]
+              )
+            : 0;
+          out.cumulativeCost = efficiencyAction.costValues
+            ? summarizeYearlyValuesBetween(
+                {
+                  historicalValues: efficiencyAction.costValues
+                    .filter((v): v is NonNullable<typeof v> => v != null)
+                    .map((v) => ({ year: v.year, value: v.value })),
+                  forecastValues: [],
+                },
+                yearRange[0],
+                yearRange[1]
+              )
+            : 0;
           out.unitAdjustmentMultiplier = efficiencyAction.unitAdjustmentMultiplier ?? undefined;
           if (out.unitAdjustmentMultiplier !== undefined)
             out.cumulativeEfficiency =
               (out.cumulativeCost / Math.abs(out.cumulativeImpact)) * out.unitAdjustmentMultiplier;
 
-          const efficiencyProps: Partial<ActionWithEfficiency> = {
-            cumulativeImpactId: efficiencyType?.effectNode?.id,
-            cumulativeImpactUnit: efficiencyType?.effectUnit?.htmlShort,
+          /*
+            TODO: Is invertImpact available somewhere in api?
             cumulativeImpactName: `${efficiencyType?.effectNode?.name} ${
               data.impactOverviews[activeEfficiency]?.invertImpact ? reductionText : ''
             }`,
+          */
+          const efficiencyProps: Partial<ActionWithEfficiency> = {
+            cumulativeImpactId: efficiencyType?.effectNode?.id,
+            cumulativeImpactUnit: efficiencyType?.effectUnit?.htmlShort,
+            cumulativeImpactName: `${efficiencyType?.effectNode?.name}`,
             cumulativeCostUnit: efficiencyType?.costUnit?.htmlShort,
             cumulativeCostName: efficiencyType?.costNode?.name,
             cumulativeEfficiencyUnit: efficiencyType?.indicatorUnit.htmlShort,
@@ -293,7 +296,7 @@ function ActionListPage({ page }: ActionListPageProps) {
           return out;
         })
         .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
-    [data, actionGroup, activeEfficiency, yearRange, filteredActions, t]
+    [data, actionGroup, activeEfficiency, yearRange, filteredActions]
   );
 
   const displayedActionsCount = useMemo(() => {
@@ -344,8 +347,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   return (
     <>
       <PageHero
-        title={t('actions')}
-        leadTitle={page.actionListLeadTitle ?? undefined}
+        leadTitle={page.actionListLeadTitle ?? t('actions')}
         leadDescription={page.actionListLeadParagraph ?? undefined}
       >
         <ScenarioPanel />
@@ -387,7 +389,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={actionGroup}
                     onChange={(e) => setActionGroup(e.target.value as string)}
                     size="small"
-                    MenuProps={{ container: () => document.getElementById('main')!, }}
+                    MenuProps={{ container: () => document.getElementById('main')! }}
                   >
                     <MenuItem value="ALL_ACTIONS">{t('action-groups-all')}</MenuItem>
                     {actionGroups.map((group) => (
@@ -412,7 +414,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                     value={sortBy.key}
                     onChange={(e) => handleChangeSort(e.target.value as SortActionsBy)}
                     size="small"
-                     MenuProps={{ container: () => document.getElementById('main')!, }}
+                    MenuProps={{ container: () => document.getElementById('main')! }}
                   >
                     {sortOptions
                       .filter((opt) => !opt.isHidden)
@@ -487,11 +489,7 @@ function ActionListPage({ page }: ActionListPageProps) {
         </ViewSelectorBar>
       )}
 
-      <Container 
-        fixed 
-        maxWidth="xl" 
-        sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4, }}
-      >
+      <Container fixed maxWidth="xl" sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4 }}>
         {listType === 'list' ? (
           <ActionsList
             id="list-view"
@@ -510,59 +508,50 @@ function ActionListPage({ page }: ActionListPageProps) {
               setAscending((prev) => !prev);
             }}
           />
-        ) : (() => {
-          const selectedOverview = impactResp.data?.impactOverviews[activeEfficiency];
-          const graphType = selectedOverview?.graphType;
+        ) : (
+          (() => {
+            const selectedOverview = impactResp.data?.impactOverviews[activeEfficiency];
+            const graphType = selectedOverview?.graphType;
 
-          switch (graphType) {
-            case 'cost_efficiency':
-              return (
-                <ActionsMac
-                  id="efficiency-view"
-                  actions={usableActions}
-                  impactOverviews={selectedOverview}
-                  t={t}
-                  actionGroups={data.instance.actionGroups}
-                  sortBy={sortBy.sortKey}
-                  sortAscending={ascending}
-                  refetching={areActionsLoading}
-                />
-              );
-            case 'cost_benefit':
-              return (
-                <CostBenefitAnalysis 
-                  data={selectedOverview}
-                  isLoading={impactResp.loading} 
-                />
-              );
-            case 'return_on_investment':
-              return (
-                <ReturnOnInvestment 
-                  data={selectedOverview}
-                  isLoading={impactResp.loading} 
-                />
-              );
-            case 'simple_effect':
-              return (
-                <SimpleEffect 
-                  data={selectedOverview}
-                  isLoading={impactResp.loading} 
-                />
-              );
-            default:
-              return (
-                <ActionsComparison
-                  id="comparison-view"
-                  actions={usableActions}
-                  actionGroups={data.instance.actionGroups}
-                  sortBy={sortBy.sortKey}
-                  sortAscending={ascending}
-                  refetching={areActionsLoading}
-                  displayYears={yearRange}
-                />
-              );
-          }
-        })()}
+            switch (graphType) {
+              case 'cost_efficiency':
+                return (
+                  <ActionsMac
+                    id="efficiency-view"
+                    actions={usableActions}
+                    impactOverviews={selectedOverview}
+                    t={t}
+                    actionGroups={data.instance.actionGroups}
+                    sortBy={sortBy.sortKey}
+                    sortAscending={ascending}
+                    refetching={areActionsLoading}
+                  />
+                );
+              case 'cost_benefit':
+                return (
+                  <CostBenefitAnalysis data={selectedOverview} isLoading={impactResp.loading} />
+                );
+              case 'return_on_investment':
+                return (
+                  <ReturnOnInvestment data={selectedOverview} isLoading={impactResp.loading} />
+                );
+              case 'simple_effect':
+                return <SimpleEffect data={selectedOverview} isLoading={impactResp.loading} />;
+              default:
+                return (
+                  <ActionsComparison
+                    id="comparison-view"
+                    actions={usableActions}
+                    actionGroups={data.instance.actionGroups}
+                    sortBy={sortBy.sortKey}
+                    sortAscending={ascending}
+                    refetching={areActionsLoading}
+                    displayYears={yearRange}
+                  />
+                );
+            }
+          })()
+        )}
       </Container>
     </>
   );

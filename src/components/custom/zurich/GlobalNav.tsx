@@ -10,9 +10,9 @@ import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
+import { getThemeStaticURL } from '@common/themes/theme';
 
 import { Link } from '@/common/links';
-import { getThemeStaticURL } from '@/common/theme';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
 import NavDropdown from '@/components/common/NavDropdown';
 import LanguageSelector from '@/components/general/LanguageSelector';

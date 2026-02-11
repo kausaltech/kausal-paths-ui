@@ -2,18 +2,15 @@ import { useQuery } from '@apollo/client';
 import { Box, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  GetParametersQuery,
-  GetParametersQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { ParametersQuery, ParametersQueryVariables } from '@/common/__generated__/graphql';
 import ContentLoader from '@/components/common/ContentLoader';
 import ParameterWidget from '@/components/general/ParameterWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const GlobalParameters = () => {
   const { loading, error, data, previousData } = useQuery<
-    GetParametersQuery,
-    GetParametersQueryVariables
+    ParametersQuery,
+    ParametersQueryVariables
   >(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
     context: {

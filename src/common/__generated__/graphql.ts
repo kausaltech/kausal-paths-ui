@@ -32,15 +32,13 @@ export enum ActionSortOrder {
 }
 
 export type CreateOrganizationMutationInput = {
-  /** A simplified short version of name for the general public */
+  /** Short version or abbreviation of the organization name to be displayed when it is not necessary to show the full name */
   abbreviation: InputMaybe<Scalars['String']['input']>;
   classification: InputMaybe<Scalars['ID']['input']>;
   clientMutationId: InputMaybe<Scalars['String']['input']>;
-  /** A date of dissolution */
   dissolutionDate: InputMaybe<Scalars['Date']['input']>;
-  /** A date of founding */
   foundingDate: InputMaybe<Scalars['Date']['input']>;
-  /** A primary name, e.g. a legally recognized name */
+  /** Full name of the organization */
   name: Scalars['String']['input'];
   parent: InputMaybe<Scalars['ID']['input']>;
 };
@@ -147,16 +145,14 @@ export enum SearchOperatorEnum {
 }
 
 export type UpdateOrganizationMutationInput = {
-  /** A simplified short version of name for the general public */
+  /** Short version or abbreviation of the organization name to be displayed when it is not necessary to show the full name */
   abbreviation: InputMaybe<Scalars['String']['input']>;
   classification: InputMaybe<Scalars['ID']['input']>;
   clientMutationId: InputMaybe<Scalars['String']['input']>;
-  /** A date of dissolution */
   dissolutionDate: InputMaybe<Scalars['Date']['input']>;
-  /** A date of founding */
   foundingDate: InputMaybe<Scalars['Date']['input']>;
   id: InputMaybe<Scalars['ID']['input']>;
-  /** A primary name, e.g. a legally recognized name */
+  /** Full name of the organization */
   name: Scalars['String']['input'];
   parent: InputMaybe<Scalars['ID']['input']>;
 };
@@ -166,34 +162,17 @@ export enum VisualizationKind {
   Node = 'node'
 }
 
-export type AllMetricFieldsFragment = (
-  { name: string | null, id: string | null, unit: (
-    { htmlShort: string, htmlLong: string }
-    & { __typename: 'UnitType' }
-  ) | null, historicalValues: Array<(
-    { year: number, value: number }
-    & { __typename: 'YearlyValue' }
-  )>, forecastValues: Array<(
-    { value: number, year: number }
-    & { __typename: 'YearlyValue' }
-  )>, baselineForecastValues: Array<(
-    { year: number, value: number }
-    & { __typename: 'YearlyValue' }
-  )> | null }
-  & { __typename: 'ForecastMetricType' }
-);
-
-type StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment = (
+type StreamField_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment = (
   { id: string | null, blockType: string, field: string }
   & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
 );
 
-type StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment = (
+type StreamField_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment = (
   { id: string | null, blockType: string, field: string }
   & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TimeBlock' | 'URLBlock' }
 );
 
-type StreamFieldFragment_CardListBlock_Fragment = (
+type StreamField_CardListBlock_Fragment = (
   { blockType: string, title: string | null, id: string | null, field: string, cards: Array<(
     { title: string | null, shortDescription: string | null }
     & { __typename: 'CardListCardBlock' }
@@ -201,37 +180,37 @@ type StreamFieldFragment_CardListBlock_Fragment = (
   & { __typename: 'CardListBlock' }
 );
 
-type StreamFieldFragment_RichTextBlock_Fragment = (
+type StreamField_RichTextBlock_Fragment = (
   { value: string, rawValue: string, id: string | null, blockType: string, field: string }
   & { __typename: 'RichTextBlock' }
 );
 
-type StreamFieldFragment_TextBlock_Fragment = (
+type StreamField_TextBlock_Fragment = (
   { value: string, id: string | null, blockType: string, field: string }
   & { __typename: 'TextBlock' }
 );
 
-export type StreamFieldFragmentFragment = StreamFieldFragment_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment | StreamFieldFragment_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment | StreamFieldFragment_CardListBlock_Fragment | StreamFieldFragment_RichTextBlock_Fragment | StreamFieldFragment_TextBlock_Fragment;
+export type StreamFieldFragment = StreamField_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment | StreamField_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment | StreamField_CardListBlock_Fragment | StreamField_RichTextBlock_Fragment | StreamField_TextBlock_Fragment;
 
-export type GetNodeDetailsQueryVariables = Exact<{
+export type NodeDetailsQueryVariables = Exact<{
   node: Scalars['ID']['input'];
   scenarios: InputMaybe<Array<Scalars['String']['input']>>;
 }>;
 
 
-export type GetNodeDetailsQuery = (
+export type NodeDetailsQuery = (
   { node: (
-    { id: string, nodeType: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, tags: Array<string | null> | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, unit: (
+    { id: string, nodeType: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, tags: Array<string | null> | null, color: string | null, quantity: string | null, inputDimensions: Array<string | null> | null, outputDimensions: Array<string | null> | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
@@ -303,28 +282,6 @@ type ActionParameter_UnknownParameterType_Fragment = (
 
 export type ActionParameterFragment = ActionParameter_BoolParameterType_Fragment | ActionParameter_NumberParameterType_Fragment | ActionParameter_StringParameterType_Fragment | ActionParameter_UnknownParameterType_Fragment;
 
-export type SetGlobalParameterFromActionSummaryMutationVariables = Exact<{
-  parameterId: Scalars['ID']['input'];
-  boolValue: InputMaybe<Scalars['Boolean']['input']>;
-  numberValue: InputMaybe<Scalars['Float']['input']>;
-  stringValue: InputMaybe<Scalars['String']['input']>;
-}>;
-
-
-export type SetGlobalParameterFromActionSummaryMutation = (
-  { setParameter: (
-    { ok: boolean | null, parameter: (
-      { isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null }
-      & { __typename: 'BoolParameterType' }
-    ) | (
-      { isCustomized: boolean, isCustomizable: boolean }
-      & { __typename: 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
-    ) | null }
-    & { __typename: 'SetParameterMutation' }
-  ) | null }
-  & { __typename: 'Mutation' }
-);
-
 export type SetNormalizationFromWidgetMutationVariables = Exact<{
   id: InputMaybe<Scalars['ID']['input']>;
 }>;
@@ -349,10 +306,10 @@ export type SetParameterMutationVariables = Exact<{
 export type SetParameterMutation = (
   { setParameter: (
     { ok: boolean | null, parameter: (
-      { isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null }
+      { id: string, isCustomized: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null }
       & { __typename: 'BoolParameterType' }
     ) | (
-      { isCustomized: boolean }
+      { id: string, isCustomized: boolean }
       & { __typename: 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
     ) | null }
     & { __typename: 'SetParameterMutation' }
@@ -374,15 +331,15 @@ export type DimensionalPlotFragment = (
   & { __typename: 'DimensionalFlowType' }
 );
 
-export type GetInstanceGoalOutcomeQueryVariables = Exact<{
+export type InstanceGoalOutcomeQueryVariables = Exact<{
   goal: Scalars['ID']['input'];
 }>;
 
 
-export type GetInstanceGoalOutcomeQuery = (
+export type InstanceGoalOutcomeQuery = (
   { instance: (
     { id: string, goals: Array<(
-      { values: Array<(
+      { id: string, values: Array<(
         { year: number, goal: number | null, actual: number | null, isForecast: boolean, isInterpolated: boolean | null }
         & { __typename: 'InstanceYearlyGoalType' }
       )>, unit: (
@@ -438,12 +395,12 @@ export type DimensionalMetricFragment = (
   & { __typename: 'DimensionalMetricType' }
 );
 
-export type GetAvailableInstancesQueryVariables = Exact<{
+export type AvailableInstancesQueryVariables = Exact<{
   hostname: Scalars['String']['input'];
 }>;
 
 
-export type GetAvailableInstancesQuery = (
+export type AvailableInstancesQuery = (
   { availableInstances: Array<(
     { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
       { basePath: string | null }
@@ -462,10 +419,10 @@ export type AvailableInstanceFragment = (
   & { __typename: 'InstanceBasicConfiguration' }
 );
 
-export type GetCytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
+export type CytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCytoscapeNodesQuery = (
+export type CytoscapeNodesQuery = (
   { nodes: Array<(
     { id: string, name: string, color: string | null, quantity: string | null, isVisible: boolean, parentAction: (
       { id: string }
@@ -486,7 +443,7 @@ export type GetCytoscapeNodesQuery = (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metric: (
-      { historicalValues: Array<(
+      { id: string | null, historicalValues: Array<(
         { year: number, value: number }
         & { __typename: 'YearlyValue' }
       )> }
@@ -504,7 +461,7 @@ export type GetCytoscapeNodesQuery = (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metric: (
-      { historicalValues: Array<(
+      { id: string | null, historicalValues: Array<(
         { year: number, value: number }
         & { __typename: 'YearlyValue' }
       )> }
@@ -515,10 +472,10 @@ export type GetCytoscapeNodesQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
+export type ModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetModelNodesQuery = (
+export type ModelNodesQuery = (
   { nodes: Array<(
     { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, nodeType: string, parentAction: (
       { id: string }
@@ -539,7 +496,7 @@ export type GetModelNodesQuery = (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metric: (
-      { historicalValues: Array<(
+      { id: string | null, historicalValues: Array<(
         { year: number, value: number }
         & { __typename: 'YearlyValue' }
       )> }
@@ -557,7 +514,7 @@ export type GetModelNodesQuery = (
       { id: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, metric: (
-      { historicalValues: Array<(
+      { id: string | null, historicalValues: Array<(
         { year: number, value: number }
         & { __typename: 'YearlyValue' }
       )> }
@@ -568,25 +525,25 @@ export type GetModelNodesQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetNodePageQueryVariables = Exact<{
+export type NodePageQueryVariables = Exact<{
   node: Scalars['ID']['input'];
   scenarios: InputMaybe<Array<Scalars['String']['input']>>;
 }>;
 
 
-export type GetNodePageQuery = (
+export type NodePageQuery = (
   { node: (
-    { id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, targetYearGoal: number | null, quantity: string | null, isAction: boolean, unit: (
+    { id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, quantity: string | null, unit: (
       { htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, isAction: boolean, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
@@ -622,7 +579,7 @@ export type GetNodePageQuery = (
 );
 
 export type DimensionalNodeMetricFragment = (
-  { metricDim: (
+  { id: string, metricDim: (
     { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
       { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
         { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
@@ -650,8 +607,13 @@ export type DimensionalNodeMetricFragment = (
   & { __typename: 'ActionNode' | 'Node' }
 );
 
+export type UnitFieldsFragment = (
+  { short: string, htmlShort: string, htmlLong: string }
+  & { __typename: 'UnitType' }
+);
+
 type CausalGridNode_ActionNode_Fragment = (
-  { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
+  { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, unit: (
@@ -732,6 +694,9 @@ type CausalGridNode_ActionNode_Fragment = (
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'UnknownParameterType' }
+  )>, goals: Array<(
+    { year: number, value: number }
+    & { __typename: 'NodeGoal' }
   )>, metric: (
     { name: string | null, id: string | null, unit: (
       { htmlShort: string }
@@ -752,7 +717,7 @@ type CausalGridNode_ActionNode_Fragment = (
 );
 
 type CausalGridNode_Node_Fragment = (
-  { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
+  { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, unit: (
     { htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
@@ -830,6 +795,9 @@ type CausalGridNode_Node_Fragment = (
       & { __typename: 'ActionNode' | 'Node' }
     ) | null }
     & { __typename: 'UnknownParameterType' }
+  )>, goals: Array<(
+    { year: number, value: number }
+    & { __typename: 'NodeGoal' }
   )>, metric: (
     { name: string | null, id: string | null, unit: (
       { htmlShort: string }
@@ -851,17 +819,17 @@ type CausalGridNode_Node_Fragment = (
 
 export type CausalGridNodeFragment = CausalGridNode_ActionNode_Fragment | CausalGridNode_Node_Fragment;
 
-export type GetCausalChainQueryVariables = Exact<{
+export type CausalChainQueryVariables = Exact<{
   node: Scalars['ID']['input'];
   goal: InputMaybe<Scalars['ID']['input']>;
   untilNode: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
-export type GetCausalChainQuery = (
+export type CausalChainQuery = (
   { action: (
     { id: string, downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -942,6 +910,9 @@ export type GetCausalChainQuery = (
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'UnknownParameterType' }
+      )>, goals: Array<(
+        { year: number, value: number }
+        & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
           { htmlShort: string }
@@ -960,7 +931,7 @@ export type GetCausalChainQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -1038,6 +1009,9 @@ export type GetCausalChainQuery = (
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'UnknownParameterType' }
+      )>, goals: Array<(
+        { year: number, value: number }
+        & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
           { htmlShort: string }
@@ -1061,16 +1035,16 @@ export type GetCausalChainQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetActionContentQueryVariables = Exact<{
+export type ActionContentQueryVariables = Exact<{
   node: Scalars['ID']['input'];
   goal: InputMaybe<Scalars['ID']['input']>;
   downstreamDepth: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetActionContentQuery = (
+export type ActionContentQuery = (
   { action: (
-    { goal: string | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, dimensionalFlow: (
+    { goal: string | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, dimensionalFlow: (
       { id: string, sources: Array<string>, unit: (
         { htmlLong: string }
         & { __typename: 'UnitType' }
@@ -1083,7 +1057,7 @@ export type GetActionContentQuery = (
       )> }
       & { __typename: 'DimensionalFlowType' }
     ) | null, downstreamNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, group: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, group: (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
@@ -1164,6 +1138,9 @@ export type GetActionContentQuery = (
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'UnknownParameterType' }
+      )>, goals: Array<(
+        { year: number, value: number }
+        & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
           { htmlShort: string }
@@ -1182,7 +1159,7 @@ export type GetActionContentQuery = (
       ) | null }
       & { __typename: 'ActionNode' }
     ) | (
-      { id: string, name: string, shortDescription: string | null, color: string | null, targetYearGoal: number | null, order: number | null, quantity: string | null, unit: (
+      { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, unit: (
         { htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -1260,6 +1237,9 @@ export type GetActionContentQuery = (
           & { __typename: 'ActionNode' | 'Node' }
         ) | null }
         & { __typename: 'UnknownParameterType' }
+      )>, goals: Array<(
+        { year: number, value: number }
+        & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
           { htmlShort: string }
@@ -1376,6 +1356,9 @@ export type GetActionContentQuery = (
         & { __typename: 'ActionNode' | 'Node' }
       ) | null }
       & { __typename: 'UnknownParameterType' }
+    )>, goals: Array<(
+      { year: number, value: number }
+      & { __typename: 'NodeGoal' }
     )>, metric: (
       { name: string | null, id: string | null, unit: (
         { htmlShort: string }
@@ -1397,15 +1380,15 @@ export type GetActionContentQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetActionImpactsQueryVariables = Exact<{
+export type ActionImpactsQueryVariables = Exact<{
   impact1: Scalars['ID']['input'];
   impact2: Scalars['ID']['input'];
 }>;
 
 
-export type GetActionImpactsQuery = (
+export type ActionImpactsQuery = (
   { energyNode: (
-    { metric: (
+    { id: string, metric: (
       { id: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
@@ -1417,7 +1400,7 @@ export type GetActionImpactsQuery = (
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null, costNode: (
-    { metric: (
+    { id: string, metric: (
       { id: string | null, unit: (
         { short: string }
         & { __typename: 'UnitType' }
@@ -1430,10 +1413,10 @@ export type GetActionImpactsQuery = (
     & { __typename: 'ActionNode' | 'Node' }
   ) | null, actions: Array<(
     { name: string, id: string, energy: (
-      { cumulativeForecastValue: number | null }
+      { id: string | null, cumulativeForecastValue: number | null }
       & { __typename: 'ForecastMetricType' }
     ) | null, cost: (
-      { cumulativeForecastValue: number | null }
+      { id: string | null, cumulativeForecastValue: number | null }
       & { __typename: 'ForecastMetricType' }
     ) | null }
     & { __typename: 'ActionNode' }
@@ -1441,12 +1424,12 @@ export type GetActionImpactsQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetActionListQueryVariables = Exact<{
+export type ActionListQueryVariables = Exact<{
   goal: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
-export type GetActionListQuery = (
+export type ActionListQuery = (
   { instance: (
     { id: string, actionGroups: Array<(
       { id: string, name: string, color: string | null, actions: Array<(
@@ -1556,10 +1539,10 @@ export type GetActionListQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
+export type ImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetImpactOverviewsQuery = (
+export type ImpactOverviewsQuery = (
   { impactOverviews: Array<(
     { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, effectNode: (
       { id: string }
@@ -1615,12 +1598,12 @@ export type GetImpactOverviewsQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetNodeVisualizationsQueryVariables = Exact<{
+export type NodeVisualizationsQueryVariables = Exact<{
   nodeId: Scalars['ID']['input'];
 }>;
 
 
-export type GetNodeVisualizationsQuery = (
+export type NodeVisualizationsQuery = (
   { scenarios: Array<(
     { id: string, isActive: boolean, isDefault: boolean, name: string, actualHistoricalYears: Array<number> | null, kind: ScenarioKind | null }
     & { __typename: 'ScenarioType' }
@@ -1650,7 +1633,7 @@ export type GetNodeVisualizationsQuery = (
       ) | null }
       & { __typename: 'DimensionalMetricType' }
     ) | null, visualizations: Array<(
-      { label: string | null, children: Array<(
+      { id: string, label: string | null, children: Array<(
         { id: string, label: string | null }
         & { __typename: 'VisualizationGroup' }
       ) | (
@@ -1686,7 +1669,7 @@ export type GetNodeVisualizationsQuery = (
       )> }
       & { __typename: 'VisualizationGroup' }
     ) | (
-      { label: string | null }
+      { id: string, label: string | null }
       & { __typename: 'VisualizationNodeOutput' }
     )> | null }
     & { __typename: 'ActionNode' | 'Node' }
@@ -1694,13 +1677,8 @@ export type GetNodeVisualizationsQuery = (
   & { __typename: 'Query' }
 );
 
-export type UnitFieldsFragment = (
-  { short: string, htmlShort: string, htmlLong: string }
-  & { __typename: 'UnitType' }
-);
-
 export type OutcomeNodeFieldsFragment = (
-  { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
+  { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, metric: (
     { id: string | null, name: string | null, unit: (
       { short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
@@ -1773,17 +1751,17 @@ export type OutcomeNodeFieldsFragment = (
   & { __typename: 'Node' }
 );
 
-export type GetOutcomeNodeQueryVariables = Exact<{
+export type OutcomeNodeQueryVariables = Exact<{
   id: Scalars['ID']['input'];
   goal: InputMaybe<Scalars['ID']['input']>;
   scenarios: InputMaybe<Array<Scalars['String']['input']>>;
 }>;
 
 
-export type GetOutcomeNodeQuery = (
+export type OutcomeNodeQuery = (
   { node: (
     { upstreamNodes: Array<{ __typename: 'ActionNode' } | (
-      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
+      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, metric: (
         { id: string | null, name: string | null, unit: (
           { short: string, htmlShort: string, htmlLong: string }
           & { __typename: 'UnitType' }
@@ -1857,8 +1835,8 @@ export type GetOutcomeNodeQuery = (
     )> }
     & { __typename: 'ActionNode' }
   ) | (
-    { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
-      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, targetYearGoal: number | null, quantity: string | null, metric: (
+    { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
+      { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, metric: (
         { id: string | null, name: string | null, unit: (
           { short: string, htmlShort: string, htmlLong: string }
           & { __typename: 'UnitType' }
@@ -2022,7 +2000,7 @@ export type ScenarioActionImpactsFieldsFragment = (
 );
 
 export type DashboardCardVisualizationsFragment = (
-  { visualizations: Array<(
+  { id: string | null, visualizations: Array<(
     { title: string, scenarioId: string, id: string | null }
     & { __typename: 'ActionImpactBlock' }
   ) | (
@@ -2064,9 +2042,15 @@ export type ScenarioValueFieldsFragment = (
 );
 
 export type DashboardPageFieldsFragment = (
-  { backgroundColor: string | null, introTitle: string | null, introParagraph: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
-    { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
-      { url: string }
+  { id: string | null, backgroundColor: string | null, introTitle: string | null, introParagraph: string | null, dashboardCards: Array<(
+    { id: string | null }
+    & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
+  ) | (
+    { id: string | null }
+    & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+  ) | (
+    { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: (
+      { id: string, url: string }
       & { __typename: 'ImageObjectType' }
     ) | null, node: (
       { id: string, name: string }
@@ -2108,7 +2092,7 @@ export type DashboardPageFieldsFragment = (
       )> }
       & { __typename: 'ScenarioActionImpacts' }
     ) | null> | null, callToAction: (
-      { title: string, content: string, linkUrl: string }
+      { title: string, content: string, linkUrl: string, id: string | null }
       & { __typename: 'CallToActionBlock' }
     ), visualizations: Array<(
       { title: string, scenarioId: string, id: string | null }
@@ -2134,12 +2118,12 @@ export type DashboardPageFieldsFragment = (
   & { __typename: 'DashboardPage' }
 );
 
-export type GetPageQueryVariables = Exact<{
+export type PageQueryVariables = Exact<{
   path: Scalars['String']['input'];
 }>;
 
 
-export type GetPageQuery = (
+export type PageQuery = (
   { activeScenario: (
     { id: string }
     & { __typename: 'ScenarioType' }
@@ -2147,9 +2131,15 @@ export type GetPageQuery = (
     { showOnlyMunicipalActions: boolean | null, defaultSortOrder: ActionSortOrder, id: string | null, title: string, actionListLeadTitle: string | null, actionListLeadParagraph: string | null }
     & { __typename: 'ActionListPage' }
   ) | (
-    { id: string | null, title: string, backgroundColor: string | null, introTitle: string | null, introParagraph: string | null, dashboardCards: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' } | { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
-      { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, image: (
-        { url: string }
+    { id: string | null, title: string, backgroundColor: string | null, introTitle: string | null, introParagraph: string | null, dashboardCards: Array<(
+      { id: string | null }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
+    ) | (
+      { id: string | null }
+      & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+    ) | (
+      { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: (
+        { id: string, url: string }
         & { __typename: 'ImageObjectType' }
       ) | null, node: (
         { id: string, name: string }
@@ -2191,7 +2181,7 @@ export type GetPageQuery = (
         )> }
         & { __typename: 'ScenarioActionImpacts' }
       ) | null> | null, callToAction: (
-        { title: string, content: string, linkUrl: string }
+        { title: string, content: string, linkUrl: string, id: string | null }
         & { __typename: 'CallToActionBlock' }
       ), visualizations: Array<(
         { title: string, scenarioId: string, id: string | null }
@@ -2249,10 +2239,10 @@ export type GetPageQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetParametersQueryVariables = Exact<{ [key: string]: never; }>;
+export type ParametersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetParametersQuery = (
+export type ParametersQuery = (
   { availableNormalizations: Array<(
     { id: string, label: string, isActive: boolean }
     & { __typename: 'NormalizationType' }
@@ -2287,10 +2277,10 @@ export type GetParametersQuery = (
   & { __typename: 'Query' }
 );
 
-export type GetScenariosQueryVariables = Exact<{ [key: string]: never; }>;
+export type ScenariosQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetScenariosQuery = (
+export type ScenariosQuery = (
   { scenarios: Array<(
     { id: string, name: string, isActive: boolean, isDefault: boolean, isSelectable: boolean }
     & { __typename: 'ScenarioType' }
@@ -2298,21 +2288,27 @@ export type GetScenariosQuery = (
   & { __typename: 'Query' }
 );
 
-export type ScenarioFragmentFragment = (
+export type ScenarioFragment = (
   { id: string, isActive: boolean, isDefault: boolean, name: string, actualHistoricalYears: Array<number> | null, kind: ScenarioKind | null }
   & { __typename: 'ScenarioType' }
 );
 
-export type GetInstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
+export type InstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetInstanceContextQuery = (
+export type InstanceContextQuery = (
   { instance: (
     { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string | null, leadParagraph: string | null, features: (
       { hideNodeDetails: boolean, maximumFractionDigits: number | null, baselineVisibleInGraphs: boolean, showAccumulatedEffects: boolean, showSignificantDigits: number | null, showRefreshPrompt: boolean }
       & { __typename: 'InstanceFeaturesType' }
-    ), introContent: Array<{ __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' } | { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' } | (
-      { field: string, value: string }
+    ), introContent: Array<(
+      { id: string | null }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' }
+    ) | (
+      { id: string | null }
+      & { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+    ) | (
+      { field: string, value: string, id: string | null }
       & { __typename: 'RichTextBlock' }
     )> | null, goals: Array<(
       { id: string, label: string | null, default: boolean, disabled: boolean, outcomeNode: (
@@ -2324,7 +2320,7 @@ export type GetInstanceContextQuery = (
       )> }
       & { __typename: 'InstanceGoalEntry' }
     )>, actionListPage: (
-      { showInMenus: boolean }
+      { id: string | null, showInMenus: boolean }
       & { __typename: 'ActionListPage' }
     ) | null }
     & { __typename: 'InstanceType' }
@@ -2383,12 +2379,12 @@ export type GetInstanceContextQuery = (
   & { __typename: 'Query' }
 );
 
-type VisualizationEntryFragment_VisualizationGroup_Fragment = (
+type VisualizationEntry_VisualizationGroup_Fragment = (
   { id: string, label: string | null }
   & { __typename: 'VisualizationGroup' }
 );
 
-type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
+type VisualizationEntry_VisualizationNodeOutput_Fragment = (
   { label: string | null, nodeId: string, scenarios: Array<string> | null, desiredOutcome: DesiredOutcome, id: string, dimensions: Array<(
     { id: string, categories: Array<string> | null, flatten: boolean | null }
     & { __typename: 'VisualizationNodeDimension' }
@@ -2420,4 +2416,4 @@ type VisualizationEntryFragment_VisualizationNodeOutput_Fragment = (
   & { __typename: 'VisualizationNodeOutput' }
 );
 
-export type VisualizationEntryFragmentFragment = VisualizationEntryFragment_VisualizationGroup_Fragment | VisualizationEntryFragment_VisualizationNodeOutput_Fragment;
+export type VisualizationEntryFragment = VisualizationEntry_VisualizationGroup_Fragment | VisualizationEntry_VisualizationNodeOutput_Fragment;

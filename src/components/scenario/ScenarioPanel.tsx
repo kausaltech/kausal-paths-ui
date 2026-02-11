@@ -16,8 +16,8 @@ import { useTranslation } from 'next-i18next';
 import { Sliders } from 'react-bootstrap-icons';
 
 import type {
-  GetInstanceGoalOutcomeQuery,
-  GetInstanceGoalOutcomeQueryVariables,
+  InstanceGoalOutcomeQuery,
+  InstanceGoalOutcomeQueryVariables,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -30,10 +30,11 @@ import ScenarioOutcome from './ScenarioOutcome';
 import ScenarioSelector from './ScenarioSelector';
 
 export const GET_INSTANCE_GOAL_OUTCOME = gql`
-  query GetInstanceGoalOutcome($goal: ID!) {
+  query InstanceGoalOutcome($goal: ID!) {
     instance {
       id
       goals(id: $goal) {
+        id
         values {
           year
           goal
@@ -139,14 +140,14 @@ const ScenarioPanel = () => {
   }, [scenarioEditorDrawerOpen]);
 
   // Get the goal outcome for the active goal
-  const { error, data } = useQuery<
-    GetInstanceGoalOutcomeQuery,
-    GetInstanceGoalOutcomeQueryVariables
-  >(GET_INSTANCE_GOAL_OUTCOME, {
-    variables: {
-      goal: activeGoal?.id ?? '',
-    },
-  });
+  const { error, data } = useQuery<InstanceGoalOutcomeQuery, InstanceGoalOutcomeQueryVariables>(
+    GET_INSTANCE_GOAL_OUTCOME,
+    {
+      variables: {
+        goal: activeGoal?.id ?? '',
+      },
+    }
+  );
 
   // if (loading) return <Skeleton variant="text" width={100} height={24} />;
   if (error) return <div>error!</div>;

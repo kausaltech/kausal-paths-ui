@@ -45,7 +45,7 @@ type NodePlotProps = {
   targetYearGoal?: number;
   targetYear?: number;
   filled?: boolean;
-  quantity?: string;
+  quantity?: string | null | undefined;
   compact?: boolean;
 };
 
@@ -363,10 +363,7 @@ const NodePlot = (props: NodePlotProps) => {
 
   return (
     <>
-      <PlotWrapper 
-        $compact={compact}
-        aria-hidden="true"
-      >
+      <PlotWrapper $compact={compact} aria-hidden="true">
         <Plot
           data={plotData}
           layout={layout}

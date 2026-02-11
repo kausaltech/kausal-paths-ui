@@ -4,6 +4,7 @@ import { DimensionalMetric } from '@/data/metric';
 
 const dimensionalNodePlotFragment = gql`
   fragment DimensionalNodeMetric on NodeInterface {
+    id
     metricDim(withScenarios: $scenarios) {
       ...DimensionalMetric
     }

@@ -71,7 +71,7 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
     const newDefault = getDefaultSliceConfig(cube, activeGoal);
     if (!newDefault || isEqual(sliceConfig, newDefault)) return;
     setSliceConfig(newDefault);
-  }, [activeGoal, cube]);
+  }, [activeGoal, cube, sliceConfig]);
 
   const yearData = cube.getSingleYear(endYear, sliceConfig.categories);
 

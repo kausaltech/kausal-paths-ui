@@ -1,11 +1,12 @@
-import { NetworkStatus, gql, useQuery, useReactiveVar } from '@apollo/client';
+import { NetworkStatus, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  GetActionListQuery,
-  GetActionListQueryVariables,
+import {
+  type ActionListQuery,
+  type ActionListQueryVariables,
+  DecisionLevel,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { findActionEnabledParam } from '@/common/preprocess';
@@ -79,6 +80,7 @@ const WidgetWrapper = styled.div`
   }
 `;
 
+/*
 const SET_PARAMETER = gql`
   mutation SetGlobalParameterFromActionSummary(
     $parameterId: ID!
@@ -94,6 +96,7 @@ const SET_PARAMETER = gql`
     ) {
       ok
       parameter {
+        id
         isCustomized
         isCustomizable
         ... on BoolParameterType {
@@ -104,6 +107,7 @@ const SET_PARAMETER = gql`
     }
   }
 `;
+*/
 
 type ActionListCardProps = {
   action: ActionsSummaryAction;
@@ -131,12 +135,12 @@ const ActionListCard = (props: ActionListCardProps) => {
   );
 };
 
-type ActionsSummaryAction = GetActionListQuery['actions'][0];
+type ActionsSummaryAction = ActionListQuery['actions'][0];
 
 const ActionsSummary = () => {
   const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
-  const queryResp = useQuery<GetActionListQuery, GetActionListQueryVariables>(GET_ACTION_LIST, {
+  const queryResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
     variables: {
       goal: activeGoal?.id ?? null,
     },
@@ -159,7 +163,9 @@ const ActionsSummary = () => {
     );
   }
 
-  const actions = (data?.actions ?? []).filter((action) => action.decisionLevel === 'MUNICIPALITY');
+  const actions = (data?.actions ?? []).filter(
+    (action) => action.decisionLevel === DecisionLevel.Municipality
+  );
   const activeActions = actions.filter((action) => {
     const { parameters } = action;
     const enabledParam = parameters.find(

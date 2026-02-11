@@ -105,7 +105,7 @@ const i18nRes = Object.fromEntries(
 );
 
 function initI18n(lang: string) {
-  const errCallback = (err, t) => {
+  const errCallback = (err) => {
     if (err) console.error(err);
   };
   const fallbackLng = i18nConfig.fallbackLng as FallbackLngObjList;

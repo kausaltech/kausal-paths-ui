@@ -1,12 +1,12 @@
 import { gql } from '@apollo/client';
 
-import type { StreamFieldFragmentFragment } from '@/common/__generated__/graphql';
+import type { StreamFieldFragment } from '@/common/__generated__/graphql';
 
 import { CardListBlock } from './CardListBlock';
 import RichText from './RichText';
 
 export const STREAM_FIELD_FRAGMENT = gql`
-  fragment StreamFieldFragment on StreamFieldInterface {
+  fragment StreamField on StreamFieldInterface {
     id
     blockType
     field
@@ -33,7 +33,7 @@ export const STREAM_FIELD_FRAGMENT = gql`
 `;
 
 type Props = {
-  block: StreamFieldFragmentFragment;
+  block: StreamFieldFragment;
 };
 
 export function StreamField({ block }: Props) {
