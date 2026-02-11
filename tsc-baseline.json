@@ -46,18 +46,6 @@
       "count": 1,
       "message": "No overload matches this call."
     },
-    "b51977d1bc5766ea0371bb53977f527dacd9830a": {
-      "file": "src/components/common/GraphQLError.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"errors:network-error\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: any; }] | [key: string | string[], defaultValue: any, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
-    "1484f806f69e92e870e04470aab2e62401c4c6bf": {
-      "file": "src/components/common/GraphQLError.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '[\"show-error\"]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: string; }] | [key: string | string[], defaultValue: string, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
-    },
     "e7147c75e383b0af321d8fb7fea64234dbf6ab47": {
       "file": "src/components/common/NavDropdown.tsx",
       "code": "TS2322",
@@ -177,72 +165,6 @@
       "code": "TS2322",
       "count": 6,
       "message": "Type 'string | undefined' is not assignable to type 'string'."
-    },
-    "ea89aeadcf94e9ffda4f621429a6f6ee1a5697fb": {
-      "file": "src/components/general/BarGraph.tsx",
-      "code": "TS2353",
-      "count": 1,
-      "message": "Object literal may only specify known properties, and 'base' does not exist in type 'Partial<PlotData>'."
-    },
-    "5bef34d5cf050c91d9d0c0a55d123fe9dcc945bc": {
-      "file": "src/components/general/BarGraph.tsx",
-      "code": "TS2353",
-      "count": 1,
-      "message": "Object literal may only specify known properties, and 'meta' does not exist in type 'Partial<PlotData>'."
-    },
-    "f79dfb77c8dcb54c91f396c9de8787f3dcf75b65": {
-      "file": "src/components/general/CausalCard.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'targetYearGoal' does not exist on type '({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; })'."
-    },
-    "da24e7c2ed7660ff8aa2649896ce407066660b89": {
-      "file": "src/components/general/CausalCard.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; })' is not assignable to parameter of type '{ impactMetric: NodeMetric; }'."
-    },
-    "1f91406b13bd414b63e28fded8c43e372599d91d": {
-      "file": "src/components/general/CausalCard.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '({ name: string | null; id: string | null; unit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; historicalValues: ({ year: number; value: number; } & { __typename: \"YearlyValue\"; })[]; forecastValues: ({ ...; } & { ...; })[]; baselineForecastValues: ({ ...; } & { ...; })[] | null; yearlyCumulativeUni...' is not assignable to parameter of type 'NodeMetric'."
-    },
-    "a38b4ba50b094e8b5dace5364004c5b1e72558a9": {
-      "file": "src/components/general/CausalCard.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'string | null' is not assignable to type 'string | undefined'."
-    },
-    "6d1ff041c619096cc30e7fbd34a286722f0e2d2f": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '(({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; }))[]' is not assignable to parameter of type '({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; })'."
-    },
-    "df53029f1716e91bf3afc620394aa347f494c2fa": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; })' is not assignable to parameter of type '{ impactMetric: NodeMetric; }'."
-    },
-    "fa99c0f5aaf731168a1f48c8b7cf15ef7453b6c5": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '({ name: string | null; id: string | null; unit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; historicalValues: ({ year: number; value: number; } & { __typename: \"YearlyValue\"; })[]; forecastValues: ({ ...; } & { ...; })[]; baselineForecastValues: ({ ...; } & { ...; })[] | null; yearlyCumulativeUni...' is not assignable to parameter of type 'NodeMetric'."
-    },
-    "1c67995469c9e6a4b4725bc993dc2a5fb7f444e4": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'map' does not exist on type '({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; })'."
-    },
-    "f5bea15327ceb7a2c037c78ba020033acd8f435b": {
-      "file": "src/components/general/CausalGrid.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'targetYearGoal' does not exist on type '({ id: string; name: string; shortDescription: string | null; color: string | null; order: number | null; quantity: string | null; group: ({ id: string; name: string; color: string | null; } & { ...; }) | null; ... 6 more ...; metric: ({ ...; } & { ...; }) | null; } & { ...; }) | ({ ...; } & { ...; })'."
     },
     "5b6453f07542be6d7bfec4d26b70f9f8cf392d97": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -364,41 +286,11 @@
       "count": 2,
       "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
     },
-    "6f43617dc0023ee8b029d75c9dbe9af60b63ed7e": {
-      "file": "src/components/pages/ActionListPage.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'impactValues' does not exist on type '{ unitAdjustmentMultiplier: number | null; action: { id: string; group: ({ id: string; name: string; color: string | null; } & { __typename: \"ActionGroupType\"; }) | null; } & { __typename: \"ActionNode\"; }; } & { ...; }'."
-    },
-    "12ae3f079548ec15c44a7159d1ec652332ea5943": {
-      "file": "src/components/pages/ActionListPage.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'costValues' does not exist on type '{ unitAdjustmentMultiplier: number | null; action: { id: string; group: ({ id: string; name: string; color: string | null; } & { __typename: \"ActionGroupType\"; }) | null; } & { __typename: \"ActionNode\"; }; } & { ...; }'."
-    },
-    "a08752db7d8d5060835d92e98d05f5e0b88adaee": {
-      "file": "src/components/pages/ActionListPage.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'invertImpact' does not exist on type '{ id: string; label: string; plotLimitForIndicator: number | null; indicatorUnit: { htmlShort: string; } & { __typename: \"UnitType\"; }; costUnit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; effectUnit: ({ ...; } & { ...; }) | null; costNode: ({ ...; } & { ...; }) | null; effectNode: { ...; } & { ....'."
-    },
-    "c194b51408f9d380646d403bba8cee0b026a0f57": {
-      "file": "src/components/pages/ActionListPage.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type '{ children: Element[]; title: string; leadTitle: string | undefined; leadDescription: string | undefined; }' is not assignable to type 'IntrinsicAttributes & PageHeroProps'."
-    },
     "206816150b003a0388def0ce44f1a17572e94da6": {
       "file": "src/components/pages/StaticPage.tsx",
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ children: Element; title: string; }' is not assignable to type 'IntrinsicAttributes & PageHeroProps'."
-    },
-    "0ffca2d6c30523720b83a07e15a250dc85c225df": {
-      "file": "src/middleware/lru-cache.ts",
-      "code": "TS2554",
-      "count": 1,
-      "message": "Expected 1 arguments, but got 3."
     },
     "a4057799a97d6f94bd0a33586c727a65ab228a53": {
       "file": "src/pages/api/graphql.ts",
