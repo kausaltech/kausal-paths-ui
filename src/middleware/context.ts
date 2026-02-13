@@ -15,6 +15,7 @@ import { createSentryLink, logOperationLink } from '@common/apollo/links';
 import { getPathsGraphQLUrl } from '@common/env';
 import { envToBool } from '@common/env/utils';
 import { getClientIP } from '@common/utils';
+import LRUCache from '@common/utils/lru-cache';
 
 import type {
   AvailableInstanceFragment,
@@ -22,8 +23,6 @@ import type {
   AvailableInstancesQueryVariables,
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
-
-import LRUCache from './lru-cache';
 
 const GET_AVAILABLE_INSTANCES = gql`
   query AvailableInstances($hostname: String!) {
