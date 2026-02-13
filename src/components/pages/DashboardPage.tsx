@@ -6,7 +6,7 @@ import {
   type DashboardCardVisualizationsFragment,
   type MetricDimensionCategoryValueFieldsFragment as DimensionCategory,
   DimensionKind,
-  type GetPageQuery,
+  type PageQuery,
   type ScenarioActionImpactsFieldsFragment,
   type ScenarioValueFieldsFragment,
 } from '@/common/__generated__/graphql';
@@ -235,7 +235,7 @@ function DashboardVisualization({
 }
 
 type Props = {
-  page: GetPageQuery['page'];
+  page: PageQuery['page'];
 };
 
 function DashboardPage({ page }: Props) {

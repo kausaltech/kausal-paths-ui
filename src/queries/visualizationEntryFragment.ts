@@ -3,7 +3,7 @@ import { gql } from '@apollo/client';
 import { DimensionalMetric } from '@/data/metric';
 
 const visualizationEntryFragment = gql`
-  fragment VisualizationEntryFragment on VisualizationEntry {
+  fragment VisualizationEntry on VisualizationEntry {
     id
     label
     ... on VisualizationNodeOutput {

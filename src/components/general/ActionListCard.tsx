@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { useTranslation } from 'next-i18next';
 
+import { DecisionLevel } from '@/common/__generated__/graphql';
 import { ActionLink } from '@/common/links';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import Badge from '@/components/common/Badge';
@@ -37,10 +38,6 @@ const CardHeader = styled.div`
 
 const ActionCategory = styled.div`
   margin-bottom: 0.5rem;
-`;
-
-const TextContent = styled.div`
-  margin: 1rem 0;
 `;
 
 const CardContent = styled.div`
@@ -87,13 +84,13 @@ const StyledActionTitle = styled.h5`
 
 type ActionListCardProps = {
   action: ActionWithEfficiency;
-  displayType: string;
+  displayType?: string;
   displayYears: [number, number];
   refetching: boolean;
 };
 
 const ActionListCard = (props: ActionListCardProps) => {
-  const { action, displayType, displayYears, refetching } = props;
+  const { action, displayYears, refetching } = props;
   const { t } = useTranslation();
 
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
@@ -139,7 +136,7 @@ const ActionListCard = (props: ActionListCardProps) => {
           </StyledActionLink>
         </ActionLink>
         <ActionCategory>
-          {action.decisionLevel === 'NATION' && (
+          {action.decisionLevel === DecisionLevel.Nation && (
             <Badge color="neutralLight">{t('decision-national')}</Badge>
           )}
         </ActionCategory>

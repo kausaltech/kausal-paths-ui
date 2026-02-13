@@ -15,7 +15,6 @@ const FullScreenLayout = ({ children }: React.PropsWithChildren) => {
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content={site.title} />
       </Head>
-      {/* <CombinedIconSymbols /> */}
 
       {/* Persistent drawer for desktop */}
       <main className="main" id="main">

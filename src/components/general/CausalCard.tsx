@@ -150,9 +150,10 @@ type CausalCardProps = {
   compact: boolean;
 };
 
-const NodeIcon = (props) => {
+const NodeIcon = (props: { node: CausalGridNode }) => {
   const { node } = props;
-  const nodeType = node.isAction ? 'action' : node.quantity;
+  const isActionNode = node.__typename === 'ActionNode';
+  const nodeType = isActionNode ? 'action' : node.quantity;
 
   switch (nodeType) {
     case 'emission_factor':
@@ -188,14 +189,19 @@ const NodeIcon = (props) => {
 
 const CausalCard = (props: CausalCardProps) => {
   const { node, startYear, endYear, noEffect, compact } = props;
-  const { targetYearGoal } = node;
+  const { goals } = node;
+
+  // TODO: Maybe not use endyear here, find out goal year from plan maybe?
+  const targetYearGoal = goals?.find((goal) => goal.year === endYear)?.value;
   const { maxYear } = useSite();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const impactAtTargetYear = getImpactMetricValue(node, endYear);
+  const impactAtTargetYear = node.impactMetric
+    ? getImpactMetricValue({ impactMetric: node.impactMetric }, endYear)
+    : 0;
   // TODO: use isACtivity when available, for now cumulate impact on emissions
   const cumulativeImpact =
-    node.quantity === 'emissions'
+    node.quantity === 'emissions' && node.impactMetric
       ? summarizeYearlyValuesBetween(node.impactMetric, startYear, endYear)
       : undefined;
 
@@ -238,7 +244,7 @@ const CausalCard = (props: CausalCardProps) => {
                   startYear={startYear}
                   endYear={endYear}
                   color={node.color}
-                  isAction={node.isAction}
+                  isAction={node.__typename === 'ActionNode'}
                   targetYearGoal={targetYearGoal}
                   targetYear={maxYear}
                   quantity={node.quantity}

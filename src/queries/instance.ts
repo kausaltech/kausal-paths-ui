@@ -3,7 +3,7 @@ import { gql } from '@apollo/client';
 import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
 
 export const scenarioFragment = gql`
-  fragment ScenarioFragment on ScenarioType {
+  fragment Scenario on ScenarioType {
     id
     isActive
     isDefault
@@ -14,7 +14,7 @@ export const scenarioFragment = gql`
 `;
 
 const GET_INSTANCE_CONTEXT = gql`
-  query GetInstanceContext {
+  query InstanceContext {
     instance {
       id
       name
@@ -38,6 +38,7 @@ const GET_INSTANCE_CONTEXT = gql`
         showRefreshPrompt
       }
       introContent {
+        id
         ... on StreamFieldInterface {
           ... on RichTextBlock {
             field
@@ -60,11 +61,12 @@ const GET_INSTANCE_CONTEXT = gql`
         }
       }
       actionListPage {
+        id
         showInMenus
       }
     }
     scenarios {
-      ...ScenarioFragment
+      ...Scenario
     }
     availableNormalizations {
       id

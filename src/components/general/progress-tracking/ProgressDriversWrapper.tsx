@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
 import { Fade } from 'reactstrap';
 
-import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
+import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import GraphQLError from '@/components/common/GraphQLError';
 import { useSiteWithSetter } from '@/context/site';
@@ -52,7 +52,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
   const { t } = useTranslation();
   const [siteContext, setSiteContext] = useSiteWithSetter();
 
-  const { loading, error, data } = useQuery<GetNodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
+  const { loading, error, data } = useQuery<NodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
     variables: { nodeId, scenarios: ['default', 'progress_tracking'] },
     notifyOnNetworkStatusChange: true,
   });
@@ -139,7 +139,8 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                                 ? `${child.label} ${
                                     child.metricDim.unit.short
                                       ? /* TODO: Remove this translation when the backend label is updated */
-                                        `(${t(child.metricDim.unit.short as any)})`
+                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+                                        `(${String(t(child.metricDim.unit.short as any))})`
                                       : ''
                                   }`
                                 : undefined

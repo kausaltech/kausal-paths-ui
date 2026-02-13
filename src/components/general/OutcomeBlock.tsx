@@ -8,9 +8,9 @@ import type { ParsedUrlQuery } from 'querystring';
 import { useTranslation } from 'react-i18next';
 
 import type {
-  GetOutcomeNodeQuery,
   OutcomeNodeFieldsFragment,
-  ScenarioFragmentFragment,
+  OutcomeNodeQuery,
+  ScenarioFragment,
 } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 
@@ -59,8 +59,8 @@ const findVisibleNodes = (
 };
 
 type OutcomeBlockProps = {
-  outcomeNode: GetOutcomeNodeQuery['node'] | null | undefined;
-  activeScenario: ScenarioFragmentFragment | null;
+  outcomeNode: OutcomeNodeQuery['node'] | null | undefined;
+  activeScenario: ScenarioFragment | null;
   loading: boolean;
 };
 

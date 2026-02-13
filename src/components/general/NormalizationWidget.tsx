@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { startInteraction } from '@common/sentry/helpers';
 
 import type {
-  GetParametersQuery,
+  ParametersQuery,
   SetNormalizationFromWidgetMutation,
   SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
@@ -32,7 +32,7 @@ export const SET_NORMALIZATION_MUTATION = gql`
 function NormalizationWidget() {
   const { t } = useTranslation();
 
-  const { loading, error, data, previousData, networkStatus } = useQuery<GetParametersQuery>(
+  const { loading, error, data, previousData, networkStatus } = useQuery<ParametersQuery>(
     GET_PARAMETERS,
     {
       notifyOnNetworkStatusChange: true,

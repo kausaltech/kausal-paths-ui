@@ -12,12 +12,12 @@ type GraphQLErrorProps = {
 
 const GraphQLError = (props: GraphQLErrorProps) => {
   const { error } = props;
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'errors']);
   let errorDetailMsg: string | null = null;
 
   Sentry.captureException(error);
   if (error.networkError) {
-    errorDetailMsg = `${t('errors:network-error')}: ${error.networkError.toString()}`;
+    errorDetailMsg = `${String(t('errors:network-error'))}: ${String(error.networkError)}`;
   }
 
   return (

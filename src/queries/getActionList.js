@@ -3,7 +3,7 @@ import { gql } from '@apollo/client';
 import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
 
 const GET_ACTION_LIST = gql`
-  query GetActionList($goal: ID) {
+  query ActionList($goal: ID) {
     instance {
       id
       actionGroups {
@@ -99,10 +99,12 @@ const GET_ACTION_LIST = gql`
           }
         }
         unitAdjustmentMultiplier
+        # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: migrate to new properties
         costValues {
           value
           year
         }
+        # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: migrate to new properties
         impactValues {
           value
           year

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
@@ -61,27 +61,28 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
   }, []);
 
   return (
-    <Box 
-      id="scenario-editor" 
-      role="dialog" 
-      aria-modal="true" 
+    <Box
+      id="scenario-editor"
+      role="dialog"
+      aria-modal="true"
       aria-labelledby="scenario-editor-title"
-      >
+    >
       <DrawerHeader>
-        <Typography 
-          id="scenario-editor-title" 
-          ref={titleRef} 
-          variant="h4" 
-          component="h2" 
-          sx={{ m: 1, lineHeight: 1 }} 
+        <Typography
+          id="scenario-editor-title"
+          ref={titleRef}
+          variant="h4"
+          component="h2"
+          sx={{ m: 1, lineHeight: 1 }}
           tabIndex={-1}
         >
           {t('edit-scenario')}
         </Typography>
-        <IconButton 
-          onClick={handleDrawerClose} 
+        <IconButton
+          onClick={handleDrawerClose}
           size="small"
-          aria-label={t('close-scenario-editor')}>
+          aria-label={t('close-scenario-editor')}
+        >
           <XLg aria-hidden="true" focusable="false" />
         </IconButton>
       </DrawerHeader>

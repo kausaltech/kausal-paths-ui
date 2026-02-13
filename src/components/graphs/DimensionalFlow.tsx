@@ -80,8 +80,7 @@ function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<str
     src: number,
     dest: number,
     val: number | null,
-    color: string | undefined,
-    custom: any
+    color: string | undefined
   ) {
     data.link.source.push(src);
     data.link.target.push(dest);
@@ -94,7 +93,7 @@ function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<str
     const src = nodeMap.get(srcId)!;
     const target = nodeMap.get(link.targets[idx])!;
     const value = link.values[idx];
-    newFlow('action', src.idx, target.idx, value, src.linkColor, {});
+    newFlow('action', src.idx, target.idx, value, src.linkColor);
   });
 
   const impactSum = new Map<string, number>();
@@ -120,18 +119,11 @@ function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<str
 
     const impact = impactSum.get(srcId)!;
     const remainingLinkColor = src.linkColor ? tint(0.5, src.linkColor) : undefined;
-    newFlow('start-remaining', startIdx, src.idx, remainingVal, remainingLinkColor, {});
-    newFlow('start-impact', startIdx, src.idx, impact, src.linkColor, {});
-    newFlow(
-      'start-other',
-      startIdx,
-      src.idx,
-      startVal - impact - remainingVal,
-      remainingLinkColor,
-      {}
-    );
+    newFlow('start-remaining', startIdx, src.idx, remainingVal, remainingLinkColor);
+    newFlow('start-impact', startIdx, src.idx, impact, src.linkColor);
+    newFlow('start-other', startIdx, src.idx, startVal - impact - remainingVal, remainingLinkColor);
 
-    newFlow('action-remaining', src.idx, remainingIdx, remainingVal, remainingLinkColor, {});
+    newFlow('action-remaining', src.idx, remainingIdx, remainingVal, remainingLinkColor);
   });
 
   return data;
@@ -144,7 +136,7 @@ const BasicPlot = dynamic(() => import('@/components/graphs/Plot').then((mod) =>
 export default function DimensionalFlow(props: DimensionalPlotProps) {
   const { flow } = props;
   const theme = useTheme();
-  const [startYear, endYear] = useReactiveVar(yearRangeVar);
+  const [_startYear, endYear] = useReactiveVar(yearRangeVar);
 
   useEffect(() => {
     console.log('flow changed');
@@ -169,7 +161,7 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
     const start = flow.links[0];
     const current = flow.links.find((link) => link.year == year)!;
     return [makeFrame(flow, start, current, nodeMap)];
-  }, [flow, endYear]);
+  }, [flow, endYear, theme]);
 
   const layout = useMemo(() => {
     const out: Partial<Plotly.Layout> = {

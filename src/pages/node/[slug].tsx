@@ -10,7 +10,7 @@ import { useTranslation } from 'next-i18next';
 
 import { logApolloError } from '@common/logging/apollo';
 
-import type { GetNodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import type { NodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
@@ -71,19 +71,17 @@ const BodyText = styled.div`
 `;
 
 const GET_NODE_PAGE_CONTENT = gql`
-  query GetNodePage($node: ID!, $scenarios: [String!]) {
+  query NodePage($node: ID!, $scenarios: [String!]) {
     node(id: $node) {
       id
       name
       shortDescription
       description
       color
-      targetYearGoal
       unit {
         htmlShort
       }
       quantity
-      isAction
       inputNodes {
         id
         name
@@ -93,7 +91,6 @@ const GET_NODE_PAGE_CONTENT = gql`
           htmlShort
         }
         quantity
-        isAction
       }
       outputNodes {
         id
@@ -104,7 +101,6 @@ const GET_NODE_PAGE_CONTENT = gql`
           htmlShort
         }
         quantity
-        isAction
       }
       ...DimensionalNodeMetric
     }
@@ -119,7 +115,7 @@ export default function NodePage() {
   const { slug } = router.query;
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery<GetNodePageQuery>(GET_NODE_PAGE_CONTENT, {
+  const { loading, error, data, refetch } = useQuery<NodePageQuery>(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
       scenarios: null,
@@ -164,7 +160,7 @@ export default function NodePage() {
           <PageHeader>
             <ScenarioPanel />
             <HeaderCard>
-              <div>{node.isAction && <span>{t('action')}</span>}</div>
+              <div>{node.__typename === 'ActionNode' && <span>{t('action')}</span>}</div>
               <h1>{node.name}</h1>
               {node.shortDescription && (
                 <NodeDescription>
@@ -172,7 +168,7 @@ export default function NodePage() {
                 </NodeDescription>
               )}
               <div>
-                {node.isAction && (
+                {node.__typename === 'ActionNode' && (
                   <ActionLink action={node}>
                     <a>
                       {t('action-impact')} <Icon name="arrowRight" />

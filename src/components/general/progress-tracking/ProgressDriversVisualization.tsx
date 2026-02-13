@@ -13,7 +13,7 @@ import { useTranslation } from 'next-i18next';
 
 import { Chart } from '@common/components/Chart';
 
-import { DesiredOutcome, type GetNodeVisualizationsQuery } from '@/common/__generated__/graphql';
+import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { useSiteWithSetter } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
@@ -86,7 +86,7 @@ const StyledChartTitle = styled.h4`
 `;
 
 type Props = {
-  metric: NonNullable<NonNullable<GetNodeVisualizationsQuery['node']>['metricDim']>;
+  metric: NonNullable<NonNullable<NodeVisualizationsQuery['node']>['metricDim']>;
   desiredOutcome: DesiredOutcome;
   title?: string;
   /** Show progress tracker values as observed rather than calculated */
@@ -341,7 +341,9 @@ export function ProgressDriversVisualization({
             return '';
           }
 
-          const year = params[0].axisValue;
+          const year = (
+            params[0] as DefaultLabelFormatterCallbackParams & { axisValue?: string | number }
+          ).axisValue;
           const noDataColor = theme.graphColors.red030 || '#ef9a9a';
           const noDataText = t('no-data-reported');
           const items = params.map((param) => {

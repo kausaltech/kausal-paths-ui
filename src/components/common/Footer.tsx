@@ -5,9 +5,10 @@ import { Container } from '@mui/material';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 
+import { getThemeStaticURL } from '@common/themes/theme';
+
 import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
-import { getThemeStaticURL } from '@/common/theme';
 import { useSite } from '@/context/site';
 
 import Icon from './icon';

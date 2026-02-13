@@ -1,8 +1,8 @@
 import { type FullConfig } from '@playwright/test';
 
-import { displayConfiguration } from './common/context';
+import { displayConfiguration } from '@/common/context.js';
 
-async function globalSetup(config: FullConfig) {
+function globalSetup(_config: FullConfig) {
   displayConfiguration();
 }
 

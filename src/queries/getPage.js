@@ -2,13 +2,7 @@ import { gql } from '@apollo/client';
 
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 
-const UNIT_FRAGMENT = gql`
-  fragment UnitFields on UnitType {
-    short
-    htmlShort
-    htmlLong
-  }
-`;
+import { UNIT_FRAGMENT } from './fragments';
 
 const DASHBOARD_PAGE_FRAGMENT = gql`
   fragment ScenarioActionImpactsFields on ScenarioActionImpacts {
@@ -34,6 +28,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
   }
 
   fragment DashboardCardVisualizations on DashboardCardBlock {
+    id
     visualizations {
       __typename
       id
@@ -104,14 +99,17 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
   }
 
   fragment DashboardPageFields on DashboardPage {
+    id
     introTitle: leadTitle
     introParagraph: leadParagraph
     backgroundColor
     dashboardCards {
+      id
       ... on DashboardCardBlock {
         title
         description
         image {
+          id
           url
         }
         node {
@@ -140,6 +138,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
 
         ...DashboardCardVisualizations
 
+        # eslint-disable-next-line @graphql-eslint/require-selections
         callToAction {
           ... on CallToActionBlock {
             title
@@ -156,7 +155,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
 
 const GET_PAGE = gql`
   ${DASHBOARD_PAGE_FRAGMENT}
-  query GetPage($path: String!) {
+  query Page($path: String!) {
     activeScenario {
       id
     }
@@ -182,7 +181,7 @@ const GET_PAGE = gql`
       }
       ... on StaticPage {
         body {
-          ...StreamFieldFragment
+          ...StreamField
         }
       }
     }

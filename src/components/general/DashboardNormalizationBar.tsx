@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { SettingsToggleBar } from '@common/components/SettingsToggleBar';
 
 import type {
-  GetParametersQuery,
+  ParametersQuery,
   SetNormalizationFromWidgetMutation,
   SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
@@ -22,7 +22,7 @@ import { GET_PARAMETERS } from '@/queries/getParameters';
 function DashboardNormalizationBar() {
   const { t } = useTranslation();
 
-  const { loading, data, previousData } = useQuery<GetParametersQuery>(GET_PARAMETERS, {
+  const { loading, data, previousData } = useQuery<ParametersQuery>(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
   });
 

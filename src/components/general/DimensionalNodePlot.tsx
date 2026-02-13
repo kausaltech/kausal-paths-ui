@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import { useTranslation } from 'next-i18next';
 import type { LayoutAxis } from 'plotly.js';
 import { tint } from 'polished';

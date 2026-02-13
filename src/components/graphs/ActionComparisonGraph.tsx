@@ -50,26 +50,35 @@ const HoverValueValue = styled.span`
 
 const HoverValueUnit = styled.span``;
 
-const formatNumber = (value, language) => {
+const formatNumber = (value: number, language: string) => {
   return parseFloat(Number(value).toPrecision(3)).toLocaleString(language);
 };
 
-function ActionComparisonGraph(props) {
+type ActionComparisonData = {
+  actions: string[];
+  impact: number[];
+  colors: (string | null | undefined)[];
+  groups: (string | undefined)[];
+};
+
+type ActionComparisonGraphProps = {
+  data: ActionComparisonData;
+  effectUnit: string | undefined;
+  impactName: string;
+  actionIds: string[];
+  actionGroups: { id: string; name: string }[];
+};
+
+function ActionComparisonGraph(props: ActionComparisonGraphProps) {
   const { data, effectUnit, impactName, actionIds, actionGroups } = props;
   const theme = useTheme();
   const { t, i18n } = useTranslation();
 
-  const [hoverId, setHoverId] = useState(null);
+  const [hoverId, setHoverId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Update the document title using the browser API
     setHoverId(null);
   }, [data]);
-
-  // console.log("mac props", props);
-  // TODO: Add sorting of data here
-
-  if (data.actions?.length < 1) return <div />;
 
   const layout = useMemo(
     () => ({
@@ -107,16 +116,12 @@ function ActionComparisonGraph(props) {
       paper_bgcolor: theme.themeColors.white,
       plot_bgcolor: theme.themeColors.white,
     }),
-    [theme, effectUnit, impactName]
+    [theme, effectUnit, impactName, t]
   );
 
   const handleHover = useCallback(
-    (evt) => {
-      // console.log("HOVERED", evt);
+    (evt: { points: { pointIndex: number }[] }) => {
       const hoveredIndex = evt.points[0].pointIndex;
-      //const hoverColors = data.colors;
-      //hoverColors[hoveredIndex] = "#333";
-      //setBarColors(hoverColors);
       setHoverId(hoveredIndex);
       return null;
     },
@@ -129,9 +134,9 @@ function ActionComparisonGraph(props) {
         data={[
           {
             type: 'bar',
-            x: data['actions'],
-            y: data['impact'],
-            text: data['actions'],
+            x: data.actions,
+            y: data.impact,
+            text: data.actions,
             name: impactName,
             marker: {
               color: data.colors,
@@ -142,7 +147,7 @@ function ActionComparisonGraph(props) {
               },
             },
             textposition: 'none',
-            customdata: data['impact'],
+            customdata: data.impact,
             hovertemplate: `%{y:.3r} ${effectUnit}`,
           },
         ]}
@@ -153,16 +158,18 @@ function ActionComparisonGraph(props) {
         onHover={(evt) => handleHover(evt)}
       />
     ),
-    [data, theme, layout, handleHover]
+    [data, theme, layout, handleHover, effectUnit, impactName]
   );
+
+  if (data.actions?.length < 1) return null;
 
   return (
     <GraphContainer>
       {plot}
       {hoverId !== null && (
-        <ActionDescription color={data.colors[hoverId]}>
+        <ActionDescription color={data.colors[hoverId] ?? undefined}>
           <a href={`/actions/${actionIds[hoverId]}/`}>
-            <HoverGroupTag color={data.colors[hoverId]}>
+            <HoverGroupTag color={data.colors[hoverId] ?? undefined}>
               {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>
@@ -176,7 +183,7 @@ function ActionComparisonGraph(props) {
                 <HoverValueValue>
                   {formatNumber(data.impact[hoverId], i18n.language)}
                 </HoverValueValue>
-                <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
+                <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit ?? '' }} />
               </HoverValue>
             </Grid>
             <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }} />

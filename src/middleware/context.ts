@@ -15,18 +15,17 @@ import { createSentryLink, logOperationLink } from '@common/apollo/links';
 import { getPathsGraphQLUrl } from '@common/env';
 import { envToBool } from '@common/env/utils';
 import { getClientIP } from '@common/utils';
+import LRUCache from '@common/utils/lru-cache';
 
 import type {
   AvailableInstanceFragment,
-  GetAvailableInstancesQuery,
-  GetAvailableInstancesQueryVariables,
+  AvailableInstancesQuery,
+  AvailableInstancesQueryVariables,
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
 
-import LRUCache from './lru-cache';
-
 const GET_AVAILABLE_INSTANCES = gql`
-  query GetAvailableInstances($hostname: String!) {
+  query AvailableInstances($hostname: String!) {
     availableInstances(hostname: $hostname) {
       ...AvailableInstance
     }
@@ -93,7 +92,7 @@ function createApolloClient(req: NextRequest, logger: Logger) {
 }
 
 async function queryInstances(client: ApolloClientType, hostname: string, logger: Logger) {
-  const resp = await client.query<GetAvailableInstancesQuery, GetAvailableInstancesQueryVariables>({
+  const resp = await client.query<AvailableInstancesQuery, AvailableInstancesQueryVariables>({
     query: GET_AVAILABLE_INSTANCES,
     variables: {
       hostname: hostname,

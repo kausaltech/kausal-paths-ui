@@ -15,7 +15,7 @@ import { startInteraction } from '@common/sentry/helpers';
 import type {
   ActivateScenarioMutation,
   ActivateScenarioMutationVariables,
-  GetScenariosQuery,
+  ScenariosQuery,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
@@ -88,7 +88,7 @@ const ScenarioSelector = () => {
   const selectId = 'scenario-select';
   const labelId = 'scenario-select-label';
 
-  const { loading, error, data, previousData } = useQuery<GetScenariosQuery>(GET_SCENARIOS, {
+  const { loading, error, data, previousData } = useQuery<ScenariosQuery>(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
     context: {
@@ -121,13 +121,13 @@ const ScenarioSelector = () => {
         <StyledInputLabel id={labelId} htmlFor={selectId}>
           {t('plot-scenario')}
         </StyledInputLabel>
-        <StyledSelect 
-          value={t('loading')} 
+        <StyledSelect
+          value={t('loading')}
           id={selectId}
           labelId={labelId}
           name="scenario"
-          $custom={false} 
-          >
+          $custom={false}
+        >
           <MenuItem disabled value={t('loading')}>
             <span>
               <CircularProgress size={16} />

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+// Plotly doesnt type well, let's disable the linting for this file until it's properly deprecated
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useTranslation } from 'next-i18next';
@@ -24,15 +26,13 @@ type PlotProps = PlotParams & {
 };
 
 const Plot = (props: PlotProps) => {
-  const { data } = props;
-  const config: NonNullable<PlotParams['config']> = props.config || {};
-  const layout = props.layout || {};
-  let separators;
+  const { data, noValidate, config: configProp, layout: layoutProp, ...rest } = props;
+  const layout = layoutProp || {};
   const { i18n } = useTranslation();
   const lang = i18n.language;
 
-  config.locales = locales;
-  config.locale = lang;
+  let locale = lang;
+  let separators: string;
 
   switch (lang) {
     case 'fi':
@@ -43,11 +43,11 @@ const Plot = (props: PlotProps) => {
       separators = ', ';
       break;
     case 'de':
-      config.locale = 'de';
+      locale = 'de';
       separators = ',.';
       break;
     case 'de-CH':
-      config.locale = 'de-CH';
+      locale = 'de-CH';
       separators = ".'";
       break;
     case 'da':
@@ -55,7 +55,7 @@ const Plot = (props: PlotProps) => {
       separators = ',.';
       break;
     case 'es-US':
-      config.locale = 'es-US';
+      locale = 'es-US';
       separators = '.,';
       break;
     case 'en':
@@ -64,17 +64,16 @@ const Plot = (props: PlotProps) => {
       break;
   }
 
-  config.responsive = true;
-  if (!props.noValidate) {
-    // @ts-ignore
+  const config = { ...configProp, locales, locale, responsive: true };
+
+  if (!noValidate) {
     const ret = Plotly.validate(data, layout);
     if (ret && ret.length) {
       console.warn('Plotly validation returned errors');
       console.log(ret);
     }
   }
-  props = { ...props, config, layout: { ...layout, separators } };
-  return <PlotlyPlot {...props} />;
+  return <PlotlyPlot data={data} {...rest} config={config} layout={{ ...layout, separators }} />;
 };
 
 type UsePlotlyArgs = {
@@ -88,7 +87,6 @@ export function usePlotlyBasic({ data, layout, config, noValidate }: UsePlotlyAr
   const ref = useRef<HTMLDivElement>(null);
 
   if (!noValidate) {
-    // @ts-ignore
     const ret = Plotly.validate(data, layout);
     if (ret && ret.length) {
       console.warn('Plotly validation errors:');

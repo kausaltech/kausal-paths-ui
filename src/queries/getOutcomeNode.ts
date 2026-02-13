@@ -1,14 +1,7 @@
 import { gql } from '@apollo/client';
 
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
-
-const UNIT_FRAGMENT = gql`
-  fragment UnitFields on UnitType {
-    short
-    htmlShort
-    htmlLong
-  }
-`;
+import { UNIT_FRAGMENT } from './fragments';
 
 const OUTCOME_NODE_FIELDS = gql`
   fragment OutcomeNodeFields on Node {
@@ -37,7 +30,6 @@ const OUTCOME_NODE_FIELDS = gql`
         value
       }
     }
-    targetYearGoal
     goals(activeGoal: $goal) {
       year
       value
@@ -46,7 +38,6 @@ const OUTCOME_NODE_FIELDS = gql`
       ...UnitFields
     }
     quantity
-    shortDescription
     inputNodes {
       id
       name
@@ -87,7 +78,7 @@ const OUTCOME_NODE_FIELDS = gql`
 
 const GET_OUTCOME_NODE = gql`
   ${OUTCOME_NODE_FIELDS}
-  query GetOutcomeNode($id: ID!, $goal: ID, $scenarios: [String!]) {
+  query OutcomeNode($id: ID!, $goal: ID, $scenarios: [String!]) {
     node(id: $id) {
       ...OutcomeNodeFields
       upstreamNodes(sameQuantity: true, sameUnit: true, includeActions: false) {

@@ -10,10 +10,10 @@ import { Container, Grid } from '@mui/material';
 import { useTranslation } from 'next-i18next';
 
 import type {
-  GetActionContentQuery,
-  GetActionContentQueryVariables,
-  GetCausalChainQuery,
-  GetCausalChainQueryVariables,
+  ActionContentQuery,
+  ActionContentQueryVariables,
+  CausalChainQuery,
+  CausalChainQueryVariables,
 } from '@/common/__generated__/graphql';
 import { DecisionLevel } from '@/common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
@@ -139,22 +139,19 @@ export default function ActionPage() {
   const [activeDownstreamNode, setActiveDownstreamNode] = useState<string | undefined>(undefined);
   const theme = useTheme();
 
-  const queryResp = useQuery<GetActionContentQuery, GetActionContentQueryVariables>(
-    GET_ACTION_CONTENT,
-    {
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        node: slug as string,
-        goal: activeGoal?.id ?? null,
-        downstreamDepth: theme.settings.hideActionGrid ? 1 : null,
-      },
-    }
-  );
+  const queryResp = useQuery<ActionContentQuery, ActionContentQueryVariables>(GET_ACTION_CONTENT, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      node: slug as string,
+      goal: activeGoal?.id ?? null,
+      downstreamDepth: theme.settings.hideActionGrid ? 1 : null,
+    },
+  });
 
   // Fetch the full causal chain only upon clicking the expand grid button
   const [getCausalChain, causalChainResp] = useLazyQuery<
-    GetCausalChainQuery,
-    GetCausalChainQueryVariables
+    CausalChainQuery,
+    CausalChainQueryVariables
   >(GET_CAUSAL_CHAIN);
 
   const { loading, error, previousData, refetch } = queryResp;
@@ -219,7 +216,6 @@ export default function ActionPage() {
             endYear={yearRange[1]}
             color={action.color}
             isAction={action.__typename === 'ActionNode'}
-            targetYearGoal={action.targetYearGoal ?? undefined}
           />
         </>
       )

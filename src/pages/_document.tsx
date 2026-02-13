@@ -14,8 +14,7 @@ import {
 } from '@mui/material-nextjs/v14-pagesRouter';
 
 import { getEnvScriptContents } from '@common/env/script-component';
-
-import { getThemeStaticURL } from '@/common/theme';
+import { getThemeStaticURL } from '@common/themes/theme';
 
 import type { PathsAppProps } from './_app';
 

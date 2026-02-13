@@ -33,6 +33,7 @@
   "impact-total": "Totalt",
   "loading": "Laddar",
   "nav-footer": "Sidfot",
+  "negative": "negativ",
   "plot-action-impact": "Åtgärd påverkan",
   "plot-actualized": "Aktualiserad",
   "plot-baseline": "Baseline",
@@ -95,7 +96,7 @@
   "error-occurred": "Fel inträffade",
   "page-not-found": "Sidan hittas inte",
   "error-with-code": "Felkod {{code}}",
-  "show-error": "Visa fel\"",
+  "show-error": "Visa fel",
   "watch": {
     "espoo": "Esbo klimatvakt"
   },

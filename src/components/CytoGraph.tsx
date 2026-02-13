@@ -1,11 +1,10 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return*/
+// Ignore linting for this file, this component can be deprecated soon and the code is not worth fixing at this point
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useRouter } from 'next/router';
+
+import styled from '@emotion/styled';
 import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,
@@ -13,24 +12,17 @@ import Cytoscape, {
 } from 'cytoscape';
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
-import { useRouter } from 'next/router';
-// @ts-ignore
 //import pdfExport from 'cytoscape-pdf-export';
 import { readableColor } from 'polished';
-import {
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  UncontrolledDropdown,
-} from 'reactstrap';
+import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
-import type { GetCytoscapeNodesQuery } from '@/common/__generated__/graphql';
+import { sanitizeHtmlUnit } from '@common/utils/format';
+
+import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
-import { sanitizeHtmlUnit } from '@/common/preprocess';
-import styled from '@emotion/styled';
 
-import Icon from './common/icon';
 import SelectDropdown from './common/SelectDropdown';
+import Icon from './common/icon';
 
 const GraphContainer = styled.div`
   background-color: ${(props) => props.theme.graphColors.grey005};
@@ -49,7 +41,7 @@ const Toolbar = styled.div`
 
 Cytoscape.use(dagre);
 Cytoscape.use(elk);
-function getBackgroundColor(node: GetCytoscapeNodesQuery['nodes'][0]) {
+function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {
   const nodeColors = {
     action: '#0A5E43',
     emissions: '#682901',
@@ -122,7 +114,7 @@ function NodeSelector(props: NodeSelectorProps) {
     id: node.id,
     label: node.name,
   }));
-  const { t } = useTranslation();
+
   return (
     <SelectDropdown
       id="dimension"
@@ -173,16 +165,16 @@ const DownloadSelector = (props: {
         {` ${t('download-data')}`}
       </DropdownToggle>
       <DropdownMenu>
-        <DropdownItem onClick={(e) => handleExport('jpg')}>
+        <DropdownItem onClick={() => handleExport('jpg')}>
           <Icon name="file" /> JPG
         </DropdownItem>
-        <DropdownItem onClick={(e) => handleExport('png')}>
+        <DropdownItem onClick={() => handleExport('png')}>
           <Icon name="file" /> PNG
         </DropdownItem>
-        <DropdownItem onClick={(e) => handleExport('json')}>
+        <DropdownItem onClick={() => handleExport('json')}>
           <Icon name="file" /> JSON
         </DropdownItem>
-        <DropdownItem onClick={(e) => handleExport('pdf')}>
+        <DropdownItem onClick={() => handleExport('pdf')}>
           <Icon name="file" /> PDF
         </DropdownItem>
       </DropdownMenu>
@@ -316,7 +308,7 @@ const nodeStyle: Cytoscape.Css.Node = {
   height: 50,
 };
 
-const nodeToElement = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
+const nodeToElement = (node: CytoscapeNodesQuery['nodes'][0]) => {
   const latestHistorical = node.metric?.historicalValues?.[0];
 
   const latest = {
@@ -353,7 +345,7 @@ const nodeToElement = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
   return element;
 };
 
-const edgesToElements = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
+const edgesToElements = (node: CytoscapeNodesQuery['nodes'][0]) => {
   const edges: EdgeDefinition[] = [];
   node.outputNodes.forEach((target) => {
     const edge: EdgeDefinition = {
@@ -393,7 +385,7 @@ const edgesToElements = (node: GetCytoscapeNodesQuery['nodes'][0]) => {
   return edges;
 };
 
-async function saveAs(blob: Blob, filename: string, isPDF: boolean) {
+function saveAs(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -402,7 +394,7 @@ async function saveAs(blob: Blob, filename: string, isPDF: boolean) {
 }
 
 type CytoGraphProps = {
-  nodes: GetCytoscapeNodesQuery['nodes'];
+  nodes: CytoscapeNodesQuery['nodes'];
 };
 
 export default function CytoGraph(props: CytoGraphProps) {

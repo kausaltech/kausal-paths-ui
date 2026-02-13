@@ -668,12 +668,10 @@ export class DimensionalMetric {
         color: totalColor,
         order: null,
       },
-      forecastValues: this.data.years
-        .filter((year) => this.isForecastYear(year))
-        .map((year) => null),
+      forecastValues: this.data.years.filter((year) => this.isForecastYear(year)).map(() => null),
       historicalValues: this.data.years
         .filter((year) => !this.isForecastYear(year))
-        .map((year) => null),
+        .map(() => null),
       isNegative: false,
       color: totalColor,
     };

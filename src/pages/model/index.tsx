@@ -4,7 +4,7 @@ import { ApolloError, gql, useQuery } from '@apollo/client';
 import { Drawer } from '@mui/material';
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react';
 
-import type { GetModelNodesQuery } from '@/common/__generated__/graphql';
+import type { ModelNodesQuery } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { getLayout } from '@/components/FullScreenLayout';
 import ContentLoader from '@/components/common/ContentLoader';
@@ -23,7 +23,7 @@ const getConfigUrl = (instance: string) => {
 // Config types are now imported from @/types/config.types
 const DRAWER_WIDTH = 320;
 const GET_NODES = gql`
-  query GetModelNodes {
+  query ModelNodes {
     nodes {
       id
       name
@@ -42,6 +42,7 @@ const GET_NODES = gql`
         id
       }
       metric {
+        id
         historicalValues(latest: 1) {
           year
           value
@@ -65,7 +66,7 @@ const GET_NODES = gql`
 `;
 
 const nodeToReactFlowNode: (
-  node: GetModelNodesQuery['nodes'][0],
+  node: ModelNodesQuery['nodes'][0],
   nodeDataFromConfig?: ConfigNode | Action | null
 ) => Node = (node, nodeDataFromConfig) => {
   const isActionNode = node.__typename === 'ActionNode';
@@ -91,7 +92,7 @@ const nodeToReactFlowNode: (
   };
 };
 
-const createNodeEdges: (node: GetModelNodesQuery['nodes'][0]) => Edge[] = (node) => {
+const createNodeEdges: (node: ModelNodesQuery['nodes'][0]) => Edge[] = (node) => {
   const edges: Edge[] = [];
   node.outputNodes.forEach((target) => {
     const newEdge: Edge = {
@@ -105,7 +106,7 @@ const createNodeEdges: (node: GetModelNodesQuery['nodes'][0]) => Edge[] = (node)
   return edges;
 };
 
-const createAllEdges: (nodes: GetModelNodesQuery['nodes']) => Edge[] = (nodes) => {
+const createAllEdges: (nodes: ModelNodesQuery['nodes']) => Edge[] = (nodes) => {
   const allEdges: Edge[] = [];
   nodes.forEach((node) => {
     allEdges.push(...createNodeEdges(node));
@@ -128,7 +129,7 @@ function ModelPage() {
     []
   );
 
-  const { loading, error, data } = useQuery<GetModelNodesQuery>(GET_NODES);
+  const { loading, error, data } = useQuery<ModelNodesQuery>(GET_NODES);
 
   // Memoize data transformations before any early returns
   const reactFlowNodes = useMemo(() => {

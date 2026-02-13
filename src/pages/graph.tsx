@@ -5,7 +5,7 @@ import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
 
 const GET_NODES = gql`
-  query GetCytoscapeNodes {
+  query CytoscapeNodes {
     nodes {
       id
       name
@@ -22,6 +22,7 @@ const GET_NODES = gql`
         id
       }
       metric {
+        id
         historicalValues(latest: 1) {
           year
           value

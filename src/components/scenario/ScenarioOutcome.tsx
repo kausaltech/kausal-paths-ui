@@ -1,15 +1,15 @@
-import { gql, useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
-import _ from 'lodash';
 import { useTranslation } from 'next-i18next';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
 
-import type { GetInstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
+import { beautifyValue } from '@common/utils/format';
+
+import type { InstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useFeatures } from '@/common/instance';
 import type { InstanceGoal } from '@/common/instance';
-import { beautifyValue } from '@/common/preprocess';
 
 import ScenarioOutcomeAsText from './ScenarioOutcomeAsText';
 
@@ -35,32 +35,12 @@ const CompactOutcome = styled(Box)`
   }
 `;
 
-export const GET_INSTANCE_GOAL_OUTCOME = gql`
-  query GetInstanceGoalOutcome($goal: ID!) {
-    instance {
-      id
-      goals(id: $goal) {
-        values {
-          year
-          goal
-          actual
-          isForecast
-          isInterpolated
-        }
-        unit {
-          htmlShort
-        }
-      }
-    }
-  }
-`;
-
 type ScenarioOutcomeProps = {
   compact?: boolean;
   activeGoal: InstanceGoal;
   targetYear: number;
   variant?: 'default' | 'verbose' | 'compact';
-  goalOutcome: GetInstanceGoalOutcomeQuery['instance']['goals'][0];
+  goalOutcome: InstanceGoalOutcomeQuery['instance']['goals'][0];
   loading?: boolean;
   refetching?: boolean;
 };
