@@ -40,12 +40,6 @@ const ActionCategory = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-/*
-const TextContent = styled.div`
-  margin: 1rem 0;
-`;
-*/
-
 const CardContent = styled.div`
   display: flex;
   flex-direction: column;
