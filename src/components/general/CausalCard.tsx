@@ -152,7 +152,7 @@ type CausalCardProps = {
 
 const NodeIcon = (props: { node: CausalGridNode }) => {
   const { node } = props;
-  const isActionNode = node.__typename.toLowerCase().includes('action');
+  const isActionNode = node.__typename === 'ActionNode';
   const nodeType = isActionNode ? 'action' : node.quantity;
 
   switch (nodeType) {
