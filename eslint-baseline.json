@@ -95,17 +95,11 @@
     }
   },
   "src/components/general/DimensionalBarGraph.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-unary-minus": {
       "count": 1
     }
   },
   "src/components/general/DimensionalNodePlot.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 4
     }
@@ -158,11 +152,6 @@
       "count": 19
     },
     "react-compiler/react-compiler": {
-      "count": 1
-    }
-  },
-  "src/components/general/SimpleEffect.tsx": {
-    "@typescript-eslint/no-unsafe-call": {
       "count": 1
     }
   },

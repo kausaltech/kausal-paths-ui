@@ -138,8 +138,8 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
 
         ...DashboardCardVisualizations
 
+        # eslint-disable-next-line @graphql-eslint/require-selections
         callToAction {
-          id
           ... on CallToActionBlock {
             title
             content

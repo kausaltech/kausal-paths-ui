@@ -2092,7 +2092,7 @@ export type DashboardPageFieldsFragment = (
       )> }
       & { __typename: 'ScenarioActionImpacts' }
     ) | null> | null, callToAction: (
-      { title: string, content: string, linkUrl: string, id: string | null }
+      { title: string, content: string, linkUrl: string }
       & { __typename: 'CallToActionBlock' }
     ), visualizations: Array<(
       { title: string, scenarioId: string, id: string | null }
@@ -2181,7 +2181,7 @@ export type PageQuery = (
         )> }
         & { __typename: 'ScenarioActionImpacts' }
       ) | null> | null, callToAction: (
-        { title: string, content: string, linkUrl: string, id: string | null }
+        { title: string, content: string, linkUrl: string }
         & { __typename: 'CallToActionBlock' }
       ), visualizations: Array<(
         { title: string, scenarioId: string, id: string | null }
