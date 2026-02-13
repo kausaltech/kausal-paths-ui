@@ -16,9 +16,10 @@ import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 import { readableColor } from 'polished';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
+import { sanitizeHtmlUnit } from '@common/utils/format';
+
 import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
-import { sanitizeHtmlUnit } from '@/common/preprocess';
 
 import SelectDropdown from './common/SelectDropdown';
 import Icon from './common/icon';

@@ -1,7 +1,8 @@
 import { useTranslation } from 'next-i18next';
 
+import { beautifyValue } from '@common/utils/format';
+
 import { useFeatures } from '@/common/instance';
-import { beautifyValue } from '@/common/preprocess';
 
 const ScenarioOutcomeAsText = (props: {
   isForecast: boolean;

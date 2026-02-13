@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import type { BarSeriesOption } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
-import round from 'lodash/round';
+import round from 'lodash-es/round';
 import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';

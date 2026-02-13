@@ -170,9 +170,6 @@ importers:
       immutable:
         specifier: ^5.1.3
         version: 5.1.3
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21

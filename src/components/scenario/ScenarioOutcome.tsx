@@ -1,15 +1,15 @@
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
-import _ from 'lodash';
 import { useTranslation } from 'next-i18next';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
+
+import { beautifyValue } from '@common/utils/format';
 
 import type { InstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useFeatures } from '@/common/instance';
 import type { InstanceGoal } from '@/common/instance';
-import { beautifyValue } from '@/common/preprocess';
 
 import ScenarioOutcomeAsText from './ScenarioOutcomeAsText';
 

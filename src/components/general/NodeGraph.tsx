@@ -12,9 +12,9 @@ import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
+import { beautifyValue, sanitizeHtmlUnit } from '@common/utils/format';
 
 import { type InstanceContextType, useInstance } from '@/common/instance';
-import { beautifyValue, sanitizeHtmlUnit } from '@/common/preprocess';
 
 import { getPredictionLabel } from './OutcomeGraph';
 
@@ -685,7 +685,7 @@ function buildTooltipRow(
   const rawValue: number = param.data[yIndex] as number;
   const value = beautifyValue(rawValue, undefined, maximumFractionDigits ?? undefined);
 
-  if (value === 0 || value === undefined || value === null) return '';
+  if (value === undefined || value === null) return '';
   if (!param.seriesName || param.value === undefined) return '';
 
   const color = typeof param.color === 'string' ? param.color : '#000';

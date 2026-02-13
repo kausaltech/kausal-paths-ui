@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import { useTranslation } from 'next-i18next';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
