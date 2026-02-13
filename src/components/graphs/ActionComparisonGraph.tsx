@@ -161,7 +161,7 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
     [data, theme, layout, handleHover, effectUnit, impactName]
   );
 
-  if (data.actions?.length < 1) return <div />;
+  if (data.actions?.length < 1) return null;
 
   return (
     <GraphContainer>
