@@ -39,8 +39,8 @@ const Toolbar = styled.div`
   margin-bottom: 10px;
 `;
 
-Cytoscape.use(dagre);
-Cytoscape.use(elk);
+Cytoscape.use(dagre as unknown as Parameters<typeof Cytoscape.use>[0]);
+Cytoscape.use(elk as unknown as Parameters<typeof Cytoscape.use>[0]);
 function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {
   const nodeColors = {
     action: '#0A5E43',
@@ -52,6 +52,7 @@ function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {
     energy: '#E37D7D',
     emission_factor: '#FDF1D2',
     argument: '#ff7354',
+    value_weight: '#9B59B6',
   };
 
   if (node.__typename == 'ActionNode') {

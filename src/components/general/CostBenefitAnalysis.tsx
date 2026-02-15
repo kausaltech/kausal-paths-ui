@@ -59,7 +59,11 @@ type Cubes = {
 function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOption {
   const sortedData = data.sort((a, b) => a.totals.netBenefit - b.totals.netBenefit);
   const unit = sortedData.length > 0 ? sortedData[0].metric?.data.unit.short : undefined;
-  const unitLabel = unit ? (typeof unit === 'string' ? t(unit) : unit) : '';
+  const unitLabel = unit
+    ? typeof unit === 'string'
+      ? (t as (key: string) => string)(unit)
+      : unit
+    : '';
 
   const config: EChartsCoreOption = {
     aria: {
