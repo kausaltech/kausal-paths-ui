@@ -135,6 +135,12 @@ export class InstanceContext {
     this.i18n = initI18n(lng);
   }
 
+  // Returns the first page of the given type, or null if no such page exists
+  getPageOfType(type: string): PathsPage | null {
+    const item = this.instance.pages.find((page) => page.__typename === type) || null;
+    return item;
+  }
+
   getActionListPage(): ActionListPage | null {
     function isActionPage(item: PathsPage): item is ActionListPage {
       if (item.__typename !== 'ActionListPage') return false;

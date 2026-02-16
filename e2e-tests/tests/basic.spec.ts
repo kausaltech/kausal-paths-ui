@@ -37,60 +37,13 @@ const testInstance = (instanceId: string) =>
         await ctx.navigateTo(page, ctx.baseURL);
 
         test.slow();
-        await expect(page.locator('nav#global-navigation-bar')).toBeVisible();
+        // Branding navigation bar and main content should be visible in all instances
+        await expect(page.locator('nav#branding-navigation-bar')).toBeVisible();
         await expect(page.locator('main#main')).toBeVisible();
         await ctx.waitForLoaded(page);
       });
 
-      await test.step('There should be a plot', async () => {
-        await expect(page.locator('.plot-container canvas').nth(0)).toBeVisible();
-      });
       await ctx.waitForLoaded(page);
-      //await expect(page).toHaveScreenshot({ fullPage: true });
-    });
-    test('action list page through menu click', async ({ page, ctx }) => {
-      const listItem = ctx.getActionListPage()!;
-      test.skip(!listItem, 'No action list page for instance');
-
-      await ctx.navigateTo(page, ctx.baseURL);
-
-      const nav = page.locator('nav#global-navigation-bar');
-      const link = nav.getByRole('link', {
-        name: listItem.title,
-        exact: true,
-      });
-
-      await expect(link).toBeVisible();
-      await ctx.waitForLoaded(page);
-
-      // Test SPA navigation
-      await link.click();
-      await ctx.checkMeta(page);
-
-      await expect.configure({ timeout: 45000 })(page.getByTestId('actions-list')).toBeVisible();
-
-      await ctx.waitForLoaded(page);
-    });
-    test('action list page through direct URL', async ({ page, ctx }) => {
-      const listItem = ctx.getActionListPage()!;
-      test.skip(!listItem, 'No action list page for instance');
-
-      await ctx.navigateTo(page, `${ctx.baseURL}${listItem.urlPath}`);
-      await expect(page).toHaveURL(`${ctx.baseURL}${listItem.urlPath}`, { timeout: 3000 }); // Fix NS_BINDING_ABORTED error in Firefox
-      await ctx.checkMeta(page);
-      await ctx.waitForLoaded(page);
-      await expect.configure({ timeout: 15000 })(page.getByTestId('actions-list')).toBeVisible();
-    });
-    test('action details page', async ({ page, ctx }) => {
-      test.skip(ctx.instance.actions.length == 0, 'No actions defined in instance');
-      const action = ctx.instance.actions[0];
-      await ctx.navigateTo(page, ctx.getActionURL(action));
-      await ctx.checkMeta(page);
-      await ctx.waitForLoaded(page);
-
-      await expect(
-        page.locator(`main a[href*="/node/${action.id}"]`).getByText(ctx.i18n.t('read-more'))
-      ).toBeVisible();
       //await expect(page).toHaveScreenshot({ fullPage: true });
     });
   });

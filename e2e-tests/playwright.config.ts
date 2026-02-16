@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 const basePath = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({
   path: [path.resolve(basePath, '.env'), path.resolve(basePath, '..', '.env')],
+  quiet: true,
 });
 
 /**
@@ -37,7 +38,7 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     actionTimeout: 2000,
-    screenshot: 'on',
+    screenshot: process.env.CI ? 'off' : 'on',
   },
   maxFailures: 10,
   globalSetup: path.resolve('./global-setup'),
