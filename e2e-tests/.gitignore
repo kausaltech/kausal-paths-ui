@@ -3,3 +3,9 @@
 test-results.json
 *.ts-snapshots/
 tests-out/
+
+.env
+.env.local
+
+.DS_Store
+Thumbs.db
