@@ -19,9 +19,9 @@ import {
   printRuntimeConfig,
 } from '@common/env';
 import { getLogger } from '@common/logging/logger';
-import { CommonThemeProvider } from '@common/providers/CommonThemeProvider';
 import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';
 import { initializeMuiTheme } from '@common/themes/mui-theme/theme';
+import '@common/themes/styles/main.scss';
 import { loadTheme } from '@common/themes/theme';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
@@ -45,8 +45,6 @@ import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from 
 import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
-
-import '../../styles/default/main.scss';
 
 type WatchLink = {
   title: string | { [key: string]: string };
@@ -261,12 +259,10 @@ function PathsApp(props: PathsAppProps) {
         <InstanceContext.Provider value={instanceContext}>
           <ApolloProvider client={apolloClient}>
             <ThemeProvider theme={muiTheme}>
-              <CommonThemeProvider theme={themeProps}>
-                <ThemedGlobalStyles />
-                <LocalizedNumbersContext.Provider value={numbersContext}>
-                  {component}
-                </LocalizedNumbersContext.Provider>
-              </CommonThemeProvider>
+              <ThemedGlobalStyles />
+              <LocalizedNumbersContext.Provider value={numbersContext}>
+                {component}
+              </LocalizedNumbersContext.Provider>
             </ThemeProvider>
           </ApolloProvider>
         </InstanceContext.Provider>
