@@ -4,7 +4,6 @@ import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
 import styled from '@emotion/styled';
 import type { DefaultLabelFormatterCallbackParams, EChartsOption } from 'echarts';
-import type { TFunction } from 'i18next';
 import {
   Dropdown,
   DropdownItem,
@@ -18,6 +17,7 @@ import {
 
 import { Chart } from '@common/components/Chart';
 
+import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useSite } from '@/context/site';
@@ -643,7 +643,7 @@ export const ProgressIndicator = ({
                       )}
                     </StyledFlexContainer>
                   )}
-                  <h5>{t('emissions-by-sector', { year: selectedEmissions?.year })}</h5>
+                  <h5>{t('emissions-by-sector', { year: selectedEmissions?.year ?? '' })}</h5>
                   <StyledCard>
                     <StyledChartWrapper>
                       {chartConfig && (

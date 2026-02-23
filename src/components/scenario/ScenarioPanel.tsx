@@ -12,7 +12,6 @@ import {
   useMediaQuery,
   useScrollTrigger,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import { Sliders } from 'react-bootstrap-icons';
 
 import type {
@@ -20,6 +19,7 @@ import type {
   InstanceGoalOutcomeQueryVariables,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { useSiteWithSetter } from '@/context/site';
 

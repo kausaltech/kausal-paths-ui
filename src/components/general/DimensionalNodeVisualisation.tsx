@@ -13,12 +13,12 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import { type TFunction, useTranslation } from 'next-i18next';
 import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
+import { type TFunction, useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useFeatures, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import { useSiteWithSetter } from '@/context/site';

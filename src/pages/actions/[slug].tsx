@@ -7,7 +7,6 @@ import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Container, Grid } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
 import type {
   ActionContentQuery,
@@ -17,6 +16,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { DecisionLevel } from '@/common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { ActionListLink, NodeLink } from '@/common/links';
 import Badge from '@/components/common/Badge';
 import ContentLoader from '@/components/common/ContentLoader';

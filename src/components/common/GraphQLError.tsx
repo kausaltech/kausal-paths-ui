@@ -1,10 +1,11 @@
 import type { ApolloError } from '@apollo/client';
 import { Button } from '@mui/material';
 import * as Sentry from '@sentry/nextjs';
-import { useTranslation } from 'next-i18next';
 import { Alert, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
+
+import { useTranslation } from '@/common/i18n';
 
 type GraphQLErrorProps = {
   error: ApolloError;
@@ -12,12 +13,13 @@ type GraphQLErrorProps = {
 
 const GraphQLError = (props: GraphQLErrorProps) => {
   const { error } = props;
-  const { t } = useTranslation(['common', 'errors']);
+  const { t } = useTranslation('common');
+  const { t: tErrors } = useTranslation('errors');
   let errorDetailMsg: string | null = null;
 
   Sentry.captureException(error);
   if (error.networkError) {
-    errorDetailMsg = `${String(t('errors:network-error'))}: ${String(error.networkError)}`;
+    errorDetailMsg = `${String(tErrors('network-error'))}: ${String(error.networkError)}`;
   }
 
   return (

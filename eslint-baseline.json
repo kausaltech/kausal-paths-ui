@@ -89,9 +89,6 @@
   "src/components/general/CostBenefitAnalysis.tsx": {
     "@typescript-eslint/no-unsafe-call": {
       "count": 6
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 3
     }
   },
   "src/components/general/DimensionalBarGraph.tsx": {

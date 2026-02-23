@@ -1,5 +1,6 @@
 import type { Theme } from '@emotion/react';
-import type { TFunction } from 'i18next';
+
+import type { TFunction } from '@/common/i18n';
 
 type Status = {
   key: 'ON_TRACK' | 'OFF_TRACK' | 'DEVIATING';

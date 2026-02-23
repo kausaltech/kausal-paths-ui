@@ -11,10 +11,10 @@ import {
   type SnackbarCloseReason,
   Typography,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import { X, XLg } from 'react-bootstrap-icons';
 
 import { activeScenarioVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import ScenarioSelector from '@/components/scenario/ScenarioSelector';
 import { useSiteWithSetter } from '@/context/site';
 

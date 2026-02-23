@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import { Box, Skeleton, useTheme } from '@mui/material';
 import type { ParsedUrlQuery } from 'querystring';
-import { useTranslation } from 'react-i18next';
 
 import type {
   OutcomeNodeFieldsFragment,
@@ -13,6 +12,7 @@ import type {
   ScenarioFragment,
 } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 
 import OutcomeCardSet from './OutcomeCardSet';
 

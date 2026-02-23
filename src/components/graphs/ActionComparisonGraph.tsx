@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Grid } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
+import { useTranslation } from '@/common/i18n';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });

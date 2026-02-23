@@ -1,7 +1,6 @@
 import { NetworkStatus, gql, useMutation, useQuery } from '@apollo/client';
 import styled from '@emotion/styled';
 import { CircularProgress, FormControlLabel, Switch } from '@mui/material';
-import { useTranslation } from 'react-i18next';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -10,6 +9,7 @@ import type {
   SetNormalizationFromWidgetMutation,
   SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const SwitchWrapper = styled.div`

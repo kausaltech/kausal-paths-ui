@@ -8,7 +8,6 @@ import {
   Select,
   type SelectChangeEvent,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -18,6 +17,7 @@ import type {
   ScenariosQuery,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import type { SiteContextScenario } from '@/context/site';
 import { GET_SCENARIOS } from '@/queries/getScenarios';

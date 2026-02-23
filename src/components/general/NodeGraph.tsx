@@ -8,12 +8,12 @@ import type {
   LegendOption,
   TooltipPositionCallback,
 } from 'echarts/types/dist/shared';
-import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
 import { beautifyValue, sanitizeHtmlUnit } from '@common/utils/format';
 
+import { type TFunction, useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
 
 import { getPredictionLabel } from './OutcomeGraph';

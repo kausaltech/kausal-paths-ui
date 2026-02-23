@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
-import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
 const formatValue = (value: number | null, unit: string) => `${(value || 0).toFixed(2)} ${unit}`;

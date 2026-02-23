@@ -9,12 +9,12 @@ import type {
   EChartsCoreOption,
   EChartsOption,
 } from 'echarts';
-import { useTranslation } from 'next-i18next';
 
 import { Chart } from '@common/components/Chart';
 
 import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { useSiteWithSetter } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';

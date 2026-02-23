@@ -1,6 +1,7 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { useTranslation } from 'react-i18next';
+
+import { useTranslation } from '@/common/i18n';
 
 import { StyledCard } from './StyledCard';
 import { StyledStatusBadge } from './StyledStatusBadge';

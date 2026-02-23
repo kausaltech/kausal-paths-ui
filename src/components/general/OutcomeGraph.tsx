@@ -5,11 +5,11 @@ import dynamic from 'next/dynamic';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
-import { type TFunction, useTranslation } from 'next-i18next';
 import { tint } from 'polished';
 import type { PlotParams } from 'react-plotly.js';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { type TFunction, useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
 import { getRange, metricToPlot } from '@/common/preprocess';
 import { useSite } from '@/context/site';

@@ -1,19 +1,17 @@
 import React from 'react';
 
 import { useTheme } from '@emotion/react';
-import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
 import styled from '@emotion/styled';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
-import 'overlayscrollbars/styles/overlayscrollbars.css';
-
+import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
-import { useTranslation } from 'react-i18next';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import { Chart } from '@common/components/Chart';
 
 import { ScenarioKind } from '@/common/__generated__/graphql';
-import { Trans } from '@/common/i18n';
+import { useTranslations } from '@/common/i18n';
 import { useSiteWithSetter } from '@/context/site';
 
 type ActionGroup = {
@@ -52,7 +50,6 @@ const ScrollArea = styled.div`
 const ChartRow = styled.div`
   padding-top: 0.75rem;
 `;
-
 
 const Legend = ({ groups }: { groups: ActionGroup[] }) => {
   const theme = useTheme();
@@ -123,7 +120,7 @@ function getGroupColor(group: ActionGroup, theme: Theme, index: number) {
 
 const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props) => {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const t = useTranslations('common');
   const [site] = useSiteWithSetter();
   const year = actions[0]?.year;
   const baselineScenario = site.scenarios.find(({ kind }) => kind === ScenarioKind.Baseline);
@@ -277,22 +274,19 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
               </ChartRow>
             </OverlayScrollbarsComponent>
           </ScrollArea>
-          
 
           <Divider sx={{ my: 2 }} role="presentation" aria-hidden="true" />
 
           <Typography variant="subtitle1" component="p" sx={{ textAlign: 'right' }}>
-            <Trans
-              i18nKey="impact-compared-to-baseline"
-              values={{
-                impact:
-                  totalImpact > 0
-                    ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                    : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
-                unit: unit || '',
-                baseline: baselineScenario?.name || t('plot-baseline'),
-              }}
-            />
+            {t.rich('impact-compared-to-baseline', {
+              impact:
+                totalImpact > 0
+                  ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                  : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+              unit: unit || '',
+              baseline: baselineScenario?.name || t('plot-baseline'),
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </Typography>
         </CardContent>
       </Card>

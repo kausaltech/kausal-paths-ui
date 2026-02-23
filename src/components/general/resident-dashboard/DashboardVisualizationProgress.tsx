@@ -17,7 +17,6 @@ import type { LabelLayoutOptionCallbackParams } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
 import { readableColor } from 'polished';
 import { Dash, Plus } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
@@ -25,6 +24,7 @@ import type {
   ScenarioValueFieldsFragment,
   UnitFieldsFragment,
 } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
 
 export enum ProgressType {
@@ -322,7 +322,7 @@ const DashboardVisualizationProgress = ({
                         {unit.short}
                       </Typography>
                     )}
-      
+
                     <Box aria-hidden="true" role="presentation" tabIndex={-1}>
                       <Chart
                         isLoading={false}

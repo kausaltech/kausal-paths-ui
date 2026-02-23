@@ -4,9 +4,9 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
-import { useTranslation } from 'next-i18next';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';

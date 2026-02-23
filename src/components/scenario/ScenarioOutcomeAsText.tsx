@@ -1,7 +1,6 @@
-import { useTranslation } from 'next-i18next';
-
 import { beautifyValue } from '@common/utils/format';
 
+import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 
 const ScenarioOutcomeAsText = (props: {
@@ -50,7 +49,6 @@ const ScenarioOutcomeAsText = (props: {
             selectedYearValue: selectedYearValueFormatted,
             nearestGoalYear,
             nearestGoalValue: nearestGoalValueFormatted,
-            interpolation: { escapeValue: false },
           }),
         }}
       />
@@ -65,7 +63,6 @@ const ScenarioOutcomeAsText = (props: {
             selectedYearDifference,
             nearestGoalYear,
             nearestGoalValue: nearestGoalValueFormatted,
-            interpolation: { escapeValue: false },
           }),
         }}
       />

@@ -3,12 +3,12 @@ import React, { Fragment, useMemo, useState } from 'react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, Container } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar, NavbarBrand } from 'reactstrap';
 
 import { getThemeStaticURL } from '@common/themes/theme';
 
+import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
 import NavDropdown, { type NavDropdownListItem } from '@/components/common/NavDropdown';
 import Icon from '@/components/common/icon';
@@ -219,12 +219,9 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
   //const instanceId = site.instanceId || site.instanceContext?.id || 'default';
 
   const watchLinkTitle = site.watchLink
-    ? t(`watchLink.${site.instanceId}.${i18n.language}`, {
-        defaultValue:
-          typeof site.watchLink.title === 'string'
-            ? site.watchLink.title
-            : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0],
-      })
+    ? typeof site.watchLink.title === 'string'
+      ? site.watchLink.title
+      : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0]
     : null;
 
   const watchLinkUrl = site.watchLink

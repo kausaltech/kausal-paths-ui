@@ -15,10 +15,10 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import { ChevronDown } from 'react-bootstrap-icons';
 
 import { DecisionLevel } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
 import {
   findActionEnabledParam,
@@ -239,17 +239,20 @@ const ActionsList = ({
               backgroundColor: theme.graphColors.blue010,
               '& .MuiTableSortLabel-root': { lineHeight: 'inherit', whiteSpace: 'normal' },
               '& > .MuiTableCell-head:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
-              '& > .MuiTableCell-root:nth-of-type(3)': { minWidth: { xs: '22ch', md: 160 }, width: { md: 160 } },
+              '& > .MuiTableCell-root:nth-of-type(3)': {
+                minWidth: { xs: '22ch', md: 160 },
+                width: { md: 160 },
+              },
               '& > .MuiTableCell-head:nth-of-type(2)': {
                 position: { xs: 'sticky', md: 'static' },
-                left:     { xs: 0, md: 'auto' },
-                zIndex:   { xs: 3, md: 'auto' },
+                left: { xs: 0, md: 'auto' },
+                zIndex: { xs: 3, md: 'auto' },
                 backgroundColor: theme.graphColors.blue010,
                 boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
               },
             }}
           >
-            <TableCell >
+            <TableCell>
               <Box component="span" sx={headerText}>
                 {t('actions-group-type')}
               </Box>
@@ -268,10 +271,7 @@ const ActionsList = ({
             </TableCell>
 
             {columns.map((col) => (
-              <TableCell
-                key={col.key}
-                sx={{ minWidth: { xs: '16ch', md: '12' } }}
-              >
+              <TableCell key={col.key} sx={{ minWidth: { xs: '16ch', md: '12' } }}>
                 <TableSortLabel
                   active={sortBy.key === col.key}
                   direction={sortBy.key === col.key ? (sortAscending ? 'asc' : 'desc') : 'asc'}
@@ -288,7 +288,7 @@ const ActionsList = ({
               sx={{
                 position: 'relative',
               }}
-              >
+            >
               <Box
                 component="span"
                 sx={{
@@ -340,11 +340,13 @@ const ActionsList = ({
                       color: 'inherit',
                       borderBottom: isOpen ? 'none' : undefined,
                     },
-                    '& > .MuiTableCell-root:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
+                    '& > .MuiTableCell-root:nth-of-type(1)': {
+                      minWidth: { xs: '18ch', md: 'auto' },
+                    },
                     '& > .MuiTableCell-root:nth-of-type(2)': {
                       position: { xs: 'sticky', md: 'static' },
-                      left:     { xs: 0, md: 'auto' },
-                      zIndex:   { xs: 2, md: 'auto' },
+                      left: { xs: 0, md: 'auto' },
+                      zIndex: { xs: 2, md: 'auto' },
                       backgroundColor: rowBg,
                       boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
                     },
@@ -493,10 +495,10 @@ const ActionsList = ({
                       },
                     }}
                   >
-                    <Collapse 
+                    <Collapse
                       id={detailsId}
-                      in={isOpen} 
-                      timeout="auto" 
+                      in={isOpen}
+                      timeout="auto"
                       unmountOnExit
                       role="region"
                       aria-label={t('action-details-for', { action: action.name })}

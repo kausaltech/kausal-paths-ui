@@ -6,12 +6,12 @@ import { useRouter } from 'next/router';
 import { gql, useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Card, CardContent, Container } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
 import { logApolloError } from '@common/logging/apollo';
 
 import type { NodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
 import ContentLoader from '@/components/common/ContentLoader';
 import ErrorMessage from '@/components/common/ErrorMessage';

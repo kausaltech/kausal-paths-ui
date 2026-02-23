@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { ToggleButton } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import { Range, getTrackBackground } from 'react-range';
 
+import { useTranslation } from '@/common/i18n';
 import Icon from '@/components/common/icon';
 
 const SectionWrapper = styled.div`

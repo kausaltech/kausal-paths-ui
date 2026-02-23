@@ -139,7 +139,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                                 ? `${child.label} ${
                                     child.metricDim.unit.short
                                       ? /* TODO: Remove this translation when the backend label is updated */
-                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         `(${String(t(child.metricDim.unit.short as any))})`
                                       : ''
                                   }`

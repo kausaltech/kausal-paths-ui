@@ -2,7 +2,6 @@
 // Plotly doesnt type well, let's disable the linting for this file until it's properly deprecated
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 
-import { useTranslation } from 'next-i18next';
 import cs from 'plotly.js-locales/cs';
 import da from 'plotly.js-locales/da';
 import de from 'plotly.js-locales/de';
@@ -16,6 +15,8 @@ import sv from 'plotly.js-locales/sv';
 import Plotly from 'plotly.js/dist/plotly-basic';
 import type { PlotParams } from 'react-plotly.js';
 import createPlotlyComponent from 'react-plotly.js/factory';
+
+import { useTranslation } from '@/common/i18n';
 
 const locales = { fi, sv, de, 'de-CH': de_ch, cs, da, lv, pl, 'es-US': es, el };
 

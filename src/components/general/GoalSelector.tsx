@@ -3,9 +3,9 @@ import { useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
 import { activeGoalVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import type { InstanceGoal } from '@/common/instance';
 import { useInstance } from '@/common/instance';
 
