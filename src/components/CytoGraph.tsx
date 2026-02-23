@@ -52,6 +52,7 @@ function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {
     energy: '#E37D7D',
     emission_factor: '#FDF1D2',
     argument: '#ff7354',
+    value_weight: '#9B59B6',
   };
 
   if (node.__typename == 'ActionNode') {
