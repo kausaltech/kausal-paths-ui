@@ -21,6 +21,7 @@ import {
 import { getLogger } from '@common/logging/logger';
 import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';
 import { initializeMuiTheme } from '@common/themes/mui-theme/theme';
+import '@common/themes/styles/main.scss';
 import { loadTheme } from '@common/themes/theme';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
@@ -44,8 +45,6 @@ import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
 import type { Messages } from '@/i18n/loadMessages';
-
-import '../../styles/default/main.scss';
 
 type WatchLink = {
   title: string | { [key: string]: string };
