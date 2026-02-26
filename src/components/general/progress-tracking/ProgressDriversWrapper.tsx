@@ -103,7 +103,16 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
     return null;
   }
 
-  const emissionsMeasureDatapointYears = metricDim?.measureDatapointYears ?? [];
+  // Use both the global list of observed years from the progress tracking scenario
+  // (which includes years with observed data across all sectors), and the years that
+  // this measure has observed data for. This allows us to display the most recent calculated
+  // GHG emissions for a sector even if it does not have driver data behind it.
+  const latestObservedYear = [...observedYears].sort().pop();
+  const measureDatapointYears = metricDim?.measureDatapointYears ?? [];
+  const emissionsMeasureDatapointYears =
+    latestObservedYear && !measureDatapointYears.includes(latestObservedYear)
+      ? [...measureDatapointYears, latestObservedYear]
+      : measureDatapointYears;
 
   return (
     <Fade>
@@ -115,6 +124,10 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
               metric={metricDim}
               desiredOutcome={DesiredOutcome.Decreasing}
               isDirectlyObserved={false}
+              // If there are no visualisations, ensure we don't display calculated the emissions of any other years
+              parentMeasureDatapointYears={
+                visualizations ? emissionsMeasureDatapointYears : undefined
+              }
             />
           </StyledCard>
         )}

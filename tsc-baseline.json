@@ -94,11 +94,11 @@
       "count": 6,
       "message": "Property 'stzh-link' does not exist on type 'JSX.IntrinsicElements'."
     },
-    "1352e7c87632cca339d7a1adb9d6066f1464df56": {
+    "983aa64447dda0298cd013ccc12e0c00f5553812": {
       "file": "src/components/CytoGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type 'import(\"/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/@types+cytoscape@3.21.9/node_modules/@types/cytoscape/index\").Ext' is not assignable to parameter of type 'cytoscape.Ext'."
+      "message": "Argument of type 'import(\"/Users/joesmallwood/Documents/repos/kausal-paths-ui/node_modules/.pnpm/@types+cytoscape@3.21.9/node_modules/@types/cytoscape/index\").Ext' is not assignable to parameter of type 'cytoscape.Ext'."
     },
     "1b4bfa44097ae8240c85ac1f3d43d3a7072059c2": {
       "file": "src/components/CytoGraph.tsx",
@@ -172,11 +172,11 @@
       "count": 1,
       "message": "Property 'data' is private and only accessible within class 'DimensionalMetric'."
     },
-    "f09f8c4d045c9ee4f3dd91121e56c2987bf88464": {
+    "2f22479cd93fe47f239dcfe1e23dcc829d292058": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: string | string[], options: TOptionsBase & $Dictionary & { defaultValue: never; }] | [key: string | string[], defaultValue: never, options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...]'."
+      "message": "Argument of type '[string]' is not assignable to parameter of type '[key: \"details\" | \"table\" | TemplateStringsArray | \"loading\" | \"negative\" | \"pred\" | \"impact\" | \"reduction\" | \"abbr-per-annum\" | \"action-impact\" | \"action\" | ... 156 more ... | (\"details\" | ... 165 more ... | \"loading-calculation\")[], options?: (TOptionsBase & $Dictionary) | undefined] | [key: ...] | [key: ...]'."
     },
     "abb5815825b3902eabf28686d700768bb586b994": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",

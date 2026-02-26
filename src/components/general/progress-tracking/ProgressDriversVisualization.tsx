@@ -235,7 +235,7 @@ export function ProgressDriversVisualization({
 
       if (!filteredProgressYears.includes(latestYear)) {
         filteredProgressYears.push(latestYear);
-        inferredYear = latestYear;
+        inferredYear = isDirectlyObserved ? latestYear : null;
       }
     }
 
@@ -303,7 +303,10 @@ export function ProgressDriversVisualization({
       { years: [], defaultData: [], progressData: [], inferredProgressData: [] }
     );
 
-    const interpolatedProgressData = interpolateProgressValues(progressData);
+    const interpolatedProgressData = interpolateProgressValues([
+      ...progressData,
+      ...inferredProgressData,
+    ]);
 
     const areaData = defaultData.map((value, i) => {
       const progressValue = interpolatedProgressData[i];
