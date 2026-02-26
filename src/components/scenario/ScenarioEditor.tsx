@@ -91,13 +91,13 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
           <ScenarioSelector />
         </Box>
         <Box component="section" aria-label={t('actions')} sx={{ mb: 3 }}>
-          <ActionsChooser />
           {hasGlobalParameters && (
             <Box component="section" aria-label={t('all-settings')} sx={{ mb: 3 }}>
               <Divider />
               <GlobalParameters />
             </Box>
           )}
+          <ActionsChooser />
         </Box>
       </Box>
       <Snackbar
