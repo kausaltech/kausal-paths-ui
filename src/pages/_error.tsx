@@ -11,7 +11,7 @@ import type { NextPageContext } from 'next';
 import { isProductionDeployment } from '@common/env';
 import { getLogger } from '@common/logging';
 
-import { useTranslation } from '@/common/i18n';
+import { useTranslations } from '@/common/i18n';
 import { Link } from '@/common/links';
 
 const ErrorBackground = styled.div`
@@ -69,7 +69,8 @@ const PathsError = (props: AppErrorProps) => {
   );
 
   const theme = useTheme();
-  const { t } = useTranslation('errors');
+  const t = useTranslations('errors');
+  const tCommon = useTranslations('common');
 
   let title = props.title;
   let intro: string | null = t('generic-intro');
@@ -82,7 +83,7 @@ const PathsError = (props: AppErrorProps) => {
         intro = t('not-found-intro');
         apology = null;
       } else if (statusCode !== 500) {
-        title = t('error-with-code', { code: statusCode, ns: 'common' });
+        title = tCommon('error-with-code', { code: statusCode });
       }
     }
   }
@@ -136,7 +137,7 @@ const PathsError = (props: AppErrorProps) => {
                 <Link href="/">
                   <a>
                     <Button variant="outlined" size="small" color="primary">
-                      {t('return-to-front', { ns: 'common' })}
+                      {tCommon('return-to-front')}
                     </Button>
                   </a>
                 </Link>

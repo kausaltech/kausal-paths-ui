@@ -8,7 +8,7 @@ import type { Theme } from '@kausal/themes/types';
 import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
-import { appWithTranslation, useTranslation } from 'next-i18next';
+import { NextIntlClientProvider } from 'next-intl';
 import numbro from 'numbro';
 
 import {
@@ -40,11 +40,11 @@ import {
   SUPPORTED_LANGUAGES_HEADER,
   THEME_IDENTIFIER_HEADER,
 } from '@/common/const';
-import { getI18n } from '@/common/i18n';
 import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
 import Layout from '@/components/Layout';
 import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
+import type { Messages } from '@/i18n/loadMessages';
 
 type WatchLink = {
   title: string | { [key: string]: string };
@@ -195,6 +195,8 @@ export type PathsAppProps = AppProps<Record<string, unknown>> & {
   instanceContext: InstanceContextType;
   themeProps: Theme;
   apolloClient?: ApolloClientType;
+  messages: Messages;
+  locale: string;
 };
 
 function PathsApp(props: PathsAppProps) {
@@ -204,9 +206,10 @@ function PathsApp(props: PathsAppProps) {
     siteContext: initialSiteContext,
     instanceContext,
     themeProps,
+    messages,
+    locale,
   } = props;
   const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
-  const { i18n } = useTranslation();
   const logger = getLogger({ name: 'app-component' });
   const muiTheme = initializeMuiTheme(themeProps);
 
@@ -214,21 +217,22 @@ function PathsApp(props: PathsAppProps) {
   const getLayout = Component.getLayout ?? ((page) => <Layout>{page}</Layout>);
 
   // FIXME: Remove this when possible; it's not safe for async contexts
-  numbro.setLanguage(
-    i18n.language,
-    i18n.language.indexOf('-') > 0 ? i18n.language.split('-')[0] : undefined
-  );
+  numbro.setLanguage(locale, locale.indexOf('-') > 0 ? locale.split('-')[0] : undefined);
   const component = getLayout(<Component {...pageProps} />);
   if (!instanceContext || !siteContext) {
     // getInitialProps errored, return with a very simple layout
     logger.error('no site context');
-    return <ThemeProvider theme={muiTheme}>{component}</ThemeProvider>;
+    return (
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <ThemeProvider theme={muiTheme}>{component}</ThemeProvider>
+      </NextIntlClientProvider>
+    );
   }
 
   const instance = instanceContext;
 
   const numbersContext = createNumbersContext(
-    i18n.language,
+    locale,
     instance.features.showSignificantDigits ?? undefined
   );
 
@@ -254,20 +258,22 @@ function PathsApp(props: PathsAppProps) {
   const apolloClient = initializeApollo(null, siteContext.apolloConfig);
 
   return (
-    <AppCacheProvider {...props}>
-      <SiteContext.Provider value={[siteContext, setSiteContext]}>
-        <InstanceContext.Provider value={instanceContext}>
-          <ApolloProvider client={apolloClient}>
-            <ThemeProvider theme={muiTheme}>
-              <ThemedGlobalStyles />
-              <LocalizedNumbersContext.Provider value={numbersContext}>
-                {component}
-              </LocalizedNumbersContext.Provider>
-            </ThemeProvider>
-          </ApolloProvider>
-        </InstanceContext.Provider>
-      </SiteContext.Provider>
-    </AppCacheProvider>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <AppCacheProvider {...props}>
+        <SiteContext.Provider value={[siteContext, setSiteContext]}>
+          <InstanceContext.Provider value={instanceContext}>
+            <ApolloProvider client={apolloClient}>
+              <ThemeProvider theme={muiTheme}>
+                <ThemedGlobalStyles />
+                <LocalizedNumbersContext.Provider value={numbersContext}>
+                  {component}
+                </LocalizedNumbersContext.Provider>
+              </ThemeProvider>
+            </ApolloProvider>
+          </InstanceContext.Provider>
+        </SiteContext.Provider>
+      </AppCacheProvider>
+    </NextIntlClientProvider>
   );
 }
 
@@ -364,9 +370,8 @@ function getLocaleDebug(ctx: PathsPageContext) {
 
 async function getI18nProps(ctx: PathsPageContext) {
   // SSR only
-  const { serverSideTranslations } = await import('next-i18next/serverSideTranslations');
+  const { loadMessages } = await import('@/i18n/loadMessages');
   const { req } = ctx;
-  const nextI18nConfig = (await import('../../next-i18next.config')).default;
   let defaultLanguage = req.headers[DEFAULT_LANGUAGE_HEADER] as string | undefined;
   const logger = getLogger({ name: 'app-get-i18n-props', request: req });
 
@@ -387,21 +392,15 @@ async function getI18nProps(ctx: PathsPageContext) {
   }
   const header = req.headers[SUPPORTED_LANGUAGES_HEADER] as string | undefined;
   const supportedLanguages = (header ?? defaultLanguage).split(',');
-  const i18n = getI18n();
 
-  if (i18n) {
-    await i18n.changeLanguage(ctx.locale);
-  }
-  const conf = {
-    ...nextI18nConfig,
-    i18n: {
-      ...nextI18nConfig.i18n,
-      defaultLocale: defaultLanguage,
-      locales: supportedLanguages,
-    },
+  const messages = await loadMessages(ctx.locale, ['common', 'errors']);
+
+  return {
+    messages,
+    locale: ctx.locale,
+    supportedLocales: supportedLanguages,
+    defaultLocale: defaultLanguage,
   };
-  const i18nConfig = await serverSideTranslations(ctx.locale, ['common', 'errors'], conf);
-  return i18nConfig;
 }
 
 type InstanceConfig = AvailableInstancesQuery['availableInstances'][0];
@@ -435,17 +434,16 @@ const getInitialProps = async (appContext: PathsAppContext) => {
     const appProps = await App.getInitialProps(appContext);
     const nextData = window.__NEXT_DATA__;
     const pageProps = nextData.props as PathsAppProps;
-    const { _nextI18Next } = pageProps.pageProps;
-    const { siteContext, instanceContext, themeProps } = pageProps;
+    const { messages, locale, siteContext, instanceContext, themeProps } = pageProps;
     const ret = {
       ...appProps,
       siteContext,
       instanceContext,
       themeProps,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      messages,
+      locale,
       pageProps: {
-        ...appProps.pageProps,
-        _nextI18Next,
+        ...(appProps.pageProps as Record<string, unknown>),
       },
     };
     return ret;
@@ -460,16 +458,16 @@ const getInitialProps = async (appContext: PathsAppContext) => {
   if (!appProps.pageProps) {
     appProps.pageProps = {};
   }
-  const pageProps = appProps.pageProps;
 
-  const i18nProps = await getI18nProps(ctx);
-  const i18nConf = i18nProps._nextI18Next!.userConfig!.i18n;
+  const i18nResult = await getI18nProps(ctx);
   const siteI18nConf: SiteI18nConfig = {
-    locale: ctx.locale!,
-    defaultLocale: i18nConf.defaultLocale,
-    supportedLocales: i18nConf.locales,
+    locale: i18nResult.locale,
+    defaultLocale: i18nResult.defaultLocale,
+    supportedLocales: i18nResult.supportedLocales,
   };
-  Object.assign(pageProps, i18nProps);
+  appProps.messages = i18nResult.messages;
+  appProps.locale = i18nResult.locale;
+
   const siteProps = await getSiteContext(ctx, siteI18nConf);
   if (siteProps) {
     appProps.siteContext = siteProps.siteContext;
@@ -492,6 +490,4 @@ PathsApp.getInitialProps = async (appContext: PathsAppContext) => {
   });
 };
 
-const PathsAppWithTranslation = appWithTranslation(PathsApp);
-
-export default PathsAppWithTranslation;
+export default PathsApp;

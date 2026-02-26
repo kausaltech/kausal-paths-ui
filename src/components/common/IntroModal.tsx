@@ -10,7 +10,8 @@ import {
   DialogTitle,
   FormControlLabel,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
+
+import { useTranslation } from '@/common/i18n';
 
 import RichText from './RichText';
 

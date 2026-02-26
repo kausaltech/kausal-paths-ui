@@ -1,5 +1,5 @@
-import 'i18next';
-import * as NextI18Next from 'next-i18next';
+import 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import numbro from 'numbro';
 import numbroCs from 'numbro/dist/languages/cs-CZ.min.js';
 import numbroDa from 'numbro/dist/languages/da-DK.min.js';
@@ -56,25 +56,31 @@ Object.entries(numbroLangs).forEach(([lang, conf]) => {
   });
 });
 
-const { appWithTranslation, withTranslation, Trans, useTranslation } = NextI18Next;
+type ValidNamespace = 'common' | 'errors';
 
-export function getI18n() {
-  return NextI18Next.i18n;
+/**
+ * Compatibility wrapper around next-intl's useTranslations hook.
+ * Returns { t, i18n } to match the previous next-i18next API.
+ */
+export function useTranslation<NS extends ValidNamespace = 'common'>(namespace?: NS | NS[]) {
+  const ns = (Array.isArray(namespace) ? namespace[0] : (namespace ?? 'common')) as NS;
+  const t = useTranslations(ns);
+  const locale = useLocale();
+  const i18n = { language: locale };
+  return { t, i18n };
 }
 
-export { appWithTranslation, Trans, useTranslation, withTranslation };
+export { useLocale, useTranslations };
 
-declare module 'i18next' {
-  // Extend CustomTypeOptions
-  interface CustomTypeOptions {
-    // custom namespace type, if you changed it
-    defaultNS: 'common';
-    nsSeparator: ':';
-    // custom resources type
-    resources: {
+/** Type for the t() function returned by useTranslations, defaults to common namespace */
+export type TFunction = ReturnType<typeof useTranslations<'common'>>;
+
+// TypeScript module augmentation for next-intl message type safety
+declare module 'next-intl' {
+  interface AppConfig {
+    Messages: {
       common: typeof nsCommon;
       errors: typeof nsErrors;
     };
-    // other
   }
 }

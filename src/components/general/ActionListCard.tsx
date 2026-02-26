@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
-import { useTranslation } from 'next-i18next';
 
 import { DecisionLevel } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import Badge from '@/components/common/Badge';

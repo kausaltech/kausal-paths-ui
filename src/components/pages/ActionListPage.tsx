@@ -13,8 +13,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'next-i18next';
 
 import {
   type ActionListQuery,
@@ -24,6 +22,8 @@ import {
   type PageQuery,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, yearRangeVar } from '@/common/cache';
+import type { TFunction } from '@/common/i18n';
+import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ContentLoader from '@/components/common/ContentLoader';

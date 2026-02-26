@@ -6,10 +6,10 @@ import type { Theme } from '@emotion/react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import type { PlotParams } from 'react-plotly.js';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
 

@@ -4,7 +4,6 @@ import Head from 'next/head';
 
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { useTranslation } from 'next-i18next';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
@@ -12,6 +11,7 @@ import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 import { isProductionDeployment } from '@common/env';
 import { getThemeStaticURL } from '@common/themes/theme';
 
+import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
 import type { GlobalNavProps } from '@/components/common/GlobalNav';
 import NavDropdown from '@/components/common/NavDropdown';
@@ -174,12 +174,9 @@ function GlobalNav(props: GlobalNavProps) {
   const { siteTitle, ownerName, navItems } = props;
 
   const watchLinkTitle = site.watchLink
-    ? t(`watchLink.${site.instanceId}.${i18n.language}`, {
-        defaultValue:
-          typeof site.watchLink.title === 'string'
-            ? site.watchLink.title
-            : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0],
-      })
+    ? typeof site.watchLink.title === 'string'
+      ? site.watchLink.title
+      : site.watchLink.title[i18n.language] || Object.values(site.watchLink.title)[0]
     : null;
 
   const watchLinkUrl = site.watchLink

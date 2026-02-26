@@ -10,10 +10,10 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import { BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { NodeLink } from '@/common/links';
 
 type NodeLinksProps = {
@@ -30,7 +30,9 @@ const NodeLinks = (props: NodeLinksProps) => {
         {inputNodes.length > 0 && (
           <Card>
             <CardContent>
-              <Typography variant="h5" component="p" >{t('affected-by')}</Typography>
+              <Typography variant="h5" component="p">
+                {t('affected-by')}
+              </Typography>
               <List>
                 {inputNodes.map((inputNode) => (
                   <ListItem key={inputNode.id}>
@@ -53,7 +55,9 @@ const NodeLinks = (props: NodeLinksProps) => {
         {outputNodes.length > 0 && (
           <Card>
             <CardContent>
-              <Typography variant="h5" component="p">{t('has-effect-on')}</Typography>
+              <Typography variant="h5" component="p">
+                {t('has-effect-on')}
+              </Typography>
               <List>
                 {outputNodes.map((outputNode) => (
                   <ListItem key={outputNode.id}>

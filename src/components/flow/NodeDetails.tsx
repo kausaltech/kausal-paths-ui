@@ -10,11 +10,11 @@ import {
   Typography,
 } from '@mui/material';
 import { Dash, PlusLg } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
 
 import { logApolloError } from '@common/logging/apollo';
 
 import type { NodeDetailsQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';

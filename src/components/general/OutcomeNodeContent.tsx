@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import styled from '@emotion/styled';
 import { Box, IconButton, MenuItem } from '@mui/material';
 import { Menu } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import {
   BarChartLineFill,
   InfoCircleFill,
@@ -13,6 +12,7 @@ import {
 } from 'react-bootstrap-icons';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 //import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';

@@ -14,13 +14,19 @@ import { type Page, expect } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
-import i18nConfig from '../../next-i18next.config.js';
 import type {
   PlaywrightGetInstanceBasicsQuery,
   PlaywrightGetInstanceBasicsQueryVariables,
   PlaywrightGetInstanceInfoQuery,
   PlaywrightGetInstanceInfoQueryVariables,
 } from '../__generated__/graphql.ts';
+
+const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
+const FALLBACK_LNG: FallbackLngObjList = {
+  'en-AU': ['en'],
+  'de-CH': ['de'],
+  default: ['en'],
+};
 
 // @ts-expect-error crazy apollo imports
 const { ApolloClient, InMemoryCache, gql } = apollo.default as typeof apollo;
@@ -90,7 +96,7 @@ export type ApolloErrorContext = {
 type LocaleDefs = Record<string, string>;
 
 const i18nRes = Object.fromEntries(
-  i18nConfig.i18n.locales.map((lng) => {
+  SUPPORTED_LOCALES.map((lng) => {
     return [
       lng,
       {
@@ -108,7 +114,7 @@ function initI18n(lang: string) {
   const errCallback = (err) => {
     if (err) console.error(err);
   };
-  const fallbackLng = i18nConfig.fallbackLng as FallbackLngObjList;
+  const fallbackLng = FALLBACK_LNG;
   return i18next.createInstance(
     {
       lng: lang,

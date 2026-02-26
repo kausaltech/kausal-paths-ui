@@ -1,13 +1,13 @@
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
 
 import { beautifyValue } from '@common/utils/format';
 
 import type { InstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 import type { InstanceGoal } from '@/common/instance';
 

@@ -12,11 +12,11 @@ import {
   alpha,
   lighten,
 } from '@mui/material';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
 
 import type { ActionListQuery, ActionListQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
+import type { TFunction } from '@/common/i18n';
+import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 

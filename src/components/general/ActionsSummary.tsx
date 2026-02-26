@@ -1,7 +1,6 @@
 import { NetworkStatus, useQuery, useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { useTranslation } from 'react-i18next';
 
 import {
   type ActionListQuery,
@@ -9,6 +8,7 @@ import {
   DecisionLevel,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
 import ContentLoader from '@/components/common/ContentLoader';
 import { GET_ACTION_LIST } from '@/queries/getActionList';

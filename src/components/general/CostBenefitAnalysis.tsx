@@ -7,16 +7,15 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
-import type { TFunction } from 'i18next';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
-import { useTranslation } from 'react-i18next';
 
 import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
 
@@ -56,10 +55,10 @@ type Cubes = {
   };
 };
 
-function getChartData(data: Cubes[], theme: Theme, t: TFunction): EChartsCoreOption {
+function getChartData(data: Cubes[], theme: Theme): EChartsCoreOption {
   const sortedData = data.sort((a, b) => a.totals.netBenefit - b.totals.netBenefit);
   const unit = sortedData.length > 0 ? sortedData[0].metric?.data.unit.short : undefined;
-  const unitLabel = unit ? (typeof unit === 'string' ? t(unit) : unit) : '';
+  const unitLabel = unit ?? '';
 
   const config: EChartsCoreOption = {
     aria: {
@@ -246,8 +245,8 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   }, [dimensionalMetrics, startYear, endYear]);
 
   const chartData = useMemo(() => {
-    return metricsWithTotals ? getChartData(metricsWithTotals, theme, t) : undefined;
-  }, [metricsWithTotals, theme, t]);
+    return metricsWithTotals ? getChartData(metricsWithTotals, theme) : undefined;
+  }, [metricsWithTotals, theme]);
 
   const barCount = metricsWithTotals.length;
   const chartHeight = barCount ? barCount * 50 + 150 : 400;

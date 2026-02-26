@@ -1,6 +1,5 @@
-import { useTranslation } from 'next-i18next';
-
 import type { ActionListQuery } from '@/common/__generated__/graphql';
+import { useTranslation } from '@/common/i18n';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import ActionComparisonGraph from '@/components/graphs/ActionComparisonGraph';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
@@ -57,7 +56,7 @@ const ActionsComparison = ({
 
   // FIXME: Running impact metric name through translation as a quickfix until they are translated in the backend
   const impactName = sortedActions[0]?.impactMetric?.name
-    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- dynamic key from backend
+    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic key from backend
       `${String(t(sortedActions[0].impactMetric.name as any))} ${displayYears[1]}`
     : '';
   const effectUnit = sortedActions[0]?.impactMetric?.unit?.htmlShort;

@@ -3,9 +3,9 @@ import { useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, InputLabel, NativeSelect } from '@mui/material';
-import { useTranslation } from 'react-i18next';
 
 import { yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 
 const StyledFormControl = styled(Box)`
   display: flex;

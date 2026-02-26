@@ -11,7 +11,6 @@ import {
   Switch,
   TextField,
 } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
 import { startInteraction } from '@common/sentry/helpers';
 
@@ -21,6 +20,7 @@ import type {
   SetParameterMutationVariables,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import { useSiteWithSetter } from '@/context/site';
 
 const WidgetWrapper = styled.div`

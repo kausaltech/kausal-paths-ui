@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
-import { useTranslation } from 'next-i18next';
 
+import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { formatNumber } from '@/common/preprocess';
 

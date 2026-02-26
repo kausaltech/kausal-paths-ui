@@ -1,5 +1,4 @@
-import { useTranslation } from 'next-i18next';
-
+import { useTranslation } from '@/common/i18n';
 import { formatNumber } from '@/common/preprocess';
 import HighlightValue from '@/components/general/HighlightValue';
 

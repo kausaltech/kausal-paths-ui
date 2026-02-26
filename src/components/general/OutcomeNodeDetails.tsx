@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 
 import styled from '@emotion/styled';
 import { Typography } from '@mui/material';
+
+import type { TFunction } from '@/common/i18n';
 import { ActionLink, NodeLink } from '@/common/links';
-import type { TFunction } from 'i18next';
 
 type ActionParam = {
   id: string;
@@ -75,12 +76,13 @@ const ActionsListCard = styled.li<{ active: boolean; $groupColor: string }>`
       props.active ? props.theme.graphColors.grey090 : props.theme.graphColors.grey050};
   }
 
-  a > .action-title { 
-    display: block; 
-    font-size: 0.875rem; 
-    font-weight: 600; 
-    line-height: 1.2; 
-    margin: 0.1rem 0 0; }
+  a > .action-title {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0.1rem 0 0;
+  }
 `;
 
 const ActionListItem = ({ action }: ActionListItemProps) => {
@@ -110,7 +112,6 @@ const OutcomeNodeDetails = ({ node, t }: OutcomeNodeDetailsProps) => {
     upstreamActions.sort((a, b) => (a.group?.id ?? '').localeCompare(b.group?.id ?? ''));
     return upstreamActions;
   }, [node.upstreamActions]);
-
 
   return (
     <div>

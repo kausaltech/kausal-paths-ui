@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import styled from '@emotion/styled';
-import { useTranslation } from 'next-i18next';
+
+import { useTranslation } from '@/common/i18n';
 
 import { KausalProgress } from './Loader';
 

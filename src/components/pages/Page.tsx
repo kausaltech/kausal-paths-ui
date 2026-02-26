@@ -6,13 +6,13 @@ import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
 import type { Theme } from '@kausal/themes/types';
 import { Box, Container, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material';
-import { useTranslation } from 'next-i18next';
 
 import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 
 import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ActionListPage from '@/components/pages/ActionListPage';
 import DashboardPage from '@/components/pages/DashboardPage';

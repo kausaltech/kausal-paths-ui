@@ -7,9 +7,8 @@ import type { Options as SassOptions } from 'sass';
 import { getNextConfig } from './kausal_common/configs/common-next-config';
 import { wrapWithSentryConfig } from './kausal_common/src/sentry/sentry-next-config';
 import { initializeThemes } from './kausal_common/src/themes/next-config.mjs';
-import i18nConfig from './next-i18next.config.js';
 
-const { i18n } = i18nConfig;
+const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
@@ -18,7 +17,7 @@ process.env.NEXT_TELEMETRY_DISABLED = '1';
 initializeThemes(__dirname);
 
 let nextConfig: NextConfig = {
-  ...getNextConfig(__dirname, { isPagesRouter: true }),
+  ...getNextConfig(__dirname),
   sassOptions: {
     quietDeps: true,
     silenceDeprecations: [
@@ -32,7 +31,7 @@ let nextConfig: NextConfig = {
   // basePath: process.env.BASE_PATH,
   i18n: {
     defaultLocale: 'default',
-    locales: ['default', ...i18n.locales],
+    locales: ['default', ...SUPPORTED_LOCALES],
     localeDetection: false,
   },
 };

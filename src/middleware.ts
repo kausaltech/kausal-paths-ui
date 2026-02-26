@@ -16,7 +16,6 @@ import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common
 
 import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
 
-import i18nConfig from '../next-i18next.config';
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
 import {
   BASE_PATH_HEADER,
@@ -27,6 +26,8 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
 import { getInstancesForRequest } from './middleware/context';
+
+const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
 
 type Instance = AvailableInstanceFragment;
 
@@ -107,13 +108,13 @@ function getAcceptPreferredLocale(supportedLocales: string[], headers: Headers) 
 function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
   const locale =
     headers.get(DEFAULT_LANGUAGE_HEADER) ||
-    getAcceptPreferredLocale(i18nConfig.i18n.locales, headers) ||
+    getAcceptPreferredLocale(SUPPORTED_LOCALES, headers) ||
     'en';
   const url = new NextURL(req.nextUrl.href, {
     nextConfig: {
       i18n: {
         defaultLocale: locale,
-        locales: i18nConfig.i18n.locales,
+        locales: SUPPORTED_LOCALES,
       },
     },
     forceLocale: true,

@@ -6,7 +6,6 @@ import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { isEqual } from 'lodash-es';
-import { useTranslation } from 'next-i18next';
 import type { LayoutAxis } from 'plotly.js';
 import { tint } from 'polished';
 import {
@@ -21,6 +20,7 @@ import {
 import { type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
+import { useTranslation } from '@/common/i18n';
 import { useFeatures, useInstance } from '@/common/instance';
 import { getRange } from '@/common/preprocess';
 import SelectDropdown from '@/components/common/SelectDropdown';
