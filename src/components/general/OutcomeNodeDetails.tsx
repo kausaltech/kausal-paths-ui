@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import styled from '@emotion/styled';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import type { TFunction } from '@/common/i18n';
 import { ActionLink, NodeLink } from '@/common/links';
@@ -114,7 +114,7 @@ const OutcomeNodeDetails = ({ node, t }: OutcomeNodeDetailsProps) => {
   }, [node.upstreamActions]);
 
   return (
-    <div>
+    <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
       {node.shortDescription && <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />}
       {actions.length > 0 && (
         <Typography variant="h5" component="h3" sx={{ mt: 1, mb: 1 }}>
@@ -131,7 +131,7 @@ const OutcomeNodeDetails = ({ node, t }: OutcomeNodeDetailsProps) => {
           <a>{t('read-more')}</a>
         </NodeLink>
       </p>
-    </div>
+    </Box>
   );
 };
 
