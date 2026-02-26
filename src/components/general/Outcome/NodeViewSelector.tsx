@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, FormControl, MenuItem, Select } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
@@ -28,6 +29,7 @@ const NodeViewSelector = ({
 }) => {
   const selectId = `${idPrefix}-view-select`;
   const { t } = useTranslation();
+  const theme = useTheme();
   const instance = useInstance();
   const showDetailsLink = !instance.features?.hideNodeDetails;
 
@@ -44,25 +46,29 @@ const NodeViewSelector = ({
   const allItems = [
     {
       id: 'year',
-      icon: <PieChartFill aria-hidden="true" focusable="false" />,
+      icon: <PieChartFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />,
       label: t('distribution'),
       show: showDistribution,
     },
     {
       id: 'graph',
-      icon: <BarChartLineFill aria-hidden="true" focusable="false" />,
+      icon: (
+        <BarChartLineFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
+      ),
       label: t('time-series'),
       show: true,
     },
     {
       id: 'table',
-      icon: <Table aria-hidden="true" focusable="false" />,
+      icon: <Table aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />,
       label: t('table'),
       show: true,
     },
     {
       id: 'info',
-      icon: <InfoCircleFill aria-hidden="true" focusable="false" />,
+      icon: (
+        <InfoCircleFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
+      ),
       label: t('details'),
       show: showDetailsLink,
     },

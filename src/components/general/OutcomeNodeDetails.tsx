@@ -114,18 +114,22 @@ const OutcomeNodeDetails = ({ node, t }: OutcomeNodeDetailsProps) => {
   }, [node.upstreamActions]);
 
   return (
-    <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
-      {node.shortDescription && <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />}
+    <Box sx={{ maxHeight: 400, overflowY: 'auto', py: 2 }}>
+      {node.shortDescription && (
+        <Box sx={{ mb: 2 }} dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
+      )}
       {actions.length > 0 && (
         <Typography variant="h5" component="h3" sx={{ mt: 1, mb: 1 }}>
           {t('actions-influencing-this', { sector: node.name })} ({actions.length})
         </Typography>
       )}
-      <ActionsList>
-        {actions.map((action) => (
-          <ActionListItem key={action.id} action={action} />
-        ))}
-      </ActionsList>
+      <Box sx={{ mb: 2 }}>
+        <ActionsList>
+          {actions.map((action) => (
+            <ActionListItem key={action.id} action={action} />
+          ))}
+        </ActionsList>
+      </Box>
       <p>
         <NodeLink node={node}>
           <a>{t('read-more')}</a>
