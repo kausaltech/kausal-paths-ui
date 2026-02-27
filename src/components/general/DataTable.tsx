@@ -1,12 +1,12 @@
 import {
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -39,19 +39,20 @@ const DataTable = (props: DataTableProps) => {
     totalHistoricalValues.some((val) => val.value !== null) ||
     totalForecastValues.some((val) => val.value !== null);
 
-  const titleId = `${node.id}-datatable-title`;  
+  const titleId = `${node.id}-datatable-title`;
 
   return (
-    <TableContainer 
+    <TableContainer
       component={Paper}
       role="region"
       aria-labelledby={titleId}
       tabIndex={0}
+      sx={{ maxHeight: 400, overflow: 'auto' }}
     >
       <Typography id={titleId} variant="h5" component="h3" sx={{ px: 2, pt: 2 }}>
         {node.name} ({startYear} - {endYear})
       </Typography>
-      <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+      <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table" stickyHeader>
         <TableHead>
           <TableRow>
             <TableCell>{t('table-year')}</TableCell>

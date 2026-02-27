@@ -1,15 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import styled from '@emotion/styled';
-import { Box, IconButton, MenuItem } from '@mui/material';
-import { Menu } from '@mui/material';
-import {
-  BarChartLineFill,
-  InfoCircleFill,
-  PieChartFill,
-  Table,
-  ThreeDotsVertical,
-} from 'react-bootstrap-icons';
+import { Box } from '@mui/material';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -22,6 +14,7 @@ import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tra
 
 import DataTable from './DataTable';
 import DimensionalNodeVisualisation from './DimensionalNodeVisualisation';
+import NodeViewSelector from './Outcome/NodeViewSelector';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
 import {
   type CategoryMeasureYearsMap,
@@ -56,117 +49,6 @@ const CardContent = styled.div`
     background-color: ${(props) => props.theme.graphColors.grey050};
   }
 `;
-
-const StyledMenuItem = styled(MenuItem)`
-  padding: 0.5rem 1rem;
-
-  svg.bi {
-    margin-right: 0.5rem;
-    fill: ${({ theme }) => theme.textColor.tertiary};
-  }
-`;
-
-const ViewSelector = ({
-  idPrefix,
-  activeTabId,
-  setActiveTabId,
-  showDistribution,
-}: {
-  idPrefix: string;
-  activeTabId: string;
-  setActiveTabId: (tabId: string) => void;
-  showDistribution: boolean;
-}) => {
-  const buttonId = `${idPrefix}-view-options-btn`;
-  const menuId = `${idPrefix}-view-options-menu`;
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const { t } = useTranslation();
-  const instance = useInstance();
-  const showDetailsLink = !instance.features?.hideNodeDetails;
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const createHandleMenuItemClick = (tabId: string) => () => {
-    setActiveTabId(tabId);
-    handleClose();
-    // A11y: After switching the view, move focus to the new region
-    const targetRegionId = `${idPrefix}-panel-${tabId}`;
-    requestAnimationFrame(() => {
-      document.getElementById(targetRegionId)?.focus();
-    });
-  };
-
-  return (
-    <Box>
-      <IconButton
-        id={buttonId}
-        aria-controls={open ? menuId : undefined}
-        aria-haspopup="menu"
-        aria-expanded={open ? 'true' : undefined}
-        aria-label={t('view-options')}
-        onClick={handleClick}
-      >
-        <ThreeDotsVertical aria-hidden="true" focusable="false" />
-      </IconButton>
-      <Menu
-        id={menuId}
-        anchorEl={anchorEl}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        open={open}
-        onClose={handleClose}
-        slotProps={{
-          list: {
-            'aria-labelledby': buttonId,
-          },
-        }}
-      >
-        {showDistribution && (
-          <StyledMenuItem
-            onClick={createHandleMenuItemClick('year')}
-            selected={activeTabId === 'year'}
-          >
-            <PieChartFill aria-hidden="true" focusable="false" /> {t('distribution')}
-          </StyledMenuItem>
-        )}
-        <StyledMenuItem
-          onClick={createHandleMenuItemClick('graph')}
-          selected={activeTabId === 'graph'}
-        >
-          <BarChartLineFill aria-hidden="true" focusable="false" /> {t('time-series')}
-        </StyledMenuItem>
-        <StyledMenuItem
-          onClick={createHandleMenuItemClick('table')}
-          selected={activeTabId === 'table'}
-        >
-          <Table aria-hidden="true" focusable="false" /> {t('table')}
-        </StyledMenuItem>
-        {showDetailsLink && (
-          <StyledMenuItem
-            onClick={createHandleMenuItemClick('info')}
-            selected={activeTabId === 'info'}
-          >
-            <InfoCircleFill aria-hidden="true" focusable="false" />
-            {t('details')}
-          </StyledMenuItem>
-        )}
-      </Menu>
-    </Box>
-  );
-};
 
 type OutcomeNodeContentProps = {
   idPrefix: string;
@@ -308,7 +190,7 @@ const OutcomeNodeContent = ({
                 categoryMeasureYears={categoryMeasureYears}
               />
             )}
-            <ViewSelector
+            <NodeViewSelector
               idPrefix={idPrefix}
               activeTabId={activeTabId}
               setActiveTabId={setActiveTabId}
