@@ -60,6 +60,8 @@ export function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): 
   };
 }
 
+export const NZP_WASTE_NODE_ID = 'waste_emissions';
+
 // TODO: Move to node descriptions on the backend
 // This is a temporary solution with non-translated text for NZC specific plans (only supported in English).
 const HELP_TEXT_BY_NODE_ID = new Map([
