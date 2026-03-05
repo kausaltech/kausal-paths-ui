@@ -60,6 +60,12 @@ export function getStatus(deltaPercentage: number, t: TFunction, theme: Theme): 
   };
 }
 
+// The NZP waste node is treated as a special case for the progress tracker
+// because its sector has no yearly inputs for observed additional data. We
+// use the ID to these handle special cases but in future we should add a property
+// to the backend to control this.
+export const NZP_WASTE_NODE_ID = 'waste_emissions';
+
 // TODO: Move to node descriptions on the backend
 // This is a temporary solution with non-translated text for NZC specific plans (only supported in English).
 const HELP_TEXT_BY_NODE_ID = new Map([

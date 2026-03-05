@@ -16,10 +16,7 @@ import DataTable from './DataTable';
 import DimensionalNodeVisualisation from './DimensionalNodeVisualisation';
 import NodeViewSelector from './Outcome/NodeViewSelector';
 import OutcomeNodeDetails from './OutcomeNodeDetails';
-import {
-  type CategoryMeasureYearsMap,
-  ProgressIndicator,
-} from './progress-tracking/ProgressIndicator';
+import { ProgressIndicator } from './progress-tracking/ProgressIndicator';
 
 const ContentWrapper = styled.div<{ $maxHeightPx?: number }>`
   min-height: 300px;
@@ -87,19 +84,6 @@ const OutcomeNodeContent = ({
   const showProgressTrackingStatus =
     node.metricDim && hasProgressTracking(node.metricDim, site.scenarios, site.minYear);
 
-  // Build a map of category/node ID -> measureDatapointYears from upstream nodes (subNodes)
-  // This allows us to only render the progress tracker and only include years with data
-  const categoryMeasureYears = useMemo((): CategoryMeasureYearsMap => {
-    const map: CategoryMeasureYearsMap = new Map();
-
-    subNodes.forEach((subNode) => {
-      if (subNode.metricDim?.measureDatapointYears) {
-        map.set(subNode.id, subNode.metricDim.measureDatapointYears);
-      }
-    });
-
-    return map;
-  }, [subNodes]);
   /*
 
 
@@ -187,7 +171,6 @@ const OutcomeNodeContent = ({
                 selectedYear={selectedProgressYear}
                 onSelectedYearChange={setSelectedProgressYear}
                 showViewDetails={isRootNode}
-                categoryMeasureYears={categoryMeasureYears}
               />
             )}
             <NodeViewSelector

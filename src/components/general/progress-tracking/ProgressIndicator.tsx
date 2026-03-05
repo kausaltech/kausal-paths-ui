@@ -27,7 +27,7 @@ import { ProgressDriversWrapper } from './ProgressDriversWrapper';
 import { StyledCard } from './StyledCard';
 import { StyledIndicator, StyledStatusBadge } from './StyledStatusBadge';
 import { type MetricDim, type ProgressData, useProgressData } from './useProgressData';
-import { STATUS_KEYS, getDeltaPercentage, getStatus } from './utils';
+import { NZP_WASTE_NODE_ID, STATUS_KEYS, getDeltaPercentage, getStatus } from './utils';
 
 type DrillDownState = {
   categoryId: string;
@@ -111,8 +111,6 @@ const StyledChart = styled(Chart)`
   }
 `;
 
-export type CategoryMeasureYearsMap = Map<string, number[]>;
-
 export type ProgressIndicatorProps = {
   color?: string;
   metric: MetricDim;
@@ -121,8 +119,6 @@ export type ProgressIndicatorProps = {
   selectedYear: number;
   onSelectedYearChange: (year: number) => void;
   showViewDetails?: boolean;
-  /** Map of category/node ID -> measureDatapointYears from upstream nodes */
-  categoryMeasureYears?: CategoryMeasureYearsMap;
 };
 
 const StyledChartWrapper = styled.div`
@@ -409,7 +405,6 @@ export const ProgressIndicator = ({
   selectedYear,
   onSelectedYearChange,
   showViewDetails = true,
-  categoryMeasureYears = new Map(),
 }: ProgressIndicatorProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -435,7 +430,7 @@ export const ProgressIndicator = ({
   // Filter emissions to only include categories that have measureDatapointYears for the selected year
   // (excluding the baseline year)
   const filteredEmissionsForChart = useMemo((): ProgressData | undefined => {
-    if (!selectedEmissions || categoryMeasureYears.size === 0) {
+    if (!selectedEmissions) {
       return selectedEmissions;
     }
 
@@ -443,15 +438,9 @@ export const ProgressIndicator = ({
     const filteredObserved: typeof selectedEmissions.observed = [];
 
     selectedEmissions.expected.forEach((exp, index) => {
-      const measureYears = categoryMeasureYears.get(exp.id) ?? [];
-      const hasMeasuredDataForYear = measureYears.some(
-        (year) => year === selectedEmissions.year && year !== site.minYear
-      );
-
-      // Always include expected, but only include observed if category has measured data
       filteredExpected.push(exp);
 
-      if (hasMeasuredDataForYear) {
+      if (exp.id !== NZP_WASTE_NODE_ID) {
         filteredObserved.push(selectedEmissions.observed[index]);
       } else {
         // Include a placeholder with zero value so indices align
@@ -467,28 +456,26 @@ export const ProgressIndicator = ({
       expected: filteredExpected,
       observed: filteredObserved,
     };
-  }, [selectedEmissions, categoryMeasureYears, site.minYear]);
+  }, [selectedEmissions]);
 
   // Create a Set of category IDs that have measured data for the selected year
   const categoriesWithMeasuredData = useMemo(() => {
     const categoriesSet = new Set<string>();
 
-    if (!selectedEmissions || categoryMeasureYears.size === 0) {
+    if (!selectedEmissions) {
       return undefined;
     }
 
     selectedEmissions.expected.forEach((exp) => {
-      const measureYears = categoryMeasureYears.get(exp.id) ?? [];
-      const hasMeasuredDataForYear = measureYears.some(
-        (year) => year === selectedEmissions.year && year !== site.minYear
-      );
+      const isWasteSector = exp.id === NZP_WASTE_NODE_ID;
 
-      if (hasMeasuredDataForYear) {
+      if (!isWasteSector) {
         categoriesSet.add(exp.id);
       }
     });
+
     return categoriesSet;
-  }, [selectedEmissions, categoryMeasureYears, site.minYear]);
+  }, [selectedEmissions]);
 
   // If there are no observed years with measured data, don't render the progress indicator
   if (observedYears.length === 0 || !latestProgressData) {
