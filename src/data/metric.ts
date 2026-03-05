@@ -185,7 +185,7 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
 export class DimensionalMetric {
   static ALL_SCENARIOS = 'ALL_SCENARIOS';
   private readonly data: Metric;
-  private readonly rows: MetricRow[];
+  public readonly rows: MetricRow[];
   valuesByDim: Map<string, DimValues>;
   dimensions: MetricDimension[];
   dimsById: Map<string, MetricDimension>;
