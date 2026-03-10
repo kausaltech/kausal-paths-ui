@@ -5,10 +5,11 @@ import { useReactiveVar } from '@apollo/client';
 import type { Theme } from '@emotion/react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Box } from '@mui/material';
+import { Box, Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
+import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
 import { Chart } from '@common/components/Chart';
 
@@ -30,6 +31,10 @@ type Props = {
 
 type AxisBounds = { min: number; max: number };
 
+function formatValue(value: number): string {
+  return value.toLocaleString(undefined, { maximumFractionDigits: 3 });
+}
+
 type Cubes = {
   metric: DimensionalMetric;
   actionName: string;
@@ -37,12 +42,11 @@ type Cubes = {
   totals: { cost: number; benefit: number; netBenefit: number };
 };
 
-type StakeholderTotal = {
-  categoryId: string;
-  label: string;
-  cost: number;
-  benefit: number;
-  netBenefit: number;
+type CostTypeInfo = { originalId: string; label: string; color: string; isCost: boolean };
+
+type StakeholderCostTypeData = {
+  costTypes: CostTypeInfo[];
+  rows: Record<string, number | string>[];
 };
 
 type ActionRowProps = {
@@ -54,7 +58,6 @@ type ActionRowProps = {
   unitLabel: string;
   startYear: number;
   endYear: number;
-  outcomesLabel: string;
   isLoading: boolean;
 };
 
@@ -77,6 +80,7 @@ const StyledChartColumn = styled.div`
 `;
 
 const StyledActionBlock = styled.div`
+  position: relative;
   border-bottom: 1px solid ${({ theme }) => theme.graphColors.grey010};
 
   &:last-child {
@@ -84,12 +88,18 @@ const StyledActionBlock = styled.div`
   }
 `;
 
-const StyledOutcomesToggle = styled.button`
+// The top position is calculated by the parent based on the size of this action row's chart. The size may vary
+// as the first chart includes a legend. This button needs to be absolute to avoid breaking the vertical tick
+// lines on the x-axis and to position the button just below the action name within the chart area.
+const StyledOutcomesToggle = styled.button<{ $top: string }>`
+  position: absolute;
+  top: ${({ $top }) => $top};
+  transition: none;
   background: none;
   border: none;
   cursor: pointer;
   font-size: ${({ theme }) => theme.fontSizeSm};
-  color: ${({ theme }) => theme.themeColors.dark};
+  color: ${({ theme }) => theme.linkColor};
   display: block;
   width: ${LABEL_COLUMN_WIDTH}px;
   text-align: right;
@@ -148,13 +158,16 @@ function getActionChartConfig(
     },
     grid: {
       left: LABEL_COLUMN_WIDTH,
-      top: isFirst ? 70 : 4,
-      bottom: 4,
+      top: isFirst ? 70 : 0,
+      bottom: 0,
       right: 60,
     },
     legend: isFirst
-      ? // TODO: Ensure this isn't clickable
-        { data: [{ name: 'Net Benefit', icon: 'circle' }, 'Benefit', 'Cost'], top: 0 }
+      ? {
+          selectedMode: false,
+          data: [{ name: 'Net Benefit', icon: 'circle' }, 'Benefit', 'Cost'],
+          top: 0,
+        }
       : { show: false },
     xAxis: {
       type: 'value',
@@ -163,7 +176,9 @@ function getActionChartConfig(
       max: bounds.max,
       axisLabel: {
         show: isFirst,
-        formatter: `{value} ${unitLabel}`,
+        formatter: (value: number) => `${formatValue(value)} ${unitLabel}`,
+        showMinLabel: false,
+        showMaxLabel: false,
       },
       axisLine: { show: false },
       splitLine: { show: true },
@@ -172,14 +187,14 @@ function getActionChartConfig(
       type: 'category',
       splitArea: { show: true },
       axisLine: { show: false },
-      axisLabel: { show: true, width: 200, overflow: 'break', align: 'right' },
+      axisLabel: { show: true, width: 200, overflow: 'break', align: 'right', fontSize: 14 },
       axisTick: { show: false },
       splitLine: { show: false },
     },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: number) => `${Math.round(value)} ${unitLabel}`,
+      valueFormatter: (value: number) => `${formatValue(value)} ${unitLabel}`,
     },
     series: [
       {
@@ -223,7 +238,7 @@ function getActionChartConfig(
               {
                 type: 'text',
                 style: {
-                  text: `${Math.round(netBenefit)} ${unitLabel}`,
+                  text: `${formatValue(netBenefit as number)} ${unitLabel}`,
                   font: '12px sans-serif',
                   fill: theme.themeColors.black,
                   textAlign: 'left',
@@ -254,39 +269,184 @@ function getActionChartConfig(
   };
 }
 
-function getStakeholderChartConfig(
-  stakeholders: StakeholderTotal[],
-  bounds: AxisBounds,
-  unitLabel: string,
+const COST_SHADES = [
+  'red090',
+  'red070',
+  'red050',
+  'red030',
+  'red010',
+  'yellow050',
+  'yellow030',
+  'yellow010',
+] as const;
+
+const BENEFIT_SHADES = [
+  'green090',
+  'green070',
+  'green050',
+  'green030',
+  'green010',
+  'blue070',
+  'blue050',
+  'blue030',
+  'blue010',
+] as const;
+
+function getStakeholderCostTypeData(
+  metric: DimensionalMetric,
+  startYear: number,
+  endYear: number,
   theme: Theme
+): StakeholderCostTypeData | null {
+  const stakeholderDim = metric.dimensions.find((d) => d.originalId === 'stakeholder');
+  const costTypeDim = metric.dimensions.find((d) => d.originalId === 'cost_type');
+
+  if (!stakeholderDim || !costTypeDim) return null;
+
+  // Calculate total per cost type to determine the sign and
+  // filter out cost types with no data in the selected year range.
+  const costTypeAggregates = new Map<string, number>();
+
+  for (const row of metric.rows) {
+    if (row.value == null || row.year < startYear || row.year > endYear) {
+      continue;
+    }
+
+    const costTypeId = row.dimCats[costTypeDim.id]?.id;
+
+    if (costTypeId) {
+      costTypeAggregates.set(costTypeId, (costTypeAggregates.get(costTypeId) ?? 0) + row.value);
+    }
+  }
+
+  // Positive aggregate = cost (red), negative = benefit (green), zero = exclude
+  const costs = costTypeDim.categories
+    .filter((c) => c.originalId != null && (costTypeAggregates.get(c.id) ?? 0) > 0)
+    .sort((a, b) => (costTypeAggregates.get(b.id) ?? 0) - (costTypeAggregates.get(a.id) ?? 0)); // largest cost first
+
+  const benefits = costTypeDim.categories
+    .filter((c) => c.originalId != null && (costTypeAggregates.get(c.id) ?? 0) < 0)
+    .sort((a, b) => (costTypeAggregates.get(a.id) ?? 0) - (costTypeAggregates.get(b.id) ?? 0)); // largest benefit first
+
+  const costTypes: CostTypeInfo[] = [
+    ...costs.map((category, i) => ({
+      originalId: category.originalId!,
+      label: category.label,
+      color: theme.graphColors[COST_SHADES[i % COST_SHADES.length]],
+      isCost: true,
+    })),
+    ...benefits.map((category, i) => ({
+      originalId: category.originalId!,
+      label: category.label,
+      color: theme.graphColors[BENEFIT_SHADES[i % BENEFIT_SHADES.length]],
+      isCost: false,
+    })),
+  ];
+
+  const rows: Record<string, number | string>[] = stakeholderDim.categories.map(
+    (stakeholderCategory) => {
+      const row: Record<string, number | string> = { label: stakeholderCategory.label };
+
+      for (const costType of costTypes) {
+        const costCategory = costTypeDim.categories.find(
+          (c) => c.originalId === costType.originalId
+        );
+
+        if (!costCategory) {
+          row[costType.originalId] = 0;
+        } else {
+          const rawSum = metric.rows.reduce<number>((sum, metricRow) => {
+            if (
+              metricRow.value == null ||
+              metricRow.year < startYear ||
+              metricRow.year > endYear ||
+              metricRow.dimCats[stakeholderDim.id]?.id !== stakeholderCategory.id ||
+              metricRow.dimCats[costTypeDim.id]?.id !== costCategory.id
+            ) {
+              return sum;
+            }
+
+            return sum + metricRow.value;
+          }, 0);
+
+          // Use absolute values so both costs and benefits plot as positive (right-going) bars,
+          // matching the convention of the action-level chart.
+          row[costType.originalId] = Math.abs(rawSum);
+        }
+      }
+
+      return row;
+    }
+  );
+
+  return { costTypes, rows };
+}
+
+function getStakeholderChartConfig(
+  data: StakeholderCostTypeData,
+  unitLabel: string
 ): EChartsCoreOption {
   return {
+    animation: false,
     aria: { enabled: true },
     dataset: {
-      dimensions: [
-        { name: 'label', type: 'ordinal' },
-        { name: 'cost', type: 'number' },
-        { name: 'benefit', type: 'number' },
-      ],
-      source: stakeholders.map((s) => ({ label: s.label, cost: s.cost, benefit: s.benefit })),
+      dimensions: ['label', ...data.costTypes.map((costType) => costType.originalId)],
+      source: data.rows,
     },
     grid: {
       left: LABEL_COLUMN_WIDTH,
-      top: 0,
+      top: 24,
       bottom: 4,
       right: 60,
+    },
+    legend: {
+      type: 'scroll',
+      orient: 'horizontal',
+      bottom: 0,
+      data: data.costTypes.map((costType) => ({
+        name: costType.label,
+        itemStyle: { color: costType.color },
+      })),
     },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: unknown) => `${Math.round(value as number)} ${unitLabel}`,
+      formatter: (() => {
+        // Build label → originalId map so we can look up the correct dataset column per series.
+        const labelToId = new Map(
+          data.costTypes.map((costType) => [costType.label, costType.originalId])
+        );
+
+        return (params: unknown) => {
+          type TooltipParam = { marker: string; seriesName: string; value: Record<string, number> };
+
+          return (params as TooltipParam[])
+            .flatMap((param) => {
+              const id = labelToId.get(param.seriesName);
+              const val = id != null ? param.value[id] : null;
+
+              if (val == null || val === 0) {
+                return [];
+              }
+
+              return [
+                `${param.marker}${param.seriesName}: <b>${formatValue(val)} ${unitLabel}</b>`,
+              ];
+            })
+            .join('<br/>');
+        };
+      })(),
     },
     xAxis: {
       type: 'value',
       position: 'top',
-      min: bounds.min,
-      max: bounds.max,
-      axisLabel: { show: false },
+      axisLabel: {
+        show: true,
+        formatter: (value: number) => `${formatValue(value)} ${unitLabel}`,
+        showMinLabel: false,
+        showMaxLabel: false,
+      },
+      axisTick: { show: true },
       axisLine: { show: false },
       splitLine: { show: true },
     },
@@ -297,69 +457,16 @@ function getStakeholderChartConfig(
       axisTick: { show: false },
       splitLine: { show: false },
     },
-    series: [
-      {
-        type: 'bar',
-        barCategoryGap: '40%',
-        name: 'Benefit',
-        encode: { x: 'benefit', y: 'label' },
-        itemStyle: { color: theme.graphColors.green010 },
-      },
-      {
-        type: 'bar',
-        name: 'Cost',
-        encode: { x: 'cost', y: 'label' },
-        itemStyle: { color: theme.graphColors.red010 },
-      },
-    ],
+    series: data.costTypes.map((costType) => ({
+      type: 'bar',
+      name: costType.label,
+      // Costs and benefits use separate stacks so they form two grouped bar sets,
+      // matching the same approach of the action-level chart above
+      stack: costType.isCost ? 'costs' : 'benefits',
+      encode: { x: costType.originalId, y: 'label' },
+      itemStyle: { color: costType.color },
+    })),
   };
-}
-
-/**
- * Returns cost/benefit totals per category for a given dimension, summed over the year range.
- * Negative row values are treated as benefits and positive as costs. Written based on other methods
- * in metric.ts but kjept separate because this is specifically for cost benefits.
- *
- * @param dimensionOriginalId The non-prefixed (canonical) id for the dimension
- * @param startYear Inclusive start year
- * @param endYear Inclusive end year
- */
-function getPerCategoryTotals(
-  dimensionalMetric: DimensionalMetric,
-  dimensionOriginalId: string,
-  startYear: number,
-  endYear: number
-): StakeholderTotal[] {
-  const dim = dimensionalMetric.dimensions.find((d) => d.originalId === dimensionOriginalId);
-
-  if (!dim) {
-    return [];
-  }
-
-  return dim.categories.map((cat) => {
-    const [cost, benefit] = dimensionalMetric.rows.reduce<[number, number]>(
-      ([cost, benefit], row) => {
-        if (
-          row.value === 0 ||
-          row.value == null ||
-          row.year < startYear ||
-          row.year > endYear ||
-          row.dimCats[dim.id]?.id !== cat.id
-        ) {
-          return [cost, benefit];
-        }
-
-        if (row.value < 0) {
-          return [cost, benefit + Math.abs(row.value)];
-        }
-
-        return [cost + row.value, benefit];
-      },
-      [0, 0]
-    );
-
-    return { categoryId: cat.id, label: cat.label, cost, benefit, netBenefit: benefit - cost };
-  });
 }
 
 function ActionRow({
@@ -371,10 +478,10 @@ function ActionRow({
   unitLabel,
   startYear,
   endYear,
-  outcomesLabel,
   isLoading,
 }: ActionRowProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const hasStakeholders = item.metric.hasDimension('stakeholder');
 
   const actionChartConfig = useMemo(
@@ -382,24 +489,27 @@ function ActionRow({
     [item.actionName, item.totals, bounds, isFirst, unitLabel, theme]
   );
 
-  const stakeholders = useMemo<StakeholderTotal[] | null>(
+  const stakeholderData = useMemo<StakeholderCostTypeData | null>(
     () =>
       !isExpanded || !hasStakeholders
         ? null
-        : getPerCategoryTotals(item.metric, 'stakeholder', startYear, endYear),
-    [isExpanded, hasStakeholders, item.metric, startYear, endYear]
+        : getStakeholderCostTypeData(item.metric, startYear, endYear, theme),
+    [isExpanded, hasStakeholders, item.metric, startYear, endYear, theme]
   );
 
   const stakeholderChartConfig = useMemo(
     () =>
-      !stakeholders?.length
-        ? null
-        : getStakeholderChartConfig(stakeholders, bounds, unitLabel, theme),
-    [stakeholders, bounds, unitLabel, theme]
+      !stakeholderData?.rows.length ? null : getStakeholderChartConfig(stakeholderData, unitLabel),
+    [stakeholderData, unitLabel]
   );
 
-  const actionChartHeight = isFirst ? '120px' : '55px';
-  const stakeholderChartHeight = `${(stakeholders?.length ?? 0) * 45 + 10}px`;
+  const SPACE_FOR_OUTCOMES_TOGGLE = 40;
+
+  // The first action chart has a bigger height to fit the legend
+  const actionChartHeight = isFirst
+    ? `${120 + SPACE_FOR_OUTCOMES_TOGGLE}px`
+    : `${55 + SPACE_FOR_OUTCOMES_TOGGLE}px`;
+  const stakeholderChartHeight = `${(stakeholderData?.rows.length ?? 0) * 45 + 50}px`;
 
   return (
     <StyledActionBlock>
@@ -410,18 +520,33 @@ function ActionRow({
         withResizeLegend={false}
       />
       {hasStakeholders && (
-        <StyledOutcomesToggle onClick={onToggle}>
-          {outcomesLabel} {isExpanded ? '▲' : '▼'}
+        <StyledOutcomesToggle onClick={onToggle} $top={`calc(${actionChartHeight} - 25px)`}>
+          {t('outcomes-of-interest')} {isExpanded ? <ChevronUp /> : <ChevronDown />}
         </StyledOutcomesToggle>
       )}
-      {isExpanded && stakeholderChartConfig && (
-        <Chart
-          isLoading={false}
-          data={stakeholderChartConfig}
-          height={stakeholderChartHeight}
-          withResizeLegend={false}
-        />
-      )}
+
+      <Collapse in={!!(isExpanded && stakeholderChartConfig)} mountOnEnter unmountOnExit>
+        <Card sx={{ ml: 6, mt: 1, mb: 2 }}>
+          <CardContent>
+            <Grid container>
+              <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {t('outcomes-of-interest-description')}
+                </Typography>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 8, lg: 10 }}>
+                <Chart
+                  isLoading={false}
+                  data={stakeholderChartConfig ?? undefined}
+                  height={stakeholderChartHeight}
+                  withResizeLegend={false}
+                />
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Collapse>
     </StyledActionBlock>
   );
 }
@@ -458,7 +583,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
             return [cost, benefit];
           }
 
-          // Negative costs are considered benefits
+          // Positive values are costs, negative values are benefits
           if (row.value < 0) {
             return [cost, benefit + Math.abs(row.value)];
           }
@@ -477,7 +602,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   }, [dimensionalMetrics, startYear, endYear]);
 
   const sortedMetrics = useMemo(
-    () => [...metricsWithTotals].sort((a, b) => a.totals.netBenefit - b.totals.netBenefit),
+    () => [...metricsWithTotals].sort((a, b) => b.totals.netBenefit - a.totals.netBenefit),
     [metricsWithTotals]
   );
 
@@ -525,7 +650,6 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
                   unitLabel={unitLabel}
                   startYear={startYear}
                   endYear={endYear}
-                  outcomesLabel={t('outcomes-of-interest')}
                   isLoading={isLoading}
                 />
               ))}
