@@ -1,5 +1,5 @@
 import type { ActionListQuery } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
+import { type TFunction, useTranslation } from '@/common/i18n';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import ActionComparisonGraph from '@/components/graphs/ActionComparisonGraph';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
@@ -54,10 +54,13 @@ const ActionsComparison = ({
     impact: sortedActions.map((action) => action.impact),
   };
 
+  const metricName = sortedActions[0].impactMetric?.name;
   // FIXME: Running impact metric name through translation as a quickfix until they are translated in the backend
+  const translatedMetricName = t.has(metricName as Parameters<TFunction>[0])
+    ? t(metricName as Parameters<TFunction>[0])
+    : metricName;
   const impactName = sortedActions[0]?.impactMetric?.name
-    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic key from backend
-      `${String(t(sortedActions[0].impactMetric.name as any))} ${displayYears[1]}`
+    ? `${translatedMetricName} ${displayYears[1]}`
     : '';
   const effectUnit = sortedActions[0]?.impactMetric?.unit?.htmlShort;
 

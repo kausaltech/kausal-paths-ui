@@ -6,7 +6,7 @@ import { CircularProgress } from '@mui/material';
 import { Fade } from 'reactstrap';
 
 import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
+import { type TFunction, useTranslation } from '@/common/i18n';
 import GraphQLError from '@/components/common/GraphQLError';
 import { useSiteWithSetter } from '@/context/site';
 import { GET_NODE_VISUALIZATIONS } from '@/queries/getNodeVisualizations';
@@ -46,6 +46,25 @@ const StyledChartContainer = styled.div`
 
 interface Props {
   nodeId: string;
+}
+
+type TranslationKey = Parameters<TFunction>[0];
+
+function getChartLabel(t: TFunction, label?: string | null, shortUnit?: string) {
+  if (!label) {
+    return undefined;
+  }
+
+  // TODO: Remove this translation when the backend label is updated
+  if (shortUnit && t.has(shortUnit as TranslationKey)) {
+    return `${label} (${t(shortUnit as TranslationKey)})`;
+  }
+
+  if (shortUnit) {
+    return `${label} (${shortUnit})`;
+  }
+
+  return label;
 }
 
 export function ProgressDriversWrapper({ nodeId }: Props) {
@@ -131,7 +150,6 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
             />
           </StyledCard>
         )}
-
         {!!visualizations && (
           <>
             <StyledDriversTitle>{t('emission-drivers')}</StyledDriversTitle>
@@ -147,17 +165,7 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
                         <StyledChartContainer key={ii}>
                           <ProgressDriversVisualization
                             key={`${loading}`}
-                            title={
-                              child.label
-                                ? `${child.label} ${
-                                    child.metricDim.unit.short
-                                      ? /* TODO: Remove this translation when the backend label is updated */
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        `(${String(t(child.metricDim.unit.short as any))})`
-                                      : ''
-                                  }`
-                                : undefined
-                            }
+                            title={getChartLabel(t, child.label, child.metricDim.unit.short)}
                             metric={child.metricDim}
                             desiredOutcome={child.desiredOutcome}
                             isDirectlyObserved={true}
