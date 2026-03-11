@@ -9,6 +9,7 @@ import styled from '@emotion/styled';
 import { Box, Drawer } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
+import { getLogger } from '@common/logging';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
@@ -17,7 +18,7 @@ import { useInstance } from '@/common/instance';
 import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
-import { useSiteWithSetter } from '@/context/site';
+import { useSiteOrNull } from '@/context/site';
 
 import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
@@ -81,10 +82,13 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const router = useRouter();
   const { asPath: pathname } = router;
   const theme = useTheme();
-  const [site] = useSiteWithSetter();
+  const site = useSiteOrNull();
+  if (!site) {
+    throw new Error('Site context not found');
+  }
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { menuPages, iconBase: fallbackIconBase, ogImage, additionalLinkPages } = site;
+  const { menuPages, iconBase: fallbackIconBase, ogImage, additionalLinkPages } = site || {};
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
   const handleDrawerClose = () => {
@@ -159,7 +163,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta name="robots" content="noindex" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content={site.title} />
+        <meta property="og:site_name" content={site?.title || ''} />
         {iconBase && (
           <>
             <link rel="icon" href={getThemeStaticURL(theme.favicons.svg)} type="image/svg+xml" />
@@ -199,7 +203,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             },
           }}
         >
-          {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
+          {drawerOpen && !isMobile && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {/* Temporary drawer for mobile */}
         <Drawer
@@ -222,19 +226,19 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             },
           }}
         >
-          {drawerOpen && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
+          {drawerOpen && isMobile && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
         <Box sx={{ flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
           <NavComponent
-            siteTitle={site.title}
-            ownerName={site.owner ?? undefined}
+            siteTitle={site?.title || ''}
+            ownerName={site?.owner || undefined}
             navItems={navItems}
           />
           <main className="main" id="main">
             {/* hidden H1 fallback for accessibility */}
             <Box component="h1" sx={visuallyHiddenSx}>
-              {activePage?.title || site.title}
+              {activePage?.title || site?.title || ''}
             </Box>
             {children}
           </main>
