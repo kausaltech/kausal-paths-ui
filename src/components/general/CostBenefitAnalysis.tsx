@@ -396,7 +396,7 @@ function getStakeholderChartConfig(
     grid: {
       left: LABEL_COLUMN_WIDTH,
       top: 24,
-      bottom: 4,
+      bottom: 40,
       right: 60,
     },
     legend: {
