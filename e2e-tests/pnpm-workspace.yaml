@@ -1,0 +1,4 @@
+hoist: true
+minimumReleaseAge: 1440
+sharedWorkspaceLockfile: false
+linkWorkspacePackages: false
