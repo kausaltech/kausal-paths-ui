@@ -88,6 +88,7 @@ type OutcomeCardSetProps = {
   startYear: number;
   endYear: number;
   activeScenario: string;
+  activeScenarioId: string;
   activeNodeId: string | undefined;
   setLastActiveNodeId: (s: string) => void;
   subNodesTitle: string;
@@ -95,19 +96,21 @@ type OutcomeCardSetProps = {
   refetching: boolean;
 };
 
-const OutcomeCardSet = ({
-  nodeMap,
-  rootNode,
-  parentColor,
-  startYear,
-  endYear,
-  activeScenario,
-  activeNodeId,
-  setLastActiveNodeId,
-  subNodesTitle,
-  isRootNode,
-  refetching,
-}: OutcomeCardSetProps) => {
+export default function OutcomeCardSet(props: OutcomeCardSetProps) {
+  const {
+    nodeMap,
+    rootNode,
+    parentColor,
+    startYear,
+    endYear,
+    activeScenario,
+    activeScenarioId,
+    activeNodeId,
+    setLastActiveNodeId,
+    subNodesTitle,
+    isRootNode,
+    refetching,
+  } = props;
   const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>(undefined);
   //const { scrollTo } = useScrollTo(config.molasses);
   const showRefreshPrompt = useFeatures().showRefreshPrompt;
@@ -207,7 +210,13 @@ const OutcomeCardSet = ({
           refetching={refetching}
         />
       )}
-      <CardSet id={rootNode.id} $color={rootNode.color!} $haschildren={cardNodes.length > 0}>
+      <CardSet
+        id={rootNode.id}
+        $color={rootNode.color!}
+        $haschildren={cardNodes.length > 0}
+        data-testid="outcome-card-set"
+        data-scenario-id={activeScenarioId}
+      >
         <ContentArea>
           <OutcomeNodeContent
             isRootNode={isRootNode}
@@ -261,6 +270,4 @@ const OutcomeCardSet = ({
       </CardSet>
     </>
   );
-};
-
-export default OutcomeCardSet;
+}

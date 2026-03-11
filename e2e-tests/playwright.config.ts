@@ -10,11 +10,22 @@ dotenv.config({
   quiet: true,
 });
 
+const resultsPath = process.env.TEST_RESULTS_PATH ?? './test-results';
+export const snapshotsPath =
+  process.env.TEST_SNAPSHOTS_PATH ?? path.resolve(basePath, './test-snapshots');
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: './tests',
+  outputDir: resultsPath,
+  snapshotPathTemplate: snapshotsPath ? `${snapshotsPath}{/projectName}/{arg}{ext}` : undefined,
+  expect: {
+    toMatchAriaSnapshot: {
+      pathTemplate: `${snapshotsPath}{/projectName}/{arg}{ext}`,
+    },
+  },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -36,9 +47,12 @@ export default defineConfig({
     // baseURL: 'http://127.0.0.1:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: process.env.CI ? 'retain-on-failure' : 'on',
     actionTimeout: 2000,
-    screenshot: process.env.CI ? 'off' : 'on',
+    screenshot: 'on',
+    contextOptions: {
+      reducedMotion: 'reduce',
+    },
   },
   maxFailures: 10,
   globalSetup: path.resolve('./global-setup'),
@@ -85,11 +99,11 @@ export default defineConfig({
   webServer: process.env.TEST_PAGE_BASE_URL
     ? undefined
     : {
-        command: process.env.TEST_DEVSERVER ? 'cd .. && npm run dev' : 'cd .. && npm start',
+        command: process.env.TEST_DEVSERVER ? 'cd .. && pnpm dev' : 'cd .. && pnpm start',
         url: 'http://localhost:3000/_health',
         reuseExistingServer: true,
         env: {
-          NEXT_PUBLIC_WILDCARD_DOMAINS: 'localhost',
+          WILDCARD_DOMAINS: 'localhost',
         },
       },
 });

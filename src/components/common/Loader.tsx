@@ -73,12 +73,10 @@ const LoaderOverlay = styled.div`
   z-index: 1;
 `;
 
-const Loader = () => {
+export default function Loader() {
   return (
-    <LoaderOverlay>
+    <LoaderOverlay aria-busy="true">
       <KausalProgress />
     </LoaderOverlay>
   );
-};
-
-export default Loader;
+}

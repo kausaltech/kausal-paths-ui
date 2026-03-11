@@ -4,13 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 import type {
   ApolloClient as ApolloClientType,
-  ApolloQueryResult,
   DocumentNode,
-  NormalizedCacheObject,
   OperationVariables,
 } from '@apollo/client';
-import * as apollo from '@apollo/client';
-import { type Page, expect } from '@playwright/test';
+import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
+import { type Page, type PageScreenshotOptions, expect } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
@@ -20,6 +18,7 @@ import type {
   PlaywrightGetInstanceInfoQuery,
   PlaywrightGetInstanceInfoQueryVariables,
 } from '../__generated__/graphql.ts';
+import { snapshotsPath } from '../playwright.config.ts';
 
 const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
 const FALLBACK_LNG: FallbackLngObjList = {
@@ -27,9 +26,6 @@ const FALLBACK_LNG: FallbackLngObjList = {
   'de-CH': ['de'],
   default: ['en'],
 };
-
-// @ts-expect-error crazy apollo imports
-const { ApolloClient, InMemoryCache, gql } = apollo.default as typeof apollo;
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -65,6 +61,9 @@ const GET_INSTANCE_INFO = gql`
       features {
         showRefreshPrompt
       }
+      goals {
+        id
+      }
     }
     pages {
       urlPath
@@ -74,6 +73,14 @@ const GET_INSTANCE_INFO = gql`
     }
     actions {
       id
+      isVisible
+      group {
+        id
+      }
+      parameters {
+        localId
+        isCustomizable
+      }
     }
   }
 `;
@@ -89,7 +96,7 @@ export type ActionListPage = PathsPage & {
 export type ApolloErrorContext = {
   query: DocumentNode;
   variables?: OperationVariables;
-  client?: ApolloClientType<NormalizedCacheObject>;
+  client?: ApolloClientType;
   component?: string;
 };
 
@@ -133,12 +140,16 @@ export class InstanceContext {
   instance: InstanceInfo;
   baseURL: string;
   i18n: i18n;
+  takeScreenshots: boolean;
+  compareScreenshots: boolean;
 
   constructor(instance: InstanceInfo, baseURL: string) {
     this.instance = instance;
     this.baseURL = baseURL;
     const lng = this.instance.instance.defaultLanguage;
     this.i18n = initI18n(lng);
+    this.takeScreenshots = process.env.TEST_TAKE_SCREENSHOTS === '1';
+    this.compareScreenshots = process.env.TEST_COMPARE_SCREENSHOTS === '1';
   }
 
   // Returns the first page of the given type, or null if no such page exists
@@ -156,6 +167,10 @@ export class InstanceContext {
     return item;
   }
 
+  getVisibleActions(): ActionInfo[] {
+    return this.instance.actions.filter((action) => action.isVisible && action.group !== null);
+  }
+
   getActionURL(action: ActionInfo) {
     return `${this.baseURL}/actions/${action.id}`;
   }
@@ -163,6 +178,7 @@ export class InstanceContext {
   async navigateTo(page: Page, url: string) {
     await page.goto(url);
     await this.checkMeta(page);
+    await this.waitForLoaded(page);
   }
 
   async checkMeta(page: Page) {
@@ -177,13 +193,47 @@ export class InstanceContext {
     });
   }
 
+  async waitForNavbarVisible(page: Page) {
+    if ((await page.locator('nav#branding-navigation-bar').count()) > 1) {
+      await expect(page.locator('nav#branding-navigation-bar')).toBeVisible();
+    } else {
+      await expect(page.locator('nav#global-navigation-bar')).toBeVisible();
+    }
+  }
+
+  async takeScreenshot(
+    page: Page,
+    screenshotId: string,
+    opts?: Omit<PageScreenshotOptions, 'path'>
+  ) {
+    const finalOpts = {
+      fullPage: true,
+      ...(opts || {}),
+    };
+    if (this.compareScreenshots) {
+      await expect(page).toHaveScreenshot(
+        [this.instance.instance.id, `${screenshotId}.png`],
+        finalOpts
+      );
+      await expect(page.getByRole('main')).toMatchAriaSnapshot({
+        name: `${this.instance.instance.id}/${screenshotId}.aria.yml`,
+      });
+    }
+
+    if (!this.takeScreenshots) return;
+
+    const screenshotDir = snapshotsPath;
+    const path = `${screenshotDir}/${this.instance.instance.id}/${screenshotId}.png`;
+    await page.screenshot({ path, ...finalOpts });
+  }
+
   static async fromInstanceId(instanceId: string) {
     const apolloClient = new ApolloClient({
       cache: new InMemoryCache(),
-      uri: `${API_BASE}/graphql/`,
+      link: new HttpLink({ uri: `${API_BASE}/graphql/` }),
     });
 
-    let langRes: ApolloQueryResult<PlaywrightGetInstanceBasicsQuery>;
+    let langRes: ApolloClient.QueryResult<PlaywrightGetInstanceBasicsQuery>;
     try {
       langRes = await apolloClient.query<
         PlaywrightGetInstanceBasicsQuery,
@@ -196,9 +246,13 @@ export class InstanceContext {
       console.error(err);
       throw err;
     }
-    const primaryLanguage = langRes.data.instance.defaultLanguage;
+    const instanceData = langRes.data?.instance;
+    if (!instanceData) {
+      throw new Error('Instance basics data not found for instance ' + instanceId);
+    }
+    const primaryLanguage = instanceData.defaultLanguage;
     const baseURL = getPageBaseUrlToTest(instanceId);
-    let res: ApolloQueryResult<PlaywrightGetInstanceInfoQuery>;
+    let res: ApolloClient.QueryResult<PlaywrightGetInstanceInfoQuery>;
     try {
       res = await apolloClient.query<
         PlaywrightGetInstanceInfoQuery,
@@ -212,6 +266,9 @@ export class InstanceContext {
       throw err;
     }
     const data = res.data;
+    if (!data) {
+      throw new Error('Instance info data not found for instance ' + instanceId);
+    }
     return new InstanceContext(data, baseURL);
   }
 }

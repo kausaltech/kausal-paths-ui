@@ -80,7 +80,8 @@ const isCustomScenario = (scenario: { id: string }) => {
   return scenario.id === 'custom';
 };
 
-const ScenarioSelector = () => {
+export default function ScenarioSelector(props: { testId?: string }) {
+  const { testId: testIdBase } = props;
   const { t } = useTranslation();
   const instance = useInstance();
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -95,6 +96,8 @@ const ScenarioSelector = () => {
       componentName: 'ScenarioSelector',
     },
   });
+
+  const testId = testIdBase ? `${testIdBase}-selector` : undefined;
 
   const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation<
     ActivateScenarioMutation,
@@ -117,7 +120,7 @@ const ScenarioSelector = () => {
 
   if (loading && !previousData) {
     return (
-      <StyledFormControl>
+      <StyledFormControl data-testid={testId}>
         <StyledInputLabel id={labelId} htmlFor={selectId}>
           {t('plot-scenario')}
         </StyledInputLabel>
@@ -160,7 +163,7 @@ const ScenarioSelector = () => {
   };
 
   return (
-    <StyledFormControl disabled={loading || mutationLoading}>
+    <StyledFormControl disabled={loading || mutationLoading} data-testid={testId}>
       <StyledInputLabel id={labelId} htmlFor={selectId}>
         {t('plot-scenario')}
       </StyledInputLabel>
@@ -187,6 +190,4 @@ const ScenarioSelector = () => {
       </StyledSelect>
     </StyledFormControl>
   );
-};
-
-export default ScenarioSelector;
+}

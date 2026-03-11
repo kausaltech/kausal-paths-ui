@@ -39,6 +39,7 @@ const Toolbar = styled.div`
   margin-bottom: 10px;
 `;
 
+// @ts-expect-error - Cytoscape types package is not up-to-date
 Cytoscape.use(dagre);
 Cytoscape.use(elk);
 function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {

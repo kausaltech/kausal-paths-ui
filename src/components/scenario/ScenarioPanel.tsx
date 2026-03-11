@@ -47,6 +47,9 @@ export const GET_INSTANCE_GOAL_OUTCOME = gql`
         }
       }
     }
+    activeScenario {
+      id
+    }
   }
 `;
 
@@ -148,7 +151,6 @@ const ScenarioPanel = () => {
       },
     }
   );
-
   // if (loading) return <Skeleton variant="text" width={100} height={24} />;
   if (error) return <div>error!</div>;
 
@@ -216,7 +218,7 @@ const ScenarioPanel = () => {
             <Grid container spacing={2} sx={{ alignItems: 'flex-end' }}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <ScenarioSelector />
+                  <ScenarioSelector testId="scenario-panel" />
                   <Button
                     ref={editBtnRef}
                     size="small"
@@ -243,6 +245,7 @@ const ScenarioPanel = () => {
                     activeGoal={activeGoal}
                     targetYear={yearRange[1]}
                     variant="compact"
+                    scenarioId={data?.activeScenario?.id}
                   />
                 </Grid>
               )}

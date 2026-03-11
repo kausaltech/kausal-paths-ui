@@ -90,7 +90,7 @@ const headerText = {
 
 const COL1_XS = '18ch';
 
-const ActionsList = ({
+export default function ActionsList({
   id,
   actions,
   actionGroups,
@@ -100,7 +100,7 @@ const ActionsList = ({
   refetching,
   onChangeSort,
   onToggleSortDirection,
-}: ActionsListProps) => {
+}: ActionsListProps) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -540,6 +540,4 @@ const ActionsList = ({
       </Table>
     </TableContainer>
   );
-};
-
-export default ActionsList;
+}

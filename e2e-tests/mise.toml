@@ -1,0 +1,27 @@
+[prepare]
+disable = ["npm", "yarn"]
+
+[prepare.pnpm]
+auto = true
+
+[env]
+# Add node_modules/.bin to PATH
+_.path = ['{{config_root}}/node_modules/.bin']
+
+[tasks.pnpm-install]
+description = 'Installs dependencies with pnpm'
+run = 'pnpm install'
+sources = ['package.json', 'pnpm-lock.yaml', 'mise.toml']
+outputs = ['node_modules/.pnpm/lock.yaml']
+
+[tasks.playwright-install]
+description = 'Install Playwright browsers'
+run = 'playwright install'
+depends = ['pnpm-install']
+sources = ['package.json', 'pnpm-lock.yaml', 'mise.toml']
+
+[tasks.test]
+description = 'Run tests'
+run = 'playwright test --project chromium --workers 1'
+depends = ['pnpm-install']
+sources = ['tests/**/*.spec.ts']

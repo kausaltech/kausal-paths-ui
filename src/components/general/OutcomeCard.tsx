@@ -247,7 +247,7 @@ type OutcomeCardProps = {
   refetching: boolean;
 };
 
-const OutcomeCard = (props: OutcomeCardProps) => {
+export default function OutcomeCard(props: OutcomeCardProps) {
   const {
     node,
     state,
@@ -315,8 +315,8 @@ const OutcomeCard = (props: OutcomeCardProps) => {
         interactive={handleClick !== undefined}
       >
         <ContentArea>
-          {refetching && <Loader />}
-          {isCompared && siblingsTotal && (
+          {refetching ? <Loader /> : null}
+          {isCompared && siblingsTotal ? (
             <ProportionBar
               size={goalOutcomeValue ? goalOutcomeValue / siblingsTotal : 0}
               color={color}
@@ -324,7 +324,7 @@ const OutcomeCard = (props: OutcomeCardProps) => {
               isOpen={state === 'open'}
               offset={negativeTotal < 0 ? Math.abs(negativeTotal / siblingsTotal) : 0}
             />
-          )}
+          ) : null}
           <CardContent>
             <Header className={state}>
               <Title color={color}>
@@ -350,6 +350,4 @@ const OutcomeCard = (props: OutcomeCardProps) => {
       </DashCard>
     </TabWrapper>
   );
-};
-
-export default OutcomeCard;
+}

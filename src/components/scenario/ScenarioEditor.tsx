@@ -28,7 +28,7 @@ const DrawerHeader = styled.div`
   justify-content: space-between;
 `;
 
-const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }) => {
+export default function ScenarioEditor({ handleDrawerClose }: { handleDrawerClose: () => void }) {
   const [site] = useSiteWithSetter();
   const { t } = useTranslation();
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -63,6 +63,7 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
   return (
     <Box
       id="scenario-editor"
+      data-testid="scenario-editor"
       role="dialog"
       aria-modal="true"
       aria-labelledby="scenario-editor-title"
@@ -88,7 +89,7 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
       </DrawerHeader>
       <Box sx={{ p: 1 }}>
         <Box component="section" aria-label={t('scenario')} sx={{ mb: 2 }}>
-          <ScenarioSelector />
+          <ScenarioSelector testId="scenario-editor" />
         </Box>
         <Box component="section" aria-label={t('actions')} sx={{ mb: 3 }}>
           {hasGlobalParameters && (
@@ -116,6 +117,4 @@ const ScenarioEditor = ({ handleDrawerClose }: { handleDrawerClose: () => void }
       />
     </Box>
   );
-};
-
-export default ScenarioEditor;
+}

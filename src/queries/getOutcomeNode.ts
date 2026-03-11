@@ -85,6 +85,9 @@ const GET_OUTCOME_NODE = gql`
         ...OutcomeNodeFields
       }
     }
+    activeScenario {
+      id
+    }
   }
 `;
 

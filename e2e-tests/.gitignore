@@ -3,7 +3,8 @@
 test-results.json
 *.ts-snapshots/
 tests-out/
-
+/test-screenshots/
+/test-snapshots/
 .env
 .env.local
 

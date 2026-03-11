@@ -38,13 +38,13 @@ const testInstance = (instanceId: string) =>
 
         test.slow();
         // Branding navigation bar and main content should be visible in all instances
-        await expect(page.locator('nav#branding-navigation-bar')).toBeVisible();
+        await ctx.waitForNavbarVisible(page);
         await expect(page.locator('main#main')).toBeVisible();
         await ctx.waitForLoaded(page);
       });
 
       await ctx.waitForLoaded(page);
-      //await expect(page).toHaveScreenshot({ fullPage: true });
+      await ctx.takeScreenshot(page, 'front-page');
     });
   });
 

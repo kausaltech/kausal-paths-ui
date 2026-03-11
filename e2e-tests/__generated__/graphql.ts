@@ -12,7 +12,6 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  Date: { input: any; output: any; }
   DateTime: { input: any; output: any; }
   JSONString: { input: any; output: any; }
   PositiveInt: { input: any; output: any; }
@@ -31,19 +30,7 @@ export enum ActionSortOrder {
   Standard = 'STANDARD'
 }
 
-export type CreateOrganizationMutationInput = {
-  /** Short version or abbreviation of the organization name to be displayed when it is not necessary to show the full name */
-  abbreviation?: InputMaybe<Scalars['String']['input']>;
-  classification?: InputMaybe<Scalars['ID']['input']>;
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  dissolutionDate?: InputMaybe<Scalars['Date']['input']>;
-  foundingDate?: InputMaybe<Scalars['Date']['input']>;
-  /** Full name of the organization */
-  name: Scalars['String']['input'];
-  parent?: InputMaybe<Scalars['ID']['input']>;
-};
-
-/** An enumeration. */
+/** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
   Municipality = 'MUNICIPALITY',
@@ -130,7 +117,6 @@ export type NzcCityEssentialData = {
   temperature: LowHigh;
 };
 
-/** An enumeration. */
 export enum ScenarioKind {
   Baseline = 'BASELINE',
   Custom = 'CUSTOM',
@@ -143,19 +129,6 @@ export enum SearchOperatorEnum {
   And = 'AND',
   Or = 'OR'
 }
-
-export type UpdateOrganizationMutationInput = {
-  /** Short version or abbreviation of the organization name to be displayed when it is not necessary to show the full name */
-  abbreviation?: InputMaybe<Scalars['String']['input']>;
-  classification?: InputMaybe<Scalars['ID']['input']>;
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  dissolutionDate?: InputMaybe<Scalars['Date']['input']>;
-  foundingDate?: InputMaybe<Scalars['Date']['input']>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  /** Full name of the organization */
-  name: Scalars['String']['input'];
-  parent?: InputMaybe<Scalars['ID']['input']>;
-};
 
 export enum VisualizationKind {
   Group = 'group',
@@ -175,4 +148,4 @@ export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
 }>;
 
 
-export type PlaywrightGetInstanceInfoQuery = { __typename?: 'Query', instance: { __typename?: 'InstanceType', id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: { __typename?: 'InstanceFeaturesType', showRefreshPrompt: boolean } }, pages: Array<{ __typename: 'ActionListPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'DashboardPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'InstanceRootPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'OutcomePage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'Page', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'StaticPage', urlPath: string, title: string, showInMenus: boolean }>, actions: Array<{ __typename?: 'ActionNode', id: string }> };
+export type PlaywrightGetInstanceInfoQuery = { __typename?: 'Query', instance: { __typename?: 'InstanceType', id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: { __typename?: 'InstanceFeaturesType', showRefreshPrompt: boolean }, goals: Array<{ __typename?: 'InstanceGoalEntry', id: string }> }, pages: Array<{ __typename: 'ActionListPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'DashboardPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'InstanceRootPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'OutcomePage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'Page', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'StaticPage', urlPath: string, title: string, showInMenus: boolean }>, actions: Array<{ __typename?: 'ActionNode', id: string, isVisible: boolean, group?: { __typename?: 'ActionGroupType', id: string } | null, parameters: Array<{ __typename?: 'BoolParameterType', localId?: string | null, isCustomizable: boolean } | { __typename?: 'NumberParameterType', localId?: string | null, isCustomizable: boolean } | { __typename?: 'StringParameterType', localId?: string | null, isCustomizable: boolean } | { __typename?: 'UnknownParameterType', localId?: string | null, isCustomizable: boolean }> }> };

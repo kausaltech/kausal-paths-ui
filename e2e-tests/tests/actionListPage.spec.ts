@@ -42,6 +42,8 @@ const testInstance = (instanceId: string) =>
       await expect.configure({ timeout: 45000 })(page.getByTestId('actions-list')).toBeVisible();
 
       await ctx.waitForLoaded(page);
+
+      await ctx.takeScreenshot(page, 'action-list-page');
     });
     test('action list page through direct URL', async ({ page, ctx }) => {
       const listItem = ctx.getActionListPage();
@@ -71,6 +73,8 @@ const testInstance = (instanceId: string) =>
         page.locator(`main a[href*="/node/${action.id}"]`).getByText(ctx.i18n.t('read-more'))
       ).toBeVisible();
       //await expect(page).toHaveScreenshot({ fullPage: true });
+
+      await ctx.takeScreenshot(page, 'action-details-page');
     });
   });
 

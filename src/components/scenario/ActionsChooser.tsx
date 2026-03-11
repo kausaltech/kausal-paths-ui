@@ -37,9 +37,9 @@ type ActionListCardProps = {
 };
 
 /* Nice mock skeleton loader */
-const LoaderSkeleton = ({ t }: { t: TFunction }) => {
+function LoaderSkeleton({ t }: { t: TFunction }) {
   return (
-    <Box sx={{ mb: 2 }}>
+    <Box sx={{ mb: 2 }} aria-busy="true">
       <Typography variant="h5" component="h2" sx={{ mb: 0.5 }}>
         {t('actions')}
       </Typography>
@@ -65,9 +65,9 @@ const LoaderSkeleton = ({ t }: { t: TFunction }) => {
       </ActionsList>
     </Box>
   );
-};
+}
 
-const ActionListCard = (props: ActionListCardProps) => {
+function ActionListCard(props: ActionListCardProps) {
   const { action } = props;
   const actionParameterSwitch = findActionEnabledParam(action.parameters);
   const isActive = actionParameterSwitch?.boolValue ?? false;
@@ -78,6 +78,7 @@ const ActionListCard = (props: ActionListCardProps) => {
 
   return (
     <Card
+      data-testid="action-list-item"
       sx={{
         borderLeft: `7px solid ${isActive ? categoryColor : categoryColorLight}`,
         backgroundColor: alpha(theme.palette.background.paper, 0.7),
@@ -110,11 +111,11 @@ const ActionListCard = (props: ActionListCardProps) => {
       </CardActions>
     </Card>
   );
-};
+}
 
 type ActionsSummaryAction = ActionListQuery['actions'][0];
 
-const ActionsChooser = () => {
+export default function ActionsChooser() {
   const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
   const queryResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
@@ -158,7 +159,7 @@ const ActionsChooser = () => {
   });
 
   return (
-    <Box sx={{ mb: 2 }}>
+    <Box sx={{ mb: 2 }} data-testid="actions-chooser">
       <Typography variant="h5" component="h2" sx={{ mb: 0.5 }}>
         {t('actions')}
       </Typography>
@@ -179,6 +180,4 @@ const ActionsChooser = () => {
       </ActionsList>
     </Box>
   );
-};
-
-export default ActionsChooser;
+}

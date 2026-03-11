@@ -1,0 +1,14 @@
+hoist: true
+minimumReleaseAge: 1440
+sharedWorkspaceLockfile: false
+linkWorkspacePackages: false
+packages: []
+allowBuilds:
+  '@parcel/watcher': false
+  '@sentry-internal/node-cpu-profiler': false
+  '@sentry/cli': false
+  '@swc/core': true
+  es5-ext: false
+  libxmljs2: false
+  sharp: false
+  unrs-resolver: false

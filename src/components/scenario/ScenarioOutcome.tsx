@@ -43,10 +43,19 @@ type ScenarioOutcomeProps = {
   goalOutcome: InstanceGoalOutcomeQuery['instance']['goals'][0];
   loading?: boolean;
   refetching?: boolean;
+  scenarioId?: string;
 };
 
-const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
-  const { activeGoal, targetYear, variant = 'default', loading, refetching, goalOutcome } = props;
+export default function ScenarioOutcome(props: ScenarioOutcomeProps) {
+  const {
+    activeGoal,
+    targetYear,
+    variant = 'default',
+    loading,
+    refetching,
+    goalOutcome,
+    scenarioId,
+  } = props;
   const { t } = useTranslation();
   const features = useFeatures();
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -55,9 +64,9 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
   if (loading || refetching) {
     switch (variant) {
       case 'verbose':
-        return <Skeleton variant="text" width={100} height={24} />;
+        return <Skeleton variant="text" width={100} height={24} aria-busy="true" />;
       case 'compact':
-        return <Skeleton variant="text" width={200} height={64} />;
+        return <Skeleton variant="text" width={200} height={64} aria-busy="true" />;
       default:
         return null;
     }
@@ -79,7 +88,11 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
       return <div>default</div>;
     case 'verbose':
       return (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          data-testid="scenario-outcome"
+          data-scenario-id={scenarioId}
+        >
           <Typography variant="body2" sx={{ lineHeight: 1, m: 0, p: 0 }}>
             <ScenarioOutcomeAsText
               isForecast={isForecastOnGoalYear}
@@ -125,7 +138,7 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
       return (
         <CompactOutcome>
           {icon}
-          <Box>
+          <Box data-testid="scenario-outcome" data-scenario-id={scenarioId}>
             <Typography variant="h6" component="h3" sx={{ lineHeight: 1, m: 0, p: 0 }}>
               {isForecastOnGoalYear
                 ? t('scenario-outcome')
@@ -139,6 +152,4 @@ const ScenarioOutcome = (props: ScenarioOutcomeProps) => {
       );
     }
   }
-};
-
-export default ScenarioOutcome;
+}

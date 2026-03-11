@@ -16,9 +16,9 @@ import { useTranslation } from '@/common/i18n';
 
 import OutcomeCardSet from './OutcomeCardSet';
 
-const OutcomeBlockLoader = () => {
+function OutcomeBlockLoader() {
   return (
-    <Box>
+    <Box aria-busy="true">
       <Skeleton
         variant="rectangular"
         width="250px"
@@ -38,7 +38,7 @@ const OutcomeBlockLoader = () => {
       />
     </Box>
   );
-};
+}
 
 const findVisibleNodes = (
   allNodes: Map<string, OutcomeNodeFieldsFragment>,
@@ -64,7 +64,7 @@ type OutcomeBlockProps = {
   loading: boolean;
 };
 
-const OutcomeBlock = (props: OutcomeBlockProps) => {
+export default function OutcomeBlock(props: OutcomeBlockProps) {
   const { outcomeNode, activeScenario, loading } = props;
   const router = useRouter();
   const queryNodeId = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
@@ -123,6 +123,7 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
           startYear={yearRange[0]}
           endYear={yearRange[1]}
           activeScenario={activeScenario?.name ?? ''}
+          activeScenarioId={activeScenario?.id ?? ''}
           parentColor={theme.graphColors.blue050}
           activeNodeId={index < visibleNodes.length - 1 ? visibleNodes[index + 1].id : undefined}
           setLastActiveNodeId={setLastActiveNodeId}
@@ -131,6 +132,4 @@ const OutcomeBlock = (props: OutcomeBlockProps) => {
       ))}
     </Fragment>
   );
-};
-
-export default OutcomeBlock;
+}
