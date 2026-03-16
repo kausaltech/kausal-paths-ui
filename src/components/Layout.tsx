@@ -3,13 +3,10 @@ import React from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
-import { Box, Drawer } from '@mui/material';
+import { useReactiveVar } from '@apollo/client/react';
+import { Box, Drawer, styled, useTheme } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-import { getLogger } from '@common/logging';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
@@ -26,7 +23,7 @@ import { RefreshPrompt } from './general/RefreshPrompt';
 
 const DRAWER_WIDTH = 320;
 
-const StyledSkipToContent = styled.a`
+const StyledSkipToContent = styled('a')`
   position: absolute;
   left: -9999px;
   z-index: 999;
@@ -83,9 +80,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const { asPath: pathname } = router;
   const theme = useTheme();
   const site = useSiteOrNull();
-  if (!site) {
-    throw new Error('Site context not found');
-  }
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { menuPages, iconBase: fallbackIconBase, ogImage, additionalLinkPages } = site || {};

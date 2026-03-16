@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
+import type { Bindings } from 'pino';
 
 import {
   MIDDLEWARE_RAN_HEADER,
@@ -11,7 +12,8 @@ import {
 } from '@common/constants/headers.mjs';
 import { HEALTH_CHECK_PUBLIC_PATH } from '@common/constants/routes.mjs';
 import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocalDev } from '@common/env';
-import { LOGGER_SPAN_ID, LOGGER_TRACE_ID } from '@common/logging/init';
+import { envToBool } from '@common/env/utils';
+import { getTraceLogBindings } from '@common/logging/init';
 import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
 
 import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
@@ -102,7 +104,9 @@ function getAcceptPreferredLocale(supportedLocales: string[], headers: Headers) 
   try {
     return acceptLanguage(acceptLanguageHeader ?? undefined, supportedLocales);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {}
+  } catch (error) {
+    return null;
+  }
 }
 
 function protectedResponse(req: NextRequest, headers: Headers) {
@@ -168,21 +172,41 @@ function shouldAddInstanceHeaders(parts: string[]) {
   return true;
 }
 
-async function middleware(req: NextRequest) {
-  const { nextUrl } = req;
-  const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || req.nextUrl.host;
-  const hostname = host.split(':')[0];
-  const reqId = req.headers.get('X-Correlation-ID') || generateCorrelationID();
-  let path = nextUrl.pathname;
-  const detectedLocale = nextUrl.locale;
+function handleNonPagePaths(path: string) {
   const pathParts = splitPath(path);
 
+  if (path === HEALTH_CHECK_PUBLIC_PATH) {
+    return NextResponse.json({ status: 'OK' });
+  }
+  if (path === '/_ping') {
+    return NextResponse.json({ status: 'pong' });
+  }
+  if (path.startsWith('/__nextjs') || NON_PAGE_PATHS.includes(pathParts[0])) {
+    return NextResponse.next();
+  }
+  if (NON_PAGE_PATHS.includes(path)) {
+    return NextResponse.next();
+  }
+  if (isLocalDev && path === '/.well-known/appspecific/com.chrome.devtools.json') {
+    return NextResponse.json({
+      root: process.env.PWD,
+      uuid: '7f3824db-0718-4ca7-a2a2-de666f274826',
+    });
+  }
+  return null;
+}
+
+const OTEL_DEBUG = envToBool(process.env.OTEL_DEBUG, false);
+
+function getLoggerForRequest(req: NextRequest, host: string, path: string) {
+  const reqId = req.headers.get('X-Correlation-ID') || generateCorrelationID();
   const span = Sentry.getActiveSpan();
-  const spanBindings = {};
+  const spanBindings: Bindings = {};
   if (span) {
-    spanBindings[LOGGER_TRACE_ID] = span.spanContext().traceId;
-    spanBindings[LOGGER_SPAN_ID] = span.spanContext().spanId;
-    spanBindings['sampled'] = span.isRecording();
+    Object.assign(spanBindings, getTraceLogBindings());
+    if (OTEL_DEBUG) {
+      spanBindings['sampled'] = span.isRecording();
+    }
   }
   const logger = getLogger({
     name: 'middleware',
@@ -195,16 +219,6 @@ async function middleware(req: NextRequest) {
     request: req,
   });
 
-  if (req.nextUrl.pathname === HEALTH_CHECK_PUBLIC_PATH) {
-    return NextResponse.json({ status: 'OK' });
-  }
-  if (
-    req.nextUrl.pathname === '/__nextjs_original-stack-frame' ||
-    req.nextUrl.pathname.startsWith('/_next/static/')
-  ) {
-    return NextResponse.next();
-  }
-
   // If spotlight is enabled, we enrich the span with the request headers
   // for nicer debug experience.
   if (span && getSpotlightUrl()) {
@@ -214,21 +228,36 @@ async function middleware(req: NextRequest) {
     });
   }
 
-  if (req.nextUrl.pathname === '/_ping') {
-    return NextResponse.json({ status: 'pong' });
-  }
   logger.info({ method: req.method }, `${req.method} ${req.nextUrl.pathname}`);
-  if (false && isLocalDev) {
+  if (isLocalDev) {
     const debugHeaders: Record<string, string> = {};
     req.headers.forEach((value, key) => {
       debugHeaders[key] = value;
     });
-    logger.info(debugHeaders, 'incoming headers');
+    logger.trace(debugHeaders, 'incoming headers');
+  }
+  return { logger, reqId };
+}
+
+async function proxy(req: NextRequest) {
+  const { nextUrl } = req;
+  const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || req.nextUrl.host;
+  const hostname = host.split(':')[0];
+  let path = nextUrl.pathname;
+  const detectedLocale = nextUrl.locale;
+  const pathParts = splitPath(path);
+
+  const { logger, reqId } = getLoggerForRequest(req, host, path);
+
+  const nonPageResp = handleNonPagePaths(path);
+  if (nonPageResp) {
+    return nonPageResp;
   }
   if (req.headers.get(MIDDLEWARE_RAN_HEADER)) {
     // Request has already been processed
     return NextResponse.next();
   }
+
   const reqHeaders = new Headers(req.headers);
   const reqInit = {
     request: {
@@ -308,4 +337,4 @@ async function middleware(req: NextRequest) {
   return rewrittenResp;
 }
 
-export default middleware;
+export default proxy;

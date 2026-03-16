@@ -3,11 +3,12 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
+import { gql } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { Card, CardContent, Container } from '@mui/material';
 
 import { logApolloError } from '@common/logging/apollo';
+import styled from '@common/themes/styled';
 
 import type { NodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
@@ -173,9 +174,7 @@ export default function NodePage() {
               <div>
                 {node.__typename === 'ActionNode' && (
                   <ActionLink action={node}>
-                    <a>
-                      {t('action-impact')} <Icon name="arrowRight" />
-                    </a>
+                    {t('action-impact')} <Icon name="arrowRight" />
                   </ActionLink>
                 )}
               </div>

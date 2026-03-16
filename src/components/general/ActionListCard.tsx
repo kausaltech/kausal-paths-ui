@@ -1,8 +1,8 @@
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 import { DecisionLevel } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
-import { ActionLink } from '@/common/links';
+import { ActionLink, type ActionLinkProps } from '@/common/links';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import Badge from '@/components/common/Badge';
 import Loader from '@/components/common/Loader';
@@ -67,7 +67,7 @@ const StyledIconWrapper = styled.div`
   transition: transform 0.1s;
 `;
 
-const StyledActionLink = styled.a`
+const StyledActionLink = styled(ActionLink)<ActionLinkProps>`
   display: flex;
   gap: ${({ theme }) => theme.spaces.s050};
   align-items: center;
@@ -127,14 +127,12 @@ const ActionListCard = (props: ActionListCardProps) => {
         {action.group && (
           <GroupTag color={action.group.color ?? undefined}>{action.group.name}</GroupTag>
         )}
-        <ActionLink action={action}>
-          <StyledActionLink data-testid="actionlink">
-            <StyledActionTitle>{action.name}</StyledActionTitle>
-            <StyledIconWrapper className="action-link-icon-wrapper">
-              <Icon width="20px" height="20px" name="arrowRight" />
-            </StyledIconWrapper>
-          </StyledActionLink>
-        </ActionLink>
+        <StyledActionLink action={action} data-testid="actionlink">
+          <StyledActionTitle>{action.name}</StyledActionTitle>
+          <StyledIconWrapper className="action-link-icon-wrapper">
+            <Icon width="20px" height="20px" name="arrowRight" />
+          </StyledIconWrapper>
+        </StyledActionLink>
         <ActionCategory>
           {action.decisionLevel === DecisionLevel.Nation && (
             <Badge color="neutralLight">{t('decision-national')}</Badge>

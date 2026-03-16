@@ -1,13 +1,13 @@
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import type { Theme } from '@kausal/themes/types';
 import { Container } from '@mui/material';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { getThemeStaticURL } from '@common/themes/theme';
 
-import { useTranslation } from '@/common/i18n';
+import { type TFunction, useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
 import { useSite } from '@/context/site';
 
@@ -140,7 +140,7 @@ const UtilityColumn = styled.ul`
     align-items: center;
     width: 100%;
 
-    &:first-child {
+    &:first-of-type {
       margin-bottom: ${(props) => props.theme.spaces.s150};
     }
   }
@@ -151,7 +151,7 @@ const UtilityItem = styled.li`
   margin-bottom: ${(props) => props.theme.spaces.s200};
   font-weight: ${(props) => props.theme.fontWeightBold};
 
-  &:first-child {
+  &:first-of-type {
     margin-left: 0;
   }
 
@@ -225,7 +225,7 @@ const BaseLink = styled.li`
   }
 
   @media (max-width: ${(props) => props.theme.breakpoints.values.lg}px) {
-    &:first-child {
+    &:first-of-type {
       margin-left: 0;
     }
   }
@@ -305,8 +305,37 @@ type MenuPage = {
   urlPath: string;
 };
 
-interface SiteFooterProps {
+export interface SiteFooterProps {
   additionalLinks: MenuPage[];
+}
+
+function OrgLogo(props: {
+  theme: Theme;
+  ownerName: string | null;
+  siteTitle: string;
+  t: TFunction;
+}) {
+  const { theme, ownerName, siteTitle, t } = props;
+
+  if (theme.themeLogoWhiteUrl.endsWith('.png')) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
+        alt={`${ownerName}, ${siteTitle} ${t('front-page')}`}
+        className="footer-org-logo footer-logo-bitmap"
+      />
+    );
+  }
+  return (
+    <SVG
+      src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
+      preserveAspectRatio="xMinYMid meet"
+      title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
+      className="footer-org-logo"
+      style={{ display: 'block' }}
+    />
+  );
 }
 
 function SiteFooter(props: SiteFooterProps) {
@@ -323,28 +352,6 @@ function SiteFooter(props: SiteFooterProps) {
   const ownerLinks = theme.settings?.footerOwnerLinks;
   const { fundingInstruments, otherLogos, footerStatement } = theme.settings;
 
-  const OrgLogo = () => {
-    if (theme.themeLogoWhiteUrl.endsWith('.png')) {
-      return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
-          alt={`${ownerName}, ${siteTitle} ${t('front-page')}`}
-          className="footer-org-logo footer-logo-bitmap"
-        />
-      );
-    }
-    return (
-      <SVG
-        src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
-        preserveAspectRatio="xMinYMid meet"
-        title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
-        className="footer-org-logo"
-        style={{ display: 'block' }}
-      />
-    );
-  };
-
   function scrollToTop(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     window.scrollTo(0, 0);
@@ -359,10 +366,22 @@ function SiteFooter(props: SiteFooterProps) {
               <Logo>
                 {theme?.footerLogoLink ? (
                   <a href={theme.footerLogoLink} target="_blank" rel="noreferrer">
-                    <OrgLogo aria-hidden="true" />
+                    <OrgLogo
+                      theme={theme}
+                      ownerName={ownerName}
+                      siteTitle={siteTitle}
+                      t={t}
+                      aria-hidden="true"
+                    />
                   </a>
                 ) : (
-                  <OrgLogo aria-hidden="true" />
+                  <OrgLogo
+                    theme={theme}
+                    ownerName={ownerName}
+                    siteTitle={siteTitle}
+                    t={t}
+                    aria-hidden="true"
+                  />
                 )}
               </Logo>
             ) : null}

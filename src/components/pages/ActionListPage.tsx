@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { type QueryResult, useQuery, useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box,
   Container,
@@ -14,11 +13,15 @@ import {
   ToggleButtonGroup,
 } from '@mui/material';
 
+import styled from '@common/themes/styled';
+import { transientOptions } from '@common/themes/styles/styled';
+
 import {
   type ActionListQuery,
   type ActionListQueryVariables,
   DecisionLevel,
   type ImpactOverviewsQuery,
+  type ImpactOverviewsQueryVariables,
   type PageQuery,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, yearRangeVar } from '@/common/cache';
@@ -82,7 +85,7 @@ const ShowLabel = styled(FormLabel)`
   margin: 0;
 `;
 
-const StyledSelect = styled(Select)<{ $custom?: boolean }>`
+const StyledSelect = styled(Select, transientOptions)<{ $custom?: boolean }>`
   .MuiSelect-select {
     padding: 0.5rem 0.75rem;
     font-size: 1rem;
@@ -175,10 +178,8 @@ type ActionListPageProps = {
   refetch: PageRefetchCallback;
 };
 
-function hasGraph(impactResponse: QueryResult<ImpactOverviewsQuery>, graphType: string) {
-  return !!impactResponse.data?.impactOverviews.find(
-    (overview) => overview.graphType === graphType
-  );
+function hasGraph(impactOverviews: ImpactOverviewsQuery['impactOverviews'], graphType: string) {
+  return !!impactOverviews?.find((overview) => overview.graphType === graphType);
 }
 
 function ActionListPage({ page }: ActionListPageProps) {
@@ -186,9 +187,12 @@ function ActionListPage({ page }: ActionListPageProps) {
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
 
-  const impactResp = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const impactResp = useQuery<ImpactOverviewsQuery, ImpactOverviewsQueryVariables>(
+    GET_IMPACT_OVERVIEWS,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const actionListResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
     variables: {
@@ -202,16 +206,18 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   const data = actionListResp.data ?? previousData;
   const hasEfficiency = data ? data.impactOverviews.length > 0 : false;
-  const showReturnOnInvestment = hasGraph(impactResp, 'return_on_investment');
-  const showCostBenefitAnalysis = hasGraph(impactResp, 'cost_benefit');
-  const showSimpleEffect = hasGraph(impactResp, 'simple_effect');
+  const impactOverviews = impactResp.data?.impactOverviews ?? [];
+  const showReturnOnInvestment = hasGraph(impactOverviews, 'return_on_investment');
+  const showCostBenefitAnalysis = hasGraph(impactOverviews, 'cost_benefit');
+  const showSimpleEffect = hasGraph(impactOverviews, 'simple_effect');
 
   const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
 
   const [listType, setListType] = useState<ViewType>('list');
   const [ascending, setAscending] = useState(true);
   const [sortBy, setSortBy] = useState<SortActionsConfig>(
-    sortOptions.find((sortOption) => sortOption.key === page.defaultSortOrder) ?? sortOptions[0]
+    sortOptions.find((sortOption) => sortOption.key === (page.defaultSortOrder as SortActionsBy)) ??
+      sortOptions[0]
   );
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');

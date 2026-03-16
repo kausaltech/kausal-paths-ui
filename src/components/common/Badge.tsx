@@ -1,6 +1,6 @@
 import React from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import { readableColor } from 'polished';
 import PropTypes from 'prop-types';
 import { Badge as BSSBadge } from 'reactstrap';

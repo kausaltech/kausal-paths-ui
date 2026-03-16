@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Alert, CircularProgress, Container } from '@mui/material';
 import { remove } from 'lodash-es';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { ActionContentQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -76,7 +77,7 @@ const GridCol = styled.div`
   scroll-snap-align: center;
   margin: 0 0.5rem;
 
-  &:first-child {
+  &:first-of-type {
     margin-left: 2rem;
   }
 
@@ -518,9 +519,7 @@ const CausalGrid = ({
                   />
                 )}
                 <NodeLink node={lastNode}>
-                  <a>
-                    {t('details')} <Icon name="arrow-right" />
-                  </a>
+                  {t('details')} <Icon name="arrow-right" />
                 </NodeLink>
                 <ImpactFigures>
                   <ImpactDisplay

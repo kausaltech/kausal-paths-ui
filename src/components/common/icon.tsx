@@ -1,9 +1,9 @@
 import React, { type HTMLProps } from 'react';
 
-import { useTheme } from '@emotion/react';
 import SVG from 'react-inlinesvg';
 
 import { getLogger } from '@common/logging';
+import { useTheme } from '@common/themes';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 const camelToKebabCase = (s: string) =>

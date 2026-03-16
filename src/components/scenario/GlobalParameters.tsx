@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { Box, Grid, Typography } from '@mui/material';
 
 import type { ParametersQuery, ParametersQueryVariables } from '@/common/__generated__/graphql';

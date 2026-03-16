@@ -1,16 +1,12 @@
-import * as url from 'node:url';
-
 import type BundleAnalyzerPlugin from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
 import type { Options as SassOptions } from 'sass';
 
 import { getNextConfig } from './kausal_common/configs/common-next-config';
-import { wrapWithSentryConfig } from './kausal_common/src/sentry/sentry-next-config';
+import { wrapWithSentryConfig } from './kausal_common/configs/sentry-next-config.ts';
 import { initializeThemes } from './kausal_common/src/themes/next-config.mjs';
 
 const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
-
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';
 

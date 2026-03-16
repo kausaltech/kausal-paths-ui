@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import { Box } from '@mui/material';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -103,7 +103,7 @@ const OutcomeNodeContent = ({
 
   const showNodeLinks = !instance.features?.hideNodeDetails;
   const maximumFractionDigits = instance.features?.maximumFractionDigits ?? undefined;
-  
+
   // TODO: Remove showRefreshPrompt check when node help text is moved to the backend
   const helpText = showRefreshPrompt ? getHelpText(node.id) : undefined;
   */

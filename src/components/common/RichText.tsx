@@ -1,6 +1,6 @@
 import React from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import parse, { domToReact } from 'html-react-parser';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';

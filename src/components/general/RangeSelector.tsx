@@ -1,9 +1,12 @@
+// FIXME: Unused?
 import { useEffect, useState } from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { ToggleButton } from '@mui/material';
+
 import { Range, getTrackBackground } from 'react-range';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { useTranslation } from '@/common/i18n';
 import Icon from '@/components/common/icon';
@@ -69,9 +72,13 @@ type RangeSelectorProps = {
   defaultMin: number;
   defaultMax: number;
   disabled?: boolean;
+  onMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTouchStart: (event: React.TouchEvent<HTMLDivElement>) => void;
+  ref: React.RefObject<HTMLDivElement>;
+  style: React.CSSProperties;
 };
 
-const RangeSelector = (props: RangeSelectorProps) => {
+function RangeSelector(props: RangeSelectorProps) {
   const { min, max, referenceYear, handleChange, defaultMin, defaultMax, disabled = false } = props;
 
   const { t } = useTranslation();
@@ -260,6 +267,6 @@ const RangeSelector = (props: RangeSelectorProps) => {
       </ActiveYearDisplay>
     </SectionWrapper>
   );
-};
+}
 
 export default RangeSelector;

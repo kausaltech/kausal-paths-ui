@@ -2,14 +2,14 @@
 import NextErrorComponent, { type ErrorProps } from 'next/error';
 import Head from 'next/head';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Button, Card, CardContent, Container, Grid } from '@mui/material';
 import * as Sentry from '@sentry/nextjs';
 import type { NextPageContext } from 'next';
 
 import { isProductionDeployment } from '@common/env';
 import { getLogger } from '@common/logging';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { useTranslations } from '@/common/i18n';
 import { Link } from '@/common/links';
@@ -135,11 +135,9 @@ const PathsError = (props: AppErrorProps) => {
                 <p>{intro}</p>
                 {apology ? <p>{apology}</p> : null}
                 <Link href="/">
-                  <a>
-                    <Button variant="outlined" size="small" color="primary">
-                      {tCommon('return-to-front')}
-                    </Button>
-                  </a>
+                  <Button variant="outlined" size="small" color="primary">
+                    {tCommon('return-to-front')}
+                  </Button>
                 </Link>
               </CardContent>
             </StyledCard>
@@ -152,7 +150,9 @@ const PathsError = (props: AppErrorProps) => {
 
 PathsError.getInitialProps = async (props: NextPageContext) => {
   const { err, asPath } = props;
-  await Sentry.captureUnderscoreErrorException(props);
+  if ('captureUnderscoreErrorException' in Sentry) {
+    await Sentry.captureUnderscoreErrorException(props);
+  }
   const errorInitialProps: AppErrorProps = await NextErrorComponent.getInitialProps(props);
 
   // Workaround for https://github.com/vercel/next.js/issues/8592, mark when

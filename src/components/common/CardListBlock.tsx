@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import { Card, CardContent } from '@mui/material';
 
 type Props = {

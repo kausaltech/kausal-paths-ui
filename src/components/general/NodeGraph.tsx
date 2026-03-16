@@ -1,6 +1,6 @@
-import { useTheme } from '@emotion/react';
 import { Alert } from '@mui/material';
 import { type Theme } from '@mui/material/styles';
+
 import * as Sentry from '@sentry/nextjs';
 import type * as echarts from 'echarts/core';
 import type {
@@ -11,6 +11,7 @@ import type {
 import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
+import { useTheme } from '@common/themes';
 import { sanitizeHtmlUnit } from '@common/utils/format';
 
 import { type TFunction, useTranslation } from '@/common/i18n';
@@ -315,10 +316,10 @@ export default function NodeGraph(props: NodeGraphProps) {
     tooltip: {
       trigger: 'axis',
       position: function (point, params, dom, rect, size) {
-        const obj = { top: 60 };
+        const obj: ReturnType<TooltipPositionCallback> = { top: 60 };
         obj[['left', 'right'][+(point[0] < size.viewSize[0] / 2)]] = 5;
         return obj;
-      } as TooltipPositionCallback,
+      } satisfies TooltipPositionCallback,
       confine: true,
       formatter: createTooltipFormatter(),
     },

@@ -36,6 +36,12 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  ../kausal_common/e2e-tests:
+    dependencies:
+      '@playwright/test':
+        specifier: ^1
+        version: 1.58.2
+
 packages:
 
   '@apollo/client@4.1.6':
@@ -397,10 +403,6 @@ packages:
 
   atomically@2.0.3:
     resolution: {integrity: sha512-kU6FmrwZ3Lx7/7y3hPS5QnbJfaohcIul5fGqf7ok+4KklIEk9tJ0C2IQPdacSbVUWv6zVHXEBWoWd6NrVMT7Cw==}
-
-  axe-core@4.10.3:
-    resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
-    engines: {node: '>=4'}
 
   axe-core@4.11.1:
     resolution: {integrity: sha512-BASOg+YwO2C+346x3LZOeoovTIoTrRqEsqMa6fmfAV0P+U9mFr9NsyOEpiYvFjbc64NMrSswhV50WdXzdb/Z5A==}
@@ -1458,8 +1460,6 @@ snapshots:
       stubborn-fs: 1.2.5
       when-exit: 2.1.4
 
-  axe-core@4.10.3: {}
-
   axe-core@4.11.1: {}
 
   b4a@1.6.7: {}
@@ -1720,7 +1720,7 @@ snapshots:
     dependencies:
       '@paulirish/trace_engine': 0.0.57
       '@sentry/node': 9.46.0
-      axe-core: 4.10.3
+      axe-core: 4.11.1
       chrome-launcher: 1.2.0
       configstore: 7.0.0
       csp_evaluator: 1.1.5

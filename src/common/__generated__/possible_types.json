@@ -1,5 +1,28 @@
 {
   "possibleTypes": {
+    "CreateEdgePayload": [
+      "NodeEdgeType",
+      "OperationInfo"
+    ],
+    "CreateNodePayload": [
+      "ActionNode",
+      "Node",
+      "OperationInfo"
+    ],
+    "CreateScenarioPayload": [
+      "OperationInfo",
+      "ScenarioType"
+    ],
+    "InputPortBindingUnion": [
+      "DatasetPortType",
+      "NodeEdgeType"
+    ],
+    "NodeConfigUnion": [
+      "ActionConfigType",
+      "FormulaConfigType",
+      "PipelineConfigType",
+      "SimpleConfigType"
+    ],
     "NodeInterface": [
       "ActionNode",
       "Node"
@@ -17,6 +40,10 @@
       "NumberParameterType",
       "StringParameterType",
       "UnknownParameterType"
+    ],
+    "PublishModelInstancePayload": [
+      "InstanceType",
+      "OperationInfo"
     ],
     "SnippetInterface": [
       "InstanceSiteContent"
@@ -58,6 +85,15 @@
       "TextBlock",
       "TimeBlock",
       "URLBlock"
+    ],
+    "UpdateNodePayload": [
+      "ActionNode",
+      "Node",
+      "OperationInfo"
+    ],
+    "UpdateScenarioPayload": [
+      "OperationInfo",
+      "ScenarioType"
     ],
     "VisualizationEntry": [
       "VisualizationGroup",

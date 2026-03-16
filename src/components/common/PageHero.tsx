@@ -1,5 +1,5 @@
 import type { Theme } from '@emotion/react';
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import { Card, Container, type SxProps } from '@mui/material';
 
 const StyledHeroSection = styled.div`
@@ -58,7 +58,7 @@ export const PageHero = ({
   if (!hasHeroCard && !children) {
     return null;
   }
-  
+
   return (
     <StyledHeroSection>
       <Container fixed maxWidth="xl" sx={{ py: 3 }}>

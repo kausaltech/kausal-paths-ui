@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@common/themes';
 import {
   Box,
   Chip,
@@ -363,7 +363,7 @@ export default function ActionsList({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <ActionLink action={action}>
                         <Typography
-                          component="a"
+                          component="span"
                           variant="h6"
                           sx={{ color: colors.title, textDecoration: 'none', cursor: 'pointer' }}
                         >
@@ -507,7 +507,7 @@ export default function ActionsList({
                         </Typography>
                         <ActionLink action={action}>
                           <Typography
-                            component="a"
+                            component="span"
                             variant="h6"
                             sx={{
                               color: colors.title,

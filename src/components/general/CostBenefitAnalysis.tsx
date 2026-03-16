@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { useMemo, useState } from 'react';
 
-import { useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client/react';
 import type { Theme } from '@emotion/react';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Box, Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';
@@ -13,6 +11,8 @@ import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
 import { Chart } from '@common/components/Chart';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';

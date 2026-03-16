@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../kausal_common/configs/tsconfig.react.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "paths": {
+      "@/*": ["../src/*"],
+      "@common/*": ["../kausal_common/src/*"]
+    },
+    "checkJs": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["../next-env.d.ts", "../src", "../kausal_common/src"],
+  "exclude": ["../kausal_common/components/paths", "../kausal_common/src/utils/paths"]
+}

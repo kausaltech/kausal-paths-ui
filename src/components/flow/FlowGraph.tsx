@@ -135,30 +135,6 @@ const FlowGraph = (props: FlowGraphProps) => {
     );
   }, []);
 
-  const muteUnselectedNodes = useCallback((selectedIds: string[]) => {
-    /* let's assume only 1 node selected at a time */
-    const selectedId = selectedIds[0];
-    const selectedNode: Node | undefined = nodes.find((node) => selectedId === node.id);
-    if (!selectedNode) {
-      showAllNodes();
-      return;
-    }
-    const downstreamNodes = getDownstreamNodes(selectedNode, nodes, edges);
-    const upstreamNodes = getUpstreamNodes(selectedNode, nodes, edges);
-    setNodes((currentNodes) =>
-      currentNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          muted:
-            !downstreamNodes.some((n) => n.id === node.id) &&
-            !upstreamNodes.some((n) => n.id === node.id) &&
-            node.id !== selectedNode.id,
-        },
-      }))
-    );
-  }, []);
-
   const open = Boolean(layoutDirectionButton);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setLayoutDirectionButton(event.currentTarget);
@@ -171,7 +147,34 @@ const FlowGraph = (props: FlowGraphProps) => {
     setNodes((currentNodes) =>
       currentNodes.map((node) => ({ ...node, data: { ...node.data, muted: false } }))
     );
-  }, []);
+  }, [setNodes]);
+
+  const muteUnselectedNodes = useCallback(
+    (selectedIds: string[]) => {
+      /* let's assume only 1 node selected at a time */
+      const selectedId = selectedIds[0];
+      const selectedNode: Node | undefined = nodes.find((node) => selectedId === node.id);
+      if (!selectedNode) {
+        showAllNodes();
+        return;
+      }
+      const downstreamNodes = getDownstreamNodes(selectedNode, nodes, edges);
+      const upstreamNodes = getUpstreamNodes(selectedNode, nodes, edges);
+      setNodes((currentNodes) =>
+        currentNodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            muted:
+              !downstreamNodes.some((n) => n.id === node.id) &&
+              !upstreamNodes.some((n) => n.id === node.id) &&
+              node.id !== selectedNode.id,
+          },
+        }))
+      );
+    },
+    [nodes, edges, showAllNodes]
+  );
 
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
@@ -181,7 +184,7 @@ const FlowGraph = (props: FlowGraphProps) => {
       muteUnselectedNodes(selectedIds);
       onNodeSelect(selectedNodes[0]?.id || null);
     },
-    [updateEdgesAnimation, onNodeSelect]
+    [updateEdgesAnimation, onNodeSelect, muteUnselectedNodes]
   );
 
   /*

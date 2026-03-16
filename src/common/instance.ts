@@ -11,8 +11,18 @@ const InstanceContext = createContext<InstanceContextType>(null!);
 
 export { GET_INSTANCE_CONTEXT };
 
-export const useInstance = () => useContext(InstanceContext);
-
+export const useInstance = () => {
+  const instance = useContext(InstanceContext);
+  if (!instance) {
+    throw new Error('useInstance called without a InstanceContext');
+  }
+  return instance;
+};
+export const useInstanceOrNull = () => {
+  const instance = useContext(InstanceContext);
+  if (!instance) return null;
+  return instance;
+};
 export const useFeatures = () => {
   const instance = useInstance();
 

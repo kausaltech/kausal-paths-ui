@@ -36,6 +36,7 @@ export function chompBasePath(site: SiteContextType, path: string) {
 
 type OtherLinkProps = Omit<LinkProps, 'href' | 'as'> & {
   children?: React.ReactNode;
+  className?: string;
   target?: string;
   rel?: string;
 };
@@ -52,7 +53,7 @@ export function Link(props: OtherLinkProps & { href: string }) {
     as = undefined;
   }
   const localeDisabledProps = { ...rest, locale: false } satisfies OtherLinkProps;
-  return <NextLink legacyBehavior href={href} as={as} {...localeDisabledProps} />;
+  return <NextLink href={href} as={as} {...localeDisabledProps} />;
 }
 
 type FormattedLinkProps = {
@@ -71,7 +72,6 @@ function getLinkProps(
   const linkProps: LinkProps = {
     href,
     as: formatUrl(site, as, locale),
-    passHref: otherProps.passHref ?? true,
     locale: false,
     prefetch: false,
     ...rest,
@@ -80,7 +80,6 @@ function getLinkProps(
 }
 
 type NodeLinkProps = OtherLinkProps & {
-  className?: string;
   node: {
     id: string;
   };
@@ -98,10 +97,10 @@ export function NodeLink(props: NodeLinkProps) {
     as: `/node/${node.id}`,
   };
   const site = useSite();
-  return <NextLink legacyBehavior {...getLinkProps(site, hrefProps, rest)} />;
+  return <NextLink {...getLinkProps(site, hrefProps, rest)} />;
 }
 
-type ActionLinkProps = OtherLinkProps & {
+export type ActionLinkProps = OtherLinkProps & {
   action: {
     id: string;
   };
@@ -119,7 +118,7 @@ export function ActionLink(props: ActionLinkProps) {
     as: `/actions/${action.id}`,
   };
   const site = useSiteOrNull();
-  return <NextLink legacyBehavior {...getLinkProps(site, hrefProps, rest)} />;
+  return <NextLink {...getLinkProps(site, hrefProps, rest)} />;
 }
 
 type ActionListLinkProps = OtherLinkProps & {
@@ -136,5 +135,5 @@ export function ActionListLink(props: ActionListLinkProps) {
   };
   const site = useSiteOrNull();
   const linkProps = getLinkProps(site, hrefProps, rest);
-  return <NextLink legacyBehavior passHref={true} {...linkProps} />;
+  return <NextLink {...linkProps} />;
 }

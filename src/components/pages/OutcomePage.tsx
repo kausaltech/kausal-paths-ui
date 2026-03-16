@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-import { useQuery, useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
+import styled from '@common/themes/styled';
 import { Box, Container, useTheme } from '@mui/material';
 
 import { isLocalDev } from '@common/env';

@@ -1,5 +1,5 @@
-import { useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
+import { useReactiveVar } from "@apollo/client/react";
+import styled from '@common/themes/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';

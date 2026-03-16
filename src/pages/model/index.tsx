@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { ApolloError, gql, useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { Drawer } from '@mui/material';
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react';
 
@@ -8,6 +9,7 @@ import type { ModelNodesQuery } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { getLayout } from '@/components/FullScreenLayout';
 import ContentLoader from '@/components/common/ContentLoader';
+import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
 import FlowGraph from '@/components/flow/FlowGraph';
 import NodeDetails from '@/components/flow/NodeDetails';
@@ -185,11 +187,8 @@ function ModelPage() {
   if (error) {
     return <GraphQLError error={error} />;
   }
-  if (configError) {
-    return <GraphQLError error={new ApolloError({ graphQLErrors: [{ message: configError }] })} />;
-  }
-  if (!data) {
-    return <GraphQLError error={new ApolloError({ graphQLErrors: [{ message: 'No data' }] })} />;
+  if (configError || !data) {
+    return <ErrorMessage message={configError || 'No data'} />;
   }
 
   const getNodeDetails = (nodeId: string | null): ConfigNode | Action | null => {

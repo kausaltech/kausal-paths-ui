@@ -1,7 +1,55 @@
 {
-  "kausal_common/src/logging/init.ts": {
+  "kausal_common/src/components/Chart.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "kausal_common/src/components/DelayedCircularProgress.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "kausal_common/src/graphql/proxy.ts": {
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
+    }
+  },
+  "kausal_common/src/themes/next-config.mjs": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    }
+  },
+  "kausal_common/src/utils/lru-cache.ts": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 5
+    }
+  },
+  "next.config.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    }
+  },
+  "src/common/apollo.ts": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 3
     }
   },
   "src/common/preprocess.ts": {
@@ -16,6 +64,9 @@
     }
   },
   "src/components/CytoGraph.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
     "@typescript-eslint/no-floating-promises": {
       "count": 2
     },
@@ -25,8 +76,30 @@
     "@typescript-eslint/no-redundant-type-constituents": {
       "count": 1
     },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 2
+    },
+    "no-case-declarations": {
+      "count": 1
+    },
     "react-hooks/rules-of-hooks": {
       "count": 3
+    }
+  },
+  "src/components/FullScreenLayout.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    }
+  },
+  "src/components/Layout.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 1
+    },
+    "react-hooks/static-components": {
+      "count": 2
     }
   },
   "src/components/common/Badge.tsx": {
@@ -34,16 +107,36 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 8
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
-    },
     "@typescript-eslint/no-unsafe-return": {
       "count": 2
+    }
+  },
+  "src/components/common/ErrorMessage.tsx": {
+    "react/prop-types": {
+      "count": 1
+    }
+  },
+  "src/components/common/Footer.tsx": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    }
+  },
+  "src/components/common/GlobalNav.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    }
+  },
+  "src/components/common/IntroModal.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
     }
   },
   "src/components/common/RichText.tsx": {
@@ -64,8 +157,38 @@
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
+    }
+  },
+  "src/components/common/ScenarioBadge.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    }
+  },
+  "src/components/common/SelectDropdown.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    }
+  },
+  "src/components/custom/zurich/Footer.tsx": {
+    "react/jsx-no-target-blank": {
+      "count": 3
     },
-    "react-compiler/react-compiler": {
+    "react/no-unknown-property": {
+      "count": 3
+    }
+  },
+  "src/components/flow/FlowGraph.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/flow/NodeDetails.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 1
+    }
+  },
+  "src/components/general/ActionsComparison.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }
   },
@@ -84,6 +207,22 @@
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 8
+    },
+    "react/prop-types": {
+      "count": 10
+    }
+  },
+  "src/components/general/BarGraph.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 2
+    }
+  },
+  "src/components/general/CausalGrid.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 4
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
     }
   },
   "src/components/general/CostBenefitAnalysis.tsx": {
@@ -91,42 +230,176 @@
       "count": 6
     }
   },
-  "src/components/general/DimensionalBarGraph.tsx": {
-    "@typescript-eslint/no-unsafe-unary-minus": {
+  "src/components/general/DashboardNormalizationBar.tsx": {
+    "react-hooks/set-state-in-effect": {
       "count": 1
     }
   },
-  "src/components/general/LanguageSelector.tsx": {
-    "@typescript-eslint/no-unsafe-assignment": {
+  "src/components/general/DimensionalBarGraph.tsx": {
+    "@typescript-eslint/no-unsafe-unary-minus": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 6
-    },
-    "@typescript-eslint/no-unsafe-return": {
+    "no-prototype-builtins": {
       "count": 2
     },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/general/DimensionalNodePlot.tsx": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 1
+    },
+    "no-empty": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/general/DimensionalNodeVisualisation.tsx": {
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/general/IcicleGraph.tsx": {
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 18
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 13
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 40
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 6
+    }
+  },
+  "src/components/general/LanguageSelector.tsx": {
     "react-compiler/react-compiler": {
       "count": 1
     }
   },
+  "src/components/general/NodeGraph.tsx": {
+    "no-useless-escape": {
+      "count": 8
+    }
+  },
+  "src/components/general/OutcomeCard.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 2
+    }
+  },
+  "src/components/general/OutcomeGraph.tsx": {
+    "react-hooks/globals": {
+      "count": 1
+    }
+  },
+  "src/components/general/progress-tracking/useProgressData.ts": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 4
+    }
+  },
+  "src/components/graphs/ActionComparisonGraph.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/graphs/MacGraph.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/graphs/Plot.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    }
+  },
+  "src/components/pages/ActionListPage.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 2
+    }
+  },
+  "src/components/pages/OutcomePage.tsx": {
+    "@typescript-eslint/only-throw-error": {
+      "count": 1
+    },
+    "no-extra-boolean-cast": {
+      "count": 1
+    }
+  },
+  "src/components/pages/Page.tsx": {
+    "@typescript-eslint/only-throw-error": {
+      "count": 1
+    }
+  },
+  "src/components/scenario/ScenarioEditor.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
   "src/data/metric.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 3
+    },
+    "no-prototype-builtins": {
+      "count": 2
+    }
+  },
+  "src/pages/_app.tsx": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 3
+    }
+  },
+  "src/pages/actions/[slug].tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
     }
   },
   "src/pages/graph.tsx": {
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
+      "count": 1
+    }
+  },
+  "src/pages/model/index.tsx": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 2
+    }
+  },
+  "src/proxy.ts": {
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 1
     }
   }
 }

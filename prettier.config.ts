@@ -1,8 +1,7 @@
-import defaultConfig from './kausal_common/configs/prettier.mjs';
+import { type Config } from 'prettier';
 
-/**
- * @type {import('prettier').Config}
- */
+import defaultConfig from './kausal_common/configs/prettier.ts';
+
 const config = {
   ...defaultConfig,
   overrides: [
@@ -11,5 +10,5 @@ const config = {
       excludeFiles: ['**'],
     },
   ],
-};
+} satisfies Config;
 export default config;

@@ -3,9 +3,9 @@ import React, { type ReactNode, useState } from 'react';
 import App, { type AppContext, type AppProps } from 'next/app';
 
 import type { ApolloClient } from '@apollo/client';
-import { ApolloProvider } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 import type { Theme } from '@kausal/themes/types';
-import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
+import { AppCacheProvider } from '@mui/material-nextjs/v16-pagesRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/nextjs';
 import { NextIntlClientProvider } from 'next-intl';
@@ -22,7 +22,7 @@ import { getLogger } from '@common/logging/logger';
 import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';
 import { initializeMuiTheme } from '@common/themes/mui-theme/theme';
 import '@common/themes/styles/main.scss';
-import { loadTheme } from '@common/themes/theme';
+import { loadTheme } from '@common/themes/theme-init.server';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
 import type {
@@ -214,6 +214,7 @@ function PathsApp(props: PathsAppProps) {
 
   // Use the layout defined at the page level, if available
   const getLayout = Component.getLayout ?? ((page) => <Layout>{page}</Layout>);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   // FIXME: Remove this when possible; it's not safe for async contexts
   numbro.setLanguage(locale, locale.indexOf('-') > 0 ? locale.split('-')[0] : undefined);
@@ -222,10 +223,15 @@ function PathsApp(props: PathsAppProps) {
     // getInitialProps errored, return with a very simple layout
     logger.error('no site context');
     return (
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <ThemeProvider theme={muiTheme}>{component}</ThemeProvider>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
+        <ThemeProvider theme={muiTheme}>
+          <Component {...pageProps} />
+        </ThemeProvider>
       </NextIntlClientProvider>
     );
+  }
+  if (isLocalDev) {
+    logger.trace('PathsApp rendering with site context');
   }
 
   const instance = instanceContext;
@@ -249,10 +255,9 @@ function PathsApp(props: PathsAppProps) {
     ];
     yearRangeVar(yearRange);
   }
-  const apolloClient = initializeApollo(null, siteContext.apolloConfig);
-
+  const apolloClient = initializeApollo(siteContext.apolloConfig);
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
       <AppCacheProvider {...props}>
         <SiteContext.Provider value={[siteContext, setSiteContext]}>
           <InstanceContext.Provider value={instanceContext}>
@@ -299,10 +304,13 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
       locale: i18nConf.locale,
       clientCookies: req.apiCookies ? req.apiCookies.join('; ') : undefined,
     };
-  const apolloClient: ApolloClient<object> = initializeApollo(null, apolloConfig);
+  const apolloClient: ApolloClient = initializeApollo(apolloConfig);
 
   // Load the instance configuration from backend
-  const { data } = await apolloClient.query<InstanceContextQuery, InstanceContextQueryVariables>({
+  const { data: queryResponse } = await apolloClient.query<
+    InstanceContextQuery,
+    InstanceContextQueryVariables
+  >({
     query: GET_INSTANCE_CONTEXT,
     context: {
       'instance-hostname': apolloConfig.instanceHostname,
@@ -310,6 +318,11 @@ async function getSiteContext(ctx: PathsPageContext, i18nConf: SiteI18nConfig) {
       'component-name': 'PathsApp.getSiteContext',
     },
   });
+  if (!queryResponse) {
+    return null;
+  }
+
+  const data = queryResponse;
   const { scenarios } = data;
   const instance = data.instance;
   const basePath = req.headers[BASE_PATH_HEADER] as string;
@@ -361,6 +374,8 @@ function getLocaleDebug(ctx: PathsPageContext) {
 }
 
 async function getI18nProps(ctx: PathsPageContext) {
+  'use server';
+
   // SSR only
   const { loadMessages } = await import('@/i18n/loadMessages');
   const { req } = ctx;
@@ -374,8 +389,8 @@ async function getI18nProps(ctx: PathsPageContext) {
     defaultLanguage = 'en';
   }
 
-  if (false) {
-    logger.debug(getLocaleDebug(ctx));
+  if (logger.isLevelEnabled('trace')) {
+    logger.trace(getLocaleDebug(ctx));
   }
 
   if (!ctx.locale) {
@@ -416,37 +431,29 @@ type PathsAppContext = Omit<AppContext, 'ctx'> & {
 
 let defaultTheme: Theme | undefined;
 
-const getInitialProps = async (appContext: PathsAppContext) => {
+const logger = getLogger({ name: 'app-get-initial-props' });
+
+async function getInitialPropsServer(appContext: PathsAppContext) {
   const { ctx } = appContext;
 
-  if (process.browser) {
-    if (isLocalDev) {
-      printRuntimeConfig('Kausal Paths UI');
-    }
-    const appProps = await App.getInitialProps(appContext);
-    const nextData = window.__NEXT_DATA__;
-    const pageProps = nextData.props as PathsAppProps;
-    const { messages, locale, siteContext, instanceContext, themeProps } = pageProps;
-    const ret = {
-      ...appProps,
-      siteContext,
-      instanceContext,
-      themeProps,
-      messages,
-      locale,
-      pageProps: {
-        ...(appProps.pageProps as Record<string, unknown>),
-      },
-    };
-    return ret;
-  }
-
+  // SSR
   if (!defaultTheme) {
     defaultTheme = await loadTheme('default');
   }
 
-  // SSR
   const appProps: Partial<PathsAppProps> = await App.getInitialProps(appContext);
+  if (isLocalDev) {
+    const { router } = appContext;
+    logger.trace(
+      {
+        appProps,
+        route: router.route,
+        pathname: router.pathname,
+        defaultLocale: router.defaultLocale,
+      },
+      'getInitialProps running'
+    );
+  }
   if (!appProps.pageProps) {
     appProps.pageProps = {};
   }
@@ -474,6 +481,36 @@ const getInitialProps = async (appContext: PathsAppContext) => {
     ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=59');
   }
   return appProps;
+}
+
+async function getInitialPropsBrowser(appContext: PathsAppContext) {
+  if (isLocalDev) {
+    printRuntimeConfig('Kausal Paths UI');
+  }
+  const appProps = await App.getInitialProps(appContext);
+  const nextData = window.__NEXT_DATA__;
+  const pageProps = nextData.props as PathsAppProps;
+  const { messages, locale, siteContext, instanceContext, themeProps } = pageProps;
+  const ret = {
+    ...appProps,
+    siteContext,
+    instanceContext,
+    themeProps,
+    messages,
+    locale,
+    pageProps: {
+      ...(appProps.pageProps as Record<string, unknown>),
+    },
+  };
+  return ret;
+}
+
+const getInitialProps = async (appContext: PathsAppContext) => {
+  if (typeof window === 'undefined') {
+    return await getInitialPropsServer(appContext);
+  } else {
+    return await getInitialPropsBrowser(appContext);
+  }
 };
 
 PathsApp.getInitialProps = async (appContext: PathsAppContext) => {

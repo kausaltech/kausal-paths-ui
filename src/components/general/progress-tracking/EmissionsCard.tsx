@@ -1,5 +1,5 @@
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { useTranslation } from '@/common/i18n';
 import { useNumberFormatter } from '@/common/numbers';

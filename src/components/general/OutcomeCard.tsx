@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { useTranslations } from 'next-intl';

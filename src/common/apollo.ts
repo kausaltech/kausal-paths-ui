@@ -1,16 +1,10 @@
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  type NormalizedCacheObject,
-} from '@apollo/client';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
 import { type DirectiveNode, Kind, type VariableDefinitionNode } from 'graphql';
 import type { Logger } from 'pino';
 
 import type { DefaultApolloContext } from '@common/apollo';
 import { type DirectiveArg, createOperationDirective } from '@common/apollo/directives';
-import { createSentryLink, logOperationLink } from '@common/apollo/links';
+import { createSentryLink, logOperationLink, retryLink } from '@common/apollo/links';
 import { FORWARDED_HEADER } from '@common/constants/headers.mjs';
 import { GRAPHQL_CLIENT_PROXY_PATH } from '@common/constants/routes.mjs';
 import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
@@ -27,11 +21,12 @@ import {
 declare module '@apollo/client/core' {
   export interface DefaultContext extends Partial<DefaultApolloContext> {
     instanceHostname?: string;
+    locale?: string;
   }
 }
 
 const localeMiddleware = new ApolloLink((operation, forward) => {
-  operation.setContext(({ headers = {}, locale }) => {
+  operation.setContext(({ headers = {}, locale }: ApolloLink.OperationContext) => {
     if (locale) {
       return {
         headers: {
@@ -66,10 +61,10 @@ export function getHttpHeaders(opts: ApolloClientOpts) {
     clientIp,
     clientCookies,
   } = opts;
-  const headers = {};
+  const headers: Record<string, string> = {};
 
   if (instanceIdentifier) {
-    headers[INSTANCE_IDENTIFIER_HEADER] = opts.instanceIdentifier;
+    headers[INSTANCE_IDENTIFIER_HEADER] = instanceIdentifier;
   }
   if (instanceHostname) {
     headers[INSTANCE_HOSTNAME_HEADER] = instanceHostname;
@@ -84,7 +79,7 @@ export function getHttpHeaders(opts: ApolloClientOpts) {
     const { baseURL, path } = currentURL;
     headers['referer'] = baseURL + path;
   }
-  if (!process.browser) {
+  if (typeof window === 'undefined') {
     if (clientIp) {
       headers[FORWARDED_HEADER] = `for="${clientIp}"`;
     }
@@ -93,6 +88,10 @@ export function getHttpHeaders(opts: ApolloClientOpts) {
     }
   }
   return headers;
+}
+
+function directiveExists(directives: DirectiveNode[], name: string) {
+  return directives.some((d) => d.name.value === name);
 }
 
 const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
@@ -115,7 +114,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
       if (def.kind !== Kind.OPERATION_DEFINITION) return def;
       const variableDefinitions: VariableDefinitionNode[] = [...(def.variableDefinitions || [])];
       const directives: DirectiveNode[] = [...(def.directives || [])];
-      if (locale) {
+      if (locale && !directiveExists(directives, 'locale')) {
         const directive = createOperationDirective({
           name: 'locale',
           args: [
@@ -133,7 +132,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         variables['_locale'] = locale;
       }
       const instanceArgs: DirectiveArg[] = [];
-      if (instanceIdentifier) {
+      if (instanceIdentifier && !directiveExists(directives, 'identifier')) {
         instanceArgs.push({
           name: 'identifier',
           variable: {
@@ -143,7 +142,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         });
         variables['_identifier'] = instanceIdentifier;
       }
-      if (instanceHostname) {
+      if (instanceHostname && !directiveExists(directives, 'hostname')) {
         instanceArgs.push({
           name: 'hostname',
           variable: {
@@ -153,7 +152,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         });
         variables['_hostname'] = instanceHostname;
       }
-      if (instanceArgs.length) {
+      if (instanceArgs.length && !directiveExists(directives, 'instance')) {
         const directive = createOperationDirective({
           name: 'instance',
           args: instanceArgs,
@@ -188,7 +187,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
   return middleware;
 };
 
-export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
+export type ApolloClientType = ApolloClient;
 
 let apolloClient: ApolloClientType | undefined;
 
@@ -212,8 +211,8 @@ function createApolloClient(opts: ApolloClientOpts) {
 
   return new ApolloClient({
     ssrMode,
-    uri,
     link: ApolloLink.from([
+      retryLink,
       createSentryLink(uri),
       logOperationLink,
       localeMiddleware,
@@ -231,23 +230,12 @@ function createApolloClient(opts: ApolloClientOpts) {
   });
 }
 
-export function initializeApollo(
-  initialState: NormalizedCacheObject | null,
-  opts: ApolloClientOpts
-) {
+export function initializeApollo(opts: ApolloClientOpts) {
   const _apolloClient = apolloClient ?? createApolloClient(opts);
 
-  // If your page has Next.js data fetching methods that use Apollo Client, the initial state
-  // gets hydrated here
-  if (initialState) {
-    // Get existing cache, loaded during client side data fetching
-    const existingCache = _apolloClient.extract();
-    // Restore the cache using the data passed from getStaticProps/getServerSideProps
-    // combined with the existing cached data
-    _apolloClient.cache.restore({ ...existingCache, ...initialState });
-  }
   // For SSG and SSR always create a new Apollo Client
   if (typeof window === 'undefined') return _apolloClient;
+
   // Create the Apollo Client once in the client
   if (!apolloClient) apolloClient = _apolloClient;
   return _apolloClient;

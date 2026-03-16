@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import {
   Buildings,
   ClipboardX,
@@ -257,9 +257,7 @@ const CausalCard = (props: CausalCardProps) => {
             )}
             <MoreLink>
               <NodeLink node={node} className="node-type-icon">
-                <a>
-                  {t('details')} <Icon name="arrow-right" />
-                </a>
+                {t('details')} <Icon name="arrow-right" />
               </NodeLink>
             </MoreLink>
           </CardContent>

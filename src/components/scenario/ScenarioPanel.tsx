@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
+import { gql } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box,
   Button,
@@ -13,6 +13,8 @@ import {
   useScrollTrigger,
 } from '@mui/material';
 import { Sliders } from 'react-bootstrap-icons';
+
+import { useTheme } from '@common/themes';
 
 import type {
   InstanceGoalOutcomeQuery,

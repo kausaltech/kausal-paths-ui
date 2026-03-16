@@ -10,7 +10,6 @@ export const STREAM_FIELD_FRAGMENT = gql`
     id
     blockType
     field
-
     ... on RichTextBlock {
       value
       rawValue

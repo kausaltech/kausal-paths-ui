@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 

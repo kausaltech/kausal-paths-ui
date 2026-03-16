@@ -2,10 +2,12 @@ import { useEffect, useMemo } from 'react';
 
 import dynamic from 'next/dynamic';
 
-import { gql, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
+import { gql } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client/react';
 import type Plotly from 'plotly.js';
 import { tint, transparentize } from 'polished';
+
+import { useTheme } from '@common/themes';
 
 import type { DimensionalPlotFragment } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';

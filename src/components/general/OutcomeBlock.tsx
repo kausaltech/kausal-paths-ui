@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/router';
 
-import { useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from "@apollo/client/react";
 import { Box, Skeleton, useTheme } from '@mui/material';
 import type { ParsedUrlQuery } from 'querystring';
 

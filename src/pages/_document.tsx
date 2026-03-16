@@ -11,7 +11,7 @@ import {
   DocumentHeadTags,
   type DocumentHeadTagsProps,
   documentGetInitialProps,
-} from '@mui/material-nextjs/v14-pagesRouter';
+} from '@mui/material-nextjs/v16-pagesRouter';
 
 import { getEnvScriptContents } from '@common/env/script-component';
 import { getThemeStaticURL } from '@common/themes/theme';
@@ -20,7 +20,6 @@ import type { PathsAppProps } from './_app';
 
 async function getInitialProps(ctx: DocumentContext) {
   let themeProps: PathsAppProps['pageProps']['themeProps'] = null;
-
   const props = await documentGetInitialProps(ctx, {
     // Get the theme props from the app for the theme stylesheet
     plugins: [
@@ -29,7 +28,10 @@ async function getInitialProps(ctx: DocumentContext) {
           themeProps = props.themeProps;
           return <App {...props} />;
         },
-        resolveProps: async (props) => Promise.resolve({ ...props, themeProps }),
+        resolveProps: async (props) => {
+          const ret = Promise.resolve({ ...props, themeProps });
+          return ret;
+        }
       },
     ],
   });

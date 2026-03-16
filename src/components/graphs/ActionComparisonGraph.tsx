@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import dynamic from 'next/dynamic';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { Grid } from '@mui/material';
 import { useTranslations } from 'next-intl';
 

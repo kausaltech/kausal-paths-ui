@@ -1,6 +1,7 @@
-import { NetworkStatus, useQuery, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { NetworkStatus } from '@apollo/client';
+import { useQuery, useReactiveVar } from "@apollo/client/react";
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import {
   type ActionListQuery,

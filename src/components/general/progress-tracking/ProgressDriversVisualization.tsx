@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
-import { useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
+import { useReactiveVar } from "@apollo/client/react";
+import { useTheme } from '@common/themes';
 import type { Theme } from '@emotion/react';
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import type {
   DefaultLabelFormatterCallbackParams,
   EChartsCoreOption,

@@ -1,5 +1,4 @@
-import { readFile } from 'fs/promises';
-import path from 'path';
+'use server';
 
 export type Messages = Record<string, Record<string, string>>;
 
@@ -19,14 +18,16 @@ function getLocaleChain(locale: string): string[] {
 }
 
 async function tryReadJson(filePath: string): Promise<Record<string, string> | null> {
+  const fs = await import('node:fs');
   try {
-    return JSON.parse(await readFile(filePath, 'utf-8')) as Record<string, string>;
+    return JSON.parse(await fs.promises.readFile(filePath, 'utf-8')) as Record<string, string>;
   } catch {
     return null;
   }
 }
 
 export async function loadMessages(locale: string, namespaces: string[]): Promise<Messages> {
+  const path = await import('path');
   const localeChain = getLocaleChain(locale);
   const messages: Messages = {};
   for (const ns of namespaces) {

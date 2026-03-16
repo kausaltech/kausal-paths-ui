@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useLazyQuery, useQuery, useReactiveVar } from "@apollo/client/react";
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { Container, Grid } from '@mui/material';
 
 import type {
@@ -250,9 +250,7 @@ export default function ActionPage() {
               <Breadcrumb aria-label="breadcrumb">
                 <ol className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <ActionListLink>
-                      <a>{t('actions')}</a>
-                    </ActionListLink>
+                    <ActionListLink>{t('actions')}</ActionListLink>
                   </li>
                   {action.group && <li className="breadcrumb-item">{action.group.name}</li>}
                 </ol>
@@ -281,9 +279,7 @@ export default function ActionPage() {
                       }}
                     />
                     <NodeLink node={action}>
-                      <a>
-                        {t('read-more')} <Icon name="arrowRight" />
-                      </a>
+                      {t('read-more')} <Icon name="arrowRight" />
                     </NodeLink>
                   </ActionDescription>
                 </Grid>

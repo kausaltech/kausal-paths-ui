@@ -1,6 +1,4 @@
-import { useQuery, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box,
   Card,
@@ -12,6 +10,9 @@ import {
   alpha,
   lighten,
 } from '@mui/material';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { ActionListQuery, ActionListQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
@@ -73,7 +74,7 @@ function ActionListCard(props: ActionListCardProps) {
   const isActive = actionParameterSwitch?.boolValue ?? false;
   const theme = useTheme();
 
-  const categoryColor = action.group?.color ?? theme.actionColor;
+  const categoryColor = action.group?.color || theme.actionColor;
   const categoryColorLight = lighten(categoryColor, 0.5);
 
   return (

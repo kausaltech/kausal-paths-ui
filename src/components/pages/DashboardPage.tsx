@@ -1,4 +1,4 @@
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@common/themes';
 import { Box, Card, CardContent, CardMedia, Container, Stack, Typography } from '@mui/material';
 import { readableColor } from 'polished';
 

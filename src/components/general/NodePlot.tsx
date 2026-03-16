@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import type Plotly from 'plotly.js';
 import { tint, transparentize } from 'polished';
 import CsvDownload from 'react-json-to-csv';

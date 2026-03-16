@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
-import { gql, useMutation } from '@apollo/client';
-import styled from '@emotion/styled';
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
+import styled from '@common/themes/styled';
 import {
   CircularProgress,
   FormControlLabel,

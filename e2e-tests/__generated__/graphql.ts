@@ -13,6 +13,7 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   DateTime: { input: any; output: any; }
+  JSON: { input: any; output: any; }
   JSONString: { input: any; output: any; }
   PositiveInt: { input: any; output: any; }
   RichText: { input: any; output: any; }
@@ -37,97 +38,25 @@ export enum DecisionLevel {
   Nation = 'NATION'
 }
 
-/** Desired (benificial) direction for the values of the output of a node */
-export enum DesiredOutcome {
-  Decreasing = 'decreasing',
-  Increasing = 'increasing'
-}
-
 export enum DimensionKind {
   Common = 'COMMON',
   Node = 'NODE',
   Scenario = 'SCENARIO'
 }
 
-export type FrameworkConfigInput = {
-  baselineYear: Scalars['Int']['input'];
-  frameworkId: Scalars['ID']['input'];
-  /** Identifier for the model instance. Needs to be unique. */
-  instanceIdentifier: Scalars['ID']['input'];
-  /** Name for the framework configuration instance. Typically the name of the organization. */
-  name: Scalars['String']['input'];
-  /** Name of the organization. If not set, it will be determined through the user's credentials, if possible. */
-  organizationName?: InputMaybe<Scalars['String']['input']>;
-  /** Target year for model. */
-  targetYear?: InputMaybe<Scalars['Int']['input']>;
-  /** UUID for the new framework config. If not set, will be generated automatically. */
-  uuid?: InputMaybe<Scalars['UUID']['input']>;
-};
-
-/** An enumeration. */
-export enum FrameworksMeasureTemplatePriorityChoices {
-  /** High */
-  High = 'HIGH',
-  /** Low */
-  Low = 'LOW',
-  /** Medium */
-  Medium = 'MEDIUM'
+export enum NodeKind {
+  Action = 'ACTION',
+  Formula = 'FORMULA',
+  Pipeline = 'PIPELINE',
+  Simple = 'SIMPLE'
 }
 
-export type InstanceContext = {
-  hostname?: InputMaybe<Scalars['String']['input']>;
-  identifier?: InputMaybe<Scalars['ID']['input']>;
-  locale?: InputMaybe<Scalars['String']['input']>;
-};
-
-export enum LowHigh {
-  High = 'HIGH',
-  Low = 'LOW'
-}
-
-export type MeasureDataPointInput = {
-  /** Value for the data point (set to null to remove) */
-  value?: InputMaybe<Scalars['Float']['input']>;
-  /** Year of the data point. If not given, defaults to the baseline year for the framework instance. */
-  year?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type MeasureInput = {
-  dataPoints?: InputMaybe<Array<MeasureDataPointInput>>;
-  /** Internal notes for the measure instance */
-  internalNotes?: InputMaybe<Scalars['String']['input']>;
-  /** ID (or UUID) of the measure template within a framework */
-  measureTemplateId: Scalars['ID']['input'];
-};
-
-/** An enumeration. */
-export enum ModelAction {
-  Add = 'ADD',
-  Change = 'CHANGE',
-  Delete = 'DELETE',
-  View = 'VIEW'
-}
-
-export type NzcCityEssentialData = {
-  /** Population of the city */
-  population: Scalars['Int']['input'];
-  /** Share of renewables in energy production (low or high) */
-  renewableMix: LowHigh;
-  /** Average yearly temperature (low or high) */
-  temperature: LowHigh;
-};
-
-export enum ScenarioKind {
-  Baseline = 'BASELINE',
-  Custom = 'CUSTOM',
-  Default = 'DEFAULT',
-  ProgressTracking = 'PROGRESS_TRACKING'
-}
-
-/** Enum for search operator. */
-export enum SearchOperatorEnum {
-  And = 'AND',
-  Or = 'OR'
+export enum PrimaryLayoutClass {
+  Action = 'ACTION',
+  ContextSource = 'CONTEXT_SOURCE',
+  Core = 'CORE',
+  GhostableContextSource = 'GHOSTABLE_CONTEXT_SOURCE',
+  Outcome = 'OUTCOME'
 }
 
 export enum VisualizationKind {
@@ -148,4 +77,16 @@ export type PlaywrightGetInstanceInfoQueryVariables = Exact<{
 }>;
 
 
-export type PlaywrightGetInstanceInfoQuery = { __typename?: 'Query', instance: { __typename?: 'InstanceType', id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: { __typename?: 'InstanceFeaturesType', showRefreshPrompt: boolean }, goals: Array<{ __typename?: 'InstanceGoalEntry', id: string }> }, pages: Array<{ __typename: 'ActionListPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'DashboardPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'InstanceRootPage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'OutcomePage', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'Page', urlPath: string, title: string, showInMenus: boolean } | { __typename: 'StaticPage', urlPath: string, title: string, showInMenus: boolean }>, actions: Array<{ __typename?: 'ActionNode', id: string, isVisible: boolean, group?: { __typename?: 'ActionGroupType', id: string } | null, parameters: Array<{ __typename?: 'BoolParameterType', localId?: string | null, isCustomizable: boolean } | { __typename?: 'NumberParameterType', localId?: string | null, isCustomizable: boolean } | { __typename?: 'StringParameterType', localId?: string | null, isCustomizable: boolean } | { __typename?: 'UnknownParameterType', localId?: string | null, isCustomizable: boolean }> }> };
+export type PlaywrightGetInstanceInfoQuery = { __typename?: 'Query', instance: { __typename?: 'InstanceType', id: string, name: string, defaultLanguage: string, supportedLanguages: Array<string>, features: { __typename?: 'InstanceFeaturesType', showRefreshPrompt: boolean }, goals: Array<{ __typename?: 'InstanceGoalEntry', id: string }> }, pages: Array<
+    | { __typename: 'ActionListPage', urlPath: string, title: string, showInMenus: boolean }
+    | { __typename: 'DashboardPage', urlPath: string, title: string, showInMenus: boolean }
+    | { __typename: 'InstanceRootPage', urlPath: string, title: string, showInMenus: boolean }
+    | { __typename: 'OutcomePage', urlPath: string, title: string, showInMenus: boolean }
+    | { __typename: 'Page', urlPath: string, title: string, showInMenus: boolean }
+    | { __typename: 'StaticPage', urlPath: string, title: string, showInMenus: boolean }
+  >, actions: Array<{ __typename?: 'ActionNode', id: string, isVisible: boolean, group?: { __typename?: 'ActionGroupType', id: string } | null, parameters: Array<
+      | { __typename?: 'BoolParameterType', localId?: string | null, isCustomizable: boolean }
+      | { __typename?: 'NumberParameterType', localId?: string | null, isCustomizable: boolean }
+      | { __typename?: 'StringParameterType', localId?: string | null, isCustomizable: boolean }
+      | { __typename?: 'UnknownParameterType', localId?: string | null, isCustomizable: boolean }
+    > }> };

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';

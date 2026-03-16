@@ -2,7 +2,8 @@ import { Suspense } from 'react';
 
 import Head from 'next/head';
 
-import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
+import { type ObservableQuery } from '@apollo/client';
+import { useQuery, useReactiveVar } from "@apollo/client/react";
 import type { Theme } from '@kausal/themes/types';
 import { Box, Container, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material';

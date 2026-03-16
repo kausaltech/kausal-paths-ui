@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useRouter } from 'next/router';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,

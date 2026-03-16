@@ -1,4 +1,5 @@
 node_modules
+*/node_modules
 /.next/
 .yarn*
 .pnp.*
@@ -7,3 +8,5 @@ node_modules
 /e2e-tests/
 /Attic/
 /public/static/themes/
+/.pnpm-store
+*.bak

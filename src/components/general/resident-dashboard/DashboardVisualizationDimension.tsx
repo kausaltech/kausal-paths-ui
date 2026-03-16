@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@common/themes';
 import { Box, Card, CardContent, Typography } from '@mui/material';
 
 import { Chart } from '@common/components/Chart';
