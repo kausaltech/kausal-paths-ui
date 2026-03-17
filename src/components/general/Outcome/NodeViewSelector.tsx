@@ -1,7 +1,12 @@
 import { Box, FormControl, MenuItem, Select } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
-
-import { BarChartLineFill, InfoCircleFill, PieChartFill, Table } from 'react-bootstrap-icons';
+import {
+  BarChartLineFill,
+  BoxArrowUpRight,
+  InfoCircleFill,
+  PieChartFill,
+  Table,
+} from 'react-bootstrap-icons';
 
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
@@ -72,6 +77,14 @@ const NodeViewSelector = ({
       ),
       label: t('details'),
       show: true,
+    },
+    {
+      id: 'node-page',
+      icon: (
+        <BoxArrowUpRight aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
+      ),
+      label: t('node-open'),
+      show: showDetailsLink,
     },
   ];
 
