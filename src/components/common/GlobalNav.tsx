@@ -99,13 +99,13 @@ const SiteTitle = styled.div`
     font-size: ${(props) => props.theme.fontSizeMd};
   }
 `;
-const HomeLink = styled.a`
+const HomeLink = styled.a<{ $hideLogoOnMobile?: boolean }>`
   display: flex;
   align-items: center;
   color: ${(props) => props.theme.brandNavColor};
   font-weight: ${(props) => props.theme.fontWeightBold};
   line-height: ${(props) => props.theme.lineHeightSm};
-  hyphens: auto;
+  hyphens: manual;
   word-break: break-word;
 
   &:hover {
@@ -113,19 +113,26 @@ const HomeLink = styled.a`
     color: ${(props) => props.theme.brandNavColor};
   }
 
-  svg {
-    display: none;
-    width: auto;
-    max-width: 6em;
+  .org-logo {
+    display: ${(props) => (!props.$hideLogoOnMobile ? 'block' : 'none')};
+    max-width: 6rem;
     height: ${(props) => props.theme.spaces.s200};
-    margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}
+    margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s100}
       ${(props) => props.theme.spaces.s050} 0;
   }
 
-  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    svg {
+  // Support png logos. PNG logos are always full height.
+  img.org-logo {
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 100%;
+    max-height: ${({ theme }) => theme.spaces.s600};
+  }
+
+  @media (min-width: ${(props) => props.theme.breakpointMd}) {
+    .org-logo {
       display: block;
-      max-width: 18em;
+      max-width: 12rem;
       height: calc(${(props) => props.theme.spaces.s200} + ${(props) => props.theme.spaces.s050});
       margin: ${(props) => props.theme.spaces.s050} ${(props) => props.theme.spaces.s150}
         ${(props) => props.theme.spaces.s050} 0;
@@ -231,6 +238,12 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
     : '';
   const orgLogo = useMemo(() => {
     const url = getThemeStaticURL(theme.themeLogoUrl);
+    if (theme.themeLogoUrl.endsWith('.png')) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt={`${ownerName}, ${siteTitle} ${t('front-page')}`} className="org-logo" />
+      );
+    }
     return (
       <SVG
         className="org-logo"

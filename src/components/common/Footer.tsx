@@ -77,9 +77,14 @@ const Logo = styled.div`
   margin: ${(props) => props.theme.spaces.s150} ${(props) => props.theme.spaces.s200}
     ${(props) => props.theme.spaces.s150} 0;
 
-  svg {
+  .footer-org-logo {
     height: 100%;
     max-width: 100%;
+
+    &.footer-logo-bitmap {
+      height: auto;
+      max-height: 100%;
+    }
   }
 
   @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
@@ -319,11 +324,22 @@ function SiteFooter(props: SiteFooterProps) {
   const { fundingInstruments, otherLogos, footerStatement } = theme.settings;
 
   const OrgLogo = () => {
+    if (theme.themeLogoWhiteUrl.endsWith('.png')) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
+          alt={`${ownerName}, ${siteTitle} ${t('front-page')}`}
+          className="footer-org-logo footer-logo-bitmap"
+        />
+      );
+    }
     return (
       <SVG
         src={getThemeStaticURL(theme.themeLogoWhiteUrl)}
         preserveAspectRatio="xMinYMid meet"
         title={`${ownerName}, ${siteTitle} ${t('front-page')}`}
+        className="footer-org-logo"
         style={{ display: 'block' }}
       />
     );
