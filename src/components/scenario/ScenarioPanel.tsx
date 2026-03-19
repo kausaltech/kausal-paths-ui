@@ -222,7 +222,7 @@ const ScenarioPanel = () => {
                   <Button
                     ref={editBtnRef}
                     size="small"
-                    color="primary"
+                    sx={{ color: theme.themeColors.black }}
                     onClick={handleEditClick}
                     startIcon={<Sliders />}
                     aria-haspopup="dialog"

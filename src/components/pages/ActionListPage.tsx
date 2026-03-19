@@ -47,8 +47,8 @@ const SettingsForm = styled.form`
   display: block;
   margin: 1.5rem 0;
   padding: 0.5rem 0;
-  border-top: 1px solid ${(props) => props.theme.graphColors.blue030};
-  border-bottom: 1px solid ${(props) => props.theme.graphColors.blue030};
+  border-top: 1px solid ${(props) => props.theme.neutralLight};
+  border-bottom: 1px solid ${(props) => props.theme.neutralLight};
 `;
 
 const ActionCount = styled.div`
