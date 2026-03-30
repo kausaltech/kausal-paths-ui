@@ -61,6 +61,7 @@ type ValidNamespace = 'common' | 'errors';
 /**
  * Compatibility wrapper around next-intl's useTranslations hook.
  * Returns { t, i18n } to match the previous next-i18next API.
+ * @deprecated prefer to use direct import from next-intl for consistency
  */
 export function useTranslation<NS extends ValidNamespace = 'common'>(namespace?: NS | NS[]) {
   const ns = (Array.isArray(namespace) ? namespace[0] : (namespace ?? 'common')) as NS;

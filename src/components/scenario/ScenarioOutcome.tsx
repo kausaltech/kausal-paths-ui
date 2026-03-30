@@ -1,13 +1,13 @@
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
+import { useLocale, useTranslations } from 'next-intl';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
 
 import { beautifyValue } from '@common/utils/format';
 
 import type { InstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
-import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
 import type { InstanceGoal } from '@/common/instance';
 
@@ -56,7 +56,8 @@ export default function ScenarioOutcome(props: ScenarioOutcomeProps) {
     goalOutcome,
     scenarioId,
   } = props;
-  const { t } = useTranslation();
+  const t = useTranslations('common');
+  const locale = useLocale();
   const features = useFeatures();
   const activeScenario = useReactiveVar(activeScenarioVar);
   const maximumFractionDigits = features.maximumFractionDigits ?? undefined;
@@ -115,7 +116,7 @@ export default function ScenarioOutcome(props: ScenarioOutcomeProps) {
         const missingText =
           goalVal !== 0
             ? `${Math.abs((missing / goalVal) * 100).toFixed(0)}%`
-            : `${beautifyValue(missing, undefined, maximumFractionDigits)} ${unit}`;
+            : `${beautifyValue(missing, locale, maximumFractionDigits)} ${unit}`;
 
         // TODO: Verbalise case "exactly on target"
         const outcomeText = missing > 0 ? t('above-target') : t('below-target');
