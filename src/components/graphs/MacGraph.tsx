@@ -5,10 +5,13 @@ import dynamic from 'next/dynamic';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Grid } from '@mui/material';
+import { useLocale, useTranslations } from 'next-intl';
 import type Plotly from 'plotly.js';
 
+import { beautifyValue } from '@common/utils/format';
+
 import type { ActionListQuery } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
@@ -60,10 +63,6 @@ const EmptyPlot = styled.div`
   margin: 0 0 2rem;
 `;
 
-const formatNumber = (value, language: string) => {
-  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language);
-};
-
 /*
   const macData = {
     ids: sortedActions.map((action) => action.id),
@@ -108,7 +107,9 @@ function MacGraph(props: MacGraphProps) {
     actionGroups,
   } = props;
   const theme = useTheme();
-  const { i18n, t } = useTranslation();
+  const t = useTranslations('common');
+  const locale = useLocale();
+  const instance = useInstance();
 
   const [hoverId, setHoverId] = useState<number | null>(null);
 
@@ -117,7 +118,7 @@ function MacGraph(props: MacGraphProps) {
     setHoverId(null);
   }, [data]);
 
-  // console.log("mac props", props);
+  const significantDigits = instance?.features?.showSignificantDigits || undefined;
   // TODO: Add sorting of data here
 
   const isEmpty = data.actions?.length < 1;
@@ -294,7 +295,7 @@ function MacGraph(props: MacGraphProps) {
               <HoverValue>
                 <HoverValueTitle>{impactName}</HoverValueTitle>
                 <HoverValueValue>
-                  {formatNumber(data.impact[hoverId], i18n.language)}
+                  {beautifyValue(data.impact[hoverId], locale, significantDigits)}
                 </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
@@ -302,7 +303,9 @@ function MacGraph(props: MacGraphProps) {
             <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{costName}</HoverValueTitle>
-                <HoverValueValue>{formatNumber(data.cost[hoverId], i18n.language)}</HoverValueValue>
+                <HoverValueValue>
+                  {beautifyValue(data.cost[hoverId], locale, significantDigits)}
+                </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: costUnit }} />
               </HoverValue>
             </Grid>
@@ -310,7 +313,7 @@ function MacGraph(props: MacGraphProps) {
               <HoverValue>
                 <HoverValueTitle>{efficiencyName}</HoverValueTitle>
                 <HoverValueValue>
-                  {formatNumber(data.efficiency[hoverId], i18n.language)}
+                  {beautifyValue(data.efficiency[hoverId], locale, significantDigits)}
                 </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: indicatorUnit }} />
               </HoverValue>
