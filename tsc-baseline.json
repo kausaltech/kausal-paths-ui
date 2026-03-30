@@ -208,24 +208,6 @@
       "count": 1,
       "message": "Type 'string | undefined' is not assignable to type 'Datum[]'."
     },
-    "6778a441611a5747e6cb162e8f63c20c974f4c63": {
-      "file": "src/components/general/DimensionalNodePlot.tsx",
-      "code": "TS18047",
-      "count": 2,
-      "message": "'value' is possibly 'null'."
-    },
-    "975a48f99284ccdb1e857dbb2cbd696bebd681f9": {
-      "file": "src/components/general/DimensionalNodePlot.tsx",
-      "code": "TS18047",
-      "count": 2,
-      "message": "'site.referenceYear' is possibly 'null'."
-    },
-    "5a99b3d5720cbdf8086586f93527dcd76af8cfc0": {
-      "file": "src/components/general/IcicleGraph.tsx",
-      "code": "TS2769",
-      "count": 1,
-      "message": "No overload matches this call."
-    },
     "b97148837f7f9e321099c698c5755122bddb40d8": {
       "file": "src/components/general/LanguageSelector.tsx",
       "code": "TS2322",
