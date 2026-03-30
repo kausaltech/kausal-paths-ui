@@ -1,19 +1,5 @@
 import { ceil, max, min, sum } from 'lodash-es';
 
-const nrSignificantDigits = 3;
-
-// Use Format number to locale and round to 3 decimals
-export const formatNumber = (value: number, language = 'en', maximumFractionDigits?: number) => {
-  if (value == null || !Number.isFinite(value)) {
-    return '–';
-  }
-  if (typeof maximumFractionDigits === 'number') {
-    return value.toLocaleString(language, { maximumFractionDigits });
-  }
-
-  return parseFloat(Number(value).toPrecision(nrSignificantDigits)).toLocaleString(language);
-};
-
 export const getInitialMetric = (node: { metric: NodeMetric }) => node.metric.historicalValues[0];
 
 type MetricValue = {
