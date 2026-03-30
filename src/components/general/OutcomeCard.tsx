@@ -4,11 +4,13 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { beautifyValue } from '@common/utils/format';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
-import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
+import { getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';
 import PopoverTip from '@/components/common/PopoverTip';
 
@@ -175,7 +177,9 @@ export const SectorSummary = ({
   startYear,
   endYear,
 }: SectorSummaryProps) => {
-  const { t } = useTranslation();
+  const t = useTranslations();
+  const locale = useLocale();
+
   return (
     <MainValueWrapper>
       <Label $active={active}>
@@ -183,7 +187,7 @@ export const SectorSummary = ({
       </Label>
       {goalOutcomeValue !== undefined ? (
         <TotalValue>
-          {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
+          {beautifyValue(goalOutcomeValue, locale, maximumFractionDigits ?? undefined)}
           <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
         </TotalValue>
       ) : (
@@ -273,6 +277,7 @@ export default function OutcomeCard(props: OutcomeCardProps) {
       });
   }, [active]);
 
+  console.log();
   const isCompared = positiveTotal !== undefined && negativeTotal !== undefined;
   const siblingsTotal = isCompared ? positiveTotal - negativeTotal : undefined;
   const baseOutcomeValue = node.metric

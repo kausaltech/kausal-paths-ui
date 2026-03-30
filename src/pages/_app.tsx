@@ -42,7 +42,6 @@ import {
 } from '@/common/const';
 import InstanceContext, { GET_INSTANCE_CONTEXT, type InstanceContextType } from '@/common/instance';
 import Layout from '@/components/Layout';
-import LocalizedNumbersContext, { createNumbersContext } from '@/context/numbers';
 import SiteContext, { type SiteContextType, type SiteI18nConfig } from '@/context/site';
 import type { Messages } from '@/i18n/loadMessages';
 
@@ -231,11 +230,6 @@ function PathsApp(props: PathsAppProps) {
 
   const instance = instanceContext;
 
-  const numbersContext = createNumbersContext(
-    locale,
-    instance.features.showSignificantDigits ?? undefined
-  );
-
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
   const goals = instance.goals;
 
@@ -265,9 +259,7 @@ function PathsApp(props: PathsAppProps) {
             <ApolloProvider client={apolloClient}>
               <ThemeProvider theme={muiTheme}>
                 <ThemedGlobalStyles />
-                <LocalizedNumbersContext.Provider value={numbersContext}>
-                  {component}
-                </LocalizedNumbersContext.Provider>
+                {component}
               </ThemeProvider>
             </ApolloProvider>
           </InstanceContext.Provider>

@@ -1,36 +1,6 @@
 import { ceil, max, min, sum } from 'lodash-es';
-import numbro from 'numbro';
 
-let nrSignificantDigits = 3;
-
-export function setSignificantDigits(nr: number) {
-  nrSignificantDigits = nr;
-}
-
-/**
- * fractionDigits overrides significant digits
- */
-export const beautifyValue = (x: number, significantDigits?: number, fractionDigits?: number) => {
-  if (!significantDigits) significantDigits = nrSignificantDigits;
-
-  if (!x) return x;
-
-  if (typeof fractionDigits === 'number') {
-    return x.toLocaleString(undefined, { maximumFractionDigits: fractionDigits });
-  }
-
-  const rounded =
-    Math.abs(x) < 1
-      ? Number(x.toFixed(significantDigits))
-      : Number(x.toPrecision(significantDigits));
-
-  const format: numbro.Format = {
-    thousandSeparated: true,
-  };
-
-  const formatted = numbro(rounded).format(format);
-  return formatted;
-};
+const nrSignificantDigits = 3;
 
 // Use Format number to locale and round to 3 decimals
 export const formatNumber = (value: number, language = 'en', maximumFractionDigits?: number) => {
