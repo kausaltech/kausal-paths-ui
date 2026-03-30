@@ -5,8 +5,11 @@ import dynamic from 'next/dynamic';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Grid } from '@mui/material';
+import { useLocale, useTranslations } from 'next-intl';
 
-import { useTranslation } from '@/common/i18n';
+import { beautifyValue } from '@common/utils/format';
+
+import { useInstance } from '@/common/instance';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
@@ -50,10 +53,6 @@ const HoverValueValue = styled.span`
 
 const HoverValueUnit = styled.span``;
 
-const formatNumber = (value: number, language: string) => {
-  return parseFloat(Number(value).toPrecision(3)).toLocaleString(language);
-};
-
 type ActionComparisonData = {
   actions: string[];
   impact: number[];
@@ -72,7 +71,10 @@ type ActionComparisonGraphProps = {
 function ActionComparisonGraph(props: ActionComparisonGraphProps) {
   const { data, effectUnit, impactName, actionIds, actionGroups } = props;
   const theme = useTheme();
-  const { t, i18n } = useTranslation();
+  const t = useTranslations();
+  const locale = useLocale();
+  const instance = useInstance();
+  const significantDigits = instance?.features?.showSignificantDigits || undefined;
 
   const [hoverId, setHoverId] = useState<number | null>(null);
 
@@ -181,7 +183,7 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
               <HoverValue>
                 <HoverValueTitle>{impactName}</HoverValueTitle>
                 <HoverValueValue>
-                  {formatNumber(data.impact[hoverId], i18n.language)}
+                  {beautifyValue(data.impact[hoverId], locale, significantDigits)}
                 </HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit ?? '' }} />
               </HoverValue>
