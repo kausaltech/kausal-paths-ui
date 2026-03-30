@@ -8,11 +8,12 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { beautifyValue } from '@common/utils/format';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
-import { formatNumber } from '@/common/preprocess';
 
 type DataTableProps = {
   node: OutcomeNodeFieldsFragment;
@@ -23,7 +24,8 @@ type DataTableProps = {
 
 const DataTable = (props: DataTableProps) => {
   const { node, subNodes, startYear, endYear } = props;
-  const { t, i18n } = useTranslation();
+  const t = useTranslations('common');
+  const locale = useLocale();
 
   const metric = node.metric!;
 
@@ -72,11 +74,12 @@ const DataTable = (props: DataTableProps) => {
               {subNodes?.map((subNode) => (
                 <TableCell key={`${subNode.id}-${metric.year}`}>
                   {subNode?.metric?.historicalValues.find((value) => value.year === metric.year)
-                    ? formatNumber(
+                    ? beautifyValue(
                         subNode?.metric?.historicalValues.find(
                           (value) => value.year === metric.year
                         )?.value ?? 0,
-                        i18n.language,
+                        locale,
+                        undefined,
                         maximumFractionDigits
                       )
                     : '-'}
@@ -84,7 +87,7 @@ const DataTable = (props: DataTableProps) => {
               ))}
               {hasTotalValues && (
                 <TableCell>
-                  {formatNumber(metric.value, i18n.language, maximumFractionDigits)}
+                  {beautifyValue(metric.value, locale, undefined, maximumFractionDigits)}
                 </TableCell>
               )}
               <TableCell
@@ -101,10 +104,11 @@ const DataTable = (props: DataTableProps) => {
               {subNodes?.map((subNode) => (
                 <TableCell key={`${subNode.id}-${metric.year}`}>
                   {subNode?.metric?.forecastValues.find((value) => value.year === metric.year)
-                    ? formatNumber(
+                    ? beautifyValue(
                         subNode?.metric?.forecastValues.find((value) => value.year === metric.year)
                           ?.value ?? 0,
-                        i18n.language,
+                        locale,
+                        undefined,
                         maximumFractionDigits
                       )
                     : '-'}
@@ -112,7 +116,7 @@ const DataTable = (props: DataTableProps) => {
               ))}
               {hasTotalValues && (
                 <TableCell>
-                  {formatNumber(metric.value, i18n.language, maximumFractionDigits)}
+                  {beautifyValue(metric.value, locale, undefined, maximumFractionDigits)}
                 </TableCell>
               )}
               <TableCell
