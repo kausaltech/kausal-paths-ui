@@ -15,16 +15,15 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
+import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown } from 'react-bootstrap-icons';
 
+import { beautifyValue } from '@common/utils/format';
+
 import { DecisionLevel } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
 import { ActionLink } from '@/common/links';
-import {
-  findActionEnabledParam,
-  formatNumber,
-  summarizeYearlyValuesBetween,
-} from '@/common/preprocess';
+import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ScenarioChip from '@/components/general/ScenarioChip';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
@@ -71,11 +70,12 @@ const getValueForSorting = (
 const formatEfficiencyForDisplay = (
   eff: number | null | undefined,
   cap: number | null | undefined,
-  lang: string
+  locale: string,
+  significantDigits: number | undefined
 ) => {
   const value = eff ?? 0;
   const limit = cap ?? Infinity;
-  return Math.abs(value) < limit ? formatNumber(value, lang) : '-';
+  return Math.abs(value) < limit ? beautifyValue(value, locale, significantDigits) : '-';
 };
 
 const headerText = {
@@ -101,7 +101,10 @@ export default function ActionsList({
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) {
-  const { t, i18n } = useTranslation();
+  const t = useTranslations('common');
+  const locale = useLocale();
+  const instance = useInstance();
+  const significantDigits = instance?.features?.showSignificantDigits || undefined;
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
@@ -403,11 +406,12 @@ export default function ActionsList({
                       display = formatEfficiencyForDisplay(
                         action.cumulativeEfficiency,
                         action.efficiencyCap,
-                        i18n.language
+                        locale,
+                        significantDigits
                       );
                       unit = action.cumulativeEfficiencyUnit;
                     } else {
-                      display = formatNumber(val, i18n.language);
+                      display = beautifyValue(val, locale, significantDigits);
                       unit = col.getUnit(action);
                     }
 
