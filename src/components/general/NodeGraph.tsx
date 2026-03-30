@@ -16,7 +16,11 @@ import { beautifyValue, sanitizeHtmlUnit } from '@common/utils/format';
 import { type TFunction, useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
 
-import { getPredictionLabel } from './OutcomeGraph';
+export function getPredictionLabel(t: TFunction, instance: InstanceContextType) {
+  // Naughtily use showRefreshPrompt to determine if this is a NZP instance
+  const isNZPInstance = !!instance.features.showRefreshPrompt;
+  return isNZPInstance ? t('planned') : t('pred');
+}
 
 /**
  * Receives filtered node data as tables and plots them in a chart.
