@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { useMemo, useState } from 'react';
 
 import { useReactiveVar } from '@apollo/client';
@@ -7,15 +7,17 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
+import { useLocale, useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
 import { Chart } from '@common/components/Chart';
+import { beautifyValue } from '@common/utils/format';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
 
@@ -30,10 +32,6 @@ type Props = {
 };
 
 type AxisBounds = { min: number; max: number };
-
-function formatValue(value: number): string {
-  return value.toLocaleString(undefined, { maximumFractionDigits: 3 });
-}
 
 type Cubes = {
   metric: DimensionalMetric;
@@ -136,7 +134,9 @@ function getActionChartConfig(
   bounds: AxisBounds,
   isFirst: boolean,
   unitLabel: string,
-  theme: Theme
+  theme: Theme,
+  locale: string,
+  significantDigits: number | undefined
 ): EChartsCoreOption {
   return {
     aria: { enabled: true },
@@ -176,7 +176,8 @@ function getActionChartConfig(
       max: bounds.max,
       axisLabel: {
         show: isFirst,
-        formatter: (value: number) => `${formatValue(value)} ${unitLabel}`,
+        formatter: (value: number) =>
+          `${beautifyValue(value, locale, significantDigits)} ${unitLabel}`,
         showMinLabel: false,
         showMaxLabel: false,
       },
@@ -194,7 +195,8 @@ function getActionChartConfig(
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: number) => `${formatValue(value)} ${unitLabel}`,
+      valueFormatter: (value: number) =>
+        `${beautifyValue(value, locale, significantDigits)} ${unitLabel}`,
     },
     series: [
       {
@@ -238,7 +240,7 @@ function getActionChartConfig(
               {
                 type: 'text',
                 style: {
-                  text: `${formatValue(netBenefit as number)} ${unitLabel}`,
+                  text: `${beautifyValue(netBenefit as number, locale, significantDigits)} ${unitLabel}`,
                   font: '12px sans-serif',
                   fill: theme.themeColors.black,
                   textAlign: 'left',
@@ -384,7 +386,9 @@ function getStakeholderCostTypeData(
 
 function getStakeholderChartConfig(
   data: StakeholderCostTypeData,
-  unitLabel: string
+  unitLabel: string,
+  locale: string,
+  significantDigits: number | undefined
 ): EChartsCoreOption {
   return {
     animation: false,
@@ -430,7 +434,7 @@ function getStakeholderChartConfig(
               }
 
               return [
-                `${param.marker}${param.seriesName}: <b>${formatValue(val)} ${unitLabel}</b>`,
+                `${param.marker}${param.seriesName}: <b>${beautifyValue(val, locale, significantDigits)} ${unitLabel}</b>`,
               ];
             })
             .join('<br/>');
@@ -442,7 +446,8 @@ function getStakeholderChartConfig(
       position: 'top',
       axisLabel: {
         show: true,
-        formatter: (value: number) => `${formatValue(value)} ${unitLabel}`,
+        formatter: (value: number) =>
+          `${beautifyValue(value, locale, significantDigits)} ${unitLabel}`,
         showMinLabel: false,
         showMaxLabel: false,
       },
@@ -481,12 +486,25 @@ function ActionRow({
   isLoading,
 }: ActionRowProps) {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const t = useTranslations('common');
+  const locale = useLocale();
+  const instance = useInstance();
+  const significantDigits = instance?.features?.showSignificantDigits || undefined;
   const hasStakeholders = item.metric.hasDimension('stakeholder');
 
   const actionChartConfig = useMemo(
-    () => getActionChartConfig(item.actionName, item.totals, bounds, isFirst, unitLabel, theme),
-    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme]
+    () =>
+      getActionChartConfig(
+        item.actionName,
+        item.totals,
+        bounds,
+        isFirst,
+        unitLabel,
+        theme,
+        locale,
+        significantDigits
+      ),
+    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme, locale, significantDigits]
   );
 
   const stakeholderData = useMemo<StakeholderCostTypeData | null>(
@@ -499,8 +517,10 @@ function ActionRow({
 
   const stakeholderChartConfig = useMemo(
     () =>
-      !stakeholderData?.rows.length ? null : getStakeholderChartConfig(stakeholderData, unitLabel),
-    [stakeholderData, unitLabel]
+      !stakeholderData?.rows.length
+        ? null
+        : getStakeholderChartConfig(stakeholderData, unitLabel, locale, significantDigits),
+    [stakeholderData, unitLabel, locale, significantDigits]
   );
 
   const SPACE_FOR_OUTCOMES_TOGGLE = 40;
@@ -554,7 +574,7 @@ function ActionRow({
 type TActionRow = { metric: DimensionalMetric; actionName: string; actionId: string };
 
 export function CostBenefitAnalysis({ data, isLoading }: Props) {
-  const { t } = useTranslation();
+  const t = useTranslations('common');
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
 

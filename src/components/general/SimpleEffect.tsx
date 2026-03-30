@@ -4,20 +4,21 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import type { BarSeriesOption } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
-import round from 'lodash-es/round';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
+import { beautifyValue } from '@common/utils/format';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { useTranslation } from '@/common/i18n';
+import { useInstance } from '@/common/instance';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-
-const formatValue = (value: number, unit: string) => `${round(value, 2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
   endYear: number,
+  locale: string,
+  significantDigits: number | undefined,
   dataset?: ImpactOverviewsQuery['impactOverviews'][0]
 ): EChartsCoreOption {
   const unit = dataset?.indicatorUnit?.short || '';
@@ -59,7 +60,8 @@ function getChartConfig(
       : [],
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (value: number) => formatValue(value, unit),
+      valueFormatter: (value: number) =>
+        `${beautifyValue(value, locale, significantDigits)} ${unit}`,
     },
     grid: {
       containLabel: true,
@@ -99,7 +101,7 @@ function getChartConfig(
             const activeIndex = params.encode?.x[0];
             const value = activeIndex ? params.value?.[activeIndex] : null;
 
-            return value ? formatValue(value, unit) : '';
+            return value ? `${beautifyValue(value, locale, significantDigits)} ${unit}` : '';
           },
         },
       } satisfies BarSeriesOption,
@@ -113,11 +115,14 @@ type Props = {
 };
 
 export function SimpleEffect({ data, isLoading }: Props) {
-  const { t } = useTranslation();
+  const t = useTranslations('common');
+  const locale = useLocale();
+  const instance = useInstance();
+  const significantDigits = instance?.features?.showSignificantDigits || undefined;
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const chartData = useMemo(
-    () => getChartConfig(startYear, endYear, data),
-    [data, startYear, endYear]
+    () => getChartConfig(startYear, endYear, locale, significantDigits, data),
+    [data, startYear, endYear, locale, significantDigits]
   );
   const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
