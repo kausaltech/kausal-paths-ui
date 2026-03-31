@@ -12,6 +12,7 @@ import { Chart } from '@common/components/Chart';
 
 import { ScenarioKind } from '@/common/__generated__/graphql';
 import { useTranslations } from '@/common/i18n';
+import { useNumberFormatter } from '@/common/numbers';
 import { useSiteWithSetter } from '@/context/site';
 
 type ActionGroup = {
@@ -121,6 +122,7 @@ function getGroupColor(group: ActionGroup, theme: Theme, index: number) {
 const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props) => {
   const theme = useTheme();
   const t = useTranslations('common');
+  const formatNumber = useNumberFormatter();
   const [site] = useSiteWithSetter();
   const year = actions[0]?.year;
   const baselineScenario = site.scenarios.find(({ kind }) => kind === ScenarioKind.Baseline);
@@ -166,8 +168,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: number) =>
-        `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${unit}`,
+      valueFormatter: (value: number) => `${formatNumber(value)} ${unit}`,
     },
     grid: {
       containLabel: true,
@@ -216,7 +217,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
           align: 'right',
           position: 'left',
           formatter: (params: CallbackDataParams & { data: Datum }) =>
-            params.data.value.toLocaleString(undefined, { maximumFractionDigits: 1 }),
+            formatNumber(params.data.value),
           fontWeight: 'bold',
         },
       },
@@ -279,10 +280,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
 
           <Typography variant="subtitle1" component="p" sx={{ textAlign: 'right' }}>
             {t.rich('impact-compared-to-baseline', {
-              impact:
-                totalImpact > 0
-                  ? `+${totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                  : totalImpact.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+              impact: totalImpact > 0 ? `+${formatNumber(totalImpact)}` : formatNumber(totalImpact),
               unit: unit || '',
               baseline: baselineScenario?.name || t('plot-baseline'),
               strong: (chunks) => <strong>{chunks}</strong>,

@@ -136,11 +136,11 @@
       "count": 2,
       "message": "'action.impactMetric' is possibly 'null'."
     },
-    "163fe842433dce3a350b1283b0bcd8e35407421a": {
+    "f0a7187830d50691dd53d95aea803455c66cfd91": {
       "file": "src/components/general/ActionListCard.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '({ id: string | null; name: string | null; cumulativeForecastValue: number | null; unit: ({ htmlShort: string; } & { __typename: \"UnitType\"; }) | null; yearlyCumulativeUnit: ({ ...; } & { ...; }) | null; historicalValues: ({ ...; } & { ...; })[]; forecastValues: ({ ...; } & { ...; })[]; } & { ...; }) | null' is not assignable to parameter of type 'NodeMetric'."
+      "message": "Argument of type '({ id: string | null; name: string | null; cumulativeForecastValue: number | null; unit: ({ id: string; htmlShort: string; } & { __typename: \"UnitType\"; }) | null; yearlyCumulativeUnit: ({ ...; } & { ...; }) | null; historicalValues: ({ ...; } & { ...; })[]; forecastValues: ({ ...; } & { ...; })[]; } & { ...; }) | n...' is not assignable to parameter of type 'NodeMetric'."
     },
     "90db6ba7b7e4a96b99700c37b0e0060652b6a62a": {
       "file": "src/components/general/ActionListCard.tsx",
@@ -184,18 +184,6 @@
       "count": 1,
       "message": "Type 'false | \"d-md-none\"' is not assignable to type 'string | undefined'."
     },
-    "55eaf1a4d65582e14fde64af8ccdafc992a17594": {
-      "file": "src/components/general/OutcomeCard.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
-    },
-    "99936ba91d28f8708ea0e9f9c07f54f2dce7f4e3": {
-      "file": "src/components/general/OutcomeCard.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"table-historical\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
-    },
     "e9defc3dc196aa17226558a6ad265b9da1f5ee28": {
       "file": "src/components/general/OutcomeNodeContent.tsx",
       "code": "TS2322",
@@ -208,41 +196,17 @@
       "count": 2,
       "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
     },
-    "1156f58bf777a15c1316d54d2a7afdf3b99ebf4c": {
-      "file": "src/components/graphs/ActionComparisonGraph.tsx",
-      "code": "TS2345",
+    "a7ca7397817f5ac924f5b6432183a1342914f976": {
+      "file": "src/components/pages/DashboardPage.tsx",
+      "code": "TS2322",
       "count": 1,
-      "message": "Argument of type '\"actions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Type '{ short: string; htmlShort: string; htmlLong: string; } | undefined' is not assignable to type 'Omit<UnitFieldsFragment, \"__typename\"> | undefined'."
     },
     "206816150b003a0388def0ce44f1a17572e94da6": {
       "file": "src/components/pages/StaticPage.tsx",
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ children: Element; title: string; }' is not assignable to type 'IntrinsicAttributes & PageHeroProps'."
-    },
-    "349fc3e4e87ef7226e3d44df5fae8faa8d27eea0": {
-      "file": "src/components/scenario/ScenarioOutcome.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"above-target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
-    },
-    "64a6e2ebfd480f86532b936c789fd88d6e66cf65": {
-      "file": "src/components/scenario/ScenarioOutcome.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"below-target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
-    },
-    "819b7e0748e9f8ce78c3b5b6d082e0959080dc64": {
-      "file": "src/components/scenario/ScenarioOutcome.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"scenario-outcome\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
-    },
-    "a02cb277f8f6116fafce43b3807b094b08a269ae": {
-      "file": "src/components/scenario/ScenarioOutcome.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"table-historical\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
     "a4057799a97d6f94bd0a33586c727a65ab228a53": {
       "file": "src/pages/api/graphql.ts",

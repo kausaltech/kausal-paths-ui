@@ -79,6 +79,7 @@ const GET_NODE_PAGE_CONTENT = gql`
       description
       color
       unit {
+        id
         htmlShort
       }
       quantity
@@ -88,6 +89,7 @@ const GET_NODE_PAGE_CONTENT = gql`
         shortDescription
         color
         unit {
+          id
           htmlShort
         }
         quantity
@@ -98,6 +100,7 @@ const GET_NODE_PAGE_CONTENT = gql`
         shortDescription
         color
         unit {
+          id
           htmlShort
         }
         quantity

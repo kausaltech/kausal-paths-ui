@@ -5,6 +5,8 @@ import { Box, Card, CardContent, Typography } from '@mui/material';
 
 import { Chart } from '@common/components/Chart';
 
+import { useNumberFormatter } from '@/common/numbers';
+
 type Data = {
   id: string;
   name: string;
@@ -21,6 +23,7 @@ type Props = {
 
 const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
   const theme = useTheme();
+  const formatNumber = useNumberFormatter();
   const year = data?.[0]?.year;
   const fallbackColors = [
     theme.graphColors.blue030,
@@ -40,8 +43,7 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
     aria: { enabled: true },
     tooltip: {
       trigger: 'item',
-      valueFormatter: (value: number) =>
-        `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${unit}`,
+      valueFormatter: (value: number) => `${formatNumber(value)} ${unit}`,
     },
     legend: {
       orient: 'vertical',
@@ -66,10 +68,7 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
           position: 'center',
           formatter: () => {
             const total = dataWithColors.reduce((sum, src) => sum + src.value, 0);
-            return total
-              ? total.toLocaleString(undefined, { maximumFractionDigits: 0 }) +
-                  (unit ? ` ${unit}` : '')
-              : '';
+            return total ? formatNumber(total) + (unit ? ` ${unit}` : '') : '';
           },
           fontSize: 18,
           fontWeight: 'bold',

@@ -174,17 +174,17 @@ export type NodeDetailsQueryVariables = Exact<{
 export type NodeDetailsQuery = (
   { node: (
     { id: string, nodeType: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, tags: Array<string> | null, color: string | null, quantity: string | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
       { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
@@ -205,7 +205,7 @@ export type NodeDetailsQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string, htmlLong: string, long: string }
+        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -228,7 +228,7 @@ type ActionParameter_BoolParameterType_Fragment = (
 
 type ActionParameter_NumberParameterType_Fragment = (
   { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-    { htmlShort: string }
+    { id: string, htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, node: (
     { id: string }
@@ -292,7 +292,7 @@ export type SetParameterMutation = (
 
 export type DimensionalPlotFragment = (
   { id: string, sources: Array<string>, unit: (
-    { htmlLong: string }
+    { id: string, htmlLong: string }
     & { __typename: 'UnitType' }
   ), nodes: Array<(
     { id: string, label: string, color: string | null }
@@ -316,7 +316,7 @@ export type InstanceGoalOutcomeQuery = (
         { year: number, goal: number | null, actual: number | null, isForecast: boolean, isInterpolated: boolean | null }
         & { __typename: 'InstanceYearlyGoalType' }
       )>, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) }
       & { __typename: 'InstanceGoalEntry' }
@@ -362,7 +362,7 @@ export type DimensionalMetricFragment = (
     )> }
     & { __typename: 'DimensionalMetricGoalEntry' }
   )>, unit: (
-    { htmlShort: string, short: string, htmlLong: string, long: string }
+    { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
     & { __typename: 'UnitType' }
   ), normalizedBy: (
     { id: string, name: string }
@@ -410,7 +410,7 @@ export type CytoscapeNodesQuery = (
       { id: string, color: string | null }
       & { __typename: 'ActionGroupType' }
     ) | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string }
@@ -428,7 +428,7 @@ export type CytoscapeNodesQuery = (
     & { __typename: 'ActionNode' }
   ) | (
     { id: string, name: string, color: string | null, quantity: string | null, isVisible: boolean, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string }
@@ -463,7 +463,7 @@ export type ModelNodesQuery = (
       { id: string, color: string | null, name: string }
       & { __typename: 'ActionGroupType' }
     ) | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string }
@@ -481,7 +481,7 @@ export type ModelNodesQuery = (
     & { __typename: 'ActionNode' }
   ) | (
     { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, nodeType: string, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string }
@@ -514,13 +514,13 @@ export type NodePageQuery = (
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
     )>, outputNodes: Array<(
       { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ActionNode' | 'Node' }
@@ -541,7 +541,7 @@ export type NodePageQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string, htmlLong: string, long: string }
+        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -572,7 +572,7 @@ export type DimensionalNodeMetricFragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string, htmlLong: string, long: string }
+      { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -584,7 +584,7 @@ export type DimensionalNodeMetricFragment = (
 );
 
 export type UnitFieldsFragment = (
-  { short: string, htmlShort: string, htmlLong: string }
+  { id: string, short: string, htmlShort: string, htmlLong: string }
   & { __typename: 'UnitType' }
 );
 
@@ -593,7 +593,7 @@ type CausalGridNode_ActionNode_Fragment = (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, unit: (
-    { htmlShort: string }
+    { id: string, htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
     { id: string }
@@ -603,7 +603,7 @@ type CausalGridNode_ActionNode_Fragment = (
     & { __typename: 'ActionNode' | 'Node' }
   )>, impactMetric: (
     { name: string | null, id: string | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, historicalValues: Array<(
       { year: number, value: number }
@@ -615,7 +615,7 @@ type CausalGridNode_ActionNode_Fragment = (
       { year: number, value: number }
       & { __typename: 'YearlyValue' }
     )> | null, yearlyCumulativeUnit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null }
     & { __typename: 'ForecastMetricType' }
@@ -636,7 +636,7 @@ type CausalGridNode_ActionNode_Fragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string, htmlLong: string, long: string }
+      { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -651,7 +651,7 @@ type CausalGridNode_ActionNode_Fragment = (
     & { __typename: 'BoolParameterType' }
   ) | (
     { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
       { id: string }
@@ -675,7 +675,7 @@ type CausalGridNode_ActionNode_Fragment = (
     & { __typename: 'NodeGoal' }
   )>, metric: (
     { name: string | null, id: string | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, historicalValues: Array<(
       { year: number, value: number }
@@ -694,7 +694,7 @@ type CausalGridNode_ActionNode_Fragment = (
 
 type CausalGridNode_Node_Fragment = (
   { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, unit: (
-    { htmlShort: string }
+    { id: string, htmlShort: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
     { id: string }
@@ -704,7 +704,7 @@ type CausalGridNode_Node_Fragment = (
     & { __typename: 'ActionNode' | 'Node' }
   )>, impactMetric: (
     { name: string | null, id: string | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, historicalValues: Array<(
       { year: number, value: number }
@@ -716,7 +716,7 @@ type CausalGridNode_Node_Fragment = (
       { year: number, value: number }
       & { __typename: 'YearlyValue' }
     )> | null, yearlyCumulativeUnit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null }
     & { __typename: 'ForecastMetricType' }
@@ -737,7 +737,7 @@ type CausalGridNode_Node_Fragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string, htmlLong: string, long: string }
+      { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -752,7 +752,7 @@ type CausalGridNode_Node_Fragment = (
     & { __typename: 'BoolParameterType' }
   ) | (
     { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
       { id: string }
@@ -776,7 +776,7 @@ type CausalGridNode_Node_Fragment = (
     & { __typename: 'NodeGoal' }
   )>, metric: (
     { name: string | null, id: string | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, historicalValues: Array<(
       { year: number, value: number }
@@ -809,7 +809,7 @@ export type CausalChainQuery = (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
         { id: string }
@@ -819,7 +819,7 @@ export type CausalChainQuery = (
         & { __typename: 'ActionNode' | 'Node' }
       )>, impactMetric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -831,7 +831,7 @@ export type CausalChainQuery = (
           { year: number, value: number }
           & { __typename: 'YearlyValue' }
         )> | null, yearlyCumulativeUnit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null }
         & { __typename: 'ForecastMetricType' }
@@ -852,7 +852,7 @@ export type CausalChainQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string, htmlLong: string, long: string }
+          { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -867,7 +867,7 @@ export type CausalChainQuery = (
         & { __typename: 'BoolParameterType' }
       ) | (
         { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, node: (
           { id: string }
@@ -891,7 +891,7 @@ export type CausalChainQuery = (
         & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -908,7 +908,7 @@ export type CausalChainQuery = (
       & { __typename: 'ActionNode' }
     ) | (
       { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
         { id: string }
@@ -918,7 +918,7 @@ export type CausalChainQuery = (
         & { __typename: 'ActionNode' | 'Node' }
       )>, impactMetric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -930,7 +930,7 @@ export type CausalChainQuery = (
           { year: number, value: number }
           & { __typename: 'YearlyValue' }
         )> | null, yearlyCumulativeUnit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null }
         & { __typename: 'ForecastMetricType' }
@@ -951,7 +951,7 @@ export type CausalChainQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string, htmlLong: string, long: string }
+          { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -966,7 +966,7 @@ export type CausalChainQuery = (
         & { __typename: 'BoolParameterType' }
       ) | (
         { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, node: (
           { id: string }
@@ -990,7 +990,7 @@ export type CausalChainQuery = (
         & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -1022,7 +1022,7 @@ export type ActionContentQuery = (
   { action: (
     { goal: string | null, description: string | null, decisionLevel: DecisionLevel | null, id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, dimensionalFlow: (
       { id: string, sources: Array<string>, unit: (
-        { htmlLong: string }
+        { id: string, htmlLong: string }
         & { __typename: 'UnitType' }
       ), nodes: Array<(
         { id: string, label: string, color: string | null }
@@ -1037,7 +1037,7 @@ export type ActionContentQuery = (
         { id: string, name: string, color: string | null }
         & { __typename: 'ActionGroupType' }
       ) | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
         { id: string }
@@ -1047,7 +1047,7 @@ export type ActionContentQuery = (
         & { __typename: 'ActionNode' | 'Node' }
       )>, impactMetric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -1059,7 +1059,7 @@ export type ActionContentQuery = (
           { year: number, value: number }
           & { __typename: 'YearlyValue' }
         )> | null, yearlyCumulativeUnit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null }
         & { __typename: 'ForecastMetricType' }
@@ -1080,7 +1080,7 @@ export type ActionContentQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string, htmlLong: string, long: string }
+          { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -1095,7 +1095,7 @@ export type ActionContentQuery = (
         & { __typename: 'BoolParameterType' }
       ) | (
         { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, node: (
           { id: string }
@@ -1119,7 +1119,7 @@ export type ActionContentQuery = (
         & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -1136,7 +1136,7 @@ export type ActionContentQuery = (
       & { __typename: 'ActionNode' }
     ) | (
       { id: string, name: string, shortDescription: string | null, color: string | null, order: number | null, quantity: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
         { id: string }
@@ -1146,7 +1146,7 @@ export type ActionContentQuery = (
         & { __typename: 'ActionNode' | 'Node' }
       )>, impactMetric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -1158,7 +1158,7 @@ export type ActionContentQuery = (
           { year: number, value: number }
           & { __typename: 'YearlyValue' }
         )> | null, yearlyCumulativeUnit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null }
         & { __typename: 'ForecastMetricType' }
@@ -1179,7 +1179,7 @@ export type ActionContentQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string, htmlLong: string, long: string }
+          { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -1194,7 +1194,7 @@ export type ActionContentQuery = (
         & { __typename: 'BoolParameterType' }
       ) | (
         { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, node: (
           { id: string }
@@ -1218,7 +1218,7 @@ export type ActionContentQuery = (
         & { __typename: 'NodeGoal' }
       )>, metric: (
         { name: string | null, id: string | null, unit: (
-          { htmlShort: string }
+          { id: string, htmlShort: string }
           & { __typename: 'UnitType' }
         ) | null, historicalValues: Array<(
           { year: number, value: number }
@@ -1255,7 +1255,7 @@ export type ActionContentQuery = (
       { id: string, name: string, color: string | null }
       & { __typename: 'ActionGroupType' }
     ) | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string }
@@ -1265,7 +1265,7 @@ export type ActionContentQuery = (
       & { __typename: 'ActionNode' | 'Node' }
     )>, impactMetric: (
       { name: string | null, id: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, historicalValues: Array<(
         { year: number, value: number }
@@ -1277,7 +1277,7 @@ export type ActionContentQuery = (
         { year: number, value: number }
         & { __typename: 'YearlyValue' }
       )> | null, yearlyCumulativeUnit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ForecastMetricType' }
@@ -1298,7 +1298,7 @@ export type ActionContentQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string, htmlLong: string, long: string }
+        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -1313,7 +1313,7 @@ export type ActionContentQuery = (
       & { __typename: 'BoolParameterType' }
     ) | (
       { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, node: (
         { id: string }
@@ -1337,7 +1337,7 @@ export type ActionContentQuery = (
       & { __typename: 'NodeGoal' }
     )>, metric: (
       { name: string | null, id: string | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, historicalValues: Array<(
         { year: number, value: number }
@@ -1366,10 +1366,10 @@ export type ActionImpactsQuery = (
   { energyNode: (
     { id: string, metric: (
       { id: string | null, unit: (
-        { short: string }
+        { id: string, short: string }
         & { __typename: 'UnitType' }
       ) | null, yearlyCumulativeUnit: (
-        { short: string }
+        { id: string, short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ForecastMetricType' }
@@ -1378,10 +1378,10 @@ export type ActionImpactsQuery = (
   ) | null, costNode: (
     { id: string, metric: (
       { id: string | null, unit: (
-        { short: string }
+        { id: string, short: string }
         & { __typename: 'UnitType' }
       ) | null, yearlyCumulativeUnit: (
-        { short: string }
+        { id: string, short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'ForecastMetricType' }
@@ -1417,7 +1417,7 @@ export type ActionListQuery = (
     & { __typename: 'InstanceType' }
   ), actions: Array<(
     { id: string, name: string, goal: string | null, shortDescription: string | null, color: string | null, decisionLevel: DecisionLevel | null, quantity: string | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, parameters: Array<(
       { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
@@ -1427,7 +1427,7 @@ export type ActionListQuery = (
       & { __typename: 'BoolParameterType' }
     ) | (
       { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, node: (
         { id: string }
@@ -1454,10 +1454,10 @@ export type ActionListQuery = (
       & { __typename: 'ActionNode' | 'Node' }
     )>, impactMetric: (
       { id: string | null, name: string | null, cumulativeForecastValue: number | null, unit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, yearlyCumulativeUnit: (
-        { htmlShort: string }
+        { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, historicalValues: Array<(
         { year: number, value: number }
@@ -1474,23 +1474,23 @@ export type ActionListQuery = (
     & { __typename: 'ActionNode' }
   )>, impactOverviews: Array<(
     { id: string, label: string, plotLimitForIndicator: number | null, indicatorUnit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, effectUnit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, costNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
-        { short: string }
+        { id: string, short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
     ) | null, effectNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
-        { short: string }
+        { id: string, short: string }
         & { __typename: 'UnitType' }
       ) | null }
       & { __typename: 'Node' }
@@ -1504,7 +1504,7 @@ export type ActionListQuery = (
       ), costValues: Array<(
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
-      ) | null> | null, impactValues: Array<(
+      )> | null, impactValues: Array<(
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
       ) | null> | null }
@@ -1524,13 +1524,13 @@ export type ImpactOverviewsQuery = (
       { id: string }
       & { __typename: 'Node' }
     ), effectUnit: (
-      { short: string, long: string }
+      { id: string, short: string, long: string }
       & { __typename: 'UnitType' }
     ) | null, indicatorUnit: (
-      { short: string, long: string }
+      { id: string, short: string, long: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
-      { short: string, long: string }
+      { id: string, short: string, long: string }
       & { __typename: 'UnitType' }
     ) | null, actions: Array<(
       { unitAdjustmentMultiplier: number | null, action: (
@@ -1553,7 +1553,7 @@ export type ImpactOverviewsQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string }
+          { id: string, htmlShort: string, short: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -1601,7 +1601,7 @@ export type NodeVisualizationsQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string, htmlLong: string, long: string }
+        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -1633,7 +1633,7 @@ export type NodeVisualizationsQuery = (
             )> }
             & { __typename: 'DimensionalMetricGoalEntry' }
           )>, unit: (
-            { htmlShort: string, short: string, htmlLong: string, long: string }
+            { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
             & { __typename: 'UnitType' }
           ), normalizedBy: (
             { id: string, name: string }
@@ -1656,7 +1656,7 @@ export type NodeVisualizationsQuery = (
 export type OutcomeNodeFieldsFragment = (
   { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, metric: (
     { id: string | null, name: string | null, unit: (
-      { short: string, htmlShort: string, htmlLong: string }
+      { id: string, short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
     ) | null, forecastValues: Array<(
       { year: number, value: number }
@@ -1673,7 +1673,7 @@ export type OutcomeNodeFieldsFragment = (
     { year: number, value: number }
     & { __typename: 'NodeGoal' }
   )>, unit: (
-    { short: string, htmlShort: string, htmlLong: string }
+    { id: string, short: string, htmlShort: string, htmlLong: string }
     & { __typename: 'UnitType' }
   ) | null, inputNodes: Array<(
     { id: string, name: string }
@@ -1716,7 +1716,7 @@ export type OutcomeNodeFieldsFragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string, htmlLong: string, long: string }
+      { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }
@@ -1739,7 +1739,7 @@ export type OutcomeNodeQuery = (
     { upstreamNodes: Array<{ __typename: 'ActionNode' } | (
       { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, metric: (
         { id: string | null, name: string | null, unit: (
-          { short: string, htmlShort: string, htmlLong: string }
+          { id: string, short: string, htmlShort: string, htmlLong: string }
           & { __typename: 'UnitType' }
         ) | null, forecastValues: Array<(
           { year: number, value: number }
@@ -1756,7 +1756,7 @@ export type OutcomeNodeQuery = (
         { year: number, value: number }
         & { __typename: 'NodeGoal' }
       )>, unit: (
-        { short: string, htmlShort: string, htmlLong: string }
+        { id: string, short: string, htmlShort: string, htmlLong: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
         { id: string, name: string }
@@ -1799,7 +1799,7 @@ export type OutcomeNodeQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string, htmlLong: string, long: string }
+          { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -1814,7 +1814,7 @@ export type OutcomeNodeQuery = (
     { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, upstreamNodes: Array<{ __typename: 'ActionNode' } | (
       { id: string, name: string, color: string | null, order: number | null, shortName: string | null, shortDescription: string | null, quantity: string | null, metric: (
         { id: string | null, name: string | null, unit: (
-          { short: string, htmlShort: string, htmlLong: string }
+          { id: string, short: string, htmlShort: string, htmlLong: string }
           & { __typename: 'UnitType' }
         ) | null, forecastValues: Array<(
           { year: number, value: number }
@@ -1831,7 +1831,7 @@ export type OutcomeNodeQuery = (
         { year: number, value: number }
         & { __typename: 'NodeGoal' }
       )>, unit: (
-        { short: string, htmlShort: string, htmlLong: string }
+        { id: string, short: string, htmlShort: string, htmlLong: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
         { id: string, name: string }
@@ -1874,7 +1874,7 @@ export type OutcomeNodeQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { htmlShort: string, short: string, htmlLong: string, long: string }
+          { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }
@@ -1885,7 +1885,7 @@ export type OutcomeNodeQuery = (
       & { __typename: 'Node' }
     )>, metric: (
       { id: string | null, name: string | null, unit: (
-        { short: string, htmlShort: string, htmlLong: string }
+        { id: string, short: string, htmlShort: string, htmlLong: string }
         & { __typename: 'UnitType' }
       ) | null, forecastValues: Array<(
         { year: number, value: number }
@@ -1902,7 +1902,7 @@ export type OutcomeNodeQuery = (
       { year: number, value: number }
       & { __typename: 'NodeGoal' }
     )>, unit: (
-      { short: string, htmlShort: string, htmlLong: string }
+      { id: string, short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string, name: string }
@@ -1945,7 +1945,7 @@ export type OutcomeNodeQuery = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { htmlShort: string, short: string, htmlLong: string, long: string }
+        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
         & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -2035,7 +2035,7 @@ export type DashboardPageFieldsFragment = (
       { id: string, name: string }
       & { __typename: 'Node' }
     ), unit: (
-      { short: string, htmlShort: string, htmlLong: string }
+      { id: string, short: string, htmlShort: string, htmlLong: string }
       & { __typename: 'UnitType' }
     ), goalValues: Array<(
       { year: number, value: number }
@@ -2124,7 +2124,7 @@ export type PageQuery = (
         { id: string, name: string }
         & { __typename: 'Node' }
       ), unit: (
-        { short: string, htmlShort: string, htmlLong: string }
+        { id: string, short: string, htmlShort: string, htmlLong: string }
         & { __typename: 'UnitType' }
       ), goalValues: Array<(
         { year: number, value: number }
@@ -2233,7 +2233,7 @@ export type ParametersQuery = (
     & { __typename: 'BoolParameterType' }
   ) | (
     { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
       { id: string }
@@ -2335,7 +2335,7 @@ export type InstanceContextQuery = (
     & { __typename: 'BoolParameterType' }
   ) | (
     { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, node: (
       { id: string }
@@ -2384,7 +2384,7 @@ type VisualizationEntry_VisualizationNodeOutput_Fragment = (
       )> }
       & { __typename: 'DimensionalMetricGoalEntry' }
     )>, unit: (
-      { htmlShort: string, short: string, htmlLong: string, long: string }
+      { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
       & { __typename: 'UnitType' }
     ), normalizedBy: (
       { id: string, name: string }

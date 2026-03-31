@@ -7,17 +7,16 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box, Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
 import type { EChartsCoreOption } from 'echarts/core';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
 import { Chart } from '@common/components/Chart';
-import { beautifyValue } from '@common/utils/format';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { useInstance } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
 
@@ -135,8 +134,7 @@ function getActionChartConfig(
   isFirst: boolean,
   unitLabel: string,
   theme: Theme,
-  locale: string,
-  significantDigits: number | undefined
+  formatNumber: (value: number) => string
 ): EChartsCoreOption {
   return {
     aria: { enabled: true },
@@ -176,8 +174,7 @@ function getActionChartConfig(
       max: bounds.max,
       axisLabel: {
         show: isFirst,
-        formatter: (value: number) =>
-          `${beautifyValue(value, locale, significantDigits)} ${unitLabel}`,
+        formatter: (value: number) => `${formatNumber(value)} ${unitLabel}`,
         showMinLabel: false,
         showMaxLabel: false,
       },
@@ -195,8 +192,7 @@ function getActionChartConfig(
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: number) =>
-        `${beautifyValue(value, locale, significantDigits)} ${unitLabel}`,
+      valueFormatter: (value: number) => `${formatNumber(value)} ${unitLabel}`,
     },
     series: [
       {
@@ -240,7 +236,7 @@ function getActionChartConfig(
               {
                 type: 'text',
                 style: {
-                  text: `${beautifyValue(netBenefit as number, locale, significantDigits)} ${unitLabel}`,
+                  text: `${formatNumber(netBenefit as number)} ${unitLabel}`,
                   font: '12px sans-serif',
                   fill: theme.themeColors.black,
                   textAlign: 'left',
@@ -387,8 +383,7 @@ function getStakeholderCostTypeData(
 function getStakeholderChartConfig(
   data: StakeholderCostTypeData,
   unitLabel: string,
-  locale: string,
-  significantDigits: number | undefined
+  formatNumber: (value: number) => string
 ): EChartsCoreOption {
   return {
     animation: false,
@@ -434,7 +429,7 @@ function getStakeholderChartConfig(
               }
 
               return [
-                `${param.marker}${param.seriesName}: <b>${beautifyValue(val, locale, significantDigits)} ${unitLabel}</b>`,
+                `${param.marker}${param.seriesName}: <b>${formatNumber(val)} ${unitLabel}</b>`,
               ];
             })
             .join('<br/>');
@@ -446,8 +441,7 @@ function getStakeholderChartConfig(
       position: 'top',
       axisLabel: {
         show: true,
-        formatter: (value: number) =>
-          `${beautifyValue(value, locale, significantDigits)} ${unitLabel}`,
+        formatter: (value: number) => `${formatNumber(value)} ${unitLabel}`,
         showMinLabel: false,
         showMaxLabel: false,
       },
@@ -487,9 +481,7 @@ function ActionRow({
 }: ActionRowProps) {
   const theme = useTheme();
   const t = useTranslations('common');
-  const locale = useLocale();
-  const instance = useInstance();
-  const significantDigits = instance?.features?.showSignificantDigits || undefined;
+  const formatNumber = useNumberFormatter();
   const hasStakeholders = item.metric.hasDimension('stakeholder');
 
   const actionChartConfig = useMemo(
@@ -501,10 +493,9 @@ function ActionRow({
         isFirst,
         unitLabel,
         theme,
-        locale,
-        significantDigits
+        formatNumber
       ),
-    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme, locale, significantDigits]
+    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme, formatNumber]
   );
 
   const stakeholderData = useMemo<StakeholderCostTypeData | null>(
@@ -519,8 +510,8 @@ function ActionRow({
     () =>
       !stakeholderData?.rows.length
         ? null
-        : getStakeholderChartConfig(stakeholderData, unitLabel, locale, significantDigits),
-    [stakeholderData, unitLabel, locale, significantDigits]
+        : getStakeholderChartConfig(stakeholderData, unitLabel, formatNumber),
+    [stakeholderData, unitLabel, formatNumber]
   );
 
   const SPACE_FOR_OUTCOMES_TOGGLE = 40;

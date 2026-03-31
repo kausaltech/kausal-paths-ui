@@ -43,6 +43,7 @@ export const GET_INSTANCE_GOAL_OUTCOME = gql`
           isInterpolated
         }
         unit {
+          id
           htmlShort
         }
       }

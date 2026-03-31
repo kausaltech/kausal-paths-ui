@@ -16,14 +16,17 @@ export const GET_IMPACT_OVERVIEWS = gql`
         id
       }
       effectUnit {
+        id
         short
         long
       }
       indicatorUnit {
+        id
         short
         long
       }
       costUnit {
+        id
         short
         long
       }
@@ -67,6 +70,7 @@ export const GET_IMPACT_OVERVIEWS = gql`
             }
           }
           unit {
+            id
             htmlShort
             short
           }

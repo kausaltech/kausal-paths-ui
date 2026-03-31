@@ -1,9 +1,8 @@
 import styled from '@emotion/styled';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
-import { beautifyValue } from '@common/utils/format';
-
-import { useInstance } from '@/common/instance';
+import { useFeatures } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
 
 import HighlightValue from './HighlightValue';
 
@@ -70,9 +69,8 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
     impactName,
   } = props;
   const t = useTranslations('common');
-  const locale = useLocale();
-  const instance = useInstance();
-  const significantDigits = instance?.features?.showSignificantDigits || undefined;
+  const formatNumber = useNumberFormatter();
+  const { showAccumulatedEffects } = useFeatures();
 
   const cumulativePrefix = effectCumulative !== undefined ? (effectCumulative > 0 ? '+' : '') : '';
   const yearlyPrefix = effectYearly > 0 ? '+' : '';
@@ -84,10 +82,10 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
         {impactName && ` (${impactName})`}
       </StyledDisplayHeader>
       <StyledItemsWrapper>
-        {effectCumulative !== undefined && instance.features.showAccumulatedEffects && (
+        {effectCumulative !== undefined && showAccumulatedEffects && (
           <StyledDisplayItem>
             <HighlightValue
-              displayValue={`${cumulativePrefix}${beautifyValue(effectCumulative || 0, locale, significantDigits)}`}
+              displayValue={`${cumulativePrefix}${formatNumber(effectCumulative || 0)}`}
               header={`${t('impact-total')} ${yearRange[0]}–${yearRange[1]}`}
               unit={unitCumulative || ''}
               muted={muted}
@@ -97,7 +95,7 @@ const ImpactDisplay = (props: ImpactDisplayProps) => {
         )}
         <StyledDisplayItem>
           <HighlightValue
-            displayValue={`${yearlyPrefix}${beautifyValue(effectYearly || 0, locale, significantDigits)}`}
+            displayValue={`${yearlyPrefix}${formatNumber(effectYearly || 0)}`}
             header={`${t('impact-on-year')} ${yearRange[1]}`}
             unit={unitYearly || ''}
             muted={muted}

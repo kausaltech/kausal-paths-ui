@@ -26,6 +26,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
 
 export enum ProgressType {
   SCENARIO = 'ScenarioProgressBarBlock',
@@ -233,6 +234,7 @@ const DashboardVisualizationProgress = ({
   const instance = useInstance();
   const theme = useTheme();
   const { t } = useTranslation();
+  const formatNumber = useNumberFormatter();
 
   const allExpanded = items.length > 0 && expanded.length === items.length;
 
@@ -301,7 +303,7 @@ const DashboardVisualizationProgress = ({
                         component="span"
                         sx={{ color: 'text.primary', fontWeight: 'fontWeightRegular' }}
                       >
-                        {item.value.toLocaleString()}{' '}
+                        {formatNumber(item.value)}{' '}
                       </Typography>
 
                       {unit && <span>{unit.short}</span>}

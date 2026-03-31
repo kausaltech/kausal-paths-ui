@@ -1,8 +1,6 @@
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
-import { beautifyValue } from '@common/utils/format';
-
-import { useInstance } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
 import HighlightValue from '@/components/general/HighlightValue';
 
 import {
@@ -44,19 +42,13 @@ const EfficiencyDisplay = (props: EfficiencyDisplayProps) => {
     muted,
   } = props;
   const t = useTranslations('common');
-  const locale = useLocale();
-  const instance = useInstance();
-  const significantDigits = instance?.features?.showSignificantDigits || undefined;
+  const formatNumber = useNumberFormatter();
 
   const displayEfficiency =
-    Math.abs(efficiencyCumulative) < efficiencyCap
-      ? beautifyValue(efficiencyCumulative || 0, locale, significantDigits)
-      : '-';
+    Math.abs(efficiencyCumulative) < efficiencyCap ? formatNumber(efficiencyCumulative || 0) : '-';
 
   const displayImpact =
-    Math.abs(efficiencyCumulative) < efficiencyCap
-      ? beautifyValue(impactCumulative || 0, locale, significantDigits)
-      : '0';
+    Math.abs(efficiencyCumulative) < efficiencyCap ? formatNumber(impactCumulative || 0) : '0';
 
   return (
     <StyledDisplayWrapper>
@@ -64,7 +56,7 @@ const EfficiencyDisplay = (props: EfficiencyDisplayProps) => {
       <StyledItemsWrapper>
         <StyledDisplayItem>
           <HighlightValue
-            displayValue={beautifyValue(costCumulative || 0, locale, significantDigits)}
+            displayValue={formatNumber(costCumulative || 0)}
             header={`${costCumulativeLabel} ${yearRange[0]}-${yearRange[1]}`}
             unit={costCumulativeUnit}
             muted={muted}

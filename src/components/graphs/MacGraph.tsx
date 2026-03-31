@@ -5,13 +5,11 @@ import dynamic from 'next/dynamic';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Grid } from '@mui/material';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import type Plotly from 'plotly.js';
 
-import { beautifyValue } from '@common/utils/format';
-
 import type { ActionListQuery } from '@/common/__generated__/graphql';
-import { useInstance } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
@@ -108,8 +106,7 @@ function MacGraph(props: MacGraphProps) {
   } = props;
   const theme = useTheme();
   const t = useTranslations('common');
-  const locale = useLocale();
-  const instance = useInstance();
+  const formatNumber = useNumberFormatter();
 
   const [hoverId, setHoverId] = useState<number | null>(null);
 
@@ -117,8 +114,6 @@ function MacGraph(props: MacGraphProps) {
     // Update the document title using the browser API
     setHoverId(null);
   }, [data]);
-
-  const significantDigits = instance?.features?.showSignificantDigits || undefined;
   // TODO: Add sorting of data here
 
   const isEmpty = data.actions?.length < 1;
@@ -294,27 +289,21 @@ function MacGraph(props: MacGraphProps) {
             <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{impactName}</HoverValueTitle>
-                <HoverValueValue>
-                  {beautifyValue(data.impact[hoverId], locale, significantDigits)}
-                </HoverValueValue>
+                <HoverValueValue>{formatNumber(data.impact[hoverId])}</HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: effectUnit }} />
               </HoverValue>
             </Grid>
             <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{costName}</HoverValueTitle>
-                <HoverValueValue>
-                  {beautifyValue(data.cost[hoverId], locale, significantDigits)}
-                </HoverValueValue>
+                <HoverValueValue>{formatNumber(data.cost[hoverId])}</HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: costUnit }} />
               </HoverValue>
             </Grid>
             <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
                 <HoverValueTitle>{efficiencyName}</HoverValueTitle>
-                <HoverValueValue>
-                  {beautifyValue(data.efficiency[hoverId], locale, significantDigits)}
-                </HoverValueValue>
+                <HoverValueValue>{formatNumber(data.efficiency[hoverId])}</HoverValueValue>
                 <HoverValueUnit dangerouslySetInnerHTML={{ __html: indicatorUnit }} />
               </HoverValue>
             </Grid>

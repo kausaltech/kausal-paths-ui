@@ -17,9 +17,6 @@ const ActionNode = (props: NodeProps<ActionNode>) => {
 
   return (
     <Box
-      onClick={() => {
-        console.log('ActionNode clicked', props);
-      }}
       sx={{
         width,
         height,
