@@ -15,7 +15,7 @@ import { sanitizeHtmlUnit } from '@common/utils/format';
 
 import { type TFunction, useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
-import { useNumberFormatter } from '@/common/numbers';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 
 export function getPredictionLabel(t: TFunction, instance: InstanceContextType) {
   // Naughtily use showRefreshPrompt to determine if this is a NZP instance
@@ -72,6 +72,7 @@ export default function NodeGraph(props: NodeGraphProps) {
   const { t } = useTranslation();
   const instance = useInstance();
   const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
 
   const {
     title,
@@ -340,6 +341,9 @@ export default function NodeGraph(props: NodeGraphProps) {
         fontWeight: 'normal',
       },
       nameGap: 30,
+      axisLabel: {
+        formatter: formatAxisLabel,
+      },
     },
     barGap: 0,
     barCategoryGap: BAR_CATEGORY_GAP,

@@ -16,7 +16,7 @@ import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { useNumberFormatter } from '@/common/numbers';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
 
@@ -134,7 +134,8 @@ function getActionChartConfig(
   isFirst: boolean,
   unitLabel: string,
   theme: Theme,
-  formatNumber: (value: number) => string
+  formatNumber: (value: number) => string,
+  formatAxisLabel: (value: number) => string
 ): EChartsCoreOption {
   return {
     aria: { enabled: true },
@@ -174,7 +175,7 @@ function getActionChartConfig(
       max: bounds.max,
       axisLabel: {
         show: isFirst,
-        formatter: (value: number) => `${formatNumber(value)} ${unitLabel}`,
+        formatter: (value: number) => `${formatAxisLabel(value)} ${unitLabel}`,
         showMinLabel: false,
         showMaxLabel: false,
       },
@@ -383,7 +384,8 @@ function getStakeholderCostTypeData(
 function getStakeholderChartConfig(
   data: StakeholderCostTypeData,
   unitLabel: string,
-  formatNumber: (value: number) => string
+  formatNumber: (value: number) => string,
+  formatAxisLabel: (value: number) => string
 ): EChartsCoreOption {
   return {
     animation: false,
@@ -441,7 +443,7 @@ function getStakeholderChartConfig(
       position: 'top',
       axisLabel: {
         show: true,
-        formatter: (value: number) => `${formatNumber(value)} ${unitLabel}`,
+        formatter: (value: number) => `${formatAxisLabel(value)} ${unitLabel}`,
         showMinLabel: false,
         showMaxLabel: false,
       },
@@ -482,6 +484,7 @@ function ActionRow({
   const theme = useTheme();
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
   const hasStakeholders = item.metric.hasDimension('stakeholder');
 
   const actionChartConfig = useMemo(
@@ -493,9 +496,10 @@ function ActionRow({
         isFirst,
         unitLabel,
         theme,
-        formatNumber
+        formatNumber,
+        formatAxisLabel
       ),
-    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme, formatNumber]
+    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme, formatNumber, formatAxisLabel]
   );
 
   const stakeholderData = useMemo<StakeholderCostTypeData | null>(
@@ -510,8 +514,8 @@ function ActionRow({
     () =>
       !stakeholderData?.rows.length
         ? null
-        : getStakeholderChartConfig(stakeholderData, unitLabel, formatNumber),
-    [stakeholderData, unitLabel, formatNumber]
+        : getStakeholderChartConfig(stakeholderData, unitLabel, formatNumber, formatAxisLabel),
+    [stakeholderData, unitLabel, formatNumber, formatAxisLabel]
   );
 
   const SPACE_FOR_OUTCOMES_TOGGLE = 40;

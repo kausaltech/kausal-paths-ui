@@ -15,7 +15,7 @@ import { Chart } from '@common/components/Chart';
 import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
-import { useNumberFormatter } from '@/common/numbers';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { useSiteWithSetter } from '@/context/site';
 import { DimensionalMetric } from '@/data/metric';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
@@ -172,6 +172,7 @@ export function ProgressDriversVisualization({
   const theme = useTheme();
   const { t } = useTranslation();
   const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
   const activeGoal = useReactiveVar(activeGoalVar);
 
   const chartData = useMemo<EChartsCoreOption | undefined>(() => {
@@ -405,7 +406,10 @@ export function ProgressDriversVisualization({
       yAxis: {
         type: 'value',
         axisLabel: {
-          formatter: metric.unit.short.length > 2 ? '{value}' : `{value} ${metric.unit.short}`,
+          formatter:
+            metric.unit.short.length > 2
+              ? formatAxisLabel
+              : (v: number) => `${formatAxisLabel(v)} ${metric.unit.short}`,
         },
       },
       series: [

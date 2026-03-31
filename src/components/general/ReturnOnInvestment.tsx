@@ -9,13 +9,14 @@ import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { useNumberFormatter } from '@/common/numbers';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
 function getChartConfig(
   startYear: number,
   endYear: number,
   formatNumber: (value: number) => string,
+  formatAxisLabel: (value: number) => string,
   dataset?: ImpactOverviewsQuery['impactOverviews'][0]
 ): EChartsCoreOption {
   const unit = dataset?.indicatorUnit?.short || '';
@@ -78,7 +79,7 @@ function getChartConfig(
       type: 'value',
       position: 'top',
       axisLabel: {
-        formatter: `{value} ${unit}`,
+        formatter: (v: number) => `${formatAxisLabel(v)} ${unit}`,
       },
     },
 
@@ -123,10 +124,11 @@ type Props = {
 export function ReturnOnInvestment({ data, isLoading }: Props) {
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const chartData = useMemo(
-    () => getChartConfig(startYear, endYear, formatNumber, data),
-    [data, startYear, endYear, formatNumber]
+    () => getChartConfig(startYear, endYear, formatNumber, formatAxisLabel, data),
+    [data, startYear, endYear, formatNumber, formatAxisLabel]
   );
   const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
