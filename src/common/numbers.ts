@@ -2,14 +2,11 @@ import { useCallback, useMemo } from 'react';
 
 import { useLocale } from 'next-intl';
 
-import {
-  DEFAULT_SIGNIFICANT_DIGITS,
-  formatWithFormatter,
-  makeFormatter,
-} from '@common/utils/format';
+import { formatWithFormatter, makeFormatter } from '@common/utils/format';
 
 import { useFeatures } from './instance';
 
+export const DEFAULT_SIGNIFICANT_DIGITS = 3;
 /**
  * Returns a locale-aware axis label formatter for ECharts.
  * Applies locale decimal and thousands separators without overriding ECharts' auto-precision.
