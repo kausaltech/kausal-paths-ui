@@ -68,7 +68,7 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
           position: 'center',
           formatter: () => {
             const total = dataWithColors.reduce((sum, src) => sum + src.value, 0);
-            return total ? formatNumber(total) + (unit ? ` ${unit}` : '') : '';
+            return total != null ? formatNumber(total) + (unit ? ` ${unit}` : '') : '';
           },
           fontSize: 18,
           fontWeight: 'bold',

@@ -488,6 +488,7 @@ export function ProgressDriversVisualization({
   }, [
     t,
     formatNumber,
+    formatAxisLabel,
     metric,
     theme,
     activeGoal,
