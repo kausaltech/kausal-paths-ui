@@ -3,19 +3,20 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
+import { useTranslations } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
-import { useTranslation } from '@/common/i18n';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-
-const formatValue = (value: number | null, unit: string) => `${(value || 0).toFixed(2)} ${unit}`;
 
 function getChartConfig(
   startYear: number,
   endYear: number,
+  formatNumber: (value: number) => string,
+  formatAxisLabel: (value: number) => string,
   dataset?: ImpactOverviewsQuery['impactOverviews'][0]
 ): EChartsCoreOption {
   const unit = dataset?.indicatorUnit?.short || '';
@@ -67,7 +68,7 @@ function getChartConfig(
       : [],
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (value: number) => formatValue(value, unit),
+      valueFormatter: (value: number) => `${formatNumber(value || 0)} ${unit}`,
     },
     grid: {
       containLabel: true,
@@ -78,7 +79,7 @@ function getChartConfig(
       type: 'value',
       position: 'top',
       axisLabel: {
-        formatter: `{value} ${unit}`,
+        formatter: (v: number) => `${formatAxisLabel(v)} ${unit}`,
       },
     },
 
@@ -107,7 +108,7 @@ function getChartConfig(
             const activeIndex: number | undefined = params.encode?.x[0];
             const value: number | null = activeIndex ? Number(params.value?.[activeIndex]) : null;
 
-            return value ? formatValue(value, unit) : '';
+            return value ? `${formatNumber(value)} ${unit}` : '';
           },
         },
       },
@@ -121,11 +122,13 @@ type Props = {
 };
 
 export function ReturnOnInvestment({ data, isLoading }: Props) {
-  const { t } = useTranslation();
+  const t = useTranslations('common');
+  const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const chartData = useMemo(
-    () => getChartConfig(startYear, endYear, data),
-    [data, startYear, endYear]
+    () => getChartConfig(startYear, endYear, formatNumber, formatAxisLabel, data),
+    [data, startYear, endYear, formatNumber, formatAxisLabel]
   );
   const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;

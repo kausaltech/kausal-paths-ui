@@ -1,5 +1,6 @@
-import { useTranslation } from '@/common/i18n';
-import { formatNumber } from '@/common/preprocess';
+import { useTranslations } from 'next-intl';
+
+import { useNumberFormatter } from '@/common/numbers';
 import HighlightValue from '@/components/general/HighlightValue';
 
 import {
@@ -40,17 +41,14 @@ const EfficiencyDisplay = (props: EfficiencyDisplayProps) => {
     yearRange,
     muted,
   } = props;
-  const { t, i18n } = useTranslation();
+  const t = useTranslations('common');
+  const formatNumber = useNumberFormatter();
 
   const displayEfficiency =
-    Math.abs(efficiencyCumulative) < efficiencyCap
-      ? formatNumber(efficiencyCumulative || 0, i18n.language)
-      : '-';
+    Math.abs(efficiencyCumulative) < efficiencyCap ? formatNumber(efficiencyCumulative || 0) : '-';
 
   const displayImpact =
-    Math.abs(efficiencyCumulative) < efficiencyCap
-      ? formatNumber(impactCumulative || 0, i18n.language)
-      : '0';
+    Math.abs(efficiencyCumulative) < efficiencyCap ? formatNumber(impactCumulative || 0) : '0';
 
   return (
     <StyledDisplayWrapper>
@@ -58,7 +56,7 @@ const EfficiencyDisplay = (props: EfficiencyDisplayProps) => {
       <StyledItemsWrapper>
         <StyledDisplayItem>
           <HighlightValue
-            displayValue={`${formatNumber(costCumulative || 0, i18n.language)}`}
+            displayValue={formatNumber(costCumulative || 0)}
             header={`${costCumulativeLabel} ${yearRange[0]}-${yearRange[1]}`}
             unit={costCumulativeUnit}
             muted={muted}

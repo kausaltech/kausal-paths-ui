@@ -19,6 +19,7 @@ import { Chart } from '@common/components/Chart';
 
 import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
+import { useNumberFormatter } from '@/common/numbers';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useSite } from '@/context/site';
 
@@ -199,6 +200,7 @@ function getChartConfig(
   t: TFunction,
   theme: Theme,
   iconPath: string,
+  formatNumber: (value: number, fractionDigitsOverride?: number) => string,
   categoriesWithMeasuredData?: Set<string>
 ): EChartsOption {
   return {
@@ -242,12 +244,7 @@ function getChartConfig(
                 ? getStripeGradient(color)
                 : `background-color: ${color};`;
 
-            const roundedValue =
-              typeof param.value === 'number'
-                ? param.value.toLocaleString(undefined, {
-                    maximumFractionDigits: 0,
-                  })
-                : null;
+            const roundedValue = typeof param.value === 'number' ? formatNumber(param.value) : null;
 
             return getTooltipRow(
               style,
@@ -408,6 +405,7 @@ export const ProgressIndicator = ({
 }: ProgressIndicatorProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const formatNumber = useNumberFormatter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [drillDownState, setDrillDownState] = useState<DrillDownState>(null);
   const site = useSite();
@@ -528,6 +526,7 @@ export const ProgressIndicator = ({
         t,
         theme,
         drillDownIconPath,
+        formatNumber,
         categoriesWithMeasuredData
       )
     : undefined;

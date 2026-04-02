@@ -15,16 +15,13 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'react-bootstrap-icons';
 
 import { DecisionLevel } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
-import {
-  findActionEnabledParam,
-  formatNumber,
-  summarizeYearlyValuesBetween,
-} from '@/common/preprocess';
+import { useNumberFormatter } from '@/common/numbers';
+import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ScenarioChip from '@/components/general/ScenarioChip';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
@@ -71,11 +68,11 @@ const getValueForSorting = (
 const formatEfficiencyForDisplay = (
   eff: number | null | undefined,
   cap: number | null | undefined,
-  lang: string
+  formatNumber: (value: number) => string
 ) => {
   const value = eff ?? 0;
   const limit = cap ?? Infinity;
-  return Math.abs(value) < limit ? formatNumber(value, lang) : '-';
+  return Math.abs(value) < limit ? formatNumber(value) : '-';
 };
 
 const headerText = {
@@ -101,7 +98,8 @@ export default function ActionsList({
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) {
-  const { t, i18n } = useTranslation();
+  const t = useTranslations('common');
+  const formatNumber = useNumberFormatter();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
@@ -403,11 +401,11 @@ export default function ActionsList({
                       display = formatEfficiencyForDisplay(
                         action.cumulativeEfficiency,
                         action.efficiencyCap,
-                        i18n.language
+                        formatNumber
                       );
                       unit = action.cumulativeEfficiencyUnit;
                     } else {
-                      display = formatNumber(val, i18n.language);
+                      display = formatNumber(val);
                       unit = col.getUnit(action);
                     }
 

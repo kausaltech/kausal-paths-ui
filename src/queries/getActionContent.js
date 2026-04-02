@@ -13,6 +13,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
     color
     order
     unit {
+      id
       htmlShort
     }
     inputNodes {
@@ -32,6 +33,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
       name
       id
       unit {
+        id
         htmlShort
       }
       historicalValues {
@@ -47,6 +49,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
         value
       }
       yearlyCumulativeUnit {
+        id
         htmlShort
       }
     }
@@ -65,6 +68,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
       name
       id
       unit {
+        id
         htmlShort
       }
       historicalValues {

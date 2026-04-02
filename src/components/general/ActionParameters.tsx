@@ -32,6 +32,7 @@ export const ACTION_PARAMETER_FRAGMENT = gql`
       minValue
       maxValue
       unit {
+        id
         htmlShort
       }
       step

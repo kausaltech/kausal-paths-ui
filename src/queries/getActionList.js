@@ -23,6 +23,7 @@ const GET_ACTION_LIST = gql`
       color
       decisionLevel
       unit {
+        id
         htmlShort
       }
       parameters {
@@ -39,10 +40,12 @@ const GET_ACTION_LIST = gql`
         id
         name
         unit {
+          id
           htmlShort
         }
         cumulativeForecastValue
         yearlyCumulativeUnit {
+          id
           htmlShort
         }
         historicalValues {
@@ -65,12 +68,15 @@ const GET_ACTION_LIST = gql`
       label
       plotLimitForIndicator
       indicatorUnit {
+        id
         htmlShort
       }
       costUnit {
+        id
         htmlShort
       }
       effectUnit {
+        id
         htmlShort
       }
       costNode {
@@ -78,6 +84,7 @@ const GET_ACTION_LIST = gql`
         name
         shortDescription
         unit {
+          id
           short
         }
       }
@@ -86,6 +93,7 @@ const GET_ACTION_LIST = gql`
         name
         shortDescription
         unit {
+          id
           short
         }
       }

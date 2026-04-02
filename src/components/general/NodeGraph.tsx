@@ -11,12 +11,17 @@ import type {
 import { tint } from 'polished';
 
 import { Chart } from '@common/components/Chart';
-import { beautifyValue, sanitizeHtmlUnit } from '@common/utils/format';
+import { sanitizeHtmlUnit } from '@common/utils/format';
 
 import { type TFunction, useTranslation } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 
-import { getPredictionLabel } from './OutcomeGraph';
+export function getPredictionLabel(t: TFunction, instance: InstanceContextType) {
+  // Naughtily use showRefreshPrompt to determine if this is a NZP instance
+  const isNZPInstance = !!instance.features.showRefreshPrompt;
+  return isNZPInstance ? t('planned') : t('pred');
+}
 
 /**
  * Receives filtered node data as tables and plots them in a chart.
@@ -30,7 +35,6 @@ import { getPredictionLabel } from './OutcomeGraph';
  * @param referenceYear - The reference year to plot. If present, we are aware that there is a gap in the data.
  * @param forecastRange - The forecast range to plot. Visualized as an areaMarker. Datapoints in the range marked as forecast. Filtered to the visible range of years.
  * @param categoryColors - The colors of the categories.
- * @param maximumFractionDigits - Used for beautifying and localizing values for display.
  * @param baselineLabel - The label of the baseline.
  * @param showTotalLine - Whether to show the total line.
  */
@@ -47,7 +51,6 @@ type NodeGraphProps = {
   referenceYear: number | undefined | null;
   forecastRange: [number, number] | null;
   categoryColors: string[];
-  maximumFractionDigits: number | undefined;
   baselineLabel: string | null | undefined;
   showTotalLine?: boolean;
   onClickMeasuredEmissions?: (year: number) => void;
@@ -68,6 +71,8 @@ export default function NodeGraph(props: NodeGraphProps) {
   const theme = useTheme();
   const { t } = useTranslation();
   const instance = useInstance();
+  const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
 
   const {
     title,
@@ -81,7 +86,6 @@ export default function NodeGraph(props: NodeGraphProps) {
     referenceYear,
     forecastRange,
     categoryColors,
-    maximumFractionDigits,
     baselineLabel,
     showTotalLine = false,
     onClickMeasuredEmissions,
@@ -242,11 +246,11 @@ export default function NodeGraph(props: NodeGraphProps) {
         isForecast,
         isReferenceYear,
         unit,
-        maximumFractionDigits,
         specialSeriesLabels,
         t,
         showTotalLine,
-        instance
+        instance,
+        formatNumber
       );
     };
   };
@@ -337,6 +341,9 @@ export default function NodeGraph(props: NodeGraphProps) {
         fontWeight: 'normal',
       },
       nameGap: 30,
+      axisLabel: {
+        formatter: formatAxisLabel,
+      },
     },
     barGap: 0,
     barCategoryGap: BAR_CATEGORY_GAP,
@@ -617,11 +624,11 @@ function buildTooltipContent(
   isForecast: boolean,
   isReferenceYear: boolean,
   unit: string,
-  maximumFractionDigits: number | undefined,
   specialSeriesLabels: Record<string, string>,
   t: TFunction,
   showTotalLine: boolean,
-  instance: InstanceContextType
+  instance: InstanceContextType,
+  formatNumber: (value: number, fractionDigitsOverride?: number) => string
 ) {
   if (!year) return '';
   const yearLabel = isForecast
@@ -652,7 +659,7 @@ function buildTooltipContent(
   if (regularSeries.length > 0) {
     tooltip += `<div style="border-top: 1px solid #eee; margin: 8px 0 4px 0;"></div>`;
     [...regularSeries].reverse().forEach((param) => {
-      tooltip += buildTooltipRow(param, unit, maximumFractionDigits);
+      tooltip += buildTooltipRow(param, unit, formatNumber);
     });
   }
 
@@ -660,13 +667,7 @@ function buildTooltipContent(
   if (specialSeries.length > 0) {
     tooltip += `<div style="border-top: 1px solid #ccc; margin: 8px 0 4px 0;"></div>`;
     specialSeries.reverse().forEach((param) => {
-      tooltip += buildTooltipRow(
-        param,
-        unit,
-        maximumFractionDigits,
-        specialSeriesLabels,
-        showTotalLine
-      );
+      tooltip += buildTooltipRow(param, unit, formatNumber, specialSeriesLabels, showTotalLine);
     });
   }
 
@@ -676,14 +677,14 @@ function buildTooltipContent(
 function buildTooltipRow(
   param: CallbackDataParams,
   unit: string,
-  maximumFractionDigits: number | undefined,
+  formatNumber: (value: number, fractionDigitsOverride?: number) => string,
   specialSeriesLabels?: Record<string, string>,
   showTotalLine?: boolean
 ) {
   const yIndex: number | undefined = param?.encode?.y?.[0];
   if (!yIndex || !param.data) return '';
   const rawValue: number = param.data[yIndex] as number;
-  const value = beautifyValue(rawValue, undefined, maximumFractionDigits ?? undefined);
+  const value = formatNumber(rawValue);
 
   if (value === undefined || value === null) return '';
   if (!param.seriesName || param.value === undefined) return '';

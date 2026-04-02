@@ -35,6 +35,7 @@ const GET_NODE_DETAILS = gql`
       tags
       color
       unit {
+        id
         htmlShort
       }
       quantity
@@ -45,6 +46,7 @@ const GET_NODE_DETAILS = gql`
         shortDescription
         color
         unit {
+          id
           htmlShort
         }
         quantity
@@ -56,6 +58,7 @@ const GET_NODE_DETAILS = gql`
         shortDescription
         color
         unit {
+          id
           htmlShort
         }
         quantity
@@ -167,7 +170,7 @@ export interface NodeDetailsProps {
   defaultLanguage?: string;
 }
 
-const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) => {
+const NodeDetails = ({ nodeId, nodeExtras }: NodeDetailsProps) => {
   const { t } = useTranslation();
   const { loading, error, data } = useQuery<NodeDetailsQuery>(GET_NODE_DETAILS, {
     variables: {
@@ -205,8 +208,6 @@ const NodeDetails = ({ nodeId, nodeExtras, defaultLanguage }: NodeDetailsProps) 
   const nodeTypeColor = node?.nodeType
     ? getNodeTypeColor(node.nodeType)
     : { bg: '#fafafa', border: '#bdbdbd' };
-
-  console.log('NodeDetails', { node, defaultLanguage, nodeName });
 
   return (
     <Box sx={{ padding: 1 }}>

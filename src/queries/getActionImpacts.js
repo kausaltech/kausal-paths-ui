@@ -7,9 +7,11 @@ const GET_ACTION_IMPACTS = gql`
       metric {
         id
         unit {
+          id
           short
         }
         yearlyCumulativeUnit {
+          id
           short
         }
       }
@@ -19,9 +21,11 @@ const GET_ACTION_IMPACTS = gql`
       metric {
         id
         unit {
+          id
           short
         }
         yearlyCumulativeUnit {
+          id
           short
         }
       }

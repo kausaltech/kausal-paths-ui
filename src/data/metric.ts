@@ -166,6 +166,7 @@ const DIMENSIONAL_METRIC_FRAGMENT = gql`
       }
     }
     unit {
+      id
       htmlShort
       short
       htmlLong

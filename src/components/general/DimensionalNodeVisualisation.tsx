@@ -19,7 +19,7 @@ import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graph
 import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
 import { type TFunction, useTranslation } from '@/common/i18n';
-import { type InstanceContextType, useFeatures, useInstance } from '@/common/instance';
+import { type InstanceContextType, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import { useSiteWithSetter } from '@/context/site';
 import {
@@ -523,7 +523,6 @@ export default function DimensionalNodeVisualisation({
           referenceYear={referenceYear}
           forecastRange={visibleForecastRange}
           categoryColors={categoryColors}
-          maximumFractionDigits={useFeatures().maximumFractionDigits ?? undefined}
           baselineLabel={site?.baselineName}
           showTotalLine={hasNegativeValues && metric.stackable && dataCategories.length > 1}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
