@@ -5,5 +5,6 @@
   "error-label": "Kod błędu",
   "not-found-title": "Nie znaleziono strony",
   "not-found-intro": "404 Nie znaleziono.",
-  "network-error": "Błąd sieci"
+  "network-error": "Błąd sieci",
+  "instance-protected": "Ta strona nie jest obecnie publicznie dostępna."
 }
