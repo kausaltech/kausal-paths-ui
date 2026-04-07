@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
 
-import Head from 'next/head';
-
 import { type ObservableQuery } from '@apollo/client';
 import { useQuery, useReactiveVar } from "@apollo/client/react";
 import type { Theme } from '@kausal/themes/types';
@@ -20,7 +18,7 @@ import DashboardPage from '@/components/pages/DashboardPage';
 import OutcomePage from '@/components/pages/OutcomePage';
 import StaticPage from '@/components/pages/StaticPage';
 import { useSiteOrNull } from '@/context/site';
-import Error from '@/pages/_error';
+import Error from '@/components/common/PathsError';
 import GET_PAGE from '@/queries/getPage';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
 
@@ -117,13 +115,7 @@ function Page(props: PageProps) {
   }
   return (
     <>
-      <Head>
-        {site ? (
-          <title>
-            {site?.title} | {page.title}
-          </title>
-        ) : null}
-      </Head>
+      {site ? <title>{site.title} | {page.title}</title> : null}
       {headerExtra}
       <Suspense fallback={<PageLoader theme={theme} />}>{pageContent}</Suspense>
     </>

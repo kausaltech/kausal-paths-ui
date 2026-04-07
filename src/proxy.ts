@@ -1,9 +1,8 @@
-import { acceptLanguage } from 'next/dist/server/accept-header';
-import { NextURL } from 'next/dist/server/web/next-url';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
+import createIntlMiddleware from 'next-intl/middleware';
 import type { Bindings } from 'pino';
 
 import {
@@ -16,7 +15,7 @@ import { envToBool } from '@common/env/utils';
 import { getTraceLogBindings } from '@common/logging/init';
 import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
 
-import { ensureSlash, joinPath, splitPath } from '@/utils/paths';
+import { ensureSlash, splitPath } from '@/utils/paths';
 
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
 import {
@@ -28,8 +27,6 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
 import { getInstancesForRequest } from './middleware/context';
-
-const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
 
 type Instance = AvailableInstanceFragment;
 
@@ -58,29 +55,28 @@ function determineMatchingInstance(instances: Instance[], path: string) {
   } else {
     // Chomp the basepath part from the path
     parts.shift();
-    path = joinPath(parts);
+    path = ['', ...parts].join('/');
   }
   return { basePath, instance: match, path, parts };
 }
 
-function determineLocale(instance: Instance, path: string, detectedLocale: string) {
-  if (detectedLocale !== 'default') {
-    // NextJS chomps the locale, so we need to add it back in.
-    path = `/${detectedLocale}${path}`;
-  }
+/**
+ * Determine the locale from the URL path.
+ * In App Router mode, we don't rely on Next.js built-in locale detection.
+ * Instead, we check the first path segment against the instance's supported languages.
+ */
+function determineLocale(instance: Instance, path: string) {
   const otherLanguages = instance.supportedLanguages.filter(
-    (lang) => lang != instance.defaultLanguage
+    (lang) => lang !== instance.defaultLanguage
   );
-  let parts = splitPath(path);
-  let locale = otherLanguages.find((lang) => lang.toLowerCase() === parts[0].toLowerCase());
-  if (!locale) {
-    locale = instance.defaultLanguage;
-  } else {
+  const parts = splitPath(path);
+  const locale = otherLanguages.find((lang) => lang.toLowerCase() === parts[0]?.toLowerCase());
+  if (locale) {
+    // Remove the locale segment — next-intl middleware will handle it
     parts.shift();
+    return { locale, path: ['', ...parts].join('/') };
   }
-  // Ensure path always has the language code as first part
-  parts = [locale, ...parts];
-  return { locale, path: joinPath(parts) };
+  return { locale: instance.defaultLanguage, path };
 }
 
 function setInstanceHeaders(
@@ -99,61 +95,26 @@ function setInstanceHeaders(
   requestHeaders.set(THEME_IDENTIFIER_HEADER, match.themeIdentifier);
 }
 
-function getAcceptPreferredLocale(supportedLocales: string[], headers: Headers) {
-  const acceptLanguageHeader = headers.get('accept-language');
-  try {
-    return acceptLanguage(acceptLanguageHeader ?? undefined, supportedLocales);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return null;
-  }
+function protectedResponse(req: NextRequest, headers: Headers, hostname: string, locale: string) {
+  const rewrittenUrl = new URL(`/root/${hostname}/${locale}/protected`, req.url);
+  return NextResponse.rewrite(rewrittenUrl, { request: { headers } });
 }
 
-function protectedResponse(req: NextRequest, headers: Headers) {
-  const locale =
-    headers.get(DEFAULT_LANGUAGE_HEADER) ||
-    getAcceptPreferredLocale(SUPPORTED_LOCALES, headers) ||
-    'en';
-  const url = new NextURL(req.nextUrl.href, {
-    nextConfig: {
-      i18n: {
-        defaultLocale: locale,
-        locales: SUPPORTED_LOCALES,
-      },
-    },
-    forceLocale: true,
-  });
-  url.pathname = '/protected';
-  return NextResponse.rewrite(url, { request: { headers } });
-}
-
-function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
-  const locale =
-    headers.get(DEFAULT_LANGUAGE_HEADER) ||
-    getAcceptPreferredLocale(SUPPORTED_LOCALES, headers) ||
-    'en';
-  const url = new NextURL(req.nextUrl.href, {
-    nextConfig: {
-      i18n: {
-        defaultLocale: locale,
-        locales: SUPPORTED_LOCALES,
-      },
-    },
-    forceLocale: true,
-  });
+function errorResponse(
+  req: NextRequest,
+  headers: Headers,
+  kind: 'not-found' | 'server-error'
+) {
   const reqInit: { request: { headers: Headers }; status?: number } = {
-    request: {
-      headers,
-    },
+    request: { headers },
   };
   if (kind === 'not-found') {
     reqInit.status = 404;
-    url.pathname = '/404';
   } else {
     reqInit.status = 500;
-    url.pathname = '/500';
   }
-  return NextResponse.rewrite(url, reqInit);
+  // Return a simple response since we don't have proper error pages yet in the rewrite target
+  return new Response(kind === 'not-found' ? 'Not found' : 'Internal server error', reqInit);
 }
 
 const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
@@ -243,8 +204,7 @@ async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || req.nextUrl.host;
   const hostname = host.split(':')[0];
-  let path = nextUrl.pathname;
-  const detectedLocale = nextUrl.locale;
+  const path = nextUrl.pathname;
   const pathParts = splitPath(path);
 
   const { logger, reqId } = getLoggerForRequest(req, host, path);
@@ -289,7 +249,8 @@ async function proxy(req: NextRequest) {
   }
   if (instance?.isProtected) {
     reqHeaders.delete(INSTANCE_IDENTIFIER_HEADER);
-    return protectedResponse(req, reqHeaders);
+    const locale = instance.defaultLanguage;
+    return protectedResponse(req, reqHeaders, hostname, locale);
   }
   if (!instances.length) {
     const wildcardDomains = getWildcardDomains();
@@ -311,29 +272,48 @@ async function proxy(req: NextRequest) {
     return errorResponse(req, reqHeaders, 'not-found');
   }
 
-  const { path: localizedPath } = determineLocale(instance, match.path, detectedLocale);
-  path = localizedPath;
+  // Determine locale from the URL path (after basePath is stripped)
+  const { locale, path: pathWithoutLocale } = determineLocale(instance, match.path);
 
-  const href = `${nextUrl.protocol}//${nextUrl.host}${path}`;
-  const url = new NextURL(href);
-  const shouldRewrite = nextUrl.pathname !== url.pathname;
-  if (shouldRewrite) {
-    logger.info(
-      {
-        beforeHref: nextUrl.toString(),
-        beforeLocale: nextUrl.locale,
-        afterHref: url.toString(),
-        afterLocale: url.locale,
-      },
-      'rewriting URL'
-    );
-  }
-  if (!shouldRewrite || isHotReloadPath(match.parts)) {
-    const resp = NextResponse.next(reqInit);
-    resp.headers.set('Document-Policy', 'js-profiling');
-    return resp;
-  }
-  const rewrittenResp = NextResponse.rewrite(url, reqInit);
+  // Use next-intl middleware for locale handling, created dynamically per instance
+  const handleI18nRouting = createIntlMiddleware({
+    locales: instance.supportedLanguages,
+    defaultLocale: instance.defaultLanguage,
+    localePrefix: 'as-needed',
+    localeDetection: false,
+  });
+
+  const i18nResponse = handleI18nRouting(req);
+
+  // Rewrite the URL to the App Router route structure: /root/{hostname}/{locale}/{rest}
+  const strippedPath = pathWithoutLocale === '/' ? '' : pathWithoutLocale;
+  const rewrittenUrl = new URL(
+    `/root/${hostname}/${locale}${strippedPath}`,
+    req.url
+  );
+
+  // Preserve the original URL for metadata generation
+  reqHeaders.set('x-url', nextUrl.href);
+  reqHeaders.set('x-middleware-rewrite', rewrittenUrl.pathname);
+
+  logger.info(
+    {
+      originalPath: path,
+      locale,
+      rewrittenPath: rewrittenUrl.pathname,
+      instance: instance.identifier,
+    },
+    'rewriting URL for App Router'
+  );
+
+  const rewrittenResp = NextResponse.rewrite(rewrittenUrl, { request: { headers: reqHeaders } });
+
+  // Copy over any cookies set by next-intl middleware
+  i18nResponse.cookies.getAll().forEach((cookie) => {
+    rewrittenResp.cookies.set(cookie);
+  });
+
+  rewrittenResp.headers.set('Document-Policy', 'js-profiling');
   return rewrittenResp;
 }
 

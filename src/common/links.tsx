@@ -34,49 +34,32 @@ export function chompBasePath(site: SiteContextType, path: string) {
   if (!site.basePath) return path;
 }
 
-type OtherLinkProps = Omit<LinkProps, 'href' | 'as'> & {
+type OtherLinkProps = Omit<LinkProps, 'href'> & {
   children?: React.ReactNode;
   className?: string;
   target?: string;
   rel?: string;
+  locale?: string | false;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 };
 
 export function Link(props: OtherLinkProps & { href: string }) {
-  const { href, ...rest } = props;
-  let as: string | undefined;
-
+  const { href, locale, ...rest } = props;
   const site = useSiteOrNull();
-
-  if (href.startsWith('/')) {
-    as = formatUrl(site, href, rest.locale);
-  } else {
-    as = undefined;
-  }
-  const localeDisabledProps = { ...rest, locale: false } satisfies OtherLinkProps;
-  return <NextLink href={href} as={as} {...localeDisabledProps} />;
+  const resolvedHref = href.startsWith('/') ? formatUrl(site, href, locale) : href;
+  return <NextLink href={resolvedHref} {...rest} />;
 }
 
 type FormattedLinkProps = {
-  href: LinkProps['href'];
   as: string;
 };
 
-function getLinkProps(
+function getResolvedHref(
   site: SiteContextType | null,
   hrefProps: FormattedLinkProps,
-  otherProps: OtherLinkProps
+  locale?: string | false
 ) {
-  const { locale, ...rest } = otherProps;
-  const { href, as } = hrefProps;
-
-  const linkProps: LinkProps = {
-    href,
-    as: formatUrl(site, as, locale),
-    locale: false,
-    prefetch: false,
-    ...rest,
-  };
-  return linkProps;
+  return formatUrl(site, hrefProps.as, locale);
 }
 
 type NodeLinkProps = OtherLinkProps & {
@@ -86,18 +69,10 @@ type NodeLinkProps = OtherLinkProps & {
 };
 
 export function NodeLink(props: NodeLinkProps) {
-  const { node, ...rest } = props;
-  const hrefProps: FormattedLinkProps = {
-    href: {
-      pathname: '/node/[slug]',
-      query: {
-        slug: node.id,
-      },
-    },
-    as: `/node/${node.id}`,
-  };
+  const { node, locale, ...rest } = props;
   const site = useSite();
-  return <NextLink {...getLinkProps(site, hrefProps, rest)} />;
+  const href = getResolvedHref(site, { as: `/node/${node.id}` }, locale);
+  return <NextLink href={href} prefetch={false} {...rest} />;
 }
 
 export type ActionLinkProps = OtherLinkProps & {
@@ -107,33 +82,19 @@ export type ActionLinkProps = OtherLinkProps & {
 };
 
 export function ActionLink(props: ActionLinkProps) {
-  const { action, ...rest } = props;
-  const hrefProps = {
-    href: {
-      pathname: '/actions/[slug]',
-      query: {
-        slug: action.id,
-      },
-    },
-    as: `/actions/${action.id}`,
-  };
+  const { action, locale, ...rest } = props;
   const site = useSiteOrNull();
-  return <NextLink {...getLinkProps(site, hrefProps, rest)} />;
+  const href = getResolvedHref(site, { as: `/actions/${action.id}` }, locale);
+  return <NextLink href={href} prefetch={false} {...rest} />;
 }
 
 type ActionListLinkProps = OtherLinkProps & {
   subPage?: 'list' | 'mac';
 };
 export function ActionListLink(props: ActionListLinkProps) {
-  const { subPage, ...rest } = props;
+  const { subPage, locale, ...rest } = props;
   const pathname = subPage === 'mac' ? '/actions/mac' : '/actions';
-  const hrefProps = {
-    href: {
-      pathname,
-    },
-    as: pathname,
-  };
   const site = useSiteOrNull();
-  const linkProps = getLinkProps(site, hrefProps, rest);
-  return <NextLink {...linkProps} />;
+  const href = getResolvedHref(site, { as: pathname }, locale);
+  return <NextLink href={href} prefetch={false} {...rest} />;
 }

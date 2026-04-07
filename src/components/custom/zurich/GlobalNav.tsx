@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import Head from 'next/head';
+import Script from 'next/script';
 
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
@@ -204,9 +204,7 @@ function GlobalNav(props: GlobalNavProps) {
   return (
     <>
       {isProductionDeployment() ? (
-        <Head>
-          <script key="zuerich-analytics" src={analyticsUrl} async />
-        </Head>
+        <Script key="zuerich-analytics" src={analyticsUrl} strategy="afterInteractive" />
       ) : null}
 
       <div className="header header--has-appnav">

@@ -15,7 +15,7 @@ import type {
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { PageHero } from '@/components/common/PageHero';
-import Error from '@/pages/_error';
+import Error from '@/components/common/PathsError';
 import GET_OUTCOME_NODE from '@/queries/getOutcomeNode';
 
 import OutcomeBlock from '../general/OutcomeBlock';

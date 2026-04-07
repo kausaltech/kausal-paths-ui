@@ -1,6 +1,8 @@
-import React, { Fragment, useMemo, useState } from 'react';
+import type React from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
 import { Box, Container } from '@mui/material';
+
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar, NavbarBrand } from 'reactstrap';
 

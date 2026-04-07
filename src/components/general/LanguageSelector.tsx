@@ -1,7 +1,6 @@
-import { useRouter } from 'next/router';
-
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
+import { useLocale } from 'next-intl';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
 import { transientOptions } from '@common/themes/styles/styled';
@@ -73,12 +72,11 @@ function getLanguageCodeLabel(lang: string) {
 }
 
 function LanguageSelector({ mobile }: { mobile: boolean }) {
-  const router = useRouter();
   const theme = useTheme();
-  const { locales: globalLocales } = useRouter();
+  const locale = useLocale();
   const { supportedLanguages: planLocales } = useInstance();
 
-  const locales = planLocales.filter((locale) => globalLocales?.includes(locale) ?? true);
+  const locales = planLocales;
 
   if (!locales || locales.length < 2) return null;
   const handleLocaleChange = (ev: React.MouseEvent<HTMLAnchorElement>) => {
@@ -91,7 +89,7 @@ function LanguageSelector({ mobile }: { mobile: boolean }) {
     <Selector nav inNavbar $mobile={mobile} className={mobile ? 'd-md-none' : undefined}>
       <DropdownToggle nav>
         <Icon name="globe" color={theme.neutralDark} />
-        <CurrentLanguage $mobile={mobile}>{getLanguageCodeLabel(router.locale!)}</CurrentLanguage>
+        <CurrentLanguage $mobile={mobile}>{getLanguageCodeLabel(locale)}</CurrentLanguage>
       </DropdownToggle>
       <StyledDropdownMenu end>
         {locales.map((locale) => (

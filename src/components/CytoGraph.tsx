@@ -2,7 +2,7 @@
 // Ignore linting for this file, this component can be deprecated soon and the code is not worth fixing at this point
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 import styled from '@common/themes/styled';
 import Cytoscape, {

@@ -1,10 +1,9 @@
 import { Fragment, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-import { useRouter } from 'next/router';
-
-import { useReactiveVar } from "@apollo/client/react";
 import { Box, Skeleton, useTheme } from '@mui/material';
-import type { ParsedUrlQuery } from 'querystring';
+
+import { useReactiveVar } from '@apollo/client/react';
 
 import type {
   OutcomeNodeFieldsFragment,
@@ -13,7 +12,6 @@ import type {
 } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
-
 import OutcomeCardSet from './OutcomeCardSet';
 
 function OutcomeBlockLoader() {
@@ -66,26 +64,23 @@ type OutcomeBlockProps = {
 
 export default function OutcomeBlock(props: OutcomeBlockProps) {
   const { outcomeNode, activeScenario, loading } = props;
-  const router = useRouter();
-  const queryNodeId = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+  const searchParams = useSearchParams();
+  const queryNodeId = searchParams.get('node') ?? undefined;
   const [lastActiveNodeId, setLastActiveNodeId] = useState<string | undefined>(queryNodeId);
   const yearRange = useReactiveVar(yearRangeVar);
   const theme = useTheme();
   const { t } = useTranslation();
-  useEffect(() => {
-    if (!router.isReady) return;
 
-    const currentNode = Array.isArray(router.query.node) ? router.query.node[0] : router.query.node;
+  useEffect(() => {
+    const nodeParam = searchParams.getAll('node');
+    const currentNode = nodeParam[0];
     if (currentNode === lastActiveNodeId) return;
 
-    const nextQuery: ParsedUrlQuery = { ...router.query };
-    if (lastActiveNodeId) nextQuery.node = lastActiveNodeId;
-    else delete nextQuery.node;
-
-    void router.replace({ pathname: router.pathname, query: nextQuery }, undefined, {
-      shallow: true,
-    });
-  }, [lastActiveNodeId, router]);
+    const nextQuery: URLSearchParams = new URLSearchParams(searchParams);
+    if (lastActiveNodeId) nextQuery.set('node', lastActiveNodeId);
+    else nextQuery.delete('node');
+    window.history.pushState(null, '', `?${nextQuery.toString()}`);
+  }, [lastActiveNodeId, searchParams]);
 
   if (loading || !outcomeNode) {
     return <OutcomeBlockLoader />;

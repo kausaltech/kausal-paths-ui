@@ -1,13 +1,12 @@
+'use client';
+
 import React from 'react';
 
-import Head from 'next/head';
-import { useRouter } from 'next/router';
+import { usePathname } from 'next/navigation';
 
 import { useReactiveVar } from '@apollo/client/react';
 import { Box, Drawer, styled, useTheme } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
-
-import { getThemeStaticURL } from '@common/themes/theme';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -76,8 +75,7 @@ function isMenuPage(page: unknown): page is { id?: unknown; title?: unknown; url
 }
 
 const Layout = ({ children }: React.PropsWithChildren) => {
-  const router = useRouter();
-  const { asPath: pathname } = router;
+  const pathname = usePathname();
   const theme = useTheme();
   const site = useSiteOrNull();
   const { t } = useTranslation();
@@ -153,21 +151,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
   return (
     <>
-      <Head>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <meta name="robots" content="noindex" />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content={site?.title || ''} />
-        {iconBase && (
-          <>
-            <link rel="icon" href={getThemeStaticURL(theme.favicons.svg)} type="image/svg+xml" />
-            <link rel="icon" href={getThemeStaticURL(theme.favicons.ico)} />
-            <link rel="apple-touch-icon" href={getThemeStaticURL(theme.favicons.apple)} />
-          </>
-        )}
-        {ogImage && <meta property="og:image" key="head-og-image" content={ogImage} />}
-      </Head>
-
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
 
       <Box sx={{ display: 'flex', maxWidth: '100%', minWidth: 0 }}>
