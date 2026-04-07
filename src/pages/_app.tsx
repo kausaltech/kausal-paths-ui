@@ -22,7 +22,6 @@ import { getLogger } from '@common/logging/logger';
 import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';
 import { initializeMuiTheme } from '@common/themes/mui-theme/theme';
 import '@common/themes/styles/main.scss';
-import { loadTheme } from '@common/themes/theme-init.server';
 import { getClientIP, getCurrentURL } from '@common/utils';
 
 import type {
@@ -433,12 +432,17 @@ let defaultTheme: Theme | undefined;
 
 const logger = getLogger({ name: 'app-get-initial-props' });
 
+async function loadServerTheme(themeIdentifier: string): Promise<Theme> {
+  const { loadTheme } = await import('@common/themes/theme-init.server');
+  return await loadTheme(themeIdentifier);
+}
+
 async function getInitialPropsServer(appContext: PathsAppContext) {
   const { ctx } = appContext;
 
   // SSR
   if (!defaultTheme) {
-    defaultTheme = await loadTheme('default');
+    defaultTheme = await loadServerTheme('default');
   }
 
   const appProps: Partial<PathsAppProps> = await App.getInitialProps(appContext);
@@ -473,7 +477,7 @@ async function getInitialPropsServer(appContext: PathsAppContext) {
     appProps.instanceContext = siteProps.instanceContext;
   }
   const themeIdentifier = ctx.req?.headers[THEME_IDENTIFIER_HEADER] as string | undefined;
-  const theme = themeIdentifier ? await loadTheme(themeIdentifier) : defaultTheme;
+  const theme = themeIdentifier ? await loadServerTheme(themeIdentifier) : defaultTheme;
   appProps.themeProps = theme;
 
   // We instruct the upstream cache to cache for a minute

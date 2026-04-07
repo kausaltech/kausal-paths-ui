@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
-
 import Head from 'next/head';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 import { useTranslations } from '@/common/i18n';
 
