@@ -11,7 +11,6 @@ import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
 import type { CurrentURL } from '@common/utils';
 
 import possibleTypes from '@/common/__generated__/possible_types.json';
-
 import {
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
@@ -112,8 +111,13 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
 
     const definitions = operation.query.definitions.map((def) => {
       if (def.kind !== Kind.OPERATION_DEFINITION) return def;
-      const variableDefinitions: VariableDefinitionNode[] = [...(def.variableDefinitions || [])];
-      const directives: DirectiveNode[] = [...(def.directives || [])];
+      const variableDefinitions: VariableDefinitionNode[] = [...(def.variableDefinitions ?? [])];
+      const directives: DirectiveNode[] = [...(def.directives ?? [])];
+
+      if (directiveExists(directives, 'context')) {
+        return def;
+      }
+
       if (locale && !directiveExists(directives, 'locale')) {
         const directive = createOperationDirective({
           name: 'locale',

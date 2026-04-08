@@ -16,10 +16,10 @@ import { getTraceLogBindings } from '@common/logging/init';
 import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
 
 import { ensureSlash, splitPath } from '@/utils/paths';
-
 import type { AvailableInstanceFragment } from './common/__generated__/graphql';
 import {
   BASE_PATH_HEADER,
+  CURRENT_LANGUAGE_HEADER,
   DEFAULT_LANGUAGE_HEADER,
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
@@ -100,11 +100,7 @@ function protectedResponse(req: NextRequest, headers: Headers, hostname: string,
   return NextResponse.rewrite(rewrittenUrl, { request: { headers } });
 }
 
-function errorResponse(
-  req: NextRequest,
-  headers: Headers,
-  kind: 'not-found' | 'server-error'
-) {
+function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
   const reqInit: { request: { headers: Headers }; status?: number } = {
     request: { headers },
   };
@@ -240,7 +236,7 @@ async function proxy(req: NextRequest) {
     return errorResponse(req, reqHeaders, 'server-error');
   }
   const match = determineMatchingInstance(instances, path);
-  setInstanceHeaders(reqHeaders, instances, match?.instance || null);
+  setInstanceHeaders(reqHeaders, instances, match?.instance ?? null);
   const { instance, basePath } = match;
   reqHeaders.set(BASE_PATH_HEADER, basePath);
   reqHeaders.set(REQUEST_CORRELATION_ID_HEADER, reqId);
@@ -287,15 +283,12 @@ async function proxy(req: NextRequest) {
 
   // Rewrite the URL to the App Router route structure: /root/{hostname}/{locale}/{rest}
   const strippedPath = pathWithoutLocale === '/' ? '' : pathWithoutLocale;
-  const rewrittenUrl = new URL(
-    `/root/${hostname}/${locale}${strippedPath}`,
-    req.url
-  );
+  const rewrittenUrl = new URL(`/root/${hostname}/${locale}${strippedPath}`, req.url);
 
   // Preserve the original URL for metadata generation
   reqHeaders.set('x-url', nextUrl.href);
   reqHeaders.set('x-middleware-rewrite', rewrittenUrl.pathname);
-
+  reqHeaders.set(CURRENT_LANGUAGE_HEADER, locale);
   logger.info(
     {
       originalPath: path,

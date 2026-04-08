@@ -5,13 +5,13 @@ type WatchLink = {
 
 type DemoPage = { id: string; lang: string; title: string; urlPath: string };
 
-type InstanceConfig = {
+type InstanceFixedConfigToBeRemoved = {
   instanceId?: string;
   watchLink?: WatchLink;
   demoPages?: DemoPage[];
 };
 
-const instanceConfigs: Record<string, InstanceConfig> = {
+const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
   'cork-nzc': {
     watchLink: {
       title: 'Benefits Dashboard',
@@ -140,8 +140,6 @@ const instanceConfigs: Record<string, InstanceConfig> = {
   },
 };
 
-const defaultConfig: InstanceConfig = instanceConfigs['sunnydale']!;
-
-export function getInstanceConfig(instanceId: string): InstanceConfig {
-  return instanceConfigs[instanceId] ?? defaultConfig;
+export function getInstanceConfig(instanceId: string): InstanceFixedConfigToBeRemoved | undefined {
+  return instanceConfigs[instanceId];
 }

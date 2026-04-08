@@ -1,16 +1,18 @@
-import { use, type ReactNode } from 'react';
-
+import { type ReactNode, cache, use } from 'react';
 import { headers } from 'next/headers';
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
+
 import type { Metadata } from 'next';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 
-import { getEnvScriptContents } from '@common/env/script-component';
+import { PATHS_INSTANCE_IDENTIFIER_HEADER } from '@common/constants/headers.mjs';
 import { getAssetPrefix } from '@common/env';
+import { getEnvScriptContents } from '@common/env/script-component';
+import '@common/themes/styles/main.scss';
 import { getThemeStaticURL } from '@common/themes/theme';
 import { loadTheme } from '@common/themes/theme-init.server';
-import '@common/themes/styles/main.scss';
+import { getRequestOrigin } from '@common/utils/request.server';
 
 import type {
   InstanceContextQuery,
@@ -47,13 +49,14 @@ async function getContextFromHeaders() {
   };
 }
 
-async function fetchInstanceContext(locale: string) {
+async function fetchInstanceContext(identifier: string, hostname: string, locale: string) {
   const client = await getClient();
   const { data } = await client.query<InstanceContextQuery, InstanceContextQueryVariables>({
     query: GET_INSTANCE_CONTEXT,
-    context: {
+    variables: {
+      identifier,
+      hostname,
       locale,
-      'component-name': 'RootLayout.fetchInstanceContext',
     },
   });
   return data;
@@ -66,7 +69,14 @@ function buildSiteContext(
   defaultLanguage: string,
   supportedLanguages: string[]
 ) {
-  const { scenarios, parameters, menuPages, footerPages, additionalLinkPages, availableNormalizations } = data;
+  const {
+    scenarios,
+    parameters,
+    menuPages,
+    footerPages,
+    additionalLinkPages,
+    availableNormalizations,
+  } = data;
   const instance = data.instance;
   const assetPrefix = getAssetPrefix();
 
@@ -87,7 +97,7 @@ function buildSiteContext(
     minYear: instance.minimumHistoricalYear,
     maxYear: instance.modelEndYear,
     targetYear: instance.targetYear ?? instance.modelEndYear,
-    latestMetricYear: instance.maximumHistoricalYear || 2018,
+    latestMetricYear: instance.maximumHistoricalYear ?? 2018,
     baselineName: scenarios.find((scenario: { id: string }) => scenario.id === 'baseline')?.name,
     iconBase: `${assetPrefix}/static/themes/default/images/favicon`,
     ogImage: `${assetPrefix}/static/themes/default/images/og-image-default.png`,
@@ -105,9 +115,60 @@ function buildSiteContext(
   return { siteContext, instanceContext: instance };
 }
 
-export const metadata: Metadata = {
-  robots: 'noindex',
+type LayoutProps = {
+  params: Promise<{ domain: string; lang: string }>;
+  children: ReactNode;
 };
+
+const cachedFetchInstanceContext = cache(fetchInstanceContext);
+
+async function instanceParamsFromRequest() {
+  const requestHeaders = await headers();
+  const identifier = requestHeaders.get(PATHS_INSTANCE_IDENTIFIER_HEADER);
+  if (!identifier) {
+    throw new Error('Instance identifier not found in request headers');
+  }
+  return {
+    identifier,
+    hostname: requestHeaders.get(INSTANCE_HOSTNAME_HEADER) ?? '',
+    locale: requestHeaders.get(DEFAULT_LANGUAGE_HEADER) ?? 'en',
+    origin: new URL(requestHeaders.get('x-url') ?? (await getRequestOrigin())),
+  };
+}
+
+export async function generateMetadata(props: LayoutProps): Promise<Metadata> {
+  const { domain, lang } = await props.params;
+  const instanceParams = await instanceParamsFromRequest();
+  const origin = instanceParams.origin; // The full user facing URL with path
+
+  const resp = await cachedFetchInstanceContext(instanceParams.identifier, domain, lang);
+  const data = resp!;
+  const theme = await loadTheme(data.instance.themeIdentifier || 'default');
+
+  return {
+    robots: 'noindex',
+    title: data.instance.name,
+    description: data.instance.leadParagraph,
+    openGraph: {
+      title: data.instance.name,
+      description: data.instance.leadParagraph ?? undefined,
+    },
+    metadataBase: new URL(origin),
+    icons: {
+      icon: [
+        {
+          type: 'image/svg+xml',
+          url: getThemeStaticURL(theme?.favicons?.svg),
+        },
+        {
+          type: 'image/x-icon',
+          url: getThemeStaticURL(theme?.favicons?.ico),
+        },
+      ],
+      apple: getThemeStaticURL(theme?.favicons?.apple),
+    },
+  };
+}
 
 export default function LangLayout(props: Props) {
   const params = use(props.params);
@@ -115,6 +176,7 @@ export default function LangLayout(props: Props) {
 
   const messages = useMessages();
   const ctx = use(getContextFromHeaders());
+  const instanceParams = use(instanceParamsFromRequest());
 
   // If no instance identifier, render a minimal layout (error will be shown downstream)
   if (!ctx.instanceIdentifier) {
@@ -124,10 +186,15 @@ export default function LangLayout(props: Props) {
       </html>
     );
   }
-
-  const data = use(fetchInstanceContext(params.lang));
+  const data = use(
+    cachedFetchInstanceContext(instanceParams.identifier, params.domain, params.lang)
+  );
   const { siteContext, instanceContext } = buildSiteContext(
-    data, ctx, params.lang, ctx.defaultLanguage, ctx.supportedLanguages
+    data!,
+    ctx,
+    params.lang,
+    ctx.defaultLanguage,
+    ctx.supportedLanguages
   );
 
   const themeProps = use(loadTheme(ctx.themeIdentifier));

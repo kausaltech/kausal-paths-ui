@@ -1,13 +1,13 @@
 'use client';
 
 import { ApolloLink, HttpLink } from '@apollo/client';
-import { useApolloClient } from '@apollo/client/react';
 import {
   ApolloClient,
   ApolloNextAppProvider,
   InMemoryCache,
   SSRMultipartLink,
 } from '@apollo/client-integration-nextjs';
+import { useApolloClient } from '@apollo/client/react';
 import { useLocale } from 'next-intl';
 
 import { createSentryLink, logOperationLink, retryLink } from '@common/apollo/links';
@@ -15,7 +15,7 @@ import { GRAPHQL_CLIENT_PROXY_PATH } from '@common/constants/routes.mjs';
 import { getPathsGraphQLUrl } from '@common/env';
 
 import possibleTypes from '@/common/__generated__/possible_types.json';
-import { getHttpHeaders, type ApolloClientOpts } from '@/common/apollo';
+import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
 
 const isServer = typeof window === 'undefined';
 
@@ -75,9 +75,7 @@ function makeClient(config: {
       logOperationLink,
       localeMiddleware,
       headersMiddleware,
-      ...(isServer
-        ? [new SSRMultipartLink({ stripDefer: true })]
-        : []),
+      ...(isServer ? [new SSRMultipartLink({ stripDefer: true })] : []),
       new HttpLink({
         uri,
         credentials: 'include',

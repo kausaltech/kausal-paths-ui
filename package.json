@@ -150,6 +150,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-storybook": "^10.3.4",
     "eslint-scope": "^9.1.2",
+    "globals": "^17.4.0",
     "graphql-codegen-typescript-operation-types": "^2.0.2",
     "graphql-config": "^5.1.6",
     "husky": "^9.1.7",

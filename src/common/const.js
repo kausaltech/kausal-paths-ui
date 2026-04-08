@@ -3,6 +3,7 @@
  */
 export const DEFAULT_LANGUAGE_HEADER = 'x-default-language';
 export const SUPPORTED_LANGUAGES_HEADER = 'x-supported-languages';
+export const CURRENT_LANGUAGE_HEADER = 'x-current-language';
 export const WILDCARD_DOMAINS_HEADER = 'x-wildcard-domains';
 export const INSTANCE_HOSTNAME_HEADER = 'x-paths-instance-hostname';
 export const INSTANCE_IDENTIFIER_HEADER = 'x-paths-instance-identifier';
