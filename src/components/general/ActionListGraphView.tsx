@@ -1,6 +1,5 @@
 import { useQuery } from '@apollo/client';
 import { Container } from '@mui/material';
-import { useTranslations } from 'next-intl';
 
 import { type ActionListQuery, type ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -32,8 +31,6 @@ export function ActionListGraphView({
   refetching,
   yearRange,
 }: ActionListGraphViewProps) {
-  const t = useTranslations();
-
   const { data, loading, error } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -56,7 +53,6 @@ export function ActionListGraphView({
           id="efficiency-view"
           actions={usableActions}
           impactOverviews={selectedOverview}
-          t={t}
           actionGroups={instanceActionGroups}
           sortBy={sortBy.sortKey}
           sortAscending={sortAscending}

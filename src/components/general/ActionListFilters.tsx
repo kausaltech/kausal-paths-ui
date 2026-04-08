@@ -16,8 +16,8 @@ import type { SortActionsBy } from '@/types/actions.types';
 
 const SettingsForm = styled.form`
   display: block;
-  margin: 1.5rem 0;
-  padding: 0.5rem 0;
+  margin: 2rem 0 0;
+  padding: 0.5rem 0 1rem;
   border-top: 1px solid ${(props) => props.theme.neutralLight};
   border-bottom: 1px solid ${(props) => props.theme.neutralLight};
 `;
@@ -80,9 +80,7 @@ const SortButtons = styled(ToggleButtonGroup)`
 
 type ActionListFiltersProps = {
   hasEfficiency: boolean;
-  data: {
-    impactOverviews: { label: string }[];
-  };
+  impactOverviews: { label: string }[];
   activeEfficiency: number;
   setActiveEfficiency: (value: number) => void;
   actionGroups: { id: string; name: string }[];
@@ -98,7 +96,7 @@ type ActionListFiltersProps = {
 const ActionListFilters = (props: ActionListFiltersProps) => {
   const {
     hasEfficiency,
-    data,
+    impactOverviews,
     activeEfficiency,
     setActiveEfficiency,
     actionGroups,
@@ -129,7 +127,7 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
                 size="small"
                 MenuProps={{ disablePortal: true }}
               >
-                {data.impactOverviews.map((impactGroup, indx) => (
+                {impactOverviews.map((impactGroup, indx) => (
                   <MenuItem value={indx} key={indx}>
                     {impactGroup.label}
                   </MenuItem>
