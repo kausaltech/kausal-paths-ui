@@ -123,7 +123,7 @@ export function SimpleEffect({ data, isLoading }: Props) {
   );
   const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = data?.label || t('simple-effect');
+  const title = `${data?.label || t('simple-effect')} (${startYear} - ${endYear})`;
   const subtitle = data?.indicatorLabel || t('simple-effect-subtitle');
 
   return (

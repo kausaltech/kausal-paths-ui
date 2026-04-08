@@ -167,7 +167,7 @@ function ActionListPage({ page }: ActionListPageProps) {
         {data && (
           <ActionListFilters
             hasEfficiency={hasEfficiency}
-            data={data}
+            impactOverviews={data.impactOverviews}
             activeEfficiency={activeEfficiency}
             setActiveEfficiency={setActiveEfficiency}
             actionGroups={actionGroups}
