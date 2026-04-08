@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
 import { Box, Container, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 import {
   type ActionListQuery,
@@ -10,8 +11,7 @@ import {
   type PageQuery,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, yearRangeVar } from '@/common/cache';
-import type { TFunction } from '@/common/i18n';
-import { useTranslation } from '@/common/i18n';
+import { type TFunction } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { PageHero } from '@/components/common/PageHero';
@@ -95,7 +95,7 @@ type ActionListPageProps = {
 };
 
 function ActionListPage({ page }: ActionListPageProps) {
-  const { t } = useTranslation();
+  const t = useTranslations('common');
   const instance = useInstance();
   const activeGoal = useReactiveVar(activeGoalVar);
   const yearRange = useReactiveVar(yearRangeVar);
