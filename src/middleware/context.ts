@@ -15,7 +15,7 @@ import type {
   AvailableInstancesQuery,
   AvailableInstancesQueryVariables,
 } from '@/common/__generated__/graphql';
-import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
+import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo-config';
 
 const GET_AVAILABLE_INSTANCES = gql`
   query AvailableInstances($hostname: String!) {

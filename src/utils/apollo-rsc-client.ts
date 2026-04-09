@@ -1,14 +1,11 @@
 import { headers as getHeaders } from 'next/headers';
 
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { registerApolloClient } from '@apollo/client-integration-nextjs';
 
-import { createSentryLink, logOperationLink, retryLink } from '@common/apollo/links';
-import { getPathsGraphQLUrl } from '@common/env';
 import { getLogger } from '@common/logging/logger';
 
-import possibleTypes from '@/common/__generated__/possible_types.json';
-import { getHttpHeaders, type ApolloClientOpts } from '@/common/apollo';
+import { type ApolloClientOpts, getApolloClientConfig } from '@/common/apollo-config';
 import {
   DEFAULT_LANGUAGE_HEADER,
   INSTANCE_HOSTNAME_HEADER,
@@ -25,9 +22,8 @@ export const { getClient } = registerApolloClient(async () => {
   const headers = await getHeaders();
   const instanceIdentifier = headers.get(INSTANCE_IDENTIFIER_HEADER) ?? undefined;
   const instanceHostname = headers.get(INSTANCE_HOSTNAME_HEADER) ?? undefined;
-  const locale = headers.get('x-next-intl-locale') ?? headers.get(DEFAULT_LANGUAGE_HEADER) ?? undefined;
-
-  const uri = getPathsGraphQLUrl();
+  const locale =
+    headers.get('x-next-intl-locale') ?? headers.get(DEFAULT_LANGUAGE_HEADER) ?? undefined;
 
   const opts: ApolloClientOpts = {
     instanceHostname,
@@ -35,15 +31,7 @@ export const { getClient } = registerApolloClient(async () => {
     locale,
   };
 
-  const headersMiddleware = new ApolloLink((operation, forward) => {
-    operation.setContext(({ headers: existingHeaders = {} }) => ({
-      headers: {
-        ...existingHeaders,
-        ...getHttpHeaders(opts),
-      },
-    }));
-    return forward(operation);
-  });
+  const { link, cache } = getApolloClientConfig(opts);
 
   return new ApolloClient({
     defaultContext: {
@@ -51,26 +39,7 @@ export const { getClient } = registerApolloClient(async () => {
       logger: rscLogger,
     },
     devtools: { enabled: false },
-    cache: new InMemoryCache({
-      possibleTypes: possibleTypes.possibleTypes,
-      typePolicies: {
-        CardListCardBlock: {
-          keyFields: false,
-        },
-      },
-    }),
-    link: ApolloLink.from([
-      retryLink,
-      createSentryLink(uri),
-      logOperationLink,
-      headersMiddleware,
-      new HttpLink({
-        uri,
-        credentials: 'include',
-        fetchOptions: {
-          referrerPolicy: 'unsafe-url',
-        },
-      }),
-    ]),
+    cache: new InMemoryCache(cache),
+    link,
   });
 });

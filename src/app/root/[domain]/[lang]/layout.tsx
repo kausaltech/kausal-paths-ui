@@ -218,7 +218,7 @@ export default function LangLayout(props: Props) {
         <NextIntlClientProvider locale={params.lang} messages={messages} timeZone={timeZone}>
           <AppRouterCacheProvider options={{ enableCssLayer: true }}>
             <ApolloWrapper
-              initialLocale={params.lang}
+              locale={params.lang}
               instanceIdentifier={ctx.instanceIdentifier}
               instanceHostname={ctx.instanceHostname}
             >
