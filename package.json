@@ -54,6 +54,8 @@
     "@sentry/vercel-edge": "^10.47.0",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@xyflow/react": "^12.10.2",
+    "ag-grid-community": "^35.2.1",
+    "ag-grid-react": "^35.2.1",
     "bootstrap": "^5.3.8",
     "chalk": "^5.6.2",
     "chroma-js": "^3.2.0",

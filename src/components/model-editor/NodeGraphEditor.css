@@ -1,0 +1,25 @@
+.react-flow__node-elk {
+  border-radius: 4px;
+}
+
+.react-flow__handle {
+  width: 5px;
+  height: 5px;
+  background: #90a4ae;
+  border: 1px solid #fff;
+  /* Reset default centering transform so ELK y-positions work correctly */
+  transform: translate(0, -50%);
+}
+
+.react-flow__handle.target {
+  left: -3px;
+}
+
+.react-flow__handle.source {
+  right: -3px;
+}
+
+.react-flow__edge-path {
+  stroke: #b0bec5;
+  stroke-width: 1;
+}

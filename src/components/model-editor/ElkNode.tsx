@@ -1,0 +1,221 @@
+import { createContext, type FC, type ReactElement, memo, use } from 'react';
+
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import FlagIcon from '@mui/icons-material/Flag';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import MergeIcon from '@mui/icons-material/MergeType';
+import RemoveIcon from '@mui/icons-material/Remove';
+import ScienceIcon from '@mui/icons-material/Science';
+import SettingsIcon from '@mui/icons-material/Settings';
+import StorageIcon from '@mui/icons-material/Storage';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { Box, Typography } from '@mui/material';
+import {
+  Handle,
+  type Node,
+  type NodeProps,
+  Position,
+  type ReactFlowState,
+  useStore,
+} from '@xyflow/react';
+
+export type NodeGraphInteraction = {
+  highlightedNodeIds: ReadonlySet<string>;
+  onHiddenContextClick: (id: string) => void;
+};
+
+const defaultInteraction: NodeGraphInteraction = {
+  highlightedNodeIds: new Set(),
+  onHiddenContextClick: () => {},
+};
+
+export const NodeGraphInteractionContext = createContext<NodeGraphInteraction>(defaultInteraction);
+
+const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.7;
+
+type NodeStyle = { bg: string; border: string; icon: ReactElement; label: string };
+
+function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean): NodeStyle {
+  const cls = nodeClass.toLowerCase();
+  const sz = { fontSize: 11 };
+
+  if (isOutcome) return { bg: '#e8eaf6', border: '#3f51b5', icon: <FlagIcon sx={sz} />, label: 'Outcome' };
+  if (kind.toLowerCase() === 'action') return { bg: '#e8f5e9', border: '#4caf50', icon: <SettingsIcon sx={sz} />, label: 'Action' };
+  if (cls.includes('additive')) return { bg: '#e3f2fd', border: '#2196f3', icon: <AddIcon sx={sz} />, label: 'Additive' };
+  if (cls.includes('multiplicative')) return { bg: '#f3e5f5', border: '#9c27b0', icon: <CloseIcon sx={sz} />, label: 'Multiplicative' };
+  if (cls.includes('subtractive')) return { bg: '#ffebee', border: '#f44336', icon: <RemoveIcon sx={sz} />, label: 'Subtractive' };
+  if (cls.includes('emissionfactor') || cls.includes('sectoremission'))
+    return { bg: '#fce4ec', border: '#e91e63', icon: <TrendingUpIcon sx={sz} />, label: 'Emission' };
+  if (cls.includes('dataset')) return { bg: '#f9f6d7', border: '#daa520', icon: <StorageIcon sx={sz} />, label: 'Dataset' };
+  if (cls.includes('coalesce')) return { bg: '#e0f2f1', border: '#009688', icon: <MergeIcon sx={sz} />, label: 'Coalesce' };
+  if (cls.includes('health')) return { bg: '#fce4ec', border: '#e91e63', icon: <ScienceIcon sx={sz} />, label: 'Health' };
+  return { bg: '#f5f5f5', border: '#90a4ae', icon: <HelpOutlineIcon sx={sz} />, label: 'Node' };
+}
+
+export type HandleData = { id: string; multi?: boolean };
+export type HiddenContextRef = { id: string; label: string };
+
+export type QuantityKindData = { icon?: string | null; id: string; label: string };
+
+export type ElkNodeData = {
+  label: string;
+  kind: string;
+  nodeClass: string;
+  color: string;
+  isOutcome: boolean;
+  quantityKind?: QuantityKindData | null;
+  hiddenContextSources?: HiddenContextRef[];
+  nodeHeight?: number;
+  sourceHandles: HandleData[];
+  targetHandles: HandleData[];
+};
+
+export type ElkNodeType = Node<ElkNodeData, 'elk'>;
+
+const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType>) => {
+  const showContent = useStore(zoomSelector);
+  const { highlightedNodeIds, onHiddenContextClick } = use(NodeGraphInteractionContext);
+  const highlighted = highlightedNodeIds.has(id);
+  const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
+
+  const targetCount = data.targetHandles.length;
+  const sourceCount = data.sourceHandles.length;
+
+  return (
+    <>
+      {data.targetHandles.map((handle, i) => (
+        <Handle
+          key={handle.id}
+          id={handle.id}
+          type="target"
+          position={Position.Left}
+          style={targetCount > 1
+            ? { top: `${((i + 1) / (targetCount + 1)) * 100}%`, position: 'absolute' }
+            : undefined
+          }
+        />
+      ))}
+      {showContent ? (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: '4px',
+            overflow: 'hidden',
+            boxShadow: 1,
+            borderLeft: `3px solid ${style.border}`,
+            outline: highlighted ? `2px solid ${style.border}` : 'none',
+            backgroundColor: 'white',
+            minWidth: 100,
+            maxWidth: 180,
+          }}
+        >
+          <Box
+            sx={{
+              px: '5px',
+              py: '2px',
+              backgroundColor: style.bg,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+          >
+            <Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>
+            <Typography
+              variant="caption"
+              sx={{ fontSize: 9, lineHeight: 1.2, color: style.border, fontWeight: 500 }}
+            >
+              {style.label}
+            </Typography>
+            {data.quantityKind?.icon && (
+              <Typography
+                component="span"
+                title={data.quantityKind.label}
+                sx={{ fontSize: 11, lineHeight: 1, ml: 'auto' }}
+              >
+                {data.quantityKind.icon}
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ px: '5px', py: '3px' }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontSize: 11,
+                lineHeight: 1.25,
+                hyphens: 'auto',
+                wordBreak: 'break-word',
+              }}
+            >
+              {data.label}
+            </Typography>
+            {data.hiddenContextSources && data.hiddenContextSources.length > 0 && (
+              <Box sx={{ mt: 0.75, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                {data.hiddenContextSources.slice(0, 2).map((source) => (
+                  <Box
+                    key={source.id}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onHiddenContextClick(source.id);
+                    }}
+                    sx={{
+                      px: 0.75,
+                      py: 0.25,
+                      fontSize: 9,
+                      borderRadius: 999,
+                      backgroundColor: '#eceff1',
+                      color: '#455a64',
+                      cursor: 'pointer',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {source.label}
+                  </Box>
+                ))}
+                {data.hiddenContextSources.length > 2 && (
+                  <Box
+                    sx={{
+                      px: 0.75,
+                      py: 0.25,
+                      fontSize: 9,
+                      borderRadius: 999,
+                      backgroundColor: '#eceff1',
+                      color: '#455a64',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    +{data.hiddenContextSources.length - 2} more
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: data.color || style.border,
+          }}
+        />
+      )}
+      {data.sourceHandles.map((handle, i) => (
+        <Handle
+          key={handle.id}
+          id={handle.id}
+          type="source"
+          position={Position.Right}
+          style={sourceCount > 1
+            ? { top: `${((i + 1) / (sourceCount + 1)) * 100}%`, position: 'absolute' }
+            : undefined
+          }
+        />
+      ))}
+    </>
+  );
+};
+
+export default memo(ElkNode);
