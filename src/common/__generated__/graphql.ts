@@ -1473,7 +1473,7 @@ export type ActionListQuery = (
     ) | null }
     & { __typename: 'ActionNode' }
   )>, impactOverviews: Array<(
-    { id: string, label: string, plotLimitForIndicator: number | null, indicatorUnit: (
+    { id: string, graphType: string | null, label: string, plotLimitForIndicator: number | null, indicatorUnit: (
       { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ), costUnit: (

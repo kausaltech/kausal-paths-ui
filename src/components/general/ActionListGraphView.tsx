@@ -43,6 +43,7 @@ export function ActionListGraphView({
     );
   }
 
+  console.log('impact overviews', data?.impactOverviews, loading);
   const selectedOverview = data?.impactOverviews[activeEfficiency];
   const graphType = selectedOverview?.graphType;
 

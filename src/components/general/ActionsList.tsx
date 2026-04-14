@@ -23,7 +23,11 @@ import { ActionLink } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ScenarioChip from '@/components/general/ScenarioChip';
-import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
+import type {
+  ActionWithEfficiency,
+  ActiveOverviewInfo,
+  SortActionsConfig,
+} from '@/types/actions.types';
 
 type ActionsListProps = {
   id?: string;
@@ -34,6 +38,7 @@ type ActionsListProps = {
   sortBy: SortActionsConfig;
   sortAscending: boolean;
   refetching: boolean;
+  activeOverview: ActiveOverviewInfo | null;
   onChangeSort?: (key: SortActionsConfig['key']) => void;
   onToggleSortDirection?: () => void;
 };
@@ -95,6 +100,7 @@ export default function ActionsList({
   sortBy,
   sortAscending,
   refetching,
+  activeOverview,
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) {
@@ -102,7 +108,6 @@ export default function ActionsList({
   const formatNumber = useNumberFormatter();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
-
   const cardBgPrimary = theme.cardBackground?.primary ?? theme.palette.background.paper;
   const cardBgSecondary = theme.cardBackground?.secondary ?? theme.palette.background.default;
   const textPrimary = theme.textColor?.primary ?? theme.palette.text.primary;
@@ -121,48 +126,87 @@ export default function ActionsList({
     () => new Map(filteredActions.map((a, i) => [a.id, i])),
     [filteredActions]
   );
-
   const columns: ColumnDef[] = useMemo(() => {
-    const base: ColumnDef[] = [
+    const graphType = activeOverview?.graphType ?? null;
+
+    // simple_effect and no-overview: impact columns only (from impactMetric)
+    if (!graphType || graphType === 'simple_effect') {
+      return [
+        {
+          key: 'CUM_IMPACT',
+          label: `${activeOverview?.label ?? t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
+          getValue: (a) =>
+            a.cumulativeImpact != null
+              ? a.cumulativeImpact
+              : a.impactMetric
+                ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
+                : 0,
+          getUnit: (a) => a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
+        },
+        {
+          key: 'IMPACT',
+          label: `${t('annual-impact')} ${yearRange[1]}`,
+          sortKey: 'impactOnTargetYear',
+          getValue: (a) => a.impactOnTargetYear,
+          getUnit: (a) => a.impactMetric?.unit?.htmlShort,
+        },
+      ];
+    }
+
+    // return_on_investment: single ROI column
+    if (graphType === 'return_on_investment' && activeOverview) {
+      return [
+        {
+          key: 'CUM_EFFICIENCY',
+          label: activeOverview.label,
+          sortKey: 'cumulativeEfficiency',
+          getValue: (a) => {
+            const cost = a.cumulativeCost ?? 0;
+            const impact = a.cumulativeImpact ?? 0;
+            if (cost <= 0) return 0;
+            return (impact / cost) * (a.unitAdjustmentMultiplier ?? 1);
+          },
+          getUnit: () => activeOverview.indicatorUnit ?? '%',
+        },
+      ];
+    }
+
+    // cost_efficiency: effectDim, costDim, efficiency columns
+    const firstWithCost = filteredActions.find((a) => typeof a.cumulativeCost === 'number');
+    const firstWithEfficiency = filteredActions.find(
+      (a) => typeof a.cumulativeEfficiency === 'number'
+    );
+    const cols: ColumnDef[] = [
       {
         key: 'CUM_IMPACT',
-        label: `${t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
-        getValue: (a) =>
-          a.impactMetric
-            ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
-            : 0,
-        getUnit: (a) => a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
-      },
-      {
-        key: 'IMPACT',
-        label: `${t('annual-impact')} ${yearRange[1]}`,
-        sortKey: 'impactOnTargetYear',
-        getValue: (a) => a.impactOnTargetYear,
-        getUnit: (a) => a.impactMetric?.unit?.htmlShort,
+        label:
+          firstWithCost?.cumulativeImpactName ??
+          `${t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
+        getValue: (a) => a.cumulativeImpact ?? 0,
+        getUnit: (a) => a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
       },
     ];
-
-    if (filteredActions.some((a) => typeof a.cumulativeCost === 'number')) {
-      base.push({
+    if (firstWithCost) {
+      cols.push({
         key: 'CUM_COST',
-        label: `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
+        label:
+          firstWithCost.cumulativeCostName ?? `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
         sortKey: 'cumulativeCost',
         getValue: (a) => a.cumulativeCost ?? 0,
         getUnit: (a) => a.cumulativeCostUnit,
       });
     }
-
-    if (filteredActions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
-      base.push({
+    if (firstWithEfficiency) {
+      cols.push({
         key: 'CUM_EFFICIENCY',
-        label: t('cost-efficiency'),
+        label: firstWithEfficiency.cumulativeEfficiencyName ?? t('cost-efficiency'),
         sortKey: 'cumulativeEfficiency',
         getValue: (a) => a.cumulativeEfficiency ?? 0,
         getUnit: (a) => a.cumulativeEfficiencyUnit,
       });
     }
-    return base;
-  }, [filteredActions, yearRange, t]);
+    return cols;
+  }, [filteredActions, yearRange, t, activeOverview]);
 
   const sortedActions = useMemo(() => {
     const arr = [...filteredActions];

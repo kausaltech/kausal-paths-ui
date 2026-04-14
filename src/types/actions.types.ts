@@ -1,5 +1,11 @@
 import type { ActionListQuery, ActionSortOrder } from '@/common/__generated__/graphql';
 
+export type ActiveOverviewInfo = {
+  graphType: string | null;
+  indicatorUnit: string | null;
+  label: string;
+};
+
 export type ActionWithEfficiency = ActionListQuery['actions'][0] & {
   impactOnTargetYear: number;
   cumulativeImpactId?: string;

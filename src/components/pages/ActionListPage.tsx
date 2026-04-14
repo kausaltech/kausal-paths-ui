@@ -116,7 +116,14 @@ function ActionListPage({ page }: ActionListPageProps) {
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');
 
-  const { usableActions, displayedActionsCount, actionGroups, hasEfficiency } = useActionListData({
+  const {
+    usableActions,
+    displayedActionsCount,
+    totalActionsCount,
+    actionGroups,
+    hasEfficiency,
+    activeOverview,
+  } = useActionListData({
     data,
     showOnlyMunicipalActions: !!page.showOnlyMunicipalActions,
     activeEfficiency,
@@ -193,7 +200,9 @@ function ActionListPage({ page }: ActionListPageProps) {
               {areActionsLoading ? (
                 <span>{t('loading')}</span>
               ) : (
-                <span>{t('actions-count', { count: displayedActionsCount })}</span>
+                <span>
+                  {t('actions-count', { count: `${displayedActionsCount}/${totalActionsCount}` })}
+                </span>
               )}
             </ActionCount>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
@@ -239,6 +248,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             yearRange={yearRange}
             sortBy={sortBy}
             sortAscending={ascending}
+            activeOverview={activeOverview}
             refetching={areActionsLoading}
             onChangeSort={(key) => {
               handleChangeSort(key);

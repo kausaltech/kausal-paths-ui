@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { type ActionListQuery, DecisionLevel } from '@/common/__generated__/graphql';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
-import type { ActionWithEfficiency } from '@/types/actions.types';
+import type { ActionWithEfficiency, ActiveOverviewInfo } from '@/types/actions.types';
 
 type UseActionListDataProps = {
   data: ActionListQuery | undefined;
@@ -15,8 +15,10 @@ type UseActionListDataProps = {
 type UseActionListDataResult = {
   usableActions: ActionWithEfficiency[];
   displayedActionsCount: number;
+  totalActionsCount: number;
   actionGroups: NonNullable<ActionWithEfficiency['group']>[];
   hasEfficiency: boolean;
+  activeOverview: ActiveOverviewInfo | null;
 };
 
 export function useActionListData({
@@ -96,7 +98,12 @@ export function useActionListData({
           Object.assign(out, efficiencyProps);
           return out;
         })
-        .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
+        .filter((action) => {
+          const efficiencyType = data?.impactOverviews[activeEfficiency];
+          if (efficiencyType && !efficiencyType.actions.some((a) => a.action.id === action.id))
+            return false;
+          return actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id;
+        }),
     [data, actionGroup, activeEfficiency, yearRange, filteredActions]
   );
 
@@ -104,6 +111,11 @@ export function useActionListData({
     const hasAnyGroup = usableActions.some((a) => a.group);
     return hasAnyGroup ? usableActions.filter((a) => a.group).length : usableActions.length;
   }, [usableActions]);
+
+  const totalActionsCount = useMemo(() => {
+    const hasAnyGroup = filteredActions.some((a) => a.group);
+    return hasAnyGroup ? filteredActions.filter((a) => a.group).length : filteredActions.length;
+  }, [filteredActions]);
 
   const actionGroups = useMemo(
     () =>
@@ -117,5 +129,21 @@ export function useActionListData({
     [filteredActions]
   );
 
-  return { usableActions, displayedActionsCount, actionGroups, hasEfficiency };
+  const activeOverview = data?.impactOverviews[activeEfficiency] ?? null;
+  const activeOverviewInfo: ActiveOverviewInfo | null = activeOverview
+    ? {
+        graphType: activeOverview.graphType ?? null,
+        indicatorUnit: activeOverview.indicatorUnit.htmlShort,
+        label: activeOverview.label,
+      }
+    : null;
+
+  return {
+    usableActions,
+    displayedActionsCount,
+    totalActionsCount,
+    actionGroups,
+    hasEfficiency,
+    activeOverview: activeOverviewInfo,
+  };
 }
