@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
+import { getSessionCookie } from 'better-auth/cookies';
 import createIntlMiddleware from 'next-intl/middleware';
 import type { Bindings } from 'pino';
 
@@ -95,7 +96,7 @@ function setInstanceHeaders(
   requestHeaders.set(THEME_IDENTIFIER_HEADER, match.themeIdentifier);
 }
 
-function protectedResponse(req: NextRequest, headers: Headers, hostname: string, locale: string) {
+function _protectedResponse(req: NextRequest, headers: Headers, hostname: string, locale: string) {
   const rewrittenUrl = new URL(`/root/${hostname}/${locale}/protected`, req.url);
   return NextResponse.rewrite(rewrittenUrl, { request: { headers } });
 }
@@ -209,6 +210,7 @@ async function proxy(req: NextRequest) {
   if (nonPageResp) {
     return nonPageResp;
   }
+
   if (req.headers.get(MIDDLEWARE_RAN_HEADER)) {
     // Request has already been processed
     return NextResponse.next();
@@ -243,10 +245,11 @@ async function proxy(req: NextRequest) {
   if (!shouldAddInstanceHeaders(match.parts)) {
     return NextResponse.next(reqInit);
   }
-  if (instance?.isProtected) {
-    reqHeaders.delete(INSTANCE_IDENTIFIER_HEADER);
-    const locale = instance.defaultLanguage;
-    return protectedResponse(req, reqHeaders, hostname, locale);
+  if (instance?.isProtected && !path.endsWith('/auth/sign-in')) {
+    const sessionCookie = getSessionCookie(req);
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL('/auth/sign-in', req.url));
+    }
   }
   if (!instances.length) {
     const wildcardDomains = getWildcardDomains();

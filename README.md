@@ -80,11 +80,22 @@ Make sure that your installation does not give errors about missing files. If it
 
 #### 6.)
 
-To run local development against a Kausal Paths backend, create an `.env` file with the following env variable set to the staging GraphQL API URL. Ask a teammate for this value.
+To run local development against a Kausal Paths backend, create an `.env` file with the following env variables. Ask a teammate for the values.
 
 ```
 PATHS_BACKEND_URL=
+
+# Authentication (required for Trailhead / authenticated instances)
+AUTH_SECRET=              # Secret for signing/encrypting session cookies (generate with: openssl rand -base64 32)
+AUTH_CLIENT_ID=           # OAuth client ID from the backend's AuthApplication
+AUTH_CLIENT_SECRET=       # OAuth client secret from the backend's AuthApplication
+AUTH_ALLOWED_HOSTS=       # Additional allowed hostnames, comma-separated (optional, for non-wildcard domains)
 ```
+
+`WILDCARD_DOMAINS` (defaults to `localhost` in dev) controls which
+domains use the `{instance}.{domain}` pattern. These are automatically
+allowed as auth origins. `AUTH_ALLOWED_HOSTS` adds single-instance
+hostnames that don't follow the wildcard pattern (e.g., customer domains).
 
 ### Running the local dev server
 

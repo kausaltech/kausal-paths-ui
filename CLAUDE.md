@@ -33,6 +33,8 @@ pnpm prettier:fix           # Format all files
 
 Both linting and typechecking use baseline files (`eslint-baseline.json`, `tsc-baseline.json`) so only new errors are surfaced. Update baselines with `:update` variants.
 
+TypeScript should be run with `tsc -b` (composite project build), not `tsc --noEmit`. The repo uses composite tsconfig references across the main app, `kausal_common/`, and `e2e-tests/`.
+
 ### E2E Tests
 
 E2E tests live in `e2e-tests/` as a separate pnpm workspace with Playwright. They have their own `package.json` and `tsconfig.json`.

@@ -11,6 +11,7 @@ import {
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
 } from '@/common/const';
+import { getAccessToken } from '@/lib/auth-server';
 
 const rscLogger = getLogger({ name: 'apollo-rsc' });
 
@@ -25,10 +26,13 @@ export const { getClient } = registerApolloClient(async () => {
   const locale =
     headers.get('x-next-intl-locale') ?? headers.get(DEFAULT_LANGUAGE_HEADER) ?? undefined;
 
+  const accessToken = await getAccessToken();
+
   const opts: ApolloClientOpts = {
     instanceHostname,
     instanceIdentifier,
     locale,
+    authorizationToken: accessToken ?? undefined,
   };
 
   const { link, cache } = getApolloClientConfig(opts);
