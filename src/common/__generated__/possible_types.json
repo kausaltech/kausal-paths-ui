@@ -1,5 +1,9 @@
 {
   "possibleTypes": {
+    "CreateDimensionCategoriesPayload": [
+      "InstanceDimension",
+      "OperationInfo"
+    ],
     "CreateEdgePayload": [
       "NodeEdgeType",
       "OperationInfo"
@@ -12,6 +16,11 @@
     "CreateScenarioPayload": [
       "OperationInfo",
       "ScenarioType"
+    ],
+    "EdgeTransformationUnion": [
+      "AssignCategoryTransformationType",
+      "FlattenTransformationType",
+      "SelectCategoriesTransformationType"
     ],
     "InputPortBindingUnion": [
       "DatasetPortType",
@@ -85,6 +94,14 @@
       "TextBlock",
       "TimeBlock",
       "URLBlock"
+    ],
+    "UpdateDimensionCategoriesPayload": [
+      "InstanceDimension",
+      "OperationInfo"
+    ],
+    "UpdateDimensionPayload": [
+      "InstanceDimension",
+      "OperationInfo"
     ],
     "UpdateNodePayload": [
       "ActionNode",

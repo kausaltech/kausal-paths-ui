@@ -1,12 +1,7 @@
-import '@xyflow/react/dist/style.css';
-import './NodeGraphEditor.css';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, lazy } from 'react';
-
-import { gql } from '@apollo/client';
-import { useSuspenseQuery } from '@apollo/client/react';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import StorageIcon from '@mui/icons-material/Storage';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
@@ -26,7 +21,10 @@ import {
   Select,
   Typography,
 } from '@mui/material';
-import { MarkerType, type Edge, type OnSelectionChangeFunc } from '@xyflow/react';
+
+import { gql } from '@apollo/client';
+import { useSuspenseQuery } from '@apollo/client/react';
+import { type Edge, MarkerType, type OnSelectionChangeFunc } from '@xyflow/react';
 import {
   Background,
   Controls,
@@ -37,18 +35,25 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 
-import ElkNode, { type ElkNodeType, type HiddenContextRef, NodeGraphInteractionContext } from './ElkNode';
 import type {
+  EditorNodeEdgeFragment,
+  EditorNodeFieldsFragment,
   NodeGraphQuery,
-  NodeEdgeFragment,
-  NodeFieldsFragment,
 } from '@/common/__generated__/graphql';
-import useLayoutNodes from './useLayoutNodes';
+import ElkNode, {
+  type ElkNodeType,
+  type HiddenContextRef,
+  NodeGraphInteractionContext,
+} from './ElkNode';
+import './NodeGraphEditor.css';
 import { useNodeMetric } from './metric-viewer/useNodeMetric';
+import useLayoutNodes from './useLayoutNodes';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
 const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
+const DatasetViewerModal = lazy(() => import('./dataset-viewer/DatasetViewerModal'));
 
 const nodeTypes = {
   elk: ElkNode,
@@ -75,15 +80,15 @@ const GET_NODE_GRAPH = gql`
       }
       edges {
         id
-        ...NodeEdge
+        ...EditorNodeEdge
       }
       nodes {
         id
-        ...NodeFields
+        ...EditorNodeFields
       }
     }
   }
-  fragment NodeFields on NodeInterface {
+  fragment EditorNodeFields on NodeInterface {
     id
     identifier
     name
@@ -122,6 +127,7 @@ const GET_NODE_GRAPH = gql`
         bindings {
           __typename
           ... on DatasetPortType {
+            id
             dataset {
               id
               identifier
@@ -131,6 +137,9 @@ const GET_NODE_GRAPH = gql`
               id
               label
             }
+          }
+          ... on NodeEdgeType {
+            id
           }
         }
       }
@@ -149,7 +158,7 @@ const GET_NODE_GRAPH = gql`
       }
     }
   }
-  fragment NodeEdge on NodeEdgeType {
+  fragment EditorNodeEdge on NodeEdgeType {
     id
     fromRef {
       nodeId
@@ -177,8 +186,8 @@ const ALL_OUTCOMES = '__all__';
 /** Walk edges backwards from a set of root node IDs and return all upstream node IDs (inclusive). */
 function computeUpstreamNodeIds(
   rootIds: ReadonlySet<string>,
-  edges: readonly NodeEdgeFragment[],
-  allNodeIds: ReadonlySet<string>,
+  edges: readonly EditorNodeEdgeFragment[],
+  allNodeIds: ReadonlySet<string>
 ): Set<string> {
   const reverseAdj = new Map<string, string[]>();
   for (const edge of edges) {
@@ -204,10 +213,10 @@ const SPAN_THRESHOLD = 8;
 const FANOUT_THRESHOLD = 5;
 
 function computeSnippedEdgeIds(
-  edges: readonly NodeEdgeFragment[],
-  nodes: readonly NodeFieldsFragment[],
+  edges: readonly EditorNodeEdgeFragment[],
+  nodes: readonly EditorNodeFieldsFragment[]
 ): Set<string> {
-  const nodeById = new Map(nodes.map(n => [n.id, n]));
+  const nodeById = new Map(nodes.map((n: EditorNodeFieldsFragment) => [n.id, n]));
   const snipped = new Set<string>();
 
   const outDegree = new Map<string, number>();
@@ -234,51 +243,61 @@ function computeSnippedEdgeIds(
 }
 
 function convertToElk(
-  nodes: readonly NodeFieldsFragment[],
-  edges: readonly NodeEdgeFragment[],
-  hiddenContextSourcesByNodeId: ReadonlyMap<string, HiddenContextRef[]>,
+  nodes: readonly EditorNodeFieldsFragment[],
+  edges: readonly EditorNodeEdgeFragment[],
+  hiddenContextSourcesByNodeId: ReadonlyMap<string, HiddenContextRef[]>
 ) {
-  const nodeIds = new Set(nodes.map(n => n.id));
+  const nodeIds = new Set(nodes.map((n) => n.id));
 
   const sourceHandlesFromEdges = new Map<string, Set<string>>();
   const targetHandlesFromEdges = new Map<string, Set<string>>();
   for (const edge of edges) {
     if (!nodeIds.has(edge.fromRef.nodeId) || !nodeIds.has(edge.toRef.nodeId)) continue;
-    if (!sourceHandlesFromEdges.has(edge.fromRef.nodeId)) sourceHandlesFromEdges.set(edge.fromRef.nodeId, new Set());
+    if (!sourceHandlesFromEdges.has(edge.fromRef.nodeId))
+      sourceHandlesFromEdges.set(edge.fromRef.nodeId, new Set());
     sourceHandlesFromEdges.get(edge.fromRef.nodeId)!.add(edge.fromRef.portId);
-    if (!targetHandlesFromEdges.has(edge.toRef.nodeId)) targetHandlesFromEdges.set(edge.toRef.nodeId, new Set());
+    if (!targetHandlesFromEdges.has(edge.toRef.nodeId))
+      targetHandlesFromEdges.set(edge.toRef.nodeId, new Set());
     targetHandlesFromEdges.get(edge.toRef.nodeId)!.add(edge.toRef.portId);
   }
 
-  const nodesById = new Map(nodes.map(n => [n.id, n]));
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
   const validEdges = edges.filter((edge) => {
     const src = nodesById.get(edge.fromRef.nodeId);
     const tgt = nodesById.get(edge.toRef.nodeId);
     if (src) {
       const outPorts = src.spec?.outputPorts;
       if (!outPorts || !outPorts.some((p: { id: string }) => p.id === edge.fromRef.portId)) {
-        console.warn(`Skipping edge ${edge.id}: fromPort="${edge.fromRef.portId}" not found on node "${src.identifier}"`);
+        console.warn(
+          `Skipping edge ${edge.id}: fromPort="${edge.fromRef.portId}" not found on node "${src.identifier}"`
+        );
         return false;
       }
     }
     if (tgt) {
       const inPorts = tgt.spec?.inputPorts;
       if (!inPorts || !inPorts.some((p: { id: string }) => p.id === edge.toRef.portId)) {
-        console.warn(`Skipping edge ${edge.id}: toPort="${edge.toRef.portId}" not found on node "${tgt.identifier}"`);
+        console.warn(
+          `Skipping edge ${edge.id}: toPort="${edge.toRef.portId}" not found on node "${tgt.identifier}"`
+        );
         return false;
       }
     }
     return true;
   });
 
-  const elkNodes = nodes.map((node) => {
+  const elkNodes = nodes.map((node: EditorNodeFieldsFragment) => {
     const inputPorts = node.spec?.inputPorts ?? [];
     const outputPorts = node.spec?.outputPorts ?? [];
-    const srcHandles = outputPorts.map(p => ({ id: p.id }));
-    const tgtHandles = inputPorts.map(p => ({ id: p.id, multi: 'multi' in p ? (p.multi as boolean) : undefined }));
+    const srcHandles = outputPorts.map((p) => ({ id: p.id }));
+    const tgtHandles = inputPorts.map((p) => ({
+      id: p.id,
+      multi: p.multi,
+    }));
 
     const typeConfig = node.spec?.typeConfig;
-    const nodeClass = (typeConfig && 'nodeClass' in typeConfig) ? typeConfig.nodeClass : node.nodeType ?? '';
+    const nodeClass =
+      typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : (node.nodeType ?? '');
 
     const elkNode: ElkNodeType = {
       id: node.id,
@@ -299,32 +318,41 @@ function convertToElk(
     return elkNode;
   });
 
-  const elkNodesById = new Map(elkNodes.map(node => [node.id, node]));
+  const elkNodesById = new Map(elkNodes.map((node) => [node.id, node]));
 
   const elkEdges = validEdges
-    .filter(edge => elkNodesById.has(edge.fromRef.nodeId) && elkNodesById.has(edge.toRef.nodeId))
-    .map((edge) => ({
-      id: edge.id,
-      source: edge.fromRef.nodeId,
-      sourceHandle: edge.fromRef.portId,
-      target: edge.toRef.nodeId,
-      targetHandle: edge.toRef.portId,
-      markerEnd: EDGE_MARKER,
-    } satisfies Edge));
+    .filter((edge) => elkNodesById.has(edge.fromRef.nodeId) && elkNodesById.has(edge.toRef.nodeId))
+    .map(
+      (edge) =>
+        ({
+          id: edge.id,
+          source: edge.fromRef.nodeId,
+          sourceHandle: edge.fromRef.portId,
+          target: edge.toRef.nodeId,
+          targetHandle: edge.toRef.portId,
+          markerEnd: EDGE_MARKER,
+        }) satisfies Edge
+    );
 
   return { nodes: elkNodes, edges: elkEdges };
 }
 
 type NodeDetailsPanelProps = {
-  node: NodeFieldsFragment | null;
-  allNodes: readonly NodeFieldsFragment[];
-  edges: readonly NodeEdgeFragment[];
+  node: EditorNodeFieldsFragment | null;
+  allNodes: readonly EditorNodeFieldsFragment[];
+  edges: readonly EditorNodeEdgeFragment[];
   onClose: () => void;
   onWideContent: (isWide: boolean) => void;
   onSelectNode: (nodeId: string) => void;
 };
 
-function ConnectedNodeChip({ nodeId, label, isDataset, onSelect, onHover }: {
+function ConnectedNodeChip({
+  nodeId,
+  label,
+  isDataset,
+  onSelect,
+  onHover,
+}: {
   nodeId: string;
   label: string;
   isDataset: boolean;
@@ -345,26 +373,39 @@ function ConnectedNodeChip({ nodeId, label, isDataset, onSelect, onHover }: {
   );
 }
 
-function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSelectNode }: NodeDetailsPanelProps) {
-  const { portMetrics, loading: metricsLoading, fetch: fetchMetrics } = useNodeMetric(
-    node?.id ?? null,
-  );
+function NodeDetailsPanel({
+  node,
+  allNodes,
+  edges,
+  onClose,
+  onWideContent,
+  onSelectNode,
+}: NodeDetailsPanelProps) {
+  const {
+    portMetrics,
+    loading: metricsLoading,
+    fetch: fetchMetrics,
+  } = useNodeMetric(node?.id ?? null);
   const { fitView, getNodes } = useReactFlow();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [datasetModal, setDatasetModal] = useState<{ bindingId: string } | null>(null);
 
   const hasMetrics = portMetrics.length > 0;
   useEffect(() => {
     onWideContent(hasMetrics);
   }, [hasMetrics, onWideContent]);
 
-  const handleNavigateToNode = useCallback((targetNodeId: string) => {
-    const rfNodes = getNodes();
-    const targetRfNode = rfNodes.find(n => n.id === targetNodeId);
-    if (targetRfNode) {
-      fitView({ nodes: [targetRfNode], duration: 400, padding: 0.5 });
-    }
-    onSelectNode(targetNodeId);
-  }, [getNodes, fitView, onSelectNode]);
+  const handleNavigateToNode = useCallback(
+    (targetNodeId: string) => {
+      const rfNodes = getNodes();
+      const targetRfNode = rfNodes.find((n) => n.id === targetNodeId);
+      if (targetRfNode) {
+        void fitView({ nodes: [targetRfNode], duration: 400, padding: 0.5 });
+      }
+      onSelectNode(targetNodeId);
+    },
+    [getNodes, fitView, onSelectNode]
+  );
 
   const handleHover = useCallback((nodeId: string | null) => {
     setHoveredNodeId(nodeId);
@@ -372,20 +413,20 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
 
   if (!node) return null;
 
-  const nodeMap = new Map(allNodes.map(n => [n.id, n]));
+  const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
   const typeConfig = node.spec?.typeConfig;
-  const nodeClass = (typeConfig && 'nodeClass' in typeConfig) ? typeConfig.nodeClass : null;
+  const nodeClass = typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : null;
 
-  const incomingByPort = new Map<string, NodeEdgeFragment[]>();
-  for (const e of edges.filter(e => e.toRef.nodeId === node.id)) {
+  const incomingByPort = new Map<string, EditorNodeEdgeFragment[]>();
+  for (const e of edges.filter((e) => e.toRef.nodeId === node.id)) {
     const portId = e.toRef.portId;
     const list = incomingByPort.get(portId) ?? [];
     list.push(e);
     incomingByPort.set(portId, list);
   }
 
-  const outgoingByPort = new Map<string, NodeEdgeFragment[]>();
-  for (const e of edges.filter(e => e.fromRef.nodeId === node.id)) {
+  const outgoingByPort = new Map<string, EditorNodeEdgeFragment[]>();
+  for (const e of edges.filter((e) => e.fromRef.nodeId === node.id)) {
     const portId = e.fromRef.portId;
     const list = outgoingByPort.get(portId) ?? [];
     list.push(e);
@@ -395,13 +436,18 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
   const inputPorts = node.spec?.inputPorts ?? [];
   const outputPorts = node.spec?.outputPorts ?? [];
 
-  const isDatasetNode = (n: NodeFieldsFragment | undefined) =>
+  const isDatasetNode = (n: EditorNodeFieldsFragment | undefined) =>
     n != null && n.nodeType.toLowerCase().includes('dataset');
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3, flex: 1, mr: 1 }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3, flex: 1, mr: 1 }}
+        >
           {node.name}
         </Typography>
         <IconButton size="small" onClick={onClose}>
@@ -409,14 +455,24 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
         </IconButton>
       </Box>
 
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, fontFamily: 'monospace' }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: 'block', mb: 1.5, fontFamily: 'monospace' }}
+      >
         {node.identifier}
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
         <Chip label={node.kind} size="small" variant="outlined" />
-        <Chip label={(nodeClass ?? node.nodeType ?? '').split('.').pop()} size="small" variant="outlined" />
-        {node.__typename === 'Node' && node.isOutcome && <Chip label="outcome" size="small" color="primary" />}
+        <Chip
+          label={(nodeClass ?? node.nodeType ?? '').split('.').pop()}
+          size="small"
+          variant="outlined"
+        />
+        {node.__typename === 'Node' && node.isOutcome && (
+          <Chip label="outcome" size="small" color="primary" />
+        )}
         {node.nodeGroup && <Chip label={node.nodeGroup} size="small" variant="outlined" />}
       </Box>
 
@@ -428,25 +484,50 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
             Inputs
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-            {inputPorts.map(port => {
+            {inputPorts.map((port, portIdx) => {
               const connectedEdges = incomingByPort.get(port.id) ?? [];
-              const datasetBindings = (port.bindings ?? []).filter(
-                (b: { __typename?: string }) => b.__typename === 'DatasetPortType'
-              ) as { __typename: 'DatasetPortType'; dataset: { id: string; identifier: string; name: string }; metric: { id: string; label: string } }[];
+              type DatasetBinding = Extract<
+                (typeof port.bindings)[number],
+                { __typename: 'DatasetPortType' }
+              >;
+              type BoundDatasetBinding = DatasetBinding & {
+                dataset: NonNullable<DatasetBinding['dataset']>;
+                metric: NonNullable<DatasetBinding['metric']>;
+              };
+              const datasetBindings = port.bindings.filter(
+                (b): b is BoundDatasetBinding =>
+                  b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
+              );
               const hasConnections = connectedEdges.length > 0 || datasetBindings.length > 0;
 
               return (
                 <Box key={port.id}>
-                  <Typography variant="body2" sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
-                    {port.label ?? 'input'}{port.multi ? ' (multi)' : ''}
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}
+                  >
+                    {port.label ?? `Input #${portIdx + 1}`}
+                    {port.multi ? ' (multi)' : ''}
                   </Typography>
                   {hasConnections ? (
                     <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {connectedEdges.map(e => {
+                      {connectedEdges.map((e) => {
                         const sourceNode = nodeMap.get(e.fromRef.nodeId);
                         const highlighted = hoveredNodeId === e.fromRef.nodeId;
                         return (
-                          <Box key={e.id} sx={highlighted ? { '& .MuiChip-root': { borderColor: 'primary.main', bgcolor: 'action.hover' } } : undefined}>
+                          <Box
+                            key={e.id}
+                            sx={
+                              highlighted
+                                ? {
+                                    '& .MuiChip-root': {
+                                      borderColor: 'primary.main',
+                                      bgcolor: 'action.hover',
+                                    },
+                                  }
+                                : undefined
+                            }
+                          >
                             <ConnectedNodeChip
                               nodeId={e.fromRef.nodeId}
                               label={sourceNode?.name ?? e.fromRef.nodeId}
@@ -457,7 +538,7 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
                           </Box>
                         );
                       })}
-                      {datasetBindings.map(ds => (
+                      {datasetBindings.map((ds) => (
                         <Chip
                           key={ds.dataset.id}
                           icon={<StorageIcon sx={{ fontSize: 14 }} />}
@@ -465,7 +546,8 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
                           size="small"
                           variant="outlined"
                           color="info"
-                          sx={{ maxWidth: '100%' }}
+                          onClick={() => setDatasetModal({ bindingId: ds.id })}
+                          sx={{ maxWidth: '100%', cursor: 'pointer' }}
                         />
                       ))}
                     </Box>
@@ -487,20 +569,35 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
             Outputs
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-            {outputPorts.map(port => {
+            {outputPorts.map((port, portIdx) => {
               const connectedEdges = outgoingByPort.get(port.id) ?? [];
               return (
                 <Box key={port.id}>
-                  <Typography variant="body2" sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
-                    {port.label ?? 'output'}
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}
+                  >
+                    {port.label ?? `Output #${portIdx + 1}`}
                   </Typography>
                   {connectedEdges.length > 0 ? (
                     <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {connectedEdges.map(e => {
+                      {connectedEdges.map((e) => {
                         const targetNode = nodeMap.get(e.toRef.nodeId);
                         const highlighted = hoveredNodeId === e.toRef.nodeId;
                         return (
-                          <Box key={e.id} sx={highlighted ? { '& .MuiChip-root': { borderColor: 'primary.main', bgcolor: 'action.hover' } } : undefined}>
+                          <Box
+                            key={e.id}
+                            sx={
+                              highlighted
+                                ? {
+                                    '& .MuiChip-root': {
+                                      borderColor: 'primary.main',
+                                      bgcolor: 'action.hover',
+                                    },
+                                  }
+                                : undefined
+                            }
+                          >
                             <ConnectedNodeChip
                               nodeId={e.toRef.nodeId}
                               label={targetNode?.name ?? e.toRef.nodeId}
@@ -539,7 +636,7 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
         </Button>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {portMetrics.map(pm => (
+          {portMetrics.map((pm) => (
             <Box key={pm.portId}>
               <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                 {pm.portLabel ?? pm.quantity ?? pm.portId}
@@ -557,19 +654,31 @@ function NodeDetailsPanel({ node, allNodes, edges, onClose, onWideContent, onSel
           ))}
         </Box>
       )}
+
+      {datasetModal && node && (
+        <Suspense>
+          <DatasetViewerModal
+            open
+            onClose={() => setDatasetModal(null)}
+            nodeId={node.id}
+            bindingId={datasetModal.bindingId}
+          />
+        </Suspense>
+      )}
     </Box>
   );
 }
 
-
-type ContextMenuState = {
-  mouseX: number;
-  mouseY: number;
-} & ({ kind: 'node'; nodeId: string } | { kind: 'edge'; edgeId: string }) | null;
+type ContextMenuState =
+  | ({
+      mouseX: number;
+      mouseY: number;
+    } & ({ kind: 'node'; nodeId: string } | { kind: 'edge'; edgeId: string }))
+  | null;
 
 function FlowEditor(props: {
-  nodes: readonly NodeFieldsFragment[];
-  edges: readonly NodeEdgeFragment[];
+  nodes: readonly EditorNodeFieldsFragment[];
+  edges: readonly EditorNodeEdgeFragment[];
   outcomeNodeIds: readonly string[];
 }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -585,55 +694,50 @@ function FlowEditor(props: {
     setDrawerWide(isWide);
   }, []);
 
-  const nodeMap = useMemo(
-    () => new Map(props.nodes.map(n => [n.id, n])),
-    [props.nodes]
-  );
+  const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
 
-  const allNodeIdsSet = useMemo(
-    () => new Set(props.nodes.map(n => n.id)),
-    [props.nodes]
-  );
+  const allNodeIdsSet = useMemo(() => new Set(props.nodes.map((n) => n.id)), [props.nodes]);
 
   const outcomeNodes = useMemo(
-    () => props.outcomeNodeIds.map(id => nodeMap.get(id)).filter((n): n is NodeFieldsFragment => Boolean(n)),
+    () =>
+      props.outcomeNodeIds
+        .map((id) => nodeMap.get(id))
+        .filter((n): n is EditorNodeFieldsFragment => Boolean(n)),
     [props.outcomeNodeIds, nodeMap]
   );
 
   const autoSnippedEdgeIds = useMemo(
     () => computeSnippedEdgeIds(props.edges, props.nodes),
-    [props.edges, props.nodes],
+    [props.edges, props.nodes]
   );
 
   const upstreamFilteredNodeIds = useMemo(() => {
     if (selectedOutcomeId === ALL_OUTCOMES) return null;
-    return computeUpstreamNodeIds(
-      new Set([selectedOutcomeId]),
-      props.edges,
-      allNodeIdsSet,
-    );
+    return computeUpstreamNodeIds(new Set([selectedOutcomeId]), props.edges, allNodeIdsSet);
   }, [selectedOutcomeId, props.edges, allNodeIdsSet]);
 
   const visibleNodes = useMemo(
-    () => props.nodes.filter(node =>
-      upstreamFilteredNodeIds === null || upstreamFilteredNodeIds.has(node.id)
-    ),
+    () =>
+      props.nodes.filter(
+        (node) => upstreamFilteredNodeIds === null || upstreamFilteredNodeIds.has(node.id)
+      ),
     [props.nodes, upstreamFilteredNodeIds]
   );
 
   const visibleEdges = useMemo(
-    () => props.edges.filter(edge =>
-      !autoSnippedEdgeIds.has(edge.id)
-      && !userHiddenEdgeIds.has(edge.id)
-      && (upstreamFilteredNodeIds === null || (upstreamFilteredNodeIds.has(edge.fromRef.nodeId) && upstreamFilteredNodeIds.has(edge.toRef.nodeId)))
-    ),
+    () =>
+      props.edges.filter(
+        (edge) =>
+          !autoSnippedEdgeIds.has(edge.id) &&
+          !userHiddenEdgeIds.has(edge.id) &&
+          (upstreamFilteredNodeIds === null ||
+            (upstreamFilteredNodeIds.has(edge.fromRef.nodeId) &&
+              upstreamFilteredNodeIds.has(edge.toRef.nodeId)))
+      ),
     [props.edges, autoSnippedEdgeIds, userHiddenEdgeIds, upstreamFilteredNodeIds]
   );
 
-  const visibleNodeIdsSet = useMemo(
-    () => new Set(visibleNodes.map(n => n.id)),
-    [visibleNodes]
-  );
+  const visibleNodeIdsSet = useMemo(() => new Set(visibleNodes.map((n) => n.id)), [visibleNodes]);
 
   const snippedConnectionsByNodeId = useMemo(() => {
     const refs = new Map<string, HiddenContextRef[]>();
@@ -656,11 +760,7 @@ function FlowEditor(props: {
   const highlightedNodeIds = useMemo(() => new Set<string>(), []);
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
-    return convertToElk(
-      visibleNodes,
-      visibleEdges,
-      snippedConnectionsByNodeId,
-    );
+    return convertToElk(visibleNodes, visibleEdges, snippedConnectionsByNodeId);
   }, [snippedConnectionsByNodeId, visibleEdges, visibleNodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
@@ -696,7 +796,7 @@ function FlowEditor(props: {
 
   const handleHideEdge = useCallback(() => {
     if (!contextMenu || contextMenu.kind !== 'edge') return;
-    setUserHiddenEdgeIds(prev => new Set([...prev, contextMenu.edgeId]));
+    setUserHiddenEdgeIds((prev) => new Set([...prev, contextMenu.edgeId]));
     setContextMenu(null);
   }, [contextMenu]);
 
@@ -704,18 +804,32 @@ function FlowEditor(props: {
     setSelectedNodeId(nodeId);
   }, []);
 
-  const interactionCtx = useMemo(() => ({
-    highlightedNodeIds,
-    onHiddenContextClick: handleSnippedNodeClick,
-  }), [highlightedNodeIds, handleSnippedNodeClick]);
+  const interactionCtx = useMemo(
+    () => ({
+      highlightedNodeIds,
+      onHiddenContextClick: handleSnippedNodeClick,
+    }),
+    [highlightedNodeIds, handleSnippedNodeClick]
+  );
 
-  const selectedNode = selectedNodeId ? nodeMap.get(selectedNodeId) ?? null : null;
+  const selectedNode = selectedNodeId ? (nodeMap.get(selectedNodeId) ?? null) : null;
 
   return (
     <NodeGraphInteractionContext value={interactionCtx}>
       <Box sx={{ display: 'flex', width: '100%', height: '100%' }}>
         <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid #e0e0e0', backgroundColor: '#fafafa', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+          <Box
+            sx={{
+              px: 1.5,
+              py: 1,
+              borderBottom: '1px solid #e0e0e0',
+              backgroundColor: '#fafafa',
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             <Button
               variant="outlined"
               size="small"
@@ -737,8 +851,10 @@ function FlowEditor(props: {
                     onChange={(e) => setSelectedOutcomeId(e.target.value)}
                   >
                     <MenuItem value={ALL_OUTCOMES}>All outcomes</MenuItem>
-                    {outcomeNodes.map(n => (
-                      <MenuItem key={n.id} value={n.id}>{n.name}</MenuItem>
+                    {outcomeNodes.map((n) => (
+                      <MenuItem key={n.id} value={n.id}>
+                        {n.name}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -746,66 +862,67 @@ function FlowEditor(props: {
             )}
           </Box>
           <Box sx={{ flex: 1, position: 'relative' }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onSelectionChange={onSelectionChange}
-
-            onEdgeClick={onEdgeClick}
-            onEdgeContextMenu={onEdgeContextMenu}
-            nodeTypes={nodeTypes}
-            minZoom={0.2}
-            maxZoom={5}
-            fitView
-          >
-            <Background color="#f0f0f0" />
-            <Controls />
-            <MiniMap nodeStrokeWidth={3} />
-          </ReactFlow>
-          <Menu
-            open={contextMenu !== null}
-            onClose={() => setContextMenu(null)}
-            anchorReference="anchorPosition"
-            anchorPosition={
-              contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
-            }
-          >
-            {contextMenu?.kind === 'edge' && (
-              <MenuItem onClick={handleHideEdge}>
-                <ListItemIcon><VisibilityOffIcon fontSize="small" /></ListItemIcon>
-                <ListItemText>Hide edge</ListItemText>
-              </MenuItem>
-            )}
-          </Menu>
-          <Drawer
-            variant="persistent"
-            anchor="right"
-            open={!!selectedNode}
-            slotProps={{
-              paper: {
-                sx: {
-                  width: drawerWidth,
-                  maxWidth: 'none',
-                  boxShadow: 10,
-                  transition: 'width 0.2s ease-in-out',
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onSelectionChange={onSelectionChange}
+              onEdgeClick={onEdgeClick}
+              onEdgeContextMenu={onEdgeContextMenu}
+              nodeTypes={nodeTypes}
+              minZoom={0.2}
+              maxZoom={5}
+              fitView
+            >
+              <Background color="#f0f0f0" />
+              <Controls />
+              <MiniMap nodeStrokeWidth={3} />
+            </ReactFlow>
+            <Menu
+              open={contextMenu !== null}
+              onClose={() => setContextMenu(null)}
+              anchorReference="anchorPosition"
+              anchorPosition={
+                contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
+              }
+            >
+              {contextMenu?.kind === 'edge' && (
+                <MenuItem onClick={handleHideEdge}>
+                  <ListItemIcon>
+                    <VisibilityOffIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Hide edge</ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
+            <Drawer
+              variant="persistent"
+              anchor="right"
+              open={!!selectedNode}
+              slotProps={{
+                paper: {
+                  sx: {
+                    width: drawerWidth,
+                    maxWidth: 'none',
+                    boxShadow: 10,
+                    transition: 'width 0.2s ease-in-out',
+                  },
                 },
-              },
-            }}
-          >
-            <NodeDetailsPanel
-              node={selectedNode}
-              allNodes={props.nodes}
-              edges={props.edges}
-              onClose={() => {
-                setSelectedNodeId(null);
-                setDrawerWide(false);
               }}
-              onWideContent={handleDrawerWideContent}
-              onSelectNode={setSelectedNodeId}
-            />
-          </Drawer>
+            >
+              <NodeDetailsPanel
+                node={selectedNode}
+                allNodes={props.nodes}
+                edges={props.edges}
+                onClose={() => {
+                  setSelectedNodeId(null);
+                  setDrawerWide(false);
+                }}
+                onWideContent={handleDrawerWideContent}
+                onSelectNode={setSelectedNodeId}
+              />
+            </Drawer>
           </Box>
         </Box>
       </Box>
@@ -824,10 +941,7 @@ function FlowEditor(props: {
 }
 
 export default function NodeGraphEditor() {
-  const { data } = useSuspenseQuery<NodeGraphQuery>(
-    GET_NODE_GRAPH,
-    { fetchPolicy: 'no-cache' }
-  );
+  const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
 
   return (
     <Suspense fallback={<CircularProgress />}>

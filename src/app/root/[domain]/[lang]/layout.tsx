@@ -49,15 +49,10 @@ async function getContextFromHeaders() {
   };
 }
 
-async function fetchInstanceContext(identifier: string, hostname: string, locale: string) {
+async function fetchInstanceContext(_identifier: string, _hostname: string, _locale: string) {
   const client = await getClient();
   const { data } = await client.query<InstanceContextQuery, InstanceContextQueryVariables>({
     query: GET_INSTANCE_CONTEXT,
-    variables: {
-      identifier,
-      hostname,
-      locale,
-    },
   });
   return data;
 }

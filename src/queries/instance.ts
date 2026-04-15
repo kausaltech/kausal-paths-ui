@@ -17,8 +17,7 @@ export const scenarioFragment = gql`
 `;
 
 const GET_INSTANCE_CONTEXT = gql`
-  query InstanceContext($identifier: ID!, $hostname: String!, $locale: String!)
-  @context(input: { hostname: $hostname, identifier: $identifier, locale: $locale }) {
+  query InstanceContext {
     instance {
       id
       name

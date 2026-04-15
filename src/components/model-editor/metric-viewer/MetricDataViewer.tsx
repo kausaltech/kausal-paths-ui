@@ -30,7 +30,8 @@ type MetricDataViewerProps = {
 const FORECAST_CELL_CLASS = 'metric-forecast-cell';
 
 export default function MetricDataViewer({ metric, compact = false }: MetricDataViewerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('pivot');
+  const hasDimensions = metric.dimensions.length > 0;
+  const [viewMode, setViewMode] = useState<ViewMode>(hasDimensions ? 'pivot' : 'flat');
   const [pivotDimId, setPivotDimId] = useState<string>(
     () => metric.dimensions[0]?.id ?? '',
   );
@@ -128,15 +129,17 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
           <Chip label={`Forecast from ${metric.forecastFrom}`} size="small" color="info" variant="outlined" />
         )}
         <Box sx={{ flex: 1 }} />
-        <ToggleButtonGroup
-          value={viewMode}
-          exclusive
-          onChange={(_, v) => { if (v) setViewMode(v); }}
-          size="small"
-        >
-          <ToggleButton value="pivot">Pivot</ToggleButton>
-          <ToggleButton value="flat">Flat</ToggleButton>
-        </ToggleButtonGroup>
+        {hasDimensions && (
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, v) => { if (v) setViewMode(v); }}
+            size="small"
+          >
+            <ToggleButton value="pivot">Pivot</ToggleButton>
+            <ToggleButton value="flat">Flat</ToggleButton>
+          </ToggleButtonGroup>
+        )}
       </Box>
 
       {viewMode === 'pivot' && metric.dimensions.length > 1 && (

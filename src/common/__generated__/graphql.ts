@@ -415,7 +415,7 @@ export type NodeGraphQuery = (
           { inputPorts: Array<(
             { id: string, label: string | null, multi: boolean, bindings: Array<
               | (
-                { dataset: (
+                { id: string, dataset: (
                   { id: string, identifier: string | null, name: string }
                   & { __typename: 'Dataset' }
                 ) | null, metric: (
@@ -424,7 +424,10 @@ export type NodeGraphQuery = (
                 ) | null }
                 & { __typename: 'DatasetPortType' }
               )
-              | { __typename: 'NodeEdgeType' }
+              | (
+                { id: string }
+                & { __typename: 'NodeEdgeType' }
+              )
             > }
             & { __typename: 'InputPortType' }
           )>, outputPorts: Array<(
@@ -452,7 +455,7 @@ export type NodeGraphQuery = (
           { inputPorts: Array<(
             { id: string, label: string | null, multi: boolean, bindings: Array<
               | (
-                { dataset: (
+                { id: string, dataset: (
                   { id: string, identifier: string | null, name: string }
                   & { __typename: 'Dataset' }
                 ) | null, metric: (
@@ -461,7 +464,10 @@ export type NodeGraphQuery = (
                 ) | null }
                 & { __typename: 'DatasetPortType' }
               )
-              | { __typename: 'NodeEdgeType' }
+              | (
+                { id: string }
+                & { __typename: 'NodeEdgeType' }
+              )
             > }
             & { __typename: 'InputPortType' }
           )>, outputPorts: Array<(
@@ -484,7 +490,7 @@ export type NodeGraphQuery = (
   & { __typename: 'Query' }
 );
 
-type NodeFields_ActionNode_Fragment = (
+type EditorNodeFields_ActionNode_Fragment = (
   { id: string, identifier: string, name: string, color: string | null, uuid: string | null, nodeGroup: string | null, nodeType: string, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
@@ -495,7 +501,7 @@ type NodeFields_ActionNode_Fragment = (
     { inputPorts: Array<(
       { id: string, label: string | null, multi: boolean, bindings: Array<
         | (
-          { dataset: (
+          { id: string, dataset: (
             { id: string, identifier: string | null, name: string }
             & { __typename: 'Dataset' }
           ) | null, metric: (
@@ -504,7 +510,10 @@ type NodeFields_ActionNode_Fragment = (
           ) | null }
           & { __typename: 'DatasetPortType' }
         )
-        | { __typename: 'NodeEdgeType' }
+        | (
+          { id: string }
+          & { __typename: 'NodeEdgeType' }
+        )
       > }
       & { __typename: 'InputPortType' }
     )>, outputPorts: Array<(
@@ -522,7 +531,7 @@ type NodeFields_ActionNode_Fragment = (
   & { __typename: 'ActionNode' }
 );
 
-type NodeFields_Node_Fragment = (
+type EditorNodeFields_Node_Fragment = (
   { isOutcome: boolean, id: string, identifier: string, name: string, color: string | null, uuid: string | null, nodeGroup: string | null, nodeType: string, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
@@ -533,7 +542,7 @@ type NodeFields_Node_Fragment = (
     { inputPorts: Array<(
       { id: string, label: string | null, multi: boolean, bindings: Array<
         | (
-          { dataset: (
+          { id: string, dataset: (
             { id: string, identifier: string | null, name: string }
             & { __typename: 'Dataset' }
           ) | null, metric: (
@@ -542,7 +551,10 @@ type NodeFields_Node_Fragment = (
           ) | null }
           & { __typename: 'DatasetPortType' }
         )
-        | { __typename: 'NodeEdgeType' }
+        | (
+          { id: string }
+          & { __typename: 'NodeEdgeType' }
+        )
       > }
       & { __typename: 'InputPortType' }
     )>, outputPorts: Array<(
@@ -560,12 +572,12 @@ type NodeFields_Node_Fragment = (
   & { __typename: 'Node' }
 );
 
-export type NodeFieldsFragment =
-  | NodeFields_ActionNode_Fragment
-  | NodeFields_Node_Fragment
+export type EditorNodeFieldsFragment =
+  | EditorNodeFields_ActionNode_Fragment
+  | EditorNodeFields_Node_Fragment
 ;
 
-export type NodeEdgeFragment = (
+export type EditorNodeEdgeFragment = (
   { id: string, fromRef: (
     { nodeId: string, portId: string }
     & { __typename: 'NodePortRef' }
@@ -574,6 +586,70 @@ export type NodeEdgeFragment = (
     & { __typename: 'NodePortRef' }
   ) }
   & { __typename: 'NodeEdgeType' }
+);
+
+export type DatasetPortDataQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+}>;
+
+
+export type DatasetPortDataQuery = (
+  { node: (
+    { id: string, spec: (
+      { inputPorts: Array<(
+        { id: string, bindings: Array<
+          | (
+            { id: string, dataset: (
+              { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+                { repoUrl: string, commit: string | null, datasetId: string }
+                & { __typename: 'DatasetExternalRefType' }
+              ) | null, dimensions: Array<(
+                { id: string, name: string, categories: Array<(
+                  { uuid: string, identifier: string | null, label: string }
+                  & { __typename: 'DatasetDimensionCategory' }
+                )> }
+                & { __typename: 'DatasetDimension' }
+              )>, metrics: Array<(
+                { id: string, name: string | null, label: string, unit: string }
+                & { __typename: 'DatasetMetric' }
+              )> }
+              & { __typename: 'Dataset' }
+            ) | null, metric: (
+              { id: string, name: string | null, label: string }
+              & { __typename: 'DatasetMetricRefType' }
+            ) | null, data: Array<(
+              { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+                { short: string, long: string, htmlShort: string, htmlLong: string }
+                & { __typename: 'UnitType' }
+              ), dimensions: Array<(
+                { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
+                  { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+                  & { __typename: 'MetricDimensionCategoryType' }
+                )>, groups: Array<(
+                  { id: string, originalId: string, label: string, color: string | null, order: number | null }
+                  & { __typename: 'MetricDimensionCategoryGroupType' }
+                )> }
+                & { __typename: 'MetricDimensionType' }
+              )>, goals: Array<(
+                { categories: Array<string>, values: Array<(
+                  { year: number, value: number }
+                  & { __typename: 'MetricYearlyGoalType' }
+                )> }
+                & { __typename: 'DimensionalMetricGoalEntry' }
+              )> }
+              & { __typename: 'DimensionalMetricType' }
+            )> }
+            & { __typename: 'DatasetPortType' }
+          )
+          | { __typename: 'NodeEdgeType' }
+        > }
+        & { __typename: 'InputPortType' }
+      )> }
+      & { __typename: 'NodeSpecType' }
+    ) | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
 );
 
 export type NodeOutputDataQueryVariables = Exact<{
@@ -2637,11 +2713,7 @@ export type ScenarioFragment = (
   & { __typename: 'ScenarioType' }
 );
 
-export type InstanceContextQueryVariables = Exact<{
-  identifier: Scalars['ID']['input'];
-  hostname: Scalars['String']['input'];
-  locale: Scalars['String']['input'];
-}>;
+export type InstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type InstanceContextQuery = (

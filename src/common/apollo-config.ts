@@ -204,8 +204,6 @@ const headersMiddleware = (opts: ApolloClientOpts) =>
 
 async function apolloFetch(url: RequestInfo | URL, init?: RequestInit) {
   // TODO: Sign the request headers here
-  console.log(url);
-  console.log(init);
   return await fetch(url, init);
 }
 
