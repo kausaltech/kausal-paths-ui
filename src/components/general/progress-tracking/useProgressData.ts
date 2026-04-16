@@ -9,6 +9,7 @@ import { setUniqueColors } from '@/common/colors';
 import { useSite } from '@/context/site';
 import { DimensionalMetric, type MetricCategoryValues } from '@/data/metric';
 import {
+  getBaselineScenario,
   getProgressTrackingScenario,
   metricHasBaselineScenario,
   metricHasProgressTrackingScenario,
@@ -78,11 +79,14 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
     if (!hasProgressTracking) return [];
 
     const hasBaseline = metricHasBaselineScenario(metric, site.scenarios);
+    const baselineScenario = getBaselineScenario(site.scenarios);
 
     const metrics = {
       default: defaultMetric,
       progress: new DimensionalMetric(metric, 'progress_tracking'),
-      ...(hasBaseline ? { baseline: new DimensionalMetric(metric, 'baseline') } : {}),
+      ...(hasBaseline && baselineScenario
+        ? { baseline: new DimensionalMetric(metric, baselineScenario?.id) }
+        : {}),
     };
 
     const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
