@@ -1,15 +1,15 @@
-import React from 'react';
-
-import styled from '@common/themes/styled';
-import { readableColor } from 'polished';
-import PropTypes from 'prop-types';
+import { darken, readableColor } from 'polished';
 import { Badge as BSSBadge } from 'reactstrap';
 
-const StyledBadge = styled(BSSBadge)`
-  background-color: ${(props) => props.theme[props.color]} !important;
+import styled from '@common/themes/styled';
+
+type BadgeColor = 'neutralLight' | 'neutralDark' | 'brandLight' | 'brandDark';
+
+const StyledBadge = styled(BSSBadge)<{ $color: BadgeColor; $isLink: boolean }>`
+  background-color: ${(props) => props.theme[props.$color]} !important;
   color: ${(props) =>
     readableColor(
-      props.theme[props.color],
+      props.theme[props.$color],
       props.theme.themeColors.black,
       props.theme.themeColors.white
     )};
@@ -25,7 +25,7 @@ const StyledBadge = styled(BSSBadge)`
 
   &:hover {
     background-color: ${(props) =>
-      props.isLink && darken(0.05, props.theme[props.color])} !important;
+      props.$isLink && darken(0.05, props.theme[props.$color])} !important;
   }
 
   &.lg {
@@ -39,11 +39,18 @@ const StyledBadge = styled(BSSBadge)`
   }
 `;
 
-const Badge = (props) => {
+type BadgeProps = {
+  children?: React.ReactNode;
+  size?: string;
+  color: 'neutralLight' | 'neutralDark' | 'brandLight' | 'brandDark';
+  isLink?: boolean;
+};
+
+const Badge = (props: BadgeProps) => {
   const { children, size, color, isLink } = props;
 
   return (
-    <StyledBadge className={size} color={color} isLink={isLink}>
+    <StyledBadge className={size} $color={color} $isLink={isLink ?? false}>
       {children}
     </StyledBadge>
   );
@@ -54,13 +61,6 @@ Badge.defaultProps = {
   size: 'sm',
   color: 'brandDark',
   isLink: false,
-};
-
-Badge.propTypes = {
-  children: PropTypes.node,
-  size: PropTypes.string,
-  color: PropTypes.string,
-  isLink: PropTypes.bool,
 };
 
 export default Badge;

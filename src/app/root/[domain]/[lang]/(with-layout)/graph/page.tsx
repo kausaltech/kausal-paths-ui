@@ -3,6 +3,7 @@
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 
+import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import CytoGraph from '@/components/CytoGraph';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -49,7 +50,7 @@ const GET_NODES = gql`
 `;
 
 export default function Graph() {
-  const { loading, error, data } = useQuery(GET_NODES);
+  const { loading, error, data } = useQuery<CytoscapeNodesQuery>(GET_NODES);
 
   if (loading || typeof window === 'undefined') {
     return <ContentLoader />;
@@ -58,7 +59,7 @@ export default function Graph() {
     return <GraphQLError error={error} />;
   }
 
-  const { nodes } = data;
+  const { nodes } = data!;
   return (
     <div>
       <CytoGraph nodes={nodes} />
