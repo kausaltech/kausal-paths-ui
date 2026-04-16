@@ -1,4 +1,4 @@
-import { ScenarioKind, type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import { type DimensionalNodeMetricFragment, ScenarioKind } from '@/common/__generated__/graphql';
 import type { SiteContextScenario, SiteContextType } from '@/context/site';
 
 type Metric = NonNullable<DimensionalNodeMetricFragment['metricDim']>;
@@ -11,6 +11,25 @@ function getScenariosFromMetric(metric: Metric) {
 
 export function getProgressTrackingScenario(scenarios: SiteContextScenario[]) {
   return scenarios.find((scenario) => scenario.kind === ScenarioKind.ProgressTracking);
+}
+
+export function getBaselineScenario(scenarios: SiteContextScenario[]) {
+  return (
+    scenarios.find((scenario) => scenario.kind === ScenarioKind.Baseline) ??
+    scenarios.find((scenario) => scenario.id === 'baseline')
+  );
+}
+
+export function metricHasBaselineScenario(metric: Metric, scenarios: SiteContextScenario[]) {
+  const baselineScenario = getBaselineScenario(scenarios);
+
+  if (!baselineScenario) {
+    return false;
+  }
+
+  const scenariosFromMetric = getScenariosFromMetric(metric);
+
+  return !!scenariosFromMetric.find((s) => s.originalId === baselineScenario.id);
 }
 
 export function metricHasProgressTrackingScenario(

@@ -7,13 +7,37 @@ import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graph
 import { activeGoalVar } from '@/common/cache';
 import { setUniqueColors } from '@/common/colors';
 import { useSite } from '@/context/site';
-import { DimensionalMetric } from '@/data/metric';
+import { DimensionalMetric, type MetricCategoryValues } from '@/data/metric';
 import {
   getProgressTrackingScenario,
+  metricHasBaselineScenario,
   metricHasProgressTrackingScenario,
 } from '@/utils/progress-tracking';
 
 export type MetricDim = NonNullable<DimensionalNodeMetricFragment['metricDim']>;
+
+type ValuesSource = Pick<MetricCategoryValues, 'historicalValues' | 'forecastValues'>;
+
+function getValueAtIndex(item: ValuesSource | null | undefined, index: number): number {
+  if (!item) {
+    return 0;
+  }
+
+  return [...item.historicalValues, ...item.forecastValues][index] ?? 0;
+}
+
+function mapCategoriesToEntries(
+  defaultCategoryValues: MetricCategoryValues[],
+  lookupCv: (categoryValue: MetricCategoryValues) => ValuesSource | undefined,
+  index: number
+) {
+  return defaultCategoryValues.map((categoryValue) => ({
+    id: categoryValue.category.originalId!,
+    color: categoryValue.color || '',
+    label: categoryValue.category.label,
+    value: getValueAtIndex(lookupCv(categoryValue), index),
+  }));
+}
 
 export type ProgressData = {
   year: number;
@@ -27,6 +51,13 @@ export type ProgressData = {
   }[];
   totalObserved: number | null;
   observed: {
+    id: string;
+    color: string;
+    label: string;
+    value: number;
+  }[];
+  totalBaseline: number | null;
+  baseline: {
     id: string;
     color: string;
     label: string;
@@ -46,9 +77,12 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
 
     if (!hasProgressTracking) return [];
 
+    const hasBaseline = metricHasBaselineScenario(metric, site.scenarios);
+
     const metrics = {
       default: defaultMetric,
       progress: new DimensionalMetric(metric, 'progress_tracking'),
+      ...(hasBaseline ? { baseline: new DimensionalMetric(metric, 'baseline') } : {}),
     };
 
     const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
@@ -64,6 +98,10 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
       defaultConfig.categories
     );
 
+    const baselineSlice = hasBaseline
+      ? metrics.baseline!.sliceBy(defaultConfig.dimensionId!, true, defaultConfig.categories)
+      : null;
+
     /**
      * Generate colours for nodes missing colours using the same
      * logic as DimensionalNodePlot for node colour consistency.
@@ -72,18 +110,18 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
     if (defaultSlice.categoryValues.length > 1) {
       setUniqueColors(
         defaultSlice.categoryValues,
-        (cv) => cv.color,
-        (cv, color) => {
-          cv.color = color;
+        (categoryValue) => categoryValue.color,
+        (categoryValue, color) => {
+          categoryValue.color = color;
         },
         defaultColor
       );
 
       setUniqueColors(
         progressSlice.categoryValues,
-        (cv) => cv.color,
-        (cv, color) => {
-          cv.color = color;
+        (categoryValue) => categoryValue.color,
+        (categoryValue, color) => {
+          categoryValue.color = color;
         },
         defaultColor
       );
@@ -106,42 +144,34 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
         ...progressSlice.forecastYears,
       ].indexOf(year);
 
+      const findInSlice = (slice: typeof progressSlice, categoryValue: MetricCategoryValues) =>
+        slice.categoryValues.find(
+          ({ category }) => category.originalId === categoryValue.category.originalId
+        );
+
       return {
         year,
         unit: defaultSlice.unit,
-        totalExpected:
-          [
-            ...(defaultSlice.totalValues?.historicalValues ?? []),
-            ...(defaultSlice.totalValues?.forecastValues ?? []),
-          ][yearIndex] || 0,
-        expected: defaultSlice.categoryValues.map((cv) => ({
-          id: cv.category.originalId!,
-          color: cv.color || '',
-          label: cv.category.label,
-          value: [...cv.historicalValues, ...cv.forecastValues][yearIndex] || 0,
-        })),
-        totalObserved:
-          [
-            ...(progressSlice.totalValues?.historicalValues ?? []),
-            ...(progressSlice.totalValues?.forecastValues ?? []),
-          ][yearIndex] || 0,
-        observed: defaultSlice.categoryValues.map((cv) => {
-          const matchingProgressCategory = progressSlice.categoryValues.find(
-            ({ category }) => category.originalId === cv.category.originalId
-          );
-
-          return {
-            id: cv.category.originalId!,
-            color: cv.color || '',
-            label: cv.category.label,
-            value: matchingProgressCategory
-              ? [
-                  ...matchingProgressCategory.historicalValues,
-                  ...matchingProgressCategory.forecastValues,
-                ][progressIndex] || 0
-              : 0,
-          };
-        }),
+        totalExpected: getValueAtIndex(defaultSlice.totalValues, yearIndex),
+        expected: mapCategoriesToEntries(
+          defaultSlice.categoryValues,
+          (categoryValue) => categoryValue,
+          yearIndex
+        ),
+        totalObserved: getValueAtIndex(progressSlice.totalValues, yearIndex),
+        observed: mapCategoriesToEntries(
+          defaultSlice.categoryValues,
+          (categoryValue) => findInSlice(progressSlice, categoryValue),
+          progressIndex
+        ),
+        totalBaseline: baselineSlice ? getValueAtIndex(baselineSlice.totalValues, yearIndex) : null,
+        baseline: baselineSlice
+          ? mapCategoriesToEntries(
+              defaultSlice.categoryValues,
+              (categoryValue) => findInSlice(baselineSlice, categoryValue),
+              yearIndex
+            )
+          : [],
       };
     });
   }, [metric, site.scenarios, site.minYear, activeGoal, defaultColor]);

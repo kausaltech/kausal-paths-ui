@@ -21,7 +21,7 @@ import StaticPage from '@/components/pages/StaticPage';
 import { useSiteOrNull } from '@/context/site';
 import Error from '@/pages/_error';
 import GET_PAGE from '@/queries/getPage';
-import { getProgressTrackingScenario } from '@/utils/progress-tracking';
+import { getBaselineScenario, getProgressTrackingScenario } from '@/utils/progress-tracking';
 
 export type PageRefetchCallback = ObservableQuery<PageQuery>['refetch'];
 
@@ -56,7 +56,13 @@ function Page(props: PageProps) {
 
   const site = useSiteOrNull();
   const scenarios =
-    site && !!getProgressTrackingScenario(site.scenarios) ? ['default', 'progress_tracking'] : null;
+    site && !!getProgressTrackingScenario(site.scenarios)
+      ? [
+          'default',
+          'progress_tracking',
+          ...(getBaselineScenario(site.scenarios) ? ['baseline'] : []),
+        ]
+      : null;
   const activeGoal = useReactiveVar(activeGoalVar);
   const queryResp = useQuery<PageQuery, PageQueryVariables>(GET_PAGE, {
     variables: {
