@@ -4,6 +4,9 @@ import type { ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { AppBar, Box, Tab, Tabs, Toolbar, Typography } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const editorTheme = createTheme();
 
 type Props = {
   children: ReactNode;
@@ -49,27 +52,29 @@ export default function ModelEditorLayout({ children }: Props) {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh', width: '100%' }}>
-      <AppBar position="static" color="default" elevation={1}>
-        <Toolbar variant="dense" sx={{ gap: 2, minHeight: 48 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-            Model editor
-          </Typography>
-          <Tabs
-            value={activeIndex}
-            onChange={(_, idx: number) => {
-              const tab = TABS[idx];
-              if (tab) router.push(base + tab.href);
-            }}
-            sx={{ minHeight: 48 }}
-          >
-            {TABS.map((t) => (
-              <Tab key={t.label} label={t.label} sx={{ minHeight: 48 }} />
-            ))}
-          </Tabs>
-        </Toolbar>
-      </AppBar>
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>{children}</Box>
-    </Box>
+    <ThemeProvider theme={editorTheme}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh', width: '100%' }}>
+        <AppBar position="static" color="default" elevation={1}>
+          <Toolbar variant="dense" sx={{ gap: 2, minHeight: 48 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Model editor
+            </Typography>
+            <Tabs
+              value={activeIndex}
+              onChange={(_, idx: number) => {
+                const tab = TABS[idx];
+                if (tab) router.push(base + tab.href);
+              }}
+              sx={{ minHeight: 48 }}
+            >
+              {TABS.map((t) => (
+                <Tab key={t.label} label={t.label} sx={{ minHeight: 48 }} />
+              ))}
+            </Tabs>
+          </Toolbar>
+        </AppBar>
+        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>{children}</Box>
+      </Box>
+    </ThemeProvider>
   );
 }
