@@ -12,6 +12,8 @@ export const GET_IMPACT_OVERVIEWS = gql`
       costCategoryLabel
       effectCategoryLabel
       description
+      stakeholderDimension
+      outcomeDimension
       effectNode {
         id
       }

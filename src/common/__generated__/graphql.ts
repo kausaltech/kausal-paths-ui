@@ -12,8 +12,16 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
+  /**
+   * Allows use of a JSON String for input / output from the GraphQL schema.
+   *
+   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
+   * schema (one of the key benefits of GraphQL).
+   */
   JSONString: { input: string; output: string; }
+  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -510,7 +518,7 @@ export type NodePageQueryVariables = Exact<{
 export type NodePageQuery = (
   { node: (
     { id: string, name: string, shortDescription: string | null, description: string | null, color: string | null, quantity: string | null, unit: (
-      { htmlShort: string }
+      { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
       { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
@@ -1520,7 +1528,7 @@ export type ImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ImpactOverviewsQuery = (
   { impactOverviews: Array<(
-    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, effectNode: (
+    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, effectNode: (
       { id: string }
       & { __typename: 'Node' }
     ), effectUnit: (

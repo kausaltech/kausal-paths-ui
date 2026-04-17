@@ -56,6 +56,8 @@ type ActionRowProps = {
   startYear: number;
   endYear: number;
   isLoading: boolean;
+  stakeholderDimensionId: string | null | undefined;
+  outcomeDimensionId: string | null | undefined;
 };
 
 // Fixed pixel width reserved for the y-axis label column
@@ -299,10 +301,16 @@ function getStakeholderCostTypeData(
   metric: DimensionalMetric,
   startYear: number,
   endYear: number,
-  theme: Theme
+  theme: Theme,
+  stakeholderDimensionId: string | null | undefined,
+  outcomeDimensionId: string | null | undefined
 ): StakeholderCostTypeData | null {
-  const stakeholderDim = metric.dimensions.find((d) => d.originalId === 'stakeholder');
-  const costTypeDim = metric.dimensions.find((d) => d.originalId === 'cost_type');
+  const stakeholderDim = stakeholderDimensionId
+    ? metric.dimensions.find((d) => d.originalId === stakeholderDimensionId)
+    : undefined;
+  const costTypeDim = outcomeDimensionId
+    ? metric.dimensions.find((d) => d.originalId === outcomeDimensionId)
+    : undefined;
 
   if (!stakeholderDim && !costTypeDim) return null;
 
@@ -575,13 +583,16 @@ function ActionRow({
   startYear,
   endYear,
   isLoading,
+  stakeholderDimensionId,
+  outcomeDimensionId,
 }: ActionRowProps) {
   const theme = useTheme();
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const hasOutcomesOfInterest =
-    item.metric.hasDimension('stakeholder') || item.metric.hasDimension('cost_type');
+    (!!stakeholderDimensionId && item.metric.hasDimension(stakeholderDimensionId)) ||
+    (!!outcomeDimensionId && item.metric.hasDimension(outcomeDimensionId));
 
   const actionChartConfig = useMemo(
     () =>
@@ -602,8 +613,24 @@ function ActionRow({
     () =>
       !isExpanded || !hasOutcomesOfInterest
         ? null
-        : getStakeholderCostTypeData(item.metric, startYear, endYear, theme),
-    [isExpanded, hasOutcomesOfInterest, item.metric, startYear, endYear, theme]
+        : getStakeholderCostTypeData(
+            item.metric,
+            startYear,
+            endYear,
+            theme,
+            stakeholderDimensionId,
+            outcomeDimensionId
+          ),
+    [
+      isExpanded,
+      hasOutcomesOfInterest,
+      item.metric,
+      startYear,
+      endYear,
+      theme,
+      stakeholderDimensionId,
+      outcomeDimensionId,
+    ]
   );
 
   const stakeholderChartConfig = useMemo(
@@ -762,6 +789,8 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
                   startYear={startYear}
                   endYear={endYear}
                   isLoading={isLoading}
+                  stakeholderDimensionId={data?.stakeholderDimension}
+                  outcomeDimensionId={data?.outcomeDimension}
                 />
               ))}
             </Box>

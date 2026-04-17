@@ -12,8 +12,16 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date with time (isoformat) */
   DateTime: { input: any; output: any; }
+  /**
+   * Allows use of a JSON String for input / output from the GraphQL schema.
+   *
+   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
+   * schema (one of the key benefits of GraphQL).
+   */
   JSONString: { input: any; output: any; }
+  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: any; output: any; }
   RichText: { input: any; output: any; }
   UUID: { input: any; output: any; }
