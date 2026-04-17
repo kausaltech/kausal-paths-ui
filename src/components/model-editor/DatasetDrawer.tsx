@@ -4,10 +4,8 @@ import {
   Box,
   Chip,
   CircularProgress,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Divider,
+  Drawer,
   IconButton,
   Table,
   TableBody,
@@ -19,19 +17,15 @@ import {
   Typography,
 } from '@mui/material';
 
-import { Database, Link45deg, X } from 'react-bootstrap-icons';
+import { Link45deg, X } from 'react-bootstrap-icons';
 
-import { type DatasetInfo, type DatasetPortData, useDatasetData } from './useDatasetData';
+import {
+  type DatasetInfo,
+  type DatasetPortData,
+  useDatasetData,
+} from './dataset-viewer/useDatasetData';
 
-const MetricDataViewer = lazy(() => import('../metric-viewer/MetricDataViewer'));
-
-type DatasetViewerModalProps = {
-  open: boolean;
-  onClose: () => void;
-  nodeId: string;
-  /** Pre-filter to a specific dataset binding ID, or null to show all for the node */
-  bindingId: string | null;
-};
+const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 
 function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
   return (
@@ -159,40 +153,66 @@ function DatasetPortView({ port }: { port: DatasetPortData }) {
   );
 }
 
-export default function DatasetViewerModal({
-  open,
-  onClose,
-  nodeId,
-  bindingId,
-}: DatasetViewerModalProps) {
+type Props = {
+  nodeId: string | null;
+  bindingId: string | null;
+  open: boolean;
+  onClose: () => void;
+  width: number;
+  zIndex?: number;
+};
+
+export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width, zIndex }: Props) {
   const { datasetPorts, loading, error, fetch } = useDatasetData(nodeId);
 
   useEffect(() => {
-    if (open) {
-      fetch();
-    }
-  }, [open, fetch]);
+    if (open && nodeId) fetch();
+    // fetch on open and when node/binding changes while open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, nodeId, bindingId]);
 
   const filtered = bindingId ? datasetPorts.filter((p) => p.bindingId === bindingId) : datasetPorts;
+  const title = `Input dataset${filtered.length === 1 ? `: ${filtered[0].dataset.name}` : ''}`;
 
   return (
-    <Dialog
+    <Drawer
+      variant="persistent"
+      anchor="right"
       open={open}
-      onClose={onClose}
-      maxWidth="lg"
-      fullWidth
-      PaperProps={{ sx: { maxHeight: '85vh' } }}
+      slotProps={{
+        paper: {
+          sx: {
+            width,
+            maxWidth: '100vw',
+            boxShadow: 14,
+            zIndex: zIndex ?? ((theme) => theme.zIndex.drawer + 1),
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        },
+      }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 6 }}>
-        <Database size={20} />
-        {filtered.length === 1 ? filtered[0].dataset.name : 'Dataset Viewer'}
-        <Box sx={{ flex: 1 }} />
-        <IconButton onClick={onClose} sx={{ position: 'absolute', right: 8, top: 8 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1.5,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          flexShrink: 0,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600 }}>
+          {title}
+        </Typography>
+        <IconButton size="small" onClick={onClose}>
           <X size={20} />
         </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
-        {loading && (
+      </Box>
+      <Box sx={{ p: 2, flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        {loading && filtered.length === 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress />
           </Box>
@@ -219,7 +239,7 @@ export default function DatasetViewerModal({
             {idx < filtered.length - 1 && <Divider sx={{ my: 2 }} />}
           </Box>
         ))}
-      </DialogContent>
-    </Dialog>
+      </Box>
+    </Drawer>
   );
 }

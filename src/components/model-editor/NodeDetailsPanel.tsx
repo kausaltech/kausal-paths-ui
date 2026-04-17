@@ -1,9 +1,9 @@
-import { Suspense, lazy, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { Box, Button, Chip, Divider, IconButton, Typography } from '@mui/material';
+import { Box, Chip, Divider, IconButton, Typography } from '@mui/material';
 
 import { useReactFlow } from '@xyflow/react';
-import { Database, X } from 'react-bootstrap-icons';
+import { BarChartLine, Database, X } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -21,8 +21,6 @@ function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
   const kind: string = node.kind ?? '';
   return getNodeStyle(kind, nodeClass, isOutcome);
 }
-
-const DatasetViewerModal = lazy(() => import('./dataset-viewer/DatasetViewerModal'));
 
 type ConnectedNodeChipProps = {
   nodeId: string;
@@ -66,6 +64,7 @@ export type NodeDetailsPanelProps = {
   onClose: () => void;
   onSelectNode: (nodeId: string) => void;
   onShowMetrics?: () => void;
+  onShowDataset?: (bindingId: string) => void;
 };
 
 export default function NodeDetailsPanel({
@@ -75,10 +74,10 @@ export default function NodeDetailsPanel({
   onClose,
   onSelectNode,
   onShowMetrics,
+  onShowDataset,
 }: NodeDetailsPanelProps) {
   const { fitView, getNodes } = useReactFlow();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-  const [datasetModal, setDatasetModal] = useState<{ bindingId: string } | null>(null);
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
@@ -270,7 +269,7 @@ export default function NodeDetailsPanel({
                           label={`${ds.dataset.name} → ${ds.metric.label}`}
                           variant="outlined"
                           color="info"
-                          onClick={() => setDatasetModal({ bindingId: ds.id })}
+                          onClick={() => onShowDataset?.(ds.id)}
                           sx={{
                             maxWidth: '100%',
                             cursor: 'pointer',
@@ -357,20 +356,20 @@ export default function NodeDetailsPanel({
 
       <Divider sx={{ my: 1.5 }} />
 
-      <Button variant="outlined" size="small" onClick={onShowMetrics} fullWidth>
-        Show output data
-      </Button>
-
-      {datasetModal && node && (
-        <Suspense>
-          <DatasetViewerModal
-            open
-            onClose={() => setDatasetModal(null)}
-            nodeId={node.id}
-            bindingId={datasetModal.bindingId}
-          />
-        </Suspense>
-      )}
+      <Chip
+        icon={<BarChartLine size={18} />}
+        label="Output data"
+        variant="outlined"
+        color="info"
+        onClick={onShowMetrics}
+        sx={{
+          maxWidth: '100%',
+          cursor: 'pointer',
+          height: 32,
+          fontSize: 13,
+          '& .MuiChip-label': { px: 1.25 },
+        }}
+      />
     </Box>
   );
 }

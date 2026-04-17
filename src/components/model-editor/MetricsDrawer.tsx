@@ -57,7 +57,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
         }}
       >
         <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600 }}>
-          {nodeName ? `${nodeName} — output data` : 'Output data'}
+          Output data {nodeName ? `: ${nodeName}` : ''}
         </Typography>
         <IconButton size="small" onClick={onClose}>
           <X size={20} />

@@ -31,6 +31,7 @@ import type {
   EditorNodeFieldsFragment,
   NodeGraphQuery,
 } from '@/common/__generated__/graphql';
+import DatasetDrawer from './DatasetDrawer';
 import ElkNode, {
   type ElkNodeType,
   type HiddenContextRef,
@@ -178,7 +179,7 @@ const EDGE_MARKER: Edge['markerEnd'] = {
 };
 
 const DRAWER_WIDTH = 320;
-const METRICS_DRAWER_WIDTH = 600;
+const OVERLAY_DRAWER_WIDTH = 600;
 const PANEL_PEEK_WIDTH = 48;
 
 const ALL_OUTCOMES = '__all__';
@@ -353,10 +354,13 @@ function FlowEditor(props: {
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
   );
-  const [metricsOpen, setMetricsOpen] = useState(false);
+  const [overlay, setOverlay] = useState<
+    { kind: 'metrics' } | { kind: 'dataset'; bindingId: string } | null
+  >(null);
+  const overlayOpen = overlay !== null;
 
   useEffect(() => {
-    setMetricsOpen(false);
+    setOverlay(null);
   }, [selectedNodeId]);
 
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
@@ -586,15 +590,15 @@ function FlowEditor(props: {
               slotProps={{
                 paper: {
                   onClick: () => {
-                    if (metricsOpen) setMetricsOpen(false);
+                    if (overlayOpen) setOverlay(null);
                   },
                   sx: {
                     width: DRAWER_WIDTH,
                     maxWidth: 'none',
                     boxShadow: 10,
-                    cursor: metricsOpen ? 'pointer' : 'default',
-                    transform: metricsOpen
-                      ? `translateX(-${METRICS_DRAWER_WIDTH - DRAWER_WIDTH + PANEL_PEEK_WIDTH}px) !important`
+                    cursor: overlayOpen ? 'pointer' : 'default',
+                    transform: overlayOpen
+                      ? `translateX(-${OVERLAY_DRAWER_WIDTH - DRAWER_WIDTH + PANEL_PEEK_WIDTH}px) !important`
                       : undefined,
                     transition: (theme) =>
                       theme.transitions.create('transform', {
@@ -611,15 +615,23 @@ function FlowEditor(props: {
                 edges={props.edges}
                 onClose={() => setSelectedNodeId(null)}
                 onSelectNode={setSelectedNodeId}
-                onShowMetrics={() => setMetricsOpen(true)}
+                onShowMetrics={() => setOverlay({ kind: 'metrics' })}
+                onShowDataset={(bindingId) => setOverlay({ kind: 'dataset', bindingId })}
               />
             </Drawer>
             <MetricsDrawer
               nodeId={selectedNode?.id ?? null}
               nodeName={selectedNode?.name ?? null}
-              open={metricsOpen && !!selectedNode}
-              onClose={() => setMetricsOpen(false)}
-              width={METRICS_DRAWER_WIDTH}
+              open={overlay?.kind === 'metrics' && !!selectedNode}
+              onClose={() => setOverlay(null)}
+              width={OVERLAY_DRAWER_WIDTH}
+            />
+            <DatasetDrawer
+              nodeId={selectedNode?.id ?? null}
+              bindingId={overlay?.kind === 'dataset' ? overlay.bindingId : null}
+              open={overlay?.kind === 'dataset' && !!selectedNode}
+              onClose={() => setOverlay(null)}
+              width={OVERLAY_DRAWER_WIDTH}
             />
           </Box>
         </Box>
