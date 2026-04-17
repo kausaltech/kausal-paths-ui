@@ -40,6 +40,15 @@ export enum ActionSortOrder {
   Standard = 'STANDARD'
 }
 
+export type CreateDimensionCategoryInput = {
+  dimensionId: Scalars['UUID']['input'];
+  id: InputMaybe<Scalars['UUID']['input']>;
+  identifier: InputMaybe<Scalars['String']['input']>;
+  label: Scalars['String']['input'];
+  nextSibling: InputMaybe<Scalars['ID']['input']>;
+  previousSibling: InputMaybe<Scalars['ID']['input']>;
+};
+
 export type CreateInstanceInput = {
   frameworkId: Scalars['String']['input'];
   identifier: Scalars['String']['input'];
@@ -121,6 +130,19 @@ export enum ScenarioKind {
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
 }
+
+export type UpdateDimensionCategoryInput = {
+  categoryId: Scalars['UUID']['input'];
+  identifier: InputMaybe<Scalars['String']['input']>;
+  label: InputMaybe<Scalars['String']['input']>;
+  nextSibling: InputMaybe<Scalars['ID']['input']>;
+  previousSibling: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type UpdateDimensionInput = {
+  dimensionId: Scalars['UUID']['input'];
+  name: InputMaybe<Scalars['String']['input']>;
+};
 
 export enum VisualizationKind {
   Group = 'group',
@@ -792,6 +814,149 @@ export type DatasetPortDataQuery = (
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
   & { __typename: 'Query' }
+);
+
+export type InstanceDimensionFieldsFragment = (
+  { id: string, identifier: string, name: string, categories: Array<(
+    { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+    & { __typename: 'InstanceDimensionCategory' }
+  )> }
+  & { __typename: 'InstanceDimension' }
+);
+
+export type OperationInfoFieldsFragment = (
+  { messages: Array<(
+    { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+    & { __typename: 'OperationMessage' }
+  )> }
+  & { __typename: 'OperationInfo' }
+);
+
+export type InstanceDimensionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type InstanceDimensionsQuery = (
+  { instance: (
+    { id: string, identifier: string, editor: (
+      { dimensions: Array<(
+        { id: string, identifier: string, name: string, categories: Array<(
+          { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'InstanceDimensionCategory' }
+        )> }
+        & { __typename: 'InstanceDimension' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type UpdateDimensionMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: UpdateDimensionInput;
+}>;
+
+
+export type UpdateDimensionMutation = (
+  { instanceEditor: (
+    { updateDimension:
+      | (
+        { id: string, identifier: string, name: string, categories: Array<(
+          { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'InstanceDimensionCategory' }
+        )> }
+        & { __typename: 'InstanceDimension' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateDimensionCategoriesMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: Array<CreateDimensionCategoryInput>;
+}>;
+
+
+export type CreateDimensionCategoriesMutation = (
+  { instanceEditor: (
+    { createDimensionCategories:
+      | (
+        { id: string, identifier: string, name: string, categories: Array<(
+          { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'InstanceDimensionCategory' }
+        )> }
+        & { __typename: 'InstanceDimension' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateDimensionCategoriesMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: Array<UpdateDimensionCategoryInput>;
+}>;
+
+
+export type UpdateDimensionCategoriesMutation = (
+  { instanceEditor: (
+    { updateDimensionCategories:
+      | (
+        { id: string, identifier: string, name: string, categories: Array<(
+          { id: string, identifier: string | null, label: string, order: number, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'InstanceDimensionCategory' }
+        )> }
+        & { __typename: 'InstanceDimension' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteDimensionCategoryMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  categoryId: Scalars['UUID']['input'];
+}>;
+
+
+export type DeleteDimensionCategoryMutation = (
+  { instanceEditor: (
+    { deleteDimensionCategory: (
+      { messages: Array<(
+        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type NodeOutputDataQueryVariables = Exact<{
