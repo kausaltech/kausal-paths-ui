@@ -12,9 +12,18 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
+  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
+  /**
+   * Allows use of a JSON String for input / output from the GraphQL schema.
+   *
+   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
+   * schema (one of the key benefits of GraphQL).
+   */
   JSONString: { input: string; output: string; }
+  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -30,6 +39,13 @@ export enum ActionSortOrder {
   /** Standard */
   Standard = 'STANDARD'
 }
+
+export type CreateInstanceInput = {
+  frameworkId: Scalars['String']['input'];
+  identifier: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  organizationName: Scalars['String']['input'];
+};
 
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
@@ -50,11 +66,37 @@ export enum DimensionKind {
   Scenario = 'SCENARIO'
 }
 
+/** An enumeration. */
+export enum FrameworksMeasureTemplatePriorityChoices {
+  /** High */
+  High = 'HIGH',
+  /** Low */
+  Low = 'LOW',
+  /** Medium */
+  Medium = 'MEDIUM'
+}
+
+/** An enumeration. */
+export enum ModelAction {
+  Add = 'ADD',
+  Change = 'CHANGE',
+  Delete = 'DELETE',
+  View = 'VIEW'
+}
+
 export enum NodeKind {
   Action = 'ACTION',
   Formula = 'FORMULA',
   Pipeline = 'PIPELINE',
   Simple = 'SIMPLE'
+}
+
+export enum OperationMessageKind {
+  Error = 'ERROR',
+  Info = 'INFO',
+  Permission = 'PERMISSION',
+  Validation = 'VALIDATION',
+  Warning = 'WARNING'
 }
 
 export enum PrimaryLayoutClass {
@@ -64,6 +106,14 @@ export enum PrimaryLayoutClass {
   GhostableContextSource = 'GHOSTABLE_CONTEXT_SOURCE',
   Outcome = 'OUTCOME'
 }
+
+export type RegisterUserInput = {
+  email: Scalars['String']['input'];
+  firstName: InputMaybe<Scalars['String']['input']>;
+  frameworkId: Scalars['String']['input'];
+  lastName: InputMaybe<Scalars['String']['input']>;
+  password: Scalars['String']['input'];
+};
 
 export enum ScenarioKind {
   Baseline = 'BASELINE',
@@ -186,13 +236,57 @@ export type NodePageQuery = (
   & { __typename: 'Query' }
 );
 
+export type CreateInstanceMutationVariables = Exact<{
+  input: CreateInstanceInput;
+}>;
+
+
+export type CreateInstanceMutation = (
+  { createInstance:
+    | (
+      { instanceId: string, instanceName: string }
+      & { __typename: 'CreateInstanceResult' }
+    )
+    | (
+      { messages: Array<(
+        { kind: OperationMessageKind, message: string, field: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    )
+   }
+  & { __typename: 'Mutation' }
+);
+
+export type RegisterUserMutationVariables = Exact<{
+  input: RegisterUserInput;
+}>;
+
+
+export type RegisterUserMutation = (
+  { registerUser:
+    | (
+      { messages: Array<(
+        { kind: OperationMessageKind, message: string, field: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    )
+    | (
+      { userId: string, email: string }
+      & { __typename: 'RegisterUserResult' }
+    )
+   }
+  & { __typename: 'Mutation' }
+);
+
 export type ModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ModelNodesQuery = (
   { nodes: Array<
     | (
-      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, nodeType: string, parentAction: (
+      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, parentAction: (
         { id: string }
         & { __typename: 'ActionNode' }
       ) | null, subactions: Array<(
@@ -220,7 +314,7 @@ export type ModelNodesQuery = (
       & { __typename: 'ActionNode' }
     )
     | (
-      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, nodeType: string, unit: (
+      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, unit: (
         { id: string, htmlShort: string }
         & { __typename: 'UnitType' }
       ) | null, inputNodes: Array<(
@@ -260,6 +354,20 @@ type StreamField_CardListBlock_Fragment = (
   & { __typename: 'CardListBlock' }
 );
 
+type StreamField_FrameworkLandingBlock_Fragment = (
+  { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
+    { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
+      { id: string, organizationName: string | null, viewUrl: string | null, instance: (
+        { id: string, name: string }
+        & { __typename: 'InstanceType' }
+      ) | null }
+      & { __typename: 'FrameworkConfig' }
+    )> }
+    & { __typename: 'Framework' }
+  ) | null }
+  & { __typename: 'FrameworkLandingBlock' }
+);
+
 type StreamField_RichTextBlock_Fragment = (
   { value: string, rawValue: string, id: string | null, blockType: string, field: string }
   & { __typename: 'RichTextBlock' }
@@ -274,6 +382,7 @@ export type StreamFieldFragment =
   | StreamField_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment
   | StreamField_KCyuF1ERfSDjEhFkBiZv2Jg0yNyFm47M1qS2aebiI_Fragment
   | StreamField_CardListBlock_Fragment
+  | StreamField_FrameworkLandingBlock_Fragment
   | StreamField_RichTextBlock_Fragment
   | StreamField_TextBlock_Fragment
 ;
@@ -286,7 +395,10 @@ export type NodeDetailsQueryVariables = Exact<{
 
 export type NodeDetailsQuery = (
   { node: (
-    { id: string, nodeType: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, tags: Array<string> | null, color: string | null, quantity: string | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, unit: (
+    { id: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, color: string | null, quantity: string | null, editor: (
+      { nodeType: string, tags: Array<string> | null }
+      & { __typename: 'NodeEditor' }
+    ) | null, unit: (
       { id: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, inputNodes: Array<(
@@ -388,99 +500,114 @@ export type NodeGraphQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type NodeGraphQuery = (
   { instance: (
-    { id: string, identifier: string, graphLayout: (
-      { coreNodeIds: Array<string>, ghostableContextSourceIds: Array<string>, hubIds: Array<string>, actionIds: Array<string>, outcomeIds: Array<string>, mainGraphNodeIds: Array<string>, thresholds: (
-        { hubDegree: number, ghostableOutDegree: number, ghostableTotalDegree: number, ghostableAvgOutgoingSpan: number }
-        & { __typename: 'GraphLayoutThresholds' }
-      ) }
-      & { __typename: 'GraphLayout' }
-    ), edges: Array<(
-      { id: string, fromRef: (
-        { nodeId: string, portId: string }
-        & { __typename: 'NodePortRef' }
-      ), toRef: (
-        { nodeId: string, portId: string }
-        & { __typename: 'NodePortRef' }
-      ) }
-      & { __typename: 'NodeEdgeType' }
-    )>, nodes: Array<
+    { id: string, identifier: string, editor: (
+      { graphLayout: (
+        { coreNodeIds: Array<string>, ghostableContextSourceIds: Array<string>, hubIds: Array<string>, actionIds: Array<string>, outcomeIds: Array<string>, mainGraphNodeIds: Array<string>, thresholds: (
+          { hubDegree: number, ghostableOutDegree: number, ghostableTotalDegree: number, ghostableAvgOutgoingSpan: number }
+          & { __typename: 'GraphLayoutThresholds' }
+        ) }
+        & { __typename: 'GraphLayout' }
+      ), edges: Array<(
+        { id: string, fromRef: (
+          { nodeId: string, portId: string }
+          & { __typename: 'NodePortRef' }
+        ), toRef: (
+          { nodeId: string, portId: string }
+          & { __typename: 'NodePortRef' }
+        ) }
+        & { __typename: 'NodeEdgeType' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null, nodes: Array<
       | (
-        { id: string, identifier: string, name: string, color: string | null, uuid: string | null, nodeGroup: string | null, nodeType: string, kind: NodeKind | null, quantityKind: (
+        { id: string, identifier: string, name: string, color: string | null, uuid: string | null, kind: NodeKind | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
-        ) | null, layoutMeta: (
-          { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
-          & { __typename: 'NodeGraphLayoutMeta' }
-        ), spec: (
-          { inputPorts: Array<(
-            { id: string, label: string | null, multi: boolean, bindings: Array<
+        ) | null, editor: (
+          { nodeGroup: string | null, nodeType: string, layoutMeta: (
+            { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
+            & { __typename: 'NodeGraphLayoutMeta' }
+          ), spec: (
+            { inputPorts: Array<(
+              { id: string, label: string | null, multi: boolean, bindings: Array<
+                | (
+                  { id: string, dataset: (
+                    { id: string, identifier: string | null, name: string }
+                    & { __typename: 'Dataset' }
+                  ) | null, metric: (
+                    { id: string, label: string }
+                    & { __typename: 'DatasetMetricRefType' }
+                  ) | null }
+                  & { __typename: 'DatasetPortType' }
+                )
+                | (
+                  { id: string }
+                  & { __typename: 'NodeEdgeType' }
+                )
+              > }
+              & { __typename: 'InputPortType' }
+            )>, outputPorts: Array<(
+              { id: string, label: string | null, quantity: string | null, unit: (
+                { id: string, short: string }
+                & { __typename: 'UnitType' }
+              ) }
+              & { __typename: 'OutputPortType' }
+            )>, typeConfig:
               | (
-                { id: string, dataset: (
-                  { id: string, identifier: string | null, name: string }
-                  & { __typename: 'Dataset' }
-                ) | null, metric: (
-                  { id: string, label: string }
-                  & { __typename: 'DatasetMetricRefType' }
-                ) | null }
-                & { __typename: 'DatasetPortType' }
+                { nodeClass: string }
+                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
               )
-              | (
-                { id: string }
-                & { __typename: 'NodeEdgeType' }
-              )
-            > }
-            & { __typename: 'InputPortType' }
-          )>, outputPorts: Array<(
-            { id: string, label: string | null }
-            & { __typename: 'OutputPortType' }
-          )>, typeConfig:
-            | (
-              { nodeClass: string }
-              & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
-            )
-            | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
-           }
-          & { __typename: 'NodeSpecType' }
+              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+             }
+            & { __typename: 'NodeSpecType' }
+          ) | null }
+          & { __typename: 'NodeEditor' }
         ) | null }
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, isOutcome: boolean, identifier: string, name: string, color: string | null, uuid: string | null, nodeGroup: string | null, nodeType: string, kind: NodeKind | null, quantityKind: (
+        { id: string, isOutcome: boolean, identifier: string, name: string, color: string | null, uuid: string | null, kind: NodeKind | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
-        ) | null, layoutMeta: (
-          { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
-          & { __typename: 'NodeGraphLayoutMeta' }
-        ), spec: (
-          { inputPorts: Array<(
-            { id: string, label: string | null, multi: boolean, bindings: Array<
+        ) | null, editor: (
+          { nodeGroup: string | null, nodeType: string, layoutMeta: (
+            { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
+            & { __typename: 'NodeGraphLayoutMeta' }
+          ), spec: (
+            { inputPorts: Array<(
+              { id: string, label: string | null, multi: boolean, bindings: Array<
+                | (
+                  { id: string, dataset: (
+                    { id: string, identifier: string | null, name: string }
+                    & { __typename: 'Dataset' }
+                  ) | null, metric: (
+                    { id: string, label: string }
+                    & { __typename: 'DatasetMetricRefType' }
+                  ) | null }
+                  & { __typename: 'DatasetPortType' }
+                )
+                | (
+                  { id: string }
+                  & { __typename: 'NodeEdgeType' }
+                )
+              > }
+              & { __typename: 'InputPortType' }
+            )>, outputPorts: Array<(
+              { id: string, label: string | null, quantity: string | null, unit: (
+                { id: string, short: string }
+                & { __typename: 'UnitType' }
+              ) }
+              & { __typename: 'OutputPortType' }
+            )>, typeConfig:
               | (
-                { id: string, dataset: (
-                  { id: string, identifier: string | null, name: string }
-                  & { __typename: 'Dataset' }
-                ) | null, metric: (
-                  { id: string, label: string }
-                  & { __typename: 'DatasetMetricRefType' }
-                ) | null }
-                & { __typename: 'DatasetPortType' }
+                { nodeClass: string }
+                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
               )
-              | (
-                { id: string }
-                & { __typename: 'NodeEdgeType' }
-              )
-            > }
-            & { __typename: 'InputPortType' }
-          )>, outputPorts: Array<(
-            { id: string, label: string | null }
-            & { __typename: 'OutputPortType' }
-          )>, typeConfig:
-            | (
-              { nodeClass: string }
-              & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
-            )
-            | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
-           }
-          & { __typename: 'NodeSpecType' }
+              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+             }
+            & { __typename: 'NodeSpecType' }
+          ) | null }
+          & { __typename: 'NodeEditor' }
         ) | null }
         & { __typename: 'Node' }
       )
@@ -491,83 +618,95 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { id: string, identifier: string, name: string, color: string | null, uuid: string | null, nodeGroup: string | null, nodeType: string, kind: NodeKind | null, quantityKind: (
+  { id: string, identifier: string, name: string, color: string | null, uuid: string | null, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
-  ) | null, layoutMeta: (
-    { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
-    & { __typename: 'NodeGraphLayoutMeta' }
-  ), spec: (
-    { inputPorts: Array<(
-      { id: string, label: string | null, multi: boolean, bindings: Array<
+  ) | null, editor: (
+    { nodeGroup: string | null, nodeType: string, layoutMeta: (
+      { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
+      & { __typename: 'NodeGraphLayoutMeta' }
+    ), spec: (
+      { inputPorts: Array<(
+        { id: string, label: string | null, multi: boolean, bindings: Array<
+          | (
+            { id: string, dataset: (
+              { id: string, identifier: string | null, name: string }
+              & { __typename: 'Dataset' }
+            ) | null, metric: (
+              { id: string, label: string }
+              & { __typename: 'DatasetMetricRefType' }
+            ) | null }
+            & { __typename: 'DatasetPortType' }
+          )
+          | (
+            { id: string }
+            & { __typename: 'NodeEdgeType' }
+          )
+        > }
+        & { __typename: 'InputPortType' }
+      )>, outputPorts: Array<(
+        { id: string, label: string | null, quantity: string | null, unit: (
+          { id: string, short: string }
+          & { __typename: 'UnitType' }
+        ) }
+        & { __typename: 'OutputPortType' }
+      )>, typeConfig:
         | (
-          { id: string, dataset: (
-            { id: string, identifier: string | null, name: string }
-            & { __typename: 'Dataset' }
-          ) | null, metric: (
-            { id: string, label: string }
-            & { __typename: 'DatasetMetricRefType' }
-          ) | null }
-          & { __typename: 'DatasetPortType' }
+          { nodeClass: string }
+          & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
         )
-        | (
-          { id: string }
-          & { __typename: 'NodeEdgeType' }
-        )
-      > }
-      & { __typename: 'InputPortType' }
-    )>, outputPorts: Array<(
-      { id: string, label: string | null }
-      & { __typename: 'OutputPortType' }
-    )>, typeConfig:
-      | (
-        { nodeClass: string }
-        & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
-      )
-      | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
-     }
-    & { __typename: 'NodeSpecType' }
+        | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+       }
+      & { __typename: 'NodeSpecType' }
+    ) | null }
+    & { __typename: 'NodeEditor' }
   ) | null }
   & { __typename: 'ActionNode' }
 );
 
 type EditorNodeFields_Node_Fragment = (
-  { isOutcome: boolean, id: string, identifier: string, name: string, color: string | null, uuid: string | null, nodeGroup: string | null, nodeType: string, kind: NodeKind | null, quantityKind: (
+  { isOutcome: boolean, id: string, identifier: string, name: string, color: string | null, uuid: string | null, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
-  ) | null, layoutMeta: (
-    { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
-    & { __typename: 'NodeGraphLayoutMeta' }
-  ), spec: (
-    { inputPorts: Array<(
-      { id: string, label: string | null, multi: boolean, bindings: Array<
+  ) | null, editor: (
+    { nodeGroup: string | null, nodeType: string, layoutMeta: (
+      { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
+      & { __typename: 'NodeGraphLayoutMeta' }
+    ), spec: (
+      { inputPorts: Array<(
+        { id: string, label: string | null, multi: boolean, bindings: Array<
+          | (
+            { id: string, dataset: (
+              { id: string, identifier: string | null, name: string }
+              & { __typename: 'Dataset' }
+            ) | null, metric: (
+              { id: string, label: string }
+              & { __typename: 'DatasetMetricRefType' }
+            ) | null }
+            & { __typename: 'DatasetPortType' }
+          )
+          | (
+            { id: string }
+            & { __typename: 'NodeEdgeType' }
+          )
+        > }
+        & { __typename: 'InputPortType' }
+      )>, outputPorts: Array<(
+        { id: string, label: string | null, quantity: string | null, unit: (
+          { id: string, short: string }
+          & { __typename: 'UnitType' }
+        ) }
+        & { __typename: 'OutputPortType' }
+      )>, typeConfig:
         | (
-          { id: string, dataset: (
-            { id: string, identifier: string | null, name: string }
-            & { __typename: 'Dataset' }
-          ) | null, metric: (
-            { id: string, label: string }
-            & { __typename: 'DatasetMetricRefType' }
-          ) | null }
-          & { __typename: 'DatasetPortType' }
+          { nodeClass: string }
+          & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
         )
-        | (
-          { id: string }
-          & { __typename: 'NodeEdgeType' }
-        )
-      > }
-      & { __typename: 'InputPortType' }
-    )>, outputPorts: Array<(
-      { id: string, label: string | null }
-      & { __typename: 'OutputPortType' }
-    )>, typeConfig:
-      | (
-        { nodeClass: string }
-        & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
-      )
-      | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
-     }
-    & { __typename: 'NodeSpecType' }
+        | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+       }
+      & { __typename: 'NodeSpecType' }
+    ) | null }
+    & { __typename: 'NodeEditor' }
   ) | null }
   & { __typename: 'Node' }
 );
@@ -595,57 +734,60 @@ export type DatasetPortDataQueryVariables = Exact<{
 
 export type DatasetPortDataQuery = (
   { node: (
-    { id: string, spec: (
-      { inputPorts: Array<(
-        { id: string, bindings: Array<
-          | (
-            { id: string, dataset: (
-              { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
-                { repoUrl: string, commit: string | null, datasetId: string }
-                & { __typename: 'DatasetExternalRefType' }
-              ) | null, dimensions: Array<(
-                { id: string, name: string, categories: Array<(
-                  { uuid: string, identifier: string | null, label: string }
-                  & { __typename: 'DatasetDimensionCategory' }
+    { id: string, editor: (
+      { spec: (
+        { inputPorts: Array<(
+          { id: string, bindings: Array<
+            | (
+              { id: string, dataset: (
+                { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+                  { repoUrl: string, commit: string | null, datasetId: string }
+                  & { __typename: 'DatasetExternalRefType' }
+                ) | null, dimensions: Array<(
+                  { id: string, name: string, categories: Array<(
+                    { uuid: string, identifier: string | null, label: string }
+                    & { __typename: 'DatasetDimensionCategory' }
+                  )> }
+                  & { __typename: 'DatasetDimension' }
+                )>, metrics: Array<(
+                  { id: string, name: string | null, label: string, unit: string }
+                  & { __typename: 'DatasetMetric' }
                 )> }
-                & { __typename: 'DatasetDimension' }
-              )>, metrics: Array<(
-                { id: string, name: string | null, label: string, unit: string }
-                & { __typename: 'DatasetMetric' }
+                & { __typename: 'Dataset' }
+              ) | null, metric: (
+                { id: string, name: string | null, label: string }
+                & { __typename: 'DatasetMetricRefType' }
+              ) | null, data: Array<(
+                { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+                  { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+                  & { __typename: 'UnitType' }
+                ), dimensions: Array<(
+                  { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
+                    { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+                    & { __typename: 'MetricDimensionCategoryType' }
+                  )>, groups: Array<(
+                    { id: string, originalId: string, label: string, color: string | null, order: number | null }
+                    & { __typename: 'MetricDimensionCategoryGroupType' }
+                  )> }
+                  & { __typename: 'MetricDimensionType' }
+                )>, goals: Array<(
+                  { categories: Array<string>, values: Array<(
+                    { year: number, value: number }
+                    & { __typename: 'MetricYearlyGoalType' }
+                  )> }
+                  & { __typename: 'DimensionalMetricGoalEntry' }
+                )> }
+                & { __typename: 'DimensionalMetricType' }
               )> }
-              & { __typename: 'Dataset' }
-            ) | null, metric: (
-              { id: string, name: string | null, label: string }
-              & { __typename: 'DatasetMetricRefType' }
-            ) | null, data: Array<(
-              { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
-                { short: string, long: string, htmlShort: string, htmlLong: string }
-                & { __typename: 'UnitType' }
-              ), dimensions: Array<(
-                { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
-                  { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
-                  & { __typename: 'MetricDimensionCategoryType' }
-                )>, groups: Array<(
-                  { id: string, originalId: string, label: string, color: string | null, order: number | null }
-                  & { __typename: 'MetricDimensionCategoryGroupType' }
-                )> }
-                & { __typename: 'MetricDimensionType' }
-              )>, goals: Array<(
-                { categories: Array<string>, values: Array<(
-                  { year: number, value: number }
-                  & { __typename: 'MetricYearlyGoalType' }
-                )> }
-                & { __typename: 'DimensionalMetricGoalEntry' }
-              )> }
-              & { __typename: 'DimensionalMetricType' }
-            )> }
-            & { __typename: 'DatasetPortType' }
-          )
-          | { __typename: 'NodeEdgeType' }
-        > }
-        & { __typename: 'InputPortType' }
-      )> }
-      & { __typename: 'NodeSpecType' }
+              & { __typename: 'DatasetPortType' }
+            )
+            | { __typename: 'NodeEdgeType' }
+          > }
+          & { __typename: 'InputPortType' }
+        )> }
+        & { __typename: 'NodeSpecType' }
+      ) | null }
+      & { __typename: 'NodeEditor' }
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
@@ -659,36 +801,39 @@ export type NodeOutputDataQueryVariables = Exact<{
 
 export type NodeOutputDataQuery = (
   { node: (
-    { id: string, name: string, spec: (
-      { outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, unit: (
-          { short: string, long: string, htmlShort: string, htmlLong: string }
-          & { __typename: 'UnitType' }
-        ), output: (
-          { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
-            { short: string, long: string, htmlShort: string, htmlLong: string }
+    { id: string, name: string, editor: (
+      { spec: (
+        { outputPorts: Array<(
+          { id: string, label: string | null, quantity: string | null, unit: (
+            { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
             & { __typename: 'UnitType' }
-          ), dimensions: Array<(
-            { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
-              { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
-              & { __typename: 'MetricDimensionCategoryType' }
-            )>, groups: Array<(
-              { id: string, originalId: string, label: string, color: string | null, order: number | null }
-              & { __typename: 'MetricDimensionCategoryGroupType' }
+          ), output: (
+            { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+              { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+              & { __typename: 'UnitType' }
+            ), dimensions: Array<(
+              { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
+                { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+                & { __typename: 'MetricDimensionCategoryType' }
+              )>, groups: Array<(
+                { id: string, originalId: string, label: string, color: string | null, order: number | null }
+                & { __typename: 'MetricDimensionCategoryGroupType' }
+              )> }
+              & { __typename: 'MetricDimensionType' }
+            )>, goals: Array<(
+              { categories: Array<string>, values: Array<(
+                { year: number, value: number }
+                & { __typename: 'MetricYearlyGoalType' }
+              )> }
+              & { __typename: 'DimensionalMetricGoalEntry' }
             )> }
-            & { __typename: 'MetricDimensionType' }
-          )>, goals: Array<(
-            { categories: Array<string>, values: Array<(
-              { year: number, value: number }
-              & { __typename: 'MetricYearlyGoalType' }
-            )> }
-            & { __typename: 'DimensionalMetricGoalEntry' }
-          )> }
-          & { __typename: 'DimensionalMetricType' }
-        ) | null }
-        & { __typename: 'OutputPortType' }
-      )> }
-      & { __typename: 'NodeSpecType' }
+            & { __typename: 'DimensionalMetricType' }
+          ) | null }
+          & { __typename: 'OutputPortType' }
+        )> }
+        & { __typename: 'NodeSpecType' }
+      ) | null }
+      & { __typename: 'NodeEditor' }
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
@@ -713,7 +858,7 @@ export type ModelEditorMetricDimensionFieldsFragment = (
 
 export type ModelEditorDimensionalMetricFieldsFragment = (
   { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
-    { short: string, long: string, htmlShort: string, htmlLong: string }
+    { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
     & { __typename: 'UnitType' }
   ), dimensions: Array<(
     { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
@@ -1602,6 +1747,19 @@ export type ActionContentQuery = (
         & { __typename: 'CardListBlock' }
       )
       | (
+        { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
+          { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
+            { id: string, organizationName: string | null, viewUrl: string | null, instance: (
+              { id: string, name: string }
+              & { __typename: 'InstanceType' }
+            ) | null }
+            & { __typename: 'FrameworkConfig' }
+          )> }
+          & { __typename: 'Framework' }
+        ) | null }
+        & { __typename: 'FrameworkLandingBlock' }
+      )
+      | (
         { value: string, rawValue: string, id: string | null, blockType: string, field: string }
         & { __typename: 'RichTextBlock' }
       )
@@ -2381,11 +2539,11 @@ export type DashboardCardVisualizationsFragment = (
     )
     | (
       { id: string | null }
-      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' }
+      & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'FrameworkLandingBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' }
     )
     | (
       { id: string | null }
-      & { __typename: 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'RawHTMLBlock' | 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
     )
     | (
       { title: string, dimensionId: string, id: string | null }
@@ -2426,11 +2584,11 @@ export type DashboardPageFieldsFragment = (
   { id: string | null, backgroundColor: string | null, introTitle: string | null, introParagraph: string | null, dashboardCards: Array<
     | (
       { id: string | null }
-      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
+      & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'FrameworkLandingBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' }
     )
     | (
       { id: string | null }
-      & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+      & { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
     )
     | (
       { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: (
@@ -2485,11 +2643,11 @@ export type DashboardPageFieldsFragment = (
         )
         | (
           { id: string | null }
-          & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' }
+          & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'FrameworkLandingBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' }
         )
         | (
           { id: string | null }
-          & { __typename: 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+          & { __typename: 'RawHTMLBlock' | 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
         )
         | (
           { title: string, dimensionId: string, id: string | null }
@@ -2528,11 +2686,11 @@ export type PageQuery = (
       { id: string | null, title: string, backgroundColor: string | null, introTitle: string | null, introParagraph: string | null, dashboardCards: Array<
         | (
           { id: string | null }
-          & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
+          & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'FrameworkLandingBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' }
         )
         | (
           { id: string | null }
-          & { __typename: 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+          & { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'RichTextBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
         )
         | (
           { title: string, description: string, referenceYearValue: number | null, lastHistoricalYearValue: number | null, id: string | null, image: (
@@ -2587,11 +2745,11 @@ export type PageQuery = (
             )
             | (
               { id: string | null }
-              & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' }
+              & { __typename: 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CharBlock' | 'ChoiceBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'FrameworkLandingBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' }
             )
             | (
               { id: string | null }
-              & { __typename: 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+              & { __typename: 'RawHTMLBlock' | 'RegexBlock' | 'RichTextBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
             )
             | (
               { title: string, dimensionId: string, id: string | null }
@@ -2612,17 +2770,6 @@ export type PageQuery = (
       & { __typename: 'DashboardPage' }
     )
     | (
-      { id: string | null, title: string }
-      & { __typename: 'InstanceRootPage' | 'Page' }
-    )
-    | (
-      { leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: (
-        { id: string }
-        & { __typename: 'Node' }
-      ) }
-      & { __typename: 'OutcomePage' }
-    )
-    | (
       { id: string | null, title: string, body: Array<
         | (
           { id: string | null, blockType: string, field: string }
@@ -2640,6 +2787,19 @@ export type PageQuery = (
           & { __typename: 'CardListBlock' }
         )
         | (
+          { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
+            { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
+              { id: string, organizationName: string | null, viewUrl: string | null, instance: (
+                { id: string, name: string }
+                & { __typename: 'InstanceType' }
+              ) | null }
+              & { __typename: 'FrameworkConfig' }
+            )> }
+            & { __typename: 'Framework' }
+          ) | null }
+          & { __typename: 'FrameworkLandingBlock' }
+        )
+        | (
           { value: string, rawValue: string, id: string | null, blockType: string, field: string }
           & { __typename: 'RichTextBlock' }
         )
@@ -2648,7 +2808,18 @@ export type PageQuery = (
           & { __typename: 'TextBlock' }
         )
        | null> | null }
-      & { __typename: 'StaticPage' }
+      & { __typename: 'InstanceRootPage' | 'StaticPage' }
+    )
+    | (
+      { leadTitle: string, leadParagraph: string, id: string | null, title: string, outcomeNode: (
+        { id: string }
+        & { __typename: 'Node' }
+      ) }
+      & { __typename: 'OutcomePage' }
+    )
+    | (
+      { id: string | null, title: string }
+      & { __typename: 'Page' }
     )
    | null }
   & { __typename: 'Query' }
@@ -2724,11 +2895,11 @@ export type InstanceContextQuery = (
     ), introContent: Array<
       | (
         { id: string | null }
-        & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' }
+        & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CardListBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'FrameworkLandingBlock' | 'GoalProgressBarBlock' | 'ImageBlock' }
       )
       | (
         { id: string | null }
-        & { __typename: 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
+        & { __typename: 'ImageChooserBlock' | 'IntegerBlock' | 'ListBlock' | 'PageChooserBlock' | 'RawHTMLBlock' | 'ReferenceProgressBarBlock' | 'RegexBlock' | 'ScenarioProgressBarBlock' | 'SnippetChooserBlock' | 'StaticBlock' | 'StreamBlock' | 'StreamFieldBlock' | 'StructBlock' | 'TextBlock' | 'TimeBlock' | 'URLBlock' }
       )
       | (
         { field: string, value: string, id: string | null }

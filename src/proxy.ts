@@ -245,7 +245,7 @@ async function proxy(req: NextRequest) {
   if (!shouldAddInstanceHeaders(match.parts)) {
     return NextResponse.next(reqInit);
   }
-  if (instance?.isProtected && !path.endsWith('/auth/sign-in')) {
+  if (instance?.isProtected && !match.path.startsWith('/auth/')) {
     const sessionCookie = getSessionCookie(req);
     if (!sessionCookie) {
       return NextResponse.redirect(new URL('/auth/sign-in', req.url));

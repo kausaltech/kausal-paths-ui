@@ -1,7 +1,6 @@
 import { gql } from '@apollo/client';
 
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
-
 import { UNIT_FRAGMENT } from './fragments';
 
 const DASHBOARD_PAGE_FRAGMENT = gql`
@@ -180,6 +179,11 @@ const GET_PAGE = gql`
         defaultSortOrder
       }
       ... on StaticPage {
+        body {
+          ...StreamField
+        }
+      }
+      ... on InstanceRootPage {
         body {
           ...StreamField
         }

@@ -8,6 +8,10 @@
       "NodeEdgeType",
       "OperationInfo"
     ],
+    "CreateInstancePayload": [
+      "CreateInstanceResult",
+      "OperationInfo"
+    ],
     "CreateNodePayload": [
       "ActionNode",
       "Node",
@@ -54,6 +58,10 @@
       "InstanceType",
       "OperationInfo"
     ],
+    "RegisterUserPayload": [
+      "OperationInfo",
+      "RegisterUserResult"
+    ],
     "SnippetInterface": [
       "InstanceSiteContent"
     ],
@@ -75,6 +83,7 @@
       "EmailBlock",
       "EmbedBlock",
       "FloatBlock",
+      "FrameworkLandingBlock",
       "GoalProgressBarBlock",
       "ImageBlock",
       "ImageChooserBlock",

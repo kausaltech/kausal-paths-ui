@@ -12,6 +12,7 @@ import { getThemeStaticURL } from '@common/themes/theme';
 
 import { useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
+import AccountMenu from '@/components/common/AccountMenu';
 import NavDropdown, { type NavDropdownListItem } from '@/components/common/NavDropdown';
 import Icon from '@/components/common/icon';
 import LanguageSelector from '@/components/general/LanguageSelector';
@@ -268,8 +269,9 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
                 <SiteTitle>{siteTitle}</SiteTitle>
               </HomeLink>
             </NavbarBrand>
-            <Nav navbar className="ml-auto d-none d-md-flex">
+            <Nav navbar className="ml-auto d-none d-md-flex" style={{ alignItems: 'center' }}>
               <LanguageSelector mobile={false} />
+              <AccountMenu />
             </Nav>
             <NavbarToggler
               onClick={() => toggleOpen(!isOpen)}

@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-
 import { usePathname } from 'next/navigation';
 
-import { useReactiveVar } from '@apollo/client/react';
 import { Box, Drawer, styled, useTheme } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
+
+import { useReactiveVar } from '@apollo/client/react';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -15,7 +15,6 @@ import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
 import { useSiteOrNull } from '@/context/site';
-
 import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
@@ -206,19 +205,28 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           {drawerOpen && isMobile && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <Box sx={{ flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            flexShrink: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100vh',
+          }}
+        >
           <NavComponent
             siteTitle={site?.title || ''}
             ownerName={site?.owner || undefined}
             navItems={navItems}
           />
-          <main className="main" id="main">
+          <Box component="main" className="main" id="main" sx={{ flexGrow: 1 }}>
             {/* hidden H1 fallback for accessibility */}
             <Box component="h1" sx={visuallyHiddenSx}>
               {activePage?.title || site?.title || ''}
             </Box>
             {children}
-          </main>
+          </Box>
           <FooterComponent additionalLinks={additionalLinkItems} />
         </Box>
       </Box>
