@@ -176,8 +176,7 @@ const EDGE_MARKER: Edge['markerEnd'] = {
   color: '#b0bec5',
 };
 
-const DRAWER_WIDTH_NARROW = 320;
-const DRAWER_WIDTH_WIDE = 700;
+const DRAWER_WIDTH = 320;
 
 const ALL_OUTCOMES = '__all__';
 
@@ -351,14 +350,6 @@ function FlowEditor(props: {
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
   );
-  const [drawerWide, setDrawerWide] = useState(false);
-
-  const drawerWidth = drawerWide ? DRAWER_WIDTH_WIDE : DRAWER_WIDTH_NARROW;
-
-  const handleDrawerWideContent = useCallback((isWide: boolean) => {
-    setDrawerWide(isWide);
-  }, []);
-
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
 
   const allNodeIdsSet = useMemo(() => new Set(props.nodes.map((n) => n.id)), [props.nodes]);
@@ -586,10 +577,9 @@ function FlowEditor(props: {
               slotProps={{
                 paper: {
                   sx: {
-                    width: drawerWidth,
+                    width: DRAWER_WIDTH,
                     maxWidth: 'none',
                     boxShadow: 10,
-                    transition: 'width 0.2s ease-in-out',
                   },
                 },
               }}
@@ -598,11 +588,7 @@ function FlowEditor(props: {
                 node={selectedNode}
                 allNodes={props.nodes}
                 edges={props.edges}
-                onClose={() => {
-                  setSelectedNodeId(null);
-                  setDrawerWide(false);
-                }}
-                onWideContent={handleDrawerWideContent}
+                onClose={() => setSelectedNodeId(null)}
                 onSelectNode={setSelectedNodeId}
               />
             </Drawer>

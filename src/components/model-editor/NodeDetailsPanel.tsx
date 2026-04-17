@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { Suspense, lazy, useCallback, useState } from 'react';
 
 import {
   Box,
@@ -6,6 +6,7 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  Drawer,
   IconButton,
   Typography,
 } from '@mui/material';
@@ -74,16 +75,16 @@ export type NodeDetailsPanelProps = {
   allNodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
   onClose: () => void;
-  onWideContent: (isWide: boolean) => void;
   onSelectNode: (nodeId: string) => void;
 };
+
+const METRICS_DRAWER_WIDTH = 600;
 
 export default function NodeDetailsPanel({
   node,
   allNodes,
   edges,
   onClose,
-  onWideContent,
   onSelectNode,
 }: NodeDetailsPanelProps) {
   const {
@@ -94,11 +95,12 @@ export default function NodeDetailsPanel({
   const { fitView, getNodes } = useReactFlow();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [datasetModal, setDatasetModal] = useState<{ bindingId: string } | null>(null);
+  const [metricsDrawerOpen, setMetricsDrawerOpen] = useState(false);
 
-  const hasMetrics = portMetrics.length > 0;
-  useEffect(() => {
-    onWideContent(hasMetrics);
-  }, [hasMetrics, onWideContent]);
+  const handleShowMetrics = () => {
+    fetchMetrics();
+    setMetricsDrawerOpen(true);
+  };
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
@@ -377,37 +379,70 @@ export default function NodeDetailsPanel({
 
       <Divider sx={{ my: 1.5 }} />
 
-      {portMetrics.length === 0 ? (
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={fetchMetrics}
-          disabled={metricsLoading}
-          startIcon={metricsLoading ? <CircularProgress size={14} /> : undefined}
-          fullWidth
+      <Button variant="outlined" size="small" onClick={handleShowMetrics} fullWidth>
+        Show output data
+      </Button>
+
+      <Drawer
+        variant="persistent"
+        anchor="right"
+        open={metricsDrawerOpen}
+        slotProps={{
+          paper: {
+            sx: {
+              width: METRICS_DRAWER_WIDTH,
+              maxWidth: '100vw',
+              boxShadow: 14,
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
         >
-          {metricsLoading ? 'Loading data...' : 'Load output data'}
-        </Button>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {portMetrics.map((pm) => (
-            <Box key={pm.portId}>
-              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                {pm.portLabel ?? pm.quantity ?? pm.portId}
-              </Typography>
-              {pm.metric ? (
-                <Suspense fallback={<CircularProgress size={20} />}>
-                  <MetricDataViewer metric={pm.metric} compact />
-                </Suspense>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No data available
-                </Typography>
-              )}
-            </Box>
-          ))}
+          <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600 }}>
+            {node.name} — output data
+          </Typography>
+          <IconButton size="small" onClick={() => setMetricsDrawerOpen(false)}>
+            <X size={20} />
+          </IconButton>
         </Box>
-      )}
+        <Box sx={{ p: 2, overflowY: 'auto' }}>
+          {metricsLoading && portMetrics.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={24} />
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {portMetrics.map((pm) => (
+                <Box key={pm.portId}>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                    {pm.portLabel ?? pm.quantity ?? pm.portId}
+                  </Typography>
+                  {pm.metric ? (
+                    <Suspense fallback={<CircularProgress size={20} />}>
+                      <MetricDataViewer metric={pm.metric} compact />
+                    </Suspense>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No data available
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Drawer>
 
       {datasetModal && node && (
         <Suspense>
