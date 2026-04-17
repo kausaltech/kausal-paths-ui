@@ -27,7 +27,20 @@ import {
 
 const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 
-function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
+function DatasetMetadata({
+  dataset,
+  usedDimensionKeys,
+  usedCategoryKeysByDimension,
+}: {
+  dataset: DatasetInfo;
+  usedDimensionKeys?: ReadonlySet<string>;
+  usedCategoryKeysByDimension?: ReadonlyMap<string, ReadonlySet<string>>;
+}) {
+  const visibleDimensions = usedDimensionKeys
+    ? dataset.dimensions.filter(
+        (dim) => usedDimensionKeys.has(dim.id) || usedDimensionKeys.has(dim.name)
+      )
+    : dataset.dimensions;
   return (
     <Box sx={{ mb: 2 }}>
       {dataset.externalRef && (
@@ -60,7 +73,7 @@ function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
         />
       )}
 
-      {dataset.dimensions.length > 0 && (
+      {visibleDimensions.length > 0 && (
         <Box sx={{ mb: 1.5 }}>
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
             Dimensions
@@ -74,18 +87,33 @@ function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {dataset.dimensions.map((dim) => (
-                  <TableRow key={dim.id}>
-                    <TableCell sx={{ py: 0.5 }}>{dim.name}</TableCell>
-                    <TableCell sx={{ py: 0.5 }}>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {dim.categories.map((cat) => (
-                          <Chip key={cat.uuid} label={cat.label} size="small" variant="outlined" />
-                        ))}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {visibleDimensions.map((dim) => {
+                  const catKeys = usedCategoryKeysByDimension?.get(dim.name);
+                  const visibleCategories = catKeys
+                    ? dim.categories.filter(
+                        (c) =>
+                          catKeys.has(c.label) ||
+                          (c.identifier != null && catKeys.has(c.identifier))
+                      )
+                    : dim.categories;
+                  return (
+                    <TableRow key={dim.id}>
+                      <TableCell sx={{ py: 0.5 }}>{dim.name}</TableCell>
+                      <TableCell sx={{ py: 0.5 }}>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {visibleCategories.map((cat) => (
+                            <Chip
+                              key={cat.uuid}
+                              label={cat.label}
+                              size="small"
+                              variant="outlined"
+                            />
+                          ))}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
@@ -126,6 +154,23 @@ function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
 }
 
 function DatasetPortView({ port }: { port: DatasetPortData }) {
+  const usedDimensionKeys = new Set<string>();
+  const usedCategoryKeysByDimension = new Map<string, Set<string>>();
+  for (const metric of port.metrics) {
+    for (const dim of metric.dimensions) {
+      usedDimensionKeys.add(dim.id);
+      if (dim.originalId) usedDimensionKeys.add(dim.originalId);
+      if (dim.label) usedDimensionKeys.add(dim.label);
+
+      const catKeys = usedCategoryKeysByDimension.get(dim.label) ?? new Set<string>();
+      for (const cat of dim.categories) {
+        if (cat.label) catKeys.add(cat.label);
+        if (cat.originalId) catKeys.add(cat.originalId);
+      }
+      usedCategoryKeysByDimension.set(dim.label, catKeys);
+    }
+  }
+
   return (
     <Box>
       {port.boundMetric && (
@@ -134,7 +179,11 @@ function DatasetPortView({ port }: { port: DatasetPortData }) {
         </Typography>
       )}
 
-      <DatasetMetadata dataset={port.dataset} />
+      <DatasetMetadata
+        dataset={port.dataset}
+        usedDimensionKeys={usedDimensionKeys}
+        usedCategoryKeysByDimension={usedCategoryKeysByDimension}
+      />
 
       {port.metrics.length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

@@ -30,7 +30,7 @@ type ConnectedNodeChipProps = {
   onHover: (nodeId: string | null) => void;
 };
 
-const CHIP_LABEL_MAX = 40;
+const CHIP_LABEL_MAX = 35;
 
 function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: ConnectedNodeChipProps) {
   const truncated =
