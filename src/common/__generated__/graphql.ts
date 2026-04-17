@@ -12,6 +12,8 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date (isoformat) */
+  Date: { input: any; output: any; }
   /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
@@ -39,6 +41,13 @@ export enum ActionSortOrder {
   /** Standard */
   Standard = 'STANDARD'
 }
+
+export type CreateDataPointInput = {
+  date: Scalars['Date']['input'];
+  dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
+  metricId: Scalars['UUID']['input'];
+  value: InputMaybe<Scalars['Float']['input']>;
+};
 
 export type CreateDimensionCategoryInput = {
   dimensionId: Scalars['UUID']['input'];
@@ -130,6 +139,13 @@ export enum ScenarioKind {
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
 }
+
+export type UpdateDataPointInput = {
+  date: InputMaybe<Scalars['Date']['input']>;
+  dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
+  metricId: InputMaybe<Scalars['UUID']['input']>;
+  value: InputMaybe<Scalars['Float']['input']>;
+};
 
 export type UpdateDimensionCategoryInput = {
   categoryId: Scalars['UUID']['input'];
@@ -814,6 +830,221 @@ export type DatasetPortDataQuery = (
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
   & { __typename: 'Query' }
+);
+
+export type DatasetSummaryFieldsFragment = (
+  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+    { repoUrl: string, commit: string | null, datasetId: string }
+    & { __typename: 'DatasetExternalRefType' }
+  ) | null, dimensions: Array<(
+    { id: string, name: string }
+    & { __typename: 'DatasetDimension' }
+  )>, metrics: Array<(
+    { id: string, label: string }
+    & { __typename: 'DatasetMetric' }
+  )> }
+  & { __typename: 'Dataset' }
+);
+
+export type DatasetDetailFieldsFragment = (
+  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+    { repoUrl: string, commit: string | null, datasetId: string }
+    & { __typename: 'DatasetExternalRefType' }
+  ) | null, dimensions: Array<(
+    { id: string, name: string, categories: Array<(
+      { uuid: string, identifier: string | null, label: string }
+      & { __typename: 'DatasetDimensionCategory' }
+    )> }
+    & { __typename: 'DatasetDimension' }
+  )>, metrics: Array<(
+    { id: string, name: string | null, label: string, unit: string, previousSibling: string | null, nextSibling: string | null }
+    & { __typename: 'DatasetMetric' }
+  )>, dataPoints: Array<(
+    { id: string, date: any, value: number | null, metric: (
+      { id: string }
+      & { __typename: 'DatasetMetric' }
+    ), dimensionCategories: Array<(
+      { uuid: string }
+      & { __typename: 'DatasetDimensionCategory' }
+    )> }
+    & { __typename: 'DataPoint' }
+  )> }
+  & { __typename: 'Dataset' }
+);
+
+export type InstanceDatasetsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type InstanceDatasetsQuery = (
+  { instance: (
+    { id: string, editor: (
+      { datasets: Array<(
+        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPoints: Array<(
+          { id: string }
+          & { __typename: 'DataPoint' }
+        )>, externalRef: (
+          { repoUrl: string, commit: string | null, datasetId: string }
+          & { __typename: 'DatasetExternalRefType' }
+        ) | null, dimensions: Array<(
+          { id: string, name: string }
+          & { __typename: 'DatasetDimension' }
+        )>, metrics: Array<(
+          { id: string, label: string }
+          & { __typename: 'DatasetMetric' }
+        )> }
+        & { __typename: 'Dataset' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type InstanceDatasetQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type InstanceDatasetQuery = (
+  { instance: (
+    { id: string, editor: (
+      { datasets: Array<(
+        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+          { repoUrl: string, commit: string | null, datasetId: string }
+          & { __typename: 'DatasetExternalRefType' }
+        ) | null, dimensions: Array<(
+          { id: string, name: string, categories: Array<(
+            { uuid: string, identifier: string | null, label: string }
+            & { __typename: 'DatasetDimensionCategory' }
+          )> }
+          & { __typename: 'DatasetDimension' }
+        )>, metrics: Array<(
+          { id: string, name: string | null, label: string, unit: string, previousSibling: string | null, nextSibling: string | null }
+          & { __typename: 'DatasetMetric' }
+        )>, dataPoints: Array<(
+          { id: string, date: any, value: number | null, metric: (
+            { id: string }
+            & { __typename: 'DatasetMetric' }
+          ), dimensionCategories: Array<(
+            { uuid: string }
+            & { __typename: 'DatasetDimensionCategory' }
+          )> }
+          & { __typename: 'DataPoint' }
+        )> }
+        & { __typename: 'Dataset' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type DataPointFieldsFragment = (
+  { id: string, date: any, value: number | null, metric: (
+    { id: string }
+    & { __typename: 'DatasetMetric' }
+  ), dimensionCategories: Array<(
+    { uuid: string }
+    & { __typename: 'DatasetDimensionCategory' }
+  )> }
+  & { __typename: 'DataPoint' }
+);
+
+export type CreateDataPointMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  input: CreateDataPointInput;
+}>;
+
+
+export type CreateDataPointMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { createDataPoint:
+        | (
+          { id: string, date: any, value: number | null, metric: (
+            { id: string }
+            & { __typename: 'DatasetMetric' }
+          ), dimensionCategories: Array<(
+            { uuid: string }
+            & { __typename: 'DatasetDimensionCategory' }
+          )> }
+          & { __typename: 'DataPoint' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateDataPointMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  dataPointId: Scalars['ID']['input'];
+  input: UpdateDataPointInput;
+}>;
+
+
+export type UpdateDataPointMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { updateDataPoint:
+        | (
+          { id: string, date: any, value: number | null, metric: (
+            { id: string }
+            & { __typename: 'DatasetMetric' }
+          ), dimensionCategories: Array<(
+            { uuid: string }
+            & { __typename: 'DatasetDimensionCategory' }
+          )> }
+          & { __typename: 'DataPoint' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteDataPointMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  dataPointId: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteDataPointMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { deleteDataPoint: (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      ) | null }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type InstanceDimensionFieldsFragment = (

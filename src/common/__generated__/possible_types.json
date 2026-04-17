@@ -1,5 +1,9 @@
 {
   "possibleTypes": {
+    "CreateDataPointPayload": [
+      "DataPoint",
+      "OperationInfo"
+    ],
     "CreateDimensionCategoriesPayload": [
       "InstanceDimension",
       "OperationInfo"
@@ -103,6 +107,10 @@
       "TextBlock",
       "TimeBlock",
       "URLBlock"
+    ],
+    "UpdateDataPointPayload": [
+      "DataPoint",
+      "OperationInfo"
     ],
     "UpdateDimensionCategoriesPayload": [
       "InstanceDimension",

@@ -18,13 +18,19 @@ type TabDef = {
 const TABS: TabDef[] = [
   {
     label: 'Node graph',
-    matches: (path) => !path.includes('/model-editor/dimensions'),
+    matches: (path) =>
+      !path.includes('/model-editor/dimensions') && !path.includes('/model-editor/datasets'),
     href: '',
   },
   {
     label: 'Dimensions',
     matches: (path) => path.includes('/model-editor/dimensions'),
     href: '/dimensions',
+  },
+  {
+    label: 'Datasets',
+    matches: (path) => path.includes('/model-editor/datasets'),
+    href: '/datasets',
   },
 ];
 
