@@ -975,8 +975,10 @@ export default function NodeGraphEditor() {
 
   if (!editor) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Typography color="text.secondary">Model editor data is not available.</Typography>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
+      >
+        <CircularProgress />
       </Box>
     );
   }
