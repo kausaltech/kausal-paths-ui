@@ -42,7 +42,7 @@ export type WizardState = {
 };
 
 export const WIZARD_STEPS = [
-  'Copy Action',
+  'Source Action',
   'Basic Info',
   'Data Source',
   'Outputs',

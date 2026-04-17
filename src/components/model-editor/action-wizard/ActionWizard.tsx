@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -38,11 +38,37 @@ type ActionWizardProps = {
   onClose: () => void;
   nodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
+  initialSourceAction?: EditorNodeFieldsFragment | null;
 };
 
-export default function ActionWizard({ open, onClose, nodes, edges }: ActionWizardProps) {
-  const [activeStep, setActiveStep] = useState(0);
-  const [state, setState] = useState<WizardState>(createInitialWizardState);
+export default function ActionWizard({
+  open,
+  onClose,
+  nodes,
+  edges,
+  initialSourceAction,
+}: ActionWizardProps) {
+  const [activeStep, setActiveStep] = useState(initialSourceAction ? 1 : 0);
+  const [state, setState] = useState<WizardState>(() => {
+    const base = createInitialWizardState();
+    if (initialSourceAction) {
+      return { ...base, ...deriveStateFromSource(initialSourceAction, edges, nodes) };
+    }
+    return base;
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    if (initialSourceAction) {
+      setState((prev) => ({
+        ...prev,
+        ...deriveStateFromSource(initialSourceAction, edges, nodes),
+      }));
+      setActiveStep(1);
+    }
+    // Only re-run when the preselected action or open state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSourceAction, open]);
 
   const updateState = useCallback((partial: Partial<WizardState>) => {
     setState((prev) => ({ ...prev, ...partial }));
@@ -120,7 +146,7 @@ export default function ActionWizard({ open, onClose, nodes, edges }: ActionWiza
       slotProps={{ paper: { sx: { minHeight: '70vh' } } }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        Copy Action
+        Duplicate Action
         <IconButton size="small" onClick={handleClose}>
           <CloseIcon />
         </IconButton>

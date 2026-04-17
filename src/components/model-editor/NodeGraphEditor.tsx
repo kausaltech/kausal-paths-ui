@@ -3,7 +3,6 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import StorageIcon from '@mui/icons-material/Storage';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
   Box,
   Button,
@@ -14,9 +13,6 @@ import {
   FormControl,
   IconButton,
   InputLabel,
-  ListItemIcon,
-  ListItemText,
-  Menu,
   MenuItem,
   Select,
   Typography,
@@ -47,6 +43,7 @@ import ElkNode, {
   type HiddenContextRef,
   NodeGraphInteractionContext,
 } from './ElkNode';
+import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
 import { useNodeMetric } from './metric-viewer/useNodeMetric';
 import useLayoutNodes from './useLayoutNodes';
@@ -698,13 +695,6 @@ function NodeDetailsPanel({
   );
 }
 
-type ContextMenuState =
-  | ({
-      mouseX: number;
-      mouseY: number;
-    } & ({ kind: 'node'; nodeId: string } | { kind: 'edge'; edgeId: string }))
-  | null;
-
 function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
@@ -715,6 +705,9 @@ function FlowEditor(props: {
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const [selectedOutcomeId, setSelectedOutcomeId] = useState<string>(ALL_OUTCOMES);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
+    null
+  );
   const [drawerWide, setDrawerWide] = useState(false);
 
   const drawerWidth = drawerWide ? DRAWER_WIDTH_WIDE : DRAWER_WIDTH_NARROW;
@@ -823,11 +816,35 @@ function FlowEditor(props: {
     setContextMenu({ kind: 'edge', mouseX: event.clientX, mouseY: event.clientY, edgeId: edge.id });
   }, []);
 
-  const handleHideEdge = useCallback(() => {
-    if (!contextMenu || contextMenu.kind !== 'edge') return;
-    setUserHiddenEdgeIds((prev) => new Set([...prev, contextMenu.edgeId]));
-    setContextMenu(null);
-  }, [contextMenu]);
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: { id: string }) => {
+      event.preventDefault();
+      const graphNode = nodeMap.get(node.id);
+      const isAction = (graphNode?.kind ?? '').toLowerCase() === 'action';
+      setContextMenu({
+        kind: 'node',
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+        nodeId: node.id,
+        isAction,
+      });
+    },
+    [nodeMap]
+  );
+
+  const handleHideEdge = useCallback((edgeId: string) => {
+    setUserHiddenEdgeIds((prev) => new Set([...prev, edgeId]));
+  }, []);
+
+  const handleCopyAction = useCallback(
+    (nodeId: string) => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return;
+      setWizardSourceAction(node);
+      setWizardOpen(true);
+    },
+    [nodeMap]
+  );
 
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
@@ -863,10 +880,13 @@ function FlowEditor(props: {
               variant="outlined"
               size="small"
               startIcon={<ContentCopyIcon />}
-              onClick={() => setWizardOpen(true)}
+              onClick={() => {
+                setWizardSourceAction(null);
+                setWizardOpen(true);
+              }}
               sx={{ flexShrink: 0 }}
             >
-              Copy action
+              Duplicate action
             </Button>
             {outcomeNodes.length > 1 && (
               <>
@@ -899,6 +919,7 @@ function FlowEditor(props: {
               onSelectionChange={onSelectionChange}
               onEdgeClick={onEdgeClick}
               onEdgeContextMenu={onEdgeContextMenu}
+              onNodeContextMenu={onNodeContextMenu}
               nodeTypes={nodeTypes}
               minZoom={0.2}
               maxZoom={5}
@@ -908,23 +929,12 @@ function FlowEditor(props: {
               <Controls />
               <MiniMap nodeStrokeWidth={3} />
             </ReactFlow>
-            <Menu
-              open={contextMenu !== null}
+            <NodeGraphContextMenu
+              state={contextMenu}
               onClose={() => setContextMenu(null)}
-              anchorReference="anchorPosition"
-              anchorPosition={
-                contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
-              }
-            >
-              {contextMenu?.kind === 'edge' && (
-                <MenuItem onClick={handleHideEdge}>
-                  <ListItemIcon>
-                    <VisibilityOffIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Hide edge</ListItemText>
-                </MenuItem>
-              )}
-            </Menu>
+              onHideEdge={handleHideEdge}
+              onCopyAction={handleCopyAction}
+            />
             <Drawer
               variant="persistent"
               anchor="right"
@@ -959,9 +969,13 @@ function FlowEditor(props: {
         <Suspense fallback={null}>
           <ActionWizard
             open={wizardOpen}
-            onClose={() => setWizardOpen(false)}
+            onClose={() => {
+              setWizardOpen(false);
+              setWizardSourceAction(null);
+            }}
             nodes={props.nodes}
             edges={props.edges}
+            initialSourceAction={wizardSourceAction}
           />
         </Suspense>
       )}
