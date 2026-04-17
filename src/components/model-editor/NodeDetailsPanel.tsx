@@ -1,15 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react';
 
-import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Divider,
-  Drawer,
-  IconButton,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Chip, Divider, IconButton, Typography } from '@mui/material';
 
 import { useReactFlow } from '@xyflow/react';
 import { Database, X } from 'react-bootstrap-icons';
@@ -19,7 +10,6 @@ import type {
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { type NodeStyle, getNodeStyle } from './ElkNode';
-import { useNodeMetric } from './metric-viewer/useNodeMetric';
 import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
 
 function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
@@ -32,7 +22,6 @@ function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
   return getNodeStyle(kind, nodeClass, isOutcome);
 }
 
-const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 const DatasetViewerModal = lazy(() => import('./dataset-viewer/DatasetViewerModal'));
 
 type ConnectedNodeChipProps = {
@@ -76,9 +65,8 @@ export type NodeDetailsPanelProps = {
   edges: readonly EditorNodeEdgeFragment[];
   onClose: () => void;
   onSelectNode: (nodeId: string) => void;
+  onShowMetrics?: () => void;
 };
-
-const METRICS_DRAWER_WIDTH = 600;
 
 export default function NodeDetailsPanel({
   node,
@@ -86,21 +74,11 @@ export default function NodeDetailsPanel({
   edges,
   onClose,
   onSelectNode,
+  onShowMetrics,
 }: NodeDetailsPanelProps) {
-  const {
-    portMetrics,
-    loading: metricsLoading,
-    fetch: fetchMetrics,
-  } = useNodeMetric(node?.id ?? null);
   const { fitView, getNodes } = useReactFlow();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [datasetModal, setDatasetModal] = useState<{ bindingId: string } | null>(null);
-  const [metricsDrawerOpen, setMetricsDrawerOpen] = useState(false);
-
-  const handleShowMetrics = () => {
-    fetchMetrics();
-    setMetricsDrawerOpen(true);
-  };
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
@@ -379,70 +357,9 @@ export default function NodeDetailsPanel({
 
       <Divider sx={{ my: 1.5 }} />
 
-      <Button variant="outlined" size="small" onClick={handleShowMetrics} fullWidth>
+      <Button variant="outlined" size="small" onClick={onShowMetrics} fullWidth>
         Show output data
       </Button>
-
-      <Drawer
-        variant="persistent"
-        anchor="right"
-        open={metricsDrawerOpen}
-        slotProps={{
-          paper: {
-            sx: {
-              width: METRICS_DRAWER_WIDTH,
-              maxWidth: '100vw',
-              boxShadow: 14,
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            px: 2,
-            py: 1.5,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600 }}>
-            {node.name} — output data
-          </Typography>
-          <IconButton size="small" onClick={() => setMetricsDrawerOpen(false)}>
-            <X size={20} />
-          </IconButton>
-        </Box>
-        <Box sx={{ p: 2, overflowY: 'auto' }}>
-          {metricsLoading && portMetrics.length === 0 ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={24} />
-            </Box>
-          ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {portMetrics.map((pm) => (
-                <Box key={pm.portId}>
-                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                    {pm.portLabel ?? pm.quantity ?? pm.portId}
-                  </Typography>
-                  {pm.metric ? (
-                    <Suspense fallback={<CircularProgress size={20} />}>
-                      <MetricDataViewer metric={pm.metric} compact />
-                    </Suspense>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      No data available
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Box>
-      </Drawer>
 
       {datasetModal && node && (
         <Suspense>

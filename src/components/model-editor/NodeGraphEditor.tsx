@@ -36,6 +36,7 @@ import ElkNode, {
   type HiddenContextRef,
   NodeGraphInteractionContext,
 } from './ElkNode';
+import MetricsDrawer from './MetricsDrawer';
 import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
@@ -177,6 +178,8 @@ const EDGE_MARKER: Edge['markerEnd'] = {
 };
 
 const DRAWER_WIDTH = 320;
+const METRICS_DRAWER_WIDTH = 600;
+const PANEL_PEEK_WIDTH = 48;
 
 const ALL_OUTCOMES = '__all__';
 
@@ -350,6 +353,12 @@ function FlowEditor(props: {
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
   );
+  const [metricsOpen, setMetricsOpen] = useState(false);
+
+  useEffect(() => {
+    setMetricsOpen(false);
+  }, [selectedNodeId]);
+
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
 
   const allNodeIdsSet = useMemo(() => new Set(props.nodes.map((n) => n.id)), [props.nodes]);
@@ -576,10 +585,22 @@ function FlowEditor(props: {
               open={!!selectedNode}
               slotProps={{
                 paper: {
+                  onClick: () => {
+                    if (metricsOpen) setMetricsOpen(false);
+                  },
                   sx: {
                     width: DRAWER_WIDTH,
                     maxWidth: 'none',
                     boxShadow: 10,
+                    cursor: metricsOpen ? 'pointer' : 'default',
+                    transform: metricsOpen
+                      ? `translateX(-${METRICS_DRAWER_WIDTH - DRAWER_WIDTH + PANEL_PEEK_WIDTH}px) !important`
+                      : undefined,
+                    transition: (theme) =>
+                      theme.transitions.create('transform', {
+                        easing: theme.transitions.easing.sharp,
+                        duration: theme.transitions.duration.standard,
+                      }),
                   },
                 },
               }}
@@ -590,8 +611,16 @@ function FlowEditor(props: {
                 edges={props.edges}
                 onClose={() => setSelectedNodeId(null)}
                 onSelectNode={setSelectedNodeId}
+                onShowMetrics={() => setMetricsOpen(true)}
               />
             </Drawer>
+            <MetricsDrawer
+              nodeId={selectedNode?.id ?? null}
+              nodeName={selectedNode?.name ?? null}
+              open={metricsOpen && !!selectedNode}
+              onClose={() => setMetricsOpen(false)}
+              width={METRICS_DRAWER_WIDTH}
+            />
           </Box>
         </Box>
       </Box>

@@ -26,11 +26,16 @@ type ViewMode = 'pivot' | 'flat';
 type MetricDataViewerProps = {
   metric: DimensionalMetric;
   compact?: boolean;
+  fillHeight?: boolean;
 };
 
 const FORECAST_CELL_CLASS = 'metric-forecast-cell';
 
-export default function MetricDataViewer({ metric, compact = false }: MetricDataViewerProps) {
+export default function MetricDataViewer({
+  metric,
+  compact = false,
+  fillHeight = false,
+}: MetricDataViewerProps) {
   const hasDimensions = metric.dimensions.length > 0;
   const [viewMode, setViewMode] = useState<ViewMode>(hasDimensions ? 'pivot' : 'flat');
   const [pivotDimId, setPivotDimId] = useState<string>(() => metric.dimensions[0]?.id ?? '');
@@ -121,7 +126,14 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
   const gridHeight = compact ? 300 : 500;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        ...(fillHeight && { height: '100%', minHeight: 0 }),
+      }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
         {!compact && (
           <Typography variant="subtitle2" sx={{ mr: 1 }}>
@@ -198,7 +210,7 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
       <Box
         className="ag-theme-alpine"
         sx={{
-          height: gridHeight,
+          ...(fillHeight ? { flex: 1, minHeight: 0 } : { height: gridHeight }),
           width: '100%',
           [`& .${FORECAST_CELL_CLASS}`]: {
             backgroundColor: 'rgba(33, 150, 243, 0.06)',
@@ -210,8 +222,8 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
             columnDefs={pivotColumnDefs}
             rowData={pivotData.rows}
             defaultColDef={{ resizable: true, suppressMovable: true }}
-            suppressColumnVirtualisation={compact}
-            domLayout={compact ? 'autoHeight' : undefined}
+            suppressColumnVirtualisation={compact && !fillHeight}
+            domLayout={compact && !fillHeight ? 'autoHeight' : undefined}
           />
         )}
         {viewMode === 'flat' && (
@@ -219,7 +231,7 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
             columnDefs={flatColumnDefs}
             rowData={flatRows}
             defaultColDef={{ resizable: true, suppressMovable: true }}
-            domLayout={compact ? 'autoHeight' : undefined}
+            domLayout={compact && !fillHeight ? 'autoHeight' : undefined}
           />
         )}
       </Box>
