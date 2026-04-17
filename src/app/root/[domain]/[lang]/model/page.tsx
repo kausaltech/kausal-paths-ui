@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Drawer } from '@mui/material';
+
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-import { Drawer } from '@mui/material';
 import { type Edge, type Node, ReactFlowProvider } from '@xyflow/react';
 
 import type { ModelNodesQuery } from '@/common/__generated__/graphql';
@@ -33,7 +34,6 @@ const GET_NODES = gql`
       color
       quantity
       isVisible
-      nodeType
       unit {
         id
         htmlShort
@@ -78,17 +78,17 @@ const nodeToReactFlowNode: (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   const actionNode = isActionNode ? (node as any) : null;
 
-  const nodeDatasetsCount = nodeDataFromConfig?.input_datasets?.length || 0;
+  const nodeDatasetsCount = nodeDataFromConfig?.input_datasets?.length ?? 0;
   return {
     id: node.id,
     position: { x: 0, y: 0 },
     data: {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      label: nodeWithShortName.shortName || node.name,
+      label: nodeWithShortName.shortName ?? node.name,
       isVisible: node.isVisible,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      color: node.color || actionNode?.group?.color,
-      nodeType: nodeDataFromConfig?.type || node.__typename,
+      color: node.color ?? actionNode?.group?.color,
+      nodeType: nodeDataFromConfig?.type ?? node.__typename,
       inputDatasets: nodeDatasetsCount,
     },
     type: isActionNode ? 'action' : 'standard',
@@ -139,8 +139,8 @@ export default function ModelPage() {
 
     return data.nodes.map((node) => {
       const nodeDataFromConfig = _config
-        ? _config.nodes?.find((n) => n.id === node.id) ||
-          _config.actions?.find((a) => a.id === node.id)
+        ? (_config.nodes?.find((n) => n.id === node.id) ??
+          _config.actions?.find((a) => a.id === node.id))
         : null;
       return nodeToReactFlowNode(node, nodeDataFromConfig);
     });

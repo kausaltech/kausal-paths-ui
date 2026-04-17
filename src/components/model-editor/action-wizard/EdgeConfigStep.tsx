@@ -12,13 +12,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { NodeFieldsFragment } from '@/common/__generated__/graphql';
+
+import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import type { DraftEdgeMapping, OutputMetric } from './types';
 
 type EdgeConfigStepProps = {
   edgeMappings: DraftEdgeMapping[];
   outputMetrics: OutputMetric[];
-  allNodes: readonly NodeFieldsFragment[];
+  allNodes: readonly EditorNodeFieldsFragment[];
   onUpdate: (mappings: DraftEdgeMapping[]) => void;
 };
 
@@ -37,9 +38,7 @@ export default function EdgeConfigStep({
   };
 
   const handleFieldChange = (id: string, field: keyof DraftEdgeMapping, value: string) => {
-    onUpdate(
-      edgeMappings.map((e) => (e.id === id ? { ...e, [field]: value } : e)),
-    );
+    onUpdate(edgeMappings.map((e) => (e.id === id ? { ...e, [field]: value } : e)));
   };
 
   return (
@@ -80,7 +79,13 @@ export default function EdgeConfigStep({
                   component="span"
                   role="button"
                   tabIndex={0}
-                  sx={{ cursor: 'pointer', display: 'inline-flex', p: 0.5, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}
+                  sx={{
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    p: 0.5,
+                    borderRadius: 1,
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(mapping.id);

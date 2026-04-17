@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 
 import { Alert, Box, TextField, Typography } from '@mui/material';
-import type { NodeFieldsFragment } from '@/common/__generated__/graphql';
+
+import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 
 type BasicInfoStepProps = {
   newActionId: string;
   newActionName: string;
   actionGroup: string;
-  sourceAction: NodeFieldsFragment | null;
-  allNodes: readonly NodeFieldsFragment[];
+  sourceAction: EditorNodeFieldsFragment | null;
+  allNodes: readonly EditorNodeFieldsFragment[];
   onChange: (field: 'newActionId' | 'newActionName' | 'actionGroup', value: string) => void;
 };
 

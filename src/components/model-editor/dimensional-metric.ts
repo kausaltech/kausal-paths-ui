@@ -6,59 +6,20 @@
  * DimensionalMetric class in src/data/metric.ts — the two should be
  * consolidated in the future.
  */
+import type {
+  ModelEditorDimensionalMetricFieldsFragment,
+  ModelEditorMetricCategoryFieldsFragment,
+  ModelEditorMetricDimensionFieldsFragment,
+} from '@/common/__generated__/graphql';
 
-export type MetricCategoryGroup = {
-  id: string;
-  originalId: string;
-  label: string;
-  color?: string | null;
-  order?: number | null;
-};
+export type { DimensionKind } from '@/common/__generated__/graphql';
 
-export type MetricCategory = {
-  id: string;
-  originalId?: string | null;
-  label: string;
-  color?: string | null;
-  order?: number | null;
-  group?: string | null;
-};
-
-export type DimensionKind = 'COMMON' | 'NODE' | 'SCENARIO';
-
-export type MetricDimension = {
-  id: string;
-  originalId?: string | null;
-  label: string;
-  helpText?: string | null;
-  kind: DimensionKind;
-  categories: MetricCategory[];
-  groups: MetricCategoryGroup[];
-};
-
-export type MetricUnit = {
-  short: string;
-  long: string;
-  htmlShort: string;
-  htmlLong: string;
-};
-
-export type GoalEntry = {
-  categories: string[];
-  values: { year: number; value: number }[];
-};
-
-export type DimensionalMetricData = {
-  id: string;
-  name: string;
-  unit: MetricUnit;
-  dimensions: MetricDimension[];
-  years: number[];
-  values: number[];
-  stackable: boolean;
-  forecastFrom?: number | null;
-  goals: GoalEntry[];
-};
+export type MetricCategoryGroup = ModelEditorMetricDimensionFieldsFragment['groups'][number];
+export type MetricCategory = ModelEditorMetricCategoryFieldsFragment;
+export type MetricDimension = ModelEditorMetricDimensionFieldsFragment;
+export type MetricUnit = ModelEditorDimensionalMetricFieldsFragment['unit'];
+export type GoalEntry = ModelEditorDimensionalMetricFieldsFragment['goals'][number];
+export type DimensionalMetricData = ModelEditorDimensionalMetricFieldsFragment;
 
 export type CubeRow = {
   categories: Record<string, string>;
@@ -99,14 +60,11 @@ export class DimensionalMetric {
 
     this.dimAxisIndex = new Map(data.dimensions.map((d, i) => [d.id, i]));
     this.catIndexMaps = new Map(
-      data.dimensions.map((d) => [
-        d.id,
-        new Map(d.categories.map((c, ci) => [c.id, ci])),
-      ]),
+      data.dimensions.map((d) => [d.id, new Map(d.categories.map((c, ci) => [c.id, ci]))])
     );
 
     const sizes = [...data.dimensions.map((d) => d.categories.length), data.years.length];
-    this.strides = new Array(sizes.length);
+    this.strides = new Array<number>(sizes.length);
     let stride = 1;
     for (let i = sizes.length - 1; i >= 0; i--) {
       this.strides[i] = stride;
@@ -116,7 +74,7 @@ export class DimensionalMetric {
     const expectedLen = stride;
     if (data.values.length !== expectedLen) {
       console.warn(
-        `DimensionalMetric "${data.id}": expected ${expectedLen} values, got ${data.values.length}`,
+        `DimensionalMetric "${data.id}": expected ${expectedLen} values, got ${data.values.length}`
       );
     }
     this.values = new Float64Array(data.values);
@@ -132,6 +90,21 @@ export class DimensionalMetric {
 
   getDimension(dimId: string): MetricDimension | undefined {
     return this.dimensions.find((d) => d.id === dimId);
+  }
+
+  private toData(dimensions: readonly MetricDimension[], values: number[]): DimensionalMetricData {
+    return {
+      __typename: 'DimensionalMetricType',
+      id: this.id,
+      name: this.name,
+      unit: this.unit,
+      dimensions: [...dimensions],
+      years: [...this.years],
+      values,
+      stackable: this.stackable,
+      forecastFrom: this.forecastFrom,
+      goals: [...this.goals],
+    };
   }
 
   private flatIndex(catIds: Record<string, string>, yearIndex: number): number {
@@ -206,7 +179,7 @@ export class DimensionalMetric {
     }
 
     const newDimensions = this.dimensions.map((d) =>
-      d.id === dimId ? { ...d, categories: keptCategories } : d,
+      d.id === dimId ? { ...d, categories: keptCategories } : d
     );
 
     const newValues: number[] = [];
@@ -216,17 +189,7 @@ export class DimensionalMetric {
       }
     }
 
-    return new DimensionalMetric({
-      id: this.id,
-      name: this.name,
-      unit: this.unit,
-      dimensions: newDimensions,
-      years: [...this.years],
-      values: newValues,
-      stackable: this.stackable,
-      forecastFrom: this.forecastFrom,
-      goals: [...this.goals],
-    });
+    return new DimensionalMetric(this.toData(newDimensions, newValues));
   }
 
   sumOver(dimId: string): DimensionalMetric {
@@ -269,17 +232,7 @@ export class DimensionalMetric {
       }
     }
 
-    return new DimensionalMetric({
-      id: this.id,
-      name: this.name,
-      unit: this.unit,
-      dimensions: newDimensions,
-      years: [...this.years],
-      values: newValues,
-      stackable: this.stackable,
-      forecastFrom: this.forecastFrom,
-      goals: [...this.goals],
-    });
+    return new DimensionalMetric(this.toData(newDimensions, newValues));
   }
 
   toRows(): Record<string, string | number>[] {
@@ -290,7 +243,11 @@ export class DimensionalMetric {
     return result;
   }
 
-  toPivotRows(pivotDimId: string): { years: number[]; columns: MetricCategory[]; rows: Record<string, number>[] } {
+  toPivotRows(pivotDimId: string): {
+    years: number[];
+    columns: MetricCategory[];
+    rows: Record<string, number>[];
+  } {
     const dim = this.getDimension(pivotDimId);
     if (!dim) throw new Error(`Dimension "${pivotDimId}" not found`);
 

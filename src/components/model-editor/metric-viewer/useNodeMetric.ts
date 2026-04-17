@@ -3,7 +3,11 @@ import { useMemo } from 'react';
 import { gql } from '@apollo/client';
 import { useLazyQuery } from '@apollo/client/react';
 
-import { DimensionalMetric, type DimensionalMetricData } from '../dimensional-metric';
+import type {
+  NodeOutputDataQuery,
+  NodeOutputDataQueryVariables,
+} from '@/common/__generated__/graphql';
+import { DimensionalMetric } from '../dimensional-metric';
 import { DIMENSIONAL_METRIC_FIELDS } from '../queries';
 
 const GET_NODE_OUTPUT_DATA = gql`
@@ -11,19 +15,22 @@ const GET_NODE_OUTPUT_DATA = gql`
     node(id: $nodeId) {
       id
       name
-      spec {
-        outputPorts {
-          id
-          label
-          quantity
-          unit {
-            short
-            long
-            htmlShort
-            htmlLong
-          }
-          output {
-            ...ModelEditorDimensionalMetricFields
+      editor {
+        spec {
+          outputPorts {
+            id
+            label
+            quantity
+            unit {
+              id
+              short
+              long
+              htmlShort
+              htmlLong
+            }
+            output {
+              ...ModelEditorDimensionalMetricFields
+            }
           }
         }
       }
@@ -32,10 +39,14 @@ const GET_NODE_OUTPUT_DATA = gql`
   ${DIMENSIONAL_METRIC_FIELDS}
 `;
 
+type NodeOutputPort = NonNullable<
+  NonNullable<NonNullable<NodeOutputDataQuery['node']>['editor']>['spec']
+>['outputPorts'][number];
+
 type PortMetric = {
-  portId: string;
-  portLabel: string | null;
-  quantity: string | null;
+  portId: NodeOutputPort['id'];
+  portLabel: NodeOutputPort['label'];
+  quantity: NodeOutputPort['quantity'];
   metric: DimensionalMetric | null;
 };
 
@@ -47,27 +58,24 @@ type UseNodeMetricResult = {
 };
 
 export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
-  const [executeQuery, { data, loading, error }] = useLazyQuery(GET_NODE_OUTPUT_DATA, {
-    variables: { nodeId: nodeId ?? '' },
+  const [executeQuery, { data, loading, error }] = useLazyQuery<
+    NodeOutputDataQuery,
+    NodeOutputDataQueryVariables
+  >(GET_NODE_OUTPUT_DATA, {
     fetchPolicy: 'cache-and-network',
   });
 
   const fetch = () => {
     if (nodeId) {
-      executeQuery({ variables: { nodeId } });
+      void executeQuery({ variables: { nodeId } });
     }
   };
 
   const portMetrics = useMemo<PortMetric[]>(() => {
-    const ports = data?.node?.spec?.outputPorts;
+    const ports = data?.node?.editor?.spec?.outputPorts;
     if (!ports) return [];
 
-    return ports.map((port: {
-      id: string;
-      label: string | null;
-      quantity: string | null;
-      output: DimensionalMetricData | null;
-    }) => ({
+    return ports.map((port) => ({
       portId: port.id,
       portLabel: port.label,
       quantity: port.quantity,

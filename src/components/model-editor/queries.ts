@@ -37,6 +37,7 @@ export const DIMENSIONAL_METRIC_FIELDS = gql`
     id
     name
     unit {
+      id
       short
       long
       htmlShort

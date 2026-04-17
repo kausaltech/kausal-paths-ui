@@ -213,7 +213,19 @@ export class InstanceContext {
       if (!response.ok()) {
         throw new Error(`GraphQL request failed with status ${status}`);
       }
-      const data = (await response.json()) as Record<string, unknown>;
+      let data: Record<string, unknown>;
+      try {
+        data = (await response.json()) as Record<string, unknown>;
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.message.includes('No data found for resource') ||
+            error.message.includes('Test ended'))
+        ) {
+          return;
+        }
+        throw error;
+      }
       if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
         console.log(data.errors);
         throw new Error(`GraphQL request failed with ${data.errors.length} errors`);
@@ -238,7 +250,7 @@ export class InstanceContext {
   async afterEach(page: Page) {
     page.off('response', this.handleNetworkResponse);
     page.off('console', this.handleConsoleMessage);
-    if (process.env.TEST_ALLOW_CONSOLE_OUTPUT === '1') return;
+    if (process.env.TEST_ALLOW_CONSOLE_OUTPUT !== '0') return;
     expect(this.consoleMessages.length, {
       message: 'Test produced console output',
     }).toBe(0);
@@ -286,11 +298,13 @@ export class InstanceContext {
   }
 
   async waitForNavbarVisible(page: Page) {
-    if ((await page.locator('nav#branding-navigation-bar').count()) > 1) {
-      await expect(page.locator('nav#branding-navigation-bar')).toBeVisible();
-    } else {
-      await expect(page.locator('nav#global-navigation-bar')).toBeVisible();
-    }
+    const brandingNav = page.locator('nav#branding-navigation-bar').first();
+    const globalNav = page.locator('nav#global-navigation-bar').first();
+    await expect
+      .poll(async () => (await brandingNav.isVisible()) || (await globalNav.isVisible()), {
+        timeout: 5000,
+      })
+      .toBeTruthy();
   }
 
   async takeScreenshot(

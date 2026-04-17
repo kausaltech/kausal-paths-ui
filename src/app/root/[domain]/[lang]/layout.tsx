@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 
 import { PATHS_INSTANCE_IDENTIFIER_HEADER } from '@common/constants/headers.mjs';
@@ -147,6 +147,9 @@ export async function generateMetadata(props: LayoutProps): Promise<Metadata> {
     openGraph: {
       title: data.instance.name,
       description: data.instance.leadParagraph ?? undefined,
+      type: 'website',
+      siteName: data.instance.name,
+      images: [`${getAssetPrefix()}/static/themes/default/images/og-image-default.png`],
     },
     metadataBase: new URL(origin),
     icons: {
@@ -164,6 +167,11 @@ export async function generateMetadata(props: LayoutProps): Promise<Metadata> {
     },
   };
 }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export default function LangLayout(props: Props) {
   const params = use(props.params);

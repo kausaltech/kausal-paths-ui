@@ -13,7 +13,11 @@ import {
   StepLabel,
   Stepper,
 } from '@mui/material';
-import type { NodeEdgeFragment, NodeFieldsFragment } from '@/common/__generated__/graphql';
+
+import type {
+  EditorNodeEdgeFragment,
+  EditorNodeFieldsFragment,
+} from '@/common/__generated__/graphql';
 import BasicInfoStep from './BasicInfoStep';
 import CopyActionStep from './CopyActionStep';
 import DataSourceStep from './DataSourceStep';
@@ -23,8 +27,8 @@ import ReviewStep from './ReviewStep';
 import {
   type DataSourceConfig,
   type DraftEdgeMapping,
-  type WizardState,
   WIZARD_STEPS,
+  type WizardState,
   createInitialWizardState,
   deriveStateFromSource,
 } from './types';
@@ -32,8 +36,8 @@ import {
 type ActionWizardProps = {
   open: boolean;
   onClose: () => void;
-  nodes: readonly NodeFieldsFragment[];
-  edges: readonly NodeEdgeFragment[];
+  nodes: readonly EditorNodeFieldsFragment[];
+  edges: readonly EditorNodeEdgeFragment[];
 };
 
 export default function ActionWizard({ open, onClose, nodes, edges }: ActionWizardProps) {
@@ -45,32 +49,32 @@ export default function ActionWizard({ open, onClose, nodes, edges }: ActionWiza
   }, []);
 
   const handleSelectSource = useCallback(
-    (action: NodeFieldsFragment) => {
+    (action: EditorNodeFieldsFragment) => {
       const derived = deriveStateFromSource(action, edges, nodes);
       setState((prev) => ({ ...prev, ...derived }));
     },
-    [edges, nodes],
+    [edges, nodes]
   );
 
   const handleBasicInfoChange = useCallback(
     (field: 'newActionId' | 'newActionName' | 'actionGroup', value: string) => {
       updateState({ [field]: value });
     },
-    [updateState],
+    [updateState]
   );
 
   const handleDataSourceChange = useCallback(
     (dataSource: DataSourceConfig) => {
       updateState({ dataSource });
     },
-    [updateState],
+    [updateState]
   );
 
   const handleEdgeMappingsChange = useCallback(
     (edgeMappings: DraftEdgeMapping[]) => {
       updateState({ edgeMappings });
     },
-    [updateState],
+    [updateState]
   );
 
   const canAdvance = useMemo(() => {

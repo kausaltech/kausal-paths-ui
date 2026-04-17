@@ -11,12 +11,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { NodeFieldsFragment } from '@/common/__generated__/graphql';
+
+import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 
 type CopyActionStepProps = {
-  nodes: readonly NodeFieldsFragment[];
-  selectedAction: NodeFieldsFragment | null;
-  onSelect: (action: NodeFieldsFragment) => void;
+  nodes: readonly EditorNodeFieldsFragment[];
+  selectedAction: EditorNodeFieldsFragment | null;
+  onSelect: (action: EditorNodeFieldsFragment) => void;
 };
 
 export default function CopyActionStep({ nodes, selectedAction, onSelect }: CopyActionStepProps) {
@@ -27,14 +28,14 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
       nodes
         .filter((n) => n.__typename === 'ActionNode')
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [nodes],
+    [nodes]
   );
 
   const filtered = useMemo(() => {
     if (!search) return actionNodes;
     const q = search.toLowerCase();
     return actionNodes.filter(
-      (n) => n.name.toLowerCase().includes(q) || n.identifier.toLowerCase().includes(q),
+      (n) => n.name.toLowerCase().includes(q) || n.identifier.toLowerCase().includes(q)
     );
   }, [actionNodes, search]);
 
@@ -63,13 +64,24 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
         sx={{ mb: 1 }}
       />
 
-      <Box sx={{ maxHeight: 400, overflow: 'auto', border: 1, borderColor: 'divider', borderRadius: 1 }}>
+      <Box
+        sx={{
+          maxHeight: 400,
+          overflow: 'auto',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 1,
+        }}
+      >
         <List dense disablePadding>
           {filtered.map((action) => {
-            const typeConfig = action.spec?.typeConfig;
+            const spec = action.editor?.spec;
+            const typeConfig = spec?.typeConfig;
             const nodeClass =
-              typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : action.nodeType;
-            const outputCount = action.spec?.outputPorts.length ?? 0;
+              typeConfig && 'nodeClass' in typeConfig
+                ? typeConfig.nodeClass
+                : (action.editor?.nodeType ?? '');
+            const outputCount = spec?.outputPorts.length ?? 0;
             const isSelected = selectedAction?.id === action.id;
 
             return (
@@ -78,13 +90,13 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
                 selected={isSelected}
                 onClick={() => onSelect(action)}
               >
-                <ListItemText
-                  primary={action.name}
-                  secondary={action.identifier}
-                />
+                <ListItemText primary={action.name} secondary={action.identifier} />
                 <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
                   <Chip label={nodeClass} size="small" variant="outlined" />
-                  <Chip label={`${outputCount} output${outputCount !== 1 ? 's' : ''}`} size="small" />
+                  <Chip
+                    label={`${outputCount} output${outputCount !== 1 ? 's' : ''}`}
+                    size="small"
+                  />
                 </Box>
               </ListItemButton>
             );
@@ -104,7 +116,8 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
           <Typography variant="subtitle2">Selected: {selectedAction.name}</Typography>
           <Typography variant="body2" color="text.secondary">
             {selectedAction.identifier}
-            {selectedAction.nodeGroup && ` \u00b7 Group: ${selectedAction.nodeGroup}`}
+            {selectedAction.editor?.nodeGroup &&
+              ` \u00b7 Group: ${selectedAction.editor.nodeGroup}`}
           </Typography>
         </Box>
       )}

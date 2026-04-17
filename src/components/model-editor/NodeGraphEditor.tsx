@@ -64,23 +64,25 @@ const GET_NODE_GRAPH = gql`
     instance {
       id
       identifier
-      graphLayout {
-        thresholds {
-          hubDegree
-          ghostableOutDegree
-          ghostableTotalDegree
-          ghostableAvgOutgoingSpan
+      editor {
+        graphLayout {
+          thresholds {
+            hubDegree
+            ghostableOutDegree
+            ghostableTotalDegree
+            ghostableAvgOutgoingSpan
+          }
+          coreNodeIds
+          ghostableContextSourceIds
+          hubIds
+          actionIds
+          outcomeIds
+          mainGraphNodeIds
         }
-        coreNodeIds
-        ghostableContextSourceIds
-        hubIds
-        actionIds
-        outcomeIds
-        mainGraphNodeIds
-      }
-      edges {
-        id
-        ...EditorNodeEdge
+        edges {
+          id
+          ...EditorNodeEdge
+        }
       }
       nodes {
         id
@@ -94,66 +96,73 @@ const GET_NODE_GRAPH = gql`
     name
     color
     uuid
-    nodeGroup
-    nodeType
     kind
     quantityKind {
       icon
       id
       label
     }
-    layoutMeta {
-      primaryClass
-      isHub
-      ghostable
-      ghostTargets
-      canonicalRail
-      topologicalLayer
-      inDegree
-      outDegree
-      totalDegree
-      avgOutgoingSpan
-      maxOutgoingSpan
-      hasActionAncestor
-    }
     ... on Node {
       isOutcome
     }
-    spec {
-      inputPorts {
-        id
-        label
-        multi
-        bindings {
+    editor {
+      nodeGroup
+      nodeType
+      layoutMeta {
+        primaryClass
+        isHub
+        ghostable
+        ghostTargets
+        canonicalRail
+        topologicalLayer
+        inDegree
+        outDegree
+        totalDegree
+        avgOutgoingSpan
+        maxOutgoingSpan
+        hasActionAncestor
+      }
+      spec {
+        inputPorts {
+          id
+          label
+          multi
+          bindings {
+            __typename
+            ... on DatasetPortType {
+              id
+              dataset {
+                id
+                identifier
+                name
+              }
+              metric {
+                id
+                label
+              }
+            }
+            ... on NodeEdgeType {
+              id
+            }
+          }
+        }
+        outputPorts {
+          id
+          label
+          quantity
+          unit {
+            id
+            short
+          }
+        }
+        typeConfig {
           __typename
-          ... on DatasetPortType {
-            id
-            dataset {
-              id
-              identifier
-              name
-            }
-            metric {
-              id
-              label
-            }
+          ... on SimpleConfigType {
+            nodeClass
           }
-          ... on NodeEdgeType {
-            id
+          ... on ActionConfigType {
+            nodeClass
           }
-        }
-      }
-      outputPorts {
-        id
-        label
-      }
-      typeConfig {
-        __typename
-        ... on SimpleConfigType {
-          nodeClass
-        }
-        ... on ActionConfigType {
-          nodeClass
         }
       }
     }
@@ -182,6 +191,22 @@ const DRAWER_WIDTH_NARROW = 320;
 const DRAWER_WIDTH_WIDE = 700;
 
 const ALL_OUTCOMES = '__all__';
+
+function getNodeSpec(node: EditorNodeFieldsFragment) {
+  return node.editor?.spec ?? null;
+}
+
+function getNodeLayoutMeta(node: EditorNodeFieldsFragment) {
+  return node.editor?.layoutMeta ?? null;
+}
+
+function getNodeType(node: EditorNodeFieldsFragment) {
+  return node.editor?.nodeType ?? '';
+}
+
+function getNodeGroup(node: EditorNodeFieldsFragment) {
+  return node.editor?.nodeGroup ?? null;
+}
 
 /** Walk edges backwards from a set of root node IDs and return all upstream node IDs (inclusive). */
 function computeUpstreamNodeIds(
@@ -227,9 +252,11 @@ function computeSnippedEdgeIds(
   for (const edge of edges) {
     const src = nodeById.get(edge.fromRef.nodeId);
     const tgt = nodeById.get(edge.toRef.nodeId);
-    if (!src?.layoutMeta || !tgt?.layoutMeta) continue;
+    const srcLayoutMeta = src ? getNodeLayoutMeta(src) : null;
+    const tgtLayoutMeta = tgt ? getNodeLayoutMeta(tgt) : null;
+    if (!srcLayoutMeta || !tgtLayoutMeta) continue;
 
-    const span = Math.abs(tgt.layoutMeta.topologicalLayer - src.layoutMeta.topologicalLayer);
+    const span = Math.abs(tgtLayoutMeta.topologicalLayer - srcLayoutMeta.topologicalLayer);
     const srcOutDegree = outDegree.get(edge.fromRef.nodeId) ?? 0;
 
     if (span > SPAN_THRESHOLD) {
@@ -266,8 +293,8 @@ function convertToElk(
     const src = nodesById.get(edge.fromRef.nodeId);
     const tgt = nodesById.get(edge.toRef.nodeId);
     if (src) {
-      const outPorts = src.spec?.outputPorts;
-      if (!outPorts || !outPorts.some((p: { id: string }) => p.id === edge.fromRef.portId)) {
+      const outPorts = getNodeSpec(src)?.outputPorts;
+      if (!outPorts || !outPorts.some((p) => p.id === edge.fromRef.portId)) {
         console.warn(
           `Skipping edge ${edge.id}: fromPort="${edge.fromRef.portId}" not found on node "${src.identifier}"`
         );
@@ -275,8 +302,8 @@ function convertToElk(
       }
     }
     if (tgt) {
-      const inPorts = tgt.spec?.inputPorts;
-      if (!inPorts || !inPorts.some((p: { id: string }) => p.id === edge.toRef.portId)) {
+      const inPorts = getNodeSpec(tgt)?.inputPorts;
+      if (!inPorts || !inPorts.some((p) => p.id === edge.toRef.portId)) {
         console.warn(
           `Skipping edge ${edge.id}: toPort="${edge.toRef.portId}" not found on node "${tgt.identifier}"`
         );
@@ -287,17 +314,18 @@ function convertToElk(
   });
 
   const elkNodes = nodes.map((node: EditorNodeFieldsFragment) => {
-    const inputPorts = node.spec?.inputPorts ?? [];
-    const outputPorts = node.spec?.outputPorts ?? [];
+    const spec = getNodeSpec(node);
+    const inputPorts = spec?.inputPorts ?? [];
+    const outputPorts = spec?.outputPorts ?? [];
     const srcHandles = outputPorts.map((p) => ({ id: p.id }));
     const tgtHandles = inputPorts.map((p) => ({
       id: p.id,
       multi: p.multi,
     }));
 
-    const typeConfig = node.spec?.typeConfig;
+    const typeConfig = spec?.typeConfig;
     const nodeClass =
-      typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : (node.nodeType ?? '');
+      typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : getNodeType(node);
 
     const elkNode: ElkNodeType = {
       id: node.id,
@@ -414,7 +442,8 @@ function NodeDetailsPanel({
   if (!node) return null;
 
   const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
-  const typeConfig = node.spec?.typeConfig;
+  const spec = getNodeSpec(node);
+  const typeConfig = spec?.typeConfig;
   const nodeClass = typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : null;
 
   const incomingByPort = new Map<string, EditorNodeEdgeFragment[]>();
@@ -433,11 +462,11 @@ function NodeDetailsPanel({
     outgoingByPort.set(portId, list);
   }
 
-  const inputPorts = node.spec?.inputPorts ?? [];
-  const outputPorts = node.spec?.outputPorts ?? [];
+  const inputPorts = spec?.inputPorts ?? [];
+  const outputPorts = spec?.outputPorts ?? [];
 
   const isDatasetNode = (n: EditorNodeFieldsFragment | undefined) =>
-    n != null && n.nodeType.toLowerCase().includes('dataset');
+    n != null && getNodeType(n).toLowerCase().includes('dataset');
 
   return (
     <Box sx={{ p: 2 }}>
@@ -466,14 +495,14 @@ function NodeDetailsPanel({
       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
         <Chip label={node.kind} size="small" variant="outlined" />
         <Chip
-          label={(nodeClass ?? node.nodeType ?? '').split('.').pop()}
+          label={(nodeClass ?? getNodeType(node)).split('.').pop()}
           size="small"
           variant="outlined"
         />
         {node.__typename === 'Node' && node.isOutcome && (
           <Chip label="outcome" size="small" color="primary" />
         )}
-        {node.nodeGroup && <Chip label={node.nodeGroup} size="small" variant="outlined" />}
+        {getNodeGroup(node) && <Chip label={getNodeGroup(node)} size="small" variant="outlined" />}
       </Box>
 
       <Divider sx={{ mb: 1.5 }} />
@@ -942,6 +971,15 @@ function FlowEditor(props: {
 
 export default function NodeGraphEditor() {
   const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
+  const editor = data.instance.editor;
+
+  if (!editor) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="text.secondary">Model editor data is not available.</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Suspense fallback={<CircularProgress />}>
@@ -949,8 +987,8 @@ export default function NodeGraphEditor() {
         <ReactFlowProvider>
           <FlowEditor
             nodes={data.instance.nodes}
-            edges={data.instance.edges}
-            outcomeNodeIds={data.instance.graphLayout.outcomeIds}
+            edges={editor.edges}
+            outcomeNodeIds={editor.graphLayout.outcomeIds}
           />
         </ReactFlowProvider>
       </div>

@@ -1,4 +1,7 @@
-import type { NodeEdgeFragment, NodeFieldsFragment } from '@/common/__generated__/graphql';
+import type {
+  EditorNodeEdgeFragment,
+  EditorNodeFieldsFragment,
+} from '@/common/__generated__/graphql';
 
 export type OutputMetric = {
   portId: string;
@@ -28,8 +31,8 @@ export type DataSourceConfig = {
 };
 
 export type WizardState = {
-  sourceAction: NodeFieldsFragment | null;
-  sourceEdges: NodeEdgeFragment[];
+  sourceAction: EditorNodeFieldsFragment | null;
+  sourceEdges: EditorNodeEdgeFragment[];
   newActionId: string;
   newActionName: string;
   actionGroup: string;
@@ -68,18 +71,19 @@ export function createInitialWizardState(): WizardState {
 }
 
 export function deriveStateFromSource(
-  action: NodeFieldsFragment,
-  allEdges: readonly NodeEdgeFragment[],
-  allNodes: readonly NodeFieldsFragment[],
+  action: EditorNodeFieldsFragment,
+  allEdges: readonly EditorNodeEdgeFragment[],
+  allNodes: readonly EditorNodeFieldsFragment[]
 ): Partial<WizardState> {
   const nodesById = new Map(allNodes.map((n) => [n.id, n]));
   const outgoingEdges = allEdges.filter((e) => e.fromRef.nodeId === action.id);
+  const spec = action.editor?.spec;
 
-  const outputMetrics: OutputMetric[] = (action.spec?.outputPorts ?? []).map((p) => ({
+  const outputMetrics: OutputMetric[] = (spec?.outputPorts ?? []).map((p) => ({
     portId: p.id,
     label: p.label ?? p.id,
-    unit: '',
-    quantity: '',
+    unit: p.unit.short,
+    quantity: p.quantity ?? '',
   }));
 
   const edgeMappings: DraftEdgeMapping[] = outgoingEdges.map((edge) => {
@@ -101,7 +105,7 @@ export function deriveStateFromSource(
     sourceEdges: [...outgoingEdges],
     newActionId: '',
     newActionName: '',
-    actionGroup: action.nodeGroup ?? '',
+    actionGroup: action.editor?.nodeGroup ?? '',
     outputMetrics,
     edgeMappings,
   };

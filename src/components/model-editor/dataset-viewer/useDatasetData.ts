@@ -4,56 +4,59 @@ import { gql } from '@apollo/client';
 import { useLazyQuery } from '@apollo/client/react';
 
 import {
-  DatasetPortDataQuery,
+  type DatasetPortDataQuery,
   type DatasetPortDataQueryVariables,
 } from '@/common/__generated__/graphql';
-import { DimensionalMetric, type DimensionalMetricData } from '../dimensional-metric';
+import { DimensionalMetric } from '../dimensional-metric';
 import { DIMENSIONAL_METRIC_FIELDS } from '../queries';
 
 const GET_DATASET_PORT_DATA = gql`
+  # eslint-disable @graphql-eslint/selection-set-depth -- editor/spec nesting plus dataset metadata exceeds the generic limit.
   query DatasetPortData($nodeId: ID!) {
     node(id: $nodeId) {
       id
-      spec {
-        inputPorts {
-          id
-          bindings {
-            __typename
-            ... on DatasetPortType {
-              id
-              dataset {
+      editor {
+        spec {
+          inputPorts {
+            id
+            bindings {
+              __typename
+              ... on DatasetPortType {
                 id
-                identifier
-                name
-                isExternalPlaceholder
-                externalRef {
-                  repoUrl
-                  commit
-                  datasetId
-                }
-                dimensions {
+                dataset {
                   id
+                  identifier
                   name
-                  categories {
-                    uuid
-                    identifier
+                  isExternalPlaceholder
+                  externalRef {
+                    repoUrl
+                    commit
+                    datasetId
+                  }
+                  dimensions {
+                    id
+                    name
+                    categories {
+                      uuid
+                      identifier
+                      label
+                    }
+                  }
+                  metrics {
+                    id
+                    name
                     label
+                    unit
                   }
                 }
-                metrics {
+                metric {
                   id
                   name
                   label
-                  unit
                 }
-              }
-              metric {
-                id
-                name
-                label
-              }
-              data {
-                ...ModelEditorDimensionalMetricFields
+                data {
+                  ...ModelEditorDimensionalMetricFields
+                }
               }
             }
           }
@@ -64,34 +67,22 @@ const GET_DATASET_PORT_DATA = gql`
   ${DIMENSIONAL_METRIC_FIELDS}
 `;
 
-export type DatasetInfo = {
-  id: string;
-  identifier: string | null;
-  name: string;
-  isExternalPlaceholder: boolean;
-  externalRef: {
-    repoUrl: string;
-    commit: string | null;
-    datasetId: string;
-  } | null;
-  dimensions: {
-    id: string;
-    name: string;
-    categories: { uuid: string; identifier: string | null; label: string }[];
-  }[];
-  metrics: {
-    id: string;
-    name: string | null;
-    label: string;
-    unit: string;
-  }[];
-};
+type DatasetInputPort = NonNullable<
+  NonNullable<NonNullable<DatasetPortDataQuery['node']>['editor']>['spec']
+>['inputPorts'][number];
+
+type DatasetPortBinding = Extract<
+  DatasetInputPort['bindings'][number],
+  { __typename: 'DatasetPortType' }
+>;
+
+export type DatasetInfo = NonNullable<DatasetPortBinding['dataset']>;
 
 export type DatasetPortData = {
-  bindingId: string;
-  portId: string;
+  bindingId: DatasetPortBinding['id'];
+  portId: DatasetInputPort['id'];
   dataset: DatasetInfo;
-  boundMetric: { id: string; name: string | null; label: string } | null;
+  boundMetric: DatasetPortBinding['metric'];
   metrics: DimensionalMetric[];
 };
 
@@ -107,27 +98,25 @@ export function useDatasetData(nodeId: string | null): UseDatasetDataResult {
     DatasetPortDataQuery,
     DatasetPortDataQueryVariables
   >(GET_DATASET_PORT_DATA, {
-    variables: { nodeId: nodeId ?? '' },
     fetchPolicy: 'cache-and-network',
   });
 
   const fetch = useCallback(() => {
     if (nodeId) {
-      executeQuery({ variables: { nodeId } });
+      void executeQuery({ variables: { nodeId } });
     }
   }, [nodeId, executeQuery]);
 
   const datasetPorts = useMemo<DatasetPortData[]>(() => {
-    const ports = data?.node?.spec?.inputPorts;
+    const ports = data?.node?.editor?.spec?.inputPorts;
     if (!ports) return [];
 
     const results: DatasetPortData[] = [];
     for (const port of ports) {
       for (const binding of port.bindings ?? []) {
         if (binding.__typename !== 'DatasetPortType') continue;
-        const metrics = (binding.data ?? []).map(
-          (d: DimensionalMetricData) => new DimensionalMetric(d)
-        );
+        if (!binding.dataset) continue;
+        const metrics = (binding.data ?? []).map((d) => new DimensionalMetric(d));
         results.push({
           bindingId: binding.id,
           portId: port.id,
