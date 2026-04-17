@@ -1,15 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Drawer,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from '@mui/material';
+import { Box, Button, CircularProgress, Drawer } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useSuspenseQuery } from '@apollo/client/react';
@@ -39,6 +30,7 @@ import ElkNode, {
 } from './ElkNode';
 import MetricsDrawer from './MetricsDrawer';
 import NodeDetailsPanel from './NodeDetailsPanel';
+import NodeFilters, { type NodeFilterState, emptyNodeFilters } from './NodeFilters';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
@@ -181,8 +173,6 @@ const EDGE_MARKER: Edge['markerEnd'] = {
 const DRAWER_WIDTH = 320;
 const OVERLAY_DRAWER_WIDTH = 600;
 const PANEL_PEEK_WIDTH = 48;
-
-const ALL_OUTCOMES = '__all__';
 
 /** Walk edges backwards from a set of root node IDs and return all upstream node IDs (inclusive). */
 function computeUpstreamNodeIds(
@@ -349,7 +339,7 @@ function FlowEditor(props: {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
-  const [selectedOutcomeId, setSelectedOutcomeId] = useState<string>(ALL_OUTCOMES);
+  const [filters, setFilters] = useState<NodeFilterState>(emptyNodeFilters);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -381,9 +371,9 @@ function FlowEditor(props: {
   );
 
   const upstreamFilteredNodeIds = useMemo(() => {
-    if (selectedOutcomeId === ALL_OUTCOMES) return null;
-    return computeUpstreamNodeIds(new Set([selectedOutcomeId]), props.edges, allNodeIdsSet);
-  }, [selectedOutcomeId, props.edges, allNodeIdsSet]);
+    if (filters.outcomeId === null) return null;
+    return computeUpstreamNodeIds(new Set([filters.outcomeId]), props.edges, allNodeIdsSet);
+  }, [filters.outcomeId, props.edges, allNodeIdsSet]);
 
   const visibleNodes = useMemo(
     () =>
@@ -512,52 +502,8 @@ function FlowEditor(props: {
     <NodeGraphInteractionContext value={interactionCtx}>
       <Box sx={{ display: 'flex', width: '100%', height: '100%' }}>
         <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-          <Box
-            sx={{
-              px: 1.5,
-              py: 1,
-              borderBottom: '1px solid #e0e0e0',
-              backgroundColor: '#fafafa',
-              display: 'flex',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 1,
-            }}
-          >
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Copy />}
-              onClick={() => {
-                setWizardSourceAction(null);
-                setWizardOpen(true);
-              }}
-              sx={{ flexShrink: 0 }}
-            >
-              Duplicate action
-            </Button>
-            {outcomeNodes.length > 1 && (
-              <>
-                <Box sx={{ flex: 1 }} />
-                <FormControl size="small" sx={{ minWidth: 220 }}>
-                  <InputLabel id="outcome-select-label">Outcome node</InputLabel>
-                  <Select
-                    labelId="outcome-select-label"
-                    label="Outcome node"
-                    value={selectedOutcomeId}
-                    onChange={(e) => setSelectedOutcomeId(e.target.value)}
-                  >
-                    <MenuItem value={ALL_OUTCOMES}>All outcomes</MenuItem>
-                    {outcomeNodes.map((n) => (
-                      <MenuItem key={n.id} value={n.id}>
-                        {n.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </>
-            )}
-          </Box>
+          <NodeFilters value={filters} onChange={setFilters} outcomeNodes={outcomeNodes} />
+
           <Box sx={{ flex: 1, position: 'relative' }}>
             <ReactFlow
               nodes={nodes}
