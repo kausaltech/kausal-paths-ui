@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
-
 import Script from 'next/script';
 
-import { useTheme } from '@common/themes';
-import styled from '@common/themes/styled';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 import { useTranslation } from '@/common/i18n';

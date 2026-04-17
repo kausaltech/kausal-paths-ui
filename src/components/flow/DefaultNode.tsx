@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import { Badge, Box, Typography } from '@mui/material';
+
 import {
   Handle,
   type Node,

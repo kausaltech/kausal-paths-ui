@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
-import { useReactiveVar } from "@apollo/client/react";
+import { useReactiveVar } from '@apollo/client/react';
+
 import { useTheme } from '@common/themes';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';

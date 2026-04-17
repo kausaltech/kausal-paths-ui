@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Alert, CircularProgress, Container } from '@mui/material';
+
 import { remove } from 'lodash-es';
 import { ArcherContainer, type ArcherContainerRef, ArcherElement } from 'react-archer';
 
@@ -16,7 +17,6 @@ import Icon from '@/components/common/icon';
 import CausalCard from '@/components/general/CausalCard';
 import ImpactDisplay from '@/components/general/ImpactDisplay';
 import NodePlot from '@/components/general/NodePlot';
-
 import CausalGridOutcomeCard from './CausalGridOutcomeCard';
 
 const EXPAND_GRID_ID = 'expand-grid-button';

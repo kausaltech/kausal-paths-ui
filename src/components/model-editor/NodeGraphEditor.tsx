@@ -643,7 +643,7 @@ export default function NodeGraphEditor() {
 
   return (
     <Suspense fallback={<CircularProgress />}>
-      <div style={{ width: '100vw', height: '100vh' }}>
+      <div style={{ width: '100%', height: '100%' }}>
         <ReactFlowProvider>
           <FlowEditor
             nodes={data.instance.nodes}

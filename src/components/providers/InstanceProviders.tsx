@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { ThemeProvider } from '@mui/material/styles';
+
 import type { Theme } from '@kausal/themes/types';
 
 import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';

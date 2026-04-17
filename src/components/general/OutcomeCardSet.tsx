@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import styled from '@common/themes/styled';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
+
+import styled from '@common/themes/styled';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { setUniqueColors } from '@/common/colors';
 import { useFeatures } from '@/common/instance';
 import { getMetricValue, getOutcomeTotal } from '@/common/preprocess';
 import OutcomeNodeContent from '@/components/general/OutcomeNodeContent';
-
 import NZPOutcomeHelpText from './NZPOutcomeHelpText';
 import OutcomeCard from './OutcomeCard';
 

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect } from 'react';
 
+import CloseIcon from '@mui/icons-material/Close';
 import LinkIcon from '@mui/icons-material/Link';
 import StorageIcon from '@mui/icons-material/Storage';
 import {
@@ -20,7 +21,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 import { type DatasetInfo, type DatasetPortData, useDatasetData } from './useDatasetData';
 
@@ -58,7 +58,13 @@ function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
         </Box>
       )}
       {dataset.isExternalPlaceholder && (
-        <Chip label="External placeholder (no local data)" size="small" color="warning" variant="outlined" sx={{ mb: 1 }} />
+        <Chip
+          label="External placeholder (no local data)"
+          size="small"
+          color="warning"
+          variant="outlined"
+          sx={{ mb: 1 }}
+        />
       )}
 
       {dataset.dimensions.length > 0 && (
@@ -111,7 +117,9 @@ function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
                 {dataset.metrics.map((m) => (
                   <TableRow key={m.id}>
                     <TableCell sx={{ py: 0.5 }}>{m.label}</TableCell>
-                    <TableCell sx={{ py: 0.5, fontFamily: 'monospace', fontSize: 12 }}>{m.name ?? '–'}</TableCell>
+                    <TableCell sx={{ py: 0.5, fontFamily: 'monospace', fontSize: 12 }}>
+                      {m.name ?? '–'}
+                    </TableCell>
                     <TableCell sx={{ py: 0.5 }}>{m.unit}</TableCell>
                   </TableRow>
                 ))}
@@ -152,7 +160,12 @@ function DatasetPortView({ port }: { port: DatasetPortData }) {
   );
 }
 
-export default function DatasetViewerModal({ open, onClose, nodeId, bindingId }: DatasetViewerModalProps) {
+export default function DatasetViewerModal({
+  open,
+  onClose,
+  nodeId,
+  bindingId,
+}: DatasetViewerModalProps) {
   const { datasetPorts, loading, error, fetch } = useDatasetData(nodeId);
 
   useEffect(() => {
@@ -161,9 +174,7 @@ export default function DatasetViewerModal({ open, onClose, nodeId, bindingId }:
     }
   }, [open, fetch]);
 
-  const filtered = bindingId
-    ? datasetPorts.filter((p) => p.bindingId === bindingId)
-    : datasetPorts;
+  const filtered = bindingId ? datasetPorts.filter((p) => p.bindingId === bindingId) : datasetPorts;
 
   return (
     <Dialog

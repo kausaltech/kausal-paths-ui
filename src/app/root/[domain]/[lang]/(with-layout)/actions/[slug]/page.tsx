@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { useParams } from 'next/navigation';
 
+import { Container, Grid } from '@mui/material';
+
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client/react';
+
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
-import { Container, Grid } from '@mui/material';
 
 import type {
   ActionContentQuery,
@@ -236,7 +237,9 @@ export default function ActionPage() {
 
   return (
     <>
-      <title>{site.title} | {action.name}</title>
+      <title>
+        {site.title} | {action.name}
+      </title>
       <HeaderSection>
         <Container fixed maxWidth="xl">
           <PageHeader>

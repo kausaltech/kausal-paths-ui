@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import styled from '@common/themes/styled';
 import {
   Button,
   Checkbox,
@@ -11,8 +10,9 @@ import {
   FormControlLabel,
 } from '@mui/material';
 
-import { useTranslation } from '@/common/i18n';
+import styled from '@common/themes/styled';
 
+import { useTranslation } from '@/common/i18n';
 import RichText from './RichText';
 
 const StyledButton = styled(Button)`

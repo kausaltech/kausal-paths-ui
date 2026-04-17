@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-
 import { useParams } from 'next/navigation';
+
+import { Card, CardContent, Container } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
-import { Card, CardContent, Container } from '@mui/material';
 
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
@@ -155,7 +155,9 @@ export default function NodePage() {
 
   return (
     <>
-      <title>{site.title} | {node.name}</title>
+      <title>
+        {site.title} | {node.name}
+      </title>
       <HeaderSection $color={node.color || undefined}>
         <Container fixed maxWidth="xl">
           <PageHeader>

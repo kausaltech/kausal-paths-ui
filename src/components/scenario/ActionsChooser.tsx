@@ -1,4 +1,3 @@
-import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box,
   Card,
@@ -11,6 +10,8 @@ import {
   lighten,
 } from '@mui/material';
 
+import { useQuery, useReactiveVar } from '@apollo/client/react';
+
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
@@ -20,7 +21,6 @@ import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
-
 import ActionParameters from '../general/ActionParameters';
 
 const ActionsList = styled.div`

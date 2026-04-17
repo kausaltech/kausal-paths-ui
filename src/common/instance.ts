@@ -1,7 +1,6 @@
 import { createContext, useContext } from 'react';
 
 import type { InstanceContextQuery } from '@/common/__generated__/graphql';
-
 import GET_INSTANCE_CONTEXT from '../queries/instance';
 
 export type InstanceContextType = InstanceContextQuery['instance'];

@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+
 import type { DataSourceConfig, DataSourceType } from './types';
 
 type DataSourceStepProps = {
@@ -15,8 +16,7 @@ type DataSourceStepProps = {
 };
 
 export default function DataSourceStep({ dataSource, onChange }: DataSourceStepProps) {
-  const update = (partial: Partial<DataSourceConfig>) =>
-    onChange({ ...dataSource, ...partial });
+  const update = (partial: Partial<DataSourceConfig>) => onChange({ ...dataSource, ...partial });
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -34,11 +34,7 @@ export default function DataSourceStep({ dataSource, onChange }: DataSourceStepP
           control={<Radio />}
           label="Use an existing dataset/table"
         />
-        <FormControlLabel
-          value="new"
-          control={<Radio />}
-          label="Create a new dedicated dataset"
-        />
+        <FormControlLabel value="new" control={<Radio />} label="Create a new dedicated dataset" />
       </RadioGroup>
 
       {dataSource.type === 'existing' && (

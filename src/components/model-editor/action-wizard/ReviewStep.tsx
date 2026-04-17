@@ -1,12 +1,5 @@
-import {
-  Alert,
-  Box,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
+
 import type { WizardState } from './types';
 
 type ReviewStepProps = {
@@ -29,7 +22,7 @@ export default function ReviewStep({ state }: ReviewStepProps) {
   const unwiredMetrics = state.outputMetrics.filter((m) => !wiredPortIds.has(m.portId));
   if (unwiredMetrics.length > 0) {
     warnings.push(
-      `${unwiredMetrics.length} output metric${unwiredMetrics.length !== 1 ? 's' : ''} not connected to any target node.`,
+      `${unwiredMetrics.length} output metric${unwiredMetrics.length !== 1 ? 's' : ''} not connected to any target node.`
     );
   }
 

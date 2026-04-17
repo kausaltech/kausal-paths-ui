@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 
-import styled from '@common/themes/styled';
 import { Box } from '@mui/material';
+
+import styled from '@common/themes/styled';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
@@ -10,7 +11,6 @@ import Loader from '@/components/common/Loader';
 import DimensionalBarGraph from '@/components/general/DimensionalBarGraph';
 import { useSiteWithSetter } from '@/context/site';
 import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
-
 import DataTable from './DataTable';
 import DimensionalNodeVisualisation from './DimensionalNodeVisualisation';
 import NodeViewSelector from './Outcome/NodeViewSelector';

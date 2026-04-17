@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react';
-
 import dynamic from 'next/dynamic';
 
 import { gql } from '@apollo/client';

@@ -1,12 +1,13 @@
 import { useState } from 'react';
-
 import dynamic from 'next/dynamic';
 
+import { CircularProgress } from '@mui/material';
 import type { Theme } from '@emotion/react';
+
+import type { PlotParams } from 'react-plotly.js';
+
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
-import { CircularProgress } from '@mui/material';
-import type { PlotParams } from 'react-plotly.js';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';

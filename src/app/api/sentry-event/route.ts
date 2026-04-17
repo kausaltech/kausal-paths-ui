@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Sentry disabled' }, { status: 500 });
   }
 
-  const clientIp = req.headers.get(FORWARDED_FOR_HEADER) ?? req.headers.get('x-forwarded-for') ?? undefined;
+  const clientIp =
+    req.headers.get(FORWARDED_FOR_HEADER) ?? req.headers.get('x-forwarded-for') ?? undefined;
 
   const body = Buffer.from(await req.arrayBuffer());
   try {

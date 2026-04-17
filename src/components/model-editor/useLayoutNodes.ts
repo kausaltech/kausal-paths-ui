@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
 import { type Edge, useNodesInitialized, useReactFlow } from '@xyflow/react';
+import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
 
 import { type ElkNodeType } from './ElkNode';
 import { computeLayoutMetrics, formatMetrics } from './layoutMetrics';
@@ -116,10 +116,12 @@ export default function useLayoutNodes(layoutVersion: number) {
       },
       (err) => {
         console.error('ELK layout failed:', err);
-      },
+      }
     );
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [nodesInitialized, layoutVersion, getNodes, getEdges, setNodes, fitView]);
 
   return null;

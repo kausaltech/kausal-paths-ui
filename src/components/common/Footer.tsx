@@ -1,5 +1,6 @@
-import type { Theme } from '@kausal/themes/types';
 import { Container } from '@mui/material';
+
+import type { Theme } from '@kausal/themes/types';
 import { transparentize } from 'polished';
 import SVG from 'react-inlinesvg';
 
@@ -10,7 +11,6 @@ import { getThemeStaticURL } from '@common/themes/theme';
 import { type TFunction, useTranslation } from '@/common/i18n';
 import { Link } from '@/common/links';
 import { useSite } from '@/context/site';
-
 import Icon from './icon';
 
 const StyledFooter = styled.footer`

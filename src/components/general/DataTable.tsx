@@ -8,6 +8,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+
 import { useTranslations } from 'next-intl';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';

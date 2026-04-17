@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
-
 import { Card, Container } from '@mui/material';
+
+import type { Metadata } from 'next';
 
 import { MuiThemeExample } from '@/components/common/MuiThemeExample';
 

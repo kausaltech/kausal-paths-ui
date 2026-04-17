@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { useTheme } from '@common/themes';
 import { Box, Card, CardContent, Typography } from '@mui/material';
 
 import { Chart } from '@common/components/Chart';
+import { useTheme } from '@common/themes';
 
 import { useNumberFormatter } from '@/common/numbers';
 

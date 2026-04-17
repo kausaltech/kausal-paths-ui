@@ -1,17 +1,17 @@
 import dynamic from 'next/dynamic';
 
-import { useTheme } from '@common/themes';
-import styled from '@common/themes/styled';
 import type Plotly from 'plotly.js';
 import { tint, transparentize } from 'polished';
 import CsvDownload from 'react-json-to-csv';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { metricToPlot } from '@/common/preprocess';
 import Icon from '@/components/common/icon';
 import { useSite } from '@/context/site';
-
 import type { CausalGridNode } from './CausalGrid';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });

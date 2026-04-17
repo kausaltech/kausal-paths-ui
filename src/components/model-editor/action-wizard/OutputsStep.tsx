@@ -1,14 +1,7 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
-import {
-  Box,
-  Chip,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-} from '@mui/material';
+import { Box, Chip, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+
 import type { DraftEdgeMapping, OutputMetric } from './types';
 
 const METRIC_DISPLAY_LABELS: Record<string, string> = {
@@ -39,7 +32,7 @@ export default function OutputsStep({ outputMetrics, edgeMappings }: OutputsStep
           const isWired = wiredPortIds.has(metric.portId);
           const displayLabel = METRIC_DISPLAY_LABELS[metric.quantity] ?? metric.label;
           const targetCount = edgeMappings.filter(
-            (e) => e.outputMetricPortId === metric.portId,
+            (e) => e.outputMetricPortId === metric.portId
           ).length;
 
           return (
@@ -59,11 +52,7 @@ export default function OutputsStep({ outputMetrics, edgeMappings }: OutputsStep
               }
             >
               <ListItemIcon>
-                {isWired ? (
-                  <CheckCircleIcon color="success" />
-                ) : (
-                  <LinkOffIcon color="warning" />
-                )}
+                {isWired ? <CheckCircleIcon color="success" /> : <LinkOffIcon color="warning" />}
               </ListItemIcon>
               <ListItemText
                 primary={displayLabel}

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
-import styled from '@common/themes/styled';
+
 import type { DefaultLabelFormatterCallbackParams, EChartsOption } from 'echarts';
 import {
   Dropdown,
@@ -16,13 +16,13 @@ import {
 } from 'reactstrap';
 
 import { Chart } from '@common/components/Chart';
+import styled from '@common/themes/styled';
 
 import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
 import { useNumberFormatter } from '@/common/numbers';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useSite } from '@/context/site';
-
 import { EmissionsCard } from './EmissionsCard';
 import { ProgressDriversWrapper } from './ProgressDriversWrapper';
 import { StyledCard } from './StyledCard';

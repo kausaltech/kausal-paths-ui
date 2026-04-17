@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { useApolloClient } from '@apollo/client/react';
 import {
   Button,
   Card,
@@ -10,6 +9,8 @@ import {
   Portal,
   Typography,
 } from '@mui/material';
+
+import { useApolloClient } from '@apollo/client/react';
 import { ArrowClockwise, X } from 'react-bootstrap-icons';
 
 import styled from '@common/themes/styled';

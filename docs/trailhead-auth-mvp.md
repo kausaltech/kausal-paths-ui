@@ -12,6 +12,7 @@ climate actions, build transparent emission scenarios, and integrate
 climate considerations into decision-making.
 
 Core capabilities:
+
 1. **Modelling and comparing** the impacts of climate actions — emission
    reductions, costs, and monetisable benefits
 2. **Visualising** city-level emission development under different
@@ -56,6 +57,7 @@ Kausal Watch. Reference implementation:
 the client library but the IdP interaction is the same).
 
 **IdP details:**
+
 - Discovery URL: `{AUTH_ISSUER}/.well-known/openid-configuration`
 - `AUTH_ISSUER` env var defaults to `PATHS_BACKEND_URL`
   (see `kausal_common/src/env/runtime.ts`)
@@ -117,6 +119,7 @@ deleteFrameworkConfig(id: ID!): DeleteFrameworkConfigMutation
 ```
 
 **Not yet in schema** (need backend work):
+
 - User self-registration mutation
 - User invitation mutation (accept email, grant instance access)
 

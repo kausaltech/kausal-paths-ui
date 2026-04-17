@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { useMemo, useState } from 'react';
 
-import { useReactiveVar } from '@apollo/client/react';
-import type { Theme } from '@emotion/react';
 import { Box, Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
+import type { Theme } from '@emotion/react';
+
+import { useReactiveVar } from '@apollo/client/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';

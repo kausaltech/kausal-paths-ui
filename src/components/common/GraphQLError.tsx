@@ -1,6 +1,7 @@
+import { Button } from '@mui/material';
+
 import type { ErrorLike } from '@apollo/client/core';
 import { CombinedGraphQLErrors, CombinedProtocolErrors, LinkError } from '@apollo/client/errors';
-import { Button } from '@mui/material';
 import * as Sentry from '@sentry/nextjs';
 import type { GraphQLFormattedError } from 'graphql';
 import { Alert, Card, CardBody, UncontrolledCollapse } from 'reactstrap';

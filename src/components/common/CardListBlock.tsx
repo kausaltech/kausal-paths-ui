@@ -1,5 +1,6 @@
-import styled from '@common/themes/styled';
 import { Card, CardContent } from '@mui/material';
+
+import styled from '@common/themes/styled';
 
 type Props = {
   title?: string;

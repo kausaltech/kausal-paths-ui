@@ -29,8 +29,14 @@ function segmentsIntersect(a: Seg, b: Seg) {
 }
 
 function lineIntersectsEdge(
-  x1: number, y1: number, x2: number, y2: number,
-  x3: number, y3: number, x4: number, y4: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  x3: number,
+  y3: number,
+  x4: number,
+  y4: number
 ) {
   const d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
   if (Math.abs(d) < 1e-10) return false;
@@ -90,11 +96,15 @@ export function computeLayoutMetrics(nodes: Node[], edges: Edge[]): LayoutMetric
   let crossings = 0;
   for (let i = 0; i < segs.length; i++) {
     for (let j = i + 1; j < segs.length; j++) {
-      const ei = edgeRefs[i], ej = edgeRefs[j];
+      const ei = edgeRefs[i],
+        ej = edgeRefs[j];
       if (
-        ei.source === ej.source || ei.source === ej.target ||
-        ei.target === ej.source || ei.target === ej.target
-      ) continue;
+        ei.source === ej.source ||
+        ei.source === ej.target ||
+        ei.target === ej.source ||
+        ei.target === ej.target
+      )
+        continue;
       if (segmentsIntersect(segs[i], segs[j])) crossings++;
     }
   }
@@ -108,7 +118,10 @@ export function computeLayoutMetrics(nodes: Node[], edges: Edge[]): LayoutMetric
     }
   }
 
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity;
   for (const n of nodeInfos) {
     minX = Math.min(minX, n.x);
     maxX = Math.max(maxX, n.x + n.w);

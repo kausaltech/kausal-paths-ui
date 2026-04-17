@@ -1,14 +1,15 @@
 import React from 'react';
 
-import { useTheme } from '@common/themes';
-import styled from '@common/themes/styled';
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
+
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import { Chart } from '@common/components/Chart';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { ScenarioKind } from '@/common/__generated__/graphql';
 import { useTranslations } from '@/common/i18n';

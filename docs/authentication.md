@@ -21,6 +21,7 @@ stateless mode (no database). The Kausal backend serves as the OIDC
 Identity Provider.
 
 **Server config** (`src/lib/auth.ts`):
+
 - Generic OAuth plugin with OIDC discovery against the Kausal IdP
 - Stateless JWE cookie cache (7-day expiry, auto-refresh at 80%)
 - Account data stored in encrypted cookie (`storeAccountCookie: true`)
@@ -28,21 +29,23 @@ Identity Provider.
   response by reading it from the account cookie
 
 **Client** (`src/lib/auth-client.ts`):
+
 - `createAuthClient` with generic OAuth + custom session type inference
 - Provides `signIn`, `signOut`, `useSession` hooks
 
 **API route** (`src/app/api/auth/[...all]/route.ts`):
+
 - Mounts better-auth's handler via `toNextJsHandler`
 
 ### Environment Variables
 
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `AUTH_SECRET` | Signs/encrypts session cookies | (required) |
-| `AUTH_ISSUER` | OIDC IdP base URL | Falls back to `PATHS_BACKEND_URL` |
-| `AUTH_CLIENT_ID` | OAuth client ID | (required) |
-| `AUTH_CLIENT_SECRET` | OAuth client secret | (required) |
-| `AUTH_ALLOWED_HOSTS` | Additional allowed hostnames (comma-separated) | (none) |
+| Variable             | Purpose                                        | Default                           |
+| -------------------- | ---------------------------------------------- | --------------------------------- |
+| `AUTH_SECRET`        | Signs/encrypts session cookies                 | (required)                        |
+| `AUTH_ISSUER`        | OIDC IdP base URL                              | Falls back to `PATHS_BACKEND_URL` |
+| `AUTH_CLIENT_ID`     | OAuth client ID                                | (required)                        |
+| `AUTH_CLIENT_SECRET` | OAuth client secret                            | (required)                        |
+| `AUTH_ALLOWED_HOSTS` | Additional allowed hostnames (comma-separated) | (none)                            |
 
 `WILDCARD_DOMAINS` (existing, comma-separated) is also used: each entry
 becomes a `*.{domain}:*` pattern for better-auth's dynamic base URL
@@ -54,12 +57,12 @@ can populate this from ingress configuration.
 
 ### Cookie Inventory
 
-| Cookie | Set by | Contents | Purpose |
-|--------|--------|----------|---------|
-| `better-auth.session_token` | better-auth | Signed session token | Session identity |
-| `better-auth.session_data` | better-auth | JWE-encrypted session + user | Stateless session cache |
-| `better-auth.account_data` | better-auth | Encrypted OAuth tokens | Stores access/refresh/id tokens |
-| `paths_api_sessionid` | Django backend | Django session ID | Ephemeral model state |
+| Cookie                      | Set by         | Contents                     | Purpose                         |
+| --------------------------- | -------------- | ---------------------------- | ------------------------------- |
+| `better-auth.session_token` | better-auth    | Signed session token         | Session identity                |
+| `better-auth.session_data`  | better-auth    | JWE-encrypted session + user | Stateless session cache         |
+| `better-auth.account_data`  | better-auth    | Encrypted OAuth tokens       | Stores access/refresh/id tokens |
+| `paths_api_sessionid`       | Django backend | Django session ID            | Ephemeral model state           |
 
 ### Token Flow by Layer
 
@@ -107,7 +110,7 @@ RSC renders are read-only (no mutations that would change session state).
 
 **proxy.ts (request interception):**
 
-Does not extract or forward tokens. Only checks for the *existence* of
+Does not extract or forward tokens. Only checks for the _existence_ of
 the session cookie via `getSessionCookie(req)` and redirects to
 `/auth/sign-in` if absent. This is an optimistic check — the cookie
 is not validated, just detected.
@@ -127,7 +130,7 @@ modify the underlying model for other users.
 Django's `login()` function explicitly writes the user ID into the
 session (`request.session[SESSION_KEY]`). Token-based authentication
 middleware (DRF `TokenAuthentication`, custom OIDC middleware, etc.)
-sets `request.user` directly on the request object *without* calling
+sets `request.user` directly on the request object _without_ calling
 `login()` and without writing to the session.
 
 This means:
@@ -141,7 +144,7 @@ This means:
 - Logging out (losing the Bearer token) doesn't destroy the Django
   session — tweaks survive if the browser still has the session cookie
 
-**Potential concern:** If the backend's auth middleware *does* call
+**Potential concern:** If the backend's auth middleware _does_ call
 `login()` (e.g., on first authenticated request), Django will cycle
 the session key for security. This would discard any ephemeral tweaks
 from the previous anonymous session. Verify that the Paths backend's
@@ -156,6 +159,7 @@ the session cookie is still present.
 
 For Trailhead (where all users are authenticated), the question is
 whether ephemeral tweaks should be:
+
 - **Session-scoped** (current behavior) — tweaks disappear when the
   session expires
 - **User-scoped** — tweaks are stored per-user and restored on login

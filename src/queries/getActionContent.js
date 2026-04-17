@@ -3,7 +3,6 @@ import { gql } from '@apollo/client';
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 import DimensionalFlow from '@/components/graphs/DimensionalFlow';
 import { DimensionalMetric } from '@/data/metric';
-
 import { ACTION_PARAMETER_FRAGMENT } from './actionParameterFragment';
 
 const CAUSAL_GRID_NODE_FRAGMENT = gql`

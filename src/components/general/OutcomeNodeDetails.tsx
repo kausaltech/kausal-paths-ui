@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 
-import styled from '@common/themes/styled';
 import { Box, Typography } from '@mui/material';
+
+import styled from '@common/themes/styled';
 
 import type { TFunction } from '@/common/i18n';
 import { ActionLink, NodeLink } from '@/common/links';

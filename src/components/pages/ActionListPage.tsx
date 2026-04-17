@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box,
   Container,
@@ -12,6 +11,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 
 import styled from '@common/themes/styled';
 import { transientOptions } from '@common/themes/styles/styled';
@@ -41,7 +42,6 @@ import { ReturnOnInvestment } from '@/components/general/ReturnOnInvestment';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type { ActionWithEfficiency, SortActionsBy, SortActionsConfig } from '@/types/actions.types';
-
 import { SimpleEffect } from '../general/SimpleEffect';
 import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';

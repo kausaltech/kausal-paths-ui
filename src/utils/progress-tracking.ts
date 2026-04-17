@@ -1,4 +1,4 @@
-import { ScenarioKind, type DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
+import { type DimensionalNodeMetricFragment, ScenarioKind } from '@/common/__generated__/graphql';
 import type { SiteContextScenario, SiteContextType } from '@/context/site';
 
 type Metric = NonNullable<DimensionalNodeMetricFragment['metricDim']>;

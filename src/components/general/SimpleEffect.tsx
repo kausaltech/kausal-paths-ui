@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { useMemo } from 'react';
 
-import { useReactiveVar } from "@apollo/client/react";
+import { useReactiveVar } from '@apollo/client/react';
 import type { BarSeriesOption } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';

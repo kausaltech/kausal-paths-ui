@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Card, CardContent, Container, Grid } from '@mui/material';
+
 import * as Sentry from '@sentry/nextjs';
 
 import { isProductionDeployment } from '@common/env';

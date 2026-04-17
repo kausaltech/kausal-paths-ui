@@ -1,9 +1,10 @@
-import { gql, NetworkStatus } from '@apollo/client';
-import { useMutation, useQuery } from '@apollo/client/react';
-import styled from '@common/themes/styled';
 import { CircularProgress, FormControlLabel, Switch } from '@mui/material';
 
+import { NetworkStatus, gql } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client/react';
+
 import { startInteraction } from '@common/sentry/helpers';
+import styled from '@common/themes/styled';
 
 import type {
   ParametersQuery,

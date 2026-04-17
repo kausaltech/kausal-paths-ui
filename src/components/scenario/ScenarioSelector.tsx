@@ -1,7 +1,3 @@
-import { gql } from '@apollo/client';
-import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
-
-import { styled } from '@mui/material/styles';
 import {
   CircularProgress,
   FormControl,
@@ -10,8 +6,13 @@ import {
   Select,
   type SelectChangeEvent,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+import { gql } from '@apollo/client';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 
 import { startInteraction } from '@common/sentry/helpers';
+import { transientOptions } from '@common/themes/styles/styled';
 
 import type {
   ActivateScenarioMutation,
@@ -23,7 +24,6 @@ import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import type { SiteContextScenario } from '@/context/site';
 import { GET_SCENARIOS } from '@/queries/getScenarios';
-import { transientOptions } from '@common/themes/styles/styled';
 
 const ACTIVATE_SCENARIO = gql`
   mutation ActivateScenario($scenarioId: ID!) {
@@ -39,7 +39,6 @@ const ACTIVATE_SCENARIO = gql`
     }
   }
 `;
-
 
 const StyledFormControl = styled(FormControl)`
   max-width: 320px;

@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 
-import { useQuery, useReactiveVar } from '@apollo/client/react';
-import styled from '@common/themes/styled';
 import { Box, Container, useTheme } from '@mui/material';
+
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 
 import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
+import styled from '@common/themes/styled';
 
 import type {
   OutcomeNodeQuery,
@@ -17,7 +18,6 @@ import { useInstance } from '@/common/instance';
 import { PageHero } from '@/components/common/PageHero';
 import Error from '@/components/common/PathsError';
 import GET_OUTCOME_NODE from '@/queries/getOutcomeNode';
-
 import OutcomeBlock from '../general/OutcomeBlock';
 import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';

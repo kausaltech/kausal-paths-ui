@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useReactiveVar } from "@apollo/client/react";
-import { useTheme } from '@common/themes';
-import styled from '@common/themes/styled';
 import {
   Box,
   Grid,
@@ -13,7 +10,12 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
+
+import { useReactiveVar } from '@apollo/client/react';
 import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
@@ -33,7 +35,6 @@ import {
   getProgressTrackingScenario,
   metricHasProgressTrackingScenario,
 } from '@/utils/progress-tracking';
-
 import NodeGraph from './NodeGraph';
 
 const Tools = styled.div`

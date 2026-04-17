@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return*/
 // Ignore linting for this file, this component can be deprecated soon and the code is not worth fixing at this point
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
-import styled from '@common/themes/styled';
 import Cytoscape, {
   type EdgeDefinition,
   type ElementDefinition,
@@ -16,11 +14,11 @@ import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 import { readableColor } from 'polished';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
+import styled from '@common/themes/styled';
 import { sanitizeHtmlUnit } from '@common/utils/format';
 
 import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
-
 import SelectDropdown from './common/SelectDropdown';
 import Icon from './common/icon';
 

@@ -1,5 +1,6 @@
-import styled from '@common/themes/styled';
 import { ChevronCompactDown, ChevronCompactUp } from 'react-bootstrap-icons';
+
+import styled from '@common/themes/styled';
 
 const CardWithState = styled.div`
   position: relative;

@@ -11,9 +11,10 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import type { ColDef, CellClassParams } from 'ag-grid-community';
-import AgGridReact from '../GridEditor';
 
+import type { CellClassParams, ColDef } from 'ag-grid-community';
+
+import AgGridReact from '../GridEditor';
 import {
   type DimensionalMetric,
   type MetricCategory,
@@ -32,9 +33,7 @@ const FORECAST_CELL_CLASS = 'metric-forecast-cell';
 export default function MetricDataViewer({ metric, compact = false }: MetricDataViewerProps) {
   const hasDimensions = metric.dimensions.length > 0;
   const [viewMode, setViewMode] = useState<ViewMode>(hasDimensions ? 'pivot' : 'flat');
-  const [pivotDimId, setPivotDimId] = useState<string>(
-    () => metric.dimensions[0]?.id ?? '',
-  );
+  const [pivotDimId, setPivotDimId] = useState<string>(() => metric.dimensions[0]?.id ?? '');
 
   const [filters, setFilters] = useState<Record<string, string[]>>({});
 
@@ -64,7 +63,9 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
       type: 'numericColumn',
       width: 120,
       valueFormatter: (params: { value: number | null }) =>
-        params.value != null ? params.value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '',
+        params.value != null
+          ? params.value.toLocaleString(undefined, { maximumFractionDigits: 2 })
+          : '',
       cellClass: (params: CellClassParams) =>
         forecastFrom != null && params.data?.year >= forecastFrom ? FORECAST_CELL_CLASS : '',
     }));
@@ -96,7 +97,8 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
         headerName: dim.label,
         width: 140,
         sortable: true,
-        valueFormatter: (params: { value: string }) => catLabelMap.get(params.value) ?? params.value,
+        valueFormatter: (params: { value: string }) =>
+          catLabelMap.get(params.value) ?? params.value,
       };
     });
     const yearCol: ColDef = { field: 'year', headerName: 'Year', width: 80, sortable: true };
@@ -107,7 +109,9 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
       width: 130,
       sortable: true,
       valueFormatter: (params: { value: number | null }) =>
-        params.value != null ? params.value.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '',
+        params.value != null
+          ? params.value.toLocaleString(undefined, { maximumFractionDigits: 4 })
+          : '',
       cellClass: (params: CellClassParams) =>
         forecastFrom != null && params.data?.year >= forecastFrom ? FORECAST_CELL_CLASS : '',
     };
@@ -126,14 +130,21 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
         )}
         <Chip label={metric.unit.short} size="small" variant="outlined" />
         {metric.forecastFrom != null && (
-          <Chip label={`Forecast from ${metric.forecastFrom}`} size="small" color="info" variant="outlined" />
+          <Chip
+            label={`Forecast from ${metric.forecastFrom}`}
+            size="small"
+            color="info"
+            variant="outlined"
+          />
         )}
         <Box sx={{ flex: 1 }} />
         {hasDimensions && (
           <ToggleButtonGroup
             value={viewMode}
             exclusive
-            onChange={(_, v) => { if (v) setViewMode(v); }}
+            onChange={(_, v) => {
+              if (v) setViewMode(v);
+            }}
             size="small"
           >
             <ToggleButton value="pivot">Pivot</ToggleButton>
@@ -152,7 +163,9 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
             onChange={(e) => setPivotDimId(e.target.value)}
           >
             {metric.dimensions.map((d) => (
-              <MenuItem key={d.id} value={d.id}>{d.label}</MenuItem>
+              <MenuItem key={d.id} value={d.id}>
+                {d.label}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -169,12 +182,12 @@ export default function MetricDataViewer({ metric, compact = false }: MetricData
                 multiple
                 value={filters[dim.id] ?? []}
                 onChange={(e) => handleFilterChange(dim.id, e.target.value as string[])}
-                renderValue={(selected) =>
-                  `${selected.length} of ${dim.categories.length}`
-                }
+                renderValue={(selected) => `${selected.length} of ${dim.categories.length}`}
               >
                 {dim.categories.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>{cat.label}</MenuItem>
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.label}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>

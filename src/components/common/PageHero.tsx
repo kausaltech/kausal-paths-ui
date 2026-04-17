@@ -1,6 +1,7 @@
-import type { Theme } from '@emotion/react';
-import styled from '@common/themes/styled';
 import { Card, Container, type SxProps } from '@mui/material';
+import type { Theme } from '@emotion/react';
+
+import styled from '@common/themes/styled';
 
 const StyledHeroSection = styled.div`
   background: ${({ theme }) => theme.brandDark};

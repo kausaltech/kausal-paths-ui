@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
 
-import { useReactiveVar } from "@apollo/client/react";
-import { useTheme } from '@common/themes';
 import type { Theme } from '@emotion/react';
-import styled from '@common/themes/styled';
+
+import { useReactiveVar } from '@apollo/client/react';
 import type {
   DefaultLabelFormatterCallbackParams,
   EChartsCoreOption,
@@ -11,6 +10,8 @@ import type {
 } from 'echarts';
 
 import { Chart } from '@common/components/Chart';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';

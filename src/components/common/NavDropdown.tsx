@@ -1,10 +1,10 @@
 import React, { type ReactNode } from 'react';
-
 import Link from 'next/link';
 
-import styled from '@common/themes/styled';
 import { transparentize } from 'polished';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+
+import styled from '@common/themes/styled';
 
 const NavLink = styled.div`
   a {

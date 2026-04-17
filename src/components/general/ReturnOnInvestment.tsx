@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useReactiveVar } from "@apollo/client/react";
+import { useReactiveVar } from '@apollo/client/react';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { useTranslations } from 'next-intl';

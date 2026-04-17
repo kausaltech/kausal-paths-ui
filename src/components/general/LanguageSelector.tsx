@@ -1,8 +1,8 @@
-import { useTheme } from '@common/themes';
-import styled from '@common/themes/styled';
 import { useLocale } from 'next-intl';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { transientOptions } from '@common/themes/styles/styled';
 
 import { useInstance } from '@/common/instance';

@@ -1,14 +1,15 @@
-import { useReactiveVar } from "@apollo/client/react";
-import styled from '@common/themes/styled';
 import { Box, Skeleton, Typography } from '@mui/material';
+
+import { useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { PatchCheckFill, PatchExclamationFill } from 'react-bootstrap-icons';
+
+import styled from '@common/themes/styled';
 
 import type { InstanceGoalOutcomeQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import type { InstanceGoal } from '@/common/instance';
 import { useNumberFormatter } from '@/common/numbers';
-
 import ScenarioOutcomeAsText from './ScenarioOutcomeAsText';
 
 const CompactOutcome = styled(Box)`
