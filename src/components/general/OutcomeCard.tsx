@@ -4,11 +4,12 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
+import { useTranslations } from 'next-intl';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
 import { useFeatures } from '@/common/instance';
-import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
+import { useNumberFormatter } from '@/common/numbers';
+import { getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';
 import PopoverTip from '@/components/common/PopoverTip';
 
@@ -158,7 +159,6 @@ type SectorSummaryProps = {
   active: boolean;
   isForecast: boolean;
   goalOutcomeValue: number;
-  maximumFractionDigits: number | null;
   unit: string | undefined;
   change: number | undefined;
   startYear: number;
@@ -169,13 +169,14 @@ export const SectorSummary = ({
   active,
   isForecast,
   goalOutcomeValue,
-  maximumFractionDigits,
   unit,
   change,
   startYear,
   endYear,
 }: SectorSummaryProps) => {
-  const { t } = useTranslation();
+  const t = useTranslations('common');
+  const formatNumber = useNumberFormatter();
+
   return (
     <MainValueWrapper>
       <Label $active={active}>
@@ -183,7 +184,7 @@ export const SectorSummary = ({
       </Label>
       {goalOutcomeValue !== undefined ? (
         <TotalValue>
-          {beautifyValue(goalOutcomeValue, undefined, maximumFractionDigits ?? undefined)}
+          {formatNumber(goalOutcomeValue)}
           <MainUnit dangerouslySetInnerHTML={{ __html: unit || '' }} />
         </TotalValue>
       ) : (
@@ -284,7 +285,7 @@ export default function OutcomeCard(props: OutcomeCardProps) {
   const lastMeasuredYear =
     node?.metric?.historicalValues[node.metric.historicalValues.length - 1]?.year;
   const isForecast = !lastMeasuredYear || endYear > lastMeasuredYear;
-  const { maximumFractionDigits, showRefreshPrompt } = useFeatures();
+  const { showRefreshPrompt } = useFeatures();
 
   // TODO: Remove the showRefreshPrompt check once help text is moved to node descriptions on the backend
   const helpText = showRefreshPrompt ? getHelpText(node.id) : undefined;
@@ -338,7 +339,6 @@ export default function OutcomeCard(props: OutcomeCardProps) {
                 active={active}
                 isForecast={isForecast}
                 goalOutcomeValue={goalOutcomeValue}
-                maximumFractionDigits={maximumFractionDigits}
                 unit={unit}
                 change={change}
                 startYear={startYear}

@@ -2,6 +2,7 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 
 import { useTranslation } from '@/common/i18n';
+import { useNumberFormatter } from '@/common/numbers';
 
 import { StyledCard } from './StyledCard';
 import { StyledStatusBadge } from './StyledStatusBadge';
@@ -32,6 +33,7 @@ const StyledEmissionsCardTitle = styled.h5`
 export function EmissionsCard({ title, value, unit, deltaPercentage }: EmissionsCardProps) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const formatNumber = useNumberFormatter();
 
   const status = deltaPercentage ? getStatus(deltaPercentage, t, theme) : undefined;
 
@@ -39,8 +41,7 @@ export function EmissionsCard({ title, value, unit, deltaPercentage }: Emissions
     <StyledCard>
       <StyledEmissionsCardTitle>{title}</StyledEmissionsCardTitle>
       <StyledEmissionsCardValue>
-        {value.toLocaleString(undefined, { maximumFractionDigits: 0 })}{' '}
-        <StyledEmissionsCardUnit>{unit}</StyledEmissionsCardUnit>
+        {formatNumber(value)} <StyledEmissionsCardUnit>{unit}</StyledEmissionsCardUnit>
       </StyledEmissionsCardValue>
       {status?.subLabel && (
         <StyledStatusBadge $backgroundColor={status.backgroundColor} $color={status.color}>

@@ -6,7 +6,6 @@ import { Box } from '@mui/material';
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
-//import { beautifyValue, getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';
 import DimensionalBarGraph from '@/components/general/DimensionalBarGraph';
 import { useSiteWithSetter } from '@/context/site';

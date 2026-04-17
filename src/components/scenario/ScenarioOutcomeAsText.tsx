@@ -1,7 +1,5 @@
-import { beautifyValue } from '@common/utils/format';
-
 import { useTranslation } from '@/common/i18n';
-import { useFeatures } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
 
 const ScenarioOutcomeAsText = (props: {
   isForecast: boolean;
@@ -15,7 +13,7 @@ const ScenarioOutcomeAsText = (props: {
   unit: string;
 }) => {
   const { t } = useTranslation();
-  const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
+  const formatNumber = useNumberFormatter();
   const {
     isForecast,
     scenarioName,
@@ -28,16 +26,8 @@ const ScenarioOutcomeAsText = (props: {
     unit,
   } = props;
 
-  const selectedYearValueFormatted = `${beautifyValue(
-    selectedYearValue,
-    undefined,
-    maximumFractionDigits ?? undefined
-  )} ${unit}`;
-  const nearestGoalValueFormatted = `${beautifyValue(
-    nearestGoalValue,
-    undefined,
-    maximumFractionDigits ?? undefined
-  )} ${unit}`;
+  const selectedYearValueFormatted = `${formatNumber(selectedYearValue)} ${unit}`;
+  const nearestGoalValueFormatted = `${formatNumber(nearestGoalValue)} ${unit}`;
   if (isForecast) {
     return (
       <div

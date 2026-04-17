@@ -1,4 +1,5 @@
 {
   "network-error": "Nätverksfel",
-  "not-found-intro": "404 Sidan hittas inte."
+  "not-found-intro": "404 Sidan hittas inte.",
+  "instance-protected": "Webbplatsen är för närvarande inte offentlig."
 }

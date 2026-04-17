@@ -105,6 +105,24 @@ function getAcceptPreferredLocale(supportedLocales: string[], headers: Headers) 
   } catch (error) {}
 }
 
+function protectedResponse(req: NextRequest, headers: Headers) {
+  const locale =
+    headers.get(DEFAULT_LANGUAGE_HEADER) ||
+    getAcceptPreferredLocale(SUPPORTED_LOCALES, headers) ||
+    'en';
+  const url = new NextURL(req.nextUrl.href, {
+    nextConfig: {
+      i18n: {
+        defaultLocale: locale,
+        locales: SUPPORTED_LOCALES,
+      },
+    },
+    forceLocale: true,
+  });
+  url.pathname = '/protected';
+  return NextResponse.rewrite(url, { request: { headers } });
+}
+
 function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
   const locale =
     headers.get(DEFAULT_LANGUAGE_HEADER) ||
@@ -239,6 +257,10 @@ async function middleware(req: NextRequest) {
   reqHeaders.set(REQUEST_CORRELATION_ID_HEADER, reqId);
   if (!shouldAddInstanceHeaders(match.parts)) {
     return NextResponse.next(reqInit);
+  }
+  if (instance?.isProtected) {
+    reqHeaders.delete(INSTANCE_IDENTIFIER_HEADER);
+    return protectedResponse(req, reqHeaders);
   }
   if (!instances.length) {
     const wildcardDomains = getWildcardDomains();

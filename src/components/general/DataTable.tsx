@@ -8,11 +8,10 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { useTranslation } from '@/common/i18n';
-import { useFeatures } from '@/common/instance';
-import { formatNumber } from '@/common/preprocess';
+import { useNumberFormatter } from '@/common/numbers';
 
 type DataTableProps = {
   node: OutcomeNodeFieldsFragment;
@@ -23,8 +22,8 @@ type DataTableProps = {
 
 const DataTable = (props: DataTableProps) => {
   const { node, subNodes, startYear, endYear } = props;
-  const { t, i18n } = useTranslation();
-
+  const t = useTranslations('common');
+  const formatNumber = useNumberFormatter();
   const metric = node.metric!;
 
   const totalHistoricalValues = metric.historicalValues.filter(
@@ -33,7 +32,6 @@ const DataTable = (props: DataTableProps) => {
   const totalForecastValues = metric.forecastValues.filter(
     (value) => value.year >= startYear && value.year <= endYear
   );
-  const maximumFractionDigits = useFeatures().maximumFractionDigits ?? undefined;
 
   const hasTotalValues =
     totalHistoricalValues.some((val) => val.value !== null) ||
@@ -75,18 +73,12 @@ const DataTable = (props: DataTableProps) => {
                     ? formatNumber(
                         subNode?.metric?.historicalValues.find(
                           (value) => value.year === metric.year
-                        )?.value ?? 0,
-                        i18n.language,
-                        maximumFractionDigits
+                        )?.value ?? 0
                       )
                     : '-'}
                 </TableCell>
               ))}
-              {hasTotalValues && (
-                <TableCell>
-                  {formatNumber(metric.value, i18n.language, maximumFractionDigits)}
-                </TableCell>
-              )}
+              {hasTotalValues && <TableCell>{formatNumber(metric.value)}</TableCell>}
               <TableCell
                 dangerouslySetInnerHTML={{
                   __html: node?.metricDim?.unit?.htmlShort ?? '',
@@ -103,18 +95,12 @@ const DataTable = (props: DataTableProps) => {
                   {subNode?.metric?.forecastValues.find((value) => value.year === metric.year)
                     ? formatNumber(
                         subNode?.metric?.forecastValues.find((value) => value.year === metric.year)
-                          ?.value ?? 0,
-                        i18n.language,
-                        maximumFractionDigits
+                          ?.value ?? 0
                       )
                     : '-'}
                 </TableCell>
               ))}
-              {hasTotalValues && (
-                <TableCell>
-                  {formatNumber(metric.value, i18n.language, maximumFractionDigits)}
-                </TableCell>
-              )}
+              {hasTotalValues && <TableCell>{formatNumber(metric.value)}</TableCell>}
               <TableCell
                 dangerouslySetInnerHTML={{
                   __html: node?.metricDim?.unit?.htmlShort ?? '',

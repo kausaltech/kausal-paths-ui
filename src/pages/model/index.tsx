@@ -33,6 +33,7 @@ const GET_NODES = gql`
       isVisible
       nodeType
       unit {
+        id
         htmlShort
       }
       inputNodes {

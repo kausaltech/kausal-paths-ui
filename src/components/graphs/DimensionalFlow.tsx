@@ -191,6 +191,7 @@ DimensionalFlow.fragment = gql`
   fragment DimensionalPlot on DimensionalFlowType {
     id
     unit {
+      id
       htmlLong
     }
     nodes {
