@@ -1,6 +1,6 @@
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { Box, Chip, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+
+import { CheckCircleFill, XCircle } from 'react-bootstrap-icons';
 
 import type { DraftEdgeMapping, OutputMetric } from './types';
 
@@ -52,7 +52,11 @@ export default function OutputsStep({ outputMetrics, edgeMappings }: OutputsStep
               }
             >
               <ListItemIcon>
-                {isWired ? <CheckCircleIcon color="success" /> : <LinkOffIcon color="warning" />}
+                {isWired ? (
+                  <CheckCircleFill color="#2e7d32" size={20} />
+                ) : (
+                  <XCircle color="#ed6c02" size={20} />
+                )}
               </ListItemIcon>
               <ListItemText
                 primary={displayLabel}

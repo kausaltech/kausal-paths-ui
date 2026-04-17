@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import EditIcon from '@mui/icons-material/Edit';
 import {
   Alert,
   Box,
@@ -26,6 +23,7 @@ import {
 } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
+import { Pencil, Plus, Trash } from 'react-bootstrap-icons';
 
 import type { InstanceDimensionsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -63,7 +61,7 @@ export default function DimensionList() {
         <Typography variant="h5">Dimensions</Typography>
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
+          startIcon={<Plus />}
           onClick={() => setNotice('Creating dimensions is not yet implemented.')}
         >
           New dimension
@@ -114,7 +112,7 @@ export default function DimensionList() {
                       size="small"
                       onClick={() => router.push(`${base}/${encodeURIComponent(dim.id)}`)}
                     >
-                      <EditIcon fontSize="small" />
+                      <Pencil size={18} />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Delete">
@@ -122,7 +120,7 @@ export default function DimensionList() {
                       size="small"
                       onClick={() => setNotice(`Deleting "${dim.name}" is not yet implemented.`)}
                     >
-                      <DeleteOutlineIcon fontSize="small" />
+                      <Trash size={18} />
                     </IconButton>
                   </Tooltip>
                 </TableCell>

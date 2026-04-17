@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
@@ -12,6 +10,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+
+import { ChevronDown, Trash } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import type { DraftEdgeMapping, OutputMetric } from './types';
@@ -64,7 +64,7 @@ export default function EdgeConfigStep({
             expanded={expanded === mapping.id}
             onChange={(_, isExpanded) => setExpanded(isExpanded ? mapping.id : false)}
           >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <AccordionSummary expandIcon={<ChevronDown />}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
                 <Typography sx={{ flexShrink: 0 }}>{metricLabel}</Typography>
                 <Typography color="text.secondary" sx={{ mx: 0.5 }}>
@@ -97,7 +97,7 @@ export default function EdgeConfigStep({
                     }
                   }}
                 >
-                  <DeleteIcon fontSize="small" />
+                  <Trash size={18} />
                 </Box>
               </Box>
             </AccordionSummary>

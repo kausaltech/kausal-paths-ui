@@ -1,7 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 
-import CloseIcon from '@mui/icons-material/Close';
-import StorageIcon from '@mui/icons-material/Storage';
 import {
   Box,
   Button,
@@ -13,22 +11,24 @@ import {
 } from '@mui/material';
 
 import { useReactFlow } from '@xyflow/react';
+import { Database, X } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { getNodeStyle } from './ElkNode';
+import { type NodeStyle, getNodeStyle } from './ElkNode';
 import { useNodeMetric } from './metric-viewer/useNodeMetric';
 import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
 
-function getStyleForNode(node: EditorNodeFieldsFragment) {
+function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
   const spec = getNodeSpec(node);
   const typeConfig = spec?.typeConfig;
-  const nodeClass =
+  const nodeClass: string =
     typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : getNodeType(node);
   const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
-  return getNodeStyle(node.kind ?? '', nodeClass ?? '', isOutcome);
+  const kind: string = node.kind ?? '';
+  return getNodeStyle(kind, nodeClass, isOutcome);
 }
 
 const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
@@ -42,11 +42,16 @@ type ConnectedNodeChipProps = {
   onHover: (nodeId: string | null) => void;
 };
 
+const CHIP_LABEL_MAX = 40;
+
 function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: ConnectedNodeChipProps) {
+  const truncated =
+    label.length > CHIP_LABEL_MAX ? `${label.slice(0, CHIP_LABEL_MAX - 1)}…` : label;
   return (
     <Chip
       icon={<Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>}
-      label={label}
+      label={truncated}
+      title={label}
       size="small"
       variant="outlined"
       onClick={() => onSelect(nodeId)}
@@ -137,19 +142,57 @@ export default function NodeDetailsPanel({
   const inputPorts = spec?.inputPorts ?? [];
   const outputPorts = spec?.outputPorts ?? [];
 
+  const headerStyle = getStyleForNode(node);
+
   return (
     <Box sx={{ p: 2 }}>
       <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 1,
+          mb: 1,
+          mx: -2,
+          mt: -2,
+          px: 2,
+          py: 1.5,
+          backgroundColor: headerStyle.bg,
+          borderBottom: `2px solid ${headerStyle.border}`,
+        }}
       >
-        <Typography
-          variant="h6"
-          sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3, flex: 1, mr: 1 }}
+        <Box
+          sx={{
+            color: headerStyle.border,
+            display: 'flex',
+            alignItems: 'center',
+            '& .MuiSvgIcon-root': { fontSize: 20 },
+            mt: '2px',
+          }}
         >
-          {node.name}
-        </Typography>
-        <IconButton size="small" onClick={onClose}>
-          <CloseIcon fontSize="small" />
+          {headerStyle.icon}
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              color: headerStyle.border,
+              fontWeight: 600,
+              fontSize: 10,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+              lineHeight: 1,
+              mb: 0.5,
+            }}
+          >
+            {headerStyle.label}
+          </Typography>
+          <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>
+            {node.name}
+          </Typography>
+        </Box>
+        <IconButton size="small" onClick={onClose} sx={{ mt: '-4px', mr: '-4px' }}>
+          <X size={20} />
         </IconButton>
       </Box>
 
@@ -243,7 +286,7 @@ export default function NodeDetailsPanel({
                       {datasetBindings.map((ds) => (
                         <Chip
                           key={ds.dataset.id}
-                          icon={<StorageIcon sx={{ fontSize: 18 }} />}
+                          icon={<Database size={18} />}
                           label={`${ds.dataset.name} → ${ds.metric.label}`}
                           variant="outlined"
                           color="info"

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
   Button,
@@ -13,6 +12,8 @@ import {
   StepLabel,
   Stepper,
 } from '@mui/material';
+
+import { X } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -148,7 +149,7 @@ export default function ActionWizard({
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         Duplicate Action
         <IconButton size="small" onClick={handleClose}>
-          <CloseIcon />
+          <X size={20} />
         </IconButton>
       </DialogTitle>
 

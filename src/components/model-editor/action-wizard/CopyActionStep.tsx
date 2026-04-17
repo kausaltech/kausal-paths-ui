@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Chip,
@@ -11,6 +10,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+
+import { Search } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 
@@ -56,7 +57,7 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
+                <Search size={18} />
               </InputAdornment>
             ),
           },

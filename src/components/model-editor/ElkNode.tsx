@@ -1,15 +1,5 @@
 import { type FC, type ReactElement, createContext, memo, use } from 'react';
 
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import FlagIcon from '@mui/icons-material/Flag';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import MergeIcon from '@mui/icons-material/MergeType';
-import RemoveIcon from '@mui/icons-material/Remove';
-import ScienceIcon from '@mui/icons-material/Science';
-import SettingsIcon from '@mui/icons-material/Settings';
-import StorageIcon from '@mui/icons-material/Storage';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Box, Typography } from '@mui/material';
 
 import {
@@ -20,6 +10,18 @@ import {
   type ReactFlowState,
   useStore,
 } from '@xyflow/react';
+import {
+  DashSquare,
+  Database,
+  Flag,
+  Flask,
+  Gear,
+  GraphUpArrow,
+  Intersect,
+  PlusSquare,
+  QuestionCircle,
+  XSquare,
+} from 'react-bootstrap-icons';
 
 export type NodeGraphInteraction = {
   highlightedNodeIds: ReadonlySet<string>;
@@ -39,39 +41,51 @@ const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.7;
 
 export type NodeStyle = { bg: string; border: string; icon: ReactElement; label: string };
 
+const ICON_SIZE = 14;
+
 export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean): NodeStyle {
   const cls = nodeClass.toLowerCase();
-  const sz = { fontSize: 11 };
+  const sz = ICON_SIZE;
 
   if (isOutcome)
-    return { bg: '#e8eaf6', border: '#3f51b5', icon: <FlagIcon sx={sz} />, label: 'Outcome' };
+    return { bg: '#e8eaf6', border: '#3f51b5', icon: <Flag size={sz} />, label: 'Outcome' };
   if (kind.toLowerCase() === 'action')
-    return { bg: '#e8f5e9', border: '#4caf50', icon: <SettingsIcon sx={sz} />, label: 'Action' };
+    return { bg: '#e8f5e9', border: '#4caf50', icon: <Gear size={sz} />, label: 'Action' };
   if (cls.includes('additive'))
-    return { bg: '#e3f2fd', border: '#2196f3', icon: <AddIcon sx={sz} />, label: 'Additive' };
+    return {
+      bg: '#e3f2fd',
+      border: '#2196f3',
+      icon: <PlusSquare size={sz} />,
+      label: 'Additive',
+    };
   if (cls.includes('multiplicative'))
     return {
       bg: '#f3e5f5',
       border: '#9c27b0',
-      icon: <CloseIcon sx={sz} />,
+      icon: <XSquare size={sz} />,
       label: 'Multiplicative',
     };
   if (cls.includes('subtractive'))
-    return { bg: '#ffebee', border: '#f44336', icon: <RemoveIcon sx={sz} />, label: 'Subtractive' };
+    return {
+      bg: '#ffebee',
+      border: '#f44336',
+      icon: <DashSquare size={sz} />,
+      label: 'Subtractive',
+    };
   if (cls.includes('emissionfactor') || cls.includes('sectoremission'))
     return {
       bg: '#fce4ec',
       border: '#e91e63',
-      icon: <TrendingUpIcon sx={sz} />,
+      icon: <GraphUpArrow size={sz} />,
       label: 'Emission',
     };
   if (cls.includes('dataset'))
-    return { bg: '#f9f6d7', border: '#daa520', icon: <StorageIcon sx={sz} />, label: 'Dataset' };
+    return { bg: '#f9f6d7', border: '#daa520', icon: <Database size={sz} />, label: 'Dataset' };
   if (cls.includes('coalesce'))
-    return { bg: '#e0f2f1', border: '#009688', icon: <MergeIcon sx={sz} />, label: 'Coalesce' };
+    return { bg: '#e0f2f1', border: '#009688', icon: <Intersect size={sz} />, label: 'Coalesce' };
   if (cls.includes('health'))
-    return { bg: '#fce4ec', border: '#e91e63', icon: <ScienceIcon sx={sz} />, label: 'Health' };
-  return { bg: '#f5f5f5', border: '#90a4ae', icon: <HelpOutlineIcon sx={sz} />, label: 'Node' };
+    return { bg: '#fce4ec', border: '#e91e63', icon: <Flask size={sz} />, label: 'Health' };
+  return { bg: '#f5f5f5', border: '#90a4ae', icon: <QuestionCircle size={sz} />, label: 'Node' };
 }
 
 export type HandleData = { id: string; multi?: boolean };
@@ -129,7 +143,6 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             borderRadius: '4px',
             overflow: 'hidden',
             boxShadow: active ? 6 : 1,
-            borderLeft: `3px solid ${style.border}`,
             outline: active
               ? `3px solid ${style.border}`
               : highlighted

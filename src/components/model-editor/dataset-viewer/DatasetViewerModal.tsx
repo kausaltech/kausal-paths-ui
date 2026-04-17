@@ -1,8 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
 
-import CloseIcon from '@mui/icons-material/Close';
-import LinkIcon from '@mui/icons-material/Link';
-import StorageIcon from '@mui/icons-material/Storage';
 import {
   Box,
   Chip,
@@ -22,6 +19,8 @@ import {
   Typography,
 } from '@mui/material';
 
+import { Database, Link45deg, X } from 'react-bootstrap-icons';
+
 import { type DatasetInfo, type DatasetPortData, useDatasetData } from './useDatasetData';
 
 const MetricDataViewer = lazy(() => import('../metric-viewer/MetricDataViewer'));
@@ -40,7 +39,7 @@ function DatasetMetadata({ dataset }: { dataset: DatasetInfo }) {
       {dataset.externalRef && (
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
           <Chip
-            icon={<LinkIcon sx={{ fontSize: 14 }} />}
+            icon={<Link45deg size={14} />}
             label={dataset.externalRef.datasetId}
             size="small"
             variant="outlined"
@@ -185,11 +184,11 @@ export default function DatasetViewerModal({
       PaperProps={{ sx: { maxHeight: '85vh' } }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 6 }}>
-        <StorageIcon />
+        <Database size={20} />
         {filtered.length === 1 ? filtered[0].dataset.name : 'Dataset Viewer'}
         <Box sx={{ flex: 1 }} />
         <IconButton onClick={onClose} sx={{ position: 'absolute', right: 8, top: 8 }}>
-          <CloseIcon />
+          <X size={20} />
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>

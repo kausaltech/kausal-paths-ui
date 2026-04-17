@@ -1,6 +1,6 @@
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+
+import { Copy, EyeSlash } from 'react-bootstrap-icons';
 
 export type ContextMenuState =
   | ({
@@ -39,7 +39,7 @@ export default function NodeGraphContextMenu({ state, onClose, onHideEdge, onCop
       {state?.kind === 'edge' && (
         <MenuItem onClick={handleHideEdge}>
           <ListItemIcon>
-            <VisibilityOffIcon fontSize="small" />
+            <EyeSlash size={18} />
           </ListItemIcon>
           <ListItemText>Hide edge</ListItemText>
         </MenuItem>
@@ -47,7 +47,7 @@ export default function NodeGraphContextMenu({ state, onClose, onHideEdge, onCop
       {state?.kind === 'node' && state.isAction && (
         <MenuItem onClick={handleCopyAction}>
           <ListItemIcon>
-            <ContentCopyIcon fontSize="small" />
+            <Copy size={18} />
           </ListItemIcon>
           <ListItemText>Duplicate action</ListItemText>
         </MenuItem>

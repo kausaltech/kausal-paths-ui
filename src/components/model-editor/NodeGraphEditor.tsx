@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
   Box,
   Button,
@@ -25,6 +24,7 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { Copy } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -523,7 +523,7 @@ function FlowEditor(props: {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<ContentCopyIcon />}
+              startIcon={<Copy />}
               onClick={() => {
                 setWizardSourceAction(null);
                 setWizardOpen(true);

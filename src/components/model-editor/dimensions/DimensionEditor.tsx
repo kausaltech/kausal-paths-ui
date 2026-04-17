@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-import AddIcon from '@mui/icons-material/Add';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import {
   Alert,
   Box,
@@ -22,6 +18,7 @@ import {
 } from '@mui/material';
 
 import { useMutation, useQuery } from '@apollo/client/react';
+import { ArrowLeft, GripVertical, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
   CreateDimensionCategoriesMutation,
@@ -325,7 +322,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
   if (!dimension) {
     return (
       <Container maxWidth="md" sx={{ py: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => router.push(listBase)}>
+        <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
           Back to dimensions
         </Button>
         <Alert severity="warning" sx={{ mt: 2 }}>
@@ -337,7 +334,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
 
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => router.push(listBase)} sx={{ mb: 2 }}>
+      <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)} sx={{ mb: 2 }}>
         Back to dimensions
       </Button>
 
@@ -365,7 +362,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
       <Paper sx={{ p: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="h6">Categories</Typography>
-          <Button startIcon={<AddIcon />} onClick={handleAddCategory}>
+          <Button startIcon={<Plus />} onClick={handleAddCategory}>
             Add category
           </Button>
         </Stack>
@@ -539,7 +536,7 @@ function CategoryRowView({
       >
         <Tooltip title="Drag to reorder">
           <Box sx={{ cursor: 'grab', display: 'flex', color: 'text.secondary' }}>
-            <DragIndicatorIcon />
+            <GripVertical size={20} />
           </Box>
         </Tooltip>
         <TextField
@@ -558,7 +555,7 @@ function CategoryRowView({
         />
         <Tooltip title="Remove category">
           <IconButton size="small" onClick={onRemove}>
-            <DeleteOutlineIcon fontSize="small" />
+            <Trash size={18} />
           </IconButton>
         </Tooltip>
       </Stack>
