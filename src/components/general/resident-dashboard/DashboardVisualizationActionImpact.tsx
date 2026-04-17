@@ -259,6 +259,17 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
             <OverlayScrollbarsComponent
               defer
               className="os-top-scrollbar"
+              role="region"
+              aria-label={chartLabel}
+              events={{
+                initialized(instance) {
+                  const viewport = instance.elements().viewport;
+                  viewport.setAttribute('tabindex', '0');
+                  if (chartLabel) {
+                    viewport.setAttribute('aria-label', chartLabel);
+                  }
+                },
+              }}
               options={{
                 scrollbars: { autoHide: 'never' },
                 overflow: { x: 'scroll', y: 'hidden' },
