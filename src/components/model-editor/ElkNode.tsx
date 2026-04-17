@@ -1,4 +1,4 @@
-import { createContext, type FC, type ReactElement, memo, use } from 'react';
+import { type FC, type ReactElement, createContext, memo, use } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,6 +11,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Box, Typography } from '@mui/material';
+
 import {
   Handle,
   type Node,
@@ -22,11 +23,13 @@ import {
 
 export type NodeGraphInteraction = {
   highlightedNodeIds: ReadonlySet<string>;
+  activeNodeId: string | null;
   onHiddenContextClick: (id: string) => void;
 };
 
 const defaultInteraction: NodeGraphInteraction = {
   highlightedNodeIds: new Set(),
+  activeNodeId: null,
   onHiddenContextClick: () => {},
 };
 
@@ -34,22 +37,40 @@ export const NodeGraphInteractionContext = createContext<NodeGraphInteraction>(d
 
 const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.7;
 
-type NodeStyle = { bg: string; border: string; icon: ReactElement; label: string };
+export type NodeStyle = { bg: string; border: string; icon: ReactElement; label: string };
 
-function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean): NodeStyle {
+export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean): NodeStyle {
   const cls = nodeClass.toLowerCase();
   const sz = { fontSize: 11 };
 
-  if (isOutcome) return { bg: '#e8eaf6', border: '#3f51b5', icon: <FlagIcon sx={sz} />, label: 'Outcome' };
-  if (kind.toLowerCase() === 'action') return { bg: '#e8f5e9', border: '#4caf50', icon: <SettingsIcon sx={sz} />, label: 'Action' };
-  if (cls.includes('additive')) return { bg: '#e3f2fd', border: '#2196f3', icon: <AddIcon sx={sz} />, label: 'Additive' };
-  if (cls.includes('multiplicative')) return { bg: '#f3e5f5', border: '#9c27b0', icon: <CloseIcon sx={sz} />, label: 'Multiplicative' };
-  if (cls.includes('subtractive')) return { bg: '#ffebee', border: '#f44336', icon: <RemoveIcon sx={sz} />, label: 'Subtractive' };
+  if (isOutcome)
+    return { bg: '#e8eaf6', border: '#3f51b5', icon: <FlagIcon sx={sz} />, label: 'Outcome' };
+  if (kind.toLowerCase() === 'action')
+    return { bg: '#e8f5e9', border: '#4caf50', icon: <SettingsIcon sx={sz} />, label: 'Action' };
+  if (cls.includes('additive'))
+    return { bg: '#e3f2fd', border: '#2196f3', icon: <AddIcon sx={sz} />, label: 'Additive' };
+  if (cls.includes('multiplicative'))
+    return {
+      bg: '#f3e5f5',
+      border: '#9c27b0',
+      icon: <CloseIcon sx={sz} />,
+      label: 'Multiplicative',
+    };
+  if (cls.includes('subtractive'))
+    return { bg: '#ffebee', border: '#f44336', icon: <RemoveIcon sx={sz} />, label: 'Subtractive' };
   if (cls.includes('emissionfactor') || cls.includes('sectoremission'))
-    return { bg: '#fce4ec', border: '#e91e63', icon: <TrendingUpIcon sx={sz} />, label: 'Emission' };
-  if (cls.includes('dataset')) return { bg: '#f9f6d7', border: '#daa520', icon: <StorageIcon sx={sz} />, label: 'Dataset' };
-  if (cls.includes('coalesce')) return { bg: '#e0f2f1', border: '#009688', icon: <MergeIcon sx={sz} />, label: 'Coalesce' };
-  if (cls.includes('health')) return { bg: '#fce4ec', border: '#e91e63', icon: <ScienceIcon sx={sz} />, label: 'Health' };
+    return {
+      bg: '#fce4ec',
+      border: '#e91e63',
+      icon: <TrendingUpIcon sx={sz} />,
+      label: 'Emission',
+    };
+  if (cls.includes('dataset'))
+    return { bg: '#f9f6d7', border: '#daa520', icon: <StorageIcon sx={sz} />, label: 'Dataset' };
+  if (cls.includes('coalesce'))
+    return { bg: '#e0f2f1', border: '#009688', icon: <MergeIcon sx={sz} />, label: 'Coalesce' };
+  if (cls.includes('health'))
+    return { bg: '#fce4ec', border: '#e91e63', icon: <ScienceIcon sx={sz} />, label: 'Health' };
   return { bg: '#f5f5f5', border: '#90a4ae', icon: <HelpOutlineIcon sx={sz} />, label: 'Node' };
 }
 
@@ -75,8 +96,11 @@ export type ElkNodeType = Node<ElkNodeData, 'elk'>;
 
 const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType>) => {
   const showContent = useStore(zoomSelector);
-  const { highlightedNodeIds, onHiddenContextClick } = use(NodeGraphInteractionContext);
+  const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
+    NodeGraphInteractionContext
+  );
   const highlighted = highlightedNodeIds.has(id);
+  const active = activeNodeId === id;
   const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
 
   const targetCount = data.targetHandles.length;
@@ -90,9 +114,10 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
           id={handle.id}
           type="target"
           position={Position.Left}
-          style={targetCount > 1
-            ? { top: `${((i + 1) / (targetCount + 1)) * 100}%`, position: 'absolute' }
-            : undefined
+          style={
+            targetCount > 1
+              ? { top: `${((i + 1) / (targetCount + 1)) * 100}%`, position: 'absolute' }
+              : undefined
           }
         />
       ))}
@@ -103,9 +128,14 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             flexDirection: 'column',
             borderRadius: '4px',
             overflow: 'hidden',
-            boxShadow: 1,
+            boxShadow: active ? 6 : 1,
             borderLeft: `3px solid ${style.border}`,
-            outline: highlighted ? `2px solid ${style.border}` : 'none',
+            outline: active
+              ? `3px solid ${style.border}`
+              : highlighted
+                ? `2px solid ${style.border}`
+                : 'none',
+            outlineOffset: active ? '1px' : undefined,
             backgroundColor: 'white',
             minWidth: 100,
             maxWidth: 180,
@@ -195,10 +225,12 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
       ) : (
         <Box
           sx={{
-            width: 8,
-            height: 8,
+            width: active ? 12 : 8,
+            height: active ? 12 : 8,
             borderRadius: '50%',
             backgroundColor: data.color || style.border,
+            outline: active ? `2px solid ${style.border}` : 'none',
+            outlineOffset: active ? '1px' : undefined,
           }}
         />
       )}
@@ -208,9 +240,10 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
           id={handle.id}
           type="source"
           position={Position.Right}
-          style={sourceCount > 1
-            ? { top: `${((i + 1) / (sourceCount + 1)) * 100}%`, position: 'absolute' }
-            : undefined
+          style={
+            sourceCount > 1
+              ? { top: `${((i + 1) / (sourceCount + 1)) * 100}%`, position: 'absolute' }
+              : undefined
           }
         />
       ))}
