@@ -1,11 +1,9 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
-import { type plugin as apolloClientHelpersPlugin } from '@graphql-codegen/typescript-apollo-client-helpers';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
 import { type TypescriptOperationTypesPluginConfig } from 'graphql-codegen-typescript-operation-types';
 
-import graphqlConfig, { getRemoteSchema } from './graphql.config.ts';
+import graphqlConfig, { getSchema } from './graphql.config.ts';
 
-type ApolloClientHelpersConfig = Parameters<typeof apolloClientHelpersPlugin>[2];
 type GraphQLOpConfig = TypeScriptDocumentsPluginConfig & TypescriptOperationTypesPluginConfig;
 
 const tsoConfig: GraphQLOpConfig = {
@@ -35,7 +33,7 @@ const generalExcludes = [
 const e2eTestsExclude = '!./e2e-tests/**';
 const appExclude = '!./src/**';
 const apolloConfigDocs = [...generalExcludes, ...graphqlConfig.documents];
-const schema = getRemoteSchema();
+const schema = getSchema();
 
 console.log(`🍓 Using GraphQL schema from: ${schema}`);
 
