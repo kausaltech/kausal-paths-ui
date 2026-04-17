@@ -106,6 +106,8 @@
   },
   "devDependencies": {
     "@cyclonedx/webpack-plugin": "^5.3.2",
+    "@eslint/config-helpers": "^0.5.5",
+    "@eslint/core": "^1.2.1",
     "@eslint/js": "^9",
     "@graphql-codegen/cli": "^6.2.1",
     "@graphql-codegen/client-preset": "^5.2.4",
@@ -135,6 +137,7 @@
     "@types/react-plotly.js": "^2.6.4",
     "@types/set-cookie-parser": "^2.4.10",
     "@typescript-eslint/parser": "^8.58.0",
+    "@typescript-eslint/types": "^8.58.2",
     "@typescript-eslint/utils": "^8.58.0",
     "@vtsls/language-server": "^0.3.0",
     "ansi-styles": "^6.2.3",
