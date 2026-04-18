@@ -1,10 +1,15 @@
 import { type ReactNode, useCallback, useState } from 'react';
 
-import { Box, Chip, Collapse, IconButton, Typography } from '@mui/material';
+import { Box, Button, Chip, Collapse, IconButton, Typography } from '@mui/material';
 
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { useReactFlow } from '@xyflow/react';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/styles/overlayscrollbars.css';
 import {
   BarChartLine,
+  BoxArrowUpRight,
   ChevronDown,
   ChevronRight,
   DashCircle,
@@ -16,8 +21,22 @@ import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
+import { NodeLink } from '@/common/links';
 import { type NodeStyle, getNodeStyle } from './ElkNode';
 import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
+
+const GET_NODE_EXPLANATION = gql`
+  query NodeExplanation($node: ID!) {
+    node(id: $node) {
+      id
+      explanation
+    }
+  }
+`;
+
+type NodeExplanationQuery = {
+  node: { id: string; explanation: string | null } | null;
+};
 
 function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
   const spec = getNodeSpec(node);
@@ -135,9 +154,16 @@ export default function NodeDetailsPanel({
   const { setCenter, getZoom, getNodes } = useReactFlow();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
+
+  const { data: explanationData } = useQuery<NodeExplanationQuery>(GET_NODE_EXPLANATION, {
+    variables: { node: node?.id ?? '' },
+    skip: !node?.id,
+  });
+  const explanation = explanationData?.node?.explanation ?? null;
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
@@ -290,7 +316,61 @@ export default function NodeDetailsPanel({
             <Chip label={getNodeGroup(node)} size="small" variant="outlined" sx={metaChipSx} />
           )}
         </Box>
+
+        <Box sx={{ alignSelf: 'flex-start', '& a': { textDecoration: 'none', color: 'inherit' } }}>
+          <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<BoxArrowUpRight size={12} />}
+              sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
+            >
+              Open public page
+            </Button>
+          </NodeLink>
+        </Box>
       </CollapsibleSection>
+
+      {explanation && (
+        <CollapsibleSection
+          title="Explanation"
+          open={explanationOpen}
+          onToggle={() => setExplanationOpen((v) => !v)}
+        >
+          <Box
+            sx={{
+              width: '100%',
+              bgcolor: 'grey.100',
+              borderRadius: 0.5,
+            }}
+          >
+            <OverlayScrollbarsComponent
+              defer
+              options={{
+                scrollbars: { autoHide: 'never' },
+                overflow: { x: 'hidden', y: 'scroll' },
+              }}
+              style={{ maxHeight: 300 }}
+            >
+              <Box
+                sx={{
+                  px: 1,
+                  py: 0.5,
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere',
+                  '& p': { m: 0, mb: 1 },
+                  '& p:last-child': { mb: 0 },
+                  '& pre, & code': { whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
+                  '& img, & table': { maxWidth: '100%' },
+                }}
+                dangerouslySetInnerHTML={{ __html: explanation }}
+              />
+            </OverlayScrollbarsComponent>
+          </Box>
+        </CollapsibleSection>
+      )}
 
       {inputPorts.length > 0 && (
         <CollapsibleSection

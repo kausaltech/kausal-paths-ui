@@ -170,7 +170,7 @@ const EDGE_MARKER: Edge['markerEnd'] = {
   color: '#b0bec5',
 };
 
-const DRAWER_WIDTH = 320;
+const DRAWER_WIDTH = 360;
 const OVERLAY_DRAWER_WIDTH = 600;
 const PANEL_PEEK_WIDTH = 48;
 
