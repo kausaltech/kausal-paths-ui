@@ -254,7 +254,7 @@ function computeSnippedEdgeIds(
 function convertToElk(
   nodes: readonly EditorNodeFieldsFragment[],
   edges: readonly EditorNodeEdgeFragment[],
-  hiddenContextSourcesByNodeId: ReadonlyMap<string, HiddenContextRef[]>
+  hiddenSourcesByNodeAndPort: ReadonlyMap<string, ReadonlyMap<string, HiddenContextRef[]>>
 ) {
   const nodeIds = new Set(nodes.map((n) => n.id));
 
@@ -300,12 +300,14 @@ function convertToElk(
     const inputPorts = spec?.inputPorts ?? [];
     const outputPorts = spec?.outputPorts ?? [];
     const srcHandles = outputPorts.map((p) => ({ id: p.id }));
+    const hiddenSourcesForNode = hiddenSourcesByNodeAndPort.get(node.id);
     const tgtHandles = inputPorts.map((p) => ({
       id: p.id,
       multi: p.multi,
       hasDataset: p.bindings.some(
         (b) => b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
       ),
+      hiddenSources: hiddenSourcesForNode?.get(p.id),
     }));
 
     const typeConfig = spec?.typeConfig;
@@ -321,7 +323,6 @@ function convertToElk(
         color: node.color ?? '',
         isOutcome: node.__typename === 'Node' ? (node.isOutcome ?? false) : false,
         quantityKind: node.quantityKind ?? null,
-        hiddenContextSources: hiddenContextSourcesByNodeId.get(node.id) ?? [],
         sourceHandles: srcHandles,
         targetHandles: tgtHandles,
       },
@@ -415,19 +416,23 @@ function FlowEditor(props: {
   const visibleNodeIdsSet = useMemo(() => new Set(visibleNodes.map((n) => n.id)), [visibleNodes]);
 
   const snippedConnectionsByNodeId = useMemo(() => {
-    const refs = new Map<string, HiddenContextRef[]>();
+    const refs = new Map<string, Map<string, HiddenContextRef[]>>();
     for (const edge of props.edges) {
       if (!autoSnippedEdgeIds.has(edge.id)) continue;
       const srcNode = nodeMap.get(edge.fromRef.nodeId);
       const tgtNode = nodeMap.get(edge.toRef.nodeId);
       if (!srcNode || !tgtNode) continue;
       if (!visibleNodeIdsSet.has(edge.toRef.nodeId)) continue;
-      const list = refs.get(edge.toRef.nodeId) ?? [];
+      const perPort = refs.get(edge.toRef.nodeId) ?? new Map<string, HiddenContextRef[]>();
+      const list = perPort.get(edge.toRef.portId) ?? [];
       list.push({ id: srcNode.id, label: srcNode.name });
-      refs.set(edge.toRef.nodeId, list);
+      perPort.set(edge.toRef.portId, list);
+      refs.set(edge.toRef.nodeId, perPort);
     }
-    for (const [, list] of refs) {
-      list.sort((a, b) => a.label.localeCompare(b.label));
+    for (const perPort of refs.values()) {
+      for (const list of perPort.values()) {
+        list.sort((a, b) => a.label.localeCompare(b.label));
+      }
     }
     return refs;
   }, [props.edges, autoSnippedEdgeIds, nodeMap, visibleNodeIdsSet]);

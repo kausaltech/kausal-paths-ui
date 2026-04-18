@@ -219,8 +219,6 @@ export default function NodeDetailsPanel({
 
   const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
   const spec = getNodeSpec(node);
-  const typeConfig = spec?.typeConfig;
-  const nodeClass = typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : null;
 
   const nodeGroupOptions = Array.from(
     new Set(allNodes.map((n) => getNodeGroup(n)).filter((g): g is string => g != null && g !== ''))
@@ -311,7 +309,6 @@ export default function NodeDetailsPanel({
           isEditable={isEditable}
           editorUserName={editorUserName}
           currentEdit={currentEdit}
-          nodeClass={nodeClass}
           nodeGroupOptions={nodeGroupOptions}
           actionGroupOptions={actionGroups}
         />

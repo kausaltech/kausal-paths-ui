@@ -20,7 +20,7 @@ import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { modelEditorModeVar } from '@/common/cache';
 import { NodeLink } from '@/common/links';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
-import { getNodeGroup, getNodeType } from './nodeHelpers';
+import { getNodeGroup } from './nodeHelpers';
 
 const metaChipSx = {
   height: 20,
@@ -468,7 +468,6 @@ export type NodeDetailsSectionProps = {
   isEditable: boolean;
   editorUserName: string;
   currentEdit: MockNodeEdit | undefined;
-  nodeClass: string | null;
   nodeGroupOptions: readonly string[];
   actionGroupOptions: readonly ActionGroupOption[];
 };
@@ -478,7 +477,6 @@ export default function NodeDetailsSection({
   isEditable,
   editorUserName,
   currentEdit,
-  nodeClass,
   nodeGroupOptions,
   actionGroupOptions,
 }: NodeDetailsSectionProps) {
@@ -600,30 +598,25 @@ export default function NodeDetailsSection({
         </Box>
       </Box>
 
-      <Box>
-        <FieldLabel>Classification</FieldLabel>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          <Chip label={node.kind} size="small" variant="outlined" sx={metaChipSx} />
-          <Chip
-            label={(nodeClass ?? getNodeType(node)).split('.').pop()}
-            size="small"
-            variant="outlined"
-            sx={metaChipSx}
-          />
-          {node.quantityKind && (
-            <Chip
-              label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
-              title={`quantityKind: ${node.quantityKind.id}`}
-              size="small"
-              variant="outlined"
-              sx={metaChipSx}
-            />
-          )}
-          {displayIsOutcome && (
-            <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
-          )}
+      {(node.quantityKind ?? displayIsOutcome) && (
+        <Box>
+          <FieldLabel>Quantity</FieldLabel>
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {node.quantityKind && (
+              <Chip
+                label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
+                title={`quantityKind: ${node.quantityKind.id}`}
+                size="small"
+                variant="outlined"
+                sx={metaChipSx}
+              />
+            )}
+            {displayIsOutcome && (
+              <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
+            )}
+          </Box>
         </Box>
-      </Box>
+      )}
 
       <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
         <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">

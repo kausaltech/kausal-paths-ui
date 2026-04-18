@@ -1,6 +1,6 @@
 import { type FC, Fragment, type ReactElement, createContext, memo, use } from 'react';
 
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import { useReactiveVar } from '@apollo/client/react';
@@ -252,8 +252,13 @@ export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean
   return { bg, border, icon: <Icon size={ICON_SIZE} />, label };
 }
 
-export type HandleData = { id: string; multi?: boolean; hasDataset?: boolean };
 export type HiddenContextRef = { id: string; label: string };
+export type HandleData = {
+  id: string;
+  multi?: boolean;
+  hasDataset?: boolean;
+  hiddenSources?: HiddenContextRef[];
+};
 
 export type QuantityKindData = { icon?: string | null; id: string; label: string };
 
@@ -264,7 +269,6 @@ export type ElkNodeData = {
   color: string;
   isOutcome: boolean;
   quantityKind?: QuantityKindData | null;
-  hiddenContextSources?: HiddenContextRef[];
   nodeHeight?: number;
   sourceHandles: HandleData[];
   targetHandles: HandleData[];
@@ -316,6 +320,43 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 <Box sx={{ width: 10, height: '1px', backgroundColor: 'currentColor' }} />
               </Box>
             )}
+            {handle.hiddenSources?.map((source, hsIdx) => {
+              const count = handle.hiddenSources!.length;
+              const gap = 4;
+              const offsetPx = (hsIdx - (count - 1) / 2) * gap;
+              return (
+                <Tooltip key={source.id} title={source.label} placement="left" arrow>
+                  <Box
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onHiddenContextClick(source.id);
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      left: -14,
+                      top: `calc(${top} + ${offsetPx}px)`,
+                      transform: 'translateY(-50%)',
+                      width: 14,
+                      height: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      color: '#b0bec5',
+                      '&:hover': { color: (theme) => theme.palette.primary.main },
+                    }}
+                  >
+                    <Box
+                      component="svg"
+                      viewBox="0 0 14 6"
+                      sx={{ width: '100%', height: '100%', overflow: 'visible' }}
+                    >
+                      <line x1="0" y1="3" x2="10" y2="3" stroke="currentColor" strokeWidth="1" />
+                      <polygon points="10,0 14,3 10,6" fill="currentColor" />
+                    </Box>
+                  </Box>
+                </Tooltip>
+              );
+            })}
           </Fragment>
         );
       })}
@@ -336,6 +377,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             backgroundColor: hasEdit ? (theme) => alpha(theme.palette.warning.main, 0.15) : 'white',
             minWidth: 100,
             maxWidth: 180,
+            minHeight: 7 * Math.max(targetCount, sourceCount),
           }}
         >
           <Box
@@ -377,46 +419,6 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             >
               {data.label}
             </Typography>
-            {data.hiddenContextSources && data.hiddenContextSources.length > 0 && (
-              <Box sx={{ mt: 0.75, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                {data.hiddenContextSources.slice(0, 2).map((source) => (
-                  <Box
-                    key={source.id}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onHiddenContextClick(source.id);
-                    }}
-                    sx={{
-                      px: 0.75,
-                      py: 0.25,
-                      fontSize: 9,
-                      borderRadius: 999,
-                      backgroundColor: '#eceff1',
-                      color: '#455a64',
-                      cursor: 'pointer',
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {source.label}
-                  </Box>
-                ))}
-                {data.hiddenContextSources.length > 2 && (
-                  <Box
-                    sx={{
-                      px: 0.75,
-                      py: 0.25,
-                      fontSize: 9,
-                      borderRadius: 999,
-                      backgroundColor: '#eceff1',
-                      color: '#455a64',
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    +{data.hiddenContextSources.length - 2} more
-                  </Box>
-                )}
-              </Box>
-            )}
           </Box>
         </Box>
       ) : (
