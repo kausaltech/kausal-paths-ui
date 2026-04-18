@@ -287,6 +287,9 @@ function convertToElk(
     const tgtHandles = inputPorts.map((p) => ({
       id: p.id,
       multi: p.multi,
+      hasDataset: p.bindings.some(
+        (b) => b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
+      ),
     }));
 
     const typeConfig = spec?.typeConfig;

@@ -1,4 +1,4 @@
-import { type FC, type ReactElement, createContext, memo, use } from 'react';
+import { type FC, Fragment, type ReactElement, createContext, memo, use } from 'react';
 
 import { Box, Typography } from '@mui/material';
 
@@ -88,7 +88,7 @@ export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean
   return { bg: '#f5f5f5', border: '#90a4ae', icon: <QuestionCircle size={sz} />, label: 'Node' };
 }
 
-export type HandleData = { id: string; multi?: boolean };
+export type HandleData = { id: string; multi?: boolean; hasDataset?: boolean };
 export type HiddenContextRef = { id: string; label: string };
 
 export type QuantityKindData = { icon?: string | null; id: string; label: string };
@@ -122,19 +122,36 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
 
   return (
     <>
-      {data.targetHandles.map((handle, i) => (
-        <Handle
-          key={handle.id}
-          id={handle.id}
-          type="target"
-          position={Position.Left}
-          style={
-            targetCount > 1
-              ? { top: `${((i + 1) / (targetCount + 1)) * 100}%`, position: 'absolute' }
-              : undefined
-          }
-        />
-      ))}
+      {data.targetHandles.map((handle, i) => {
+        const top = targetCount > 1 ? `${((i + 1) / (targetCount + 1)) * 100}%` : '50%';
+        return (
+          <Fragment key={handle.id}>
+            <Handle
+              id={handle.id}
+              type="target"
+              position={Position.Left}
+              style={targetCount > 1 ? { top, position: 'absolute' } : undefined}
+            />
+            {handle.hasDataset && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: -22,
+                  top,
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  pointerEvents: 'none',
+                  color: 'grey.800',
+                }}
+              >
+                <Database size={12} />
+                <Box sx={{ width: 10, height: '1px', backgroundColor: 'currentColor' }} />
+              </Box>
+            )}
+          </Fragment>
+        );
+      })}
       {showContent ? (
         <Box
           sx={{
@@ -144,7 +161,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             overflow: 'hidden',
             boxShadow: active ? 6 : 1,
             outline: active
-              ? `3px solid ${style.border}`
+              ? `2px solid ${style.border}`
               : highlighted
                 ? `2px solid ${style.border}`
                 : 'none',

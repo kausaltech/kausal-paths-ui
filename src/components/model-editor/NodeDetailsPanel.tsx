@@ -56,6 +56,7 @@ function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: Connecte
       sx={{
         cursor: 'pointer',
         maxWidth: '100%',
+        borderRadius: 1,
         backgroundColor: style.bg,
         borderColor: style.border,
         color: style.border,
@@ -332,6 +333,7 @@ export default function NodeDetailsPanel({
                           cursor: 'pointer',
                           height: 32,
                           fontSize: 13,
+                          borderRadius: 1,
                           bgcolor: 'grey.900',
                           color: 'common.white',
                           '& .MuiChip-icon': { color: 'common.white' },
@@ -349,6 +351,7 @@ export default function NodeDetailsPanel({
                     variant="outlined"
                     sx={{
                       alignSelf: 'flex-start',
+                      borderRadius: 1,
                       color: 'text.disabled',
                       borderColor: 'divider',
                       bgcolor: 'transparent',
@@ -375,6 +378,7 @@ export default function NodeDetailsPanel({
           sx={{
             maxWidth: '100%',
             cursor: 'pointer',
+            borderRadius: 1,
             bgcolor: 'grey.900',
             color: 'common.white',
             '& .MuiChip-icon': { color: 'common.white' },
@@ -440,6 +444,7 @@ export default function NodeDetailsPanel({
                     variant="outlined"
                     sx={{
                       alignSelf: 'flex-start',
+                      borderRadius: 1,
                       color: 'text.disabled',
                       borderColor: 'divider',
                       bgcolor: 'transparent',
