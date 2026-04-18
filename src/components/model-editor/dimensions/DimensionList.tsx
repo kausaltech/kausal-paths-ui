@@ -56,7 +56,7 @@ export default function DimensionList() {
   const dimensions = data?.instance.editor?.dimensions ?? [];
 
   return (
-    <Container maxWidth="lg" sx={{ pt: 8, pb: 3, mx: 0 }}>
+    <Container maxWidth="lg" sx={{ pt: 16, pb: 3, mx: 0 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Typography variant="h5">Dimensions</Typography>
         <Button
