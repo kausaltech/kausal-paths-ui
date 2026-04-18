@@ -103,7 +103,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   if (error) return <GraphQLError error={error} />;
   if (!dataset) {
     return (
-      <Container maxWidth="md" sx={{ pt: 8, pb: 3 }}>
+      <Container maxWidth="md" sx={{ pt: 8, pb: 3, mx: 0 }}>
         <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
           Back to datasets
         </Button>
@@ -118,7 +118,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const nameDirty = name !== dataset.name;
 
   return (
-    <Container maxWidth="lg" sx={{ pt: 8, pb: 3 }}>
+    <Container maxWidth="lg" sx={{ pt: 8, pb: 3, mx: 0 }}>
       <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)} sx={{ mb: 2 }}>
         Back to datasets
       </Button>
