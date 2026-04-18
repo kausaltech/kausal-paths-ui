@@ -264,60 +264,70 @@ export default function NodeDetailsPanel({
       </Box>
 
       <CollapsibleSection
-        title="Details"
+        title="Node details"
         open={detailsOpen}
         onToggle={() => setDetailsOpen((v) => !v)}
       >
-        <Box
-          sx={{
-            width: '100%',
-            bgcolor: 'grey.100',
-            borderRadius: 0.5,
-            px: 1,
-            py: 0.5,
-            overflowX: 'auto',
-          }}
-        >
-          <Typography
-            variant="caption"
-            color="text.secondary"
+        <Box>
+          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
+            Identifier
+          </Typography>
+          <Box
             sx={{
-              display: 'block',
-              fontFamily: 'monospace',
-              fontSize: 10,
-              whiteSpace: 'nowrap',
+              width: '100%',
+              bgcolor: 'grey.100',
+              borderRadius: 0.5,
+              px: 1,
+              py: 0.5,
+              overflowX: 'auto',
             }}
           >
-            {node.identifier}
-          </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'block',
+                fontFamily: 'monospace',
+                fontSize: 10,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {node.identifier}
+            </Typography>
+          </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          <Chip label={node.kind} size="small" variant="outlined" sx={metaChipSx} />
-          <Chip
-            label={(nodeClass ?? getNodeType(node)).split('.').pop()}
-            size="small"
-            variant="outlined"
-            sx={metaChipSx}
-          />
-          {node.quantityKind && (
+        <Box>
+          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
+            Classification
+          </Typography>
+
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            <Chip label={node.kind} size="small" variant="outlined" sx={metaChipSx} />
             <Chip
-              label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
-              title={`quantityKind: ${node.quantityKind.id}`}
+              label={(nodeClass ?? getNodeType(node)).split('.').pop()}
               size="small"
               variant="outlined"
               sx={metaChipSx}
             />
-          )}
-          {node.__typename === 'Node' && node.isOutcome && (
-            <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
-          )}
-          {getNodeGroup(node) && (
-            <Chip label={getNodeGroup(node)} size="small" variant="outlined" sx={metaChipSx} />
-          )}
+            {node.quantityKind && (
+              <Chip
+                label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
+                title={`quantityKind: ${node.quantityKind.id}`}
+                size="small"
+                variant="outlined"
+                sx={metaChipSx}
+              />
+            )}
+            {node.__typename === 'Node' && node.isOutcome && (
+              <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
+            )}
+            {getNodeGroup(node) && (
+              <Chip label={getNodeGroup(node)} size="small" variant="outlined" sx={metaChipSx} />
+            )}
+          </Box>
         </Box>
-
-        <Box sx={{ alignSelf: 'flex-start', '& a': { textDecoration: 'none', color: 'inherit' } }}>
+        <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
           <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
             <Button
               size="small"
@@ -333,7 +343,7 @@ export default function NodeDetailsPanel({
 
       {explanation && (
         <CollapsibleSection
-          title="Explanation"
+          title="Node explanation"
           open={explanationOpen}
           onToggle={() => setExplanationOpen((v) => !v)}
         >
@@ -374,7 +384,7 @@ export default function NodeDetailsPanel({
 
       {inputPorts.length > 0 && (
         <CollapsibleSection
-          title={`Input ports (${inputPorts.length})`}
+          title={`Node input ports (${inputPorts.length})`}
           open={inputOpen}
           onToggle={() => setInputOpen((v) => !v)}
         >
@@ -479,8 +489,8 @@ export default function NodeDetailsPanel({
       >
         <Chip
           icon={<BarChartLine size={18} />}
-          label="Node data"
-          title="Node data"
+          label="Show node data"
+          title="show node data"
           variant="outlined"
           onClick={onShowMetrics}
           sx={{
@@ -497,7 +507,7 @@ export default function NodeDetailsPanel({
 
       {outputPorts.length > 0 && (
         <CollapsibleSection
-          title={`Output ports (${outputPorts.length})`}
+          title={`Node output ports (${outputPorts.length})`}
           open={outputOpen}
           onToggle={() => setOutputOpen((v) => !v)}
         >
