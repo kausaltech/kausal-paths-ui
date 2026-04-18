@@ -124,7 +124,7 @@ function CollapsibleSection({ title, open, onToggle, children }: CollapsibleSect
         </Typography>
       </Box>
       <Collapse in={open}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, px: 1, py: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, px: 1, pb: 2, pt: 1 }}>
           {children}
         </Box>
       </Collapse>
