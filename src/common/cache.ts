@@ -1,5 +1,7 @@
 import { makeVar } from '@apollo/client';
 
+import type { NodeFilterState } from '@/components/model-editor/NodeFilters';
+import { emptyNodeFilters } from '@/components/model-editor/NodeFilters';
 import type { SiteContextScenario } from '@/context/site';
 import type { InstanceGoal } from './instance';
 
@@ -14,6 +16,9 @@ export const activeScenarioVar = makeVar<
 
 export const activeGoalVar = makeVar<InstanceGoal | null>(null);
 export const scenarioEditorDrawerOpenVar = makeVar<boolean>(false);
+
+export const nodeFiltersVar = makeVar<NodeFilterState>(emptyNodeFilters);
+export const nodeFiltersOpenVar = makeVar<boolean>(false);
 
 type SettingsVarType = {
   iconBase: string;

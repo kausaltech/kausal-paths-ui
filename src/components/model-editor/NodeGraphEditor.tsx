@@ -1,9 +1,9 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Box, Button, CircularProgress, Drawer } from '@mui/material';
+import { Box, CircularProgress, Drawer } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useSuspenseQuery } from '@apollo/client/react';
+import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
 import { type Edge, MarkerType, type OnSelectionChangeFunc } from '@xyflow/react';
 import {
   Background,
@@ -15,13 +15,13 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Copy } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
   NodeGraphQuery,
 } from '@/common/__generated__/graphql';
+import { nodeFiltersVar } from '@/common/cache';
 import DatasetDrawer from './DatasetDrawer';
 import ElkNode, {
   type ElkNodeType,
@@ -30,7 +30,6 @@ import ElkNode, {
 } from './ElkNode';
 import MetricsDrawer from './MetricsDrawer';
 import NodeDetailsPanel from './NodeDetailsPanel';
-import NodeFilters, { type NodeFilterState, emptyNodeFilters } from './NodeFilters';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
@@ -342,7 +341,7 @@ function FlowEditor(props: {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
-  const [filters, setFilters] = useState<NodeFilterState>(emptyNodeFilters);
+  const filters = useReactiveVar(nodeFiltersVar);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -359,14 +358,6 @@ function FlowEditor(props: {
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
 
   const allNodeIdsSet = useMemo(() => new Set(props.nodes.map((n) => n.id)), [props.nodes]);
-
-  const outcomeNodes = useMemo(
-    () =>
-      props.outcomeNodeIds
-        .map((id) => nodeMap.get(id))
-        .filter((n): n is EditorNodeFieldsFragment => Boolean(n)),
-    [props.outcomeNodeIds, nodeMap]
-  );
 
   const autoSnippedEdgeIds = useMemo(
     () => computeSnippedEdgeIds(props.edges, props.nodes),
@@ -505,8 +496,6 @@ function FlowEditor(props: {
     <NodeGraphInteractionContext value={interactionCtx}>
       <Box sx={{ display: 'flex', width: '100%', height: '100%' }}>
         <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-          <NodeFilters value={filters} onChange={setFilters} outcomeNodes={outcomeNodes} />
-
           <Box sx={{ flex: 1, position: 'relative' }}>
             <ReactFlow
               nodes={nodes}

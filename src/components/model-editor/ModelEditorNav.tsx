@@ -9,7 +9,10 @@ import {
   Box,
   Button,
   Divider,
+  FormControl,
+  IconButton,
   InputAdornment,
+  InputLabel,
   List,
   ListItemButton,
   ListItemIcon,
@@ -18,14 +21,25 @@ import {
   MenuItem,
   Link as MuiLink,
   Paper,
+  Select,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useQuery } from '@apollo/client/react';
-import { Box as BoxIcon, Database, Diagram2, House, Search } from 'react-bootstrap-icons';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
+import {
+  Box as BoxIcon,
+  Database,
+  Diagram2,
+  Funnel,
+  FunnelFill,
+  House,
+  Search,
+} from 'react-bootstrap-icons';
 
+import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 
 const GET_NODE_SEARCH_LIST = gql`
@@ -35,6 +49,9 @@ const GET_NODE_SEARCH_LIST = gql`
       nodes {
         id
         name
+        ... on Node {
+          isOutcome
+        }
       }
     }
   }
@@ -72,8 +89,10 @@ const GET_DIMENSION_SEARCH_LIST = gql`
 
 type SearchItem = { id: string; name: string };
 
+type NodeSearchItem = SearchItem & { __typename?: string; isOutcome?: boolean };
+
 type NodeSearchListQuery = {
-  instance: { id: string; nodes: SearchItem[] };
+  instance: { id: string; nodes: NodeSearchItem[] };
 };
 
 type DatasetSearchListQuery = {
@@ -141,6 +160,7 @@ const PLACEHOLDERS: Record<SearchMode, string> = {
 };
 
 const MAX_RESULTS = 10;
+const ALL_OUTCOMES_VALUE = '__all__';
 
 export default function ModelEditorNav() {
   const pathname = usePathname();
@@ -152,6 +172,9 @@ export default function ModelEditorNav() {
   const activeTab = TABS.find((t) => t.matches(pathname)) ?? TABS[0];
   const mode = getSearchMode(pathname);
   const isLanding = activeTab.label === 'Model';
+
+  const filters = useReactiveVar(nodeFiltersVar);
+  const filtersOpen = useReactiveVar(nodeFiltersOpenVar);
 
   const { data: nodesData } = useQuery<NodeSearchListQuery>(GET_NODE_SEARCH_LIST, {
     skip: mode !== 'nodes',
@@ -177,6 +200,16 @@ export default function ModelEditorNav() {
     if (!q) return [];
     return items.filter((n) => n.name.toLowerCase().includes(q)).slice(0, MAX_RESULTS);
   }, [query, items]);
+
+  const outcomeNodes = useMemo<SearchItem[]>(() => {
+    const nodes = nodesData?.instance.nodes ?? [];
+    return nodes.filter((n) => n.isOutcome);
+  }, [nodesData]);
+
+  const filtersAvailable = mode === 'nodes' && outcomeNodes.length > 1;
+  const showFilterToggle = mode === 'nodes';
+  const showFilters = filtersAvailable && filtersOpen;
+  const hasActiveFilters = filters.outcomeId !== null;
 
   const handleSelect = (itemId: string) => {
     setQuery('');
@@ -235,13 +268,13 @@ export default function ModelEditorNav() {
         <>
           <Divider />
 
-          <Box sx={{ p: 1 }}>
+          <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <TextField
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={PLACEHOLDERS[mode]}
               size="small"
-              fullWidth
+              sx={{ flex: 1 }}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -252,7 +285,58 @@ export default function ModelEditorNav() {
                 },
               }}
             />
+            {showFilterToggle && (
+              <Tooltip
+                title={
+                  filtersAvailable
+                    ? filtersOpen
+                      ? 'Hide filters'
+                      : 'Show filters'
+                    : 'No filters available'
+                }
+              >
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => nodeFiltersOpenVar(!filtersOpen)}
+                    disabled={!filtersAvailable}
+                    color={hasActiveFilters ? 'primary' : 'default'}
+                  >
+                    {hasActiveFilters ? <FunnelFill size={14} /> : <Funnel size={14} />}
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
           </Box>
+
+          {showFilters && (
+            <>
+              <Divider />
+              <Box sx={{ p: 1 }}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="outcome-filter-label">Outcome node</InputLabel>
+                  <Select
+                    labelId="outcome-filter-label"
+                    label="Outcome node"
+                    value={filters.outcomeId ?? ALL_OUTCOMES_VALUE}
+                    onChange={(e) =>
+                      nodeFiltersVar({
+                        ...filters,
+                        outcomeId: e.target.value === ALL_OUTCOMES_VALUE ? null : e.target.value,
+                      })
+                    }
+                  >
+                    <MenuItem value={ALL_OUTCOMES_VALUE}>All outcomes</MenuItem>
+                    {outcomeNodes.map((n) => (
+                      <MenuItem key={n.id} value={n.id}>
+                        {n.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </>
+          )}
 
           {query.trim().length > 0 && (
             <>
