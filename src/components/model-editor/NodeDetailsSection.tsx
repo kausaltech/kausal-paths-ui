@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 
 import {
+  Autocomplete,
   Box,
   Button,
   Chip,
@@ -168,6 +169,153 @@ function TextEditField({
   );
 }
 
+type ActionGroupOption = { id: string; name: string; color: string | null };
+
+type ActionGroupEditFieldProps = {
+  nodeId: string;
+  originalValue: string | null;
+  currentValue: string | null | undefined;
+  options: readonly ActionGroupOption[];
+  isEditable: boolean;
+  editorUserName: string;
+};
+
+function ActionGroupEditField({
+  nodeId,
+  originalValue,
+  currentValue,
+  options,
+  isEditable,
+  editorUserName,
+}: ActionGroupEditFieldProps) {
+  const effective = currentValue === undefined ? originalValue : currentValue;
+  const selected = options.find((o) => o.id === effective) ?? null;
+  const hasEdit =
+    isEditable && currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
+
+  const commit = (next: ActionGroupOption | null) => {
+    setMockNodeFieldEdit(nodeId, 'actionGroup', next?.id ?? null, originalValue, editorUserName);
+  };
+
+  return (
+    <Box>
+      <FieldLabel>Action group</FieldLabel>
+      <EditableWrapper isEditable={isEditable}>
+        <Autocomplete
+          value={selected}
+          options={[...options]}
+          disabled={!isEditable}
+          getOptionLabel={(o) => o.name}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          onChange={(_, next) => commit(next)}
+          size="small"
+          sx={editedSx(hasEdit)}
+          renderOption={(props, option) => (
+            <Box component="li" {...props} key={option.id}>
+              <Box
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  bgcolor: option.color ?? 'transparent',
+                  border: option.color ? 'none' : '1px solid',
+                  borderColor: 'divider',
+                  mr: 1,
+                }}
+              />
+              <Typography sx={{ fontSize: 13 }}>{option.name}</Typography>
+            </Box>
+          )}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="No action group"
+              slotProps={{
+                input: {
+                  ...params.InputProps,
+                  startAdornment: selected?.color ? (
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        bgcolor: selected.color,
+                        ml: 0.5,
+                      }}
+                    />
+                  ) : null,
+                  sx: { fontSize: 13 },
+                },
+              }}
+            />
+          )}
+        />
+      </EditableWrapper>
+    </Box>
+  );
+}
+
+type NodeGroupEditFieldProps = {
+  nodeId: string;
+  originalValue: string | null;
+  currentValue: string | null | undefined;
+  options: readonly string[];
+  isEditable: boolean;
+  editorUserName: string;
+};
+
+function NodeGroupEditField({
+  nodeId,
+  originalValue,
+  currentValue,
+  options,
+  isEditable,
+  editorUserName,
+}: NodeGroupEditFieldProps) {
+  const effective = currentValue === undefined ? originalValue : currentValue;
+  const value = effective ?? '';
+  const hasEdit =
+    isEditable && currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
+
+  const commit = (next: string | null) => {
+    setMockNodeFieldEdit(nodeId, 'nodeGroup', next, originalValue, editorUserName);
+  };
+
+  return (
+    <Box>
+      <FieldLabel>Node group</FieldLabel>
+      <EditableWrapper isEditable={isEditable}>
+        <Autocomplete
+          value={value}
+          options={options}
+          freeSolo
+          disabled={!isEditable}
+          onChange={(_, next) => commit(next && next !== '' ? next : null)}
+          onInputChange={(_, next, reason) => {
+            if (reason === 'input' || reason === 'clear') {
+              commit(next && next !== '' ? next : null);
+            }
+          }}
+          size="small"
+          sx={editedSx(hasEdit)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="No group"
+              slotProps={{
+                input: {
+                  ...params.InputProps,
+                  sx: { fontSize: 13 },
+                },
+              }}
+            />
+          )}
+        />
+      </EditableWrapper>
+    </Box>
+  );
+}
+
 type ColorEditFieldProps = {
   nodeId: string;
   originalValue: string | null;
@@ -321,6 +469,8 @@ export type NodeDetailsSectionProps = {
   editorUserName: string;
   currentEdit: MockNodeEdit | undefined;
   nodeClass: string | null;
+  nodeGroupOptions: readonly string[];
+  actionGroupOptions: readonly ActionGroupOption[];
 };
 
 export default function NodeDetailsSection({
@@ -329,10 +479,14 @@ export default function NodeDetailsSection({
   editorUserName,
   currentEdit,
   nodeClass,
+  nodeGroupOptions,
+  actionGroupOptions,
 }: NodeDetailsSectionProps) {
   const originalIsOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   const displayIsOutcome = currentEdit?.isOutcome ?? originalIsOutcome;
   const supportsOutcome = node.__typename === 'Node';
+  const isActionNode = node.__typename === 'ActionNode';
+  const originalActionGroupId = node.__typename === 'ActionNode' ? (node.group?.id ?? null) : null;
 
   return (
     <>
@@ -376,15 +530,25 @@ export default function NodeDetailsSection({
         editorUserName={editorUserName}
       />
 
-      <TextEditField
-        label="Node group"
-        field="nodeGroup"
+      <NodeGroupEditField
         nodeId={node.id}
         originalValue={getNodeGroup(node)}
         currentValue={currentEdit?.nodeGroup}
+        options={nodeGroupOptions}
         isEditable={isEditable}
         editorUserName={editorUserName}
       />
+
+      {isActionNode && (
+        <ActionGroupEditField
+          nodeId={node.id}
+          originalValue={originalActionGroupId}
+          currentValue={currentEdit?.actionGroup}
+          options={actionGroupOptions}
+          isEditable={isEditable}
+          editorUserName={editorUserName}
+        />
+      )}
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <BooleanEditField

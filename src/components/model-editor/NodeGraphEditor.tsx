@@ -48,6 +48,11 @@ const GET_NODE_GRAPH = gql`
     instance {
       id
       identifier
+      actionGroups {
+        id
+        name
+        color
+      }
       editor {
         graphLayout {
           thresholds {
@@ -91,6 +96,13 @@ const GET_NODE_GRAPH = gql`
     }
     ... on Node {
       isOutcome
+    }
+    ... on ActionNode {
+      group {
+        id
+        name
+        color
+      }
     }
     editor {
       nodeGroup
@@ -342,6 +354,7 @@ function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
   outcomeNodeIds: readonly string[];
+  actionGroups: readonly { id: string; name: string; color: string | null }[];
 }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
@@ -601,6 +614,7 @@ function FlowEditor(props: {
                 node={selectedNode}
                 allNodes={props.nodes}
                 edges={props.edges}
+                actionGroups={props.actionGroups}
                 onClose={() => setSelectedNodeId(null)}
                 onSelectNode={setSelectedNodeId}
                 onShowMetrics={() => setOverlay({ kind: 'metrics' })}
@@ -664,6 +678,7 @@ export default function NodeGraphEditor() {
             nodes={data.instance.nodes}
             edges={editor.edges}
             outcomeNodeIds={editor.graphLayout.outcomeIds}
+            actionGroups={data.instance.actionGroups}
           />
         </ReactFlowProvider>
       </div>

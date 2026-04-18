@@ -538,7 +538,10 @@ export type NodeGraphQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type NodeGraphQuery = (
   { instance: (
-    { id: string, identifier: string, editor: (
+    { id: string, identifier: string, actionGroups: Array<(
+      { id: string, name: string, color: string | null }
+      & { __typename: 'ActionGroupType' }
+    )>, editor: (
       { graphLayout: (
         { coreNodeIds: Array<string>, ghostableContextSourceIds: Array<string>, hubIds: Array<string>, actionIds: Array<string>, outcomeIds: Array<string>, mainGraphNodeIds: Array<string>, thresholds: (
           { hubDegree: number, ghostableOutDegree: number, ghostableTotalDegree: number, ghostableAvgOutgoingSpan: number }
@@ -558,7 +561,10 @@ export type NodeGraphQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null, nodes: Array<
       | (
-        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
+        { group: (
+          { id: string, name: string, color: string | null }
+          & { __typename: 'ActionGroupType' }
+        ) | null, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
@@ -656,7 +662,10 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
+  { group: (
+    { id: string, name: string, color: string | null }
+    & { __typename: 'ActionGroupType' }
+  ) | null, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (

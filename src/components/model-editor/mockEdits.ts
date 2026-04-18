@@ -16,6 +16,7 @@ export type MockNodeEdit = {
   isVisible?: boolean;
   isOutcome?: boolean;
   nodeGroup?: string | null;
+  actionGroup?: string | null;
   editedAt?: Date;
   editedBy?: string;
 };

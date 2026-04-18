@@ -25,7 +25,7 @@ import { useSession } from '@/lib/auth-client';
 import { type NodeStyle, getNodeStyle } from './ElkNode';
 import NodeDetailsSection from './NodeDetailsSection';
 import { mockNodeEditsVar } from './mockEdits';
-import { getNodeSpec, getNodeType } from './nodeHelpers';
+import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
 
 const GET_NODE_EXPLANATION = gql`
   query NodeExplanation($node: ID!) {
@@ -129,10 +129,13 @@ function CollapsibleSection({ title, open, onToggle, children }: CollapsibleSect
   );
 }
 
+export type ActionGroupOption = { id: string; name: string; color: string | null };
+
 export type NodeDetailsPanelProps = {
   node: EditorNodeFieldsFragment | null;
   allNodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
+  actionGroups: readonly ActionGroupOption[];
   onClose: () => void;
   onSelectNode: (nodeId: string) => void;
   onShowMetrics?: () => void;
@@ -143,6 +146,7 @@ export default function NodeDetailsPanel({
   node,
   allNodes,
   edges,
+  actionGroups,
   onClose,
   onSelectNode,
   onShowMetrics,
@@ -198,6 +202,10 @@ export default function NodeDetailsPanel({
   const spec = getNodeSpec(node);
   const typeConfig = spec?.typeConfig;
   const nodeClass = typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : null;
+
+  const nodeGroupOptions = Array.from(
+    new Set(allNodes.map((n) => getNodeGroup(n)).filter((g): g is string => g != null && g !== ''))
+  ).sort();
 
   const incomingByPort = new Map<string, EditorNodeEdgeFragment[]>();
   for (const e of edges.filter((e) => e.toRef.nodeId === node.id)) {
@@ -281,6 +289,8 @@ export default function NodeDetailsPanel({
           editorUserName={editorUserName}
           currentEdit={currentEdit}
           nodeClass={nodeClass}
+          nodeGroupOptions={nodeGroupOptions}
+          actionGroupOptions={actionGroups}
         />
       </CollapsibleSection>
 
