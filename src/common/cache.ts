@@ -20,6 +20,9 @@ export const scenarioEditorDrawerOpenVar = makeVar<boolean>(false);
 export const nodeFiltersVar = makeVar<NodeFilterState>(emptyNodeFilters);
 export const nodeFiltersOpenVar = makeVar<boolean>(false);
 
+export type ModelEditorMode = 'published' | 'draft';
+export const modelEditorModeVar = makeVar<ModelEditorMode>('published');
+
 type SettingsVarType = {
   iconBase: string;
   ogImage: string;

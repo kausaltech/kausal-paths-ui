@@ -22,6 +22,7 @@ import {
   Link as MuiLink,
   Paper,
   Select,
+  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -31,15 +32,17 @@ import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box as BoxIcon,
+  BroadcastPin,
   Database,
   Diagram2,
   Funnel,
   FunnelFill,
   House,
+  PencilSquare,
   Search,
 } from 'react-bootstrap-icons';
 
-import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
+import { modelEditorModeVar, nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 
 const GET_NODE_SEARCH_LIST = gql`
@@ -175,6 +178,7 @@ export default function ModelEditorNav() {
 
   const filters = useReactiveVar(nodeFiltersVar);
   const filtersOpen = useReactiveVar(nodeFiltersOpenVar);
+  const editorMode = useReactiveVar(modelEditorModeVar);
 
   const { data: nodesData } = useQuery<NodeSearchListQuery>(GET_NODE_SEARCH_LIST, {
     skip: mode !== 'nodes',
@@ -234,6 +238,42 @@ export default function ModelEditorNav() {
         width: 360,
       }}
     >
+      <Tooltip
+        title={
+          editorMode === 'draft'
+            ? 'Viewing draft with unpublished edits. Toggle off to view published model.'
+            : 'Viewing published model. Toggle on to view draft with unpublished edits.'
+        }
+        placement="right"
+      >
+        <Box
+          component="label"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.75,
+            px: 1,
+            py: 0.5,
+            cursor: 'pointer',
+            userSelect: 'none',
+            color: editorMode === 'draft' ? 'warning.main' : 'success.main',
+          }}
+        >
+          <Switch
+            checked={editorMode === 'draft'}
+            onChange={(_, checked) => modelEditorModeVar(checked ? 'draft' : 'published')}
+            size="small"
+            color={editorMode === 'draft' ? 'warning' : 'success'}
+          />
+          {editorMode === 'draft' ? <PencilSquare size={12} /> : <BroadcastPin size={12} />}
+          <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
+            {editorMode === 'draft' ? 'Draft' : 'Published'}
+          </Typography>
+        </Box>
+      </Tooltip>
+
+      <Divider />
+
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
         <MuiLink
           component={Link}

@@ -245,35 +245,6 @@ const editorComponents: ThemeOptions['components'] = {
       root: { boxShadow: 'none', '&:hover': { boxShadow: 'none' } },
     },
   },
-  MuiSwitch: {
-    styleOverrides: {
-      root: {
-        width: 36,
-        height: 20,
-        padding: 0,
-        marginRight: 6,
-        '&.MuiSwitch-sizeSmall': {
-          width: 32,
-          height: 16,
-        },
-        '& .MuiSwitch-switchBase': {
-          padding: 0,
-          margin: 2,
-          '&.Mui-checked': {
-            transform: 'translateX(16px)',
-            color: '#ffffff',
-            '& + .MuiSwitch-track': { backgroundColor: '#2563eb', opacity: 1, border: 0 },
-          },
-        },
-        '& .MuiSwitch-thumb': { boxSizing: 'border-box', width: 16, height: 16 },
-        '& .MuiSwitch-track': {
-          borderRadius: 10,
-          backgroundColor: '#cbd5e1',
-          opacity: 1,
-        },
-      },
-    },
-  },
   MuiCheckbox: {
     styleOverrides: {
       root: { '&.Mui-checked': { color: '#2563eb' } },

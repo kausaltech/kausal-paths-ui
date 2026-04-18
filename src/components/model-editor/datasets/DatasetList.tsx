@@ -54,7 +54,7 @@ export default function DatasetList() {
   const datasets = data?.instance.editor?.datasets ?? [];
 
   return (
-    <Container maxWidth="lg" sx={{ pt: 16, pb: 3, mx: 0 }}>
+    <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Database size={22} />
