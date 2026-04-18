@@ -39,6 +39,11 @@ type ConnectedNodeChipProps = {
 
 const CHIP_LABEL_MAX = 35;
 
+const metaChipSx = {
+  height: 20,
+  '& .MuiChip-label': { px: 0.75, fontSize: 10, color: 'text.secondary' },
+};
+
 function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: ConnectedNodeChipProps) {
   const truncated =
     label.length > CHIP_LABEL_MAX ? `${label.slice(0, CHIP_LABEL_MAX - 1)}…` : label;
@@ -237,26 +242,52 @@ export default function NodeDetailsPanel({
         open={detailsOpen}
         onToggle={() => setDetailsOpen((v) => !v)}
       >
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: 'block', fontFamily: 'monospace', fontSize: 10 }}
+        <Box
+          sx={{
+            width: '100%',
+            bgcolor: 'grey.100',
+            borderRadius: 0.5,
+            px: 1,
+            py: 0.5,
+            overflowX: 'auto',
+          }}
         >
-          {node.identifier}
-        </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              display: 'block',
+              fontFamily: 'monospace',
+              fontSize: 10,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {node.identifier}
+          </Typography>
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          <Chip label={node.kind} size="small" variant="outlined" />
+          <Chip label={node.kind} size="small" variant="outlined" sx={metaChipSx} />
           <Chip
             label={(nodeClass ?? getNodeType(node)).split('.').pop()}
             size="small"
             variant="outlined"
+            sx={metaChipSx}
           />
+          {node.quantityKind && (
+            <Chip
+              label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
+              title={`quantityKind: ${node.quantityKind.id}`}
+              size="small"
+              variant="outlined"
+              sx={metaChipSx}
+            />
+          )}
           {node.__typename === 'Node' && node.isOutcome && (
-            <Chip label="outcome" size="small" color="primary" />
+            <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
           )}
           {getNodeGroup(node) && (
-            <Chip label={getNodeGroup(node)} size="small" variant="outlined" />
+            <Chip label={getNodeGroup(node)} size="small" variant="outlined" sx={metaChipSx} />
           )}
         </Box>
       </CollapsibleSection>
@@ -325,7 +356,8 @@ export default function NodeDetailsPanel({
                         key={ds.dataset.id}
                         icon={<Database size={18} />}
                         label={`${ds.dataset.name} → ${ds.metric.label}`}
-                        variant="filled"
+                        title={`${ds.dataset.name} → ${ds.metric.label}`}
+                        variant="outlined"
                         onClick={() => onShowDataset?.(ds.id)}
                         sx={{
                           maxWidth: '100%',
@@ -333,11 +365,7 @@ export default function NodeDetailsPanel({
                           height: 32,
                           fontSize: 12,
                           borderRadius: 1,
-                          bgcolor: 'grey.600',
-                          color: 'common.white',
-                          '& .MuiChip-icon': { color: 'common.white' },
                           '& .MuiChip-label': { px: 1.25 },
-                          '&:hover': { bgcolor: 'grey.500' },
                         }}
                       />
                     ))}
@@ -372,16 +400,13 @@ export default function NodeDetailsPanel({
         <Chip
           icon={<BarChartLine size={18} />}
           label="Node data"
-          variant="filled"
+          title="Node data"
+          variant="outlined"
           onClick={onShowMetrics}
           sx={{
             maxWidth: '100%',
             cursor: 'pointer',
             borderRadius: 1,
-            bgcolor: 'grey.600',
-            color: 'common.white',
-            '& .MuiChip-icon': { color: 'common.white' },
-            '&:hover': { bgcolor: 'grey.700' },
             height: 32,
             fontSize: 13,
             '& .MuiChip-label': { px: 1.25 },
