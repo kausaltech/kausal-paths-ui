@@ -32,12 +32,31 @@ const GET_NODE_EXPLANATION = gql`
     node(id: $node) {
       id
       explanation
+      parameters {
+        __typename
+        id
+        nodeRelativeId
+        ... on StringParameterType {
+          stringValue: value
+        }
+      }
     }
   }
 `;
 
+type NodeExplanationParameter = {
+  __typename: string;
+  id: string;
+  nodeRelativeId: string | null;
+  stringValue?: string | null;
+};
+
 type NodeExplanationQuery = {
-  node: { id: string; explanation: string | null } | null;
+  node: {
+    id: string;
+    explanation: string | null;
+    parameters: NodeExplanationParameter[];
+  } | null;
 };
 
 function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
@@ -225,6 +244,10 @@ export default function NodeDetailsPanel({
 
   const inputPorts = spec?.inputPorts ?? [];
   const outputPorts = spec?.outputPorts ?? [];
+  const formula =
+    explanationData?.node?.parameters?.find(
+      (p) => p.__typename === 'StringParameterType' && p.nodeRelativeId === 'formula'
+    )?.stringValue ?? null;
 
   const headerStyle = getStyleForNode(node);
 
@@ -440,6 +463,30 @@ export default function NodeDetailsPanel({
         open={nodeDataOpen}
         onToggle={() => setNodeDataOpen((v) => !v)}
       >
+        {formula && (
+          <Box>
+            <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
+              Formula
+            </Typography>
+            <Box
+              component="pre"
+              sx={{
+                m: 0,
+                px: 1,
+                py: 0.75,
+                bgcolor: 'grey.100',
+                borderRadius: 0.5,
+                fontFamily: 'monospace',
+                fontSize: 12,
+                lineHeight: 1.4,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
+              {formula}
+            </Box>
+          </Box>
+        )}
         <Chip
           icon={<BarChartLine size={18} />}
           label="Show node data"
