@@ -31,7 +31,9 @@ import {
 import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
+  BoxArrowUpRight,
   Box as BoxIcon,
+  Compass,
   Database,
   Diagram2,
   Funnel,
@@ -238,59 +240,62 @@ export default function ModelEditorNav() {
         boxShadow: (theme) => theme.shadows[3],
       }}
     >
-      <Tooltip
-        title={
-          editorMode === 'draft'
-            ? 'Viewing draft with unpublished edits. Toggle off to view published model.'
-            : 'Viewing published model. Toggle on to view draft with unpublished edits.'
-        }
-        placement="right"
+      <MuiLink
+        component={Link}
+        href={base}
+        underline="none"
+        color="inherit"
+        sx={{
+          display: 'block',
+          px: 1.5,
+          py: 0.75,
+          fontWeight: 600,
+          fontSize: (theme) => theme.typography.subtitle2.fontSize,
+          '&:hover': { color: 'primary.main' },
+        }}
       >
-        <Box
-          component="label"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.75,
-            px: 1,
-            py: 0.5,
-            cursor: 'pointer',
-            userSelect: 'none',
-            color: editorMode === 'draft' ? 'warning.main' : 'success.main',
-          }}
-        >
-          <Switch
-            checked={editorMode === 'draft'}
-            onChange={(_, checked) => modelEditorModeVar(checked ? 'draft' : 'published')}
-            size="small"
-            color={editorMode === 'draft' ? 'warning' : 'success'}
-          />
-          <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
-            {editorMode === 'draft' ? 'Draft' : 'Published'}
-          </Typography>
-        </Box>
-      </Tooltip>
+        {instance.name}
+      </MuiLink>
 
       <Divider />
 
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
-        <MuiLink
-          component={Link}
-          href={base}
-          underline="none"
-          color="inherit"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            px: 1.5,
-            fontWeight: 600,
-            fontSize: (theme) => theme.typography.subtitle2.fontSize,
-            '&:hover': { color: 'primary.main' },
-          }}
+        <Tooltip
+          title={
+            editorMode === 'draft'
+              ? 'Viewing draft with unpublished edits. Toggle off to view published model.'
+              : 'Viewing published model. Toggle on to view draft with unpublished edits.'
+          }
+          placement="right"
         >
-          {instance.name}
-        </MuiLink>
-        <Divider orientation="vertical" flexItem />
+          <Box
+            component="label"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              px: 1,
+              py: 0.5,
+              cursor: 'pointer',
+              userSelect: 'none',
+              color: editorMode === 'draft' ? 'warning.main' : 'success.main',
+            }}
+          >
+            <Switch
+              checked={editorMode === 'draft'}
+              onChange={(_, checked) => modelEditorModeVar(checked ? 'draft' : 'published')}
+              size="small"
+              color={editorMode === 'draft' ? 'warning' : 'success'}
+            />
+            <Typography
+              variant="overline"
+              sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}
+            >
+              {editorMode === 'draft' ? 'Draft' : 'Published'}
+            </Typography>
+          </Box>
+        </Tooltip>
+        <Divider orientation="vertical" flexItem sx={{ ml: 'auto' }} />
         <Button
           size="small"
           color="inherit"
@@ -428,6 +433,19 @@ export default function ModelEditorNav() {
             <ListItemText>{t.label}</ListItemText>
           </MenuItem>
         ))}
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            router.push('/');
+          }}
+        >
+          <ListItemIcon>
+            <Compass size={16} />
+          </ListItemIcon>
+          <ListItemText>Explore</ListItemText>
+          <BoxArrowUpRight size={12} style={{ marginLeft: 12, opacity: 0.6 }} />
+        </MenuItem>
       </Menu>
     </Paper>
   );
