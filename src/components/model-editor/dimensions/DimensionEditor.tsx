@@ -321,7 +321,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
   if (error) return <GraphQLError error={error} />;
   if (!dimension) {
     return (
-      <Container maxWidth="md" sx={{ py: 3 }}>
+      <Container maxWidth="md" sx={{ pt: 8, pb: 3 }}>
         <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
           Back to dimensions
         </Button>
@@ -333,7 +333,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
+    <Container maxWidth="md" sx={{ pt: 8, pb: 3 }}>
       <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)} sx={{ mb: 2 }}>
         Back to dimensions
       </Button>

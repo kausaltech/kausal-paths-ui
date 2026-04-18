@@ -1,6 +1,7 @@
 'use client';
 
 import { type ComponentType, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { ArrowDropDown } from '@mui/icons-material';
@@ -12,11 +13,11 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Link as MuiLink,
   Paper,
-  Typography,
 } from '@mui/material';
 
-import { Box as BoxIcon, Database, Diagram2 } from 'react-bootstrap-icons';
+import { Box as BoxIcon, Database, Diagram2, House } from 'react-bootstrap-icons';
 
 import { useInstance } from '@/common/instance';
 
@@ -29,10 +30,18 @@ type TabDef = {
 
 const TABS: TabDef[] = [
   {
-    label: 'Nodes',
+    label: 'Model',
     matches: (path) =>
-      !path.includes('/model-editor/dimensions') && !path.includes('/model-editor/datasets'),
+      !path.includes('/model-editor/nodes') &&
+      !path.includes('/model-editor/datasets') &&
+      !path.includes('/model-editor/dimensions'),
     href: '',
+    Icon: House,
+  },
+  {
+    label: 'Nodes',
+    matches: (path) => path.includes('/model-editor/nodes'),
+    href: '/nodes',
     Icon: Diagram2,
   },
   {
@@ -74,12 +83,22 @@ export default function ModelEditorNav() {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
-        <Typography
-          variant="subtitle2"
-          sx={{ display: 'flex', alignItems: 'center', px: 1.5, fontWeight: 600 }}
+        <MuiLink
+          component={Link}
+          href={base}
+          underline="none"
+          color="inherit"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            px: 1.5,
+            fontWeight: 600,
+            fontSize: (theme) => theme.typography.subtitle2.fontSize,
+            '&:hover': { color: 'primary.main' },
+          }}
         >
           {instance.name}
-        </Typography>
+        </MuiLink>
         <Divider orientation="vertical" flexItem />
         <Button
           size="small"
