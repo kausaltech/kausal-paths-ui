@@ -175,7 +175,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             sx={{
               px: '5px',
               py: '2px',
-              backgroundColor: style.bg,
+              backgroundColor: 'grey.100',
               display: 'flex',
               alignItems: 'center',
               gap: '3px',

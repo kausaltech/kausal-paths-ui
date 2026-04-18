@@ -1,10 +1,9 @@
 import { type ReactNode, useCallback, useState } from 'react';
 
-import { Box, Chip, Collapse, Divider, IconButton, Paper, Stack, Typography } from '@mui/material';
+import { Box, Chip, Collapse, IconButton, Typography } from '@mui/material';
 
 import { useReactFlow } from '@xyflow/react';
 import {
-  ArrowDown,
   BarChartLine,
   ChevronDown,
   ChevronRight,
@@ -57,7 +56,7 @@ function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: Connecte
         cursor: 'pointer',
         maxWidth: '100%',
         borderRadius: 1,
-        backgroundColor: style.bg,
+        backgroundColor: 'grey.100',
         borderColor: style.border,
         color: style.border,
         '& .MuiChip-icon': { color: style.border, ml: '4px' },
@@ -193,7 +192,7 @@ export default function NodeDetailsPanel({
           mb: 1,
           px: 2,
           py: 1.5,
-          backgroundColor: headerStyle.bg,
+          backgroundColor: 'grey.100',
           borderBottom: `2px solid ${headerStyle.border}`,
         }}
       >
@@ -291,7 +290,7 @@ export default function NodeDetailsPanel({
                   {port.multi ? ' (multi)' : ''}
                 </Typography>
                 {hasConnections ? (
-                  <Stack sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                     {connectedEdges.map((e) => {
                       const sourceNode = nodeMap.get(e.fromRef.nodeId);
                       const highlighted = hoveredNodeId === e.fromRef.nodeId;
@@ -332,17 +331,17 @@ export default function NodeDetailsPanel({
                           maxWidth: '100%',
                           cursor: 'pointer',
                           height: 32,
-                          fontSize: 13,
+                          fontSize: 12,
                           borderRadius: 1,
-                          bgcolor: 'grey.900',
+                          bgcolor: 'grey.600',
                           color: 'common.white',
                           '& .MuiChip-icon': { color: 'common.white' },
                           '& .MuiChip-label': { px: 1.25 },
-                          '&:hover': { bgcolor: 'grey.800' },
+                          '&:hover': { bgcolor: 'grey.500' },
                         }}
                       />
                     ))}
-                  </Stack>
+                  </Box>
                 ) : (
                   <Chip
                     icon={<DashCircle size={14} />}
@@ -379,10 +378,10 @@ export default function NodeDetailsPanel({
             maxWidth: '100%',
             cursor: 'pointer',
             borderRadius: 1,
-            bgcolor: 'grey.900',
+            bgcolor: 'grey.600',
             color: 'common.white',
             '& .MuiChip-icon': { color: 'common.white' },
-            '&:hover': { bgcolor: 'grey.800' },
+            '&:hover': { bgcolor: 'grey.700' },
             height: 32,
             fontSize: 13,
             '& .MuiChip-label': { px: 1.25 },
