@@ -1,9 +1,10 @@
 import { type ReactNode, useCallback, useState } from 'react';
 
-import { Box, Button, Chip, Collapse, IconButton, Typography } from '@mui/material';
+import { Box, Button, Chip, Collapse, IconButton, TextField, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 import { gql } from '@apollo/client';
-import { useQuery } from '@apollo/client/react';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useReactFlow } from '@xyflow/react';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
@@ -21,8 +22,10 @@ import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
+import { modelEditorModeVar } from '@/common/cache';
 import { NodeLink } from '@/common/links';
 import { type NodeStyle, getNodeStyle } from './ElkNode';
+import { mockNodeEditsVar, setMockNodeNameEdit } from './mockEdits';
 import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
 
 const GET_NODE_EXPLANATION = gql`
@@ -152,12 +155,21 @@ export default function NodeDetailsPanel({
   onShowDataset,
 }: NodeDetailsPanelProps) {
   const { setCenter, getZoom, getNodes } = useReactFlow();
+  const editorMode = useReactiveVar(modelEditorModeVar);
+  const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const isEditable = editorMode === 'draft';
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
+
+  const currentEdit = node ? nodeEdits[node.id] : undefined;
+  const editedName = currentEdit?.name;
+  const hasNameEdit = editedName !== undefined && editedName !== node?.name;
+  const displayName = isEditable && hasNameEdit ? editedName : (node?.name ?? '');
+  const fieldNameValue = isEditable ? (editedName ?? node?.name ?? '') : (node?.name ?? '');
 
   const { data: explanationData } = useQuery<NodeExplanationQuery>(GET_NODE_EXPLANATION, {
     variables: { node: node?.id ?? '' },
@@ -255,7 +267,7 @@ export default function NodeDetailsPanel({
             {headerStyle.label}
           </Typography>
           <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>
-            {node.name}
+            {displayName}
           </Typography>
         </Box>
         <IconButton size="small" onClick={onClose} sx={{ mt: '-4px', mr: '-4px' }}>
@@ -268,6 +280,34 @@ export default function NodeDetailsPanel({
         open={detailsOpen}
         onToggle={() => setDetailsOpen((v) => !v)}
       >
+        <Box>
+          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
+            Name
+          </Typography>
+          <TextField
+            value={fieldNameValue}
+            onChange={(e) => {
+              if (!node) return;
+              setMockNodeNameEdit(node.id, e.target.value, node.name ?? '');
+            }}
+            size="small"
+            fullWidth
+            disabled={!isEditable}
+            sx={
+              isEditable && hasNameEdit
+                ? {
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: (theme) => alpha(theme.palette.warning.main, 0.15),
+                    },
+                  }
+                : undefined
+            }
+            slotProps={{
+              input: { sx: { fontSize: 13 } },
+            }}
+          />
+        </Box>
+
         <Box>
           <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
             Identifier

@@ -1,7 +1,9 @@
 import { type FC, Fragment, type ReactElement, createContext, memo, use } from 'react';
 
 import { Box, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
+import { useReactiveVar } from '@apollo/client/react';
 import {
   Handle,
   type Node,
@@ -30,6 +32,9 @@ import {
   Sliders,
   XSquare,
 } from 'react-bootstrap-icons';
+
+import { modelEditorModeVar } from '@/common/cache';
+import { mockNodeEditsVar } from './mockEdits';
 
 export type NodeGraphInteraction = {
   highlightedNodeIds: ReadonlySet<string>;
@@ -272,6 +277,9 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
     NodeGraphInteractionContext
   );
+  const editorMode = useReactiveVar(modelEditorModeVar);
+  const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const hasEdit = editorMode === 'draft' && Boolean(nodeEdits[id]);
   const highlighted = highlightedNodeIds.has(id);
   const active = activeNodeId === id;
   const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
@@ -325,7 +333,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 ? `2px solid ${style.border}`
                 : 'none',
             outlineOffset: active ? '1px' : undefined,
-            backgroundColor: 'white',
+            backgroundColor: hasEdit ? (theme) => alpha(theme.palette.warning.main, 0.15) : 'white',
             minWidth: 100,
             maxWidth: 180,
           }}
