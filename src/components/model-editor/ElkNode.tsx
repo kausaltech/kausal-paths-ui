@@ -14,6 +14,7 @@ import {
 } from '@xyflow/react';
 import {
   ArrowRepeat,
+  ArrowRightCircleFill,
   Braces,
   Bullseye,
   Calculator,
@@ -253,10 +254,11 @@ export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean
 }
 
 export type HiddenContextRef = { id: string; label: string };
+export type DatasetRef = { id: string; label: string };
 export type HandleData = {
   id: string;
   multi?: boolean;
-  hasDataset?: boolean;
+  datasets?: DatasetRef[];
   hiddenSources?: HiddenContextRef[];
 };
 
@@ -303,60 +305,68 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
               position={Position.Left}
               style={targetCount > 1 ? { top, position: 'absolute' } : undefined}
             />
-            {handle.hasDataset && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  left: -22,
-                  top,
-                  transform: 'translateY(-50%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  pointerEvents: 'none',
-                  color: 'grey.800',
-                }}
-              >
-                <Database size={12} />
-                <Box sx={{ width: 10, height: '1px', backgroundColor: 'currentColor' }} />
-              </Box>
-            )}
-            {handle.hiddenSources?.map((source, hsIdx) => {
-              const count = handle.hiddenSources!.length;
-              const gap = 4;
-              const offsetPx = (hsIdx - (count - 1) / 2) * gap;
-              return (
-                <Tooltip key={source.id} title={source.label} placement="left" arrow>
-                  <Box
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onHiddenContextClick(source.id);
-                    }}
-                    sx={{
-                      position: 'absolute',
-                      left: -14,
-                      top: `calc(${top} + ${offsetPx}px)`,
-                      transform: 'translateY(-50%)',
-                      width: 14,
-                      height: 6,
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      color: '#b0bec5',
-                      '&:hover': { color: (theme) => theme.palette.primary.main },
-                    }}
-                  >
+            {(() => {
+              type Stub = {
+                key: string;
+                label: string;
+                icon?: ReactElement;
+                onClick?: () => void;
+              };
+              const stubs: Stub[] = [
+                ...(handle.datasets?.map<Stub>((d) => ({
+                  key: `ds:${d.id}`,
+                  label: d.label,
+                  icon: <Database size={12} />,
+                })) ?? []),
+                ...(handle.hiddenSources?.map<Stub>((s) => ({
+                  key: `hs:${s.id}`,
+                  label: s.label,
+                  icon: <ArrowRightCircleFill size={12} />,
+                  onClick: () => onHiddenContextClick(s.id),
+                })) ?? []),
+              ];
+              if (stubs.length === 0) return null;
+              const count = stubs.length;
+              const gap = 6;
+              const width = 22;
+              return stubs.map((stub, idx) => {
+                const offsetPx = (idx - (count - 1) / 2) * gap;
+                return (
+                  <Tooltip key={stub.key} title={stub.label} placement="left" arrow>
                     <Box
-                      component="svg"
-                      viewBox="0 0 14 6"
-                      sx={{ width: '100%', height: '100%', overflow: 'visible' }}
+                      onClick={(event) => {
+                        if (!stub.onClick) return;
+                        event.stopPropagation();
+                        stub.onClick();
+                      }}
+                      sx={{
+                        position: 'absolute',
+                        left: -width,
+                        top: `calc(${top} + ${offsetPx}px)`,
+                        transform: 'translateY(-50%)',
+                        width,
+                        height: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        cursor: stub.onClick ? 'pointer' : 'default',
+                        color: '#b0bec5',
+                        '&:hover': { color: (theme) => theme.palette.primary.main },
+                      }}
                     >
-                      <line x1="0" y1="3" x2="10" y2="3" stroke="currentColor" strokeWidth="1" />
-                      <polygon points="10,0 14,3 10,6" fill="currentColor" />
+                      {stub.icon}
+                      <Box
+                        component="svg"
+                        viewBox="0 0 10 6"
+                        sx={{ width: 10, height: 6, overflow: 'visible', flexShrink: 0 }}
+                      >
+                        <line x1="0" y1="3" x2="6" y2="3" stroke="currentColor" strokeWidth="1" />
+                        <polygon points="6,0 10,3 6,6" fill="currentColor" />
+                      </Box>
                     </Box>
-                  </Box>
-                </Tooltip>
-              );
-            })}
+                  </Tooltip>
+                );
+              });
+            })()}
           </Fragment>
         );
       })}

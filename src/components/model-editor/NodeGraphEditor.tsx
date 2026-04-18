@@ -304,8 +304,10 @@ function convertToElk(
     const tgtHandles = inputPorts.map((p) => ({
       id: p.id,
       multi: p.multi,
-      hasDataset: p.bindings.some(
-        (b) => b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
+      datasets: p.bindings.flatMap((b) =>
+        b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
+          ? [{ id: b.id, label: `${b.dataset.name} → ${b.metric.label}` }]
+          : []
       ),
       hiddenSources: hiddenSourcesForNode?.get(p.id),
     }));
