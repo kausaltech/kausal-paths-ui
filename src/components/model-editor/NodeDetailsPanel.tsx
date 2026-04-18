@@ -15,6 +15,7 @@ import {
   ChevronRight,
   DashCircle,
   Database,
+  PencilSquare,
   X,
 } from 'react-bootstrap-icons';
 
@@ -284,28 +285,69 @@ export default function NodeDetailsPanel({
           <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
             Name
           </Typography>
-          <TextField
-            value={fieldNameValue}
-            onChange={(e) => {
-              if (!node) return;
-              setMockNodeNameEdit(node.id, e.target.value, node.name ?? '');
-            }}
-            size="small"
-            fullWidth
-            disabled={!isEditable}
-            sx={
-              isEditable && hasNameEdit
-                ? {
-                    '& .MuiOutlinedInput-root': {
-                      bgcolor: (theme) => alpha(theme.palette.warning.main, 0.15),
-                    },
+          <Box sx={{ position: 'relative' }}>
+            <TextField
+              value={fieldNameValue}
+              onChange={(e) => {
+                if (!node) return;
+                setMockNodeNameEdit(node.id, e.target.value, node.name ?? '');
+              }}
+              size="small"
+              fullWidth
+              disabled={!isEditable}
+              sx={
+                isEditable && hasNameEdit
+                  ? {
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: (theme) => alpha(theme.palette.warning.main, 0.15),
+                      },
+                    }
+                  : undefined
+              }
+              slotProps={{
+                input: { sx: { fontSize: 13 } },
+              }}
+            />
+            {!isEditable && (
+              <Box
+                role="button"
+                tabIndex={0}
+                onClick={() => modelEditorModeVar('draft')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    modelEditorModeVar('draft');
                   }
-                : undefined
-            }
-            slotProps={{
-              input: { sx: { fontSize: 13 } },
-            }}
-          />
+                }}
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.75,
+                  cursor: 'pointer',
+                  borderRadius: 1,
+                  opacity: 0,
+                  bgcolor: (theme) => alpha(theme.palette.warning.main, 0.9),
+                  color: (theme) => theme.palette.warning.contrastText,
+                  transition: 'opacity 0.15s',
+                  '&:hover, &:focus-visible': {
+                    opacity: 1,
+                  },
+                  '&:focus-visible': {
+                    outline: (theme) => `2px solid ${theme.palette.warning.main}`,
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <PencilSquare size={12} />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: 'inherit' }}>
+                  Edit in draft mode
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </Box>
 
         <Box>

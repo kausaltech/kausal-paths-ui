@@ -32,13 +32,11 @@ import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   Box as BoxIcon,
-  BroadcastPin,
   Database,
   Diagram2,
   Funnel,
   FunnelFill,
   House,
-  PencilSquare,
   Search,
 } from 'react-bootstrap-icons';
 
@@ -267,7 +265,6 @@ export default function ModelEditorNav() {
             size="small"
             color={editorMode === 'draft' ? 'warning' : 'success'}
           />
-          {editorMode === 'draft' ? <PencilSquare size={12} /> : <BroadcastPin size={12} />}
           <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
             {editorMode === 'draft' ? 'Draft' : 'Published'}
           </Typography>
