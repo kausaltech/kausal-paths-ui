@@ -10,11 +10,17 @@ import {
   Switch,
   TextField,
   type Theme,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import { BoxArrowUpRight, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
+import {
+  ArrowCounterclockwise,
+  BoxArrowUpRight,
+  PencilSquare,
+  X as XIcon,
+} from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { modelEditorModeVar } from '@/common/cache';
@@ -27,11 +33,25 @@ const metaChipSx = {
   '& .MuiChip-label': { px: 0.75, fontSize: 10, color: 'text.secondary' },
 };
 
-function FieldLabel({ children }: { children: ReactNode }) {
+function FieldLabel({ children, onRevert }: { children: ReactNode; onRevert?: () => void }) {
   return (
-    <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
-      {children}
-    </Typography>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, mb: 0.5, minHeight: 16 }}>
+      <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary' }}>
+        {children}
+      </Typography>
+      {onRevert && (
+        <Tooltip title="Revert changes" placement="top">
+          <IconButton
+            size="small"
+            onClick={onRevert}
+            aria-label="Revert changes"
+            sx={{ p: 0.125, color: 'warning.main' }}
+          >
+            <ArrowCounterclockwise size={11} />
+          </IconButton>
+        </Tooltip>
+      )}
+    </Box>
   );
 }
 
@@ -136,9 +156,13 @@ function TextEditField({
   const hasEdit =
     isEditable && currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
 
+  const handleRevert = () => {
+    setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
+  };
+
   return (
     <Box>
-      <FieldLabel>{label}</FieldLabel>
+      <FieldLabel onRevert={hasEdit ? handleRevert : undefined}>{label}</FieldLabel>
       <EditableWrapper isEditable={isEditable}>
         <TextField
           value={value}
@@ -197,9 +221,13 @@ function ActionGroupEditField({
     setMockNodeFieldEdit(nodeId, 'actionGroup', next?.id ?? null, originalValue, editorUserName);
   };
 
+  const handleRevert = () => {
+    setMockNodeFieldEdit(nodeId, 'actionGroup', originalValue, originalValue, editorUserName);
+  };
+
   return (
     <Box>
-      <FieldLabel>Action group</FieldLabel>
+      <FieldLabel onRevert={hasEdit ? handleRevert : undefined}>Action group</FieldLabel>
       <EditableWrapper isEditable={isEditable}>
         <Autocomplete
           value={selected}
@@ -281,9 +309,13 @@ function NodeGroupEditField({
     setMockNodeFieldEdit(nodeId, 'nodeGroup', next, originalValue, editorUserName);
   };
 
+  const handleRevert = () => {
+    setMockNodeFieldEdit(nodeId, 'nodeGroup', originalValue, originalValue, editorUserName);
+  };
+
   return (
     <Box>
-      <FieldLabel>Node group</FieldLabel>
+      <FieldLabel onRevert={hasEdit ? handleRevert : undefined}>Node group</FieldLabel>
       <EditableWrapper isEditable={isEditable}>
         <Autocomplete
           value={value}
@@ -340,9 +372,13 @@ function ColorEditField({
     setMockNodeFieldEdit(nodeId, 'color', value, originalValue, editorUserName);
   };
 
+  const handleRevert = () => {
+    setMockNodeFieldEdit(nodeId, 'color', originalValue, originalValue, editorUserName);
+  };
+
   return (
     <Box>
-      <FieldLabel>Color</FieldLabel>
+      <FieldLabel onRevert={hasEdit ? handleRevert : undefined}>Color</FieldLabel>
       <EditableWrapper isEditable={isEditable}>
         <Box
           sx={{
@@ -443,23 +479,41 @@ function BooleanEditField({
   const value = currentValue ?? originalValue;
   const hasEdit = isEditable && currentValue !== undefined && currentValue !== originalValue;
 
+  const handleRevert = () => {
+    setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
+  };
+
   return (
-    <EditableWrapper isEditable={isEditable}>
-      <FormControlLabel
-        disabled={!isEditable}
-        control={
-          <Switch
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <EditableWrapper isEditable={isEditable}>
+        <FormControlLabel
+          disabled={!isEditable}
+          control={
+            <Switch
+              size="small"
+              checked={value}
+              onChange={(e) =>
+                setMockNodeFieldEdit(nodeId, field, e.target.checked, originalValue, editorUserName)
+              }
+            />
+          }
+          label={<Typography sx={{ fontSize: 13 }}>{label}</Typography>}
+          sx={editedSwitchSx(hasEdit)}
+        />
+      </EditableWrapper>
+      {hasEdit && (
+        <Tooltip title="Revert changes" placement="top">
+          <IconButton
             size="small"
-            checked={value}
-            onChange={(e) =>
-              setMockNodeFieldEdit(nodeId, field, e.target.checked, originalValue, editorUserName)
-            }
-          />
-        }
-        label={<Typography sx={{ fontSize: 13 }}>{label}</Typography>}
-        sx={editedSwitchSx(hasEdit)}
-      />
-    </EditableWrapper>
+            onClick={handleRevert}
+            aria-label="Revert changes"
+            sx={{ p: 0.125, ml: 0.25, color: 'warning.main' }}
+          >
+            <ArrowCounterclockwise size={11} />
+          </IconButton>
+        </Tooltip>
+      )}
+    </Box>
   );
 }
 
