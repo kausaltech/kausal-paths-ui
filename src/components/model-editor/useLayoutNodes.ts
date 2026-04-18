@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { type Edge, useNodesInitialized, useReactFlow } from '@xyflow/react';
 import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
@@ -83,16 +83,27 @@ async function getElkLayoutedNodes(nodes: ElkNodeType[], edges: Edge[]): Promise
   });
 }
 
+type Options = {
+  /** When true, skip the default fitView after layout (caller will set viewport). */
+  skipFitView?: boolean;
+};
+
 /**
  * Runs ELK layout once React Flow has measured all node dimensions,
- * then calls fitView. Accepts a `layoutVersion` that should be bumped
- * whenever the set of nodes/edges changes, so the effect re-fires
- * after the new nodes are measured.
+ * then calls fitView (unless `skipFitView` is set). Accepts a `layoutVersion`
+ * that should be bumped whenever the set of nodes/edges changes, so the
+ * effect re-fires after the new nodes are measured.
+ *
+ * Returns the last layout version whose positions have been written to
+ * React Flow. Gate viewport-manipulating effects on this matching the
+ * current `layoutVersion` to avoid racing against in-flight layouts.
  */
-export default function useLayoutNodes(layoutVersion: number) {
+export default function useLayoutNodes(layoutVersion: number, options: Options = {}): number {
+  const { skipFitView = false } = options;
   const nodesInitialized = useNodesInitialized();
   const { getNodes, getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
   const lastLayoutVersionRef = useRef(-1);
+  const [appliedVersion, setAppliedVersion] = useState(-1);
 
   useEffect(() => {
     if (!nodesInitialized) return;
@@ -109,7 +120,10 @@ export default function useLayoutNodes(layoutVersion: number) {
         setNodes(layoutedNodes);
         requestAnimationFrame(() => {
           if (cancelled) return;
-          fitView();
+          if (!skipFitView) {
+            fitView();
+          }
+          setAppliedVersion(layoutVersion);
           const metrics = computeLayoutMetrics(layoutedNodes, edges);
           console.log(formatMetrics(metrics));
         });
@@ -122,7 +136,7 @@ export default function useLayoutNodes(layoutVersion: number) {
     return () => {
       cancelled = true;
     };
-  }, [nodesInitialized, layoutVersion, getNodes, getEdges, setNodes, fitView]);
+  }, [nodesInitialized, layoutVersion, getNodes, getEdges, setNodes, fitView, skipFitView]);
 
-  return null;
+  return appliedVersion;
 }

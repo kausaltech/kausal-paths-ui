@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { Box, CircularProgress, Drawer } from '@mui/material';
 
@@ -13,6 +14,7 @@ import {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -342,6 +344,10 @@ function FlowEditor(props: {
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
+  const searchParams = useSearchParams();
+  const requestedNodeKey = searchParams.get('node');
+  const { setCenter, getNodes, getZoom } = useReactFlow();
+  const handledNodeKeyRef = useRef<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -428,7 +434,47 @@ function FlowEditor(props: {
     setEdges(layoutedEdges);
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
-  useLayoutNodes(layoutVersion);
+  const layoutAppliedVersion = useLayoutNodes(layoutVersion, {
+    skipFitView: requestedNodeKey !== null,
+  });
+
+  // Deep-link: /model-editor/nodes?node=<identifier> opens the panel on that
+  // node and centers the graph on it. Waits for ELK layout to be *applied*
+  // (positions written back to React Flow) so `setCenter` reads real coords.
+  useEffect(() => {
+    if (!requestedNodeKey) return;
+    if (layoutAppliedVersion !== layoutVersion) return;
+    if (handledNodeKeyRef.current === requestedNodeKey) return;
+
+    const target =
+      props.nodes.find((n) => n.identifier === requestedNodeKey) ??
+      props.nodes.find((n) => n.id === requestedNodeKey);
+    if (!target) return;
+
+    const rfNodes = getNodes();
+    const targetRfNode = rfNodes.find((n) => n.id === target.id);
+    if (!targetRfNode) return;
+
+    const width = targetRfNode.measured?.width ?? targetRfNode.width ?? 0;
+    const height = targetRfNode.measured?.height ?? targetRfNode.height ?? 0;
+    const cx = targetRfNode.position.x + width / 2;
+    const cy = targetRfNode.position.y + height / 2;
+    // Readable-label threshold (ElkNode's zoomSelector shows content at >= 0.7).
+    // Use 0.8 for a small margin so the first paint is clearly legible.
+    const MIN_FOCUS_ZOOM = 0.8;
+    const focusZoom = Math.max(getZoom(), MIN_FOCUS_ZOOM);
+    void setCenter(cx, cy, { zoom: focusZoom, duration: 400 });
+    setSelectedNodeId(target.id);
+    handledNodeKeyRef.current = requestedNodeKey;
+  }, [
+    requestedNodeKey,
+    layoutAppliedVersion,
+    layoutVersion,
+    props.nodes,
+    getNodes,
+    setCenter,
+    getZoom,
+  ]);
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
     if (selected.length !== 1) {
@@ -510,6 +556,7 @@ function FlowEditor(props: {
               minZoom={0.2}
               maxZoom={5}
               fitView
+              fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
             >
               <Background color="#f0f0f0" />
               <Controls />

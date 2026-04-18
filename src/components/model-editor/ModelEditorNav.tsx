@@ -51,6 +51,7 @@ const GET_NODE_SEARCH_LIST = gql`
       id
       nodes {
         id
+        identifier
         name
         ... on Node {
           isOutcome
@@ -90,7 +91,7 @@ const GET_DIMENSION_SEARCH_LIST = gql`
   }
 `;
 
-type SearchItem = { id: string; name: string };
+type SearchItem = { id: string; name: string; identifier?: string };
 
 type NodeSearchItem = SearchItem & { __typename?: string; isOutcome?: boolean };
 
@@ -215,14 +216,15 @@ export default function ModelEditorNav() {
   const showFilters = filtersAvailable && filtersOpen;
   const hasActiveFilters = filters.outcomeId !== null;
 
-  const handleSelect = (itemId: string) => {
+  const handleSelect = (item: SearchItem) => {
     setQuery('');
     if (mode === 'nodes') {
-      router.push(`${base}/nodes?node=${encodeURIComponent(itemId)}`);
+      const key = item.identifier ?? item.id;
+      router.push(`${base}/nodes?node=${encodeURIComponent(key)}`);
     } else if (mode === 'datasets') {
-      router.push(`${base}/datasets/${encodeURIComponent(itemId)}`);
+      router.push(`${base}/datasets/${encodeURIComponent(item.id)}`);
     } else {
-      router.push(`${base}/dimensions/${encodeURIComponent(itemId)}`);
+      router.push(`${base}/dimensions/${encodeURIComponent(item.id)}`);
     }
   };
 
@@ -384,7 +386,7 @@ export default function ModelEditorNav() {
               {results.length > 0 ? (
                 <List dense sx={{ maxHeight: 320, overflow: 'auto', py: 0 }}>
                   {results.map((n) => (
-                    <ListItemButton key={n.id} onClick={() => handleSelect(n.id)}>
+                    <ListItemButton key={n.id} onClick={() => handleSelect(n)}>
                       <ListItemText
                         primary={n.name}
                         slotProps={{

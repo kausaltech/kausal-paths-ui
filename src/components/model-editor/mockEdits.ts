@@ -12,6 +12,10 @@ export type MockNodeEdit = { name?: string };
 
 export const mockNodeEditsVar = makeVar<Record<string, MockNodeEdit>>({});
 
+export function clearMockNodeEdits(): void {
+  mockNodeEditsVar({});
+}
+
 export function setMockNodeNameEdit(nodeId: string, value: string, originalName: string): void {
   const current = mockNodeEditsVar();
   const next = { ...current };
