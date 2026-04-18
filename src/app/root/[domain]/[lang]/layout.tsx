@@ -9,7 +9,6 @@ import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { PATHS_INSTANCE_IDENTIFIER_HEADER } from '@common/constants/headers.mjs';
 import { getAssetPrefix } from '@common/env';
 import { getEnvScriptContents } from '@common/env/script-component';
-import '@common/themes/styles/main.scss';
 import { getThemeStaticURL } from '@common/themes/theme';
 import { loadTheme } from '@common/themes/theme-init.server';
 import { getRequestOrigin } from '@common/utils/request.server';
@@ -206,12 +205,6 @@ export default function LangLayout(props: Props) {
   return (
     <html lang={params.lang}>
       <head>
-        <link
-          id="theme-stylesheet"
-          rel="stylesheet"
-          type="text/css"
-          href={getThemeStaticURL(themeProps.mainCssFile)}
-        />
         <script
           id="public-runtime-env"
           dangerouslySetInnerHTML={{ __html: getEnvScriptContents() }}

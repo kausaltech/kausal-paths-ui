@@ -2,20 +2,19 @@
 
 import { type ReactNode, useState } from 'react';
 
-import { ThemeProvider } from '@mui/material/styles';
-
 import type { Theme } from '@kausal/themes/types';
-
-import ThemedGlobalStyles from '@common/themes/ThemedGlobalStyles';
-import { initializeMuiTheme } from '@common/themes/mui-theme/theme';
 
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import InstanceContext, { type InstanceContextType } from '@/common/instance';
 import SiteContext, { type SiteContextType } from '@/context/site';
+import { InstanceThemeProvider } from './InstanceThemedStyles';
 
 /**
  * Client component that provides instance-specific context to the component tree.
- * Handles SiteContext, InstanceContext, MUI theming, and initializes Apollo reactive vars.
+ * Handles SiteContext, InstanceContext, the kausal MUI theme, and initializes
+ * Apollo reactive vars. Instance-wide global CSS (heading colors, Bootstrap,
+ * etc.) lives in the `(with-layout)` route group so routes like `model-editor`
+ * can opt out while still reading `theme.*` values in shared components.
  */
 export function InstanceProviders({
   siteContext: initialSiteContext,
@@ -29,9 +28,7 @@ export function InstanceProviders({
   children: ReactNode;
 }) {
   const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
-  const muiTheme = initializeMuiTheme(themeProps);
 
-  // Initialize Apollo reactive vars from instance/site context
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
   const goals = instanceContext.goals;
 
@@ -55,10 +52,7 @@ export function InstanceProviders({
   return (
     <SiteContext.Provider value={[siteContext, setSiteContext]}>
       <InstanceContext.Provider value={instanceContext}>
-        <ThemeProvider theme={muiTheme}>
-          <ThemedGlobalStyles />
-          {children}
-        </ThemeProvider>
+        <InstanceThemeProvider themeProps={themeProps}>{children}</InstanceThemeProvider>
       </InstanceContext.Provider>
     </SiteContext.Provider>
   );
