@@ -7,6 +7,7 @@ import { loadTheme } from '@common/themes/theme-init.server';
 
 import { THEME_IDENTIFIER_HEADER } from '@/common/const';
 import Layout from '@/components/Layout';
+import EditorModeSnackbar from '@/components/common/EditorModeSnackbar';
 import PublicEditorBar from '@/components/common/PublicEditorBar';
 import { InstanceGlobalStyles } from '@/components/providers/InstanceThemedStyles';
 
@@ -30,6 +31,7 @@ export default async function WithLayoutLayout({ children }: Props) {
       <InstanceGlobalStyles />
       <PublicEditorBar />
       <Layout>{children}</Layout>
+      <EditorModeSnackbar />
     </>
   );
 }
