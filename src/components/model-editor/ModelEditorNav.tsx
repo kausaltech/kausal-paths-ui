@@ -228,7 +228,6 @@ export default function ModelEditorNav() {
 
   return (
     <Paper
-      elevation={3}
       sx={{
         position: 'absolute',
         top: 12,
@@ -236,6 +235,7 @@ export default function ModelEditorNav() {
         zIndex: (theme) => theme.zIndex.appBar,
         borderRadius: 1,
         width: 360,
+        boxShadow: (theme) => theme.shadows[3],
       }}
     >
       <Tooltip
