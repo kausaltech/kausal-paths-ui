@@ -1,9 +1,17 @@
-import { useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 
-import { Box, Chip, Divider, IconButton, Typography } from '@mui/material';
+import { Box, Chip, Collapse, Divider, IconButton, Paper, Stack, Typography } from '@mui/material';
 
 import { useReactFlow } from '@xyflow/react';
-import { BarChartLine, Database, X } from 'react-bootstrap-icons';
+import {
+  ArrowDown,
+  BarChartLine,
+  ChevronDown,
+  ChevronRight,
+  DashCircle,
+  Database,
+  X,
+} from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -57,6 +65,49 @@ function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: Connecte
   );
 }
 
+type CollapsibleSectionProps = {
+  title: ReactNode;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+};
+
+function CollapsibleSection({ title, open, onToggle, children }: CollapsibleSectionProps) {
+  return (
+    <Box
+      sx={{
+        mb: 0.5,
+        pt: 0.5,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Box
+        onClick={onToggle}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          cursor: 'pointer',
+          userSelect: 'none',
+          mb: 0.5,
+          px: 0.5,
+        }}
+      >
+        {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        <Typography variant="subtitle2" sx={{ fontSize: 12 }}>
+          {title}
+        </Typography>
+      </Box>
+      <Collapse in={open}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, px: 1, py: 2 }}>
+          {children}
+        </Box>
+      </Collapse>
+    </Box>
+  );
+}
+
 export type NodeDetailsPanelProps = {
   node: EditorNodeFieldsFragment | null;
   allNodes: readonly EditorNodeFieldsFragment[];
@@ -76,19 +127,27 @@ export default function NodeDetailsPanel({
   onShowMetrics,
   onShowDataset,
 }: NodeDetailsPanelProps) {
-  const { fitView, getNodes } = useReactFlow();
+  const { setCenter, getZoom, getNodes } = useReactFlow();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [inputOpen, setInputOpen] = useState(true);
+  const [outputOpen, setOutputOpen] = useState(true);
+  const [nodeDataOpen, setNodeDataOpen] = useState(true);
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
       const rfNodes = getNodes();
       const targetRfNode = rfNodes.find((n) => n.id === targetNodeId);
       if (targetRfNode) {
-        void fitView({ nodes: [targetRfNode], duration: 400, padding: 0.5 });
+        const width = targetRfNode.measured?.width ?? targetRfNode.width ?? 0;
+        const height = targetRfNode.measured?.height ?? targetRfNode.height ?? 0;
+        const cx = targetRfNode.position.x + width / 2;
+        const cy = targetRfNode.position.y + height / 2;
+        void setCenter(cx, cy, { zoom: getZoom(), duration: 400 });
       }
       onSelectNode(targetNodeId);
     },
-    [getNodes, fitView, onSelectNode]
+    [getNodes, setCenter, getZoom, onSelectNode]
   );
 
   const handleHover = useCallback((nodeId: string | null) => {
@@ -124,15 +183,13 @@ export default function NodeDetailsPanel({
   const headerStyle = getStyleForNode(node);
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 0 }}>
       <Box
         sx={{
           display: 'flex',
           alignItems: 'flex-start',
           gap: 1,
           mb: 1,
-          mx: -2,
-          mt: -2,
           px: 2,
           py: 1.5,
           backgroundColor: headerStyle.bg,
@@ -175,201 +232,226 @@ export default function NodeDetailsPanel({
         </IconButton>
       </Box>
 
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ display: 'block', mb: 1.5, fontFamily: 'monospace' }}
+      <CollapsibleSection
+        title="Details"
+        open={detailsOpen}
+        onToggle={() => setDetailsOpen((v) => !v)}
       >
-        {node.identifier}
-      </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', fontFamily: 'monospace', fontSize: 10 }}
+        >
+          {node.identifier}
+        </Typography>
 
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
-        <Chip label={node.kind} size="small" variant="outlined" />
-        <Chip
-          label={(nodeClass ?? getNodeType(node)).split('.').pop()}
-          size="small"
-          variant="outlined"
-        />
-        {node.__typename === 'Node' && node.isOutcome && (
-          <Chip label="outcome" size="small" color="primary" />
-        )}
-        {getNodeGroup(node) && <Chip label={getNodeGroup(node)} size="small" variant="outlined" />}
-      </Box>
-
-      <Divider sx={{ mb: 1.5 }} />
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+          <Chip label={node.kind} size="small" variant="outlined" />
+          <Chip
+            label={(nodeClass ?? getNodeType(node)).split('.').pop()}
+            size="small"
+            variant="outlined"
+          />
+          {node.__typename === 'Node' && node.isOutcome && (
+            <Chip label="outcome" size="small" color="primary" />
+          )}
+          {getNodeGroup(node) && (
+            <Chip label={getNodeGroup(node)} size="small" variant="outlined" />
+          )}
+        </Box>
+      </CollapsibleSection>
 
       {inputPorts.length > 0 && (
-        <>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Inputs
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-            {inputPorts.map((port, portIdx) => {
-              const connectedEdges = incomingByPort.get(port.id) ?? [];
-              type DatasetBinding = Extract<
-                (typeof port.bindings)[number],
-                { __typename: 'DatasetPortType' }
-              >;
-              type BoundDatasetBinding = DatasetBinding & {
-                dataset: NonNullable<DatasetBinding['dataset']>;
-                metric: NonNullable<DatasetBinding['metric']>;
-              };
-              const datasetBindings = port.bindings.filter(
-                (b): b is BoundDatasetBinding =>
-                  b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
-              );
-              const hasConnections = connectedEdges.length > 0 || datasetBindings.length > 0;
+        <CollapsibleSection
+          title={`Input ports (${inputPorts.length})`}
+          open={inputOpen}
+          onToggle={() => setInputOpen((v) => !v)}
+        >
+          {inputPorts.map((port, index) => {
+            const connectedEdges = incomingByPort.get(port.id) ?? [];
+            type DatasetBinding = Extract<
+              (typeof port.bindings)[number],
+              { __typename: 'DatasetPortType' }
+            >;
+            type BoundDatasetBinding = DatasetBinding & {
+              dataset: NonNullable<DatasetBinding['dataset']>;
+              metric: NonNullable<DatasetBinding['metric']>;
+            };
+            const datasetBindings = port.bindings.filter(
+              (b): b is BoundDatasetBinding =>
+                b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
+            );
+            const hasConnections = connectedEdges.length > 0 || datasetBindings.length > 0;
 
-              return (
-                <Box key={port.id}>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}
-                  >
-                    {port.label ?? `Input #${portIdx + 1}`}
-                    {port.multi ? ' (multi)' : ''}
-                  </Typography>
-                  {hasConnections ? (
-                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {connectedEdges.map((e) => {
-                        const sourceNode = nodeMap.get(e.fromRef.nodeId);
-                        const highlighted = hoveredNodeId === e.fromRef.nodeId;
-                        return (
-                          <Box
-                            key={e.id}
-                            sx={
-                              highlighted
-                                ? {
-                                    '& .MuiChip-root': {
-                                      borderColor: 'primary.main',
-                                      bgcolor: 'action.hover',
-                                    },
-                                  }
-                                : undefined
+            return (
+              <Box key={port.id}>
+                <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
+                  {port.label ?? `Port #${index + 1}`}
+                  {port.multi ? ' (multi)' : ''}
+                </Typography>
+                {hasConnections ? (
+                  <Stack sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {connectedEdges.map((e) => {
+                      const sourceNode = nodeMap.get(e.fromRef.nodeId);
+                      const highlighted = hoveredNodeId === e.fromRef.nodeId;
+                      return (
+                        <Box
+                          key={e.id}
+                          sx={
+                            highlighted
+                              ? {
+                                  '& .MuiChip-root': {
+                                    borderColor: 'primary.main',
+                                    bgcolor: 'action.hover',
+                                  },
+                                }
+                              : undefined
+                          }
+                        >
+                          <ConnectedNodeChip
+                            nodeId={e.fromRef.nodeId}
+                            label={sourceNode?.name ?? e.fromRef.nodeId}
+                            style={
+                              sourceNode ? getStyleForNode(sourceNode) : getNodeStyle('', '', false)
                             }
-                          >
-                            <ConnectedNodeChip
-                              nodeId={e.fromRef.nodeId}
-                              label={sourceNode?.name ?? e.fromRef.nodeId}
-                              style={
-                                sourceNode
-                                  ? getStyleForNode(sourceNode)
-                                  : getNodeStyle('', '', false)
-                              }
-                              onSelect={handleNavigateToNode}
-                              onHover={handleHover}
-                            />
-                          </Box>
-                        );
-                      })}
-                      {datasetBindings.map((ds) => (
-                        <Chip
-                          key={ds.dataset.id}
-                          icon={<Database size={18} />}
-                          label={`${ds.dataset.name} → ${ds.metric.label}`}
-                          variant="outlined"
-                          color="info"
-                          onClick={() => onShowDataset?.(ds.id)}
-                          sx={{
-                            maxWidth: '100%',
-                            cursor: 'pointer',
-                            height: 32,
-                            fontSize: 13,
-                            '& .MuiChip-label': { px: 1.25 },
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  ) : (
-                    <Typography variant="caption" color="text.disabled">
-                      Not connected
-                    </Typography>
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-        </>
+                            onSelect={handleNavigateToNode}
+                            onHover={handleHover}
+                          />
+                        </Box>
+                      );
+                    })}
+                    {datasetBindings.map((ds) => (
+                      <Chip
+                        key={ds.dataset.id}
+                        icon={<Database size={18} />}
+                        label={`${ds.dataset.name} → ${ds.metric.label}`}
+                        variant="filled"
+                        onClick={() => onShowDataset?.(ds.id)}
+                        sx={{
+                          maxWidth: '100%',
+                          cursor: 'pointer',
+                          height: 32,
+                          fontSize: 13,
+                          bgcolor: 'grey.900',
+                          color: 'common.white',
+                          '& .MuiChip-icon': { color: 'common.white' },
+                          '& .MuiChip-label': { px: 1.25 },
+                          '&:hover': { bgcolor: 'grey.800' },
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                ) : (
+                  <Chip
+                    icon={<DashCircle size={14} />}
+                    label="Not connected"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      alignSelf: 'flex-start',
+                      color: 'text.disabled',
+                      borderColor: 'divider',
+                      bgcolor: 'transparent',
+                      '& .MuiChip-icon': { color: 'text.disabled' },
+                    }}
+                  />
+                )}
+              </Box>
+            );
+          })}
+        </CollapsibleSection>
       )}
+
+      <CollapsibleSection
+        title="Node result data"
+        open={nodeDataOpen}
+        onToggle={() => setNodeDataOpen((v) => !v)}
+      >
+        <Chip
+          icon={<BarChartLine size={18} />}
+          label="Node data"
+          variant="filled"
+          onClick={onShowMetrics}
+          sx={{
+            maxWidth: '100%',
+            cursor: 'pointer',
+            bgcolor: 'grey.900',
+            color: 'common.white',
+            '& .MuiChip-icon': { color: 'common.white' },
+            '&:hover': { bgcolor: 'grey.800' },
+            height: 32,
+            fontSize: 13,
+            '& .MuiChip-label': { px: 1.25 },
+            alignSelf: 'flex-start',
+          }}
+        />
+      </CollapsibleSection>
 
       {outputPorts.length > 0 && (
-        <>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Outputs
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-            {outputPorts.map((port, portIdx) => {
-              const connectedEdges = outgoingByPort.get(port.id) ?? [];
-              return (
-                <Box key={port.id}>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}
-                  >
-                    {port.label ?? `Output #${portIdx + 1}`}
-                  </Typography>
-                  {connectedEdges.length > 0 ? (
-                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {connectedEdges.map((e) => {
-                        const targetNode = nodeMap.get(e.toRef.nodeId);
-                        const highlighted = hoveredNodeId === e.toRef.nodeId;
-                        return (
-                          <Box
-                            key={e.id}
-                            sx={
-                              highlighted
-                                ? {
-                                    '& .MuiChip-root': {
-                                      borderColor: 'primary.main',
-                                      bgcolor: 'action.hover',
-                                    },
-                                  }
-                                : undefined
+        <CollapsibleSection
+          title={`Output ports (${outputPorts.length})`}
+          open={outputOpen}
+          onToggle={() => setOutputOpen((v) => !v)}
+        >
+          {outputPorts.map((port, portIdx) => {
+            const connectedEdges = outgoingByPort.get(port.id) ?? [];
+            return (
+              <Box key={port.id}>
+                <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
+                  {port.label ?? `Port #${portIdx + 1}`}
+                </Typography>
+                {connectedEdges.length > 0 ? (
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {connectedEdges.map((e) => {
+                      const targetNode = nodeMap.get(e.toRef.nodeId);
+                      const highlighted = hoveredNodeId === e.toRef.nodeId;
+                      return (
+                        <Box
+                          key={e.id}
+                          sx={
+                            highlighted
+                              ? {
+                                  '& .MuiChip-root': {
+                                    borderColor: 'primary.main',
+                                    bgcolor: 'action.hover',
+                                  },
+                                }
+                              : undefined
+                          }
+                        >
+                          <ConnectedNodeChip
+                            nodeId={e.toRef.nodeId}
+                            label={targetNode?.name ?? e.toRef.nodeId}
+                            style={
+                              targetNode ? getStyleForNode(targetNode) : getNodeStyle('', '', false)
                             }
-                          >
-                            <ConnectedNodeChip
-                              nodeId={e.toRef.nodeId}
-                              label={targetNode?.name ?? e.toRef.nodeId}
-                              style={
-                                targetNode
-                                  ? getStyleForNode(targetNode)
-                                  : getNodeStyle('', '', false)
-                              }
-                              onSelect={handleNavigateToNode}
-                              onHover={handleHover}
-                            />
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  ) : (
-                    <Typography variant="caption" color="text.disabled">
-                      Not connected
-                    </Typography>
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-        </>
+                            onSelect={handleNavigateToNode}
+                            onHover={handleHover}
+                          />
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                ) : (
+                  <Chip
+                    icon={<DashCircle size={14} />}
+                    label="Not connected"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      alignSelf: 'flex-start',
+                      color: 'text.disabled',
+                      borderColor: 'divider',
+                      bgcolor: 'transparent',
+                      '& .MuiChip-icon': { color: 'text.disabled' },
+                    }}
+                  />
+                )}
+              </Box>
+            );
+          })}
+        </CollapsibleSection>
       )}
-
-      <Divider sx={{ my: 1.5 }} />
-
-      <Chip
-        icon={<BarChartLine size={18} />}
-        label="Output data"
-        variant="outlined"
-        color="info"
-        onClick={onShowMetrics}
-        sx={{
-          maxWidth: '100%',
-          cursor: 'pointer',
-          height: 32,
-          fontSize: 13,
-          '& .MuiChip-label': { px: 1.25 },
-        }}
-      />
     </Box>
   );
 }
