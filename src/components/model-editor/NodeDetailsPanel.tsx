@@ -25,6 +25,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { modelEditorModeVar } from '@/common/cache';
 import { NodeLink } from '@/common/links';
+import { useSession } from '@/lib/auth-client';
 import { type NodeStyle, getNodeStyle } from './ElkNode';
 import { mockNodeEditsVar, setMockNodeNameEdit } from './mockEdits';
 import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
@@ -158,6 +159,8 @@ export default function NodeDetailsPanel({
   const { setCenter, getZoom, getNodes } = useReactFlow();
   const editorMode = useReactiveVar(modelEditorModeVar);
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const { data: session } = useSession();
+  const editorUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
   const isEditable = editorMode === 'draft';
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(true);
@@ -290,7 +293,7 @@ export default function NodeDetailsPanel({
               value={fieldNameValue}
               onChange={(e) => {
                 if (!node) return;
-                setMockNodeNameEdit(node.id, e.target.value, node.name ?? '');
+                setMockNodeNameEdit(node.id, e.target.value, node.name ?? '', editorUserName);
               }}
               size="small"
               fullWidth

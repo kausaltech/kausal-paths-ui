@@ -33,7 +33,11 @@ import {
 
 import { modelEditorModeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
-import { clearMockNodeEdits, mockNodeEditsVar } from '@/components/model-editor/mockEdits';
+import {
+  mockLastPublishedVar,
+  mockNodeEditsVar,
+  publishMockEdits,
+} from '@/components/model-editor/mockEdits';
 import { useSession } from '@/lib/auth-client';
 
 const GET_LANDING_NODE_NAMES = gql`
@@ -97,8 +101,19 @@ export default function ModelEditorLandingPage() {
   const instance = useInstance();
   const { data: session, isPending } = useSession();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const lastPublished = useReactiveVar(mockLastPublishedVar);
   const editorMode = useReactiveVar(modelEditorModeVar);
   const isDraft = editorMode === 'draft';
+  const currentUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
+
+  // Seed a mock "last published" entry so Published mode has something to show
+  // before the user has clicked Publish in this session.
+  useEffect(() => {
+    if (!session?.user) return;
+    if (mockLastPublishedVar() !== null) return;
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    mockLastPublishedVar({ at: fourteenDaysAgo, by: currentUserName });
+  }, [session?.user, currentUserName]);
 
   const { data: nodesData } = useQuery<LandingNodesQuery>(GET_LANDING_NODE_NAMES, {
     fetchPolicy: 'cache-first',
@@ -116,6 +131,17 @@ export default function ModelEditorLandingPage() {
       })
       .filter((row) => row.editedName !== row.originalName);
   }, [nodeEdits, nodesData]);
+
+  const latestEdit = useMemo(() => {
+    let latest: { at: Date; by: string } | null = null;
+    for (const edit of Object.values(nodeEdits)) {
+      if (!edit.editedAt) continue;
+      if (!latest || edit.editedAt > latest.at) {
+        latest = { at: edit.editedAt, by: edit.editedBy ?? 'Unknown user' };
+      }
+    }
+    return latest;
+  }, [nodeEdits]);
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -206,6 +232,35 @@ export default function ModelEditorLandingPage() {
                   ? `${editedRows.length} node${editedRows.length === 1 ? '' : 's'} with unpublished edits.`
                   : 'No unpublished edits.'}
             </Typography>
+            {isDraft && latestEdit ? (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 0.5 }}
+              >
+                Last edited{' '}
+                {latestEdit.at.toLocaleString(undefined, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}{' '}
+                by {latestEdit.by}
+              </Typography>
+            ) : (
+              lastPublished && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mt: 0.5 }}
+                >
+                  Last published{' '}
+                  {lastPublished.at.toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  })}{' '}
+                  by {lastPublished.by}
+                </Typography>
+              )
+            )}
           </Box>
         </Box>
 
@@ -257,7 +312,7 @@ export default function ModelEditorLandingPage() {
                     color="primary"
                     startIcon={<CloudUpload size={14} />}
                     disabled={!hasEdits}
-                    onClick={() => clearMockNodeEdits()}
+                    onClick={() => publishMockEdits(currentUserName)}
                   >
                     Publish edits
                   </Button>
