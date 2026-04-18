@@ -10,9 +10,17 @@ import { makeVar } from '@apollo/client';
 
 export type MockNodeEdit = {
   name?: string;
+  shortName?: string | null;
+  description?: string | null;
+  color?: string | null;
+  isVisible?: boolean;
+  isOutcome?: boolean;
+  nodeGroup?: string | null;
   editedAt?: Date;
   editedBy?: string;
 };
+
+export type EditableNodeField = Exclude<keyof MockNodeEdit, 'editedAt' | 'editedBy'>;
 
 export const mockNodeEditsVar = makeVar<Record<string, MockNodeEdit>>({});
 
@@ -28,29 +36,42 @@ export function publishMockEdits(publishedBy: string): void {
   mockNodeEditsVar({});
 }
 
+export function setMockNodeFieldEdit<K extends EditableNodeField>(
+  nodeId: string,
+  field: K,
+  value: MockNodeEdit[K],
+  originalValue: MockNodeEdit[K],
+  editedBy: string
+): void {
+  const current = mockNodeEditsVar();
+  const next = { ...current };
+  const existing: MockNodeEdit = next[nodeId] ?? {};
+  const matchesOriginal = value === originalValue;
+
+  if (matchesOriginal) {
+    const { [field]: _omit, editedAt: _t, editedBy: _u, ...rest } = existing;
+    const hasOtherFieldEdits = Object.keys(rest).some((k) => k !== 'editedAt' && k !== 'editedBy');
+    if (!hasOtherFieldEdits) {
+      delete next[nodeId];
+    } else {
+      next[nodeId] = { ...rest, editedAt: new Date(), editedBy };
+    }
+  } else {
+    next[nodeId] = {
+      ...existing,
+      [field]: value,
+      editedAt: new Date(),
+      editedBy,
+    };
+  }
+  mockNodeEditsVar(next);
+}
+
 export function setMockNodeNameEdit(
   nodeId: string,
   value: string,
   originalName: string,
   editedBy: string
 ): void {
-  const current = mockNodeEditsVar();
-  const next = { ...current };
-  const existing = next[nodeId] ?? {};
-  if (value === originalName) {
-    const { name: _omit, editedAt: _t, editedBy: _u, ...rest } = existing;
-    if (Object.keys(rest).length === 0) {
-      delete next[nodeId];
-    } else {
-      next[nodeId] = rest;
-    }
-  } else {
-    next[nodeId] = {
-      ...existing,
-      name: value,
-      editedAt: new Date(),
-      editedBy,
-    };
-  }
-  mockNodeEditsVar(next);
+  setMockNodeFieldEdit(nodeId, 'name', value, originalName, editedBy);
 }

@@ -1,0 +1,478 @@
+import { type ReactNode } from 'react';
+
+import {
+  Box,
+  Button,
+  Chip,
+  FormControlLabel,
+  IconButton,
+  Switch,
+  TextField,
+  type Theme,
+  Typography,
+} from '@mui/material';
+import { alpha } from '@mui/material/styles';
+
+import { BoxArrowUpRight, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
+
+import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { modelEditorModeVar } from '@/common/cache';
+import { NodeLink } from '@/common/links';
+import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
+import { getNodeGroup, getNodeType } from './nodeHelpers';
+
+const metaChipSx = {
+  height: 20,
+  '& .MuiChip-label': { px: 0.75, fontSize: 10, color: 'text.secondary' },
+};
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
+      {children}
+    </Typography>
+  );
+}
+
+function EditLockOverlay() {
+  return (
+    <Box
+      role="button"
+      tabIndex={0}
+      onClick={() => modelEditorModeVar('draft')}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          modelEditorModeVar('draft');
+        }
+      }}
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 0.75,
+        cursor: 'pointer',
+        borderRadius: 1,
+        opacity: 0,
+        bgcolor: (theme) => alpha(theme.palette.warning.main, 0.9),
+        color: (theme) => theme.palette.warning.contrastText,
+        transition: 'opacity 0.15s',
+        '&:hover, &:focus-visible': { opacity: 1 },
+        '&:focus-visible': {
+          outline: (theme) => `2px solid ${theme.palette.warning.main}`,
+          outlineOffset: 2,
+        },
+      }}
+    >
+      <PencilSquare size={12} />
+      <Typography variant="caption" sx={{ fontWeight: 600, color: 'inherit' }}>
+        Edit in draft mode
+      </Typography>
+    </Box>
+  );
+}
+
+type EditableWrapperProps = {
+  isEditable: boolean;
+  children: ReactNode;
+};
+
+function EditableWrapper({ isEditable, children }: EditableWrapperProps) {
+  return (
+    <Box sx={{ position: 'relative' }}>
+      {children}
+      {!isEditable && <EditLockOverlay />}
+    </Box>
+  );
+}
+
+function editedSx(hasEdit: boolean) {
+  return hasEdit
+    ? {
+        '& .MuiOutlinedInput-root': {
+          bgcolor: (theme: Theme) => alpha(theme.palette.warning.main, 0.15),
+        },
+      }
+    : undefined;
+}
+
+function editedSwitchSx(hasEdit: boolean) {
+  return hasEdit
+    ? {
+        px: 0.5,
+        borderRadius: 1,
+        bgcolor: (theme: Theme) => alpha(theme.palette.warning.main, 0.15),
+      }
+    : { px: 0.5 };
+}
+
+type TextEditFieldProps = {
+  label: string;
+  field: Extract<EditableNodeField, 'name' | 'shortName' | 'description' | 'nodeGroup'>;
+  nodeId: string;
+  originalValue: string | null;
+  currentValue: string | null | undefined;
+  isEditable: boolean;
+  editorUserName: string;
+  multiline?: boolean;
+  placeholder?: string;
+};
+
+function TextEditField({
+  label,
+  field,
+  nodeId,
+  originalValue,
+  currentValue,
+  isEditable,
+  editorUserName,
+  multiline,
+  placeholder,
+}: TextEditFieldProps) {
+  const value = currentValue ?? originalValue ?? '';
+  const hasEdit =
+    isEditable && currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
+
+  return (
+    <Box>
+      <FieldLabel>{label}</FieldLabel>
+      <EditableWrapper isEditable={isEditable}>
+        <TextField
+          value={value}
+          onChange={(e) => {
+            const next = e.target.value;
+            setMockNodeFieldEdit(
+              nodeId,
+              field,
+              next === '' ? null : next,
+              originalValue,
+              editorUserName
+            );
+          }}
+          size="small"
+          fullWidth
+          disabled={!isEditable}
+          multiline={multiline}
+          minRows={multiline ? 2 : undefined}
+          maxRows={multiline ? 6 : undefined}
+          placeholder={placeholder}
+          sx={editedSx(hasEdit)}
+          slotProps={{
+            input: { sx: { fontSize: 13 } },
+          }}
+        />
+      </EditableWrapper>
+    </Box>
+  );
+}
+
+type ColorEditFieldProps = {
+  nodeId: string;
+  originalValue: string | null;
+  currentValue: string | null | undefined;
+  isEditable: boolean;
+  editorUserName: string;
+};
+
+function ColorEditField({
+  nodeId,
+  originalValue,
+  currentValue,
+  isEditable,
+  editorUserName,
+}: ColorEditFieldProps) {
+  const effective = currentValue === undefined ? originalValue : currentValue;
+  const hasEdit =
+    isEditable && currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
+  const hasColor = typeof effective === 'string' && effective !== '';
+
+  const setValue = (value: string | null) => {
+    setMockNodeFieldEdit(nodeId, 'color', value, originalValue, editorUserName);
+  };
+
+  return (
+    <Box>
+      <FieldLabel>Color</FieldLabel>
+      <EditableWrapper isEditable={isEditable}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            p: 0.25,
+            borderRadius: 1,
+            bgcolor: hasEdit
+              ? (theme: Theme) => alpha(theme.palette.warning.main, 0.15)
+              : 'transparent',
+          }}
+        >
+          <Box
+            component="label"
+            sx={{
+              position: 'relative',
+              width: 22,
+              height: 22,
+              borderRadius: 0.5,
+              border: '1px solid',
+              borderColor: 'divider',
+              cursor: isEditable ? 'pointer' : 'default',
+              overflow: 'hidden',
+              flexShrink: 0,
+              ...(hasColor
+                ? { bgcolor: effective }
+                : {
+                    backgroundImage:
+                      'linear-gradient(45deg, transparent 45%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.3) 55%, transparent 55%)',
+                    bgcolor: 'grey.100',
+                  }),
+            }}
+          >
+            <input
+              type="color"
+              value={hasColor ? effective : '#000000'}
+              disabled={!isEditable}
+              onChange={(e) => setValue(e.target.value)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                opacity: 0,
+                cursor: 'inherit',
+                border: 'none',
+                padding: 0,
+              }}
+            />
+          </Box>
+          <Typography
+            variant="caption"
+            sx={{
+              fontFamily: 'monospace',
+              fontSize: 12,
+              color: hasColor ? 'text.primary' : 'text.disabled',
+              flex: 1,
+            }}
+          >
+            {hasColor ? effective : 'No color'}
+          </Typography>
+          {hasColor && isEditable && (
+            <IconButton
+              size="small"
+              onClick={() => setValue(null)}
+              title="Clear color"
+              sx={{ p: 0.25 }}
+            >
+              <XIcon size={12} />
+            </IconButton>
+          )}
+        </Box>
+      </EditableWrapper>
+    </Box>
+  );
+}
+
+type BooleanEditFieldProps = {
+  label: string;
+  field: Extract<EditableNodeField, 'isVisible' | 'isOutcome'>;
+  nodeId: string;
+  originalValue: boolean;
+  currentValue: boolean | undefined;
+  isEditable: boolean;
+  editorUserName: string;
+};
+
+function BooleanEditField({
+  label,
+  field,
+  nodeId,
+  originalValue,
+  currentValue,
+  isEditable,
+  editorUserName,
+}: BooleanEditFieldProps) {
+  const value = currentValue ?? originalValue;
+  const hasEdit = isEditable && currentValue !== undefined && currentValue !== originalValue;
+
+  return (
+    <EditableWrapper isEditable={isEditable}>
+      <FormControlLabel
+        disabled={!isEditable}
+        control={
+          <Switch
+            size="small"
+            checked={value}
+            onChange={(e) =>
+              setMockNodeFieldEdit(nodeId, field, e.target.checked, originalValue, editorUserName)
+            }
+          />
+        }
+        label={<Typography sx={{ fontSize: 13 }}>{label}</Typography>}
+        sx={editedSwitchSx(hasEdit)}
+      />
+    </EditableWrapper>
+  );
+}
+
+export type NodeDetailsSectionProps = {
+  node: EditorNodeFieldsFragment;
+  isEditable: boolean;
+  editorUserName: string;
+  currentEdit: MockNodeEdit | undefined;
+  nodeClass: string | null;
+};
+
+export default function NodeDetailsSection({
+  node,
+  isEditable,
+  editorUserName,
+  currentEdit,
+  nodeClass,
+}: NodeDetailsSectionProps) {
+  const originalIsOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
+  const displayIsOutcome = currentEdit?.isOutcome ?? originalIsOutcome;
+  const supportsOutcome = node.__typename === 'Node';
+
+  return (
+    <>
+      <TextEditField
+        label="Name"
+        field="name"
+        nodeId={node.id}
+        originalValue={node.name ?? ''}
+        currentValue={currentEdit?.name}
+        isEditable={isEditable}
+        editorUserName={editorUserName}
+      />
+
+      <TextEditField
+        label="Short name"
+        field="shortName"
+        nodeId={node.id}
+        originalValue={node.shortName ?? null}
+        currentValue={currentEdit?.shortName}
+        isEditable={isEditable}
+        editorUserName={editorUserName}
+        placeholder="Abbreviated label"
+      />
+
+      <TextEditField
+        label="Description"
+        field="description"
+        nodeId={node.id}
+        originalValue={node.description ?? null}
+        currentValue={currentEdit?.description}
+        isEditable={isEditable}
+        editorUserName={editorUserName}
+        multiline
+      />
+
+      <ColorEditField
+        nodeId={node.id}
+        originalValue={node.color ?? null}
+        currentValue={currentEdit?.color}
+        isEditable={isEditable}
+        editorUserName={editorUserName}
+      />
+
+      <TextEditField
+        label="Node group"
+        field="nodeGroup"
+        nodeId={node.id}
+        originalValue={getNodeGroup(node)}
+        currentValue={currentEdit?.nodeGroup}
+        isEditable={isEditable}
+        editorUserName={editorUserName}
+      />
+
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <BooleanEditField
+          label="Visible"
+          field="isVisible"
+          nodeId={node.id}
+          originalValue={node.isVisible ?? true}
+          currentValue={currentEdit?.isVisible}
+          isEditable={isEditable}
+          editorUserName={editorUserName}
+        />
+        {supportsOutcome && (
+          <BooleanEditField
+            label="Outcome"
+            field="isOutcome"
+            nodeId={node.id}
+            originalValue={originalIsOutcome}
+            currentValue={currentEdit?.isOutcome}
+            isEditable={isEditable}
+            editorUserName={editorUserName}
+          />
+        )}
+      </Box>
+
+      <Box>
+        <FieldLabel>Identifier</FieldLabel>
+        <Box
+          sx={{
+            width: '100%',
+            bgcolor: 'grey.100',
+            borderRadius: 0.5,
+            px: 1,
+            py: 0.5,
+            overflowX: 'auto',
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              display: 'block',
+              fontFamily: 'monospace',
+              fontSize: 10,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {node.identifier}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box>
+        <FieldLabel>Classification</FieldLabel>
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+          <Chip label={node.kind} size="small" variant="outlined" sx={metaChipSx} />
+          <Chip
+            label={(nodeClass ?? getNodeType(node)).split('.').pop()}
+            size="small"
+            variant="outlined"
+            sx={metaChipSx}
+          />
+          {node.quantityKind && (
+            <Chip
+              label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
+              title={`quantityKind: ${node.quantityKind.id}`}
+              size="small"
+              variant="outlined"
+              sx={metaChipSx}
+            />
+          )}
+          {displayIsOutcome && (
+            <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
+          )}
+        </Box>
+      </Box>
+
+      <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
+        <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<BoxArrowUpRight size={12} />}
+            sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
+          >
+            Open public page
+          </Button>
+        </NodeLink>
+      </Box>
+    </>
+  );
+}

@@ -1,7 +1,6 @@
 import { type ReactNode, useCallback, useState } from 'react';
 
-import { Box, Button, Chip, Collapse, IconButton, TextField, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { Box, Chip, Collapse, IconButton, Typography } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
@@ -10,12 +9,10 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import {
   BarChartLine,
-  BoxArrowUpRight,
   ChevronDown,
   ChevronRight,
   DashCircle,
   Database,
-  PencilSquare,
   X,
 } from 'react-bootstrap-icons';
 
@@ -24,11 +21,11 @@ import type {
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { modelEditorModeVar } from '@/common/cache';
-import { NodeLink } from '@/common/links';
 import { useSession } from '@/lib/auth-client';
 import { type NodeStyle, getNodeStyle } from './ElkNode';
-import { mockNodeEditsVar, setMockNodeNameEdit } from './mockEdits';
-import { getNodeGroup, getNodeSpec, getNodeType } from './nodeHelpers';
+import NodeDetailsSection from './NodeDetailsSection';
+import { mockNodeEditsVar } from './mockEdits';
+import { getNodeSpec, getNodeType } from './nodeHelpers';
 
 const GET_NODE_EXPLANATION = gql`
   query NodeExplanation($node: ID!) {
@@ -62,11 +59,6 @@ type ConnectedNodeChipProps = {
 };
 
 const CHIP_LABEL_MAX = 35;
-
-const metaChipSx = {
-  height: 20,
-  '& .MuiChip-label': { px: 0.75, fontSize: 10, color: 'text.secondary' },
-};
 
 function ConnectedNodeChip({ nodeId, label, style, onSelect, onHover }: ConnectedNodeChipProps) {
   const truncated =
@@ -173,7 +165,6 @@ export default function NodeDetailsPanel({
   const editedName = currentEdit?.name;
   const hasNameEdit = editedName !== undefined && editedName !== node?.name;
   const displayName = isEditable && hasNameEdit ? editedName : (node?.name ?? '');
-  const fieldNameValue = isEditable ? (editedName ?? node?.name ?? '') : (node?.name ?? '');
 
   const { data: explanationData } = useQuery<NodeExplanationQuery>(GET_NODE_EXPLANATION, {
     variables: { node: node?.id ?? '' },
@@ -284,146 +275,13 @@ export default function NodeDetailsPanel({
         open={detailsOpen}
         onToggle={() => setDetailsOpen((v) => !v)}
       >
-        <Box>
-          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
-            Name
-          </Typography>
-          <Box sx={{ position: 'relative' }}>
-            <TextField
-              value={fieldNameValue}
-              onChange={(e) => {
-                if (!node) return;
-                setMockNodeNameEdit(node.id, e.target.value, node.name ?? '', editorUserName);
-              }}
-              size="small"
-              fullWidth
-              disabled={!isEditable}
-              sx={
-                isEditable && hasNameEdit
-                  ? {
-                      '& .MuiOutlinedInput-root': {
-                        bgcolor: (theme) => alpha(theme.palette.warning.main, 0.15),
-                      },
-                    }
-                  : undefined
-              }
-              slotProps={{
-                input: { sx: { fontSize: 13 } },
-              }}
-            />
-            {!isEditable && (
-              <Box
-                role="button"
-                tabIndex={0}
-                onClick={() => modelEditorModeVar('draft')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    modelEditorModeVar('draft');
-                  }
-                }}
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 0.75,
-                  cursor: 'pointer',
-                  borderRadius: 1,
-                  opacity: 0,
-                  bgcolor: (theme) => alpha(theme.palette.warning.main, 0.9),
-                  color: (theme) => theme.palette.warning.contrastText,
-                  transition: 'opacity 0.15s',
-                  '&:hover, &:focus-visible': {
-                    opacity: 1,
-                  },
-                  '&:focus-visible': {
-                    outline: (theme) => `2px solid ${theme.palette.warning.main}`,
-                    outlineOffset: 2,
-                  },
-                }}
-              >
-                <PencilSquare size={12} />
-                <Typography variant="caption" sx={{ fontWeight: 600, color: 'inherit' }}>
-                  Edit in draft mode
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        </Box>
-
-        <Box>
-          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
-            Identifier
-          </Typography>
-          <Box
-            sx={{
-              width: '100%',
-              bgcolor: 'grey.100',
-              borderRadius: 0.5,
-              px: 1,
-              py: 0.5,
-              overflowX: 'auto',
-            }}
-          >
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                display: 'block',
-                fontFamily: 'monospace',
-                fontSize: 10,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {node.identifier}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box>
-          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
-            Classification
-          </Typography>
-
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-            <Chip label={node.kind} size="small" variant="outlined" sx={metaChipSx} />
-            <Chip
-              label={(nodeClass ?? getNodeType(node)).split('.').pop()}
-              size="small"
-              variant="outlined"
-              sx={metaChipSx}
-            />
-            {node.quantityKind && (
-              <Chip
-                label={`${node.quantityKind.icon ?? ''} ${node.quantityKind.label}`.trim()}
-                title={`quantityKind: ${node.quantityKind.id}`}
-                size="small"
-                variant="outlined"
-                sx={metaChipSx}
-              />
-            )}
-            {node.__typename === 'Node' && node.isOutcome && (
-              <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
-            )}
-            {getNodeGroup(node) && (
-              <Chip label={getNodeGroup(node)} size="small" variant="outlined" sx={metaChipSx} />
-            )}
-          </Box>
-        </Box>
-        <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
-          <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<BoxArrowUpRight size={12} />}
-              sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
-            >
-              Open public page
-            </Button>
-          </NodeLink>
-        </Box>
+        <NodeDetailsSection
+          node={node}
+          isEditable={isEditable}
+          editorUserName={editorUserName}
+          currentEdit={currentEdit}
+          nodeClass={nodeClass}
+        />
       </CollapsibleSection>
 
       {explanation && (

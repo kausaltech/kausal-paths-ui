@@ -78,7 +78,10 @@ const GET_NODE_GRAPH = gql`
     id
     identifier
     name
+    shortName
+    description
     color
+    isVisible
     uuid
     kind
     quantityKind {
