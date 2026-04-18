@@ -10,6 +10,7 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Chip,
   CircularProgress,
   Container,
   Divider,
@@ -34,6 +35,8 @@ import {
 import { modelEditorModeVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import {
+  type EditableNodeField,
+  type MockNodeEdit,
   mockLastPublishedVar,
   mockNodeEditsVar,
   publishMockEdits,
@@ -91,9 +94,30 @@ function getModelEditorBase(pathname: string): string {
 
 type EditedNodeRow = {
   id: string;
+  displayName: string;
   originalName: string;
-  editedName: string;
+  editedName: string | null;
+  editedFields: string[];
 };
+
+const FIELD_LABELS: Record<EditableNodeField, string> = {
+  name: 'Name',
+  shortName: 'Short name',
+  description: 'Description',
+  color: 'Color',
+  isVisible: 'Visibility',
+  isOutcome: 'Outcome',
+  nodeGroup: 'Node group',
+  actionGroup: 'Action group',
+};
+
+function getEditedFieldLabels(edit: MockNodeEdit): string[] {
+  const labels: string[] = [];
+  for (const key of Object.keys(FIELD_LABELS) as EditableNodeField[]) {
+    if (edit[key] !== undefined) labels.push(FIELD_LABELS[key]);
+  }
+  return labels;
+}
 
 export default function ModelEditorLandingPage() {
   const router = useRouter();
@@ -123,13 +147,21 @@ export default function ModelEditorLandingPage() {
   const editedRows = useMemo<EditedNodeRow[]>(() => {
     const nodes = nodesData?.instance.nodes ?? [];
     const byId = new Map(nodes.map((n) => [n.id, n.name]));
-    return Object.entries(nodeEdits)
-      .filter(([, edit]) => edit.name !== undefined)
-      .map(([id, edit]) => {
-        const originalName = byId.get(id) ?? id;
-        return { id, originalName, editedName: edit.name ?? '' };
-      })
-      .filter((row) => row.editedName !== row.originalName);
+    const rows: EditedNodeRow[] = [];
+    for (const [id, edit] of Object.entries(nodeEdits)) {
+      const editedFields = getEditedFieldLabels(edit);
+      if (editedFields.length === 0) continue;
+      const originalName = byId.get(id) ?? id;
+      const editedName = typeof edit.name === 'string' ? edit.name : null;
+      rows.push({
+        id,
+        originalName,
+        editedName,
+        displayName: editedName ?? originalName,
+        editedFields,
+      });
+    }
+    return rows;
   }, [nodeEdits, nodesData]);
 
   const latestEdit = useMemo(() => {
@@ -285,20 +317,45 @@ export default function ModelEditorLandingPage() {
                 >
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ textDecoration: 'line-through' }}
+                      row.editedName !== null && row.editedName !== row.originalName ? (
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
                         >
-                          {row.originalName}
-                        </Typography>
-                        <ArrowRight size={12} />
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ textDecoration: 'line-through' }}
+                          >
+                            {row.originalName}
+                          </Typography>
+                          <ArrowRight size={12} />
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {row.editedName}
+                          </Typography>
+                        </Box>
+                      ) : (
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {row.editedName}
+                          {row.displayName}
                         </Typography>
+                      )
+                    }
+                    secondary={
+                      <Box
+                        component="span"
+                        sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}
+                      >
+                        {row.editedFields.map((label) => (
+                          <Chip
+                            key={label}
+                            label={label}
+                            size="small"
+                            variant="outlined"
+                            sx={{ height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 10 } }}
+                          />
+                        ))}
                       </Box>
                     }
+                    slotProps={{ secondary: { component: 'div' } }}
                   />
                 </ListItem>
               ))}
