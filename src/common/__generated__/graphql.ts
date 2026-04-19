@@ -42,6 +42,17 @@ export enum ActionSortOrder {
   Standard = 'STANDARD'
 }
 
+export enum ChangeTargetKind {
+  DatasetPort = 'DATASET_PORT',
+  DataPoint = 'DATA_POINT',
+  Dimension = 'DIMENSION',
+  DimensionCategory = 'DIMENSION_CATEGORY',
+  Edge = 'EDGE',
+  Instance = 'INSTANCE',
+  Node = 'NODE',
+  Unknown = 'UNKNOWN'
+}
+
 export type CreateDataPointInput = {
   date: Scalars['Date']['input'];
   dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
@@ -157,6 +168,13 @@ export type UpdateDimensionCategoryInput = {
 
 export type UpdateDimensionInput = {
   dimensionId: Scalars['UUID']['input'];
+  name: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateNodeInput = {
+  color: InputMaybe<Scalars['String']['input']>;
+  isOutcome: InputMaybe<Scalars['Boolean']['input']>;
+  isVisible: InputMaybe<Scalars['Boolean']['input']>;
   name: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -316,6 +334,23 @@ export type RegisterUserMutation = (
     )
    }
   & { __typename: 'Mutation' }
+);
+
+export type ModelEditorLandingDataQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ModelEditorLandingDataQuery = (
+  { instance: (
+    { id: string, nodes: Array<(
+      { id: string, name: string }
+      & { __typename: 'ActionNode' | 'Node' }
+    )>, editor: (
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
 );
 
 export type ModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
@@ -533,6 +568,82 @@ export type DimensionalPlotFragment = (
   & { __typename: 'DimensionalFlowType' }
 );
 
+export type EditorNodeSearchListQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorNodeSearchListQuery = (
+  { instance: (
+    { id: string, nodes: Array<
+      | (
+        { id: string, identifier: string, name: string }
+        & { __typename: 'ActionNode' }
+      )
+      | (
+        { isOutcome: boolean, id: string, identifier: string, name: string }
+        & { __typename: 'Node' }
+      )
+    > }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type EditorDatasetSearchListQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorDatasetSearchListQuery = (
+  { instance: (
+    { id: string, editor: (
+      { datasets: Array<(
+        { id: string, identifier: string | null, name: string }
+        & { __typename: 'Dataset' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type EditorDimensionSearchListQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorDimensionSearchListQuery = (
+  { instance: (
+    { id: string, editor: (
+      { dimensions: Array<(
+        { id: string, identifier: string, name: string }
+        & { __typename: 'InstanceDimension' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type NodeExplanationQueryVariables = Exact<{
+  node: Scalars['ID']['input'];
+}>;
+
+
+export type NodeExplanationQuery = (
+  { node: (
+    { id: string, explanation: string | null, parameters: Array<
+      | (
+        { id: string, nodeRelativeId: string | null }
+        & { __typename: 'BoolParameterType' | 'NumberParameterType' | 'UnknownParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, stringValue: string | null }
+        & { __typename: 'StringParameterType' }
+      )
+    > }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type NodeGraphQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -561,10 +672,10 @@ export type NodeGraphQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null, nodes: Array<
       | (
-        { group: (
+        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
-        ) | null, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
+        ) | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
@@ -613,7 +724,7 @@ export type NodeGraphQuery = (
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
+        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
@@ -668,10 +779,10 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { group: (
+  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
-  ) | null, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
+  ) | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
@@ -681,9 +792,9 @@ type EditorNodeFields_ActionNode_Fragment = (
     ), spec: (
       { inputPorts: Array<(
         { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-                { id: string, short: string }
-                & { __typename: 'UnitType' }
-              ) | null, bindings: Array<
+          { id: string, short: string }
+          & { __typename: 'UnitType' }
+        ) | null, bindings: Array<
           | (
             { id: string, dataset: (
               { id: string, identifier: string | null, name: string }
@@ -721,7 +832,7 @@ type EditorNodeFields_ActionNode_Fragment = (
 );
 
 type EditorNodeFields_Node_Fragment = (
-  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string | null, kind: NodeKind | null, quantityKind: (
+  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
@@ -731,9 +842,9 @@ type EditorNodeFields_Node_Fragment = (
     ), spec: (
       { inputPorts: Array<(
         { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-                { id: string, short: string }
-                & { __typename: 'UnitType' }
-              ) | null, bindings: Array<
+          { id: string, short: string }
+          & { __typename: 'UnitType' }
+        ) | null, bindings: Array<
           | (
             { id: string, dataset: (
               { id: string, identifier: string | null, name: string }
@@ -1252,6 +1363,114 @@ export type NodeOutputDataQuery = (
       ) | null }
       & { __typename: 'NodeEditor' }
     ) | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
+export type EditorOperationInfoFieldsFragment = (
+  { messages: Array<(
+    { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+    & { __typename: 'OperationMessage' }
+  )> }
+  & { __typename: 'OperationInfo' }
+);
+
+export type InstanceEditorPublishStateFragment = (
+  { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+  & { __typename: 'InstanceEditor' }
+);
+
+export type EditorPublishStateQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorPublishStateQuery = (
+  { instance: (
+    { id: string, editor: (
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type PublishModelInstanceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+}>;
+
+
+export type PublishModelInstanceMutation = (
+  { instanceEditor: (
+    { publishModelInstance:
+      | (
+        { id: string, editor: (
+          { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+          & { __typename: 'InstanceEditor' }
+        ) | null }
+        & { __typename: 'InstanceType' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateNodeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  nodeId: Scalars['ID']['input'];
+  input: UpdateNodeInput;
+}>;
+
+
+export type UpdateNodeMutation = (
+  { instanceEditor: (
+    { updateNode:
+      | (
+        { id: string, name: string, color: string | null, isVisible: boolean }
+        & { __typename: 'ActionNode' }
+      )
+      | (
+        { id: string, name: string, color: string | null, isVisible: boolean, isOutcome: boolean }
+        & { __typename: 'Node' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type NodeHistoryEntryFragment = (
+  { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind }
+  & { __typename: 'InstanceModelLogEntryType' }
+);
+
+export type NodeChangeHistoryQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+  limit?: Scalars['Int']['input'];
+}>;
+
+
+export type NodeChangeHistoryQuery = (
+  { node: (
+    { uuid: string, id: string, changeHistory: Array<(
+      { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind }
+      & { __typename: 'InstanceModelLogEntryType' }
+    )> }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
   & { __typename: 'Query' }

@@ -1,5 +1,13 @@
 {
   "possibleTypes": {
+    "AddNodeInputPortPayload": [
+      "InputPortType",
+      "OperationInfo"
+    ],
+    "AddNodeOutputPortPayload": [
+      "OperationInfo",
+      "OutputPortType"
+    ],
     "CreateDataPointPayload": [
       "DataPoint",
       "OperationInfo"
@@ -29,6 +37,12 @@
       "AssignCategoryTransformationType",
       "FlattenTransformationType",
       "SelectCategoriesTransformationType"
+    ],
+    "EditableEntity": [
+      "ActionNode",
+      "DatasetPortType",
+      "Node",
+      "NodeEdgeType"
     ],
     "InputPortBindingUnion": [
       "DatasetPortType",

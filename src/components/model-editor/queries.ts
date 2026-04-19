@@ -1,5 +1,115 @@
 import { gql } from '@apollo/client';
 
+const EDITOR_OPERATION_INFO_FIELDS = gql`
+  fragment EditorOperationInfoFields on OperationInfo {
+    messages {
+      kind
+      field
+      message
+      code
+    }
+  }
+`;
+
+export const INSTANCE_EDITOR_PUBLISH_STATE = gql`
+  fragment InstanceEditorPublishState on InstanceEditor {
+    live
+    hasUnpublishedChanges
+    firstPublishedAt
+    lastPublishedAt
+  }
+`;
+
+export const GET_INSTANCE_EDITOR_PUBLISH_STATE = gql`
+  query EditorPublishState {
+    instance {
+      id
+      editor {
+        ...InstanceEditorPublishState
+      }
+    }
+  }
+  ${INSTANCE_EDITOR_PUBLISH_STATE}
+`;
+
+export const PUBLISH_MODEL_INSTANCE = gql`
+  mutation PublishModelInstance($instanceId: ID!) {
+    instanceEditor(instanceId: $instanceId) {
+      publishModelInstance(instanceId: $instanceId) {
+        __typename
+        ... on InstanceType {
+          id
+          editor {
+            ...InstanceEditorPublishState
+          }
+        }
+        ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${INSTANCE_EDITOR_PUBLISH_STATE}
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_NODE = gql`
+  mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!) {
+    instanceEditor(instanceId: $instanceId) {
+      updateNode(nodeId: $nodeId, input: $input) {
+        __typename
+        ... on Node {
+          id
+          name
+          color
+          isVisible
+          isOutcome
+        }
+        ... on ActionNode {
+          id
+          name
+          color
+          isVisible
+        }
+        ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+const NODE_HISTORY_ENTRY = gql`
+  fragment NodeHistoryEntry on InstanceModelLogEntryType {
+    uuid
+    action
+    createdAt
+    targetKind
+  }
+`;
+
+export const NODE_CHANGE_HISTORY = gql`
+  query NodeChangeHistory($nodeId: ID!, $limit: Int! = 10) {
+    node(id: $nodeId) {
+      id
+      ... on Node {
+        uuid
+        changeHistory(limit: $limit) {
+          ...NodeHistoryEntry
+        }
+      }
+      ... on ActionNode {
+        uuid
+        changeHistory(limit: $limit) {
+          ...NodeHistoryEntry
+        }
+      }
+    }
+  }
+  ${NODE_HISTORY_ENTRY}
+`;
+
 export const METRIC_CATEGORY_FIELDS = gql`
   fragment ModelEditorMetricCategoryFields on MetricDimensionCategoryType {
     id

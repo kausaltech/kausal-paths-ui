@@ -15,10 +15,8 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useReactiveVar } from '@apollo/client/react';
 import { BoxArrowRight, ChevronDown, PencilSquare } from 'react-bootstrap-icons';
 
-import { modelEditorModeVar } from '@/common/cache';
 import { authClient, useSession } from '@/lib/auth-client';
 
 function getFirstName(name: string | null | undefined, email: string | null | undefined): string {
@@ -37,7 +35,6 @@ function getInitials(name: string | null | undefined, email: string | null | und
 
 export default function PublicEditorBar() {
   const { data: session } = useSession();
-  const editorMode = useReactiveVar(modelEditorModeVar);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   if (!session?.user) return null;
@@ -46,7 +43,6 @@ export default function PublicEditorBar() {
   const firstName = getFirstName(user.name, user.email);
   const initials = getInitials(user.name, user.email);
   const image = 'image' in user && typeof user.image === 'string' ? user.image : null;
-  const isDraft = editorMode === 'draft';
 
   const handleSignOut = () => {
     setAnchorEl(null);
@@ -73,35 +69,26 @@ export default function PublicEditorBar() {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Tooltip
-          title={
-            isDraft
-              ? 'Viewing draft with unpublished edits. Toggle off to view published model.'
-              : 'Viewing published model. Toggle on to view draft with unpublished edits.'
-          }
+          title="Draft mode is not yet available — all edits apply directly to the published model."
           placement="bottom"
         >
           <Box
-            component="label"
+            component="span"
             sx={{
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
-              cursor: 'pointer',
               userSelect: 'none',
-              color: isDraft ? 'warning.main' : 'success.main',
+              color: 'success.main',
+              opacity: 0.6,
             }}
           >
-            <Switch
-              checked={isDraft}
-              onChange={(_, checked) => modelEditorModeVar(checked ? 'draft' : 'published')}
-              size="small"
-              color={isDraft ? 'warning' : 'success'}
-            />
+            <Switch checked={false} disabled size="small" color="success" />
             <Typography
               variant="overline"
               sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1, fontSize: 10 }}
             >
-              {isDraft ? 'Draft' : 'Published'}
+              Published
             </Typography>
           </Box>
         </Tooltip>

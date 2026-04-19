@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -18,11 +19,12 @@ import {
   ListItem,
   ListItemText,
   Paper,
+  Snackbar,
   Typography,
 } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   ArrowRight,
   Box as BoxIcon,
@@ -32,32 +34,52 @@ import {
   Diagram2,
 } from 'react-bootstrap-icons';
 
-import { modelEditorModeVar } from '@/common/cache';
+import type {
+  PublishModelInstanceMutation,
+  PublishModelInstanceMutationVariables,
+} from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import {
   type EditableNodeField,
   type MockNodeEdit,
-  mockLastPublishedVar,
   mockNodeEditsVar,
-  publishMockEdits,
 } from '@/components/model-editor/mockEdits';
+import {
+  INSTANCE_EDITOR_PUBLISH_STATE,
+  PUBLISH_MODEL_INSTANCE,
+} from '@/components/model-editor/queries';
 import { useSession } from '@/lib/auth-client';
 
-const GET_LANDING_NODE_NAMES = gql`
-  query ModelEditorLandingNodes {
+const GET_LANDING_DATA = gql`
+  query ModelEditorLandingData {
     instance {
       id
       nodes {
         id
         name
       }
+      editor {
+        ...InstanceEditorPublishState
+      }
     }
   }
+  ${INSTANCE_EDITOR_PUBLISH_STATE}
 `;
 
-type LandingNodesQuery = {
-  instance: { id: string; nodes: { id: string; name: string }[] };
+type LandingDataQuery = {
+  instance: {
+    id: string;
+    nodes: { id: string; name: string }[];
+    editor: {
+      live: boolean;
+      hasUnpublishedChanges: boolean;
+      firstPublishedAt: string | null;
+      lastPublishedAt: string | null;
+    } | null;
+  };
 };
+
+type ToastState = { severity: 'success' | 'error'; message: string } | null;
 
 type LandingCard = {
   title: string;
@@ -94,19 +116,13 @@ function getModelEditorBase(pathname: string): string {
 
 type EditedNodeRow = {
   id: string;
-  displayName: string;
   originalName: string;
-  editedName: string | null;
   editedFields: string[];
 };
 
 const FIELD_LABELS: Record<EditableNodeField, string> = {
-  name: 'Name',
   shortName: 'Short name',
   description: 'Description',
-  color: 'Color',
-  isVisible: 'Visibility',
-  isOutcome: 'Outcome',
   nodeGroup: 'Node group',
   actionGroup: 'Action group',
 };
@@ -119,52 +135,45 @@ function getEditedFieldLabels(edit: MockNodeEdit): string[] {
   return labels;
 }
 
+function formatDateTime(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 export default function ModelEditorLandingPage() {
   const router = useRouter();
   const pathname = usePathname();
   const instance = useInstance();
   const { data: session, isPending } = useSession();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
-  const lastPublished = useReactiveVar(mockLastPublishedVar);
-  const editorMode = useReactiveVar(modelEditorModeVar);
-  const isDraft = editorMode === 'draft';
-  const currentUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
 
-  // Seed a mock "last published" entry so Published mode has something to show
-  // before the user has clicked Publish in this session.
-  useEffect(() => {
-    if (!session?.user) return;
-    if (mockLastPublishedVar() !== null) return;
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-    mockLastPublishedVar({ at: fourteenDaysAgo, by: currentUserName });
-  }, [session?.user, currentUserName]);
-
-  const { data: nodesData } = useQuery<LandingNodesQuery>(GET_LANDING_NODE_NAMES, {
-    fetchPolicy: 'cache-first',
+  const { data } = useQuery<LandingDataQuery>(GET_LANDING_DATA, {
+    fetchPolicy: 'cache-and-network',
     skip: !session?.user,
   });
 
+  const [publish, { loading: publishing }] = useMutation<
+    PublishModelInstanceMutation,
+    PublishModelInstanceMutationVariables
+  >(PUBLISH_MODEL_INSTANCE);
+
+  const [toast, setToast] = useState<ToastState>(null);
+
   const editedRows = useMemo<EditedNodeRow[]>(() => {
-    const nodes = nodesData?.instance.nodes ?? [];
+    const nodes = data?.instance.nodes ?? [];
     const byId = new Map(nodes.map((n) => [n.id, n.name]));
     const rows: EditedNodeRow[] = [];
     for (const [id, edit] of Object.entries(nodeEdits)) {
       const editedFields = getEditedFieldLabels(edit);
       if (editedFields.length === 0) continue;
-      const originalName = byId.get(id) ?? id;
-      const editedName = typeof edit.name === 'string' ? edit.name : null;
-      rows.push({
-        id,
-        originalName,
-        editedName,
-        displayName: editedName ?? originalName,
-        editedFields,
-      });
+      rows.push({ id, originalName: byId.get(id) ?? id, editedFields });
     }
     return rows;
-  }, [nodeEdits, nodesData]);
+  }, [nodeEdits, data]);
 
-  const latestEdit = useMemo(() => {
+  const latestMockEdit = useMemo(() => {
     let latest: { at: Date; by: string } | null = null;
     for (const edit of Object.values(nodeEdits)) {
       if (!edit.editedAt) continue;
@@ -192,7 +201,26 @@ export default function ModelEditorLandingPage() {
   }
 
   const base = getModelEditorBase(pathname);
-  const hasEdits = editedRows.length > 0;
+  const editor = data?.instance.editor ?? null;
+  const hasUnpublishedChanges = editor?.hasUnpublishedChanges ?? false;
+  const hasMockEdits = editedRows.length > 0;
+  const lastPublishedLabel = formatDateTime(editor?.lastPublishedAt);
+  const indicatorColor = hasUnpublishedChanges ? 'warning.main' : 'success.main';
+
+  const handlePublish = async () => {
+    try {
+      const result = await publish({ variables: { instanceId: instance.id } });
+      const payload = result.data?.instanceEditor.publishModelInstance;
+      if (payload?.__typename === 'OperationInfo') {
+        const msg = payload.messages.map((m) => m.message).join('; ') || 'Publish failed';
+        setToast({ severity: 'error', message: msg });
+        return;
+      }
+      setToast({ severity: 'success', message: 'Model published.' });
+    } catch (err) {
+      setToast({ severity: 'error', message: err instanceof Error ? err.message : String(err) });
+    }
+  };
 
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
@@ -242,62 +270,62 @@ export default function ModelEditorLandingPage() {
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 2,
-            mb: isDraft && hasEdits ? 2 : 0,
+            mb: hasUnpublishedChanges ? 2 : 0,
           }}
         >
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  color: isDraft ? 'warning.main' : 'success.main',
-                }}
-              >
+              <Box sx={{ display: 'flex', color: indicatorColor }}>
                 <CircleFill size={12} />
               </Box>
-              <Typography variant="h3">{isDraft ? 'Draft' : 'Published'}</Typography>
+              <Typography variant="h3">
+                {hasUnpublishedChanges ? 'Unpublished changes' : 'Published'}
+              </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {!isDraft
-                ? 'You are viewing the published model. To see the unpublished edits here, toggle Draft mode.'
-                : hasEdits
-                  ? `${editedRows.length} node${editedRows.length === 1 ? '' : 's'} with unpublished edits.`
-                  : 'No unpublished edits.'}
+              {hasUnpublishedChanges
+                ? 'Edits to this model have not been published yet.'
+                : 'The published model matches the current state.'}
             </Typography>
-            {isDraft && latestEdit ? (
+            {lastPublishedLabel && (
               <Typography
                 variant="caption"
                 color="text.secondary"
                 sx={{ display: 'block', mt: 0.5 }}
               >
-                Last edited{' '}
-                {latestEdit.at.toLocaleString(undefined, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                })}{' '}
-                by {latestEdit.by}
+                Last published {lastPublishedLabel}
               </Typography>
-            ) : (
-              lastPublished && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mt: 0.5 }}
-                >
-                  Last published{' '}
-                  {lastPublished.at.toLocaleString(undefined, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}{' '}
-                  by {lastPublished.by}
-                </Typography>
-              )
             )}
           </Box>
+          {hasUnpublishedChanges && (
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<CloudUpload size={14} />}
+              disabled={publishing}
+              onClick={() => {
+                void handlePublish();
+              }}
+            >
+              {publishing ? 'Publishing…' : 'Publish'}
+            </Button>
+          )}
         </Box>
 
-        {isDraft && hasEdits && (
+        {hasMockEdits && (
           <>
+            <Divider sx={{ mt: 2, mb: 1 }} />
+            <Typography variant="caption" sx={{ color: 'info.main', display: 'block', mb: 1 }}>
+              Mock preview · edits to short name, description, node group and action group are not
+              yet persisted
+              {latestMockEdit
+                ? ` · last edited ${latestMockEdit.at.toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  })} by ${latestMockEdit.by}`
+                : ''}
+            </Typography>
             <List dense disablePadding>
               {editedRows.map((row) => (
                 <ListItem
@@ -313,31 +341,21 @@ export default function ModelEditorLandingPage() {
                       View
                     </Button>
                   }
-                  sx={{ borderTop: '1px solid', borderColor: 'divider', py: 1 }}
+                  sx={{
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                    py: 1,
+                    bgcolor: (theme) => `${theme.palette.info.main}14`,
+                  }}
                 >
                   <ListItemText
                     primary={
-                      row.editedName !== null && row.editedName !== row.originalName ? (
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
-                        >
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ textDecoration: 'line-through' }}
-                          >
-                            {row.originalName}
-                          </Typography>
-                          <ArrowRight size={12} />
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {row.editedName}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {row.displayName}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'info.dark' }}>
+                          {row.originalName}
                         </Typography>
-                      )
+                        <ArrowRight size={12} />
+                      </Box>
                     }
                     secondary={
                       <Box
@@ -350,7 +368,12 @@ export default function ModelEditorLandingPage() {
                             label={label}
                             size="small"
                             variant="outlined"
-                            sx={{ height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 10 } }}
+                            sx={{
+                              height: 18,
+                              borderColor: 'info.main',
+                              color: 'info.dark',
+                              '& .MuiChip-label': { px: 0.75, fontSize: 10 },
+                            }}
                           />
                         ))}
                       </Box>
@@ -360,25 +383,20 @@ export default function ModelEditorLandingPage() {
                 </ListItem>
               ))}
             </List>
-            {isDraft && (
-              <>
-                <Divider sx={{ mt: 2 }} />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<CloudUpload size={14} />}
-                    disabled={!hasEdits}
-                    onClick={() => publishMockEdits(currentUserName)}
-                  >
-                    Publish edits
-                  </Button>
-                </Box>
-              </>
-            )}
           </>
         )}
       </Paper>
+
+      <Snackbar
+        open={toast !== null}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={toast?.severity ?? 'success'} onClose={() => setToast(null)}>
+          {toast?.message ?? ''}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

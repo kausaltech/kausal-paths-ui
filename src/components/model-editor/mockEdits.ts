@@ -1,20 +1,17 @@
 import { makeVar } from '@apollo/client';
 
 /**
- * Mock client-side edit state for the model editor.
+ * Client-side mock edits for the node fields that the backend `updateNode`
+ * mutation does not yet accept (short name, description, node group, action
+ * group). Everything else is persisted via `updateNode`.
  *
- * We don't yet have a backend for drafts, so user edits to node properties
- * are kept in these in-memory reactive vars. When the backend lands, these
- * go away and the edits live on the server.
+ * When the backend extends `UpdateNodeInput` to cover these fields, delete
+ * this module entirely and replace the call sites in NodeDetailsSection.
  */
 
 export type MockNodeEdit = {
-  name?: string;
   shortName?: string | null;
   description?: string | null;
-  color?: string | null;
-  isVisible?: boolean;
-  isOutcome?: boolean;
   nodeGroup?: string | null;
   actionGroup?: string | null;
   editedAt?: Date;
@@ -25,15 +22,7 @@ export type EditableNodeField = Exclude<keyof MockNodeEdit, 'editedAt' | 'edited
 
 export const mockNodeEditsVar = makeVar<Record<string, MockNodeEdit>>({});
 
-export type MockPublishInfo = { at: Date; by: string };
-export const mockLastPublishedVar = makeVar<MockPublishInfo | null>(null);
-
 export function clearMockNodeEdits(): void {
-  mockNodeEditsVar({});
-}
-
-export function publishMockEdits(publishedBy: string): void {
-  mockLastPublishedVar({ at: new Date(), by: publishedBy });
   mockNodeEditsVar({});
 }
 
@@ -66,13 +55,4 @@ export function setMockNodeFieldEdit<K extends EditableNodeField>(
     };
   }
   mockNodeEditsVar(next);
-}
-
-export function setMockNodeNameEdit(
-  nodeId: string,
-  value: string,
-  originalName: string,
-  editedBy: string
-): void {
-  setMockNodeFieldEdit(nodeId, 'name', value, originalName, editedBy);
 }

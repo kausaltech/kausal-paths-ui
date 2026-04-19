@@ -42,7 +42,7 @@ import {
   Search,
 } from 'react-bootstrap-icons';
 
-import { modelEditorModeVar, nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
+import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 
 const GET_NODE_SEARCH_LIST = gql`
@@ -179,7 +179,6 @@ export default function ModelEditorNav() {
 
   const filters = useReactiveVar(nodeFiltersVar);
   const filtersOpen = useReactiveVar(nodeFiltersOpenVar);
-  const editorMode = useReactiveVar(modelEditorModeVar);
 
   const { data: nodesData } = useQuery<NodeSearchListQuery>(GET_NODE_SEARCH_LIST, {
     skip: mode !== 'nodes',
@@ -261,37 +260,28 @@ export default function ModelEditorNav() {
 
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
         <Tooltip
-          title={
-            editorMode === 'draft'
-              ? 'Viewing draft with unpublished edits. Toggle off to view published model.'
-              : 'Viewing published model. Toggle on to view draft with unpublished edits.'
-          }
+          title="Draft mode is not yet available — all edits apply directly to the published model."
           placement="right"
         >
           <Box
-            component="label"
+            component="span"
             sx={{
               display: 'flex',
               alignItems: 'center',
               gap: 0.75,
               px: 1,
               py: 0.5,
-              cursor: 'pointer',
               userSelect: 'none',
-              color: editorMode === 'draft' ? 'warning.main' : 'success.main',
+              color: 'success.main',
+              opacity: 0.6,
             }}
           >
-            <Switch
-              checked={editorMode === 'draft'}
-              onChange={(_, checked) => modelEditorModeVar(checked ? 'draft' : 'published')}
-              size="small"
-              color={editorMode === 'draft' ? 'warning' : 'success'}
-            />
+            <Switch checked={false} disabled size="small" color="success" />
             <Typography
               variant="overline"
               sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}
             >
-              {editorMode === 'draft' ? 'Draft' : 'Published'}
+              Published
             </Typography>
           </Box>
         </Tooltip>

@@ -34,7 +34,6 @@ import {
   XSquare,
 } from 'react-bootstrap-icons';
 
-import { modelEditorModeVar } from '@/common/cache';
 import { mockNodeEditsVar } from './mockEdits';
 
 export type NodeGraphInteraction = {
@@ -286,9 +285,8 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
     NodeGraphInteractionContext
   );
-  const editorMode = useReactiveVar(modelEditorModeVar);
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
-  const hasEdit = editorMode === 'draft' && Boolean(nodeEdits[id]);
+  const hasMockEdit = Boolean(nodeEdits[id]);
   const highlighted = highlightedNodeIds.has(id);
   const active = activeNodeId === id;
   const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
@@ -391,7 +389,9 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 ? `2px solid ${style.border}`
                 : 'none',
             outlineOffset: active ? '1px' : undefined,
-            backgroundColor: hasEdit ? (theme) => alpha(theme.palette.warning.main, 0.15) : 'white',
+            backgroundColor: hasMockEdit
+              ? (theme) => alpha(theme.palette.info.main, 0.18)
+              : 'white',
             minWidth: 100,
             maxWidth: 180,
             minHeight: 8 * Math.max(targetCount, sourceCount),

@@ -7,7 +7,6 @@ import { ThemeProvider } from '@mui/material/styles';
 
 import '@fontsource-variable/inter';
 
-import EditorModeSnackbar from '@/components/common/EditorModeSnackbar';
 import ModelEditorNav from '@/components/model-editor/ModelEditorNav';
 import UserNav from '@/components/model-editor/UserNav';
 import { createEditorTheme } from '@/components/model-editor/theme';
@@ -30,7 +29,6 @@ export default function ModelEditorLayout({ children }: Props) {
         <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>{children}</Box>
         <ModelEditorNav />
         <UserNav />
-        <EditorModeSnackbar />
       </ScopedCssBaseline>
     </ThemeProvider>
   );

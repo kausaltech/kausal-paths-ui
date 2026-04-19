@@ -13,8 +13,8 @@ import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { modelEditorModeVar } from '@/common/cache';
 import { useSession } from '@/lib/auth-client';
+import NodeChangeHistorySection from './NodeChangeHistorySection';
 import NodeDetailsSection from './NodeDetailsSection';
 import { mockNodeEditsVar } from './mockEdits';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
@@ -78,22 +78,19 @@ export default function NodeDetailsPanel({
   onShowDataset,
 }: NodeDetailsPanelProps) {
   const { setCenter, getZoom, getNodes } = useReactFlow();
-  const editorMode = useReactiveVar(modelEditorModeVar);
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const { data: session } = useSession();
   const editorUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
-  const isEditable = editorMode === 'draft';
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const currentEdit = node ? nodeEdits[node.id] : undefined;
-  const editedName = currentEdit?.name;
-  const hasNameEdit = editedName !== undefined && editedName !== node?.name;
-  const displayName = isEditable && hasNameEdit ? editedName : (node?.name ?? '');
+  const displayName = node?.name ?? '';
 
   const { data: explanationData } = useQuery<NodeExplanationQuery>(GET_NODE_EXPLANATION, {
     variables: { node: node?.id ?? '' },
@@ -212,13 +209,18 @@ export default function NodeDetailsPanel({
       >
         <NodeDetailsSection
           node={node}
-          isEditable={isEditable}
           editorUserName={editorUserName}
           currentEdit={currentEdit}
           nodeGroupOptions={nodeGroupOptions}
           actionGroupOptions={actionGroups}
         />
       </CollapsibleSection>
+
+      <NodeChangeHistorySection
+        nodeId={node.id}
+        open={historyOpen}
+        onToggle={() => setHistoryOpen((v) => !v)}
+      />
 
       {explanation && (
         <CollapsibleSection

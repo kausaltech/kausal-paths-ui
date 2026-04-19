@@ -12,6 +12,8 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date (isoformat) */
+  Date: { input: any; output: any; }
   /** Date with time (isoformat) */
   DateTime: { input: any; output: any; }
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
@@ -38,6 +40,17 @@ export enum ActionSortOrder {
   Impact = 'IMPACT',
   /** Standard */
   Standard = 'STANDARD'
+}
+
+export enum ChangeTargetKind {
+  DatasetPort = 'DATASET_PORT',
+  DataPoint = 'DATA_POINT',
+  Dimension = 'DIMENSION',
+  DimensionCategory = 'DIMENSION_CATEGORY',
+  Edge = 'EDGE',
+  Instance = 'INSTANCE',
+  Node = 'NODE',
+  Unknown = 'UNKNOWN'
 }
 
 /** Which governance level is applicable for an action */
