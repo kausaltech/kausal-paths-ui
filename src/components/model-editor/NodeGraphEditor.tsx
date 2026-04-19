@@ -29,6 +29,7 @@ import ElkNode, {
   type ElkNodeType,
   type HiddenContextRef,
   NodeGraphInteractionContext,
+  getNodeStyle,
 } from './ElkNode';
 import MetricsDrawer from './MetricsDrawer';
 import NodeDetailsPanel from './NodeDetailsPanel';
@@ -186,6 +187,15 @@ const EDGE_MARKER: Edge['markerEnd'] = {
   color: '#b0bec5',
 };
 
+function getNodeBorderColor(node: EditorNodeFieldsFragment): string {
+  const spec = getNodeSpec(node);
+  const typeConfig = spec?.typeConfig;
+  const nodeClass =
+    typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : getNodeType(node);
+  const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
+  return getNodeStyle(node.kind ?? '', nodeClass ?? '', isOutcome).border;
+}
+
 const DRAWER_WIDTH = 360;
 const OVERLAY_DRAWER_WIDTH = 600;
 const PANEL_PEEK_WIDTH = 48;
@@ -338,17 +348,14 @@ function convertToElk(
 
   const elkEdges = validEdges
     .filter((edge) => elkNodesById.has(edge.fromRef.nodeId) && elkNodesById.has(edge.toRef.nodeId))
-    .map(
-      (edge) =>
-        ({
-          id: edge.id,
-          source: edge.fromRef.nodeId,
-          sourceHandle: edge.fromRef.portId,
-          target: edge.toRef.nodeId,
-          targetHandle: edge.toRef.portId,
-          markerEnd: EDGE_MARKER,
-        }) satisfies Edge
-    );
+    .map<Edge>((edge) => ({
+      id: edge.id,
+      source: edge.fromRef.nodeId,
+      sourceHandle: edge.fromRef.portId,
+      target: edge.toRef.nodeId,
+      targetHandle: edge.toRef.portId,
+      markerEnd: EDGE_MARKER,
+    }));
 
   return { nodes: elkNodes, edges: elkEdges };
 }
@@ -427,7 +434,7 @@ function FlowEditor(props: {
       if (!visibleNodeIdsSet.has(edge.toRef.nodeId)) continue;
       const perPort = refs.get(edge.toRef.nodeId) ?? new Map<string, HiddenContextRef[]>();
       const list = perPort.get(edge.toRef.portId) ?? [];
-      list.push({ id: srcNode.id, label: srcNode.name });
+      list.push({ id: srcNode.id, label: srcNode.name, color: getNodeBorderColor(srcNode) });
       perPort.set(edge.toRef.portId, list);
       refs.set(edge.toRef.nodeId, perPort);
     }
@@ -561,6 +568,24 @@ function FlowEditor(props: {
 
   const selectedNode = selectedNodeId ? (nodeMap.get(selectedNodeId) ?? null) : null;
 
+  const displayedEdges = useMemo<Edge[]>(() => {
+    if (!selectedNodeId) return edges;
+    return edges.map((e): Edge => {
+      const otherId =
+        e.source === selectedNodeId ? e.target : e.target === selectedNodeId ? e.source : null;
+      if (otherId === null) return e;
+      const other = nodeMap.get(otherId);
+      if (!other) return e;
+      const color = getNodeBorderColor(other);
+      return {
+        ...e,
+        style: { ...e.style, stroke: color, strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color },
+        zIndex: 10,
+      };
+    });
+  }, [edges, selectedNodeId, nodeMap]);
+
   return (
     <NodeGraphInteractionContext value={interactionCtx}>
       <Box sx={{ display: 'flex', width: '100%', height: '100%' }}>
@@ -568,7 +593,7 @@ function FlowEditor(props: {
           <Box sx={{ flex: 1, position: 'relative' }}>
             <ReactFlow
               nodes={nodes}
-              edges={edges}
+              edges={displayedEdges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onSelectionChange={onSelectionChange}

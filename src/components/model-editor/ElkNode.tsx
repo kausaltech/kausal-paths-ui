@@ -253,8 +253,11 @@ export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean
   return { bg, border, icon: <Icon size={ICON_SIZE} />, label };
 }
 
-export type HiddenContextRef = { id: string; label: string };
+export type HiddenContextRef = { id: string; label: string; color?: string };
 export type DatasetRef = { id: string; label: string };
+
+const DATASET_STUB_COLOR = CATEGORY_STYLES.dataset.border;
+const STUB_DEFAULT_COLOR = '#b0bec5';
 export type HandleData = {
   id: string;
   multi?: boolean;
@@ -311,18 +314,21 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 label: string;
                 icon?: ReactElement;
                 onClick?: () => void;
+                activeColor: string;
               };
               const stubs: Stub[] = [
                 ...(handle.datasets?.map<Stub>((d) => ({
                   key: `ds:${d.id}`,
                   label: d.label,
                   icon: <Database size={12} />,
+                  activeColor: DATASET_STUB_COLOR,
                 })) ?? []),
                 ...(handle.hiddenSources?.map<Stub>((s) => ({
                   key: `hs:${s.id}`,
                   label: s.label,
-                  icon: <ArrowRightCircleFill size={12} />,
+                  icon: <ArrowRightCircleFill size={8} />,
                   onClick: () => onHiddenContextClick(s.id),
+                  activeColor: s.color ?? STUB_DEFAULT_COLOR,
                 })) ?? []),
               ];
               if (stubs.length === 0) return null;
@@ -331,6 +337,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
               const width = 22;
               return stubs.map((stub, idx) => {
                 const offsetPx = (idx - (count - 1) / 2) * gap;
+                const color = active ? stub.activeColor : STUB_DEFAULT_COLOR;
                 return (
                   <Tooltip key={stub.key} title={stub.label} placement="left" arrow>
                     <Box
@@ -349,8 +356,8 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                         display: 'flex',
                         alignItems: 'center',
                         cursor: stub.onClick ? 'pointer' : 'default',
-                        color: '#b0bec5',
-                        '&:hover': { color: (theme) => theme.palette.primary.main },
+                        color,
+                        '&:hover': { color: stub.activeColor },
                       }}
                     >
                       {stub.icon}
@@ -387,7 +394,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             backgroundColor: hasEdit ? (theme) => alpha(theme.palette.warning.main, 0.15) : 'white',
             minWidth: 100,
             maxWidth: 180,
-            minHeight: 7 * Math.max(targetCount, sourceCount),
+            minHeight: 8 * Math.max(targetCount, sourceCount),
           }}
         >
           <Box
