@@ -573,7 +573,10 @@ export type NodeGraphQuery = (
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
             { inputPorts: Array<(
-              { id: string, label: string | null, multi: boolean, bindings: Array<
+              { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+                { id: string, short: string }
+                & { __typename: 'UnitType' }
+              ) | null, bindings: Array<
                 | (
                   { id: string, dataset: (
                     { id: string, identifier: string | null, name: string }
@@ -619,7 +622,10 @@ export type NodeGraphQuery = (
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
             { inputPorts: Array<(
-              { id: string, label: string | null, multi: boolean, bindings: Array<
+              { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+                { id: string, short: string }
+                & { __typename: 'UnitType' }
+              ) | null, bindings: Array<
                 | (
                   { id: string, dataset: (
                     { id: string, identifier: string | null, name: string }
@@ -674,7 +680,10 @@ type EditorNodeFields_ActionNode_Fragment = (
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
       { inputPorts: Array<(
-        { id: string, label: string | null, multi: boolean, bindings: Array<
+        { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+                { id: string, short: string }
+                & { __typename: 'UnitType' }
+              ) | null, bindings: Array<
           | (
             { id: string, dataset: (
               { id: string, identifier: string | null, name: string }
@@ -721,7 +730,10 @@ type EditorNodeFields_Node_Fragment = (
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
       { inputPorts: Array<(
-        { id: string, label: string | null, multi: boolean, bindings: Array<
+        { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+                { id: string, short: string }
+                & { __typename: 'UnitType' }
+              ) | null, bindings: Array<
           | (
             { id: string, dataset: (
               { id: string, identifier: string | null, name: string }

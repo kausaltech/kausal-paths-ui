@@ -127,6 +127,13 @@ const GET_NODE_GRAPH = gql`
           id
           label
           multi
+          quantity
+          unit {
+            id
+            short
+          }
+          requiredDimensions
+          supportedDimensions
           bindings {
             __typename
             ... on DatasetPortType {
