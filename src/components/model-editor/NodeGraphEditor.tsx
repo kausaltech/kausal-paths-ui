@@ -5,9 +5,16 @@ import { Box, CircularProgress, Drawer } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
-import { type Edge, MarkerType, type OnSelectionChangeFunc } from '@xyflow/react';
+import {
+  type Edge,
+  MarkerType,
+  type NodeChange,
+  type OnNodesChange,
+  type OnSelectionChangeFunc,
+} from '@xyflow/react';
 import {
   Background,
+  ControlButton,
   Controls,
   MiniMap,
   ReactFlow,
@@ -17,6 +24,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -24,6 +32,7 @@ import type {
   NodeGraphQuery,
 } from '@/common/__generated__/graphql';
 import { nodeFiltersVar } from '@/common/cache';
+import { useInstance } from '@/common/instance';
 import DatasetDrawer from './DatasetDrawer';
 import ElkNode, {
   type ElkNodeType,
@@ -35,6 +44,7 @@ import MetricsDrawer from './MetricsDrawer';
 import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
+import { clearLayoutCache, saveUserPosition } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import useLayoutNodes from './useLayoutNodes';
 
@@ -460,19 +470,47 @@ function FlowEditor(props: {
     return convertToElk(visibleNodes, visibleEdges, snippedConnectionsByNodeId);
   }, [snippedConnectionsByNodeId, visibleEdges, visibleNodes]);
 
+  const instance = useInstance();
+  const instanceId = instance.id;
+
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
 
+  const handleNodesChange = useCallback<OnNodesChange<ElkNodeType>>(
+    (changes: NodeChange<ElkNodeType>[]) => {
+      onNodesChange(changes);
+      for (const change of changes) {
+        if (
+          change.type === 'position' &&
+          change.dragging === false &&
+          change.position !== undefined
+        ) {
+          saveUserPosition(instanceId, change.id, change.position.x, change.position.y);
+        }
+      }
+    },
+    [onNodesChange, instanceId]
+  );
+
+  const [resetCounter, setResetCounter] = useState(0);
+  const handleResetLayout = useCallback(() => {
+    clearLayoutCache(instanceId);
+    setResetCounter((c) => c + 1);
+  }, [instanceId]);
+
   const layoutVersionRef = useRef(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const layoutVersion = useMemo(() => ++layoutVersionRef.current, [layoutedNodes, layoutedEdges]);
+  const layoutVersion = useMemo(
+    () => ++layoutVersionRef.current,
+    [layoutedNodes, layoutedEdges, resetCounter]
+  );
 
   useEffect(() => {
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
-  const layoutAppliedVersion = useLayoutNodes(layoutVersion, {
+  const layoutAppliedVersion = useLayoutNodes(instanceId, layoutVersion, {
     skipFitView: requestedNodeKey !== null,
   });
 
@@ -602,7 +640,7 @@ function FlowEditor(props: {
             <ReactFlow
               nodes={nodes}
               edges={displayedEdges}
-              onNodesChange={onNodesChange}
+              onNodesChange={handleNodesChange}
               onEdgesChange={onEdgesChange}
               onSelectionChange={onSelectionChange}
               onEdgeClick={onEdgeClick}
@@ -615,7 +653,15 @@ function FlowEditor(props: {
               fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
             >
               <Background color="#f0f0f0" />
-              <Controls />
+              <Controls>
+                <ControlButton
+                  onClick={handleResetLayout}
+                  title="Reset layout"
+                  aria-label="Reset layout"
+                >
+                  <ArrowCounterclockwise />
+                </ControlButton>
+              </Controls>
               <MiniMap nodeStrokeWidth={3} />
             </ReactFlow>
             <NodeGraphContextMenu

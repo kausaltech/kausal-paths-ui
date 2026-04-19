@@ -105,4 +105,5 @@ e2e-tests/             # Playwright E2E tests (separate workspace)
 - App Router routes under `src/app/root/[domain]/[lang]/`; route groups like `(with-layout)` for shared UI
 - GraphQL queries use codegen — never hand-write types for API responses
 - Prefer Emotion styled components for new styling; Sass/Bootstrap exist for legacy reasons
+- Icons: use `react-bootstrap-icons` (not `@mui/icons-material`) for consistency with the rest of the app
 - React 19 with the React Compiler babel plugin enabled

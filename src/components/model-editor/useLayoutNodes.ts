@@ -4,6 +4,7 @@ import { type Edge, useNodesInitialized, useReactFlow } from '@xyflow/react';
 import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
 
 import { type ElkNodeType } from './ElkNode';
+import { loadLayoutCache, saveAutoPositions } from './layoutCache';
 import { computeLayoutMetrics, formatMetrics } from './layoutMetrics';
 
 const NODE_WIDTH = 150;
@@ -94,11 +95,20 @@ type Options = {
  * that should be bumped whenever the set of nodes/edges changes, so the
  * effect re-fires after the new nodes are measured.
  *
+ * Positions are read from a per-instance localStorage cache when available
+ * (see layoutCache.ts). ELK only runs when at least one visible node has no
+ * cached position; existing `user`-sourced entries are always preserved so
+ * drags survive re-layouts.
+ *
  * Returns the last layout version whose positions have been written to
  * React Flow. Gate viewport-manipulating effects on this matching the
  * current `layoutVersion` to avoid racing against in-flight layouts.
  */
-export default function useLayoutNodes(layoutVersion: number, options: Options = {}): number {
+export default function useLayoutNodes(
+  instanceId: string,
+  layoutVersion: number,
+  options: Options = {}
+): number {
   const { skipFitView = false } = options;
   const nodesInitialized = useNodesInitialized();
   const { getNodes, getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
@@ -114,19 +124,49 @@ export default function useLayoutNodes(layoutVersion: number, options: Options =
     const edges = getEdges();
     let cancelled = false;
 
+    const cache = loadLayoutCache(instanceId);
+    const missing = nodes.filter((n) => !(n.id in cache));
+
+    const finishWith = (laidOut: ElkNodeType[]) => {
+      if (cancelled) return;
+      setNodes(laidOut);
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        if (!skipFitView) {
+          fitView();
+        }
+        setAppliedVersion(layoutVersion);
+        const metrics = computeLayoutMetrics(laidOut, edges);
+        console.log(formatMetrics(metrics));
+      });
+    };
+
+    if (missing.length === 0) {
+      const fromCache = nodes.map((node) => {
+        const cached = cache[node.id];
+        return cached ? { ...node, position: { x: cached.x, y: cached.y } } : node;
+      });
+      finishWith(fromCache);
+      return () => {
+        cancelled = true;
+      };
+    }
+
     getElkLayoutedNodes(nodes, edges).then(
       (layoutedNodes) => {
         if (cancelled) return;
-        setNodes(layoutedNodes);
-        requestAnimationFrame(() => {
-          if (cancelled) return;
-          if (!skipFitView) {
-            fitView();
+        const merged = layoutedNodes.map((node) => {
+          const cached = cache[node.id];
+          if (cached?.source === 'user') {
+            return { ...node, position: { x: cached.x, y: cached.y } };
           }
-          setAppliedVersion(layoutVersion);
-          const metrics = computeLayoutMetrics(layoutedNodes, edges);
-          console.log(formatMetrics(metrics));
+          return node;
         });
+        const autoPositions = merged
+          .filter((n) => cache[n.id]?.source !== 'user')
+          .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y }));
+        saveAutoPositions(instanceId, autoPositions);
+        finishWith(merged);
       },
       (err) => {
         console.error('ELK layout failed:', err);
@@ -136,7 +176,16 @@ export default function useLayoutNodes(layoutVersion: number, options: Options =
     return () => {
       cancelled = true;
     };
-  }, [nodesInitialized, layoutVersion, getNodes, getEdges, setNodes, fitView, skipFitView]);
+  }, [
+    nodesInitialized,
+    layoutVersion,
+    instanceId,
+    getNodes,
+    getEdges,
+    setNodes,
+    fitView,
+    skipFitView,
+  ]);
 
   return appliedVersion;
 }
