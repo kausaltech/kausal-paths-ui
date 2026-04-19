@@ -271,9 +271,6 @@
   "src/components/model-editor/useLayoutNodes.ts": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
     }
   },
   "src/components/pages/ActionListPage.tsx": {

@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import {
   Autocomplete,
@@ -28,7 +28,7 @@ import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
 import { getNodeGroup } from './nodeHelpers';
-import { UPDATE_NODE } from './queries';
+import { type NodeFieldOverrides, UPDATE_NODE, patchNodeGraphOverride } from './queries';
 
 const metaChipSx = {
   height: 20,
@@ -101,10 +101,25 @@ function useUpdateNodeMutation() {
   const instance = useInstance();
   const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
   return useCallback(
-    (nodeId: string, input: Partial<UpdateNodeInput>) =>
-      mutate({
+    async (nodeId: string, input: Partial<UpdateNodeInput>) => {
+      const result = await mutate({
         variables: { instanceId: instance.id, nodeId, input: stripNulls(input) },
-      }),
+      });
+      const payload = result.data?.instanceEditor.updateNode;
+      if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
+        // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
+        // updated fields via the reactive-var overlay.
+        const override: NodeFieldOverrides = {};
+        if (input.name !== undefined) override.name = payload.name;
+        if (input.color !== undefined) override.color = payload.color;
+        if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
+        if (input.isOutcome !== undefined && payload.__typename === 'Node') {
+          override.isOutcome = payload.isOutcome;
+        }
+        patchNodeGraphOverride(nodeId, override);
+      }
+      return result;
+    },
     [instance.id, mutate]
   );
 }
@@ -113,24 +128,55 @@ type LiveTextFieldProps = {
   label: string;
   nodeId: string;
   value: string;
-  onCommit: (next: string) => Promise<unknown> | void;
+  onCommit: (next: string) => Promise<unknown>;
   placeholder?: string;
 };
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+function SaveStatusLabel({ status }: { status: SaveStatus }) {
+  if (status === 'idle') return null;
+  const { text, color } =
+    status === 'saving'
+      ? { text: 'Saving…', color: 'text.secondary' as const }
+      : status === 'saved'
+        ? { text: 'Saved', color: 'success.main' as const }
+        : { text: 'Save failed', color: 'error.main' as const };
+  return (
+    <Typography variant="caption" sx={{ fontSize: 10, color }}>
+      {text}
+    </Typography>
+  );
+}
 
 // Local-draft text input. The component is keyed on `nodeId` at the call site,
 // so React remounts it when the user navigates between nodes — initializing
 // `draft` from the new server value without an effect.
 function LiveTextField({ label, value, onCommit, placeholder }: LiveTextFieldProps) {
   const [draft, setDraft] = useState(value);
+  const [status, setStatus] = useState<SaveStatus>('idle');
+
+  useEffect(() => {
+    if (status !== 'saved') return;
+    const t = setTimeout(() => setStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [status]);
 
   const commit = () => {
     if (draft === value) return;
-    void onCommit(draft);
+    setStatus('saving');
+    onCommit(draft).then(
+      () => setStatus('saved'),
+      () => setStatus('error')
+    );
   };
 
   return (
     <Box>
-      <FieldLabel>{label}</FieldLabel>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <FieldLabel>{label}</FieldLabel>
+        <SaveStatusLabel status={status} />
+      </Box>
       <TextField
         value={draft}
         onChange={(e) => setDraft(e.target.value)}

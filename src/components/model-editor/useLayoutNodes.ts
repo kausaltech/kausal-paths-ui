@@ -90,37 +90,47 @@ type Options = {
 };
 
 /**
- * Runs ELK layout once React Flow has measured all node dimensions,
- * then calls fitView (unless `skipFitView` is set). Accepts a `layoutVersion`
- * that should be bumped whenever the set of nodes/edges changes, so the
- * effect re-fires after the new nodes are measured.
+ * Runs ELK layout once React Flow has measured all node dimensions, then
+ * calls fitView (unless `skipFitView` is set). Re-runs when `sourceNodes`
+ * changes reference or when `resetTrigger` bumps.
  *
  * Positions are read from a per-instance localStorage cache when available
  * (see layoutCache.ts). ELK only runs when at least one visible node has no
  * cached position; existing `user`-sourced entries are always preserved so
  * drags survive re-layouts.
  *
- * Returns the last layout version whose positions have been written to
- * React Flow. Gate viewport-manipulating effects on this matching the
- * current `layoutVersion` to avoid racing against in-flight layouts.
+ * Returns the `sourceNodes` reference that was most recently laid out and
+ * written to React Flow. Gate viewport-manipulating effects on
+ * `returned === currentSourceNodes` to avoid racing against in-flight layouts.
  */
 export default function useLayoutNodes(
   instanceId: string,
-  layoutVersion: number,
+  sourceNodes: readonly ElkNodeType[],
+  resetTrigger: number,
   options: Options = {}
-): number {
+): readonly ElkNodeType[] | null {
   const { skipFitView = false } = options;
   const nodesInitialized = useNodesInitialized();
-  const { getNodes, getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
-  const lastLayoutVersionRef = useRef(-1);
-  const [appliedVersion, setAppliedVersion] = useState(-1);
+  const { getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
+  const lastSourceNodesRef = useRef<readonly ElkNodeType[] | null>(null);
+  const lastResetTriggerRef = useRef(-1);
+  const [appliedNodes, setAppliedNodes] = useState<readonly ElkNodeType[] | null>(null);
 
   useEffect(() => {
     if (!nodesInitialized) return;
-    if (lastLayoutVersionRef.current === layoutVersion) return;
-    lastLayoutVersionRef.current = layoutVersion;
+    if (
+      lastSourceNodesRef.current === sourceNodes &&
+      lastResetTriggerRef.current === resetTrigger
+    ) {
+      return;
+    }
+    lastSourceNodesRef.current = sourceNodes;
+    lastResetTriggerRef.current = resetTrigger;
 
-    const nodes = getNodes() as ElkNodeType[];
+    // Reading nodes from sourceNodes instead of RF's `getNodes()` — the latter
+    // can lag by a frame when the previous `setNodes(layoutedNodes)` hasn't
+    // been reconciled yet, causing stale `data` (e.g. out-of-date node names).
+    const nodes = sourceNodes as ElkNodeType[];
     const edges = getEdges();
     let cancelled = false;
 
@@ -129,13 +139,18 @@ export default function useLayoutNodes(
 
     const finishWith = (laidOut: ElkNodeType[]) => {
       if (cancelled) return;
-      setNodes(laidOut);
+      // Preserve selection flag from live RF state — replacing nodes wholesale
+      // would otherwise drop it and close the details panel.
+      setNodes((prev) => {
+        const selectedIds = new Set(prev.filter((n) => n.selected).map((n) => n.id));
+        return laidOut.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
+      });
       requestAnimationFrame(() => {
         if (cancelled) return;
         if (!skipFitView) {
           fitView();
         }
-        setAppliedVersion(layoutVersion);
+        setAppliedNodes(sourceNodes);
         const metrics = computeLayoutMetrics(laidOut, edges);
         console.log(formatMetrics(metrics));
       });
@@ -178,14 +193,14 @@ export default function useLayoutNodes(
     };
   }, [
     nodesInitialized,
-    layoutVersion,
+    sourceNodes,
+    resetTrigger,
     instanceId,
-    getNodes,
     getEdges,
     setNodes,
     fitView,
     skipFitView,
   ]);
 
-  return appliedVersion;
+  return appliedNodes;
 }

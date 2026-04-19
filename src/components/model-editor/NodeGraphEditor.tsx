@@ -46,6 +46,7 @@ import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextM
 import './NodeGraphEditor.css';
 import { clearLayoutCache, saveUserPosition } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
+import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
 import useLayoutNodes from './useLayoutNodes';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
@@ -401,9 +402,14 @@ function FlowEditor(props: {
   >(null);
   const overlayOpen = overlay !== null;
 
-  useEffect(() => {
+  // Adjust-state-during-render (React's recommended pattern) to reset the
+  // overlay when the selected node changes, without the cascading render that
+  // an effect-based reset would cause.
+  const [prevSelectedNodeId, setPrevSelectedNodeId] = useState(selectedNodeId);
+  if (prevSelectedNodeId !== selectedNodeId) {
+    setPrevSelectedNodeId(selectedNodeId);
     setOverlay(null);
-  }, [selectedNodeId]);
+  }
 
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
 
@@ -498,28 +504,27 @@ function FlowEditor(props: {
     setResetCounter((c) => c + 1);
   }, [instanceId]);
 
-  const layoutVersionRef = useRef(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const layoutVersion = useMemo(
-    () => ++layoutVersionRef.current,
-    [layoutedNodes, layoutedEdges, resetCounter]
-  );
-
   useEffect(() => {
-    setNodes(layoutedNodes);
+    // Functional updater preserves the `selected` flag from the current RF
+    // state so replacing nodes after a save doesn't close the details panel.
+    setNodes((prev) => {
+      const selectedIds = new Set(prev.filter((n) => n.selected).map((n) => n.id));
+      return layoutedNodes.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
+    });
     setEdges(layoutedEdges);
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
-  const layoutAppliedVersion = useLayoutNodes(instanceId, layoutVersion, {
+  const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, resetCounter, {
     skipFitView: requestedNodeKey !== null,
   });
+  const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
 
   // Deep-link: /model-editor/nodes?node=<identifier> opens the panel on that
   // node and centers the graph on it. Waits for ELK layout to be *applied*
   // (positions written back to React Flow) so `setCenter` reads real coords.
   useEffect(() => {
     if (!requestedNodeKey) return;
-    if (layoutAppliedVersion !== layoutVersion) return;
+    if (!isLayoutCurrent) return;
     if (handledNodeKeyRef.current === requestedNodeKey) return;
 
     const target =
@@ -540,17 +545,11 @@ function FlowEditor(props: {
     const MIN_FOCUS_ZOOM = 0.8;
     const focusZoom = Math.max(getZoom(), MIN_FOCUS_ZOOM);
     void setCenter(cx, cy, { zoom: focusZoom, duration: 400 });
-    setSelectedNodeId(target.id);
     handledNodeKeyRef.current = requestedNodeKey;
-  }, [
-    requestedNodeKey,
-    layoutAppliedVersion,
-    layoutVersion,
-    props.nodes,
-    getNodes,
-    setCenter,
-    getZoom,
-  ]);
+    // Defer selection update to next frame so it runs outside the effect body,
+    // matching the pattern used in useLayoutNodes.
+    requestAnimationFrame(() => setSelectedNodeId(target.id));
+  }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, setCenter, getZoom]);
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
     if (selected.length !== 1) {
@@ -742,9 +741,32 @@ function FlowEditor(props: {
   );
 }
 
+function applyOverride(
+  node: EditorNodeFieldsFragment,
+  override: NodeFieldOverrides
+): EditorNodeFieldsFragment {
+  const merged: EditorNodeFieldsFragment = { ...node };
+  if (override.name !== undefined) merged.name = override.name;
+  if (override.color !== undefined) merged.color = override.color;
+  if (override.isVisible !== undefined) merged.isVisible = override.isVisible;
+  if (override.isOutcome !== undefined && merged.__typename === 'Node') {
+    merged.isOutcome = override.isOutcome;
+  }
+  return merged;
+}
+
 export default function NodeGraphEditor() {
   const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
+  const overrides = useReactiveVar(nodeGraphOverridesVar);
   const editor = data.instance.editor;
+
+  const nodesWithOverrides = useMemo(() => {
+    if (Object.keys(overrides).length === 0) return data.instance.nodes;
+    return data.instance.nodes.map((node) => {
+      const override = overrides[node.id];
+      return override ? applyOverride(node, override) : node;
+    });
+  }, [data.instance.nodes, overrides]);
 
   if (!editor) {
     return (
@@ -761,7 +783,7 @@ export default function NodeGraphEditor() {
       <div style={{ width: '100%', height: '100%' }}>
         <ReactFlowProvider>
           <FlowEditor
-            nodes={data.instance.nodes}
+            nodes={nodesWithOverrides}
             edges={editor.edges}
             outcomeNodeIds={editor.graphLayout.outcomeIds}
             actionGroups={data.instance.actionGroups}

@@ -1,4 +1,25 @@
-import { gql } from '@apollo/client';
+import { gql, makeVar } from '@apollo/client';
+
+// NodeGraph uses fetchPolicy: 'no-cache' for size reasons, so Apollo's
+// normalized cache updates from the updateNode mutation don't reach it.
+// This reactive var lets NodeDetailsSection push updated fields to any
+// consumer that renders nodes from the NodeGraph query.
+export type NodeFieldOverrides = {
+  name?: string;
+  color?: string | null;
+  isVisible?: boolean;
+  isOutcome?: boolean;
+};
+
+export const nodeGraphOverridesVar = makeVar<Record<string, NodeFieldOverrides>>({});
+
+export function patchNodeGraphOverride(nodeId: string, patch: NodeFieldOverrides): void {
+  const current = nodeGraphOverridesVar();
+  nodeGraphOverridesVar({
+    ...current,
+    [nodeId]: { ...(current[nodeId] ?? {}), ...patch },
+  });
+}
 
 const EDITOR_OPERATION_INFO_FIELDS = gql`
   fragment EditorOperationInfoFields on OperationInfo {
