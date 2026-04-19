@@ -594,7 +594,7 @@ export type NodeGraphQuery = (
               > }
               & { __typename: 'InputPortType' }
             )>, outputPorts: Array<(
-              { id: string, label: string | null, quantity: string | null, unit: (
+              { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
                 { id: string, short: string }
                 & { __typename: 'UnitType' }
               ) }
@@ -643,7 +643,7 @@ export type NodeGraphQuery = (
               > }
               & { __typename: 'InputPortType' }
             )>, outputPorts: Array<(
-              { id: string, label: string | null, quantity: string | null, unit: (
+              { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
                 { id: string, short: string }
                 & { __typename: 'UnitType' }
               ) }
@@ -701,7 +701,7 @@ type EditorNodeFields_ActionNode_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, unit: (
+        { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
           { id: string, short: string }
           & { __typename: 'UnitType' }
         ) }
@@ -751,7 +751,7 @@ type EditorNodeFields_Node_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, unit: (
+        { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
           { id: string, short: string }
           & { __typename: 'UnitType' }
         ) }

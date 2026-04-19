@@ -7,7 +7,7 @@ import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useReactFlow } from '@xyflow/react';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
-import { BarChartLine, DashCircle, X } from 'react-bootstrap-icons';
+import { BarChartLine, X } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -15,11 +15,11 @@ import type {
 } from '@/common/__generated__/graphql';
 import { modelEditorModeVar } from '@/common/cache';
 import { useSession } from '@/lib/auth-client';
-import { getNodeStyle } from './ElkNode';
 import NodeDetailsSection from './NodeDetailsSection';
 import { mockNodeEditsVar } from './mockEdits';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
-import { CollapsibleSection, ConnectedNodeChip, getStyleForNode } from './node-details/shared';
+import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
+import { CollapsibleSection, getStyleForNode } from './node-details/shared';
 import { getNodeGroup, getNodeSpec } from './nodeHelpers';
 
 const GET_NODE_EXPLANATION = gql`
@@ -320,72 +320,16 @@ export default function NodeDetailsPanel({
         />
       </CollapsibleSection>
 
-      {outputPorts.length > 0 && (
-        <CollapsibleSection
-          title={`Node output ports (${outputPorts.length})`}
-          open={outputOpen}
-          onToggle={() => setOutputOpen((v) => !v)}
-        >
-          {outputPorts.map((port, portIdx) => {
-            const connectedEdges = outgoingByPort.get(port.id) ?? [];
-            return (
-              <Box key={port.id}>
-                <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0 }}>
-                  {port.label ?? `Port #${portIdx + 1}`}
-                </Typography>
-                {connectedEdges.length > 0 ? (
-                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {connectedEdges.map((e) => {
-                      const targetNode = nodeMap.get(e.toRef.nodeId);
-                      const highlighted = hoveredNodeId === e.toRef.nodeId;
-                      return (
-                        <Box
-                          key={e.id}
-                          sx={
-                            highlighted
-                              ? {
-                                  '& .MuiChip-root': {
-                                    borderColor: 'primary.main',
-                                    bgcolor: 'action.hover',
-                                  },
-                                }
-                              : undefined
-                          }
-                        >
-                          <ConnectedNodeChip
-                            nodeId={e.toRef.nodeId}
-                            label={targetNode?.name ?? e.toRef.nodeId}
-                            style={
-                              targetNode ? getStyleForNode(targetNode) : getNodeStyle('', '', false)
-                            }
-                            onSelect={handleNavigateToNode}
-                            onHover={handleHover}
-                          />
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                ) : (
-                  <Chip
-                    icon={<DashCircle size={14} />}
-                    label="Not connected"
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      alignSelf: 'flex-start',
-                      borderRadius: 1,
-                      color: 'text.disabled',
-                      borderColor: 'divider',
-                      bgcolor: 'transparent',
-                      '& .MuiChip-icon': { color: 'text.disabled' },
-                    }}
-                  />
-                )}
-              </Box>
-            );
-          })}
-        </CollapsibleSection>
-      )}
+      <NodeOutputPortsSection
+        ports={outputPorts}
+        outgoingByPort={outgoingByPort}
+        nodeMap={nodeMap}
+        hoveredNodeId={hoveredNodeId}
+        open={outputOpen}
+        onToggle={() => setOutputOpen((v) => !v)}
+        onSelectNode={handleNavigateToNode}
+        onHover={handleHover}
+      />
     </Box>
   );
 }

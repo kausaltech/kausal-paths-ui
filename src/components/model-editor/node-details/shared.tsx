@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Box, Chip, Collapse, Typography } from '@mui/material';
 
-import { ChevronDown, ChevronRight, DashCircle } from 'react-bootstrap-icons';
+import { CaretDownFill, CaretRightFill, DashCircle } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { type NodeStyle, getNodeStyle } from '../ElkNode';
@@ -108,7 +108,9 @@ export function CollapsibleSection({ title, open, onToggle, children }: Collapsi
           px: 0.5,
         }}
       >
-        {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        <Box sx={{ color: 'text.disabled', display: 'flex' }}>
+          {open ? <CaretDownFill size={12} /> : <CaretRightFill size={12} />}
+        </Box>
         <Typography variant="subtitle2" sx={{ fontSize: 12 }}>
           {title}
         </Typography>

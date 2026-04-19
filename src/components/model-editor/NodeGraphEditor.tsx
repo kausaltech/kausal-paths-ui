@@ -161,6 +161,7 @@ const GET_NODE_GRAPH = gql`
             id
             short
           }
+          dimensions
         }
         typeConfig {
           __typename
