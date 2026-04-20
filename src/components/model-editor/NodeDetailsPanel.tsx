@@ -264,6 +264,7 @@ export default function NodeDetailsPanel({
       )}
 
       <NodeInputPortsSection
+        currentNodeId={node.id}
         ports={inputPorts}
         incomingByPort={incomingByPort}
         nodeMap={nodeMap}

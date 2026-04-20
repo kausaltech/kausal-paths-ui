@@ -1,6 +1,18 @@
-import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
+import { useState } from 'react';
 
-import { Database, InfoSquare } from 'react-bootstrap-icons';
+import {
+  Box,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+
+import { Database, InfoSquare, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -8,6 +20,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import type { getNodeSpec } from '../nodeHelpers';
+import NodeSelector from './NodeSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
 type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
@@ -57,6 +70,7 @@ function PortTooltipContent({ port }: { port: InputPort }) {
 }
 
 type NodeInputPortsSectionProps = {
+  currentNodeId: string;
   ports: readonly InputPort[];
   incomingByPort: ReadonlyMap<string, readonly EditorNodeEdgeFragment[]>;
   nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
@@ -69,6 +83,7 @@ type NodeInputPortsSectionProps = {
 };
 
 export default function NodeInputPortsSection({
+  currentNodeId,
   ports,
   incomingByPort,
   nodeMap,
@@ -79,6 +94,9 @@ export default function NodeInputPortsSection({
   onHover,
   onShowDataset,
 }: NodeInputPortsSectionProps) {
+  const [editingPortId, setEditingPortId] = useState<string | null>(null);
+  const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
+
   if (ports.length === 0) return null;
 
   return (
@@ -129,62 +147,103 @@ export default function NodeInputPortsSection({
                 <InfoSquare size={10} aria-label="Port info" />
               </Typography>
             </Tooltip>
-            {hasConnections ? (
-              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                {connectedEdges.map((e) => {
-                  const sourceNode = nodeMap.get(e.fromRef.nodeId);
-                  const highlighted = hoveredNodeId === e.fromRef.nodeId;
-                  return (
-                    <Box
-                      key={e.id}
-                      sx={
-                        highlighted
-                          ? {
-                              '& .MuiChip-root': {
-                                borderColor: 'primary.main',
-                                bgcolor: 'action.hover',
-                              },
-                            }
-                          : undefined
-                      }
-                    >
-                      <ConnectedNodeChip
-                        nodeId={e.fromRef.nodeId}
-                        label={sourceNode?.name ?? e.fromRef.nodeId}
-                        style={
-                          sourceNode ? getStyleForNode(sourceNode) : getNodeStyle('', '', false)
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {hasConnections ? (
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
+                  {connectedEdges.map((e) => {
+                    const sourceNode = nodeMap.get(e.fromRef.nodeId);
+                    const highlighted = hoveredNodeId === e.fromRef.nodeId;
+                    return (
+                      <Box
+                        key={e.id}
+                        sx={
+                          highlighted
+                            ? {
+                                '& .MuiChip-root': {
+                                  borderColor: 'primary.main',
+                                  bgcolor: 'action.hover',
+                                },
+                              }
+                            : undefined
                         }
-                        onSelect={onSelectNode}
-                        onHover={onHover}
-                      />
-                    </Box>
-                  );
-                })}
-                {datasetBindings.map((ds) => (
-                  <Chip
-                    key={ds.dataset.id}
-                    icon={<Database size={18} />}
-                    label={`${ds.dataset.name} → ${ds.metric.label}`}
-                    title={`${ds.dataset.name} → ${ds.metric.label}`}
-                    variant="outlined"
-                    onClick={() => onShowDataset?.(ds.id)}
-                    sx={{
-                      maxWidth: '100%',
-                      cursor: 'pointer',
-                      height: 32,
-                      fontSize: 12,
-                      borderRadius: 1,
-                      '& .MuiChip-label': { px: 1.25 },
-                    }}
-                  />
-                ))}
-              </Box>
-            ) : (
-              <NotConnectedChip />
-            )}
+                      >
+                        <ConnectedNodeChip
+                          nodeId={e.fromRef.nodeId}
+                          label={sourceNode?.name ?? e.fromRef.nodeId}
+                          style={
+                            sourceNode ? getStyleForNode(sourceNode) : getNodeStyle('', '', false)
+                          }
+                          onSelect={onSelectNode}
+                          onHover={onHover}
+                        />
+                      </Box>
+                    );
+                  })}
+                  {datasetBindings.map((ds) => (
+                    <Chip
+                      key={ds.dataset.id}
+                      icon={<Database size={18} />}
+                      label={`${ds.dataset.name} → ${ds.metric.label}`}
+                      title={`${ds.dataset.name} → ${ds.metric.label}`}
+                      variant="outlined"
+                      onClick={() => onShowDataset?.(ds.id)}
+                      sx={{
+                        maxWidth: '100%',
+                        cursor: 'pointer',
+                        height: 32,
+                        fontSize: 12,
+                        borderRadius: 1,
+                        '& .MuiChip-label': { px: 1.25 },
+                      }}
+                    />
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ flex: 1 }}>
+                  <NotConnectedChip />
+                </Box>
+              )}
+              <Tooltip title="Select input node" placement="left">
+                <IconButton
+                  size="small"
+                  onClick={() => setEditingPortId(port.id)}
+                  aria-label="Select input node"
+                  sx={{ p: 0.5, color: 'text.secondary' }}
+                >
+                  <PencilSquare size={12} />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
         );
       })}
+      <Dialog
+        open={editingPort !== null}
+        onClose={() => setEditingPortId(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ pr: 6 }}>
+          Select new input node
+          <IconButton
+            aria-label="Close"
+            onClick={() => setEditingPortId(null)}
+            sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
+          >
+            <XIcon size={20} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {editingPort && (
+            <NodeSelector
+              nodes={[...nodeMap.values()]}
+              port={editingPort}
+              currentNodeId={currentNodeId}
+              onSelect={() => setEditingPortId(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </CollapsibleSection>
   );
 }
