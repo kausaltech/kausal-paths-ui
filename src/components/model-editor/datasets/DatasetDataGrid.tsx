@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   Alert,
@@ -21,7 +21,14 @@ import {
 } from '@mui/material';
 
 import { useMutation } from '@apollo/client/react';
-import type { CellValueChangedEvent, ColDef, ICellRendererParams } from 'ag-grid-community';
+import type {
+  CellValueChangedEvent,
+  ColDef,
+  ColumnState,
+  GridApi,
+  GridReadyEvent,
+  ICellRendererParams,
+} from 'ag-grid-community';
 import { Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
@@ -45,7 +52,11 @@ type Props = {
 /**
  * Discriminated cell shape — each column in a row renders one of these. Kept
  * minimal compared to the reference implementation in kausal-extensions;
- * `ComputedValue` / reference tracking / dirty-batching are not in scope yet.
+ * `ComputedValue` / reference tracking are not in scope yet.
+ *
+ * Dirty-tracking lives in `pendingEdits` on the component (keyed by
+ * `${rowId}|${colId}`) rather than inside the cell so committed state stays
+ * pristine until `onMutated` refetches.
  */
 type MetricHeaderCell = {
   type: 'MetricHeader';
@@ -74,6 +85,20 @@ type GridRow = {
   cells: Record<string, RowCell>;
 };
 
+type PendingEdit = {
+  rowId: string;
+  colId: string;
+  year: number;
+  /** Data-point id if the cell was already persisted when the edit started. */
+  dataPointId: string | null;
+  /** New value the user entered (null = clear / delete). */
+  nextValue: number | null;
+  /** Committed value at edit time — what "Discard" restores. */
+  originalValue: number | null;
+  /** Set when the previous commit attempt failed; drives the red tint. */
+  error?: string;
+};
+
 type Dataset = DatasetDetailFieldsFragment;
 type DataPoint = Dataset['dataPoints'][number];
 
@@ -81,16 +106,14 @@ const METRIC_COL = 'col_metric';
 const ACTIONS_COL = 'col_actions';
 const dimColId = (dimensionId: string) => `col_dim_${dimensionId}`;
 const yearColId = (year: number) => `col_year_${year}`;
+const pendingKey = (rowId: string, colId: string) => `${rowId}|${colId}`;
 
 function extractYear(date: DataPoint['date']): number {
-  // GraphQL `Date` scalar comes through as `YYYY-MM-DD`. Parse as UTC to
-  // avoid timezone drift pushing dates into the previous year.
   const s = typeof date === 'string' ? date : String(date);
   const m = /^(\d{4})/.exec(s);
   return m ? Number(m[1]) : new Date(s).getUTCFullYear();
 }
 
-/** Stable row key from metric + (dim.id → category.uuid). */
 function rowKey(metricId: string, categoryByDim: Record<string, string | null>): string {
   const parts = Object.entries(categoryByDim)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -98,10 +121,6 @@ function rowKey(metricId: string, categoryByDim: Record<string, string | null>):
   return [metricId, ...parts].join('|');
 }
 
-/**
- * Fold data points into wide rows keyed by (metric, category-combination).
- * Year columns come from the union of all years present.
- */
 function buildGridData(dataset: Dataset): {
   rows: GridRow[];
   years: number[];
@@ -153,9 +172,6 @@ function buildGridData(dataset: Dataset): {
       rowsByKey.set(key, row);
     }
 
-    // If two data points share (metric, categories, year) we keep the one with
-    // the later date — a concession to the year-granular wide view. The skipped
-    // one stays in the DB; switching back to long view would surface it.
     const colId = yearColId(year);
     const existing = row.cells[colId];
     if (!existing || (existing.type === 'Value' && existing.dataPointId === null)) {
@@ -168,7 +184,6 @@ function buildGridData(dataset: Dataset): {
     }
   }
 
-  // Ensure every row has a ValueCell for every known year (empty = null dp).
   const sortedYears = [...yearSet].sort((a, b) => a - b);
   for (const row of rowsByKey.values()) {
     for (const year of sortedYears) {
@@ -182,10 +197,28 @@ function buildGridData(dataset: Dataset): {
   return { rows: [...rowsByKey.values()], years: sortedYears };
 }
 
+function diffKind(
+  dataPointId: string | null,
+  nextValue: number | null
+): 'create' | 'update' | 'delete' {
+  if (dataPointId === null) return 'create';
+  if (nextValue === null) return 'delete';
+  return 'update';
+}
+
 export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const instance = useInstance();
   const [addOpen, setAddOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
+  // Ref mirror so long-lived AG Grid column callbacks (valueGetter, cellStyle,
+  // tooltipValueGetter) always see the latest pending state without forcing
+  // columnDefs to rebuild — a rebuild resets user-adjusted column widths.
+  const pendingEditsRef = useRef(pendingEdits);
+  pendingEditsRef.current = pendingEdits;
+  const gridApiRef = useRef<GridApi<GridRow> | null>(null);
+  const columnStateRef = useRef<ColumnState[] | null>(null);
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
     CREATE_DATA_POINT
@@ -197,13 +230,12 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     DELETE_DATA_POINT
   );
 
-  // Generated input types require all fields (avoidOptionals). Backend rejects
-  // explicit null on Maybe fields, so we build partial inputs and cast.
   type UpdateInput = UpdateDataPointMutationVariables['input'];
   const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
     partial as unknown as UpdateInput;
 
   const { rows, years } = useMemo(() => buildGridData(dataset), [dataset]);
+  const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
   const handleRowDelete = useCallback(
     async (row: GridRow) => {
@@ -212,7 +244,6 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         .map((c) => c.dataPointId as string);
       if (ids.length === 0) return;
       try {
-        // Sequential is fine at this scale and keeps error attribution simple.
         for (const id of ids) {
           const result = await deleteDataPoint({
             variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
@@ -223,6 +254,16 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
             break;
           }
         }
+        // Drop any pending edits on this row — they refer to rows that no
+        // longer exist after the delete.
+        setPendingEdits((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Map(prev);
+          for (const key of next.keys()) {
+            if (key.startsWith(`${row.id}|`)) next.delete(key);
+          }
+          return next;
+        });
       } finally {
         onMutated();
       }
@@ -245,12 +286,10 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           const c = p.data?.cells[METRIC_COL];
           if (c?.type !== 'MetricHeader') return null;
           return (
-            <Box sx={{ lineHeight: 1.2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {c.label}
-              </Typography>
+            <Box sx={{ lineHeight: 1.1, py: 0.25 }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 500 }}>{c.label}</Typography>
               {c.unit && (
-                <Typography variant="caption" color="text.secondary">
+                <Typography sx={{ fontSize: 10 }} color="text.secondary">
                   {c.unit}
                 </Typography>
               )}
@@ -272,33 +311,81 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       });
     }
     for (const year of years) {
+      const colId = yearColId(year);
       cols.push({
-        colId: yearColId(year),
+        colId,
         headerName: String(year),
-        width: 110,
+        width: 84,
         editable: true,
         type: 'numericColumn',
         valueGetter: (p) => {
-          const c = p.data?.cells[yearColId(year)];
+          if (!p.data) return null;
+          const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
+          if (pending) return pending.nextValue;
+          const c = p.data.cells[colId];
           return c?.type === 'Value' ? c.value : null;
         },
         valueSetter: (p) => {
           if (!p.data) return false;
           const raw: unknown = p.newValue;
-          const next = raw === null || raw === '' ? null : Number(raw);
+          const next =
+            raw === null || raw === '' || typeof raw === 'undefined' ? null : Number(raw);
           if (next !== null && !Number.isFinite(next)) return false;
-          const prev = p.data.cells[yearColId(year)];
-          const dataPointId = prev?.type === 'Value' ? prev.dataPointId : null;
-          p.data.cells[yearColId(year)] = {
-            type: 'Value',
-            dataPointId,
-            value: next,
-            year,
-          };
+          const committed = p.data.cells[colId];
+          if (committed?.type !== 'Value') return false;
+
+          setPendingEdits((prev) => {
+            const map = new Map(prev);
+            const key = pendingKey(p.data.id, colId);
+            const existing = map.get(key);
+            // The baseline we compare against is what was persisted when the
+            // user first touched this cell — preserved across keystrokes so
+            // a round-trip (A → B → A) clears the pending entry.
+            const originalValue = existing ? existing.originalValue : committed.value;
+            if (next === originalValue) {
+              map.delete(key);
+            } else {
+              map.set(key, {
+                rowId: p.data.id,
+                colId,
+                year,
+                dataPointId: committed.dataPointId,
+                nextValue: next,
+                originalValue,
+              });
+            }
+            return map;
+          });
           return true;
         },
         valueFormatter: (p: { value: number | null }) =>
           p.value != null ? p.value.toLocaleString(undefined, { maximumFractionDigits: 6 }) : '',
+        // Using cellClassRules (not cellStyle) because AG Grid doesn't clear
+        // previously applied inline styles when cellStyle transitions back to
+        // null — classes are toggled cleanly on refresh.
+        cellClassRules: {
+          'dsg-cell-dirty': (p) => {
+            if (!p.data) return false;
+            const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
+            return !!pending && !pending.error;
+          },
+          'dsg-cell-error': (p) => {
+            if (!p.data) return false;
+            const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
+            return !!pending?.error;
+          },
+        },
+        tooltipValueGetter: (p) => {
+          if (!p.data) return undefined;
+          const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
+          if (!pending) return undefined;
+          if (pending.error) return `Save failed: ${pending.error}`;
+          const original =
+            pending.originalValue != null
+              ? pending.originalValue.toLocaleString(undefined, { maximumFractionDigits: 6 })
+              : '(empty)';
+          return `Unsaved · was ${original}`;
+        },
       });
     }
     cols.push({
@@ -327,28 +414,67 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     return cols;
   }, [dataset.dimensions, years, handleRowDelete]);
 
-  const handleCellChange = useCallback(
-    async (event: CellValueChangedEvent<GridRow>) => {
-      if (!event.data) return;
-      const row = event.data;
-      const colId = event.colDef.colId ?? '';
-      if (!colId.startsWith('col_year_')) return;
+  const handleCellChange = useCallback((_event: CellValueChangedEvent<GridRow>) => {
+    // Value commits happen in valueSetter (pendingEdits state). Nothing to do
+    // on the post-commit event — kept as a seam if we later want to log edits.
+  }, []);
 
-      const year = Number(colId.slice('col_year_'.length));
-      const cell = row.cells[colId];
-      if (cell?.type !== 'Value') return;
+  const handleDiscard = useCallback(() => {
+    setPendingEdits(new Map());
+  }, []);
 
-      const baseVars = { instanceId: instance.id, datasetId: dataset.id };
+  const handleSave = useCallback(async () => {
+    if (pendingEdits.size === 0 || saving) return;
+    setSaving(true);
+
+    const baseVars = { instanceId: instance.id, datasetId: dataset.id };
+    // Snapshot the queue at save start — entries the user adds mid-commit
+    // stay in `pendingEdits` and get their own run next time.
+    const queued = [...pendingEdits];
+
+    const clearPending = (key: string) => {
+      setPendingEdits((prev) => {
+        if (!prev.has(key)) return prev;
+        const next = new Map(prev);
+        next.delete(key);
+        return next;
+      });
+    };
+    const markFailure = (key: string, edit: PendingEdit, error: string) => {
+      setPendingEdits((prev) => {
+        const next = new Map(prev);
+        next.set(key, { ...edit, error });
+        return next;
+      });
+    };
+
+    let failureCount = 0;
+    let unexpected: string | null = null;
+
+    // Sequential commits — kausal-extensions does it this way too. Simpler
+    // error attribution than Promise.allSettled, acceptable latency at the
+    // scale of a single grid view. Highlight clears per-cell as each
+    // mutation resolves.
+    for (const [key, edit] of queued) {
+      const row = rowById.get(edit.rowId);
+      if (!row) {
+        clearPending(key);
+        continue;
+      }
+      const kind = diffKind(edit.dataPointId, edit.nextValue);
 
       try {
-        if (cell.dataPointId === null) {
-          if (cell.value === null) return; // empty → empty
+        if (kind === 'create') {
+          if (edit.nextValue === null) {
+            clearPending(key);
+            continue;
+          }
           const result = await createDataPoint({
             variables: {
               ...baseVars,
               input: {
-                date: `${year}-01-01`,
-                value: cell.value,
+                date: `${edit.year}-01-01`,
+                value: edit.nextValue,
                 metricId: row.metricId,
                 dimensionCategoryIds: Object.values(row.categoryByDim).filter(
                   (v): v is string => v !== null
@@ -358,37 +484,144 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           });
           const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
           if (payload?.__typename === 'OperationInfo') {
-            setError(payload.messages.map((m) => m.message).join('; '));
+            failureCount += 1;
+            markFailure(key, edit, payload.messages.map((m) => m.message).join('; '));
+          } else {
+            clearPending(key);
           }
-        } else if (cell.value === null) {
+        } else if (kind === 'delete') {
+          if (edit.dataPointId === null) {
+            clearPending(key);
+            continue;
+          }
           const result = await deleteDataPoint({
-            variables: { ...baseVars, dataPointId: cell.dataPointId },
+            variables: { ...baseVars, dataPointId: edit.dataPointId },
           });
           const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
           if (msgs.length > 0) {
-            setError(msgs.map((m) => m.message).join('; '));
+            failureCount += 1;
+            markFailure(key, edit, msgs.map((m) => m.message).join('; '));
+          } else {
+            clearPending(key);
           }
         } else {
-          await updateDataPoint({
+          if (edit.dataPointId === null) {
+            clearPending(key);
+            continue;
+          }
+          const result = await updateDataPoint({
             variables: {
               ...baseVars,
-              dataPointId: cell.dataPointId,
-              input: asUpdateInput({ value: cell.value }),
+              dataPointId: edit.dataPointId,
+              input: asUpdateInput({ value: edit.nextValue }),
             },
           });
+          const payload = result.data?.instanceEditor.datasetEditor.updateDataPoint;
+          if (payload?.__typename === 'OperationInfo') {
+            failureCount += 1;
+            markFailure(key, edit, payload.messages.map((m) => m.message).join('; '));
+          } else {
+            clearPending(key);
+          }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        onMutated();
+        failureCount += 1;
+        const msg = err instanceof Error ? err.message : String(err);
+        markFailure(key, edit, msg);
+        unexpected ??= msg;
       }
-    },
-    [instance.id, dataset.id, createDataPoint, updateDataPoint, deleteDataPoint, onMutated]
-  );
+    }
+
+    setSaving(false);
+
+    if (failureCount > 0) {
+      setError(
+        unexpected ??
+          `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
+      );
+    }
+    onMutated();
+  }, [
+    pendingEdits,
+    saving,
+    instance.id,
+    dataset.id,
+    rowById,
+    createDataPoint,
+    updateDataPoint,
+    deleteDataPoint,
+    onMutated,
+  ]);
+
+  // Redraw year-column cells when the pending map changes so cellStyle /
+  // valueGetter / tooltipValueGetter pick up the new ref value. `force: true`
+  // ensures the styling refreshes even if the rendered text didn't change.
+  useEffect(() => {
+    const api = gridApiRef.current;
+    if (!api) return;
+    const yearColIds = years.map(yearColId);
+    if (yearColIds.length > 0) {
+      api.refreshCells({ columns: yearColIds, force: true });
+    }
+  }, [pendingEdits, years]);
+
+  // After columnDefs reference changes (e.g. a refetch added or removed a
+  // year column), re-apply any saved column widths. `applyOrder: false` means
+  // unknown columns keep their default position.
+  useEffect(() => {
+    const api = gridApiRef.current;
+    const saved = columnStateRef.current;
+    if (!api || !saved) return;
+    api.applyColumnState({ state: saved, applyOrder: false });
+  }, [columnDefs]);
+
+  // Stable references for props passed to AgGridReact — fresh object/function
+  // references on every render cause AG Grid to re-apply defaults and drop
+  // user-adjusted column widths.
+  const defaultColDef = useMemo<ColDef<GridRow>>(() => ({ resizable: true, sortable: true }), []);
+  const getRowId = useCallback((p: { data: GridRow }) => p.data.id, []);
+  const handleGridReady = useCallback((event: GridReadyEvent<GridRow>) => {
+    gridApiRef.current = event.api;
+  }, []);
+  const handleColumnResized = useCallback((event: { finished: boolean }) => {
+    if (event.finished && gridApiRef.current) {
+      columnStateRef.current = gridApiRef.current.getColumnState();
+    }
+  }, []);
+
+  const pendingCount = pendingEdits.size;
+  const hasPending = pendingCount > 0;
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="flex-end"
+        spacing={1}
+        sx={{ mb: 1 }}
+      >
+        {hasPending && (
+          <Typography variant="body2" color="warning.main" sx={{ mr: 'auto' }}>
+            {pendingCount} unsaved change{pendingCount === 1 ? '' : 's'}
+          </Typography>
+        )}
+        <Button
+          size="small"
+          onClick={handleDiscard}
+          disabled={!hasPending || saving}
+          color="inherit"
+        >
+          Discard
+        </Button>
+        <Button
+          size="small"
+          variant="contained"
+          onClick={() => void handleSave()}
+          disabled={!hasPending || saving}
+        >
+          {saving ? 'Saving…' : 'Save changes'}
+        </Button>
         <Button
           size="small"
           startIcon={<Plus />}
@@ -398,17 +631,54 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           Add data point
         </Button>
       </Stack>
-      <Box className="ag-theme-alpine" sx={{ height: 500, width: '100%' }}>
+      <Box
+        className="ag-theme-alpine"
+        sx={{
+          height: 500,
+          width: '100%',
+          // Compact variant of the alpine theme — reduces row height, cell
+          // padding, and font size. Scoped via className so the spacious
+          // default still applies elsewhere.
+          '--ag-grid-size': '3px',
+          '--ag-font-size': '12px',
+          '--ag-cell-horizontal-padding': '4px',
+          // Cell/header padding — AG Grid's compiled CSS (`.ag-ltr .ag-cell`)
+          // ships in the same specificity band as our sx class and is loaded
+          // later in the cascade, so the `--ag-cell-horizontal-padding` var
+          // gets overridden by the theme's calc() chain. Force with
+          // !important to win unconditionally.
+          '& .ag-cell': {
+            paddingLeft: '4px !important',
+            paddingRight: '4px !important',
+          },
+          '& .ag-header-cell': {
+            paddingLeft: '4px !important',
+            paddingRight: '4px !important',
+          },
+          '& .ag-header-cell-label': { fontSize: 12 },
+          '& .ag-cell.dsg-cell-dirty': {
+            backgroundColor: 'rgba(237, 108, 2, 0.12)',
+            borderLeft: '3px solid #ed6c02',
+          },
+          '& .ag-cell.dsg-cell-error': {
+            backgroundColor: 'rgba(211, 47, 47, 0.12)',
+            borderLeft: '3px solid #d32f2f',
+          },
+        }}
+      >
         <AgGridReact
           rowData={rows}
           columnDefs={columnDefs}
-          defaultColDef={{ resizable: true, sortable: true }}
-          onCellValueChanged={(e) => {
-            void handleCellChange(e);
-          }}
-          getRowId={(p) => p.data.id}
+          defaultColDef={defaultColDef}
+          onGridReady={handleGridReady}
+          onColumnResized={handleColumnResized}
+          onCellValueChanged={handleCellChange}
+          getRowId={getRowId}
+          rowHeight={28}
+          headerHeight={32}
           singleClickEdit
           stopEditingWhenCellsLoseFocus
+          tooltipShowDelay={400}
         />
       </Box>
       <AddDataPointDialog
