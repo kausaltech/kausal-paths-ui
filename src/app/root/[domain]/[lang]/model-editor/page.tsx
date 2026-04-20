@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 
 import { gql } from '@apollo/client';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   ArrowRight,
@@ -47,6 +48,8 @@ import {
 import {
   INSTANCE_EDITOR_PUBLISH_STATE,
   PUBLISH_MODEL_INSTANCE,
+  draftHeadTokenVar,
+  staleVersionNotificationVar,
 } from '@/components/model-editor/queries';
 import { useSession } from '@/lib/auth-client';
 
@@ -75,6 +78,7 @@ type LandingDataQuery = {
       hasUnpublishedChanges: boolean;
       firstPublishedAt: string | null;
       lastPublishedAt: string | null;
+      draftHeadToken: string | null;
     } | null;
   };
 };
@@ -190,6 +194,14 @@ export default function ModelEditorLandingPage() {
     }
   }, [isPending, session, router]);
 
+  // Seed the optimistic-locking token var whenever the query returns a new
+  // value — mutations read from this var to gate writes via the backend's
+  // StaleVersionError check.
+  const currentToken = data?.instance.editor?.draftHeadToken ?? null;
+  useEffect(() => {
+    draftHeadTokenVar(currentToken);
+  }, [currentToken]);
+
   if (isPending || !session?.user) {
     return (
       <Box
@@ -209,7 +221,10 @@ export default function ModelEditorLandingPage() {
 
   const handlePublish = async () => {
     try {
-      const result = await publish({ variables: { instanceId: instance.id } });
+      const result = await publish({
+        variables: { instanceId: instance.id, version: draftHeadTokenVar() },
+        refetchQueries: ['EditorPublishState', 'ModelEditorLandingData'],
+      });
       const payload = result.data?.instanceEditor.publishModelInstance;
       if (payload?.__typename === 'OperationInfo') {
         const msg = payload.messages.map((m) => m.message).join('; ') || 'Publish failed';
@@ -218,6 +233,14 @@ export default function ModelEditorLandingPage() {
       }
       setToast({ severity: 'success', message: 'Model published.' });
     } catch (err) {
+      const isStale =
+        CombinedGraphQLErrors.is(err) &&
+        err.errors.some((e) => e.extensions?.code === 'stale_version');
+      if (isStale) {
+        // The top-level StaleVersionNotice snackbar takes over from here.
+        staleVersionNotificationVar(true);
+        return;
+      }
       setToast({ severity: 'error', message: err instanceof Error ? err.message : String(err) });
     }
   };

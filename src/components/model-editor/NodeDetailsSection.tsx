@@ -15,7 +15,8 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import { useMutation } from '@apollo/client/react';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
+import { useApolloClient, useMutation } from '@apollo/client/react';
 import { ArrowCounterclockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
 
 import type {
@@ -28,7 +29,13 @@ import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
 import { getNodeGroup } from './nodeHelpers';
-import { type NodeFieldOverrides, UPDATE_NODE, patchNodeGraphOverride } from './queries';
+import {
+  type NodeFieldOverrides,
+  UPDATE_NODE,
+  draftHeadTokenVar,
+  patchNodeGraphOverride,
+  staleVersionNotificationVar,
+} from './queries';
 
 const metaChipSx = {
   height: 20,
@@ -99,28 +106,50 @@ function stripNulls(input: Partial<UpdateNodeInput>): UpdateNodeInput {
 
 function useUpdateNodeMutation() {
   const instance = useInstance();
+  const client = useApolloClient();
   const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
   return useCallback(
     async (nodeId: string, input: Partial<UpdateNodeInput>) => {
-      const result = await mutate({
-        variables: { instanceId: instance.id, nodeId, input: stripNulls(input) },
-      });
-      const payload = result.data?.instanceEditor.updateNode;
-      if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
-        // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
-        // updated fields via the reactive-var overlay.
-        const override: NodeFieldOverrides = {};
-        if (input.name !== undefined) override.name = payload.name;
-        if (input.color !== undefined) override.color = payload.color;
-        if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
-        if (input.isOutcome !== undefined && payload.__typename === 'Node') {
-          override.isOutcome = payload.isOutcome;
+      try {
+        const result = await mutate({
+          variables: {
+            instanceId: instance.id,
+            nodeId,
+            input: stripNulls(input),
+            version: draftHeadTokenVar(),
+          },
+          // Re-fetch the token after a successful write so subsequent mutations
+          // pass the new head and don't trip the stale-check.
+          refetchQueries: ['EditorPublishState'],
+        });
+        const payload = result.data?.instanceEditor.updateNode;
+        if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
+          // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
+          // updated fields via the reactive-var overlay.
+          const override: NodeFieldOverrides = {};
+          if (input.name !== undefined) override.name = payload.name;
+          if (input.color !== undefined) override.color = payload.color;
+          if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
+          if (input.isOutcome !== undefined && payload.__typename === 'Node') {
+            override.isOutcome = payload.isOutcome;
+          }
+          patchNodeGraphOverride(nodeId, override);
         }
-        patchNodeGraphOverride(nodeId, override);
+        return result;
+      } catch (err) {
+        const isStale =
+          CombinedGraphQLErrors.is(err) &&
+          err.errors.some((e) => e.extensions?.code === 'stale_version');
+        if (isStale) {
+          staleVersionNotificationVar(true);
+          // Refresh the token so the user's next edit — on a fresh page or
+          // after dismissing — doesn't hit the stale-check again.
+          void client.refetchQueries({ include: ['EditorPublishState'] });
+        }
+        throw err;
       }
-      return result;
     },
-    [instance.id, mutate]
+    [instance.id, mutate, client]
   );
 }
 

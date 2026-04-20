@@ -345,7 +345,7 @@ export type ModelEditorLandingDataQuery = (
       { id: string, name: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
@@ -660,7 +660,7 @@ export type NodeGraphQuery = (
         ) }
         & { __typename: 'GraphLayout' }
       ), edges: Array<(
-        { id: string, fromRef: (
+        { id: string, tags: Array<string>, fromRef: (
           { nodeId: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), toRef: (
@@ -887,7 +887,7 @@ export type EditorNodeFieldsFragment =
 ;
 
 export type EditorNodeEdgeFragment = (
-  { id: string, fromRef: (
+  { id: string, tags: Array<string>, fromRef: (
     { nodeId: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), toRef: (
@@ -1377,7 +1377,7 @@ export type EditorOperationInfoFieldsFragment = (
 );
 
 export type InstanceEditorPublishStateFragment = (
-  { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+  { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
   & { __typename: 'InstanceEditor' }
 );
 
@@ -1387,7 +1387,7 @@ export type EditorPublishStateQueryVariables = Exact<{ [key: string]: never; }>;
 export type EditorPublishStateQuery = (
   { instance: (
     { id: string, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
@@ -1397,6 +1397,7 @@ export type EditorPublishStateQuery = (
 
 export type PublishModelInstanceMutationVariables = Exact<{
   instanceId: Scalars['ID']['input'];
+  version: InputMaybe<Scalars['UUID']['input']>;
 }>;
 
 
@@ -1405,7 +1406,7 @@ export type PublishModelInstanceMutation = (
     { publishModelInstance:
       | (
         { id: string, editor: (
-          { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+          { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
           & { __typename: 'InstanceEditor' }
         ) | null }
         & { __typename: 'InstanceType' }
@@ -1427,6 +1428,7 @@ export type UpdateNodeMutationVariables = Exact<{
   instanceId: Scalars['ID']['input'];
   nodeId: Scalars['ID']['input'];
   input: UpdateNodeInput;
+  version: InputMaybe<Scalars['UUID']['input']>;
 }>;
 
 

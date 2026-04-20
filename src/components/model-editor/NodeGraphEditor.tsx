@@ -47,6 +47,7 @@ import './NodeGraphEditor.css';
 import { clearLayoutCache, saveUserPosition } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
@@ -763,6 +764,8 @@ function applyOverride(
 export default function NodeGraphEditor() {
   const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
   const overrides = useReactiveVar(nodeGraphOverridesVar);
+  // Keeps draftHeadTokenVar current while the graph is open.
+  useEditorPublishState();
   const editor = data.instance.editor;
 
   const nodesWithOverrides = useMemo(() => {
