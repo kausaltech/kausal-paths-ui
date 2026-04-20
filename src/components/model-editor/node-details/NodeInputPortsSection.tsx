@@ -12,7 +12,13 @@ import {
   Typography,
 } from '@mui/material';
 
-import { Database, InfoSquare, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
+import {
+  BarChartLine,
+  Database,
+  InfoSquare,
+  PencilSquare,
+  X as XIcon,
+} from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -80,6 +86,7 @@ type NodeInputPortsSectionProps = {
   onSelectNode: (nodeId: string) => void;
   onHover: (nodeId: string | null) => void;
   onShowDataset?: (bindingId: string) => void;
+  onShowMetrics?: (nodeId: string, nodeName: string | null) => void;
 };
 
 export default function NodeInputPortsSection({
@@ -93,6 +100,7 @@ export default function NodeInputPortsSection({
   onSelectNode,
   onHover,
   onShowDataset,
+  onShowMetrics,
 }: NodeInputPortsSectionProps) {
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
@@ -120,6 +128,10 @@ export default function NodeInputPortsSection({
             b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
         );
         const hasConnections = connectedEdges.length > 0 || datasetBindings.length > 0;
+        const singleSourceNode =
+          connectedEdges.length === 1
+            ? (nodeMap.get(connectedEdges[0].fromRef.nodeId) ?? null)
+            : null;
 
         return (
           <Box key={port.id}>
@@ -213,6 +225,20 @@ export default function NodeInputPortsSection({
                   <PencilSquare size={12} />
                 </IconButton>
               </Tooltip>
+              {singleSourceNode && onShowMetrics && (
+                <Tooltip title="Show source node output data" placement="left">
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      onShowMetrics(singleSourceNode.id, singleSourceNode.name ?? null)
+                    }
+                    aria-label="Show source node output data"
+                    sx={{ p: 0.5, color: 'text.secondary' }}
+                  >
+                    <BarChartLine size={12} />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
           </Box>
         );

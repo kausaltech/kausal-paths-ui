@@ -63,7 +63,7 @@ export type NodeDetailsPanelProps = {
   actionGroups: readonly ActionGroupOption[];
   onClose: () => void;
   onSelectNode: (nodeId: string) => void;
-  onShowMetrics?: () => void;
+  onShowMetrics?: (nodeId: string, nodeName: string | null) => void;
   onShowDataset?: (bindingId: string) => void;
 };
 
@@ -274,6 +274,7 @@ export default function NodeDetailsPanel({
         onSelectNode={handleNavigateToNode}
         onHover={handleHover}
         onShowDataset={onShowDataset}
+        onShowMetrics={onShowMetrics}
       />
 
       <CollapsibleSection
@@ -310,7 +311,7 @@ export default function NodeDetailsPanel({
           label="Show node data"
           title="show node data"
           variant="outlined"
-          onClick={onShowMetrics}
+          onClick={() => onShowMetrics?.(node.id, node.name ?? null)}
           sx={{
             maxWidth: '100%',
             cursor: 'pointer',

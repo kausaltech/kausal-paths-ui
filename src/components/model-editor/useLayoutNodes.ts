@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { type Edge, useNodesInitialized, useReactFlow } from '@xyflow/react';
 import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
 
-import { type ElkNodeType } from './ElkNode';
+import { type ElkNodeType, type HandleData } from './ElkNode';
 import { loadLayoutCache, saveAutoPositions } from './layoutCache';
 import { computeLayoutMetrics, formatMetrics } from './layoutMetrics';
 
@@ -54,7 +54,11 @@ async function getElkLayoutedNodes(nodes: ElkNodeType[], edges: Edge[]): Promise
         width: w,
         height: h,
         properties: {
-          'org.eclipse.elk.portConstraints': 'FIXED_ORDER',
+          // FIXED_SIDE lets ELK reorder ports within each side to minimize
+          // crossings during node placement; our post-layout port-order pass
+          // (see `assignPortTops`) then re-sorts render positions by the
+          // final source/target Y coordinates for a clean visual.
+          'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
         },
         ports: [...targetPorts, ...sourcePorts],
       };
@@ -81,6 +85,58 @@ async function getElkLayoutedNodes(nodes: ElkNodeType[], edges: Edge[]): Promise
         y: laid?.y ?? 0,
       },
     };
+  });
+}
+
+/**
+ * Reorder each node's target/source handles by the Y of their connected peers
+ * and push the resulting `top` into `HandleData`. Works post-layout (once
+ * node positions are known) so it applies whether positions came from ELK or
+ * the localStorage cache.
+ *
+ * Ports with no edges keep their original relative order and sit below the
+ * connected ones.
+ */
+function assignPortTops(nodes: ElkNodeType[], edges: Edge[]): ElkNodeType[] {
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+
+  const sortAndAssign = (
+    handles: readonly HandleData[],
+    getPeerYs: (handleId: string) => number[]
+  ): HandleData[] => {
+    const n = handles.length;
+    if (n === 0) return [];
+    type Sortable = { handle: HandleData; sortKey: number; originalIndex: number };
+    const withKeys: Sortable[] = handles.map((handle, originalIndex) => {
+      const ys = getPeerYs(handle.id);
+      const sortKey =
+        ys.length === 0 ? Number.POSITIVE_INFINITY : ys.reduce((a, b) => a + b, 0) / ys.length;
+      return { handle, sortKey, originalIndex };
+    });
+    withKeys.sort((a, b) => {
+      if (a.sortKey !== b.sortKey) return a.sortKey - b.sortKey;
+      return a.originalIndex - b.originalIndex;
+    });
+    return withKeys.map(({ handle }, i) => ({
+      ...handle,
+      top: n > 1 ? `${((i + 1) / (n + 1)) * 100}%` : '50%',
+    }));
+  };
+
+  return nodes.map((node) => {
+    const targetHandles = sortAndAssign(node.data.targetHandles, (handleId) =>
+      edges
+        .filter((e) => e.target === node.id && e.targetHandle === handleId)
+        .map((e) => nodeById.get(e.source)?.position.y)
+        .filter((y): y is number => y != null)
+    );
+    const sourceHandles = sortAndAssign(node.data.sourceHandles, (handleId) =>
+      edges
+        .filter((e) => e.source === node.id && e.sourceHandle === handleId)
+        .map((e) => nodeById.get(e.target)?.position.y)
+        .filter((y): y is number => y != null)
+    );
+    return { ...node, data: { ...node.data, targetHandles, sourceHandles } };
   });
 }
 
@@ -139,11 +195,14 @@ export default function useLayoutNodes(
 
     const finishWith = (laidOut: ElkNodeType[]) => {
       if (cancelled) return;
+      // Sort each node's handles by the Y of their connected peers so edges
+      // line up with the source/target vertical order, minimising crossings.
+      const withPorts = assignPortTops(laidOut, edges);
       // Preserve selection flag from live RF state — replacing nodes wholesale
       // would otherwise drop it and close the details panel.
       setNodes((prev) => {
         const selectedIds = new Set(prev.filter((n) => n.selected).map((n) => n.id));
-        return laidOut.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
+        return withPorts.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
       });
       requestAnimationFrame(() => {
         if (cancelled) return;
@@ -151,7 +210,7 @@ export default function useLayoutNodes(
           fitView();
         }
         setAppliedNodes(sourceNodes);
-        const metrics = computeLayoutMetrics(laidOut, edges);
+        const metrics = computeLayoutMetrics(withPorts, edges);
         console.log(formatMetrics(metrics));
       });
     };

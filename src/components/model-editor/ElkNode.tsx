@@ -262,6 +262,12 @@ export type HandleData = {
   multi?: boolean;
   datasets?: DatasetRef[];
   hiddenSources?: HiddenContextRef[];
+  /**
+   * CSS `top` for the handle, set by the layout pass after edges are known
+   * so ports line up with their neighbours and avoid edge crossings. Falls
+   * back to an even-spacing index-based position when absent.
+   */
+  top?: string;
 };
 
 export type QuantityKindData = { icon?: string | null; id: string; label: string };
@@ -297,7 +303,8 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   return (
     <>
       {data.targetHandles.map((handle, i) => {
-        const top = targetCount > 1 ? `${((i + 1) / (targetCount + 1)) * 100}%` : '50%';
+        const top =
+          handle.top ?? (targetCount > 1 ? `${((i + 1) / (targetCount + 1)) * 100}%` : '50%');
         return (
           <Fragment key={handle.id}>
             <Handle
@@ -450,19 +457,19 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
           }}
         />
       )}
-      {data.sourceHandles.map((handle, i) => (
-        <Handle
-          key={handle.id}
-          id={handle.id}
-          type="source"
-          position={Position.Right}
-          style={
-            sourceCount > 1
-              ? { top: `${((i + 1) / (sourceCount + 1)) * 100}%`, position: 'absolute' }
-              : undefined
-          }
-        />
-      ))}
+      {data.sourceHandles.map((handle, i) => {
+        const top =
+          handle.top ?? (sourceCount > 1 ? `${((i + 1) / (sourceCount + 1)) * 100}%` : '50%');
+        return (
+          <Handle
+            key={handle.id}
+            id={handle.id}
+            type="source"
+            position={Position.Right}
+            style={sourceCount > 1 ? { top, position: 'absolute' } : undefined}
+          />
+        );
+      })}
     </>
   );
 };

@@ -398,7 +398,9 @@ function FlowEditor(props: {
     null
   );
   const [overlay, setOverlay] = useState<
-    { kind: 'metrics' } | { kind: 'dataset'; bindingId: string } | null
+    | { kind: 'metrics'; nodeId: string; nodeName: string | null }
+    | { kind: 'dataset'; bindingId: string }
+    | null
   >(null);
   const overlayOpen = overlay !== null;
 
@@ -702,14 +704,16 @@ function FlowEditor(props: {
                 actionGroups={props.actionGroups}
                 onClose={() => setSelectedNodeId(null)}
                 onSelectNode={setSelectedNodeId}
-                onShowMetrics={() => setOverlay({ kind: 'metrics' })}
+                onShowMetrics={(nodeId, nodeName) =>
+                  setOverlay({ kind: 'metrics', nodeId, nodeName })
+                }
                 onShowDataset={(bindingId) => setOverlay({ kind: 'dataset', bindingId })}
               />
             </Drawer>
             <MetricsDrawer
-              nodeId={selectedNode?.id ?? null}
-              nodeName={selectedNode?.name ?? null}
-              open={overlay?.kind === 'metrics' && !!selectedNode}
+              nodeId={overlay?.kind === 'metrics' ? overlay.nodeId : null}
+              nodeName={overlay?.kind === 'metrics' ? overlay.nodeName : null}
+              open={overlay?.kind === 'metrics'}
               onClose={() => setOverlay(null)}
               width={OVERLAY_DRAWER_WIDTH}
             />
