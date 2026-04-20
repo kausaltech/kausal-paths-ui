@@ -104,6 +104,9 @@ type DataPoint = Dataset['dataPoints'][number];
 
 const METRIC_COL = 'col_metric';
 const ACTIONS_COL = 'col_actions';
+// Row-level delete is hidden for now — editing happens through cell commits.
+// Flip to re-enable the trash column + row delete button.
+const SHOW_ACTIONS_COLUMN = false;
 const dimColId = (dimensionId: string) => `col_dim_${dimensionId}`;
 const yearColId = (year: number) => `col_year_${year}`;
 const pendingKey = (rowId: string, colId: string) => `${rowId}|${colId}`;
@@ -121,7 +124,10 @@ function rowKey(metricId: string, categoryByDim: Record<string, string | null>):
   return [metricId, ...parts].join('|');
 }
 
-function buildGridData(dataset: Dataset): {
+function buildGridData(
+  dataset: Dataset,
+  extraYears: ReadonlySet<number>
+): {
   rows: GridRow[];
   years: number[];
 } {
@@ -184,6 +190,9 @@ function buildGridData(dataset: Dataset): {
     }
   }
 
+  // User-added empty year columns are merged in so they render alongside
+  // data-derived years, sorted together.
+  for (const y of extraYears) yearSet.add(y);
   const sortedYears = [...yearSet].sort((a, b) => a - b);
   for (const row of rowsByKey.values()) {
     for (const year of sortedYears) {
@@ -212,6 +221,8 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
+  const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
+  const [addYearOpen, setAddYearOpen] = useState(false);
   // Ref mirror so long-lived AG Grid column callbacks (valueGetter, cellStyle,
   // tooltipValueGetter) always see the latest pending state without forcing
   // columnDefs to rebuild — a rebuild resets user-adjusted column widths.
@@ -234,7 +245,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
     partial as unknown as UpdateInput;
 
-  const { rows, years } = useMemo(() => buildGridData(dataset), [dataset]);
+  const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
   const handleRowDelete = useCallback(
@@ -272,32 +283,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   );
 
   const columnDefs = useMemo<ColDef<GridRow>[]>(() => {
-    const cols: ColDef<GridRow>[] = [
-      {
-        colId: METRIC_COL,
-        headerName: 'Metric',
-        width: 180,
-        pinned: 'left',
-        valueGetter: (p) => {
-          const c = p.data?.cells[METRIC_COL];
-          return c?.type === 'MetricHeader' ? c.label : '';
-        },
-        cellRenderer: (p: ICellRendererParams<GridRow>) => {
-          const c = p.data?.cells[METRIC_COL];
-          if (c?.type !== 'MetricHeader') return null;
-          return (
-            <Box sx={{ lineHeight: 1.1, py: 0.25 }}>
-              <Typography sx={{ fontSize: 12, fontWeight: 500 }}>{c.label}</Typography>
-              {c.unit && (
-                <Typography sx={{ fontSize: 10 }} color="text.secondary">
-                  {c.unit}
-                </Typography>
-              )}
-            </Box>
-          );
-        },
-      },
-    ];
+    const cols: ColDef<GridRow>[] = [];
     for (const dim of dataset.dimensions) {
       cols.push({
         colId: dimColId(dim.id),
@@ -310,6 +296,42 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         },
       });
     }
+    // Metric sits *last* in the pinned block so the number column flows
+    // directly into its year cells without a dimension-break in between.
+    cols.push({
+      colId: METRIC_COL,
+      headerName: 'Metric',
+      width: 180,
+      pinned: 'left',
+      valueGetter: (p) => {
+        const c = p.data?.cells[METRIC_COL];
+        return c?.type === 'MetricHeader' ? c.label : '';
+      },
+      cellRenderer: (p: ICellRendererParams<GridRow>) => {
+        const c = p.data?.cells[METRIC_COL];
+        if (c?.type !== 'MetricHeader') return null;
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              lineHeight: 1.2,
+              height: '100%',
+            }}
+          >
+            <Typography sx={{ fontSize: 11, fontWeight: 500, lineHeight: 1.2 }}>
+              {c.label}
+            </Typography>
+            {c.unit && (
+              <Typography sx={{ fontSize: 10, lineHeight: 1.2 }} color="text.secondary">
+                {c.unit}
+              </Typography>
+            )}
+          </Box>
+        );
+      },
+    });
     for (const year of years) {
       const colId = yearColId(year);
       cols.push({
@@ -388,29 +410,31 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         },
       });
     }
-    cols.push({
-      colId: ACTIONS_COL,
-      headerName: '',
-      width: 60,
-      pinned: 'right',
-      lockPinned: true,
-      resizable: false,
-      sortable: false,
-      filter: false,
-      editable: false,
-      cellRenderer: (p: ICellRendererParams<GridRow>) => (
-        <Tooltip title="Delete all values in this row">
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (p.data) void handleRowDelete(p.data);
-            }}
-          >
-            <Trash />
-          </IconButton>
-        </Tooltip>
-      ),
-    });
+    if (SHOW_ACTIONS_COLUMN) {
+      cols.push({
+        colId: ACTIONS_COL,
+        headerName: '',
+        width: 60,
+        pinned: 'right',
+        lockPinned: true,
+        resizable: false,
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellRenderer: (p: ICellRendererParams<GridRow>) => (
+          <Tooltip title="Delete all values in this row">
+            <IconButton
+              size="small"
+              onClick={() => {
+                if (p.data) void handleRowDelete(p.data);
+              }}
+            >
+              <Trash />
+            </IconButton>
+          </Tooltip>
+        ),
+      });
+    }
     return cols;
   }, [dataset.dimensions, years, handleRowDelete]);
 
@@ -580,14 +604,52 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   // user-adjusted column widths.
   const defaultColDef = useMemo<ColDef<GridRow>>(() => ({ resizable: true, sortable: true }), []);
   const getRowId = useCallback((p: { data: GridRow }) => p.data.id, []);
-  const handleGridReady = useCallback((event: GridReadyEvent<GridRow>) => {
-    gridApiRef.current = event.api;
-  }, []);
+
+  // Keep the pinned-left columns (dimensions + Metric) from starving the
+  // scrolling year columns. Runs after layout so we can read the grid's
+  // actual rendered width. User-driven resizes via `onColumnResized` still
+  // win — we only shrink automatically when the cap is breached.
+  const MAX_PINNED_FRACTION = 0.75;
+  const capPinnedWidths = useCallback(() => {
+    const api = gridApiRef.current;
+    if (!api) return;
+    const rootEl = document.querySelector<HTMLElement>('.ag-root-wrapper');
+    const gridWidth = rootEl?.clientWidth ?? 0;
+    if (gridWidth <= 0) return;
+    const cap = gridWidth * MAX_PINNED_FRACTION;
+    const pinnedIds: string[] = [...dataset.dimensions.map((d) => dimColId(d.id)), METRIC_COL];
+    const widths = pinnedIds.map((id) => api.getColumn(id)?.getActualWidth() ?? 0);
+    const total = widths.reduce((a, b) => a + b, 0);
+    if (total <= cap || total === 0) return;
+    const scale = cap / total;
+    const updates = pinnedIds
+      .map((key, i) => ({ key, newWidth: Math.max(40, Math.floor(widths[i] * scale)) }))
+      .filter(({ newWidth }, i) => newWidth !== widths[i]);
+    if (updates.length > 0) api.setColumnWidths(updates);
+  }, [dataset.dimensions]);
+
+  const handleGridReady = useCallback(
+    (event: GridReadyEvent<GridRow>) => {
+      gridApiRef.current = event.api;
+      // Defer one frame so the wrapper has laid out its width.
+      requestAnimationFrame(capPinnedWidths);
+    },
+    [capPinnedWidths]
+  );
   const handleColumnResized = useCallback((event: { finished: boolean }) => {
     if (event.finished && gridApiRef.current) {
       columnStateRef.current = gridApiRef.current.getColumnState();
     }
   }, []);
+  const handleGridSizeChanged = useCallback(() => {
+    capPinnedWidths();
+  }, [capPinnedWidths]);
+
+  // Re-apply cap when the set of pinned columns changes (dimensions added,
+  // etc.) — columnDefs rebuild triggers AG Grid to restore its default widths.
+  useEffect(() => {
+    capPinnedWidths();
+  }, [capPinnedWidths, columnDefs]);
 
   const pendingCount = pendingEdits.size;
   const hasPending = pendingCount > 0;
@@ -622,6 +684,9 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         >
           {saving ? 'Saving…' : 'Save changes'}
         </Button>
+        <Button size="small" startIcon={<Plus />} onClick={() => setAddYearOpen(true)}>
+          Add year
+        </Button>
         <Button
           size="small"
           startIcon={<Plus />}
@@ -640,7 +705,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           // padding, and font size. Scoped via className so the spacious
           // default still applies elsewhere.
           '--ag-grid-size': '3px',
-          '--ag-font-size': '12px',
+          '--ag-font-size': '11px',
           '--ag-cell-horizontal-padding': '4px',
           // Cell/header padding — AG Grid's compiled CSS (`.ag-ltr .ag-cell`)
           // ships in the same specificity band as our sx class and is loaded
@@ -655,7 +720,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
             paddingLeft: '4px !important',
             paddingRight: '4px !important',
           },
-          '& .ag-header-cell-label': { fontSize: 12 },
+          '& .ag-header-cell-label': { fontSize: 11 },
           '& .ag-cell.dsg-cell-dirty': {
             backgroundColor: 'rgba(237, 108, 2, 0.12)',
             borderLeft: '3px solid #ed6c02',
@@ -671,10 +736,11 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           onGridReady={handleGridReady}
+          onGridSizeChanged={handleGridSizeChanged}
           onColumnResized={handleColumnResized}
           onCellValueChanged={handleCellChange}
           getRowId={getRowId}
-          rowHeight={28}
+          rowHeight={38}
           headerHeight={32}
           singleClickEdit
           stopEditingWhenCellsLoseFocus
@@ -696,6 +762,19 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           }
           onMutated();
           return true;
+        }}
+      />
+      <AddYearDialog
+        open={addYearOpen}
+        existingYears={years}
+        onClose={() => setAddYearOpen(false)}
+        onAdd={(year) => {
+          setExtraYears((prev) => {
+            if (prev.has(year) || years.includes(year)) return prev;
+            const next = new Set(prev);
+            next.add(year);
+            return next;
+          });
         }}
       />
       <Snackbar
@@ -833,6 +912,79 @@ function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps
           }}
         >
           {submitting ? 'Adding…' : 'Add'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+const MIN_YEAR = 1900;
+const MAX_YEAR = 2100;
+
+type AddYearDialogProps = {
+  open: boolean;
+  existingYears: readonly number[];
+  onClose: () => void;
+  onAdd: (year: number) => void;
+};
+
+function AddYearDialog({ open, existingYears, onClose, onAdd }: AddYearDialogProps) {
+  const suggested = useMemo(() => {
+    if (existingYears.length > 0) return existingYears[existingYears.length - 1] + 1;
+    return new Date().getFullYear();
+  }, [existingYears]);
+  const [input, setInput] = useState(String(suggested));
+  // Adjust-state-during-render: reset the field to the freshly-suggested year
+  // each time the dialog opens, rather than via an effect (which would
+  // cascade a render).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) setInput(String(suggested));
+  }
+  const parsed = Number(input);
+  const duplicate = Number.isFinite(parsed) && existingYears.includes(parsed);
+  const outOfRange = !Number.isFinite(parsed) || parsed < MIN_YEAR || parsed > MAX_YEAR;
+  const invalid = outOfRange || duplicate;
+  const helperText = outOfRange
+    ? `Year must be between ${MIN_YEAR} and ${MAX_YEAR}.`
+    : duplicate
+      ? 'This year column already exists.'
+      : undefined;
+
+  const submit = () => {
+    if (invalid) return;
+    onAdd(parsed);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>Add year</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          label="Year"
+          type="number"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          error={input !== '' && invalid}
+          helperText={input !== '' ? helperText : undefined}
+          fullWidth
+          sx={{ mt: 1 }}
+          slotProps={{ htmlInput: { min: MIN_YEAR, max: MAX_YEAR, step: 1 } }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" disabled={invalid} onClick={submit}>
+          Add
         </Button>
       </DialogActions>
     </Dialog>
