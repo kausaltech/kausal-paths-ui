@@ -3,7 +3,7 @@ import { getAccountCookie } from 'better-auth/cookies';
 import { nextCookies } from 'better-auth/next-js';
 import { customSession, genericOAuth } from 'better-auth/plugins';
 
-import { getAuthIssuer, getWildcardDomains, isLocalDev } from '@common/env';
+import { getAuthIssuer, getDeploymentType, getWildcardDomains, isLocalDev } from '@common/env';
 
 import { KAUSAL_PROVIDER_ID } from './auth-const';
 
@@ -14,7 +14,7 @@ function getAllowedHosts(): string[] {
   // become patterns like "*.localhost:*" for better-auth's host matching.
   for (const domain of getWildcardDomains()) {
     hosts.push(`*.${domain}`);
-    if (isLocalDev) {
+    if (isLocalDev || getDeploymentType() == 'ci') {
       hosts.push(`*.${domain}:*`);
     }
   }
