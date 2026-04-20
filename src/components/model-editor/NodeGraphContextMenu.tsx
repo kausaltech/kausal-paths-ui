@@ -2,6 +2,8 @@ import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/materi
 
 import { Copy, EyeSlash, Magic, Trash } from 'react-bootstrap-icons';
 
+import { useIsEditorReadOnly } from './useIsEditorReadOnly';
+
 export type ContextMenuState =
   | ({
       mouseX: number;
@@ -26,6 +28,8 @@ export default function NodeGraphContextMenu({
   onDuplicateAction,
   onDeleteNode,
 }: Props) {
+  const readOnly = useIsEditorReadOnly();
+
   const handleHideEdge = () => {
     if (state?.kind !== 'edge') return;
     onHideEdge(state.edgeId);
@@ -66,7 +70,8 @@ export default function NodeGraphContextMenu({
           <ListItemText>Hide edge</ListItemText>
         </MenuItem>
       )}
-      {state?.kind === 'node' &&
+      {!readOnly &&
+        state?.kind === 'node' &&
         state.isAction && [
           <MenuItem key="duplicate" onClick={handleDuplicateAction}>
             <ListItemIcon>
@@ -82,12 +87,24 @@ export default function NodeGraphContextMenu({
           </MenuItem>,
           <Divider key="divider" />,
         ]}
-      {state?.kind === 'node' && (
+      {!readOnly && state?.kind === 'node' && (
         <MenuItem onClick={handleDeleteNode} sx={{ color: 'error.main' }}>
           <ListItemIcon sx={{ color: 'inherit' }}>
             <Trash size={14} />
           </ListItemIcon>
           <ListItemText>Delete node</ListItemText>
+        </MenuItem>
+      )}
+      {readOnly && state?.kind === 'node' && (
+        <MenuItem disabled>
+          <ListItemText
+            primary="Read-only"
+            secondary="Switch to Draft to edit."
+            slotProps={{
+              primary: { sx: { fontSize: 12 } },
+              secondary: { sx: { fontSize: 11 } },
+            }}
+          />
         </MenuItem>
       )}
     </Menu>

@@ -33,8 +33,12 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
   outputPorts: OutputPortInput[];
 } {
   const spec = source.editor?.spec;
+  // Explicit UUIDs per port — the backend's deterministic fallback keys on
+  // (identifier, direction, label|quantity|index), which collides whenever
+  // two ports share a label. React then sees duplicate keys in the port
+  // lists on the new node.
   const inputPorts: InputPortInput[] = (spec?.inputPorts ?? []).map((port) => ({
-    id: null,
+    id: crypto.randomUUID(),
     label: port.label ?? null,
     multi: port.multi,
     quantity: port.quantity ?? null,
@@ -43,7 +47,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     supportedDimensions: [...port.supportedDimensions],
   }));
   const outputPorts: OutputPortInput[] = (spec?.outputPorts ?? []).map((port) => ({
-    id: null,
+    id: crypto.randomUUID(),
     columnId: port.columnId ?? null,
     label: port.label ?? null,
     quantity: port.quantity ?? null,

@@ -36,6 +36,7 @@ import {
   patchNodeGraphOverride,
   staleVersionNotificationVar,
 } from './queries';
+import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 
 const metaChipSx = {
   height: 20,
@@ -545,14 +546,28 @@ export default function NodeDetailsSection({
   actionGroupOptions,
 }: NodeDetailsSectionProps) {
   const updateNode = useUpdateNodeMutation();
+  const readOnly = useIsEditorReadOnly();
 
   const originalIsOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   const supportsOutcome = node.__typename === 'Node';
   const isActionNode = node.__typename === 'ActionNode';
   const originalActionGroupId = node.__typename === 'ActionNode' ? (node.group?.id ?? null) : null;
 
-  return (
-    <>
+  // `fieldset disabled` propagates disabled state to every native form control
+  // inside, so MUI TextField / Switch / Autocomplete / color input all go
+  // read-only without per-component plumbing.
+  const body = (
+    <Box
+      component="fieldset"
+      disabled={readOnly}
+      sx={{
+        border: 0,
+        p: 0,
+        m: 0,
+        minWidth: 0,
+        display: 'contents',
+      }}
+    >
       <LiveTextField
         key={`name:${node.id}`}
         label="Name"
@@ -685,6 +700,18 @@ export default function NodeDetailsSection({
           </Button>
         </NodeLink>
       </Box>
-    </>
+    </Box>
+  );
+
+  if (!readOnly) return body;
+  return (
+    <Tooltip
+      title="Read-only: you're viewing the published revision. Switch to Draft mode to edit."
+      placement="left"
+      arrow
+      followCursor
+    >
+      {body}
+    </Tooltip>
   );
 }

@@ -33,6 +33,18 @@ export function patchNodeGraphOverride(nodeId: string, patch: NodeFieldOverrides
 export const draftHeadTokenVar = makeVar<string | null>(null);
 
 /**
+ * Which slice the editor is viewing. DRAFT is the editor's working copy;
+ * PUBLISHED is whatever is currently live (read-only preview). The Apollo
+ * link reads this on every operation — toggling re-runs any refetched query
+ * against the new slice.
+ *
+ * Only consulted on `/model-editor/*` routes; non-editor surfaces stay on
+ * the backend default (published-first).
+ */
+export type EditorPreviewMode = 'DRAFT' | 'PUBLISHED';
+export const editorPreviewModeVar = makeVar<EditorPreviewMode>('DRAFT');
+
+/**
  * Set to true when a mutation is rejected with a `stale_version` error —
  * another tab (or user) has edited this instance since we last read the
  * token. A top-level `StaleVersionNotice` snackbar subscribes and prompts

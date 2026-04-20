@@ -49,6 +49,7 @@ import {
   INSTANCE_EDITOR_PUBLISH_STATE,
   PUBLISH_MODEL_INSTANCE,
   draftHeadTokenVar,
+  editorPreviewModeVar,
   staleVersionNotificationVar,
 } from '@/components/model-editor/queries';
 import { useSession } from '@/lib/auth-client';
@@ -146,12 +147,25 @@ function formatDateTime(iso: string | null | undefined): string | null {
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+function formatRelative(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const deltaSec = Math.round((Date.now() - d.getTime()) / 1000);
+  if (deltaSec < 60) return 'just now';
+  if (deltaSec < 3600) return `${Math.round(deltaSec / 60)} min ago`;
+  if (deltaSec < 86400) return `${Math.round(deltaSec / 3600)} h ago`;
+  if (deltaSec < 2592000) return `${Math.round(deltaSec / 86400)} d ago`;
+  return null;
+}
+
 export default function ModelEditorLandingPage() {
   const router = useRouter();
   const pathname = usePathname();
   const instance = useInstance();
   const { data: session, isPending } = useSession();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const previewMode = useReactiveVar(editorPreviewModeVar);
 
   const { data } = useQuery<LandingDataQuery>(GET_LANDING_DATA, {
     fetchPolicy: 'cache-and-network',
@@ -217,7 +231,35 @@ export default function ModelEditorLandingPage() {
   const hasUnpublishedChanges = editor?.hasUnpublishedChanges ?? false;
   const hasMockEdits = editedRows.length > 0;
   const lastPublishedLabel = formatDateTime(editor?.lastPublishedAt);
-  const indicatorColor = hasUnpublishedChanges ? 'warning.main' : 'success.main';
+  const lastPublishedRelative = formatRelative(editor?.lastPublishedAt);
+  const firstPublishedLabel = formatDateTime(editor?.firstPublishedAt);
+  const hasBeenPublished = editor?.firstPublishedAt != null;
+  const isDraftView = previewMode === 'DRAFT';
+  const badgeLabel = isDraftView ? 'Draft' : 'Published';
+  const badgeColor: 'warning' | 'success' = isDraftView ? 'warning' : 'success';
+  const indicatorColor = isDraftView
+    ? hasUnpublishedChanges
+      ? 'warning.main'
+      : 'success.main'
+    : 'success.main';
+  const statusHeading = isDraftView
+    ? hasUnpublishedChanges
+      ? 'Draft · unpublished changes'
+      : hasBeenPublished
+        ? 'Draft · up to date with published'
+        : 'Draft · never published'
+    : hasBeenPublished
+      ? 'Viewing published revision'
+      : 'Viewing draft (no published revision yet)';
+  const statusDescription = isDraftView
+    ? hasUnpublishedChanges
+      ? 'Edits to this model have not been published yet.'
+      : hasBeenPublished
+        ? 'The draft has no changes over the published revision.'
+        : 'This model has never been published. Public readers see the draft as a bootstrap.'
+    : hasBeenPublished
+      ? 'Read-only preview of the live revision. Switch to Draft to edit.'
+      : 'No published revision exists yet — showing the draft.';
 
   const handlePublish = async () => {
     try {
@@ -290,37 +332,48 @@ export default function ModelEditorLandingPage() {
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'space-between',
             gap: 2,
-            mb: hasUnpublishedChanges ? 2 : 0,
+            mb: hasUnpublishedChanges || !hasBeenPublished ? 2 : 0,
           }}
         >
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
               <Box sx={{ display: 'flex', color: indicatorColor }}>
                 <CircleFill size={12} />
               </Box>
-              <Typography variant="h3">
-                {hasUnpublishedChanges ? 'Unpublished changes' : 'Published'}
-              </Typography>
+              <Typography variant="h3">{statusHeading}</Typography>
+              <Chip
+                label={badgeLabel}
+                size="small"
+                color={badgeColor}
+                variant="outlined"
+                sx={{ ml: 0.5, height: 20, fontSize: 10, fontWeight: 600 }}
+              />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {hasUnpublishedChanges
-                ? 'Edits to this model have not been published yet.'
-                : 'The published model matches the current state.'}
+              {statusDescription}
             </Typography>
-            {lastPublishedLabel && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'block', mt: 0.5 }}
-              >
-                Last published {lastPublishedLabel}
-              </Typography>
-            )}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, mt: 1 }}>
+              {lastPublishedLabel ? (
+                <Typography variant="caption" color="text.secondary">
+                  Last published {lastPublishedLabel}
+                  {lastPublishedRelative ? ` (${lastPublishedRelative})` : ''}
+                </Typography>
+              ) : (
+                <Typography variant="caption" color="text.secondary">
+                  Never published
+                </Typography>
+              )}
+              {firstPublishedLabel && firstPublishedLabel !== lastPublishedLabel && (
+                <Typography variant="caption" color="text.secondary">
+                  First published {firstPublishedLabel}
+                </Typography>
+              )}
+            </Box>
           </Box>
-          {hasUnpublishedChanges && (
+          {isDraftView && (hasUnpublishedChanges || !hasBeenPublished) && (
             <Button
               variant="contained"
               color="primary"
@@ -331,7 +384,7 @@ export default function ModelEditorLandingPage() {
                 void handlePublish();
               }}
             >
-              {publishing ? 'Publishing…' : 'Publish'}
+              {publishing ? 'Publishing…' : hasBeenPublished ? 'Publish' : 'Publish first revision'}
             </Button>
           )}
         </Box>
