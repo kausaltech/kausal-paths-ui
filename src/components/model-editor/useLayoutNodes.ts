@@ -170,7 +170,21 @@ export default function useLayoutNodes(
   const { getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
   const lastSourceNodesRef = useRef<readonly ElkNodeType[] | null>(null);
   const lastResetTriggerRef = useRef(-1);
+  // Supersession refs — let async callbacks detect whether a newer layout
+  // request has arrived without relying on effect cleanup (cleanup would
+  // also fire on the transient `nodesInitialized` flip that `setNodes`
+  // inside `finishWith` itself causes, cancelling the rAF that sets
+  // `appliedNodes`).
+  const latestSourceNodesRef = useRef(sourceNodes);
+  const latestResetTriggerRef = useRef(resetTrigger);
   const [appliedNodes, setAppliedNodes] = useState<readonly ElkNodeType[] | null>(null);
+
+  useEffect(() => {
+    latestSourceNodesRef.current = sourceNodes;
+  }, [sourceNodes]);
+  useEffect(() => {
+    latestResetTriggerRef.current = resetTrigger;
+  }, [resetTrigger]);
 
   useEffect(() => {
     if (!nodesInitialized) return;
@@ -183,18 +197,21 @@ export default function useLayoutNodes(
     lastSourceNodesRef.current = sourceNodes;
     lastResetTriggerRef.current = resetTrigger;
 
+    const isCurrent = () =>
+      latestSourceNodesRef.current === sourceNodes &&
+      latestResetTriggerRef.current === resetTrigger;
+
     // Reading nodes from sourceNodes instead of RF's `getNodes()` — the latter
     // can lag by a frame when the previous `setNodes(layoutedNodes)` hasn't
     // been reconciled yet, causing stale `data` (e.g. out-of-date node names).
     const nodes = sourceNodes as ElkNodeType[];
     const edges = getEdges();
-    let cancelled = false;
 
     const cache = loadLayoutCache(instanceId);
     const missing = nodes.filter((n) => !(n.id in cache));
 
     const finishWith = (laidOut: ElkNodeType[]) => {
-      if (cancelled) return;
+      if (!isCurrent()) return;
       // Sort each node's handles by the Y of their connected peers so edges
       // line up with the source/target vertical order, minimising crossings.
       const withPorts = assignPortTops(laidOut, edges);
@@ -205,7 +222,7 @@ export default function useLayoutNodes(
         return withPorts.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
       });
       requestAnimationFrame(() => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         if (!skipFitView) {
           fitView();
         }
@@ -221,14 +238,12 @@ export default function useLayoutNodes(
         return cached ? { ...node, position: { x: cached.x, y: cached.y } } : node;
       });
       finishWith(fromCache);
-      return () => {
-        cancelled = true;
-      };
+      return;
     }
 
     getElkLayoutedNodes(nodes, edges).then(
       (layoutedNodes) => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         const merged = layoutedNodes.map((node) => {
           const cached = cache[node.id];
           if (cached?.source === 'user') {
@@ -246,10 +261,6 @@ export default function useLayoutNodes(
         console.error('ELK layout failed:', err);
       }
     );
-
-    return () => {
-      cancelled = true;
-    };
   }, [
     nodesInitialized,
     sourceNodes,

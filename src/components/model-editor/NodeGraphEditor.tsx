@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import {
   Alert,
@@ -417,10 +417,15 @@ function FlowEditor(props: {
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedNodeKey = searchParams.get('node');
-  const { setCenter, getNodes, getZoom } = useReactFlow();
+  const { fitView, getNodes } = useReactFlow();
   const handledNodeKeyRef = useRef<string | null>(null);
+  // Captured once so later URL changes (e.g. deselecting a node) don't
+  // re-toggle RF's built-in `fitView` prop and refit the whole graph.
+  const [initialFitView] = useState(() => requestedNodeKey === null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -545,13 +550,13 @@ function FlowEditor(props: {
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
   const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, resetCounter, {
-    skipFitView: requestedNodeKey !== null,
+    skipFitView: !initialFitView,
   });
   const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
 
   // Deep-link: /model-editor/nodes?node=<identifier> opens the panel on that
   // node and centers the graph on it. Waits for ELK layout to be *applied*
-  // (positions written back to React Flow) so `setCenter` reads real coords.
+  // (positions written back to React Flow) so `fitView` reads real coords.
   useEffect(() => {
     if (!requestedNodeKey) return;
     if (!isLayoutCurrent) return;
@@ -566,20 +571,39 @@ function FlowEditor(props: {
     const targetRfNode = rfNodes.find((n) => n.id === target.id);
     if (!targetRfNode) return;
 
-    const width = targetRfNode.measured?.width ?? targetRfNode.width ?? 0;
-    const height = targetRfNode.measured?.height ?? targetRfNode.height ?? 0;
-    const cx = targetRfNode.position.x + width / 2;
-    const cy = targetRfNode.position.y + height / 2;
-    // Readable-label threshold (ElkNode's zoomSelector shows content at >= 0.7).
-    // Use 0.8 for a small margin so the first paint is clearly legible.
-    const MIN_FOCUS_ZOOM = 0.8;
-    const focusZoom = Math.max(getZoom(), MIN_FOCUS_ZOOM);
-    void setCenter(cx, cy, { zoom: focusZoom, duration: 400 });
     handledNodeKeyRef.current = requestedNodeKey;
-    // Defer selection update to next frame so it runs outside the effect body,
-    // matching the pattern used in useLayoutNodes.
-    requestAnimationFrame(() => setSelectedNodeId(target.id));
-  }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, setCenter, getZoom]);
+    // Drive RF's own selection state; `onSelectionChange` fires with this
+    // node and updates `selectedNodeId`, which opens the details panel.
+    setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === target.id })));
+    // fitView with a single node centers and zooms on it natively.
+    void fitView({ nodes: [{ id: target.id }], maxZoom: 1.2, duration: 400, padding: 0.4 });
+  }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, fitView, setNodes]);
+
+  // Mirror the current selection back into the URL (`?node=<identifier>`) so
+  // the view is linkable/refreshable. Uses `router.replace` to avoid adding a
+  // history entry per click, and syncs `handledNodeKeyRef` so the deep-link
+  // effect above doesn't re-pan/re-zoom in response to our own URL update.
+  useEffect(() => {
+    const target = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
+    const nextKey = target?.identifier ?? target?.id ?? null;
+    if (nextKey === requestedNodeKey) return;
+    // On fresh load with `?node=xxx`, the deep-link effect hasn't populated
+    // selection yet. Don't strip the param in that window, or the target
+    // never gets focused.
+    if (
+      nextKey === null &&
+      requestedNodeKey !== null &&
+      handledNodeKeyRef.current !== requestedNodeKey
+    ) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextKey) params.set('node', nextKey);
+    else params.delete('node');
+    const query = params.toString();
+    handledNodeKeyRef.current = nextKey;
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [selectedNodeId, nodeMap, requestedNodeKey, searchParams, router, pathname]);
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
     if (selected.length !== 1) {
@@ -762,7 +786,7 @@ function FlowEditor(props: {
               nodeTypes={nodeTypes}
               minZoom={0.2}
               maxZoom={5}
-              fitView
+              fitView={initialFitView}
               fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
             >
               <Background color="#f0f0f0" />

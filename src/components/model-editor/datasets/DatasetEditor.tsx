@@ -27,7 +27,6 @@ import {
   Plus,
   Sliders,
   Trash,
-  X,
 } from 'react-bootstrap-icons';
 
 import type {
@@ -273,22 +272,18 @@ export default function DatasetEditor({ datasetId }: Props) {
           }}
         >
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="h6">{dataset.name}</Typography>
-              <Tooltip
-                title={
-                  connectedNodeCount === 0
-                    ? 'Not connected to any node'
-                    : `Connected to ${connectedNodeCount} node${connectedNodeCount === 1 ? '' : 's'}`
-                }
-              >
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={`${connectedNodeCount} node${connectedNodeCount === 1 ? '' : 's'}`}
-                />
-              </Tooltip>
-            </Stack>
+            <Box>
+              <Typography variant="h3">{dataset.name}</Typography>
+              {dataset.identifier && (
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ fontFamily: 'monospace' }}
+                >
+                  {dataset.identifier}
+                </Typography>
+              )}
+            </Box>
             <Button
               startIcon={<Sliders />}
               variant={detailsOpen ? 'contained' : 'text'}
@@ -324,16 +319,14 @@ export default function DatasetEditor({ datasetId }: Props) {
             width: DETAILS_WIDTH,
             boxSizing: 'border-box',
             height: '100vh',
+            boxShadow: (theme) => theme.shadows[4],
           },
         }}
       >
         <Box sx={{ p: 3, height: '100%', overflowY: 'auto' }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-            <Typography variant="h6">Dataset details</Typography>
-            <IconButton size="small" onClick={() => setDetailsOpen(false)}>
-              <X />
-            </IconButton>
-          </Stack>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Dataset details
+          </Typography>
 
           {/* Metadata */}
           <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
