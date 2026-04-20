@@ -3,7 +3,7 @@ import { getAccountCookie } from 'better-auth/cookies';
 import { nextCookies } from 'better-auth/next-js';
 import { customSession, genericOAuth } from 'better-auth/plugins';
 
-import { getAuthIssuer, getWildcardDomains } from '@common/env';
+import { getAuthIssuer, getWildcardDomains, isLocalDev } from '@common/env';
 
 import { KAUSAL_PROVIDER_ID } from './auth-const';
 
@@ -13,7 +13,10 @@ function getAllowedHosts(): string[] {
   // Wildcard domains (WILDCARD_DOMAINS env var, e.g. "localhost,paths.kausal.dev")
   // become patterns like "*.localhost:*" for better-auth's host matching.
   for (const domain of getWildcardDomains()) {
-    hosts.push(`*.${domain}:*`);
+    hosts.push(`*.${domain}`);
+    if (isLocalDev) {
+      hosts.push(`*.${domain}:*`);
+    }
   }
 
   // Single-instance hostnames (AUTH_ALLOWED_HOSTS env var) are passed through
