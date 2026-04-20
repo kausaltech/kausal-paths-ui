@@ -1,7 +1,15 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { Alert, Box, CircularProgress, Drawer, Snackbar } from '@mui/material';
+import {
+  Alert,
+  Backdrop,
+  Box,
+  CircularProgress,
+  Drawer,
+  Snackbar,
+  Typography,
+} from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
@@ -147,6 +155,7 @@ const GET_NODE_GRAPH = gql`
           unit {
             id
             short
+            standard
           }
           requiredDimensions
           supportedDimensions
@@ -173,9 +182,11 @@ const GET_NODE_GRAPH = gql`
           id
           label
           quantity
+          columnId
           unit {
             id
             short
+            standard
           }
           dimensions
         }
@@ -615,6 +626,11 @@ function FlowEditor(props: {
     { kind: 'success'; message: string } | { kind: 'error'; message: string } | null
   >(null);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  // Holds the new node's identifier between "mutation resolved" and
+  // "props.nodes contains the new node". Resetting the layout before the
+  // refetch lands leaves ELK laying out the old set with cached positions,
+  // which is exactly the mess we're trying to avoid.
+  const [pendingDuplicateIdentifier, setPendingDuplicateIdentifier] = useState<string | null>(null);
 
   const handleDuplicateAction = useCallback(
     (nodeId: string) => {
@@ -623,12 +639,13 @@ function FlowEditor(props: {
       if (isDuplicating) return;
       setIsDuplicating(true);
       duplicateAction(node, props.nodes)
-        .then((result) =>
+        .then((result) => {
+          setPendingDuplicateIdentifier(result.newIdentifier);
           setDuplicateFeedback({
             kind: 'success',
             message: `Duplicated "${node.name}" as "${result.newIdentifier}"`,
-          })
-        )
+          });
+        })
         .catch((err: unknown) =>
           setDuplicateFeedback({
             kind: 'error',
@@ -639,6 +656,18 @@ function FlowEditor(props: {
     },
     [duplicateAction, isDuplicating, nodeMap, props.nodes]
   );
+
+  // Adjust-state-during-render: once the refetched nodes contain the new
+  // identifier, trigger a layout reset in the same render. Using an effect
+  // would cascade renders; this runs exactly once when the node lands.
+  if (
+    pendingDuplicateIdentifier !== null &&
+    props.nodes.some((n) => n.identifier === pendingDuplicateIdentifier)
+  ) {
+    clearLayoutCache(instanceId);
+    setResetCounter((c) => c + 1);
+    setPendingDuplicateIdentifier(null);
+  }
 
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
@@ -782,6 +811,18 @@ function FlowEditor(props: {
           />
         </Suspense>
       )}
+      <Backdrop
+        open={isDuplicating}
+        sx={(theme) => ({
+          zIndex: theme.zIndex.modal + 1,
+          flexDirection: 'column',
+          gap: 2,
+          color: 'common.white',
+        })}
+      >
+        <CircularProgress color="inherit" />
+        <Typography variant="body2">Duplicating action…</Typography>
+      </Backdrop>
       <Snackbar
         open={duplicateFeedback !== null}
         autoHideDuration={duplicateFeedback?.kind === 'error' ? null : 4000}

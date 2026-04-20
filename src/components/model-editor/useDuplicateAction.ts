@@ -38,16 +38,16 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     label: port.label ?? null,
     multi: port.multi,
     quantity: port.quantity ?? null,
-    unit: port.unit?.short ?? null,
+    unit: port.unit?.standard ?? null,
     requiredDimensions: [...port.requiredDimensions],
     supportedDimensions: [...port.supportedDimensions],
   }));
   const outputPorts: OutputPortInput[] = (spec?.outputPorts ?? []).map((port) => ({
     id: null,
-    columnId: null,
+    columnId: port.columnId ?? null,
     label: port.label ?? null,
     quantity: port.quantity ?? null,
-    unit: port.unit?.short ?? '',
+    unit: port.unit?.standard ?? '',
     dimensions: [...port.dimensions],
     isEditable: true,
   }));
@@ -57,11 +57,9 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
 function buildConfig(source: EditorNodeFieldsFragment): NodeConfigInput | null {
   const typeConfig = source.editor?.spec?.typeConfig;
   if (!typeConfig) return null;
-  const empty: NodeConfigInput = { action: null, formula: null, pipeline: null, simple: null };
   switch (typeConfig.__typename) {
     case 'ActionConfigType':
       return {
-        ...empty,
         action: {
           nodeClass: typeConfig.nodeClass,
           decisionLevel: typeConfig.decisionLevel ?? null,
@@ -69,9 +67,9 @@ function buildConfig(source: EditorNodeFieldsFragment): NodeConfigInput | null {
           parent: typeConfig.parent ?? null,
           noEffectValue: typeConfig.noEffectValue ?? null,
         },
-      };
+      } as NodeConfigInput;
     case 'SimpleConfigType':
-      return { ...empty, simple: { nodeClass: typeConfig.nodeClass } };
+      return { simple: { nodeClass: typeConfig.nodeClass } } as NodeConfigInput;
     default:
       return null;
   }
@@ -106,7 +104,7 @@ export function useDuplicateAction() {
       }
       const existingIdentifiers = new Set(allNodes.map((n) => n.identifier));
       const newIdentifier = pickUniqueIdentifier(source.identifier, existingIdentifiers);
-      const newName = `${source.name} (copy)`;
+      const newName = `Copy of ${source.name}`;
       const { inputPorts, outputPorts } = buildPortInputs(source);
       const input: CreateNodeInput = {
         identifier: newIdentifier,

@@ -257,10 +257,27 @@ export type UpdateDimensionInput = {
 };
 
 export type UpdateNodeInput = {
+  allowNulls: InputMaybe<Scalars['Boolean']['input']>;
   color: InputMaybe<Scalars['String']['input']>;
+  config: InputMaybe<NodeConfigInput>;
+  description: InputMaybe<Scalars['String']['input']>;
+  i18n: InputMaybe<Scalars['JSON']['input']>;
+  inputDatasets: InputMaybe<Scalars['JSON']['input']>;
+  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  inputPorts: InputMaybe<Array<InputPortInput>>;
   isOutcome: InputMaybe<Scalars['Boolean']['input']>;
   isVisible: InputMaybe<Scalars['Boolean']['input']>;
+  kind: InputMaybe<NodeKind>;
+  minimumYear: InputMaybe<Scalars['Int']['input']>;
   name: InputMaybe<Scalars['String']['input']>;
+  nodeGroup: InputMaybe<Scalars['ID']['input']>;
+  order: InputMaybe<Scalars['Int']['input']>;
+  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
+  outputPorts: InputMaybe<Array<OutputPortInput>>;
+  params: InputMaybe<Scalars['JSON']['input']>;
+  shortName: InputMaybe<Scalars['String']['input']>;
+  tags: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum VisualizationKind {
@@ -770,7 +787,7 @@ export type NodeGraphQuery = (
           ), spec: (
             { inputPorts: Array<(
               { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-                { id: string, short: string }
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) | null, bindings: Array<
                 | (
@@ -790,8 +807,8 @@ export type NodeGraphQuery = (
               > }
               & { __typename: 'InputPortType' }
             )>, outputPorts: Array<(
-              { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-                { id: string, short: string }
+              { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) }
               & { __typename: 'OutputPortType' }
@@ -823,7 +840,7 @@ export type NodeGraphQuery = (
           ), spec: (
             { inputPorts: Array<(
               { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-                { id: string, short: string }
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) | null, bindings: Array<
                 | (
@@ -843,8 +860,8 @@ export type NodeGraphQuery = (
               > }
               & { __typename: 'InputPortType' }
             )>, outputPorts: Array<(
-              { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-                { id: string, short: string }
+              { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) }
               & { __typename: 'OutputPortType' }
@@ -885,7 +902,7 @@ type EditorNodeFields_ActionNode_Fragment = (
     ), spec: (
       { inputPorts: Array<(
         { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-          { id: string, short: string }
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) | null, bindings: Array<
           | (
@@ -905,8 +922,8 @@ type EditorNodeFields_ActionNode_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-          { id: string, short: string }
+        { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) }
         & { __typename: 'OutputPortType' }
@@ -939,7 +956,7 @@ type EditorNodeFields_Node_Fragment = (
     ), spec: (
       { inputPorts: Array<(
         { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-          { id: string, short: string }
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) | null, bindings: Array<
           | (
@@ -959,8 +976,8 @@ type EditorNodeFields_Node_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-          { id: string, short: string }
+        { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) }
         & { __typename: 'OutputPortType' }
