@@ -1455,7 +1455,7 @@ export type UpdateNodeMutation = (
 );
 
 export type NodeHistoryEntryFragment = (
-  { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind }
+  { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: any | null, after: any | null }
   & { __typename: 'InstanceModelLogEntryType' }
 );
 
@@ -1468,7 +1468,7 @@ export type NodeChangeHistoryQueryVariables = Exact<{
 export type NodeChangeHistoryQuery = (
   { node: (
     { uuid: string, id: string, changeHistory: Array<(
-      { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind }
+      { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: any | null, after: any | null }
       & { __typename: 'InstanceModelLogEntryType' }
     )> }
     & { __typename: 'ActionNode' | 'Node' }

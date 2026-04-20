@@ -107,6 +107,8 @@ const NODE_HISTORY_ENTRY = gql`
     action
     createdAt
     targetKind
+    before
+    after
   }
 `;
 
