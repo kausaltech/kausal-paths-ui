@@ -94,6 +94,32 @@ export const PUBLISH_MODEL_INSTANCE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+export const CREATE_NODE = gql`
+  mutation CreateNode($instanceId: ID!, $input: CreateNodeInput!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      createNode(input: $input) {
+        __typename
+        ... on Node {
+          id
+          identifier
+          name
+          uuid
+        }
+        ... on ActionNode {
+          id
+          identifier
+          name
+          uuid
+        }
+        ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
 export const UPDATE_NODE = gql`
   mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {

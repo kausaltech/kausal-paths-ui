@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { Box, CircularProgress, Drawer } from '@mui/material';
+import { Alert, Box, CircularProgress, Drawer, Snackbar } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
@@ -47,6 +47,7 @@ import './NodeGraphEditor.css';
 import { clearLayoutCache, saveUserPosition } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { useDuplicateAction } from './useDuplicateAction';
 import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
 
@@ -120,6 +121,9 @@ const GET_NODE_GRAPH = gql`
     editor {
       nodeGroup
       nodeType
+      tags
+      inputDimensions
+      outputDimensions
       layoutMeta {
         primaryClass
         isHub
@@ -182,6 +186,10 @@ const GET_NODE_GRAPH = gql`
           }
           ... on ActionConfigType {
             nodeClass
+            decisionLevel
+            group
+            parent
+            noEffectValue
           }
         }
       }
@@ -592,7 +600,7 @@ function FlowEditor(props: {
     setUserHiddenEdgeIds((prev) => new Set([...prev, edgeId]));
   }, []);
 
-  const handleCopyAction = useCallback(
+  const handleOpenActionWizard = useCallback(
     (nodeId: string) => {
       const node = nodeMap.get(nodeId);
       if (!node) return;
@@ -600,6 +608,36 @@ function FlowEditor(props: {
       setWizardOpen(true);
     },
     [nodeMap]
+  );
+
+  const duplicateAction = useDuplicateAction();
+  const [duplicateFeedback, setDuplicateFeedback] = useState<
+    { kind: 'success'; message: string } | { kind: 'error'; message: string } | null
+  >(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+
+  const handleDuplicateAction = useCallback(
+    (nodeId: string) => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return;
+      if (isDuplicating) return;
+      setIsDuplicating(true);
+      duplicateAction(node, props.nodes)
+        .then((result) =>
+          setDuplicateFeedback({
+            kind: 'success',
+            message: `Duplicated "${node.name}" as "${result.newIdentifier}"`,
+          })
+        )
+        .catch((err: unknown) =>
+          setDuplicateFeedback({
+            kind: 'error',
+            message: err instanceof Error ? err.message : 'Failed to duplicate action',
+          })
+        )
+        .finally(() => setIsDuplicating(false));
+    },
+    [duplicateAction, isDuplicating, nodeMap, props.nodes]
   );
 
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
@@ -671,7 +709,8 @@ function FlowEditor(props: {
               state={contextMenu}
               onClose={() => setContextMenu(null)}
               onHideEdge={handleHideEdge}
-              onCopyAction={handleCopyAction}
+              onOpenActionWizard={handleOpenActionWizard}
+              onDuplicateAction={handleDuplicateAction}
             />
             <Drawer
               variant="persistent"
@@ -743,6 +782,22 @@ function FlowEditor(props: {
           />
         </Suspense>
       )}
+      <Snackbar
+        open={duplicateFeedback !== null}
+        autoHideDuration={duplicateFeedback?.kind === 'error' ? null : 4000}
+        onClose={() => setDuplicateFeedback(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {duplicateFeedback ? (
+          <Alert
+            onClose={() => setDuplicateFeedback(null)}
+            severity={duplicateFeedback.kind === 'success' ? 'success' : 'error'}
+            variant="filled"
+          >
+            {duplicateFeedback.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </NodeGraphInteractionContext>
   );
 }

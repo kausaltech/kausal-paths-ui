@@ -32,6 +32,14 @@ export type Scalars = {
   _Any: { input: any; output: any; }
 };
 
+export type ActionConfigInput = {
+  decisionLevel: InputMaybe<DecisionLevel>;
+  group: InputMaybe<Scalars['String']['input']>;
+  noEffectValue: InputMaybe<Scalars['Float']['input']>;
+  nodeClass: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['String']['input']>;
+};
+
 /** An enumeration. */
 export enum ActionSortOrder {
   /** Cumulative impact */
@@ -76,6 +84,31 @@ export type CreateInstanceInput = {
   organizationName: Scalars['String']['input'];
 };
 
+export type CreateNodeInput = {
+  allowNulls: Scalars['Boolean']['input'];
+  color: InputMaybe<Scalars['String']['input']>;
+  config: NodeConfigInput;
+  description: InputMaybe<Scalars['String']['input']>;
+  i18n: InputMaybe<Scalars['JSON']['input']>;
+  identifier: Scalars['ID']['input'];
+  inputDatasets: InputMaybe<Scalars['JSON']['input']>;
+  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  inputPorts: InputMaybe<Array<InputPortInput>>;
+  isOutcome: Scalars['Boolean']['input'];
+  isVisible: Scalars['Boolean']['input'];
+  kind: NodeKind;
+  minimumYear: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  nodeGroup: InputMaybe<Scalars['ID']['input']>;
+  order: InputMaybe<Scalars['Int']['input']>;
+  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
+  outputPorts: InputMaybe<Array<OutputPortInput>>;
+  params: InputMaybe<Scalars['JSON']['input']>;
+  shortName: InputMaybe<Scalars['String']['input']>;
+  tags: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
@@ -95,6 +128,10 @@ export enum DimensionKind {
   Scenario = 'SCENARIO'
 }
 
+export type FormulaConfigInput = {
+  formula: Scalars['String']['input'];
+};
+
 /** An enumeration. */
 export enum FrameworksMeasureTemplatePriorityChoices {
   /** High */
@@ -105,6 +142,16 @@ export enum FrameworksMeasureTemplatePriorityChoices {
   Medium = 'MEDIUM'
 }
 
+export type InputPortInput = {
+  id: InputMaybe<Scalars['UUID']['input']>;
+  label: InputMaybe<Scalars['String']['input']>;
+  multi: Scalars['Boolean']['input'];
+  quantity: InputMaybe<Scalars['String']['input']>;
+  requiredDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  supportedDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  unit: InputMaybe<Scalars['String']['input']>;
+};
+
 /** An enumeration. */
 export enum ModelAction {
   Add = 'ADD',
@@ -112,6 +159,13 @@ export enum ModelAction {
   Delete = 'DELETE',
   View = 'VIEW'
 }
+
+export type NodeConfigInput = {
+  action: InputMaybe<ActionConfigInput>;
+  formula: InputMaybe<FormulaConfigInput>;
+  pipeline: InputMaybe<PipelineConfigInput>;
+  simple: InputMaybe<SimpleConfigInput>;
+};
 
 export enum NodeKind {
   Action = 'ACTION',
@@ -127,6 +181,33 @@ export enum OperationMessageKind {
   Validation = 'VALIDATION',
   Warning = 'WARNING'
 }
+
+export type OutputMetricInput = {
+  columnId: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  label: InputMaybe<Scalars['String']['input']>;
+  portId: InputMaybe<Scalars['UUID']['input']>;
+  quantity: InputMaybe<Scalars['String']['input']>;
+  unit: Scalars['String']['input'];
+};
+
+export type OutputPortInput = {
+  columnId: InputMaybe<Scalars['String']['input']>;
+  dimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  id: InputMaybe<Scalars['UUID']['input']>;
+  isEditable: Scalars['Boolean']['input'];
+  label: InputMaybe<Scalars['String']['input']>;
+  quantity: InputMaybe<Scalars['String']['input']>;
+  unit: Scalars['String']['input'];
+};
+
+export type PipelineConfigInput = {
+  operations: Array<PipelineOperationInput>;
+};
+
+export type PipelineOperationInput = {
+  operation: Scalars['String']['input'];
+};
 
 export enum PrimaryLayoutClass {
   Action = 'ACTION',
@@ -150,6 +231,10 @@ export enum ScenarioKind {
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
 }
+
+export type SimpleConfigInput = {
+  nodeClass: Scalars['String']['input'];
+};
 
 export type UpdateDataPointInput = {
   date: InputMaybe<Scalars['Date']['input']>;
@@ -679,7 +764,7 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, layoutMeta: (
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
@@ -712,10 +797,14 @@ export type NodeGraphQuery = (
               & { __typename: 'OutputPortType' }
             )>, typeConfig:
               | (
-                { nodeClass: string }
-                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+                { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+                & { __typename: 'ActionConfigType' }
               )
               | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { nodeClass: string }
+                & { __typename: 'SimpleConfigType' }
+              )
              }
             & { __typename: 'NodeSpecType' }
           ) | null }
@@ -728,7 +817,7 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, layoutMeta: (
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
@@ -761,10 +850,14 @@ export type NodeGraphQuery = (
               & { __typename: 'OutputPortType' }
             )>, typeConfig:
               | (
-                { nodeClass: string }
-                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+                { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+                & { __typename: 'ActionConfigType' }
               )
               | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { nodeClass: string }
+                & { __typename: 'SimpleConfigType' }
+              )
              }
             & { __typename: 'NodeSpecType' }
           ) | null }
@@ -786,7 +879,7 @@ type EditorNodeFields_ActionNode_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, layoutMeta: (
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
@@ -819,10 +912,14 @@ type EditorNodeFields_ActionNode_Fragment = (
         & { __typename: 'OutputPortType' }
       )>, typeConfig:
         | (
-          { nodeClass: string }
-          & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+          { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+          & { __typename: 'ActionConfigType' }
         )
         | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { nodeClass: string }
+          & { __typename: 'SimpleConfigType' }
+        )
        }
       & { __typename: 'NodeSpecType' }
     ) | null }
@@ -836,7 +933,7 @@ type EditorNodeFields_Node_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, layoutMeta: (
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
@@ -869,10 +966,14 @@ type EditorNodeFields_Node_Fragment = (
         & { __typename: 'OutputPortType' }
       )>, typeConfig:
         | (
-          { nodeClass: string }
-          & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+          { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+          & { __typename: 'ActionConfigType' }
         )
         | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { nodeClass: string }
+          & { __typename: 'SimpleConfigType' }
+        )
        }
       & { __typename: 'NodeSpecType' }
     ) | null }
@@ -1410,6 +1511,33 @@ export type PublishModelInstanceMutation = (
           & { __typename: 'InstanceEditor' }
         ) | null }
         & { __typename: 'InstanceType' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateNodeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: CreateNodeInput;
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type CreateNodeMutation = (
+  { instanceEditor: (
+    { createNode:
+      | (
+        { id: string, identifier: string, name: string, uuid: string }
+        & { __typename: 'ActionNode' | 'Node' }
       )
       | (
         { messages: Array<(
