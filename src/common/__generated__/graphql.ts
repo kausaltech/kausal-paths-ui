@@ -1569,6 +1569,27 @@ export type CreateNodeMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type DeleteNodeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  nodeId: Scalars['ID']['input'];
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type DeleteNodeMutation = (
+  { instanceEditor: (
+    { deleteNode: (
+      { messages: Array<(
+        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type UpdateNodeMutationVariables = Exact<{
   instanceId: Scalars['ID']['input'];
   nodeId: Scalars['ID']['input'];

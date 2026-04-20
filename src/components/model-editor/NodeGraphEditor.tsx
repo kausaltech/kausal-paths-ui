@@ -5,7 +5,13 @@ import {
   Alert,
   Backdrop,
   Box,
+  Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Drawer,
   Snackbar,
   Typography,
@@ -55,6 +61,7 @@ import './NodeGraphEditor.css';
 import { clearLayoutCache, saveUserPosition } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { useDeleteNode } from './useDeleteNode';
 import { useDuplicateAction } from './useDuplicateAction';
 import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
@@ -669,6 +676,42 @@ function FlowEditor(props: {
     setPendingDuplicateIdentifier(null);
   }
 
+  const deleteNode = useDeleteNode();
+  const [deleteConfirmNode, setDeleteConfirmNode] = useState<EditorNodeFieldsFragment | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleRequestDeleteNode = useCallback(
+    (nodeId: string) => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return;
+      setDeleteConfirmNode(node);
+    },
+    [nodeMap]
+  );
+
+  const handleConfirmDelete = useCallback(() => {
+    const node = deleteConfirmNode;
+    if (!node || isDeleting) return;
+    setIsDeleting(true);
+    deleteNode(node.id)
+      .then(() => {
+        if (selectedNodeId === node.id) setSelectedNodeId(null);
+        clearLayoutCache(instanceId);
+        setResetCounter((c) => c + 1);
+        setDuplicateFeedback({ kind: 'success', message: `Deleted "${node.name}"` });
+      })
+      .catch((err: unknown) =>
+        setDuplicateFeedback({
+          kind: 'error',
+          message: err instanceof Error ? err.message : 'Failed to delete node',
+        })
+      )
+      .finally(() => {
+        setIsDeleting(false);
+        setDeleteConfirmNode(null);
+      });
+  }, [deleteConfirmNode, deleteNode, instanceId, isDeleting, selectedNodeId]);
+
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
   }, []);
@@ -740,6 +783,7 @@ function FlowEditor(props: {
               onHideEdge={handleHideEdge}
               onOpenActionWizard={handleOpenActionWizard}
               onDuplicateAction={handleDuplicateAction}
+              onDeleteNode={handleRequestDeleteNode}
             />
             <Drawer
               variant="persistent"
@@ -812,7 +856,7 @@ function FlowEditor(props: {
         </Suspense>
       )}
       <Backdrop
-        open={isDuplicating}
+        open={isDuplicating || isDeleting}
         sx={(theme) => ({
           zIndex: theme.zIndex.modal + 1,
           flexDirection: 'column',
@@ -821,8 +865,28 @@ function FlowEditor(props: {
         })}
       >
         <CircularProgress color="inherit" />
-        <Typography variant="body2">Duplicating action…</Typography>
+        <Typography variant="body2">
+          {isDeleting ? 'Deleting node…' : 'Duplicating action…'}
+        </Typography>
       </Backdrop>
+      <Dialog
+        open={deleteConfirmNode !== null && !isDeleting}
+        onClose={() => setDeleteConfirmNode(null)}
+      >
+        <DialogTitle>Delete node?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Permanently delete &quot;{deleteConfirmNode?.name}&quot; and all of its edges. This
+            cannot be undone without reverting to the last published revision.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmNode(null)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={duplicateFeedback !== null}
         autoHideDuration={duplicateFeedback?.kind === 'error' ? null : 4000}

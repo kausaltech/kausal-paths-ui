@@ -1,6 +1,6 @@
-import { ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
 
-import { Copy, EyeSlash, Magic } from 'react-bootstrap-icons';
+import { Copy, EyeSlash, Magic, Trash } from 'react-bootstrap-icons';
 
 export type ContextMenuState =
   | ({
@@ -15,6 +15,7 @@ type Props = {
   onHideEdge: (edgeId: string) => void;
   onOpenActionWizard: (nodeId: string) => void;
   onDuplicateAction: (nodeId: string) => void;
+  onDeleteNode: (nodeId: string) => void;
 };
 
 export default function NodeGraphContextMenu({
@@ -23,6 +24,7 @@ export default function NodeGraphContextMenu({
   onHideEdge,
   onOpenActionWizard,
   onDuplicateAction,
+  onDeleteNode,
 }: Props) {
   const handleHideEdge = () => {
     if (state?.kind !== 'edge') return;
@@ -39,6 +41,12 @@ export default function NodeGraphContextMenu({
   const handleDuplicateAction = () => {
     if (state?.kind !== 'node') return;
     onDuplicateAction(state.nodeId);
+    onClose();
+  };
+
+  const handleDeleteNode = () => {
+    if (state?.kind !== 'node') return;
+    onDeleteNode(state.nodeId);
     onClose();
   };
 
@@ -72,7 +80,16 @@ export default function NodeGraphContextMenu({
             </ListItemIcon>
             <ListItemText>Action wizard (legacy)</ListItemText>
           </MenuItem>,
+          <Divider key="divider" />,
         ]}
+      {state?.kind === 'node' && (
+        <MenuItem onClick={handleDeleteNode} sx={{ color: 'error.main' }}>
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <Trash size={14} />
+          </ListItemIcon>
+          <ListItemText>Delete node</ListItemText>
+        </MenuItem>
+      )}
     </Menu>
   );
 }

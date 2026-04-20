@@ -120,6 +120,17 @@ export const CREATE_NODE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+export const DELETE_NODE = gql`
+  mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      deleteNode(nodeId: $nodeId) {
+        ...EditorOperationInfoFields
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
 export const UPDATE_NODE = gql`
   mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
