@@ -2702,7 +2702,7 @@ export type ImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ImpactOverviewsQuery = (
   { impactOverviews: Array<(
-    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, effectNode: (
+    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, effectNode: (
       { id: string }
       & { __typename: 'Node' }
     ), effectUnit: (

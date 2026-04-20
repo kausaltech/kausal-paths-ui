@@ -57,6 +57,8 @@ type ActionRowProps = {
   startYear: number;
   endYear: number;
   isLoading: boolean;
+  stakeholderDimensionId: string | null | undefined;
+  outcomeDimensionId: string | null | undefined;
 };
 
 // Fixed pixel width reserved for the y-axis label column
@@ -292,92 +294,193 @@ const BENEFIT_SHADES = [
   'blue010',
 ] as const;
 
+/** Single synthetic outcome when the cost_type dimension is absent (empty legend label). */
+const SYNTHETIC_OUTCOME_COST_ID = '__synthetic_outcome_cost__';
+const SYNTHETIC_OUTCOME_BENEFIT_ID = '__synthetic_outcome_benefit__';
+
 function getStakeholderCostTypeData(
   metric: DimensionalMetric,
   startYear: number,
   endYear: number,
-  theme: Theme
+  theme: Theme,
+  stakeholderDimensionId: string | null | undefined,
+  outcomeDimensionId: string | null | undefined
 ): StakeholderCostTypeData | null {
-  const stakeholderDim = metric.dimensions.find((d) => d.originalId === 'stakeholder');
-  const costTypeDim = metric.dimensions.find((d) => d.originalId === 'cost_type');
+  const stakeholderDim = stakeholderDimensionId
+    ? metric.dimensions.find((d) => d.originalId === stakeholderDimensionId)
+    : undefined;
+  const costTypeDim = outcomeDimensionId
+    ? metric.dimensions.find((d) => d.originalId === outcomeDimensionId)
+    : undefined;
 
-  if (!stakeholderDim || !costTypeDim) return null;
+  if (!stakeholderDim && !costTypeDim) return null;
 
-  // Calculate total per cost type to determine the sign and
-  // filter out cost types with no data in the selected year range.
-  const costTypeAggregates = new Map<string, number>();
+  if (stakeholderDim && stakeholderDim.categories.length === 0) return null;
 
-  for (const row of metric.rows) {
-    if (row.value == null || row.year < startYear || row.year > endYear) {
-      continue;
+  let costTypes: CostTypeInfo[];
+
+  if (costTypeDim) {
+    // Calculate total per cost type to determine the sign and
+    // filter out cost types with no data in the selected year range.
+    const costTypeAggregates = new Map<string, number>();
+
+    for (const row of metric.rows) {
+      if (row.value == null || row.year < startYear || row.year > endYear) {
+        continue;
+      }
+
+      const costTypeId = row.dimCats[costTypeDim.id]?.id;
+
+      if (costTypeId) {
+        costTypeAggregates.set(costTypeId, (costTypeAggregates.get(costTypeId) ?? 0) + row.value);
+      }
     }
 
-    const costTypeId = row.dimCats[costTypeDim.id]?.id;
+    // Positive aggregate = cost (red), negative = benefit (green), zero = exclude
+    const costs = costTypeDim.categories
+      .filter((c) => c.originalId != null && (costTypeAggregates.get(c.id) ?? 0) > 0)
+      .sort((a, b) => (costTypeAggregates.get(b.id) ?? 0) - (costTypeAggregates.get(a.id) ?? 0)); // largest cost first
 
-    if (costTypeId) {
-      costTypeAggregates.set(costTypeId, (costTypeAggregates.get(costTypeId) ?? 0) + row.value);
+    const benefits = costTypeDim.categories
+      .filter((c) => c.originalId != null && (costTypeAggregates.get(c.id) ?? 0) < 0)
+      .sort((a, b) => (costTypeAggregates.get(a.id) ?? 0) - (costTypeAggregates.get(b.id) ?? 0)); // largest benefit first
+
+    costTypes = [
+      ...costs.map((category, i) => ({
+        originalId: category.originalId!,
+        label: category.label,
+        color: theme.graphColors[COST_SHADES[i % COST_SHADES.length]],
+        isCost: true,
+      })),
+      ...benefits.map((category, i) => ({
+        originalId: category.originalId!,
+        label: category.label,
+        color: theme.graphColors[BENEFIT_SHADES[i % BENEFIT_SHADES.length]],
+        isCost: false,
+      })),
+    ];
+  } else {
+    let anyCost = false;
+    let anyBenefit = false;
+
+    for (const row of metric.rows) {
+      if (row.value == null || row.year < startYear || row.year > endYear) {
+        continue;
+      }
+
+      if (row.value > 0) anyCost = true;
+      if (row.value < 0) anyBenefit = true;
+    }
+
+    costTypes = [];
+
+    if (anyCost) {
+      costTypes.push({
+        originalId: SYNTHETIC_OUTCOME_COST_ID,
+        label: '',
+        color: theme.graphColors.red030,
+        isCost: true,
+      });
+    }
+
+    if (anyBenefit) {
+      costTypes.push({
+        originalId: SYNTHETIC_OUTCOME_BENEFIT_ID,
+        label: '',
+        color: theme.graphColors.green030,
+        isCost: false,
+      });
     }
   }
 
-  // Positive aggregate = cost (red), negative = benefit (green), zero = exclude
-  const costs = costTypeDim.categories
-    .filter((c) => c.originalId != null && (costTypeAggregates.get(c.id) ?? 0) > 0)
-    .sort((a, b) => (costTypeAggregates.get(b.id) ?? 0) - (costTypeAggregates.get(a.id) ?? 0)); // largest cost first
+  if (!costTypes.length) return null;
 
-  const benefits = costTypeDim.categories
-    .filter((c) => c.originalId != null && (costTypeAggregates.get(c.id) ?? 0) < 0)
-    .sort((a, b) => (costTypeAggregates.get(a.id) ?? 0) - (costTypeAggregates.get(b.id) ?? 0)); // largest benefit first
+  const matchesYear = (metricRow: { year: number }) =>
+    metricRow.year >= startYear && metricRow.year <= endYear;
 
-  const costTypes: CostTypeInfo[] = [
-    ...costs.map((category, i) => ({
-      originalId: category.originalId!,
-      label: category.label,
-      color: theme.graphColors[COST_SHADES[i % COST_SHADES.length]],
-      isCost: true,
-    })),
-    ...benefits.map((category, i) => ({
-      originalId: category.originalId!,
-      label: category.label,
-      color: theme.graphColors[BENEFIT_SHADES[i % BENEFIT_SHADES.length]],
-      isCost: false,
-    })),
-  ];
+  const matchesStakeholder = (
+    metricRow: { dimCats: Record<string, { id: string } | undefined> },
+    stakeholderCategoryId: string | undefined
+  ) =>
+    stakeholderDim == null ||
+    stakeholderCategoryId == null ||
+    metricRow.dimCats[stakeholderDim.id]?.id === stakeholderCategoryId;
 
-  const rows: Record<string, number | string>[] = stakeholderDim.categories.map(
-    (stakeholderCategory) => {
-      const row: Record<string, number | string> = { label: stakeholderCategory.label };
+  const cellValue = (costType: CostTypeInfo, stakeholderCategoryId: string | undefined): number => {
+    if (costTypeDim) {
+      const costCategory = costTypeDim.categories.find((c) => c.originalId === costType.originalId);
 
-      for (const costType of costTypes) {
-        const costCategory = costTypeDim.categories.find(
-          (c) => c.originalId === costType.originalId
-        );
-
-        if (!costCategory) {
-          row[costType.originalId] = 0;
-        } else {
-          const rawSum = metric.rows.reduce<number>((sum, metricRow) => {
-            if (
-              metricRow.value == null ||
-              metricRow.year < startYear ||
-              metricRow.year > endYear ||
-              metricRow.dimCats[stakeholderDim.id]?.id !== stakeholderCategory.id ||
-              metricRow.dimCats[costTypeDim.id]?.id !== costCategory.id
-            ) {
-              return sum;
-            }
-
-            return sum + metricRow.value;
-          }, 0);
-
-          // Use absolute values so both costs and benefits plot as positive (right-going) bars,
-          // matching the convention of the action-level chart.
-          row[costType.originalId] = Math.abs(rawSum);
-        }
+      if (!costCategory) {
+        return 0;
       }
 
-      return row;
+      const rawSum = metric.rows.reduce<number>((sum, metricRow) => {
+        if (
+          metricRow.value == null ||
+          !matchesYear(metricRow) ||
+          metricRow.dimCats[costTypeDim.id]?.id !== costCategory.id ||
+          !matchesStakeholder(metricRow, stakeholderCategoryId)
+        ) {
+          return sum;
+        }
+
+        return sum + metricRow.value;
+      }, 0);
+
+      // Use absolute values so both costs and benefits plot as positive (right-going) bars,
+      // matching the convention of the action-level chart.
+      return Math.abs(rawSum);
     }
-  );
+
+    if (costType.originalId === SYNTHETIC_OUTCOME_COST_ID) {
+      return metric.rows.reduce<number>((sum, metricRow) => {
+        if (
+          metricRow.value == null ||
+          !matchesYear(metricRow) ||
+          metricRow.value <= 0 ||
+          !matchesStakeholder(metricRow, stakeholderCategoryId)
+        ) {
+          return sum;
+        }
+
+        return sum + metricRow.value;
+      }, 0);
+    }
+
+    if (costType.originalId === SYNTHETIC_OUTCOME_BENEFIT_ID) {
+      return metric.rows.reduce<number>((sum, metricRow) => {
+        if (
+          metricRow.value == null ||
+          !matchesYear(metricRow) ||
+          metricRow.value >= 0 ||
+          !matchesStakeholder(metricRow, stakeholderCategoryId)
+        ) {
+          return sum;
+        }
+
+        return sum + Math.abs(metricRow.value);
+      }, 0);
+    }
+
+    return 0;
+  };
+
+  const rowForStakeholder = (
+    label: string,
+    stakeholderCategoryId: string | undefined
+  ): Record<string, number | string> => {
+    const row: Record<string, number | string> = { label };
+
+    for (const costType of costTypes) {
+      row[costType.originalId] = cellValue(costType, stakeholderCategoryId);
+    }
+
+    return row;
+  };
+
+  const rows: Record<string, number | string>[] = stakeholderDim
+    ? stakeholderDim.categories.map((c) => rowForStakeholder(c.label, c.id))
+    : [rowForStakeholder('', undefined)];
 
   return { costTypes, rows };
 }
@@ -405,8 +508,10 @@ function getStakeholderChartConfig(
       type: 'scroll',
       orient: 'horizontal',
       bottom: 0,
+      formatter: (name: string) =>
+        data.costTypes.find((costType) => costType.originalId === name)?.label ?? '',
       data: data.costTypes.map((costType) => ({
-        name: costType.label,
+        name: costType.originalId,
         itemStyle: { color: costType.color },
       })),
     },
@@ -414,26 +519,24 @@ function getStakeholderChartConfig(
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       formatter: (() => {
-        // Build label → originalId map so we can look up the correct dataset column per series.
-        const labelToId = new Map(
-          data.costTypes.map((costType) => [costType.label, costType.originalId])
-        );
-
         return (params: unknown) => {
           type TooltipParam = { marker: string; seriesName: string; value: Record<string, number> };
 
           return (params as TooltipParam[])
             .flatMap((param) => {
-              const id = labelToId.get(param.seriesName);
-              const val = id != null ? param.value[id] : null;
+              const id = param.seriesName;
+              const val = param.value[id];
 
               if (val == null || val === 0) {
                 return [];
               }
 
-              return [
-                `${param.marker}${param.seriesName}: <b>${formatNumber(val)} ${unitLabel}</b>`,
-              ];
+              const legendLabel = data.costTypes.find(
+                (costType) => costType.originalId === id
+              )?.label;
+              const title = legendLabel ? `${legendLabel}: ` : '';
+
+              return [`${param.marker}${title}<b>${formatNumber(val)} ${unitLabel}</b>`];
             })
             .join('<br/>');
         };
@@ -461,7 +564,7 @@ function getStakeholderChartConfig(
     },
     series: data.costTypes.map((costType) => ({
       type: 'bar',
-      name: costType.label,
+      name: costType.originalId,
       // Costs and benefits use separate stacks so they form two grouped bar sets,
       // matching the same approach of the action-level chart above
       stack: costType.isCost ? 'costs' : 'benefits',
@@ -481,12 +584,16 @@ function ActionRow({
   startYear,
   endYear,
   isLoading,
+  stakeholderDimensionId,
+  outcomeDimensionId,
 }: ActionRowProps) {
   const theme = useTheme();
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
-  const hasStakeholders = item.metric.hasDimension('stakeholder');
+  const hasOutcomesOfInterest =
+    (!!stakeholderDimensionId && item.metric.hasDimension(stakeholderDimensionId)) ||
+    (!!outcomeDimensionId && item.metric.hasDimension(outcomeDimensionId));
 
   const actionChartConfig = useMemo(
     () =>
@@ -505,10 +612,26 @@ function ActionRow({
 
   const stakeholderData = useMemo<StakeholderCostTypeData | null>(
     () =>
-      !isExpanded || !hasStakeholders
+      !isExpanded || !hasOutcomesOfInterest
         ? null
-        : getStakeholderCostTypeData(item.metric, startYear, endYear, theme),
-    [isExpanded, hasStakeholders, item.metric, startYear, endYear, theme]
+        : getStakeholderCostTypeData(
+            item.metric,
+            startYear,
+            endYear,
+            theme,
+            stakeholderDimensionId,
+            outcomeDimensionId
+          ),
+    [
+      isExpanded,
+      hasOutcomesOfInterest,
+      item.metric,
+      startYear,
+      endYear,
+      theme,
+      stakeholderDimensionId,
+      outcomeDimensionId,
+    ]
   );
 
   const stakeholderChartConfig = useMemo(
@@ -535,7 +658,7 @@ function ActionRow({
         height={actionChartHeight}
         withResizeLegend={false}
       />
-      {hasStakeholders && (
+      {hasOutcomesOfInterest && (
         <StyledOutcomesToggle onClick={onToggle} $top={`calc(${actionChartHeight} - 25px)`}>
           {t('outcomes-of-interest')} {isExpanded ? <ChevronUp /> : <ChevronDown />}
         </StyledOutcomesToggle>
@@ -667,6 +790,8 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
                   startYear={startYear}
                   endYear={endYear}
                   isLoading={isLoading}
+                  stakeholderDimensionId={data?.stakeholderDimension}
+                  outcomeDimensionId={data?.outcomeDimension}
                 />
               ))}
             </Box>
