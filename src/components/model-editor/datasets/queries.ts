@@ -63,6 +63,13 @@ export const DATASET_DETAIL_FIELDS = gql`
         uuid
       }
     }
+    portBindings {
+      id
+      nodeRef {
+        nodeId
+        portId
+      }
+    }
   }
 `;
 
@@ -95,6 +102,37 @@ export const GET_INSTANCE_DATASET = gql`
     }
   }
   ${DATASET_DETAIL_FIELDS}
+`;
+
+export const GET_DATASET_CONNECTED_NODES = gql`
+  query DatasetConnectedNodes($ids: [ID!]!) {
+    instance {
+      id
+      nodes(id: $ids) {
+        __typename
+        id
+        name
+        kind
+        ... on Node {
+          isOutcome
+        }
+        editor {
+          nodeType
+          spec {
+            typeConfig {
+              __typename
+              ... on SimpleConfigType {
+                nodeClass
+              }
+              ... on ActionConfigType {
+                nodeClass
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 `;
 
 export const DATA_POINT_FIELDS = gql`

@@ -1121,6 +1121,12 @@ export type DatasetDetailFieldsFragment = (
       & { __typename: 'DatasetDimensionCategory' }
     )> }
     & { __typename: 'DataPoint' }
+  )>, portBindings: Array<(
+    { id: string, nodeRef: (
+      { nodeId: string, portId: string }
+      & { __typename: 'NodePortRef' }
+    ) }
+    & { __typename: 'DatasetPortType' }
   )> }
   & { __typename: 'Dataset' }
 );
@@ -1182,11 +1188,63 @@ export type InstanceDatasetQuery = (
             & { __typename: 'DatasetDimensionCategory' }
           )> }
           & { __typename: 'DataPoint' }
+        )>, portBindings: Array<(
+          { id: string, nodeRef: (
+            { nodeId: string, portId: string }
+            & { __typename: 'NodePortRef' }
+          ) }
+          & { __typename: 'DatasetPortType' }
         )> }
         & { __typename: 'Dataset' }
       )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type DatasetConnectedNodesQueryVariables = Exact<{
+  ids: Array<Scalars['ID']['input']>;
+}>;
+
+
+export type DatasetConnectedNodesQuery = (
+  { instance: (
+    { id: string, nodes: Array<
+      | (
+        { id: string, name: string, kind: NodeKind | null, editor: (
+          { nodeType: string, spec: (
+            { typeConfig:
+              | (
+                { nodeClass: string }
+                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+              )
+              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+             }
+            & { __typename: 'NodeSpecType' }
+          ) | null }
+          & { __typename: 'NodeEditor' }
+        ) | null }
+        & { __typename: 'ActionNode' }
+      )
+      | (
+        { isOutcome: boolean, id: string, name: string, kind: NodeKind | null, editor: (
+          { nodeType: string, spec: (
+            { typeConfig:
+              | (
+                { nodeClass: string }
+                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+              )
+              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+             }
+            & { __typename: 'NodeSpecType' }
+          ) | null }
+          & { __typename: 'NodeEditor' }
+        ) | null }
+        & { __typename: 'Node' }
+      )
+    > }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }

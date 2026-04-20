@@ -7,6 +7,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Collapse,
   Drawer,
   IconButton,
   Paper,
@@ -18,25 +19,106 @@ import {
 } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
-import { ArrowLeft, Link45deg, Plus, Sliders, Trash, X } from 'react-bootstrap-icons';
+import {
+  ArrowLeft,
+  CaretDownFill,
+  CaretRightFill,
+  Link45deg,
+  Plus,
+  Sliders,
+  Trash,
+  X,
+} from 'react-bootstrap-icons';
 
 import type {
+  DatasetConnectedNodesQuery,
+  DatasetConnectedNodesQueryVariables,
   DatasetDetailFieldsFragment,
   InstanceDatasetQuery,
 } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
+import { getNodeStyle } from '../ElkNode';
+import { ConnectedNodeChip } from '../node-details/shared';
 import DatasetDataGrid from './DatasetDataGrid';
-import { GET_INSTANCE_DATASET } from './queries';
+import { GET_DATASET_CONNECTED_NODES, GET_INSTANCE_DATASET } from './queries';
 
 type Props = {
   datasetId: string;
 };
 
 type MetricRow = DatasetDetailFieldsFragment['metrics'][number];
+type DimensionRow = DatasetDetailFieldsFragment['dimensions'][number];
+type CategoryRow = DimensionRow['categories'][number];
+
+function CategoryChip({ cat, used }: { cat: CategoryRow; used: boolean }) {
+  return (
+    <Tooltip title={used ? 'Used by data points' : 'Not used by any data point'}>
+      <Chip
+        label={cat.label}
+        size="small"
+        variant={used ? 'filled' : 'outlined'}
+        color={used ? 'primary' : 'default'}
+        sx={used ? undefined : { opacity: 0.6 }}
+      />
+    </Tooltip>
+  );
+}
+
+function DimensionCategories({
+  dim,
+  usedCategoryUuids,
+}: {
+  dim: DimensionRow;
+  usedCategoryUuids: Set<string>;
+}) {
+  const [showUnused, setShowUnused] = useState(false);
+  const used = dim.categories.filter((c) => usedCategoryUuids.has(c.uuid));
+  const unused = dim.categories.filter((c) => !usedCategoryUuids.has(c.uuid));
+
+  return (
+    <Stack spacing={1}>
+      {used.length > 0 ? (
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+          {used.map((cat) => (
+            <CategoryChip key={cat.uuid} cat={cat} used />
+          ))}
+        </Box>
+      ) : (
+        <Typography variant="caption" color="text.secondary">
+          No categories used by any data point.
+        </Typography>
+      )}
+      {unused.length > 0 && (
+        <>
+          <Button
+            size="small"
+            onClick={() => setShowUnused((v) => !v)}
+            startIcon={showUnused ? <CaretDownFill /> : <CaretRightFill />}
+            sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
+          >
+            {showUnused ? 'Hide' : 'Show'} unused ({unused.length})
+          </Button>
+          <Collapse in={showUnused} unmountOnExit>
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {unused.map((cat) => (
+                <CategoryChip key={cat.uuid} cat={cat} used={false} />
+              ))}
+            </Box>
+          </Collapse>
+        </>
+      )}
+    </Stack>
+  );
+}
 
 function getListBase(pathname: string): string {
   const idx = pathname.indexOf('/model-editor');
   return idx >= 0 ? pathname.slice(0, idx) + '/model-editor/datasets' : '/model-editor/datasets';
+}
+
+function getModelEditorBase(pathname: string): string {
+  const idx = pathname.indexOf('/model-editor');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model-editor' : '/model-editor';
 }
 
 /** Topologically sort metrics by previousSibling/nextSibling linked list. */
@@ -72,6 +154,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getListBase(pathname);
+  const modelEditorBase = getModelEditorBase(pathname);
 
   const dataset = useMemo(
     () => data?.instance.editor?.datasets.find((d) => d.id === datasetId) ?? null,
@@ -94,6 +177,33 @@ export default function DatasetEditor({ datasetId }: Props) {
     () => (dataset ? sortMetricsBySiblings(dataset.metrics) : []),
     [dataset]
   );
+
+  const usedCategoryUuids = useMemo(() => {
+    const used = new Set<string>();
+    if (!dataset) return used;
+    for (const dp of dataset.dataPoints) {
+      for (const cat of dp.dimensionCategories) used.add(cat.uuid);
+    }
+    return used;
+  }, [dataset]);
+
+  const connectedNodeIds = useMemo(() => {
+    if (!dataset) return [] as string[];
+    const ids = new Set<string>();
+    for (const binding of dataset.portBindings) ids.add(binding.nodeRef.nodeId);
+    return [...ids];
+  }, [dataset]);
+  const connectedNodeCount = connectedNodeIds.length;
+
+  const { data: connectedNodesData } = useQuery<
+    DatasetConnectedNodesQuery,
+    DatasetConnectedNodesQueryVariables
+  >(GET_DATASET_CONNECTED_NODES, {
+    variables: { ids: connectedNodeIds },
+    skip: connectedNodeIds.length === 0,
+    fetchPolicy: 'cache-and-network',
+  });
+  const connectedNodes = connectedNodesData?.instance.nodes ?? [];
 
   if (loading && !data) {
     return (
@@ -163,7 +273,22 @@ export default function DatasetEditor({ datasetId }: Props) {
           }}
         >
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-            <Typography variant="h6">{dataset.name}</Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="h6">{dataset.name}</Typography>
+              <Tooltip
+                title={
+                  connectedNodeCount === 0
+                    ? 'Not connected to any node'
+                    : `Connected to ${connectedNodeCount} node${connectedNodeCount === 1 ? '' : 's'}`
+                }
+              >
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`${connectedNodeCount} node${connectedNodeCount === 1 ? '' : 's'}`}
+                />
+              </Tooltip>
+            </Stack>
             <Button
               startIcon={<Sliders />}
               variant={detailsOpen ? 'contained' : 'text'}
@@ -289,6 +414,44 @@ export default function DatasetEditor({ datasetId }: Props) {
             </Stack>
           </Paper>
 
+          {/* Connected nodes */}
+          <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 2 }}>
+              Connected nodes{' '}
+              <Typography component="span" variant="body2" color="text.secondary">
+                ({connectedNodeCount})
+              </Typography>
+            </Typography>
+            {connectedNodeCount === 0 ? (
+              <Typography color="text.secondary" variant="body2">
+                No nodes are bound to this dataset.
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {connectedNodes.map((node) => {
+                  const nodeClass =
+                    node.editor?.spec?.typeConfig && 'nodeClass' in node.editor.spec.typeConfig
+                      ? node.editor.spec.typeConfig.nodeClass
+                      : (node.editor?.nodeType ?? '');
+                  const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
+                  const style = getNodeStyle(node.kind ?? '', nodeClass, isOutcome);
+                  return (
+                    <ConnectedNodeChip
+                      key={node.id}
+                      nodeId={node.id}
+                      label={node.name ?? node.id}
+                      style={style}
+                      onSelect={(id) =>
+                        router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)
+                      }
+                      onHover={() => {}}
+                    />
+                  );
+                })}
+              </Box>
+            )}
+          </Paper>
+
           {/* Dimensions */}
           <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
             <Stack
@@ -338,11 +501,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                         </span>
                       </Tooltip>
                     </Stack>
-                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {dim.categories.map((cat) => (
-                        <Chip key={cat.uuid} label={cat.label} size="small" variant="outlined" />
-                      ))}
-                    </Box>
+                    <DimensionCategories dim={dim} usedCategoryUuids={usedCategoryUuids} />
                   </Paper>
                 ))}
               </Stack>
