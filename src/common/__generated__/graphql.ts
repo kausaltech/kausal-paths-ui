@@ -1046,7 +1046,7 @@ export type DatasetPortDataQuery = (
                 { id: string, name: string | null, label: string }
                 & { __typename: 'DatasetMetricRefType' }
               ) | null, data: Array<(
-                { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+                { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
                   { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
                   & { __typename: 'UnitType' }
                 ), dimensions: Array<(
@@ -1058,9 +1058,12 @@ export type DatasetPortDataQuery = (
                     & { __typename: 'MetricDimensionCategoryGroupType' }
                   )> }
                   & { __typename: 'MetricDimensionType' }
-                )>, goals: Array<(
-                  { categories: Array<string>, values: Array<(
-                    { year: number, value: number }
+                )>, normalizedBy: (
+                  { id: string, name: string }
+                  & { __typename: 'NormalizerNodeType' }
+                ) | null, goals: Array<(
+                  { categories: Array<string>, groups: Array<string>, values: Array<(
+                    { year: number, value: number, isInterpolated: boolean }
                     & { __typename: 'MetricYearlyGoalType' }
                   )> }
                   & { __typename: 'DimensionalMetricGoalEntry' }
@@ -1454,7 +1457,7 @@ export type NodeOutputDataQuery = (
             { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
             & { __typename: 'UnitType' }
           ), output: (
-            { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+            { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
               { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
               & { __typename: 'UnitType' }
             ), dimensions: Array<(
@@ -1466,9 +1469,12 @@ export type NodeOutputDataQuery = (
                 & { __typename: 'MetricDimensionCategoryGroupType' }
               )> }
               & { __typename: 'MetricDimensionType' }
-            )>, goals: Array<(
-              { categories: Array<string>, values: Array<(
-                { year: number, value: number }
+            )>, normalizedBy: (
+              { id: string, name: string }
+              & { __typename: 'NormalizerNodeType' }
+            ) | null, goals: Array<(
+              { categories: Array<string>, groups: Array<string>, values: Array<(
+                { year: number, value: number, isInterpolated: boolean }
                 & { __typename: 'MetricYearlyGoalType' }
               )> }
               & { __typename: 'DimensionalMetricGoalEntry' }
@@ -1681,7 +1687,7 @@ export type ModelEditorMetricDimensionFieldsFragment = (
 );
 
 export type ModelEditorDimensionalMetricFieldsFragment = (
-  { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+  { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
     { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
     & { __typename: 'UnitType' }
   ), dimensions: Array<(
@@ -1693,9 +1699,12 @@ export type ModelEditorDimensionalMetricFieldsFragment = (
       & { __typename: 'MetricDimensionCategoryGroupType' }
     )> }
     & { __typename: 'MetricDimensionType' }
-  )>, goals: Array<(
-    { categories: Array<string>, values: Array<(
-      { year: number, value: number }
+  )>, normalizedBy: (
+    { id: string, name: string }
+    & { __typename: 'NormalizerNodeType' }
+  ) | null, goals: Array<(
+    { categories: Array<string>, groups: Array<string>, values: Array<(
+      { year: number, value: number, isInterpolated: boolean }
       & { __typename: 'MetricYearlyGoalType' }
     )> }
     & { __typename: 'DimensionalMetricGoalEntry' }

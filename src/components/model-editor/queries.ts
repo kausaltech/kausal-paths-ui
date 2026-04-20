@@ -258,6 +258,7 @@ export const DIMENSIONAL_METRIC_FIELDS = gql`
   fragment ModelEditorDimensionalMetricFields on DimensionalMetricType {
     id
     name
+    measureDatapointYears
     unit {
       id
       short
@@ -272,11 +273,17 @@ export const DIMENSIONAL_METRIC_FIELDS = gql`
     values
     stackable
     forecastFrom
+    normalizedBy {
+      id
+      name
+    }
     goals {
       categories
+      groups
       values {
         year
         value
+        isInterpolated
       }
     }
   }
