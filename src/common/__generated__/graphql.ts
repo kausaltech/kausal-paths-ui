@@ -1454,6 +1454,26 @@ export type UpdateNodeMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type AvailableDatasetsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AvailableDatasetsQuery = (
+  { instance: (
+    { id: string, editor: (
+      { datasets: Array<(
+        { id: string, identifier: string | null, name: string, metrics: Array<(
+          { id: string, label: string, unit: string }
+          & { __typename: 'DatasetMetric' }
+        )> }
+        & { __typename: 'Dataset' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
 export type NodeHistoryEntryFragment = (
   { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: any | null, after: any | null }
   & { __typename: 'InstanceModelLogEntryType' }

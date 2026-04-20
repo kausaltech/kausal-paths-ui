@@ -101,6 +101,26 @@ export const UPDATE_NODE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+export const AVAILABLE_DATASETS = gql`
+  query AvailableDatasets {
+    instance {
+      id
+      editor {
+        datasets {
+          id
+          identifier
+          name
+          metrics {
+            id
+            label
+            unit
+          }
+        }
+      }
+    }
+  }
+`;
+
 const NODE_HISTORY_ENTRY = gql`
   fragment NodeHistoryEntry on InstanceModelLogEntryType {
     uuid

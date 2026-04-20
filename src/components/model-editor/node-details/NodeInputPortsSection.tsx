@@ -20,7 +20,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import type { getNodeSpec } from '../nodeHelpers';
-import NodeSelector from './NodeSelector';
+import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
 type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
@@ -235,11 +235,12 @@ export default function NodeInputPortsSection({
         </DialogTitle>
         <DialogContent>
           {editingPort && (
-            <NodeSelector
+            <PortBindingSelector
               nodes={[...nodeMap.values()]}
               port={editingPort}
               currentNodeId={currentNodeId}
-              onSelect={() => setEditingPortId(null)}
+              onSelectNode={() => setEditingPortId(null)}
+              onSelectDataset={() => setEditingPortId(null)}
             />
           )}
         </DialogContent>
