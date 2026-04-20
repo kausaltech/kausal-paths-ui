@@ -17,6 +17,7 @@ import {
   Stack,
   TextField,
   Tooltip,
+  Typography,
 } from '@mui/material';
 
 import { useMutation } from '@apollo/client/react';
@@ -41,32 +42,144 @@ type Props = {
   onMutated: () => void;
 };
 
-type Row = {
-  id: string;
-  date: string;
-  value: number | null;
+/**
+ * Discriminated cell shape — each column in a row renders one of these. Kept
+ * minimal compared to the reference implementation in kausal-extensions;
+ * `ComputedValue` / reference tracking / dirty-batching are not in scope yet.
+ */
+type MetricHeaderCell = {
+  type: 'MetricHeader';
   metricId: string;
-  /** Map of dimension.id → category.uuid */
-  categoryByDim: Record<string, string>;
+  label: string;
+  unit: string;
+};
+type DimensionCategoryCell = {
+  type: 'DimensionCategory';
+  dimensionId: string;
+  categoryUuid: string | null;
+  label: string;
+};
+type ValueCell = {
+  type: 'Value';
+  dataPointId: string | null;
+  value: number | null;
+  year: number;
+};
+type RowCell = MetricHeaderCell | DimensionCategoryCell | ValueCell;
+
+type GridRow = {
+  id: string;
+  metricId: string;
+  categoryByDim: Record<string, string | null>;
+  cells: Record<string, RowCell>;
 };
 
-function buildRow(
-  dp: DatasetDetailFieldsFragment['dataPoints'][number],
-  dimensions: DatasetDetailFieldsFragment['dimensions']
-): Row {
-  const dpCatUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
-  const categoryByDim: Record<string, string> = {};
-  for (const dim of dimensions) {
-    const found = dim.categories.find((c) => dpCatUuids.has(c.uuid));
-    if (found) categoryByDim[dim.id] = found.uuid;
+type Dataset = DatasetDetailFieldsFragment;
+type DataPoint = Dataset['dataPoints'][number];
+
+const METRIC_COL = 'col_metric';
+const ACTIONS_COL = 'col_actions';
+const dimColId = (dimensionId: string) => `col_dim_${dimensionId}`;
+const yearColId = (year: number) => `col_year_${year}`;
+
+function extractYear(date: DataPoint['date']): number {
+  // GraphQL `Date` scalar comes through as `YYYY-MM-DD`. Parse as UTC to
+  // avoid timezone drift pushing dates into the previous year.
+  const s = typeof date === 'string' ? date : String(date);
+  const m = /^(\d{4})/.exec(s);
+  return m ? Number(m[1]) : new Date(s).getUTCFullYear();
+}
+
+/** Stable row key from metric + (dim.id → category.uuid). */
+function rowKey(metricId: string, categoryByDim: Record<string, string | null>): string {
+  const parts = Object.entries(categoryByDim)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([dimId, catUuid]) => `${dimId}:${catUuid ?? '∅'}`);
+  return [metricId, ...parts].join('|');
+}
+
+/**
+ * Fold data points into wide rows keyed by (metric, category-combination).
+ * Year columns come from the union of all years present.
+ */
+function buildGridData(dataset: Dataset): {
+  rows: GridRow[];
+  years: number[];
+} {
+  const metricById = new Map(dataset.metrics.map((m) => [m.id, m]));
+  const catLabelByUuid = new Map<string, { label: string; dimensionId: string }>();
+  for (const dim of dataset.dimensions) {
+    for (const cat of dim.categories) {
+      catLabelByUuid.set(cat.uuid, { label: cat.label, dimensionId: dim.id });
+    }
   }
-  return {
-    id: dp.id,
-    date: typeof dp.date === 'string' ? dp.date : String(dp.date),
-    value: dp.value,
-    metricId: dp.metric.id,
-    categoryByDim,
-  };
+
+  const rowsByKey = new Map<string, GridRow>();
+  const yearSet = new Set<number>();
+
+  for (const dp of dataset.dataPoints) {
+    const dpCatUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
+    const categoryByDim: Record<string, string | null> = {};
+    for (const dim of dataset.dimensions) {
+      const found = dim.categories.find((c) => dpCatUuids.has(c.uuid));
+      categoryByDim[dim.id] = found?.uuid ?? null;
+    }
+
+    const year = extractYear(dp.date);
+    yearSet.add(year);
+
+    const key = rowKey(dp.metric.id, categoryByDim);
+    let row = rowsByKey.get(key);
+    if (!row) {
+      const metric = metricById.get(dp.metric.id);
+      const cells: Record<string, RowCell> = {
+        [METRIC_COL]: {
+          type: 'MetricHeader',
+          metricId: dp.metric.id,
+          label: metric?.label ?? dp.metric.id,
+          unit: metric?.unit ?? '',
+        },
+      };
+      for (const dim of dataset.dimensions) {
+        const catUuid = categoryByDim[dim.id];
+        cells[dimColId(dim.id)] = {
+          type: 'DimensionCategory',
+          dimensionId: dim.id,
+          categoryUuid: catUuid,
+          label: catUuid ? (catLabelByUuid.get(catUuid)?.label ?? catUuid) : '—',
+        };
+      }
+      row = { id: key, metricId: dp.metric.id, categoryByDim, cells };
+      rowsByKey.set(key, row);
+    }
+
+    // If two data points share (metric, categories, year) we keep the one with
+    // the later date — a concession to the year-granular wide view. The skipped
+    // one stays in the DB; switching back to long view would surface it.
+    const colId = yearColId(year);
+    const existing = row.cells[colId];
+    if (!existing || (existing.type === 'Value' && existing.dataPointId === null)) {
+      row.cells[colId] = {
+        type: 'Value',
+        dataPointId: dp.id,
+        value: dp.value,
+        year,
+      };
+    }
+  }
+
+  // Ensure every row has a ValueCell for every known year (empty = null dp).
+  const sortedYears = [...yearSet].sort((a, b) => a - b);
+  for (const row of rowsByKey.values()) {
+    for (const year of sortedYears) {
+      const colId = yearColId(year);
+      if (!row.cells[colId]) {
+        row.cells[colId] = { type: 'Value', dataPointId: null, value: null, year };
+      }
+    }
+  }
+
+  return { rows: [...rowsByKey.values()], years: sortedYears };
 }
 
 export default function DatasetDataGrid({ dataset, onMutated }: Props) {
@@ -80,104 +193,130 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const [updateDataPoint] = useMutation<UpdateDataPointMutation, UpdateDataPointMutationVariables>(
     UPDATE_DATA_POINT
   );
-
-  // Generated input types require all fields (avoidOptionals). The backend rejects
-  // explicit null on Maybe fields, so we build partial inputs and cast.
-  type UpdateInput = UpdateDataPointMutationVariables['input'];
-  const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
-    partial as unknown as UpdateInput;
   const [deleteDataPoint] = useMutation<DeleteDataPointMutation, DeleteDataPointMutationVariables>(
     DELETE_DATA_POINT
   );
 
-  const rows = useMemo<Row[]>(
-    () => dataset.dataPoints.map((dp) => buildRow(dp, dataset.dimensions)),
-    [dataset]
-  );
+  // Generated input types require all fields (avoidOptionals). Backend rejects
+  // explicit null on Maybe fields, so we build partial inputs and cast.
+  type UpdateInput = UpdateDataPointMutationVariables['input'];
+  const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
+    partial as unknown as UpdateInput;
 
-  const metricById = useMemo(
-    () => new Map(dataset.metrics.map((m) => [m.id, m])),
-    [dataset.metrics]
-  );
+  const { rows, years } = useMemo(() => buildGridData(dataset), [dataset]);
 
-  const handleDelete = useCallback(
-    async (dataPointId: string) => {
-      const result = await deleteDataPoint({
-        variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId },
-      });
-      const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
-      if (msgs.length > 0) {
-        setError(msgs.map((m) => m.message).join('; '));
-      } else {
+  const handleRowDelete = useCallback(
+    async (row: GridRow) => {
+      const ids = Object.values(row.cells)
+        .filter((c): c is ValueCell => c.type === 'Value' && c.dataPointId !== null)
+        .map((c) => c.dataPointId as string);
+      if (ids.length === 0) return;
+      try {
+        // Sequential is fine at this scale and keeps error attribution simple.
+        for (const id of ids) {
+          const result = await deleteDataPoint({
+            variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
+          });
+          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+          if (msgs.length > 0) {
+            setError(msgs.map((m) => m.message).join('; '));
+            break;
+          }
+        }
+      } finally {
         onMutated();
       }
     },
     [deleteDataPoint, instance.id, dataset.id, onMutated]
   );
 
-  const columnDefs = useMemo<ColDef<Row>[]>(() => {
-    const cols: ColDef<Row>[] = [
+  const columnDefs = useMemo<ColDef<GridRow>[]>(() => {
+    const cols: ColDef<GridRow>[] = [
       {
-        field: 'date',
-        headerName: 'Date',
-        width: 130,
-        editable: true,
-        sortable: true,
-      },
-      {
-        field: 'metricId',
+        colId: METRIC_COL,
         headerName: 'Metric',
         width: 180,
-        editable: true,
-        cellEditor: 'agSelectCellEditor',
-        cellEditorParams: { values: dataset.metrics.map((m) => m.id) },
-        valueFormatter: (p: { value: string }) => metricById.get(p.value)?.label ?? p.value,
+        pinned: 'left',
+        valueGetter: (p) => {
+          const c = p.data?.cells[METRIC_COL];
+          return c?.type === 'MetricHeader' ? c.label : '';
+        },
+        cellRenderer: (p: ICellRendererParams<GridRow>) => {
+          const c = p.data?.cells[METRIC_COL];
+          if (c?.type !== 'MetricHeader') return null;
+          return (
+            <Box sx={{ lineHeight: 1.2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {c.label}
+              </Typography>
+              {c.unit && (
+                <Typography variant="caption" color="text.secondary">
+                  {c.unit}
+                </Typography>
+              )}
+            </Box>
+          );
+        },
       },
     ];
     for (const dim of dataset.dimensions) {
-      const catLabel = new Map(dim.categories.map((c) => [c.uuid, c.label]));
       cols.push({
-        colId: `dim-${dim.id}`,
+        colId: dimColId(dim.id),
         headerName: dim.name,
         width: 160,
+        pinned: 'left',
+        valueGetter: (p) => {
+          const c = p.data?.cells[dimColId(dim.id)];
+          return c?.type === 'DimensionCategory' ? c.label : '';
+        },
+      });
+    }
+    for (const year of years) {
+      cols.push({
+        colId: yearColId(year),
+        headerName: String(year),
+        width: 110,
         editable: true,
-        cellEditor: 'agSelectCellEditor',
-        cellEditorParams: { values: dim.categories.map((c) => c.uuid) },
-        valueGetter: (p) => p.data?.categoryByDim[dim.id] ?? '',
+        type: 'numericColumn',
+        valueGetter: (p) => {
+          const c = p.data?.cells[yearColId(year)];
+          return c?.type === 'Value' ? c.value : null;
+        },
         valueSetter: (p) => {
           if (!p.data) return false;
-          p.data.categoryByDim = { ...p.data.categoryByDim, [dim.id]: p.newValue as string };
+          const raw: unknown = p.newValue;
+          const next = raw === null || raw === '' ? null : Number(raw);
+          if (next !== null && !Number.isFinite(next)) return false;
+          const prev = p.data.cells[yearColId(year)];
+          const dataPointId = prev?.type === 'Value' ? prev.dataPointId : null;
+          p.data.cells[yearColId(year)] = {
+            type: 'Value',
+            dataPointId,
+            value: next,
+            year,
+          };
           return true;
         },
-        valueFormatter: (p: { value: string }) => catLabel.get(p.value) ?? p.value,
+        valueFormatter: (p: { value: number | null }) =>
+          p.value != null ? p.value.toLocaleString(undefined, { maximumFractionDigits: 6 }) : '',
       });
     }
     cols.push({
-      field: 'value',
-      headerName: 'Value',
-      width: 130,
-      editable: true,
-      type: 'numericColumn',
-      valueParser: (p: { newValue: string }) => {
-        const n = Number(p.newValue);
-        return Number.isFinite(n) ? n : null;
-      },
-      valueFormatter: (p: { value: number | null }) =>
-        p.value != null ? p.value.toLocaleString(undefined, { maximumFractionDigits: 6 }) : '',
-    });
-    cols.push({
-      colId: 'actions',
+      colId: ACTIONS_COL,
       headerName: '',
       width: 60,
+      pinned: 'right',
+      lockPinned: true,
+      resizable: false,
       sortable: false,
       filter: false,
       editable: false,
-      cellRenderer: (p: ICellRendererParams<Row>) => (
-        <Tooltip title="Delete">
+      cellRenderer: (p: ICellRendererParams<GridRow>) => (
+        <Tooltip title="Delete all values in this row">
           <IconButton
             size="small"
             onClick={() => {
-              if (p.data) void handleDelete(p.data.id);
+              if (p.data) void handleRowDelete(p.data);
             }}
           >
             <Trash />
@@ -186,51 +325,65 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       ),
     });
     return cols;
-  }, [dataset.dimensions, dataset.metrics, metricById, handleDelete]);
+  }, [dataset.dimensions, years, handleRowDelete]);
 
   const handleCellChange = useCallback(
-    async (event: CellValueChangedEvent<Row>) => {
+    async (event: CellValueChangedEvent<GridRow>) => {
       if (!event.data) return;
       const row = event.data;
-      const colField = event.colDef.field;
       const colId = event.colDef.colId ?? '';
+      if (!colId.startsWith('col_year_')) return;
 
-      const baseVars = {
-        instanceId: instance.id,
-        datasetId: dataset.id,
-        dataPointId: row.id,
-      };
+      const year = Number(colId.slice('col_year_'.length));
+      const cell = row.cells[colId];
+      if (cell?.type !== 'Value') return;
+
+      const baseVars = { instanceId: instance.id, datasetId: dataset.id };
 
       try {
-        if (colField === 'date') {
-          await updateDataPoint({
-            variables: { ...baseVars, input: asUpdateInput({ date: row.date }) },
+        if (cell.dataPointId === null) {
+          if (cell.value === null) return; // empty → empty
+          const result = await createDataPoint({
+            variables: {
+              ...baseVars,
+              input: {
+                date: `${year}-01-01`,
+                value: cell.value,
+                metricId: row.metricId,
+                dimensionCategoryIds: Object.values(row.categoryByDim).filter(
+                  (v): v is string => v !== null
+                ),
+              },
+            },
           });
-        } else if (colField === 'value') {
-          await updateDataPoint({
-            variables: { ...baseVars, input: asUpdateInput({ value: row.value }) },
+          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+          if (payload?.__typename === 'OperationInfo') {
+            setError(payload.messages.map((m) => m.message).join('; '));
+          }
+        } else if (cell.value === null) {
+          const result = await deleteDataPoint({
+            variables: { ...baseVars, dataPointId: cell.dataPointId },
           });
-        } else if (colField === 'metricId') {
-          await updateDataPoint({
-            variables: { ...baseVars, input: asUpdateInput({ metricId: row.metricId }) },
-          });
-        } else if (colId.startsWith('dim-')) {
+          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+          if (msgs.length > 0) {
+            setError(msgs.map((m) => m.message).join('; '));
+          }
+        } else {
           await updateDataPoint({
             variables: {
               ...baseVars,
-              input: asUpdateInput({
-                dimensionCategoryIds: Object.values(row.categoryByDim),
-              }),
+              dataPointId: cell.dataPointId,
+              input: asUpdateInput({ value: cell.value }),
             },
           });
         }
-        onMutated();
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-        onMutated(); // refetch to revert optimistic row
+      } finally {
+        onMutated();
       }
     },
-    [instance.id, dataset.id, updateDataPoint, onMutated]
+    [instance.id, dataset.id, createDataPoint, updateDataPoint, deleteDataPoint, onMutated]
   );
 
   return (

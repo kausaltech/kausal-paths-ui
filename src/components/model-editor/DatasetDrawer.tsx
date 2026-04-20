@@ -1,7 +1,10 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
   Divider,
@@ -17,7 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { Link45deg, X } from 'react-bootstrap-icons';
+import { Link45deg, PencilSquare, X } from 'react-bootstrap-icons';
 
 import {
   type DatasetInfo,
@@ -153,7 +156,7 @@ function DatasetMetadata({
   );
 }
 
-function DatasetPortView({ port }: { port: DatasetPortData }) {
+function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: string | null }) {
   const usedDimensionKeys = new Set<string>();
   const usedCategoryKeysByDimension = new Map<string, Set<string>>();
   for (const metric of port.metrics) {
@@ -173,11 +176,35 @@ function DatasetPortView({ port }: { port: DatasetPortData }) {
 
   return (
     <Box>
-      {port.boundMetric && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Bound metric: <strong>{port.boundMetric.label}</strong>
-        </Typography>
-      )}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+          mb: 1,
+        }}
+      >
+        {port.boundMetric ? (
+          <Typography variant="body2" color="text.secondary">
+            Bound metric: <strong>{port.boundMetric.label}</strong>
+          </Typography>
+        ) : (
+          <Box />
+        )}
+        {editHref && (
+          <Button
+            component={Link}
+            href={editHref}
+            size="small"
+            variant="outlined"
+            startIcon={<PencilSquare size={12} />}
+            sx={{ textTransform: 'none', py: 0.25, fontSize: 12 }}
+          >
+            Edit dataset
+          </Button>
+        )}
+      </Box>
 
       <DatasetMetadata
         dataset={port.dataset}
@@ -213,6 +240,7 @@ type Props = {
 
 export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width, zIndex }: Props) {
   const { datasetPorts, loading, error, fetch } = useDatasetData(nodeId);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (open && nodeId) fetch();
@@ -222,6 +250,13 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
 
   const filtered = bindingId ? datasetPorts.filter((p) => p.bindingId === bindingId) : datasetPorts;
   const title = `Input dataset${filtered.length === 1 ? `: ${filtered[0].dataset.name}` : ''}`;
+
+  // Model-editor base URL (locale + instance prefix) derived from the current
+  // pathname so edit links land on the same instance the user is editing.
+  const editorBase = useMemo(() => {
+    const idx = pathname.indexOf('/model-editor');
+    return idx >= 0 ? pathname.slice(0, idx) + '/model-editor' : null;
+  }, [pathname]);
 
   return (
     <Drawer
@@ -284,7 +319,12 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
                 {port.boundMetric && ` → ${port.boundMetric.label}`}
               </Typography>
             )}
-            <DatasetPortView port={port} />
+            <DatasetPortView
+              port={port}
+              editHref={
+                editorBase ? `${editorBase}/datasets/${encodeURIComponent(port.dataset.id)}` : null
+              }
+            />
             {idx < filtered.length - 1 && <Divider sx={{ my: 2 }} />}
           </Box>
         ))}
