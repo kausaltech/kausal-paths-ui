@@ -849,7 +849,7 @@ function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add data point</DialogTitle>
+      <DialogTitle>Add row</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
