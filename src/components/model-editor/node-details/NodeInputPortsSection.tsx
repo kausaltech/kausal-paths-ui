@@ -132,6 +132,25 @@ export default function NodeInputPortsSection({
           connectedEdges.length === 1
             ? (nodeMap.get(connectedEdges[0].fromRef.nodeId) ?? null)
             : null;
+        // For a port with no explicit label, derive the name the
+        // formula/runtime references. Formula-node conventions:
+        //   - dataset binding: always referenced as "reference"
+        //   - edge binding: first edge tag (alias) or source-node identifier
+        // `tags` cast: codegen is blocked by unrelated schema drift; the
+        // fragment fetches `tags` at runtime.
+        const singleEdgeTags =
+          connectedEdges.length === 1
+            ? ((connectedEdges[0] as (typeof connectedEdges)[0] & { tags: readonly string[] })
+                .tags ?? [])
+            : [];
+        const hasSingleDataset = datasetBindings.length === 1 && connectedEdges.length === 0;
+        const derivedPortName = port.label
+          ? null
+          : hasSingleDataset
+            ? 'reference'
+            : singleSourceNode
+              ? (singleEdgeTags[0] ?? singleSourceNode.identifier)
+              : null;
 
         return (
           <Box key={port.id}>
@@ -154,7 +173,7 @@ export default function NodeInputPortsSection({
                   cursor: 'help',
                 }}
               >
-                {port.label ?? `Port #${index + 1}`}
+                Port: {port.label ?? derivedPortName ?? `#${index + 1}`}
                 {port.multi ? ' (multi)' : ''}
                 <InfoSquare size={10} aria-label="Port info" />
               </Typography>

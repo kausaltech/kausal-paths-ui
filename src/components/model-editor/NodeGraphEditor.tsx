@@ -188,6 +188,7 @@ const GET_NODE_GRAPH = gql`
   }
   fragment EditorNodeEdge on NodeEdgeType {
     id
+    tags
     fromRef {
       nodeId
       portId
