@@ -655,7 +655,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const hasPending = pendingCount > 0;
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <Stack
         direction="row"
         alignItems="center"
@@ -699,7 +699,8 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       <Box
         className="ag-theme-alpine"
         sx={{
-          height: 500,
+          flex: 1,
+          minHeight: 0,
           width: '100%',
           // Compact variant of the alpine theme — reduces row height, cell
           // padding, and font size. Scoped via className so the spacious
