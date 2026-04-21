@@ -5,7 +5,7 @@ import { type ReactNode, useState } from 'react';
 import type { Theme } from '@kausal/themes/types';
 
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
-import InstanceContext, { type InstanceContextType } from '@/common/instance';
+import InstanceContext, { type InstanceContextExtended } from '@/common/instance';
 import SiteContext, { type SiteContextType } from '@/context/site';
 import { InstanceThemeProvider } from './InstanceThemedStyles';
 
@@ -23,11 +23,21 @@ export function InstanceProviders({
   children,
 }: {
   siteContext: SiteContextType;
-  instanceContext: InstanceContextType;
+  instanceContext: InstanceContextExtended;
   themeProps: Theme;
   children: ReactNode;
 }) {
   const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
+
+  // TODO: remove when backend ships disableScenarioEditing and hideNodeDetails overrides
+  const mockedInstanceContext: InstanceContextExtended = {
+    ...instanceContext,
+    features: {
+      ...instanceContext.features,
+      disableScenarioEditing: true,
+      hideNodeDetails: false,
+    },
+  };
 
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
   const goals = instanceContext.goals;
@@ -51,7 +61,7 @@ export function InstanceProviders({
 
   return (
     <SiteContext.Provider value={[siteContext, setSiteContext]}>
-      <InstanceContext.Provider value={instanceContext}>
+      <InstanceContext.Provider value={mockedInstanceContext}>
         <InstanceThemeProvider themeProps={themeProps}>{children}</InstanceThemeProvider>
       </InstanceContext.Provider>
     </SiteContext.Provider>
