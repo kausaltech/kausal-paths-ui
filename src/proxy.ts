@@ -27,6 +27,8 @@ import {
   SUPPORTED_LANGUAGES_HEADER,
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
+import { auth } from './lib/auth';
+import { KAUSAL_PROVIDER_ID } from './lib/auth-const';
 import { getInstancesForRequest } from './middleware/context';
 
 type Instance = AvailableInstanceFragment;
@@ -154,6 +156,82 @@ function handleNonPagePaths(path: string) {
   return null;
 }
 
+/**
+ * Proactively refreshes the user's OAuth access token if it's near expiry,
+ * so RSC renders downstream see a fresh cookie. Propagates rotated cookies
+ * to BOTH the downstream request headers (so the RSC render reads them) and
+ * the outbound response (so the browser persists them).
+ *
+ * The /api/* routes are short-circuited before this runs (handleNonPagePaths),
+ * and /api/graphql refreshes independently in its own route handler, since
+ * the proxy doesn't touch it. Route handlers can write cookies directly via
+ * better-auth's `nextCookies` plugin.
+ *
+ * Silent on failure: an expired refresh token, a missing account cookie, or
+ * a transient IdP error all produce `null`. The user either proceeds with
+ * the stale token (backend 401) or hits an auth gate on the next hop — we
+ * don't try to be clever here.
+ */
+async function refreshAccessTokenIfNeeded(
+  req: NextRequest,
+  reqHeaders: Headers
+): Promise<string[] | null> {
+  if (!getSessionCookie(req)) {
+    // Not signed in — nothing to refresh.
+    return null;
+  }
+  let setCookies: string[];
+  try {
+    const result = (await auth.api.getAccessToken({
+      body: { providerId: KAUSAL_PROVIDER_ID },
+      headers: req.headers,
+      returnHeaders: true,
+    })) as { headers: Headers; response: unknown };
+    setCookies = result.headers.getSetCookie();
+  } catch (error) {
+    // UNAUTHORIZED, FAILED_TO_GET_ACCESS_TOKEN, ACCOUNT_NOT_FOUND, etc.
+    // Logged by better-auth already; swallow here so proxy flow continues.
+    Sentry.captureException(error, { level: 'debug' });
+    return null;
+  }
+  if (setCookies.length === 0) {
+    // Token wasn't expired — no rotation, no cookies to forward.
+    return null;
+  }
+  mergeRequestCookies(reqHeaders, setCookies);
+  return setCookies;
+}
+
+/**
+ * Merge rotated cookies (from Set-Cookie lines) into the downstream request's
+ * Cookie header so RSC sees the fresh values via `next/headers` `cookies()`.
+ */
+function mergeRequestCookies(reqHeaders: Headers, setCookies: string[]) {
+  const existingMap = new Map<string, string>();
+  const existing = reqHeaders.get('cookie');
+  if (existing) {
+    for (const pair of existing.split(';')) {
+      const idx = pair.indexOf('=');
+      if (idx === -1) continue;
+      const name = pair.slice(0, idx).trim();
+      existingMap.set(name, pair.slice(idx + 1));
+    }
+  }
+  for (const line of setCookies) {
+    const firstPart = line.split(';')[0] ?? '';
+    const idx = firstPart.indexOf('=');
+    if (idx === -1) continue;
+    const name = firstPart.slice(0, idx).trim();
+    existingMap.set(name, firstPart.slice(idx + 1));
+  }
+  reqHeaders.set(
+    'cookie',
+    Array.from(existingMap.entries())
+      .map(([k, v]) => `${k}=${v}`)
+      .join('; ')
+  );
+}
+
 const OTEL_DEBUG = envToBool(process.env.OTEL_DEBUG, false);
 
 function getLoggerForRequest(req: NextRequest, host: string, path: string) {
@@ -271,6 +349,17 @@ async function proxy(req: NextRequest) {
     return errorResponse(req, reqHeaders, 'not-found');
   }
 
+  // Proactively refresh the access token before the RSC render runs. RSC
+  // can't set cookies, so this has to happen in the proxy. Skipped on
+  // /auth/* paths to avoid racing with the sign-in/out flow.
+  let refreshedSetCookies: string[] | null = null;
+  if (!match.path.startsWith('/auth/')) {
+    refreshedSetCookies = await refreshAccessTokenIfNeeded(req, reqHeaders);
+    if (refreshedSetCookies) {
+      logger.info({ count: refreshedSetCookies.length }, 'rotated auth cookies');
+    }
+  }
+
   // Determine locale from the URL path (after basePath is stripped)
   const { locale, path: pathWithoutLocale } = determineLocale(instance, match.path);
 
@@ -308,6 +397,13 @@ async function proxy(req: NextRequest) {
   i18nResponse.cookies.getAll().forEach((cookie) => {
     rewrittenResp.cookies.set(cookie);
   });
+
+  // Forward rotated auth cookies (if any) to the browser.
+  if (refreshedSetCookies) {
+    for (const line of refreshedSetCookies) {
+      rewrittenResp.headers.append('set-cookie', line);
+    }
+  }
 
   rewrittenResp.headers.set('Document-Policy', 'js-profiling');
   return rewrittenResp;
