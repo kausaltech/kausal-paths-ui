@@ -117,9 +117,9 @@ export default function NodeGraph(props: NodeGraphProps) {
     if (!onClickMeasuredEmissions || !startYear) return;
     // If the user clicks below the x axis, we do nothing
     if (dataPoint[1] < 0) return;
-    // If the clicked year is the reference year, we do nothing
-    // By definition reference year has no progress data
-    if (dataPoint[0] === 0 && referenceYear) return;
+    // If the clicked year is the first year, we do nothing
+    // By definition first year has no progress data
+    if (Math.abs(dataPoint[0]) === 0) return;
 
     // If some other year is clicked, we need to offset the index if referenceYear is present
     const offsetForReferenceYear = referenceYear ? 1 : 0;
