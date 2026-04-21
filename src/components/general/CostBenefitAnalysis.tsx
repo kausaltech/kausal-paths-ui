@@ -10,6 +10,7 @@ import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
+import { darken, lighten } from 'polished';
 import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
 import { Chart } from '@common/components/Chart';
@@ -268,28 +269,21 @@ function getActionChartConfig(
   };
 }
 
-const COST_SHADES = [
-  'red090',
-  'red070',
-  'red050',
-  'red030',
-  'red010',
-  'yellow050',
-  'yellow030',
-  'yellow010',
-] as const;
+function getCostBenefitShades(type: 'cost' | 'benefit', theme: Theme) {
+  const primaryColor = type === 'cost' ? theme.graphColors.red050 : theme.graphColors.green050;
 
-const BENEFIT_SHADES = [
-  'green090',
-  'green070',
-  'green050',
-  'green030',
-  'green010',
-  'blue070',
-  'blue050',
-  'blue030',
-  'blue010',
-] as const;
+  return [
+    darken(0.25, primaryColor),
+    darken(0.2, primaryColor),
+    darken(0.125, primaryColor),
+    darken(0.05, primaryColor),
+    primaryColor,
+    lighten(0.1, primaryColor),
+    lighten(0.15, primaryColor),
+    lighten(0.2, primaryColor),
+    lighten(0.3, primaryColor),
+  ];
+}
 
 /** Single synthetic outcome when the cost_type dimension is absent (empty legend label). */
 const SYNTHETIC_OUTCOME_COST_ID = '__synthetic_outcome_cost__';
@@ -301,6 +295,9 @@ function getStakeholderCostTypeData(
   endYear: number,
   theme: Theme
 ): StakeholderCostTypeData | null {
+  const costShades = getCostBenefitShades('cost', theme);
+  const benefitShades = getCostBenefitShades('benefit', theme);
+
   const stakeholderDim = metric.dimensions.find((d) => d.originalId === 'stakeholder');
   const costTypeDim = metric.dimensions.find((d) => d.originalId === 'cost_type');
 
@@ -340,13 +337,13 @@ function getStakeholderCostTypeData(
       ...costs.map((category, i) => ({
         originalId: category.originalId!,
         label: category.label,
-        color: theme.graphColors[COST_SHADES[i % COST_SHADES.length]],
+        color: costShades[i % costShades.length],
         isCost: true,
       })),
       ...benefits.map((category, i) => ({
         originalId: category.originalId!,
         label: category.label,
-        color: theme.graphColors[BENEFIT_SHADES[i % BENEFIT_SHADES.length]],
+        color: benefitShades[i % benefitShades.length],
         isCost: false,
       })),
     ];
