@@ -394,6 +394,19 @@ export type NodePageQuery = (
   & { __typename: 'Query' }
 );
 
+export type CreateInstanceFrameworkNameQueryVariables = Exact<{
+  identifier: Scalars['ID']['input'];
+}>;
+
+
+export type CreateInstanceFrameworkNameQuery = (
+  { framework: (
+    { id: string, name: string }
+    & { __typename: 'Framework' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type CreateInstanceMutationVariables = Exact<{
   input: CreateInstanceInput;
 }>;
@@ -414,6 +427,19 @@ export type CreateInstanceMutation = (
     )
    }
   & { __typename: 'Mutation' }
+);
+
+export type FrameworkNameQueryVariables = Exact<{
+  identifier: Scalars['ID']['input'];
+}>;
+
+
+export type FrameworkNameQuery = (
+  { framework: (
+    { id: string, name: string }
+    & { __typename: 'Framework' }
+  ) | null }
+  & { __typename: 'Query' }
 );
 
 export type RegisterUserMutationVariables = Exact<{
@@ -511,6 +537,20 @@ export type ModelNodesQuery = (
   & { __typename: 'Query' }
 );
 
+export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CanEditModelQuery = (
+  { instance: (
+    { id: string, nodes: Array<(
+      { id: string }
+      & { __typename: 'ActionNode' | 'Node' }
+    )> }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
 type StreamField_ZdQ8UWlP6f5e6Md3cdGwbo2c4Hrqm4yhimg5aq7Pma_Fragment = (
   { id: string | null, blockType: string, field: string }
   & { __typename: 'ActionImpactBlock' | 'BlockQuoteBlock' | 'BooleanBlock' | 'CallToActionBlock' | 'CategoryBreakdownBlock' | 'CharBlock' | 'ChoiceBlock' | 'CurrentProgressBarBlock' | 'DashboardCardBlock' | 'DateBlock' | 'DateTimeBlock' | 'DecimalBlock' | 'DocumentChooserBlock' | 'EmailBlock' | 'EmbedBlock' | 'FloatBlock' | 'GoalProgressBarBlock' | 'ImageBlock' | 'ImageChooserBlock' | 'IntegerBlock' }
@@ -531,13 +571,7 @@ type StreamField_CardListBlock_Fragment = (
 
 type StreamField_FrameworkLandingBlock_Fragment = (
   { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
-    { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
-      { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-        { id: string, name: string }
-        & { __typename: 'InstanceType' }
-      ) | null }
-      & { __typename: 'FrameworkConfig' }
-    )> }
+    { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean }
     & { __typename: 'Framework' }
   ) | null }
   & { __typename: 'FrameworkLandingBlock' }
@@ -614,6 +648,25 @@ export type NodeDetailsQuery = (
       & { __typename: 'DimensionalMetricType' }
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
+export type FrameworkConfigsQueryVariables = Exact<{
+  identifier: Scalars['ID']['input'];
+}>;
+
+
+export type FrameworkConfigsQuery = (
+  { framework: (
+    { id: string, configs: Array<(
+      { id: string, organizationName: string | null, viewUrl: string | null, instance: (
+        { id: string, name: string }
+        & { __typename: 'InstanceType' }
+      ) | null }
+      & { __typename: 'FrameworkConfig' }
+    )> }
+    & { __typename: 'Framework' }
   ) | null }
   & { __typename: 'Query' }
 );
@@ -2639,13 +2692,7 @@ export type ActionContentQuery = (
       )
       | (
         { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
-          { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
-            { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-              { id: string, name: string }
-              & { __typename: 'InstanceType' }
-            ) | null }
-            & { __typename: 'FrameworkConfig' }
-          )> }
+          { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean }
           & { __typename: 'Framework' }
         ) | null }
         & { __typename: 'FrameworkLandingBlock' }
@@ -3679,13 +3726,7 @@ export type PageQuery = (
         )
         | (
           { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
-            { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
-              { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-                { id: string, name: string }
-                & { __typename: 'InstanceType' }
-              ) | null }
-              & { __typename: 'FrameworkConfig' }
-            )> }
+            { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean }
             & { __typename: 'Framework' }
           ) | null }
           & { __typename: 'FrameworkLandingBlock' }
