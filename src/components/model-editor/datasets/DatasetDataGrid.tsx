@@ -693,7 +693,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           onClick={() => setAddOpen(true)}
           disabled={dataset.metrics.length === 0}
         >
-          Add data point
+          Add row
         </Button>
       </Stack>
       <Box

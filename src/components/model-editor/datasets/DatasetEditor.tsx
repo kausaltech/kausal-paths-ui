@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
@@ -24,6 +25,7 @@ import {
   CaretDownFill,
   CaretRightFill,
   Link45deg,
+  PencilSquare,
   Plus,
   Sliders,
   Trash,
@@ -479,20 +481,31 @@ export default function DatasetEditor({ datasetId }: Props) {
                       sx={{ mb: 1 }}
                     >
                       <Typography variant="subtitle2">{dim.name}</Typography>
-                      <Tooltip title="Detach dimension">
-                        <span>
+                      <Stack direction="row">
+                        <Tooltip title="Edit">
                           <IconButton
                             size="small"
-                            onClick={() =>
-                              setNotice(
-                                'Detaching dimensions is not yet implemented on the backend.'
-                              )
-                            }
+                            component={Link}
+                            href={`${modelEditorBase}/dimensions/${encodeURIComponent(dim.id)}`}
                           >
-                            <Trash />
+                            <PencilSquare />
                           </IconButton>
-                        </span>
-                      </Tooltip>
+                        </Tooltip>
+                        <Tooltip title="Detach dimension">
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                setNotice(
+                                  'Detaching dimensions is not yet implemented on the backend.'
+                                )
+                              }
+                            >
+                              <Trash />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Stack>
                     </Stack>
                     <DimensionCategories dim={dim} usedCategoryUuids={usedCategoryUuids} />
                   </Paper>
@@ -540,7 +553,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                                   )
                                 }
                               >
-                                <Plus style={{ transform: 'rotate(45deg)' }} />
+                                <PencilSquare />
                               </IconButton>
                             </span>
                           </Tooltip>
