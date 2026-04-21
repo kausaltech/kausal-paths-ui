@@ -110,10 +110,100 @@ RSC renders are read-only (no mutations that would change session state).
 
 **proxy.ts (request interception):**
 
-Does not extract or forward tokens. Only checks for the _existence_ of
-the session cookie via `getSessionCookie(req)` and redirects to
-`/auth/sign-in` if absent. This is an optimistic check — the cookie
-is not validated, just detected.
+Does not forward tokens to downstream services itself, but _does_
+proactively refresh the access token before the RSC render runs (see
+"Token Refresh" below). Also checks for the _existence_ of the session
+cookie via `getSessionCookie(req)` and redirects to `/auth/sign-in` if
+absent on protected instances. The existence check is optimistic — the
+cookie is not validated, just detected.
+
+## Token Refresh
+
+OAuth access tokens expire. When expired, the backend 401s and the UI
+breaks. We refresh proactively rather than reactively, in two places:
+
+| Entry point    | Runs in                | Helper                             |
+| -------------- | ---------------------- | ---------------------------------- |
+| `src/proxy.ts` | Middleware (Node)      | `auth.api.getAccessToken` directly |
+| `/api/graphql` | Route Handler          | `getFreshAccessToken()`            |
+| RSC render     | React Server Component | `getAccessToken()` (**read-only**) |
+
+### Why two entry points
+
+- **Route handlers** can write cookies freely, so `/api/graphql` can
+  delegate to `getFreshAccessToken()` which calls `auth.api.getAccessToken`.
+  Better-auth's `nextCookies` plugin persists rotated tokens via
+  `cookies().set()` in the response.
+- **RSC cannot set cookies.** If RSC triggered a refresh, it would mint
+  a new token with the IdP but be unable to persist the rotated cookie —
+  which, with refresh-token rotation enabled on the IdP, would consume
+  the one-shot refresh token and leave the browser holding a now-dead
+  one. So RSC uses the read-only `getAccessToken()` helper, and the
+  proxy runs the refresh beforehand.
+- The proxy runs on every page / RSC request. For `/api/graphql` the
+  proxy short-circuits (`NON_PAGE_PATHS`) — that's why the route
+  handler needs its own refresh call.
+
+### Proxy flow
+
+`refreshAccessTokenIfNeeded(req, reqHeaders)` in `src/proxy.ts`:
+
+1. Short-circuits if there's no `better-auth.session_token` cookie.
+2. Calls `auth.api.getAccessToken({ body: { providerId }, headers,
+returnHeaders: true })`. Better-auth checks `accessTokenExpiresAt`
+   with a 5-second skew and refreshes via the IdP if near expiry.
+3. Reads `result.headers.getSetCookie()` — rotated account cookies.
+4. Merges rotated values into the downstream request's `Cookie`
+   header (`mergeRequestCookies`) so the RSC render sees the fresh
+   cookie via `next/headers` `cookies()`.
+5. Appends each rotated `Set-Cookie` line to the final response so
+   the browser persists the new state.
+
+Skipped on `/auth/*` paths to avoid racing with the sign-in/out flow.
+
+### Helpers (`src/lib/auth-server.ts`)
+
+- `getAuthSession()` — reads the current session. No refresh.
+- `getAccessToken()` — reads the access token from the session.
+  **Read-only; safe in RSC.** Trusts the proxy to have refreshed first.
+- `getFreshAccessToken()` — calls `auth.api.getAccessToken`, which
+  refreshes via IdP if expired and persists via `nextCookies`. **Only
+  call from contexts that can write cookies** (Route Handlers, Server
+  Actions). Calling from RSC is unsafe — see rationale above.
+
+### Failure modes and the rotation race
+
+If the refresh token is expired or revoked, `auth.api.getAccessToken`
+throws `FAILED_TO_GET_ACCESS_TOKEN`. We swallow the error (logged to
+Sentry at debug level) and proceed. The user's next authenticated
+request will surface the 401 or hit the sign-in gate.
+
+**Multi-pod rotation race (accepted):** Pods have no stickiness, and
+account state lives only in the cookie (no DB row to lock on). If two
+requests concurrently hit different pods with the same expired-but-
+refreshable token, both call the IdP's refresh endpoint. If the IdP
+rotates refresh tokens (Keycloak's "Revoke Refresh Token" setting,
+most OAuth providers' default), one refresh wins and the other's
+rotated cookie ends up invalid on persist. Whichever `Set-Cookie`
+reaches the browser last wins; the losing pod's response carries a
+dead refresh token.
+
+We accept this race because:
+
+- The common case is cold-start — a single HTML request after idle
+  time, then subsequent queries all go through `/api/graphql` where
+  the route handler centralises refresh.
+- When the race does trigger (parallel RSC subrequests, or tab
+  reawakens mid-navigation), the user eats a re-auth. Annoying,
+  not broken.
+- The alternatives — DB-backed accounts with row locks, distributed
+  Redis locks, or disabling refresh-token rotation at the IdP — are
+  heavier than the problem warrants today.
+
+If the re-auth frequency becomes a real complaint, the cheapest
+escalation is to disable refresh-token rotation in the IdP; the
+second-cheapest is to move accounts to the DB and serialise refreshes
+with `SELECT ... FOR UPDATE`.
 
 ## Ephemeral Model State (Django Sessions)
 
