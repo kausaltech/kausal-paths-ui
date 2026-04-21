@@ -38,11 +38,13 @@ export const draftHeadTokenVar = makeVar<string | null>(null);
  * link reads this on every operation — toggling re-runs any refetched query
  * against the new slice.
  *
- * Only consulted on `/model-editor/*` routes; non-editor surfaces stay on
- * the backend default (published-first).
+ * Currently pinned to PUBLISHED because preview-mode routing is gated off
+ * in `ApolloWrapper.detectPreviewMode` while the backend DRAFT hydrate bug
+ * is being fixed. All edits land on the published revision in place. Flip
+ * the default back to DRAFT once the backend is repaired.
  */
 export type EditorPreviewMode = 'DRAFT' | 'PUBLISHED';
-export const editorPreviewModeVar = makeVar<EditorPreviewMode>('DRAFT');
+export const editorPreviewModeVar = makeVar<EditorPreviewMode>('PUBLISHED');
 
 /**
  * Set to true when a mutation is rejected with a `stale_version` error —

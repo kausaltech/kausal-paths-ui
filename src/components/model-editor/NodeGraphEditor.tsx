@@ -786,7 +786,6 @@ function FlowEditor(props: {
               nodeTypes={nodeTypes}
               minZoom={0.2}
               maxZoom={5}
-              fitView={initialFitView}
               fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
             >
               <Background color="#f0f0f0" />

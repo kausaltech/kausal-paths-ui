@@ -29,7 +29,7 @@ import {
 } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useApolloClient, useQuery, useReactiveVar } from '@apollo/client/react';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import {
   BoxArrowUpRight,
   Box as BoxIcon,
@@ -40,11 +40,11 @@ import {
   FunnelFill,
   House,
   Search,
+  XLg,
 } from 'react-bootstrap-icons';
 
 import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
-import { editorPreviewModeVar } from './queries';
 
 const GET_NODE_SEARCH_LIST = gql`
   query EditorNodeSearchList {
@@ -292,6 +292,18 @@ export default function ModelEditorNav() {
                       <Search size={14} />
                     </InputAdornment>
                   ),
+                  endAdornment: query ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setQuery('')}
+                        aria-label="Clear search"
+                        edge="end"
+                      >
+                        <XLg size={12} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
                 },
               }}
             />
@@ -417,30 +429,17 @@ export default function ModelEditorNav() {
   );
 }
 
+// Disabled while preview-mode routing is gated off in
+// `ApolloWrapper.detectPreviewMode`. Restore the interactive handler +
+// dynamic label once the backend DRAFT hydrate bug is fixed.
 function PreviewModeToggle() {
-  const mode = useReactiveVar(editorPreviewModeVar);
-  const client = useApolloClient();
-  const isDraft = mode === 'DRAFT';
-
-  const handleToggle = () => {
-    const next: typeof mode = isDraft ? 'PUBLISHED' : 'DRAFT';
-    editorPreviewModeVar(next);
-    // Refetch active queries so they re-issue against the new slice. Using
-    // `resetStore` would throw `Store reset while query was in flight` when
-    // any suspense query (e.g. NodeGraph) is mid-fetch — refetch is safe.
-    void client.refetchQueries({ include: 'active' });
-  };
-
-  const label = isDraft ? 'Draft' : 'Published';
-  const color = isDraft ? 'warning.main' : 'success.main';
-  const tooltip = isDraft
-    ? 'Showing the editor draft. Toggle to preview the published revision.'
-    : 'Showing the published revision (read-only). Toggle back to edit the draft.';
-
   return (
-    <Tooltip title={tooltip} placement="right">
+    <Tooltip
+      title="Draft mode is not yet available — all edits apply directly to the published model."
+      placement="right"
+    >
       <Box
-        component="label"
+        component="span"
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -448,18 +447,13 @@ function PreviewModeToggle() {
           px: 1,
           py: 0.5,
           userSelect: 'none',
-          color,
-          cursor: 'pointer',
+          color: 'success.main',
+          opacity: 0.6,
         }}
       >
-        <Switch
-          checked={isDraft}
-          onChange={handleToggle}
-          size="small"
-          color={isDraft ? 'warning' : 'success'}
-        />
+        <Switch checked={false} disabled size="small" color="success" />
         <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
-          {label}
+          Published
         </Typography>
       </Box>
     </Tooltip>

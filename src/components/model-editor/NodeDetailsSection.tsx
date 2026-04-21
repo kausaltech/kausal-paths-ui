@@ -442,7 +442,15 @@ type LiveColorFieldProps = {
 };
 
 function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
-  const hasColor = typeof value === 'string' && value !== '';
+  // Local draft so the color input reflects the user's in-progress pick
+  // while the native picker is open. Committing on every `onChange` would
+  // fire a mutation for each micro-movement in the picker — and back-to-
+  // back mutations race the `EditorPublishState` refetch, tripping the
+  // stale-version check on every event after the first. Commit once on
+  // blur (picker close) instead. Keyed on `nodeId` so switching nodes
+  // remounts and resets the draft to the new server value.
+  const [draft, setDraft] = useState<string | null>(value);
+  const hasColor = typeof draft === 'string' && draft !== '';
 
   return (
     <Box>
@@ -470,7 +478,7 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             overflow: 'hidden',
             flexShrink: 0,
             ...(hasColor
-              ? { bgcolor: value }
+              ? { bgcolor: draft }
               : {
                   backgroundImage:
                     'linear-gradient(45deg, transparent 45%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.3) 55%, transparent 55%)',
@@ -480,8 +488,11 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
         >
           <input
             type="color"
-            value={hasColor ? value : '#000000'}
-            onChange={(e) => onCommit(e.target.value)}
+            value={hasColor ? draft : '#000000'}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={() => {
+              if (draft !== value) onCommit(draft);
+            }}
             style={{
               position: 'absolute',
               inset: 0,
@@ -503,7 +514,7 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             flex: 1,
           }}
         >
-          {hasColor ? value : 'No color'}
+          {hasColor ? draft : 'No color'}
         </Typography>
       </Box>
     </Box>
@@ -597,6 +608,7 @@ export default function NodeDetailsSection({
       />
 
       <LiveColorField
+        key={`color:${node.id}`}
         nodeId={node.id}
         value={node.color ?? null}
         onCommit={(next) => {

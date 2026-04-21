@@ -7,7 +7,6 @@ import {
 } from '@apollo/client-integration-nextjs';
 
 import { getApolloClientConfig } from '@/common/apollo-config';
-import { editorPreviewModeVar } from '@/components/model-editor/queries';
 
 type Props = {
   locale: string;
@@ -16,19 +15,16 @@ type Props = {
 } & React.PropsWithChildren;
 
 /**
- * Editor routes must opt into a slice explicitly — after the backend's
- * Phase-4 resolver split, the default resolves against the latest published
- * revision. `editorPreviewModeVar` is the user-facing toggle (DRAFT by
- * default); on non-editor routes we return null so the backend uses its
- * published-first default.
- *
- * Keyed on `window.location.pathname` so client-side navigation between
- * editor and public pages switches mode without recreating Apollo.
+ * Preview-mode routing is disabled while the backend's
+ * `_create_from_published_revision` hydrate bug is being fixed. Returning
+ * `null` keeps the `preview` arg off the `@instance` directive so the
+ * backend serves its publish-first default everywhere. Re-enable by
+ * threading `editorPreviewModeVar` / the `?preview=` URL param back through
+ * here once the backend hydrate no longer stomps snapshot specs with live
+ * DB state.
  */
 function detectPreviewMode() {
-  if (typeof window === 'undefined') return null;
-  if (!window.location.pathname.includes('/model-editor')) return null;
-  return editorPreviewModeVar();
+  return null;
 }
 
 export function ApolloWrapper({ locale, instanceIdentifier, instanceHostname, children }: Props) {

@@ -1,9 +1,10 @@
-import { useReactiveVar } from '@apollo/client/react';
-
-import { editorPreviewModeVar } from './queries';
-
-/** True when the editor is showing the published revision and edits must be suppressed. */
+/**
+ * Always returns `false` while preview-mode routing is disabled (see
+ * `ApolloWrapper.detectPreviewMode`). All mutations hit the backend's
+ * publish-first default slice, so the editor is effectively editing the
+ * published revision in place. Restore the `editorPreviewModeVar` check
+ * once the backend DRAFT hydrate bug is fixed.
+ */
 export function useIsEditorReadOnly(): boolean {
-  const mode = useReactiveVar(editorPreviewModeVar);
-  return mode === 'PUBLISHED';
+  return false;
 }

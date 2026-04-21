@@ -159,6 +159,11 @@ type Options = {
  * written to React Flow. Gate viewport-manipulating effects on
  * `returned === currentSourceNodes` to avoid racing against in-flight layouts.
  */
+function structuralSignature(nodes: readonly ElkNodeType[]): string {
+  const ids = nodes.map((n) => n.id).sort();
+  return ids.join('\0');
+}
+
 export default function useLayoutNodes(
   instanceId: string,
   sourceNodes: readonly ElkNodeType[],
@@ -170,6 +175,10 @@ export default function useLayoutNodes(
   const { getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
   const lastSourceNodesRef = useRef<readonly ElkNodeType[] | null>(null);
   const lastResetTriggerRef = useRef(-1);
+  // Tracks the id-set + reset-trigger pair that last produced a fitView.
+  // Data-only updates (e.g. a node rename) reuse the same structure, so we
+  // skip the viewport refit and preserve the user's zoom/pan.
+  const lastFitStructureRef = useRef<string | null>(null);
   // Supersession refs — let async callbacks detect whether a newer layout
   // request has arrived without relying on effect cleanup (cleanup would
   // also fire on the transient `nodesInitialized` flip that `setNodes`
@@ -210,6 +219,12 @@ export default function useLayoutNodes(
     const cache = loadLayoutCache(instanceId);
     const missing = nodes.filter((n) => !(n.id in cache));
 
+    // Suppress `fitView` on data-only updates (e.g. node rename): the id set
+    // is identical and resetTrigger hasn't bumped, so the viewport stays put.
+    // `resetTrigger` is folded into the key so an explicit reset always refits.
+    const structureKey = `${resetTrigger}:${structuralSignature(nodes)}`;
+    const structureUnchanged = lastFitStructureRef.current === structureKey;
+
     const finishWith = (laidOut: ElkNodeType[]) => {
       if (!isCurrent()) return;
       // Sort each node's handles by the Y of their connected peers so edges
@@ -223,9 +238,10 @@ export default function useLayoutNodes(
       });
       requestAnimationFrame(() => {
         if (!isCurrent()) return;
-        if (!skipFitView) {
+        if (!skipFitView && !structureUnchanged) {
           fitView();
         }
+        lastFitStructureRef.current = structureKey;
         setAppliedNodes(sourceNodes);
         const metrics = computeLayoutMetrics(withPorts, edges);
         console.log(formatMetrics(metrics));
