@@ -1,6 +1,9 @@
 import { gql } from '@apollo/client';
+import * as Sentry from '@sentry/nextjs';
 
-import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
+import { ACTION_PARAMETER_FRAGMENT } from '@/queries/actionParameterFragment';
+
+Sentry.captureException(new Error('test'));
 
 export const scenarioFragment = gql`
   fragment Scenario on ScenarioType {

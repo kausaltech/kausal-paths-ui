@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { useApolloClient } from '@apollo/client';
-import styled from '@emotion/styled';
 import {
   Button,
   Card,
@@ -11,7 +9,11 @@ import {
   Portal,
   Typography,
 } from '@mui/material';
+
+import { useApolloClient } from '@apollo/client/react';
 import { ArrowClockwise, X } from 'react-bootstrap-icons';
+
+import styled from '@common/themes/styled';
 
 const DISABLE_REFRESH_PROMPT = 'hideRefreshPrompt';
 const TEN_MINS = 10 * 60 * 1000;
@@ -27,7 +29,9 @@ function getIsPromptDisabled() {
 function storeDisableRefreshPrompt() {
   try {
     localStorage.setItem(DISABLE_REFRESH_PROMPT, 'true');
-  } catch {}
+  } catch {
+    // ignore
+  }
 }
 
 /**

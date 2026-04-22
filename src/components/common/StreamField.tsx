@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 import type { StreamFieldFragment } from '@/common/__generated__/graphql';
-
+import { FrameworkLanding } from '@/components/general/FrameworkLanding';
 import { CardListBlock } from './CardListBlock';
 import RichText from './RichText';
 
@@ -10,7 +10,6 @@ export const STREAM_FIELD_FRAGMENT = gql`
     id
     blockType
     field
-
     ... on RichTextBlock {
       value
       rawValue
@@ -27,6 +26,30 @@ export const STREAM_FIELD_FRAGMENT = gql`
         __typename
         title
         shortDescription
+      }
+    }
+
+    ... on FrameworkLandingBlock {
+      heading
+      body
+      ctaLabel
+      ctaUrl
+      framework {
+        id
+        identifier
+        name
+        description
+        allowUserRegistration
+        allowInstanceCreation
+        configs {
+          id
+          organizationName
+          viewUrl
+          instance {
+            id
+            name
+          }
+        }
       }
     }
   }
@@ -51,6 +74,9 @@ export function StreamField({ block }: Props) {
           title={block.title ?? undefined}
         />
       );
+
+    case 'FrameworkLandingBlock':
+      return <FrameworkLanding block={block} />;
 
     default:
       return null;

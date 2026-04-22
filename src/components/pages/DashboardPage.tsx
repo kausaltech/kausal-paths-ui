@@ -1,6 +1,8 @@
-import { useTheme } from '@emotion/react';
 import { Box, Card, CardContent, CardMedia, Container, Stack, Typography } from '@mui/material';
+
 import { readableColor } from 'polished';
+
+import { useTheme } from '@common/themes';
 
 import {
   type DashboardCardVisualizationsFragment,
@@ -10,7 +12,6 @@ import {
   type ScenarioActionImpactsFieldsFragment,
   type ScenarioValueFieldsFragment,
 } from '@/common/__generated__/graphql';
-
 import CallToActionCard from '../common/CallToActionCard';
 import { PageHero } from '../common/PageHero';
 import DashboardNormalizationBar from '../general/DashboardNormalizationBar';

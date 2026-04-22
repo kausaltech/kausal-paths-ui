@@ -1,11 +1,13 @@
-import React, { Fragment, useMemo, useState } from 'react';
+import type React from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Box, Container } from '@mui/material';
+
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar, NavbarBrand } from 'reactstrap';
 
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 import { useTranslation } from '@/common/i18n';
@@ -261,14 +263,12 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
         <Container fixed maxWidth="xl" sx={{ backgroundColor: 'theme.brandNavBackground' }}>
           <TopNav expand="md" id="branding-navigation-bar" aria-label={siteTitle} container={false}>
             <NavbarBrand tag="span" className="me-auto">
-              <Link href="/" passHref>
-                <HomeLink href="dummy">
-                  {orgLogo}
-                  <SiteTitle>{siteTitle}</SiteTitle>
-                </HomeLink>
-              </Link>
+              <HomeLink href="/">
+                {orgLogo}
+                <SiteTitle>{siteTitle}</SiteTitle>
+              </HomeLink>
             </NavbarBrand>
-            <Nav navbar className="ml-auto d-none d-md-flex">
+            <Nav navbar className="ml-auto d-none d-md-flex" style={{ alignItems: 'center' }}>
               <LanguageSelector mobile={false} />
             </Nav>
             <NavbarToggler
@@ -302,11 +302,9 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
                       <NavItem key={page.slug} active={page.active}>
                         <NavLink>
                           <Link href={page.urlPath}>
-                            <a>
-                              <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
-                                {page.name}
-                              </NavHighlighter>
-                            </a>
+                            <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
+                              {page.name}
+                            </NavHighlighter>
                           </Link>
                         </NavLink>
                       </NavItem>
@@ -314,16 +312,14 @@ function GlobalNav(props: React.PropsWithChildren<GlobalNavProps>) {
                   )}
               </Nav>
               <Nav navbar className="d-md-none">
-                <LanguageSelector mobile />
+                <LanguageSelector mobile={true} />
               </Nav>
               {site.watchLink ? (
                 <Nav navbar>
                   <NavItem>
                     <NavLink>
                       <Link href={watchLinkUrl}>
-                        <a>
-                          <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
-                        </a>
+                        <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
                       </Link>
                     </NavLink>
                   </NavItem>

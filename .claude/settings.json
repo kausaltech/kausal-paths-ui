@@ -5,10 +5,18 @@
     "ENABLE_TOOL_SEARCH": "true"
   },
   "permissions": {
-    "allow": ["Bash(head*)"]
+    "allow": ["Bash(head*)", "Bash(pnpm list:*)"]
   },
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true,
-    "context7@claude-plugins-official": true
+    "context7@claude-plugins-official": true,
+    "vtsls@claude-code-lsps": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-lsps": {
+      "source": {
+        "source": "github",
+        "repo": "Piebald-AI/claude-code-lsps"
+      }
+    }
   }
 }

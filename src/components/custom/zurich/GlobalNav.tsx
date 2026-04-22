@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
+import Script from 'next/script';
 
-import Head from 'next/head';
-
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import * as Icon from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 import { Collapse, Nav, NavItem, Navbar } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 import { getThemeStaticURL } from '@common/themes/theme';
 
 import { useTranslation } from '@/common/i18n';
@@ -50,7 +49,7 @@ const SecondaryNav = styled(Navbar)`
   }
 `;
 
-const HomeLink = styled.a`
+const HomeLink = styled(Link)`
   display: flex;
   align-items: flex-start;
   color: ${(props) => props.theme.brandNavColor};
@@ -204,9 +203,7 @@ function GlobalNav(props: GlobalNavProps) {
   return (
     <>
       {isProductionDeployment() ? (
-        <Head>
-          <script key="zuerich-analytics" src={analyticsUrl} async />
-        </Head>
+        <Script key="zuerich-analytics" src={analyticsUrl} strategy="afterInteractive" />
       ) : null}
 
       <div className="header header--has-appnav">
@@ -214,11 +211,9 @@ function GlobalNav(props: GlobalNavProps) {
           <StyledHeaderMain className="header__main">
             <div className="header__logobar" id="branding-navigation-bar">
               <div className="header__logobar-logo">
-                <Link href="/" passHref>
-                  <HomeLink href="dummy" className="header__logo-link">
-                    {orgLogo}
-                  </HomeLink>
-                </Link>
+                <HomeLink href="/" className="header__logo-link">
+                  {orgLogo}
+                </HomeLink>
               </div>
               <NavbarToggler
                 onClick={() => toggleOpen(!isOpen)}
@@ -263,14 +258,10 @@ function GlobalNav(props: GlobalNavProps) {
                           active={page.active}
                         >
                           <NavLink>
-                            <Link href={page.urlPath}>
-                              <a data-testid={`navitem::${page.urlPath}`}>
-                                <NavHighlighter
-                                  className={`highlighter ${page.active && 'active'}`}
-                                >
-                                  {page.name}
-                                </NavHighlighter>
-                              </a>
+                            <Link href={page.urlPath} data-testid={`navitem::${page.urlPath}`}>
+                              <NavHighlighter className={`highlighter ${page.active && 'active'}`}>
+                                {page.name}
+                              </NavHighlighter>
                             </Link>
                           </NavLink>
                         </NavItem>
@@ -285,11 +276,7 @@ function GlobalNav(props: GlobalNavProps) {
                     <NavItem>
                       <NavLink>
                         <Link href={watchLinkUrl}>
-                          <a>
-                            <NavHighlighter className="highlighter">
-                              {watchLinkTitle}
-                            </NavHighlighter>
-                          </a>
+                          <NavHighlighter className="highlighter">{watchLinkTitle}</NavHighlighter>
                         </Link>
                       </NavLink>
                     </NavItem>

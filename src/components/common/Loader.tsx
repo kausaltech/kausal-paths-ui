@@ -1,7 +1,8 @@
 import React from 'react';
 
-import styled from '@emotion/styled';
 import { transparentize } from 'polished';
+
+import styled from '@common/themes/styled';
 
 export const KausalProgress = styled.div`
   width: 32px;

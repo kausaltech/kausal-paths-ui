@@ -1,6 +1,8 @@
-import { NetworkStatus, useQuery, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { NetworkStatus } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import {
   type ActionListQuery,
@@ -12,7 +14,6 @@ import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
 import ContentLoader from '@/components/common/ContentLoader';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
-
 import ParameterWidget from './ParameterWidget';
 
 const GlobalParametersPanel = styled.div`

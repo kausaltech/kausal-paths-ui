@@ -1,9 +1,12 @@
 import { forwardRef } from 'react';
 
-import { css } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Card } from '@mui/material';
+import { css } from '@emotion/react';
+
 import { CardBody, CardTitle } from 'reactstrap';
+
+import styled from '@common/themes/styled';
+import { transientOptions } from '@common/themes/styles/styled';
 
 type Props = {
   title: string;
@@ -11,7 +14,15 @@ type Props = {
   selected?: boolean;
 };
 
-const StyledCard = styled(Card)<{ $selected?: boolean }>`
+const UNSELECTED_ICON = `url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24'
+      fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath
+      d='M7.0406 8.29289C6.65008 7.90237 6.01691 7.90237 5.62639 8.29289C5.23586 8.68342
+      5.23586 9.31658 5.62639 9.70711L11.6264 15.7071C12.0169 16.0976 12.6501 16.0976
+      13.0406 15.7071L19.0406 9.70711C19.4311 9.31658 19.4311 8.68342 19.0406 8.29289C18.6501
+      7.90237 18.0169 7.90237 17.6264 8.29289L12.3335 13.5858L7.0406 8.29289Z'
+      fill='%23FFF'/%3E%3C/svg%3E")`;
+
+const StyledCard = styled(Card, transientOptions)<{ $selected?: boolean }>`
   cursor: ${({ $selected }) => ($selected ? 'default' : 'pointer')};
   min-width: 10rem;
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
@@ -36,8 +47,7 @@ const StyledCard = styled(Card)<{ $selected?: boolean }>`
     right: 0;
     bottom: 0;
     height: 30px;
-    background-color: ${({ $selected, theme }) =>
-      $selected ? theme.brandDark : theme.brandLight};
+    background-color: ${({ $selected, theme }) => ($selected ? theme.brandDark : theme.brandLight)};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,13 +56,9 @@ const StyledCard = styled(Card)<{ $selected?: boolean }>`
     content: ${({ $selected }) =>
       $selected
         ? '""'
-        : css`url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' 
-      fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath 
-      d='M7.0406 8.29289C6.65008 7.90237 6.01691 7.90237 5.62639 8.29289C5.23586 8.68342 
-      5.23586 9.31658 5.62639 9.70711L11.6264 15.7071C12.0169 16.0976 12.6501 16.0976 
-      13.0406 15.7071L19.0406 9.70711C19.4311 9.31658 19.4311 8.68342 19.0406 8.29289C18.6501 
-      7.90237 18.0169 7.90237 17.6264 8.29289L12.3335 13.5858L7.0406 8.29289Z'
-      fill='%23FFF'/%3E%3C/svg%3E")`};
+        : css`
+            ${UNSELECTED_ICON}
+          `};
   }
 `;
 

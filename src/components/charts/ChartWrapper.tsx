@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 import Loader from '@/components/common/Loader';
 

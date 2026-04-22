@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 export const StyledIndicator = styled.span`
   width: 16px;

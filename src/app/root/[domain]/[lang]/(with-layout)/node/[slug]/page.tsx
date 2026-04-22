@@ -1,0 +1,215 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
+
+import { Card, CardContent, Container } from '@mui/material';
+
+import { gql } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
+
+import { logApolloError } from '@common/logging/apollo';
+import styled from '@common/themes/styled';
+
+import type { NodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
+import { useTranslation } from '@/common/i18n';
+import { ActionLink } from '@/common/links';
+import ContentLoader from '@/components/common/ContentLoader';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import GraphQLError from '@/components/common/GraphQLError';
+import Icon from '@/components/common/icon';
+import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
+import NodeLinks from '@/components/general/NodeLinks';
+import ScenarioPanel from '@/components/scenario/ScenarioPanel';
+import { useSiteWithSetter } from '@/context/site';
+import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
+
+const HeaderSection = styled.div<{ $color?: string }>`
+  padding: 1rem 0 1rem;
+  background-color: ${(props) => props.$color || props.theme.graphColors.grey070};
+`;
+
+const PageHeader = styled.div`
+  margin: 1rem 02rem;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: ${(props) => props.theme.themeColors.dark};
+  }
+`;
+
+const NodeDescription = styled.div`
+  margin-bottom: 1rem;
+  max-width: 720px;
+`;
+
+const HeaderCard = styled.div`
+  margin: 1rem 0 0;
+  padding: 2rem;
+  border-radius: ${(props) => props.theme.cardBorderRadius};
+  background-color: ${(props) => props.theme.themeColors.white};
+`;
+
+const NodeBodyText = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const ContentWrapper = styled.div`
+  padding: 1.5rem;
+  margin: 0.5rem 0;
+  background-color: ${({ theme }) => theme.cardBackground.secondary};
+  border-radius: ${(props) => props.theme.cardBorderRadius};
+
+  .x2sstick text,
+  .xtick text {
+    text-anchor: end !important;
+  }
+`;
+
+const BodyText = styled.div`
+  padding: 1rem;
+`;
+
+const GET_NODE_PAGE_CONTENT = gql`
+  query NodePage($node: ID!, $scenarios: [String!]) {
+    node(id: $node) {
+      id
+      name
+      shortDescription
+      description
+      color
+      unit {
+        id
+        htmlShort
+      }
+      quantity
+      inputNodes {
+        id
+        name
+        shortDescription
+        color
+        unit {
+          id
+          htmlShort
+        }
+        quantity
+      }
+      outputNodes {
+        id
+        name
+        shortDescription
+        color
+        unit {
+          id
+          htmlShort
+        }
+        quantity
+      }
+      ...DimensionalNodeMetric
+    }
+  }
+  ${dimensionalNodePlotFragment}
+`;
+
+export default function NodePage() {
+  const params = useParams<{ slug: string }>();
+  const [site] = useSiteWithSetter();
+  const { t } = useTranslation();
+  const slug = params.slug;
+  const yearRange = useReactiveVar(yearRangeVar);
+
+  const { loading, error, data, refetch } = useQuery<NodePageQuery>(GET_NODE_PAGE_CONTENT, {
+    variables: {
+      node: slug,
+      scenarios: null,
+    },
+  });
+
+  const activeScenario = useReactiveVar(activeScenarioVar);
+
+  useEffect(() => {
+    if (!activeScenario?.id) return;
+    void refetch();
+  }, [activeScenario?.id, refetch]);
+
+  if (loading) {
+    return <ContentLoader fullPage />;
+  }
+  if (error || !data) {
+    if (error) {
+      logApolloError(error);
+    }
+    return <Container className="pt-5">{error && <GraphQLError error={error} />}</Container>;
+  }
+
+  const { node } = data;
+  if (!node) {
+    return (
+      <Container className="pt-5">
+        <ErrorMessage message={t('page-not-found')} />
+      </Container>
+    );
+  }
+
+  return (
+    <>
+      <title>
+        {site.title} | {node.name}
+      </title>
+      <HeaderSection $color={node.color || undefined}>
+        <Container fixed maxWidth="xl">
+          <PageHeader>
+            <ScenarioPanel />
+            <HeaderCard>
+              <div>{node.__typename === 'ActionNode' && <span>{t('action')}</span>}</div>
+              <h1>{node.name}</h1>
+              {node.shortDescription && (
+                <NodeDescription>
+                  <div dangerouslySetInnerHTML={{ __html: node.shortDescription }} />
+                </NodeDescription>
+              )}
+              <div>
+                {node.__typename === 'ActionNode' && (
+                  <ActionLink action={node}>
+                    {t('action-impact')} <Icon name="arrowRight" />
+                  </ActionLink>
+                )}
+              </div>
+              {node.metricDim && (
+                <ContentWrapper>
+                  <DimensionalNodeVisualisation
+                    title={node.name}
+                    key={node.id}
+                    metric={node.metricDim}
+                    startYear={yearRange[0]}
+                    endYear={yearRange[1]}
+                    color={node.color}
+                  />
+                </ContentWrapper>
+              )}
+            </HeaderCard>
+          </PageHeader>
+        </Container>
+      </HeaderSection>
+      {node.description && (
+        <NodeBodyText>
+          <Container fixed maxWidth="xl">
+            <Card>
+              <CardContent>
+                <BodyText dangerouslySetInnerHTML={{ __html: node.description }} />
+              </CardContent>
+            </Card>
+          </Container>
+        </NodeBodyText>
+      )}
+      <Container fixed maxWidth="xl">
+        <NodeLinks
+          outputNodes={node.outputNodes as unknown as OutcomeNodeFieldsFragment[]}
+          inputNodes={node.inputNodes as unknown as OutcomeNodeFieldsFragment[]}
+        />
+      </Container>
+    </>
+  );
+}

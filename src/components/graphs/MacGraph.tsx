@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
 import dynamic from 'next/dynamic';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Grid } from '@mui/material';
+
 import { useTranslations } from 'next-intl';
 import type Plotly from 'plotly.js';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { ActionListQuery } from '@/common/__generated__/graphql';
 import { useNumberFormatter } from '@/common/numbers';

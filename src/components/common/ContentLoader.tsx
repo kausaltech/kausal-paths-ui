@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 import { useTranslation } from '@/common/i18n';
-
 import { KausalProgress } from './Loader';
 
 const Loader = styled.div`

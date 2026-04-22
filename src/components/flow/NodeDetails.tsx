@@ -1,4 +1,3 @@
-import { gql, useQuery } from '@apollo/client';
 import {
   Accordion,
   AccordionDetails,
@@ -9,6 +8,9 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
+
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { Dash, PlusLg } from 'react-bootstrap-icons';
 
 import { logApolloError } from '@common/logging/apollo';
@@ -19,7 +21,6 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import GraphQLError from '@/components/common/GraphQLError';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 import type { Action, ConfigNode, Dataset, NodeReference } from '@/types/config.types';
-
 import ContentLoader from '../common/ContentLoader';
 import { NodeTypeIcon, getNodeTypeColor } from './NodeProcessing';
 
@@ -27,19 +28,20 @@ const GET_NODE_DETAILS = gql`
   query NodeDetails($node: ID!, $scenarios: [String!]) {
     node(id: $node) {
       id
-      nodeType
       name
       shortDescription
       description
       explanation
-      tags
       color
+      editor {
+        nodeType
+        tags
+      }
       unit {
         id
         htmlShort
       }
       quantity
-      inputDimensions
       inputNodes {
         id
         name
@@ -51,7 +53,6 @@ const GET_NODE_DETAILS = gql`
         }
         quantity
       }
-      outputDimensions
       outputNodes {
         id
         name
@@ -202,18 +203,20 @@ const NodeDetails = ({ nodeId, nodeExtras }: NodeDetailsProps) => {
 
   const nodeName = node.name;
   const nodeDescription = node.description || node.shortDescription;
-  const nodeTypeIcon = node?.nodeType ? (
-    <NodeTypeIcon nodeType={node.nodeType} size={16} style={{ margin: '0 -0.25rem 0 0.5rem' }} />
+  const nodeType = node.editor?.nodeType;
+  const nodeTags = node.editor?.tags ?? [];
+  const nodeTypeIcon = nodeType ? (
+    <NodeTypeIcon nodeType={nodeType} size={16} style={{ margin: '0 -0.25rem 0 0.5rem' }} />
   ) : null;
-  const nodeTypeColor = node?.nodeType
-    ? getNodeTypeColor(node.nodeType)
+  const nodeTypeColor = nodeType
+    ? getNodeTypeColor(nodeType)
     : { bg: '#fafafa', border: '#bdbdbd' };
 
   return (
     <Box sx={{ padding: 1 }}>
-      {node?.nodeType && (
+      {nodeType && (
         <Chip
-          label={node.nodeType.replace('nodes.', '').replace('actions.', '').replace('.', ' ')}
+          label={nodeType.replace('nodes.', '').replace('actions.', '').replace('.', ' ')}
           icon={nodeTypeIcon ? nodeTypeIcon : undefined}
           sx={{
             backgroundColor: nodeTypeColor.bg,
@@ -229,8 +232,8 @@ const NodeDetails = ({ nodeId, nodeExtras }: NodeDetailsProps) => {
         <Typography variant="h3" sx={{ mb: 1 }}>
           {nodeName}
         </Typography>
-        {node.tags && node.tags.length > 0 && (
-          <Box sx={{ fontSize: '0.8rem' }}>{node.tags.map((tag) => `#${tag}`).join(' ')}</Box>
+        {nodeTags.length > 0 && (
+          <Box sx={{ fontSize: '0.8rem' }}>{nodeTags.map((tag) => `#${tag}`).join(' ')}</Box>
         )}
         {node?.unit && <Chip label={`${node.unit.htmlShort} (${node.quantity})`} size="small" />}
       </Box>

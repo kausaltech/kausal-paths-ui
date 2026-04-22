@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-import styled from '@emotion/styled';
 import {
   Buildings,
   ClipboardX,
@@ -13,13 +12,14 @@ import {
 } from 'react-bootstrap-icons';
 import { Collapse } from 'reactstrap';
 
+import styled from '@common/themes/styled';
+
 import { useTranslation } from '@/common/i18n';
 import { NodeLink } from '@/common/links';
 import { getImpactMetricValue, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import Icon from '@/components/common/icon';
 import NodePlot from '@/components/general/NodePlot';
 import { useSite } from '@/context/site';
-
 import type { CausalGridNode } from './CausalGrid';
 import ImpactDisplay from './ImpactDisplay';
 
@@ -257,9 +257,7 @@ const CausalCard = (props: CausalCardProps) => {
             )}
             <MoreLink>
               <NodeLink node={node} className="node-type-icon">
-                <a>
-                  {t('details')} <Icon name="arrow-right" />
-                </a>
+                {t('details')} <Icon name="arrow-right" />
               </NodeLink>
             </MoreLink>
           </CardContent>

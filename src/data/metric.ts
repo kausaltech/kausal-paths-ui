@@ -84,16 +84,14 @@ export class MetricSlice {
   unit: string;
 
   constructor(input: MetricSliceInput) {
-    [
-      'historicalYears',
-      'forecastYears',
-      'categoryValues',
-      'totalValues',
-      'dimensionLabel',
-      'unit',
-    ].forEach((key) => {
-      this[key] = input[key];
-    });
+    const { historicalYears, forecastYears, categoryValues, totalValues, dimensionLabel, unit } =
+      input;
+    this.historicalYears = historicalYears;
+    this.forecastYears = forecastYears;
+    this.categoryValues = categoryValues;
+    this.totalValues = totalValues;
+    this.dimensionLabel = dimensionLabel;
+    this.unit = unit;
   }
 
   createTable() {
@@ -225,6 +223,9 @@ export class DimensionalMetric {
         ? data
         : this.filterMultipleScenarios(data, scenarioId);
 
+    this.valuesByDim = new Map();
+    this.dimsById = new Map();
+
     this.dimensions = this.data.dimensions.map((dimIn) => {
       const groups = dimIn.groups.map((grpIn) => ({
         ...grpIn,
@@ -301,7 +302,7 @@ export class DimensionalMetric {
   */
 
   getGoalsForChoice(categoryChoice: MetricCategoryChoice | null | undefined) {
-    let selectedCategories;
+    let selectedCategories: string[];
     if (categoryChoice) {
       selectedCategories = Object.values(categoryChoice)
         .map((ch) => ch?.categories ?? [])
@@ -728,12 +729,12 @@ export class DimensionalMetric {
     const unordered = filteredCategoryValues.filter((cv) => cv.category.order == null);
     if (sort) {
       let idx = historicalYears.length - 1;
-      let key = 'historicalValues';
+      let key: 'historicalValues' | 'forecastValues' = 'historicalValues';
       if (idx < 0) {
         idx = forecastYears.length - 1;
         key = 'forecastValues';
       }
-      unordered.sort((a, b) => b[key][idx] - a[key][idx]);
+      unordered.sort((a, b) => b[key][idx]! - a[key][idx]!);
     }
     const out: MetricSliceInput = {
       categoryValues: [...ordered, ...unordered],

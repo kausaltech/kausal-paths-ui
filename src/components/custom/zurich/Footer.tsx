@@ -1,6 +1,6 @@
 import React from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 const StyledFooter = styled.div`
   // Handle mystery regression in prod

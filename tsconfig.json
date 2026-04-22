@@ -1,21 +1,8 @@
 {
-  "extends": "./kausal_common/configs/tsconfig.json",
-  "compilerOptions": {
-    "jsx": "preserve",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@common/*": ["./kausal_common/src/*"],
-      "/*": ["./src/*"]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    "src/**/*",
-    "src/*",
-    "*.config.mjs",
-    "*.config.ts",
-    "*.config.js",
-    "codegen.ts"
-  ],
-  "exclude": ["node_modules"]
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "files": [],
+  "references": [
+    { "path": "./configs/tsconfig.next.json" },
+    { "path": "./configs/tsconfig.node.json" }
+  ]
 }

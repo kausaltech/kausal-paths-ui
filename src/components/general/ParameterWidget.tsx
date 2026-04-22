@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { gql, useMutation } from '@apollo/client';
-import styled from '@emotion/styled';
 import {
   CircularProgress,
   FormControlLabel,
@@ -12,7 +10,11 @@ import {
   TextField,
 } from '@mui/material';
 
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
+
 import { startInteraction } from '@common/sentry/helpers';
+import styled from '@common/themes/styled';
 
 import type {
   ActionParameterFragment,

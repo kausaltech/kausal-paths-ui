@@ -10,6 +10,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+
 import { BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';

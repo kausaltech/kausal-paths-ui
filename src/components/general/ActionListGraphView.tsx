@@ -1,11 +1,11 @@
-import { useQuery } from '@apollo/client';
 import { Container } from '@mui/material';
+
+import { useQuery } from '@apollo/client/react';
 
 import { type ActionListQuery, type ImpactOverviewsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
-
 import ActionsComparison from './ActionsComparison';
 import ActionsMac from './ActionsMac';
 import { CostBenefitAnalysis } from './CostBenefitAnalysis';

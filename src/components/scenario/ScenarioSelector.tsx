@@ -1,5 +1,3 @@
-import { gql, useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
 import {
   CircularProgress,
   FormControl,
@@ -8,8 +6,13 @@ import {
   Select,
   type SelectChangeEvent,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+import { gql } from '@apollo/client';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 
 import { startInteraction } from '@common/sentry/helpers';
+import { transientOptions } from '@common/themes/styles/styled';
 
 import type {
   ActivateScenarioMutation,
@@ -36,6 +39,7 @@ const ACTIVATE_SCENARIO = gql`
     }
   }
 `;
+
 const StyledFormControl = styled(FormControl)`
   max-width: 320px;
   min-width: 100px;
@@ -60,7 +64,7 @@ const StyledInputLabel = styled(InputLabel)`
   }
 `;
 
-const StyledSelect = styled(Select)<{ $custom: boolean }>`
+const StyledSelect = styled(Select<string>, transientOptions)<{ $custom: boolean }>`
   /* Make it look like Bootstrap form-control */
   .MuiSelect-select {
     padding: 8px 12px;
@@ -75,6 +79,7 @@ const StyledMenuItem = styled(MenuItem)<{ $custom?: boolean }>`
   background-color: ${(props) =>
     props.$custom ? props.theme.graphColors.yellow010 : 'transparent'};
 `;
+StyledMenuItem.displayName = 'StyledMenuItem';
 
 const isCustomScenario = (scenario: { id: string }) => {
   return scenario.id === 'custom';
@@ -151,7 +156,7 @@ export default function ScenarioSelector(props: { testId?: string }) {
       (scen) => scen.isSelectable && (hideBaseScenario ? scen.id !== 'baseline' : true)
     ) ?? [];
 
-  const handleChange = (event: SelectChangeEvent) => {
+  const handleChange = (event: SelectChangeEvent<string>) => {
     void startInteraction(
       () => activateScenario({ variables: { scenarioId: event.target.value } }),
       {

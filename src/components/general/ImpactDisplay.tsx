@@ -1,16 +1,16 @@
-import styled from '@emotion/styled';
 import { useTranslations } from 'next-intl';
+
+import styled from '@common/themes/styled';
 
 import { useFeatures } from '@/common/instance';
 import { useNumberFormatter } from '@/common/numbers';
-
 import HighlightValue from './HighlightValue';
 
 export const StyledDisplayWrapper = styled.div`
   border-radius: 0;
   border-top: 1px solid ${({ theme }) => theme.graphColors.grey030};
 
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     border-top: none;
   }
 `;

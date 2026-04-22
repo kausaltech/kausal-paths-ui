@@ -1,28 +1,21 @@
 import type { NextRequest } from 'next/server';
 
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  type NormalizedCacheObject,
-  gql,
-} from '@apollo/client';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, gql } from '@apollo/client';
 import * as Sentry from '@sentry/nextjs';
 import type { Logger } from 'pino';
 
-import { createSentryLink, logOperationLink } from '@common/apollo/links';
+import { createSentryLink, logOperationLink, retryLink } from '@common/apollo/links';
 import { getPathsGraphQLUrl } from '@common/env';
 import { envToBool } from '@common/env/utils';
 import { getClientIP } from '@common/utils';
-import LRUCache from '@common/utils/lru-cache';
+import { SWRCache } from '@common/utils/swr-cache';
 
 import type {
   AvailableInstanceFragment,
   AvailableInstancesQuery,
   AvailableInstancesQueryVariables,
 } from '@/common/__generated__/graphql';
-import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo';
+import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo-config';
 
 const GET_AVAILABLE_INSTANCES = gql`
   query AvailableInstances($hostname: String!) {
@@ -42,8 +35,7 @@ const GET_AVAILABLE_INSTANCES = gql`
   }
 `;
 
-const instanceCache = new LRUCache<string, AvailableInstanceFragment[]>();
-type ApolloClientType = ApolloClient<NormalizedCacheObject>;
+type ApolloClientType = ApolloClient;
 
 function createApolloClient(req: NextRequest, logger: Logger) {
   const uri = getPathsGraphQLUrl();
@@ -65,7 +57,9 @@ function createApolloClient(req: NextRequest, logger: Logger) {
 
   const client: ApolloClientType = new ApolloClient({
     ssrMode: false,
+
     link: ApolloLink.from([
+      retryLink,
       logOperationLink,
       createSentryLink(uri),
       new ApolloLink((operation, forward) => {
@@ -83,7 +77,9 @@ function createApolloClient(req: NextRequest, logger: Logger) {
       }),
       httpLink,
     ]),
+
     cache: new InMemoryCache(),
+
     defaultContext: {
       logger: logger,
     },
@@ -103,7 +99,7 @@ async function queryInstances(client: ApolloClientType, hostname: string, logger
     },
   });
   if (resp.error) {
-    throw resp.error;
+    throw resp.error as Error;
   }
   if (!resp.data || !resp.data.availableInstances) {
     throw new Error('Not found'); // fixme
@@ -113,20 +109,28 @@ async function queryInstances(client: ApolloClientType, hostname: string, logger
 
 const disableInstanceCache = envToBool(process.env.DISABLE_INSTANCE_LRU_CACHE, false);
 
-export async function getInstancesForRequest(req: NextRequest, hostname: string, logger: Logger) {
-  const instances = instanceCache.get(hostname);
-  if (instances && !disableInstanceCache) return instances;
+interface InstanceFetchCtx {
+  req: NextRequest;
+  logger: Logger;
+}
 
+async function fetchInstances(hostname: string, { req, logger }: InstanceFetchCtx) {
   const client = createApolloClient(req, logger);
-  let data: AvailableInstanceFragment[];
-  try {
-    data = await Sentry.withScope(async (scope) => {
-      scope.setTag('hostname', hostname);
-      return await queryInstances(client, hostname, logger);
-    });
-  } catch (error) {
-    throw error;
+  return await Sentry.withScope(async (scope) => {
+    scope.setTag('hostname', hostname);
+    return await queryInstances(client, hostname, logger);
+  });
+}
+
+const instanceCache = new SWRCache<string, AvailableInstanceFragment[], InstanceFetchCtx>({
+  fetcher: fetchInstances,
+  ttl: 2_000,
+});
+
+export async function getInstancesForRequest(req: NextRequest, hostname: string, logger: Logger) {
+  const ctx = { req, logger };
+  if (disableInstanceCache) {
+    return fetchInstances(hostname, ctx);
   }
-  instanceCache.set(hostname, data);
-  return data;
+  return instanceCache.get(hostname, ctx);
 }

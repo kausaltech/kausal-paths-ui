@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
+import { ACTION_PARAMETER_FRAGMENT } from './actionParameterFragment';
 
 const GET_ACTION_LIST = gql`
   query ActionList($goal: ID) {
@@ -121,6 +121,7 @@ const GET_ACTION_LIST = gql`
       }
     }
   }
+
   ${ACTION_PARAMETER_FRAGMENT}
 `;
 

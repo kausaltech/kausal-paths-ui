@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material';
+
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
 
 type ActionNode = Node<

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
+
 import { ChevronDown } from 'react-bootstrap-icons';
 
 const CONTENT = [

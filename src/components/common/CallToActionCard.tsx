@@ -1,4 +1,5 @@
 import { Card, CardContent, Link as MuiLink, Typography } from '@mui/material';
+
 import { ArrowRight } from 'react-bootstrap-icons';
 
 import { Link } from '@/common/links';

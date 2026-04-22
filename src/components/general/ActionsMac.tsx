@@ -1,4 +1,4 @@
-import { useReactiveVar } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
 import { type ActionListQuery, type ImpactOverviewsQuery } from '@/common/__generated__/graphql';

@@ -1,9 +1,8 @@
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 import type { PageQuery } from '@/common/__generated__/graphql';
 import { PageHero } from '@/components/common/PageHero';
 import { StreamField } from '@/components/common/StreamField';
-
 import type { PageRefetchCallback } from './Page';
 
 const BodyCard = styled.div`

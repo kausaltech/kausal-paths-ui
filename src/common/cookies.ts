@@ -1,5 +1,6 @@
-import * as cookie from 'cookie';
 import type { IncomingMessage } from 'http';
+
+import * as cookie from 'cookie';
 import type { NextApiResponse } from 'next';
 import setCookie from 'set-cookie-parser';
 

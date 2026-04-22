@@ -8,7 +8,9 @@ import type {
   OperationVariables,
 } from '@apollo/client';
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
-import { type Page, type PageScreenshotOptions, expect } from '@playwright/test';
+import { shouldIgnoreConsoleMessage } from '@e2e-common/console-output.js';
+import { type ConsoleMessage, test as baseTest } from '@playwright/test';
+import { type Page, type PageScreenshotOptions, type Response, expect } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
@@ -100,6 +102,9 @@ export type ApolloErrorContext = {
   component?: string;
 };
 
+export const test = baseTest.extend<{ ctx: InstanceContext }>({});
+export type TestType = typeof test;
+
 type LocaleDefs = Record<string, string>;
 
 const i18nRes = Object.fromEntries(
@@ -118,7 +123,7 @@ const i18nRes = Object.fromEntries(
 );
 
 function initI18n(lang: string) {
-  const errCallback = (err) => {
+  const errCallback = (err: unknown) => {
     if (err) console.error(err);
   };
   const fallbackLng = FALLBACK_LNG;
@@ -131,6 +136,7 @@ function initI18n(lang: string) {
       missingKeyHandler(lngs, ns, key, fallbackValue, updateMissing, options) {
         console.error('missing i18n key', lngs, ns, key, options);
       },
+      showSupportNotice: false,
     },
     errCallback
   );
@@ -143,6 +149,8 @@ export class InstanceContext {
   takeScreenshots: boolean;
   compareScreenshots: boolean;
 
+  consoleMessages: ConsoleMessage[];
+
   constructor(instance: InstanceInfo, baseURL: string) {
     this.instance = instance;
     this.baseURL = baseURL;
@@ -150,6 +158,102 @@ export class InstanceContext {
     this.i18n = initI18n(lng);
     this.takeScreenshots = process.env.TEST_TAKE_SCREENSHOTS === '1';
     this.compareScreenshots = process.env.TEST_COMPARE_SCREENSHOTS === '1';
+    this.consoleMessages = [];
+  }
+
+  static getBaseURL(instanceId: string) {
+    return getPageBaseUrlToTest(instanceId);
+  }
+
+  static getAnnotations(instanceId: string) {
+    return [
+      {
+        type: 'instance',
+        description: instanceId,
+      },
+      {
+        type: 'url',
+        description: this.getBaseURL(instanceId),
+      },
+    ];
+  }
+
+  static setupTests(instanceId: string, test: TestType) {
+    test.use({
+      // eslint-disable-next-line no-empty-pattern
+      ctx: async ({}, use) => {
+        const planInfo = await InstanceContext.fromInstanceId(instanceId);
+        await use(planInfo);
+      },
+    });
+    test.beforeEach(async ({ page, ctx }) => {
+      await ctx.beforeEach(page);
+    });
+    test.afterEach(async ({ page, ctx }) => {
+      await ctx.afterEach(page);
+    });
+  }
+
+  handleConsoleMessage = async (msg: ConsoleMessage) => {
+    if (shouldIgnoreConsoleMessage(msg)) {
+      return;
+    }
+    console.log(`Console message (${msg.type()}, ${msg.args().length} args):\n`);
+    const values: unknown[] = [];
+    for (const arg of msg.args()) values.push(await arg.jsonValue());
+    console.log(...values);
+    this.consoleMessages.push(msg);
+  };
+
+  handleNetworkResponse = async (response: Response) => {
+    const request = response.request();
+    const url = request.url();
+    const status = response.status();
+    if (url.endsWith('/api/graphql')) {
+      if (!response.ok()) {
+        throw new Error(`GraphQL request failed with status ${status}`);
+      }
+      let data: Record<string, unknown>;
+      try {
+        data = (await response.json()) as Record<string, unknown>;
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.message.includes('No data found for resource') ||
+            error.message.includes('Test ended'))
+        ) {
+          return;
+        }
+        throw error;
+      }
+      if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        console.log(data.errors);
+        throw new Error(`GraphQL request failed with ${data.errors.length} errors`);
+      }
+      return;
+    }
+    if (status >= 400) {
+      throw new Error(
+        `Network request ${url} failed with status ${status}: ${response.statusText()}`
+      );
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async beforeEach(page: Page) {
+    this.consoleMessages = [];
+    page.on('console', this.handleConsoleMessage);
+    page.on('response', this.handleNetworkResponse);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async afterEach(page: Page) {
+    page.off('response', this.handleNetworkResponse);
+    page.off('console', this.handleConsoleMessage);
+    if (process.env.TEST_ALLOW_CONSOLE_OUTPUT !== '0') return;
+    expect(this.consoleMessages.length, {
+      message: 'Test produced console output',
+    }).toBe(0);
   }
 
   // Returns the first page of the given type, or null if no such page exists
@@ -187,18 +291,20 @@ export class InstanceContext {
     await expect(page.locator('html')).toHaveAttribute('lang', this.i18n.language);
   }
 
-  async waitForLoaded(page: Page) {
+  async waitForLoaded(page: Page, opts: { timeout?: number } = {}) {
     await expect(page.locator('*[aria-busy=true]')).toHaveCount(0, {
-      timeout: 20000,
+      timeout: opts.timeout || 20000,
     });
   }
 
   async waitForNavbarVisible(page: Page) {
-    if ((await page.locator('nav#branding-navigation-bar').count()) > 1) {
-      await expect(page.locator('nav#branding-navigation-bar')).toBeVisible();
-    } else {
-      await expect(page.locator('nav#global-navigation-bar')).toBeVisible();
-    }
+    const brandingNav = page.locator('nav#branding-navigation-bar').first();
+    const globalNav = page.locator('nav#global-navigation-bar').first();
+    await expect
+      .poll(async () => (await brandingNav.isVisible()) || (await globalNav.isVisible()), {
+        timeout: 5000,
+      })
+      .toBeTruthy();
   }
 
   async takeScreenshot(
@@ -271,6 +377,23 @@ export class InstanceContext {
     }
     return new InstanceContext(data, baseURL);
   }
+}
+
+type InstanceTestFunction = ({ test }: { test: TestType }) => void;
+
+export function runInstanceTests(instanceId: string, fn: InstanceTestFunction) {
+  const annotations = InstanceContext.getAnnotations(instanceId);
+  test.describe(
+    instanceId,
+    {
+      annotation: annotations,
+    },
+    () => {
+      InstanceContext.setupTests(instanceId, test);
+      test.describe.configure({ mode: 'serial' });
+      fn({ test });
+    }
+  );
 }
 
 export function getIdentifiersToTest(): string[] {

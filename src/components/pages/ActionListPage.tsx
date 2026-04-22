@@ -1,9 +1,11 @@
 import { useState } from 'react';
 
-import { useQuery, useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
 import { Box, Container, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
+
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
+
+import styled from '@common/themes/styled';
 
 import {
   type ActionListQuery,
@@ -21,7 +23,6 @@ import { ActionListGraphView } from '@/components/general/ActionListGraphView';
 import ActionsList from '@/components/general/ActionsList';
 import { GET_ACTION_LIST } from '@/queries/getActionList';
 import type { SortActionsBy, SortActionsConfig } from '@/types/actions.types';
-
 import ScenarioPanel from '../scenario/ScenarioPanel';
 import type { PageRefetchCallback } from './Page';
 import { useActionListData } from './useActionListData';
@@ -134,7 +135,8 @@ function ActionListPage({ page }: ActionListPageProps) {
   const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
 
   const [sortBy, setSortBy] = useState<SortActionsConfig>(
-    sortOptions.find((sortOption) => sortOption.key === page.defaultSortOrder) ?? sortOptions[0]
+    sortOptions.find((sortOption) => sortOption.key === (page.defaultSortOrder as SortActionsBy)) ??
+      sortOptions[0]
   );
 
   const handleChangeSort = (sortBy: SortActionsBy) => {

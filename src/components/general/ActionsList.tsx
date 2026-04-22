@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 
-import { useTheme } from '@emotion/react';
 import {
   Box,
   Chip,
@@ -15,8 +14,11 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
+
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'react-bootstrap-icons';
+
+import { useTheme } from '@common/themes';
 
 import { DecisionLevel } from '@/common/__generated__/graphql';
 import { ActionLink } from '@/common/links';
@@ -136,11 +138,10 @@ export default function ActionsList({
           key: 'CUM_IMPACT',
           label: `${activeOverview?.label ?? t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
           getValue: (a) =>
-            a.cumulativeImpact != null
-              ? a.cumulativeImpact
-              : a.impactMetric
-                ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
-                : 0,
+            a.cumulativeImpact ??
+            (a.impactMetric
+              ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
+              : 0),
           getUnit: (a) => a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
         },
         {
@@ -407,7 +408,7 @@ export default function ActionsList({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <ActionLink action={action}>
                         <Typography
-                          component="a"
+                          component="span"
                           variant="h6"
                           sx={{ color: colors.title, textDecoration: 'none', cursor: 'pointer' }}
                         >
@@ -551,7 +552,7 @@ export default function ActionsList({
                         </Typography>
                         <ActionLink action={action}>
                           <Typography
-                            component="a"
+                            component="span"
                             variant="h6"
                             sx={{
                               color: colors.title,

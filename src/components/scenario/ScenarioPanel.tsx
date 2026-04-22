@@ -1,7 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
 import {
   Box,
   Button,
@@ -12,7 +10,12 @@ import {
   useMediaQuery,
   useScrollTrigger,
 } from '@mui/material';
+
+import { gql } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { Sliders } from 'react-bootstrap-icons';
+
+import { useTheme } from '@common/themes';
 
 import type {
   InstanceGoalOutcomeQuery,
@@ -22,7 +25,6 @@ import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/comm
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import { useSiteWithSetter } from '@/context/site';
-
 import GoalSelector from '../general/GoalSelector';
 import NormalizationWidget from '../general/NormalizationWidget';
 import YearRangeSelector from '../general/YearRangeSelector';
