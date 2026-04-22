@@ -1,3 +1,5 @@
+import { type Ref } from 'react';
+
 import { Alert } from '@mui/material';
 import { type Theme } from '@mui/material/styles';
 
@@ -10,7 +12,7 @@ import type {
 } from 'echarts/types/dist/shared';
 import { tint } from 'polished';
 
-import { Chart } from '@common/components/Chart';
+import { Chart, type ChartHandle } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import { sanitizeHtmlUnit } from '@common/utils/format';
 
@@ -57,6 +59,7 @@ type NodeGraphProps = {
   onClickMeasuredEmissions?: (year: number) => void;
   forecastTitle?: string;
   stackable?: boolean;
+  chartRef?: Ref<ChartHandle>;
 };
 
 type DataTable = (string | number | null | undefined)[][];
@@ -92,6 +95,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     onClickMeasuredEmissions,
     forecastTitle,
     stackable = true,
+    chartRef,
   } = props;
 
   // Figure out the start year of the dataset sans reference year
@@ -359,6 +363,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       height={CHART_HEIGHT}
       className="plot-container"
       onZrClick={handleChartClick}
+      ref={chartRef}
     />
   );
 }

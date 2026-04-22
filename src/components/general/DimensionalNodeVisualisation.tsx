@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   Box,
@@ -12,8 +12,9 @@ import {
 } from '@mui/material';
 
 import { useReactiveVar } from '@apollo/client/react';
-import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
+import { FiletypeCsv, FiletypePng, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
 
+import { type ChartHandle } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
@@ -119,12 +120,27 @@ const getFilteredYears = (
   return { filteredYears, yearIndices, referenceYear, visibleForecastRange };
 };
 
+const downloadChartAsPng = (dataUrl: string, filename: string) => {
+  const safeName = filename.replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '') || 'chart';
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = `${safeName}.png`;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 const ToolsMenu = ({
   cube,
   sliceConfig,
+  chartRef,
+  pngFilename,
 }: {
   cube: DimensionalMetricType;
   sliceConfig: SliceConfig;
+  chartRef: RefObject<ChartHandle | null>;
+  pngFilename: string;
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -136,6 +152,18 @@ const ToolsMenu = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleDownloadPng = () => {
+    const dataUrl = chartRef.current?.getDataURL({
+      type: 'png',
+      pixelRatio: 2,
+      backgroundColor: '#fff',
+    });
+    if (dataUrl) {
+      downloadChartAsPng(dataUrl, pngFilename);
+    }
+    handleClose();
   };
 
   return (
@@ -181,6 +209,12 @@ const ToolsMenu = ({
             <FiletypeCsv />
           </ListItemIcon>
           <ListItemText>CSV</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleDownloadPng}>
+          <ListItemIcon>
+            <FiletypePng />
+          </ListItemIcon>
+          <ListItemText>PNG</ListItemText>
         </MenuItem>
       </Menu>
     </Tools>
@@ -506,14 +540,16 @@ export default function DimensionalNodeVisualisation({
       </Grid>
     ) : null;
 
+  const chartRef = useRef<ChartHandle | null>(null);
+  const chartTitle =
+    `${title}` + (subtitle && activeDimensionLabel ? ` per ${activeDimensionLabel}` : '');
+
   return (
     <>
       {controls}
       <Box sx={{ position: 'relative' }}>
         <NodeGraph
-          title={
-            `${title}` + (subtitle && activeDimensionLabel ? ` per ${activeDimensionLabel}` : '')
-          }
+          title={chartTitle}
           subtitle={subtitle}
           dataTable={datasetTable}
           goalTable={goalTable}
@@ -529,8 +565,16 @@ export default function DimensionalNodeVisualisation({
           onClickMeasuredEmissions={onClickMeasuredEmissions}
           forecastTitle={forecastTitle}
           stackable={metric.stackable}
+          chartRef={chartRef}
         />
-        {withTools && <ToolsMenu cube={metrics.default} sliceConfig={sliceConfig} />}
+        {withTools && (
+          <ToolsMenu
+            cube={metrics.default}
+            sliceConfig={sliceConfig}
+            chartRef={chartRef}
+            pngFilename={chartTitle}
+          />
+        )}
       </Box>
     </>
   );
