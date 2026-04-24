@@ -1,6 +1,9 @@
-import type { ApolloError } from '@apollo/client';
 import { Button } from '@mui/material';
+
+import type { ErrorLike } from '@apollo/client/core';
+import { CombinedGraphQLErrors, CombinedProtocolErrors, LinkError } from '@apollo/client/errors';
 import * as Sentry from '@sentry/nextjs';
+import type { GraphQLFormattedError } from 'graphql';
 import { Alert, Card, CardBody, UncontrolledCollapse } from 'reactstrap';
 
 import { isProductionDeployment } from '@common/env';
@@ -8,7 +11,7 @@ import { isProductionDeployment } from '@common/env';
 import { useTranslation } from '@/common/i18n';
 
 type GraphQLErrorProps = {
-  error: ApolloError;
+  error: ErrorLike;
 };
 
 const GraphQLError = (props: GraphQLErrorProps) => {
@@ -18,15 +21,21 @@ const GraphQLError = (props: GraphQLErrorProps) => {
   let errorDetailMsg: string | null = null;
 
   Sentry.captureException(error);
-  if (error.networkError) {
-    errorDetailMsg = `${String(tErrors('network-error'))}: ${String(error.networkError)}`;
+  if (LinkError.is(error)) {
+    errorDetailMsg = `${String(tErrors('network-error'))}: ${String(error.message)}`;
+  }
+  let graphQLErrors: readonly GraphQLFormattedError[] | null;
+  if (CombinedGraphQLErrors.is(error) || CombinedProtocolErrors.is(error)) {
+    graphQLErrors = error.errors;
+  } else {
+    graphQLErrors = null;
   }
 
   return (
     <Alert color="warning">
       <h3>{t('error-loading-data')}</h3>
       {errorDetailMsg}
-      {!isProductionDeployment() && error.graphQLErrors?.length ? (
+      {!isProductionDeployment() && graphQLErrors?.length ? (
         <>
           <Button size="small" variant="outlined" id="toggler" className="mt-2 mb-2">
             {t('show-error')}
@@ -35,11 +44,11 @@ const GraphQLError = (props: GraphQLErrorProps) => {
             <Card>
               <CardBody>
                 <small>
-                  {error.graphQLErrors.map((err, idx) => (
+                  {graphQLErrors?.map((err, idx) => (
                     <pre key={idx}>
                       <p>
                         <code>
-                          <strong>{err?.message}</strong>
+                          <strong>{err.message}</strong>
                         </code>
                         <br />
                         <code>

@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-import { ACTION_PARAMETER_FRAGMENT } from '@/components/general/ActionParameters';
+import { ACTION_PARAMETER_FRAGMENT } from './actionParameterFragment';
 
 const GET_PARAMETERS = gql`
   query Parameters {

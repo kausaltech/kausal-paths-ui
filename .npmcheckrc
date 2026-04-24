@@ -1,0 +1,13 @@
+{
+  "depcheck": {
+    "ignoreMatches": [
+      "@trivago/prettier-plugin-sort-imports",
+      "@typescript-eslint/eslint-plugin",
+      "@sentry/cli",
+      "eslint-formatter-rdjson",
+      "graphql-config",
+      "source-map-loader",
+      "@common/*"
+    ]
+  }
+}

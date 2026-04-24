@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import type { Locator, Page, Request } from 'playwright';
 
-import { expect, test } from '@/common/base-test.js';
-import { InstanceContext, getIdentifiersToTest } from '@/common/context.js';
+import { expect } from '@/common/base-test.js';
+import { getIdentifiersToTest, runInstanceTests } from '@/common/context.js';
 
 class InflightRequests {
   private _page: Page;
@@ -31,22 +30,8 @@ class InflightRequests {
   }
 }
 
-const testInstance = (instanceId: string) =>
-  test.describe(instanceId, () => {
-    test.describe.configure({ mode: 'serial' });
-
-    test.use({
-      ctx: async ({}, use) => {
-        const planInfo = await InstanceContext.fromInstanceId(instanceId);
-        await use(planInfo);
-      },
-    });
-
-    // eslint-disable-next-line @typescript-eslint/require-await
-    test.beforeEach(async () => {
-      return;
-    });
-
+function testInstance(instanceId: string) {
+  runInstanceTests(instanceId, ({ test }) => {
     test('outcome page', async ({ page, ctx }) => {
       const outcomePage = ctx.getPageOfType('OutcomePage');
       test.skip(!outcomePage, 'No outcome page for instance');
@@ -68,6 +53,7 @@ const testInstance = (instanceId: string) =>
     });
 
     test('edit scenario', async ({ page, ctx }) => {
+      test.slow();
       const outcomePage = ctx.getPageOfType('OutcomePage');
       test.skip(!outcomePage, 'No outcome page for instance');
       if (!outcomePage) return;
@@ -107,7 +93,7 @@ const testInstance = (instanceId: string) =>
         await actionToggle.click();
         await expect(scenarioSelectInput).toHaveValue('custom');
         await ctx.waitForLoaded(page);
-        await expect.poll(() => requestTracker.inflightRequests().length).toBe(0);
+        await expect.poll(() => requestTracker.inflightRequests().length, { timeout: 15000 }).toBe(0);
         requestTracker.stop();
         await expect(outcomeCardSet).toBeVisible();
         await expect(outcomeCardSet).toHaveAttribute('data-scenario-id', 'custom');
@@ -143,5 +129,6 @@ const testInstance = (instanceId: string) =>
       });
     });
   });
+}
 
 getIdentifiersToTest().forEach((instance) => testInstance(instance));

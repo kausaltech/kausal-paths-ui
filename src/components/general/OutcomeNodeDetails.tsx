@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 
-import styled from '@emotion/styled';
 import { Box, Typography } from '@mui/material';
+
+import styled from '@common/themes/styled';
 
 import type { TFunction } from '@/common/i18n';
 import { ActionLink, NodeLink } from '@/common/links';
@@ -97,10 +98,8 @@ const ActionListItem = ({ action }: ActionListItemProps) => {
   return (
     <ActionsListCard active={isActive} $groupColor={color}>
       <ActionLink action={action}>
-        <a>
-          {action.group && <ActionGroup>{action.group.name}</ActionGroup>}
-          <span className="action-title">{action.name}</span>
-        </a>
+        {action.group && <ActionGroup>{action.group.name}</ActionGroup>}
+        <span className="action-title">{action.name}</span>
       </ActionLink>
     </ActionsListCard>
   );
@@ -131,9 +130,7 @@ const OutcomeNodeDetails = ({ node, t }: OutcomeNodeDetailsProps) => {
         </ActionsList>
       </Box>
       <p>
-        <NodeLink node={node}>
-          <a>{t('read-more')}</a>
-        </NodeLink>
+        <NodeLink node={node}>{t('read-more')}</NodeLink>
       </p>
     </Box>
   );

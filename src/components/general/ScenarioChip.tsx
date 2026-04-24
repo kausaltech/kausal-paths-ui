@@ -1,8 +1,10 @@
 import * as React from 'react';
 
-import { useTheme } from '@emotion/react';
 import { Chip, TableCell } from '@mui/material';
+
 import { Check, X } from 'react-bootstrap-icons';
+
+import { useTheme } from '@common/themes';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 
@@ -12,7 +14,7 @@ type ScenarioChipProps = {
   width?: number | string;
 };
 
-const ScenarioChip: React.FC<ScenarioChipProps> = React.memo(({ checked, label, width = 64 }) => {
+function ScenarioChip({ checked, label, width = 64 }: ScenarioChipProps) {
   const theme = useTheme();
 
   const bg = checked
@@ -71,7 +73,7 @@ const ScenarioChip: React.FC<ScenarioChipProps> = React.memo(({ checked, label, 
       />
     </TableCell>
   );
-});
-
+}
+const MemoizedScenarioChip = React.memo(ScenarioChip);
 ScenarioChip.displayName = 'ScenarioChip';
-export default ScenarioChip;
+export default MemoizedScenarioChip;

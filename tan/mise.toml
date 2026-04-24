@@ -1,0 +1,3 @@
+[env]
+# Add node_modules/.bin to PATH
+_.path = ['{{config_root}}/node_modules/.bin']

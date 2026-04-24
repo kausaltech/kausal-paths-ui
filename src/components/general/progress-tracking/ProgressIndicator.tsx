@@ -21,13 +21,13 @@ import {
 } from 'reactstrap';
 
 import { Chart } from '@common/components/Chart';
+import styled from '@common/themes/styled';
 
 import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
 import { useNumberFormatter } from '@/common/numbers';
 import Icon, { useSVGIconPath } from '@/components/common/icon';
 import { useSite } from '@/context/site';
-
 import { EmissionsCard } from './EmissionsCard';
 import { ProgressDriversWrapper } from './ProgressDriversWrapper';
 import { StyledCard } from './StyledCard';

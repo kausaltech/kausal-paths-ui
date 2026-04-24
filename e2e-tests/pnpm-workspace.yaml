@@ -1,4 +1,6 @@
 hoist: true
 minimumReleaseAge: 1440
-sharedWorkspaceLockfile: false
+sharedWorkspaceLockfile: true
 linkWorkspacePackages: false
+packages:
+  - ../kausal_common/e2e-tests

@@ -1,24 +1,29 @@
 import type { ComponentType } from 'react';
 
-import dynamic from 'next/dynamic';
+import { useTheme } from '@common/themes';
 
-import { useTheme } from '@emotion/react';
+import type { SiteFooterProps } from '@/components/common/Footer';
+import type { GlobalNavProps } from '@/components/common/GlobalNav';
+import FooterZurich from '@/components/custom/zurich/Footer';
+import GlobalNavZurich from '@/components/custom/zurich/GlobalNav';
 
-export const CUSTOM_COMPONENTS: Record<string, Record<string, ComponentType>> = {
+type CustomThemeComponents = {
+  GlobalNav: ComponentType<GlobalNavProps>;
+  Footer: ComponentType<SiteFooterProps>;
+};
+
+export const CUSTOM_COMPONENTS: Record<string, CustomThemeComponents> = {
   zurich: {
-    GlobalNav: dynamic(() => import('@/components/custom/zurich/GlobalNav'), { ssr: true }),
-    Footer: dynamic(() => import('@/components/custom/zurich/Footer'), { ssr: true }),
+    GlobalNav: GlobalNavZurich,
+    Footer: FooterZurich,
   },
 };
 
-export function useCustomComponent<CT extends ComponentType>(
-  componentName: string,
-  FallbackComponent: CT
-): CT {
+export function useCustomComponent<CompName extends keyof CustomThemeComponents>(
+  componentName: CompName,
+  FallbackComponent: CustomThemeComponents[CompName]
+): CustomThemeComponents[CompName] {
   const theme = useTheme();
 
-  return (
-    (CUSTOM_COMPONENTS[theme.name]?.[componentName] as typeof FallbackComponent) ??
-    FallbackComponent
-  );
+  return CUSTOM_COMPONENTS[theme.name]?.[componentName] ?? FallbackComponent;
 }

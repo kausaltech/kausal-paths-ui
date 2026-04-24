@@ -1,10 +1,10 @@
 import React, { type ReactNode } from 'react';
-
 import Link from 'next/link';
 
-import styled from '@emotion/styled';
 import { transparentize } from 'polished';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+
+import styled from '@common/themes/styled';
 
 const NavLink = styled.div`
   a {
@@ -66,7 +66,6 @@ const StyledDropdownToggle = styled(DropdownToggle)`
 `;
 
 const StyledDropdown = styled(UncontrolledDropdown)`
-
   .dropdown-menu {
     border: 0px;
     padding-top: 0;
@@ -78,12 +77,12 @@ const StyledDropdown = styled(UncontrolledDropdown)`
 
     .highlighter {
       display: inline-block;
-      padding: ${(props) => props.theme.spaces.s050} 0 calc(${(props) =>
-        props.theme.spaces.s050} - 5px);
+      padding: ${(props) => props.theme.spaces.s050} 0
+        calc(${(props) => props.theme.spaces.s050} - 5px);
     }
 
     &:hover {
-    background-color: transparent;
+      background-color: transparent;
 
       .highlighter {
         border-bottom: 5px solid ${(props) => props.theme.brandNavBackground};
@@ -94,8 +93,7 @@ const StyledDropdown = styled(UncontrolledDropdown)`
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     .dropdown-menu {
       background-color: ${(props) => props.theme.themeColors.white};
-      box-shadow: 3px 3px 6px 2px ${(props) =>
-        transparentize(0.85, props.theme.themeColors.black)}};
+      box-shadow: 3px 3px 6px 2px ${(props) => transparentize(0.85, props.theme.themeColors.black)};
     }
 
     .dropdown-item {
@@ -121,7 +119,7 @@ export type NavDropdownProps = {
 function NavDropdown(props: NavDropdownProps) {
   const { items, active, children } = props;
   return (
-    <StyledDropdown nav inNavbar className={active && 'active'}>
+    <StyledDropdown nav inNavbar className={active ? 'active' : undefined}>
       <StyledDropdownToggle nav caret>
         <NavHighlighter className={`highlighter ${active && 'active'}`}>{children}</NavHighlighter>
       </StyledDropdownToggle>

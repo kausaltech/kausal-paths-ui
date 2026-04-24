@@ -33,6 +33,8 @@ pnpm prettier:fix           # Format all files
 
 Both linting and typechecking use baseline files (`eslint-baseline.json`, `tsc-baseline.json`) so only new errors are surfaced. Update baselines with `:update` variants.
 
+TypeScript should be run with `tsc -b` (composite project build), not `tsc --noEmit`. The repo uses composite tsconfig references across the main app, `kausal_common/`, and `e2e-tests/`.
+
 ### E2E Tests
 
 E2E tests live in `e2e-tests/` as a separate pnpm workspace with Playwright. They have their own `package.json` and `tsconfig.json`.
@@ -41,7 +43,7 @@ E2E tests live in `e2e-tests/` as a separate pnpm workspace with Playwright. The
 
 ### Tech Stack
 
-- **Framework**: Next.js 15 (Pages Router, not App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict, with baseline suppression for legacy errors)
 - **GraphQL**: Apollo Client 3 with `@graphql-codegen` for type generation
 - **Styling**: Emotion (styled components) + MUI 7 + Bootstrap 5 / Reactstrap + Sass
@@ -54,34 +56,36 @@ E2E tests live in `e2e-tests/` as a separate pnpm workspace with Playwright. The
 
 ```
 src/
-  pages/              # Next.js pages (Pages Router)
-    actions/           # Action detail pages
-    node/              # Node detail pages
-    model/             # Model overview
-    [...slug].tsx      # CMS static pages (catch-all)
+  app/                 # Next.js App Router
+    api/               # Route Handlers (graphql, health, sentry, auth)
+    root/[domain]/[lang]/  # Instance-scoped routes (domain + locale from proxy)
+      (with-layout)/   # Routes with shared navigation layout
+      model/           # Model visualization
+      model-editor/    # Trailhead graph editor
+  proxy.ts             # Request interceptor (Next.js 16 "proxy", replaces middleware)
   components/
     general/           # Core visualization & UI components
     charts/            # Chart components
     scenario/          # Scenario selection & comparison
+    providers/         # React context providers (Apollo, Instance, Theme)
     pages/             # Page-level layout components
     common/            # Shared UI primitives
-    flow/              # Node graph flow visualization
+    flow/              # Node graph flow visualization (React Flow / Trailhead)
   queries/             # GraphQL query/fragment definitions
-  context/             # React contexts (site config, Apollo, numbers)
+  context/             # React contexts (site config, numbers)
   common/              # Shared utilities, constants, generated types
     __generated__/     # GraphQL codegen output (do not edit)
   data/                # Data processing utilities
   i18n/                # Internationalization message loading
-  server/              # Server-side rendering helpers
-  middleware/          # Next.js middleware
   utils/               # General utilities
+  middleware/          # Proxy helpers (instance resolution)
 kausal_common/         # Shared code (git submodule) with common configs
 e2e-tests/             # Playwright E2E tests (separate workspace)
 ```
 
 ### Key Patterns
 
-**Multi-Instance Architecture**: The app serves many city/region instances from one codebase. Instance identity is resolved via hostname or environment variable (`NEXT_PUBLIC_INSTANCE_IDENTIFIER`). The `SiteContext` (`src/context/site.tsx`) holds instance-specific configuration including scenarios, parameters, years, and localisation.
+**Multi-Instance Architecture**: The app serves many city/region instances from one codebase. Instance identity is resolved via hostname in `src/proxy.ts` (Next.js 16 renamed middleware to "proxy"). The proxy sets request headers (`x-paths-instance-identifier`, etc.) that downstream layouts and Apollo Client consume. Routes are rewritten to `/root/{hostname}/{locale}/...` for the App Router. The `SiteContext` (`src/context/site.tsx`) holds instance-specific configuration including scenarios, parameters, years, and localisation.
 
 **GraphQL**: All data comes from the Paths backend GraphQL API. Queries live in `src/queries/`. Types are generated into `src/common/__generated__/graphql.ts` — run `pnpm graphql-codegen` after schema changes. The backend URL defaults to `https://api.paths.kausal.dev/v1/graphql/` and can be overridden with `PATHS_BACKEND_URL`.
 
@@ -98,7 +102,8 @@ e2e-tests/             # Playwright E2E tests (separate workspace)
 
 - Pre-commit hook runs lint-staged: Prettier + ESLint baseline + TypeScript baseline on staged files
 - Path aliases: `@/*` → `src/*`, `@common/*` → `kausal_common/src/*`
-- Pages use dynamic routes with brackets: `[slug].tsx`, `[...slug].tsx`
+- App Router routes under `src/app/root/[domain]/[lang]/`; route groups like `(with-layout)` for shared UI
 - GraphQL queries use codegen — never hand-write types for API responses
 - Prefer Emotion styled components for new styling; Sass/Bootstrap exist for legacy reasons
+- Icons: use `react-bootstrap-icons` (not `@mui/icons-material`) for consistency with the rest of the app
 - React 19 with the React Compiler babel plugin enabled

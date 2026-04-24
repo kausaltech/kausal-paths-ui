@@ -1,14 +1,15 @@
 import React from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
+
 import type { EChartsCoreOption } from 'echarts/core';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import { Chart } from '@common/components/Chart';
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import { ScenarioKind } from '@/common/__generated__/graphql';
 import { useTranslations } from '@/common/i18n';
@@ -257,6 +258,17 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
             <OverlayScrollbarsComponent
               defer
               className="os-top-scrollbar"
+              role="region"
+              aria-label={chartLabel}
+              events={{
+                initialized(instance) {
+                  const viewport = instance.elements().viewport;
+                  viewport.setAttribute('tabindex', '0');
+                  if (chartLabel) {
+                    viewport.setAttribute('aria-label', chartLabel);
+                  }
+                },
+              }}
               options={{
                 scrollbars: { autoHide: 'never' },
                 overflow: { x: 'scroll', y: 'hidden' },

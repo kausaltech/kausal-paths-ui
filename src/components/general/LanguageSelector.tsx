@@ -1,14 +1,15 @@
-import { useRouter } from 'next/router';
-
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
+import { useLocale } from 'next-intl';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
+import { transientOptions } from '@common/themes/styles/styled';
 
 import { useInstance } from '@/common/instance';
 import { Link } from '@/common/links';
 import Icon from '@/components/common/icon';
 
-const Selector = styled(UncontrolledDropdown)<{ $mobile: boolean }>`
+const Selector = styled(UncontrolledDropdown, transientOptions)<{ $mobile: boolean }>`
   a {
     height: 100%;
     display: flex;
@@ -37,7 +38,7 @@ const Selector = styled(UncontrolledDropdown)<{ $mobile: boolean }>`
   }
 `;
 
-const CurrentLanguage = styled.span<{ $mobile: boolean }>`
+const CurrentLanguage = styled('span', transientOptions)<{ $mobile: boolean }>`
   display: inline-block;
   width: 1.5rem;
   margin: 0 0.5rem;
@@ -63,38 +64,38 @@ const languageNames = {
   el: 'Ελληνικά',
 };
 
+function getLanguageCodeLabel(lang: string) {
+  if (lang.includes('-')) {
+    return lang.split('-')[0];
+  }
+  return lang;
+}
+
 function LanguageSelector({ mobile }: { mobile: boolean }) {
-  const router = useRouter();
   const theme = useTheme();
-  const { locales: globalLocales } = useRouter();
+  const locale = useLocale();
   const { supportedLanguages: planLocales } = useInstance();
 
-  const locales = planLocales.filter((locale) => globalLocales?.includes(locale) ?? true);
+  const locales = planLocales;
 
   if (!locales || locales.length < 2) return null;
-  const handleLocaleChange = (ev) => {
+  const handleLocaleChange = (ev: React.MouseEvent<HTMLAnchorElement>) => {
     ev.preventDefault();
-    window.location.href = ev.target.href;
-  };
-
-  const getLanguageCodeLabel = (lang) => {
-    if (lang.includes('-')) {
-      return lang.split('-')[0];
-    }
-    return lang;
+    // eslint-disable-next-line react-compiler/react-compiler
+    window.location.href = ev.currentTarget.href;
   };
 
   return (
-    <Selector nav inNavbar $mobile={mobile} className={mobile && 'd-md-none'}>
+    <Selector nav inNavbar $mobile={mobile} className={mobile ? 'd-md-none' : undefined}>
       <DropdownToggle nav>
         <Icon name="globe" color={theme.neutralDark} />
-        <CurrentLanguage $mobile={mobile}>{getLanguageCodeLabel(router.locale)}</CurrentLanguage>
+        <CurrentLanguage $mobile={mobile}>{getLanguageCodeLabel(locale)}</CurrentLanguage>
       </DropdownToggle>
       <StyledDropdownMenu end>
         {locales.map((locale) => (
           <DropdownItem key={locale} tag="div">
-            <Link locale={locale} href="/">
-              <a onClick={handleLocaleChange}>{languageNames[getLanguageCodeLabel(locale)]}</a>
+            <Link locale={locale} href="/" onClick={handleLocaleChange}>
+              {languageNames[getLanguageCodeLabel(locale)]}
             </Link>
           </DropdownItem>
         ))}

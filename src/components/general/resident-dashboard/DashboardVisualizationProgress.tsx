@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-import { type Theme, useTheme } from '@emotion/react';
 import {
   Accordion,
   AccordionDetails,
@@ -13,6 +12,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { type Theme, useTheme } from '@emotion/react';
+
 import type { LabelLayoutOptionCallbackParams } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
 import { readableColor } from 'polished';

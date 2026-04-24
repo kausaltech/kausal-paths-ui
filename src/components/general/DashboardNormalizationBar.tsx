@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
-import { useMutation, useQuery } from '@apollo/client';
 import { Fade } from '@mui/material';
+
+import { useMutation, useQuery } from '@apollo/client/react';
 
 import { SettingsToggleBar } from '@common/components/SettingsToggleBar';
 

@@ -2,7 +2,6 @@ import { useTranslations } from 'next-intl';
 
 import { useNumberFormatter } from '@/common/numbers';
 import HighlightValue from '@/components/general/HighlightValue';
-
 import {
   StyledDisplayHeader,
   StyledDisplayItem,

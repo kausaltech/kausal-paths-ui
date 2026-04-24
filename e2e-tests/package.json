@@ -1,8 +1,7 @@
 {
-  "name": "paths-ui-e2e-tests",
+  "name": "@kausal/paths-ui/e2e-tests",
   "version": "0.1.0",
   "description": "End-to-end tests for Kausal Paths UI",
-  "main": "index.js",
   "scripts": {
     "test": "playwright test --workers 2"
   },
@@ -20,5 +19,5 @@
     "react": "^19.2.4",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.31.0+sha512.e3927388bfaa8078ceb79b748ffc1e8274e84d75163e67bc22e06c0d3aed43dd153151cbf11d7f8301ff4acb98c68bdc5cadf6989532801ffafe3b3e4a63c268"
+  "packageManager": "pnpm@10.32.1"
 }

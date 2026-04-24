@@ -1,16 +1,11 @@
-import * as url from 'node:url';
-
 import type BundleAnalyzerPlugin from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
+import withNextIntl from 'next-intl/plugin';
 import type { Options as SassOptions } from 'sass';
 
-import { getNextConfig } from './kausal_common/configs/common-next-config';
-import { wrapWithSentryConfig } from './kausal_common/src/sentry/sentry-next-config';
+import { getNextConfig } from './kausal_common/configs/common-next-config.ts';
+import { wrapWithSentryConfig } from './kausal_common/configs/sentry-next-config.ts';
 import { initializeThemes } from './kausal_common/src/themes/next-config.mjs';
-
-const SUPPORTED_LOCALES = ['en', 'fi', 'sv', 'de', 'de-CH', 'cs', 'da', 'lv', 'pl', 'es-US', 'el'];
-
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';
 
@@ -28,15 +23,10 @@ let nextConfig: NextConfig = {
       'color-4-api',
     ],
   } satisfies SassOptions<'sync'>,
-  // basePath: process.env.BASE_PATH,
-  i18n: {
-    defaultLocale: 'default',
-    locales: ['default', ...SUPPORTED_LOCALES],
-    localeDetection: false,
-  },
 };
 
 nextConfig = wrapWithSentryConfig(nextConfig);
+nextConfig = withNextIntl('./src/config/i18n.ts')(nextConfig);
 
 if (process.env.ANALYZE_BUNDLE === '1') {
   const withBundleAnalyzer = require('@next/bundle-analyzer') as typeof BundleAnalyzerPlugin;

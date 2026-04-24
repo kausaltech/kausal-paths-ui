@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useReactiveVar } from '@apollo/client';
-import styled from '@emotion/styled';
 import {
   Box,
   Divider,
@@ -11,13 +9,16 @@ import {
   type SnackbarCloseReason,
   Typography,
 } from '@mui/material';
+
+import { useReactiveVar } from '@apollo/client/react';
 import { X, XLg } from 'react-bootstrap-icons';
+
+import styled from '@common/themes/styled';
 
 import { activeScenarioVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import ScenarioSelector from '@/components/scenario/ScenarioSelector';
 import { useSiteWithSetter } from '@/context/site';
-
 import ActionsChooser from './ActionsChooser';
 import GlobalParameters from './GlobalParameters';
 

@@ -4,17 +4,197 @@
     "ignoreMessages": false
   },
   "errors": {
-    "510c2498501e9565e6f126528b55114fde3f47b0": {
-      "file": "kausal_common/src/logging/init.ts",
-      "code": "TS2503",
+    "5f6aa0019575e45732ab7196e8232a5b540d6b98": {
+      "file": "kausal_common/src/apollo/links.ts",
+      "code": "TS7017",
       "count": 1,
-      "message": "Cannot find namespace 'pino'."
+      "message": "Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature."
     },
-    "9708af7d928de056f96362050a53d039370698ca": {
-      "file": "kausal_common/src/sentry/server-init.ts",
+    "d80480e8c0a6c3a449cd14b596784773410f3c59": {
+      "file": "kausal_common/src/components/PopoverTip.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+    },
+    "ec3b86efafe48b1a4d6c487602ac660a2d899acd": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@generated/paths/graphql' or its corresponding type declarations."
+    },
+    "145d9e508ca5c1c8ed54a4a1b53cef95268a3a56": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
+      "code": "TS2345",
+      "count": 2,
+      "message": "Argument of type 'SiteScenario[]' is not assignable to parameter of type '({ id: string; isActive: boolean; isDefault: boolean; name: string; actualHistoricalYears: number[] | null; kind: ScenarioKind | null; } & { __typename: \"ScenarioType\"; })[]'."
+    },
+    "46fcacf25259a539139294c97d0312c8692eef53": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'year' implicitly has an 'any' type."
+    },
+    "624d97b7b2098d3d586e5a1acbd915db68db494f": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
+      "code": "TS2339",
+      "count": 1,
+      "message": "Property 'x' does not exist on type 'Number'."
+    },
+    "354d37abffe7d50ee4a9ccd19191e1acc6da36a9": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
+      "code": "TS2339",
+      "count": 1,
+      "message": "Property 'y' does not exist on type 'Number'."
+    },
+    "7a16b1ccdd5d26ef56b3a23a3c043aa82bae89d3": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
       "code": "TS2769",
       "count": 1,
       "message": "No overload matches this call."
+    },
+    "502747c003f3e5c12e2476726b0ba86462db5473": {
+      "file": "kausal_common/src/components/paths/DimensionalNodeVisualisation.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'y' implicitly has an 'any' type."
+    },
+    "14b91ea5856c29a9f58acab3d78158f14b006010": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '\"plot-total\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+    },
+    "a46eab9e5bd2fc7352f089281f9fcce536d3106c": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '\"target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+    },
+    "7180258e35c9118f780a9df2586edb57ddf4584d": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '\"plot-baseline\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+    },
+    "de2b3e7a4224081f45f541f0fdb111bf22ae7c82": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '\"calculated-emissions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+    },
+    "593eaa5d72df05809d7c3418ee3640194d25d933": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 159 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+    },
+    "838182a273f9a9159ac1f2ddaf4c9ec8e0418271": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ top: number; }'."
+    },
+    "57ce4c2565dee80b2f0c7b4cc58acf7ae0a998c3": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'."
+    },
+    "db64243801d119235e58e82b46a62b1dd7235304": {
+      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
+    },
+    "3c9d4541d8bb98fa8666722a22b523ebb7ae71d6": {
+      "file": "kausal_common/src/logging/edge.ts",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'Level' can't be used to index type 'Console'."
+    },
+    "007e1f074951bf350d3d84817970a5233422ce71": {
+      "file": "kausal_common/src/utils/paths/metric/slicing.ts",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ id: string; type: string; options: string[]; }[]' is not assignable to type 'readonly { readonly id: string; readonly type: \"group\" | \"category\"; readonly options: readonly string[]; }[]'."
+    },
+    "d8d6c9f9a88f2c6de9c21b403e20195aa8ee4f20": {
+      "file": "src/app/api/sentry-event/route.ts",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type 'Buffer<ArrayBuffer>' is not assignable to parameter of type 'ArrayBuffer'."
+    },
+    "6bd724121a1cd8019818f33cc9a4833a8a7a1156": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/cs-CZ.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/cs-CZ.min.js' implicitly has an 'any' type."
+    },
+    "ba709add90fbb5fa5515ea208b0f0ac137411d8a": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/da-DK.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/da-DK.min.js' implicitly has an 'any' type."
+    },
+    "8fa0ff797a28ef516364138a0c4d35c67e8ebee4": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/de-CH.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/de-CH.min.js' implicitly has an 'any' type."
+    },
+    "90d3b4b960908dd817bef815a164923421f13cdb": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/de-DE.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/de-DE.min.js' implicitly has an 'any' type."
+    },
+    "252616d4b6d10c1837708c505ac2f38cb5df1ca1": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/el.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/el.min.js' implicitly has an 'any' type."
+    },
+    "b2bbdceea9300a44e600054346b4f0c36be27ab7": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/en-GB.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/en-GB.min.js' implicitly has an 'any' type."
+    },
+    "4161a13df933d94c0b92a73986967c914e4142b1": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/es-ES.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/es-ES.min.js' implicitly has an 'any' type."
+    },
+    "edf9449b6591762932cb1df17d6cd6d4f1c4eaaf": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/fi-FI.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/fi-FI.min.js' implicitly has an 'any' type."
+    },
+    "59aff4a91d8d6f31c0a5266d5e41794e3fc10081": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/lv-LV.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/lv-LV.min.js' implicitly has an 'any' type."
+    },
+    "8be1397c4d684199f686b935bcdff3ead4d60c09": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/pl-PL.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/pl-PL.min.js' implicitly has an 'any' type."
+    },
+    "b856f7ba0c9cf45b597cfdc514b288ac33dea7c1": {
+      "file": "src/common/i18n.ts",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'numbro/dist/languages/sv-SE.min.js'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/sv-SE.min.js' implicitly has an 'any' type."
+    },
+    "2a983aa13299302055052654393cd4f85c0d669b": {
+      "file": "src/common/preprocess.ts",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'date' implicitly has an 'any' type."
     },
     "d7b48510ef99dd1b8cbe48783e60f9131839eb0d": {
       "file": "src/common/preprocess.ts",
@@ -28,17 +208,107 @@
       "count": 1,
       "message": "Property 'forEach' does not exist on type 'NodeMetric'."
     },
-    "fb14b78258386f0e7c1311ce412aff3f546953fb": {
-      "file": "src/components/common/Badge.tsx",
-      "code": "TS2538",
-      "count": 3,
-      "message": "Type 'undefined' cannot be used as an index type."
-    },
-    "46434e6ab586be3fb4c948aeae03785bee443698": {
-      "file": "src/components/common/Badge.tsx",
-      "code": "TS2304",
+    "78632ac4493819075be365f5d8298468dd2d27d0": {
+      "file": "src/common/preprocess.ts",
+      "code": "TS7006",
       "count": 1,
-      "message": "Cannot find name 'darken'."
+      "message": "Parameter 'dataPoint' implicitly has an 'any' type."
+    },
+    "db542299ce983a0181499a95e78bb35300d7596f": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'cytoscape-elk'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/cytoscape-elk@2.3.0_cytoscape@3.33.1/node_modules/cytoscape-elk/dist/cytoscape-elk.js' implicitly has an 'any' type."
+    },
+    "063cd75478478c61df6099bb2a2c5695ae70f105": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2578",
+      "count": 1,
+      "message": "Unused '@ts-expect-error' directive."
+    },
+    "837a23b7e1bfb9a6b76e6e5067e109a4915e692c": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7053",
+      "count": 2,
+      "message": "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ action: string; emissions: string; utility: string; effect: string; currency: string; unit_price: string; energy: string; emission_factor: string; argument: string; value_weight: string; }'."
+    },
+    "bda396415e90ab6831c8ba21cc923570e7bff9d4": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'inputStr' implicitly has an 'any' type."
+    },
+    "f38e604956c1a43c1c7afcb0a9e7cc7585e3eeee": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'maxWidth' implicitly has an 'any' type."
+    },
+    "4a835f227cd4aeade47abae9ce88dd3c2b72c8fa": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'x' implicitly has an 'any' type."
+    },
+    "8365726200de1526d11b4be575edac2b074003d4": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'edge' implicitly has an 'any' type."
+    },
+    "1b4bfa44097ae8240c85ac1f3d43d3a7072059c2": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type 'number' is not assignable to type 'undefined'."
+    },
+    "9282e0416d90ebaf15f8da7ef5210ef13c1cf7b8": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2345",
+      "count": 1,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
+    },
+    "74235d9c871d2ff0153bf3b2a85f867787e0c801": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'cytoscape-pdf-export'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/cytoscape-pdf-export@0.0.3/node_modules/cytoscape-pdf-export/dist/cytoscape-pdf-export-cjs.js' implicitly has an 'any' type."
+    },
+    "a9fd285bb859cd73a25e2ac99d548623b0249513": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2339",
+      "count": 1,
+      "message": "Property 'pdf' does not exist on type 'typeof cytoscape'."
+    },
+    "71616431606b0f6dee6b40d828b5448ec9c8b7e1": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2740",
+      "count": 1,
+      "message": "Type 'Core' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 315 more."
+    },
+    "4f81026c42834c4bb9be95a0498636eb63a1753c": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2554",
+      "count": 4,
+      "message": "Expected 2 arguments, but got 3."
+    },
+    "b64db2a6b93b4fb881cb4371ff746509e3bf3f25": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2339",
+      "count": 2,
+      "message": "Property 'pdf' does not exist on type 'Core'."
+    },
+    "81d966589d77e4372033f0549b61dcaf97525610": {
+      "file": "src/components/CytoGraph.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type 'RefObject<Core | null>' is not assignable to type 'Ref<HTMLDivElement> | undefined'."
+    },
+    "e8db2f478295efcbd76c7cdc26ae40e81306f81a": {
+      "file": "src/components/Layout.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'page' implicitly has an 'any' type."
     },
     "27a9258334fb6405271acedd63b769b49e964aba": {
       "file": "src/components/common/CallToActionCard.tsx",
@@ -46,17 +316,29 @@
       "count": 1,
       "message": "No overload matches this call."
     },
-    "e7147c75e383b0af321d8fb7fea64234dbf6ab47": {
-      "file": "src/components/common/NavDropdown.tsx",
-      "code": "TS2322",
+    "86a0307d942e75da0829c87a3d4e305dcdee7c4c": {
+      "file": "src/components/common/ErrorMessage.tsx",
+      "code": "TS7031",
       "count": 1,
-      "message": "Type 'false | \"active\" | undefined' is not assignable to type 'string | undefined'."
+      "message": "Binding element 'message' implicitly has an 'any' type."
     },
     "943208ae9e7ed319aaad8463479435857b6aae16": {
       "file": "src/components/common/RichText.tsx",
       "code": "TS2339",
       "count": 1,
       "message": "Property 'serveFileBaseUrl' does not exist on type '{ id: string; name: string; themeIdentifier: string | null; owner: string | null; defaultLanguage: string; supportedLanguages: string[]; targetYear: number | null; modelEndYear: number; ... 8 more ...; actionListPage: ({ ...; } & { ...; }) | null; } & { ...; }'."
+    },
+    "df5056b7b533076a528a6de9f2ff2a44828c205c": {
+      "file": "src/components/common/RichText.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'url' implicitly has an 'any' type."
+    },
+    "5867bf4a304e2864348b886ab60bc0ea24c86b8b": {
+      "file": "src/components/common/RichText.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'domNode' implicitly has an 'any' type."
     },
     "683470eccdbbcb0ed30f9b808a312c06298c6f1b": {
       "file": "src/components/common/RichText.tsx",
@@ -88,48 +370,6 @@
       "count": 6,
       "message": "Property 'stzh-link' does not exist on type 'JSX.IntrinsicElements'."
     },
-    "1b4bfa44097ae8240c85ac1f3d43d3a7072059c2": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'number' is not assignable to type 'undefined'."
-    },
-    "9282e0416d90ebaf15f8da7ef5210ef13c1cf7b8": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
-    },
-    "a9fd285bb859cd73a25e2ac99d548623b0249513": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2339",
-      "count": 1,
-      "message": "Property 'pdf' does not exist on type 'typeof cytoscape'."
-    },
-    "906af037bf7a6dcb3847e08d14e9e6f40fbfdfd4": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2740",
-      "count": 1,
-      "message": "Type 'Core' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 311 more."
-    },
-    "4f81026c42834c4bb9be95a0498636eb63a1753c": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2554",
-      "count": 4,
-      "message": "Expected 2 arguments, but got 3."
-    },
-    "b64db2a6b93b4fb881cb4371ff746509e3bf3f25": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2339",
-      "count": 2,
-      "message": "Property 'pdf' does not exist on type 'Core'."
-    },
-    "81d966589d77e4372033f0549b61dcaf97525610": {
-      "file": "src/components/CytoGraph.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'RefObject<Core | null>' is not assignable to type 'Ref<HTMLDivElement> | undefined'."
-    },
     "bcecd4bf1760ab47f76dc675d086071eb24f62e3": {
       "file": "src/components/general/ActionListCard.tsx",
       "code": "TS18047",
@@ -153,6 +393,84 @@
       "code": "TS2322",
       "count": 6,
       "message": "Type 'string | undefined' is not assignable to type 'string'."
+    },
+    "11670d378dfb7cc8439702b4ba29c498132592fe": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'id' implicitly has an 'any' type."
+    },
+    "4cfa3bafb98c26a3a4c413b395c8b6a5980800b5": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'actions' implicitly has an 'any' type."
+    },
+    "b484f97e923555ce68ffe274e489fa58d0aa92a6": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'impactOverviews' implicitly has an 'any' type."
+    },
+    "d906c21d19072e5274f34502e044b810728d4939": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 't' implicitly has an 'any' type."
+    },
+    "8e73cfcf793b4ec833d731576044fd2f3dc3a508": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'actionGroups' implicitly has an 'any' type."
+    },
+    "6023a8e798254c5fb8288375812448f7032d4bbf": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'sortBy' implicitly has an 'any' type."
+    },
+    "480fb4b15688e17e4de17eb503106e89086a7c97": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'sortAscending' implicitly has an 'any' type."
+    },
+    "e1442d2565b5169774d61937895e98d4d9eef368": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'refetching' implicitly has an 'any' type."
+    },
+    "e3dd253a27b21933ec744808811849675c7287bb": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7006",
+      "count": 2,
+      "message": "Parameter 'action' implicitly has an 'any' type."
+    },
+    "9b7f825437b2a4f3ea0506ffa1a845d7d130949e": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'a' implicitly has an 'any' type."
+    },
+    "42b1a05107109207508c5e548f5eea6499cb31ec": {
+      "file": "src/components/general/ActionsMac.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'b' implicitly has an 'any' type."
+    },
+    "7b879d72d801993abb3dfe9cfce22a1d0b29183d": {
+      "file": "src/components/general/CostBenefitAnalysis.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'params' implicitly has an 'any' type."
+    },
+    "2f48c71202b88e98acca98622923ea47368cdedb": {
+      "file": "src/components/general/CostBenefitAnalysis.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'api' implicitly has an 'any' type."
     },
     "abb5815825b3902eabf28686d700768bb586b994": {
       "file": "src/components/general/CostBenefitAnalysis.tsx",
@@ -178,11 +496,65 @@
       "count": 1,
       "message": "Type 'string | undefined' is not assignable to type 'Datum[]'."
     },
-    "b97148837f7f9e321099c698c5755122bddb40d8": {
-      "file": "src/components/general/LanguageSelector.tsx",
+    "c7df3f084ee77941de45b5cabf4b942fde50d33c": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS2339",
+      "count": 1,
+      "message": "Property 'x' does not exist on type 'Number'."
+    },
+    "e44003ec5c41c26b6f990db3aba876f3965997d1": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS2339",
+      "count": 1,
+      "message": "Property 'y' does not exist on type 'Number'."
+    },
+    "7fe42a8e44456c2896938e3dd8ae2f8a8b88a6d0": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS2769",
+      "count": 1,
+      "message": "No overload matches this call."
+    },
+    "057667b86cc79524e4065cf232b17b849aa1f13d": {
+      "file": "src/components/general/DimensionalNodeVisualisation.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'y' implicitly has an 'any' type."
+    },
+    "ba724c85e0c091914b299a41da9172f2530849a2": {
+      "file": "src/components/general/GoalSelector.tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type 'false | \"d-md-none\"' is not assignable to type 'string | undefined'."
+      "message": "Type '(event: SelectChangeEvent) => void' is not assignable to type '(event: ChangeEvent<HTMLInputElement, Element> | (Event & { target: { value: unknown; name: string; }; }), child: ReactNode) => void'."
+    },
+    "12fe35fb051ce1601c085c795b71abc750927318": {
+      "file": "src/components/general/LanguageSelector.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ fi: string; en: string; de: string; sv: string; cs: string; da: string; lv: string; pl: string; es: string; el: string; }'."
+    },
+    "2990a5357c9c5f49050110d1097f22bfc386b171": {
+      "file": "src/components/general/NodeGraph.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'TooltipBoxLayoutOption'."
+    },
+    "106d363340ecedf1c4f8e8764d57ef9025f70f58": {
+      "file": "src/components/general/NodeGraph.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'."
+    },
+    "664267f3c4492d2b795712d8d1c58c8a5365e171": {
+      "file": "src/components/general/NodeGraph.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
+    },
+    "1b50655ef75920d381954e1f94e44dc22ce0906c": {
+      "file": "src/components/general/NodePlot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'react-json-to-csv'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/react-json-to-csv@1.2.0/node_modules/react-json-to-csv/dist/index.js' implicitly has an 'any' type."
     },
     "e9defc3dc196aa17226558a6ad265b9da1f5ee28": {
       "file": "src/components/general/OutcomeNodeContent.tsx",
@@ -190,11 +562,107 @@
       "count": 1,
       "message": "Type '{ node: OutcomeNodeFieldsFragment; subNodes: OutcomeNodeFieldsFragment[]; color: string | null | undefined; startYear: number; endYear: number; }' is not assignable to type 'IntrinsicAttributes & DataTableProps'."
     },
+    "476a022b2ff864493897313f1de806f5ace92db2": {
+      "file": "src/components/general/ParameterWidget.tsx",
+      "code": "TS2769",
+      "count": 2,
+      "message": "No overload matches this call."
+    },
+    "c41f8657d3ed1775087196f2c26227229a639392": {
+      "file": "src/components/general/ReturnOnInvestment.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
+    },
+    "f2cde40c40c0e9d5a518cd7b49281f041172e0d2": {
+      "file": "src/components/general/SimpleEffect.tsx",
+      "code": "TS7053",
+      "count": 1,
+      "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
+    },
+    "4753cbe447b9ba2003e440d22cff4f3e79b774ad": {
+      "file": "src/components/general/progress-tracking/ProgressDriversVisualization.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ trigger: \"axis\"; textStyle: { width: number; }; formatter: (params: DefaultLabelFormatterCallbackParams[]) => string; }' is not assignable to type 'TooltipOption | TooltipOption[] | undefined'."
+    },
+    "a8b6a351274618f31fb58d6d6a6372fdf0e5c626": {
+      "file": "src/components/general/progress-tracking/ProgressIndicator.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ trigger: \"axis\"; axisPointer: { type: \"shadow\"; }; formatter: (params: DefaultLabelFormatterCallbackParams[]) => string; }' is not assignable to type 'TooltipOption | TooltipOption[] | undefined'."
+    },
     "8a210e71a1b54d2c6c86264ecfa4297154897f9d": {
       "file": "src/components/general/progress-tracking/useProgressData.ts",
       "code": "TS2345",
       "count": 2,
       "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
+    },
+    "aa45b93a81fc488e3bdc632fd5121f65dea08c75": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/cs'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/cs.js' implicitly has an 'any' type."
+    },
+    "8fce1c5ce69680f3a69a34bc55ade7fce033d741": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/da'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/da.js' implicitly has an 'any' type."
+    },
+    "a82317c9b6aa0125b788639c94d4dff261c16dd9": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/de'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/de.js' implicitly has an 'any' type."
+    },
+    "4b39d7a4537e1b1fece85e8599fa2b8f0cb516ea": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/de-ch'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/de-ch.js' implicitly has an 'any' type."
+    },
+    "a77082c36da2ac3d2a6c578ed4668d2688bac0ee": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/el'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/el.js' implicitly has an 'any' type."
+    },
+    "8ef4390dab41d7dc901cdad763b203e6094b6eb8": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/es'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/es.js' implicitly has an 'any' type."
+    },
+    "992c5f8828794242c6a61ea1063b1bacafa7900d": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/fi'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/fi.js' implicitly has an 'any' type."
+    },
+    "c090b92d7079d40887b6ac511faadcc380390413": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/lv'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/lv.js' implicitly has an 'any' type."
+    },
+    "bd2099e4fcaff724616cb56843286f272ddb431c": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/pl'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/pl.js' implicitly has an 'any' type."
+    },
+    "1d3f4bc5ed5f647b736534ee4159f6905d3ffaae": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js-locales/sv'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/sv.js' implicitly has an 'any' type."
+    },
+    "1cec6eebf206fa16ebf5f5277c7c18a423bbd34d": {
+      "file": "src/components/graphs/Plot.tsx",
+      "code": "TS7016",
+      "count": 1,
+      "message": "Could not find a declaration file for module 'plotly.js/dist/plotly-basic'. '/home/jey/sync/devel/kausal-paths-ui/node_modules/.pnpm/plotly.js@3.5.0_mapbox-gl@1.13.3/node_modules/plotly.js/dist/plotly-basic.js' implicitly has an 'any' type."
     },
     "a7ca7397817f5ac924f5b6432183a1342914f976": {
       "file": "src/components/pages/DashboardPage.tsx",
@@ -202,23 +670,23 @@
       "count": 1,
       "message": "Type '{ short: string; htmlShort: string; htmlLong: string; } | undefined' is not assignable to type 'Omit<UnitFieldsFragment, \"__typename\"> | undefined'."
     },
+    "40349565ccb78ec27ab97684838a9f71c264e61b": {
+      "file": "src/components/pages/Page.tsx",
+      "code": "TS2322",
+      "count": 3,
+      "message": "Type '(variables?: Partial<Exact<{ path: string; }>> | undefined) => Promise<QueryResult<PageQuery>>' is not assignable to type '(variables?: Partial<OperationVariables> | undefined) => ResultPromise<QueryResult<PageQuery>>'."
+    },
+    "fc3ecd5e869274150b34ffe25cc6c4ab74b83673": {
+      "file": "src/components/pages/Page.tsx",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type '{ id: string | null; title: string; body: (({ id: string | null; blockType: string; field: string; } & { __typename: \"ActionImpactBlock\" | \"BlockQuoteBlock\" | \"BooleanBlock\" | \"CallToActionBlock\" | ... 15 more ... | \"IntegerBlock\"; }) | ... 5 more ... | null)[] | null; } & { ...; }' is not assignable to type '{ id: string | null; title: string; body: (({ id: string | null; blockType: string; field: string; } & { __typename: \"ActionImpactBlock\" | \"BlockQuoteBlock\" | \"BooleanBlock\" | \"CallToActionBlock\" | ... 15 more ... | \"IntegerBlock\"; }) | ... 5 more ... | null)[] | null; } & { ...; } & { ...; }'."
+    },
     "206816150b003a0388def0ce44f1a17572e94da6": {
       "file": "src/components/pages/StaticPage.tsx",
       "code": "TS2322",
       "count": 1,
       "message": "Type '{ children: Element; title: string; }' is not assignable to type 'IntrinsicAttributes & PageHeroProps'."
-    },
-    "a4057799a97d6f94bd0a33586c727a65ab228a53": {
-      "file": "src/pages/api/graphql.ts",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '{ field: string; val: string[]; }' is not assignable to parameter of type 'undefined'."
-    },
-    "0b0d94a5b62fb6c6cb91a366d3fb716b2ce83699": {
-      "file": "src/pages/api/sentry-event.ts",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type 'Buffer<ArrayBufferLike>' is not assignable to parameter of type 'ArrayBuffer'."
     }
   }
 }

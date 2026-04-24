@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 
-import { useQuery } from '@apollo/client';
-import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
+
+import { useQuery } from '@apollo/client/react';
 import { Fade } from 'reactstrap';
+
+import styled from '@common/themes/styled';
 
 import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
 import { type TFunction, useTranslation } from '@/common/i18n';
@@ -11,7 +13,6 @@ import GraphQLError from '@/components/common/GraphQLError';
 import { useSiteWithSetter } from '@/context/site';
 import { GET_NODE_VISUALIZATIONS } from '@/queries/getNodeVisualizations';
 import { getProgressTrackingScenario } from '@/utils/progress-tracking';
-
 import { ProgressDriversVisualization } from './ProgressDriversVisualization';
 import { StyledCard } from './StyledCard';
 

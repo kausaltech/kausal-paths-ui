@@ -1,16 +1,12 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-
-import { useReactiveVar } from '@apollo/client';
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
-import { Box, Drawer } from '@mui/material';
+import { Box, Drawer, styled, useTheme } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-import { getLogger } from '@common/logging';
-import { getThemeStaticURL } from '@common/themes/theme';
+import { useReactiveVar } from '@apollo/client/react';
 
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -19,14 +15,13 @@ import Footer from '@/components/common/Footer';
 import GlobalNav from '@/components/common/GlobalNav';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
 import { useSiteOrNull } from '@/context/site';
-
 import IntroModal from './common/IntroModal';
 import { useCustomComponent } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
 
 const DRAWER_WIDTH = 320;
 
-const StyledSkipToContent = styled.a`
+const StyledSkipToContent = styled('a')`
   position: absolute;
   left: -9999px;
   z-index: 999;
@@ -79,13 +74,9 @@ function isMenuPage(page: unknown): page is { id?: unknown; title?: unknown; url
 }
 
 const Layout = ({ children }: React.PropsWithChildren) => {
-  const router = useRouter();
-  const { asPath: pathname } = router;
+  const pathname = usePathname();
   const theme = useTheme();
   const site = useSiteOrNull();
-  if (!site) {
-    throw new Error('Site context not found');
-  }
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { menuPages, iconBase: fallbackIconBase, ogImage, additionalLinkPages } = site || {};
@@ -159,21 +150,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
   return (
     <>
-      <Head>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <meta name="robots" content="noindex" />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content={site?.title || ''} />
-        {iconBase && (
-          <>
-            <link rel="icon" href={getThemeStaticURL(theme.favicons.svg)} type="image/svg+xml" />
-            <link rel="icon" href={getThemeStaticURL(theme.favicons.ico)} />
-            <link rel="apple-touch-icon" href={getThemeStaticURL(theme.favicons.apple)} />
-          </>
-        )}
-        {ogImage && <meta property="og:image" key="head-og-image" content={ogImage} />}
-      </Head>
-
       <StyledSkipToContent href="#main">{t('skip-to-main-content')}</StyledSkipToContent>
 
       <Box sx={{ display: 'flex', maxWidth: '100%', minWidth: 0 }}>
@@ -229,19 +205,28 @@ const Layout = ({ children }: React.PropsWithChildren) => {
           {drawerOpen && isMobile && <ScenarioEditor handleDrawerClose={handleDrawerClose} />}
         </Drawer>
         {showRefreshPrompt && <RefreshPrompt />}
-        <Box sx={{ flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            flexShrink: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100vh',
+          }}
+        >
           <NavComponent
             siteTitle={site?.title || ''}
             ownerName={site?.owner || undefined}
             navItems={navItems}
           />
-          <main className="main" id="main">
+          <Box component="main" className="main" id="main" sx={{ flexGrow: 1 }}>
             {/* hidden H1 fallback for accessibility */}
             <Box component="h1" sx={visuallyHiddenSx}>
               {activePage?.title || site?.title || ''}
             </Box>
             {children}
-          </main>
+          </Box>
           <FooterComponent additionalLinks={additionalLinkItems} />
         </Box>
       </Box>

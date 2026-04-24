@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 
-import { useTheme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
+
 import { useTranslations } from 'next-intl';
+
+import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useFeatures } from '@/common/instance';
@@ -12,7 +14,6 @@ import { useNumberFormatter } from '@/common/numbers';
 import { getMetricChange, getMetricValue } from '@/common/preprocess';
 import Loader from '@/components/common/Loader';
 import PopoverTip from '@/components/common/PopoverTip';
-
 import DashCard from './DashCard';
 import { getHelpText } from './progress-tracking/utils';
 

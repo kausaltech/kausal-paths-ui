@@ -1,0 +1,41 @@
+experimental_monorepo_root = true
+
+[monorepo]
+config_roots = ["e2e-tests"]
+
+[tools]
+fnox = "latest"
+node = "latest"
+
+[hooks]
+postinstall = 'npm install -g corepack'
+
+[settings]
+experimental = true
+node.corepack = true
+
+[prepare]
+disable = ["npm", "yarn"]
+
+[prepare.pnpm]
+auto = true
+
+[env]
+# Add node_modules/.bin to PATH
+_.path = ['{{config_root}}/node_modules/.bin']
+_.file = ".env"
+NODE_USE_SYSTEM_CA = "1"
+
+[tasks.dev]
+description = 'Run NextJS dev server'
+run = 'pnpm dev'
+
+[tasks.download-schema]
+description = 'Download the GraphQL schema'
+run = 'pnpx @graphql-inspector/cli introspect ${PATHS_BACKEND_URL}/v1/graphql/ --write schema.graphql'
+
+[tasks.portless]
+description = "Run the backend with Portless"
+run = "portless --name paths-ui --app-port 8051 pnpm dev"
+env = { PORTLESS_WILDCARD = "1", "PORTLESS_TLD" = "dev", WILDCARD_DOMAINS = "paths-ui.dev" }
+raw = true

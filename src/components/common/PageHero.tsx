@@ -1,6 +1,7 @@
-import type { Theme } from '@emotion/react';
-import styled from '@emotion/styled';
 import { Card, Container, type SxProps } from '@mui/material';
+import type { Theme } from '@emotion/react';
+
+import styled from '@common/themes/styled';
 
 const StyledHeroSection = styled.div`
   background: ${({ theme }) => theme.brandDark};
@@ -58,7 +59,7 @@ export const PageHero = ({
   if (!hasHeroCard && !children) {
     return null;
   }
-  
+
   return (
     <StyledHeroSection>
       <Container fixed maxWidth="xl" sx={{ py: 3 }}>

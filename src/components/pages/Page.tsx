@@ -1,11 +1,11 @@
 import { Suspense } from 'react';
 
-import Head from 'next/head';
-
-import { type ObservableQuery, useQuery, useReactiveVar } from '@apollo/client';
-import type { Theme } from '@kausal/themes/types';
 import { Box, Container, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material';
+
+import { type ObservableQuery } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client/react';
+import type { Theme } from '@kausal/themes/types';
 
 import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
@@ -14,12 +14,13 @@ import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graph
 import { activeGoalVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import Error from '@/components/common/PathsError';
+import { StreamField } from '@/components/common/StreamField';
 import ActionListPage from '@/components/pages/ActionListPage';
 import DashboardPage from '@/components/pages/DashboardPage';
 import OutcomePage from '@/components/pages/OutcomePage';
 import StaticPage from '@/components/pages/StaticPage';
 import { useSiteOrNull } from '@/context/site';
-import Error from '@/pages/_error';
 import GET_PAGE from '@/queries/getPage';
 import { getBaselineScenario, getProgressTrackingScenario } from '@/utils/progress-tracking';
 
@@ -113,19 +114,23 @@ function Page(props: PageProps) {
     pageContent = <ActionListPage page={page} refetch={refetch} />;
   } else if (page.__typename === 'StaticPage') {
     pageContent = <StaticPage page={page} refetch={refetch} />;
+  } else if (page.__typename === 'InstanceRootPage') {
+    pageContent = (
+      <Container fixed maxWidth="xl">
+        {page.body?.map((block) => (block ? <StreamField key={block.id} block={block} /> : null))}
+      </Container>
+    );
   } else {
     console.error('Invalid page type: ', page.__typename);
     return <ErrorMessage message={`${t('invalid-page-type')}: ${page.__typename}`} />;
   }
   return (
     <>
-      <Head>
-        {site ? (
-          <title>
-            {site?.title} | {page.title}
-          </title>
-        ) : null}
-      </Head>
+      {site ? (
+        <title>
+          {site.title} | {page.title}
+        </title>
+      ) : null}
       {headerExtra}
       <Suspense fallback={<PageLoader theme={theme} />}>{pageContent}</Suspense>
     </>

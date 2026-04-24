@@ -1,7 +1,6 @@
 import { gql } from '@apollo/client';
 
 import { DimensionalMetric } from '@/data/metric';
-
 import { scenarioFragment } from './instance';
 import visualizationEntryFragment from './visualizationEntryFragment';
 

@@ -1,5 +1,6 @@
-import styled from '@emotion/styled';
 import { ChevronCompactDown, ChevronCompactUp } from 'react-bootstrap-icons';
+
+import styled from '@common/themes/styled';
 
 const CardWithState = styled.div`
   position: relative;
@@ -15,7 +16,7 @@ const CardWithState = styled.div`
       color: ${({ theme }) => theme.textColor.primary};
     }
   }
-   
+
   &.root {
     color: ${({ theme }) => theme.textColor.primary};
     background-color: ${({ theme }) => theme.cardBackground.primary};

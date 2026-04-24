@@ -1,8 +1,9 @@
 {
-  "extends": "../kausal_common/configs/tsconfig.json",
+  "extends": "../kausal_common/configs/tsconfig.base.json",
   "compilerOptions": {
     "paths": {
       "@common/*": ["../kausal_common/src/*"],
+      "@e2e-common/*": ["../kausal_common/e2e-tests/*"],
       "@/*": ["./*"]
     },
     "outDir": "tests-out",
@@ -16,6 +17,6 @@
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["tests/**/*.ts", "common/**/*.ts", "*.ts"],
+  "include": ["tests/**/*.ts", "common/**/*.ts", "*.ts", "../kausal_common/e2e-tests/**/*.ts"],
   "exclude": ["node_modules"]
 }

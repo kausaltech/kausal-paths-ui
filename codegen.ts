@@ -1,16 +1,20 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
-import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
+import { type TypescriptOperationTypesPluginConfig } from 'graphql-codegen-typescript-operation-types';
 
-import apolloConfig from './apollo.config.cjs';
+import graphqlConfig, { getSchema } from './graphql.config.ts';
 
-const tsoConfig: TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig = {
+type GraphQLOpConfig = TypeScriptDocumentsPluginConfig & TypescriptOperationTypesPluginConfig;
+
+const tsoConfig: GraphQLOpConfig = {
   arrayInputCoercion: false,
+  avoidOptionals: true,
+  immutableTypes: false,
   mergeFragmentTypes: true,
+  nonOptionalTypename: true,
   onlyOperationTypes: true,
   preResolveTypes: true,
-  avoidOptionals: true,
-  nonOptionalTypename: true,
+  useTypeImports: true,
   scalars: {
     UUID: 'string',
     RichText: 'string',
@@ -20,13 +24,21 @@ const tsoConfig: TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig = {
   },
 };
 
-const generalExcludes = ['!**/node_modules/**', '!**/__generated__/**'];
+const generalExcludes = [
+  '!**/node_modules/**',
+  '!**/__generated__/**',
+  '!./kausal_common/components/paths/**',
+  '!./kausal_common/src/utils/paths/**',
+];
 const e2eTestsExclude = '!./e2e-tests/**';
 const appExclude = '!./src/**';
-const apolloConfigDocs = [...generalExcludes, ...apolloConfig.client.includes];
+const apolloConfigDocs = [...generalExcludes, ...graphqlConfig.documents];
+const schema = getSchema();
+
+console.log(`🍓 Using GraphQL schema from: ${schema}`);
 
 const config: CodegenConfig = {
-  schema: apolloConfig.client.service.url,
+  schema,
   generates: {
     'src/common/__generated__/possible_types.json': {
       plugins: ['fragment-matcher'],
@@ -43,16 +55,16 @@ const config: CodegenConfig = {
     //   } satisfies ApolloClientHelpersConfig,
     // },
     'src/common/__generated__/graphql.ts': {
-      plugins: ['typescript', 'typescript-operations'],
+      plugins: ['graphql-codegen-typescript-operation-types', 'typescript-operations'],
       documents: [e2eTestsExclude, ...apolloConfigDocs],
       config: tsoConfig,
     },
     'e2e-tests/__generated__/graphql.ts': {
-      plugins: ['typescript', 'typescript-operations'],
+      plugins: ['graphql-codegen-typescript-operation-types', 'typescript-operations'],
       config: {
         onlyOperationTypes: true,
         useTypeImports: true,
-      } satisfies TypeScriptDocumentsPluginConfig,
+      } satisfies GraphQLOpConfig,
       documents: [appExclude, ...apolloConfigDocs],
     },
   },

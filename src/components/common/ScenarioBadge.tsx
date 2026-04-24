@@ -1,6 +1,6 @@
 import React from 'react';
 
-import styled from '@emotion/styled';
+import styled from '@common/themes/styled';
 
 const StyledBadge = styled.div`
   display: inline-block;
