@@ -2,8 +2,13 @@ import React, { useMemo, useState } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
-
-import type { DefaultLabelFormatterCallbackParams, EChartsOption } from 'echarts';
+import styled from '@emotion/styled';
+import type {
+  CustomSeriesRenderItemAPI,
+  CustomSeriesRenderItemParams,
+  DefaultLabelFormatterCallbackParams,
+  EChartsOption,
+} from 'echarts';
 import {
   Dropdown,
   DropdownItem,
@@ -195,14 +200,62 @@ const getTooltipRow = (
   return `<span style="${styles.join(';')}"></span>${seriesName}: ${value ?? ''} ${unit}`;
 };
 
+// Three stacked rects to mimic the vertical line used to show the baseline
+const BASELINE_LEGEND_MARKER =
+  'path://M3,0 L6,0 L6,5 L3,5 Z M3,8 L6,8 L6,13 L3,13 Z M3,16 L6,16 L6,21 L3,21 Z';
+
+// ECharts takes raw html with inline styles for legend customisation
+const getBaselineTooltipMarkerStyles = (theme: Theme) => `
+  display: inline-block;
+  margin-left: 4px;
+  margin-right: 8px;
+  width: 3px;
+  height: 12px;
+  vertical-align: middle;
+  background-image: repeating-linear-gradient(to bottom, ${theme.graphColors.grey050} 0, ${theme.graphColors.grey050} 4px, transparent 4px,transparent 8px);
+`;
+
+const createRenderBaselineScenario =
+  (theme: Theme) => (_params: CustomSeriesRenderItemParams, api: CustomSeriesRenderItemAPI) => {
+    const value = api.value(0) as number;
+    const yIndex = api.value(1) as number;
+    const center = api.coord([value, yIndex]);
+    const sizeResult = api.size ? api.size([0, 1]) : null;
+    const bandH = Array.isArray(sizeResult) ? Math.abs(sizeResult[1] ?? 30) : 30;
+    const half = bandH * 0.38;
+
+    return {
+      type: 'group' as const,
+      children: [
+        {
+          type: 'line' as const,
+          shape: {
+            x1: center[0],
+            y1: center[1] - half,
+            x2: center[0],
+            y2: center[1] + half,
+          },
+          style: {
+            stroke: theme.graphColors.grey050,
+            lineWidth: 2,
+            lineDash: [4, 4],
+          },
+        },
+      ],
+    };
+  };
+
 function getChartConfig(
   measuredEmissionsData: ProgressData,
   t: TFunction,
   theme: Theme,
   iconPath: string,
   formatNumber: (value: number, fractionDigitsOverride?: number) => string,
-  categoriesWithMeasuredData?: Set<string>
+  categoriesWithMeasuredData?: Set<string>,
+  baselineName?: string | null
 ): EChartsOption {
+  const hasBaselineSeries = !!baselineName && measuredEmissionsData.baseline.length > 0;
+
   return {
     title: {
       show: false,
@@ -235,6 +288,11 @@ function getChartConfig(
               return false;
             }
 
+            // The baseline scenario is handled separately below
+            if (param.seriesName === baselineName) {
+              return false;
+            }
+
             return true;
           })
           .map((param) => {
@@ -256,14 +314,35 @@ function getChartConfig(
           })
           .join('<br/>');
 
-        return `${label}<br/>${colorBlocks}`;
+        const baselineItem =
+          baselineName && hasBaselineSeries ? measuredEmissionsData.baseline[dataIndex] : null;
+
+        const baselineRow = baselineItem
+          ? `<span style="${getBaselineTooltipMarkerStyles(theme)}"></span>${baselineName}: ${baselineItem.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${measuredEmissionsData.unit}`
+          : null;
+
+        const allTooltipRows = [colorBlocks, baselineRow].filter(Boolean).join('<br/>');
+
+        return `${label}<br/>${allTooltipRows}`;
       },
     },
     legend: {
-      data: [t('planned-emissions'), t('calculated-emissions')],
+      data: [
+        t('planned-emissions'),
+        t('calculated-emissions'),
+        ...(hasBaselineSeries
+          ? [
+              {
+                name: baselineName,
+                icon: BASELINE_LEGEND_MARKER,
+                itemStyle: { color: theme.graphColors.grey060 },
+              },
+            ]
+          : []),
+      ],
       top: '0',
       itemStyle: {
-        color: '#bbb',
+        color: theme.graphColors.grey040,
       },
     },
     grid: {
@@ -306,6 +385,12 @@ function getChartConfig(
 
           return `${observed.label}\n${statusLabel}`;
         }),
+        splitArea: {
+          show: true,
+          areaStyle: {
+            color: [theme.themeColors.white, 'rgba(0, 0, 0, 0.02)'],
+          },
+        },
         axisLabel: {
           formatter: '{value}',
           lineHeight: 18,
@@ -390,6 +475,20 @@ function getChartConfig(
           },
         },
       },
+      ...(baselineName && measuredEmissionsData.baseline.length > 0
+        ? [
+            {
+              name: baselineName,
+              type: 'custom' as const,
+              yAxisIndex: 0,
+              renderItem: createRenderBaselineScenario(theme),
+              encode: { x: 0, y: 1 },
+              data: measuredEmissionsData.baseline.map((b, i) => [b.value, i]),
+              legendHoverLink: true,
+              z: 10,
+            },
+          ]
+        : []),
     ],
   };
 }
@@ -453,6 +552,8 @@ export const ProgressIndicator = ({
       ...selectedEmissions,
       expected: filteredExpected,
       observed: filteredObserved,
+      baseline: selectedEmissions.baseline,
+      totalBaseline: selectedEmissions.totalBaseline,
     };
   }, [selectedEmissions]);
 
@@ -527,7 +628,8 @@ export const ProgressIndicator = ({
         theme,
         drillDownIconPath,
         formatNumber,
-        categoriesWithMeasuredData
+        categoriesWithMeasuredData,
+        site.baselineName
       )
     : undefined;
 

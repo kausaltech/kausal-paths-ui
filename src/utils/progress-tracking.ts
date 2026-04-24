@@ -13,6 +13,25 @@ export function getProgressTrackingScenario(scenarios: SiteContextScenario[]) {
   return scenarios.find((scenario) => scenario.kind === ScenarioKind.ProgressTracking);
 }
 
+export function getBaselineScenario(scenarios: SiteContextScenario[]) {
+  return (
+    scenarios.find((scenario) => scenario.kind === ScenarioKind.Baseline) ??
+    scenarios.find((scenario) => scenario.id === 'baseline')
+  );
+}
+
+export function metricHasBaselineScenario(metric: Metric, scenarios: SiteContextScenario[]) {
+  const baselineScenario = getBaselineScenario(scenarios);
+
+  if (!baselineScenario) {
+    return false;
+  }
+
+  const scenariosFromMetric = getScenariosFromMetric(metric);
+
+  return !!scenariosFromMetric.find((s) => s.originalId === baselineScenario.id);
+}
+
 export function metricHasProgressTrackingScenario(
   metric: Metric,
   scenarios: SiteContextScenario[]
