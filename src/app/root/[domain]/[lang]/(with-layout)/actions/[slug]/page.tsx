@@ -19,6 +19,7 @@ import type {
 import { DecisionLevel } from '@/common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
+import { useFeatures } from '@/common/instance';
 import { ActionListLink, NodeLink } from '@/common/links';
 import Badge from '@/components/common/Badge';
 import ContentLoader from '@/components/common/ContentLoader';
@@ -140,6 +141,9 @@ export default function ActionPage() {
   const site = useSite();
   const [activeDownstreamNode, setActiveDownstreamNode] = useState<string | undefined>(undefined);
   const theme = useTheme();
+  const { hideNodeDetails } = useFeatures();
+
+  const isScenarioEditable = !hideNodeDetails;
 
   const queryResp = useQuery<ActionContentQuery, ActionContentQueryVariables>(GET_ACTION_CONTENT, {
     fetchPolicy: 'cache-and-network',
@@ -281,13 +285,15 @@ export default function ActionPage() {
                     </NodeLink>
                   </ActionDescription>
                 </Grid>
-                <Grid size={{ xs: 12, md: 5 }} sx={{ mb: 2 }}>
-                  <ActionMetrics>
-                    <MetricsParameters>
-                      <ActionParameters parameters={action.parameters} />
-                    </MetricsParameters>
-                  </ActionMetrics>
-                </Grid>
+                {isScenarioEditable && (
+                  <Grid size={{ xs: 12, md: 5 }} sx={{ mb: 2 }}>
+                    <ActionMetrics>
+                      <MetricsParameters>
+                        <ActionParameters parameters={action.parameters} />
+                      </MetricsParameters>
+                    </ActionMetrics>
+                  </Grid>
+                )}
               </Grid>
             </HeaderCard>
           </PageHeader>
