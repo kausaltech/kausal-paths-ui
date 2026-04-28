@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';
-import styled from '@emotion/styled';
 import type {
   CustomSeriesRenderItemAPI,
   CustomSeriesRenderItemParams,
