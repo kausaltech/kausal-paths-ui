@@ -4,7 +4,7 @@ import withNextIntl from 'next-intl/plugin';
 import type { Options as SassOptions } from 'sass';
 
 import { getNextConfig } from './kausal_common/configs/common-next-config.ts';
-import { wrapWithSentryConfig } from './kausal_common/configs/sentry-next-config.ts';
+import { wrapWithSentryConfig } from './kausal_common/src/sentry/sentry-next-config.ts';
 import { initializeThemes } from './kausal_common/src/themes/next-config.mjs';
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';

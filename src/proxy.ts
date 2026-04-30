@@ -13,7 +13,7 @@ import {
 import { HEALTH_CHECK_PUBLIC_PATH } from '@common/constants/routes.mjs';
 import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocalDev } from '@common/env';
 import { envToBool } from '@common/env/utils';
-import { getTraceLogBindings } from '@common/logging/init';
+import { getSpanContext } from '@common/logging/init';
 import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
 
 import { ensureSlash, splitPath } from '@/utils/paths';
@@ -161,7 +161,7 @@ function getLoggerForRequest(req: NextRequest, host: string, path: string) {
   const span = Sentry.getActiveSpan();
   const spanBindings: Bindings = {};
   if (span) {
-    Object.assign(spanBindings, getTraceLogBindings());
+    Object.assign(spanBindings, getSpanContext());
     if (OTEL_DEBUG) {
       spanBindings['sampled'] = span.isRecording();
     }

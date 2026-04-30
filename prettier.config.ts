@@ -1,6 +1,6 @@
 import { type Config } from 'prettier';
 
-import defaultConfig from './kausal_common/configs/prettier.ts';
+import defaultConfig from './kausal_common/configs/prettier.mjs';
 
 const config = {
   ...defaultConfig,

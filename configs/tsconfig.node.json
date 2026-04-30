@@ -1,10 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "../kausal_common/configs/tsconfig.node.base.json",
+  "extends": "../kausal_common/configs/tsconfig.json",
   "include": [
     "../*.ts",
     "../*.js",
     "../kausal_common/configs/*.ts",
+    "../kausal_common/configs/*.mjs",
     "../kausal_common/scripts/*.js"
   ],
   "compilerOptions": {

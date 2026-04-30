@@ -4,11 +4,11 @@ import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, gql } from '@apollo/
 import * as Sentry from '@sentry/nextjs';
 import type { Logger } from 'pino';
 
-import { createSentryLink, logOperationLink, retryLink } from '@common/apollo/links';
+import { createSentryLink, logOperationLink } from '@common/apollo/links';
 import { getPathsGraphQLUrl } from '@common/env';
 import { envToBool } from '@common/env/utils';
+import LRUCache from '@common/utils/lru-cache';
 import { getClientIP } from '@common/utils';
-import { SWRCache } from '@common/utils/swr-cache';
 
 import type {
   AvailableInstanceFragment,
@@ -59,7 +59,6 @@ function createApolloClient(req: NextRequest, logger: Logger) {
     ssrMode: false,
 
     link: ApolloLink.from([
-      retryLink,
       logOperationLink,
       createSentryLink(uri),
       new ApolloLink((operation, forward) => {
@@ -122,8 +121,13 @@ async function fetchInstances(hostname: string, { req, logger }: InstanceFetchCt
   });
 }
 
-const instanceCache = new SWRCache<string, AvailableInstanceFragment[], InstanceFetchCtx>({
-  fetcher: fetchInstances,
+const instanceCache = new LRUCache<string, AvailableInstanceFragment[]>({
+  upsert: async (hostname, args) => {
+    const [ctx] = args as [InstanceFetchCtx];
+    const value = await fetchInstances(hostname, ctx);
+    return { value };
+  },
+  onEvict: () => {},
   ttl: 2_000,
 });
 
@@ -132,5 +136,5 @@ export async function getInstancesForRequest(req: NextRequest, hostname: string,
   if (disableInstanceCache) {
     return fetchInstances(hostname, ctx);
   }
-  return instanceCache.get(hostname, ctx);
+  return instanceCache.upsert(hostname, ctx);
 }

@@ -4,7 +4,7 @@ import type { Logger } from 'pino';
 
 import type { DefaultApolloContext } from '@common/apollo';
 import { type DirectiveArg, createOperationDirective } from '@common/apollo/directives';
-import { createSentryLink, logOperationLink, retryLink } from '@common/apollo/links';
+import { createSentryLink, logOperationLink } from '@common/apollo/links';
 import { FORWARDED_HEADER } from '@common/constants/headers.mjs';
 import { GRAPHQL_CLIENT_PROXY_PATH } from '@common/constants/routes.mjs';
 import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
@@ -225,7 +225,6 @@ export function getApolloClientConfig(opts: ApolloClientOpts): {
 
   return {
     link: ApolloLink.from([
-      retryLink,
       createSentryLink(uri),
       logOperationLink,
       localeMiddleware,
