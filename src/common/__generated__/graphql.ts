@@ -12,24 +12,22 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** Date (isoformat) */
   Date: { input: any; output: any; }
-  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
-  /**
-   * Allows use of a JSON String for input / output from the GraphQL schema.
-   *
-   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
-   * schema (one of the key benefits of GraphQL).
-   */
   JSONString: { input: string; output: string; }
-  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
   _Any: { input: any; output: any; }
+};
+
+export type ActionConfigInput = {
+  decisionLevel: InputMaybe<DecisionLevel>;
+  group: InputMaybe<Scalars['String']['input']>;
+  noEffectValue: InputMaybe<Scalars['Float']['input']>;
+  nodeClass: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['String']['input']>;
 };
 
 /** An enumeration. */
@@ -95,6 +93,16 @@ export enum DimensionKind {
   Scenario = 'SCENARIO'
 }
 
+export type FormulaConfigInput = {
+  formula: Scalars['String']['input'];
+};
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplateDefaultValueScalingChoices {
+  /** Population */
+  Population = 'POPULATION'
+}
+
 /** An enumeration. */
 export enum FrameworksMeasureTemplatePriorityChoices {
   /** High */
@@ -105,6 +113,16 @@ export enum FrameworksMeasureTemplatePriorityChoices {
   Medium = 'MEDIUM'
 }
 
+export type InputPortInput = {
+  id: InputMaybe<Scalars['UUID']['input']>;
+  label: InputMaybe<Scalars['String']['input']>;
+  multi: Scalars['Boolean']['input'];
+  quantity: InputMaybe<Scalars['String']['input']>;
+  requiredDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  supportedDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  unit: InputMaybe<Scalars['String']['input']>;
+};
+
 /** An enumeration. */
 export enum ModelAction {
   Add = 'ADD',
@@ -112,6 +130,13 @@ export enum ModelAction {
   Delete = 'DELETE',
   View = 'VIEW'
 }
+
+export type NodeConfigInput = {
+  action: InputMaybe<ActionConfigInput>;
+  formula: InputMaybe<FormulaConfigInput>;
+  pipeline: InputMaybe<PipelineConfigInput>;
+  simple: InputMaybe<SimpleConfigInput>;
+};
 
 export enum NodeKind {
   Action = 'ACTION',
@@ -127,6 +152,33 @@ export enum OperationMessageKind {
   Validation = 'VALIDATION',
   Warning = 'WARNING'
 }
+
+export type OutputMetricInput = {
+  columnId: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  label: InputMaybe<Scalars['String']['input']>;
+  portId: InputMaybe<Scalars['UUID']['input']>;
+  quantity: InputMaybe<Scalars['String']['input']>;
+  unit: Scalars['String']['input'];
+};
+
+export type OutputPortInput = {
+  columnId: InputMaybe<Scalars['String']['input']>;
+  dimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  id: InputMaybe<Scalars['UUID']['input']>;
+  isEditable: Scalars['Boolean']['input'];
+  label: InputMaybe<Scalars['String']['input']>;
+  quantity: InputMaybe<Scalars['String']['input']>;
+  unit: Scalars['String']['input'];
+};
+
+export type PipelineConfigInput = {
+  operations: Array<PipelineOperationInput>;
+};
+
+export type PipelineOperationInput = {
+  operation: Scalars['String']['input'];
+};
 
 export enum PrimaryLayoutClass {
   Action = 'ACTION',
@@ -151,6 +203,10 @@ export enum ScenarioKind {
   ProgressTracking = 'PROGRESS_TRACKING'
 }
 
+export type SimpleConfigInput = {
+  nodeClass: Scalars['String']['input'];
+};
+
 export type UpdateDataPointInput = {
   date: InputMaybe<Scalars['Date']['input']>;
   dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
@@ -172,10 +228,26 @@ export type UpdateDimensionInput = {
 };
 
 export type UpdateNodeInput = {
+  allowNulls: InputMaybe<Scalars['Boolean']['input']>;
   color: InputMaybe<Scalars['String']['input']>;
+  config: InputMaybe<NodeConfigInput>;
+  description: InputMaybe<Scalars['String']['input']>;
+  i18n: InputMaybe<Scalars['JSON']['input']>;
+  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  inputPorts: InputMaybe<Array<InputPortInput>>;
   isOutcome: InputMaybe<Scalars['Boolean']['input']>;
   isVisible: InputMaybe<Scalars['Boolean']['input']>;
+  kind: InputMaybe<NodeKind>;
+  minimumYear: InputMaybe<Scalars['Int']['input']>;
   name: InputMaybe<Scalars['String']['input']>;
+  nodeGroup: InputMaybe<Scalars['ID']['input']>;
+  order: InputMaybe<Scalars['Int']['input']>;
+  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
+  outputPorts: InputMaybe<Array<OutputPortInput>>;
+  params: InputMaybe<Scalars['JSON']['input']>;
+  shortName: InputMaybe<Scalars['String']['input']>;
+  tags: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum VisualizationKind {
@@ -660,7 +732,7 @@ export type NodeGraphQuery = (
         ) }
         & { __typename: 'GraphLayout' }
       ), edges: Array<(
-        { id: string, fromRef: (
+        { id: string, tags: Array<string>, fromRef: (
           { nodeId: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), toRef: (
@@ -887,7 +959,7 @@ export type EditorNodeFieldsFragment =
 ;
 
 export type EditorNodeEdgeFragment = (
-  { id: string, fromRef: (
+  { id: string, tags: Array<string>, fromRef: (
     { nodeId: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), toRef: (
@@ -3582,7 +3654,7 @@ export type InstanceContextQuery = (
     { id: string, label: string, isActive: boolean }
     & { __typename: 'NormalizationType' }
   )>, menuPages: Array<(
-    { id: string | null, title: string, urlPath: string, parent: (
+    { id: string | null, title: string, menuLabel: string | null, urlPath: string, parent: (
       { id: string | null }
       & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
     ) | null }
