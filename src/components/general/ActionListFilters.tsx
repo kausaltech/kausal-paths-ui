@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import {
   Box,
   FormControl,
@@ -9,6 +8,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+import styled from '@emotion/styled';
+
 import { useTranslations } from 'next-intl';
 
 import Icon from '@/components/common/icon';

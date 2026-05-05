@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Box, Container, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
 
@@ -36,11 +36,6 @@ const ActionCount = styled.div`
   }
 `;
 
-const ShowLabel = styled(FormLabel)`
-  color: ${(p) => p.theme.brandDark};
-  margin: 0;
-`;
-
 const ViewSelectorBar = styled.div`
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -48,36 +43,72 @@ const ViewSelectorBar = styled.div`
 
 const getSortOptions = (
   t: TFunction,
-  hasEfficiency: boolean,
+  graphType: string | null,
   showAccumulatedEffects: boolean
-): SortActionsConfig[] => [
-  {
+): SortActionsConfig[] => {
+  const standard: SortActionsConfig = {
     key: 'STANDARD',
     label: t('actions-sort-default'),
-  },
-  {
-    isHidden: !hasEfficiency,
-    key: 'CUM_EFFICIENCY',
-    label: t('actions-sort-efficiency'),
-    sortKey: 'cumulativeEfficiency',
-  },
-  {
-    isHidden: !showAccumulatedEffects,
-    key: 'CUM_IMPACT',
-    label: t('actions-sort-cumulative-impact'),
-  },
-  {
-    key: 'IMPACT',
-    label: t('actions-sort-impact'),
-    sortKey: 'impactOnTargetYear',
-  },
-  {
-    isHidden: !hasEfficiency,
-    key: 'CUM_COST',
-    label: t('actions-sort-cost'),
-    sortKey: 'cumulativeCost',
-  },
-];
+  };
+
+  if (graphType === 'return_on_investment') {
+    return [
+      standard,
+      {
+        key: 'CUM_EFFICIENCY',
+        label: t('actions-sort-efficiency'),
+        sortKey: 'cumulativeEfficiency',
+      },
+    ];
+  }
+
+  if (!graphType || graphType === 'simple_effect') {
+    return [
+      standard,
+      {
+        isHidden: !showAccumulatedEffects,
+        key: 'CUM_IMPACT',
+        label: t('actions-sort-cumulative-impact'),
+      },
+      {
+        key: 'IMPACT',
+        label: t('actions-sort-impact'),
+        sortKey: 'impactOnTargetYear',
+      },
+    ];
+  }
+
+  // cost_benefit: sort keys reuse CUM_IMPACT / CUM_COST / CUM_EFFICIENCY but read
+  // from each action's computed costBenefit totals (handled in getValueForSorting).
+  if (graphType === 'cost_benefit') {
+    return [
+      standard,
+      { key: 'CUM_IMPACT', label: t('benefit') },
+      { key: 'CUM_COST', label: t('cost') },
+      { key: 'CUM_EFFICIENCY', label: t('net-benefit') },
+    ];
+  }
+
+  // cost_efficiency and any other overview with cost + effect
+  return [
+    standard,
+    {
+      isHidden: !showAccumulatedEffects,
+      key: 'CUM_IMPACT',
+      label: t('actions-sort-cumulative-impact'),
+    },
+    {
+      key: 'CUM_COST',
+      label: t('actions-sort-cost'),
+      sortKey: 'cumulativeCost',
+    },
+    {
+      key: 'CUM_EFFICIENCY',
+      label: t('actions-sort-efficiency'),
+      sortKey: 'cumulativeEfficiency',
+    },
+  ];
+};
 
 type ViewType = 'list' | 'graph';
 
@@ -114,6 +145,11 @@ function ActionListPage({ page }: ActionListPageProps) {
 
   const data = actionListResp.data ?? previousData;
 
+  // True only when we're re-fetching on top of already-visible data
+  // (e.g. scenario change, year-range change). On the very first load
+  // `previousData` is undefined, so we don't hide cells while the initial fetch runs.
+  const isRefetchingWithStaleData = areActionsLoading && previousData !== undefined;
+
   const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
   const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');
 
@@ -132,16 +168,49 @@ function ActionListPage({ page }: ActionListPageProps) {
     actionGroup,
   });
 
-  const sortOptions = getSortOptions(t, hasEfficiency, !!instance.features.showAccumulatedEffects);
+  // Mirror the list's ungrouped-hiding rule so graph views show the same set of actions
+  const visibleActionIds = useMemo(() => {
+    const hasAnyGroup = usableActions.some((a) => a.group);
+    const visible = hasAnyGroup ? usableActions.filter((a) => a.group) : usableActions;
+    return new Set(visible.map((a) => a.id));
+  }, [usableActions]);
 
-  const [sortBy, setSortBy] = useState<SortActionsConfig>(
-    sortOptions.find((sortOption) => sortOption.key === (page.defaultSortOrder as SortActionsBy)) ??
-      sortOptions[0]
+  const sortOptions = useMemo(
+    () =>
+      getSortOptions(
+        t,
+        activeOverview?.graphType ?? null,
+        !!instance.features.showAccumulatedEffects
+      ),
+    [t, activeOverview?.graphType, instance.features.showAccumulatedEffects]
   );
 
-  const handleChangeSort = (sortBy: SortActionsBy) => {
-    const selectedSorter = sortOptions.find((option) => option.key === sortBy);
-    setSortBy(selectedSorter ?? sortOptions[0]);
+  const [sortKey, setSortKey] = useState<SortActionsBy>(
+    (page.defaultSortOrder as SortActionsBy | null) ?? 'STANDARD'
+  );
+
+  // Derive the effective sort config from the (possibly filtered) options.
+  // If the desired key isn't in the current graph-type's options, fall back to STANDARD
+  // while keeping sortKey sticky for when the overview switches back.
+  const sortBy = useMemo<SortActionsConfig>(
+    () => sortOptions.find((opt) => opt.key === sortKey && !opt.isHidden) ?? sortOptions[0],
+    [sortOptions, sortKey]
+  );
+
+  // When entering cost_benefit mode, default the sort to Net Benefit descending so
+  // the list matches the graph and the dropdown reflects what's actually applied.
+  const prevGraphType = useRef<string | null>(null);
+  const newGraphType = activeOverview?.graphType ?? null;
+  if (prevGraphType.current !== newGraphType) {
+    prevGraphType.current = newGraphType;
+    if (newGraphType === 'cost_benefit') {
+      setSortKey('CUM_EFFICIENCY');
+      setAscending(false);
+    }
+  }
+
+  const handleChangeSort = (key: SortActionsBy) => {
+    setSortKey(key);
   };
   const handleSortDirectionChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -208,14 +277,22 @@ function ActionListPage({ page }: ActionListPageProps) {
               )}
             </ActionCount>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
-              <ShowLabel
-                id="view-select-label"
-                sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
+              <FormControl
+                sx={{
+                  minWidth: '12rem',
+                  maxWidth: '20rem',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
               >
-                {t('show')}
-              </ShowLabel>
-
-              <FormControl sx={{ minWidth: '12rem', maxWidth: '20rem' }}>
+                <FormLabel
+                  id="view-select-label"
+                  sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' }, mr: { xs: 1, md: 0 } }}
+                >
+                  {t('show')}
+                </FormLabel>
                 <Select
                   id="view-select"
                   labelId="view-select-label"
@@ -251,7 +328,8 @@ function ActionListPage({ page }: ActionListPageProps) {
             sortBy={sortBy}
             sortAscending={ascending}
             activeOverview={activeOverview}
-            refetching={areActionsLoading}
+            isLoading={areActionsLoading}
+            refetching={isRefetchingWithStaleData}
             onChangeSort={(key) => {
               handleChangeSort(key);
               setAscending(true);
@@ -263,11 +341,12 @@ function ActionListPage({ page }: ActionListPageProps) {
         ) : (
           <ActionListGraphView
             usableActions={usableActions}
+            visibleActionIds={visibleActionIds}
             activeEfficiency={activeEfficiency}
             instanceActionGroups={data?.instance.actionGroups ?? []}
             sortBy={sortBy}
             sortAscending={ascending}
-            refetching={areActionsLoading}
+            refetching={isRefetchingWithStaleData}
             yearRange={yearRange}
           />
         )}

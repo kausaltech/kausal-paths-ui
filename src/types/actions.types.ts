@@ -6,6 +6,13 @@ export type ActiveOverviewInfo = {
   label: string;
 };
 
+export type CostBenefitTotals = {
+  cost: number;
+  benefit: number;
+  netBenefit: number;
+  unit?: string;
+};
+
 export type ActionWithEfficiency = ActionListQuery['actions'][0] & {
   impactOnTargetYear: number;
   cumulativeImpactId?: string;
@@ -20,6 +27,7 @@ export type ActionWithEfficiency = ActionListQuery['actions'][0] & {
   cumulativeCostUnit?: string;
   cumulativeCostName?: string;
   efficiencyCap?: number;
+  costBenefit?: CostBenefitTotals;
 };
 
 export type SortActionsBy = `${ActionSortOrder}` | 'CUM_EFFICIENCY' | 'CUM_COST';
