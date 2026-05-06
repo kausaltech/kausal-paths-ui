@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  Alert,
   Box,
   Grid,
   IconButton,
@@ -9,18 +10,21 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
+  Snackbar,
 } from '@mui/material';
 
 import { useReactiveVar } from '@apollo/client/react';
-import { FiletypeCsv, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
+import { kebabCase } from 'lodash-es';
+import { FiletypeCsv, FiletypePng, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
 
+import { type ChartHandle } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
-import { type TFunction, useTranslation } from '@/common/i18n';
+import { type TFunction, useTranslations } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import { useSiteWithSetter } from '@/context/site';
@@ -60,9 +64,9 @@ const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) =>
   // the backend gets proper support for unit specifiers.
   if (cube.hasDimension('emission_scope') && !cube.hasDimension('greenhouse_gases')) {
     if (unit === 't/Einw./a') {
-      longUnit = t('tco2-e-inhabitant');
+      longUnit = t('common.tco2-e-inhabitant');
     } else if (unit === 'kt/a') {
-      longUnit = t('ktco2-e');
+      longUnit = t('common.ktco2-e');
     }
   }
 
@@ -119,16 +123,31 @@ const getFilteredYears = (
   return { filteredYears, yearIndices, referenceYear, visibleForecastRange };
 };
 
+const downloadChartAsPng = (dataUrl: string, filename: string) => {
+  const safeName = kebabCase(filename) || 'chart';
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = `${safeName}.png`;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 const ToolsMenu = ({
   cube,
   sliceConfig,
+  chartRef,
+  pngFilename,
 }: {
   cube: DimensionalMetricType;
   sliceConfig: SliceConfig;
+  chartRef: RefObject<ChartHandle | null>;
+  pngFilename: string;
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -136,6 +155,22 @@ const ToolsMenu = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleDownloadPng = () => {
+    const dataUrl = chartRef.current?.getDataURL({
+      type: 'png',
+      pixelRatio: 2,
+      backgroundColor: '#fff',
+    });
+    if (dataUrl) {
+      downloadChartAsPng(dataUrl, pngFilename);
+    } else {
+      setErrorMessage(t('errors.download-error'));
+    }
+    handleClose();
   };
 
   return (
@@ -146,7 +181,7 @@ const ToolsMenu = ({
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        aria-label={t('download-data')}
+        aria-label={t('common.download-data')}
       >
         <ThreeDotsVertical />
       </IconButton>
@@ -169,7 +204,7 @@ const ToolsMenu = ({
           },
         }}
       >
-        <ListSubheader> {` ${t('download-data')}`}</ListSubheader>
+        <ListSubheader> {` ${t('common.download-data')}`}</ListSubheader>
         <MenuItem onClick={() => void cube.downloadData(sliceConfig, 'xlsx')}>
           <ListItemIcon>
             <FiletypeXls />
@@ -182,7 +217,23 @@ const ToolsMenu = ({
           </ListItemIcon>
           <ListItemText>CSV</ListItemText>
         </MenuItem>
+        <MenuItem onClick={handleDownloadPng}>
+          <ListItemIcon>
+            <FiletypePng />
+          </ListItemIcon>
+          <ListItemText>PNG</ListItemText>
+        </MenuItem>
       </Menu>
+      <Snackbar
+        open={errorMessage !== null}
+        autoHideDuration={4000}
+        onClose={() => setErrorMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Tools>
   );
 };
@@ -212,7 +263,7 @@ export default function DimensionalNodeVisualisation({
   onClickMeasuredEmissions,
   forecastTitle,
 }: DimensionalNodeVisualisationProps) {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const activeGoal = useReactiveVar(activeGoalVar);
   const theme = useTheme();
   const [site] = useSiteWithSetter();
@@ -466,7 +517,7 @@ export default function DimensionalNodeVisualisation({
             <SelectDropdown
               id="dimension"
               className="flex-grow-1"
-              label={t('plot-choose-dimension')}
+              label={t('common.plot-choose-dimension')}
               onChange={(val) => {
                 setSliceConfig((old) => ({
                   ...old,
@@ -506,14 +557,16 @@ export default function DimensionalNodeVisualisation({
       </Grid>
     ) : null;
 
+  const chartRef = useRef<ChartHandle | null>(null);
+  const chartTitle =
+    `${title}` + (subtitle && activeDimensionLabel ? `: ${activeDimensionLabel}` : '');
+
   return (
     <>
       {controls}
       <Box sx={{ position: 'relative' }}>
         <NodeGraph
-          title={
-            `${title}` + (subtitle && activeDimensionLabel ? ` per ${activeDimensionLabel}` : '')
-          }
+          title={chartTitle}
           subtitle={subtitle}
           dataTable={datasetTable}
           goalTable={goalTable}
@@ -529,8 +582,16 @@ export default function DimensionalNodeVisualisation({
           onClickMeasuredEmissions={onClickMeasuredEmissions}
           forecastTitle={forecastTitle}
           stackable={metric.stackable}
+          chartRef={chartRef}
         />
-        {withTools && <ToolsMenu cube={metrics.default} sliceConfig={sliceConfig} />}
+        {withTools && (
+          <ToolsMenu
+            cube={metrics.default}
+            sliceConfig={sliceConfig}
+            chartRef={chartRef}
+            pngFilename={chartTitle}
+          />
+        )}
       </Box>
     </>
   );

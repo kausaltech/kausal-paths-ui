@@ -6,5 +6,6 @@
   "not-found-title": "Seite nicht gefunden",
   "not-found-intro": "404 Nicht gefunden.",
   "network-error": "Netzwerkfehler",
-  "instance-protected": "Die Seite ist derzeit nicht öffentlich."
+  "instance-protected": "Die Seite ist derzeit nicht öffentlich.",
+  "download-error": "Download fehlgeschlagen. Bitte versuchen Sie es später erneut."
 }
