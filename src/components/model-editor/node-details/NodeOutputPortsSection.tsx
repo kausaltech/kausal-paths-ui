@@ -74,6 +74,24 @@ export default function NodeOutputPortsSection({
     >
       {ports.map((port, index) => {
         const connectedEdges = outgoingByPort.get(port.id) ?? [];
+        const singleTargetNode =
+          connectedEdges.length === 1
+            ? (nodeMap.get(connectedEdges[0].toRef.nodeId) ?? null)
+            : null;
+        // For a port with no explicit label and exactly one outgoing edge,
+        // use the name downstream formulas reference this output by:
+        // the edge's first tag (alias) or the target node's identifier.
+        // `tags` cast: codegen is blocked by unrelated schema drift; the
+        // fragment fetches `tags` at runtime.
+        const singleEdgeTags =
+          connectedEdges.length === 1
+            ? ((connectedEdges[0] as (typeof connectedEdges)[0] & { tags: readonly string[] })
+                .tags ?? [])
+            : [];
+        const derivedPortName =
+          !port.label && singleTargetNode
+            ? (singleEdgeTags[0] ?? singleTargetNode.identifier)
+            : null;
 
         return (
           <Box key={port.id}>
@@ -96,7 +114,7 @@ export default function NodeOutputPortsSection({
                   cursor: 'help',
                 }}
               >
-                {port.label ?? `Port #${index + 1}`}
+                Port: {port.label ?? derivedPortName ?? `#${index + 1}`}
                 <InfoSquare size={10} aria-label="Port info" />
               </Typography>
             </Tooltip>

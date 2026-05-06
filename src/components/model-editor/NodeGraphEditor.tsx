@@ -1,7 +1,21 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { Box, CircularProgress, Drawer } from '@mui/material';
+import {
+  Alert,
+  Backdrop,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Drawer,
+  Snackbar,
+  Typography,
+} from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
@@ -47,6 +61,9 @@ import './NodeGraphEditor.css';
 import { clearLayoutCache, saveUserPosition } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { useDeleteNode } from './useDeleteNode';
+import { useDuplicateAction } from './useDuplicateAction';
+import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
@@ -119,6 +136,9 @@ const GET_NODE_GRAPH = gql`
     editor {
       nodeGroup
       nodeType
+      tags
+      inputDimensions
+      outputDimensions
       layoutMeta {
         primaryClass
         isHub
@@ -142,6 +162,7 @@ const GET_NODE_GRAPH = gql`
           unit {
             id
             short
+            standard
           }
           requiredDimensions
           supportedDimensions
@@ -168,9 +189,11 @@ const GET_NODE_GRAPH = gql`
           id
           label
           quantity
+          columnId
           unit {
             id
             short
+            standard
           }
           dimensions
         }
@@ -181,6 +204,10 @@ const GET_NODE_GRAPH = gql`
           }
           ... on ActionConfigType {
             nodeClass
+            decisionLevel
+            group
+            parent
+            noEffectValue
           }
         }
       }
@@ -390,10 +417,15 @@ function FlowEditor(props: {
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedNodeKey = searchParams.get('node');
-  const { setCenter, getNodes, getZoom } = useReactFlow();
+  const { fitView, getNodes } = useReactFlow();
   const handledNodeKeyRef = useRef<string | null>(null);
+  // Captured once so later URL changes (e.g. deselecting a node) don't
+  // re-toggle RF's built-in `fitView` prop and refit the whole graph.
+  const [initialFitView] = useState(() => requestedNodeKey === null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -518,13 +550,13 @@ function FlowEditor(props: {
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
   const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, resetCounter, {
-    skipFitView: requestedNodeKey !== null,
+    skipFitView: !initialFitView,
   });
   const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
 
-  // Deep-link: /model-editor/nodes?node=<identifier> opens the panel on that
+  // Deep-link: /model/nodes?node=<identifier> opens the panel on that
   // node and centers the graph on it. Waits for ELK layout to be *applied*
-  // (positions written back to React Flow) so `setCenter` reads real coords.
+  // (positions written back to React Flow) so `fitView` reads real coords.
   useEffect(() => {
     if (!requestedNodeKey) return;
     if (!isLayoutCurrent) return;
@@ -539,20 +571,39 @@ function FlowEditor(props: {
     const targetRfNode = rfNodes.find((n) => n.id === target.id);
     if (!targetRfNode) return;
 
-    const width = targetRfNode.measured?.width ?? targetRfNode.width ?? 0;
-    const height = targetRfNode.measured?.height ?? targetRfNode.height ?? 0;
-    const cx = targetRfNode.position.x + width / 2;
-    const cy = targetRfNode.position.y + height / 2;
-    // Readable-label threshold (ElkNode's zoomSelector shows content at >= 0.7).
-    // Use 0.8 for a small margin so the first paint is clearly legible.
-    const MIN_FOCUS_ZOOM = 0.8;
-    const focusZoom = Math.max(getZoom(), MIN_FOCUS_ZOOM);
-    void setCenter(cx, cy, { zoom: focusZoom, duration: 400 });
     handledNodeKeyRef.current = requestedNodeKey;
-    // Defer selection update to next frame so it runs outside the effect body,
-    // matching the pattern used in useLayoutNodes.
-    requestAnimationFrame(() => setSelectedNodeId(target.id));
-  }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, setCenter, getZoom]);
+    // Drive RF's own selection state; `onSelectionChange` fires with this
+    // node and updates `selectedNodeId`, which opens the details panel.
+    setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === target.id })));
+    // fitView with a single node centers and zooms on it natively.
+    void fitView({ nodes: [{ id: target.id }], maxZoom: 1.2, duration: 400, padding: 0.4 });
+  }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, fitView, setNodes]);
+
+  // Mirror the current selection back into the URL (`?node=<identifier>`) so
+  // the view is linkable/refreshable. Uses `router.replace` to avoid adding a
+  // history entry per click, and syncs `handledNodeKeyRef` so the deep-link
+  // effect above doesn't re-pan/re-zoom in response to our own URL update.
+  useEffect(() => {
+    const target = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
+    const nextKey = target?.identifier ?? target?.id ?? null;
+    if (nextKey === requestedNodeKey) return;
+    // On fresh load with `?node=xxx`, the deep-link effect hasn't populated
+    // selection yet. Don't strip the param in that window, or the target
+    // never gets focused.
+    if (
+      nextKey === null &&
+      requestedNodeKey !== null &&
+      handledNodeKeyRef.current !== requestedNodeKey
+    ) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextKey) params.set('node', nextKey);
+    else params.delete('node');
+    const query = params.toString();
+    handledNodeKeyRef.current = nextKey;
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [selectedNodeId, nodeMap, requestedNodeKey, searchParams, router, pathname]);
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
     if (selected.length !== 1) {
@@ -591,7 +642,7 @@ function FlowEditor(props: {
     setUserHiddenEdgeIds((prev) => new Set([...prev, edgeId]));
   }, []);
 
-  const handleCopyAction = useCallback(
+  const handleOpenActionWizard = useCallback(
     (nodeId: string) => {
       const node = nodeMap.get(nodeId);
       if (!node) return;
@@ -600,6 +651,90 @@ function FlowEditor(props: {
     },
     [nodeMap]
   );
+
+  const duplicateAction = useDuplicateAction();
+  const [duplicateFeedback, setDuplicateFeedback] = useState<
+    { kind: 'success'; message: string } | { kind: 'error'; message: string } | null
+  >(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  // Holds the new node's identifier between "mutation resolved" and
+  // "props.nodes contains the new node". Resetting the layout before the
+  // refetch lands leaves ELK laying out the old set with cached positions,
+  // which is exactly the mess we're trying to avoid.
+  const [pendingDuplicateIdentifier, setPendingDuplicateIdentifier] = useState<string | null>(null);
+
+  const handleDuplicateAction = useCallback(
+    (nodeId: string) => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return;
+      if (isDuplicating) return;
+      setIsDuplicating(true);
+      duplicateAction(node, props.nodes)
+        .then((result) => {
+          setPendingDuplicateIdentifier(result.newIdentifier);
+          setDuplicateFeedback({
+            kind: 'success',
+            message: `Duplicated "${node.name}" as "${result.newIdentifier}"`,
+          });
+        })
+        .catch((err: unknown) =>
+          setDuplicateFeedback({
+            kind: 'error',
+            message: err instanceof Error ? err.message : 'Failed to duplicate action',
+          })
+        )
+        .finally(() => setIsDuplicating(false));
+    },
+    [duplicateAction, isDuplicating, nodeMap, props.nodes]
+  );
+
+  // Adjust-state-during-render: once the refetched nodes contain the new
+  // identifier, trigger a layout reset in the same render. Using an effect
+  // would cascade renders; this runs exactly once when the node lands.
+  if (
+    pendingDuplicateIdentifier !== null &&
+    props.nodes.some((n) => n.identifier === pendingDuplicateIdentifier)
+  ) {
+    clearLayoutCache(instanceId);
+    setResetCounter((c) => c + 1);
+    setPendingDuplicateIdentifier(null);
+  }
+
+  const deleteNode = useDeleteNode();
+  const [deleteConfirmNode, setDeleteConfirmNode] = useState<EditorNodeFieldsFragment | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleRequestDeleteNode = useCallback(
+    (nodeId: string) => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return;
+      setDeleteConfirmNode(node);
+    },
+    [nodeMap]
+  );
+
+  const handleConfirmDelete = useCallback(() => {
+    const node = deleteConfirmNode;
+    if (!node || isDeleting) return;
+    setIsDeleting(true);
+    deleteNode(node.id)
+      .then(() => {
+        if (selectedNodeId === node.id) setSelectedNodeId(null);
+        clearLayoutCache(instanceId);
+        setResetCounter((c) => c + 1);
+        setDuplicateFeedback({ kind: 'success', message: `Deleted "${node.name}"` });
+      })
+      .catch((err: unknown) =>
+        setDuplicateFeedback({
+          kind: 'error',
+          message: err instanceof Error ? err.message : 'Failed to delete node',
+        })
+      )
+      .finally(() => {
+        setIsDeleting(false);
+        setDeleteConfirmNode(null);
+      });
+  }, [deleteConfirmNode, deleteNode, instanceId, isDeleting, selectedNodeId]);
 
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
@@ -651,7 +786,6 @@ function FlowEditor(props: {
               nodeTypes={nodeTypes}
               minZoom={0.2}
               maxZoom={5}
-              fitView
               fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
             >
               <Background color="#f0f0f0" />
@@ -670,7 +804,9 @@ function FlowEditor(props: {
               state={contextMenu}
               onClose={() => setContextMenu(null)}
               onHideEdge={handleHideEdge}
-              onCopyAction={handleCopyAction}
+              onOpenActionWizard={handleOpenActionWizard}
+              onDuplicateAction={handleDuplicateAction}
+              onDeleteNode={handleRequestDeleteNode}
             />
             <Drawer
               variant="persistent"
@@ -742,6 +878,54 @@ function FlowEditor(props: {
           />
         </Suspense>
       )}
+      <Backdrop
+        open={isDuplicating || isDeleting}
+        sx={(theme) => ({
+          zIndex: theme.zIndex.modal + 1,
+          flexDirection: 'column',
+          gap: 2,
+          color: 'common.white',
+        })}
+      >
+        <CircularProgress color="inherit" />
+        <Typography variant="body2">
+          {isDeleting ? 'Deleting node…' : 'Duplicating action…'}
+        </Typography>
+      </Backdrop>
+      <Dialog
+        open={deleteConfirmNode !== null && !isDeleting}
+        onClose={() => setDeleteConfirmNode(null)}
+      >
+        <DialogTitle>Delete node?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Permanently delete &quot;{deleteConfirmNode?.name}&quot; and all of its edges. This
+            cannot be undone without reverting to the last published revision.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmNode(null)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={duplicateFeedback !== null}
+        autoHideDuration={duplicateFeedback?.kind === 'error' ? null : 4000}
+        onClose={() => setDuplicateFeedback(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {duplicateFeedback ? (
+          <Alert
+            onClose={() => setDuplicateFeedback(null)}
+            severity={duplicateFeedback.kind === 'success' ? 'success' : 'error'}
+            variant="filled"
+          >
+            {duplicateFeedback.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </NodeGraphInteractionContext>
   );
 }
@@ -763,6 +947,8 @@ function applyOverride(
 export default function NodeGraphEditor() {
   const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
   const overrides = useReactiveVar(nodeGraphOverridesVar);
+  // Keeps draftHeadTokenVar current while the graph is open.
+  useEditorPublishState();
   const editor = data.instance.editor;
 
   const nodesWithOverrides = useMemo(() => {

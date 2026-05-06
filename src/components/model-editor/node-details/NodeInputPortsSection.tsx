@@ -212,7 +212,7 @@ export default function NodeInputPortsSection({
                   })}
                   {datasetBindings.map((ds) => (
                     <Chip
-                      key={ds.dataset.id}
+                      key={ds.id}
                       icon={<Database size={18} />}
                       label={`${ds.dataset.name} → ${ds.metric.label}`}
                       title={`${ds.dataset.name} → ${ds.metric.label}`}

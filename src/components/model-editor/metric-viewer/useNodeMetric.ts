@@ -4,6 +4,7 @@ import { gql } from '@apollo/client';
 import { useLazyQuery } from '@apollo/client/react';
 
 import type {
+  ModelEditorDimensionalMetricFieldsFragment,
   NodeOutputDataQuery,
   NodeOutputDataQueryVariables,
 } from '@/common/__generated__/graphql';
@@ -48,6 +49,8 @@ type PortMetric = {
   portLabel: NodeOutputPort['label'];
   quantity: NodeOutputPort['quantity'];
   metric: DimensionalMetric | null;
+  /** Raw fragment for consumers that want to render e.g. DimensionalNodeVisualisation. */
+  rawMetric: ModelEditorDimensionalMetricFieldsFragment | null;
 };
 
 type UseNodeMetricResult = {
@@ -80,6 +83,7 @@ export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
       portLabel: port.label,
       quantity: port.quantity,
       metric: port.output ? new DimensionalMetric(port.output) : null,
+      rawMetric: port.output ?? null,
     }));
   }, [data]);
 

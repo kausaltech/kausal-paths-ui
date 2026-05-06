@@ -159,6 +159,11 @@ type Options = {
  * written to React Flow. Gate viewport-manipulating effects on
  * `returned === currentSourceNodes` to avoid racing against in-flight layouts.
  */
+function structuralSignature(nodes: readonly ElkNodeType[]): string {
+  const ids = nodes.map((n) => n.id).sort();
+  return ids.join('\0');
+}
+
 export default function useLayoutNodes(
   instanceId: string,
   sourceNodes: readonly ElkNodeType[],
@@ -170,7 +175,25 @@ export default function useLayoutNodes(
   const { getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
   const lastSourceNodesRef = useRef<readonly ElkNodeType[] | null>(null);
   const lastResetTriggerRef = useRef(-1);
+  // Tracks the id-set + reset-trigger pair that last produced a fitView.
+  // Data-only updates (e.g. a node rename) reuse the same structure, so we
+  // skip the viewport refit and preserve the user's zoom/pan.
+  const lastFitStructureRef = useRef<string | null>(null);
+  // Supersession refs — let async callbacks detect whether a newer layout
+  // request has arrived without relying on effect cleanup (cleanup would
+  // also fire on the transient `nodesInitialized` flip that `setNodes`
+  // inside `finishWith` itself causes, cancelling the rAF that sets
+  // `appliedNodes`).
+  const latestSourceNodesRef = useRef(sourceNodes);
+  const latestResetTriggerRef = useRef(resetTrigger);
   const [appliedNodes, setAppliedNodes] = useState<readonly ElkNodeType[] | null>(null);
+
+  useEffect(() => {
+    latestSourceNodesRef.current = sourceNodes;
+  }, [sourceNodes]);
+  useEffect(() => {
+    latestResetTriggerRef.current = resetTrigger;
+  }, [resetTrigger]);
 
   useEffect(() => {
     if (!nodesInitialized) return;
@@ -183,18 +206,27 @@ export default function useLayoutNodes(
     lastSourceNodesRef.current = sourceNodes;
     lastResetTriggerRef.current = resetTrigger;
 
+    const isCurrent = () =>
+      latestSourceNodesRef.current === sourceNodes &&
+      latestResetTriggerRef.current === resetTrigger;
+
     // Reading nodes from sourceNodes instead of RF's `getNodes()` — the latter
     // can lag by a frame when the previous `setNodes(layoutedNodes)` hasn't
     // been reconciled yet, causing stale `data` (e.g. out-of-date node names).
     const nodes = sourceNodes as ElkNodeType[];
     const edges = getEdges();
-    let cancelled = false;
 
     const cache = loadLayoutCache(instanceId);
     const missing = nodes.filter((n) => !(n.id in cache));
 
+    // Suppress `fitView` on data-only updates (e.g. node rename): the id set
+    // is identical and resetTrigger hasn't bumped, so the viewport stays put.
+    // `resetTrigger` is folded into the key so an explicit reset always refits.
+    const structureKey = `${resetTrigger}:${structuralSignature(nodes)}`;
+    const structureUnchanged = lastFitStructureRef.current === structureKey;
+
     const finishWith = (laidOut: ElkNodeType[]) => {
-      if (cancelled) return;
+      if (!isCurrent()) return;
       // Sort each node's handles by the Y of their connected peers so edges
       // line up with the source/target vertical order, minimising crossings.
       const withPorts = assignPortTops(laidOut, edges);
@@ -205,10 +237,11 @@ export default function useLayoutNodes(
         return withPorts.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
       });
       requestAnimationFrame(() => {
-        if (cancelled) return;
-        if (!skipFitView) {
+        if (!isCurrent()) return;
+        if (!skipFitView && !structureUnchanged) {
           fitView();
         }
+        lastFitStructureRef.current = structureKey;
         setAppliedNodes(sourceNodes);
         const metrics = computeLayoutMetrics(withPorts, edges);
         console.log(formatMetrics(metrics));
@@ -221,14 +254,12 @@ export default function useLayoutNodes(
         return cached ? { ...node, position: { x: cached.x, y: cached.y } } : node;
       });
       finishWith(fromCache);
-      return () => {
-        cancelled = true;
-      };
+      return;
     }
 
     getElkLayoutedNodes(nodes, edges).then(
       (layoutedNodes) => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         const merged = layoutedNodes.map((node) => {
           const cached = cache[node.id];
           if (cached?.source === 'user') {
@@ -246,10 +277,6 @@ export default function useLayoutNodes(
         console.error('ELK layout failed:', err);
       }
     );
-
-    return () => {
-      cancelled = true;
-    };
   }, [
     nodesInitialized,
     sourceNodes,

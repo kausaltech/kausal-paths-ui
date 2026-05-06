@@ -40,6 +40,7 @@ import {
   FunnelFill,
   House,
   Search,
+  XLg,
 } from 'react-bootstrap-icons';
 
 import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
@@ -118,42 +119,42 @@ const TABS: TabDef[] = [
   {
     label: 'Model',
     matches: (path) =>
-      !path.includes('/model-editor/nodes') &&
-      !path.includes('/model-editor/datasets') &&
-      !path.includes('/model-editor/dimensions'),
+      !path.includes('/model/nodes') &&
+      !path.includes('/model/datasets') &&
+      !path.includes('/model/dimensions'),
     href: '',
     Icon: House,
   },
   {
     label: 'Nodes',
-    matches: (path) => path.includes('/model-editor/nodes'),
+    matches: (path) => path.includes('/model/nodes'),
     href: '/nodes',
     Icon: Diagram2,
   },
   {
     label: 'Datasets',
-    matches: (path) => path.includes('/model-editor/datasets'),
+    matches: (path) => path.includes('/model/datasets'),
     href: '/datasets',
     Icon: Database,
   },
   {
     label: 'Dimensions',
-    matches: (path) => path.includes('/model-editor/dimensions'),
+    matches: (path) => path.includes('/model/dimensions'),
     href: '/dimensions',
     Icon: BoxIcon,
   },
 ];
 
 function getModelEditorBase(pathname: string): string {
-  const idx = pathname.indexOf('/model-editor');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model-editor' : '/model-editor';
+  const idx = pathname.indexOf('/model');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
 }
 
 type SearchMode = 'nodes' | 'datasets' | 'dimensions';
 
 function getSearchMode(pathname: string): SearchMode {
-  if (pathname.includes('/model-editor/datasets')) return 'datasets';
-  if (pathname.includes('/model-editor/dimensions')) return 'dimensions';
+  if (pathname.includes('/model/datasets')) return 'datasets';
+  if (pathname.includes('/model/dimensions')) return 'dimensions';
   return 'nodes';
 }
 
@@ -259,32 +260,7 @@ export default function ModelEditorNav() {
       <Divider />
 
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
-        <Tooltip
-          title="Draft mode is not yet available — all edits apply directly to the published model."
-          placement="right"
-        >
-          <Box
-            component="span"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              px: 1,
-              py: 0.5,
-              userSelect: 'none',
-              color: 'success.main',
-              opacity: 0.6,
-            }}
-          >
-            <Switch checked={false} disabled size="small" color="success" />
-            <Typography
-              variant="overline"
-              sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}
-            >
-              Published
-            </Typography>
-          </Box>
-        </Tooltip>
+        <PreviewModeToggle />
         <Divider orientation="vertical" flexItem sx={{ ml: 'auto' }} />
         <Button
           size="small"
@@ -316,6 +292,18 @@ export default function ModelEditorNav() {
                       <Search size={14} />
                     </InputAdornment>
                   ),
+                  endAdornment: query ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setQuery('')}
+                        aria-label="Clear search"
+                        edge="end"
+                      >
+                        <XLg size={12} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
                 },
               }}
             />
@@ -438,5 +426,36 @@ export default function ModelEditorNav() {
         </MenuItem>
       </Menu>
     </Paper>
+  );
+}
+
+// Disabled while preview-mode routing is gated off in
+// `ApolloWrapper.detectPreviewMode`. Restore the interactive handler +
+// dynamic label once the backend DRAFT hydrate bug is fixed.
+function PreviewModeToggle() {
+  return (
+    <Tooltip
+      title="Draft mode is not yet available — all edits apply directly to the published model."
+      placement="right"
+    >
+      <Box
+        component="span"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          px: 1,
+          py: 0.5,
+          userSelect: 'none',
+          color: 'success.main',
+          opacity: 0.6,
+        }}
+      >
+        <Switch checked={false} disabled size="small" color="success" />
+        <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
+          Published
+        </Typography>
+      </Box>
+    </Tooltip>
   );
 }

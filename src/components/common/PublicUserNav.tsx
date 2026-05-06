@@ -15,9 +15,29 @@ import {
   Typography,
 } from '@mui/material';
 
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { BoxArrowRight, ChevronDown, PencilSquare } from 'react-bootstrap-icons';
 
 import { authClient, useSession } from '@/lib/auth-client';
+
+const CAN_EDIT_MODEL = gql`
+  query CanEditModel {
+    instance {
+      id
+      nodes {
+        id
+      }
+    }
+  }
+`;
+
+type CanEditModelData = {
+  instance: {
+    id: string;
+    nodes: { id: string }[];
+  };
+};
 
 function getFirstName(name: string | null | undefined, email: string | null | undefined): string {
   if (name && name.trim()) return name.trim().split(/\s+/)[0];
@@ -33,11 +53,16 @@ function getInitials(name: string | null | undefined, email: string | null | und
   return source.slice(0, 2).toUpperCase();
 }
 
-export default function PublicEditorBar() {
+export default function PublicUserNav() {
   const { data: session } = useSession();
+  const { data: modelData } = useQuery<CanEditModelData>(CAN_EDIT_MODEL, {
+    skip: !session?.user,
+  });
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   if (!session?.user) return null;
+
+  const canEditModel = (modelData?.instance.nodes.length ?? 0) > 0;
 
   const user = session.user;
   const firstName = getFirstName(user.name, user.email);
@@ -68,40 +93,44 @@ export default function PublicEditorBar() {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Tooltip
-          title="Draft mode is not yet available — all edits apply directly to the published model."
-          placement="bottom"
-        >
-          <Box
-            component="span"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              userSelect: 'none',
-              color: 'success.main',
-              opacity: 0.6,
-            }}
-          >
-            <Switch checked={false} disabled size="small" color="success" />
-            <Typography
-              variant="overline"
-              sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1, fontSize: 10 }}
+        {canEditModel && (
+          <>
+            <Tooltip
+              title="Draft mode is not yet available — all edits apply directly to the published model."
+              placement="bottom"
             >
-              Published
-            </Typography>
-          </Box>
-        </Tooltip>
-        <Button
-          component={Link}
-          href="/model-editor"
-          size="small"
-          variant="text"
-          startIcon={<PencilSquare size={12} />}
-          sx={{ fontSize: 12, py: 0.25, px: 0.75, textTransform: 'none' }}
-        >
-          Edit model
-        </Button>
+              <Box
+                component="span"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  userSelect: 'none',
+                  color: 'success.main',
+                  opacity: 0.6,
+                }}
+              >
+                <Switch checked={false} disabled size="small" color="success" />
+                <Typography
+                  variant="overline"
+                  sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1, fontSize: 10 }}
+                >
+                  Published
+                </Typography>
+              </Box>
+            </Tooltip>
+            <Button
+              component={Link}
+              href="/model"
+              size="small"
+              variant="text"
+              startIcon={<PencilSquare size={12} />}
+              sx={{ fontSize: 12, py: 0.25, px: 0.75, textTransform: 'none' }}
+            >
+              Edit model
+            </Button>
+          </>
+        )}
       </Box>
 
       <Box

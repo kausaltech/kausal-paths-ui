@@ -15,7 +15,8 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import { useMutation } from '@apollo/client/react';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
+import { useApolloClient, useMutation } from '@apollo/client/react';
 import { ArrowCounterclockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
 
 import type {
@@ -28,7 +29,14 @@ import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
 import { getNodeGroup } from './nodeHelpers';
-import { type NodeFieldOverrides, UPDATE_NODE, patchNodeGraphOverride } from './queries';
+import {
+  type NodeFieldOverrides,
+  UPDATE_NODE,
+  draftHeadTokenVar,
+  patchNodeGraphOverride,
+  staleVersionNotificationVar,
+} from './queries';
+import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 
 const metaChipSx = {
   height: 20,
@@ -99,28 +107,50 @@ function stripNulls(input: Partial<UpdateNodeInput>): UpdateNodeInput {
 
 function useUpdateNodeMutation() {
   const instance = useInstance();
+  const client = useApolloClient();
   const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
   return useCallback(
     async (nodeId: string, input: Partial<UpdateNodeInput>) => {
-      const result = await mutate({
-        variables: { instanceId: instance.id, nodeId, input: stripNulls(input) },
-      });
-      const payload = result.data?.instanceEditor.updateNode;
-      if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
-        // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
-        // updated fields via the reactive-var overlay.
-        const override: NodeFieldOverrides = {};
-        if (input.name !== undefined) override.name = payload.name;
-        if (input.color !== undefined) override.color = payload.color;
-        if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
-        if (input.isOutcome !== undefined && payload.__typename === 'Node') {
-          override.isOutcome = payload.isOutcome;
+      try {
+        const result = await mutate({
+          variables: {
+            instanceId: instance.id,
+            nodeId,
+            input: stripNulls(input),
+            version: draftHeadTokenVar(),
+          },
+          // Re-fetch the token after a successful write so subsequent mutations
+          // pass the new head and don't trip the stale-check.
+          refetchQueries: ['EditorPublishState'],
+        });
+        const payload = result.data?.instanceEditor.updateNode;
+        if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
+          // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
+          // updated fields via the reactive-var overlay.
+          const override: NodeFieldOverrides = {};
+          if (input.name !== undefined) override.name = payload.name;
+          if (input.color !== undefined) override.color = payload.color;
+          if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
+          if (input.isOutcome !== undefined && payload.__typename === 'Node') {
+            override.isOutcome = payload.isOutcome;
+          }
+          patchNodeGraphOverride(nodeId, override);
         }
-        patchNodeGraphOverride(nodeId, override);
+        return result;
+      } catch (err) {
+        const isStale =
+          CombinedGraphQLErrors.is(err) &&
+          err.errors.some((e) => e.extensions?.code === 'stale_version');
+        if (isStale) {
+          staleVersionNotificationVar(true);
+          // Refresh the token so the user's next edit — on a fresh page or
+          // after dismissing — doesn't hit the stale-check again.
+          void client.refetchQueries({ include: ['EditorPublishState'] });
+        }
+        throw err;
       }
-      return result;
     },
-    [instance.id, mutate]
+    [instance.id, mutate, client]
   );
 }
 
@@ -412,7 +442,15 @@ type LiveColorFieldProps = {
 };
 
 function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
-  const hasColor = typeof value === 'string' && value !== '';
+  // Local draft so the color input reflects the user's in-progress pick
+  // while the native picker is open. Committing on every `onChange` would
+  // fire a mutation for each micro-movement in the picker — and back-to-
+  // back mutations race the `EditorPublishState` refetch, tripping the
+  // stale-version check on every event after the first. Commit once on
+  // blur (picker close) instead. Keyed on `nodeId` so switching nodes
+  // remounts and resets the draft to the new server value.
+  const [draft, setDraft] = useState<string | null>(value);
+  const hasColor = typeof draft === 'string' && draft !== '';
 
   return (
     <Box>
@@ -440,7 +478,7 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             overflow: 'hidden',
             flexShrink: 0,
             ...(hasColor
-              ? { bgcolor: value }
+              ? { bgcolor: draft }
               : {
                   backgroundImage:
                     'linear-gradient(45deg, transparent 45%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.3) 55%, transparent 55%)',
@@ -450,8 +488,11 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
         >
           <input
             type="color"
-            value={hasColor ? value : '#000000'}
-            onChange={(e) => onCommit(e.target.value)}
+            value={hasColor ? draft : '#000000'}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={() => {
+              if (draft !== value) onCommit(draft);
+            }}
             style={{
               position: 'absolute',
               inset: 0,
@@ -473,7 +514,7 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             flex: 1,
           }}
         >
-          {hasColor ? value : 'No color'}
+          {hasColor ? draft : 'No color'}
         </Typography>
       </Box>
     </Box>
@@ -516,14 +557,28 @@ export default function NodeDetailsSection({
   actionGroupOptions,
 }: NodeDetailsSectionProps) {
   const updateNode = useUpdateNodeMutation();
+  const readOnly = useIsEditorReadOnly();
 
   const originalIsOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   const supportsOutcome = node.__typename === 'Node';
   const isActionNode = node.__typename === 'ActionNode';
   const originalActionGroupId = node.__typename === 'ActionNode' ? (node.group?.id ?? null) : null;
 
-  return (
-    <>
+  // `fieldset disabled` propagates disabled state to every native form control
+  // inside, so MUI TextField / Switch / Autocomplete / color input all go
+  // read-only without per-component plumbing.
+  const body = (
+    <Box
+      component="fieldset"
+      disabled={readOnly}
+      sx={{
+        border: 0,
+        p: 0,
+        m: 0,
+        minWidth: 0,
+        display: 'contents',
+      }}
+    >
       <LiveTextField
         key={`name:${node.id}`}
         label="Name"
@@ -553,6 +608,7 @@ export default function NodeDetailsSection({
       />
 
       <LiveColorField
+        key={`color:${node.id}`}
         nodeId={node.id}
         value={node.color ?? null}
         onCommit={(next) => {
@@ -656,6 +712,18 @@ export default function NodeDetailsSection({
           </Button>
         </NodeLink>
       </Box>
-    </>
+    </Box>
+  );
+
+  if (!readOnly) return body;
+  return (
+    <Tooltip
+      title="Read-only: you're viewing the published revision. Switch to Draft mode to edit."
+      placement="left"
+      arrow
+      followCursor
+    >
+      {body}
+    </Tooltip>
   );
 }

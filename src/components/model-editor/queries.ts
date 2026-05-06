@@ -21,6 +21,39 @@ export function patchNodeGraphOverride(nodeId: string, patch: NodeFieldOverrides
   });
 }
 
+/**
+ * Last-seen `draftHeadToken` for the current instance. Editing mutations
+ * pass this as the `version` arg on `instanceEditor(instanceId, version)`;
+ * the backend rejects writes with a `StaleVersionError` when the instance's
+ * head has advanced past it (e.g. another tab edited first).
+ *
+ * Seeded from the landing-page and NodeGraph queries. Refetched after each
+ * mutation so subsequent writes see the new head.
+ */
+export const draftHeadTokenVar = makeVar<string | null>(null);
+
+/**
+ * Which slice the editor is viewing. DRAFT is the editor's working copy;
+ * PUBLISHED is whatever is currently live (read-only preview). The Apollo
+ * link reads this on every operation — toggling re-runs any refetched query
+ * against the new slice.
+ *
+ * Currently pinned to PUBLISHED because preview-mode routing is gated off
+ * in `ApolloWrapper.detectPreviewMode` while the backend DRAFT hydrate bug
+ * is being fixed. All edits land on the published revision in place. Flip
+ * the default back to DRAFT once the backend is repaired.
+ */
+export type EditorPreviewMode = 'DRAFT' | 'PUBLISHED';
+export const editorPreviewModeVar = makeVar<EditorPreviewMode>('PUBLISHED');
+
+/**
+ * Set to true when a mutation is rejected with a `stale_version` error —
+ * another tab (or user) has edited this instance since we last read the
+ * token. A top-level `StaleVersionNotice` snackbar subscribes and prompts
+ * the user to reload. Cleared on reload or when the user dismisses.
+ */
+export const staleVersionNotificationVar = makeVar<boolean>(false);
+
 const EDITOR_OPERATION_INFO_FIELDS = gql`
   fragment EditorOperationInfoFields on OperationInfo {
     messages {
@@ -38,6 +71,7 @@ export const INSTANCE_EDITOR_PUBLISH_STATE = gql`
     hasUnpublishedChanges
     firstPublishedAt
     lastPublishedAt
+    draftHeadToken
   }
 `;
 
@@ -54,8 +88,8 @@ export const GET_INSTANCE_EDITOR_PUBLISH_STATE = gql`
 `;
 
 export const PUBLISH_MODEL_INSTANCE = gql`
-  mutation PublishModelInstance($instanceId: ID!) {
-    instanceEditor(instanceId: $instanceId) {
+  mutation PublishModelInstance($instanceId: ID!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
       publishModelInstance(instanceId: $instanceId) {
         __typename
         ... on InstanceType {
@@ -74,9 +108,46 @@ export const PUBLISH_MODEL_INSTANCE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+export const CREATE_NODE = gql`
+  mutation CreateNode($instanceId: ID!, $input: CreateNodeInput!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      createNode(input: $input) {
+        __typename
+        ... on Node {
+          id
+          identifier
+          name
+          uuid
+        }
+        ... on ActionNode {
+          id
+          identifier
+          name
+          uuid
+        }
+        ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_NODE = gql`
+  mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      deleteNode(nodeId: $nodeId) {
+        ...EditorOperationInfoFields
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
 export const UPDATE_NODE = gql`
-  mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!) {
-    instanceEditor(instanceId: $instanceId) {
+  mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
       updateNode(nodeId: $nodeId, input: $input) {
         __typename
         ... on Node {
@@ -189,6 +260,7 @@ export const DIMENSIONAL_METRIC_FIELDS = gql`
   fragment ModelEditorDimensionalMetricFields on DimensionalMetricType {
     id
     name
+    measureDatapointYears
     unit {
       id
       short
@@ -203,11 +275,17 @@ export const DIMENSIONAL_METRIC_FIELDS = gql`
     values
     stackable
     forecastFrom
+    normalizedBy {
+      id
+      name
+    }
     goals {
       categories
+      groups
       values {
         year
         value
+        isInterpolated
       }
     }
   }

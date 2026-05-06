@@ -64,9 +64,9 @@ const getLongUnit = (cube: DimensionalMetricType, unit: string, t: TFunction) =>
   // the backend gets proper support for unit specifiers.
   if (cube.hasDimension('emission_scope') && !cube.hasDimension('greenhouse_gases')) {
     if (unit === 't/Einw./a') {
-      longUnit = t('common.tco2-e-inhabitant');
+      longUnit = t('tco2-e-inhabitant');
     } else if (unit === 'kt/a') {
-      longUnit = t('common.ktco2-e');
+      longUnit = t('ktco2-e');
     }
   }
 

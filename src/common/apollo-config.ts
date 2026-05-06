@@ -38,6 +38,8 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
+export type PreviewMode = 'DRAFT' | 'PUBLISHED';
+
 export type ApolloClientOpts = {
   instanceHostname?: string;
   instanceIdentifier?: string;
@@ -48,6 +50,14 @@ export type ApolloClientOpts = {
   currentURL?: CurrentURL;
   clientCookies?: string;
   logger?: Logger;
+  /**
+   * Called per operation to decide whether to attach `preview` to the
+   * `@instance` directive. Returning a mode forces the backend's Phase-4
+   * resolver split onto that slice; returning null leaves the default
+   * (published-first) behavior. Invoked lazily so client-side nav is
+   * picked up without recreating the Apollo client.
+   */
+  previewMode?: () => PreviewMode | null;
 };
 
 export function getHttpHeaders(opts: ApolloClientOpts) {
@@ -99,7 +109,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
    *
    * If identifier is set directly, use that, or fall back to request hostname.
    */
-  const { instanceHostname, instanceIdentifier, locale } = opts;
+  const { instanceHostname, instanceIdentifier, locale, previewMode } = opts;
   if (!instanceHostname && !instanceIdentifier) {
     throw new Error('Neither hostname or identifier set for the instance');
   }
@@ -155,6 +165,17 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
           },
         });
         variables['_hostname'] = instanceHostname;
+      }
+      const preview = previewMode?.();
+      if (preview) {
+        instanceArgs.push({
+          name: 'preview',
+          variable: {
+            name: '_preview',
+            type: 'PreviewMode',
+          },
+        });
+        variables['_preview'] = preview;
       }
       if (instanceArgs.length && !directiveExists(directives, 'instance')) {
         const directive = createOperationDirective({
