@@ -6,5 +6,6 @@
   "not-found-title": "Stránka nenalezena",
   "not-found-intro": "404 Nenalezeno.",
   "network-error": "Chyba sítě",
-  "instance-protected": "Tento web není v současnosti veřejně přístupný."
+  "instance-protected": "Tento web není v současnosti veřejně přístupný.",
+  "download-error": "Stahování se nezdařilo. Zkuste to prosím znovu později."
 }
