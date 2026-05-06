@@ -1,5 +1,8 @@
+import { useRouter } from 'next/navigation';
+
 import { Box, FormControl, MenuItem, Select } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
+
 import {
   BarChartLineFill,
   BoxArrowUpRight,
@@ -11,8 +14,10 @@ import {
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
-import { useTranslation } from '@/common/i18n';
+import { useTranslations } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
+import { formatUrl } from '@/common/links';
+import { useSiteOrNull } from '@/context/site';
 
 const StyledMenuItem = styled(MenuItem)`
   padding: 0.5rem 1rem;
@@ -35,11 +40,17 @@ const NodeViewSelector = ({
   showDistribution: boolean;
 }) => {
   const selectId = `${idPrefix}-view-select`;
-  const { t } = useTranslation();
+  const t = useTranslations();
   const theme = useTheme();
   const instance = useInstance();
+  const router = useRouter();
+  const site = useSiteOrNull();
 
   const handleChange = (event: SelectChangeEvent) => {
+    if (event.target.value === 'node-page') {
+      router.push(formatUrl(site, `/node/${idPrefix}`));
+      return;
+    }
     const tabId = event.target.value;
     setActiveTabId(tabId);
     // A11y: After switching the view, move focus to the new region
@@ -53,7 +64,7 @@ const NodeViewSelector = ({
     {
       id: 'year',
       icon: <PieChartFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />,
-      label: t('distribution'),
+      label: t('common.distribution'),
       show: showDistribution,
     },
     {
@@ -61,13 +72,13 @@ const NodeViewSelector = ({
       icon: (
         <BarChartLineFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
       ),
-      label: t('time-series'),
+      label: t('common.time-series'),
       show: true,
     },
     {
       id: 'table',
       icon: <Table aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />,
-      label: t('table'),
+      label: t('common.table'),
       show: true,
     },
     {
@@ -75,7 +86,7 @@ const NodeViewSelector = ({
       icon: (
         <InfoCircleFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
       ),
-      label: t('details'),
+      label: t('common.details'),
       show: true,
     },
     {
@@ -83,8 +94,8 @@ const NodeViewSelector = ({
       icon: (
         <BoxArrowUpRight aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
       ),
-      label: t('node-open'),
-      show: showDetailsLink,
+      label: t('common.node-open'),
+      show: true,
     },
   ];
 
@@ -97,7 +108,7 @@ const NodeViewSelector = ({
           id={selectId}
           value={activeTabId}
           onChange={handleChange}
-          inputProps={{ 'aria-label': t('view-options') }}
+          inputProps={{ 'aria-label': t('common.view-options') }}
           sx={{
             backgroundColor: 'transparent',
             '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
@@ -107,7 +118,7 @@ const NodeViewSelector = ({
             return (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {item?.icon}
-                {item?.label ?? t('view-options')}
+                {item?.label ?? t('common.view-options')}
               </Box>
             );
           }}
