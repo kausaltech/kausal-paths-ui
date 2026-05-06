@@ -60,10 +60,13 @@ const visuallyHiddenSx = {
 type MenuPage = {
   id?: string | null;
   title: string;
+  menuLabel?: string | null;
   urlPath: string;
 };
 
-function isMenuPage(page: unknown): page is { id?: unknown; title?: unknown; urlPath?: unknown } {
+function isMenuPage(
+  page: unknown
+): page is { id?: unknown; title?: unknown; menuLabel?: unknown; urlPath?: unknown } {
   if (typeof page !== 'object' || page === null) return false;
   const p = page as Record<string, unknown>;
   return (
@@ -94,6 +97,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const menuItems: MenuPage[] = rawMenu.filter(isMenuPage).map((page) => ({
     id: typeof page.id === 'string' ? page.id : null,
     title: page.title,
+    menuLabel: typeof page.menuLabel === 'string' ? page.menuLabel : null,
     urlPath: page.urlPath,
   }));
 
@@ -120,7 +124,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
 
   const navItems = menuItems.map((page) => ({
     id: page.id || '',
-    name: page.title,
+    name: page.menuLabel || page.title,
     slug: page.urlPath,
     urlPath: page.urlPath,
     active: page === activePage,

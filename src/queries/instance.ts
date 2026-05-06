@@ -79,6 +79,7 @@ const GET_INSTANCE_CONTEXT = gql`
     menuPages: pages(inMenu: true) {
       id
       title
+      menuLabel
       urlPath
       parent {
         id
