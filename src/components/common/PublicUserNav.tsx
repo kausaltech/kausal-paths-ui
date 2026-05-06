@@ -121,7 +121,7 @@ export default function PublicUserNav() {
             </Tooltip>
             <Button
               component={Link}
-              href="/model-editor"
+              href="/model"
               size="small"
               variant="text"
               startIcon={<PencilSquare size={12} />}

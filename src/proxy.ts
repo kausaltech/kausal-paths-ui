@@ -323,7 +323,10 @@ async function proxy(req: NextRequest) {
   if (!shouldAddInstanceHeaders(match.parts)) {
     return NextResponse.next(reqInit);
   }
-  if (instance?.isProtected && !match.path.startsWith('/auth/')) {
+  const requiresAuth =
+    (instance?.isProtected || match.path.startsWith('/model')) &&
+    !match.path.startsWith('/auth/');
+  if (requiresAuth) {
     const sessionCookie = getSessionCookie(req);
     if (!sessionCookie) {
       return NextResponse.redirect(new URL('/auth/sign-in', req.url));

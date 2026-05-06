@@ -554,7 +554,7 @@ function FlowEditor(props: {
   });
   const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
 
-  // Deep-link: /model-editor/nodes?node=<identifier> opens the panel on that
+  // Deep-link: /model/nodes?node=<identifier> opens the panel on that
   // node and centers the graph on it. Waits for ELK layout to be *applied*
   // (positions written back to React Flow) so `fitView` reads real coords.
   useEffect(() => {

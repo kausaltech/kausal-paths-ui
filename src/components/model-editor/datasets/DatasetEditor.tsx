@@ -113,13 +113,13 @@ function DimensionCategories({
 }
 
 function getListBase(pathname: string): string {
-  const idx = pathname.indexOf('/model-editor');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model-editor/datasets' : '/model-editor/datasets';
+  const idx = pathname.indexOf('/model');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model/datasets' : '/model/datasets';
 }
 
 function getModelEditorBase(pathname: string): string {
-  const idx = pathname.indexOf('/model-editor');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model-editor' : '/model-editor';
+  const idx = pathname.indexOf('/model');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
 }
 
 /** Topologically sort metrics by previousSibling/nextSibling linked list. */

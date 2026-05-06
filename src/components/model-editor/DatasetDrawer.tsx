@@ -254,8 +254,8 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
   // Model-editor base URL (locale + instance prefix) derived from the current
   // pathname so edit links land on the same instance the user is editing.
   const editorBase = useMemo(() => {
-    const idx = pathname.indexOf('/model-editor');
-    return idx >= 0 ? pathname.slice(0, idx) + '/model-editor' : null;
+    const idx = pathname.indexOf('/model');
+    return idx >= 0 ? pathname.slice(0, idx) + '/model' : null;
   }, [pathname]);
 
   return (
