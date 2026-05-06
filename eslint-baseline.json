@@ -240,11 +240,6 @@
       "count": 2
     }
   },
-  "src/components/general/progress-tracking/useProgressData.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
-    }
-  },
   "src/components/graphs/ActionComparisonGraph.tsx": {
     "react-hooks/set-state-in-effect": {
       "count": 1
