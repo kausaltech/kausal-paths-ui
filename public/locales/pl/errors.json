@@ -6,5 +6,6 @@
   "not-found-title": "Nie znaleziono strony",
   "not-found-intro": "404 Nie znaleziono.",
   "network-error": "Błąd sieci",
-  "instance-protected": "Ta strona nie jest obecnie publicznie dostępna."
+  "instance-protected": "Ta strona nie jest obecnie publicznie dostępna.",
+  "download-error": "Pobieranie nie powiodło się. Spróbuj ponownie później."
 }
