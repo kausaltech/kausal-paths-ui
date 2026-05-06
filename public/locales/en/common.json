@@ -84,6 +84,7 @@
   "cost-efficiency": "Cost efficiency",
   "reduction": "reduction",
   "plot-choose-dimension": "Choose dimension",
+  "node-open": "Open node",
   "normalization": "Normalization",
   "normalize-by": "Normalize by {node}",
   "change-target": "Change target",
