@@ -93,7 +93,9 @@ function testInstance(instanceId: string) {
         await actionToggle.click();
         await expect(scenarioSelectInput).toHaveValue('custom');
         await ctx.waitForLoaded(page);
-        await expect.poll(() => requestTracker.inflightRequests().length, { timeout: 15000 }).toBe(0);
+        await expect
+          .poll(() => requestTracker.inflightRequests().length, { timeout: 15000 })
+          .toBe(0);
         requestTracker.stop();
         await expect(outcomeCardSet).toBeVisible();
         await expect(outcomeCardSet).toHaveAttribute('data-scenario-id', 'custom');

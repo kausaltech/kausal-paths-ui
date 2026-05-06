@@ -2,9 +2,8 @@ import { expect } from '@playwright/test';
 
 import { getIdentifiersToTest, runInstanceTests } from '@/common/context.js';
 
-
 function testInstance(instanceId: string) {
-  runInstanceTests(instanceId, ({ test })  => {
+  runInstanceTests(instanceId, ({ test }) => {
     test('basic layout', async ({ page, ctx }) => {
       await test.step('Initial page load', async () => {
         await ctx.navigateTo(page, ctx.baseURL);
@@ -20,6 +19,6 @@ function testInstance(instanceId: string) {
       await ctx.takeScreenshot(page, 'front-page');
     });
   });
-};
+}
 
 getIdentifiersToTest().forEach((instance) => testInstance(instance));

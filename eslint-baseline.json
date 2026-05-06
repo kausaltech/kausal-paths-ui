@@ -154,26 +154,6 @@
       "count": 1
     }
   },
-  "src/components/general/ActionsMac.tsx": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 19
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 24
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 8
-    },
-    "react/prop-types": {
-      "count": 10
-    }
-  },
   "src/components/general/BarGraph.tsx": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
@@ -240,11 +220,6 @@
       "count": 2
     }
   },
-  "src/components/general/progress-tracking/useProgressData.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
-    }
-  },
   "src/components/graphs/ActionComparisonGraph.tsx": {
     "react-hooks/set-state-in-effect": {
       "count": 1
@@ -271,11 +246,6 @@
   "src/components/model-editor/useLayoutNodes.ts": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
-    }
-  },
-  "src/components/pages/ActionListPage.tsx": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
     }
   },
   "src/components/pages/OutcomePage.tsx": {

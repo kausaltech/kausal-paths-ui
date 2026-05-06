@@ -761,9 +761,11 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   }
 
   const MIN_WIDTH_XS = 820;
+  const title = `${data?.label || t('cost-benefit-analysis')} (${startYear} - ${endYear})`;
+  const subtitle = '-';
 
   return (
-    <ChartWrapper title={t('cost-benefit-analysis')} isLoading={isLoading}>
+    <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
       <StyledScrollArea>
         <OverlayScrollbarsComponent
           defer

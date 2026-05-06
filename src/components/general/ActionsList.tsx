@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Box,
   Chip,
+  CircularProgress,
   Collapse,
   IconButton,
   Table,
@@ -26,7 +27,11 @@ import { ActionLink } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import ScenarioChip from '@/components/general/ScenarioChip';
-import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
+import type {
+  ActionWithEfficiency,
+  ActiveOverviewInfo,
+  SortActionsConfig,
+} from '@/types/actions.types';
 
 type ActionsListProps = {
   id?: string;
@@ -36,7 +41,9 @@ type ActionsListProps = {
   yearRange: [number, number];
   sortBy: SortActionsConfig;
   sortAscending: boolean;
+  isLoading: boolean;
   refetching: boolean;
+  activeOverview: ActiveOverviewInfo | null;
   onChangeSort?: (key: SortActionsConfig['key']) => void;
   onToggleSortDirection?: () => void;
 };
@@ -45,15 +52,25 @@ type ColumnDef = {
   key: SortActionsConfig['key'];
   label: string;
   sortKey?: keyof ActionWithEfficiency;
-  getValue: (a: ActionWithEfficiency) => number;
+  getValue: (a: ActionWithEfficiency) => number | null;
   getUnit: (a: ActionWithEfficiency) => string | undefined;
+  disableSort?: boolean;
 };
+
+const MISSING_VALUE = '—';
 
 const getValueForSorting = (
   action: ActionWithEfficiency,
   sortBy: SortActionsConfig,
   yearRange: [number, number]
 ): number => {
+  // Cost-benefit mode: action.costBenefit is populated, columns read from it.
+  const cb = action.costBenefit;
+  if (cb) {
+    if (sortBy.key === 'CUM_IMPACT') return cb.benefit;
+    if (sortBy.key === 'CUM_COST') return cb.cost;
+    if (sortBy.key === 'CUM_EFFICIENCY') return cb.netBenefit;
+  }
   if (sortBy.key === 'CUM_IMPACT') {
     const metric = action.impactMetric;
     if (!metric) {
@@ -69,13 +86,12 @@ const getValueForSorting = (
 };
 
 const formatEfficiencyForDisplay = (
-  eff: number | null | undefined,
+  eff: number,
   cap: number | null | undefined,
   formatNumber: (value: number) => string
 ) => {
-  const value = eff ?? 0;
   const limit = cap ?? Infinity;
-  return Math.abs(value) < limit ? formatNumber(value) : '-';
+  return Math.abs(eff) < limit ? formatNumber(eff) : '-';
 };
 
 const headerText = {
@@ -97,7 +113,9 @@ export default function ActionsList({
   yearRange,
   sortBy,
   sortAscending,
+  isLoading,
   refetching,
+  activeOverview,
   onChangeSort,
   onToggleSortDirection,
 }: ActionsListProps) {
@@ -126,51 +144,114 @@ export default function ActionsList({
     () => new Map(filteredActions.map((a, i) => [a.id, i])),
     [filteredActions]
   );
-
   const columns: ColumnDef[] = useMemo(() => {
-    const base: ColumnDef[] = [
+    const graphType = activeOverview?.graphType ?? null;
+
+    // simple_effect and no-overview: impact columns only (from impactMetric)
+    if (!graphType || graphType === 'simple_effect') {
+      return [
+        {
+          key: 'CUM_IMPACT',
+          label: `${activeOverview?.label ?? t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
+          getValue: (a) =>
+            a.cumulativeImpact ??
+            (a.impactMetric
+              ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
+              : null),
+          getUnit: (a) => a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
+        },
+        {
+          key: 'IMPACT',
+          label: `${t('annual-impact')} ${yearRange[1]}`,
+          sortKey: 'impactOnTargetYear',
+          getValue: (a) => (a.impactMetric ? a.impactOnTargetYear : null),
+          getUnit: (a) => a.impactMetric?.unit?.htmlShort,
+        },
+      ];
+    }
+
+    // cost_benefit: Benefit / Cost / Net Benefit (derived from effectDim)
+    if (graphType === 'cost_benefit') {
+      return [
+        {
+          key: 'CUM_IMPACT',
+          label: t('benefit'),
+          getValue: (a) => a.costBenefit?.benefit ?? null,
+          getUnit: (a) => a.costBenefit?.unit,
+        },
+        {
+          key: 'CUM_COST',
+          label: t('cost'),
+          getValue: (a) => a.costBenefit?.cost ?? null,
+          getUnit: (a) => a.costBenefit?.unit,
+        },
+        {
+          key: 'CUM_EFFICIENCY',
+          label: t('net-benefit'),
+          getValue: (a) => a.costBenefit?.netBenefit ?? null,
+          getUnit: (a) => a.costBenefit?.unit,
+        },
+      ];
+    }
+
+    // return_on_investment: single ROI column
+    if (graphType === 'return_on_investment' && activeOverview) {
+      return [
+        {
+          key: 'CUM_EFFICIENCY',
+          label: activeOverview.label,
+          sortKey: 'cumulativeEfficiency',
+          getValue: (a) => {
+            const cost = a.cumulativeCost;
+            const impact = a.cumulativeImpact;
+            if (cost === undefined || impact === undefined || cost <= 0) return null;
+            return (impact / cost) * (a.unitAdjustmentMultiplier ?? 1);
+          },
+          getUnit: () => activeOverview.indicatorUnit ?? '%',
+        },
+      ];
+    }
+
+    // cost_efficiency: effectDim, costDim, efficiency columns
+    const firstWithCost = filteredActions.find((a) => typeof a.cumulativeCost === 'number');
+    const firstWithEfficiency = filteredActions.find(
+      (a) => typeof a.cumulativeEfficiency === 'number'
+    );
+    const cols: ColumnDef[] = [
       {
         key: 'CUM_IMPACT',
-        label: `${t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
-        getValue: (a) =>
-          a.impactMetric
-            ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
-            : 0,
-        getUnit: (a) => a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
-      },
-      {
-        key: 'IMPACT',
-        label: `${t('annual-impact')} ${yearRange[1]}`,
-        sortKey: 'impactOnTargetYear',
-        getValue: (a) => a.impactOnTargetYear,
-        getUnit: (a) => a.impactMetric?.unit?.htmlShort,
+        label:
+          firstWithCost?.cumulativeImpactName ??
+          `${t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
+        getValue: (a) => a.cumulativeImpact ?? null,
+        getUnit: (a) => a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
       },
     ];
-
-    if (filteredActions.some((a) => typeof a.cumulativeCost === 'number')) {
-      base.push({
+    if (firstWithCost) {
+      cols.push({
         key: 'CUM_COST',
-        label: `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
+        label:
+          firstWithCost.cumulativeCostName ?? `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
         sortKey: 'cumulativeCost',
-        getValue: (a) => a.cumulativeCost ?? 0,
+        getValue: (a) => a.cumulativeCost ?? null,
         getUnit: (a) => a.cumulativeCostUnit,
       });
     }
-
-    if (filteredActions.some((a) => typeof a.cumulativeEfficiency === 'number')) {
-      base.push({
+    if (firstWithEfficiency) {
+      cols.push({
         key: 'CUM_EFFICIENCY',
-        label: t('cost-efficiency'),
+        label: firstWithEfficiency.cumulativeEfficiencyName ?? t('cost-efficiency'),
         sortKey: 'cumulativeEfficiency',
-        getValue: (a) => a.cumulativeEfficiency ?? 0,
+        getValue: (a) => a.cumulativeEfficiency ?? null,
         getUnit: (a) => a.cumulativeEfficiencyUnit,
       });
     }
-    return base;
-  }, [filteredActions, yearRange, t]);
+    return cols;
+  }, [filteredActions, yearRange, t, activeOverview]);
 
   const sortedActions = useMemo(() => {
     const arr = [...filteredActions];
+    const isCostBenefit = activeOverview?.graphType === 'cost_benefit';
 
     if (sortBy.key === 'STANDARD') {
       arr.sort((a, b) => {
@@ -182,14 +263,34 @@ export default function ActionsList({
       return arr;
     }
 
-    arr.sort((a, b) => {
+    // Partition: disabled actions and (in cost_benefit) actions missing
+    // costBenefit data — which are hidden from the graph — go to the bottom.
+    const included: ActionWithEfficiency[] = [];
+    const excluded: ActionWithEfficiency[] = [];
+    for (const action of arr) {
+      const enabledParam = findActionEnabledParam(action.parameters);
+      const isEnabled = !refetching && (enabledParam?.boolValue ?? false);
+      const hasCostBenefit = !isCostBenefit || !!action.costBenefit;
+      (isEnabled && hasCostBenefit ? included : excluded).push(action);
+    }
+
+    included.sort((a, b) => {
       const av = getValueForSorting(a, sortBy, yearRange);
       const bv = getValueForSorting(b, sortBy, yearRange);
       return sortAscending ? av - bv : bv - av;
     });
 
-    return arr;
-  }, [filteredActions, sortBy, sortAscending, yearRange, groupOrder, originalIndex]);
+    return [...included, ...excluded];
+  }, [
+    filteredActions,
+    sortBy,
+    sortAscending,
+    yearRange,
+    groupOrder,
+    originalIndex,
+    refetching,
+    activeOverview,
+  ]);
 
   const handleSortClick = (key: SortActionsConfig['key']) => {
     if (sortBy.key === key) {
@@ -199,19 +300,41 @@ export default function ActionsList({
     }
   };
 
-  // Totals for percent bars
+  // Totals for percent bars — excluded or missing-value actions don't contribute
   const totals = useMemo(() => {
     return columns.reduce(
       (acc, col) => {
-        acc[col.key] = filteredActions.reduce((sum, a) => sum + col.getValue(a), 0);
+        acc[col.key] = filteredActions.reduce((sum, a) => {
+          const enabledParam = findActionEnabledParam(a.parameters);
+          const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
+          const v = col.getValue(a);
+          return isIncluded && v !== null ? sum + v : sum;
+        }, 0);
         return acc;
       },
       {} as Record<SortActionsConfig['key'], number>
     );
-  }, [filteredActions, columns]);
+  }, [filteredActions, columns, refetching]);
 
   const COLSPAN = 4 + columns.length;
   const ROW_GAP = 0.5;
+
+  if (isLoading && sortedActions.length === 0) {
+    return (
+      <Box
+        data-testid="actions-list"
+        id={id}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          py: 8,
+        }}
+      >
+        <CircularProgress aria-label={t('loading')} />
+      </Box>
+    );
+  }
 
   return (
     <TableContainer
@@ -239,7 +362,7 @@ export default function ActionsList({
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: theme.graphColors.blue010,
+              backgroundColor: theme.graphColors.grey020,
               '& .MuiTableSortLabel-root': { lineHeight: 'inherit', whiteSpace: 'normal' },
               '& > .MuiTableCell-head:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
               '& > .MuiTableCell-root:nth-of-type(3)': {
@@ -250,7 +373,7 @@ export default function ActionsList({
                 position: { xs: 'sticky', md: 'static' },
                 left: { xs: 0, md: 'auto' },
                 zIndex: { xs: 3, md: 'auto' },
-                backgroundColor: theme.graphColors.blue010,
+                backgroundColor: theme.graphColors.grey020,
                 boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
               },
             }}
@@ -277,15 +400,21 @@ export default function ActionsList({
 
             {columns.map((col) => (
               <TableCell key={col.key} sx={{ minWidth: { xs: '16ch', md: '12' } }}>
-                <TableSortLabel
-                  active={sortBy.key === col.key}
-                  direction={sortBy.key === col.key ? (sortAscending ? 'asc' : 'desc') : 'asc'}
-                  onClick={() => handleSortClick(col.key)}
-                >
+                {col.disableSort ? (
                   <Box component="span" sx={headerText}>
                     {col.label}
                   </Box>
-                </TableSortLabel>
+                ) : (
+                  <TableSortLabel
+                    active={sortBy.key === col.key}
+                    direction={sortBy.key === col.key ? (sortAscending ? 'asc' : 'desc') : 'asc'}
+                    onClick={() => handleSortClick(col.key)}
+                  >
+                    <Box component="span" sx={headerText}>
+                      {col.label}
+                    </Box>
+                  </TableSortLabel>
+                )}
               </TableCell>
             ))}
 
@@ -400,18 +529,20 @@ export default function ActionsList({
 
                   {columns.map((col) => {
                     const val = col.getValue(action);
+                    const isImpactCol = col.key === 'CUM_IMPACT' || col.key === 'IMPACT';
+                    const hideImpact = !isIncluded && isImpactCol;
+                    const isMissing = val === null;
                     const total = totals[col.key] || 0;
-                    const percent = total ? (val / total) * 100 : 0;
+                    const percent = !isMissing && total ? (val / total) * 100 : 0;
 
                     let display: string;
                     let unit: string | undefined;
 
-                    if (col.key === 'CUM_EFFICIENCY') {
-                      display = formatEfficiencyForDisplay(
-                        action.cumulativeEfficiency,
-                        action.efficiencyCap,
-                        formatNumber
-                      );
+                    if (isMissing) {
+                      display = MISSING_VALUE;
+                      unit = undefined;
+                    } else if (col.key === 'CUM_EFFICIENCY') {
+                      display = formatEfficiencyForDisplay(val, action.efficiencyCap, formatNumber);
                       unit = action.cumulativeEfficiencyUnit;
                     } else {
                       display = formatNumber(val);
@@ -420,19 +551,23 @@ export default function ActionsList({
 
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
-                        <Typography variant="h5" component="span" sx={{ color: colors.title }}>
-                          {display}
-                        </Typography>
-                        {unit && (
-                          <Typography
-                            variant="body2"
-                            component="span"
-                            sx={{ ml: 0.5, color: colors.text }}
-                          >
-                            {unit}
-                          </Typography>
+                        {!hideImpact && (
+                          <>
+                            <Typography variant="h5" component="span" sx={{ color: colors.title }}>
+                              {display}
+                            </Typography>
+                            {unit && (
+                              <Typography
+                                variant="body2"
+                                component="span"
+                                sx={{ ml: 0.5, color: colors.text }}
+                              >
+                                {unit}
+                              </Typography>
+                            )}
+                          </>
                         )}
-                        {(col.key === 'CUM_IMPACT' || col.key === 'IMPACT') && (
+                        {isImpactCol && !hideImpact && !isMissing && (
                           <Box
                             sx={{
                               position: 'relative',

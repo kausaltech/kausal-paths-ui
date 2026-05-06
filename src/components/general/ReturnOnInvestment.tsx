@@ -132,7 +132,7 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   );
   const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = data?.label || t('return-on-investment');
+  const title = `${data?.label || t('return-on-investment')} (${startYear} - ${endYear})`;
   // TODO: Add subtitle translation return-on-investment-subtitle
   const subtitle = data?.indicatorLabel || '';
 
