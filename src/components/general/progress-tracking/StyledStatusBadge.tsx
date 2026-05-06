@@ -1,4 +1,5 @@
 import styled from '@common/themes/styled';
+import { transientOptions } from '@common/themes/styles/styled';
 
 export const StyledIndicator = styled.span`
   width: 16px;
@@ -6,7 +7,7 @@ export const StyledIndicator = styled.span`
   border-radius: 8px;
 `;
 
-export const StyledStatusBadge = styled.div<{
+export const StyledStatusBadge = styled('div', transientOptions)<{
   $backgroundColor: string;
   $color: string;
   $iconColor?: string;

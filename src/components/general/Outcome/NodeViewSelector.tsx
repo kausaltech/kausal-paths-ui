@@ -33,7 +33,6 @@ const NodeViewSelector = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const instance = useInstance();
-  const showDetailsLink = !instance.features?.hideNodeDetails;
 
   const handleChange = (event: SelectChangeEvent) => {
     const tabId = event.target.value;
@@ -72,7 +71,7 @@ const NodeViewSelector = ({
         <InfoCircleFill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
       ),
       label: t('details'),
-      show: showDetailsLink,
+      show: true,
     },
   ];
 

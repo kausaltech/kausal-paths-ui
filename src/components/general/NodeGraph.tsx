@@ -1,3 +1,5 @@
+import { type Ref } from 'react';
+
 import { Alert } from '@mui/material';
 import { type Theme } from '@mui/material/styles';
 
@@ -10,7 +12,7 @@ import type {
 } from 'echarts/types/dist/shared';
 import { tint } from 'polished';
 
-import { Chart } from '@common/components/Chart';
+import { Chart, type ChartHandle } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import { sanitizeHtmlUnit } from '@common/utils/format';
 
@@ -57,6 +59,7 @@ type NodeGraphProps = {
   onClickMeasuredEmissions?: (year: number) => void;
   forecastTitle?: string;
   stackable?: boolean;
+  chartRef?: Ref<ChartHandle>;
 };
 
 type DataTable = (string | number | null | undefined)[][];
@@ -92,6 +95,7 @@ export default function NodeGraph(props: NodeGraphProps) {
     onClickMeasuredEmissions,
     forecastTitle,
     stackable = true,
+    chartRef,
   } = props;
 
   // Figure out the start year of the dataset sans reference year
@@ -117,9 +121,9 @@ export default function NodeGraph(props: NodeGraphProps) {
     if (!onClickMeasuredEmissions || !startYear) return;
     // If the user clicks below the x axis, we do nothing
     if (dataPoint[1] < 0) return;
-    // If the clicked year is the reference year, we do nothing
-    // By definition reference year has no progress data
-    if (dataPoint[0] === 0 && referenceYear) return;
+    // If the clicked year is the first year, we do nothing
+    // By definition first year has no progress data
+    if (Math.abs(dataPoint[0]) === 0) return;
 
     // If some other year is clicked, we need to offset the index if referenceYear is present
     const offsetForReferenceYear = referenceYear ? 1 : 0;
@@ -359,6 +363,7 @@ export default function NodeGraph(props: NodeGraphProps) {
       height={CHART_HEIGHT}
       className="plot-container"
       onZrClick={handleChartClick}
+      ref={chartRef}
     />
   );
 }

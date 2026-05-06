@@ -23,7 +23,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
-import { useInstance } from '@/common/instance';
+import { useFeatures, useInstance } from '@/common/instance';
 import { useSiteWithSetter } from '@/context/site';
 import GoalSelector from '../general/GoalSelector';
 import NormalizationWidget from '../general/NormalizationWidget';
@@ -124,6 +124,7 @@ const RELATIVE_STYLES = {
 const DRAWER_WIDTH = 320;
 
 const ScenarioPanel = () => {
+  const { hideNodeDetails } = useFeatures();
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isPanelFixed, isPanelMini, initialHeight } = useIsPanelStuck(containerRef);
@@ -149,13 +150,16 @@ const ScenarioPanel = () => {
   const { error, data } = useQuery<InstanceGoalOutcomeQuery, InstanceGoalOutcomeQueryVariables>(
     GET_INSTANCE_GOAL_OUTCOME,
     {
+      skip: !!hideNodeDetails,
       variables: {
         goal: activeGoal?.id ?? '',
       },
     }
   );
+
   // if (loading) return <Skeleton variant="text" width={100} height={24} />;
   if (error) return <div>error!</div>;
+  if (hideNodeDetails) return null;
 
   const minYear = site.minYear;
   const maxYear = site.maxYear;

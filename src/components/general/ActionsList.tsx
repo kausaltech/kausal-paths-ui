@@ -22,6 +22,7 @@ import { ChevronDown } from 'react-bootstrap-icons';
 import { useTheme } from '@common/themes';
 
 import { DecisionLevel } from '@/common/__generated__/graphql';
+import { useFeatures } from '@/common/instance';
 import { ActionLink } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
@@ -122,11 +123,14 @@ export default function ActionsList({
   const formatNumber = useNumberFormatter();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const { hideNodeDetails } = useFeatures();
+
   const cardBgPrimary = theme.cardBackground?.primary ?? theme.palette.background.paper;
   const cardBgSecondary = theme.cardBackground?.secondary ?? theme.palette.background.default;
   const textPrimary = theme.textColor?.primary ?? theme.palette.text.primary;
   const textSecondary = theme.textColor?.secondary ?? theme.palette.text.primary;
   const textTertiary = theme.textColor?.tertiary ?? theme.palette.text.secondary;
+  const isScenarioEditable = !hideNodeDetails;
 
   // hide ungrouped actions if at least one group exists
   const filteredActions = useMemo(() => {
@@ -386,11 +390,13 @@ export default function ActionsList({
               </Box>
             </TableCell>
 
-            <TableCell>
-              <Box component="span" sx={headerText}>
-                {t('included-in-scenario')}
-              </Box>
-            </TableCell>
+            {isScenarioEditable && (
+              <TableCell>
+                <Box component="span" sx={headerText}>
+                  {t('included-in-scenario')}
+                </Box>
+              </TableCell>
+            )}
 
             {columns.map((col) => (
               <TableCell key={col.key} sx={{ minWidth: { xs: '16ch', md: '12' } }}>
@@ -517,7 +523,9 @@ export default function ActionsList({
                     </Box>
                   </TableCell>
 
-                  <ScenarioChip checked={isIncluded} label={t('included-in-scenario')} />
+                  {isScenarioEditable && (
+                    <ScenarioChip checked={isIncluded} label={t('included-in-scenario')} />
+                  )}
 
                   {columns.map((col) => {
                     const val = col.getValue(action);
