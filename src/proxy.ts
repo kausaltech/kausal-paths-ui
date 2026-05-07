@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
 import { getSessionCookie } from 'better-auth/cookies';
-import createIntlMiddleware from 'next-intl/middleware';
 import type { Bindings } from 'pino';
 
 import {
@@ -67,15 +66,19 @@ function determineMatchingInstance(instances: Instance[], path: string) {
  * Determine the locale from the URL path.
  * In App Router mode, we don't rely on Next.js built-in locale detection.
  * Instead, we check the first path segment against the instance's supported languages.
+ *
+ * Strips the prefix for any supported language — including the default —
+ * because users / inbound links may use an explicit `/en/...` even when
+ * `localePrefix: 'as-needed'` would render canonical URLs without it.
+ * Without this, the rewrite below would produce `/root/{host}/en/en/...`
+ * and 404.
  */
 function determineLocale(instance: Instance, path: string) {
-  const otherLanguages = instance.supportedLanguages.filter(
-    (lang) => lang !== instance.defaultLanguage
-  );
   const parts = splitPath(path);
-  const locale = otherLanguages.find((lang) => lang.toLowerCase() === parts[0]?.toLowerCase());
+  const locale = instance.supportedLanguages.find(
+    (lang) => lang.toLowerCase() === parts[0]?.toLowerCase()
+  );
   if (locale) {
-    // Remove the locale segment — next-intl middleware will handle it
     parts.shift();
     return { locale, path: ['', ...parts].join('/') };
   }
@@ -323,15 +326,6 @@ async function proxy(req: NextRequest) {
   if (!shouldAddInstanceHeaders(match.parts)) {
     return NextResponse.next(reqInit);
   }
-  const requiresAuth =
-    ((instance?.isProtected ?? false) || match.path.startsWith('/model')) &&
-    !match.path.startsWith('/auth/');
-  if (requiresAuth) {
-    const sessionCookie = getSessionCookie(req);
-    if (!sessionCookie) {
-      return NextResponse.redirect(new URL('/auth/sign-in', req.url));
-    }
-  }
   if (!instances.length) {
     const wildcardDomains = getWildcardDomains();
     logger.warn(
@@ -352,29 +346,30 @@ async function proxy(req: NextRequest) {
     return errorResponse(req, reqHeaders, 'not-found');
   }
 
+  // Strip the locale prefix before any routing checks so e.g. `/fi/model`
+  // is treated identically to `/model`.
+  const { locale, path: pathWithoutLocale } = determineLocale(instance, match.path);
+
+  const requiresAuth =
+    ((instance.isProtected ?? false) || pathWithoutLocale.startsWith('/model')) &&
+    !pathWithoutLocale.startsWith('/auth/');
+  if (requiresAuth) {
+    const sessionCookie = getSessionCookie(req);
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL('/auth/sign-in', req.url));
+    }
+  }
+
   // Proactively refresh the access token before the RSC render runs. RSC
   // can't set cookies, so this has to happen in the proxy. Skipped on
   // /auth/* paths to avoid racing with the sign-in/out flow.
   let refreshedSetCookies: string[] | null = null;
-  if (!match.path.startsWith('/auth/')) {
+  if (!pathWithoutLocale.startsWith('/auth/')) {
     refreshedSetCookies = await refreshAccessTokenIfNeeded(req, reqHeaders);
     if (refreshedSetCookies) {
       logger.info({ count: refreshedSetCookies.length }, 'rotated auth cookies');
     }
   }
-
-  // Determine locale from the URL path (after basePath is stripped)
-  const { locale, path: pathWithoutLocale } = determineLocale(instance, match.path);
-
-  // Use next-intl middleware for locale handling, created dynamically per instance
-  const handleI18nRouting = createIntlMiddleware({
-    locales: instance.supportedLanguages,
-    defaultLocale: instance.defaultLanguage,
-    localePrefix: 'as-needed',
-    localeDetection: false,
-  });
-
-  const i18nResponse = handleI18nRouting(req);
 
   // Rewrite the URL to the App Router route structure: /root/{hostname}/{locale}/{rest}
   const strippedPath = pathWithoutLocale === '/' ? '' : pathWithoutLocale;
@@ -395,11 +390,6 @@ async function proxy(req: NextRequest) {
   );
 
   const rewrittenResp = NextResponse.rewrite(rewrittenUrl, { request: { headers: reqHeaders } });
-
-  // Copy over any cookies set by next-intl middleware
-  i18nResponse.cookies.getAll().forEach((cookie) => {
-    rewrittenResp.cookies.set(cookie);
-  });
 
   // Forward rotated auth cookies (if any) to the browser.
   if (refreshedSetCookies) {
