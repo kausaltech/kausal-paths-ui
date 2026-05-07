@@ -27,6 +27,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
+import RichTextField from './RichTextField';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
 import { getNodeGroup } from './nodeHelpers';
 import {
@@ -597,14 +598,33 @@ export default function NodeDetailsSection({
         placeholder="Abbreviated label"
       />
 
-      <MockTextField
+      <RichTextField
+        key={`description:${node.id}`}
         label="Description"
-        field="description"
-        nodeId={node.id}
-        originalValue={node.description ?? null}
-        currentValue={currentEdit?.description}
-        editorUserName={editorUserName}
-        multiline
+        value={currentEdit?.description ?? node.description ?? ''}
+        hasEdit={
+          currentEdit?.description !== undefined &&
+          (currentEdit.description ?? '') !== (node.description ?? '')
+        }
+        onChange={(html) =>
+          setMockNodeFieldEdit(
+            node.id,
+            'description',
+            html,
+            node.description ?? null,
+            editorUserName
+          )
+        }
+        onRevert={() =>
+          setMockNodeFieldEdit(
+            node.id,
+            'description',
+            node.description ?? null,
+            node.description ?? null,
+            editorUserName
+          )
+        }
+        disabled={readOnly}
       />
 
       <LiveColorField
