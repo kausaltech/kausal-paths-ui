@@ -102,6 +102,10 @@ type PendingEdit = {
 type Dataset = DatasetDetailFieldsFragment;
 type DataPoint = Dataset['dataPoints'][number];
 
+type UpdateInput = UpdateDataPointMutationVariables['input'];
+const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
+  partial as unknown as UpdateInput;
+
 const METRIC_COL = 'col_metric';
 const ACTIONS_COL = 'col_actions';
 // Row-level delete is hidden for now — editing happens through cell commits.
@@ -240,10 +244,6 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const [deleteDataPoint] = useMutation<DeleteDataPointMutation, DeleteDataPointMutationVariables>(
     DELETE_DATA_POINT
   );
-
-  type UpdateInput = UpdateDataPointMutationVariables['input'];
-  const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
-    partial as unknown as UpdateInput;
 
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);

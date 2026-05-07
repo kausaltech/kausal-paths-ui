@@ -324,7 +324,7 @@ async function proxy(req: NextRequest) {
     return NextResponse.next(reqInit);
   }
   const requiresAuth =
-    (instance?.isProtected || match.path.startsWith('/model')) &&
+    ((instance?.isProtected ?? false) || match.path.startsWith('/model')) &&
     !match.path.startsWith('/auth/');
   if (requiresAuth) {
     const sessionCookie = getSessionCookie(req);
