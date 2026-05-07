@@ -21,6 +21,8 @@ const SettingsForm = styled.form`
   padding: 0.5rem 0 1rem;
   border-top: 1px solid ${(props) => props.theme.neutralLight};
   border-bottom: 1px solid ${(props) => props.theme.neutralLight};
+  max-width: 100%;
+  overflow-x: auto;
 `;
 
 const StyledFormControl = styled(FormControl)`

@@ -362,7 +362,7 @@ export default function ActionsList({
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: theme.graphColors.grey020,
+              backgroundColor: theme.graphColors.grey010,
               '& .MuiTableSortLabel-root': { lineHeight: 'inherit', whiteSpace: 'normal' },
               '& > .MuiTableCell-head:nth-of-type(1)': { minWidth: { xs: '18ch', md: 'auto' } },
               '& > .MuiTableCell-root:nth-of-type(3)': {
@@ -373,7 +373,6 @@ export default function ActionsList({
                 position: { xs: 'sticky', md: 'static' },
                 left: { xs: 0, md: 'auto' },
                 zIndex: { xs: 3, md: 'auto' },
-                backgroundColor: theme.graphColors.grey020,
                 boxShadow: { xs: '2px 0 0 rgba(0,0,0,0.06)', md: 'none' },
               },
             }}
