@@ -2,12 +2,12 @@ import { useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
 import { type ActionListQuery, type ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import MacGraph from '@/components/graphs/MacGraph';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 
-type ActionsMacProps = {
+type EfficiencyGraphProps = {
   id?: string;
   actions: ActionWithEfficiency[];
   impactOverviews: ImpactOverviewsQuery['impactOverviews'][number] | undefined;
@@ -17,7 +17,7 @@ type ActionsMacProps = {
   refetching: boolean;
 };
 
-const ActionsMac = ({
+const EfficiencyGraph = ({
   id,
   actions,
   impactOverviews: _impactOverviews,
@@ -25,9 +25,10 @@ const ActionsMac = ({
   sortBy,
   sortAscending,
   refetching,
-}: ActionsMacProps) => {
+}: EfficiencyGraphProps) => {
   const t = useTranslations('common');
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
   // efficiencyCap is embedded per-action from useActionListData (GET_ACTION_LIST)
   // Remove actions without efficiency data, and those exceeding their own cap
   const efficiencyActions = actions
@@ -82,7 +83,7 @@ const ActionsMac = ({
   const costUnit = sortedActions[0]?.cumulativeCostUnit;
 
   const title = `${_impactOverviews?.label} (${startYear} - ${endYear})`;
-  const subtitle = '-';
+  const subtitle = t('cost-efficiency-subtitle', { activeScenario: activeScenario?.name ?? '' });
 
   return (
     <ChartWrapper id={id} isLoading={refetching} title={title} subtitle={subtitle}>
@@ -101,4 +102,4 @@ const ActionsMac = ({
   );
 };
 
-export default ActionsMac;
+export default EfficiencyGraph;

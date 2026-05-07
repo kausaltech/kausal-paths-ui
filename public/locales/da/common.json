@@ -152,5 +152,9 @@
   "calculation": "Beregning",
   "calculation-visible": "Beregningen er vist",
   "calculation-hidden": "Beregningen er skjult",
-  "loading-calculation": "Indlæser beregning…"
+  "loading-calculation": "Indlæser beregning…",
+  "cost-efficiency-subtitle": "Omkostningseffektivitet for handlinger i scenariet ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Omkostninger og fordele for handlinger i scenariet ''{activeScenario}''.",
+  "simple-effect-subtitle": "Udvalgt effekt af handlinger i scenariet ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Investeringsafkast (ROI) for handlinger i scenariet ''{activeScenario}''."
 }

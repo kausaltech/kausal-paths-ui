@@ -137,5 +137,9 @@
   "calculation": "Beräkning",
   "calculation-visible": "Beräkningen är synlig",
   "calculation-hidden": "Beräkningen är dold",
-  "loading-calculation": "Laddar beräkning…"
+  "loading-calculation": "Laddar beräkning…",
+  "cost-efficiency-subtitle": "Kostnadseffektivitet för åtgärder i scenariot ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Kostnad-nytta för åtgärder i scenariot ''{activeScenario}''.",
+  "simple-effect-subtitle": "Vald påverkan av åtgärder i scenariot ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Avkastning på investering (ROI) för åtgärder i scenariot ''{activeScenario}''."
 }

@@ -142,5 +142,9 @@
   "calculation": "Aprēķins",
   "calculation-visible": "Aprēķins ir redzams",
   "calculation-hidden": "Aprēķins ir paslēpts",
-  "loading-calculation": "Ielādē aprēķinu…"
+  "loading-calculation": "Ielādē aprēķinu…",
+  "cost-efficiency-subtitle": "Darbību izmaksu efektivitāte scenārijā ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Darbību izmaksu un ieguvumu attiecība scenārijā ''{activeScenario}''.",
+  "simple-effect-subtitle": "Darbību izvēlētā ietekme scenārijā ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Darbību ieguldījumu atdeve (ROI) scenārijā ''{activeScenario}''."
 }

@@ -126,7 +126,7 @@
   "deviating": "Abweichend",
   "view-details": "Details anzeigen",
   "simple-effect": "Andere Wirkung",
-  "simple-effect-subtitle": "Die Grafik zeigt die ausgewählten Auswirkungen der einzelnen Maßnahmen.",
+  "simple-effect-subtitle": "Ausgewählte Auswirkungen der Maßnahmen im Szenario ''{activeScenario}''.",
   "emission-drivers": "Emissionstreiber",
   "actions-as-comparison": "Vergleichen",
   "planned": "Geplant",
@@ -173,5 +173,8 @@
   "calculation": "Berechnung",
   "calculation-visible": "Berechnung sichtbar",
   "calculation-hidden": "Berechnung ausgeblendet",
-  "loading-calculation": "Berechnung wird geladen…"
+  "loading-calculation": "Berechnung wird geladen…",
+  "cost-efficiency-subtitle": "Kosteneffizienz der Maßnahmen im Szenario ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Kosten-Nutzen der Maßnahmen im Szenario ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Rentabilität (ROI) der Maßnahmen im Szenario ''{activeScenario}''."
 }

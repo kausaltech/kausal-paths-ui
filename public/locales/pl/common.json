@@ -153,5 +153,9 @@
   "calculation": "Obliczenia",
   "calculation-visible": "Obliczenia są widoczne",
   "calculation-hidden": "Obliczenia są ukryte",
-  "loading-calculation": "Wczytywanie obliczeń…"
+  "loading-calculation": "Wczytywanie obliczeń…",
+  "cost-efficiency-subtitle": "Efektywność kosztowa działań w scenariuszu ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Koszty i korzyści działań w scenariuszu ''{activeScenario}''.",
+  "simple-effect-subtitle": "Wybrany wpływ działań w scenariuszu ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Zwrot z inwestycji (ROI) działań w scenariuszu ''{activeScenario}''."
 }

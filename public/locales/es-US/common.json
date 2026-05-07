@@ -157,5 +157,9 @@
   "calculation": "Cálculo",
   "calculation-visible": "El cálculo está visible",
   "calculation-hidden": "El cálculo está oculto",
-  "loading-calculation": "Cargando cálculo…"
+  "loading-calculation": "Cargando cálculo…",
+  "cost-efficiency-subtitle": "Eficiencia de costes de las acciones en el escenario ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Coste-beneficio de las acciones en el escenario ''{activeScenario}''.",
+  "simple-effect-subtitle": "Impacto seleccionado de las acciones en el escenario ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Retorno de la inversión (ROI) de las acciones en el escenario ''{activeScenario}''."
 }

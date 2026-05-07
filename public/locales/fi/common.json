@@ -145,5 +145,9 @@
   "calculation": "Laskelma",
   "calculation-visible": "Laskelma näkyy",
   "calculation-hidden": "Laskelma on piilotettu",
-  "loading-calculation": "Ladataan laskelmaa…"
+  "loading-calculation": "Ladataan laskelmaa…",
+  "cost-efficiency-subtitle": "Toimenpiteiden kustannusvaikuttavuus skenaariossa ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Toimenpiteiden kustannus-hyötysuhde skenaariossa ''{activeScenario}''.",
+  "simple-effect-subtitle": "Toimenpiteiden valittu vaikutus skenaariossa ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Toimenpiteiden tuotto-odotus (ROI) skenaariossa ''{activeScenario}''."
 }

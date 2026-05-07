@@ -10,8 +10,8 @@ import GraphQLError from '@/components/common/GraphQLError';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 import ActionsComparison from './ActionsComparison';
-import ActionsMac from './ActionsMac';
 import { CostBenefitAnalysis } from './CostBenefitAnalysis';
+import EfficiencyGraph from './EfficiencyGraph';
 import { ReturnOnInvestment } from './ReturnOnInvestment';
 import { SimpleEffect } from './SimpleEffect';
 
@@ -90,7 +90,7 @@ export function ActionListGraphView({
   switch (graphType) {
     case 'cost_efficiency': {
       return (
-        <ActionsMac
+        <EfficiencyGraph
           id="efficiency-view"
           actions={actionsInOverview}
           impactOverviews={filteredOverview}

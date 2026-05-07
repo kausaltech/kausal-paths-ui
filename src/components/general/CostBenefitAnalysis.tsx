@@ -17,7 +17,7 @@ import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
@@ -693,7 +693,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const t = useTranslations('common');
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
-
+  const activeScenario = useReactiveVar(activeScenarioVar);
   const dimensionalMetrics = useMemo(() => {
     if (!data || data.graphType !== 'cost_benefit') {
       return [] as TActionRow[];
@@ -762,8 +762,9 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
 
   const MIN_WIDTH_XS = 820;
   const title = `${data?.label || t('cost-benefit-analysis')} (${startYear} - ${endYear})`;
-  const subtitle = '-';
-
+  const subtitle =
+    data?.indicatorLabel ||
+    t('cost-benefit-subtitle', { activeScenario: activeScenario?.name ?? '' });
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
       <StyledScrollArea>

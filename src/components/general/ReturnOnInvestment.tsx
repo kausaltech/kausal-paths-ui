@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
@@ -126,6 +126,7 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
   const chartData = useMemo(
     () => getChartConfig(startYear, endYear, formatNumber, formatAxisLabel, data),
     [data, startYear, endYear, formatNumber, formatAxisLabel]
@@ -133,8 +134,9 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const bars = data?.actions.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
   const title = `${data?.label || t('return-on-investment')} (${startYear} - ${endYear})`;
-  // TODO: Add subtitle translation return-on-investment-subtitle
-  const subtitle = data?.indicatorLabel || '';
+  const subtitle = t('return-on-investment-subtitle', {
+    activeScenario: activeScenario?.name ?? '',
+  });
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
