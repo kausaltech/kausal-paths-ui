@@ -186,6 +186,11 @@ export default function useLayoutNodes(
   // `appliedNodes`).
   const latestSourceNodesRef = useRef(sourceNodes);
   const latestResetTriggerRef = useRef(resetTrigger);
+  // Suppresses async callbacks that resolve after the hook owner unmounts.
+  // The supersession refs above only catch in-flight layouts being replaced
+  // by a newer request — they keep matching after unmount, so without this
+  // flag a late ELK promise / rAF would still drive setNodes / setAppliedNodes.
+  const unmountedRef = useRef(false);
   const [appliedNodes, setAppliedNodes] = useState<readonly ElkNodeType[] | null>(null);
 
   useEffect(() => {
@@ -194,6 +199,14 @@ export default function useLayoutNodes(
   useEffect(() => {
     latestResetTriggerRef.current = resetTrigger;
   }, [resetTrigger]);
+  // Reset on mount so React's strict-mode double-invoke (which fires the
+  // cleanup once before the real mount) doesn't leave the flag stuck `true`.
+  useEffect(() => {
+    unmountedRef.current = false;
+    return () => {
+      unmountedRef.current = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!nodesInitialized) return;
@@ -207,6 +220,7 @@ export default function useLayoutNodes(
     lastResetTriggerRef.current = resetTrigger;
 
     const isCurrent = () =>
+      !unmountedRef.current &&
       latestSourceNodesRef.current === sourceNodes &&
       latestResetTriggerRef.current === resetTrigger;
 
