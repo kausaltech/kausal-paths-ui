@@ -130,6 +130,7 @@ function useUpdateNodeMutation() {
           // updated fields via the reactive-var overlay.
           const override: NodeFieldOverrides = {};
           if (input.name !== undefined) override.name = payload.name;
+          if (input.description !== undefined) override.description = payload.description;
           if (input.color !== undefined) override.color = payload.color;
           if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
           if (input.isOutcome !== undefined && payload.__typename === 'Node') {
@@ -229,7 +230,7 @@ function LiveTextField({ label, value, onCommit, placeholder }: LiveTextFieldPro
 
 type MockTextFieldProps = {
   label: string;
-  field: Extract<EditableNodeField, 'shortName' | 'description' | 'nodeGroup'>;
+  field: Extract<EditableNodeField, 'shortName' | 'nodeGroup'>;
   nodeId: string;
   originalValue: string | null;
   currentValue: string | null | undefined;
@@ -601,29 +602,8 @@ export default function NodeDetailsSection({
       <RichTextField
         key={`description:${node.id}`}
         label="Description"
-        value={currentEdit?.description ?? node.description ?? ''}
-        hasEdit={
-          currentEdit?.description !== undefined &&
-          (currentEdit.description ?? '') !== (node.description ?? '')
-        }
-        onChange={(html) =>
-          setMockNodeFieldEdit(
-            node.id,
-            'description',
-            html,
-            node.description ?? null,
-            editorUserName
-          )
-        }
-        onRevert={() =>
-          setMockNodeFieldEdit(
-            node.id,
-            'description',
-            node.description ?? null,
-            node.description ?? null,
-            editorUserName
-          )
-        }
+        value={node.description ?? ''}
+        onCommit={(html) => updateNode(node.id, { description: html })}
         disabled={readOnly}
       />
 

@@ -6,6 +6,7 @@ import { gql, makeVar } from '@apollo/client';
 // consumer that renders nodes from the NodeGraph query.
 export type NodeFieldOverrides = {
   name?: string;
+  description?: string | null;
   color?: string | null;
   isVisible?: boolean;
   isOutcome?: boolean;
@@ -153,6 +154,7 @@ export const UPDATE_NODE = gql`
         ... on Node {
           id
           name
+          description
           color
           isVisible
           isOutcome
@@ -160,6 +162,7 @@ export const UPDATE_NODE = gql`
         ... on ActionNode {
           id
           name
+          description
           color
           isVisible
         }

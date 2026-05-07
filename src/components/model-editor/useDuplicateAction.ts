@@ -129,7 +129,6 @@ export function useDuplicateAction() {
         allowNulls: false,
         order: null,
         i18n: null,
-        inputDatasets: null,
         minimumYear: null,
         outputMetrics: null,
         params: null,

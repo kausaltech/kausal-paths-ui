@@ -1,23 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { type Theme, alpha } from '@mui/material/styles';
 
 import { type Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import {
-  ArrowCounterclockwise,
-  Link45deg,
-  ListOl,
-  ListUl,
-  TypeBold,
-  TypeItalic,
-} from 'react-bootstrap-icons';
-
-const MOCK_TINT_ALPHA = 0.18;
-function mockBg(theme: Theme) {
-  return alpha(theme.palette.info.main, MOCK_TINT_ALPHA);
-}
+import { Link45deg, ListOl, ListUl, TypeBold, TypeItalic } from 'react-bootstrap-icons';
 
 type ToolbarButtonProps = {
   label: string;
@@ -31,12 +18,15 @@ function ToolbarButton({ label, active, onClick, children }: ToolbarButtonProps)
     <Tooltip title={label} placement="top">
       <IconButton
         size="small"
+        // Prevent the button from stealing focus from the editor; without
+        // this, every click fires onBlur → triggers a redundant commit.
+        onMouseDown={(e) => e.preventDefault()}
         onClick={onClick}
         aria-label={label}
         sx={{
           p: 0.25,
           borderRadius: 0.5,
-          color: active ? 'info.dark' : 'text.secondary',
+          color: active ? 'primary.main' : 'text.secondary',
           bgcolor: active ? 'action.selected' : 'transparent',
         }}
       >
@@ -103,43 +93,77 @@ function Toolbar({ editor }: { editor: Editor }) {
   );
 }
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+function SaveStatusLabel({ status }: { status: SaveStatus }) {
+  if (status === 'idle') return null;
+  const { text, color } =
+    status === 'saving'
+      ? { text: 'Saving…', color: 'text.secondary' as const }
+      : status === 'saved'
+        ? { text: 'Saved', color: 'success.main' as const }
+        : { text: 'Save failed', color: 'error.main' as const };
+  return (
+    <Typography variant="caption" sx={{ fontSize: 10, color }}>
+      {text}
+    </Typography>
+  );
+}
+
 export type RichTextFieldProps = {
   label: string;
   value: string;
-  onChange: (html: string | null) => void;
-  hasEdit: boolean;
-  onRevert?: () => void;
+  onCommit: (html: string | null) => Promise<unknown>;
   placeholder?: string;
   disabled?: boolean;
 };
 
-// Tiptap holds the source of truth in ProseMirror state; we only push `value`
-// into it on mount (and when the parent remounts via `key`). Treat this as
-// mount-once: setting content on every external change would fight the user's
-// caret. Caller must remount the component when `value` represents a different
-// document (e.g. switching nodes — key on `nodeId`).
+// Commit-on-blur rich text editor backed by Tiptap.
+//
+// Tiptap holds the source of truth in ProseMirror state; we seed `value` only
+// on mount. The caller is expected to remount this component when `value`
+// represents a different document (e.g. switching nodes — key on `nodeId`).
+//
+// Saves fire on editor blur and on unmount (covers navigation away mid-edit).
+// We compare against the canonical post-mount HTML rather than `value` to
+// avoid spurious saves caused by Tiptap's serializer normalising the input.
 export default function RichTextField({
   label,
   value,
-  onChange,
-  hasEdit,
-  onRevert,
+  onCommit,
   placeholder,
   disabled,
 }: RichTextFieldProps) {
-  const onChangeRef = useRef(onChange);
+  const [status, setStatus] = useState<SaveStatus>('idle');
+
+  const onCommitRef = useRef(onCommit);
   useEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
+    onCommitRef.current = onCommit;
+  }, [onCommit]);
+
+  // Last value we've persisted (or seen as the canonical mount value). Updates
+  // optimistically before the mutation resolves so a rapid second blur with no
+  // further edits doesn't fire a duplicate save.
+  const baselineHtmlRef = useRef<string | null>(null);
+
+  const commit = useCallback((html: string | null) => {
+    if (html === baselineHtmlRef.current) return;
+    baselineHtmlRef.current = html;
+    setStatus('saving');
+    onCommitRef.current(html).then(
+      () => setStatus('saved'),
+      () => setStatus('error')
+    );
+  }, []);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [StarterKit.configure({ link: { openOnClick: false } })],
     content: value || '',
     editable: !disabled,
-    onUpdate: ({ editor }) => {
+    onBlur: ({ editor }) => {
       const html = editor.isEmpty ? null : editor.getHTML();
-      onChangeRef.current(html);
+      commit(html);
     },
     editorProps: {
       attributes: {
@@ -148,39 +172,49 @@ export default function RichTextField({
     },
   });
 
+  // Capture the canonical baseline once the editor is created. ProseMirror
+  // may serialise back slightly differently than the input string.
+  useEffect(() => {
+    if (!editor) return;
+    baselineHtmlRef.current = editor.isEmpty ? null : editor.getHTML();
+  }, [editor]);
+
+  // Auto-dismiss the "Saved" indicator.
+  useEffect(() => {
+    if (status !== 'saved') return;
+    const t = setTimeout(() => setStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  // Commit pending changes on unmount (e.g. user switches to another node).
+  useEffect(() => {
+    if (!editor) return;
+    return () => {
+      const html = editor.isEmpty ? null : editor.getHTML();
+      if (html !== baselineHtmlRef.current) {
+        baselineHtmlRef.current = html;
+        void onCommitRef.current(html);
+      }
+    };
+  }, [editor]);
+
   useEffect(() => {
     if (editor) editor.setEditable(!disabled);
   }, [editor, disabled]);
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, mb: 0.5, minHeight: 16 }}>
-        <Typography
-          variant="body2"
-          sx={{ fontSize: 10, color: hasEdit ? 'info.main' : 'text.secondary' }}
-        >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary' }}>
           {label}
-          {hasEdit ? ' · mock' : ''}
         </Typography>
-        {hasEdit && onRevert && (
-          <Tooltip title="Revert changes" placement="top">
-            <IconButton
-              size="small"
-              onClick={onRevert}
-              aria-label="Revert changes"
-              sx={{ p: 0.125, color: 'warning.main' }}
-            >
-              <ArrowCounterclockwise size={11} />
-            </IconButton>
-          </Tooltip>
-        )}
+        <SaveStatusLabel status={status} />
       </Box>
       <Box
-        sx={(theme) => ({
+        sx={{
           border: '1px solid',
           borderColor: 'divider',
           borderRadius: 1,
-          bgcolor: mockBg(theme),
           opacity: disabled ? 0.6 : 1,
           pointerEvents: disabled ? 'none' : 'auto',
           '&:focus-within': { borderColor: 'primary.main' },
@@ -191,7 +225,6 @@ export default function RichTextField({
             outline: 'none',
             p: 1,
             fontSize: 13,
-            color: hasEdit ? 'info.dark' : 'text.primary',
           },
           '& .ProseMirror p': { m: 0, mb: 0.5 },
           '& .ProseMirror p:last-child': { mb: 0 },
@@ -204,7 +237,7 @@ export default function RichTextField({
             height: 0,
             pointerEvents: 'none',
           },
-        })}
+        }}
       >
         {editor && <Toolbar editor={editor} />}
         <EditorContent editor={editor} />

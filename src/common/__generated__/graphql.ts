@@ -12,20 +12,10 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** Date (isoformat) */
   Date: { input: any; output: any; }
-  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
-  /**
-   * Allows use of a JSON String for input / output from the GraphQL schema.
-   *
-   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
-   * schema (one of the key benefits of GraphQL).
-   */
   JSONString: { input: string; output: string; }
-  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -91,7 +81,6 @@ export type CreateNodeInput = {
   description: InputMaybe<Scalars['String']['input']>;
   i18n: InputMaybe<Scalars['JSON']['input']>;
   identifier: Scalars['ID']['input'];
-  inputDatasets: InputMaybe<Scalars['JSON']['input']>;
   inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
   inputPorts: InputMaybe<Array<InputPortInput>>;
   isOutcome: Scalars['Boolean']['input'];
@@ -131,6 +120,12 @@ export enum DimensionKind {
 export type FormulaConfigInput = {
   formula: Scalars['String']['input'];
 };
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplateDefaultValueScalingChoices {
+  /** Population */
+  Population = 'POPULATION'
+}
 
 /** An enumeration. */
 export enum FrameworksMeasureTemplatePriorityChoices {
@@ -262,7 +257,6 @@ export type UpdateNodeInput = {
   config: InputMaybe<NodeConfigInput>;
   description: InputMaybe<Scalars['String']['input']>;
   i18n: InputMaybe<Scalars['JSON']['input']>;
-  inputDatasets: InputMaybe<Scalars['JSON']['input']>;
   inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
   inputPorts: InputMaybe<Array<InputPortInput>>;
   isOutcome: InputMaybe<Scalars['Boolean']['input']>;
@@ -481,62 +475,6 @@ export type ModelEditorLandingDataQuery = (
   & { __typename: 'Query' }
 );
 
-export type ModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type ModelNodesQuery = (
-  { nodes: Array<
-    | (
-      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, parentAction: (
-        { id: string }
-        & { __typename: 'ActionNode' }
-      ) | null, subactions: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' }
-      )>, group: (
-        { id: string, color: string | null, name: string }
-        & { __typename: 'ActionGroupType' }
-      ) | null, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null, inputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, outputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, metric: (
-        { id: string | null, historicalValues: Array<(
-          { year: number, value: number }
-          & { __typename: 'YearlyValue' }
-        )> }
-        & { __typename: 'ForecastMetricType' }
-      ) | null }
-      & { __typename: 'ActionNode' }
-    )
-    | (
-      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null, inputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, outputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, metric: (
-        { id: string | null, historicalValues: Array<(
-          { year: number, value: number }
-          & { __typename: 'YearlyValue' }
-        )> }
-        & { __typename: 'ForecastMetricType' }
-      ) | null }
-      & { __typename: 'Node' }
-    )
-  > }
-  & { __typename: 'Query' }
-);
-
 export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -595,62 +533,6 @@ export type StreamFieldFragment =
   | StreamField_RichTextBlock_Fragment
   | StreamField_TextBlock_Fragment
 ;
-
-export type NodeDetailsQueryVariables = Exact<{
-  node: Scalars['ID']['input'];
-  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
-}>;
-
-
-export type NodeDetailsQuery = (
-  { node: (
-    { id: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, color: string | null, quantity: string | null, editor: (
-      { nodeType: string, tags: Array<string> | null }
-      & { __typename: 'NodeEditor' }
-    ) | null, unit: (
-      { id: string, htmlShort: string }
-      & { __typename: 'UnitType' }
-    ) | null, inputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'ActionNode' | 'Node' }
-    )>, outputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'ActionNode' | 'Node' }
-    )>, metricDim: (
-      { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
-        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
-          { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
-          & { __typename: 'MetricDimensionCategoryType' }
-        )>, groups: Array<(
-          { id: string, originalId: string, label: string, color: string | null, order: number | null }
-          & { __typename: 'MetricDimensionCategoryGroupType' }
-        )> }
-        & { __typename: 'MetricDimensionType' }
-      )>, goals: Array<(
-        { categories: Array<string>, groups: Array<string>, values: Array<(
-          { year: number, value: number, isInterpolated: boolean }
-          & { __typename: 'MetricYearlyGoalType' }
-        )> }
-        & { __typename: 'DimensionalMetricGoalEntry' }
-      )>, unit: (
-        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
-        & { __typename: 'UnitType' }
-      ), normalizedBy: (
-        { id: string, name: string }
-        & { __typename: 'NormalizerNodeType' }
-      ) | null }
-      & { __typename: 'DimensionalMetricType' }
-    ) | null }
-    & { __typename: 'ActionNode' | 'Node' }
-  ) | null }
-  & { __typename: 'Query' }
-);
 
 export type FrameworkConfigsQueryVariables = Exact<{
   identifier: Scalars['ID']['input'];
@@ -1719,11 +1601,11 @@ export type UpdateNodeMutation = (
   { instanceEditor: (
     { updateNode:
       | (
-        { id: string, name: string, color: string | null, isVisible: boolean }
+        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean }
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, name: string, color: string | null, isVisible: boolean, isOutcome: boolean }
+        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean }
         & { __typename: 'Node' }
       )
       | (
