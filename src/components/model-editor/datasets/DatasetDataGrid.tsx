@@ -8,11 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
   Snackbar,
   Stack,
   TextField,
@@ -42,6 +38,8 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import AgGridReact from '../GridEditor';
+import { type AddProgress, AddRowsModal } from './AddRowsModal';
+import { NOT_APPLICABLE } from './DimensionCategoryList';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
 
 type Props = {
@@ -227,6 +225,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
   const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
   const [addYearOpen, setAddYearOpen] = useState(false);
+  const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
   // Ref mirror so long-lived AG Grid column callbacks (valueGetter, cellStyle,
   // tooltipValueGetter) always see the latest pending state without forcing
   // columnDefs to rebuild — a rebuild resets user-adjusted column widths.
@@ -247,6 +246,71 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
 
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
+
+  // Flat list per existing row: [metricId, ...nonNullDimCategoryUuids]. Lets
+  // AddRowsModal grey out combinations that would duplicate an existing row.
+  const existingCombinations = useMemo<string[][]>(
+    () =>
+      rows.map((r) => [
+        r.metricId,
+        ...Object.values(r.categoryByDim).filter((v): v is string => v !== null),
+      ]),
+    [rows]
+  );
+
+  const handleAddRows = useCallback(
+    async (selectedMetricIds: string[], newRows: string[][]) => {
+      if (newRows.length === 0) return;
+      const metricIdSet = new Set(selectedMetricIds);
+      // One anchor DataPoint per new row: enough to make the row render. Other
+      // year cells stay backed by no DataPoint and are created lazily as the
+      // user edits them. Earliest existing year is the anchor; current year if
+      // the dataset is brand-new.
+      const anchorYear = years.length > 0 ? years[0] : new Date().getUTCFullYear();
+      setAddProgress({ current: 0, total: newRows.length });
+
+      let failureCount = 0;
+      let firstError: string | null = null;
+
+      for (const row of newRows) {
+        const metricId = row.find((id) => metricIdSet.has(id));
+        if (metricId) {
+          const dimensionCategoryIds = row.filter((id) => id !== metricId && id !== NOT_APPLICABLE);
+          try {
+            const result = await createDataPoint({
+              variables: {
+                instanceId: instance.id,
+                datasetId: dataset.id,
+                input: {
+                  date: `${anchorYear}-01-01`,
+                  metricId,
+                  dimensionCategoryIds,
+                  value: null,
+                },
+              },
+            });
+            const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+            if (payload?.__typename === 'OperationInfo') {
+              failureCount += 1;
+              firstError ??= payload.messages.map((m) => m.message).join('; ');
+            }
+          } catch (err) {
+            failureCount += 1;
+            firstError ??= err instanceof Error ? err.message : String(err);
+          }
+        }
+        setAddProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+
+      setAddProgress(null);
+      setAddOpen(false);
+      if (failureCount > 0) {
+        setError(firstError ?? `Failed to add ${failureCount} row${failureCount === 1 ? '' : 's'}`);
+      }
+      onMutated();
+    },
+    [createDataPoint, instance.id, dataset.id, years, onMutated]
+  );
 
   const handleRowDelete = useCallback(
     async (row: GridRow) => {
@@ -693,7 +757,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           onClick={() => setAddOpen(true)}
           disabled={dataset.metrics.length === 0}
         >
-          Add row
+          Add rows
         </Button>
       </Stack>
       <Box
@@ -748,21 +812,16 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           tooltipShowDelay={400}
         />
       </Box>
-      <AddDataPointDialog
+      <AddRowsModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        dataset={dataset}
-        onCreate={async (input) => {
-          const result = await createDataPoint({
-            variables: { instanceId: instance.id, datasetId: dataset.id, input },
-          });
-          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
-          if (payload?.__typename === 'OperationInfo') {
-            setError(payload.messages.map((m) => m.message).join('; '));
-            return false;
-          }
-          onMutated();
-          return true;
+        metrics={dataset.metrics}
+        dimensions={dataset.dimensions}
+        existingCombinations={existingCombinations}
+        isAdding={addProgress !== null}
+        progress={addProgress}
+        onAdd={(selectedMetricIds, newRows) => {
+          void handleAddRows(selectedMetricIds, newRows);
         }}
       />
       <AddYearDialog
@@ -789,133 +848,6 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         </Alert>
       </Snackbar>
     </Box>
-  );
-}
-
-export type AddDialogProps = {
-  open: boolean;
-  onClose: () => void;
-  dataset: DatasetDetailFieldsFragment;
-  onCreate: (input: {
-    date: string;
-    value: number | null;
-    metricId: string;
-    dimensionCategoryIds: string[];
-  }) => Promise<boolean>;
-};
-
-export function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps) {
-  const defaultDate = new Date().toISOString().slice(0, 10);
-  const [date, setDate] = useState(defaultDate);
-  const [value, setValue] = useState('');
-  const [metricId, setMetricId] = useState(dataset.metrics[0]?.id ?? '');
-  const [categoryByDim, setCategoryByDim] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    for (const dim of dataset.dimensions) {
-      if (dim.categories[0]) init[dim.id] = dim.categories[0].uuid;
-    }
-    return init;
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const reset = () => {
-    setDate(defaultDate);
-    setValue('');
-    setMetricId(dataset.metrics[0]?.id ?? '');
-    const init: Record<string, string> = {};
-    for (const dim of dataset.dimensions) {
-      if (dim.categories[0]) init[dim.id] = dim.categories[0].uuid;
-    }
-    setCategoryByDim(init);
-  };
-
-  const handleSubmit = async () => {
-    if (!metricId) return;
-    const parsed = value.trim() === '' ? null : Number(value);
-    if (parsed !== null && !Number.isFinite(parsed)) return;
-    setSubmitting(true);
-    const ok = await onCreate({
-      date,
-      value: parsed,
-      metricId,
-      dimensionCategoryIds: Object.values(categoryByDim),
-    });
-    setSubmitting(false);
-    if (ok) {
-      reset();
-      onClose();
-    }
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add row</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            fullWidth
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <FormControl fullWidth>
-            <InputLabel id="metric-select-label">Metric</InputLabel>
-            <Select
-              labelId="metric-select-label"
-              label="Metric"
-              value={metricId}
-              onChange={(e) => setMetricId(e.target.value)}
-            >
-              {dataset.metrics.map((m) => (
-                <MenuItem key={m.id} value={m.id}>
-                  {m.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          {dataset.dimensions.map((dim) => (
-            <FormControl key={dim.id} fullWidth>
-              <InputLabel id={`dim-select-${dim.id}`}>{dim.name}</InputLabel>
-              <Select
-                labelId={`dim-select-${dim.id}`}
-                label={dim.name}
-                value={categoryByDim[dim.id] ?? ''}
-                onChange={(e) =>
-                  setCategoryByDim((prev) => ({ ...prev, [dim.id]: e.target.value }))
-                }
-              >
-                {dim.categories.map((cat) => (
-                  <MenuItem key={cat.uuid} value={cat.uuid}>
-                    {cat.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ))}
-          <TextField
-            label="Value"
-            type="number"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            fullWidth
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button
-          variant="contained"
-          disabled={submitting || !metricId}
-          onClick={() => {
-            void handleSubmit();
-          }}
-        >
-          {submitting ? 'Adding…' : 'Add'}
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 
