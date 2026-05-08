@@ -19,12 +19,14 @@ import {
 
 import { useMutation } from '@apollo/client/react';
 import {
+  CompactSelection,
   DataEditor,
   type DataEditorProps,
   type EditableGridCell,
   type GridCell,
   GridCellKind,
   type GridColumn,
+  type GridSelection,
   type Item,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
@@ -46,7 +48,6 @@ import {
   type GridRow,
   METRIC_COL,
   type PendingEdit,
-  type ValueCell,
   asUpdateInput,
   buildGridData,
   diffKind,
@@ -67,6 +68,11 @@ type Props = {
 // pre-mix against white.
 const DIRTY_BG = '#fce8d4';
 const ERROR_BG = '#fbe1e1';
+
+const EMPTY_SELECTION: GridSelection = {
+  columns: CompactSelection.empty(),
+  rows: CompactSelection.empty(),
+};
 
 const DEFAULT_DIM_WIDTH = 160;
 const DEFAULT_METRIC_WIDTH = 180;
@@ -129,6 +135,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     row: GridRow;
   } | null>(null);
   const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
+  const [gridSelection, setGridSelection] = useState<GridSelection>(EMPTY_SELECTION);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   // Glide's onCellContextMenu fires through the React tree; the document-level
   // listener below reads this ref to combine the row identity with the native
@@ -214,27 +221,40 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     [createDataPoint, instance.id, dataset.id, years, onMutated]
   );
 
-  const handleRowDelete = useCallback(
-    async (row: GridRow) => {
-      const ids = Object.values(row.cells)
-        .filter((c): c is ValueCell => c.type === 'Value' && c.dataPointId !== null)
-        .map((c) => c.dataPointId as string);
-      if (ids.length === 0) {
-        // Phantom row — no DataPoints exist yet (only pending edits). Drop
-        // the pending edits and we're done.
+  const handleDeleteRows = useCallback(
+    async (rowsToDelete: GridRow[]) => {
+      if (rowsToDelete.length === 0) return;
+      const rowIdPrefixes = rowsToDelete.map((r) => `${r.id}|`);
+      const allIds: string[] = [];
+      for (const row of rowsToDelete) {
+        for (const c of Object.values(row.cells)) {
+          if (c.type === 'Value' && c.dataPointId !== null) allIds.push(c.dataPointId);
+        }
+      }
+
+      // Drop any pending edits on the affected rows — they refer to rows
+      // that no longer exist after the delete.
+      const dropPending = () => {
         setPendingEdits((prev) => {
           if (prev.size === 0) return prev;
           const next = new Map(prev);
           for (const key of next.keys()) {
-            if (key.startsWith(`${row.id}|`)) next.delete(key);
+            if (rowIdPrefixes.some((p) => key.startsWith(p))) next.delete(key);
           }
           return next;
         });
+      };
+
+      if (allIds.length === 0) {
+        // Phantom rows — no DataPoints exist yet (only pending edits).
+        dropPending();
+        setGridSelection(EMPTY_SELECTION);
         return;
       }
-      setDeleteProgress({ current: 0, total: ids.length });
+
+      setDeleteProgress({ current: 0, total: allIds.length });
       let firstError: string | null = null;
-      for (const id of ids) {
+      for (const id of allIds) {
         try {
           const result = await deleteDataPoint({
             variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
@@ -250,16 +270,9 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
         }
         setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
       }
-      // Drop any pending edits on this row — they refer to a row that no
-      // longer exists after the delete.
-      setPendingEdits((prev) => {
-        if (prev.size === 0) return prev;
-        const next = new Map(prev);
-        for (const key of next.keys()) {
-          if (key.startsWith(`${row.id}|`)) next.delete(key);
-        }
-        return next;
-      });
+
+      dropPending();
+      setGridSelection(EMPTY_SELECTION);
       setDeleteProgress(null);
       if (firstError) setError(firstError);
       onMutated();
@@ -577,6 +590,14 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
 
   const pendingCount = pendingEdits.size;
   const hasPending = pendingCount > 0;
+  const selectedRowCount = gridSelection.rows.length;
+
+  const handleDeleteSelected = useCallback(() => {
+    const indices = gridSelection.rows.toArray();
+    const targets = indices.map((i) => rows[i]).filter((r): r is GridRow => !!r);
+    if (targets.length === 0) return;
+    void handleDeleteRows(targets);
+  }, [gridSelection, rows, handleDeleteRows]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -591,6 +612,19 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           <Typography variant="body2" color="warning.main" sx={{ mr: 'auto' }}>
             {pendingCount} unsaved change{pendingCount === 1 ? '' : 's'}
           </Typography>
+        )}
+        {selectedRowCount > 0 && (
+          <Button
+            size="small"
+            color="error"
+            variant="outlined"
+            startIcon={<Trash />}
+            onClick={handleDeleteSelected}
+            disabled={deleteProgress !== null}
+            sx={!hasPending ? { mr: 'auto' } : undefined}
+          >
+            Delete {selectedRowCount} row{selectedRowCount === 1 ? '' : 's'}
+          </Button>
         )}
         <Button
           size="small"
@@ -631,6 +665,10 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           onColumnResize={onColumnResize}
           freezeColumns={freezeColumns}
           getCellsForSelection
+          gridSelection={gridSelection}
+          onGridSelectionChange={setGridSelection}
+          rowMarkers="both"
+          rowSelectionMode="multi"
           smoothScrollX
           smoothScrollY
           width="100%"
@@ -698,7 +736,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
                 onClick={() => {
                   const target = contextMenu?.row;
                   setContextMenu(null);
-                  if (target) void handleRowDelete(target);
+                  if (target) void handleDeleteRows([target]);
                 }}
                 sx={{ color: 'error.main' }}
               >
