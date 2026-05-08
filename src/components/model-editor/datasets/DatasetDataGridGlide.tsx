@@ -30,7 +30,7 @@ import {
   type Item,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import { Plus, Trash } from 'react-bootstrap-icons';
+import { ChatLeft, Clipboard, Database, Files, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
   CreateDataPointMutation,
@@ -732,18 +732,29 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
         >
           <Paper elevation={8}>
             <MenuList autoFocus dense>
-              <MenuItem
-                onClick={() => {
-                  const target = contextMenu?.row;
-                  setContextMenu(null);
-                  if (target) void handleDeleteRows([target]);
-                }}
-                sx={{ color: 'error.main' }}
-              >
-                <ListItemIcon sx={{ color: 'error.main' }}>
-                  <Trash />
+              <MenuItem disabled>
+                <ListItemIcon>
+                  <Files />
                 </ListItemIcon>
-                <ListItemText>Delete row</ListItemText>
+                <ListItemText>Copy</ListItemText>
+              </MenuItem>
+              <MenuItem disabled>
+                <ListItemIcon>
+                  <Clipboard />
+                </ListItemIcon>
+                <ListItemText>Paste</ListItemText>
+              </MenuItem>
+              <MenuItem disabled>
+                <ListItemIcon>
+                  <ChatLeft />
+                </ListItemIcon>
+                <ListItemText>Comment</ListItemText>
+              </MenuItem>
+              <MenuItem disabled>
+                <ListItemIcon>
+                  <Database />
+                </ListItemIcon>
+                <ListItemText>Data source</ListItemText>
               </MenuItem>
             </MenuList>
           </Paper>
