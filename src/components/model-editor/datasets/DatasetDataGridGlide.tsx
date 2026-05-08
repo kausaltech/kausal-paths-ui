@@ -1,6 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert, Box, Button, Snackbar, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  ClickAwayListener,
+  LinearProgress,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  MenuList,
+  Paper,
+  Popper,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material';
 
 import { useMutation } from '@apollo/client/react';
 import {
@@ -13,7 +28,7 @@ import {
   type Item,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import { Plus } from 'react-bootstrap-icons';
+import { Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
   CreateDataPointMutation,
@@ -28,8 +43,10 @@ import { useInstance } from '@/common/instance';
 import { type AddProgress, AddRowsModal } from './AddRowsModal';
 import {
   AddYearDialog,
+  type GridRow,
   METRIC_COL,
   type PendingEdit,
+  type ValueCell,
   asUpdateInput,
   buildGridData,
   diffKind,
@@ -106,6 +123,18 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
   const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    row: GridRow;
+  } | null>(null);
+  const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
+  const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  // Glide's onCellContextMenu fires through the React tree; the document-level
+  // listener below reads this ref to combine the row identity with the native
+  // event's clientX/Y. Using a ref (not state) avoids stale closures because
+  // both callbacks fire from the same browser event.
+  const pendingContextRowRef = useRef<GridRow | null>(null);
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
     CREATE_DATA_POINT
@@ -185,6 +214,59 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     [createDataPoint, instance.id, dataset.id, years, onMutated]
   );
 
+  const handleRowDelete = useCallback(
+    async (row: GridRow) => {
+      const ids = Object.values(row.cells)
+        .filter((c): c is ValueCell => c.type === 'Value' && c.dataPointId !== null)
+        .map((c) => c.dataPointId as string);
+      if (ids.length === 0) {
+        // Phantom row — no DataPoints exist yet (only pending edits). Drop
+        // the pending edits and we're done.
+        setPendingEdits((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Map(prev);
+          for (const key of next.keys()) {
+            if (key.startsWith(`${row.id}|`)) next.delete(key);
+          }
+          return next;
+        });
+        return;
+      }
+      setDeleteProgress({ current: 0, total: ids.length });
+      let firstError: string | null = null;
+      for (const id of ids) {
+        try {
+          const result = await deleteDataPoint({
+            variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
+          });
+          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+          if (msgs.length > 0) {
+            firstError ??= msgs.map((m) => m.message).join('; ');
+            break;
+          }
+        } catch (err) {
+          firstError ??= err instanceof Error ? err.message : String(err);
+          break;
+        }
+        setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+      // Drop any pending edits on this row — they refer to a row that no
+      // longer exists after the delete.
+      setPendingEdits((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Map(prev);
+        for (const key of next.keys()) {
+          if (key.startsWith(`${row.id}|`)) next.delete(key);
+        }
+        return next;
+      });
+      setDeleteProgress(null);
+      if (firstError) setError(firstError);
+      onMutated();
+    },
+    [deleteDataPoint, instance.id, dataset.id, onMutated]
+  );
+
   // Render order — drives both the columns array and the [col, row] -> colId
   // mapping in getCellContent / onCellEdited.
   const columnIds = useMemo(
@@ -259,6 +341,45 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     },
     [columnIds, rows, pendingEdits]
   );
+
+  const onCellContextMenu = useCallback<NonNullable<DataEditorProps['onCellContextMenu']>>(
+    (cell, e) => {
+      e.preventDefault();
+      const [, rowIndex] = cell;
+      const gridRow = rows[rowIndex];
+      if (!gridRow) return;
+      // Glide doesn't expose the underlying MouseEvent's clientX/Y. Stash the
+      // row here and let the document-level contextmenu listener pick it up
+      // along with the native pointer coords.
+      pendingContextRowRef.current = gridRow;
+    },
+    [rows]
+  );
+
+  // Document-level contextmenu listener: handles both initial open and
+  // reposition-on-second-right-click. A wrapper-level listener wouldn't fire
+  // when the menu's click-away catcher is active; document is reliable.
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const wrapper = gridWrapperRef.current;
+      if (!wrapper) return;
+      const insideGrid = wrapper.contains(e.target as Node);
+      if (insideGrid && pendingContextRowRef.current) {
+        e.preventDefault();
+        setContextMenu({
+          mouseX: e.clientX,
+          mouseY: e.clientY,
+          row: pendingContextRowRef.current,
+        });
+        pendingContextRowRef.current = null;
+      } else if (!insideGrid) {
+        // Right-click anywhere outside the grid dismisses an open menu.
+        setContextMenu(null);
+      }
+    };
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
+  }, []);
 
   const applyEdit = useCallback(
     (rowIndex: number, colIndex: number, newValue: EditableGridCell) => {
@@ -499,13 +620,14 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           Add rows
         </Button>
       </Stack>
-      <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
+      <Box ref={gridWrapperRef} sx={{ flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
         <DataEditor
           columns={columns}
           rows={rows.length}
           getCellContent={getCellContent}
           onCellEdited={onCellEdited}
           onCellsEdited={onCellsEdited}
+          onCellContextMenu={onCellContextMenu}
           onColumnResize={onColumnResize}
           freezeColumns={freezeColumns}
           getCellsForSelection
@@ -516,7 +638,79 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           rowHeight={38}
           headerHeight={32}
         />
+        {deleteProgress !== null && (
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(255, 255, 255, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+              // Eat all pointer events so the user can't fire another delete or
+              // edit cells while mutations are in flight.
+              cursor: 'wait',
+            }}
+          >
+            <Box sx={{ width: '60%', maxWidth: 360 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 0.5, textAlign: 'center' }}
+              >
+                Deleting {deleteProgress.current} of {deleteProgress.total} data points…
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={
+                  deleteProgress.total > 0
+                    ? (deleteProgress.current / deleteProgress.total) * 100
+                    : 0
+                }
+              />
+            </Box>
+          </Box>
+        )}
       </Box>
+      <Popper
+        open={contextMenu !== null}
+        anchorEl={
+          contextMenu !== null
+            ? {
+                getBoundingClientRect: () =>
+                  new DOMRect(contextMenu.mouseX, contextMenu.mouseY, 0, 0),
+              }
+            : null
+        }
+        placement="bottom-start"
+        sx={{ zIndex: (theme) => theme.zIndex.modal }}
+      >
+        <ClickAwayListener
+          onClickAway={() => setContextMenu(null)}
+          // Right-click events also dismiss; the document-level listener above
+          // handles repositioning to a new cell when applicable.
+          mouseEvent="onMouseDown"
+        >
+          <Paper elevation={8}>
+            <MenuList autoFocus dense>
+              <MenuItem
+                onClick={() => {
+                  const target = contextMenu?.row;
+                  setContextMenu(null);
+                  if (target) void handleRowDelete(target);
+                }}
+                sx={{ color: 'error.main' }}
+              >
+                <ListItemIcon sx={{ color: 'error.main' }}>
+                  <Trash />
+                </ListItemIcon>
+                <ListItemText>Delete row</ListItemText>
+              </MenuItem>
+            </MenuList>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
       <AddRowsModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
