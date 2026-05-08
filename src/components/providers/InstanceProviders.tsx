@@ -13,7 +13,7 @@ import { InstanceThemeProvider } from './InstanceThemedStyles';
  * Client component that provides instance-specific context to the component tree.
  * Handles SiteContext, InstanceContext, the kausal MUI theme, and initializes
  * Apollo reactive vars. Instance-wide global CSS (heading colors, Bootstrap,
- * etc.) lives in the `(with-layout)` route group so routes like `model-editor`
+ * etc.) lives in the `(with-layout)` route group so routes like `model`
  * can opt out while still reading `theme.*` values in shared components.
  */
 export function InstanceProviders({

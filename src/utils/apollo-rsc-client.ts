@@ -7,6 +7,7 @@ import { getLogger } from '@common/logging/logger';
 
 import { type ApolloClientOpts, getApolloClientConfig } from '@/common/apollo-config';
 import {
+  CURRENT_LANGUAGE_HEADER,
   DEFAULT_LANGUAGE_HEADER,
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
@@ -23,8 +24,13 @@ export const { getClient } = registerApolloClient(async () => {
   const headers = await getHeaders();
   const instanceIdentifier = headers.get(INSTANCE_IDENTIFIER_HEADER) ?? undefined;
   const instanceHostname = headers.get(INSTANCE_HOSTNAME_HEADER) ?? undefined;
+  // Use the locale resolved by the proxy (which has already stripped the
+  // URL prefix and matched against the instance's supported languages).
+  // Defaults to the instance's default language only as a defensive
+  // fallback — every page that actually rendered should have a
+  // resolved current-language header.
   const locale =
-    headers.get('x-next-intl-locale') ?? headers.get(DEFAULT_LANGUAGE_HEADER) ?? undefined;
+    headers.get(CURRENT_LANGUAGE_HEADER) ?? headers.get(DEFAULT_LANGUAGE_HEADER) ?? undefined;
 
   const accessToken = await getAccessToken();
 

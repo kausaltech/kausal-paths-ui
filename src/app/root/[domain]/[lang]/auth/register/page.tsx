@@ -3,13 +3,31 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Alert, Box, Button, Container, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
+import { ArrowLeft } from 'react-bootstrap-icons';
+import SVG from 'react-inlinesvg';
+
+import { useTheme } from '@common/themes';
+import { getThemeStaticURL } from '@common/themes/theme';
 
 import { authClient } from '@/lib/auth-client';
 import { KAUSAL_PROVIDER_ID } from '@/lib/auth-const';
+
+const GET_FRAMEWORK_NAME = gql`
+  query FrameworkName($identifier: ID!) {
+    framework(identifier: $identifier) {
+      id
+      name
+    }
+  }
+`;
+
+type FrameworkNameData = {
+  framework: { id: string; name: string } | null;
+};
 
 const REGISTER_USER = gql`
   mutation RegisterUser($input: RegisterUserInput!) {
@@ -43,8 +61,11 @@ function isOperationError(
 
 export default function RegisterPage() {
   const router = useRouter();
+  const theme = useTheme();
   const searchParams = useSearchParams();
   const frameworkId = searchParams.get('framework') ?? '';
+  const logoUrl = theme.themeLogoUrl ? getThemeStaticURL(theme.themeLogoUrl) : null;
+  const isLogoBitmap = theme.themeLogoUrl?.endsWith('.png');
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -54,7 +75,13 @@ export default function RegisterPage() {
 
   const [registerUser, { loading }] = useMutation<RegisterUserData>(REGISTER_USER);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { data: frameworkData } = useQuery<FrameworkNameData>(GET_FRAMEWORK_NAME, {
+    variables: { identifier: frameworkId },
+    skip: !frameworkId,
+  });
+  const frameworkName = frameworkData?.framework?.name;
+
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setError(null);
 
@@ -101,11 +128,44 @@ export default function RegisterPage() {
   return (
     <Container maxWidth="sm">
       <Box sx={{ mt: 8, mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Create an account
-        </Typography>
-        <Box component="form" onSubmit={(e: React.FormEvent) => void handleSubmit(e)}>
-          <Stack spacing={2} sx={{ mt: 2 }}>
+        <Paper
+          component="form"
+          onSubmit={(e) => void handleSubmit(e)}
+          sx={{
+            p: { xs: 3, sm: 4 },
+            mt: 2,
+            filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08))',
+          }}
+        >
+          <Box sx={{ width: '100%', mb: 3 }}>
+            {logoUrl && (
+              <Box sx={{ mb: 3, height: 48, display: 'flex', alignItems: 'center' }}>
+                {isLogoBitmap ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt=""
+                    style={{ height: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <SVG
+                    src={logoUrl}
+                    preserveAspectRatio="xMinYMid meet"
+                    style={{ height: '100%', maxWidth: '100%', display: 'block' }}
+                  />
+                )}
+              </Box>
+            )}
+            <Typography variant="h4" component="h1" gutterBottom>
+              Create an account
+            </Typography>
+            {frameworkName && (
+              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                The account can be used to acces {frameworkName} tool
+              </Typography>
+            )}
+          </Box>
+          <Stack spacing={2}>
             <Stack direction="row" spacing={2}>
               <TextField
                 label="First name"
@@ -138,9 +198,23 @@ export default function RegisterPage() {
               fullWidth
             />
             {error && <Alert severity="error">{error}</Alert>}
-            <Button type="submit" variant="contained" size="large" disabled={loading} fullWidth>
-              {loading ? 'Creating account...' : 'Create account'}
-            </Button>
+            <Stack direction="row" spacing={2}>
+              <Button
+                type="button"
+                variant="text"
+                size="large"
+                disabled={loading}
+                onClick={() => router.push('/')}
+                startIcon={<ArrowLeft />}
+                fullWidth
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Back
+              </Button>
+              <Button type="submit" variant="contained" size="large" disabled={loading} fullWidth>
+                {loading ? 'Creating account...' : 'Create account'}
+              </Button>
+            </Stack>
             <Typography variant="body2" align="center">
               Already have an account?{' '}
               <Button variant="text" size="small" onClick={() => router.push('/auth/sign-in')}>
@@ -148,7 +222,7 @@ export default function RegisterPage() {
               </Button>
             </Typography>
           </Stack>
-        </Box>
+        </Paper>
       </Box>
     </Container>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 import { getLogger } from '@common/logging/logger';
 
@@ -10,7 +10,12 @@ import { useSiteOrNull } from '@/context/site';
 
 export default function SlugPage() {
   const logger = getLogger('slug-page');
-  const path = usePathname();
+  // `slug` is the rewritten path segments after `[domain]/[lang]`, so it
+  // is already locale-stripped. Using `usePathname()` here would include
+  // the user-visible locale prefix (e.g. `/sv/actions`), which the backend
+  // doesn't recognise.
+  const params = useParams<{ slug: string[] }>();
+  const path = '/' + (params.slug?.join('/') ?? '');
   const site = useSiteOrNull();
 
   logger.debug({ path }, `render catchall page; path=${path}`);

@@ -12,24 +12,22 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** Date (isoformat) */
   Date: { input: any; output: any; }
-  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
-  /**
-   * Allows use of a JSON String for input / output from the GraphQL schema.
-   *
-   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
-   * schema (one of the key benefits of GraphQL).
-   */
   JSONString: { input: string; output: string; }
-  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
   _Any: { input: any; output: any; }
+};
+
+export type ActionConfigInput = {
+  decisionLevel: InputMaybe<DecisionLevel>;
+  group: InputMaybe<Scalars['String']['input']>;
+  noEffectValue: InputMaybe<Scalars['Float']['input']>;
+  nodeClass: Scalars['String']['input'];
+  parent: InputMaybe<Scalars['String']['input']>;
 };
 
 /** An enumeration. */
@@ -76,6 +74,30 @@ export type CreateInstanceInput = {
   organizationName: Scalars['String']['input'];
 };
 
+export type CreateNodeInput = {
+  allowNulls: Scalars['Boolean']['input'];
+  color: InputMaybe<Scalars['String']['input']>;
+  config: NodeConfigInput;
+  description: InputMaybe<Scalars['String']['input']>;
+  i18n: InputMaybe<Scalars['JSON']['input']>;
+  identifier: Scalars['ID']['input'];
+  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  inputPorts: InputMaybe<Array<InputPortInput>>;
+  isOutcome: Scalars['Boolean']['input'];
+  isVisible: Scalars['Boolean']['input'];
+  kind: NodeKind;
+  minimumYear: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  nodeGroup: InputMaybe<Scalars['ID']['input']>;
+  order: InputMaybe<Scalars['Int']['input']>;
+  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
+  outputPorts: InputMaybe<Array<OutputPortInput>>;
+  params: InputMaybe<Scalars['JSON']['input']>;
+  shortName: InputMaybe<Scalars['String']['input']>;
+  tags: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
@@ -95,6 +117,16 @@ export enum DimensionKind {
   Scenario = 'SCENARIO'
 }
 
+export type FormulaConfigInput = {
+  formula: Scalars['String']['input'];
+};
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplateDefaultValueScalingChoices {
+  /** Population */
+  Population = 'POPULATION'
+}
+
 /** An enumeration. */
 export enum FrameworksMeasureTemplatePriorityChoices {
   /** High */
@@ -105,6 +137,16 @@ export enum FrameworksMeasureTemplatePriorityChoices {
   Medium = 'MEDIUM'
 }
 
+export type InputPortInput = {
+  id: InputMaybe<Scalars['UUID']['input']>;
+  label: InputMaybe<Scalars['String']['input']>;
+  multi: Scalars['Boolean']['input'];
+  quantity: InputMaybe<Scalars['String']['input']>;
+  requiredDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  supportedDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  unit: InputMaybe<Scalars['String']['input']>;
+};
+
 /** An enumeration. */
 export enum ModelAction {
   Add = 'ADD',
@@ -112,6 +154,13 @@ export enum ModelAction {
   Delete = 'DELETE',
   View = 'VIEW'
 }
+
+export type NodeConfigInput = {
+  action: InputMaybe<ActionConfigInput>;
+  formula: InputMaybe<FormulaConfigInput>;
+  pipeline: InputMaybe<PipelineConfigInput>;
+  simple: InputMaybe<SimpleConfigInput>;
+};
 
 export enum NodeKind {
   Action = 'ACTION',
@@ -127,6 +176,33 @@ export enum OperationMessageKind {
   Validation = 'VALIDATION',
   Warning = 'WARNING'
 }
+
+export type OutputMetricInput = {
+  columnId: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  label: InputMaybe<Scalars['String']['input']>;
+  portId: InputMaybe<Scalars['UUID']['input']>;
+  quantity: InputMaybe<Scalars['String']['input']>;
+  unit: Scalars['String']['input'];
+};
+
+export type OutputPortInput = {
+  columnId: InputMaybe<Scalars['String']['input']>;
+  dimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  id: InputMaybe<Scalars['UUID']['input']>;
+  isEditable: Scalars['Boolean']['input'];
+  label: InputMaybe<Scalars['String']['input']>;
+  quantity: InputMaybe<Scalars['String']['input']>;
+  unit: Scalars['String']['input'];
+};
+
+export type PipelineConfigInput = {
+  operations: Array<PipelineOperationInput>;
+};
+
+export type PipelineOperationInput = {
+  operation: Scalars['String']['input'];
+};
 
 export enum PrimaryLayoutClass {
   Action = 'ACTION',
@@ -151,6 +227,10 @@ export enum ScenarioKind {
   ProgressTracking = 'PROGRESS_TRACKING'
 }
 
+export type SimpleConfigInput = {
+  nodeClass: Scalars['String']['input'];
+};
+
 export type UpdateDataPointInput = {
   date: InputMaybe<Scalars['Date']['input']>;
   dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
@@ -172,10 +252,26 @@ export type UpdateDimensionInput = {
 };
 
 export type UpdateNodeInput = {
+  allowNulls: InputMaybe<Scalars['Boolean']['input']>;
   color: InputMaybe<Scalars['String']['input']>;
+  config: InputMaybe<NodeConfigInput>;
+  description: InputMaybe<Scalars['String']['input']>;
+  i18n: InputMaybe<Scalars['JSON']['input']>;
+  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  inputPorts: InputMaybe<Array<InputPortInput>>;
   isOutcome: InputMaybe<Scalars['Boolean']['input']>;
   isVisible: InputMaybe<Scalars['Boolean']['input']>;
+  kind: InputMaybe<NodeKind>;
+  minimumYear: InputMaybe<Scalars['Int']['input']>;
   name: InputMaybe<Scalars['String']['input']>;
+  nodeGroup: InputMaybe<Scalars['ID']['input']>;
+  order: InputMaybe<Scalars['Int']['input']>;
+  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
+  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
+  outputPorts: InputMaybe<Array<OutputPortInput>>;
+  params: InputMaybe<Scalars['JSON']['input']>;
+  shortName: InputMaybe<Scalars['String']['input']>;
+  tags: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum VisualizationKind {
@@ -292,6 +388,19 @@ export type NodePageQuery = (
   & { __typename: 'Query' }
 );
 
+export type CreateInstanceFrameworkNameQueryVariables = Exact<{
+  identifier: Scalars['ID']['input'];
+}>;
+
+
+export type CreateInstanceFrameworkNameQuery = (
+  { framework: (
+    { id: string, name: string }
+    & { __typename: 'Framework' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type CreateInstanceMutationVariables = Exact<{
   input: CreateInstanceInput;
 }>;
@@ -312,6 +421,19 @@ export type CreateInstanceMutation = (
     )
    }
   & { __typename: 'Mutation' }
+);
+
+export type FrameworkNameQueryVariables = Exact<{
+  identifier: Scalars['ID']['input'];
+}>;
+
+
+export type FrameworkNameQuery = (
+  { framework: (
+    { id: string, name: string }
+    & { __typename: 'Framework' }
+  ) | null }
+  & { __typename: 'Query' }
 );
 
 export type RegisterUserMutationVariables = Exact<{
@@ -345,7 +467,7 @@ export type ModelEditorLandingDataQuery = (
       { id: string, name: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
@@ -353,59 +475,17 @@ export type ModelEditorLandingDataQuery = (
   & { __typename: 'Query' }
 );
 
-export type ModelNodesQueryVariables = Exact<{ [key: string]: never; }>;
+export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ModelNodesQuery = (
-  { nodes: Array<
-    | (
-      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, parentAction: (
-        { id: string }
-        & { __typename: 'ActionNode' }
-      ) | null, subactions: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' }
-      )>, group: (
-        { id: string, color: string | null, name: string }
-        & { __typename: 'ActionGroupType' }
-      ) | null, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null, inputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, outputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, metric: (
-        { id: string | null, historicalValues: Array<(
-          { year: number, value: number }
-          & { __typename: 'YearlyValue' }
-        )> }
-        & { __typename: 'ForecastMetricType' }
-      ) | null }
-      & { __typename: 'ActionNode' }
-    )
-    | (
-      { id: string, name: string, shortName: string | null, color: string | null, quantity: string | null, isVisible: boolean, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null, inputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, outputNodes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, metric: (
-        { id: string | null, historicalValues: Array<(
-          { year: number, value: number }
-          & { __typename: 'YearlyValue' }
-        )> }
-        & { __typename: 'ForecastMetricType' }
-      ) | null }
-      & { __typename: 'Node' }
-    )
-  > }
+export type CanEditModelQuery = (
+  { instance: (
+    { id: string, nodes: Array<(
+      { id: string }
+      & { __typename: 'ActionNode' | 'Node' }
+    )> }
+    & { __typename: 'InstanceType' }
+  ) }
   & { __typename: 'Query' }
 );
 
@@ -429,13 +509,7 @@ type StreamField_CardListBlock_Fragment = (
 
 type StreamField_FrameworkLandingBlock_Fragment = (
   { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
-    { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
-      { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-        { id: string, name: string }
-        & { __typename: 'InstanceType' }
-      ) | null }
-      & { __typename: 'FrameworkConfig' }
-    )> }
+    { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean }
     & { __typename: 'Framework' }
   ) | null }
   & { __typename: 'FrameworkLandingBlock' }
@@ -460,58 +534,21 @@ export type StreamFieldFragment =
   | StreamField_TextBlock_Fragment
 ;
 
-export type NodeDetailsQueryVariables = Exact<{
-  node: Scalars['ID']['input'];
-  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
+export type FrameworkConfigsQueryVariables = Exact<{
+  identifier: Scalars['ID']['input'];
 }>;
 
 
-export type NodeDetailsQuery = (
-  { node: (
-    { id: string, name: string, shortDescription: string | null, description: string | null, explanation: string | null, color: string | null, quantity: string | null, editor: (
-      { nodeType: string, tags: Array<string> | null }
-      & { __typename: 'NodeEditor' }
-    ) | null, unit: (
-      { id: string, htmlShort: string }
-      & { __typename: 'UnitType' }
-    ) | null, inputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'ActionNode' | 'Node' }
-    )>, outputNodes: Array<(
-      { id: string, name: string, shortDescription: string | null, color: string | null, quantity: string | null, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'ActionNode' | 'Node' }
-    )>, metricDim: (
-      { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
-        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
-          { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
-          & { __typename: 'MetricDimensionCategoryType' }
-        )>, groups: Array<(
-          { id: string, originalId: string, label: string, color: string | null, order: number | null }
-          & { __typename: 'MetricDimensionCategoryGroupType' }
-        )> }
-        & { __typename: 'MetricDimensionType' }
-      )>, goals: Array<(
-        { categories: Array<string>, groups: Array<string>, values: Array<(
-          { year: number, value: number, isInterpolated: boolean }
-          & { __typename: 'MetricYearlyGoalType' }
-        )> }
-        & { __typename: 'DimensionalMetricGoalEntry' }
-      )>, unit: (
-        { id: string, htmlShort: string, short: string, htmlLong: string, long: string }
-        & { __typename: 'UnitType' }
-      ), normalizedBy: (
+export type FrameworkConfigsQuery = (
+  { framework: (
+    { id: string, configs: Array<(
+      { id: string, organizationName: string | null, viewUrl: string | null, instance: (
         { id: string, name: string }
-        & { __typename: 'NormalizerNodeType' }
+        & { __typename: 'InstanceType' }
       ) | null }
-      & { __typename: 'DimensionalMetricType' }
-    ) | null }
-    & { __typename: 'ActionNode' | 'Node' }
+      & { __typename: 'FrameworkConfig' }
+    )> }
+    & { __typename: 'Framework' }
   ) | null }
   & { __typename: 'Query' }
 );
@@ -660,7 +697,7 @@ export type NodeGraphQuery = (
         ) }
         & { __typename: 'GraphLayout' }
       ), edges: Array<(
-        { id: string, fromRef: (
+        { id: string, tags: Array<string>, fromRef: (
           { nodeId: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), toRef: (
@@ -679,13 +716,13 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, layoutMeta: (
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
             { inputPorts: Array<(
               { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-                { id: string, short: string }
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) | null, bindings: Array<
                 | (
@@ -705,17 +742,21 @@ export type NodeGraphQuery = (
               > }
               & { __typename: 'InputPortType' }
             )>, outputPorts: Array<(
-              { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-                { id: string, short: string }
+              { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) }
               & { __typename: 'OutputPortType' }
             )>, typeConfig:
               | (
-                { nodeClass: string }
-                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+                { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+                & { __typename: 'ActionConfigType' }
               )
               | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { nodeClass: string }
+                & { __typename: 'SimpleConfigType' }
+              )
              }
             & { __typename: 'NodeSpecType' }
           ) | null }
@@ -728,13 +769,13 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, layoutMeta: (
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
             { inputPorts: Array<(
               { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-                { id: string, short: string }
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) | null, bindings: Array<
                 | (
@@ -754,17 +795,21 @@ export type NodeGraphQuery = (
               > }
               & { __typename: 'InputPortType' }
             )>, outputPorts: Array<(
-              { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-                { id: string, short: string }
+              { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                { id: string, short: string, standard: string }
                 & { __typename: 'UnitType' }
               ) }
               & { __typename: 'OutputPortType' }
             )>, typeConfig:
               | (
-                { nodeClass: string }
-                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+                { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+                & { __typename: 'ActionConfigType' }
               )
               | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { nodeClass: string }
+                & { __typename: 'SimpleConfigType' }
+              )
              }
             & { __typename: 'NodeSpecType' }
           ) | null }
@@ -786,13 +831,13 @@ type EditorNodeFields_ActionNode_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, layoutMeta: (
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
       { inputPorts: Array<(
         { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-          { id: string, short: string }
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) | null, bindings: Array<
           | (
@@ -812,17 +857,21 @@ type EditorNodeFields_ActionNode_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-          { id: string, short: string }
+        { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) }
         & { __typename: 'OutputPortType' }
       )>, typeConfig:
         | (
-          { nodeClass: string }
-          & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+          { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+          & { __typename: 'ActionConfigType' }
         )
         | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { nodeClass: string }
+          & { __typename: 'SimpleConfigType' }
+        )
        }
       & { __typename: 'NodeSpecType' }
     ) | null }
@@ -836,13 +885,13 @@ type EditorNodeFields_Node_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, layoutMeta: (
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
       { inputPorts: Array<(
         { id: string, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
-          { id: string, short: string }
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) | null, bindings: Array<
           | (
@@ -862,17 +911,21 @@ type EditorNodeFields_Node_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, label: string | null, quantity: string | null, dimensions: Array<string>, unit: (
-          { id: string, short: string }
+        { id: string, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+          { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) }
         & { __typename: 'OutputPortType' }
       )>, typeConfig:
         | (
-          { nodeClass: string }
-          & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+          { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+          & { __typename: 'ActionConfigType' }
         )
         | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { nodeClass: string }
+          & { __typename: 'SimpleConfigType' }
+        )
        }
       & { __typename: 'NodeSpecType' }
     ) | null }
@@ -887,7 +940,7 @@ export type EditorNodeFieldsFragment =
 ;
 
 export type EditorNodeEdgeFragment = (
-  { id: string, fromRef: (
+  { id: string, tags: Array<string>, fromRef: (
     { nodeId: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), toRef: (
@@ -928,7 +981,7 @@ export type DatasetPortDataQuery = (
                 { id: string, name: string | null, label: string }
                 & { __typename: 'DatasetMetricRefType' }
               ) | null, data: Array<(
-                { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+                { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
                   { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
                   & { __typename: 'UnitType' }
                 ), dimensions: Array<(
@@ -940,9 +993,12 @@ export type DatasetPortDataQuery = (
                     & { __typename: 'MetricDimensionCategoryGroupType' }
                   )> }
                   & { __typename: 'MetricDimensionType' }
-                )>, goals: Array<(
-                  { categories: Array<string>, values: Array<(
-                    { year: number, value: number }
+                )>, normalizedBy: (
+                  { id: string, name: string }
+                  & { __typename: 'NormalizerNodeType' }
+                ) | null, goals: Array<(
+                  { categories: Array<string>, groups: Array<string>, values: Array<(
+                    { year: number, value: number, isInterpolated: boolean }
                     & { __typename: 'MetricYearlyGoalType' }
                   )> }
                   & { __typename: 'DimensionalMetricGoalEntry' }
@@ -1000,6 +1056,12 @@ export type DatasetDetailFieldsFragment = (
       & { __typename: 'DatasetDimensionCategory' }
     )> }
     & { __typename: 'DataPoint' }
+  )>, portBindings: Array<(
+    { id: string, nodeRef: (
+      { nodeId: string, portId: string }
+      & { __typename: 'NodePortRef' }
+    ) }
+    & { __typename: 'DatasetPortType' }
   )> }
   & { __typename: 'Dataset' }
 );
@@ -1061,11 +1123,63 @@ export type InstanceDatasetQuery = (
             & { __typename: 'DatasetDimensionCategory' }
           )> }
           & { __typename: 'DataPoint' }
+        )>, portBindings: Array<(
+          { id: string, nodeRef: (
+            { nodeId: string, portId: string }
+            & { __typename: 'NodePortRef' }
+          ) }
+          & { __typename: 'DatasetPortType' }
         )> }
         & { __typename: 'Dataset' }
       )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type DatasetConnectedNodesQueryVariables = Exact<{
+  ids: Array<Scalars['ID']['input']>;
+}>;
+
+
+export type DatasetConnectedNodesQuery = (
+  { instance: (
+    { id: string, nodes: Array<
+      | (
+        { id: string, name: string, kind: NodeKind | null, editor: (
+          { nodeType: string, spec: (
+            { typeConfig:
+              | (
+                { nodeClass: string }
+                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+              )
+              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+             }
+            & { __typename: 'NodeSpecType' }
+          ) | null }
+          & { __typename: 'NodeEditor' }
+        ) | null }
+        & { __typename: 'ActionNode' }
+      )
+      | (
+        { isOutcome: boolean, id: string, name: string, kind: NodeKind | null, editor: (
+          { nodeType: string, spec: (
+            { typeConfig:
+              | (
+                { nodeClass: string }
+                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+              )
+              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+             }
+            & { __typename: 'NodeSpecType' }
+          ) | null }
+          & { __typename: 'NodeEditor' }
+        ) | null }
+        & { __typename: 'Node' }
+      )
+    > }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
@@ -1336,7 +1450,7 @@ export type NodeOutputDataQuery = (
             { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
             & { __typename: 'UnitType' }
           ), output: (
-            { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+            { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
               { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
               & { __typename: 'UnitType' }
             ), dimensions: Array<(
@@ -1348,9 +1462,12 @@ export type NodeOutputDataQuery = (
                 & { __typename: 'MetricDimensionCategoryGroupType' }
               )> }
               & { __typename: 'MetricDimensionType' }
-            )>, goals: Array<(
-              { categories: Array<string>, values: Array<(
-                { year: number, value: number }
+            )>, normalizedBy: (
+              { id: string, name: string }
+              & { __typename: 'NormalizerNodeType' }
+            ) | null, goals: Array<(
+              { categories: Array<string>, groups: Array<string>, values: Array<(
+                { year: number, value: number, isInterpolated: boolean }
                 & { __typename: 'MetricYearlyGoalType' }
               )> }
               & { __typename: 'DimensionalMetricGoalEntry' }
@@ -1377,7 +1494,7 @@ export type EditorOperationInfoFieldsFragment = (
 );
 
 export type InstanceEditorPublishStateFragment = (
-  { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+  { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
   & { __typename: 'InstanceEditor' }
 );
 
@@ -1387,7 +1504,7 @@ export type EditorPublishStateQueryVariables = Exact<{ [key: string]: never; }>;
 export type EditorPublishStateQuery = (
   { instance: (
     { id: string, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
@@ -1397,6 +1514,7 @@ export type EditorPublishStateQuery = (
 
 export type PublishModelInstanceMutationVariables = Exact<{
   instanceId: Scalars['ID']['input'];
+  version: InputMaybe<Scalars['UUID']['input']>;
 }>;
 
 
@@ -1405,7 +1523,7 @@ export type PublishModelInstanceMutation = (
     { publishModelInstance:
       | (
         { id: string, editor: (
-          { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null }
+          { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
           & { __typename: 'InstanceEditor' }
         ) | null }
         & { __typename: 'InstanceType' }
@@ -1423,10 +1541,59 @@ export type PublishModelInstanceMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type CreateNodeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: CreateNodeInput;
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type CreateNodeMutation = (
+  { instanceEditor: (
+    { createNode:
+      | (
+        { id: string, identifier: string, name: string, uuid: string }
+        & { __typename: 'ActionNode' | 'Node' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteNodeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  nodeId: Scalars['ID']['input'];
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type DeleteNodeMutation = (
+  { instanceEditor: (
+    { deleteNode: (
+      { messages: Array<(
+        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type UpdateNodeMutationVariables = Exact<{
   instanceId: Scalars['ID']['input'];
   nodeId: Scalars['ID']['input'];
   input: UpdateNodeInput;
+  version: InputMaybe<Scalars['UUID']['input']>;
 }>;
 
 
@@ -1434,11 +1601,11 @@ export type UpdateNodeMutation = (
   { instanceEditor: (
     { updateNode:
       | (
-        { id: string, name: string, color: string | null, isVisible: boolean }
+        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean }
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, name: string, color: string | null, isVisible: boolean, isOutcome: boolean }
+        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean }
         & { __typename: 'Node' }
       )
       | (
@@ -1513,7 +1680,7 @@ export type ModelEditorMetricDimensionFieldsFragment = (
 );
 
 export type ModelEditorDimensionalMetricFieldsFragment = (
-  { id: string, name: string, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+  { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
     { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
     & { __typename: 'UnitType' }
   ), dimensions: Array<(
@@ -1525,9 +1692,12 @@ export type ModelEditorDimensionalMetricFieldsFragment = (
       & { __typename: 'MetricDimensionCategoryGroupType' }
     )> }
     & { __typename: 'MetricDimensionType' }
-  )>, goals: Array<(
-    { categories: Array<string>, values: Array<(
-      { year: number, value: number }
+  )>, normalizedBy: (
+    { id: string, name: string }
+    & { __typename: 'NormalizerNodeType' }
+  ) | null, goals: Array<(
+    { categories: Array<string>, groups: Array<string>, values: Array<(
+      { year: number, value: number, isInterpolated: boolean }
       & { __typename: 'MetricYearlyGoalType' }
     )> }
     & { __typename: 'DimensionalMetricGoalEntry' }
@@ -2404,13 +2574,7 @@ export type ActionContentQuery = (
       )
       | (
         { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
-          { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
-            { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-              { id: string, name: string }
-              & { __typename: 'InstanceType' }
-            ) | null }
-            & { __typename: 'FrameworkConfig' }
-          )> }
+          { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean }
           & { __typename: 'Framework' }
         ) | null }
         & { __typename: 'FrameworkLandingBlock' }
@@ -3444,13 +3608,7 @@ export type PageQuery = (
         )
         | (
           { heading: string, body: string | null, ctaLabel: string | null, ctaUrl: string | null, id: string | null, blockType: string, field: string, framework: (
-            { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean, configs: Array<(
-              { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-                { id: string, name: string }
-                & { __typename: 'InstanceType' }
-              ) | null }
-              & { __typename: 'FrameworkConfig' }
-            )> }
+            { id: string, identifier: string, name: string, description: string, allowUserRegistration: boolean, allowInstanceCreation: boolean }
             & { __typename: 'Framework' }
           ) | null }
           & { __typename: 'FrameworkLandingBlock' }
