@@ -140,7 +140,7 @@ export async function generateMetadata(props: LayoutProps): Promise<Metadata> {
   const theme = await loadTheme(data.instance.themeIdentifier || 'default');
 
   return {
-    robots: 'noindex',
+    robots: 'noindex, nofollow',
     title: data.instance.name,
     description: data.instance.leadParagraph,
     openGraph: {
