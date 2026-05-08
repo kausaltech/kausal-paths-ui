@@ -441,6 +441,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           onCellsEdited={onCellsEdited}
           onColumnResize={onColumnResize}
           freezeColumns={freezeColumns}
+          getCellsForSelection
           smoothScrollX
           smoothScrollY
           width="100%"
