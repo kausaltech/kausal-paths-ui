@@ -25,8 +25,8 @@ import type {
   UpdateDataPointMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { type AddProgress, AddRowsModal } from './AddRowsModal';
 import {
-  AddDataPointDialog,
   AddYearDialog,
   METRIC_COL,
   type PendingEdit,
@@ -37,6 +37,7 @@ import {
   pendingKey,
   yearColId,
 } from './DatasetDataGrid';
+import { NOT_APPLICABLE } from './DimensionCategoryList';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
 
 type Props = {
@@ -104,6 +105,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
   const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
+  const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
     CREATE_DATA_POINT
@@ -117,6 +119,71 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
 
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
+
+  // Flat list per existing row: [metricId, ...nonNullDimCategoryUuids]. Lets
+  // AddRowsModal grey out combinations that would duplicate an existing row.
+  const existingCombinations = useMemo<string[][]>(
+    () =>
+      rows.map((r) => [
+        r.metricId,
+        ...Object.values(r.categoryByDim).filter((v): v is string => v !== null),
+      ]),
+    [rows]
+  );
+
+  const handleAddRows = useCallback(
+    async (selectedMetricIds: string[], newRows: string[][]) => {
+      if (newRows.length === 0) return;
+      const metricIdSet = new Set(selectedMetricIds);
+      // One anchor DataPoint per new row: enough to make the row render. Other
+      // year cells stay backed by no DataPoint and are created lazily as the
+      // user edits them. Earliest existing year is the anchor; current year if
+      // the dataset is brand-new.
+      const anchorYear = years.length > 0 ? years[0] : new Date().getUTCFullYear();
+      setAddProgress({ current: 0, total: newRows.length });
+
+      let failureCount = 0;
+      let firstError: string | null = null;
+
+      for (const row of newRows) {
+        const metricId = row.find((id) => metricIdSet.has(id));
+        if (metricId) {
+          const dimensionCategoryIds = row.filter((id) => id !== metricId && id !== NOT_APPLICABLE);
+          try {
+            const result = await createDataPoint({
+              variables: {
+                instanceId: instance.id,
+                datasetId: dataset.id,
+                input: {
+                  date: `${anchorYear}-01-01`,
+                  metricId,
+                  dimensionCategoryIds,
+                  value: null,
+                },
+              },
+            });
+            const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+            if (payload?.__typename === 'OperationInfo') {
+              failureCount += 1;
+              firstError ??= payload.messages.map((m) => m.message).join('; ');
+            }
+          } catch (err) {
+            failureCount += 1;
+            firstError ??= err instanceof Error ? err.message : String(err);
+          }
+        }
+        setAddProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+
+      setAddProgress(null);
+      setAddOpen(false);
+      if (failureCount > 0) {
+        setError(firstError ?? `Failed to add ${failureCount} row${failureCount === 1 ? '' : 's'}`);
+      }
+      onMutated();
+    },
+    [createDataPoint, instance.id, dataset.id, years, onMutated]
+  );
 
   // Render order — drives both the columns array and the [col, row] -> colId
   // mapping in getCellContent / onCellEdited.
@@ -429,7 +496,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           onClick={() => setAddOpen(true)}
           disabled={dataset.metrics.length === 0}
         >
-          Add row
+          Add rows
         </Button>
       </Stack>
       <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
@@ -450,21 +517,16 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           headerHeight={32}
         />
       </Box>
-      <AddDataPointDialog
+      <AddRowsModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        dataset={dataset}
-        onCreate={async (input) => {
-          const result = await createDataPoint({
-            variables: { instanceId: instance.id, datasetId: dataset.id, input },
-          });
-          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
-          if (payload?.__typename === 'OperationInfo') {
-            setError(payload.messages.map((m) => m.message).join('; '));
-            return false;
-          }
-          onMutated();
-          return true;
+        metrics={dataset.metrics}
+        dimensions={dataset.dimensions}
+        existingCombinations={existingCombinations}
+        isAdding={addProgress !== null}
+        progress={addProgress}
+        onAdd={(selectedMetricIds, newRows) => {
+          void handleAddRows(selectedMetricIds, newRows);
         }}
       />
       <AddYearDialog
