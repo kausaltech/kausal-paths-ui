@@ -4,14 +4,9 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   Snackbar,
   Stack,
-  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -39,6 +34,7 @@ import type {
 import { useInstance } from '@/common/instance';
 import AgGridReact from '../GridEditor';
 import { type AddProgress, AddRowsModal } from './AddRowsModal';
+import { AddYearsModal } from './AddYearsModal';
 import { NOT_APPLICABLE } from './DimensionCategoryList';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
 
@@ -310,6 +306,63 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       onMutated();
     },
     [createDataPoint, instance.id, dataset.id, years, onMutated]
+  );
+
+  const handleAddYears = useCallback(
+    async (newYears: number[]) => {
+      if (newYears.length === 0) return;
+
+      // Update extraYears immediately for visual feedback while mutations are
+      // in flight. After refetch, the year is in dataset.dataPoints; the
+      // extraYears entry then merges in as a no-op.
+      setExtraYears((prev) => {
+        const next = new Set(prev);
+        for (const y of newYears) next.add(y);
+        return next;
+      });
+
+      // No row to anchor against — column is ephemeral until rows exist.
+      if (rows.length === 0) return;
+
+      const anchorRow = rows[0];
+      const dimensionCategoryIds = Object.values(anchorRow.categoryByDim).filter(
+        (v): v is string => v !== null
+      );
+
+      let firstError: string | null = null;
+      let failureCount = 0;
+      for (const year of newYears) {
+        try {
+          const result = await createDataPoint({
+            variables: {
+              instanceId: instance.id,
+              datasetId: dataset.id,
+              input: {
+                date: `${year}-01-01`,
+                metricId: anchorRow.metricId,
+                dimensionCategoryIds,
+                value: null,
+              },
+            },
+          });
+          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+          if (payload?.__typename === 'OperationInfo') {
+            failureCount += 1;
+            firstError ??= payload.messages.map((m) => m.message).join('; ');
+          }
+        } catch (err) {
+          failureCount += 1;
+          firstError ??= err instanceof Error ? err.message : String(err);
+        }
+      }
+      if (failureCount > 0) {
+        setError(
+          firstError ?? `Failed to add ${failureCount} year${failureCount === 1 ? '' : 's'}`
+        );
+      }
+      onMutated();
+    },
+    [createDataPoint, instance.id, dataset.id, rows, onMutated]
   );
 
   const handleRowDelete = useCallback(
@@ -824,17 +877,12 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           void handleAddRows(selectedMetricIds, newRows);
         }}
       />
-      <AddYearDialog
+      <AddYearsModal
         open={addYearOpen}
         existingYears={years}
         onClose={() => setAddYearOpen(false)}
-        onAdd={(year) => {
-          setExtraYears((prev) => {
-            if (prev.has(year) || years.includes(year)) return prev;
-            const next = new Set(prev);
-            next.add(year);
-            return next;
-          });
+        onAddYears={(newYears) => {
+          void handleAddYears(newYears);
         }}
       />
       <Snackbar
@@ -848,78 +896,5 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         </Alert>
       </Snackbar>
     </Box>
-  );
-}
-
-const MIN_YEAR = 1900;
-const MAX_YEAR = 2100;
-
-export type AddYearDialogProps = {
-  open: boolean;
-  existingYears: readonly number[];
-  onClose: () => void;
-  onAdd: (year: number) => void;
-};
-
-export function AddYearDialog({ open, existingYears, onClose, onAdd }: AddYearDialogProps) {
-  const suggested = useMemo(() => {
-    if (existingYears.length > 0) return existingYears[existingYears.length - 1] + 1;
-    return new Date().getFullYear();
-  }, [existingYears]);
-  const [input, setInput] = useState(String(suggested));
-  // Adjust-state-during-render: reset the field to the freshly-suggested year
-  // each time the dialog opens, rather than via an effect (which would
-  // cascade a render).
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (prevOpen !== open) {
-    setPrevOpen(open);
-    if (open) setInput(String(suggested));
-  }
-  const parsed = Number(input);
-  const duplicate = Number.isFinite(parsed) && existingYears.includes(parsed);
-  const outOfRange = !Number.isFinite(parsed) || parsed < MIN_YEAR || parsed > MAX_YEAR;
-  const invalid = outOfRange || duplicate;
-  const helperText = outOfRange
-    ? `Year must be between ${MIN_YEAR} and ${MAX_YEAR}.`
-    : duplicate
-      ? 'This year column already exists.'
-      : undefined;
-
-  const submit = () => {
-    if (invalid) return;
-    onAdd(parsed);
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Add year</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          label="Year"
-          type="number"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          error={input !== '' && invalid}
-          helperText={input !== '' ? helperText : undefined}
-          fullWidth
-          sx={{ mt: 1 }}
-          slotProps={{ htmlInput: { min: MIN_YEAR, max: MAX_YEAR, step: 1 } }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" disabled={invalid} onClick={submit}>
-          Add
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }

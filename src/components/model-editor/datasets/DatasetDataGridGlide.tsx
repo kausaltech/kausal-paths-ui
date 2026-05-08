@@ -43,8 +43,8 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { type AddProgress, AddRowsModal } from './AddRowsModal';
+import { AddYearsModal } from './AddYearsModal';
 import {
-  AddYearDialog,
   type GridRow,
   METRIC_COL,
   type PendingEdit,
@@ -135,12 +135,13 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     row: GridRow;
   } | null>(null);
   const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
+  const [addYearsProgress, setAddYearsProgress] = useState<AddProgress | null>(null);
   const [gridSelection, setGridSelection] = useState<GridSelection>(EMPTY_SELECTION);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   // Glide's onCellContextMenu fires through the React tree; the document-level
-  // listener below reads this ref to combine the row identity with the native
-  // event's clientX/Y. Using a ref (not state) avoids stale closures because
-  // both callbacks fire from the same browser event.
+  // listener below reads this ref to combine the row with the native event's
+  // clientX/Y. Using a ref (not state) avoids stale closures because both
+  // callbacks fire from the same browser event.
   const pendingContextRowRef = useRef<GridRow | null>(null);
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
@@ -150,7 +151,22 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     UPDATE_DATA_POINT
   );
   const [deleteDataPoint] = useMutation<DeleteDataPointMutation, DeleteDataPointMutationVariables>(
-    DELETE_DATA_POINT
+    DELETE_DATA_POINT,
+    {
+      // Evict the deleted DataPoint from the normalised cache as soon as the
+      // mutation succeeds. Without this, references in `Dataset.dataPoints`
+      // can survive until the next refetch returns — which on slow connections
+      // makes the grid show stale columns / rows.
+      update: (cache, { data }, { variables }) => {
+        if (!variables?.dataPointId) return;
+        const messages = data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+        if (messages.length > 0) return;
+        cache.evict({
+          id: cache.identify({ __typename: 'DataPoint', id: variables.dataPointId }),
+        });
+        cache.gc();
+      },
+    }
   );
 
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
@@ -280,6 +296,139 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     [deleteDataPoint, instance.id, dataset.id, onMutated]
   );
 
+  const handleDeleteYears = useCallback(
+    async (yearsToDelete: number[]) => {
+      if (yearsToDelete.length === 0) return;
+      const colIds = yearsToDelete.map((y) => yearColId(y));
+      const colIdSuffixes = colIds.map((c) => `|${c}`);
+
+      const ids: string[] = [];
+      for (const row of rows) {
+        for (const colId of colIds) {
+          const cell = row.cells[colId];
+          if (cell?.type === 'Value' && cell.dataPointId !== null) ids.push(cell.dataPointId);
+        }
+      }
+
+      // Remove from extraYears regardless of whether DataPoints exist — the
+      // user's intent is to remove the columns.
+      setExtraYears((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Set(prev);
+        let changed = false;
+        for (const y of yearsToDelete) {
+          if (next.delete(y)) changed = true;
+        }
+        return changed ? next : prev;
+      });
+
+      // Drop pending edits in the affected columns. pendingKey is
+      // `${rowId}|${colId}`; rowId can contain `|` itself but never ends with
+      // `|col_year_NNNN`, so suffix-match is unambiguous.
+      setPendingEdits((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Map(prev);
+        for (const key of next.keys()) {
+          if (colIdSuffixes.some((s) => key.endsWith(s))) next.delete(key);
+        }
+        return next;
+      });
+
+      // Clear the column selection — the columns are gone.
+      setGridSelection(EMPTY_SELECTION);
+
+      if (ids.length === 0) return; // Phantom columns (extraYears only).
+
+      setDeleteProgress({ current: 0, total: ids.length });
+      let firstError: string | null = null;
+      for (const id of ids) {
+        try {
+          const result = await deleteDataPoint({
+            variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
+          });
+          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+          if (msgs.length > 0) {
+            firstError ??= msgs.map((m) => m.message).join('; ');
+            break;
+          }
+        } catch (err) {
+          firstError ??= err instanceof Error ? err.message : String(err);
+          break;
+        }
+        setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+
+      setDeleteProgress(null);
+      if (firstError) setError(firstError);
+      onMutated();
+    },
+    [deleteDataPoint, instance.id, dataset.id, rows, onMutated]
+  );
+
+  const handleAddYears = useCallback(
+    async (newYears: number[]) => {
+      if (newYears.length === 0) return;
+
+      // Update extraYears immediately for visual feedback while mutations are
+      // in flight. After refetch, the year is in dataset.dataPoints; the
+      // extraYears entry then merges in as a no-op (Set semantics).
+      setExtraYears((prev) => {
+        const next = new Set(prev);
+        for (const y of newYears) next.add(y);
+        return next;
+      });
+
+      // No rows to anchor against yet — the column is ephemeral until the
+      // first row is added (the row's anchor will then create a real
+      // DataPoint in some year). Skip mutations.
+      if (rows.length === 0) return;
+
+      const anchorRow = rows[0];
+      const dimensionCategoryIds = Object.values(anchorRow.categoryByDim).filter(
+        (v): v is string => v !== null
+      );
+
+      setAddYearsProgress({ current: 0, total: newYears.length });
+      let failureCount = 0;
+      let firstError: string | null = null;
+
+      for (const year of newYears) {
+        try {
+          const result = await createDataPoint({
+            variables: {
+              instanceId: instance.id,
+              datasetId: dataset.id,
+              input: {
+                date: `${year}-01-01`,
+                metricId: anchorRow.metricId,
+                dimensionCategoryIds,
+                value: null,
+              },
+            },
+          });
+          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+          if (payload?.__typename === 'OperationInfo') {
+            failureCount += 1;
+            firstError ??= payload.messages.map((m) => m.message).join('; ');
+          }
+        } catch (err) {
+          failureCount += 1;
+          firstError ??= err instanceof Error ? err.message : String(err);
+        }
+        setAddYearsProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+
+      setAddYearsProgress(null);
+      if (failureCount > 0) {
+        setError(
+          firstError ?? `Failed to add ${failureCount} year${failureCount === 1 ? '' : 's'}`
+        );
+      }
+      onMutated();
+    },
+    [createDataPoint, instance.id, dataset.id, rows, onMutated]
+  );
+
   // Render order — drives both the columns array and the [col, row] -> colId
   // mapping in getCellContent / onCellEdited.
   const columnIds = useMemo(
@@ -369,6 +518,20 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
     [rows]
   );
 
+  const onHeaderContextMenu = useCallback<NonNullable<DataEditorProps['onHeaderContextMenu']>>(
+    (colIndex, e) => {
+      e.preventDefault();
+      // Mirror left-click highlight behaviour — right-clicking a header also
+      // selects the column. No header context menu for now; we just suppress
+      // the browser's native menu and update the selection.
+      setGridSelection({
+        rows: CompactSelection.empty(),
+        columns: CompactSelection.fromSingleSelection(colIndex),
+      });
+    },
+    []
+  );
+
   // Document-level contextmenu listener: handles both initial open and
   // reposition-on-second-right-click. A wrapper-level listener wouldn't fire
   // when the menu's click-away catcher is active; document is reliable.
@@ -377,13 +540,10 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
       const wrapper = gridWrapperRef.current;
       if (!wrapper) return;
       const insideGrid = wrapper.contains(e.target as Node);
-      if (insideGrid && pendingContextRowRef.current) {
+      const row = pendingContextRowRef.current;
+      if (insideGrid && row !== null) {
         e.preventDefault();
-        setContextMenu({
-          mouseX: e.clientX,
-          mouseY: e.clientY,
-          row: pendingContextRowRef.current,
-        });
+        setContextMenu({ row, mouseX: e.clientX, mouseY: e.clientY });
         pendingContextRowRef.current = null;
       } else if (!insideGrid) {
         // Right-click anywhere outside the grid dismisses an open menu.
@@ -592,12 +752,27 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
   const hasPending = pendingCount > 0;
   const selectedRowCount = gridSelection.rows.length;
 
+  const selectedYears = useMemo(() => {
+    return gridSelection.columns
+      .toArray()
+      .map((idx) => columnIds[idx])
+      .filter((id): id is string => Boolean(id) && isYearColId(id))
+      .map((id) => yearFromColId(id))
+      .filter((y): y is number => y !== null);
+  }, [gridSelection, columnIds]);
+  const selectedYearCount = selectedYears.length;
+
   const handleDeleteSelected = useCallback(() => {
     const indices = gridSelection.rows.toArray();
     const targets = indices.map((i) => rows[i]).filter((r): r is GridRow => !!r);
     if (targets.length === 0) return;
     void handleDeleteRows(targets);
   }, [gridSelection, rows, handleDeleteRows]);
+
+  const handleDeleteSelectedYears = useCallback(() => {
+    if (selectedYears.length === 0) return;
+    void handleDeleteYears(selectedYears);
+  }, [selectedYears, handleDeleteYears]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -626,6 +801,19 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
             Delete {selectedRowCount} row{selectedRowCount === 1 ? '' : 's'}
           </Button>
         )}
+        {selectedYearCount > 0 && (
+          <Button
+            size="small"
+            color="error"
+            variant="outlined"
+            startIcon={<Trash />}
+            onClick={handleDeleteSelectedYears}
+            disabled={deleteProgress !== null}
+            sx={!hasPending && selectedRowCount === 0 ? { mr: 'auto' } : undefined}
+          >
+            Delete {selectedYearCount} year{selectedYearCount === 1 ? '' : 's'}
+          </Button>
+        )}
         <Button
           size="small"
           onClick={handleDiscard}
@@ -643,7 +831,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           {saving ? 'Saving…' : 'Save changes'}
         </Button>
         <Button size="small" startIcon={<Plus />} onClick={() => setAddYearOpen(true)}>
-          Add year
+          Add years
         </Button>
         <Button
           size="small"
@@ -662,6 +850,7 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           onCellEdited={onCellEdited}
           onCellsEdited={onCellsEdited}
           onCellContextMenu={onCellContextMenu}
+          onHeaderContextMenu={onHeaderContextMenu}
           onColumnResize={onColumnResize}
           freezeColumns={freezeColumns}
           getCellsForSelection
@@ -676,40 +865,54 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           rowHeight={38}
           headerHeight={32}
         />
-        {deleteProgress !== null && (
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              bgcolor: 'rgba(255, 255, 255, 0.7)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1,
-              // Eat all pointer events so the user can't fire another delete or
-              // edit cells while mutations are in flight.
-              cursor: 'wait',
-            }}
-          >
-            <Box sx={{ width: '60%', maxWidth: 360 }}>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 0.5, textAlign: 'center' }}
-              >
-                Deleting {deleteProgress.current} of {deleteProgress.total} data points…
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={
-                  deleteProgress.total > 0
-                    ? (deleteProgress.current / deleteProgress.total) * 100
-                    : 0
+        {(() => {
+          const overlay =
+            deleteProgress !== null
+              ? {
+                  progress: deleteProgress,
+                  label: `Deleting ${deleteProgress.current} of ${deleteProgress.total} data points…`,
                 }
-              />
+              : addYearsProgress !== null
+                ? {
+                    progress: addYearsProgress,
+                    label: `Adding ${addYearsProgress.current} of ${addYearsProgress.total} year${
+                      addYearsProgress.total === 1 ? '' : 's'
+                    }…`,
+                  }
+                : null;
+          if (!overlay) return null;
+          const { progress, label } = overlay;
+          return (
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                bgcolor: 'rgba(255, 255, 255, 0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1,
+                // Eat all pointer events so the user can't fire another delete
+                // or edit cells while mutations are in flight.
+                cursor: 'wait',
+              }}
+            >
+              <Box sx={{ width: '60%', maxWidth: 360 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 0.5, textAlign: 'center' }}
+                >
+                  {label}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress.total > 0 ? (progress.current / progress.total) * 100 : 0}
+                />
+              </Box>
             </Box>
-          </Box>
-        )}
+          );
+        })()}
       </Box>
       <Popper
         open={contextMenu !== null}
@@ -772,17 +975,12 @@ export default function DatasetDataGridGlide({ dataset, onMutated }: Props) {
           void handleAddRows(selectedMetricIds, newRows);
         }}
       />
-      <AddYearDialog
+      <AddYearsModal
         open={addYearOpen}
         existingYears={years}
         onClose={() => setAddYearOpen(false)}
-        onAdd={(year) => {
-          setExtraYears((prev) => {
-            if (prev.has(year) || years.includes(year)) return prev;
-            const next = new Set(prev);
-            next.add(year);
-            return next;
-          });
+        onAddYears={(newYears) => {
+          void handleAddYears(newYears);
         }}
       />
       <Snackbar
