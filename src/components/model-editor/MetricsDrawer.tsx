@@ -8,7 +8,7 @@ import { useSiteWithSetter } from '@/context/site';
 import DimensionalNodeVisualisation from '../general/DimensionalNodeVisualisation';
 import { useNodeMetric } from './metric-viewer/useNodeMetric';
 
-const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
+const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewerGlide'));
 
 type Props = {
   nodeId: string | null;
