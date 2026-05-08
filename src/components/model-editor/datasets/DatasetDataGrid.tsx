@@ -58,34 +58,34 @@ type Props = {
  * `${rowId}|${colId}`) rather than inside the cell so committed state stays
  * pristine until `onMutated` refetches.
  */
-type MetricHeaderCell = {
+export type MetricHeaderCell = {
   type: 'MetricHeader';
   metricId: string;
   label: string;
   unit: string;
 };
-type DimensionCategoryCell = {
+export type DimensionCategoryCell = {
   type: 'DimensionCategory';
   dimensionId: string;
   categoryUuid: string | null;
   label: string;
 };
-type ValueCell = {
+export type ValueCell = {
   type: 'Value';
   dataPointId: string | null;
   value: number | null;
   year: number;
 };
-type RowCell = MetricHeaderCell | DimensionCategoryCell | ValueCell;
+export type RowCell = MetricHeaderCell | DimensionCategoryCell | ValueCell;
 
-type GridRow = {
+export type GridRow = {
   id: string;
   metricId: string;
   categoryByDim: Record<string, string | null>;
   cells: Record<string, RowCell>;
 };
 
-type PendingEdit = {
+export type PendingEdit = {
   rowId: string;
   colId: string;
   year: number;
@@ -99,36 +99,36 @@ type PendingEdit = {
   error?: string;
 };
 
-type Dataset = DatasetDetailFieldsFragment;
-type DataPoint = Dataset['dataPoints'][number];
+export type Dataset = DatasetDetailFieldsFragment;
+export type DataPoint = Dataset['dataPoints'][number];
 
-type UpdateInput = UpdateDataPointMutationVariables['input'];
-const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
+export type UpdateInput = UpdateDataPointMutationVariables['input'];
+export const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
   partial as unknown as UpdateInput;
 
-const METRIC_COL = 'col_metric';
+export const METRIC_COL = 'col_metric';
 const ACTIONS_COL = 'col_actions';
 // Row-level delete is hidden for now — editing happens through cell commits.
 // Flip to re-enable the trash column + row delete button.
 const SHOW_ACTIONS_COLUMN = false;
-const dimColId = (dimensionId: string) => `col_dim_${dimensionId}`;
-const yearColId = (year: number) => `col_year_${year}`;
-const pendingKey = (rowId: string, colId: string) => `${rowId}|${colId}`;
+export const dimColId = (dimensionId: string) => `col_dim_${dimensionId}`;
+export const yearColId = (year: number) => `col_year_${year}`;
+export const pendingKey = (rowId: string, colId: string) => `${rowId}|${colId}`;
 
-function extractYear(date: DataPoint['date']): number {
+export function extractYear(date: DataPoint['date']): number {
   const s = typeof date === 'string' ? date : String(date);
   const m = /^(\d{4})/.exec(s);
   return m ? Number(m[1]) : new Date(s).getUTCFullYear();
 }
 
-function rowKey(metricId: string, categoryByDim: Record<string, string | null>): string {
+export function rowKey(metricId: string, categoryByDim: Record<string, string | null>): string {
   const parts = Object.entries(categoryByDim)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([dimId, catUuid]) => `${dimId}:${catUuid ?? '∅'}`);
   return [metricId, ...parts].join('|');
 }
 
-function buildGridData(
+export function buildGridData(
   dataset: Dataset,
   extraYears: ReadonlySet<number>
 ): {
@@ -210,7 +210,7 @@ function buildGridData(
   return { rows: [...rowsByKey.values()], years: sortedYears };
 }
 
-function diffKind(
+export function diffKind(
   dataPointId: string | null,
   nextValue: number | null
 ): 'create' | 'update' | 'delete' {
@@ -792,7 +792,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   );
 }
 
-type AddDialogProps = {
+export type AddDialogProps = {
   open: boolean;
   onClose: () => void;
   dataset: DatasetDetailFieldsFragment;
@@ -804,7 +804,7 @@ type AddDialogProps = {
   }) => Promise<boolean>;
 };
 
-function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps) {
+export function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps) {
   const defaultDate = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(defaultDate);
   const [value, setValue] = useState('');
@@ -922,14 +922,14 @@ function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2100;
 
-type AddYearDialogProps = {
+export type AddYearDialogProps = {
   open: boolean;
   existingYears: readonly number[];
   onClose: () => void;
   onAdd: (year: number) => void;
 };
 
-function AddYearDialog({ open, existingYears, onClose, onAdd }: AddYearDialogProps) {
+export function AddYearDialog({ open, existingYears, onClose, onAdd }: AddYearDialogProps) {
   const suggested = useMemo(() => {
     if (existingYears.length > 0) return existingYears[existingYears.length - 1] + 1;
     return new Date().getFullYear();
