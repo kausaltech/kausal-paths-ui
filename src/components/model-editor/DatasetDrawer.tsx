@@ -28,7 +28,7 @@ import {
   useDatasetData,
 } from './dataset-viewer/useDatasetData';
 
-const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewerGlide'));
+const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 
 function DatasetMetadata({
   dataset,
