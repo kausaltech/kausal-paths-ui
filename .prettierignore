@@ -4,3 +4,4 @@
 **/.hg
 **/node_modules
 **/__generated__/**
+next-env.d.ts
