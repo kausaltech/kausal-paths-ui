@@ -40,7 +40,7 @@ import type {
 import GraphQLError from '@/components/common/GraphQLError';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
-import DatasetDataGrid from './DatasetDataGridGlide';
+import DatasetDataGrid from './DatasetDataGrid';
 import { GET_DATASET_CONNECTED_NODES, GET_INSTANCE_DATASET } from './queries';
 
 type Props = {
