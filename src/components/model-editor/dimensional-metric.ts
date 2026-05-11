@@ -19,6 +19,7 @@ export type MetricCategory = ModelEditorMetricCategoryFieldsFragment;
 export type MetricDimension = ModelEditorMetricDimensionFieldsFragment;
 export type MetricUnit = ModelEditorDimensionalMetricFieldsFragment['unit'];
 export type GoalEntry = ModelEditorDimensionalMetricFieldsFragment['goals'][number];
+export type NormalizerNode = ModelEditorDimensionalMetricFieldsFragment['normalizedBy'];
 export type DimensionalMetricData = ModelEditorDimensionalMetricFieldsFragment;
 
 export type CubeRow = {
@@ -39,8 +40,10 @@ export class DimensionalMetric {
   readonly unit: MetricUnit;
   readonly dimensions: readonly MetricDimension[];
   readonly years: readonly number[];
+  readonly measureDatapointYears: readonly number[];
   readonly stackable: boolean;
   readonly forecastFrom: number | null;
+  readonly normalizedBy: NormalizerNode;
   readonly goals: readonly GoalEntry[];
 
   private readonly values: Float64Array;
@@ -54,8 +57,10 @@ export class DimensionalMetric {
     this.unit = data.unit;
     this.dimensions = data.dimensions;
     this.years = data.years;
+    this.measureDatapointYears = data.measureDatapointYears;
     this.stackable = data.stackable;
     this.forecastFrom = data.forecastFrom ?? null;
+    this.normalizedBy = data.normalizedBy;
     this.goals = data.goals;
 
     this.dimAxisIndex = new Map(data.dimensions.map((d, i) => [d.id, i]));
@@ -100,9 +105,11 @@ export class DimensionalMetric {
       unit: this.unit,
       dimensions: [...dimensions],
       years: [...this.years],
+      measureDatapointYears: [...this.measureDatapointYears],
       values,
       stackable: this.stackable,
       forecastFrom: this.forecastFrom,
+      normalizedBy: this.normalizedBy,
       goals: [...this.goals],
     };
   }

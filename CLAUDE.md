@@ -68,8 +68,7 @@ src/
     api/               # Route Handlers (graphql, health, sentry, auth)
     root/[domain]/[lang]/  # Instance-scoped routes (domain + locale from proxy)
       (with-layout)/   # Routes with shared navigation layout
-      model/           # Model visualization
-      model-editor/    # Trailhead graph editor
+      model/     # Trailhead graph editor
   proxy.ts             # Request interceptor (Next.js 16 "proxy", replaces middleware)
   components/
     general/           # Core visualization & UI components

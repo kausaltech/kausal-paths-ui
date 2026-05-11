@@ -1,4 +1,6 @@
 import { ApolloLink, HttpLink, type InMemoryCacheConfig } from '@apollo/client';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
+import { ErrorLink } from '@apollo/client/link/error';
 import { type DirectiveNode, Kind, type VariableDefinitionNode } from 'graphql';
 import type { Logger } from 'pino';
 
@@ -11,6 +13,7 @@ import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
 import type { CurrentURL } from '@common/utils';
 
 import possibleTypes from '@/common/__generated__/possible_types.json';
+import { recoverFromInvalidToken } from '@/lib/invalid-token-recovery';
 import {
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
@@ -38,6 +41,8 @@ const localeMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
+export type PreviewMode = 'DRAFT' | 'PUBLISHED';
+
 export type ApolloClientOpts = {
   instanceHostname?: string;
   instanceIdentifier?: string;
@@ -48,6 +53,14 @@ export type ApolloClientOpts = {
   currentURL?: CurrentURL;
   clientCookies?: string;
   logger?: Logger;
+  /**
+   * Called per operation to decide whether to attach `preview` to the
+   * `@instance` directive. Returning a mode forces the backend's Phase-4
+   * resolver split onto that slice; returning null leaves the default
+   * (published-first) behavior. Invoked lazily so client-side nav is
+   * picked up without recreating the Apollo client.
+   */
+  previewMode?: () => PreviewMode | null;
 };
 
 export function getHttpHeaders(opts: ApolloClientOpts) {
@@ -99,7 +112,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
    *
    * If identifier is set directly, use that, or fall back to request hostname.
    */
-  const { instanceHostname, instanceIdentifier, locale } = opts;
+  const { instanceHostname, instanceIdentifier, locale, previewMode } = opts;
   if (!instanceHostname && !instanceIdentifier) {
     throw new Error('Neither hostname or identifier set for the instance');
   }
@@ -156,6 +169,17 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         });
         variables['_hostname'] = instanceHostname;
       }
+      const preview = previewMode?.();
+      if (preview) {
+        instanceArgs.push({
+          name: 'preview',
+          variable: {
+            name: '_preview',
+            type: 'PreviewMode',
+          },
+        });
+        variables['_preview'] = preview;
+      }
       if (instanceArgs.length && !directiveExists(directives, 'instance')) {
         const directive = createOperationDirective({
           name: 'instance',
@@ -207,6 +231,19 @@ async function apolloFetch(url: RequestInfo | URL, init?: RequestInit) {
   return await fetch(url, init);
 }
 
+// Catches client-side GraphQL invalid_token errors and delegates to the
+// shared recovery (sign-out + reload). RSC/SSR failures don't reach here
+// — they surface as render errors and are handled by the Next.js error
+// boundaries, which call into the same recovery helper.
+const authErrorLink = new ErrorLink(({ error }) => {
+  if (!CombinedGraphQLErrors.is(error)) return;
+  const isInvalidToken = error.errors.some(
+    (e) => e.extensions?.code === 'invalid_token' || e.message.startsWith('invalid_token')
+  );
+  if (!isInvalidToken) return;
+  recoverFromInvalidToken();
+});
+
 export function getApolloClientConfig(opts: ApolloClientOpts): {
   link: ApolloLink;
   cache: InMemoryCacheConfig;
@@ -226,6 +263,7 @@ export function getApolloClientConfig(opts: ApolloClientOpts): {
   return {
     link: ApolloLink.from([
       retryLink,
+      authErrorLink,
       createSentryLink(uri),
       logOperationLink,
       localeMiddleware,

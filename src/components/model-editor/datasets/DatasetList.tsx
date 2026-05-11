@@ -30,8 +30,8 @@ import GraphQLError from '@/components/common/GraphQLError';
 import { GET_INSTANCE_DATASETS } from './queries';
 
 function getDatasetsBase(pathname: string): string {
-  const idx = pathname.indexOf('/model-editor');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model-editor/datasets' : '/model-editor/datasets';
+  const idx = pathname.indexOf('/model');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model/datasets' : '/model/datasets';
 }
 
 export default function DatasetList() {

@@ -41,15 +41,6 @@ export const STREAM_FIELD_FRAGMENT = gql`
         description
         allowUserRegistration
         allowInstanceCreation
-        configs {
-          id
-          organizationName
-          viewUrl
-          instance {
-            id
-            name
-          }
-        }
       }
     }
   }

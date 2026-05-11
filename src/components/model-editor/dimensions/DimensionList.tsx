@@ -30,10 +30,8 @@ import GraphQLError from '@/components/common/GraphQLError';
 import { GET_INSTANCE_DIMENSIONS } from './queries';
 
 function getDimensionsBase(pathname: string): string {
-  const idx = pathname.indexOf('/model-editor');
-  return idx >= 0
-    ? pathname.slice(0, idx) + '/model-editor/dimensions'
-    : '/model-editor/dimensions';
+  const idx = pathname.indexOf('/model');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model/dimensions' : '/model/dimensions';
 }
 
 export default function DimensionList() {

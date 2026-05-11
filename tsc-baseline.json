@@ -52,35 +52,35 @@
       "count": 1,
       "message": "Parameter 'y' implicitly has an 'any' type."
     },
-    "75551c17c268f99a4be46d1e7d414a392bcdddb1": {
+    "f3bd261087345acec51af221d6e3cef781a015a9": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"plot-total\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 162 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"plot-total\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 165 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
-    "688e439cddd07ef245fe88f75b81afd7192e2baa": {
+    "4d944256c3224ca3c2ed74de2e9c48f5db986a44": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 162 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 165 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
-    "e52ba8a20a0be909746c3c39a1c08897c71cf9b4": {
+    "76503317164847f1a878063a260f092d40168410": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"plot-baseline\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 162 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"plot-baseline\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 165 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
-    "e523fd38647440d3b1bc99b0c69fc52172fcc754": {
+    "38ff3e9c49c534c4caa7b8c9e5663af92e7e0caa": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"calculated-emissions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 162 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"calculated-emissions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 165 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
-    "bee6bfedc7d8571f449c047d99ecec24271f2ef9": {
+    "d85cdef79905c8ce1f3ed893398e4442836575f6": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 162 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 165 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
     "838182a273f9a9159ac1f2ddaf4c9ec8e0418271": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
@@ -100,11 +100,11 @@
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
     },
-    "c48a628e26aa3ea1fce8692d532f1a0d5cf4d590": {
+    "23387b98f659ff720fa1358e0a37ebd4925fd2f1": {
       "file": "kausal_common/src/components/PopoverTip.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 162 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 165 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
     },
     "3c9d4541d8bb98fa8666722a22b523ebb7ae71d6": {
       "file": "kausal_common/src/logging/edge.ts",
@@ -597,6 +597,24 @@
       "code": "TS7006",
       "count": 1,
       "message": "Parameter 'page' implicitly has an 'any' type."
+    },
+    "59ed393a4b5e7075a895a69132a22a05c557fc5b": {
+      "file": "src/components/model-editor/RichTextField.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@tiptap/react' or its corresponding type declarations."
+    },
+    "455fbbb9718a2575c7dcce023d194a495b2b3187": {
+      "file": "src/components/model-editor/RichTextField.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@tiptap/starter-kit' or its corresponding type declarations."
+    },
+    "f3281b8e5f256199543869c883ffa7fac5858da6": {
+      "file": "src/components/model-editor/RichTextField.tsx",
+      "code": "TS7031",
+      "count": 1,
+      "message": "Binding element 'editor' implicitly has an 'any' type."
     },
     "a7ca7397817f5ac924f5b6432183a1342914f976": {
       "file": "src/components/pages/DashboardPage.tsx",

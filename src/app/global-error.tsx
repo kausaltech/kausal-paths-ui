@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 
 import * as Sentry from '@sentry/nextjs';
 
+import { isInvalidTokenError, recoverFromInvalidToken } from '@/lib/invalid-token-recovery';
+
 export default function GlobalError({
   error,
   reset,
@@ -11,10 +13,23 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
+  const invalidToken = isInvalidTokenError(error);
 
+  useEffect(() => {
+    if (invalidToken) {
+      recoverFromInvalidToken();
+      return;
+    }
+    Sentry.captureException(error);
+  }, [error, invalidToken]);
+
+  if (invalidToken) {
+    return (
+      <html>
+        <body />
+      </html>
+    );
+  }
   return (
     <html>
       <body>

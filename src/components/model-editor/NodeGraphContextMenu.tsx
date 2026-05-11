@@ -1,6 +1,8 @@
-import { ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
 
-import { Copy, EyeSlash } from 'react-bootstrap-icons';
+import { Copy, EyeSlash, Magic, Trash } from 'react-bootstrap-icons';
+
+import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 
 export type ContextMenuState =
   | ({
@@ -13,19 +15,42 @@ type Props = {
   state: ContextMenuState;
   onClose: () => void;
   onHideEdge: (edgeId: string) => void;
-  onCopyAction: (nodeId: string) => void;
+  onOpenActionWizard: (nodeId: string) => void;
+  onDuplicateAction: (nodeId: string) => void;
+  onDeleteNode: (nodeId: string) => void;
 };
 
-export default function NodeGraphContextMenu({ state, onClose, onHideEdge, onCopyAction }: Props) {
+export default function NodeGraphContextMenu({
+  state,
+  onClose,
+  onHideEdge,
+  onOpenActionWizard,
+  onDuplicateAction,
+  onDeleteNode,
+}: Props) {
+  const readOnly = useIsEditorReadOnly();
+
   const handleHideEdge = () => {
     if (state?.kind !== 'edge') return;
     onHideEdge(state.edgeId);
     onClose();
   };
 
-  const handleCopyAction = () => {
+  const handleOpenActionWizard = () => {
     if (state?.kind !== 'node') return;
-    onCopyAction(state.nodeId);
+    onOpenActionWizard(state.nodeId);
+    onClose();
+  };
+
+  const handleDuplicateAction = () => {
+    if (state?.kind !== 'node') return;
+    onDuplicateAction(state.nodeId);
+    onClose();
+  };
+
+  const handleDeleteNode = () => {
+    if (state?.kind !== 'node') return;
+    onDeleteNode(state.nodeId);
     onClose();
   };
 
@@ -35,21 +60,51 @@ export default function NodeGraphContextMenu({ state, onClose, onHideEdge, onCop
       onClose={onClose}
       anchorReference="anchorPosition"
       anchorPosition={state ? { top: state.mouseY, left: state.mouseX } : undefined}
+      slotProps={{ list: { dense: true } }}
     >
       {state?.kind === 'edge' && (
         <MenuItem onClick={handleHideEdge}>
           <ListItemIcon>
-            <EyeSlash size={18} />
+            <EyeSlash size={14} />
           </ListItemIcon>
           <ListItemText>Hide edge</ListItemText>
         </MenuItem>
       )}
-      {state?.kind === 'node' && state.isAction && (
-        <MenuItem onClick={handleCopyAction}>
-          <ListItemIcon>
-            <Copy size={18} />
+      {!readOnly &&
+        state?.kind === 'node' &&
+        state.isAction && [
+          <MenuItem key="duplicate" onClick={handleDuplicateAction}>
+            <ListItemIcon>
+              <Copy size={14} />
+            </ListItemIcon>
+            <ListItemText>Duplicate action</ListItemText>
+          </MenuItem>,
+          <MenuItem key="wizard" onClick={handleOpenActionWizard}>
+            <ListItemIcon>
+              <Magic size={14} />
+            </ListItemIcon>
+            <ListItemText>Action wizard (legacy)</ListItemText>
+          </MenuItem>,
+          <Divider key="divider" />,
+        ]}
+      {!readOnly && state?.kind === 'node' && (
+        <MenuItem onClick={handleDeleteNode} sx={{ color: 'error.main' }}>
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <Trash size={14} />
           </ListItemIcon>
-          <ListItemText>Duplicate action</ListItemText>
+          <ListItemText>Delete node</ListItemText>
+        </MenuItem>
+      )}
+      {readOnly && state?.kind === 'node' && (
+        <MenuItem disabled>
+          <ListItemText
+            primary="Read-only"
+            secondary="Switch to Draft to edit."
+            slotProps={{
+              primary: { sx: { fontSize: 12 } },
+              secondary: { sx: { fontSize: 11 } },
+            }}
+          />
         </MenuItem>
       )}
     </Menu>
