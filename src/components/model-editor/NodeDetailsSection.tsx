@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import {
+  Alert,
   Autocomplete,
   Box,
   Button,
@@ -8,6 +9,8 @@ import {
   FormControlLabel,
   IconButton,
   Switch,
+  Tab,
+  Tabs,
   TextField,
   type Theme,
   Tooltip,
@@ -16,11 +19,13 @@ import {
 import { alpha } from '@mui/material/styles';
 
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
-import { useApolloClient, useMutation } from '@apollo/client/react';
+import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client/react';
 import { ArrowCounterclockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeFieldsFragment,
+  NodeTranslationQuery,
+  NodeTranslationQueryVariables,
   UpdateNodeInput,
   UpdateNodeMutation,
   UpdateNodeMutationVariables,
@@ -28,15 +33,18 @@ import type {
 import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import RichTextField from './RichTextField';
+import { getNativeLanguageName } from './languageLabel';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
 import { getNodeGroup } from './nodeHelpers';
 import {
+  NODE_TRANSLATION,
   type NodeFieldOverrides,
   UPDATE_NODE,
   draftHeadTokenVar,
   patchNodeGraphOverride,
   staleVersionNotificationVar,
 } from './queries';
+import { useEditorApolloContext } from './useEditorApolloContext';
 import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 
 const metaChipSx = {
@@ -49,7 +57,7 @@ const metaChipSx = {
  * `mockNodeEditsVar`). Uses the theme's info palette so it's visually distinct
  * from the warning tint we reserve for actual pending/unsaved state.
  */
-const MOCK_TINT_ALPHA = 0.18;
+const MOCK_TINT_ALPHA = 0.09;
 function mockBg(theme: Theme) {
   return alpha(theme.palette.info.main, MOCK_TINT_ALPHA);
 }
@@ -109,6 +117,7 @@ function stripNulls(input: Partial<UpdateNodeInput>): UpdateNodeInput {
 function useUpdateNodeMutation() {
   const instance = useInstance();
   const client = useApolloClient();
+  const editorContext = useEditorApolloContext();
   const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
   return useCallback(
     async (nodeId: string, input: Partial<UpdateNodeInput>) => {
@@ -120,6 +129,7 @@ function useUpdateNodeMutation() {
             input: stripNulls(input),
             version: draftHeadTokenVar(),
           },
+          context: editorContext,
           // Re-fetch the token after a successful write so subsequent mutations
           // pass the new head and don't trip the stale-check.
           refetchQueries: ['EditorPublishState'],
@@ -152,7 +162,7 @@ function useUpdateNodeMutation() {
         throw err;
       }
     },
-    [instance.id, mutate, client]
+    [instance.id, mutate, client, editorContext]
   );
 }
 
@@ -223,6 +233,63 @@ function LiveTextField({ label, value, onCommit, placeholder }: LiveTextFieldPro
         fullWidth
         placeholder={placeholder}
         slotProps={{ input: { sx: { fontSize: 13 } } }}
+      />
+    </Box>
+  );
+}
+
+type MockRichTextFieldProps = {
+  label: string;
+  field: Extract<EditableNodeField, 'shortDescription'>;
+  nodeId: string;
+  originalValue: string | null;
+  currentValue: string | null | undefined;
+  editorUserName: string;
+  placeholder?: string;
+};
+
+// Mock rich-text editor. Tiptap is seeded only at mount (see RichTextField),
+// so we re-key the inner component on revert to force a remount that re-reads
+// the original value.
+function MockRichTextField({
+  label,
+  field,
+  nodeId,
+  originalValue,
+  currentValue,
+  editorUserName,
+  placeholder,
+}: MockRichTextFieldProps) {
+  const value = currentValue ?? originalValue ?? '';
+  const hasEdit = currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
+  const [revertTick, setRevertTick] = useState(0);
+
+  const handleCommit = (html: string | null) => {
+    setMockNodeFieldEdit(nodeId, field, html, originalValue, editorUserName);
+    return Promise.resolve();
+  };
+
+  const handleRevert = () => {
+    setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
+    setRevertTick((t) => t + 1);
+  };
+
+  return (
+    <Box
+      sx={{
+        '& .ProseMirror': { bgcolor: mockBg },
+      }}
+    >
+      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
+        {label}
+      </FieldLabel>
+      <RichTextField
+        key={`${field}:${nodeId}:${revertTick}`}
+        label={label}
+        value={value}
+        onCommit={handleCommit}
+        placeholder={placeholder}
+        hideHeader
       />
     </Box>
   );
@@ -543,6 +610,219 @@ function LiveBooleanField({ label, value, onCommit }: LiveBooleanFieldProps) {
   );
 }
 
+function ReadOnlyTextField({ label, value }: { label: string; value: string | null | undefined }) {
+  const hasValue = value != null && value !== '';
+  return (
+    <Box>
+      <FieldLabel>{label}</FieldLabel>
+      <Box
+        sx={{
+          px: 1,
+          py: 0.75,
+          bgcolor: 'grey.50',
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+        }}
+      >
+        <Typography
+          sx={{ fontSize: 13, color: hasValue ? 'text.primary' : 'text.disabled', minHeight: 18 }}
+        >
+          {hasValue ? value : '(empty)'}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+function ReadOnlyRichTextField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
+  const hasValue = value != null && value !== '';
+  return (
+    <Box>
+      <FieldLabel>{label}</FieldLabel>
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          px: 1,
+          py: 0.75,
+          minHeight: 64,
+          maxHeight: 240,
+          overflowY: 'auto',
+          fontSize: 13,
+          color: hasValue ? 'text.primary' : 'text.disabled',
+          '& p': { m: 0, mb: 0.5 },
+          '& p:last-child': { mb: 0 },
+          '& ul, & ol': { pl: 2.5, my: 0.5 },
+          '& a': { color: 'primary.main', textDecoration: 'underline' },
+        }}
+      >
+        {hasValue ? <Box dangerouslySetInnerHTML={{ __html: value }} /> : '(empty)'}
+      </Box>
+    </Box>
+  );
+}
+
+export type NodeContentSectionProps = {
+  node: EditorNodeFieldsFragment;
+  editorUserName: string;
+  currentEdit: MockNodeEdit | undefined;
+};
+
+/**
+ * Translatable node-content fields (name, short description, description).
+ *
+ * Editor reads/writes always target the instance's default-language column
+ * (see useEditorApolloContext), so the default-language tab is editable.
+ * Other-language tabs show the resolved translation read-only — they re-run
+ * a small query with `context: { locale }` and `fetchPolicy: 'no-cache'` so
+ * each switch returns fresh data without colliding on Apollo's cache key.
+ */
+export function NodeContentSection({ node, editorUserName, currentEdit }: NodeContentSectionProps) {
+  const updateNode = useUpdateNodeMutation();
+  const readOnly = useIsEditorReadOnly();
+  const instance = useInstance();
+
+  const languages = [
+    instance.defaultLanguage,
+    ...instance.supportedLanguages.filter((l) => l !== instance.defaultLanguage),
+  ];
+  const showTabs = languages.length > 1;
+
+  const [selectedLang, setSelectedLang] = useState(instance.defaultLanguage);
+  const isDefault = selectedLang === instance.defaultLanguage;
+
+  // Apollo treats `context` as out-of-band metadata, not part of the
+  // operation's identity, so changing `selectedLang` while `variables` stays
+  // the same doesn't refetch on its own. Drive the fetch explicitly via
+  // useLazyQuery so each tab switch fires fresh with the latest locale.
+  const [fetchTranslation, { data: translationData, loading: translationLoading }] = useLazyQuery<
+    NodeTranslationQuery,
+    NodeTranslationQueryVariables
+  >(NODE_TRANSLATION, { fetchPolicy: 'no-cache' });
+
+  useEffect(() => {
+    if (isDefault) return;
+    void fetchTranslation({
+      variables: { nodeId: node.id },
+      context: { locale: selectedLang },
+    });
+  }, [fetchTranslation, isDefault, node.id, selectedLang]);
+
+  const translated = translationData?.node ?? null;
+
+  const langLabel = (code: string) =>
+    code === instance.defaultLanguage
+      ? `${code} · ${getNativeLanguageName(code)}`
+      : getNativeLanguageName(code);
+
+  const tabs = showTabs ? (
+    <Tabs
+      value={selectedLang}
+      onChange={(_, next: string) => setSelectedLang(next)}
+      variant="scrollable"
+      scrollButtons="auto"
+      sx={{
+        minHeight: 32,
+        mb: 1,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        '& .MuiTab-root': {
+          minHeight: 32,
+          minWidth: 0,
+          px: 1,
+          py: 0.25,
+          fontSize: 11,
+          textTransform: 'uppercase',
+          fontWeight: 600,
+          letterSpacing: 0.5,
+        },
+      }}
+    >
+      {languages.map((lang) => (
+        <Tab key={lang} value={lang} label={lang} title={langLabel(lang)} />
+      ))}
+    </Tabs>
+  ) : null;
+
+  const editableBody = (
+    <Box
+      component="fieldset"
+      disabled={readOnly}
+      sx={{ border: 0, p: 0, m: 0, minWidth: 0, display: 'contents' }}
+    >
+      <LiveTextField
+        key={`name:${node.id}`}
+        label="Name"
+        nodeId={node.id}
+        value={node.name ?? ''}
+        onCommit={(next) => updateNode(node.id, { name: next })}
+      />
+
+      <MockRichTextField
+        label="Short description"
+        field="shortDescription"
+        nodeId={node.id}
+        originalValue={node.shortDescription ?? null}
+        currentValue={currentEdit?.shortDescription}
+        editorUserName={editorUserName}
+        placeholder="Brief summary"
+      />
+
+      <RichTextField
+        key={`description:${node.id}`}
+        label="Description"
+        value={node.description ?? ''}
+        onCommit={(html) => updateNode(node.id, { description: html })}
+        disabled={readOnly}
+      />
+    </Box>
+  );
+
+  const readOnlyBody = (
+    <Box sx={{ display: 'contents' }}>
+      <Alert severity="info" sx={{ fontSize: 12, py: 0.5, '& .MuiAlert-message': { py: 0.25 } }}>
+        Content translations are not currently editable in model editor
+      </Alert>
+      {translationLoading ? (
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Loading translation…</Typography>
+      ) : (
+        <>
+          <ReadOnlyTextField label="Name" value={translated?.name} />
+          <ReadOnlyRichTextField label="Short description" value={translated?.shortDescription} />
+          <ReadOnlyRichTextField label="Description" value={translated?.description} />
+        </>
+      )}
+    </Box>
+  );
+
+  const body = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      {tabs}
+      {isDefault ? editableBody : readOnlyBody}
+    </Box>
+  );
+
+  if (!readOnly || !isDefault) return body;
+  return (
+    <Tooltip
+      title="Read-only: you're viewing the published revision. Switch to Draft mode to edit."
+      placement="left"
+      arrow
+      followCursor
+    >
+      {body}
+    </Tooltip>
+  );
+}
+
 export type NodeDetailsSectionProps = {
   node: EditorNodeFieldsFragment;
   editorUserName: string;
@@ -581,14 +861,6 @@ export default function NodeDetailsSection({
         display: 'contents',
       }}
     >
-      <LiveTextField
-        key={`name:${node.id}`}
-        label="Name"
-        nodeId={node.id}
-        value={node.name ?? ''}
-        onCommit={(next) => updateNode(node.id, { name: next })}
-      />
-
       <MockTextField
         label="Short name"
         field="shortName"
@@ -597,14 +869,6 @@ export default function NodeDetailsSection({
         currentValue={currentEdit?.shortName}
         editorUserName={editorUserName}
         placeholder="Abbreviated label"
-      />
-
-      <RichTextField
-        key={`description:${node.id}`}
-        label="Description"
-        value={node.description ?? ''}
-        onCommit={(html) => updateNode(node.id, { description: html })}
-        disabled={readOnly}
       />
 
       <LiveColorField

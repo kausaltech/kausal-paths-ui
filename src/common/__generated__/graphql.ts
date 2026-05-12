@@ -709,7 +709,7 @@ export type NodeGraphQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null, nodes: Array<
       | (
-        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
         ) | null, quantityKind: (
@@ -765,7 +765,7 @@ export type NodeGraphQuery = (
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
+        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
@@ -824,7 +824,7 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, quantityKind: (
@@ -881,7 +881,7 @@ type EditorNodeFields_ActionNode_Fragment = (
 );
 
 type EditorNodeFields_Node_Fragment = (
-  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
+  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
@@ -1619,6 +1619,19 @@ export type UpdateNodeMutation = (
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }
+);
+
+export type NodeTranslationQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+}>;
+
+
+export type NodeTranslationQuery = (
+  { node: (
+    { id: string, name: string, description: string | null, shortDescription: string | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
 );
 
 export type AvailableDatasetsQueryVariables = Exact<{ [key: string]: never; }>;
