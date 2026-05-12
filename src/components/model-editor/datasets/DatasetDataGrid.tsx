@@ -310,8 +310,26 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         }
       }
 
+      // Drop pending edits in the affected columns. pendingKey is
+      // `${rowId}|${colId}`; rowId can contain `|` itself but never ends with
+      // `|col_year_NNNN`, so suffix-match is unambiguous. Deferred until after
+      // mutations succeed so a failure doesn't silently discard unsaved edits.
+      const dropPendingForYears = () => {
+        setPendingEdits((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Map(prev);
+          for (const key of next.keys()) {
+            if (colIdSuffixes.some((s) => key.endsWith(s))) next.delete(key);
+          }
+          return next;
+        });
+      };
+
       // Remove from extraYears regardless of whether DataPoints exist — the
-      // user's intent is to remove the columns.
+      // user's intent is to remove the columns. Safe to do optimistically:
+      // for purely ephemeral years there are no mutations to fail; for years
+      // backed by real DataPoints, a failed delete will reintroduce the
+      // column via dataset.dataPoints after refetch.
       setExtraYears((prev) => {
         if (prev.size === 0) return prev;
         const next = new Set(prev);
@@ -322,22 +340,15 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         return changed ? next : prev;
       });
 
-      // Drop pending edits in the affected columns. pendingKey is
-      // `${rowId}|${colId}`; rowId can contain `|` itself but never ends with
-      // `|col_year_NNNN`, so suffix-match is unambiguous.
-      setPendingEdits((prev) => {
-        if (prev.size === 0) return prev;
-        const next = new Map(prev);
-        for (const key of next.keys()) {
-          if (colIdSuffixes.some((s) => key.endsWith(s))) next.delete(key);
-        }
-        return next;
-      });
-
       // Clear the column selection — the columns are gone.
       setGridSelection(EMPTY_SELECTION);
 
-      if (ids.length === 0) return; // Phantom columns (extraYears only).
+      if (ids.length === 0) {
+        // Phantom columns (extraYears only): no mutations can fail, so it's
+        // safe to drop pending edits in those columns now.
+        dropPendingForYears();
+        return;
+      }
 
       setDeleteProgress({ current: 0, total: ids.length });
       let firstError: string | null = null;
@@ -359,7 +370,11 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       }
 
       setDeleteProgress(null);
-      if (firstError) setError(firstError);
+      if (firstError) {
+        setError(firstError);
+      } else {
+        dropPendingForYears();
+      }
       onMutated();
     },
     [deleteDataPoint, instance.id, dataset.id, rows, onMutated]
