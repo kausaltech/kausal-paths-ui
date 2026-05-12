@@ -130,6 +130,7 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
                 size="small"
                 MenuProps={{ disablePortal: true }}
               >
+                <MenuItem value={-1}>{t('emissions-impact')}</MenuItem>
                 {impactOverviews.map((impactGroup, indx) => (
                   <MenuItem value={indx} key={indx}>
                     {impactGroup.label}
