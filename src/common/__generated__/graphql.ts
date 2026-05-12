@@ -475,6 +475,20 @@ export type ModelEditorLandingDataQuery = (
   & { __typename: 'Query' }
 );
 
+export type MyFrameworkRolesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyFrameworkRolesQuery = (
+  { me: (
+    { id: string, email: string, frameworkRoles: Array<(
+      { frameworkId: string, roleId: string | null, orgSlug: string | null, orgId: string | null }
+      & { __typename: 'UserFrameworkRole' }
+    )> | null }
+    & { __typename: 'UserType' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1074,7 +1088,13 @@ export type InstanceDatasetsQuery = (
     { id: string, editor: (
       { datasets: Array<(
         { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPoints: Array<(
-          { id: string }
+          { id: string, date: any, metric: (
+            { id: string }
+            & { __typename: 'DatasetMetric' }
+          ), dimensionCategories: Array<(
+            { uuid: string }
+            & { __typename: 'DatasetDimensionCategory' }
+          )> }
           & { __typename: 'DataPoint' }
         )>, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
