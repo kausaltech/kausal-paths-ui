@@ -121,6 +121,9 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
     const variables: Record<string, unknown> = {
       ...operation.variables,
     };
+    // A per-operation `context.locale` (e.g. set by the model editor to force
+    // default-language content) wins over the client-default locale.
+    const effectiveLocale = operation.getContext().locale ?? locale;
 
     const definitions = operation.query.definitions.map((def) => {
       if (def.kind !== Kind.OPERATION_DEFINITION) return def;
@@ -131,7 +134,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         return def;
       }
 
-      if (locale && !directiveExists(directives, 'locale')) {
+      if (effectiveLocale && !directiveExists(directives, 'locale')) {
         const directive = createOperationDirective({
           name: 'locale',
           args: [
@@ -146,7 +149,7 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
         });
         directives.push(directive.directive);
         variableDefinitions.push(...directive.variableDefinitions);
-        variables['_locale'] = locale;
+        variables['_locale'] = effectiveLocale;
       }
       const instanceArgs: DirectiveArg[] = [];
       if (instanceIdentifier && !directiveExists(directives, 'identifier')) {

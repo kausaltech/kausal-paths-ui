@@ -15,7 +15,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
-import NodeDetailsSection from './NodeDetailsSection';
+import NodeDetailsSection, { NodeContentSection } from './NodeDetailsSection';
 import { mockNodeEditsVar } from './mockEdits';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
@@ -82,6 +82,7 @@ export default function NodeDetailsPanel({
   const { data: session } = useSession();
   const editorUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [contentOpen, setContentOpen] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
@@ -201,6 +202,14 @@ export default function NodeDetailsPanel({
           <X size={20} />
         </IconButton>
       </Box>
+
+      <CollapsibleSection
+        title="Node content"
+        open={contentOpen}
+        onToggle={() => setContentOpen((v) => !v)}
+      >
+        <NodeContentSection node={node} editorUserName={editorUserName} currentEdit={currentEdit} />
+      </CollapsibleSection>
 
       <CollapsibleSection
         title="Node details"

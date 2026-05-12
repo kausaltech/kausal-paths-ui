@@ -63,6 +63,7 @@ import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
 import { useDeleteNode } from './useDeleteNode';
 import { useDuplicateAction } from './useDuplicateAction';
+import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
 
@@ -114,6 +115,7 @@ const GET_NODE_GRAPH = gql`
     name
     shortName
     description
+    shortDescription
     color
     isVisible
     uuid
@@ -946,7 +948,11 @@ function applyOverride(
 }
 
 export default function NodeGraphEditor() {
-  const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
+  const editorContext = useEditorApolloContext();
+  const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, {
+    fetchPolicy: 'no-cache',
+    context: editorContext,
+  });
   const overrides = useReactiveVar(nodeGraphOverridesVar);
   // Keeps draftHeadTokenVar current while the graph is open.
   useEditorPublishState();
