@@ -83,7 +83,7 @@ export default function NodeDetailsPanel({
   const editorUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [contentOpen, setContentOpen] = useState(true);
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [explanationOpen, setExplanationOpen] = useState(true);
   const [inputOpen, setInputOpen] = useState(true);
   const [outputOpen, setOutputOpen] = useState(true);
