@@ -78,7 +78,7 @@ function FieldLabel({
         sx={{ fontSize: 10, color: isMock ? 'info.main' : 'text.secondary' }}
       >
         {children}
-        {isMock ? ' · mock' : ''}
+        {isMock ? ' (uneditable)' : ''}
       </Typography>
       {onRevert && (
         <Tooltip title="Revert changes" placement="top">
@@ -290,6 +290,7 @@ function MockRichTextField({
         onCommit={handleCommit}
         placeholder={placeholder}
         hideHeader
+        disabled
       />
     </Box>
   );
@@ -342,6 +343,7 @@ function MockTextField({
         }}
         size="small"
         fullWidth
+        disabled
         multiline={multiline}
         minRows={multiline ? 2 : undefined}
         maxRows={multiline ? 6 : undefined}
@@ -398,6 +400,7 @@ function ActionGroupMockField({
         isOptionEqualToValue={(a, b) => a.id === b.id}
         onChange={(_, next) => commit(next)}
         size="small"
+        disabled
         sx={mockSx()}
         renderOption={(props, option) => (
           <Box component="li" {...props} key={option.id}>
@@ -486,6 +489,7 @@ function NodeGroupMockField({
           }
         }}
         size="small"
+        disabled
         sx={mockSx()}
         renderInput={(params) => (
           <TextField
@@ -611,26 +615,17 @@ function LiveBooleanField({ label, value, onCommit }: LiveBooleanFieldProps) {
 }
 
 function ReadOnlyTextField({ label, value }: { label: string; value: string | null | undefined }) {
-  const hasValue = value != null && value !== '';
   return (
     <Box>
-      <FieldLabel>{label}</FieldLabel>
-      <Box
-        sx={{
-          px: 1,
-          py: 0.75,
-          bgcolor: 'grey.50',
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 1,
-        }}
-      >
-        <Typography
-          sx={{ fontSize: 13, color: hasValue ? 'text.primary' : 'text.disabled', minHeight: 18 }}
-        >
-          {hasValue ? value : '(empty)'}
-        </Typography>
-      </Box>
+      <FieldLabel isMock>{label}</FieldLabel>
+      <TextField
+        value={value ?? ''}
+        size="small"
+        fullWidth
+        disabled
+        sx={mockSx()}
+        slotProps={{ input: { sx: { fontSize: 13 } } }}
+      />
     </Box>
   );
 }
@@ -642,30 +637,16 @@ function ReadOnlyRichTextField({
   label: string;
   value: string | null | undefined;
 }) {
-  const hasValue = value != null && value !== '';
   return (
-    <Box>
-      <FieldLabel>{label}</FieldLabel>
-      <Box
-        sx={{
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 1,
-          px: 1,
-          py: 0.75,
-          minHeight: 64,
-          maxHeight: 240,
-          overflowY: 'auto',
-          fontSize: 13,
-          color: hasValue ? 'text.primary' : 'text.disabled',
-          '& p': { m: 0, mb: 0.5 },
-          '& p:last-child': { mb: 0 },
-          '& ul, & ol': { pl: 2.5, my: 0.5 },
-          '& a': { color: 'primary.main', textDecoration: 'underline' },
-        }}
-      >
-        {hasValue ? <Box dangerouslySetInnerHTML={{ __html: value }} /> : '(empty)'}
-      </Box>
+    <Box sx={{ '& .ProseMirror': { bgcolor: mockBg } }}>
+      <FieldLabel isMock>{label}</FieldLabel>
+      <RichTextField
+        label={label}
+        value={value ?? ''}
+        onCommit={() => Promise.resolve()}
+        hideHeader
+        disabled
+      />
     </Box>
   );
 }
@@ -807,6 +788,18 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {tabs}
       {isDefault ? editableBody : readOnlyBody}
+      <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
+        <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<BoxArrowUpRight size={12} />}
+            sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
+          >
+            Open public page
+          </Button>
+        </NodeLink>
+      </Box>
     </Box>
   );
 
@@ -963,19 +956,6 @@ export default function NodeDetailsSection({
           </Box>
         </Box>
       )}
-
-      <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
-        <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<BoxArrowUpRight size={12} />}
-            sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
-          >
-            Open public page
-          </Button>
-        </NodeLink>
-      </Box>
     </Box>
   );
 
