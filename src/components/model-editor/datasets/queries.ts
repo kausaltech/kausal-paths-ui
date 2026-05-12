@@ -82,6 +82,13 @@ export const GET_INSTANCE_DATASETS = gql`
           ...DatasetSummaryFields
           dataPoints {
             id
+            date
+            metric {
+              id
+            }
+            dimensionCategories {
+              uuid
+            }
           }
         }
       }
