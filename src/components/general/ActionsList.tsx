@@ -51,7 +51,6 @@ type ActionsListProps = {
 type ColumnDef = {
   key: SortActionsConfig['key'];
   label: string;
-  sortKey?: keyof ActionWithEfficiency;
   getValue: (a: ActionWithEfficiency) => number | null;
   getUnit: (a: ActionWithEfficiency) => string | undefined;
   disableSort?: boolean;
@@ -153,7 +152,6 @@ export default function ActionsList({
         cols.push({
           key: 'IMPACT',
           label: `${t('annual-impact')} ${yearRange[1]}`,
-          sortKey: 'impactOnTargetYear',
           getValue: (a) => (a.impactMetric ? a.impactOnTargetYear : null),
           getUnit: (a) => a.impactMetric?.unit?.htmlShort,
         });
@@ -191,7 +189,6 @@ export default function ActionsList({
         {
           key: 'CUM_EFFICIENCY',
           label: activeOverview.label,
-          sortKey: 'cumulativeEfficiency',
           getValue: (a) => {
             const cost = a.cumulativeCost;
             const impact = a.cumulativeImpact;
@@ -223,7 +220,6 @@ export default function ActionsList({
         key: 'CUM_COST',
         label:
           firstWithCost.cumulativeCostName ?? `${t('net-cost')} ${yearRange[0]}–${yearRange[1]}`,
-        sortKey: 'cumulativeCost',
         getValue: (a) => a.cumulativeCost ?? null,
         getUnit: (a) => a.cumulativeCostUnit,
       });
@@ -232,7 +228,6 @@ export default function ActionsList({
       cols.push({
         key: 'CUM_EFFICIENCY',
         label: firstWithEfficiency.cumulativeEfficiencyName ?? t('cost-efficiency'),
-        sortKey: 'cumulativeEfficiency',
         getValue: (a) => a.cumulativeEfficiency ?? null,
         getUnit: (a) => a.cumulativeEfficiencyUnit,
       });
