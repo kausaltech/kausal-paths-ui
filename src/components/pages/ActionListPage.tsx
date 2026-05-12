@@ -173,6 +173,8 @@ function ActionListPage({ page }: ActionListPageProps) {
     actionGroups,
     hasEfficiency,
     activeOverview,
+    costBenefitDataPending,
+    costBenefitDataError,
   } = useActionListData({
     data,
     showOnlyMunicipalActions: !!page.showOnlyMunicipalActions,
@@ -241,10 +243,11 @@ function ActionListPage({ page }: ActionListPageProps) {
   ];
   const hasMultipleViews = viewOptions.length > 1;
 
-  if (error) {
+  const displayError = error ?? costBenefitDataError;
+  if (displayError) {
     return (
       <Container fixed maxWidth="xl" sx={{ pt: 5 }}>
-        <GraphQLError error={error} />
+        <GraphQLError error={displayError} />
       </Container>
     );
   }
@@ -343,7 +346,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             sortBy={sortBy}
             sortAscending={ascending}
             activeOverview={activeOverview}
-            isLoading={areActionsLoading}
+            isLoading={areActionsLoading || costBenefitDataPending}
             refetching={isRefetchingWithStaleData}
             onChangeSort={(key) => {
               handleChangeSort(key);

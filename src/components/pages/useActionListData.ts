@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import type { ErrorLike } from '@apollo/client/core';
 import { useQuery } from '@apollo/client/react';
 
 import {
@@ -30,6 +31,10 @@ type UseActionListDataResult = {
   actionGroups: NonNullable<ActionWithEfficiency['group']>[];
   hasEfficiency: boolean;
   activeOverview: ActiveOverviewInfo | null;
+  /** Cost-benefit cells depend on a richer query; this is true while it's still in-flight on first load. */
+  costBenefitDataPending: boolean;
+  /** Error from the cost-benefit overviews query, only surfaced when the active overview actually uses it. */
+  costBenefitDataError: ErrorLike | undefined;
 };
 
 export function useActionListData({
@@ -51,7 +56,11 @@ export function useActionListData({
 
   // For cost_benefit graphType the list needs per-action cost/benefit/netBenefit
   // derived from effectDim — those fields are only in the richer impact-overviews query.
-  const { data: impactOverviewsData } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
+  const {
+    data: impactOverviewsData,
+    loading: impactOverviewsLoading,
+    error: impactOverviewsError,
+  } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -205,6 +214,14 @@ export function useActionListData({
       }
     : null;
 
+  // Only gate the list on overviews-query state when the active overview is
+  // actually a cost-benefit one — that's the only graphType whose cells depend
+  // on it. Otherwise an unrelated overviews-query failure would block the list.
+  const needsCostBenefitOverview = activeOverviewInfo?.graphType === 'cost_benefit';
+  const costBenefitDataPending =
+    needsCostBenefitOverview && impactOverviewsLoading && !impactOverviewsData;
+  const costBenefitDataError = needsCostBenefitOverview ? impactOverviewsError : undefined;
+
   return {
     usableActions,
     displayedActionsCount,
@@ -212,5 +229,7 @@ export function useActionListData({
     actionGroups,
     hasEfficiency,
     activeOverview: activeOverviewInfo,
+    costBenefitDataPending,
+    costBenefitDataError,
   };
 }
