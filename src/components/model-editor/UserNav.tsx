@@ -1,12 +1,28 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-import { Avatar, Box, ListItemIcon, Menu, MenuItem, Paper, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Divider,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Paper,
+  Typography,
+} from '@mui/material';
 
-import { BoxArrowRight, ChevronDown } from 'react-bootstrap-icons';
+import { BoxArrowRight, Boxes, ChevronDown } from 'react-bootstrap-icons';
 
 import { authClient, useSession } from '@/lib/auth-client';
+
+function getModelEditorBase(pathname: string): string {
+  const idx = pathname.indexOf('/model');
+  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
+}
 
 function getFirstName(name: string | null | undefined, email: string | null | undefined): string {
   if (name && name.trim()) return name.trim().split(/\s+/)[0];
@@ -25,6 +41,7 @@ function getInitials(name: string | null | undefined, email: string | null | und
 export default function UserNav() {
   const { data: session } = useSession();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const pathname = usePathname();
 
   if (!session?.user) return null;
 
@@ -110,6 +127,17 @@ export default function UserNav() {
               </Typography>
             )}
           </Box>
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          component={Link}
+          href={`${getModelEditorBase(pathname)}/user/models`}
+          onClick={() => setAnchorEl(null)}
+        >
+          <ListItemIcon>
+            <Boxes size={16} />
+          </ListItemIcon>
+          My models
         </MenuItem>
         <MenuItem onClick={handleSignOut}>
           <ListItemIcon>

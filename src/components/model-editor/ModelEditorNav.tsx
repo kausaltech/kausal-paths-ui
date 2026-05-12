@@ -39,6 +39,7 @@ import {
   Funnel,
   FunnelFill,
   House,
+  People,
   Search,
   XLg,
 } from 'react-bootstrap-icons';
@@ -121,7 +122,8 @@ const TABS: TabDef[] = [
     matches: (path) =>
       !path.includes('/model/nodes') &&
       !path.includes('/model/datasets') &&
-      !path.includes('/model/dimensions'),
+      !path.includes('/model/dimensions') &&
+      !path.includes('/model/users'),
     href: '',
     Icon: House,
   },
@@ -142,6 +144,12 @@ const TABS: TabDef[] = [
     matches: (path) => path.includes('/model/dimensions'),
     href: '/dimensions',
     Icon: BoxIcon,
+  },
+  {
+    label: 'Users',
+    matches: (path) => path.includes('/model/users'),
+    href: '/users',
+    Icon: People,
   },
 ];
 
