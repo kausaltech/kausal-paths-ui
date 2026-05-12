@@ -84,7 +84,7 @@ const editorComponents: ThemeOptions['components'] = {
     },
   },
   MuiButtonBase: {
-    defaultProps: { disableRipple: false },
+    defaultProps: { disableRipple: true },
   },
   MuiButton: {
     defaultProps: { disableElevation: true, size: 'small' },
@@ -94,6 +94,7 @@ const editorComponents: ThemeOptions['components'] = {
         fontWeight: 500,
         textTransform: 'none',
         boxShadow: 'none',
+        transition: 'none',
       },
       sizeSmall: { fontSize: 12, lineHeight: 1.5 },
       contained: { '&:hover': { boxShadow: 'none' } },
@@ -103,7 +104,7 @@ const editorComponents: ThemeOptions['components'] = {
   MuiIconButton: {
     defaultProps: { size: 'small' },
     styleOverrides: {
-      root: { borderRadius: 6 },
+      root: { borderRadius: 6, transition: 'none' },
     },
   },
   MuiCard: {
@@ -113,6 +114,7 @@ const editorComponents: ThemeOptions['components'] = {
         borderRadius: 8,
         border: '1px solid #e2e8f0',
         boxShadow: 'none',
+        transition: 'none',
       },
     },
   },
@@ -123,6 +125,7 @@ const editorComponents: ThemeOptions['components'] = {
         borderRadius: 8,
         border: '1px solid #e2e8f0',
         boxShadow: 'none',
+        transition: 'none',
       },
     },
   },
@@ -130,9 +133,16 @@ const editorComponents: ThemeOptions['components'] = {
     styleOverrides: {
       root: {
         border: 0,
+        transition: 'none',
         '&:hover': undefined,
         '&.Mui-focused': undefined,
       },
+    },
+  },
+  MuiOutlinedInput: {
+    styleOverrides: {
+      root: { transition: 'none' },
+      notchedOutline: { transition: 'none' },
     },
   },
   MuiTextField: {
