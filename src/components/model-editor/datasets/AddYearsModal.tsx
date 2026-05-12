@@ -35,6 +35,31 @@ function getYearRange(startStr: string, endStr: string): number[] {
   return out;
 }
 
+type ValidationError = { field: 'start' | 'end'; message: string } | null;
+
+function getValidationError(startStr: string, endStr: string): ValidationError {
+  if (!isValidYearStr(startStr)) {
+    return {
+      field: 'start',
+      message: `Start year must be between ${MIN_YEAR} and ${MAX_YEAR}`,
+    };
+  }
+  const hasEnd = endStr.trim() !== '';
+  if (hasEnd && !isValidYearStr(endStr)) {
+    return {
+      field: 'end',
+      message: `End year must be between ${MIN_YEAR} and ${MAX_YEAR}`,
+    };
+  }
+  if (hasEnd && parseInt(endStr, 10) < parseInt(startStr, 10)) {
+    return {
+      field: 'end',
+      message: 'End year must be greater than or equal to the start year',
+    };
+  }
+  return null;
+}
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -70,24 +95,10 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
 
   const validateYears = useCallback(
     (startStr: string, endStr: string) => {
-      if (!isValidYearStr(startStr)) {
-        setStartError(`Start year must be between ${MIN_YEAR} and ${MAX_YEAR}`);
-        setEndError('');
-        setInfoMessage('');
-        return;
-      }
-      const hasEnd = endStr.trim() !== '';
-      if (hasEnd && !isValidYearStr(endStr)) {
-        setEndError(`End year must be between ${MIN_YEAR} and ${MAX_YEAR}`);
-        setStartError('');
-        setInfoMessage('');
-        return;
-      }
-      const start = parseInt(startStr, 10);
-      const end = parseInt(endStr, 10);
-      if (hasEnd && end < start) {
-        setEndError('End year must be greater than or equal to the start year');
-        setStartError('');
+      const error = getValidationError(startStr, endStr);
+      if (error) {
+        setStartError(error.field === 'start' ? error.message : '');
+        setEndError(error.field === 'end' ? error.message : '');
         setInfoMessage('');
         return;
       }
@@ -95,6 +106,7 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
       setStartError('');
       setEndError('');
 
+      const hasEnd = endStr.trim() !== '';
       const years = getYearRange(startStr, hasEnd ? endStr : startStr);
       const existingCount = years.filter((y) => existingYears.includes(y)).length;
       setInfoMessage(
@@ -123,11 +135,22 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
   const errorMessage = startError || endError;
 
   const handleConfirm = () => {
+    // Re-validate synchronously: the debounced effect may not have run yet for
+    // the current inputs, so relying on startError/endError state would let an
+    // out-of-range value (e.g. 1800) slip through.
+    const error = getValidationError(startYear, endYear);
+    if (error) {
+      setStartError(error.field === 'start' ? error.message : '');
+      setEndError(error.field === 'end' ? error.message : '');
+      return;
+    }
     const years = getYearRange(startYear, endYear);
     const newYears = years.filter((y) => !existingYears.includes(y));
     if (newYears.length > 0) onAddYears(newYears);
     onClose();
   };
+
+  const canConfirm = newYearCount > 0 && !errorMessage;
 
   return (
     <Dialog
@@ -136,7 +159,7 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
       maxWidth="sm"
       fullWidth
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && newYearCount > 0) {
+        if (e.key === 'Enter' && canConfirm) {
           e.preventDefault();
           handleConfirm();
         }
@@ -227,7 +250,7 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleConfirm} variant="contained" disabled={newYearCount === 0}>
+        <Button onClick={handleConfirm} variant="contained" disabled={!canConfirm}>
           Add {newYearCount} year{newYearCount === 1 ? '' : 's'}
         </Button>
       </DialogActions>

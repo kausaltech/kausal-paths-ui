@@ -175,6 +175,23 @@ export const UPDATE_NODE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+/**
+ * Translatable node fields for a single node, resolved in the active request
+ * locale. The model editor uses this with `context: { locale }` to preview the
+ * translation in a non-default language; the resolver returns the matching
+ * `*_i18n` value with fallback to the default-language column.
+ */
+export const NODE_TRANSLATION = gql`
+  query NodeTranslation($nodeId: ID!) {
+    node(id: $nodeId) {
+      id
+      name
+      description
+      shortDescription
+    }
+  }
+`;
+
 export const AVAILABLE_DATASETS = gql`
   query AvailableDatasets {
     instance {
