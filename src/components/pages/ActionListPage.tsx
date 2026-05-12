@@ -56,13 +56,26 @@ const getSortOptions = (
       standard,
       {
         key: 'CUM_EFFICIENCY',
-        label: t('actions-sort-efficiency'),
+        label: t('return-on-investment'),
         sortKey: 'cumulativeEfficiency',
       },
     ];
   }
 
-  if (!graphType || graphType === 'simple_effect') {
+  if (graphType === 'simple_effect') {
+    // ActionsList omits the annual-impact column in simple-effect mode, so
+    // don't offer an IMPACT sort that wouldn't have a matching column to read.
+    return [
+      standard,
+      {
+        isHidden: !showAccumulatedEffects,
+        key: 'CUM_IMPACT',
+        label: t('actions-sort-cumulative-impact'),
+      },
+    ];
+  }
+
+  if (!graphType) {
     return [
       standard,
       {
