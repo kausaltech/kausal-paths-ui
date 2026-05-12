@@ -945,6 +945,9 @@ function applyOverride(
   if (override.isOutcome !== undefined && merged.__typename === 'Node') {
     merged.isOutcome = override.isOutcome;
   }
+  if (override.nodeGroup !== undefined && merged.editor) {
+    merged.editor = { ...merged.editor, nodeGroup: override.nodeGroup };
+  }
   return merged;
 }
 

@@ -361,6 +361,7 @@ const editorComponents: ThemeOptions['components'] = {
     },
   },
   MuiTab: {
+    defaultProps: { disableRipple: true },
     styleOverrides: {
       root: {
         textTransform: 'none',

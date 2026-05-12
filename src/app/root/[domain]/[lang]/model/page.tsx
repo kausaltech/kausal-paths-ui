@@ -127,7 +127,6 @@ type EditedNodeRow = {
 
 const FIELD_LABELS: Record<EditableNodeField, string> = {
   shortDescription: 'Short description',
-  nodeGroup: 'Node group',
   actionGroup: 'Action group',
 };
 

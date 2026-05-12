@@ -20,7 +20,7 @@ import { alpha } from '@mui/material/styles';
 
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client/react';
-import { ArrowCounterclockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
+import { ArrowCounterclockwise, BoxArrowUpRight, X } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeFieldsFragment,
@@ -146,6 +146,9 @@ function useUpdateNodeMutation() {
           if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
           if (input.isOutcome !== undefined && payload.__typename === 'Node') {
             override.isOutcome = payload.isOutcome;
+          }
+          if (input.nodeGroup !== undefined) {
+            override.nodeGroup = payload.editor?.nodeGroup ?? null;
           }
           patchNodeGraphOverride(nodeId, override);
         }
@@ -297,69 +300,6 @@ function MockRichTextField({
   );
 }
 
-type MockTextFieldProps = {
-  label: string;
-  field: Extract<EditableNodeField, 'nodeGroup'>;
-  nodeId: string;
-  originalValue: string | null;
-  currentValue: string | null | undefined;
-  editorUserName: string;
-  multiline?: boolean;
-  placeholder?: string;
-};
-
-function MockTextField({
-  label,
-  field,
-  nodeId,
-  originalValue,
-  currentValue,
-  editorUserName,
-  multiline,
-  placeholder,
-}: MockTextFieldProps) {
-  const value = currentValue ?? originalValue ?? '';
-  const hasEdit = currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
-
-  const handleRevert = () => {
-    setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
-  };
-
-  return (
-    <Box>
-      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        {label}
-      </FieldLabel>
-      <TextField
-        value={value}
-        onChange={(e) => {
-          const next = e.target.value;
-          setMockNodeFieldEdit(
-            nodeId,
-            field,
-            next === '' ? null : next,
-            originalValue,
-            editorUserName
-          );
-        }}
-        size="small"
-        fullWidth
-        disabled
-        multiline={multiline}
-        minRows={multiline ? 2 : undefined}
-        maxRows={multiline ? 6 : undefined}
-        placeholder={placeholder}
-        sx={mockSx()}
-        slotProps={{
-          input: {
-            sx: { fontSize: 13, color: hasEdit ? 'info.dark' : 'text.primary' },
-          },
-        }}
-      />
-    </Box>
-  );
-}
-
 type ActionGroupOption = { id: string; name: string; color: string | null };
 
 type ActionGroupMockFieldProps = {
@@ -447,51 +387,52 @@ function ActionGroupMockField({
   );
 }
 
-type NodeGroupMockFieldProps = {
-  nodeId: string;
-  originalValue: string | null;
-  currentValue: string | null | undefined;
+type LiveNodeGroupFieldProps = {
+  value: string | null;
   options: readonly string[];
-  editorUserName: string;
+  onCommit: (next: string | null) => Promise<unknown>;
 };
 
-function NodeGroupMockField({
-  nodeId,
-  originalValue,
-  currentValue,
-  options,
-  editorUserName,
-}: NodeGroupMockFieldProps) {
-  const effective = currentValue === undefined ? originalValue : currentValue;
-  const value = effective ?? '';
-  const hasEdit = currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
+// Local-draft Autocomplete with freeSolo input. Same commit-on-blur pattern
+// as LiveTextField — the caller is expected to remount via `key={nodeId}` so
+// `draft` re-seeds from the new server value when switching nodes.
+function LiveNodeGroupField({ value, options, onCommit }: LiveNodeGroupFieldProps) {
+  const [draft, setDraft] = useState(value ?? '');
+  const [status, setStatus] = useState<SaveStatus>('idle');
 
-  const commit = (next: string | null) => {
-    setMockNodeFieldEdit(nodeId, 'nodeGroup', next, originalValue, editorUserName);
-  };
+  useEffect(() => {
+    if (status !== 'saved') return;
+    const t = setTimeout(() => setStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [status]);
 
-  const handleRevert = () => {
-    setMockNodeFieldEdit(nodeId, 'nodeGroup', originalValue, originalValue, editorUserName);
+  const commit = () => {
+    const normalized = draft.trim() === '' ? null : draft.trim();
+    if ((normalized ?? '') === (value ?? '')) return;
+    setStatus('saving');
+    onCommit(normalized).then(
+      () => setStatus('saved'),
+      () => setStatus('error')
+    );
   };
 
   return (
     <Box>
-      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        Node group
-      </FieldLabel>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <FieldLabel>Node group</FieldLabel>
+        <SaveStatusLabel status={status} />
+      </Box>
       <Autocomplete
-        value={value}
-        options={options}
+        value={draft}
+        inputValue={draft}
+        options={[...options]}
         freeSolo
-        onChange={(_, next) => commit(next && next !== '' ? next : null)}
+        onChange={(_, next) => setDraft(typeof next === 'string' ? next : (next ?? ''))}
         onInputChange={(_, next, reason) => {
-          if (reason === 'input' || reason === 'clear') {
-            commit(next && next !== '' ? next : null);
-          }
+          if (reason === 'input' || reason === 'clear' || reason === 'reset') setDraft(next);
         }}
+        onBlur={commit}
         size="small"
-        disabled
-        sx={mockSx()}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -499,7 +440,7 @@ function NodeGroupMockField({
             slotProps={{
               input: {
                 ...params.InputProps,
-                sx: { fontSize: 13, color: hasEdit ? 'info.dark' : 'text.primary' },
+                sx: { fontSize: 13 },
               },
             }}
           />
@@ -590,6 +531,21 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
         >
           {hasColor ? draft : 'No color'}
         </Typography>
+        {hasColor && (
+          <Tooltip title="Clear color" placement="top">
+            <IconButton
+              size="small"
+              aria-label="Clear color"
+              onClick={() => {
+                setDraft(null);
+                onCommit(null);
+              }}
+              sx={{ p: 0.25, color: 'text.secondary' }}
+            >
+              <X size={14} />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
     </Box>
   );
@@ -873,12 +829,11 @@ export default function NodeDetailsSection({
         }}
       />
 
-      <NodeGroupMockField
-        nodeId={node.id}
-        originalValue={getNodeGroup(node)}
-        currentValue={currentEdit?.nodeGroup}
+      <LiveNodeGroupField
+        key={`nodeGroup:${node.id}`}
+        value={getNodeGroup(node)}
         options={nodeGroupOptions}
-        editorUserName={editorUserName}
+        onCommit={(next) => updateNode(node.id, { nodeGroup: next })}
       />
 
       {isActionNode && (
@@ -953,6 +908,17 @@ export default function NodeDetailsSection({
             {originalIsOutcome && (
               <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
             )}
+          </Box>
+        </Box>
+      )}
+
+      {node.editor?.tags && node.editor.tags.length > 0 && (
+        <Box>
+          <FieldLabel>Tags</FieldLabel>
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {node.editor.tags.map((tag) => (
+              <Chip key={tag} label={tag} size="small" variant="outlined" sx={metaChipSx} />
+            ))}
           </Box>
         </Box>
       )}
