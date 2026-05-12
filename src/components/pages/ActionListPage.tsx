@@ -79,7 +79,7 @@ const getSortOptions = (
   }
 
   // cost_benefit: sort keys reuse CUM_IMPACT / CUM_COST / CUM_EFFICIENCY but read
-  // from each action's computed costBenefit totals (handled in getValueForSorting).
+  // from each action's computed costBenefit totals (via the column's getValue).
   if (graphType === 'cost_benefit') {
     return [
       standard,
@@ -168,6 +168,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     actionGroup,
   });
 
+  // If some actions have groups, hide actions without a group set
   // Mirror the list's ungrouped-hiding rule so graph views show the same set of actions
   const visibleActionIds = useMemo(() => {
     const hasAnyGroup = usableActions.some((a) => a.group);
@@ -175,6 +176,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     return new Set(visible.map((a) => a.id));
   }, [usableActions]);
 
+  // Available sort options depende on selected graph type
   const sortOptions = useMemo(
     () =>
       getSortOptions(

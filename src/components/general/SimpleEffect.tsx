@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client/react';
@@ -16,32 +15,35 @@ import type { SortActionsConfig } from '@/types/actions.types';
 
 type VisibleAction = { id: string; name: string };
 
-function getChartConfig(
+type Entry = { action: string; simpleEffect: number };
+
+// Actions absent from the overview are omitted rather than coerced to 0, so the
+// chart doesn't conflate "no data for this action" with "this action had zero effect".
+function buildEntries(
+  visibleActions: VisibleAction[],
   startYear: number,
   endYear: number,
+  dataset?: ImpactOverviewsQuery['impactOverviews'][0]
+): Entry[] {
+  return visibleActions.flatMap((vAction) => {
+    const overviewAction = dataset?.actions.find((a) => a.action.id === vAction.id);
+    if (!overviewAction) return [];
+    const totalEffect = overviewAction.effectDim.years.reduce((sum, year, index) => {
+      if (year < startYear || year > endYear) return sum;
+      return sum + (overviewAction.effectDim.values[index] ?? 0);
+    }, 0);
+    return [{ action: vAction.name, simpleEffect: totalEffect }];
+  });
+}
+
+function getChartConfig(
+  entries: Entry[],
+  unit: string,
   formatNumber: (value: number) => string,
   formatAxisLabel: (value: number) => string,
-  visibleActions: VisibleAction[],
   sortBy: SortActionsConfig,
-  sortAscending: boolean,
-  dataset?: ImpactOverviewsQuery['impactOverviews'][0]
+  sortAscending: boolean
 ): EChartsCoreOption {
-  const unit = dataset?.indicatorUnit?.short || '';
-
-  const entries = visibleActions.map((vAction) => {
-    const overviewAction = dataset?.actions.find((a) => a.action.id === vAction.id);
-    const totalEffect = overviewAction
-      ? overviewAction.effectDim.years.reduce((sum, year, index) => {
-          if (year < startYear || year > endYear) return sum;
-          return sum + (overviewAction.effectDim.values[index] ?? 0);
-        }, 0)
-      : 0;
-    return {
-      action: vAction.name,
-      simpleEffect: totalEffect,
-    };
-  });
-
   const sorted =
     sortBy.key === 'STANDARD'
       ? entries
@@ -92,9 +94,7 @@ function getChartConfig(
           align: 'left',
           position: 'right',
           formatter(params) {
-            const activeIndex = params.encode?.x[0];
-            const value = activeIndex ? params.value?.[activeIndex] : null;
-
+            const value = (params.value as { simpleEffect?: number } | undefined)?.simpleEffect;
             return value ? `${formatNumber(value)} ${unit}` : '';
           },
         },
@@ -117,21 +117,16 @@ export function SimpleEffect({ data, visibleActions, sortBy, sortAscending, isLo
   const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
-  const chartData = useMemo(
-    () =>
-      getChartConfig(
-        startYear,
-        endYear,
-        formatNumber,
-        formatAxisLabel,
-        visibleActions,
-        sortBy,
-        sortAscending,
-        data
-      ),
-    [data, visibleActions, sortBy, sortAscending, startYear, endYear, formatNumber, formatAxisLabel]
+  const entries = useMemo(
+    () => buildEntries(visibleActions, startYear, endYear, data),
+    [visibleActions, startYear, endYear, data]
   );
-  const bars = visibleActions.length;
+  const unit = data?.indicatorUnit?.short || '';
+  const chartData = useMemo(
+    () => getChartConfig(entries, unit, formatNumber, formatAxisLabel, sortBy, sortAscending),
+    [entries, unit, sortBy, sortAscending, formatNumber, formatAxisLabel]
+  );
+  const bars = entries.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
   const title = `${data?.label || t('simple-effect')} (${startYear} - ${endYear})`;
   const subtitle =

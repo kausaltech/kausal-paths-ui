@@ -59,32 +59,6 @@ type ColumnDef = {
 
 const MISSING_VALUE = '—';
 
-const getValueForSorting = (
-  action: ActionWithEfficiency,
-  sortBy: SortActionsConfig,
-  yearRange: [number, number]
-): number => {
-  // Cost-benefit mode: action.costBenefit is populated, columns read from it.
-  const cb = action.costBenefit;
-  if (cb) {
-    if (sortBy.key === 'CUM_IMPACT') return cb.benefit;
-    if (sortBy.key === 'CUM_COST') return cb.cost;
-    if (sortBy.key === 'CUM_EFFICIENCY') return cb.netBenefit;
-  }
-  if (sortBy.key === 'CUM_IMPACT') {
-    const metric = action.impactMetric;
-    if (!metric) {
-      return 0;
-    }
-    return summarizeYearlyValuesBetween(metric, yearRange[0], yearRange[1]);
-  }
-  if (sortBy.sortKey) {
-    const val = action[sortBy.sortKey as keyof ActionWithEfficiency];
-    return typeof val === 'number' ? val : 0;
-  }
-  return 0;
-};
-
 const formatEfficiencyForDisplay = (
   eff: number,
   cap: number | null | undefined,
@@ -147,27 +121,44 @@ export default function ActionsList({
   const columns: ColumnDef[] = useMemo(() => {
     const graphType = activeOverview?.graphType ?? null;
 
-    // simple_effect and no-overview: impact columns only (from impactMetric)
+    // simple_effect and no-overview: impact columns only (from impactMetric).
+    // When a specific simple-effect overview is selected, actions absent from it
+    // show "—" rather than the default scenario impact, which would be a different
+    // metric with a different unit and would mislead readers. The annual-impact
+    // column is omitted in that case, since it would mix in the default scenario
+    // impact (and the overview's effectUnit may not be the right unit for a
+    // single-year value).
     if (!graphType || graphType === 'simple_effect') {
-      return [
+      const isSimpleEffect = graphType === 'simple_effect';
+      const cols: ColumnDef[] = [
         {
           key: 'CUM_IMPACT',
           label: `${activeOverview?.label ?? t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
-          getValue: (a) =>
-            a.cumulativeImpact ??
-            (a.impactMetric
-              ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
-              : null),
-          getUnit: (a) => a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort,
+          getValue: (a) => {
+            if (isSimpleEffect) return a.cumulativeImpact ?? null;
+            return (
+              a.cumulativeImpact ??
+              (a.impactMetric
+                ? summarizeYearlyValuesBetween(a.impactMetric, yearRange[0], yearRange[1])
+                : null)
+            );
+          },
+          getUnit: (a) => {
+            if (isSimpleEffect) return a.cumulativeImpactUnit;
+            return a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort;
+          },
         },
-        {
+      ];
+      if (!isSimpleEffect) {
+        cols.push({
           key: 'IMPACT',
           label: `${t('annual-impact')} ${yearRange[1]}`,
           sortKey: 'impactOnTargetYear',
           getValue: (a) => (a.impactMetric ? a.impactOnTargetYear : null),
           getUnit: (a) => a.impactMetric?.unit?.htmlShort,
-        },
-      ];
+        });
+      }
+      return cols;
     }
 
     // cost_benefit: Benefit / Cost / Net Benefit (derived from effectDim)
@@ -251,7 +242,6 @@ export default function ActionsList({
 
   const sortedActions = useMemo(() => {
     const arr = [...filteredActions];
-    const isCostBenefit = activeOverview?.graphType === 'cost_benefit';
 
     if (sortBy.key === 'STANDARD') {
       arr.sort((a, b) => {
@@ -263,34 +253,29 @@ export default function ActionsList({
       return arr;
     }
 
-    // Partition: disabled actions and (in cost_benefit) actions missing
-    // costBenefit data — which are hidden from the graph — go to the bottom.
+    // Sort by the active column's value so display and ordering stay aligned.
+    // Disabled actions and actions for which the active column has no data
+    // (rendered as "—") are partitioned to the bottom.
+    const activeCol = columns.find((c) => c.key === sortBy.key);
     const included: ActionWithEfficiency[] = [];
     const excluded: ActionWithEfficiency[] = [];
     for (const action of arr) {
       const enabledParam = findActionEnabledParam(action.parameters);
       const isEnabled = !refetching && (enabledParam?.boolValue ?? false);
-      const hasCostBenefit = !isCostBenefit || !!action.costBenefit;
-      (isEnabled && hasCostBenefit ? included : excluded).push(action);
+      const hasValue = activeCol ? activeCol.getValue(action) !== null : true;
+      (isEnabled && hasValue ? included : excluded).push(action);
     }
 
-    included.sort((a, b) => {
-      const av = getValueForSorting(a, sortBy, yearRange);
-      const bv = getValueForSorting(b, sortBy, yearRange);
-      return sortAscending ? av - bv : bv - av;
-    });
+    if (activeCol) {
+      included.sort((a, b) => {
+        const av = activeCol.getValue(a) ?? 0;
+        const bv = activeCol.getValue(b) ?? 0;
+        return sortAscending ? av - bv : bv - av;
+      });
+    }
 
     return [...included, ...excluded];
-  }, [
-    filteredActions,
-    sortBy,
-    sortAscending,
-    yearRange,
-    groupOrder,
-    originalIndex,
-    refetching,
-    activeOverview,
-  ]);
+  }, [filteredActions, sortBy, sortAscending, columns, groupOrder, originalIndex, refetching]);
 
   const handleSortClick = (key: SortActionsConfig['key']) => {
     if (sortBy.key === key) {
