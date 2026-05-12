@@ -522,12 +522,21 @@ export default function ActionsList({
                     let display: string;
                     let unit: string | undefined;
 
+                    // Cost-efficiency's CUM_EFFICIENCY column needs cap-clamping
+                    // (the ratio can blow up from tiny denominators). Other modes
+                    // that reuse the CUM_EFFICIENCY key — e.g. cost-benefit's
+                    // "Net benefit" — are plain currency amounts, so they take
+                    // the same formatting path as everything else.
+                    const isEfficiencyRatio =
+                      col.key === 'CUM_EFFICIENCY' &&
+                      activeOverview?.graphType === 'cost_efficiency';
+
                     if (isMissing) {
                       display = MISSING_VALUE;
                       unit = undefined;
-                    } else if (col.key === 'CUM_EFFICIENCY') {
+                    } else if (isEfficiencyRatio) {
                       display = formatEfficiencyForDisplay(val, action.efficiencyCap, formatNumber);
-                      unit = action.cumulativeEfficiencyUnit;
+                      unit = col.getUnit(action);
                     } else {
                       display = formatNumber(val);
                       unit = col.getUnit(action);
