@@ -221,10 +221,17 @@ export default function NodeInputPortsSection({
                       sx={{
                         maxWidth: '100%',
                         cursor: 'pointer',
-                        height: 32,
+                        minHeight: 32,
+                        height: 'auto',
                         fontSize: 12,
                         borderRadius: 1,
-                        '& .MuiChip-label': { px: 1.25 },
+                        py: 0.25,
+                        '& .MuiChip-label': {
+                          px: 1.25,
+                          whiteSpace: 'normal',
+                          overflowWrap: 'anywhere',
+                          lineHeight: 1.3,
+                        },
                       }}
                     />
                   ))}
