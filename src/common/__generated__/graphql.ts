@@ -1601,11 +1601,11 @@ export type UpdateNodeMutation = (
   { instanceEditor: (
     { updateNode:
       | (
-        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean }
+        { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean }
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean }
+        { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean }
         & { __typename: 'Node' }
       )
       | (
