@@ -406,6 +406,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       setAddYearsProgress({ current: 0, total: newYears.length });
       let failureCount = 0;
       let firstError: string | null = null;
+      const failedYears: number[] = [];
 
       for (const year of newYears) {
         try {
@@ -424,16 +425,32 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
           if (payload?.__typename === 'OperationInfo') {
             failureCount += 1;
+            failedYears.push(year);
             firstError ??= payload.messages.map((m) => m.message).join('; ');
           }
         } catch (err) {
           failureCount += 1;
+          failedYears.push(year);
           firstError ??= err instanceof Error ? err.message : String(err);
         }
         setAddYearsProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
       }
 
       setAddYearsProgress(null);
+      if (failedYears.length > 0) {
+        // Roll back the optimistic extraYears entries for years whose anchor
+        // DataPoint failed to create — otherwise the column would linger
+        // without any backing data until a full reload.
+        setExtraYears((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Set(prev);
+          let changed = false;
+          for (const y of failedYears) {
+            if (next.delete(y)) changed = true;
+          }
+          return changed ? next : prev;
+        });
+      }
       if (failureCount > 0) {
         setError(
           firstError ?? `Failed to add ${failureCount} year${failureCount === 1 ? '' : 's'}`
