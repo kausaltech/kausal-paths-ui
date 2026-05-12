@@ -2,15 +2,14 @@ import { makeVar } from '@apollo/client';
 
 /**
  * Client-side mock edits for the node fields that the backend `updateNode`
- * mutation does not yet accept (short name, short description, node group,
- * action group). Everything else is persisted via `updateNode`.
+ * mutation does not yet accept (short description, node group, action group).
+ * Everything else is persisted via `updateNode`.
  *
  * When the backend extends `UpdateNodeInput` to cover these fields, delete
  * this module entirely and replace the call sites in NodeDetailsSection.
  */
 
 export type MockNodeEdit = {
-  shortName?: string | null;
   shortDescription?: string | null;
   nodeGroup?: string | null;
   actionGroup?: string | null;

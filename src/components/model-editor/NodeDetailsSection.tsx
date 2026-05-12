@@ -140,6 +140,7 @@ function useUpdateNodeMutation() {
           // updated fields via the reactive-var overlay.
           const override: NodeFieldOverrides = {};
           if (input.name !== undefined) override.name = payload.name;
+          if (input.shortName !== undefined) override.shortName = payload.shortName;
           if (input.description !== undefined) override.description = payload.description;
           if (input.color !== undefined) override.color = payload.color;
           if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
@@ -298,7 +299,7 @@ function MockRichTextField({
 
 type MockTextFieldProps = {
   label: string;
-  field: Extract<EditableNodeField, 'shortName' | 'nodeGroup'>;
+  field: Extract<EditableNodeField, 'nodeGroup'>;
   nodeId: string;
   originalValue: string | null;
   currentValue: string | null | undefined;
@@ -854,13 +855,12 @@ export default function NodeDetailsSection({
         display: 'contents',
       }}
     >
-      <MockTextField
+      <LiveTextField
+        key={`shortName:${node.id}`}
         label="Short name"
-        field="shortName"
         nodeId={node.id}
-        originalValue={node.shortName ?? null}
-        currentValue={currentEdit?.shortName}
-        editorUserName={editorUserName}
+        value={node.shortName ?? ''}
+        onCommit={(next) => updateNode(node.id, { shortName: next === '' ? null : next })}
         placeholder="Abbreviated label"
       />
 

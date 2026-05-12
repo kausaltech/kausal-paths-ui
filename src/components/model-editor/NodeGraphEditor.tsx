@@ -938,6 +938,7 @@ function applyOverride(
 ): EditorNodeFieldsFragment {
   const merged: EditorNodeFieldsFragment = { ...node };
   if (override.name !== undefined) merged.name = override.name;
+  if (override.shortName !== undefined) merged.shortName = override.shortName;
   if (override.description !== undefined) merged.description = override.description;
   if (override.color !== undefined) merged.color = override.color;
   if (override.isVisible !== undefined) merged.isVisible = override.isVisible;
