@@ -11,6 +11,7 @@ export type NodeFieldOverrides = {
   color?: string | null;
   isVisible?: boolean;
   isOutcome?: boolean;
+  nodeGroup?: string | null;
 };
 
 export const nodeGraphOverridesVar = makeVar<Record<string, NodeFieldOverrides>>({});
@@ -160,6 +161,9 @@ export const UPDATE_NODE = gql`
           color
           isVisible
           isOutcome
+          editor {
+            nodeGroup
+          }
         }
         ... on ActionNode {
           id
@@ -168,6 +172,9 @@ export const UPDATE_NODE = gql`
           description
           color
           isVisible
+          editor {
+            nodeGroup
+          }
         }
         ... on OperationInfo {
           ...EditorOperationInfoFields
