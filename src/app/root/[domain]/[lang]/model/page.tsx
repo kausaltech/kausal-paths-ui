@@ -33,6 +33,7 @@ import {
   CloudUpload,
   Database,
   Diagram2,
+  People,
 } from 'react-bootstrap-icons';
 
 import type {
@@ -297,6 +298,17 @@ export default function ModelEditorLandingPage() {
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
           {instance.leadParagraph ?? 'Edit the model for this instance.'}
         </Typography>
+      </Box>
+
+      <Box sx={{ mb: 4 }}>
+        <Button
+          variant="outlined"
+          component={Link}
+          href={`${base}/users`}
+          startIcon={<People size={14} />}
+        >
+          Manage access
+        </Button>
       </Box>
 
       <Box
