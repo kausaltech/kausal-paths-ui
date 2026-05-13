@@ -11,6 +11,10 @@ import {
   Chip,
   CircularProgress,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Drawer,
   FormControlLabel,
   IconButton,
@@ -31,6 +35,7 @@ import {
   ChatLeft,
   CheckCircle,
   DashCircle,
+  Hash,
   Link45deg,
   PencilSquare,
   Plus,
@@ -41,6 +46,9 @@ import {
 import type {
   CreateDataPointCommentMutation,
   CreateDataPointCommentMutationVariables,
+  CreateDataSourceInput,
+  CreateDataSourceMutation,
+  CreateDataSourceMutationVariables,
   CreateSourceReferenceMutation,
   CreateSourceReferenceMutationVariables,
   DataPointCommentFieldsFragment,
@@ -63,8 +71,10 @@ import GraphQLError from '@/components/common/GraphQLError';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
 import DatasetDataGrid from './DatasetDataGrid';
+import { extractYear } from './dataset-grid-data';
 import {
   CREATE_DATA_POINT_COMMENT,
+  CREATE_DATA_SOURCE,
   CREATE_SOURCE_REFERENCE,
   DELETE_SOURCE_REFERENCE,
   GET_DATASET_CONNECTED_NODES,
@@ -167,6 +177,71 @@ function isCommentEdited(createdAt: string, lastModifiedAt: string): boolean {
   return new Date(lastModifiedAt).getTime() - new Date(createdAt).getTime() >= 1000;
 }
 
+type SelectedCell = {
+  year: number;
+  metricLabel: string;
+  metricUnit: string;
+  categoryLabels: readonly string[];
+  value: number | null;
+};
+
+// Softer pastel backgrounds for the cell-identifier chips. Default text
+// colour stays dark enough to be readable on all three.
+const YEAR_CHIP_BG = '#dcfce7'; // light green
+const METRIC_CHIP_BG = '#dbeafe'; // light blue
+const CATEGORY_CHIP_BG = '#fee2e2'; // light salmon
+
+function SelectedDataPointChips({ cell }: { cell: SelectedCell }) {
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+      <Chip size="small" label={cell.year} sx={{ bgcolor: YEAR_CHIP_BG }} />
+      <Chip
+        size="small"
+        label={cell.metricUnit ? `${cell.metricLabel} (${cell.metricUnit})` : cell.metricLabel}
+        sx={{ bgcolor: METRIC_CHIP_BG }}
+      />
+      {cell.categoryLabels.map((label, i) => (
+        <Chip key={`${i}-${label}`} size="small" label={label} sx={{ bgcolor: CATEGORY_CHIP_BG }} />
+      ))}
+      {cell.value != null && (
+        <Chip
+          size="small"
+          icon={<Hash size={14} />}
+          label={cell.value.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+          variant="outlined"
+        />
+      )}
+    </Box>
+  );
+}
+
+function resolveSelectedCell(
+  dataset: DatasetDetailFieldsFragment,
+  dataPointId: string
+): SelectedCell | null {
+  const dp = dataset.dataPoints.find((d) => d.id === dataPointId);
+  if (!dp) return null;
+  const year = extractYear(dp.date);
+  const metric = dataset.metrics.find((m) => m.id === dp.metric.id);
+  const dpCatUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
+  const categoryLabels: string[] = [];
+  for (const dim of dataset.dimensions) {
+    for (const cat of dim.categories) {
+      if (dpCatUuids.has(cat.uuid)) {
+        categoryLabels.push(cat.label);
+        break;
+      }
+    }
+  }
+  return {
+    year,
+    metricLabel: metric?.label ?? dp.metric.id,
+    metricUnit: metric?.unit ?? '',
+    categoryLabels,
+    value: dp.value,
+  };
+}
+
 type CommentWithDataPoint = DataPointCommentFieldsFragment & { dataPointId: string };
 
 export type AddCommentInput = {
@@ -177,12 +252,14 @@ export type AddCommentInput = {
 function CommentsPanel({
   comments,
   selectedDataPointId,
+  selectedCell,
   onSubmitComment,
   onSetResolved,
   onClearSelection,
 }: {
   comments: readonly CommentWithDataPoint[];
   selectedDataPointId: string | null;
+  selectedCell: SelectedCell | null;
   onSubmitComment: (dataPointId: string, input: AddCommentInput) => Promise<void>;
   onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
   onClearSelection: () => void;
@@ -331,6 +408,7 @@ function CommentsPanel({
           </Button>
         )}
       </Stack>
+      {selectedCell && <SelectedDataPointChips cell={selectedCell} />}
       {addButton}
       {form}
       {visibleComments.length === 0 ? (
@@ -412,6 +490,132 @@ function CommentsPanel({
   );
 }
 
+function DefineDataSourceDialog({
+  open,
+  onClose,
+  onCreate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCreate: (input: CreateDataSourceInput) => Promise<void>;
+}) {
+  const [name, setName] = useState('');
+  const [authority, setAuthority] = useState('');
+  const [edition, setEdition] = useState('');
+  const [url, setUrl] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Reset every time the dialog opens — otherwise stale values from the
+  // previous session would linger.
+  useEffect(() => {
+    if (open) {
+      setName('');
+      setAuthority('');
+      setEdition('');
+      setUrl('');
+      setDescription('');
+      setError(null);
+      setSubmitting(false);
+    }
+  }, [open]);
+
+  const handleSubmit = async () => {
+    if (!name.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await onCreate({
+        name: name.trim(),
+        authority: authority.trim() || null,
+        edition: edition.trim() || null,
+        url: url.trim() || null,
+        description: description.trim() || null,
+      });
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={submitting ? undefined : onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Define a new data source</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <TextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            fullWidth
+            size="small"
+            autoFocus
+            disabled={submitting}
+          />
+          <TextField
+            label="Authority"
+            value={authority}
+            onChange={(e) => setAuthority(e.target.value)}
+            fullWidth
+            size="small"
+            disabled={submitting}
+            helperText="Publisher / agency behind the source (optional)."
+          />
+          <TextField
+            label="Edition"
+            value={edition}
+            onChange={(e) => setEdition(e.target.value)}
+            fullWidth
+            size="small"
+            disabled={submitting}
+            helperText="Version, year, or release identifier (optional)."
+          />
+          <TextField
+            label="URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            fullWidth
+            size="small"
+            type="url"
+            disabled={submitting}
+          />
+          <TextField
+            label="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            multiline
+            minRows={2}
+            fullWidth
+            size="small"
+            disabled={submitting}
+          />
+          {error && (
+            <Alert severity="error" onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={submitting}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => void handleSubmit()}
+          disabled={submitting || !name.trim()}
+        >
+          {submitting ? 'Creating…' : 'Create'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function SourceReferenceCard({
   reference: r,
   onDetach,
@@ -470,15 +674,19 @@ function SourcesPanel({
   refs,
   availableDataSources,
   selectedDataPointId,
+  selectedCell,
   onAttachToDataset,
   onDetach,
+  onCreateDataSource,
   onClearSelection,
 }: {
   refs: readonly DatasetSourceReferenceFieldsFragment[];
   availableDataSources: readonly DataSourceFieldsFragment[];
   selectedDataPointId: string | null;
+  selectedCell: SelectedCell | null;
   onAttachToDataset: (dataSourceId: string) => Promise<void>;
   onDetach: (referenceId: string) => Promise<void>;
+  onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
   onClearSelection: () => void;
 }) {
   const hasSelection = selectedDataPointId !== null;
@@ -526,6 +734,10 @@ function SourcesPanel({
     [datasetScopeRefs]
   );
 
+  // "Define new" dialog state. On success we auto-select the new source in
+  // the picker; the parent's cache update inserts it into availableDataSources.
+  const [defineDialogOpen, setDefineDialogOpen] = useState(false);
+
   // Per-ref busy state so multiple detach actions can be in flight.
   const [detachingIds, setDetachingIds] = useState<Set<string>>(() => new Set());
   const handleDetach = async (referenceId: string) => {
@@ -567,6 +779,7 @@ function SourcesPanel({
           </Button>
         )}
       </Stack>
+      {selectedCell && <SelectedDataPointChips cell={selectedCell} />}
 
       {hasSelection ? (
         selectedRefs.length === 0 ? (
@@ -624,7 +837,7 @@ function SourcesPanel({
                             <span>{o.label || o.name}</span>
                             {isAttached && (
                               <Typography variant="caption" color="text.secondary">
-                                already attached
+                                already in use
                               </Typography>
                             )}
                           </Stack>
@@ -637,6 +850,16 @@ function SourcesPanel({
                     )}
                     noOptionsText="No data sources defined in this instance yet."
                   />
+                  <Button
+                    size="small"
+                    variant="text"
+                    startIcon={<Plus />}
+                    onClick={() => setDefineDialogOpen(true)}
+                    disabled={attaching}
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    Define new
+                  </Button>
                   {attachError && (
                     <Alert severity="error" onClose={() => setAttachError(null)}>
                       {attachError}
@@ -688,6 +911,17 @@ function SourcesPanel({
           </Box>
         </Stack>
       )}
+      <DefineDataSourceDialog
+        open={defineDialogOpen}
+        onClose={() => setDefineDialogOpen(false)}
+        onCreate={async (input) => {
+          const created = await onCreateDataSource(input);
+          // Preselect the newly created source so the user can hit "Attach"
+          // straight away. Also opens the attach form if it wasn't already.
+          setPickedSource(created);
+          setAttachOpen(true);
+        }}
+      />
     </>
   );
 }
@@ -753,6 +987,10 @@ export default function DatasetEditor({ datasetId }: Props) {
     DeleteSourceReferenceMutation,
     DeleteSourceReferenceMutationVariables
   >(DELETE_SOURCE_REFERENCE);
+  const [createDataSource] = useMutation<
+    CreateDataSourceMutation,
+    CreateDataSourceMutationVariables
+  >(CREATE_DATA_SOURCE);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getListBase(pathname);
@@ -791,6 +1029,11 @@ export default function DatasetEditor({ datasetId }: Props) {
   const availableDataSources = useMemo<readonly DataSourceFieldsFragment[]>(
     () => data?.instance.editor?.dataSources ?? [],
     [data]
+  );
+  const selectedCell = useMemo<SelectedCell | null>(
+    () =>
+      dataset && selectedDataPointId ? resolveSelectedCell(dataset, selectedDataPointId) : null,
+    [dataset, selectedDataPointId]
   );
 
   // Sync local editable name with the fetched dataset whenever it changes.
@@ -988,6 +1231,7 @@ export default function DatasetEditor({ datasetId }: Props) {
             <CommentsPanel
               comments={commentsWithDataPoint}
               selectedDataPointId={selectedDataPointId}
+              selectedCell={selectedCell}
               onClearSelection={() => {
                 setSelectedDataPointId(null);
                 setClearSelectionNonce((n) => n + 1);
@@ -1054,6 +1298,7 @@ export default function DatasetEditor({ datasetId }: Props) {
               refs={sourceReferences}
               availableDataSources={availableDataSources}
               selectedDataPointId={selectedDataPointId}
+              selectedCell={selectedCell}
               onClearSelection={() => {
                 setSelectedDataPointId(null);
                 setClearSelectionNonce((n) => n + 1);
@@ -1123,6 +1368,42 @@ export default function DatasetEditor({ datasetId }: Props) {
                 if (messages.length > 0) {
                   throw new Error(messages.map((m) => m.message).join('; '));
                 }
+              }}
+              onCreateDataSource={async (input) => {
+                const result = await createDataSource({
+                  variables: { instanceId: instance.id, input },
+                  // Append the new source to instance.editor.dataSources via
+                  // updateQuery so the picker list refreshes without a full
+                  // refetch of the InstanceDataset query.
+                  update: (cache, { data: muData }) => {
+                    const payload = muData?.instanceEditor.createDataSource;
+                    if (payload?.__typename !== 'DataSource') return;
+                    cache.updateQuery<InstanceDatasetQuery>(
+                      { query: GET_INSTANCE_DATASET },
+                      (existing) => {
+                        if (!existing?.instance.editor) return existing;
+                        return {
+                          ...existing,
+                          instance: {
+                            ...existing.instance,
+                            editor: {
+                              ...existing.instance.editor,
+                              dataSources: [...existing.instance.editor.dataSources, payload],
+                            },
+                          },
+                        };
+                      }
+                    );
+                  },
+                });
+                const payload = result.data?.instanceEditor.createDataSource;
+                if (!payload) {
+                  throw new Error('Create data source returned no payload.');
+                }
+                if (payload.__typename === 'OperationInfo') {
+                  throw new Error(payload.messages.map((m) => m.message).join('; '));
+                }
+                return payload;
               }}
             />
           ) : (

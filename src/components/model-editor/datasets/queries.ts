@@ -388,6 +388,24 @@ export const CREATE_SOURCE_REFERENCE = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
+export const CREATE_DATA_SOURCE = gql`
+  mutation CreateDataSource($instanceId: ID!, $input: CreateDataSourceInput!) {
+    instanceEditor(instanceId: $instanceId) {
+      createDataSource(input: $input) {
+        __typename
+        ... on DataSource {
+          ...DataSourceFields
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
+  ${DATA_SOURCE_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
 export const DELETE_SOURCE_REFERENCE = gql`
   mutation DeleteSourceReference($instanceId: ID!, $datasetId: ID!, $referenceId: ID!) {
     instanceEditor(instanceId: $instanceId) {

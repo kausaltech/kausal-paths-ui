@@ -75,6 +75,14 @@ export type CreateDataPointInput = {
   value: InputMaybe<Scalars['Float']['input']>;
 };
 
+export type CreateDataSourceInput = {
+  authority: InputMaybe<Scalars['String']['input']>;
+  description: InputMaybe<Scalars['String']['input']>;
+  edition: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  url: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CreateDatasetSourceReferenceInput = {
   dataPointId: InputMaybe<Scalars['UUID']['input']>;
   dataSourceId: Scalars['UUID']['input'];
@@ -1592,6 +1600,32 @@ export type CreateSourceReferenceMutation = (
        }
       & { __typename: 'DatasetEditorMutation' }
     ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateDataSourceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: CreateDataSourceInput;
+}>;
+
+
+export type CreateDataSourceMutation = (
+  { instanceEditor: (
+    { createDataSource:
+      | (
+        { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+        & { __typename: 'DataSource' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }

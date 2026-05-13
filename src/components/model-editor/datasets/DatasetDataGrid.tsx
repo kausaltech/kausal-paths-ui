@@ -30,15 +30,7 @@ import {
   type Item,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import {
-  Bookmarks,
-  ChatLeft,
-  Clipboard,
-  Database,
-  Files,
-  Plus,
-  Trash,
-} from 'react-bootstrap-icons';
+import { Bookmarks, ChatLeft, Clipboard, Files, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
   CreateDataPointMutation,
