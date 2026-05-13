@@ -28,6 +28,7 @@ import {
 
 import { useQuery } from '@apollo/client/react';
 import {
+  ChatLeftText,
   Database,
   Files,
   Link45deg,
@@ -186,6 +187,7 @@ export default function DatasetList() {
               <TableCell align="right">Data points</TableCell>
               <TableCell align="right">Dimensions</TableCell>
               <TableCell align="right">Metrics</TableCell>
+              <TableCell align="right">Comments</TableCell>
               <TableCell>Source</TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
                 Actions
@@ -195,7 +197,7 @@ export default function DatasetList() {
           <TableBody>
             {datasets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
                     No datasets defined.
                   </Typography>
@@ -235,6 +237,23 @@ export default function DatasetList() {
                 <TableCell align="right">{ds.dataPoints.length}</TableCell>
                 <TableCell align="right">{ds.dimensions.length}</TableCell>
                 <TableCell align="right">{ds.metrics.length}</TableCell>
+                <TableCell align="right">
+                  {ds.dataPointComments.length > 0 ? (
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      alignItems="center"
+                      justifyContent="flex-end"
+                    >
+                      <ChatLeftText size={12} />
+                      <span>{ds.dataPointComments.length}</span>
+                    </Stack>
+                  ) : (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
                 <TableCell>
                   {ds.externalRef ? (
                     <Tooltip title={ds.externalRef.repoUrl}>

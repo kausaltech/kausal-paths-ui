@@ -43,6 +43,11 @@ export enum ChangeTargetKind {
   Unknown = 'UNKNOWN'
 }
 
+export enum DataPointCommentReviewState {
+  Resolved = 'RESOLVED',
+  Unresolved = 'UNRESOLVED'
+}
+
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
