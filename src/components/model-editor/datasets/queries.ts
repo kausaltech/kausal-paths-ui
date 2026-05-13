@@ -186,10 +186,14 @@ export const GET_INSTANCE_DATASET = gql`
         datasets {
           ...DatasetDetailFields
         }
+        dataSources {
+          ...DataSourceFields
+        }
       }
     }
   }
   ${DATASET_DETAIL_FIELDS}
+  ${DATA_SOURCE_FIELDS}
 `;
 
 export const GET_DATASET_CONNECTED_NODES = gql`
@@ -357,5 +361,42 @@ export const UNRESOLVE_DATA_POINT_COMMENT = gql`
     }
   }
   ${DATA_POINT_COMMENT_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const CREATE_SOURCE_REFERENCE = gql`
+  mutation CreateSourceReference(
+    $instanceId: ID!
+    $datasetId: ID!
+    $input: CreateDatasetSourceReferenceInput!
+  ) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        createSourceReference(input: $input) {
+          __typename
+          ... on DatasetSourceReference {
+            ...DatasetSourceReferenceFields
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${DATASET_SOURCE_REFERENCE_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_SOURCE_REFERENCE = gql`
+  mutation DeleteSourceReference($instanceId: ID!, $datasetId: ID!, $referenceId: ID!) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        deleteSourceReference(referenceId: $referenceId) {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
   ${OPERATION_INFO_FIELDS}
 `;

@@ -75,6 +75,12 @@ export type CreateDataPointInput = {
   value: InputMaybe<Scalars['Float']['input']>;
 };
 
+export type CreateDatasetSourceReferenceInput = {
+  dataPointId: InputMaybe<Scalars['UUID']['input']>;
+  dataSourceId: Scalars['UUID']['input'];
+  toDataset: Scalars['Boolean']['input'];
+};
+
 export type CreateDimensionCategoryInput = {
   dimensionId: Scalars['UUID']['input'];
   id: InputMaybe<Scalars['UUID']['input']>;
@@ -1266,6 +1272,9 @@ export type InstanceDatasetQuery = (
           & { __typename: 'DatasetSourceReference' }
         )> }
         & { __typename: 'Dataset' }
+      )>, dataSources: Array<(
+        { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+        & { __typename: 'DataSource' }
       )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
@@ -1539,6 +1548,72 @@ export type UnresolveDataPointCommentMutation = (
           & { __typename: 'OperationInfo' }
         )
        }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateSourceReferenceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  input: CreateDatasetSourceReferenceInput;
+}>;
+
+
+export type CreateSourceReferenceMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { createSourceReference:
+        | (
+          { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+            { id: string }
+            & { __typename: 'DataPoint' }
+          ) | null, dataSource: (
+            { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+            & { __typename: 'DataSource' }
+          ), createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DatasetSourceReference' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteSourceReferenceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  referenceId: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteSourceReferenceMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { deleteSourceReference: (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      ) | null }
       & { __typename: 'DatasetEditorMutation' }
     ) }
     & { __typename: 'InstanceEditorMutation' }

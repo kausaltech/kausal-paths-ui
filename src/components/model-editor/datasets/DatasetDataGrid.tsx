@@ -30,7 +30,15 @@ import {
   type Item,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import { ChatLeft, Clipboard, Database, Files, Plus, Trash } from 'react-bootstrap-icons';
+import {
+  Bookmarks,
+  ChatLeft,
+  Clipboard,
+  Database,
+  Files,
+  Plus,
+  Trash,
+} from 'react-bootstrap-icons';
 
 import type {
   CreateDataPointMutation,
@@ -67,6 +75,8 @@ type Props = {
   // user clicks "Show all" in the comments panel). The initial value is
   // ignored — only subsequent changes trigger a clear.
   clearSelectionNonce?: number;
+  // Open one of the right-hand drawer panels (used by the cell context menu).
+  onOpenPanel?: (panel: 'comments' | 'sources') => void;
 };
 
 // Solid colour approximations of the original rgba tints — canvas doesn't
@@ -132,6 +142,7 @@ export default function DatasetDataGrid({
   onMutated,
   onSelectedDataPointChange,
   clearSelectionNonce,
+  onOpenPanel,
 }: Props) {
   useEnsurePortal();
   const instance = useInstance();
@@ -585,13 +596,24 @@ export default function DatasetDataGrid({
   const onCellContextMenu = useCallback<NonNullable<DataEditorProps['onCellContextMenu']>>(
     (cell, e) => {
       e.preventDefault();
-      const [, rowIndex] = cell;
+      const [colIdx, rowIndex] = cell;
       const gridRow = rows[rowIndex];
       if (!gridRow) return;
       // Glide doesn't expose the underlying MouseEvent's clientX/Y. Stash the
       // row here and let the document-level contextmenu listener pick it up
       // along with the native pointer coords.
       pendingContextRowRef.current = gridRow;
+      // Focus the right-clicked cell so any panel opened from the menu
+      // ("Comment", "Data source") knows which data point the user means.
+      setGridSelection({
+        rows: CompactSelection.empty(),
+        columns: CompactSelection.empty(),
+        current: {
+          cell,
+          range: { x: colIdx, y: rowIndex, width: 1, height: 1 },
+          rangeStack: [],
+        },
+      });
     },
     [rows]
   );
@@ -1107,15 +1129,25 @@ export default function DatasetDataGrid({
                 </ListItemIcon>
                 <ListItemText>Paste</ListItemText>
               </MenuItem>
-              <MenuItem disabled>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  onOpenPanel?.('comments');
+                }}
+              >
                 <ListItemIcon>
                   <ChatLeft />
                 </ListItemIcon>
                 <ListItemText>Comment</ListItemText>
               </MenuItem>
-              <MenuItem disabled>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  onOpenPanel?.('sources');
+                }}
+              >
                 <ListItemIcon>
-                  <Database />
+                  <Bookmarks />
                 </ListItemIcon>
                 <ListItemText>Data source</ListItemText>
               </MenuItem>
