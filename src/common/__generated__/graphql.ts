@@ -98,6 +98,11 @@ export type CreateNodeInput = {
   tags: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
+export enum DataPointCommentReviewState {
+  Resolved = 'RESOLVED',
+  Unresolved = 'UNRESOLVED'
+}
+
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
@@ -483,8 +488,8 @@ export type MyFrameworkRolesQuery = (
     { id: string, email: string, frameworkRoles: Array<(
       { frameworkId: string, roleId: string | null, orgSlug: string | null, orgId: string | null }
       & { __typename: 'UserFrameworkRole' }
-    )> | null }
-    & { __typename: 'UserType' }
+    )> }
+    & { __typename: 'User' }
   ) | null }
   & { __typename: 'Query' }
 );
@@ -1096,6 +1101,9 @@ export type InstanceDatasetsQuery = (
             & { __typename: 'DatasetDimensionCategory' }
           )> }
           & { __typename: 'DataPoint' }
+        )>, dataPointComments: Array<(
+          { id: string }
+          & { __typename: 'DataPointComment' }
         )>, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
           & { __typename: 'DatasetExternalRefType' }

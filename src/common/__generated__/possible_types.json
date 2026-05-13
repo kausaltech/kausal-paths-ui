@@ -8,6 +8,10 @@
       "OperationInfo",
       "OutputPortType"
     ],
+    "CreateDataPointCommentPayload": [
+      "DataPointComment",
+      "OperationInfo"
+    ],
     "CreateDataPointPayload": [
       "DataPoint",
       "OperationInfo"
@@ -80,6 +84,10 @@
       "OperationInfo",
       "RegisterUserResult"
     ],
+    "ResolveDataPointCommentPayload": [
+      "DataPointComment",
+      "OperationInfo"
+    ],
     "SetInstanceLockedPayload": [
       "OperationInfo",
       "SetInstanceLockedResult"
@@ -125,6 +133,14 @@
       "TextBlock",
       "TimeBlock",
       "URLBlock"
+    ],
+    "UnresolveDataPointCommentPayload": [
+      "DataPointComment",
+      "OperationInfo"
+    ],
+    "UpdateDataPointCommentPayload": [
+      "DataPointComment",
+      "OperationInfo"
     ],
     "UpdateDataPointPayload": [
       "DataPoint",

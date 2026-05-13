@@ -90,6 +90,9 @@ export const GET_INSTANCE_DATASETS = gql`
               uuid
             }
           }
+          dataPointComments {
+            id
+          }
         }
       }
     }
