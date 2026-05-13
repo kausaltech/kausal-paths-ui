@@ -61,6 +61,7 @@ import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queri
 type Props = {
   dataset: DatasetDetailFieldsFragment;
   onMutated: () => void;
+  onSelectedDataPointChange?: (dataPointId: string | null) => void;
 };
 
 // Solid colour approximations of the original rgba tints — canvas doesn't
@@ -118,7 +119,7 @@ function yearFromColId(colId: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-export default function DatasetDataGrid({ dataset, onMutated }: Props) {
+export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPointChange }: Props) {
   useEnsurePortal();
   const instance = useInstance();
   const [addOpen, setAddOpen] = useState(false);
@@ -661,6 +662,23 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     },
     []
   );
+
+  // Resolve the focused cell to a dataPointId (or null for non-Value cells)
+  // and report changes upward.
+  const selectedDataPointId = useMemo(() => {
+    const cell = gridSelection.current?.cell;
+    if (!cell) return null;
+    const [col, rowIndex] = cell;
+    const colId = columnIds[col];
+    const gridRow = rows[rowIndex];
+    if (!colId || !gridRow || !isYearColId(colId)) return null;
+    const cellData = gridRow.cells[colId];
+    return cellData?.type === 'Value' ? cellData.dataPointId : null;
+  }, [gridSelection, columnIds, rows]);
+
+  useEffect(() => {
+    onSelectedDataPointChange?.(selectedDataPointId);
+  }, [selectedDataPointId, onSelectedDataPointChange]);
 
   // Overlays a small corner triangle on year cells whose DataPoint has
   // comments. `drawContent()` is invoked first so the default cell paints
