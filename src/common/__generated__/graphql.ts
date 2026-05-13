@@ -1053,6 +1053,20 @@ export type DatasetSummaryFieldsFragment = (
   & { __typename: 'Dataset' }
 );
 
+export type DataPointCommentFieldsFragment = (
+  { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null, createdBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null, lastModifiedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'DataPointComment' }
+);
+
 export type DatasetDetailFieldsFragment = (
   { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
@@ -1075,6 +1089,18 @@ export type DatasetDetailFieldsFragment = (
       & { __typename: 'DatasetDimensionCategory' }
     )> }
     & { __typename: 'DataPoint' }
+  )>, dataPointComments: Array<(
+    { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null, createdBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null, lastModifiedBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null }
+    & { __typename: 'DataPointComment' }
   )>, portBindings: Array<(
     { id: string, nodeRef: (
       { nodeId: string, portId: string }
@@ -1151,6 +1177,18 @@ export type InstanceDatasetQuery = (
             & { __typename: 'DatasetDimensionCategory' }
           )> }
           & { __typename: 'DataPoint' }
+        )>, dataPointComments: Array<(
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
         )>, portBindings: Array<(
           { id: string, nodeRef: (
             { nodeId: string, portId: string }

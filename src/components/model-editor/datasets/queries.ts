@@ -24,6 +24,37 @@ export const DATASET_SUMMARY_FIELDS = gql`
   }
 `;
 
+export const DATA_POINT_COMMENT_FIELDS = gql`
+  fragment DataPointCommentFields on DataPointComment {
+    id
+    text
+    isSticky
+    isReview
+    reviewState
+    resolvedAt
+    resolvedBy {
+      id
+      firstName
+      lastName
+      email
+    }
+    createdAt
+    createdBy {
+      id
+      firstName
+      lastName
+      email
+    }
+    lastModifiedAt
+    lastModifiedBy {
+      id
+      firstName
+      lastName
+      email
+    }
+  }
+`;
+
 export const DATASET_DETAIL_FIELDS = gql`
   fragment DatasetDetailFields on Dataset {
     id
@@ -63,6 +94,9 @@ export const DATASET_DETAIL_FIELDS = gql`
         uuid
       }
     }
+    dataPointComments {
+      ...DataPointCommentFields
+    }
     portBindings {
       id
       nodeRef {
@@ -71,6 +105,7 @@ export const DATASET_DETAIL_FIELDS = gql`
       }
     }
   }
+  ${DATA_POINT_COMMENT_FIELDS}
 `;
 
 export const GET_INSTANCE_DATASETS = gql`
