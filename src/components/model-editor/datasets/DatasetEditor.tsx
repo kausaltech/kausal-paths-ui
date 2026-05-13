@@ -133,7 +133,15 @@ function formatCommentDate(iso: string): string {
   });
 }
 
-function CommentsPanel({ comments }: { comments: readonly DataPointCommentFieldsFragment[] }) {
+type CommentWithDataPoint = DataPointCommentFieldsFragment & { dataPointId: string };
+
+function CommentsPanel({
+  comments,
+  selectedDataPointId,
+}: {
+  comments: readonly CommentWithDataPoint[];
+  selectedDataPointId: string | null;
+}) {
   if (comments.length === 0) {
     return (
       <>
@@ -146,19 +154,39 @@ function CommentsPanel({ comments }: { comments: readonly DataPointCommentFields
       </>
     );
   }
+  const matchCount = selectedDataPointId
+    ? comments.filter((c) => c.dataPointId === selectedDataPointId).length
+    : 0;
   return (
     <>
-      <Typography variant="h6" sx={{ mb: 2 }}>
+      <Typography variant="h6" sx={{ mb: 0.5 }}>
         Comments{' '}
         <Typography component="span" variant="body2" color="text.secondary">
           ({comments.length})
         </Typography>
       </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+        {selectedDataPointId
+          ? matchCount > 0
+            ? `${matchCount} on selected cell`
+            : 'No comments on selected cell'
+          : 'Select a cell to highlight its comments'}
+      </Typography>
       <Stack spacing={1.5}>
         {comments.map((c) => {
           const resolved = c.reviewState === DataPointCommentReviewState.Resolved;
+          const selected = selectedDataPointId !== null && c.dataPointId === selectedDataPointId;
           return (
-            <Paper key={c.id} variant="outlined" sx={{ p: 2 }}>
+            <Paper
+              key={c.id}
+              variant="outlined"
+              sx={{
+                p: 2,
+                borderColor: selected ? 'primary.main' : undefined,
+                borderWidth: selected ? 2 : 1,
+                bgcolor: selected ? 'action.selected' : undefined,
+              }}
+            >
               <Stack
                 direction="row"
                 alignItems="center"
@@ -248,8 +276,19 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [syncedName, setSyncedName] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<'details' | 'comments' | null>(null);
+  const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
+
+  const commentsWithDataPoint = useMemo<CommentWithDataPoint[]>(() => {
+    if (!dataset) return [];
+    const all: CommentWithDataPoint[] = [];
+    for (const dp of dataset.dataPoints) {
+      for (const c of dp.comments) all.push({ ...c, dataPointId: dp.id });
+    }
+    all.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return all;
+  }, [dataset]);
 
   // Sync local editable name with the fetched dataset whenever it changes.
   if (dataset && dataset.name !== syncedName) {
@@ -376,9 +415,9 @@ export default function DatasetEditor({ datasetId }: Props) {
                 onClick={() => setOpenPanel((p) => (p === 'comments' ? null : 'comments'))}
               >
                 Comments
-                {dataset.dataPointComments.length > 0 && (
+                {commentsWithDataPoint.length > 0 && (
                   <Chip
-                    label={dataset.dataPointComments.length}
+                    label={commentsWithDataPoint.length}
                     size="small"
                     sx={{ ml: 1, height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 11 } }}
                   />
@@ -405,6 +444,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 onMutated={() => {
                   void refetch();
                 }}
+                onSelectedDataPointChange={setSelectedDataPointId}
               />
             </Box>
           )}
@@ -426,7 +466,10 @@ export default function DatasetEditor({ datasetId }: Props) {
       >
         <Box sx={{ p: 3, height: '100%', overflowY: 'auto' }}>
           {openPanel === 'comments' ? (
-            <CommentsPanel comments={dataset.dataPointComments} />
+            <CommentsPanel
+              comments={commentsWithDataPoint}
+              selectedDataPointId={selectedDataPointId}
+            />
           ) : (
             <>
               <Typography variant="h6" sx={{ mb: 2 }}>

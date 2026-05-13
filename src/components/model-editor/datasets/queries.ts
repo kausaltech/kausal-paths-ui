@@ -94,11 +94,8 @@ export const DATASET_DETAIL_FIELDS = gql`
         uuid
       }
       comments {
-        id
+        ...DataPointCommentFields
       }
-    }
-    dataPointComments {
-      ...DataPointCommentFields
     }
     portBindings {
       id
