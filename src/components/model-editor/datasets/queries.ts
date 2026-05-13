@@ -55,6 +55,45 @@ export const DATA_POINT_COMMENT_FIELDS = gql`
   }
 `;
 
+export const DATA_SOURCE_FIELDS = gql`
+  fragment DataSourceFields on DataSource {
+    id
+    name
+    label
+    authority
+    edition
+    url
+    description
+  }
+`;
+
+export const DATASET_SOURCE_REFERENCE_FIELDS = gql`
+  fragment DatasetSourceReferenceFields on DatasetSourceReference {
+    id
+    dataPoint {
+      id
+    }
+    dataSource {
+      ...DataSourceFields
+    }
+    createdAt
+    createdBy {
+      id
+      firstName
+      lastName
+      email
+    }
+    lastModifiedAt
+    lastModifiedBy {
+      id
+      firstName
+      lastName
+      email
+    }
+  }
+  ${DATA_SOURCE_FIELDS}
+`;
+
 export const DATASET_DETAIL_FIELDS = gql`
   fragment DatasetDetailFields on Dataset {
     id
@@ -104,8 +143,12 @@ export const DATASET_DETAIL_FIELDS = gql`
         portId
       }
     }
+    sourceReferences(target: ALL) {
+      ...DatasetSourceReferenceFields
+    }
   }
   ${DATA_POINT_COMMENT_FIELDS}
+  ${DATASET_SOURCE_REFERENCE_FIELDS}
 `;
 
 export const GET_INSTANCE_DATASETS = gql`

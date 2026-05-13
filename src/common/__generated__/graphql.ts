@@ -12,10 +12,20 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date (isoformat) */
   Date: { input: any; output: any; }
+  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
+  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
+  /**
+   * Allows use of a JSON String for input / output from the GraphQL schema.
+   *
+   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
+   * schema (one of the key benefits of GraphQL).
+   */
   JSONString: { input: string; output: string; }
+  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -1074,6 +1084,28 @@ export type DataPointCommentFieldsFragment = (
   & { __typename: 'DataPointComment' }
 );
 
+export type DataSourceFieldsFragment = (
+  { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+  & { __typename: 'DataSource' }
+);
+
+export type DatasetSourceReferenceFieldsFragment = (
+  { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+    { id: string }
+    & { __typename: 'DataPoint' }
+  ) | null, dataSource: (
+    { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+    & { __typename: 'DataSource' }
+  ), createdBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null, lastModifiedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'DatasetSourceReference' }
+);
+
 export type DatasetDetailFieldsFragment = (
   { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
@@ -1114,6 +1146,21 @@ export type DatasetDetailFieldsFragment = (
       & { __typename: 'NodePortRef' }
     ) }
     & { __typename: 'DatasetPortType' }
+  )>, sourceReferences: Array<(
+    { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+      { id: string }
+      & { __typename: 'DataPoint' }
+    ) | null, dataSource: (
+      { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+      & { __typename: 'DataSource' }
+    ), createdBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null, lastModifiedBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null }
+    & { __typename: 'DatasetSourceReference' }
   )> }
   & { __typename: 'Dataset' }
 );
@@ -1202,6 +1249,21 @@ export type InstanceDatasetQuery = (
             & { __typename: 'NodePortRef' }
           ) }
           & { __typename: 'DatasetPortType' }
+        )>, sourceReferences: Array<(
+          { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+            { id: string }
+            & { __typename: 'DataPoint' }
+          ) | null, dataSource: (
+            { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+            & { __typename: 'DataSource' }
+          ), createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DatasetSourceReference' }
         )> }
         & { __typename: 'Dataset' }
       )> }
