@@ -42,6 +42,7 @@ import type {
   DatasetConnectedNodesQuery,
   DatasetConnectedNodesQueryVariables,
   DatasetDetailFieldsFragment,
+  DatasetSourceReferenceFieldsFragment,
   InstanceDatasetQuery,
   ResolveDataPointCommentMutation,
   ResolveDataPointCommentMutationVariables,
@@ -401,6 +402,136 @@ function CommentsPanel({
   );
 }
 
+function SourceReferenceCard({
+  reference: r,
+}: {
+  reference: DatasetSourceReferenceFieldsFragment;
+}) {
+  const ds = r.dataSource;
+  const meta = [ds.authority, ds.edition].filter((s): s is string => Boolean(s));
+  return (
+    <Paper variant="outlined" sx={{ p: 2 }}>
+      <Stack spacing={0.5}>
+        <Typography variant="subtitle2">{ds.name}</Typography>
+        {meta.length > 0 && (
+          <Typography variant="caption" color="text.secondary">
+            {meta.join(' · ')}
+          </Typography>
+        )}
+        {ds.description && (
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+            {ds.description}
+          </Typography>
+        )}
+        {ds.url && (
+          <Typography variant="caption">
+            <a href={ds.url} target="_blank" rel="noreferrer">
+              {ds.url}
+            </a>
+          </Typography>
+        )}
+        <Typography variant="caption" color="text.secondary" sx={{ pt: 0.5 }}>
+          attached by {getUserName(r.createdBy ?? null)} · {formatCommentDate(r.createdAt)}
+        </Typography>
+      </Stack>
+    </Paper>
+  );
+}
+
+function SourcesPanel({
+  refs,
+  selectedDataPointId,
+  onClearSelection,
+}: {
+  refs: readonly DatasetSourceReferenceFieldsFragment[];
+  selectedDataPointId: string | null;
+  onClearSelection: () => void;
+}) {
+  const hasSelection = selectedDataPointId !== null;
+  const datasetScopeRefs = refs.filter((r) => r.dataPoint === null);
+  const dataPointRefs = refs.filter((r) => r.dataPoint !== null);
+  const selectedRefs = hasSelection
+    ? dataPointRefs.filter((r) => r.dataPoint?.id === selectedDataPointId)
+    : dataPointRefs;
+  const heading = hasSelection ? 'Sources on datapoint' : 'Data sources';
+  const visibleCount = hasSelection
+    ? selectedRefs.length
+    : datasetScopeRefs.length + dataPointRefs.length;
+
+  return (
+    <>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Typography variant="h6">
+          {heading}{' '}
+          <Typography component="span" variant="body2" color="text.secondary">
+            ({visibleCount})
+          </Typography>
+        </Typography>
+        {hasSelection && (
+          <Button size="small" variant="text" onClick={onClearSelection}>
+            Show all
+          </Button>
+        )}
+      </Stack>
+
+      {hasSelection ? (
+        selectedRefs.length === 0 ? (
+          <Typography color="text.secondary" variant="body2">
+            No sources attached to this data point.
+          </Typography>
+        ) : (
+          <Stack spacing={1.5}>
+            {selectedRefs.map((r) => (
+              <SourceReferenceCard key={r.id} reference={r} />
+            ))}
+          </Stack>
+        )
+      ) : (
+        <Stack spacing={3}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Attached to the dataset{' '}
+              <Typography component="span" variant="caption" color="text.secondary">
+                ({datasetScopeRefs.length})
+              </Typography>
+            </Typography>
+            {datasetScopeRefs.length === 0 ? (
+              <Typography color="text.secondary" variant="body2">
+                No sources attached to the dataset.
+              </Typography>
+            ) : (
+              <Stack spacing={1.5}>
+                {datasetScopeRefs.map((r) => (
+                  <SourceReferenceCard key={r.id} reference={r} />
+                ))}
+              </Stack>
+            )}
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Attached to data points{' '}
+              <Typography component="span" variant="caption" color="text.secondary">
+                ({dataPointRefs.length})
+              </Typography>
+            </Typography>
+            {dataPointRefs.length === 0 ? (
+              <Typography color="text.secondary" variant="body2">
+                No sources attached to any data point.
+              </Typography>
+            ) : (
+              <Stack spacing={1.5}>
+                {dataPointRefs.map((r) => (
+                  <SourceReferenceCard key={r.id} reference={r} />
+                ))}
+              </Stack>
+            )}
+          </Box>
+        </Stack>
+      )}
+    </>
+  );
+}
+
 function getListBase(pathname: string): string {
   const idx = pathname.indexOf('/model');
   return idx >= 0 ? pathname.slice(0, idx) + '/model/datasets' : '/model/datasets';
@@ -467,7 +598,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [name, setName] = useState('');
   const [syncedName, setSyncedName] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [openPanel, setOpenPanel] = useState<'details' | 'comments' | null>(null);
+  const [openPanel, setOpenPanel] = useState<'details' | 'comments' | 'sources' | null>(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
   // Bumped to ask DatasetDataGrid to clear its internal cell selection (so
   // "Show all" in the comments panel also drops the visual cell highlight).
@@ -484,6 +615,11 @@ export default function DatasetEditor({ datasetId }: Props) {
     all.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return all;
   }, [dataset]);
+
+  const sourceReferences = useMemo<readonly DatasetSourceReferenceFieldsFragment[]>(
+    () => dataset?.sourceReferences ?? [],
+    [dataset]
+  );
 
   // Sync local editable name with the fetched dataset whenever it changes.
   if (dataset && dataset.name !== syncedName) {
@@ -619,6 +755,20 @@ export default function DatasetEditor({ datasetId }: Props) {
                 )}
               </Button>
               <Button
+                startIcon={<Link45deg />}
+                variant={openPanel === 'sources' ? 'contained' : 'text'}
+                onClick={() => setOpenPanel((p) => (p === 'sources' ? null : 'sources'))}
+              >
+                Data sources
+                {sourceReferences.length > 0 && (
+                  <Chip
+                    label={sourceReferences.length}
+                    size="small"
+                    sx={{ ml: 1, height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 11 } }}
+                  />
+                )}
+              </Button>
+              <Button
                 startIcon={<Sliders />}
                 variant={openPanel === 'details' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'details' ? null : 'details'))}
@@ -724,6 +874,15 @@ export default function DatasetEditor({ datasetId }: Props) {
                 if (payload?.__typename === 'OperationInfo') {
                   throw new Error(payload.messages.map((m) => m.message).join('; '));
                 }
+              }}
+            />
+          ) : openPanel === 'sources' ? (
+            <SourcesPanel
+              refs={sourceReferences}
+              selectedDataPointId={selectedDataPointId}
+              onClearSelection={() => {
+                setSelectedDataPointId(null);
+                setClearSelectionNonce((n) => n + 1);
               }}
             />
           ) : (

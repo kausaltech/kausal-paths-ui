@@ -201,6 +201,16 @@ export default function DatasetDataGrid({
     return map;
   }, [dataset.dataPoints]);
 
+  // dataPointIds that have at least one DatasetSourceReference attached.
+  // Used to underline the value in those cells.
+  const dataPointIdsWithSource = useMemo(() => {
+    const set = new Set<string>();
+    for (const ref of dataset.sourceReferences) {
+      if (ref.dataPoint) set.add(ref.dataPoint.id);
+    }
+    return set;
+  }, [dataset.sourceReferences]);
+
   // Flat list per existing row: [metricId, ...nonNullDimCategoryUuids]. Lets
   // AddRowsModal grey out combinations that would duplicate an existing row.
   const existingCombinations = useMemo<string[][]>(
@@ -714,10 +724,10 @@ export default function DatasetDataGrid({
     setGridSelection(EMPTY_SELECTION);
   }, [clearSelectionNonce]);
 
-  // Overlays a small corner triangle on year cells whose DataPoint has
-  // comments. Red when at least one comment is an unresolved review,
-  // orange otherwise. `drawContent()` is invoked first so the default cell
-  // paints beneath the indicator.
+  // Overlays decorations on year cells after Glide draws the default content:
+  // - corner triangle (red / orange) when comments exist (unresolved vs all)
+  // - underline on the rendered value when the DataPoint has a source
+  //   reference attached
   const drawCell = useCallback<NonNullable<DataEditorProps['drawCell']>>(
     (args, drawContent) => {
       drawContent();
@@ -727,23 +737,46 @@ export default function DatasetDataGrid({
       if (!colId || !gridRow || !isYearColId(colId)) return;
       const cellData = gridRow.cells[colId];
       if (cellData?.type !== 'Value' || cellData.dataPointId === null) return;
-      const info = commentInfoByDataPointId.get(cellData.dataPointId);
-      if (!info) return;
 
-      const size = 8;
-      const x = rect.x + rect.width;
-      const y = rect.y;
-      ctx.save();
-      ctx.fillStyle = info.hasUnresolvedReview ? '#dc2626' : '#f59e0b';
-      ctx.beginPath();
-      ctx.moveTo(x - size, y);
-      ctx.lineTo(x, y);
-      ctx.lineTo(x, y + size);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      // Source-reference underline. Skip if there's no value to underline
+      // (empty cells would underline blank space).
+      if (cellData.value !== null && dataPointIdsWithSource.has(cellData.dataPointId)) {
+        const text = formatNumber(cellData.value);
+        const padding = 8;
+        const xRight = rect.x + rect.width - padding;
+        const m = ctx.measureText(text);
+        const xLeft = Math.max(rect.x + padding, xRight - m.width);
+        const yLine = rect.y + rect.height - 9;
+        ctx.save();
+        ctx.strokeStyle = '#bbbbbb';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(xLeft, yLine);
+        ctx.lineTo(xRight, yLine);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Comment indicator triangle.
+      const info = commentInfoByDataPointId.get(cellData.dataPointId);
+      if (info) {
+        const size = 8;
+        const x = rect.x + rect.width;
+        const y = rect.y;
+        ctx.save();
+        // Matches the warning.main of the model-editor theme — same hue as
+        // the highlighted "needs review" card in the comments panel.
+        ctx.fillStyle = info.hasUnresolvedReview ? '#d97706' : '#bbbbbb';
+        ctx.beginPath();
+        ctx.moveTo(x - size, y);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x, y + size);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
     },
-    [columnIds, rows, commentInfoByDataPointId]
+    [columnIds, rows, commentInfoByDataPointId, dataPointIdsWithSource]
   );
 
   const handleDiscard = useCallback(() => {
