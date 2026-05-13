@@ -16,6 +16,10 @@
       "DataPoint",
       "OperationInfo"
     ],
+    "CreateDataSourcePayload": [
+      "DataSource",
+      "OperationInfo"
+    ],
     "CreateDimensionCategoriesPayload": [
       "InstanceDimension",
       "OperationInfo"
@@ -36,6 +40,14 @@
     "CreateScenarioPayload": [
       "OperationInfo",
       "ScenarioType"
+    ],
+    "CreateSourceReferencePayload": [
+      "DatasetSourceReference",
+      "OperationInfo"
+    ],
+    "DeleteDataSourcePayload": [
+      "ModelDeletePayload",
+      "OperationInfo"
     ],
     "EdgeTransformationUnion": [
       "AssignCategoryTransformationType",
@@ -144,6 +156,10 @@
     ],
     "UpdateDataPointPayload": [
       "DataPoint",
+      "OperationInfo"
+    ],
+    "UpdateDataSourcePayload": [
+      "DataSource",
       "OperationInfo"
     ],
     "UpdateDimensionCategoriesPayload": [

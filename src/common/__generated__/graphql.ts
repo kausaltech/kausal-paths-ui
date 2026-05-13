@@ -51,6 +51,13 @@ export enum ChangeTargetKind {
   Unknown = 'UNKNOWN'
 }
 
+export type CreateDataPointCommentInput = {
+  isReview: Scalars['Boolean']['input'];
+  isSticky: Scalars['Boolean']['input'];
+  reviewState: InputMaybe<DataPointCommentReviewState>;
+  text: Scalars['String']['input'];
+};
+
 export type CreateDataPointInput = {
   date: Scalars['Date']['input'];
   dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
@@ -1352,6 +1359,124 @@ export type DeleteDataPointMutation = (
         )> }
         & { __typename: 'OperationInfo' }
       ) | null }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateDataPointCommentMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  dataPointId: Scalars['ID']['input'];
+  input: CreateDataPointCommentInput;
+}>;
+
+
+export type CreateDataPointCommentMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { createDataPointComment:
+        | (
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type ResolveDataPointCommentMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  commentId: Scalars['ID']['input'];
+}>;
+
+
+export type ResolveDataPointCommentMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { resolveDataPointComment:
+        | (
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UnresolveDataPointCommentMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  commentId: Scalars['ID']['input'];
+}>;
+
+
+export type UnresolveDataPointCommentMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { unresolveDataPointComment:
+        | (
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
       & { __typename: 'DatasetEditorMutation' }
     ) }
     & { __typename: 'InstanceEditorMutation' }

@@ -41,6 +41,7 @@ import type {
   UpdateDataPointMutation,
   UpdateDataPointMutationVariables,
 } from '@/common/__generated__/graphql';
+import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { type AddProgress, AddRowsModal } from './AddRowsModal';
 import { AddYearsModal } from './AddYearsModal';
@@ -62,6 +63,10 @@ type Props = {
   dataset: DatasetDetailFieldsFragment;
   onMutated: () => void;
   onSelectedDataPointChange?: (dataPointId: string | null) => void;
+  // Bumped by the parent to clear the grid's cell selection (e.g. when the
+  // user clicks "Show all" in the comments panel). The initial value is
+  // ignored — only subsequent changes trigger a clear.
+  clearSelectionNonce?: number;
 };
 
 // Solid colour approximations of the original rgba tints — canvas doesn't
@@ -69,6 +74,9 @@ type Props = {
 // pre-mix against white.
 const DIRTY_BG = '#fce8d4';
 const ERROR_BG = '#fbe1e1';
+// Year cell with no backing DataPoint (vs. a DataPoint whose value is null,
+// which is treated as a real "empty value" entry).
+const UNINITIATED_BG = '#f5f5f5';
 
 const EMPTY_SELECTION: GridSelection = {
   columns: CompactSelection.empty(),
@@ -119,7 +127,12 @@ function yearFromColId(colId: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPointChange }: Props) {
+export default function DatasetDataGrid({
+  dataset,
+  onMutated,
+  onSelectedDataPointChange,
+  clearSelectionNonce,
+}: Props) {
   useEnsurePortal();
   const instance = useInstance();
   const [addOpen, setAddOpen] = useState(false);
@@ -173,12 +186,17 @@ export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPoin
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
-  // dataPointId -> comment count. Used by drawCell to overlay an indicator on
-  // year cells whose backing DataPoint has comments.
-  const commentCountByDataPointId = useMemo(() => {
-    const map = new Map<string, number>();
+  // dataPointId -> { count, hasUnresolvedReview }. Drives the corner indicator
+  // overlay in drawCell — red when the data point has any unresolved review
+  // comment, orange otherwise.
+  const commentInfoByDataPointId = useMemo(() => {
+    const map = new Map<string, { count: number; hasUnresolvedReview: boolean }>();
     for (const dp of dataset.dataPoints) {
-      if (dp.comments.length > 0) map.set(dp.id, dp.comments.length);
+      if (dp.comments.length === 0) continue;
+      const hasUnresolvedReview = dp.comments.some(
+        (c) => c.isReview && c.reviewState !== DataPointCommentReviewState.Resolved
+      );
+      map.set(dp.id, { count: dp.comments.length, hasUnresolvedReview });
     }
     return map;
   }, [dataset.dataPoints]);
@@ -516,7 +534,13 @@ export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPoin
         const baseValue = committed?.type === 'Value' ? committed.value : null;
         const pending = pendingEdits.get(pendingKey(gridRow.id, colId));
         const value = pending ? pending.nextValue : baseValue;
-        const themeOverride = pending ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG } : undefined;
+        const uninitiated =
+          !pending && committed?.type === 'Value' && committed.dataPointId === null;
+        const themeOverride = pending
+          ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG }
+          : uninitiated
+            ? { bgCell: UNINITIATED_BG }
+            : undefined;
         return {
           kind: GridCellKind.Number,
           data: value ?? undefined,
@@ -542,6 +566,7 @@ export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPoin
         displayData: label,
         allowOverlay: false,
         readonly: true,
+        themeOverride: { bgCell: UNINITIATED_BG },
       };
     },
     [columnIds, rows, pendingEdits]
@@ -680,9 +705,19 @@ export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPoin
     onSelectedDataPointChange?.(selectedDataPointId);
   }, [selectedDataPointId, onSelectedDataPointChange]);
 
+  // Drop the cell selection when the parent bumps the nonce. The initial
+  // value (whatever it is on first render) is captured and ignored — only
+  // subsequent changes trigger the clear.
+  const initialClearNonceRef = useRef(clearSelectionNonce);
+  useEffect(() => {
+    if (clearSelectionNonce === initialClearNonceRef.current) return;
+    setGridSelection(EMPTY_SELECTION);
+  }, [clearSelectionNonce]);
+
   // Overlays a small corner triangle on year cells whose DataPoint has
-  // comments. `drawContent()` is invoked first so the default cell paints
-  // beneath the indicator.
+  // comments. Red when at least one comment is an unresolved review,
+  // orange otherwise. `drawContent()` is invoked first so the default cell
+  // paints beneath the indicator.
   const drawCell = useCallback<NonNullable<DataEditorProps['drawCell']>>(
     (args, drawContent) => {
       drawContent();
@@ -692,14 +727,14 @@ export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPoin
       if (!colId || !gridRow || !isYearColId(colId)) return;
       const cellData = gridRow.cells[colId];
       if (cellData?.type !== 'Value' || cellData.dataPointId === null) return;
-      const count = commentCountByDataPointId.get(cellData.dataPointId);
-      if (!count) return;
+      const info = commentInfoByDataPointId.get(cellData.dataPointId);
+      if (!info) return;
 
       const size = 8;
       const x = rect.x + rect.width;
       const y = rect.y;
       ctx.save();
-      ctx.fillStyle = '#f59e0b';
+      ctx.fillStyle = info.hasUnresolvedReview ? '#dc2626' : '#f59e0b';
       ctx.beginPath();
       ctx.moveTo(x - size, y);
       ctx.lineTo(x, y);
@@ -708,7 +743,7 @@ export default function DatasetDataGrid({ dataset, onMutated, onSelectedDataPoin
       ctx.fill();
       ctx.restore();
     },
-    [columnIds, rows, commentCountByDataPointId]
+    [columnIds, rows, commentInfoByDataPointId]
   );
 
   const handleDiscard = useCallback(() => {
