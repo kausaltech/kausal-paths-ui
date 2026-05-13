@@ -251,3 +251,68 @@ export const DELETE_DATA_POINT = gql`
   }
   ${OPERATION_INFO_FIELDS}
 `;
+
+export const CREATE_DATA_POINT_COMMENT = gql`
+  mutation CreateDataPointComment(
+    $instanceId: ID!
+    $datasetId: ID!
+    $dataPointId: ID!
+    $input: CreateDataPointCommentInput!
+  ) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        createDataPointComment(dataPointId: $dataPointId, input: $input) {
+          __typename
+          ... on DataPointComment {
+            ...DataPointCommentFields
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${DATA_POINT_COMMENT_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const RESOLVE_DATA_POINT_COMMENT = gql`
+  mutation ResolveDataPointComment($instanceId: ID!, $datasetId: ID!, $commentId: ID!) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        resolveDataPointComment(commentId: $commentId) {
+          __typename
+          ... on DataPointComment {
+            ...DataPointCommentFields
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${DATA_POINT_COMMENT_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const UNRESOLVE_DATA_POINT_COMMENT = gql`
+  mutation UnresolveDataPointComment($instanceId: ID!, $datasetId: ID!, $commentId: ID!) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        unresolveDataPointComment(commentId: $commentId) {
+          __typename
+          ... on DataPointComment {
+            ...DataPointCommentFields
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${DATA_POINT_COMMENT_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;

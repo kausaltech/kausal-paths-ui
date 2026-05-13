@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -6,10 +6,12 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   CircularProgress,
   Collapse,
   Drawer,
+  FormControlLabel,
   IconButton,
   Paper,
   Snackbar,
@@ -19,7 +21,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useQuery } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 import {
   ArrowLeft,
   CaretDownFill,
@@ -34,18 +36,31 @@ import {
 } from 'react-bootstrap-icons';
 
 import type {
+  CreateDataPointCommentMutation,
+  CreateDataPointCommentMutationVariables,
   DataPointCommentFieldsFragment,
   DatasetConnectedNodesQuery,
   DatasetConnectedNodesQueryVariables,
   DatasetDetailFieldsFragment,
   InstanceDatasetQuery,
+  ResolveDataPointCommentMutation,
+  ResolveDataPointCommentMutationVariables,
+  UnresolveDataPointCommentMutation,
+  UnresolveDataPointCommentMutationVariables,
 } from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
+import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
 import DatasetDataGrid from './DatasetDataGrid';
-import { GET_DATASET_CONNECTED_NODES, GET_INSTANCE_DATASET } from './queries';
+import {
+  CREATE_DATA_POINT_COMMENT,
+  GET_DATASET_CONNECTED_NODES,
+  GET_INSTANCE_DATASET,
+  RESOLVE_DATA_POINT_COMMENT,
+  UNRESOLVE_DATA_POINT_COMMENT,
+} from './queries';
 
 type Props = {
   datasetId: string;
@@ -133,91 +148,255 @@ function formatCommentDate(iso: string): string {
   });
 }
 
+// Backend's UserModifiableModel sets `created_at` (auto_now_add) and
+// `last_modified_at` (auto_now) on the same .save(), but each evaluates
+// timezone.now() independently — so they always differ by microseconds.
+// Only treat the comment as edited if the gap is at least one second.
+function isCommentEdited(createdAt: string, lastModifiedAt: string): boolean {
+  return new Date(lastModifiedAt).getTime() - new Date(createdAt).getTime() >= 1000;
+}
+
 type CommentWithDataPoint = DataPointCommentFieldsFragment & { dataPointId: string };
+
+export type AddCommentInput = {
+  text: string;
+  isReview: boolean;
+};
 
 function CommentsPanel({
   comments,
   selectedDataPointId,
+  onSubmitComment,
+  onSetResolved,
+  onClearSelection,
 }: {
   comments: readonly CommentWithDataPoint[];
   selectedDataPointId: string | null;
+  onSubmitComment: (dataPointId: string, input: AddCommentInput) => Promise<void>;
+  onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
+  onClearSelection: () => void;
 }) {
-  if (comments.length === 0) {
-    return (
-      <>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Comments
-        </Typography>
-        <Typography color="text.secondary" variant="body2">
-          No comments on any data point yet.
-        </Typography>
-      </>
-    );
-  }
-  const matchCount = selectedDataPointId
-    ? comments.filter((c) => c.dataPointId === selectedDataPointId).length
-    : 0;
+  const hasSelection = selectedDataPointId !== null;
+  const visibleComments = hasSelection
+    ? comments.filter((c) => c.dataPointId === selectedDataPointId)
+    : comments;
+  const heading = hasSelection ? 'Comments on datapoint' : 'All comments in dataset';
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [isReview, setIsReview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  // Per-comment busy state while a resolve/unresolve mutation is in flight,
+  // so multiple comments can be toggled independently.
+  const [resolvingIds, setResolvingIds] = useState<Set<string>>(() => new Set());
+
+  // Close & reset the form when the selection changes — the form targets a
+  // specific data point, so silently re-pointing it would be confusing.
+  useEffect(() => {
+    setFormOpen(false);
+    setText('');
+    setIsReview(false);
+    setSubmitError(null);
+  }, [selectedDataPointId]);
+
+  const handleSubmit = async () => {
+    if (selectedDataPointId === null || text.trim() === '' || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onSubmitComment(selectedDataPointId, { text: text.trim(), isReview });
+      setFormOpen(false);
+      setText('');
+      setIsReview(false);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleToggleResolved = async (commentId: string, resolved: boolean) => {
+    if (resolvingIds.has(commentId)) return;
+    setResolvingIds((prev) => new Set(prev).add(commentId));
+    try {
+      await onSetResolved(commentId, resolved);
+    } catch {
+      // Swallow — the Apollo cache won't update, so the checkbox snaps back.
+    } finally {
+      setResolvingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(commentId);
+        return next;
+      });
+    }
+  };
+
+  const addButton = (
+    <Button
+      fullWidth
+      variant={formOpen ? 'outlined' : 'contained'}
+      size="small"
+      startIcon={<Plus />}
+      disabled={!hasSelection}
+      onClick={() => setFormOpen((v) => !v)}
+      sx={{ mb: formOpen ? 1 : 2 }}
+    >
+      {hasSelection ? 'Comment this datapoint' : 'Select a datapoint to comment'}
+    </Button>
+  );
+
+  const form = (
+    <Collapse in={formOpen && hasSelection} unmountOnExit>
+      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Stack spacing={1.5}>
+          <TextField
+            label="Comment"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            multiline
+            minRows={3}
+            fullWidth
+            size="small"
+            autoFocus
+            disabled={submitting}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={isReview}
+                onChange={(e) => setIsReview(e.target.checked)}
+                disabled={submitting}
+              />
+            }
+            label="Needs review"
+          />
+          {submitError && (
+            <Alert severity="error" onClose={() => setSubmitError(null)}>
+              {submitError}
+            </Alert>
+          )}
+          <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => {
+                setFormOpen(false);
+                setText('');
+                setIsReview(false);
+                setSubmitError(null);
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => void handleSubmit()}
+              disabled={submitting || text.trim() === ''}
+            >
+              {submitting ? 'Saving…' : 'Submit'}
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Collapse>
+  );
+
   return (
     <>
-      <Typography variant="h6" sx={{ mb: 0.5 }}>
-        Comments{' '}
-        <Typography component="span" variant="body2" color="text.secondary">
-          ({comments.length})
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="h6">
+          {heading}{' '}
+          <Typography component="span" variant="body2" color="text.secondary">
+            ({visibleComments.length})
+          </Typography>
         </Typography>
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-        {selectedDataPointId
-          ? matchCount > 0
-            ? `${matchCount} on selected cell`
-            : 'No comments on selected cell'
-          : 'Select a cell to highlight its comments'}
-      </Typography>
-      <Stack spacing={1.5}>
-        {comments.map((c) => {
-          const resolved = c.reviewState === DataPointCommentReviewState.Resolved;
-          const selected = selectedDataPointId !== null && c.dataPointId === selectedDataPointId;
-          return (
-            <Paper
-              key={c.id}
-              variant="outlined"
-              sx={{
-                p: 2,
-                borderColor: selected ? 'primary.main' : undefined,
-                borderWidth: selected ? 2 : 1,
-                bgcolor: selected ? 'action.selected' : undefined,
-              }}
-            >
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ mb: 1 }}
+        {hasSelection && (
+          <Button size="small" variant="text" onClick={onClearSelection}>
+            Show all
+          </Button>
+        )}
+      </Stack>
+      {addButton}
+      {form}
+      {visibleComments.length === 0 ? (
+        <Typography color="text.secondary" variant="body2">
+          {hasSelection
+            ? 'No comments on the selected data point yet.'
+            : 'No comments on any data point yet.'}
+        </Typography>
+      ) : (
+        <Stack spacing={1.5}>
+          {visibleComments.map((c) => {
+            const resolved = c.reviewState === DataPointCommentReviewState.Resolved;
+            const isResolving = resolvingIds.has(c.id);
+            const needsReview = c.isReview && !resolved;
+            return (
+              <Paper
+                key={c.id}
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  bgcolor: needsReview ? 'warning.lighter' : undefined,
+                  borderColor: needsReview ? 'warning.light' : undefined,
+                }}
               >
-                <Typography variant="subtitle2">{getUserName(c.createdBy ?? null)}</Typography>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  {c.isSticky && <Chip label="Sticky" size="small" variant="outlined" />}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 1 }}
+                >
+                  <Typography variant="subtitle2">{getUserName(c.createdBy ?? null)}</Typography>
+                </Stack>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
+                  {c.text}
+                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography variant="caption" color="text.secondary">
+                    {formatCommentDate(c.createdAt)}
+                    {isCommentEdited(c.createdAt, c.lastModifiedAt) && ' · edited'}
+                  </Typography>
                   {c.isReview && (
-                    <Chip
-                      icon={resolved ? <CheckCircle size={12} /> : undefined}
-                      label={resolved ? 'Resolved' : 'Review'}
-                      size="small"
-                      color={resolved ? 'success' : 'warning'}
-                      variant={resolved ? 'filled' : 'outlined'}
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          size="small"
+                          checked={resolved}
+                          disabled={isResolving}
+                          onChange={(e) => {
+                            void handleToggleResolved(c.id, e.target.checked);
+                          }}
+                          icon={<CheckCircle size={14} />}
+                          checkedIcon={<CheckCircle size={14} />}
+                        />
+                      }
+                      label={
+                        <Typography variant="caption">
+                          {resolved ? 'Resolved' : 'Resolve'}
+                        </Typography>
+                      }
+                      sx={{ m: 0 }}
                     />
                   )}
                 </Stack>
-              </Stack>
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
-                {c.text}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatCommentDate(c.createdAt)}
-                {c.lastModifiedAt !== c.createdAt && ' · edited'}
-              </Typography>
-            </Paper>
-          );
-        })}
-      </Stack>
+                {resolved && c.resolvedAt && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', textAlign: 'right', mt: 0.25 }}
+                  >
+                    by {getUserName(c.resolvedBy ?? null)} · {formatCommentDate(c.resolvedAt)}
+                  </Typography>
+                )}
+              </Paper>
+            );
+          })}
+        </Stack>
+      )}
     </>
   );
 }
@@ -262,6 +441,19 @@ export default function DatasetEditor({ datasetId }: Props) {
   const { data, loading, error, refetch } = useQuery<InstanceDatasetQuery>(GET_INSTANCE_DATASET, {
     fetchPolicy: 'cache-and-network',
   });
+  const instance = useInstance();
+  const [createComment] = useMutation<
+    CreateDataPointCommentMutation,
+    CreateDataPointCommentMutationVariables
+  >(CREATE_DATA_POINT_COMMENT);
+  const [resolveComment] = useMutation<
+    ResolveDataPointCommentMutation,
+    ResolveDataPointCommentMutationVariables
+  >(RESOLVE_DATA_POINT_COMMENT);
+  const [unresolveComment] = useMutation<
+    UnresolveDataPointCommentMutation,
+    UnresolveDataPointCommentMutationVariables
+  >(UNRESOLVE_DATA_POINT_COMMENT);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getListBase(pathname);
@@ -277,6 +469,9 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<'details' | 'comments' | null>(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
+  // Bumped to ask DatasetDataGrid to clear its internal cell selection (so
+  // "Show all" in the comments panel also drops the visual cell highlight).
+  const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
 
@@ -445,6 +640,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                   void refetch();
                 }}
                 onSelectedDataPointChange={setSelectedDataPointId}
+                clearSelectionNonce={clearSelectionNonce}
               />
             </Box>
           )}
@@ -469,6 +665,66 @@ export default function DatasetEditor({ datasetId }: Props) {
             <CommentsPanel
               comments={commentsWithDataPoint}
               selectedDataPointId={selectedDataPointId}
+              onClearSelection={() => {
+                setSelectedDataPointId(null);
+                setClearSelectionNonce((n) => n + 1);
+              }}
+              onSubmitComment={async (dataPointId, input) => {
+                const result = await createComment({
+                  variables: {
+                    instanceId: instance.id,
+                    datasetId: dataset.id,
+                    dataPointId,
+                    input: {
+                      text: input.text,
+                      isReview: input.isReview,
+                      isSticky: false,
+                      reviewState: input.isReview ? DataPointCommentReviewState.Unresolved : null,
+                    },
+                  },
+                  // Append the new comment to its DataPoint's `comments` field
+                  // directly in the normalised cache. Avoids refetching the
+                  // whole InstanceDataset query (~48s on slow connections).
+                  update: (cache, { data }) => {
+                    const payload = data?.instanceEditor.datasetEditor.createDataPointComment;
+                    if (payload?.__typename !== 'DataPointComment') return;
+                    const dpId = cache.identify({
+                      __typename: 'DataPoint',
+                      id: dataPointId,
+                    });
+                    const commentRef = cache.identify(payload);
+                    if (!dpId || !commentRef) return;
+                    cache.modify({
+                      id: dpId,
+                      fields: {
+                        comments: (existing: readonly { __ref: string }[] = []) => [
+                          ...existing,
+                          { __ref: commentRef },
+                        ],
+                      },
+                    });
+                  },
+                });
+                const payload = result.data?.instanceEditor.datasetEditor.createDataPointComment;
+                if (payload?.__typename === 'OperationInfo') {
+                  throw new Error(payload.messages.map((m) => m.message).join('; '));
+                }
+              }}
+              onSetResolved={async (commentId, resolved) => {
+                const variables = {
+                  instanceId: instance.id,
+                  datasetId: dataset.id,
+                  commentId,
+                };
+                const payload = resolved
+                  ? (await resolveComment({ variables })).data?.instanceEditor.datasetEditor
+                      .resolveDataPointComment
+                  : (await unresolveComment({ variables })).data?.instanceEditor.datasetEditor
+                      .unresolveDataPointComment;
+                if (payload?.__typename === 'OperationInfo') {
+                  throw new Error(payload.messages.map((m) => m.message).join('; '));
+                }
+              }}
             />
           ) : (
             <>
