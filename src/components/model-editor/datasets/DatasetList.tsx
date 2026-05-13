@@ -28,7 +28,7 @@ import {
 
 import { useQuery } from '@apollo/client/react';
 import {
-  ChatLeftText,
+  ChatLeft,
   Database,
   Files,
   Link45deg,
@@ -245,7 +245,7 @@ export default function DatasetList() {
                       alignItems="center"
                       justifyContent="flex-end"
                     >
-                      <ChatLeftText size={12} />
+                      <ChatLeft size={12} />
                       <span>{ds.dataPointComments.length}</span>
                     </Stack>
                   ) : (

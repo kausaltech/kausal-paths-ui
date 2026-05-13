@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -24,10 +25,12 @@ import {
 import { useMutation, useQuery } from '@apollo/client/react';
 import {
   ArrowLeft,
+  Bookmarks,
   CaretDownFill,
   CaretRightFill,
-  ChatLeftText,
+  ChatLeft,
   CheckCircle,
+  DashCircle,
   Link45deg,
   PencilSquare,
   Plus,
@@ -38,11 +41,16 @@ import {
 import type {
   CreateDataPointCommentMutation,
   CreateDataPointCommentMutationVariables,
+  CreateSourceReferenceMutation,
+  CreateSourceReferenceMutationVariables,
   DataPointCommentFieldsFragment,
+  DataSourceFieldsFragment,
   DatasetConnectedNodesQuery,
   DatasetConnectedNodesQueryVariables,
   DatasetDetailFieldsFragment,
   DatasetSourceReferenceFieldsFragment,
+  DeleteSourceReferenceMutation,
+  DeleteSourceReferenceMutationVariables,
   InstanceDatasetQuery,
   ResolveDataPointCommentMutation,
   ResolveDataPointCommentMutationVariables,
@@ -57,6 +65,8 @@ import { ConnectedNodeChip } from '../node-details/shared';
 import DatasetDataGrid from './DatasetDataGrid';
 import {
   CREATE_DATA_POINT_COMMENT,
+  CREATE_SOURCE_REFERENCE,
+  DELETE_SOURCE_REFERENCE,
   GET_DATASET_CONNECTED_NODES,
   GET_INSTANCE_DATASET,
   RESOLVE_DATA_POINT_COMMENT,
@@ -404,15 +414,33 @@ function CommentsPanel({
 
 function SourceReferenceCard({
   reference: r,
+  onDetach,
+  detaching,
 }: {
   reference: DatasetSourceReferenceFieldsFragment;
+  onDetach: () => void;
+  detaching: boolean;
 }) {
   const ds = r.dataSource;
   const meta = [ds.authority, ds.edition].filter((s): s is string => Boolean(s));
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Stack spacing={0.5}>
-        <Typography variant="subtitle2">{ds.name}</Typography>
+        <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
+          <Typography variant="subtitle2">{ds.name}</Typography>
+          <Tooltip title="Detach data source">
+            <span>
+              <IconButton
+                size="small"
+                onClick={onDetach}
+                disabled={detaching}
+                aria-label="Detach data source"
+              >
+                <DashCircle size={14} />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
         {meta.length > 0 && (
           <Typography variant="caption" color="text.secondary">
             {meta.join(' · ')}
@@ -440,11 +468,17 @@ function SourceReferenceCard({
 
 function SourcesPanel({
   refs,
+  availableDataSources,
   selectedDataPointId,
+  onAttachToDataset,
+  onDetach,
   onClearSelection,
 }: {
   refs: readonly DatasetSourceReferenceFieldsFragment[];
+  availableDataSources: readonly DataSourceFieldsFragment[];
   selectedDataPointId: string | null;
+  onAttachToDataset: (dataSourceId: string) => Promise<void>;
+  onDetach: (referenceId: string) => Promise<void>;
   onClearSelection: () => void;
 }) {
   const hasSelection = selectedDataPointId !== null;
@@ -457,6 +491,66 @@ function SourcesPanel({
   const visibleCount = hasSelection
     ? selectedRefs.length
     : datasetScopeRefs.length + dataPointRefs.length;
+
+  // Dataset-scope attach form. Kept inside the panel so it stays simple;
+  // hidden whenever a cell is selected because the form targets the dataset,
+  // not a data point.
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [pickedSource, setPickedSource] = useState<DataSourceFieldsFragment | null>(null);
+  const [attaching, setAttaching] = useState(false);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const resetAttachForm = () => {
+    setAttachOpen(false);
+    setPickedSource(null);
+    setAttachError(null);
+  };
+  const handleAttach = async () => {
+    if (!pickedSource || attaching) return;
+    setAttaching(true);
+    setAttachError(null);
+    try {
+      await onAttachToDataset(pickedSource.id);
+      resetAttachForm();
+    } catch (e) {
+      setAttachError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAttaching(false);
+    }
+  };
+
+  // dataSource ids already attached at dataset scope — used to grey out
+  // those options in the picker (the backend would also reject duplicates,
+  // but disabling them upfront is a clearer signal).
+  const datasetScopeAttachedIds = useMemo(
+    () => new Set(datasetScopeRefs.map((r) => r.dataSource.id)),
+    [datasetScopeRefs]
+  );
+
+  // Per-ref busy state so multiple detach actions can be in flight.
+  const [detachingIds, setDetachingIds] = useState<Set<string>>(() => new Set());
+  const handleDetach = async (referenceId: string) => {
+    if (detachingIds.has(referenceId)) return;
+    setDetachingIds((prev) => new Set(prev).add(referenceId));
+    try {
+      await onDetach(referenceId);
+    } catch {
+      // Swallow — the card stays in the list until the cache is updated.
+    } finally {
+      setDetachingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(referenceId);
+        return next;
+      });
+    }
+  };
+  const renderCard = (r: DatasetSourceReferenceFieldsFragment) => (
+    <SourceReferenceCard
+      key={r.id}
+      reference={r}
+      onDetach={() => void handleDetach(r.id)}
+      detaching={detachingIds.has(r.id)}
+    />
+  );
 
   return (
     <>
@@ -480,31 +574,101 @@ function SourcesPanel({
             No sources attached to this data point.
           </Typography>
         ) : (
-          <Stack spacing={1.5}>
-            {selectedRefs.map((r) => (
-              <SourceReferenceCard key={r.id} reference={r} />
-            ))}
-          </Stack>
+          <Stack spacing={1.5}>{selectedRefs.map((r) => renderCard(r))}</Stack>
         )
       ) : (
         <Stack spacing={3}>
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Attached to the dataset{' '}
-              <Typography component="span" variant="caption" color="text.secondary">
-                ({datasetScopeRefs.length})
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mb: 1 }}
+            >
+              <Typography variant="subtitle2">
+                Attached to the dataset{' '}
+                <Typography component="span" variant="caption" color="text.secondary">
+                  ({datasetScopeRefs.length})
+                </Typography>
               </Typography>
-            </Typography>
+              <Button
+                size="small"
+                startIcon={<Plus />}
+                variant={attachOpen ? 'outlined' : 'text'}
+                onClick={() => setAttachOpen((v) => !v)}
+              >
+                Set data source
+              </Button>
+            </Stack>
+            <Collapse in={attachOpen} unmountOnExit>
+              <Paper variant="outlined" sx={{ p: 2, mb: 1.5 }}>
+                <Stack spacing={1.5}>
+                  <Autocomplete
+                    size="small"
+                    options={availableDataSources}
+                    value={pickedSource}
+                    onChange={(_, v) => setPickedSource(v)}
+                    getOptionLabel={(o) => o.label || o.name}
+                    isOptionEqualToValue={(o, v) => o.id === v.id}
+                    getOptionDisabled={(o) => datasetScopeAttachedIds.has(o.id)}
+                    renderOption={(props, o) => {
+                      const isAttached = datasetScopeAttachedIds.has(o.id);
+                      return (
+                        <li {...props} key={o.id}>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            sx={{ width: '100%' }}
+                          >
+                            <span>{o.label || o.name}</span>
+                            {isAttached && (
+                              <Typography variant="caption" color="text.secondary">
+                                already attached
+                              </Typography>
+                            )}
+                          </Stack>
+                        </li>
+                      );
+                    }}
+                    disabled={attaching}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Data source" autoFocus />
+                    )}
+                    noOptionsText="No data sources defined in this instance yet."
+                  />
+                  {attachError && (
+                    <Alert severity="error" onClose={() => setAttachError(null)}>
+                      {attachError}
+                    </Alert>
+                  )}
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={resetAttachForm}
+                      disabled={attaching}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={() => void handleAttach()}
+                      disabled={attaching || !pickedSource}
+                    >
+                      {attaching ? 'Saving…' : 'Attach'}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Paper>
+            </Collapse>
             {datasetScopeRefs.length === 0 ? (
               <Typography color="text.secondary" variant="body2">
                 No sources attached to the dataset.
               </Typography>
             ) : (
-              <Stack spacing={1.5}>
-                {datasetScopeRefs.map((r) => (
-                  <SourceReferenceCard key={r.id} reference={r} />
-                ))}
-              </Stack>
+              <Stack spacing={1.5}>{datasetScopeRefs.map((r) => renderCard(r))}</Stack>
             )}
           </Box>
           <Box>
@@ -519,11 +683,7 @@ function SourcesPanel({
                 No sources attached to any data point.
               </Typography>
             ) : (
-              <Stack spacing={1.5}>
-                {dataPointRefs.map((r) => (
-                  <SourceReferenceCard key={r.id} reference={r} />
-                ))}
-              </Stack>
+              <Stack spacing={1.5}>{dataPointRefs.map((r) => renderCard(r))}</Stack>
             )}
           </Box>
         </Stack>
@@ -585,6 +745,14 @@ export default function DatasetEditor({ datasetId }: Props) {
     UnresolveDataPointCommentMutation,
     UnresolveDataPointCommentMutationVariables
   >(UNRESOLVE_DATA_POINT_COMMENT);
+  const [createSourceReference] = useMutation<
+    CreateSourceReferenceMutation,
+    CreateSourceReferenceMutationVariables
+  >(CREATE_SOURCE_REFERENCE);
+  const [deleteSourceReference] = useMutation<
+    DeleteSourceReferenceMutation,
+    DeleteSourceReferenceMutationVariables
+  >(DELETE_SOURCE_REFERENCE);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getListBase(pathname);
@@ -619,6 +787,10 @@ export default function DatasetEditor({ datasetId }: Props) {
   const sourceReferences = useMemo<readonly DatasetSourceReferenceFieldsFragment[]>(
     () => dataset?.sourceReferences ?? [],
     [dataset]
+  );
+  const availableDataSources = useMemo<readonly DataSourceFieldsFragment[]>(
+    () => data?.instance.editor?.dataSources ?? [],
+    [data]
   );
 
   // Sync local editable name with the fetched dataset whenever it changes.
@@ -741,7 +913,7 @@ export default function DatasetEditor({ datasetId }: Props) {
             </Box>
             <Stack direction="row" spacing={1}>
               <Button
-                startIcon={<ChatLeftText />}
+                startIcon={<ChatLeft />}
                 variant={openPanel === 'comments' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'comments' ? null : 'comments'))}
               >
@@ -755,7 +927,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 )}
               </Button>
               <Button
-                startIcon={<Link45deg />}
+                startIcon={<Bookmarks />}
                 variant={openPanel === 'sources' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'sources' ? null : 'sources'))}
               >
@@ -791,6 +963,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 }}
                 onSelectedDataPointChange={setSelectedDataPointId}
                 clearSelectionNonce={clearSelectionNonce}
+                onOpenPanel={setOpenPanel}
               />
             </Box>
           )}
@@ -879,10 +1052,77 @@ export default function DatasetEditor({ datasetId }: Props) {
           ) : openPanel === 'sources' ? (
             <SourcesPanel
               refs={sourceReferences}
+              availableDataSources={availableDataSources}
               selectedDataPointId={selectedDataPointId}
               onClearSelection={() => {
                 setSelectedDataPointId(null);
                 setClearSelectionNonce((n) => n + 1);
+              }}
+              onAttachToDataset={async (dataSourceId) => {
+                const result = await createSourceReference({
+                  variables: {
+                    instanceId: instance.id,
+                    datasetId: dataset.id,
+                    input: { dataSourceId, toDataset: true, dataPointId: null },
+                  },
+                  // Append the new ref to the Dataset.sourceReferences(target: ALL)
+                  // cache entry so the panel updates without a 48s refetch.
+                  update: (cache, { data: muData }) => {
+                    const payload = muData?.instanceEditor.datasetEditor.createSourceReference;
+                    if (payload?.__typename !== 'DatasetSourceReference') return;
+                    const dsId = cache.identify({
+                      __typename: 'Dataset',
+                      id: dataset.id,
+                    });
+                    const refId = cache.identify(payload);
+                    if (!dsId || !refId) return;
+                    cache.modify({
+                      id: dsId,
+                      fields: {
+                        sourceReferences: (
+                          existing: readonly { __ref: string }[] = [],
+                          { storeFieldName }
+                        ) => {
+                          // Only modify the ALL-target list (the one we read).
+                          if (!storeFieldName.includes('"ALL"')) return existing;
+                          return [...existing, { __ref: refId }];
+                        },
+                      },
+                    });
+                  },
+                });
+                const payload = result.data?.instanceEditor.datasetEditor.createSourceReference;
+                if (payload?.__typename === 'OperationInfo') {
+                  throw new Error(payload.messages.map((m) => m.message).join('; '));
+                }
+              }}
+              onDetach={async (referenceId) => {
+                const result = await deleteSourceReference({
+                  variables: {
+                    instanceId: instance.id,
+                    datasetId: dataset.id,
+                    referenceId,
+                  },
+                  // Evict the normalised entity so Apollo automatically drops
+                  // dangling refs from every cached sourceReferences list.
+                  update: (cache, { data: muData }) => {
+                    const messages =
+                      muData?.instanceEditor.datasetEditor.deleteSourceReference?.messages ?? [];
+                    if (messages.length > 0) return;
+                    cache.evict({
+                      id: cache.identify({
+                        __typename: 'DatasetSourceReference',
+                        id: referenceId,
+                      }),
+                    });
+                    cache.gc();
+                  },
+                });
+                const messages =
+                  result.data?.instanceEditor.datasetEditor.deleteSourceReference?.messages ?? [];
+                if (messages.length > 0) {
+                  throw new Error(messages.map((m) => m.message).join('; '));
+                }
               }}
             />
           ) : (
