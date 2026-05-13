@@ -93,6 +93,9 @@ export const DATASET_DETAIL_FIELDS = gql`
       dimensionCategories {
         uuid
       }
+      comments {
+        id
+      }
     }
     dataPointComments {
       ...DataPointCommentFields

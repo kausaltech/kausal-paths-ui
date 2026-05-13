@@ -172,6 +172,16 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
+  // dataPointId -> comment count. Used by drawCell to overlay an indicator on
+  // year cells whose backing DataPoint has comments.
+  const commentCountByDataPointId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const dp of dataset.dataPoints) {
+      if (dp.comments.length > 0) map.set(dp.id, dp.comments.length);
+    }
+    return map;
+  }, [dataset.dataPoints]);
+
   // Flat list per existing row: [metricId, ...nonNullDimCategoryUuids]. Lets
   // AddRowsModal grey out combinations that would duplicate an existing row.
   const existingCombinations = useMemo<string[][]>(
@@ -652,6 +662,37 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     []
   );
 
+  // Overlays a small corner triangle on year cells whose DataPoint has
+  // comments. `drawContent()` is invoked first so the default cell paints
+  // beneath the indicator.
+  const drawCell = useCallback<NonNullable<DataEditorProps['drawCell']>>(
+    (args, drawContent) => {
+      drawContent();
+      const { col, row, ctx, rect } = args;
+      const colId = columnIds[col];
+      const gridRow = rows[row];
+      if (!colId || !gridRow || !isYearColId(colId)) return;
+      const cellData = gridRow.cells[colId];
+      if (cellData?.type !== 'Value' || cellData.dataPointId === null) return;
+      const count = commentCountByDataPointId.get(cellData.dataPointId);
+      if (!count) return;
+
+      const size = 8;
+      const x = rect.x + rect.width;
+      const y = rect.y;
+      ctx.save();
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(x - size, y);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x, y + size);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+    [columnIds, rows, commentCountByDataPointId]
+  );
+
   const handleDiscard = useCallback(() => {
     setPendingEdits(new Map());
   }, []);
@@ -884,6 +925,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           onCellContextMenu={onCellContextMenu}
           onHeaderContextMenu={onHeaderContextMenu}
           onColumnResize={onColumnResize}
+          drawCell={drawCell}
           freezeColumns={freezeColumns}
           getCellsForSelection
           gridSelection={gridSelection}

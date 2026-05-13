@@ -1087,6 +1087,9 @@ export type DatasetDetailFieldsFragment = (
     ), dimensionCategories: Array<(
       { uuid: string }
       & { __typename: 'DatasetDimensionCategory' }
+    )>, comments: Array<(
+      { id: string }
+      & { __typename: 'DataPointComment' }
     )> }
     & { __typename: 'DataPoint' }
   )>, dataPointComments: Array<(
@@ -1175,6 +1178,9 @@ export type InstanceDatasetQuery = (
           ), dimensionCategories: Array<(
             { uuid: string }
             & { __typename: 'DatasetDimensionCategory' }
+          )>, comments: Array<(
+            { id: string }
+            & { __typename: 'DataPointComment' }
           )> }
           & { __typename: 'DataPoint' }
         )>, dataPointComments: Array<(
