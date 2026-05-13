@@ -24,6 +24,8 @@ import {
   ArrowLeft,
   CaretDownFill,
   CaretRightFill,
+  ChatLeftText,
+  CheckCircle,
   Link45deg,
   PencilSquare,
   Plus,
@@ -32,11 +34,13 @@ import {
 } from 'react-bootstrap-icons';
 
 import type {
+  DataPointCommentFieldsFragment,
   DatasetConnectedNodesQuery,
   DatasetConnectedNodesQueryVariables,
   DatasetDetailFieldsFragment,
   InstanceDatasetQuery,
 } from '@/common/__generated__/graphql';
+import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
@@ -112,6 +116,84 @@ function DimensionCategories({
   );
 }
 
+function getUserName(user: { firstName: string; lastName: string; email: string } | null): string {
+  if (!user) return 'Unknown';
+  const full = `${user.firstName} ${user.lastName}`.trim();
+  return full || user.email;
+}
+
+function formatCommentDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function CommentsPanel({ comments }: { comments: readonly DataPointCommentFieldsFragment[] }) {
+  if (comments.length === 0) {
+    return (
+      <>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Comments
+        </Typography>
+        <Typography color="text.secondary" variant="body2">
+          No comments on any data point yet.
+        </Typography>
+      </>
+    );
+  }
+  return (
+    <>
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        Comments{' '}
+        <Typography component="span" variant="body2" color="text.secondary">
+          ({comments.length})
+        </Typography>
+      </Typography>
+      <Stack spacing={1.5}>
+        {comments.map((c) => {
+          const resolved = c.reviewState === DataPointCommentReviewState.Resolved;
+          return (
+            <Paper key={c.id} variant="outlined" sx={{ p: 2 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 1 }}
+              >
+                <Typography variant="subtitle2">{getUserName(c.createdBy ?? null)}</Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  {c.isSticky && <Chip label="Sticky" size="small" variant="outlined" />}
+                  {c.isReview && (
+                    <Chip
+                      icon={resolved ? <CheckCircle size={12} /> : undefined}
+                      label={resolved ? 'Resolved' : 'Review'}
+                      size="small"
+                      color={resolved ? 'success' : 'warning'}
+                      variant={resolved ? 'filled' : 'outlined'}
+                    />
+                  )}
+                </Stack>
+              </Stack>
+              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
+                {c.text}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatCommentDate(c.createdAt)}
+                {c.lastModifiedAt !== c.createdAt && ' · edited'}
+              </Typography>
+            </Paper>
+          );
+        })}
+      </Stack>
+    </>
+  );
+}
+
 function getListBase(pathname: string): string {
   const idx = pathname.indexOf('/model');
   return idx >= 0 ? pathname.slice(0, idx) + '/model/datasets' : '/model/datasets';
@@ -165,7 +247,8 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [name, setName] = useState('');
   const [syncedName, setSyncedName] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [openPanel, setOpenPanel] = useState<'details' | 'comments' | null>(null);
+  const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
 
   // Sync local editable name with the fetched dataset whenever it changes.
@@ -245,14 +328,14 @@ export default function DatasetEditor({ datasetId }: Props) {
           flexDirection: 'column',
           transition: (theme) =>
             theme.transitions.create('margin', {
-              easing: detailsOpen
+              easing: drawerOpen
                 ? theme.transitions.easing.easeOut
                 : theme.transitions.easing.sharp,
-              duration: detailsOpen
+              duration: drawerOpen
                 ? theme.transitions.duration.enteringScreen
                 : theme.transitions.duration.leavingScreen,
             }),
-          marginRight: detailsOpen ? `${DETAILS_WIDTH}px` : 0,
+          marginRight: drawerOpen ? `${DETAILS_WIDTH}px` : 0,
         }}
       >
         <Button
@@ -286,13 +369,29 @@ export default function DatasetEditor({ datasetId }: Props) {
                 </Typography>
               )}
             </Box>
-            <Button
-              startIcon={<Sliders />}
-              variant={detailsOpen ? 'contained' : 'text'}
-              onClick={() => setDetailsOpen((v) => !v)}
-            >
-              Dataset details
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button
+                startIcon={<ChatLeftText />}
+                variant={openPanel === 'comments' ? 'contained' : 'text'}
+                onClick={() => setOpenPanel((p) => (p === 'comments' ? null : 'comments'))}
+              >
+                Comments
+                {dataset.dataPointComments.length > 0 && (
+                  <Chip
+                    label={dataset.dataPointComments.length}
+                    size="small"
+                    sx={{ ml: 1, height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 11 } }}
+                  />
+                )}
+              </Button>
+              <Button
+                startIcon={<Sliders />}
+                variant={openPanel === 'details' ? 'contained' : 'text'}
+                onClick={() => setOpenPanel((p) => (p === 'details' ? null : 'details'))}
+              >
+                Dataset details
+              </Button>
+            </Stack>
           </Stack>
           {isExternal ? (
             <Alert severity="info">
@@ -315,7 +414,7 @@ export default function DatasetEditor({ datasetId }: Props) {
       <Drawer
         variant="persistent"
         anchor="right"
-        open={detailsOpen}
+        open={drawerOpen}
         sx={{
           '& .MuiDrawer-paper': {
             width: DETAILS_WIDTH,
@@ -326,271 +425,280 @@ export default function DatasetEditor({ datasetId }: Props) {
         }}
       >
         <Box sx={{ p: 3, height: '100%', overflowY: 'auto' }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Dataset details
-          </Typography>
-
-          {/* Metadata */}
-          <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ mb: 2 }}>
-              Dataset
-            </Typography>
-            <Stack spacing={2}>
-              <TextField
-                label="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                fullWidth
-                size="small"
-              />
-              <TextField
-                label="Identifier"
-                value={dataset.identifier ?? ''}
-                disabled
-                helperText="The identifier cannot be changed."
-                fullWidth
-                size="small"
-              />
-              {dataset.externalRef && (
-                <Paper variant="outlined" sx={{ p: 2 }}>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Link45deg />
-                    <Typography variant="subtitle2">External source</Typography>
-                    {isExternal && <Chip label="Placeholder" size="small" color="warning" />}
-                  </Stack>
-                  <Stack spacing={1}>
-                    <TextField
-                      label="Repository URL"
-                      value={dataset.externalRef.repoUrl}
-                      disabled
-                      fullWidth
-                      size="small"
-                    />
-                    <TextField
-                      label="Dataset path"
-                      value={dataset.externalRef.datasetId}
-                      disabled
-                      fullWidth
-                      size="small"
-                    />
-                    {dataset.externalRef.commit && (
-                      <TextField
-                        label="Commit"
-                        value={dataset.externalRef.commit}
-                        disabled
-                        fullWidth
-                        size="small"
-                        slotProps={{ input: { sx: { fontFamily: 'monospace' } } }}
-                      />
-                    )}
-                  </Stack>
-                </Paper>
-              )}
-              <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!nameDirty}
-                  onClick={() => setName(dataset.name)}
-                >
-                  Discard
-                </Button>
-                <Button
-                  size="small"
-                  variant="contained"
-                  disabled={!nameDirty}
-                  onClick={() =>
-                    setNotice('Saving dataset metadata is not yet implemented on the backend.')
-                  }
-                >
-                  Save changes
-                </Button>
-              </Stack>
-            </Stack>
-          </Paper>
-
-          {/* Connected nodes */}
-          <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ mb: 2 }}>
-              Connected nodes{' '}
-              <Typography component="span" variant="body2" color="text.secondary">
-                ({connectedNodeCount})
+          {openPanel === 'comments' ? (
+            <CommentsPanel comments={dataset.dataPointComments} />
+          ) : (
+            <>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Dataset details
               </Typography>
-            </Typography>
-            {connectedNodeCount === 0 ? (
-              <Typography color="text.secondary" variant="body2">
-                No nodes are bound to this dataset.
-              </Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                {connectedNodes.map((node) => {
-                  const nodeClass =
-                    node.editor?.spec?.typeConfig && 'nodeClass' in node.editor.spec.typeConfig
-                      ? node.editor.spec.typeConfig.nodeClass
-                      : (node.editor?.nodeType ?? '');
-                  const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
-                  const style = getNodeStyle(node.kind ?? '', nodeClass, isOutcome);
-                  return (
-                    <ConnectedNodeChip
-                      key={node.id}
-                      nodeId={node.id}
-                      label={node.name ?? node.id}
-                      style={style}
-                      onSelect={(id) =>
-                        router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)
-                      }
-                      onHover={() => {}}
-                    />
-                  );
-                })}
-              </Box>
-            )}
-          </Paper>
 
-          {/* Dimensions */}
-          <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 2 }}
-            >
-              <Typography variant="subtitle1">Dimensions</Typography>
-              <Button
-                size="small"
-                startIcon={<Plus />}
-                onClick={() =>
-                  setNotice('Attaching dimensions is not yet implemented on the backend.')
-                }
-              >
-                Add
-              </Button>
-            </Stack>
-            {dataset.dimensions.length === 0 ? (
-              <Typography color="text.secondary" variant="body2">
-                No dimensions attached.
-              </Typography>
-            ) : (
-              <Stack spacing={2}>
-                {dataset.dimensions.map((dim) => (
-                  <Paper key={dim.id} variant="outlined" sx={{ p: 2 }}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      sx={{ mb: 1 }}
-                    >
-                      <Typography variant="subtitle2">{dim.name}</Typography>
-                      <Stack direction="row">
-                        <Tooltip title="Edit">
-                          <IconButton
-                            size="small"
-                            component={Link}
-                            href={`${modelEditorBase}/dimensions/${encodeURIComponent(dim.id)}`}
-                          >
-                            <PencilSquare />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Detach dimension">
-                          <span>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                setNotice(
-                                  'Detaching dimensions is not yet implemented on the backend.'
-                                )
-                              }
-                            >
-                              <Trash />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
+              {/* Metadata */}
+              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                  Dataset
+                </Typography>
+                <Stack spacing={2}>
+                  <TextField
+                    label="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    fullWidth
+                    size="small"
+                  />
+                  <TextField
+                    label="Identifier"
+                    value={dataset.identifier ?? ''}
+                    disabled
+                    helperText="The identifier cannot be changed."
+                    fullWidth
+                    size="small"
+                  />
+                  {dataset.externalRef && (
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                        <Link45deg />
+                        <Typography variant="subtitle2">External source</Typography>
+                        {isExternal && <Chip label="Placeholder" size="small" color="warning" />}
                       </Stack>
-                    </Stack>
-                    <DimensionCategories dim={dim} usedCategoryUuids={usedCategoryUuids} />
-                  </Paper>
-                ))}
-              </Stack>
-            )}
-          </Paper>
+                      <Stack spacing={1}>
+                        <TextField
+                          label="Repository URL"
+                          value={dataset.externalRef.repoUrl}
+                          disabled
+                          fullWidth
+                          size="small"
+                        />
+                        <TextField
+                          label="Dataset path"
+                          value={dataset.externalRef.datasetId}
+                          disabled
+                          fullWidth
+                          size="small"
+                        />
+                        {dataset.externalRef.commit && (
+                          <TextField
+                            label="Commit"
+                            value={dataset.externalRef.commit}
+                            disabled
+                            fullWidth
+                            size="small"
+                            slotProps={{ input: { sx: { fontFamily: 'monospace' } } }}
+                          />
+                        )}
+                      </Stack>
+                    </Paper>
+                  )}
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      disabled={!nameDirty}
+                      onClick={() => setName(dataset.name)}
+                    >
+                      Discard
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      disabled={!nameDirty}
+                      onClick={() =>
+                        setNotice('Saving dataset metadata is not yet implemented on the backend.')
+                      }
+                    >
+                      Save changes
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Paper>
 
-          {/* Metrics */}
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 2 }}
-            >
-              <Typography variant="subtitle1">Metrics</Typography>
-              <Button
-                size="small"
-                startIcon={<Plus />}
-                onClick={() => setNotice('Creating metrics is not yet implemented on the backend.')}
-              >
-                Add
-              </Button>
-            </Stack>
-            {sortedMetrics.length === 0 ? (
-              <Typography color="text.secondary" variant="body2">
-                No metrics defined.
-              </Typography>
-            ) : (
-              <Stack spacing={1}>
-                {sortedMetrics.map((m) => (
-                  <Paper key={m.id} variant="outlined" sx={{ p: 1.5 }}>
-                    <Stack spacing={0.5}>
-                      <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Typography variant="subtitle2">{m.label}</Typography>
-                        <Stack direction="row">
-                          <Tooltip title="Edit">
-                            <span>
+              {/* Connected nodes */}
+              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                  Connected nodes{' '}
+                  <Typography component="span" variant="body2" color="text.secondary">
+                    ({connectedNodeCount})
+                  </Typography>
+                </Typography>
+                {connectedNodeCount === 0 ? (
+                  <Typography color="text.secondary" variant="body2">
+                    No nodes are bound to this dataset.
+                  </Typography>
+                ) : (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                    {connectedNodes.map((node) => {
+                      const nodeClass =
+                        node.editor?.spec?.typeConfig && 'nodeClass' in node.editor.spec.typeConfig
+                          ? node.editor.spec.typeConfig.nodeClass
+                          : (node.editor?.nodeType ?? '');
+                      const isOutcome =
+                        node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
+                      const style = getNodeStyle(node.kind ?? '', nodeClass, isOutcome);
+                      return (
+                        <ConnectedNodeChip
+                          key={node.id}
+                          nodeId={node.id}
+                          label={node.name ?? node.id}
+                          style={style}
+                          onSelect={(id) =>
+                            router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)
+                          }
+                          onHover={() => {}}
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
+              </Paper>
+
+              {/* Dimensions */}
+              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 2 }}
+                >
+                  <Typography variant="subtitle1">Dimensions</Typography>
+                  <Button
+                    size="small"
+                    startIcon={<Plus />}
+                    onClick={() =>
+                      setNotice('Attaching dimensions is not yet implemented on the backend.')
+                    }
+                  >
+                    Add
+                  </Button>
+                </Stack>
+                {dataset.dimensions.length === 0 ? (
+                  <Typography color="text.secondary" variant="body2">
+                    No dimensions attached.
+                  </Typography>
+                ) : (
+                  <Stack spacing={2}>
+                    {dataset.dimensions.map((dim) => (
+                      <Paper key={dim.id} variant="outlined" sx={{ p: 2 }}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="space-between"
+                          sx={{ mb: 1 }}
+                        >
+                          <Typography variant="subtitle2">{dim.name}</Typography>
+                          <Stack direction="row">
+                            <Tooltip title="Edit">
                               <IconButton
                                 size="small"
-                                onClick={() =>
-                                  setNotice(
-                                    'Editing metrics is not yet implemented on the backend.'
-                                  )
-                                }
+                                component={Link}
+                                href={`${modelEditorBase}/dimensions/${encodeURIComponent(dim.id)}`}
                               >
                                 <PencilSquare />
                               </IconButton>
-                            </span>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <span>
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  setNotice(
-                                    'Deleting metrics is not yet implemented on the backend.'
-                                  )
-                                }
-                              >
-                                <Trash />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
+                            </Tooltip>
+                            <Tooltip title="Detach dimension">
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    setNotice(
+                                      'Detaching dimensions is not yet implemented on the backend.'
+                                    )
+                                  }
+                                >
+                                  <Trash />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Stack>
                         </Stack>
-                      </Stack>
-                      <Stack direction="row" spacing={2}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontFamily: 'monospace' }}
-                        >
-                          {m.name ?? '—'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {m.unit}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Paper>
-                ))}
-              </Stack>
-            )}
-          </Paper>
+                        <DimensionCategories dim={dim} usedCategoryUuids={usedCategoryUuids} />
+                      </Paper>
+                    ))}
+                  </Stack>
+                )}
+              </Paper>
+
+              {/* Metrics */}
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 2 }}
+                >
+                  <Typography variant="subtitle1">Metrics</Typography>
+                  <Button
+                    size="small"
+                    startIcon={<Plus />}
+                    onClick={() =>
+                      setNotice('Creating metrics is not yet implemented on the backend.')
+                    }
+                  >
+                    Add
+                  </Button>
+                </Stack>
+                {sortedMetrics.length === 0 ? (
+                  <Typography color="text.secondary" variant="body2">
+                    No metrics defined.
+                  </Typography>
+                ) : (
+                  <Stack spacing={1}>
+                    {sortedMetrics.map((m) => (
+                      <Paper key={m.id} variant="outlined" sx={{ p: 1.5 }}>
+                        <Stack spacing={0.5}>
+                          <Stack direction="row" alignItems="center" justifyContent="space-between">
+                            <Typography variant="subtitle2">{m.label}</Typography>
+                            <Stack direction="row">
+                              <Tooltip title="Edit">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      setNotice(
+                                        'Editing metrics is not yet implemented on the backend.'
+                                      )
+                                    }
+                                  >
+                                    <PencilSquare />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      setNotice(
+                                        'Deleting metrics is not yet implemented on the backend.'
+                                      )
+                                    }
+                                  >
+                                    <Trash />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            </Stack>
+                          </Stack>
+                          <Stack direction="row" spacing={2}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ fontFamily: 'monospace' }}
+                            >
+                              {m.name ?? '—'}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {m.unit}
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    ))}
+                  </Stack>
+                )}
+              </Paper>
+            </>
+          )}
         </Box>
       </Drawer>
 
