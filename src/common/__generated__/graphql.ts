@@ -519,14 +519,20 @@ export type ModelEditorLandingDataQuery = (
   & { __typename: 'Query' }
 );
 
-export type MyFrameworkRolesQueryVariables = Exact<{ [key: string]: never; }>;
+export type MyEditableInstancesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyFrameworkRolesQuery = (
+export type MyEditableInstancesQuery = (
   { me: (
-    { id: string, email: string, frameworkRoles: Array<(
-      { frameworkId: string, roleId: string | null, orgSlug: string | null, orgId: string | null }
-      & { __typename: 'UserFrameworkRole' }
+    { id: string, email: string, editableInstances: Array<(
+      { id: string, identifier: string, name: string, themeIdentifier: string | null, frameworkConfig: (
+        { id: string, organizationName: string | null, viewUrl: string | null, framework: (
+          { id: string, identifier: string, name: string }
+          & { __typename: 'Framework' }
+        ) }
+        & { __typename: 'FrameworkConfig' }
+      ) | null }
+      & { __typename: 'InstanceType' }
     )> }
     & { __typename: 'User' }
   ) | null }
@@ -547,10 +553,89 @@ export type InstanceUsersQuery = (
         & { __typename: 'User' }
       ) }
       & { __typename: 'InstanceMember' }
+    )>, invitations: Array<(
+      { id: string, email: string, expiresAt: string, createdAt: string }
+      & { __typename: 'InstanceInvitation' }
     )> }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
+);
+
+export type AddUserToInstanceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  email: Scalars['String']['input'];
+}>;
+
+
+export type AddUserToInstanceMutation = (
+  { instanceAdmin: (
+    { addUserToInstance:
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, message: string, field: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+      | (
+        { id: string, email: string, firstName: string, lastName: string }
+        & { __typename: 'User' }
+      )
+      | (
+        { email: string }
+        & { __typename: 'UserNotFoundError' }
+      )
+     }
+    & { __typename: 'InstanceAdminMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type RemoveInvitationMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  invitationId: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveInvitationMutation = (
+  { instanceAdmin: (
+    { removeInvitation: (
+      { messages: Array<(
+        { kind: OperationMessageKind, message: string, field: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceAdminMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type InviteUserToInstanceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  email: Scalars['String']['input'];
+}>;
+
+
+export type InviteUserToInstanceMutation = (
+  { instanceAdmin: (
+    { inviteUserToInstance:
+      | (
+        { id: string, email: string, expiresAt: string }
+        & { __typename: 'InstanceInvitation' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, message: string, field: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceAdminMutation' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
@@ -681,6 +766,17 @@ export type DimensionalPlotFragment = (
     & { __typename: 'FlowLinksType' }
   )> }
   & { __typename: 'DimensionalFlowType' }
+);
+
+export type ModelEditorAccessQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ModelEditorAccessQuery = (
+  { instance: (
+    { id: string, editor: { __typename: 'InstanceEditor' } | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
 );
 
 export type EditorNodeSearchListQueryVariables = Exact<{ [key: string]: never; }>;
