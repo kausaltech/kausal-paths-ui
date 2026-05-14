@@ -8,6 +8,11 @@
       "OperationInfo",
       "OutputPortType"
     ],
+    "AddUserToInstancePayload": [
+      "OperationInfo",
+      "User",
+      "UserNotFoundError"
+    ],
     "CreateDataPointCommentPayload": [
       "DataPointComment",
       "OperationInfo"
@@ -63,6 +68,10 @@
     "InputPortBindingUnion": [
       "DatasetPortType",
       "NodeEdgeType"
+    ],
+    "InviteUserToInstancePayload": [
+      "InstanceInvitation",
+      "OperationInfo"
     ],
     "NodeConfigUnion": [
       "ActionConfigType",
