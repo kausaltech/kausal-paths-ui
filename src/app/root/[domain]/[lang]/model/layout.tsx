@@ -28,10 +28,15 @@ export default function ModelEditorLayout({ children }: Props) {
           overflow: 'hidden',
         }}
       >
-        <EditorAccessGate>
+        <EditorAccessGate
+          chrome={
+            <>
+              <ModelEditorNav />
+              <StaleVersionNotice />
+            </>
+          }
+        >
           <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>{children}</Box>
-          <ModelEditorNav />
-          <StaleVersionNotice />
         </EditorAccessGate>
         <UserNav />
       </ScopedCssBaseline>
