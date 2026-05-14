@@ -1,71 +1,53 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
-import { Box, Chip, CircularProgress, Container, Paper, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+import { BoxArrowUpRight } from 'react-bootstrap-icons';
 
-import { useSession } from '@/lib/auth-client';
+import type { MyEditableInstancesQuery } from '@/common/__generated__/graphql';
 
-const GET_MY_FRAMEWORK_ROLES = gql`
-  query MyFrameworkRoles {
+const GET_MY_EDITABLE_INSTANCES = gql`
+  query MyEditableInstances {
     me {
       id
       email
-      frameworkRoles {
-        frameworkId
-        roleId
-        orgSlug
-        orgId
+      editableInstances {
+        id
+        identifier
+        name
+        themeIdentifier
+        frameworkConfig {
+          id
+          organizationName
+          viewUrl
+          framework {
+            id
+            identifier
+            name
+          }
+        }
       }
     }
   }
 `;
 
-type FrameworkRoleEntry = {
-  frameworkId: string;
-  roleId: string | null;
-  orgSlug: string | null;
-  orgId: string | null;
-};
-
-type MyFrameworkRolesQuery = {
-  me: {
-    id: string;
-    email: string | null;
-    frameworkRoles: FrameworkRoleEntry[];
-  } | null;
-};
-
 export default function MyModelsPage() {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
-
-  const { data, loading } = useQuery<MyFrameworkRolesQuery>(GET_MY_FRAMEWORK_ROLES, {
-    skip: !session?.user,
+  const { data, loading } = useQuery<MyEditableInstancesQuery>(GET_MY_EDITABLE_INSTANCES, {
     fetchPolicy: 'cache-and-network',
   });
 
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.replace('/auth/sign-in');
-    }
-  }, [isPending, session, router]);
-
-  if (isPending || !session?.user) {
-    return (
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  const roles = data?.me?.frameworkRoles ?? [];
+  const instances = data?.me?.editableInstances ?? [];
 
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
@@ -77,41 +59,61 @@ export default function MyModelsPage() {
           My models
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          Frameworks you have a role in.
+          Model instances you can edit.
         </Typography>
       </Box>
 
-      {loading && roles.length === 0 ? (
+      {loading && instances.length === 0 ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={24} />
         </Box>
-      ) : roles.length === 0 ? (
+      ) : instances.length === 0 ? (
         <Paper variant="outlined" sx={{ p: 3 }}>
           <Typography variant="body2" color="text.secondary">
-            You don&apos;t have any framework roles yet.
+            You don&apos;t have edit access to any model instances yet.
           </Typography>
         </Paper>
       ) : (
         <Stack spacing={2}>
-          {roles.map((role, idx) => (
-            <Paper
-              key={`${role.frameworkId}-${role.orgId ?? role.orgSlug ?? idx}`}
-              variant="outlined"
-              sx={{ p: 2 }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                <Typography variant="h3" sx={{ fontSize: 16 }}>
-                  {role.frameworkId}
-                </Typography>
-                {role.roleId && <Chip label={role.roleId} size="small" />}
-              </Box>
-              {(role.orgSlug || role.orgId) && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {role.orgSlug ? `Org: ${role.orgSlug}` : `Org ID: ${role.orgId}`}
-                </Typography>
-              )}
-            </Paper>
-          ))}
+          {instances.map((instance) => {
+            const framework = instance.frameworkConfig?.framework;
+            const orgName = instance.frameworkConfig?.organizationName;
+            const viewUrl = instance.frameworkConfig?.viewUrl;
+            return (
+              <Paper key={instance.id} variant="outlined" sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      <Typography variant="h3" sx={{ fontSize: 16 }}>
+                        {instance.name}
+                      </Typography>
+                      {framework && <Chip label={framework.name} size="small" />}
+                    </Box>
+                    {orgName && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        {orgName}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="text.secondary">
+                      {instance.identifier}
+                    </Typography>
+                  </Box>
+                  {viewUrl && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      endIcon={<BoxArrowUpRight size={12} />}
+                      href={viewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open
+                    </Button>
+                  )}
+                </Box>
+              </Paper>
+            );
+          })}
         </Stack>
       )}
     </Container>

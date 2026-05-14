@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import {
   Alert,
@@ -12,7 +12,6 @@ import {
   CardActionArea,
   CardContent,
   Chip,
-  CircularProgress,
   Container,
   Divider,
   List,
@@ -53,7 +52,6 @@ import {
   editorPreviewModeVar,
   staleVersionNotificationVar,
 } from '@/components/model-editor/queries';
-import { useSession } from '@/lib/auth-client';
 
 const GET_LANDING_DATA = gql`
   query ModelEditorLandingData {
@@ -159,16 +157,13 @@ function formatRelative(iso: string | null | undefined): string | null {
 }
 
 export default function ModelEditorLandingPage() {
-  const router = useRouter();
   const pathname = usePathname();
   const instance = useInstance();
-  const { data: session, isPending } = useSession();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const previewMode = useReactiveVar(editorPreviewModeVar);
 
   const { data } = useQuery<LandingDataQuery>(GET_LANDING_DATA, {
     fetchPolicy: 'cache-and-network',
-    skip: !session?.user,
   });
 
   const [publish, { loading: publishing }] = useMutation<
@@ -201,12 +196,6 @@ export default function ModelEditorLandingPage() {
     return latest;
   }, [nodeEdits]);
 
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.replace('/auth/sign-in');
-    }
-  }, [isPending, session, router]);
-
   // Seed the optimistic-locking token var whenever the query returns a new
   // value — mutations read from this var to gate writes via the backend's
   // StaleVersionError check.
@@ -214,16 +203,6 @@ export default function ModelEditorLandingPage() {
   useEffect(() => {
     draftHeadTokenVar(currentToken);
   }, [currentToken]);
-
-  if (isPending || !session?.user) {
-    return (
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   const base = getModelEditorBase(pathname);
   const editor = data?.instance.editor ?? null;
