@@ -183,6 +183,13 @@ export type InputPortInput = {
   unit: InputMaybe<Scalars['String']['input']>;
 };
 
+export enum InstanceMemberRole {
+  Admin = 'ADMIN',
+  Reviewer = 'REVIEWER',
+  SuperAdmin = 'SUPER_ADMIN',
+  Viewer = 'VIEWER'
+}
+
 /** An enumeration. */
 export enum ModelAction {
   Add = 'ADD',
@@ -251,7 +258,8 @@ export enum PrimaryLayoutClass {
 export type RegisterUserInput = {
   email: Scalars['String']['input'];
   firstName: InputMaybe<Scalars['String']['input']>;
-  frameworkId: Scalars['String']['input'];
+  frameworkId: InputMaybe<Scalars['ID']['input']>;
+  invitationToken: InputMaybe<Scalars['String']['input']>;
   lastName: InputMaybe<Scalars['String']['input']>;
   password: Scalars['String']['input'];
 };
@@ -522,6 +530,26 @@ export type MyFrameworkRolesQuery = (
     )> }
     & { __typename: 'User' }
   ) | null }
+  & { __typename: 'Query' }
+);
+
+export type InstanceUsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type InstanceUsersQuery = (
+  { me: (
+    { id: string, email: string, firstName: string, lastName: string }
+    & { __typename: 'User' }
+  ) | null, instance: (
+    { id: string, users: Array<(
+      { isOwner: boolean, role: InstanceMemberRole, user: (
+        { id: string, email: string, firstName: string, lastName: string }
+        & { __typename: 'User' }
+      ) }
+      & { __typename: 'InstanceMember' }
+    )> }
+    & { __typename: 'InstanceType' }
+  ) }
   & { __typename: 'Query' }
 );
 

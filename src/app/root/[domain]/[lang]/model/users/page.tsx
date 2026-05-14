@@ -26,10 +26,37 @@ import {
   Typography,
 } from '@mui/material';
 
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { PersonPlus } from 'react-bootstrap-icons';
 
+import { InstanceMemberRole, type InstanceUsersQuery } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { useSession } from '@/lib/auth-client';
+
+const GET_INSTANCE_USERS = gql`
+  query InstanceUsers {
+    me {
+      id
+      email
+      firstName
+      lastName
+    }
+    instance {
+      id
+      users {
+        isOwner
+        role
+        user {
+          id
+          email
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`;
 
 function getInitials(name: string | null | undefined, email: string | null | undefined): string {
   const source = name?.trim() || email?.split('@')[0] || '';
@@ -39,14 +66,11 @@ function getInitials(name: string | null | undefined, email: string | null | und
   return source.slice(0, 2).toUpperCase();
 }
 
-type UserStatus = 'active' | 'invited';
-
-type UserRow = {
-  id: string;
-  name: string | null;
-  email: string | null;
-  isCurrentUser: boolean;
-  status: UserStatus;
+const ROLE_LABEL: Record<InstanceMemberRole, string> = {
+  [InstanceMemberRole.Admin]: 'Admin',
+  [InstanceMemberRole.Reviewer]: 'Reviewer',
+  [InstanceMemberRole.SuperAdmin]: 'Super admin',
+  [InstanceMemberRole.Viewer]: 'Viewer',
 };
 
 type InviteRole = 'admin' | 'editor' | 'viewer';
@@ -71,6 +95,11 @@ export default function InstanceUsersPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
+  const { data, loading, error } = useQuery<InstanceUsersQuery>(GET_INSTANCE_USERS, {
+    skip: !session?.user,
+    fetchPolicy: 'cache-and-network',
+  });
+
   useEffect(() => {
     if (!isPending && !session?.user) {
       router.replace('/auth/sign-in');
@@ -87,27 +116,25 @@ export default function InstanceUsersPage() {
     );
   }
 
-  const user = session.user;
-  // Placeholder list: backend doesn't yet expose "who has access to this
-  // instance", so we seed with the current user plus a mock pending invite.
-  // Replace with a real query once InstanceType exposes a users / members
-  // field.
-  const rows: UserRow[] = [
-    {
-      id: user.id,
-      name: user.name ?? null,
-      email: user.email ?? null,
-      isCurrentUser: true,
-      status: 'active',
-    },
-    {
-      id: 'mock-invited-1',
-      name: null,
-      email: 'invited.colleague@example.org',
-      isCurrentUser: false,
-      status: 'invited',
-    },
-  ];
+  const me = data?.me ?? null;
+  const currentEmail = (me?.email ?? session.user.email ?? '').toLowerCase() || null;
+  const rawMembers = data?.instance?.users ?? [];
+  const isMemberOfInstance =
+    currentEmail !== null && rawMembers.some((m) => m.user.email.toLowerCase() === currentEmail);
+  // Backend only exposes `instance.users` to instance admins/owners or
+  // superusers. So if you can see this page but aren't in the members list,
+  // you must be a superuser. There's no `isSuperuser` field on the User type
+  // to confirm this directly — promote a backend flag if this needs to be
+  // exact.
+  const isSuperuser = me !== null && !isMemberOfInstance;
+  // Sort so "me" is always first when I'm a member.
+  const members = currentEmail
+    ? [...rawMembers].sort((a, b) => {
+        const aMe = a.user.email.toLowerCase() === currentEmail ? 0 : 1;
+        const bMe = b.user.email.toLowerCase() === currentEmail ? 0 : 1;
+        return aMe - bMe;
+      })
+    : rawMembers;
 
   const openInvite = () => {
     setInviteEmail('');
@@ -122,8 +149,8 @@ export default function InstanceUsersPage() {
       setEmailError('Enter a valid email address');
       return;
     }
-    // Mock: no backend mutation yet — just close and confirm. Replace with a
-    // real invitation mutation once the backend exposes one.
+    // Mock: no backend mutation yet — replace with `inviteUserToInstance` once
+    // the invite flow is wired up.
     setInviteOpen(false);
     setToast(`Invitation sent to ${trimmed} (mock)`);
   };
@@ -155,46 +182,102 @@ export default function InstanceUsersPage() {
         </Button>
       </Box>
 
-      <Stack spacing={1}>
-        {rows.map((row) => {
-          const isInvited = row.status === 'invited';
-          return (
-            <Paper key={row.id} variant="outlined" sx={{ p: 2 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Failed to load users: {error.message}
+        </Alert>
+      )}
+
+      {loading && !data ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : members.length === 0 && !isSuperuser ? (
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            No users have access to this instance yet.
+          </Typography>
+        </Paper>
+      ) : (
+        <Stack spacing={1}>
+          {isSuperuser && me && (
+            <Paper key="me" variant="outlined" sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    fontSize: 13,
-                    bgcolor: isInvited ? 'action.disabled' : 'primary.main',
-                  }}
-                >
-                  {getInitials(row.name, row.email)}
+                <Avatar sx={{ width: 36, height: 36, fontSize: 13, bgcolor: 'primary.main' }}>
+                  {getInitials(
+                    [me.firstName, me.lastName].filter(Boolean).join(' ').trim() || null,
+                    me.email
+                  )}
                 </Avatar>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                    <Typography
-                      variant="body1"
-                      sx={{ fontWeight: 500, color: isInvited ? 'text.secondary' : 'text.primary' }}
-                    >
-                      {row.name || row.email || 'Unknown user'}
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {[me.firstName, me.lastName].filter(Boolean).join(' ').trim() || me.email}
                     </Typography>
-                    {row.isCurrentUser && <Chip label="You" size="small" />}
-                    {isInvited && (
-                      <Chip label="Invite sent" size="small" color="warning" variant="outlined" />
-                    )}
+                    <Chip label="You" size="small" />
+                    <Chip label="Superuser" size="small" color="secondary" />
                   </Box>
-                  {row.name && row.email && (
+                  {([me.firstName, me.lastName].filter(Boolean).join(' ').trim()
+                    ? true
+                    : false) && (
                     <Typography variant="body2" color="text.secondary">
-                      {row.email}
+                      {me.email}
                     </Typography>
                   )}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5, display: 'block' }}
+                  >
+                    Not a member of this instance — shown because superusers can access every
+                    instance.
+                  </Typography>
                 </Box>
               </Box>
             </Paper>
-          );
-        })}
-      </Stack>
+          )}
+          {members.map((member) => {
+            const fullName =
+              [member.user.firstName, member.user.lastName].filter(Boolean).join(' ').trim() ||
+              null;
+            const isCurrentUser =
+              currentEmail !== null && member.user.email.toLowerCase() === currentEmail;
+            return (
+              <Paper key={member.user.id} variant="outlined" sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      fontSize: 13,
+                      bgcolor: 'primary.main',
+                    }}
+                  >
+                    {getInitials(fullName, member.user.email)}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {fullName || member.user.email}
+                      </Typography>
+                      {isCurrentUser && <Chip label="You" size="small" />}
+                      {member.isOwner && (
+                        <Chip label="Owner" size="small" color="primary" variant="outlined" />
+                      )}
+                      <Chip label={ROLE_LABEL[member.role]} size="small" variant="outlined" />
+                    </Box>
+                    {fullName && (
+                      <Typography variant="body2" color="text.secondary">
+                        {member.user.email}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Paper>
+            );
+          })}
+        </Stack>
+      )}
 
       <Dialog open={inviteOpen} onClose={() => setInviteOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Invite a user</DialogTitle>

@@ -71,6 +71,37 @@ export enum DimensionKind {
   Scenario = 'SCENARIO'
 }
 
+/** An enumeration. */
+export enum FrameworksMeasureTemplateDefaultValueScalingChoices {
+  /** Population */
+  Population = 'POPULATION'
+}
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplatePriorityChoices {
+  /** High */
+  High = 'HIGH',
+  /** Low */
+  Low = 'LOW',
+  /** Medium */
+  Medium = 'MEDIUM'
+}
+
+export enum InstanceMemberRole {
+  Admin = 'ADMIN',
+  Reviewer = 'REVIEWER',
+  SuperAdmin = 'SUPER_ADMIN',
+  Viewer = 'VIEWER'
+}
+
+/** An enumeration. */
+export enum ModelAction {
+  Add = 'ADD',
+  Change = 'CHANGE',
+  Delete = 'DELETE',
+  View = 'VIEW'
+}
+
 export enum NodeKind {
   Action = 'ACTION',
   Formula = 'FORMULA',
