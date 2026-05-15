@@ -22,6 +22,7 @@ import {
   CompactSelection,
   DataEditor,
   type DataEditorProps,
+  type DataEditorRef,
   type EditableGridCell,
   type GridCell,
   GridCellKind,
@@ -162,6 +163,7 @@ export default function DatasetDataGrid({
   const [addYearsProgress, setAddYearsProgress] = useState<AddProgress | null>(null);
   const [gridSelection, setGridSelection] = useState<GridSelection>(EMPTY_SELECTION);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  const gridRef = useRef<DataEditorRef>(null);
   // Glide's onCellContextMenu fires through the React tree; the document-level
   // listener below reads this ref to combine the row with the native event's
   // clientX/Y. Using a ref (not state) avoids stale closures because both
@@ -596,14 +598,24 @@ export default function DatasetDataGrid({
     (cell, e) => {
       e.preventDefault();
       const [colIdx, rowIndex] = cell;
+      const colId = columnIds[colIdx];
       const gridRow = rows[rowIndex];
-      if (!gridRow) return;
+      if (!gridRow || !colId) return;
+      // Read-only cells (dim columns and the Metric column) have no useful
+      // context-menu actions — copy/paste isn't supported there and
+      // comments/data sources hang off year-cell DataPoints. Suppress the
+      // menu entirely and close any open menu from a previous click.
+      if (!isYearColId(colId)) {
+        setContextMenu(null);
+        return;
+      }
       // Glide doesn't expose the underlying MouseEvent's clientX/Y. Stash the
       // row here and let the document-level contextmenu listener pick it up
       // along with the native pointer coords.
       pendingContextRowRef.current = gridRow;
       // Focus the right-clicked cell so any panel opened from the menu
-      // ("Comment", "Data source") knows which data point the user means.
+      // ("Comment", "Data source") knows which data point the user means,
+      // and so emit('copy') / emit('paste') target the right cell.
       setGridSelection({
         rows: CompactSelection.empty(),
         columns: CompactSelection.empty(),
@@ -614,7 +626,7 @@ export default function DatasetDataGrid({
         },
       });
     },
-    [rows]
+    [columnIds, rows]
   );
 
   const onHeaderContextMenu = useCallback<NonNullable<DataEditorProps['onHeaderContextMenu']>>(
@@ -709,6 +721,44 @@ export default function DatasetDataGrid({
       return true;
     },
     [applyEdit]
+  );
+
+  // Multi-cell paste: Glide's default for Number cells doesn't handle
+  // locale-formatted strings ("1,234.56" / "1234,56") or empty cells; coerce
+  // here so pasted spreadsheet ranges land cleanly. Non-Number targets fall
+  // through to `applyEdit`'s guards (dim/Metric columns are read-only).
+  const coercePasteValue = useCallback<NonNullable<DataEditorProps['coercePasteValue']>>(
+    (val, cell) => {
+      if (cell.kind !== GridCellKind.Number) return undefined;
+      const stripped = val.trim().replace(/\s/g, '');
+      if (stripped === '') {
+        return { ...cell, data: undefined, displayData: '' };
+      }
+      const hasComma = stripped.includes(',');
+      const hasDot = stripped.includes('.');
+      let normalised: string;
+      if (hasComma && hasDot) {
+        // Rightmost separator is the decimal; the other is thousands.
+        if (stripped.lastIndexOf('.') > stripped.lastIndexOf(',')) {
+          normalised = stripped.replace(/,/g, '');
+        } else {
+          normalised = stripped.replace(/\./g, '').replace(',', '.');
+        }
+      } else if (hasComma) {
+        // Ambiguous: "1,500" could be thousands or decimal. Treat as
+        // thousands only when the whole string is groups-of-three
+        // (e.g. "1,500", "1,500,000"); otherwise treat as decimal ("1,5").
+        normalised = /^-?\d{1,3}(,\d{3})+$/.test(stripped)
+          ? stripped.replace(/,/g, '')
+          : stripped.replace(',', '.');
+      } else {
+        normalised = stripped;
+      }
+      const num = Number(normalised);
+      if (!Number.isFinite(num)) return undefined;
+      return { ...cell, data: num, displayData: formatNumber(num) };
+    },
+    []
   );
 
   const onColumnResize = useCallback<NonNullable<DataEditorProps['onColumnResize']>>(
@@ -1028,11 +1078,14 @@ export default function DatasetDataGrid({
       </Stack>
       <Box ref={gridWrapperRef} sx={{ flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
         <DataEditor
+          ref={gridRef}
           columns={columns}
           rows={rows.length}
           getCellContent={getCellContent}
           onCellEdited={onCellEdited}
           onCellsEdited={onCellsEdited}
+          coercePasteValue={coercePasteValue}
+          onPaste
           onCellContextMenu={onCellContextMenu}
           onHeaderContextMenu={onHeaderContextMenu}
           onColumnResize={onColumnResize}
@@ -1120,13 +1173,30 @@ export default function DatasetDataGrid({
         >
           <Paper elevation={8}>
             <MenuList autoFocus dense>
-              <MenuItem disabled>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  // Glide's keyboard handlers only fire when the grid is
+                  // focused; the menu click moves focus to the MenuList.
+                  gridRef.current?.focus();
+                  void gridRef.current?.emit('copy');
+                }}
+              >
                 <ListItemIcon>
                   <Files />
                 </ListItemIcon>
                 <ListItemText>Copy</ListItemText>
               </MenuItem>
-              <MenuItem disabled>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  gridRef.current?.focus();
+                  // Reads via navigator.clipboard.readText — requires a user
+                  // gesture (the menu click qualifies) and a secure context.
+                  // No-ops silently if the browser denies permission.
+                  void gridRef.current?.emit('paste');
+                }}
+              >
                 <ListItemIcon>
                   <Clipboard />
                 </ListItemIcon>
