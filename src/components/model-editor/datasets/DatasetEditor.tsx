@@ -26,7 +26,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useMutation, useQuery } from '@apollo/client/react';
+import { useFragment, useMutation, useQuery } from '@apollo/client/react';
 import {
   ArrowLeft,
   Bookmarks,
@@ -57,6 +57,7 @@ import type {
   DatasetConnectedNodesQueryVariables,
   DatasetDetailFieldsFragment,
   DatasetSourceReferenceFieldsFragment,
+  DatasetSummaryFieldsFragment,
   DeleteSourceReferenceMutation,
   DeleteSourceReferenceMutationVariables,
   InstanceDatasetQuery,
@@ -76,6 +77,7 @@ import {
   CREATE_DATA_POINT_COMMENT,
   CREATE_DATA_SOURCE,
   CREATE_SOURCE_REFERENCE,
+  DATASET_SUMMARY_FIELDS,
   DELETE_SOURCE_REFERENCE,
   GET_DATASET_CONNECTED_NODES,
   GET_INSTANCE_DATASET,
@@ -964,8 +966,20 @@ function sortMetricsBySiblings(metrics: readonly MetricRow[]): MetricRow[] {
 
 export default function DatasetEditor({ datasetId }: Props) {
   const { data, loading, error, refetch } = useQuery<InstanceDatasetQuery>(GET_INSTANCE_DATASET, {
+    variables: { datasetId },
     fetchPolicy: 'cache-and-network',
   });
+  // Read whatever the list query already cached for this dataset, so we can
+  // render the page chrome (name, identifier, dimensions, etc.) immediately
+  // while the detail query is still in flight. `complete` is false until every
+  // field in DatasetSummaryFields is present.
+  const { data: cachedSummary, complete: cachedSummaryComplete } =
+    useFragment<DatasetSummaryFieldsFragment>({
+      fragment: DATASET_SUMMARY_FIELDS,
+      fragmentName: 'DatasetSummaryFields',
+      from: { __typename: 'Dataset', id: datasetId },
+    });
+  const summaryFromCache = cachedSummaryComplete ? cachedSummary : null;
   const instance = useInstance();
   const [createComment] = useMutation<
     CreateDataPointCommentMutation,
@@ -996,10 +1010,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const listBase = getListBase(pathname);
   const modelEditorBase = getModelEditorBase(pathname);
 
-  const dataset = useMemo(
-    () => data?.instance.editor?.datasets.find((d) => d.id === datasetId) ?? null,
-    [data, datasetId]
-  );
+  const dataset = data?.instance.editor?.dataset ?? null;
 
   const [name, setName] = useState('');
   const [syncedName, setSyncedName] = useState<string | null>(null);
@@ -1076,8 +1087,33 @@ export default function DatasetEditor({ datasetId }: Props) {
 
   if (loading && !data) {
     return (
-      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
+      <Box sx={{ pt: 20, pb: 3, px: 3, height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Button
+          startIcon={<ArrowLeft />}
+          onClick={() => router.push(listBase)}
+          sx={{ mb: 2, alignSelf: 'flex-start' }}
+        >
+          Back to datasets
+        </Button>
+        <Paper sx={{ p: 3, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {summaryFromCache && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h3">{summaryFromCache.name}</Typography>
+              {summaryFromCache.identifier && (
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ fontFamily: 'monospace' }}
+                >
+                  {summaryFromCache.identifier}
+                </Typography>
+              )}
+            </Box>
+          )}
+          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        </Paper>
       </Box>
     );
   }
