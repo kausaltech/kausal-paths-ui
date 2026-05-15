@@ -14,15 +14,15 @@ import { type Theme as MuiTheme, type ThemeOptions, createTheme } from '@mui/mat
 const editorPalette: ThemeOptions['palette'] = {
   mode: 'light',
   primary: {
-    main: '#2563eb',
-    light: '#60a5fa',
-    dark: '#1d4ed8',
+    main: '#107251',
+    light: '#1A865F',
+    dark: '#0A5E43',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#475569',
-    light: '#64748b',
-    dark: '#334155',
+    main: '#AAC5DB',
+    light: '#CBE2F6',
+    dark: '#8DAEC9',
     contrastText: '#ffffff',
   },
   error: { main: '#dc2626', light: '#fecaca', dark: '#991b1b', contrastText: '#ffffff' },
