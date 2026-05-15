@@ -1252,9 +1252,7 @@ export default function DatasetEditor({ datasetId }: Props) {
             <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <DatasetDataGrid
                 dataset={dataset}
-                onMutated={() => {
-                  void refetch();
-                }}
+                onMutated={() => refetch()}
                 onSelectedDataPointChange={setSelectedDataPointId}
                 clearSelectionNonce={clearSelectionNonce}
                 onOpenPanel={setOpenPanel}
@@ -1521,24 +1519,20 @@ export default function DatasetEditor({ datasetId }: Props) {
                       </Stack>
                     </Paper>
                   )}
-                  <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      disabled={!nameDirty}
-                      onClick={() => setName(dataset.name)}
-                    >
-                      {t('common-discard')}
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      disabled={!nameDirty}
-                      onClick={() => setNotice(t('datasets-saving-metadata-not-implemented'))}
-                    >
-                      {t('common-save-changes')}
-                    </Button>
-                  </Stack>
+                  {nameDirty && (
+                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <Button size="small" variant="outlined" onClick={() => setName(dataset.name)}>
+                        {t('common-discard')}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() => setNotice(t('datasets-saving-metadata-not-implemented'))}
+                      >
+                        {t('common-save-changes')}
+                      </Button>
+                    </Stack>
+                  )}
                 </Stack>
               </Paper>
 

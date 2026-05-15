@@ -61,7 +61,14 @@ import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queri
 
 type Props = {
   dataset: DatasetDetailFieldsFragment;
-  onMutated: () => void;
+  /**
+   * Called when an edit / delete mutation completes. May return a promise that
+   * resolves once the parent finishes refetching; `handleSave` awaits this so
+   * it can defer clearing successful pending edits until the fresh data has
+   * landed in the cache (otherwise cells flash to empty between a mutation
+   * resolving and the refetch landing).
+   */
+  onMutated: () => void | Promise<unknown>;
   onSelectedDataPointChange?: (dataPointId: string | null) => void;
   // Bumped by the parent to clear the grid's cell selection (e.g. when the
   // user clicks "Show all" in the comments panel). The initial value is
@@ -274,7 +281,7 @@ export default function DatasetDataGrid({
       if (failureCount > 0) {
         setError(firstError ?? `Failed to add ${failureCount} row${failureCount === 1 ? '' : 's'}`);
       }
-      onMutated();
+      void onMutated();
     },
     [createDataPoint, instance.id, dataset.id, years, onMutated]
   );
@@ -333,7 +340,7 @@ export default function DatasetDataGrid({
       setGridSelection(EMPTY_SELECTION);
       setDeleteProgress(null);
       if (firstError) setError(firstError);
-      onMutated();
+      void onMutated();
     },
     [deleteDataPoint, instance.id, dataset.id, onMutated]
   );
@@ -417,7 +424,7 @@ export default function DatasetDataGrid({
       } else {
         dropPendingForYears();
       }
-      onMutated();
+      void onMutated();
     },
     [deleteDataPoint, instance.id, dataset.id, rows, onMutated]
   );
@@ -498,7 +505,7 @@ export default function DatasetDataGrid({
           firstError ?? `Failed to add ${failureCount} year${failureCount === 1 ? '' : 's'}`
         );
       }
-      onMutated();
+      void onMutated();
     },
     [createDataPoint, instance.id, dataset.id, rows, onMutated]
   );
@@ -804,29 +811,18 @@ export default function DatasetDataGrid({
     const baseVars = { instanceId: instance.id, datasetId: dataset.id };
     const queued = [...pendingEdits];
 
-    const clearPending = (key: string) => {
-      setPendingEdits((prev) => {
-        if (!prev.has(key)) return prev;
-        const next = new Map(prev);
-        next.delete(key);
-        return next;
-      });
-    };
-    const markFailure = (key: string, edit: PendingEdit, errorMsg: string) => {
-      setPendingEdits((prev) => {
-        const next = new Map(prev);
-        next.set(key, { ...edit, error: errorMsg });
-        return next;
-      });
-    };
-
-    let failureCount = 0;
+    // Track outcomes locally and defer the pendingEdits update until after
+    // the parent refetch lands — clearing a successful pending mid-loop would
+    // briefly fall back to stale cache for that cell (empty for creates, old
+    // value for updates), causing the values to disappear and re-appear.
+    const successKeys: string[] = [];
+    const failures = new Map<string, { edit: PendingEdit; error: string }>();
     let unexpected: string | null = null;
 
     for (const [key, edit] of queued) {
       const row = rowById.get(edit.rowId);
       if (!row) {
-        clearPending(key);
+        successKeys.push(key);
         continue;
       }
       const kind = diffKind(edit.dataPointId, edit.nextValue);
@@ -834,7 +830,7 @@ export default function DatasetDataGrid({
       try {
         if (kind === 'create') {
           if (edit.nextValue === null) {
-            clearPending(key);
+            successKeys.push(key);
             continue;
           }
           const result = await createDataPoint({
@@ -852,14 +848,16 @@ export default function DatasetDataGrid({
           });
           const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
           if (payload?.__typename === 'OperationInfo') {
-            failureCount += 1;
-            markFailure(key, edit, payload.messages.map((m) => m.message).join('; '));
+            failures.set(key, {
+              edit,
+              error: payload.messages.map((m) => m.message).join('; '),
+            });
           } else {
-            clearPending(key);
+            successKeys.push(key);
           }
         } else if (kind === 'delete') {
           if (edit.dataPointId === null) {
-            clearPending(key);
+            successKeys.push(key);
             continue;
           }
           const result = await deleteDataPoint({
@@ -867,14 +865,13 @@ export default function DatasetDataGrid({
           });
           const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
           if (msgs.length > 0) {
-            failureCount += 1;
-            markFailure(key, edit, msgs.map((m) => m.message).join('; '));
+            failures.set(key, { edit, error: msgs.map((m) => m.message).join('; ') });
           } else {
-            clearPending(key);
+            successKeys.push(key);
           }
         } else {
           if (edit.dataPointId === null) {
-            clearPending(key);
+            successKeys.push(key);
             continue;
           }
           const result = await updateDataPoint({
@@ -886,29 +883,44 @@ export default function DatasetDataGrid({
           });
           const payload = result.data?.instanceEditor.datasetEditor.updateDataPoint;
           if (payload?.__typename === 'OperationInfo') {
-            failureCount += 1;
-            markFailure(key, edit, payload.messages.map((m) => m.message).join('; '));
+            failures.set(key, {
+              edit,
+              error: payload.messages.map((m) => m.message).join('; '),
+            });
           } else {
-            clearPending(key);
+            successKeys.push(key);
           }
         }
       } catch (err) {
-        failureCount += 1;
         const msg = err instanceof Error ? err.message : String(err);
-        markFailure(key, edit, msg);
+        failures.set(key, { edit, error: msg });
         unexpected ??= msg;
       }
     }
 
+    // Wait for the parent to refetch the dataset (so the Apollo cache holds
+    // the freshly-saved values) before dropping the pending entries. Then
+    // commit successes and failures in a single state update — the cell
+    // renderer sees pending → baseValue swap with identical values, no flash.
+    await onMutated();
+
+    setPendingEdits((prev) => {
+      if (successKeys.length === 0 && failures.size === 0) return prev;
+      const next = new Map(prev);
+      for (const key of successKeys) next.delete(key);
+      for (const [key, { edit, error }] of failures) next.set(key, { ...edit, error });
+      return next;
+    });
+
     setSaving(false);
 
+    const failureCount = failures.size;
     if (failureCount > 0) {
       setError(
         unexpected ??
           `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
       );
     }
-    onMutated();
   }, [
     pendingEdits,
     saving,
@@ -987,22 +999,21 @@ export default function DatasetDataGrid({
             Delete {selectedYearCount} year{selectedYearCount === 1 ? '' : 's'}
           </Button>
         )}
-        <Button
-          size="small"
-          onClick={handleDiscard}
-          disabled={!hasPending || saving}
-          color="inherit"
-        >
-          Discard
-        </Button>
-        <Button
-          size="small"
-          variant="contained"
-          onClick={() => void handleSave()}
-          disabled={!hasPending || saving}
-        >
-          {saving ? 'Saving…' : 'Save changes'}
-        </Button>
+        {hasPending && (
+          <>
+            <Button size="small" onClick={handleDiscard} disabled={saving} color="inherit">
+              Discard
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => void handleSave()}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : 'Save changes'}
+            </Button>
+          </>
+        )}
         <Button size="small" startIcon={<Plus />} onClick={() => setAddYearOpen(true)}>
           Add years
         </Button>
