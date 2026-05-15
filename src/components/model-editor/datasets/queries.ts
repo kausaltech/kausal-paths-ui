@@ -158,16 +158,6 @@ export const GET_INSTANCE_DATASETS = gql`
       editor {
         datasets {
           ...DatasetSummaryFields
-          dataPoints {
-            id
-            date
-            metric {
-              id
-            }
-            dimensionCategories {
-              uuid
-            }
-          }
           dataPointComments {
             id
           }
@@ -179,11 +169,11 @@ export const GET_INSTANCE_DATASETS = gql`
 `;
 
 export const GET_INSTANCE_DATASET = gql`
-  query InstanceDataset {
+  query InstanceDataset($datasetId: ID!) {
     instance {
       id
       editor {
-        datasets {
+        dataset(id: $datasetId) {
           ...DatasetDetailFields
         }
         dataSources {

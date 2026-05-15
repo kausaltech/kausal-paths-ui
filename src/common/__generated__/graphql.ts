@@ -1310,16 +1310,7 @@ export type InstanceDatasetsQuery = (
   { instance: (
     { id: string, editor: (
       { datasets: Array<(
-        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPoints: Array<(
-          { id: string, date: any, metric: (
-            { id: string }
-            & { __typename: 'DatasetMetric' }
-          ), dimensionCategories: Array<(
-            { uuid: string }
-            & { __typename: 'DatasetDimensionCategory' }
-          )> }
-          & { __typename: 'DataPoint' }
-        )>, dataPointComments: Array<(
+        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPointComments: Array<(
           { id: string }
           & { __typename: 'DataPointComment' }
         )>, externalRef: (
@@ -1341,13 +1332,15 @@ export type InstanceDatasetsQuery = (
   & { __typename: 'Query' }
 );
 
-export type InstanceDatasetQueryVariables = Exact<{ [key: string]: never; }>;
+export type InstanceDatasetQueryVariables = Exact<{
+  datasetId: Scalars['ID']['input'];
+}>;
 
 
 export type InstanceDatasetQuery = (
   { instance: (
     { id: string, editor: (
-      { datasets: Array<(
+      { dataset: (
         { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
           & { __typename: 'DatasetExternalRefType' }
@@ -1404,7 +1397,7 @@ export type InstanceDatasetQuery = (
           & { __typename: 'DatasetSourceReference' }
         )> }
         & { __typename: 'Dataset' }
-      )>, dataSources: Array<(
+      ) | null, dataSources: Array<(
         { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
         & { __typename: 'DataSource' }
       )> }

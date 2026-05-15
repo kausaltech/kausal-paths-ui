@@ -111,32 +111,6 @@ function DatasetRowActions({
   );
 }
 
-function getYearRange(dataPoints: { date: string }[]): string {
-  let min: number | null = null;
-  let max: number | null = null;
-  for (const dp of dataPoints) {
-    const y = parseInt(dp.date.slice(0, 4), 10);
-    if (!Number.isFinite(y)) continue;
-    if (min === null || y < min) min = y;
-    if (max === null || y > max) max = y;
-  }
-  if (min === null || max === null) return '—';
-  return min === max ? String(min) : `${min}–${max}`;
-}
-
-// A row in the data grid is a unique (metric, dim-category-combo) tuple —
-// the same key used by buildGridData. Sort UUIDs so combo order is canonical.
-function getRowCount(
-  dataPoints: { metric: { id: string }; dimensionCategories: { uuid: string }[] }[]
-): number {
-  const seen = new Set<string>();
-  for (const dp of dataPoints) {
-    const uuids = dp.dimensionCategories.map((c) => c.uuid).sort();
-    seen.add([dp.metric.id, ...uuids].join('|'));
-  }
-  return seen.size;
-}
-
 export default function DatasetList() {
   const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
@@ -182,9 +156,6 @@ export default function DatasetList() {
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
-              <TableCell align="right">Years</TableCell>
-              <TableCell align="right">Rows</TableCell>
-              <TableCell align="right">Data points</TableCell>
               <TableCell align="right">Dimensions</TableCell>
               <TableCell align="right">Metrics</TableCell>
               <TableCell align="right">Comments</TableCell>
@@ -197,7 +168,7 @@ export default function DatasetList() {
           <TableBody>
             {datasets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={6}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
                     No datasets defined.
                   </Typography>
@@ -232,9 +203,6 @@ export default function DatasetList() {
                     )}
                   </Stack>
                 </TableCell>
-                <TableCell align="right">{getYearRange(ds.dataPoints)}</TableCell>
-                <TableCell align="right">{getRowCount(ds.dataPoints)}</TableCell>
-                <TableCell align="right">{ds.dataPoints.length}</TableCell>
                 <TableCell align="right">{ds.dimensions.length}</TableCell>
                 <TableCell align="right">{ds.metrics.length}</TableCell>
                 <TableCell align="right">
