@@ -182,9 +182,6 @@ importers:
       next-intl:
         specifier: ^4.9.0
         version: 4.9.0(next@16.2.2(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.99.0))(react@19.2.4)(typescript@6.0.2)
-      numbro:
-        specifier: ^2.5.0
-        version: 2.5.0
       overlayscrollbars:
         specifier: ^2.14.0
         version: 2.14.0
@@ -4808,9 +4805,6 @@ packages:
     resolution: {integrity: sha512-QxD8cf2eVqJOOz63z6JIN9BzvVs/dlySa5HGSBH5xtR8dPteIRQnBxxKqkNTiT6jbDTF6jAfrd4oMcND9RGbQg==}
     engines: {node: '>=0.6'}
 
-  bignumber.js@9.3.1:
-    resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
-
   binary-search-bounds@2.0.5:
     resolution: {integrity: sha512-H0ea4Fd3lS1+sTEB2TgcLoK21lLhwEJzlQv3IN47pJS976Gx4zoWe0ak3q+uYh60ppQxg9F16Ri4tS1sfD4+jA==}
 
@@ -7370,9 +7364,6 @@ packages:
   number-is-integer@1.0.1:
     resolution: {integrity: sha1-5ZvKFy/+0nMY55x862y3LAlbIVI=}
     engines: {node: '>=0.10.0'}
-
-  numbro@2.5.0:
-    resolution: {integrity: sha512-xDcctDimhzko/e+y+Q2/8i3qNC9Svw1QgOkSkQoO0kIPI473tR9QRbo2KP88Ty9p8WbPy+3OpTaAIzehtuHq+A==}
 
   object-assign@4.1.1:
     resolution: {integrity: sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=}
@@ -14043,8 +14034,6 @@ snapshots:
 
   big-integer@1.6.52: {}
 
-  bignumber.js@9.3.1: {}
-
   binary-search-bounds@2.0.5: {}
 
   binary@0.3.0:
@@ -16974,10 +16963,6 @@ snapshots:
   number-is-integer@1.0.1:
     dependencies:
       is-finite: 1.1.0
-
-  numbro@2.5.0:
-    dependencies:
-      bignumber.js: 9.3.1
 
   object-assign@4.1.1: {}
 
