@@ -27,6 +27,7 @@ import {
 } from '@mui/material';
 
 import { useFragment, useMutation, useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   Bookmarks,
@@ -94,8 +95,9 @@ type DimensionRow = DatasetDetailFieldsFragment['dimensions'][number];
 type CategoryRow = DimensionRow['categories'][number];
 
 function CategoryChip({ cat, used }: { cat: CategoryRow; used: boolean }) {
+  const t = useTranslations('model-editor');
   return (
-    <Tooltip title={used ? 'Used by data points' : 'Not used by any data point'}>
+    <Tooltip title={used ? t('datasets-category-used') : t('datasets-category-not-used')}>
       <Chip
         label={cat.label}
         size="small"
@@ -114,6 +116,7 @@ function DimensionCategories({
   dim: DimensionRow;
   usedCategoryUuids: Set<string>;
 }) {
+  const t = useTranslations('model-editor');
   const [showUnused, setShowUnused] = useState(false);
   const used = dim.categories.filter((c) => usedCategoryUuids.has(c.uuid));
   const unused = dim.categories.filter((c) => !usedCategoryUuids.has(c.uuid));
@@ -128,7 +131,7 @@ function DimensionCategories({
         </Box>
       ) : (
         <Typography variant="caption" color="text.secondary">
-          No categories used by any data point.
+          {t('datasets-no-categories')}
         </Typography>
       )}
       {unused.length > 0 && (
@@ -139,7 +142,9 @@ function DimensionCategories({
             startIcon={showUnused ? <CaretDownFill /> : <CaretRightFill />}
             sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
           >
-            {showUnused ? 'Hide' : 'Show'} unused ({unused.length})
+            {showUnused
+              ? t('datasets-hide-unused-with-count', { count: unused.length })
+              : t('datasets-show-unused-with-count', { count: unused.length })}
           </Button>
           <Collapse in={showUnused} unmountOnExit>
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -154,8 +159,11 @@ function DimensionCategories({
   );
 }
 
-function getUserName(user: { firstName: string; lastName: string; email: string } | null): string {
-  if (!user) return 'Unknown';
+function getUserName(
+  user: { firstName: string; lastName: string; email: string } | null,
+  t: ReturnType<typeof useTranslations>
+): string {
+  if (!user) return t('common-unknown');
   const full = `${user.firstName} ${user.lastName}`.trim();
   return full || user.email;
 }
@@ -266,11 +274,12 @@ function CommentsPanel({
   onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
   onClearSelection: () => void;
 }) {
+  const t = useTranslations('model-editor');
   const hasSelection = selectedDataPointId !== null;
   const visibleComments = hasSelection
     ? comments.filter((c) => c.dataPointId === selectedDataPointId)
     : comments;
-  const heading = hasSelection ? 'Comments on datapoint' : 'All comments in dataset';
+  const heading = hasSelection ? t('datasets-comments-on-datapoint') : t('datasets-comments-all');
 
   const [formOpen, setFormOpen] = useState(false);
   const [text, setText] = useState('');
@@ -332,7 +341,7 @@ function CommentsPanel({
       onClick={() => setFormOpen((v) => !v)}
       sx={{ mb: formOpen ? 1 : 2 }}
     >
-      {hasSelection ? 'Comment this datapoint' : 'Select a datapoint to comment'}
+      {hasSelection ? t('datasets-comment-datapoint') : t('datasets-select-datapoint-to-comment')}
     </Button>
   );
 
@@ -341,7 +350,7 @@ function CommentsPanel({
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
         <Stack spacing={1.5}>
           <TextField
-            label="Comment"
+            label={t('datasets-comment')}
             value={text}
             onChange={(e) => setText(e.target.value)}
             multiline
@@ -360,7 +369,7 @@ function CommentsPanel({
                 disabled={submitting}
               />
             }
-            label="Needs review"
+            label={t('datasets-needs-review')}
           />
           {submitError && (
             <Alert severity="error" onClose={() => setSubmitError(null)}>
@@ -379,7 +388,7 @@ function CommentsPanel({
               }}
               disabled={submitting}
             >
-              Cancel
+              {t('common-cancel')}
             </Button>
             <Button
               size="small"
@@ -387,7 +396,7 @@ function CommentsPanel({
               onClick={() => void handleSubmit()}
               disabled={submitting || text.trim() === ''}
             >
-              {submitting ? 'Saving…' : 'Submit'}
+              {submitting ? t('common-saving') : t('common-submit')}
             </Button>
           </Stack>
         </Stack>
@@ -406,7 +415,7 @@ function CommentsPanel({
         </Typography>
         {hasSelection && (
           <Button size="small" variant="text" onClick={onClearSelection}>
-            Show all
+            {t('datasets-show-all')}
           </Button>
         )}
       </Stack>
@@ -415,9 +424,7 @@ function CommentsPanel({
       {form}
       {visibleComments.length === 0 ? (
         <Typography color="text.secondary" variant="body2">
-          {hasSelection
-            ? 'No comments on the selected data point yet.'
-            : 'No comments on any data point yet.'}
+          {hasSelection ? t('datasets-no-comments-datapoint') : t('datasets-no-comments-all')}
         </Typography>
       ) : (
         <Stack spacing={1.5}>
@@ -441,7 +448,7 @@ function CommentsPanel({
                   justifyContent="space-between"
                   sx={{ mb: 1 }}
                 >
-                  <Typography variant="subtitle2">{getUserName(c.createdBy ?? null)}</Typography>
+                  <Typography variant="subtitle2">{getUserName(c.createdBy ?? null, t)}</Typography>
                 </Stack>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
                   {c.text}
@@ -449,7 +456,8 @@ function CommentsPanel({
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Typography variant="caption" color="text.secondary">
                     {formatCommentDate(c.createdAt)}
-                    {isCommentEdited(c.createdAt, c.lastModifiedAt) && ' · edited'}
+                    {isCommentEdited(c.createdAt, c.lastModifiedAt) &&
+                      t('datasets-comment-edited-suffix')}
                   </Typography>
                   {c.isReview && (
                     <FormControlLabel
@@ -467,7 +475,7 @@ function CommentsPanel({
                       }
                       label={
                         <Typography variant="caption">
-                          {resolved ? 'Resolved' : 'Resolve'}
+                          {resolved ? t('datasets-resolved') : t('datasets-resolve')}
                         </Typography>
                       }
                       sx={{ m: 0 }}
@@ -480,7 +488,10 @@ function CommentsPanel({
                     color="text.secondary"
                     sx={{ display: 'block', textAlign: 'right', mt: 0.25 }}
                   >
-                    by {getUserName(c.resolvedBy ?? null)} · {formatCommentDate(c.resolvedAt)}
+                    {t('datasets-resolved-by', {
+                      name: getUserName(c.resolvedBy ?? null, t),
+                      date: formatCommentDate(c.resolvedAt),
+                    })}
                   </Typography>
                 )}
               </Paper>
@@ -501,6 +512,7 @@ function DefineDataSourceDialog({
   onClose: () => void;
   onCreate: (input: CreateDataSourceInput) => Promise<void>;
 }) {
+  const t = useTranslations('model-editor');
   const [name, setName] = useState('');
   const [authority, setAuthority] = useState('');
   const [edition, setEdition] = useState('');
@@ -545,11 +557,11 @@ function DefineDataSourceDialog({
 
   return (
     <Dialog open={open} onClose={submitting ? undefined : onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Define a new data source</DialogTitle>
+      <DialogTitle>{t('datasets-define-data-source-title')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label="Name"
+            label={t('datasets-name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -559,25 +571,25 @@ function DefineDataSourceDialog({
             disabled={submitting}
           />
           <TextField
-            label="Authority"
+            label={t('datasets-authority')}
             value={authority}
             onChange={(e) => setAuthority(e.target.value)}
             fullWidth
             size="small"
             disabled={submitting}
-            helperText="Publisher / agency behind the source (optional)."
+            helperText={t('datasets-authority-helper')}
           />
           <TextField
-            label="Edition"
+            label={t('datasets-edition')}
             value={edition}
             onChange={(e) => setEdition(e.target.value)}
             fullWidth
             size="small"
             disabled={submitting}
-            helperText="Version, year, or release identifier (optional)."
+            helperText={t('datasets-edition-helper')}
           />
           <TextField
-            label="URL"
+            label={t('datasets-url')}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             fullWidth
@@ -586,7 +598,7 @@ function DefineDataSourceDialog({
             disabled={submitting}
           />
           <TextField
-            label="Description"
+            label={t('datasets-description')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             multiline
@@ -604,14 +616,14 @@ function DefineDataSourceDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('common-cancel')}
         </Button>
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
           disabled={submitting || !name.trim()}
         >
-          {submitting ? 'Creating…' : 'Create'}
+          {submitting ? t('common-creating') : t('common-create')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -627,6 +639,7 @@ function SourceReferenceCard({
   onDetach: () => void;
   detaching: boolean;
 }) {
+  const t = useTranslations('model-editor');
   const ds = r.dataSource;
   const meta = [ds.authority, ds.edition].filter((s): s is string => Boolean(s));
   return (
@@ -634,13 +647,13 @@ function SourceReferenceCard({
       <Stack spacing={0.5}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
           <Typography variant="subtitle2">{ds.name}</Typography>
-          <Tooltip title="Detach data source">
+          <Tooltip title={t('datasets-detach-data-source')}>
             <span>
               <IconButton
                 size="small"
                 onClick={onDetach}
                 disabled={detaching}
-                aria-label="Detach data source"
+                aria-label={t('datasets-detach-data-source')}
               >
                 <DashCircle size={14} />
               </IconButton>
@@ -665,7 +678,10 @@ function SourceReferenceCard({
           </Typography>
         )}
         <Typography variant="caption" color="text.secondary" sx={{ pt: 0.5 }}>
-          attached by {getUserName(r.createdBy ?? null)} · {formatCommentDate(r.createdAt)}
+          {t('datasets-attached-by', {
+            name: getUserName(r.createdBy ?? null, t),
+            date: formatCommentDate(r.createdAt),
+          })}
         </Typography>
       </Stack>
     </Paper>
@@ -691,13 +707,14 @@ function SourcesPanel({
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
   onClearSelection: () => void;
 }) {
+  const t = useTranslations('model-editor');
   const hasSelection = selectedDataPointId !== null;
   const datasetScopeRefs = refs.filter((r) => r.dataPoint === null);
   const dataPointRefs = refs.filter((r) => r.dataPoint !== null);
   const selectedRefs = hasSelection
     ? dataPointRefs.filter((r) => r.dataPoint?.id === selectedDataPointId)
     : dataPointRefs;
-  const heading = hasSelection ? 'Sources on datapoint' : 'Data sources';
+  const heading = hasSelection ? t('datasets-sources-on-datapoint') : t('datasets-data-sources');
   const visibleCount = hasSelection
     ? selectedRefs.length
     : datasetScopeRefs.length + dataPointRefs.length;
@@ -777,7 +794,7 @@ function SourcesPanel({
         </Typography>
         {hasSelection && (
           <Button size="small" variant="text" onClick={onClearSelection}>
-            Show all
+            {t('datasets-show-all')}
           </Button>
         )}
       </Stack>
@@ -786,7 +803,7 @@ function SourcesPanel({
       {hasSelection ? (
         selectedRefs.length === 0 ? (
           <Typography color="text.secondary" variant="body2">
-            No sources attached to this data point.
+            {t('datasets-no-sources-attached-datapoint')}
           </Typography>
         ) : (
           <Stack spacing={1.5}>{selectedRefs.map((r) => renderCard(r))}</Stack>
@@ -801,7 +818,7 @@ function SourcesPanel({
               sx={{ mb: 1 }}
             >
               <Typography variant="subtitle2">
-                Attached to the dataset{' '}
+                {t('datasets-attached-to-dataset')}{' '}
                 <Typography component="span" variant="caption" color="text.secondary">
                   ({datasetScopeRefs.length})
                 </Typography>
@@ -812,7 +829,7 @@ function SourcesPanel({
                 variant={attachOpen ? 'outlined' : 'text'}
                 onClick={() => setAttachOpen((v) => !v)}
               >
-                Set data source
+                {t('datasets-attach-data-source')}
               </Button>
             </Stack>
             <Collapse in={attachOpen} unmountOnExit>
@@ -839,7 +856,7 @@ function SourcesPanel({
                             <span>{o.label || o.name}</span>
                             {isAttached && (
                               <Typography variant="caption" color="text.secondary">
-                                already in use
+                                {t('datasets-already-in-use')}
                               </Typography>
                             )}
                           </Stack>
@@ -848,9 +865,9 @@ function SourcesPanel({
                     }}
                     disabled={attaching}
                     renderInput={(params) => (
-                      <TextField {...params} label="Data source" autoFocus />
+                      <TextField {...params} label={t('datasets-data-source')} autoFocus />
                     )}
-                    noOptionsText="No data sources defined in this instance yet."
+                    noOptionsText={t('datasets-no-data-sources-available')}
                   />
                   <Button
                     size="small"
@@ -860,7 +877,7 @@ function SourcesPanel({
                     disabled={attaching}
                     sx={{ alignSelf: 'flex-start' }}
                   >
-                    Define new
+                    {t('datasets-define-new')}
                   </Button>
                   {attachError && (
                     <Alert severity="error" onClose={() => setAttachError(null)}>
@@ -874,7 +891,7 @@ function SourcesPanel({
                       onClick={resetAttachForm}
                       disabled={attaching}
                     >
-                      Cancel
+                      {t('common-cancel')}
                     </Button>
                     <Button
                       size="small"
@@ -882,7 +899,7 @@ function SourcesPanel({
                       onClick={() => void handleAttach()}
                       disabled={attaching || !pickedSource}
                     >
-                      {attaching ? 'Saving…' : 'Attach'}
+                      {attaching ? t('common-saving') : t('common-attach')}
                     </Button>
                   </Stack>
                 </Stack>
@@ -890,7 +907,7 @@ function SourcesPanel({
             </Collapse>
             {datasetScopeRefs.length === 0 ? (
               <Typography color="text.secondary" variant="body2">
-                No sources attached to the dataset.
+                {t('datasets-no-sources-attached-dataset')}
               </Typography>
             ) : (
               <Stack spacing={1.5}>{datasetScopeRefs.map((r) => renderCard(r))}</Stack>
@@ -898,14 +915,14 @@ function SourcesPanel({
           </Box>
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Attached to data points{' '}
+              {t('datasets-attached-to-data-points')}{' '}
               <Typography component="span" variant="caption" color="text.secondary">
                 ({dataPointRefs.length})
               </Typography>
             </Typography>
             {dataPointRefs.length === 0 ? (
               <Typography color="text.secondary" variant="body2">
-                No sources attached to any data point.
+                {t('datasets-no-sources-attached-datapoints')}
               </Typography>
             ) : (
               <Stack spacing={1.5}>{dataPointRefs.map((r) => renderCard(r))}</Stack>
@@ -965,6 +982,7 @@ function sortMetricsBySiblings(metrics: readonly MetricRow[]): MetricRow[] {
 }
 
 export default function DatasetEditor({ datasetId }: Props) {
+  const t = useTranslations('model-editor');
   const { data, loading, error, refetch } = useQuery<InstanceDatasetQuery>(GET_INSTANCE_DATASET, {
     variables: { datasetId },
     fetchPolicy: 'cache-and-network',
@@ -1093,7 +1111,7 @@ export default function DatasetEditor({ datasetId }: Props) {
           onClick={() => router.push(listBase)}
           sx={{ mb: 2, alignSelf: 'flex-start' }}
         >
-          Back to datasets
+          {t('datasets-back-to-datasets')}
         </Button>
         <Paper sx={{ p: 3, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {summaryFromCache && (
@@ -1122,10 +1140,10 @@ export default function DatasetEditor({ datasetId }: Props) {
     return (
       <Box sx={{ pt: 20, pb: 3, px: 3 }}>
         <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
-          Back to datasets
+          {t('datasets-back-to-datasets')}
         </Button>
         <Alert severity="warning" sx={{ mt: 2 }}>
-          Dataset not found.
+          {t('datasets-dataset-not-found')}
         </Alert>
       </Box>
     );
@@ -1164,7 +1182,7 @@ export default function DatasetEditor({ datasetId }: Props) {
           onClick={() => router.push(listBase)}
           sx={{ mb: 2, alignSelf: 'flex-start' }}
         >
-          Back to datasets
+          {t('datasets-back-to-datasets')}
         </Button>
 
         {/* Data points */}
@@ -1196,7 +1214,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 variant={openPanel === 'comments' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'comments' ? null : 'comments'))}
               >
-                Comments
+                {t('datasets-comments')}
                 {commentsWithDataPoint.length > 0 && (
                   <Chip
                     label={commentsWithDataPoint.length}
@@ -1210,7 +1228,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 variant={openPanel === 'sources' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'sources' ? null : 'sources'))}
               >
-                Data sources
+                {t('datasets-data-sources')}
                 {sourceReferences.length > 0 && (
                   <Chip
                     label={sourceReferences.length}
@@ -1224,15 +1242,12 @@ export default function DatasetEditor({ datasetId }: Props) {
                 variant={openPanel === 'details' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'details' ? null : 'details'))}
               >
-                Dataset details
+                {t('datasets-dataset-details')}
               </Button>
             </Stack>
           </Stack>
           {isExternal ? (
-            <Alert severity="info">
-              This is an external placeholder dataset. Data points are stored in the external
-              repository and are not editable here.
-            </Alert>
+            <Alert severity="info">{t('datasets-external-source-info')}</Alert>
           ) : (
             <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <DatasetDataGrid
@@ -1434,7 +1449,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 });
                 const payload = result.data?.instanceEditor.createDataSource;
                 if (!payload) {
-                  throw new Error('Create data source returned no payload.');
+                  throw new Error(t('datasets-create-data-source-no-payload'));
                 }
                 if (payload.__typename === 'OperationInfo') {
                   throw new Error(payload.messages.map((m) => m.message).join('; '));
@@ -1445,27 +1460,27 @@ export default function DatasetEditor({ datasetId }: Props) {
           ) : (
             <>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Dataset details
+                {t('datasets-dataset-details')}
               </Typography>
 
               {/* Metadata */}
               <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  Dataset
+                  {t('datasets-dataset')}
                 </Typography>
                 <Stack spacing={2}>
                   <TextField
-                    label="Name"
+                    label={t('datasets-name')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     fullWidth
                     size="small"
                   />
                   <TextField
-                    label="Identifier"
+                    label={t('datasets-identifier')}
                     value={dataset.identifier ?? ''}
                     disabled
-                    helperText="The identifier cannot be changed."
+                    helperText={t('datasets-identifier-helper')}
                     fullWidth
                     size="small"
                   />
@@ -1473,19 +1488,21 @@ export default function DatasetEditor({ datasetId }: Props) {
                     <Paper variant="outlined" sx={{ p: 2 }}>
                       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                         <Link45deg />
-                        <Typography variant="subtitle2">External source</Typography>
-                        {isExternal && <Chip label="Placeholder" size="small" color="warning" />}
+                        <Typography variant="subtitle2">{t('datasets-external-source')}</Typography>
+                        {isExternal && (
+                          <Chip label={t('datasets-placeholder')} size="small" color="warning" />
+                        )}
                       </Stack>
                       <Stack spacing={1}>
                         <TextField
-                          label="Repository URL"
+                          label={t('datasets-repository-url')}
                           value={dataset.externalRef.repoUrl}
                           disabled
                           fullWidth
                           size="small"
                         />
                         <TextField
-                          label="Dataset path"
+                          label={t('datasets-dataset-path')}
                           value={dataset.externalRef.datasetId}
                           disabled
                           fullWidth
@@ -1493,7 +1510,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                         />
                         {dataset.externalRef.commit && (
                           <TextField
-                            label="Commit"
+                            label={t('datasets-commit')}
                             value={dataset.externalRef.commit}
                             disabled
                             fullWidth
@@ -1511,17 +1528,15 @@ export default function DatasetEditor({ datasetId }: Props) {
                       disabled={!nameDirty}
                       onClick={() => setName(dataset.name)}
                     >
-                      Discard
+                      {t('common-discard')}
                     </Button>
                     <Button
                       size="small"
                       variant="contained"
                       disabled={!nameDirty}
-                      onClick={() =>
-                        setNotice('Saving dataset metadata is not yet implemented on the backend.')
-                      }
+                      onClick={() => setNotice(t('datasets-saving-metadata-not-implemented'))}
                     >
-                      Save changes
+                      {t('common-save-changes')}
                     </Button>
                   </Stack>
                 </Stack>
@@ -1530,14 +1545,14 @@ export default function DatasetEditor({ datasetId }: Props) {
               {/* Connected nodes */}
               <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  Connected nodes{' '}
+                  {t('datasets-connected-nodes')}{' '}
                   <Typography component="span" variant="body2" color="text.secondary">
                     ({connectedNodeCount})
                   </Typography>
                 </Typography>
                 {connectedNodeCount === 0 ? (
                   <Typography color="text.secondary" variant="body2">
-                    No nodes are bound to this dataset.
+                    {t('datasets-no-nodes-bound')}
                   </Typography>
                 ) : (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
@@ -1574,20 +1589,18 @@ export default function DatasetEditor({ datasetId }: Props) {
                   justifyContent="space-between"
                   sx={{ mb: 2 }}
                 >
-                  <Typography variant="subtitle1">Dimensions</Typography>
+                  <Typography variant="subtitle1">{t('datasets-dimensions')}</Typography>
                   <Button
                     size="small"
                     startIcon={<Plus />}
-                    onClick={() =>
-                      setNotice('Attaching dimensions is not yet implemented on the backend.')
-                    }
+                    onClick={() => setNotice(t('datasets-attaching-dimensions-not-implemented'))}
                   >
-                    Add
+                    {t('common-add')}
                   </Button>
                 </Stack>
                 {dataset.dimensions.length === 0 ? (
                   <Typography color="text.secondary" variant="body2">
-                    No dimensions attached.
+                    {t('datasets-no-dimensions-attached')}
                   </Typography>
                 ) : (
                   <Stack spacing={2}>
@@ -1601,7 +1614,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                         >
                           <Typography variant="subtitle2">{dim.name}</Typography>
                           <Stack direction="row">
-                            <Tooltip title="Edit">
+                            <Tooltip title={t('common-edit')}>
                               <IconButton
                                 size="small"
                                 component={Link}
@@ -1610,14 +1623,12 @@ export default function DatasetEditor({ datasetId }: Props) {
                                 <PencilSquare />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Detach dimension">
+                            <Tooltip title={t('datasets-detach-dimension')}>
                               <span>
                                 <IconButton
                                   size="small"
                                   onClick={() =>
-                                    setNotice(
-                                      'Detaching dimensions is not yet implemented on the backend.'
-                                    )
+                                    setNotice(t('datasets-detaching-dimensions-not-implemented'))
                                   }
                                 >
                                   <Trash />
@@ -1641,20 +1652,18 @@ export default function DatasetEditor({ datasetId }: Props) {
                   justifyContent="space-between"
                   sx={{ mb: 2 }}
                 >
-                  <Typography variant="subtitle1">Metrics</Typography>
+                  <Typography variant="subtitle1">{t('datasets-metrics')}</Typography>
                   <Button
                     size="small"
                     startIcon={<Plus />}
-                    onClick={() =>
-                      setNotice('Creating metrics is not yet implemented on the backend.')
-                    }
+                    onClick={() => setNotice(t('datasets-creating-metrics-not-implemented'))}
                   >
-                    Add
+                    {t('common-add')}
                   </Button>
                 </Stack>
                 {sortedMetrics.length === 0 ? (
                   <Typography color="text.secondary" variant="body2">
-                    No metrics defined.
+                    {t('datasets-no-metrics-defined')}
                   </Typography>
                 ) : (
                   <Stack spacing={1}>
@@ -1664,28 +1673,24 @@ export default function DatasetEditor({ datasetId }: Props) {
                           <Stack direction="row" alignItems="center" justifyContent="space-between">
                             <Typography variant="subtitle2">{m.label}</Typography>
                             <Stack direction="row">
-                              <Tooltip title="Edit">
+                              <Tooltip title={t('common-edit')}>
                                 <span>
                                   <IconButton
                                     size="small"
                                     onClick={() =>
-                                      setNotice(
-                                        'Editing metrics is not yet implemented on the backend.'
-                                      )
+                                      setNotice(t('datasets-editing-metrics-not-implemented'))
                                     }
                                   >
                                     <PencilSquare />
                                   </IconButton>
                                 </span>
                               </Tooltip>
-                              <Tooltip title="Delete">
+                              <Tooltip title={t('common-delete')}>
                                 <span>
                                   <IconButton
                                     size="small"
                                     onClick={() =>
-                                      setNotice(
-                                        'Deleting metrics is not yet implemented on the backend.'
-                                      )
+                                      setNotice(t('datasets-deleting-metrics-not-implemented'))
                                     }
                                   >
                                     <Trash />
