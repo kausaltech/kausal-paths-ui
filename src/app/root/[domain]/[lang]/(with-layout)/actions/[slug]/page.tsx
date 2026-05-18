@@ -174,10 +174,6 @@ export default function ActionPage() {
     }
   }, [activeDownstreamNode, data]);
 
-  if (!data) {
-    return <ContentLoader fullPage />;
-  }
-
   if (error) {
     return (
       <Container className="pt-5">
@@ -186,7 +182,11 @@ export default function ActionPage() {
     );
   }
 
-  if (!data || !data.action) {
+  if (!data) {
+    return <ContentLoader fullPage />;
+  }
+
+  if (!data.action) {
     return <ErrorMessage message={t('page-not-found')} />;
   }
 
