@@ -509,7 +509,12 @@ export default function ActionsList({
 
                   {columns.map((col) => {
                     const val = col.getValue(action);
-                    const isImpactCol = col.key === 'CUM_IMPACT' || col.key === 'IMPACT';
+                    // In cost_benefit mode the Benefit column reuses the CUM_IMPACT key,
+                    // so guard on graphType — otherwise benefit values get the red impact
+                    // bar and the disabled-row hide rule would hide Benefit but not Cost.
+                    const isImpactCol =
+                      activeOverview?.graphType !== 'cost_benefit' &&
+                      (col.key === 'CUM_IMPACT' || col.key === 'IMPACT');
                     const hideImpact = !isIncluded && isImpactCol;
                     const isMissing = val === null;
                     const showLoadingPlaceholder = isLoading && isMissing;
