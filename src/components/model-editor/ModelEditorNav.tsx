@@ -160,10 +160,11 @@ function getModelEditorBase(pathname: string): string {
 
 type SearchMode = 'nodes' | 'datasets' | 'dimensions';
 
-function getSearchMode(pathname: string): SearchMode {
+function getSearchMode(pathname: string): SearchMode | null {
+  if (pathname.includes('/model/nodes')) return 'nodes';
   if (pathname.includes('/model/datasets')) return 'datasets';
   if (pathname.includes('/model/dimensions')) return 'dimensions';
-  return 'nodes';
+  return null;
 }
 
 const PLACEHOLDERS: Record<SearchMode, string> = {
@@ -184,7 +185,6 @@ export default function ModelEditorNav() {
   const base = getModelEditorBase(pathname);
   const activeTab = TABS.find((t) => t.matches(pathname)) ?? TABS[0];
   const mode = getSearchMode(pathname);
-  const isLanding = activeTab.label === 'Model';
 
   const filters = useReactiveVar(nodeFiltersVar);
   const filtersOpen = useReactiveVar(nodeFiltersOpenVar);
@@ -205,7 +205,8 @@ export default function ModelEditorNav() {
   const items: SearchItem[] = useMemo(() => {
     if (mode === 'nodes') return nodesData?.instance.nodes ?? [];
     if (mode === 'datasets') return datasetsData?.instance.editor?.datasets ?? [];
-    return dimensionsData?.instance.editor?.dimensions ?? [];
+    if (mode === 'dimensions') return dimensionsData?.instance.editor?.dimensions ?? [];
+    return [];
   }, [mode, nodesData, datasetsData, dimensionsData]);
 
   const results = useMemo(() => {
@@ -282,7 +283,7 @@ export default function ModelEditorNav() {
         </Button>
       </Box>
 
-      {!isLanding && (
+      {mode !== null && (
         <>
           <Divider />
 
