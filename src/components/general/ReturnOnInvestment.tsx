@@ -8,64 +8,59 @@ import { useTranslations } from 'next-intl';
 import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
-function getChartConfig(
+type Entry = { action: string; returnOnInvestment: number };
+
+// Actions with no cost (or no data in range) are omitted — they don't have a
+// meaningful ROI so showing them as a zero bar would distort the chart.
+function buildEntries(
   startYear: number,
   endYear: number,
-  formatNumber: (value: number) => string,
-  formatAxisLabel: (value: number) => string,
   dataset?: ImpactOverviewsQuery['impactOverviews'][0]
-): EChartsCoreOption {
-  const unit = dataset?.indicatorUnit?.short || '';
+): Entry[] {
+  if (!dataset) return [];
+  return dataset.actions.flatMap((action) => {
+    const totals = action.effectDim.years.reduce(
+      ({ totalCost, totalEffect }, year, index) => {
+        if (year < startYear || year > endYear) return { totalCost, totalEffect };
+        return {
+          totalCost: totalCost + (action.costDim?.values[index] ?? 0),
+          totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
+        };
+      },
+      { totalCost: 0, totalEffect: 0 }
+    );
+    if (totals.totalCost <= 0) return [];
+    const roi = (totals.totalEffect / totals.totalCost) * (action.unitAdjustmentMultiplier ?? 1);
+    return [{ action: action.action.name, returnOnInvestment: roi }];
+  });
+}
 
+function getChartConfig(
+  entries: Entry[],
+  unit: string,
+  formatNumber: (value: number) => string,
+  formatAxisLabel: (value: number) => string
+): EChartsCoreOption {
   return {
     aria: {
       enabled: true,
     },
-    dataset: dataset
-      ? [
-          {
-            dimensions: ['action', 'returnOnInvestment'],
-            source: dataset.actions
-              .map((action) => {
-                const totals = action.effectDim.years.reduce(
-                  ({ totalCost, totalEffect }, year, index) => {
-                    if (year < startYear || year > endYear) {
-                      return { totalCost, totalEffect };
-                    }
-
-                    return {
-                      totalCost: totalCost + (action.costDim?.values[index] ?? 0),
-                      totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
-                    };
-                  },
-                  { totalCost: 0, totalEffect: 0 }
-                );
-
-                const roi =
-                  totals.totalCost > 0
-                    ? (totals.totalEffect / totals.totalCost) *
-                      (action.unitAdjustmentMultiplier ?? 1)
-                    : null;
-
-                return {
-                  action: action.action.name,
-                  returnOnInvestment: roi,
-                };
-              })
-              .filter((item) => item.returnOnInvestment !== null), // Remove actions with no cost
-          },
-          {
-            transform: {
-              type: 'sort',
-              config: { dimension: 'returnOnInvestment', order: 'asc' },
-            },
-          },
-        ]
-      : [],
+    dataset: [
+      {
+        dimensions: ['action', 'returnOnInvestment'],
+        source: entries,
+      },
+      {
+        transform: {
+          type: 'sort',
+          config: { dimension: 'returnOnInvestment', order: 'asc' },
+        },
+      },
+    ],
     tooltip: {
       trigger: 'axis',
       valueFormatter: (value: number) => `${formatNumber(value || 0)} ${unit}`,
@@ -87,7 +82,7 @@ function getChartConfig(
       type: 'category',
       splitArea: { show: true },
       axisLine: { show: false },
-      axisLabel: { show: true },
+      axisLabel: { show: true, width: 175, overflow: 'break' },
       axisTick: { show: false },
       splitLine: { show: false },
     },
@@ -126,15 +121,19 @@ export function ReturnOnInvestment({ data, isLoading }: Props) {
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
+  const activeScenario = useReactiveVar(activeScenarioVar);
+  const entries = useMemo(() => buildEntries(startYear, endYear, data), [data, startYear, endYear]);
+  const unit = data?.indicatorUnit?.short || '';
   const chartData = useMemo(
-    () => getChartConfig(startYear, endYear, formatNumber, formatAxisLabel, data),
-    [data, startYear, endYear, formatNumber, formatAxisLabel]
+    () => getChartConfig(entries, unit, formatNumber, formatAxisLabel),
+    [entries, unit, formatNumber, formatAxisLabel]
   );
-  const bars = data?.actions.length;
+  const bars = entries.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = data?.label || t('return-on-investment');
-  // TODO: Add subtitle translation return-on-investment-subtitle
-  const subtitle = data?.indicatorLabel || '';
+  const title = `${data?.label || t('return-on-investment')} (${startYear} - ${endYear})`;
+  const subtitle = t('return-on-investment-subtitle', {
+    activeScenario: activeScenario?.name ?? '',
+  });
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

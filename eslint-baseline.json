@@ -139,39 +139,9 @@
       "count": 3
     }
   },
-  "src/components/flow/FlowGraph.tsx": {
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
-  "src/components/flow/NodeDetails.tsx": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
   "src/components/general/ActionsComparison.tsx": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
-    }
-  },
-  "src/components/general/ActionsMac.tsx": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 19
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 24
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 8
-    },
-    "react/prop-types": {
-      "count": 10
     }
   },
   "src/components/general/BarGraph.tsx": {
@@ -255,6 +225,23 @@
       "count": 1
     }
   },
+  "src/components/model-editor/RichTextField.tsx": {
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 12
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 38
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 41
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 4
+    }
+  },
   "src/components/model-editor/metric-viewer/MetricDataViewer.tsx": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
@@ -266,11 +253,6 @@
   "src/components/model-editor/useLayoutNodes.ts": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
-    }
-  },
-  "src/components/pages/ActionListPage.tsx": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
     }
   },
   "src/components/pages/OutcomePage.tsx": {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client/react';
@@ -9,54 +8,54 @@ import { useTranslations } from 'next-intl';
 import { Chart } from '@common/components/Chart';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import type { SortActionsConfig } from '@/types/actions.types';
 
-function getChartConfig(
+type VisibleAction = { id: string; name: string };
+
+type Entry = { action: string; simpleEffect: number };
+
+// Actions absent from the overview are omitted rather than coerced to 0, so the
+// chart doesn't conflate "no data for this action" with "this action had zero effect".
+function buildEntries(
+  visibleActions: VisibleAction[],
   startYear: number,
   endYear: number,
+  dataset?: ImpactOverviewsQuery['impactOverviews'][0]
+): Entry[] {
+  return visibleActions.flatMap((vAction) => {
+    const overviewAction = dataset?.actions.find((a) => a.action.id === vAction.id);
+    if (!overviewAction) return [];
+    const totalEffect = overviewAction.effectDim.years.reduce((sum, year, index) => {
+      if (year < startYear || year > endYear) return sum;
+      return sum + (overviewAction.effectDim.values[index] ?? 0);
+    }, 0);
+    return [{ action: vAction.name, simpleEffect: totalEffect }];
+  });
+}
+
+function getChartConfig(
+  entries: Entry[],
+  unit: string,
   formatNumber: (value: number) => string,
   formatAxisLabel: (value: number) => string,
-  dataset?: ImpactOverviewsQuery['impactOverviews'][0]
+  sortBy: SortActionsConfig,
+  sortAscending: boolean
 ): EChartsCoreOption {
-  const unit = dataset?.indicatorUnit?.short || '';
+  const sorted =
+    sortBy.key === 'STANDARD'
+      ? entries
+      : [...entries].sort((a, b) => (sortAscending ? 1 : -1) * (a.simpleEffect - b.simpleEffect));
 
   return {
-    dataset: dataset
-      ? [
-          {
-            dimensions: ['action', 'simpleEffect'],
-            source: dataset.actions.map((action) => {
-              const totals = action.effectDim.years.reduce(
-                ({ totalEffect }, year, index) => {
-                  if (year < startYear || year > endYear) {
-                    return { totalEffect };
-                  }
-
-                  return {
-                    totalEffect: totalEffect + (action.effectDim.values[index] ?? 0),
-                  };
-                },
-                { totalEffect: 0 }
-              );
-
-              // const effect = totals.totalEffect;
-
-              return {
-                action: action.action.name,
-                simpleEffect: totals.totalEffect,
-              };
-            }),
-          },
-          {
-            transform: {
-              type: 'sort',
-              config: { dimension: 'simpleEffect', order: 'asc' },
-            },
-          },
-        ]
-      : [],
+    dataset: [
+      {
+        dimensions: ['action', 'simpleEffect'],
+        source: sorted,
+      },
+    ],
     tooltip: {
       trigger: 'axis',
       valueFormatter: (value: number) => `${formatNumber(value)} ${unit}`,
@@ -90,15 +89,12 @@ function getChartConfig(
           x: 'simpleEffect',
           y: 'action',
         },
-        datasetIndex: 1,
         label: {
           show: true,
           align: 'left',
           position: 'right',
           formatter(params) {
-            const activeIndex = params.encode?.x[0];
-            const value = activeIndex ? params.value?.[activeIndex] : null;
-
+            const value = (params.value as { simpleEffect?: number } | undefined)?.simpleEffect;
             return value ? `${formatNumber(value)} ${unit}` : '';
           },
         },
@@ -109,26 +105,37 @@ function getChartConfig(
 
 type Props = {
   data: ImpactOverviewsQuery['impactOverviews'][0] | undefined; // Single overview
+  visibleActions: VisibleAction[];
+  sortBy: SortActionsConfig;
+  sortAscending: boolean;
   isLoading: boolean;
 };
 
-export function SimpleEffect({ data, isLoading }: Props) {
+export function SimpleEffect({ data, visibleActions, sortBy, sortAscending, isLoading }: Props) {
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
-  const chartData = useMemo(
-    () => getChartConfig(startYear, endYear, formatNumber, formatAxisLabel, data),
-    [data, startYear, endYear, formatNumber, formatAxisLabel]
+  const activeScenario = useReactiveVar(activeScenarioVar);
+  const entries = useMemo(
+    () => buildEntries(visibleActions, startYear, endYear, data),
+    [visibleActions, startYear, endYear, data]
   );
-  const bars = data?.actions.length;
+  const unit = data?.indicatorUnit?.short || '';
+  const chartData = useMemo(
+    () => getChartConfig(entries, unit, formatNumber, formatAxisLabel, sortBy, sortAscending),
+    [entries, unit, sortBy, sortAscending, formatNumber, formatAxisLabel]
+  );
+  const bars = entries.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = data?.label || t('simple-effect');
-  const subtitle = data?.indicatorLabel || t('simple-effect-subtitle');
+  const title = `${data?.label || t('simple-effect')} (${startYear} - ${endYear})`;
+  const subtitle =
+    data?.indicatorLabel ||
+    t('simple-effect-subtitle', { activeScenario: activeScenario?.name ?? '' });
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
-      <Chart isLoading={isLoading} data={chartData} height={`${chartHeight}px`} />
+      <Chart isLoading={false} data={chartData} height={`${chartHeight}px`} />
     </ChartWrapper>
   );
 }

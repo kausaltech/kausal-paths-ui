@@ -65,6 +65,7 @@ const GET_ACTION_LIST = gql`
     }
     impactOverviews {
       id
+      graphType
       label
       plotLimitForIndicator
       indicatorUnit {

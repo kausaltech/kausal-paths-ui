@@ -11,6 +11,7 @@
   "actions-group-type": "Bereich",
   "actions-count": "{count} Massnahmenpakete",
   "actions-as-comparison": "Vergleich Auswirkung",
+  "actions-comparison-subtitle": "Auswirkungen der Massnahmen im Jahr {year} im Szenario ''{activeScenario}''.",
   "active-actions": "{count}/{total} aktive Massnahmenpakete",
   "watch-action-list-title": "Massnahmen",
   "outcome-sub-nodes": "Bereiche",

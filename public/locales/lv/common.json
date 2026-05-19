@@ -76,6 +76,12 @@
   "cost-efficiency": "Izmaksu efektivitāte",
   "financial-impact": "Finansiālā ietekme",
   "net-cost": "Neto izmaksas",
+  "net-benefit": "Neto ieguvums",
+  "return-on-investment": "Ieguldījumu atdeve",
+  "cost": "Izmaksas",
+  "benefit": "Ieguvums",
+  "outcomes-of-interest": "Nozīmīgākie rezultāti",
+  "outcomes-of-interest-description": "Nozīmīgākie rezultāti atspoguļo dažādās ietekmes, kas kvantificētas kā izmaksas un ieguvumi, kas saistīti ar katru ieinteresēto pusi.",
   "reduction": "samazinājums",
   "plot-choose-dimension": "Izvēlieties dimensiju",
   "normalization": "Normalizācija",
@@ -83,6 +89,7 @@
   "change-target": "Mainīt mērķi",
   "plot-total": "Kopā",
   "actions-as-comparison": "Salīdzināt",
+  "actions-comparison-subtitle": "Darbību ietekme {year}. gadā scenārijā ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Kumulatīvā ietekme",
   "accumulated-between": "uzkrāts starp",
   "change-over-time": "Izmaiņas",
@@ -142,5 +149,9 @@
   "calculation": "Aprēķins",
   "calculation-visible": "Aprēķins ir redzams",
   "calculation-hidden": "Aprēķins ir paslēpts",
-  "loading-calculation": "Ielādē aprēķinu…"
+  "loading-calculation": "Ielādē aprēķinu…",
+  "cost-efficiency-subtitle": "Darbību izmaksu efektivitāte scenārijā ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Darbību izmaksu un ieguvumu attiecība scenārijā ''{activeScenario}''.",
+  "simple-effect-subtitle": "Darbību izvēlētā ietekme scenārijā ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Darbību ieguldījumu atdeve (ROI) scenārijā ''{activeScenario}''."
 }

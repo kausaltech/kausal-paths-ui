@@ -78,6 +78,13 @@
   "efficiency": "Omkostningseffektivitet",
   "cost-efficiency": "Omkostningseffektivitet",
   "financial-impact": "Økonomisk påvirkning",
+  "net-cost": "Nettoomkostning",
+  "net-benefit": "Nettofordel",
+  "return-on-investment": "Investeringsafkast",
+  "cost": "Omkostning",
+  "benefit": "Fordel",
+  "outcomes-of-interest": "Relevante resultater",
+  "outcomes-of-interest-description": "Relevante resultater repræsenterer de forskellige påvirkninger, kvantificeret som omkostninger og fordele, der er forbundet med hver interessent.",
   "reduction": "reduktion",
   "plot-choose-dimension": "Vælg dimension",
   "normalization": "Normalisering",
@@ -85,6 +92,7 @@
   "change-target": "Skift mål",
   "plot-total": "I alt",
   "actions-as-comparison": "Sammenlign",
+  "actions-comparison-subtitle": "Handlingernes effekt i året {year} i scenariet ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Akkumuleret påvirkning",
   "accumulated-between": "akkumuleret mellem",
   "change-over-time": "Ændring",
@@ -152,5 +160,9 @@
   "calculation": "Beregning",
   "calculation-visible": "Beregningen er vist",
   "calculation-hidden": "Beregningen er skjult",
-  "loading-calculation": "Indlæser beregning…"
+  "loading-calculation": "Indlæser beregning…",
+  "cost-efficiency-subtitle": "Omkostningseffektivitet for handlinger i scenariet ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Omkostninger og fordele for handlinger i scenariet ''{activeScenario}''.",
+  "simple-effect-subtitle": "Udvalgt effekt af handlinger i scenariet ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Investeringsafkast (ROI) for handlinger i scenariet ''{activeScenario}''."
 }

@@ -79,6 +79,12 @@
   "cost-efficiency": "Efektywność kosztowa",
   "financial-impact": "Wpływ finansowy",
   "net-cost": "Koszt netto",
+  "net-benefit": "Korzyść netto",
+  "return-on-investment": "Zwrot z inwestycji",
+  "cost": "Koszt",
+  "benefit": "Korzyść",
+  "outcomes-of-interest": "Istotne wyniki",
+  "outcomes-of-interest-description": "Istotne wyniki przedstawiają różnorodne skutki, mierzone jako koszty i korzyści, związane z każdym interesariuszem.",
   "reduction": "redukcja",
   "plot-choose-dimension": "Wybierz wymiar",
   "normalization": "Normalizacja",
@@ -86,6 +92,7 @@
   "change-target": "Zmień cel",
   "plot-total": "Łącznie",
   "actions-as-comparison": "Porównaj",
+  "actions-comparison-subtitle": "Wpływ działań w roku {year} w scenariuszu ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Skumulowany wpływ",
   "accumulated-between": "skumulowane między",
   "change-over-time": "Zmiana",
@@ -153,5 +160,9 @@
   "calculation": "Obliczenia",
   "calculation-visible": "Obliczenia są widoczne",
   "calculation-hidden": "Obliczenia są ukryte",
-  "loading-calculation": "Wczytywanie obliczeń…"
+  "loading-calculation": "Wczytywanie obliczeń…",
+  "cost-efficiency-subtitle": "Efektywność kosztowa działań w scenariuszu ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Koszty i korzyści działań w scenariuszu ''{activeScenario}''.",
+  "simple-effect-subtitle": "Wybrany wpływ działań w scenariuszu ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Zwrot z inwestycji (ROI) działań w scenariuszu ''{activeScenario}''."
 }

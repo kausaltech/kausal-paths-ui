@@ -33,6 +33,12 @@
   "financial-impact": "Kustannusvaikutus",
   "cost-efficiency": "Kustannusvaikuttavuus",
   "net-cost": "Nettokustannus",
+  "net-benefit": "Nettohyöty",
+  "return-on-investment": "Tuotto-odotus",
+  "cost": "Kustannus",
+  "benefit": "Hyöty",
+  "outcomes-of-interest": "Sidosryhmävaikutukset",
+  "outcomes-of-interest-description": "Sidosryhmävaikutukset kuvaavat eri sidosryhmiin kohdistuvia monimuotoisia vaikutuksia, jotka esitetään kustannuksina ja hyötyinä.",
   "impact-on-year": "Vuonna",
   "impact-total": "Yhteensä",
   "loading": "Ladataan",
@@ -80,6 +86,7 @@
   "change-target": "Vaihda tavoite",
   "plot-total": "Yhteensä",
   "actions-as-comparison": "Vertailu",
+  "actions-comparison-subtitle": "Toimenpiteiden vaikutus vuonna {year} skenaariossa ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Kumulatiivinen vaikutus",
   "accumulated-between": "yhteensä välillä",
   "change-over-time": "Muutos",
@@ -145,5 +152,9 @@
   "calculation": "Laskelma",
   "calculation-visible": "Laskelma näkyy",
   "calculation-hidden": "Laskelma on piilotettu",
-  "loading-calculation": "Ladataan laskelmaa…"
+  "loading-calculation": "Ladataan laskelmaa…",
+  "cost-efficiency-subtitle": "Toimenpiteiden kustannusvaikuttavuus skenaariossa ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Toimenpiteiden kustannus-hyötysuhde skenaariossa ''{activeScenario}''.",
+  "simple-effect-subtitle": "Toimenpiteiden valittu vaikutus skenaariossa ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Toimenpiteiden tuotto-odotus (ROI) skenaariossa ''{activeScenario}''."
 }

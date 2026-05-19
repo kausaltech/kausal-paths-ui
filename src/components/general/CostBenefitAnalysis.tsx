@@ -17,7 +17,7 @@ import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import { yearRangeVar } from '@/common/cache';
+import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import { DimensionalMetric } from '@/data/metric';
@@ -139,7 +139,8 @@ function getActionChartConfig(
   unitLabel: string,
   theme: Theme,
   formatNumber: (value: number) => string,
-  formatAxisLabel: (value: number) => string
+  formatAxisLabel: (value: number) => string,
+  labels: { netBenefit: string; benefit: string; cost: string }
 ): EChartsCoreOption {
   return {
     aria: { enabled: true },
@@ -168,7 +169,7 @@ function getActionChartConfig(
     legend: isFirst
       ? {
           selectedMode: false,
-          data: [{ name: 'Net Benefit', icon: 'circle' }, 'Benefit', 'Cost'],
+          data: [{ name: labels.netBenefit, icon: 'circle' }, labels.benefit, labels.cost],
           top: 0,
         }
       : { show: false },
@@ -202,7 +203,7 @@ function getActionChartConfig(
     series: [
       {
         type: 'custom',
-        name: 'Net Benefit',
+        name: labels.netBenefit,
         itemStyle: { color: theme.themeColors.black, borderWidth: 2 },
         renderItem: function (params, api) {
           const categoryIndex = api.value('label');
@@ -214,7 +215,7 @@ function getActionChartConfig(
           const color = api.visual('color');
           const style = api.style({ stroke: color, fill: color });
           return {
-            name: 'Net benefit',
+            name: labels.netBenefit,
             type: 'group',
             children: [
               {
@@ -258,13 +259,13 @@ function getActionChartConfig(
       {
         type: 'bar',
         barCategoryGap: '40%',
-        name: 'Benefit',
+        name: labels.benefit,
         encode: { x: 'benefit', y: 'label' },
         itemStyle: { color: theme.graphColors.green030 },
       },
       {
         type: 'bar',
-        name: 'Cost',
+        name: labels.cost,
         encode: { x: 'cost', y: 'label' },
         itemStyle: { color: theme.graphColors.red030 },
       },
@@ -602,9 +603,20 @@ function ActionRow({
         unitLabel,
         theme,
         formatNumber,
-        formatAxisLabel
+        formatAxisLabel,
+        { netBenefit: t('net-benefit'), benefit: t('benefit'), cost: t('cost') }
       ),
-    [item.actionName, item.totals, bounds, isFirst, unitLabel, theme, formatNumber, formatAxisLabel]
+    [
+      item.actionName,
+      item.totals,
+      bounds,
+      isFirst,
+      unitLabel,
+      theme,
+      formatNumber,
+      formatAxisLabel,
+      t,
+    ]
   );
 
   const stakeholderData = useMemo<StakeholderCostTypeData | null>(
@@ -693,7 +705,7 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   const t = useTranslations('common');
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
   const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
-
+  const activeScenario = useReactiveVar(activeScenarioVar);
   const dimensionalMetrics = useMemo(() => {
     if (!data || data.graphType !== 'cost_benefit') {
       return [] as TActionRow[];
@@ -761,9 +773,12 @@ export function CostBenefitAnalysis({ data, isLoading }: Props) {
   }
 
   const MIN_WIDTH_XS = 820;
-
+  const title = `${data?.label || t('cost-benefit-analysis')} (${startYear} - ${endYear})`;
+  const subtitle =
+    data?.indicatorLabel ||
+    t('cost-benefit-subtitle', { activeScenario: activeScenario?.name ?? '' });
   return (
-    <ChartWrapper title={t('cost-benefit-analysis')} isLoading={isLoading}>
+    <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
       <StyledScrollArea>
         <OverlayScrollbarsComponent
           defer

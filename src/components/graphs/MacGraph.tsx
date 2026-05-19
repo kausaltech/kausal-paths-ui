@@ -19,6 +19,11 @@ const GraphContainer = styled.div`
   .js-plotly-plot {
     margin-bottom: 1rem;
   }
+  /* Hide the x-axis value callout that Plotly draws in hovermode "x" —
+     the underlying x-coordinate is an internal xPlacement value, not user-meaningful. */
+  .js-plotly-plot .hoverlayer .axistext {
+    display: none;
+  }
 `;
 
 const ActionDescription = styled.div`
@@ -190,7 +195,7 @@ function MacGraph(props: MacGraphProps) {
           color: theme.graphColors.grey090,
         },
       },
-      hovermode: 'x unified' as const,
+      hovermode: 'x' as const,
       hoverdistance: 10,
       yaxis: {
         title: {
@@ -203,6 +208,7 @@ function MacGraph(props: MacGraphProps) {
           text: `${impactName} (${effectUnit})`,
         },
         showgrid: true,
+        showspikes: false,
       },
       margin: {
         l: 50,
@@ -231,6 +237,16 @@ function MacGraph(props: MacGraphProps) {
     [setHoverId]
   );
 
+  const barLineColors = useMemo(
+    () =>
+      data.ids.map((_, i) => (i === hoverId ? theme.graphColors.grey090 : theme.themeColors.white)),
+    [hoverId, data.ids, theme.graphColors.grey090, theme.themeColors.white]
+  );
+  const barLineWidths = useMemo(
+    () => data.ids.map((_, i) => (i === hoverId ? 3 : 2)),
+    [hoverId, data.ids]
+  );
+
   const plot = useMemo(
     () =>
       isEmpty ? (
@@ -250,8 +266,8 @@ function MacGraph(props: MacGraphProps) {
                 color: data.colors,
                 opacity: 0.9,
                 line: {
-                  color: theme.themeColors.white,
-                  width: 2,
+                  color: barLineColors,
+                  width: barLineWidths,
                 },
               },
               textposition: 'none',
@@ -270,7 +286,7 @@ function MacGraph(props: MacGraphProps) {
           onHover={(evt) => handleHover(evt)}
         />
       ),
-    [isEmpty, t, xPlacement, data, theme.themeColors.white, layout, handleHover]
+    [isEmpty, t, xPlacement, data, layout, handleHover, barLineColors, barLineWidths]
   );
 
   return (

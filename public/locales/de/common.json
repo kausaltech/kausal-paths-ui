@@ -115,6 +115,9 @@
   "cost-efficiency": "Kosteneffizienz",
   "financial-impact": "Finanzielle Auswirkungen",
   "net-cost": "Nettokosten",
+  "net-benefit": "Nettonutzen",
+  "cost": "Kosten",
+  "benefit": "Nutzen",
   "reduction": "Reduzierung",
   "impact-compared-to-baseline": "<strong>Gesamtauswirkung {impact} {unit}</strong> im Vergleich zum {baseline} Szenario",
   "actions-as-efficiency": "Effizienz",
@@ -126,9 +129,10 @@
   "deviating": "Abweichend",
   "view-details": "Details anzeigen",
   "simple-effect": "Andere Wirkung",
-  "simple-effect-subtitle": "Die Grafik zeigt die ausgewählten Auswirkungen der einzelnen Maßnahmen.",
+  "simple-effect-subtitle": "Ausgewählte Auswirkungen der Maßnahmen im Szenario ''{activeScenario}''.",
   "emission-drivers": "Emissionstreiber",
   "actions-as-comparison": "Vergleichen",
+  "actions-comparison-subtitle": "Auswirkungen der Maßnahmen im Jahr {year} im Szenario ''{activeScenario}''.",
   "planned": "Geplant",
   "calculated": "Berechnet",
   "observed": "Beobachtet",
@@ -173,5 +177,8 @@
   "calculation": "Berechnung",
   "calculation-visible": "Berechnung sichtbar",
   "calculation-hidden": "Berechnung ausgeblendet",
-  "loading-calculation": "Berechnung wird geladen…"
+  "loading-calculation": "Berechnung wird geladen…",
+  "cost-efficiency-subtitle": "Kosteneffizienz der Maßnahmen im Szenario ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Kosten-Nutzen der Maßnahmen im Szenario ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Rentabilität (ROI) der Maßnahmen im Szenario ''{activeScenario}''."
 }

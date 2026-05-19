@@ -79,6 +79,12 @@
   "cost-efficiency": "Nákladová efektivita",
   "financial-impact": "Finanční dopad",
   "net-cost": "Čisté náklady",
+  "net-benefit": "Čistý přínos",
+  "return-on-investment": "Návratnost investice",
+  "cost": "Náklady",
+  "benefit": "Přínos",
+  "outcomes-of-interest": "Sledované výsledky",
+  "outcomes-of-interest-description": "Sledované výsledky představují různorodé dopady spojené s jednotlivými zainteresovanými stranami, kvantifikované jako náklady a přínosy.",
   "reduction": "snížení",
   "plot-choose-dimension": "Zvolte dimenzi",
   "normalization": "Normalizace",
@@ -86,6 +92,7 @@
   "change-target": "Změnit cíl",
   "plot-total": "Celkem",
   "actions-as-comparison": "Porovnat",
+  "actions-comparison-subtitle": "Dopad opatření v roce {year} ve scénáři ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Kumulativní dopad",
   "accumulated-between": "akumulováno mezi",
   "change-over-time": "Změna",
@@ -153,5 +160,9 @@
   "calculation": "Výpočet",
   "calculation-visible": "Výpočet je zobrazen",
   "calculation-hidden": "Výpočet je skrytý",
-  "loading-calculation": "Načítání výpočtu…"
+  "loading-calculation": "Načítání výpočtu…",
+  "cost-efficiency-subtitle": "Nákladová efektivita opatření ve scénáři ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Náklady a přínosy opatření ve scénáři ''{activeScenario}''.",
+  "simple-effect-subtitle": "Vybraný dopad opatření ve scénáři ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Návratnost investic (ROI) opatření ve scénáři ''{activeScenario}''."
 }

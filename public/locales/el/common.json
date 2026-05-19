@@ -91,6 +91,11 @@
   "cost-efficiency": "Αποδοτικότητα κόστους",
   "financial-impact": "Οικονομική επίπτωση",
   "net-cost": "Καθαρό κόστος",
+  "net-benefit": "Καθαρό όφελος",
+  "cost": "Κόστος",
+  "benefit": "Όφελος",
+  "outcomes-of-interest": "Αποτελέσματα ενδιαφέροντος",
+  "outcomes-of-interest-description": "Τα αποτελέσματα ενδιαφέροντος αντιπροσωπεύουν τις διαφορετικές επιπτώσεις, ποσοτικοποιημένες ως κόστος και οφέλη, που σχετίζονται με κάθε ενδιαφερόμενο μέρος.",
   "reduction": "μείωση",
   "plot-choose-dimension": "Επιλέξτε διάσταση",
   "normalization": "Κανονικοποίηση",
@@ -98,6 +103,7 @@
   "change-target": "Στόχος αλλαγής",
   "plot-total": "Σύνολο",
   "actions-as-comparison": "Σύγκριση",
+  "actions-comparison-subtitle": "Επίπτωση των δράσεων το έτος {year} στο σενάριο ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Αθροιστικός αντίκτυπος",
   "accumulated-between": "συσσωρευμένα μεταξύ",
   "change-over-time": "Αλλαγή",
@@ -158,5 +164,9 @@
   "calculation": "Υπολογισμός",
   "calculation-visible": "Ο υπολογισμός είναι ορατός",
   "calculation-hidden": "Ο υπολογισμός είναι κρυφός",
-  "loading-calculation": "Φόρτωση υπολογισμού…"
+  "loading-calculation": "Φόρτωση υπολογισμού…",
+  "cost-efficiency-subtitle": "Αποδοτικότητα κόστους των δράσεων στο σενάριο ''{activeScenario}''.",
+  "cost-benefit-subtitle": "Κόστος-όφελος των δράσεων στο σενάριο ''{activeScenario}''.",
+  "simple-effect-subtitle": "Επιλεγμένη επίπτωση των δράσεων στο σενάριο ''{activeScenario}''.",
+  "return-on-investment-subtitle": "Απόδοση της επένδυσης (ROI) των δράσεων στο σενάριο ''{activeScenario}''."
 }
