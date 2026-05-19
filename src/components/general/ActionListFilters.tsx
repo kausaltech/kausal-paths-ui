@@ -111,7 +111,7 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
     ascending,
     handleSortDirectionChange,
   } = props;
-
+  console.log('ActionListFilters render', props);
   const t = useTranslations('common');
   return (
     <SettingsForm className="text-light mt-4">

@@ -138,6 +138,8 @@
   "return-on-investment-help": "Higher values indicate actions with a more favorable outcome, demonstrating greater returns relative to the initial investment.",
   "simple-effect": "Other effect",
   "simple-effect-subtitle": "Selected impact of actions in ''{activeScenario}'' scenario.",
+  "stacked-raw-impact": "Stacked impacts",
+  "stacked-raw-impact-subtitle": "Yearly costs (+) and savings (-) of actions in ''{activeScenario}'' scenario.",
   "megaEUR": "M €",
   "kiloSEK": "kSEK",
   "higher-than-expected": "{percentage}% higher than expected",
