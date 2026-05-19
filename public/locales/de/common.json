@@ -130,6 +130,8 @@
   "view-details": "Details anzeigen",
   "simple-effect": "Andere Wirkung",
   "simple-effect-subtitle": "Ausgewählte Auswirkungen der Maßnahmen im Szenario ''{activeScenario}''.",
+  "stacked-raw-impact": "Gestapelte Auswirkungen",
+  "stacked-raw-impact-subtitle": "Jährliche Kosten (+) und Einsparungen (−) der Maßnahmen im Szenario ''{activeScenario}''.",
   "emission-drivers": "Emissionstreiber",
   "actions-as-comparison": "Vergleichen",
   "actions-comparison-subtitle": "Auswirkungen der Maßnahmen im Jahr {year} im Szenario ''{activeScenario}''.",

@@ -14,6 +14,7 @@ import { CostBenefitAnalysis } from './CostBenefitAnalysis';
 import EfficiencyGraph from './EfficiencyGraph';
 import { ReturnOnInvestment } from './ReturnOnInvestment';
 import { SimpleEffect } from './SimpleEffect';
+import { StackedRawImpact } from './StackedRawImpact';
 
 type ActionListGraphViewProps = {
   usableActions: ActionWithEfficiency[];
@@ -113,6 +114,17 @@ export function ActionListGraphView({
           sortBy={sortBy}
           sortAscending={sortAscending}
           isLoading={loading}
+        />
+      );
+    case 'stacked_raw_impact':
+      return (
+        <StackedRawImpact
+          data={filteredOverview}
+          visibleActions={visibleUsableActions}
+          sortBy={sortBy}
+          sortAscending={sortAscending}
+          isLoading={loading}
+          yearRange={yearRange}
         />
       );
     default:
