@@ -1,5 +1,6 @@
 import type { ActionListQuery } from '@/common/__generated__/graphql';
 import { type TFunction, useTranslation } from '@/common/i18n';
+import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import ActionComparisonGraph from '@/components/graphs/ActionComparisonGraph';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
@@ -29,11 +30,20 @@ const ActionsComparison = ({
 
   const { t } = useTranslation();
   const actionsWithImpact = actions.map((action) => {
+    // In no-overview (emissions) mode useActionListData doesn't populate
+    // cumulativeImpact, so derive it from impactMetric to match the list view
+    // and keep the cumulative-impact sort meaningful.
+    const cumulativeImpact =
+      action.cumulativeImpact ??
+      (action.impactMetric
+        ? summarizeYearlyValuesBetween(action.impactMetric, displayYears[0], displayYears[1])
+        : 0);
     return {
       ...action,
       impact:
         action.impactMetric?.forecastValues.find((dataPoint) => dataPoint.year === displayYears[1])
           ?.value || 0,
+      cumulativeImpact,
     };
   });
 
