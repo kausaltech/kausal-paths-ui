@@ -93,6 +93,7 @@
   "change-target": "Change target",
   "plot-total": "Total",
   "actions-as-comparison": "Compare",
+  "actions-comparison-subtitle": "Impact of actions in year {year} in ''{activeScenario}'' scenario.",
   "actions-sort-cumulative-impact": "Cumulative impact",
   "accumulated-between": "accumulated between",
   "change-over-time": "Change",

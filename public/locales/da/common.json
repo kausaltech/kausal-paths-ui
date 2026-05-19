@@ -92,6 +92,7 @@
   "change-target": "Skift mål",
   "plot-total": "I alt",
   "actions-as-comparison": "Sammenlign",
+  "actions-comparison-subtitle": "Handlingernes effekt i året {year} i scenariet ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Akkumuleret påvirkning",
   "accumulated-between": "akkumuleret mellem",
   "change-over-time": "Ændring",

@@ -99,6 +99,7 @@
   "change-target": "Objetivo de cambio",
   "plot-total": "Total",
   "actions-as-comparison": "Compara",
+  "actions-comparison-subtitle": "Impacto de las acciones en el año {year} en el escenario ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Impacto acumulativo",
   "accumulated-between": "acumulado entre",
   "change-over-time": "Cambia",

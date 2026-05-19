@@ -1,4 +1,7 @@
+import { useReactiveVar } from '@apollo/client/react';
+
 import type { ActionListQuery } from '@/common/__generated__/graphql';
+import { activeScenarioVar } from '@/common/cache';
 import { type TFunction, useTranslation } from '@/common/i18n';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
@@ -29,6 +32,7 @@ const ActionsComparison = ({
   // if we have efficiency limit set, remove actions over that limit
 
   const { t } = useTranslation();
+  const activeScenario = useReactiveVar(activeScenarioVar);
   const actionsWithImpact = actions.map((action) => {
     // In no-overview (emissions) mode useActionListData doesn't populate
     // cumulativeImpact, so derive it from impactMetric to match the list view
@@ -74,8 +78,14 @@ const ActionsComparison = ({
     : '';
   const effectUnit = sortedActions[0]?.impactMetric?.unit?.htmlShort;
 
+  const title = `${translatedMetricName || t('emissions-impact')} ${displayYears[1]}`;
+  const subtitle = t('actions-comparison-subtitle', {
+    year: displayYears[1],
+    activeScenario: activeScenario?.name ?? '',
+  });
+
   return (
-    <ChartWrapper id={id} isLoading={refetching}>
+    <ChartWrapper id={id} title={title} subtitle={subtitle} isLoading={refetching}>
       <ActionComparisonGraph
         data={macData}
         impactName={impactName}

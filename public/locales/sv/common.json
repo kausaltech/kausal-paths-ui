@@ -82,6 +82,7 @@
   "change-target": "Ändra mål",
   "actions-sort-default": "Standard",
   "actions-as-comparison": "Compare",
+  "actions-comparison-subtitle": "Åtgärdernas påverkan år {year} i scenariot ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Cumulative impact",
   "accumulated-between": "ackumulerad över",
   "change-over-time": "Förändring",

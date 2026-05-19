@@ -132,6 +132,7 @@
   "simple-effect-subtitle": "Ausgewählte Auswirkungen der Maßnahmen im Szenario ''{activeScenario}''.",
   "emission-drivers": "Emissionstreiber",
   "actions-as-comparison": "Vergleichen",
+  "actions-comparison-subtitle": "Auswirkungen der Maßnahmen im Jahr {year} im Szenario ''{activeScenario}''.",
   "planned": "Geplant",
   "calculated": "Berechnet",
   "observed": "Beobachtet",

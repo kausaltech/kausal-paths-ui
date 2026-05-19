@@ -92,6 +92,7 @@
   "change-target": "Změnit cíl",
   "plot-total": "Celkem",
   "actions-as-comparison": "Porovnat",
+  "actions-comparison-subtitle": "Dopad opatření v roce {year} ve scénáři ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Kumulativní dopad",
   "accumulated-between": "akumulováno mezi",
   "change-over-time": "Změna",

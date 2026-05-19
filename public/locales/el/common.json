@@ -103,6 +103,7 @@
   "change-target": "Στόχος αλλαγής",
   "plot-total": "Σύνολο",
   "actions-as-comparison": "Σύγκριση",
+  "actions-comparison-subtitle": "Επίπτωση των δράσεων το έτος {year} στο σενάριο ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Αθροιστικός αντίκτυπος",
   "accumulated-between": "συσσωρευμένα μεταξύ",
   "change-over-time": "Αλλαγή",

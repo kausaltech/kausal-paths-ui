@@ -86,6 +86,7 @@
   "change-target": "Vaihda tavoite",
   "plot-total": "Yhteensä",
   "actions-as-comparison": "Vertailu",
+  "actions-comparison-subtitle": "Toimenpiteiden vaikutus vuonna {year} skenaariossa ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Kumulatiivinen vaikutus",
   "accumulated-between": "yhteensä välillä",
   "change-over-time": "Muutos",

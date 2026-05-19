@@ -92,6 +92,7 @@
   "change-target": "Zmień cel",
   "plot-total": "Łącznie",
   "actions-as-comparison": "Porównaj",
+  "actions-comparison-subtitle": "Wpływ działań w roku {year} w scenariuszu ''{activeScenario}''.",
   "actions-sort-cumulative-impact": "Skumulowany wpływ",
   "accumulated-between": "skumulowane między",
   "change-over-time": "Zmiana",
