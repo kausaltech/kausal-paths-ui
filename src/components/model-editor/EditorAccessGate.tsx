@@ -3,11 +3,11 @@
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { Box, CircularProgress, Container, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Paper, Stack, Typography } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-import { ShieldLock } from 'react-bootstrap-icons';
+import { ArrowClockwise, ExclamationTriangle, ShieldLock } from 'react-bootstrap-icons';
 
 import type { ModelEditorAccessQuery } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
@@ -55,7 +55,7 @@ export default function EditorAccessGate({ children, chrome }: Props) {
   const { data: session, isPending } = useSession();
   const exempt = isExempt(pathname);
 
-  const { data, loading } = useQuery<ModelEditorAccessQuery>(GET_EDITOR_ACCESS, {
+  const { data, loading, error, refetch } = useQuery<ModelEditorAccessQuery>(GET_EDITOR_ACCESS, {
     skip: !session?.user,
     fetchPolicy: 'cache-and-network',
   });
@@ -82,6 +82,32 @@ export default function EditorAccessGate({ children, chrome }: Props) {
       <Centered>
         <CircularProgress />
       </Centered>
+    );
+  }
+
+  // A failed access lookup is indistinguishable from "no edit access" by `data`
+  // alone, so surface the error instead of falling through to the denial branch
+  // and locking out users who actually have permissions during a backend hiccup.
+  if (error && !data) {
+    return (
+      <Container maxWidth="sm" sx={{ pt: 20, pb: 6 }}>
+        <Paper variant="outlined" sx={{ p: 4 }}>
+          <Stack spacing={2} alignItems="flex-start">
+            <ExclamationTriangle size={28} />
+            <Typography variant="h5">Couldn&apos;t check edit access</Typography>
+            <Typography variant="body1" color="text.secondary">
+              We couldn&apos;t reach the backend to verify your access. Try again in a moment.
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowClockwise size={18} />}
+              onClick={() => void refetch()}
+            >
+              Retry
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
     );
   }
 
