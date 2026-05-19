@@ -6,6 +6,7 @@ import {
   CircularProgress,
   Collapse,
   IconButton,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -511,6 +512,7 @@ export default function ActionsList({
                     const isImpactCol = col.key === 'CUM_IMPACT' || col.key === 'IMPACT';
                     const hideImpact = !isIncluded && isImpactCol;
                     const isMissing = val === null;
+                    const showLoadingPlaceholder = isLoading && isMissing;
                     const total = totals[col.key] || 0;
                     const percent = !isMissing && total ? (val / total) * 100 : 0;
 
@@ -539,22 +541,34 @@ export default function ActionsList({
 
                     return (
                       <TableCell key={col.key} sx={{ pb: 1, pt: 1 }}>
-                        {!hideImpact && (
-                          <>
-                            <Typography variant="h5" component="span" sx={{ color: colors.title }}>
-                              {display}
-                            </Typography>
-                            {unit && (
+                        {!hideImpact &&
+                          (showLoadingPlaceholder ? (
+                            <Skeleton
+                              variant="text"
+                              width="60%"
+                              sx={{ fontSize: '1.25rem' }}
+                              aria-label={t('loading')}
+                            />
+                          ) : (
+                            <>
                               <Typography
-                                variant="body2"
+                                variant="h5"
                                 component="span"
-                                sx={{ ml: 0.5, color: colors.text }}
+                                sx={{ color: colors.title }}
                               >
-                                {unit}
+                                {display}
                               </Typography>
-                            )}
-                          </>
-                        )}
+                              {unit && (
+                                <Typography
+                                  variant="body2"
+                                  component="span"
+                                  sx={{ ml: 0.5, color: colors.text }}
+                                >
+                                  {unit}
+                                </Typography>
+                              )}
+                            </>
+                          ))}
                         {isImpactCol && !hideImpact && !isMissing && (
                           <Box
                             sx={{
