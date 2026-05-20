@@ -62,9 +62,9 @@ const getSortOptions = (
     ];
   }
 
-  if (graphType === 'simple_effect') {
-    // ActionsList omits the annual-impact column in simple-effect mode, so
-    // don't offer an IMPACT sort that wouldn't have a matching column to read.
+  if (graphType === 'simple_effect' || graphType === 'stacked_raw_impact') {
+    // ActionsList omits the annual-impact column in simple-effect / stacked-raw-impact
+    // mode, so don't offer an IMPACT sort that wouldn't have a matching column to read.
     return [
       standard,
       {
