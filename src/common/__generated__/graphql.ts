@@ -3740,7 +3740,7 @@ export type InstanceContextQuery = (
     { id: string, label: string, isActive: boolean }
     & { __typename: 'NormalizationType' }
   )>, menuPages: Array<(
-    { id: string | null, title: string, urlPath: string, parent: (
+    { id: string | null, title: string, menuLabel: string | null, urlPath: string, parent: (
       { id: string | null }
       & { __typename: 'ActionListPage' | 'DashboardPage' | 'InstanceRootPage' | 'OutcomePage' | 'Page' | 'StaticPage' }
     ) | null }
