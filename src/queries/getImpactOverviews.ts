@@ -14,30 +14,64 @@ export const GET_IMPACT_OVERVIEWS = gql`
       description
       stakeholderDimension
       outcomeDimension
+      plotLimitForIndicator
       effectNode {
         id
+        name
+        shortDescription
+        unit {
+          id
+          short
+        }
+      }
+      costNode {
+        id
+        name
+        shortDescription
+        unit {
+          id
+          short
+        }
       }
       effectUnit {
         id
         short
         long
+        htmlShort
       }
       indicatorUnit {
         id
         short
         long
+        htmlShort
       }
       costUnit {
         id
         short
         long
+        htmlShort
       }
       actions {
         action {
           id
           name
+          group {
+            id
+            name
+            color
+          }
         }
         unitAdjustmentMultiplier
+        # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: migrate to new properties
+        costValues {
+          value
+          year
+        }
+        # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: migrate to new properties
+        impactValues {
+          value
+          year
+        }
         effectDim {
           id
           name

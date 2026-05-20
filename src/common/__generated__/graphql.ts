@@ -3427,45 +3427,6 @@ export type ActionListQuery = (
       & { __typename: 'ActionGroupType' }
     ) | null }
     & { __typename: 'ActionNode' }
-  )>, impactOverviews: Array<(
-    { id: string, graphType: string | null, label: string, plotLimitForIndicator: number | null, indicatorUnit: (
-      { id: string, htmlShort: string }
-      & { __typename: 'UnitType' }
-    ), costUnit: (
-      { id: string, htmlShort: string }
-      & { __typename: 'UnitType' }
-    ) | null, effectUnit: (
-      { id: string, htmlShort: string }
-      & { __typename: 'UnitType' }
-    ) | null, costNode: (
-      { id: string, name: string, shortDescription: string | null, unit: (
-        { id: string, short: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'Node' }
-    ) | null, effectNode: (
-      { id: string, name: string, shortDescription: string | null, unit: (
-        { id: string, short: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'Node' }
-    ), actions: Array<(
-      { unitAdjustmentMultiplier: number | null, action: (
-        { id: string, group: (
-          { id: string, name: string, color: string | null }
-          & { __typename: 'ActionGroupType' }
-        ) | null }
-        & { __typename: 'ActionNode' }
-      ), costValues: Array<(
-        { value: number, year: number }
-        & { __typename: 'YearlyValue' }
-      )> | null, impactValues: Array<(
-        { value: number, year: number }
-        & { __typename: 'YearlyValue' }
-      ) | null> | null }
-      & { __typename: 'ActionImpact' }
-    )> }
-    & { __typename: 'ImpactOverviewType' }
   )> }
   & { __typename: 'Query' }
 );
@@ -3521,23 +3482,41 @@ export type ImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ImpactOverviewsQuery = (
   { impactOverviews: Array<(
-    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, effectNode: (
-      { id: string }
+    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, effectNode: (
+      { id: string, name: string, shortDescription: string | null, unit: (
+        { id: string, short: string }
+        & { __typename: 'UnitType' }
+      ) | null }
       & { __typename: 'Node' }
-    ), effectUnit: (
-      { id: string, short: string, long: string }
+    ), costNode: (
+      { id: string, name: string, shortDescription: string | null, unit: (
+        { id: string, short: string }
+        & { __typename: 'UnitType' }
+      ) | null }
+      & { __typename: 'Node' }
+    ) | null, effectUnit: (
+      { id: string, short: string, long: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, indicatorUnit: (
-      { id: string, short: string, long: string }
+      { id: string, short: string, long: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ), costUnit: (
-      { id: string, short: string, long: string }
+      { id: string, short: string, long: string, htmlShort: string }
       & { __typename: 'UnitType' }
     ) | null, actions: Array<(
       { unitAdjustmentMultiplier: number | null, action: (
-        { id: string, name: string }
+        { id: string, name: string, group: (
+          { id: string, name: string, color: string | null }
+          & { __typename: 'ActionGroupType' }
+        ) | null }
         & { __typename: 'ActionNode' }
-      ), effectDim: (
+      ), costValues: Array<(
+        { value: number, year: number }
+        & { __typename: 'YearlyValue' }
+      )> | null, impactValues: Array<(
+        { value: number, year: number }
+        & { __typename: 'YearlyValue' }
+      ) | null> | null, effectDim: (
         { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }

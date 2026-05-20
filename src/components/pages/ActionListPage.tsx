@@ -179,8 +179,9 @@ function ActionListPage({ page }: ActionListPageProps) {
     actionGroups,
     hasEfficiency,
     activeOverview,
-    costBenefitDataPending,
-    costBenefitDataError,
+    impactOverviews,
+    impactOverviewsPending,
+    impactOverviewsError,
   } = useActionListData({
     data,
     showOnlyMunicipalActions: !!page.showOnlyMunicipalActions,
@@ -247,7 +248,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   ];
   const hasMultipleViews = viewOptions.length > 1;
 
-  const displayError = error ?? costBenefitDataError;
+  const displayError = error ?? impactOverviewsError;
   if (displayError) {
     return (
       <Container fixed maxWidth="xl" sx={{ pt: 5 }}>
@@ -267,7 +268,7 @@ function ActionListPage({ page }: ActionListPageProps) {
         {data && (
           <ActionListFilters
             hasEfficiency={hasEfficiency}
-            impactOverviews={data.impactOverviews}
+            impactOverviews={impactOverviews ?? []}
             activeEfficiency={activeEfficiency}
             setActiveEfficiency={setActiveEfficiency}
             actionGroups={actionGroups}
@@ -350,7 +351,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             sortBy={sortBy}
             sortAscending={ascending}
             activeOverview={activeOverview}
-            isLoading={areActionsLoading || costBenefitDataPending}
+            isLoading={areActionsLoading || impactOverviewsPending}
             refetching={isRefetchingWithStaleData}
             onChangeSort={(key) => {
               handleChangeSort(key);

@@ -31,10 +31,12 @@ type UseActionListDataResult = {
   actionGroups: NonNullable<ActionWithEfficiency['group']>[];
   hasEfficiency: boolean;
   activeOverview: ActiveOverviewInfo | null;
-  /** Cost-benefit cells depend on a richer query; this is true while it's still in-flight on first load. */
-  costBenefitDataPending: boolean;
-  /** Error from the cost-benefit overviews query, only surfaced when the active overview actually uses it. */
-  costBenefitDataError: ErrorLike | undefined;
+  /** Overviews from GET_IMPACT_OVERVIEWS (the single canonical source). */
+  impactOverviews: ImpactOverviewsQuery['impactOverviews'] | undefined;
+  /** True while the overviews query is in-flight on first load (no cached data yet). */
+  impactOverviewsPending: boolean;
+  /** Error from the overviews query. */
+  impactOverviewsError: ErrorLike | undefined;
 };
 
 export function useActionListData({
@@ -52,10 +54,9 @@ export function useActionListData({
     [data, showOnlyMunicipalActions]
   );
 
-  const hasEfficiency = data ? data.impactOverviews.length > 0 : false;
-
-  // For cost_benefit graphType the list needs per-action cost/benefit/netBenefit
-  // derived from effectDim — those fields are only in the richer impact-overviews query.
+  // Single canonical source for impactOverviews data — backend computation is
+  // expensive, so we fetch once here and share via Apollo cache with the
+  // graph-view component (which uses the same query).
   const {
     data: impactOverviewsData,
     loading: impactOverviewsLoading,
@@ -63,6 +64,9 @@ export function useActionListData({
   } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const impactOverviews = impactOverviewsData?.impactOverviews;
+  const hasEfficiency = impactOverviews ? impactOverviews.length > 0 : false;
 
   const costBenefitByActionId = useMemo(() => {
     const overview = impactOverviewsData?.impactOverviews[activeEfficiency];
@@ -128,7 +132,7 @@ export function useActionListData({
               ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ?? 0,
           };
 
-          const efficiencyType = data?.impactOverviews[activeEfficiency];
+          const efficiencyType = impactOverviews?.[activeEfficiency];
           const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
 
           if (!efficiencyType || !efficiencyAction) return out;
@@ -180,7 +184,14 @@ export function useActionListData({
           return out;
         })
         .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
-    [data, actionGroup, activeEfficiency, yearRange, filteredActions, costBenefitByActionId]
+    [
+      impactOverviews,
+      actionGroup,
+      activeEfficiency,
+      yearRange,
+      filteredActions,
+      costBenefitByActionId,
+    ]
   );
 
   const displayedActionsCount = useMemo(() => {
@@ -205,7 +216,7 @@ export function useActionListData({
     [filteredActions]
   );
 
-  const activeOverview = data?.impactOverviews[activeEfficiency] ?? null;
+  const activeOverview = impactOverviews?.[activeEfficiency] ?? null;
   const activeOverviewInfo: ActiveOverviewInfo | null = activeOverview
     ? {
         graphType: activeOverview.graphType ?? null,
@@ -214,13 +225,10 @@ export function useActionListData({
       }
     : null;
 
-  // Only gate the list on overviews-query state when the active overview is
-  // actually a cost-benefit one — that's the only graphType whose cells depend
-  // on it. Otherwise an unrelated overviews-query failure would block the list.
-  const needsCostBenefitOverview = activeOverviewInfo?.graphType === 'cost_benefit';
-  const costBenefitDataPending =
-    needsCostBenefitOverview && impactOverviewsLoading && !impactOverviewsData;
-  const costBenefitDataError = needsCostBenefitOverview ? impactOverviewsError : undefined;
+  // Surface loading/error to the caller so it can gate the list UI on first-load.
+  // We don't gate per-graphType anymore: since this is now the single source for
+  // overviews, anything that needs them blocks until they arrive.
+  const impactOverviewsPending = impactOverviewsLoading && !impactOverviewsData;
 
   return {
     usableActions,
@@ -229,7 +237,8 @@ export function useActionListData({
     actionGroups,
     hasEfficiency,
     activeOverview: activeOverviewInfo,
-    costBenefitDataPending,
-    costBenefitDataError,
+    impactOverviews,
+    impactOverviewsPending,
+    impactOverviewsError,
   };
 }

@@ -280,6 +280,15 @@ export function getApolloClientConfig(opts: ApolloClientOpts): {
         CardListCardBlock: {
           keyFields: false,
         },
+        // ImpactOverviewType `id` is `<costNodeId>:<effectNodeId>` and is NOT
+        // unique — several overviews can share the same (cost, effect) node
+        // pair but differ by graphType (e.g. simple_effect + wedge_diagram on
+        // net_emissions). Default normalization would collapse them all into
+        // one cache entry. Disable normalization so each list entry stays
+        // distinct.
+        ImpactOverviewType: {
+          keyFields: false,
+        },
       },
     },
   };
