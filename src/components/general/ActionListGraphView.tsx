@@ -15,6 +15,7 @@ import EfficiencyGraph from './EfficiencyGraph';
 import { ReturnOnInvestment } from './ReturnOnInvestment';
 import { SimpleEffect } from './SimpleEffect';
 import { StackedRawImpact } from './StackedRawImpact';
+import { WedgeDiagram } from './WedgeDiagram';
 
 type ActionListGraphViewProps = {
   usableActions: ActionWithEfficiency[];
@@ -51,6 +52,11 @@ export function ActionListGraphView({
         ? {
             ...selectedOverview,
             actions: selectedOverview.actions.filter((a) => visibleActionIds.has(a.action.id)),
+            // Keep scenario entries (floor/ceiling) regardless of the action-id
+            // filter so the wedge always has its bounding lines.
+            wedge:
+              selectedOverview.wedge?.filter((w) => w.isScenario || visibleActionIds.has(w.id)) ??
+              null,
           }
         : undefined,
     [selectedOverview, visibleActionIds]
@@ -123,6 +129,15 @@ export function ActionListGraphView({
           visibleActions={visibleUsableActions}
           sortBy={sortBy}
           sortAscending={sortAscending}
+          isLoading={loading}
+          yearRange={yearRange}
+        />
+      );
+    case 'wedge_diagram':
+      return (
+        <WedgeDiagram
+          data={filteredOverview}
+          actionLookup={visibleUsableActions}
           isLoading={loading}
           yearRange={yearRange}
         />

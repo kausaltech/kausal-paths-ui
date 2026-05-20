@@ -3569,7 +3569,16 @@ export type ImpactOverviewsQuery = (
         & { __typename: 'DimensionalMetricType' }
       ) | null }
       & { __typename: 'ActionImpact' }
-    )> }
+    )>, wedge: Array<(
+      { id: string, label: string, isScenario: boolean, metric: (
+        { years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+          { id: string, short: string }
+          & { __typename: 'UnitType' }
+        ) }
+        & { __typename: 'DimensionalMetricType' }
+      ) }
+      & { __typename: 'WedgeEntryType' }
+    )> | null }
     & { __typename: 'ImpactOverviewType' }
   )> }
   & { __typename: 'Query' }

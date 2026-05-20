@@ -94,6 +94,22 @@ export const GET_IMPACT_OVERVIEWS = gql`
           values
         }
       }
+      wedge {
+        id
+        label
+        isScenario
+        # eslint-disable-next-line @graphql-eslint/require-selections -- id omitted intentionally to avoid cache issues
+        metric {
+          years
+          values
+          unit {
+            id
+            short
+          }
+          stackable
+          forecastFrom
+        }
+      }
     }
   }
 `;

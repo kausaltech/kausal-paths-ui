@@ -62,9 +62,15 @@ const getSortOptions = (
     ];
   }
 
-  if (graphType === 'simple_effect' || graphType === 'stacked_raw_impact') {
+  if (
+    graphType === 'simple_effect' ||
+    graphType === 'stacked_raw_impact' ||
+    graphType === 'wedge_diagram'
+  ) {
     // ActionsList omits the annual-impact column in simple-effect / stacked-raw-impact
     // mode, so don't offer an IMPACT sort that wouldn't have a matching column to read.
+    // wedge_diagram routes here for now so the dropdown isn't broken — full list-view
+    // integration is deferred.
     return [
       standard,
       {
