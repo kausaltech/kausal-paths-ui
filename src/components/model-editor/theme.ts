@@ -14,15 +14,15 @@ import { type Theme as MuiTheme, type ThemeOptions, createTheme } from '@mui/mat
 const editorPalette: ThemeOptions['palette'] = {
   mode: 'light',
   primary: {
-    main: '#2563eb',
-    light: '#60a5fa',
-    dark: '#1d4ed8',
+    main: '#107251',
+    light: '#1A865F',
+    dark: '#0A5E43',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#475569',
-    light: '#64748b',
-    dark: '#334155',
+    main: '#AAC5DB',
+    light: '#CBE2F6',
+    dark: '#8DAEC9',
     contrastText: '#ffffff',
   },
   error: { main: '#dc2626', light: '#fecaca', dark: '#991b1b', contrastText: '#ffffff' },
@@ -84,7 +84,7 @@ const editorComponents: ThemeOptions['components'] = {
     },
   },
   MuiButtonBase: {
-    defaultProps: { disableRipple: false },
+    defaultProps: { disableRipple: true },
   },
   MuiButton: {
     defaultProps: { disableElevation: true, size: 'small' },
@@ -94,6 +94,7 @@ const editorComponents: ThemeOptions['components'] = {
         fontWeight: 500,
         textTransform: 'none',
         boxShadow: 'none',
+        transition: 'none',
       },
       sizeSmall: { fontSize: 12, lineHeight: 1.5 },
       contained: { '&:hover': { boxShadow: 'none' } },
@@ -103,7 +104,7 @@ const editorComponents: ThemeOptions['components'] = {
   MuiIconButton: {
     defaultProps: { size: 'small' },
     styleOverrides: {
-      root: { borderRadius: 6 },
+      root: { borderRadius: 6, transition: 'none' },
     },
   },
   MuiCard: {
@@ -113,6 +114,7 @@ const editorComponents: ThemeOptions['components'] = {
         borderRadius: 8,
         border: '1px solid #e2e8f0',
         boxShadow: 'none',
+        transition: 'none',
       },
     },
   },
@@ -123,6 +125,7 @@ const editorComponents: ThemeOptions['components'] = {
         borderRadius: 8,
         border: '1px solid #e2e8f0',
         boxShadow: 'none',
+        transition: 'none',
       },
     },
   },
@@ -130,9 +133,16 @@ const editorComponents: ThemeOptions['components'] = {
     styleOverrides: {
       root: {
         border: 0,
+        transition: 'none',
         '&:hover': undefined,
         '&.Mui-focused': undefined,
       },
+    },
+  },
+  MuiOutlinedInput: {
+    styleOverrides: {
+      root: { transition: 'none' },
+      notchedOutline: { transition: 'none' },
     },
   },
   MuiTextField: {
@@ -351,6 +361,7 @@ const editorComponents: ThemeOptions['components'] = {
     },
   },
   MuiTab: {
+    defaultProps: { disableRipple: true },
     styleOverrides: {
       root: {
         textTransform: 'none',

@@ -4,32 +4,34 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  IconButton,
-  InputLabel,
+  ClickAwayListener,
+  LinearProgress,
+  ListItemIcon,
+  ListItemText,
   MenuItem,
-  Select,
+  MenuList,
+  Paper,
+  Popper,
   Snackbar,
   Stack,
-  TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 
 import { useMutation } from '@apollo/client/react';
-import type {
-  CellValueChangedEvent,
-  ColDef,
-  ColumnState,
-  GridApi,
-  GridReadyEvent,
-  ICellRendererParams,
-} from 'ag-grid-community';
-import { Plus, Trash } from 'react-bootstrap-icons';
+import {
+  CompactSelection,
+  DataEditor,
+  type DataEditorProps,
+  type DataEditorRef,
+  type EditableGridCell,
+  type GridCell,
+  GridCellKind,
+  type GridColumn,
+  type GridSelection,
+  type Item,
+} from '@glideapps/glide-data-grid';
+import '@glideapps/glide-data-grid/dist/index.css';
+import { Bookmarks, ChatLeft, Clipboard, Files, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
   CreateDataPointMutation,
@@ -40,200 +42,133 @@ import type {
   UpdateDataPointMutation,
   UpdateDataPointMutationVariables,
 } from '@/common/__generated__/graphql';
+import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
-import AgGridReact from '../GridEditor';
+import { type AddProgress, AddRowsModal } from './AddRowsModal';
+import { AddYearsModal } from './AddYearsModal';
+import { NOT_APPLICABLE } from './DimensionCategoryList';
+import {
+  type GridRow,
+  METRIC_COL,
+  type PendingEdit,
+  asUpdateInput,
+  buildGridData,
+  diffKind,
+  dimColId,
+  pendingKey,
+  yearColId,
+} from './dataset-grid-data';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
 
 type Props = {
   dataset: DatasetDetailFieldsFragment;
-  onMutated: () => void;
+  /**
+   * Called when an edit / delete mutation completes. May return a promise that
+   * resolves once the parent finishes refetching; `handleSave` awaits this so
+   * it can defer clearing successful pending edits until the fresh data has
+   * landed in the cache (otherwise cells flash to empty between a mutation
+   * resolving and the refetch landing).
+   */
+  onMutated: () => void | Promise<unknown>;
+  onSelectedDataPointChange?: (dataPointId: string | null) => void;
+  // Bumped by the parent to clear the grid's cell selection (e.g. when the
+  // user clicks "Show all" in the comments panel). The initial value is
+  // ignored — only subsequent changes trigger a clear.
+  clearSelectionNonce?: number;
+  // Open one of the right-hand drawer panels (used by the cell context menu).
+  onOpenPanel?: (panel: 'comments' | 'sources') => void;
 };
 
-/**
- * Discriminated cell shape — each column in a row renders one of these. Kept
- * minimal compared to the reference implementation in kausal-extensions;
- * `ComputedValue` / reference tracking are not in scope yet.
- *
- * Dirty-tracking lives in `pendingEdits` on the component (keyed by
- * `${rowId}|${colId}`) rather than inside the cell so committed state stays
- * pristine until `onMutated` refetches.
- */
-type MetricHeaderCell = {
-  type: 'MetricHeader';
-  metricId: string;
-  label: string;
-  unit: string;
-};
-type DimensionCategoryCell = {
-  type: 'DimensionCategory';
-  dimensionId: string;
-  categoryUuid: string | null;
-  label: string;
-};
-type ValueCell = {
-  type: 'Value';
-  dataPointId: string | null;
-  value: number | null;
-  year: number;
-};
-type RowCell = MetricHeaderCell | DimensionCategoryCell | ValueCell;
+// Solid colour approximations of the original rgba tints — canvas doesn't
+// composite the alpha against the row background the same way CSS does, so we
+// pre-mix against white.
+const DIRTY_BG = '#fce8d4';
+const ERROR_BG = '#fbe1e1';
+// Year cell with no backing DataPoint (vs. a DataPoint whose value is null,
+// which is treated as a real "empty value" entry).
+const UNINITIATED_BG = '#f5f5f5';
 
-type GridRow = {
-  id: string;
-  metricId: string;
-  categoryByDim: Record<string, string | null>;
-  cells: Record<string, RowCell>;
+const EMPTY_SELECTION: GridSelection = {
+  columns: CompactSelection.empty(),
+  rows: CompactSelection.empty(),
 };
 
-type PendingEdit = {
-  rowId: string;
-  colId: string;
-  year: number;
-  /** Data-point id if the cell was already persisted when the edit started. */
-  dataPointId: string | null;
-  /** New value the user entered (null = clear / delete). */
-  nextValue: number | null;
-  /** Committed value at edit time — what "Discard" restores. */
-  originalValue: number | null;
-  /** Set when the previous commit attempt failed; drives the red tint. */
-  error?: string;
-};
+const DEFAULT_DIM_WIDTH = 160;
+const DEFAULT_METRIC_WIDTH = 180;
+const DEFAULT_YEAR_WIDTH = 84;
 
-type Dataset = DatasetDetailFieldsFragment;
-type DataPoint = Dataset['dataPoints'][number];
+const YEAR_COL_PREFIX = 'col_year_';
+const DIM_COL_PREFIX = 'col_dim_';
 
-type UpdateInput = UpdateDataPointMutationVariables['input'];
-const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
-  partial as unknown as UpdateInput;
-
-const METRIC_COL = 'col_metric';
-const ACTIONS_COL = 'col_actions';
-// Row-level delete is hidden for now — editing happens through cell commits.
-// Flip to re-enable the trash column + row delete button.
-const SHOW_ACTIONS_COLUMN = false;
-const dimColId = (dimensionId: string) => `col_dim_${dimensionId}`;
-const yearColId = (year: number) => `col_year_${year}`;
-const pendingKey = (rowId: string, colId: string) => `${rowId}|${colId}`;
-
-function extractYear(date: DataPoint['date']): number {
-  const s = typeof date === 'string' ? date : String(date);
-  const m = /^(\d{4})/.exec(s);
-  return m ? Number(m[1]) : new Date(s).getUTCFullYear();
+function formatNumber(value: number | null | undefined): string {
+  if (value == null) return '';
+  return value.toLocaleString(undefined, { maximumFractionDigits: 6 });
 }
 
-function rowKey(metricId: string, categoryByDim: Record<string, string | null>): string {
-  const parts = Object.entries(categoryByDim)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([dimId, catUuid]) => `${dimId}:${catUuid ?? '∅'}`);
-  return [metricId, ...parts].join('|');
+function defaultWidthForCol(colId: string): number {
+  if (colId === METRIC_COL) return DEFAULT_METRIC_WIDTH;
+  if (colId.startsWith(YEAR_COL_PREFIX)) return DEFAULT_YEAR_WIDTH;
+  return DEFAULT_DIM_WIDTH;
 }
 
-function buildGridData(
-  dataset: Dataset,
-  extraYears: ReadonlySet<number>
-): {
-  rows: GridRow[];
-  years: number[];
-} {
-  const metricById = new Map(dataset.metrics.map((m) => [m.id, m]));
-  const catLabelByUuid = new Map<string, { label: string; dimensionId: string }>();
-  for (const dim of dataset.dimensions) {
-    for (const cat of dim.categories) {
-      catLabelByUuid.set(cat.uuid, { label: cat.label, dimensionId: dim.id });
-    }
-  }
-
-  const rowsByKey = new Map<string, GridRow>();
-  const yearSet = new Set<number>();
-
-  for (const dp of dataset.dataPoints) {
-    const dpCatUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
-    const categoryByDim: Record<string, string | null> = {};
-    for (const dim of dataset.dimensions) {
-      const found = dim.categories.find((c) => dpCatUuids.has(c.uuid));
-      categoryByDim[dim.id] = found?.uuid ?? null;
-    }
-
-    const year = extractYear(dp.date);
-    yearSet.add(year);
-
-    const key = rowKey(dp.metric.id, categoryByDim);
-    let row = rowsByKey.get(key);
-    if (!row) {
-      const metric = metricById.get(dp.metric.id);
-      const cells: Record<string, RowCell> = {
-        [METRIC_COL]: {
-          type: 'MetricHeader',
-          metricId: dp.metric.id,
-          label: metric?.label ?? dp.metric.id,
-          unit: metric?.unit ?? '',
-        },
-      };
-      for (const dim of dataset.dimensions) {
-        const catUuid = categoryByDim[dim.id];
-        cells[dimColId(dim.id)] = {
-          type: 'DimensionCategory',
-          dimensionId: dim.id,
-          categoryUuid: catUuid,
-          label: catUuid ? (catLabelByUuid.get(catUuid)?.label ?? catUuid) : '—',
-        };
-      }
-      row = { id: key, metricId: dp.metric.id, categoryByDim, cells };
-      rowsByKey.set(key, row);
-    }
-
-    const colId = yearColId(year);
-    const existing = row.cells[colId];
-    if (!existing || (existing.type === 'Value' && existing.dataPointId === null)) {
-      row.cells[colId] = {
-        type: 'Value',
-        dataPointId: dp.id,
-        value: dp.value,
-        year,
-      };
-    }
-  }
-
-  // User-added empty year columns are merged in so they render alongside
-  // data-derived years, sorted together.
-  for (const y of extraYears) yearSet.add(y);
-  const sortedYears = [...yearSet].sort((a, b) => a - b);
-  for (const row of rowsByKey.values()) {
-    for (const year of sortedYears) {
-      const colId = yearColId(year);
-      if (!row.cells[colId]) {
-        row.cells[colId] = { type: 'Value', dataPointId: null, value: null, year };
-      }
-    }
-  }
-
-  return { rows: [...rowsByKey.values()], years: sortedYears };
+function isYearColId(colId: string): boolean {
+  return colId.startsWith(YEAR_COL_PREFIX);
 }
 
-function diffKind(
-  dataPointId: string | null,
-  nextValue: number | null
-): 'create' | 'update' | 'delete' {
-  if (dataPointId === null) return 'create';
-  if (nextValue === null) return 'delete';
-  return 'update';
+// Glide's overlay editor portals into `#portal`. Mount one if missing so the
+// number-cell editor opens; left in place across unmounts so multiple grids
+// (or remounts) share a single portal node.
+function useEnsurePortal() {
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('portal')) return;
+    const el = document.createElement('div');
+    el.id = 'portal';
+    el.style.position = 'fixed';
+    el.style.left = '0';
+    el.style.top = '0';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+  }, []);
 }
 
-export default function DatasetDataGrid({ dataset, onMutated }: Props) {
+function yearFromColId(colId: string): number | null {
+  const m = /^col_year_(\d+)$/.exec(colId);
+  return m ? Number(m[1]) : null;
+}
+
+export default function DatasetDataGrid({
+  dataset,
+  onMutated,
+  onSelectedDataPointChange,
+  clearSelectionNonce,
+  onOpenPanel,
+}: Props) {
+  useEnsurePortal();
   const instance = useInstance();
   const [addOpen, setAddOpen] = useState(false);
+  const [addYearOpen, setAddYearOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
   const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
-  const [addYearOpen, setAddYearOpen] = useState(false);
-  // Ref mirror so long-lived AG Grid column callbacks (valueGetter, cellStyle,
-  // tooltipValueGetter) always see the latest pending state without forcing
-  // columnDefs to rebuild — a rebuild resets user-adjusted column widths.
-  const pendingEditsRef = useRef(pendingEdits);
-  pendingEditsRef.current = pendingEdits;
-  const gridApiRef = useRef<GridApi<GridRow> | null>(null);
-  const columnStateRef = useRef<ColumnState[] | null>(null);
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
+  const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    row: GridRow;
+  } | null>(null);
+  const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
+  const [addYearsProgress, setAddYearsProgress] = useState<AddProgress | null>(null);
+  const [gridSelection, setGridSelection] = useState<GridSelection>(EMPTY_SELECTION);
+  const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  const gridRef = useRef<DataEditorRef>(null);
+  // Glide's onCellContextMenu fires through the React tree; the document-level
+  // listener below reads this ref to combine the row with the native event's
+  // clientX/Y. Using a ref (not state) avoids stale closures because both
+  // callbacks fire from the same browser event.
+  const pendingContextRowRef = useRef<GridRow | null>(null);
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
     CREATE_DATA_POINT
@@ -242,206 +177,678 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     UPDATE_DATA_POINT
   );
   const [deleteDataPoint] = useMutation<DeleteDataPointMutation, DeleteDataPointMutationVariables>(
-    DELETE_DATA_POINT
+    DELETE_DATA_POINT,
+    {
+      // Evict the deleted DataPoint from the normalised cache as soon as the
+      // mutation succeeds. Without this, references in `Dataset.dataPoints`
+      // can survive until the next refetch returns — which on slow connections
+      // makes the grid show stale columns / rows.
+      update: (cache, { data }, { variables }) => {
+        if (!variables?.dataPointId) return;
+        const messages = data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+        if (messages.length > 0) return;
+        cache.evict({
+          id: cache.identify({ __typename: 'DataPoint', id: variables.dataPointId }),
+        });
+        cache.gc();
+      },
+    }
   );
 
   const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
-  const handleRowDelete = useCallback(
-    async (row: GridRow) => {
-      const ids = Object.values(row.cells)
-        .filter((c): c is ValueCell => c.type === 'Value' && c.dataPointId !== null)
-        .map((c) => c.dataPointId as string);
-      if (ids.length === 0) return;
-      try {
-        for (const id of ids) {
+  // dataPointId -> { count, hasUnresolvedReview }. Drives the corner indicator
+  // overlay in drawCell — red when the data point has any unresolved review
+  // comment, orange otherwise.
+  const commentInfoByDataPointId = useMemo(() => {
+    const map = new Map<string, { count: number; hasUnresolvedReview: boolean }>();
+    for (const dp of dataset.dataPoints) {
+      if (dp.comments.length === 0) continue;
+      const hasUnresolvedReview = dp.comments.some(
+        (c) => c.isReview && c.reviewState !== DataPointCommentReviewState.Resolved
+      );
+      map.set(dp.id, { count: dp.comments.length, hasUnresolvedReview });
+    }
+    return map;
+  }, [dataset.dataPoints]);
+
+  // dataPointIds that have at least one DatasetSourceReference attached.
+  // Used to underline the value in those cells.
+  const dataPointIdsWithSource = useMemo(() => {
+    const set = new Set<string>();
+    for (const ref of dataset.sourceReferences) {
+      if (ref.dataPoint) set.add(ref.dataPoint.id);
+    }
+    return set;
+  }, [dataset.sourceReferences]);
+
+  // Flat list per existing row: [metricId, ...nonNullDimCategoryUuids]. Lets
+  // AddRowsModal grey out combinations that would duplicate an existing row.
+  const existingCombinations = useMemo<string[][]>(
+    () =>
+      rows.map((r) => [
+        r.metricId,
+        ...Object.values(r.categoryByDim).filter((v): v is string => v !== null),
+      ]),
+    [rows]
+  );
+
+  const handleAddRows = useCallback(
+    async (selectedMetricIds: string[], newRows: string[][]) => {
+      if (newRows.length === 0) return;
+      const metricIdSet = new Set(selectedMetricIds);
+      // One anchor DataPoint per new row: enough to make the row render. Other
+      // year cells stay backed by no DataPoint and are created lazily as the
+      // user edits them. Earliest existing year is the anchor; current year if
+      // the dataset is brand-new.
+      const anchorYear = years.length > 0 ? years[0] : new Date().getUTCFullYear();
+      setAddProgress({ current: 0, total: newRows.length });
+
+      let failureCount = 0;
+      let firstError: string | null = null;
+
+      for (const row of newRows) {
+        const metricId = row.find((id) => metricIdSet.has(id));
+        if (metricId) {
+          const dimensionCategoryIds = row.filter((id) => id !== metricId && id !== NOT_APPLICABLE);
+          try {
+            const result = await createDataPoint({
+              variables: {
+                instanceId: instance.id,
+                datasetId: dataset.id,
+                input: {
+                  date: `${anchorYear}-01-01`,
+                  metricId,
+                  dimensionCategoryIds,
+                  value: null,
+                },
+              },
+            });
+            const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+            if (payload?.__typename === 'OperationInfo') {
+              failureCount += 1;
+              firstError ??= payload.messages.map((m) => m.message).join('; ');
+            }
+          } catch (err) {
+            failureCount += 1;
+            firstError ??= err instanceof Error ? err.message : String(err);
+          }
+        }
+        setAddProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+
+      setAddProgress(null);
+      setAddOpen(false);
+      if (failureCount > 0) {
+        setError(firstError ?? `Failed to add ${failureCount} row${failureCount === 1 ? '' : 's'}`);
+      }
+      void onMutated();
+    },
+    [createDataPoint, instance.id, dataset.id, years, onMutated]
+  );
+
+  const handleDeleteRows = useCallback(
+    async (rowsToDelete: GridRow[]) => {
+      if (rowsToDelete.length === 0) return;
+      const rowIdPrefixes = rowsToDelete.map((r) => `${r.id}|`);
+      const allIds: string[] = [];
+      for (const row of rowsToDelete) {
+        for (const c of Object.values(row.cells)) {
+          if (c.type === 'Value' && c.dataPointId !== null) allIds.push(c.dataPointId);
+        }
+      }
+
+      // Drop any pending edits on the affected rows — they refer to rows
+      // that no longer exist after the delete.
+      const dropPending = () => {
+        setPendingEdits((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Map(prev);
+          for (const key of next.keys()) {
+            if (rowIdPrefixes.some((p) => key.startsWith(p))) next.delete(key);
+          }
+          return next;
+        });
+      };
+
+      if (allIds.length === 0) {
+        // Phantom rows — no DataPoints exist yet (only pending edits).
+        dropPending();
+        setGridSelection(EMPTY_SELECTION);
+        return;
+      }
+
+      setDeleteProgress({ current: 0, total: allIds.length });
+      let firstError: string | null = null;
+      for (const id of allIds) {
+        try {
           const result = await deleteDataPoint({
             variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
           });
           const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
           if (msgs.length > 0) {
-            setError(msgs.map((m) => m.message).join('; '));
+            firstError ??= msgs.map((m) => m.message).join('; ');
             break;
           }
+        } catch (err) {
+          firstError ??= err instanceof Error ? err.message : String(err);
+          break;
         }
-        // Drop any pending edits on this row — they refer to rows that no
-        // longer exist after the delete.
-        setPendingEdits((prev) => {
-          if (prev.size === 0) return prev;
-          const next = new Map(prev);
-          for (const key of next.keys()) {
-            if (key.startsWith(`${row.id}|`)) next.delete(key);
-          }
-          return next;
-        });
-      } finally {
-        onMutated();
+        setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
       }
+
+      dropPending();
+      setGridSelection(EMPTY_SELECTION);
+      setDeleteProgress(null);
+      if (firstError) setError(firstError);
+      void onMutated();
     },
     [deleteDataPoint, instance.id, dataset.id, onMutated]
   );
 
-  const columnDefs = useMemo<ColDef<GridRow>[]>(() => {
-    const cols: ColDef<GridRow>[] = [];
-    for (const dim of dataset.dimensions) {
-      cols.push({
-        colId: dimColId(dim.id),
-        headerName: dim.name,
-        width: 160,
-        pinned: 'left',
-        valueGetter: (p) => {
-          const c = p.data?.cells[dimColId(dim.id)];
-          return c?.type === 'DimensionCategory' ? c.label : '';
-        },
-      });
-    }
-    // Metric sits *last* in the pinned block so the number column flows
-    // directly into its year cells without a dimension-break in between.
-    cols.push({
-      colId: METRIC_COL,
-      headerName: 'Metric',
-      width: 180,
-      pinned: 'left',
-      valueGetter: (p) => {
-        const c = p.data?.cells[METRIC_COL];
-        return c?.type === 'MetricHeader' ? c.label : '';
-      },
-      cellRenderer: (p: ICellRendererParams<GridRow>) => {
-        const c = p.data?.cells[METRIC_COL];
-        if (c?.type !== 'MetricHeader') return null;
-        return (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              lineHeight: 1.2,
-              height: '100%',
-            }}
-          >
-            <Typography sx={{ fontSize: 11, fontWeight: 500, lineHeight: 1.2 }}>
-              {c.label}
-            </Typography>
-            {c.unit && (
-              <Typography sx={{ fontSize: 10, lineHeight: 1.2 }} color="text.secondary">
-                {c.unit}
-              </Typography>
-            )}
-          </Box>
-        );
-      },
-    });
-    for (const year of years) {
-      const colId = yearColId(year);
-      cols.push({
-        colId,
-        headerName: String(year),
-        width: 84,
-        editable: true,
-        type: 'numericColumn',
-        valueGetter: (p) => {
-          if (!p.data) return null;
-          const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
-          if (pending) return pending.nextValue;
-          const c = p.data.cells[colId];
-          return c?.type === 'Value' ? c.value : null;
-        },
-        valueSetter: (p) => {
-          if (!p.data) return false;
-          const raw: unknown = p.newValue;
-          const next =
-            raw === null || raw === '' || typeof raw === 'undefined' ? null : Number(raw);
-          if (next !== null && !Number.isFinite(next)) return false;
-          const committed = p.data.cells[colId];
-          if (committed?.type !== 'Value') return false;
+  const handleDeleteYears = useCallback(
+    async (yearsToDelete: number[]) => {
+      if (yearsToDelete.length === 0) return;
+      const colIds = yearsToDelete.map((y) => yearColId(y));
+      const colIdSuffixes = colIds.map((c) => `|${c}`);
 
-          setPendingEdits((prev) => {
-            const map = new Map(prev);
-            const key = pendingKey(p.data.id, colId);
-            const existing = map.get(key);
-            // The baseline we compare against is what was persisted when the
-            // user first touched this cell — preserved across keystrokes so
-            // a round-trip (A → B → A) clears the pending entry.
-            const originalValue = existing ? existing.originalValue : committed.value;
-            if (next === originalValue) {
-              map.delete(key);
-            } else {
-              map.set(key, {
-                rowId: p.data.id,
-                colId,
-                year,
-                dataPointId: committed.dataPointId,
-                nextValue: next,
-                originalValue,
-              });
-            }
-            return map;
+      const ids: string[] = [];
+      for (const row of rows) {
+        for (const colId of colIds) {
+          const cell = row.cells[colId];
+          if (cell?.type === 'Value' && cell.dataPointId !== null) ids.push(cell.dataPointId);
+        }
+      }
+
+      // Drop pending edits in the affected columns. pendingKey is
+      // `${rowId}|${colId}`; rowId can contain `|` itself but never ends with
+      // `|col_year_NNNN`, so suffix-match is unambiguous. Deferred until after
+      // mutations succeed so a failure doesn't silently discard unsaved edits.
+      const dropPendingForYears = () => {
+        setPendingEdits((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Map(prev);
+          for (const key of next.keys()) {
+            if (colIdSuffixes.some((s) => key.endsWith(s))) next.delete(key);
+          }
+          return next;
+        });
+      };
+
+      // Remove from extraYears regardless of whether DataPoints exist — the
+      // user's intent is to remove the columns. Safe to do optimistically:
+      // for purely ephemeral years there are no mutations to fail; for years
+      // backed by real DataPoints, a failed delete will reintroduce the
+      // column via dataset.dataPoints after refetch.
+      setExtraYears((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Set(prev);
+        let changed = false;
+        for (const y of yearsToDelete) {
+          if (next.delete(y)) changed = true;
+        }
+        return changed ? next : prev;
+      });
+
+      // Clear the column selection — the columns are gone.
+      setGridSelection(EMPTY_SELECTION);
+
+      if (ids.length === 0) {
+        // Phantom columns (extraYears only): no mutations can fail, so it's
+        // safe to drop pending edits in those columns now.
+        dropPendingForYears();
+        return;
+      }
+
+      setDeleteProgress({ current: 0, total: ids.length });
+      let firstError: string | null = null;
+      for (const id of ids) {
+        try {
+          const result = await deleteDataPoint({
+            variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
           });
-          return true;
-        },
-        valueFormatter: (p: { value: number | null }) =>
-          p.value != null ? p.value.toLocaleString(undefined, { maximumFractionDigits: 6 }) : '',
-        // Using cellClassRules (not cellStyle) because AG Grid doesn't clear
-        // previously applied inline styles when cellStyle transitions back to
-        // null — classes are toggled cleanly on refresh.
-        cellClassRules: {
-          'dsg-cell-dirty': (p) => {
-            if (!p.data) return false;
-            const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
-            return !!pending && !pending.error;
-          },
-          'dsg-cell-error': (p) => {
-            if (!p.data) return false;
-            const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
-            return !!pending?.error;
-          },
-        },
-        tooltipValueGetter: (p) => {
-          if (!p.data) return undefined;
-          const pending = pendingEditsRef.current.get(pendingKey(p.data.id, colId));
-          if (!pending) return undefined;
-          if (pending.error) return `Save failed: ${pending.error}`;
-          const original =
-            pending.originalValue != null
-              ? pending.originalValue.toLocaleString(undefined, { maximumFractionDigits: 6 })
-              : '(empty)';
-          return `Unsaved · was ${original}`;
-        },
-      });
-    }
-    if (SHOW_ACTIONS_COLUMN) {
-      cols.push({
-        colId: ACTIONS_COL,
-        headerName: '',
-        width: 60,
-        pinned: 'right',
-        lockPinned: true,
-        resizable: false,
-        sortable: false,
-        filter: false,
-        editable: false,
-        cellRenderer: (p: ICellRendererParams<GridRow>) => (
-          <Tooltip title="Delete all values in this row">
-            <IconButton
-              size="small"
-              onClick={() => {
-                if (p.data) void handleRowDelete(p.data);
-              }}
-            >
-              <Trash />
-            </IconButton>
-          </Tooltip>
-        ),
-      });
-    }
-    return cols;
-  }, [dataset.dimensions, years, handleRowDelete]);
+          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+          if (msgs.length > 0) {
+            firstError ??= msgs.map((m) => m.message).join('; ');
+            break;
+          }
+        } catch (err) {
+          firstError ??= err instanceof Error ? err.message : String(err);
+          break;
+        }
+        setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
 
-  const handleCellChange = useCallback((_event: CellValueChangedEvent<GridRow>) => {
-    // Value commits happen in valueSetter (pendingEdits state). Nothing to do
-    // on the post-commit event — kept as a seam if we later want to log edits.
+      setDeleteProgress(null);
+      if (firstError) {
+        setError(firstError);
+      } else {
+        dropPendingForYears();
+      }
+      void onMutated();
+    },
+    [deleteDataPoint, instance.id, dataset.id, rows, onMutated]
+  );
+
+  const handleAddYears = useCallback(
+    async (newYears: number[]) => {
+      if (newYears.length === 0) return;
+
+      // Update extraYears immediately for visual feedback while mutations are
+      // in flight. After refetch, the year is in dataset.dataPoints; the
+      // extraYears entry then merges in as a no-op (Set semantics).
+      setExtraYears((prev) => {
+        const next = new Set(prev);
+        for (const y of newYears) next.add(y);
+        return next;
+      });
+
+      // No rows to anchor against yet — the column is ephemeral until the
+      // first row is added (the row's anchor will then create a real
+      // DataPoint in some year). Skip mutations.
+      if (rows.length === 0) return;
+
+      const anchorRow = rows[0];
+      const dimensionCategoryIds = Object.values(anchorRow.categoryByDim).filter(
+        (v): v is string => v !== null
+      );
+
+      setAddYearsProgress({ current: 0, total: newYears.length });
+      let failureCount = 0;
+      let firstError: string | null = null;
+      const failedYears: number[] = [];
+
+      for (const year of newYears) {
+        try {
+          const result = await createDataPoint({
+            variables: {
+              instanceId: instance.id,
+              datasetId: dataset.id,
+              input: {
+                date: `${year}-01-01`,
+                metricId: anchorRow.metricId,
+                dimensionCategoryIds,
+                value: null,
+              },
+            },
+          });
+          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
+          if (payload?.__typename === 'OperationInfo') {
+            failureCount += 1;
+            failedYears.push(year);
+            firstError ??= payload.messages.map((m) => m.message).join('; ');
+          }
+        } catch (err) {
+          failureCount += 1;
+          failedYears.push(year);
+          firstError ??= err instanceof Error ? err.message : String(err);
+        }
+        setAddYearsProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+      }
+
+      setAddYearsProgress(null);
+      if (failedYears.length > 0) {
+        // Roll back the optimistic extraYears entries for years whose anchor
+        // DataPoint failed to create — otherwise the column would linger
+        // without any backing data until a full reload.
+        setExtraYears((prev) => {
+          if (prev.size === 0) return prev;
+          const next = new Set(prev);
+          let changed = false;
+          for (const y of failedYears) {
+            if (next.delete(y)) changed = true;
+          }
+          return changed ? next : prev;
+        });
+      }
+      if (failureCount > 0) {
+        setError(
+          firstError ?? `Failed to add ${failureCount} year${failureCount === 1 ? '' : 's'}`
+        );
+      }
+      void onMutated();
+    },
+    [createDataPoint, instance.id, dataset.id, rows, onMutated]
+  );
+
+  // Render order — drives both the columns array and the [col, row] -> colId
+  // mapping in getCellContent / onCellEdited.
+  const columnIds = useMemo(
+    () => [...dataset.dimensions.map((d) => dimColId(d.id)), METRIC_COL, ...years.map(yearColId)],
+    [dataset.dimensions, years]
+  );
+
+  const columns = useMemo<GridColumn[]>(
+    () =>
+      columnIds.map((id) => {
+        let title = '';
+        if (id === METRIC_COL) {
+          title = 'Metric';
+        } else if (id.startsWith(DIM_COL_PREFIX)) {
+          const dim = dataset.dimensions.find((d) => dimColId(d.id) === id);
+          title = dim?.name ?? '';
+        } else if (id.startsWith(YEAR_COL_PREFIX)) {
+          title = id.slice(YEAR_COL_PREFIX.length);
+        }
+        return {
+          id,
+          title,
+          width: colWidths[id] ?? defaultWidthForCol(id),
+        };
+      }),
+    [columnIds, dataset.dimensions, colWidths]
+  );
+
+  // Pin all dim columns + the Metric column. Year columns scroll.
+  const freezeColumns = dataset.dimensions.length + 1;
+
+  const getCellContent = useCallback<DataEditorProps['getCellContent']>(
+    (cell: Item) => {
+      const [col, row] = cell;
+      const colId = columnIds[col];
+      const gridRow = rows[row];
+      if (!colId || !gridRow) {
+        return { kind: GridCellKind.Loading, allowOverlay: false } as GridCell;
+      }
+      if (isYearColId(colId)) {
+        const committed = gridRow.cells[colId];
+        const baseValue = committed?.type === 'Value' ? committed.value : null;
+        const pending = pendingEdits.get(pendingKey(gridRow.id, colId));
+        const value = pending ? pending.nextValue : baseValue;
+        const uninitiated =
+          !pending && committed?.type === 'Value' && committed.dataPointId === null;
+        const themeOverride = pending
+          ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG }
+          : uninitiated
+            ? { bgCell: UNINITIATED_BG }
+            : undefined;
+        return {
+          kind: GridCellKind.Number,
+          data: value ?? undefined,
+          displayData: formatNumber(value),
+          allowOverlay: true,
+          readonly: false,
+          contentAlign: 'right',
+          themeOverride,
+        };
+      }
+      const cellData = gridRow.cells[colId];
+      let label = '';
+      if (cellData?.type === 'DimensionCategory') {
+        label = cellData.label;
+      } else if (cellData?.type === 'MetricHeader') {
+        // Collapse label + unit onto a single line. Glide's text cell is
+        // single-line; stacking them would need a custom canvas renderer.
+        label = cellData.unit ? `${cellData.label} (${cellData.unit})` : cellData.label;
+      }
+      return {
+        kind: GridCellKind.Text,
+        data: label,
+        displayData: label,
+        allowOverlay: false,
+        readonly: true,
+        themeOverride: { bgCell: UNINITIATED_BG },
+      };
+    },
+    [columnIds, rows, pendingEdits]
+  );
+
+  const onCellContextMenu = useCallback<NonNullable<DataEditorProps['onCellContextMenu']>>(
+    (cell, e) => {
+      e.preventDefault();
+      const [colIdx, rowIndex] = cell;
+      const colId = columnIds[colIdx];
+      const gridRow = rows[rowIndex];
+      if (!gridRow || !colId) return;
+      // Read-only cells (dim columns and the Metric column) have no useful
+      // context-menu actions — copy/paste isn't supported there and
+      // comments/data sources hang off year-cell DataPoints. Suppress the
+      // menu entirely and close any open menu from a previous click.
+      if (!isYearColId(colId)) {
+        setContextMenu(null);
+        return;
+      }
+      // Glide doesn't expose the underlying MouseEvent's clientX/Y. Stash the
+      // row here and let the document-level contextmenu listener pick it up
+      // along with the native pointer coords.
+      pendingContextRowRef.current = gridRow;
+      // Focus the right-clicked cell so any panel opened from the menu
+      // ("Comment", "Data source") knows which data point the user means,
+      // and so emit('copy') / emit('paste') target the right cell.
+      setGridSelection({
+        rows: CompactSelection.empty(),
+        columns: CompactSelection.empty(),
+        current: {
+          cell,
+          range: { x: colIdx, y: rowIndex, width: 1, height: 1 },
+          rangeStack: [],
+        },
+      });
+    },
+    [columnIds, rows]
+  );
+
+  const onHeaderContextMenu = useCallback<NonNullable<DataEditorProps['onHeaderContextMenu']>>(
+    (colIndex, e) => {
+      e.preventDefault();
+      // Mirror left-click highlight behaviour — right-clicking a header also
+      // selects the column. No header context menu for now; we just suppress
+      // the browser's native menu and update the selection.
+      setGridSelection({
+        rows: CompactSelection.empty(),
+        columns: CompactSelection.fromSingleSelection(colIndex),
+      });
+    },
+    []
+  );
+
+  // Document-level contextmenu listener: handles both initial open and
+  // reposition-on-second-right-click. A wrapper-level listener wouldn't fire
+  // when the menu's click-away catcher is active; document is reliable.
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const wrapper = gridWrapperRef.current;
+      if (!wrapper) return;
+      const insideGrid = wrapper.contains(e.target as Node);
+      const row = pendingContextRowRef.current;
+      if (insideGrid && row !== null) {
+        e.preventDefault();
+        setContextMenu({ row, mouseX: e.clientX, mouseY: e.clientY });
+        pendingContextRowRef.current = null;
+      } else if (!insideGrid) {
+        // Right-click anywhere outside the grid dismisses an open menu.
+        setContextMenu(null);
+      }
+    };
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
   }, []);
+
+  const applyEdit = useCallback(
+    (rowIndex: number, colIndex: number, newValue: EditableGridCell) => {
+      const colId = columnIds[colIndex];
+      const gridRow = rows[rowIndex];
+      if (!colId || !gridRow || !isYearColId(colId)) return;
+      const committed = gridRow.cells[colId];
+      if (committed?.type !== 'Value') return;
+      if (newValue.kind !== GridCellKind.Number) return;
+      const raw = newValue.data;
+      // Reject non-finite (NaN, Infinity) — silently drop, matching the
+      // original valueSetter's `return false`.
+      if (raw !== undefined && raw !== null && !Number.isFinite(raw)) return;
+      const next: number | null = raw ?? null;
+
+      setPendingEdits((prev) => {
+        const map = new Map(prev);
+        const key = pendingKey(gridRow.id, colId);
+        const existing = map.get(key);
+        // Baseline = what was persisted when the user first touched this cell;
+        // preserved across keystrokes so a round-trip (A → B → A) clears the
+        // pending entry.
+        const originalValue = existing ? existing.originalValue : committed.value;
+        const year = yearFromColId(colId) ?? committed.year;
+        if (next === originalValue) {
+          map.delete(key);
+        } else {
+          map.set(key, {
+            rowId: gridRow.id,
+            colId,
+            year,
+            dataPointId: committed.dataPointId,
+            nextValue: next,
+            originalValue,
+          });
+        }
+        return map;
+      });
+    },
+    [columnIds, rows]
+  );
+
+  const onCellEdited = useCallback<NonNullable<DataEditorProps['onCellEdited']>>(
+    (cell, newValue) => {
+      applyEdit(cell[1], cell[0], newValue);
+    },
+    [applyEdit]
+  );
+
+  const onCellsEdited = useCallback<NonNullable<DataEditorProps['onCellsEdited']>>(
+    (items) => {
+      for (const item of items) {
+        applyEdit(item.location[1], item.location[0], item.value);
+      }
+      return true;
+    },
+    [applyEdit]
+  );
+
+  // Multi-cell paste: Glide's default for Number cells doesn't handle
+  // locale-formatted strings ("1,234.56" / "1234,56") or empty cells; coerce
+  // here so pasted spreadsheet ranges land cleanly. Non-Number targets fall
+  // through to `applyEdit`'s guards (dim/Metric columns are read-only).
+  const coercePasteValue = useCallback<NonNullable<DataEditorProps['coercePasteValue']>>(
+    (val, cell) => {
+      if (cell.kind !== GridCellKind.Number) return undefined;
+      const stripped = val.trim().replace(/\s/g, '');
+      if (stripped === '') {
+        return { ...cell, data: undefined, displayData: '' };
+      }
+      const hasComma = stripped.includes(',');
+      const hasDot = stripped.includes('.');
+      let normalised: string;
+      if (hasComma && hasDot) {
+        // Rightmost separator is the decimal; the other is thousands.
+        if (stripped.lastIndexOf('.') > stripped.lastIndexOf(',')) {
+          normalised = stripped.replace(/,/g, '');
+        } else {
+          normalised = stripped.replace(/\./g, '').replace(',', '.');
+        }
+      } else if (hasComma) {
+        // Ambiguous: "1,500" could be thousands or decimal. Treat as
+        // thousands only when the whole string is groups-of-three
+        // (e.g. "1,500", "1,500,000"); otherwise treat as decimal ("1,5").
+        normalised = /^-?\d{1,3}(,\d{3})+$/.test(stripped)
+          ? stripped.replace(/,/g, '')
+          : stripped.replace(',', '.');
+      } else {
+        normalised = stripped;
+      }
+      const num = Number(normalised);
+      if (!Number.isFinite(num)) return undefined;
+      return { ...cell, data: num, displayData: formatNumber(num) };
+    },
+    []
+  );
+
+  const onColumnResize = useCallback<NonNullable<DataEditorProps['onColumnResize']>>(
+    (column, newSize) => {
+      if (!column.id) return;
+      setColWidths((prev) => ({ ...prev, [column.id as string]: newSize }));
+    },
+    []
+  );
+
+  // Resolve the focused cell to a dataPointId (or null for non-Value cells)
+  // and report changes upward.
+  const selectedDataPointId = useMemo(() => {
+    const cell = gridSelection.current?.cell;
+    if (!cell) return null;
+    const [col, rowIndex] = cell;
+    const colId = columnIds[col];
+    const gridRow = rows[rowIndex];
+    if (!colId || !gridRow || !isYearColId(colId)) return null;
+    const cellData = gridRow.cells[colId];
+    return cellData?.type === 'Value' ? cellData.dataPointId : null;
+  }, [gridSelection, columnIds, rows]);
+
+  useEffect(() => {
+    onSelectedDataPointChange?.(selectedDataPointId);
+  }, [selectedDataPointId, onSelectedDataPointChange]);
+
+  // Drop the cell selection when the parent bumps the nonce. The initial
+  // value (whatever it is on first render) is captured and ignored — only
+  // subsequent changes trigger the clear.
+  const initialClearNonceRef = useRef(clearSelectionNonce);
+  useEffect(() => {
+    if (clearSelectionNonce === initialClearNonceRef.current) return;
+    setGridSelection(EMPTY_SELECTION);
+  }, [clearSelectionNonce]);
+
+  // Overlays decorations on year cells after Glide draws the default content:
+  // - corner triangle (red / orange) when comments exist (unresolved vs all)
+  // - underline on the rendered value when the DataPoint has a source
+  //   reference attached
+  const drawCell = useCallback<NonNullable<DataEditorProps['drawCell']>>(
+    (args, drawContent) => {
+      drawContent();
+      const { col, row, ctx, rect } = args;
+      const colId = columnIds[col];
+      const gridRow = rows[row];
+      if (!colId || !gridRow || !isYearColId(colId)) return;
+      const cellData = gridRow.cells[colId];
+      if (cellData?.type !== 'Value' || cellData.dataPointId === null) return;
+
+      // Source-reference underline. Skip if there's no value to underline
+      // (empty cells would underline blank space).
+      if (cellData.value !== null && dataPointIdsWithSource.has(cellData.dataPointId)) {
+        const text = formatNumber(cellData.value);
+        const padding = 8;
+        const xRight = rect.x + rect.width - padding;
+        const m = ctx.measureText(text);
+        const xLeft = Math.max(rect.x + padding, xRight - m.width);
+        const yLine = rect.y + rect.height - 9;
+        ctx.save();
+        ctx.strokeStyle = '#bbbbbb';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(xLeft, yLine);
+        ctx.lineTo(xRight, yLine);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Comment indicator triangle.
+      const info = commentInfoByDataPointId.get(cellData.dataPointId);
+      if (info) {
+        const size = 8;
+        const x = rect.x + rect.width;
+        const y = rect.y;
+        ctx.save();
+        // Matches the warning.main of the model-editor theme — same hue as
+        // the highlighted "needs review" card in the comments panel.
+        ctx.fillStyle = info.hasUnresolvedReview ? '#d97706' : '#bbbbbb';
+        ctx.beginPath();
+        ctx.moveTo(x - size, y);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x, y + size);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    },
+    [columnIds, rows, commentInfoByDataPointId, dataPointIdsWithSource]
+  );
 
   const handleDiscard = useCallback(() => {
     setPendingEdits(new Map());
@@ -452,37 +859,20 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     setSaving(true);
 
     const baseVars = { instanceId: instance.id, datasetId: dataset.id };
-    // Snapshot the queue at save start — entries the user adds mid-commit
-    // stay in `pendingEdits` and get their own run next time.
     const queued = [...pendingEdits];
 
-    const clearPending = (key: string) => {
-      setPendingEdits((prev) => {
-        if (!prev.has(key)) return prev;
-        const next = new Map(prev);
-        next.delete(key);
-        return next;
-      });
-    };
-    const markFailure = (key: string, edit: PendingEdit, error: string) => {
-      setPendingEdits((prev) => {
-        const next = new Map(prev);
-        next.set(key, { ...edit, error });
-        return next;
-      });
-    };
-
-    let failureCount = 0;
+    // Track outcomes locally and defer the pendingEdits update until after
+    // the parent refetch lands — clearing a successful pending mid-loop would
+    // briefly fall back to stale cache for that cell (empty for creates, old
+    // value for updates), causing the values to disappear and re-appear.
+    const successKeys: string[] = [];
+    const failures = new Map<string, { edit: PendingEdit; error: string }>();
     let unexpected: string | null = null;
 
-    // Sequential commits — kausal-extensions does it this way too. Simpler
-    // error attribution than Promise.allSettled, acceptable latency at the
-    // scale of a single grid view. Highlight clears per-cell as each
-    // mutation resolves.
     for (const [key, edit] of queued) {
       const row = rowById.get(edit.rowId);
       if (!row) {
-        clearPending(key);
+        successKeys.push(key);
         continue;
       }
       const kind = diffKind(edit.dataPointId, edit.nextValue);
@@ -490,7 +880,7 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
       try {
         if (kind === 'create') {
           if (edit.nextValue === null) {
-            clearPending(key);
+            successKeys.push(key);
             continue;
           }
           const result = await createDataPoint({
@@ -508,14 +898,16 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           });
           const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
           if (payload?.__typename === 'OperationInfo') {
-            failureCount += 1;
-            markFailure(key, edit, payload.messages.map((m) => m.message).join('; '));
+            failures.set(key, {
+              edit,
+              error: payload.messages.map((m) => m.message).join('; '),
+            });
           } else {
-            clearPending(key);
+            successKeys.push(key);
           }
         } else if (kind === 'delete') {
           if (edit.dataPointId === null) {
-            clearPending(key);
+            successKeys.push(key);
             continue;
           }
           const result = await deleteDataPoint({
@@ -523,14 +915,13 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           });
           const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
           if (msgs.length > 0) {
-            failureCount += 1;
-            markFailure(key, edit, msgs.map((m) => m.message).join('; '));
+            failures.set(key, { edit, error: msgs.map((m) => m.message).join('; ') });
           } else {
-            clearPending(key);
+            successKeys.push(key);
           }
         } else {
           if (edit.dataPointId === null) {
-            clearPending(key);
+            successKeys.push(key);
             continue;
           }
           const result = await updateDataPoint({
@@ -542,29 +933,44 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           });
           const payload = result.data?.instanceEditor.datasetEditor.updateDataPoint;
           if (payload?.__typename === 'OperationInfo') {
-            failureCount += 1;
-            markFailure(key, edit, payload.messages.map((m) => m.message).join('; '));
+            failures.set(key, {
+              edit,
+              error: payload.messages.map((m) => m.message).join('; '),
+            });
           } else {
-            clearPending(key);
+            successKeys.push(key);
           }
         }
       } catch (err) {
-        failureCount += 1;
         const msg = err instanceof Error ? err.message : String(err);
-        markFailure(key, edit, msg);
+        failures.set(key, { edit, error: msg });
         unexpected ??= msg;
       }
     }
 
+    // Wait for the parent to refetch the dataset (so the Apollo cache holds
+    // the freshly-saved values) before dropping the pending entries. Then
+    // commit successes and failures in a single state update — the cell
+    // renderer sees pending → baseValue swap with identical values, no flash.
+    await onMutated();
+
+    setPendingEdits((prev) => {
+      if (successKeys.length === 0 && failures.size === 0) return prev;
+      const next = new Map(prev);
+      for (const key of successKeys) next.delete(key);
+      for (const [key, { edit, error }] of failures) next.set(key, { ...edit, error });
+      return next;
+    });
+
     setSaving(false);
 
+    const failureCount = failures.size;
     if (failureCount > 0) {
       setError(
         unexpected ??
           `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
       );
     }
-    onMutated();
   }, [
     pendingEdits,
     saving,
@@ -577,82 +983,31 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
     onMutated,
   ]);
 
-  // Redraw year-column cells when the pending map changes so cellStyle /
-  // valueGetter / tooltipValueGetter pick up the new ref value. `force: true`
-  // ensures the styling refreshes even if the rendered text didn't change.
-  useEffect(() => {
-    const api = gridApiRef.current;
-    if (!api) return;
-    const yearColIds = years.map(yearColId);
-    if (yearColIds.length > 0) {
-      api.refreshCells({ columns: yearColIds, force: true });
-    }
-  }, [pendingEdits, years]);
-
-  // After columnDefs reference changes (e.g. a refetch added or removed a
-  // year column), re-apply any saved column widths. `applyOrder: false` means
-  // unknown columns keep their default position.
-  useEffect(() => {
-    const api = gridApiRef.current;
-    const saved = columnStateRef.current;
-    if (!api || !saved) return;
-    api.applyColumnState({ state: saved, applyOrder: false });
-  }, [columnDefs]);
-
-  // Stable references for props passed to AgGridReact — fresh object/function
-  // references on every render cause AG Grid to re-apply defaults and drop
-  // user-adjusted column widths.
-  const defaultColDef = useMemo<ColDef<GridRow>>(() => ({ resizable: true, sortable: true }), []);
-  const getRowId = useCallback((p: { data: GridRow }) => p.data.id, []);
-
-  // Keep the pinned-left columns (dimensions + Metric) from starving the
-  // scrolling year columns. Runs after layout so we can read the grid's
-  // actual rendered width. User-driven resizes via `onColumnResized` still
-  // win — we only shrink automatically when the cap is breached.
-  const MAX_PINNED_FRACTION = 0.75;
-  const capPinnedWidths = useCallback(() => {
-    const api = gridApiRef.current;
-    if (!api) return;
-    const rootEl = document.querySelector<HTMLElement>('.ag-root-wrapper');
-    const gridWidth = rootEl?.clientWidth ?? 0;
-    if (gridWidth <= 0) return;
-    const cap = gridWidth * MAX_PINNED_FRACTION;
-    const pinnedIds: string[] = [...dataset.dimensions.map((d) => dimColId(d.id)), METRIC_COL];
-    const widths = pinnedIds.map((id) => api.getColumn(id)?.getActualWidth() ?? 0);
-    const total = widths.reduce((a, b) => a + b, 0);
-    if (total <= cap || total === 0) return;
-    const scale = cap / total;
-    const updates = pinnedIds
-      .map((key, i) => ({ key, newWidth: Math.max(40, Math.floor(widths[i] * scale)) }))
-      .filter(({ newWidth }, i) => newWidth !== widths[i]);
-    if (updates.length > 0) api.setColumnWidths(updates);
-  }, [dataset.dimensions]);
-
-  const handleGridReady = useCallback(
-    (event: GridReadyEvent<GridRow>) => {
-      gridApiRef.current = event.api;
-      // Defer one frame so the wrapper has laid out its width.
-      requestAnimationFrame(capPinnedWidths);
-    },
-    [capPinnedWidths]
-  );
-  const handleColumnResized = useCallback((event: { finished: boolean }) => {
-    if (event.finished && gridApiRef.current) {
-      columnStateRef.current = gridApiRef.current.getColumnState();
-    }
-  }, []);
-  const handleGridSizeChanged = useCallback(() => {
-    capPinnedWidths();
-  }, [capPinnedWidths]);
-
-  // Re-apply cap when the set of pinned columns changes (dimensions added,
-  // etc.) — columnDefs rebuild triggers AG Grid to restore its default widths.
-  useEffect(() => {
-    capPinnedWidths();
-  }, [capPinnedWidths, columnDefs]);
-
   const pendingCount = pendingEdits.size;
   const hasPending = pendingCount > 0;
+  const selectedRowCount = gridSelection.rows.length;
+
+  const selectedYears = useMemo(() => {
+    return gridSelection.columns
+      .toArray()
+      .map((idx) => columnIds[idx])
+      .filter((id): id is string => Boolean(id) && isYearColId(id))
+      .map((id) => yearFromColId(id))
+      .filter((y): y is number => y !== null);
+  }, [gridSelection, columnIds]);
+  const selectedYearCount = selectedYears.length;
+
+  const handleDeleteSelected = useCallback(() => {
+    const indices = gridSelection.rows.toArray();
+    const targets = indices.map((i) => rows[i]).filter((r): r is GridRow => !!r);
+    if (targets.length === 0) return;
+    void handleDeleteRows(targets);
+  }, [gridSelection, rows, handleDeleteRows]);
+
+  const handleDeleteSelectedYears = useCallback(() => {
+    if (selectedYears.length === 0) return;
+    void handleDeleteYears(selectedYears);
+  }, [selectedYears, handleDeleteYears]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -668,24 +1023,49 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
             {pendingCount} unsaved change{pendingCount === 1 ? '' : 's'}
           </Typography>
         )}
-        <Button
-          size="small"
-          onClick={handleDiscard}
-          disabled={!hasPending || saving}
-          color="inherit"
-        >
-          Discard
-        </Button>
-        <Button
-          size="small"
-          variant="contained"
-          onClick={() => void handleSave()}
-          disabled={!hasPending || saving}
-        >
-          {saving ? 'Saving…' : 'Save changes'}
-        </Button>
+        {selectedRowCount > 0 && (
+          <Button
+            size="small"
+            color="error"
+            variant="outlined"
+            startIcon={<Trash />}
+            onClick={handleDeleteSelected}
+            disabled={deleteProgress !== null}
+            sx={!hasPending ? { mr: 'auto' } : undefined}
+          >
+            Delete {selectedRowCount} row{selectedRowCount === 1 ? '' : 's'}
+          </Button>
+        )}
+        {selectedYearCount > 0 && (
+          <Button
+            size="small"
+            color="error"
+            variant="outlined"
+            startIcon={<Trash />}
+            onClick={handleDeleteSelectedYears}
+            disabled={deleteProgress !== null}
+            sx={!hasPending && selectedRowCount === 0 ? { mr: 'auto' } : undefined}
+          >
+            Delete {selectedYearCount} year{selectedYearCount === 1 ? '' : 's'}
+          </Button>
+        )}
+        {hasPending && (
+          <>
+            <Button size="small" onClick={handleDiscard} disabled={saving} color="inherit">
+              Discard
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => void handleSave()}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : 'Save changes'}
+            </Button>
+          </>
+        )}
         <Button size="small" startIcon={<Plus />} onClick={() => setAddYearOpen(true)}>
-          Add year
+          Add years
         </Button>
         <Button
           size="small"
@@ -693,89 +1073,179 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
           onClick={() => setAddOpen(true)}
           disabled={dataset.metrics.length === 0}
         >
-          Add row
+          Add rows
         </Button>
       </Stack>
-      <Box
-        className="ag-theme-alpine"
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          width: '100%',
-          // Compact variant of the alpine theme — reduces row height, cell
-          // padding, and font size. Scoped via className so the spacious
-          // default still applies elsewhere.
-          '--ag-grid-size': '3px',
-          '--ag-font-size': '11px',
-          '--ag-cell-horizontal-padding': '4px',
-          // Cell/header padding — AG Grid's compiled CSS (`.ag-ltr .ag-cell`)
-          // ships in the same specificity band as our sx class and is loaded
-          // later in the cascade, so the `--ag-cell-horizontal-padding` var
-          // gets overridden by the theme's calc() chain. Force with
-          // !important to win unconditionally.
-          '& .ag-cell': {
-            paddingLeft: '4px !important',
-            paddingRight: '4px !important',
-          },
-          '& .ag-header-cell': {
-            paddingLeft: '4px !important',
-            paddingRight: '4px !important',
-          },
-          '& .ag-header-cell-label': { fontSize: 11 },
-          '& .ag-cell.dsg-cell-dirty': {
-            backgroundColor: 'rgba(237, 108, 2, 0.12)',
-            borderLeft: '3px solid #ed6c02',
-          },
-          '& .ag-cell.dsg-cell-error': {
-            backgroundColor: 'rgba(211, 47, 47, 0.12)',
-            borderLeft: '3px solid #d32f2f',
-          },
-        }}
-      >
-        <AgGridReact
-          rowData={rows}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          onGridReady={handleGridReady}
-          onGridSizeChanged={handleGridSizeChanged}
-          onColumnResized={handleColumnResized}
-          onCellValueChanged={handleCellChange}
-          getRowId={getRowId}
+      <Box ref={gridWrapperRef} sx={{ flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
+        <DataEditor
+          ref={gridRef}
+          columns={columns}
+          rows={rows.length}
+          getCellContent={getCellContent}
+          onCellEdited={onCellEdited}
+          onCellsEdited={onCellsEdited}
+          coercePasteValue={coercePasteValue}
+          onPaste
+          onCellContextMenu={onCellContextMenu}
+          onHeaderContextMenu={onHeaderContextMenu}
+          onColumnResize={onColumnResize}
+          drawCell={drawCell}
+          freezeColumns={freezeColumns}
+          getCellsForSelection
+          gridSelection={gridSelection}
+          onGridSelectionChange={setGridSelection}
+          rowMarkers="both"
+          rowSelectionMode="multi"
+          smoothScrollX
+          smoothScrollY
+          width="100%"
+          height="100%"
           rowHeight={38}
           headerHeight={32}
-          singleClickEdit
-          stopEditingWhenCellsLoseFocus
-          tooltipShowDelay={400}
         />
+        {(() => {
+          const overlay =
+            deleteProgress !== null
+              ? {
+                  progress: deleteProgress,
+                  label: `Deleting ${deleteProgress.current} of ${deleteProgress.total} data points…`,
+                }
+              : addYearsProgress !== null
+                ? {
+                    progress: addYearsProgress,
+                    label: `Adding ${addYearsProgress.current} of ${addYearsProgress.total} year${
+                      addYearsProgress.total === 1 ? '' : 's'
+                    }…`,
+                  }
+                : null;
+          if (!overlay) return null;
+          const { progress, label } = overlay;
+          return (
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                bgcolor: 'rgba(255, 255, 255, 0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1,
+                // Eat all pointer events so the user can't fire another delete
+                // or edit cells while mutations are in flight.
+                cursor: 'wait',
+              }}
+            >
+              <Box sx={{ width: '60%', maxWidth: 360 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 0.5, textAlign: 'center' }}
+                >
+                  {label}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress.total > 0 ? (progress.current / progress.total) * 100 : 0}
+                />
+              </Box>
+            </Box>
+          );
+        })()}
       </Box>
-      <AddDataPointDialog
+      <Popper
+        open={contextMenu !== null}
+        anchorEl={
+          contextMenu !== null
+            ? {
+                getBoundingClientRect: () =>
+                  new DOMRect(contextMenu.mouseX, contextMenu.mouseY, 0, 0),
+              }
+            : null
+        }
+        placement="bottom-start"
+        sx={{ zIndex: (theme) => theme.zIndex.modal }}
+      >
+        <ClickAwayListener
+          onClickAway={() => setContextMenu(null)}
+          // Right-click events also dismiss; the document-level listener above
+          // handles repositioning to a new cell when applicable.
+          mouseEvent="onMouseDown"
+        >
+          <Paper elevation={8}>
+            <MenuList autoFocus dense>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  // Glide's keyboard handlers only fire when the grid is
+                  // focused; the menu click moves focus to the MenuList.
+                  gridRef.current?.focus();
+                  void gridRef.current?.emit('copy');
+                }}
+              >
+                <ListItemIcon>
+                  <Files />
+                </ListItemIcon>
+                <ListItemText>Copy</ListItemText>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  gridRef.current?.focus();
+                  // Reads via navigator.clipboard.readText — requires a user
+                  // gesture (the menu click qualifies) and a secure context.
+                  // No-ops silently if the browser denies permission.
+                  void gridRef.current?.emit('paste');
+                }}
+              >
+                <ListItemIcon>
+                  <Clipboard />
+                </ListItemIcon>
+                <ListItemText>Paste</ListItemText>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  onOpenPanel?.('comments');
+                }}
+              >
+                <ListItemIcon>
+                  <ChatLeft />
+                </ListItemIcon>
+                <ListItemText>Comment</ListItemText>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setContextMenu(null);
+                  onOpenPanel?.('sources');
+                }}
+              >
+                <ListItemIcon>
+                  <Bookmarks />
+                </ListItemIcon>
+                <ListItemText>Data source</ListItemText>
+              </MenuItem>
+            </MenuList>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
+      <AddRowsModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        dataset={dataset}
-        onCreate={async (input) => {
-          const result = await createDataPoint({
-            variables: { instanceId: instance.id, datasetId: dataset.id, input },
-          });
-          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
-          if (payload?.__typename === 'OperationInfo') {
-            setError(payload.messages.map((m) => m.message).join('; '));
-            return false;
-          }
-          onMutated();
-          return true;
+        metrics={dataset.metrics}
+        dimensions={dataset.dimensions}
+        existingCombinations={existingCombinations}
+        isAdding={addProgress !== null}
+        progress={addProgress}
+        onAdd={(selectedMetricIds, newRows) => {
+          void handleAddRows(selectedMetricIds, newRows);
         }}
       />
-      <AddYearDialog
+      <AddYearsModal
         open={addYearOpen}
         existingYears={years}
         onClose={() => setAddYearOpen(false)}
-        onAdd={(year) => {
-          setExtraYears((prev) => {
-            if (prev.has(year) || years.includes(year)) return prev;
-            const next = new Set(prev);
-            next.add(year);
-            return next;
-          });
+        onAddYears={(newYears) => {
+          void handleAddYears(newYears);
         }}
       />
       <Snackbar
@@ -789,205 +1259,5 @@ export default function DatasetDataGrid({ dataset, onMutated }: Props) {
         </Alert>
       </Snackbar>
     </Box>
-  );
-}
-
-type AddDialogProps = {
-  open: boolean;
-  onClose: () => void;
-  dataset: DatasetDetailFieldsFragment;
-  onCreate: (input: {
-    date: string;
-    value: number | null;
-    metricId: string;
-    dimensionCategoryIds: string[];
-  }) => Promise<boolean>;
-};
-
-function AddDataPointDialog({ open, onClose, dataset, onCreate }: AddDialogProps) {
-  const defaultDate = new Date().toISOString().slice(0, 10);
-  const [date, setDate] = useState(defaultDate);
-  const [value, setValue] = useState('');
-  const [metricId, setMetricId] = useState(dataset.metrics[0]?.id ?? '');
-  const [categoryByDim, setCategoryByDim] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    for (const dim of dataset.dimensions) {
-      if (dim.categories[0]) init[dim.id] = dim.categories[0].uuid;
-    }
-    return init;
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const reset = () => {
-    setDate(defaultDate);
-    setValue('');
-    setMetricId(dataset.metrics[0]?.id ?? '');
-    const init: Record<string, string> = {};
-    for (const dim of dataset.dimensions) {
-      if (dim.categories[0]) init[dim.id] = dim.categories[0].uuid;
-    }
-    setCategoryByDim(init);
-  };
-
-  const handleSubmit = async () => {
-    if (!metricId) return;
-    const parsed = value.trim() === '' ? null : Number(value);
-    if (parsed !== null && !Number.isFinite(parsed)) return;
-    setSubmitting(true);
-    const ok = await onCreate({
-      date,
-      value: parsed,
-      metricId,
-      dimensionCategoryIds: Object.values(categoryByDim),
-    });
-    setSubmitting(false);
-    if (ok) {
-      reset();
-      onClose();
-    }
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add row</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            fullWidth
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <FormControl fullWidth>
-            <InputLabel id="metric-select-label">Metric</InputLabel>
-            <Select
-              labelId="metric-select-label"
-              label="Metric"
-              value={metricId}
-              onChange={(e) => setMetricId(e.target.value)}
-            >
-              {dataset.metrics.map((m) => (
-                <MenuItem key={m.id} value={m.id}>
-                  {m.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          {dataset.dimensions.map((dim) => (
-            <FormControl key={dim.id} fullWidth>
-              <InputLabel id={`dim-select-${dim.id}`}>{dim.name}</InputLabel>
-              <Select
-                labelId={`dim-select-${dim.id}`}
-                label={dim.name}
-                value={categoryByDim[dim.id] ?? ''}
-                onChange={(e) =>
-                  setCategoryByDim((prev) => ({ ...prev, [dim.id]: e.target.value }))
-                }
-              >
-                {dim.categories.map((cat) => (
-                  <MenuItem key={cat.uuid} value={cat.uuid}>
-                    {cat.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ))}
-          <TextField
-            label="Value"
-            type="number"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            fullWidth
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button
-          variant="contained"
-          disabled={submitting || !metricId}
-          onClick={() => {
-            void handleSubmit();
-          }}
-        >
-          {submitting ? 'Adding…' : 'Add'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-const MIN_YEAR = 1900;
-const MAX_YEAR = 2100;
-
-type AddYearDialogProps = {
-  open: boolean;
-  existingYears: readonly number[];
-  onClose: () => void;
-  onAdd: (year: number) => void;
-};
-
-function AddYearDialog({ open, existingYears, onClose, onAdd }: AddYearDialogProps) {
-  const suggested = useMemo(() => {
-    if (existingYears.length > 0) return existingYears[existingYears.length - 1] + 1;
-    return new Date().getFullYear();
-  }, [existingYears]);
-  const [input, setInput] = useState(String(suggested));
-  // Adjust-state-during-render: reset the field to the freshly-suggested year
-  // each time the dialog opens, rather than via an effect (which would
-  // cascade a render).
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (prevOpen !== open) {
-    setPrevOpen(open);
-    if (open) setInput(String(suggested));
-  }
-  const parsed = Number(input);
-  const duplicate = Number.isFinite(parsed) && existingYears.includes(parsed);
-  const outOfRange = !Number.isFinite(parsed) || parsed < MIN_YEAR || parsed > MAX_YEAR;
-  const invalid = outOfRange || duplicate;
-  const helperText = outOfRange
-    ? `Year must be between ${MIN_YEAR} and ${MAX_YEAR}.`
-    : duplicate
-      ? 'This year column already exists.'
-      : undefined;
-
-  const submit = () => {
-    if (invalid) return;
-    onAdd(parsed);
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Add year</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          label="Year"
-          type="number"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          error={input !== '' && invalid}
-          helperText={input !== '' ? helperText : undefined}
-          fullWidth
-          sx={{ mt: 1 }}
-          slotProps={{ htmlInput: { min: MIN_YEAR, max: MAX_YEAR, step: 1 } }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" disabled={invalid} onClick={submit}>
-          Add
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }

@@ -68,3 +68,4 @@ yarn-error.log
 .pnpm-store/
 .mise/
 .playwright-cli/
+next-env.d.ts

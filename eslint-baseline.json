@@ -225,29 +225,38 @@
       "count": 1
     }
   },
-  "src/components/model-editor/RichTextField.tsx": {
+  "src/components/model-editor/datasets/DatasetDataGrid.tsx": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
+      "count": 10
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 12
+      "count": 53
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 38
+      "count": 47
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 41
+      "count": 88
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 4
     }
   },
   "src/components/model-editor/metric-viewer/MetricDataViewer.tsx": {
+    "@typescript-eslint/no-redundant-type-constituents": {
+      "count": 1
+    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
     },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 18
+    },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 2
+      "count": 13
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 4
     }
   },
   "src/components/model-editor/useLayoutNodes.ts": {

@@ -52,35 +52,35 @@
       "count": 1,
       "message": "Parameter 'y' implicitly has an 'any' type."
     },
-    "2036425b9b79ddd20dd8208c4f0a5f8b858adccf": {
+    "db2cd6a352cd83e3e5967b5fdd19086a76b4320b": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"plot-total\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"plot-total\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
-    "07447c6f21d5a111bbf40b17315b44fee9ecc86f": {
+    "b853863712579ed251f9333a66646af6c887b07a": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
-    "cbec2b47cc85a8f0b416c62d79176e5d49e02936": {
+    "94d0ba4339f7ead7200d087cffc268f958ee01a0": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"plot-baseline\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"plot-baseline\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
-    "5728d01d5173aa09d1518330dea25492d88427fc": {
+    "f4e94bcc1033c96a11b051053ad89cb9b5bde744": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"calculated-emissions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"calculated-emissions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
-    "cd5230e2ffb532421999ed25a68675f140f4dcc1": {
+    "492070e97bed2cc9e1aa9e0c91b068e87a538e0f": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
     "838182a273f9a9159ac1f2ddaf4c9ec8e0418271": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
@@ -100,11 +100,11 @@
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
     },
-    "3a6b0d3ee2f1bd39d0881d4f23ce35c423c3c515": {
+    "edb494d480789db593614664ba9b174afacf2ea1": {
       "file": "kausal_common/src/components/PopoverTip.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; }, never>'."
+      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
     "3c9d4541d8bb98fa8666722a22b523ebb7ae71d6": {
       "file": "kausal_common/src/logging/edge.ts",
@@ -123,72 +123,6 @@
       "code": "TS2345",
       "count": 1,
       "message": "Argument of type 'Buffer<ArrayBuffer>' is not assignable to parameter of type 'ArrayBuffer'."
-    },
-    "6b74b1bb380d79fb00608ccc07c04a744ec69b61": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/cs-CZ.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/cs-CZ.min.js' implicitly has an 'any' type."
-    },
-    "53cdd7416086b0d70e82dc7b7fc8911bd0a7274a": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/da-DK.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/da-DK.min.js' implicitly has an 'any' type."
-    },
-    "3143f3f17c231dcab6d80b6094f5ec5ed049e8ab": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/de-CH.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/de-CH.min.js' implicitly has an 'any' type."
-    },
-    "1b96248aea7b37a550d408b52bd900f71d936896": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/de-DE.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/de-DE.min.js' implicitly has an 'any' type."
-    },
-    "5024cfbd1a6efaa24142c367a31a71dc06ab612b": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/el.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/el.min.js' implicitly has an 'any' type."
-    },
-    "9e31d4baf71aa4e4e083401fc31fc43be0c8d9a6": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/en-GB.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/en-GB.min.js' implicitly has an 'any' type."
-    },
-    "3ec1fd5cce5b88b18b2917b28f9a914f5bdebecd": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/es-ES.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/es-ES.min.js' implicitly has an 'any' type."
-    },
-    "43cd024d2c51deae206a4a778d04a5879de79be1": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/fi-FI.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/fi-FI.min.js' implicitly has an 'any' type."
-    },
-    "d605db1b05f6cc454d89ad38eca8f9e88235fda5": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/lv-LV.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/lv-LV.min.js' implicitly has an 'any' type."
-    },
-    "a581ecfeb4fce76b0ed6021a635e4bf530cdc711": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/pl-PL.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/pl-PL.min.js' implicitly has an 'any' type."
-    },
-    "2bb92a88047c0fe211ce57ada3f4d7f818b8e060": {
-      "file": "src/common/i18n.ts",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'numbro/dist/languages/sv-SE.min.js'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/numbro@2.5.0/node_modules/numbro/dist/languages/sv-SE.min.js' implicitly has an 'any' type."
     },
     "2a983aa13299302055052654393cd4f85c0d669b": {
       "file": "src/common/preprocess.ts",
@@ -591,6 +525,126 @@
       "code": "TS7006",
       "count": 1,
       "message": "Parameter 'page' implicitly has an 'any' type."
+    },
+    "17c56783e060d2ab533c5f4b34f6a3fc8e4a3a39": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@glideapps/glide-data-grid' or its corresponding type declarations."
+    },
+    "30e70273437072067ca9a2f4f39feac812d6d97f": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 3,
+      "message": "Parameter 'cell' implicitly has an 'any' type."
+    },
+    "71b570f104c6884960ce76f5623ee4b6e08f6216": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 2,
+      "message": "Parameter 'e' implicitly has an 'any' type."
+    },
+    "40ffc7190afbe08d99f4991f38ea36032c085e09": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'colIndex' implicitly has an 'any' type."
+    },
+    "2f87572d4c17dfc3060a2d03295b9e232d6f92ee": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'newValue' implicitly has an 'any' type."
+    },
+    "092f14ff9f2185772b208b7e48d595f302e678a6": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'items' implicitly has an 'any' type."
+    },
+    "bcfd5fce383bcc0f1f4a4d29c86029032c9a3944": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'val' implicitly has an 'any' type."
+    },
+    "72fe160da821ccad0597a607bf3c9d41573ad6fb": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'column' implicitly has an 'any' type."
+    },
+    "cc8528e06d8dfbc742e81a6de4b79cf62c59afbf": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'newSize' implicitly has an 'any' type."
+    },
+    "f77013b3a42edea3acc0c48be1b73a35812e43e2": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'args' implicitly has an 'any' type."
+    },
+    "ab4322e97e2deb9ce8c8b54c869ea896fb87ed44": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'drawContent' implicitly has an 'any' type."
+    },
+    "14e916ce3ddcf7d5de4c5827dac11cec51e3c331": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'idx' implicitly has an 'any' type."
+    },
+    "e078bcb6aee704d25e9fe5c349f3f5d176aa125d": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 2,
+      "message": "Parameter 'id' implicitly has an 'any' type."
+    },
+    "bfb3306ab55ae44428e34349a0796cb1bbd6c2da": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'y' implicitly has an 'any' type."
+    },
+    "2a3df809dee0405be735bc4591b4ec1f015161a9": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'i' implicitly has an 'any' type."
+    },
+    "24056ed2df4831647d50c456021b0ef426e993b8": {
+      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'r' implicitly has an 'any' type."
+    },
+    "4bc4ad0efa4b160b989ca2cd66ce115b84d4f8cc": {
+      "file": "src/components/model-editor/metric-viewer/MetricDataViewer.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@glideapps/glide-data-grid' or its corresponding type declarations."
+    },
+    "ab818ac67c9d867199bd14d2c5495dd060beec35": {
+      "file": "src/components/model-editor/metric-viewer/MetricDataViewer.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'colIndex' implicitly has an 'any' type."
+    },
+    "c0b3343f3c5ba14957b35dd0c17b59446c392350": {
+      "file": "src/components/model-editor/metric-viewer/MetricDataViewer.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'column' implicitly has an 'any' type."
+    },
+    "29601e98621590db7873180556650898ccf06fb8": {
+      "file": "src/components/model-editor/metric-viewer/MetricDataViewer.tsx",
+      "code": "TS7006",
+      "count": 1,
+      "message": "Parameter 'newSize' implicitly has an 'any' type."
     },
     "a7ca7397817f5ac924f5b6432183a1342914f976": {
       "file": "src/components/pages/DashboardPage.tsx",

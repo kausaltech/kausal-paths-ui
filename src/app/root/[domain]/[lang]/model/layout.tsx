@@ -7,6 +7,7 @@ import { ThemeProvider } from '@mui/material/styles';
 
 import '@fontsource-variable/inter';
 
+import EditorAccessGate from '@/components/model-editor/EditorAccessGate';
 import ModelEditorNav from '@/components/model-editor/ModelEditorNav';
 import StaleVersionNotice from '@/components/model-editor/StaleVersionNotice';
 import UserNav from '@/components/model-editor/UserNav';
@@ -27,10 +28,17 @@ export default function ModelEditorLayout({ children }: Props) {
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>{children}</Box>
-        <ModelEditorNav />
+        <EditorAccessGate
+          chrome={
+            <>
+              <ModelEditorNav />
+              <StaleVersionNotice />
+            </>
+          }
+        >
+          <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>{children}</Box>
+        </EditorAccessGate>
         <UserNav />
-        <StaleVersionNotice />
       </ScopedCssBaseline>
     </ThemeProvider>
   );

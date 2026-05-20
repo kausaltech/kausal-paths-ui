@@ -14,6 +14,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { CREATE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
+import { useEditorApolloContext } from './useEditorApolloContext';
 
 function pickUniqueIdentifier(
   sourceIdentifier: string,
@@ -88,6 +89,7 @@ export type DuplicateActionResult = {
 export function useDuplicateAction() {
   const instance = useInstance();
   const client = useApolloClient();
+  const editorContext = useEditorApolloContext();
   const [mutate] = useMutation<CreateNodeMutation, CreateNodeMutationVariables>(CREATE_NODE);
 
   return useCallback(
@@ -141,6 +143,7 @@ export function useDuplicateAction() {
             input,
             version: draftHeadTokenVar(),
           },
+          context: editorContext,
           refetchQueries: ['NodeGraph', 'EditorPublishState'],
           awaitRefetchQueries: true,
         });
@@ -161,6 +164,6 @@ export function useDuplicateAction() {
         throw err;
       }
     },
-    [client, instance.id, mutate]
+    [client, instance.id, mutate, editorContext]
   );
 }

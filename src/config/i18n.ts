@@ -13,9 +13,9 @@ const FALLBACKS: Record<string, string> = {
   default: 'en',
 };
 
-type LocaleFile = 'common' | 'errors';
+type LocaleFile = 'common' | 'errors' | 'model-editor';
 
-const NAMESPACES: LocaleFile[] = ['common', 'errors'];
+const NAMESPACES: LocaleFile[] = ['common', 'errors', 'model-editor'];
 
 async function importLocale(locale: string, file: LocaleFile) {
   try {

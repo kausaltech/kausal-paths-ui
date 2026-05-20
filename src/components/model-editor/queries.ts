@@ -6,10 +6,12 @@ import { gql, makeVar } from '@apollo/client';
 // consumer that renders nodes from the NodeGraph query.
 export type NodeFieldOverrides = {
   name?: string;
+  shortName?: string | null;
   description?: string | null;
   color?: string | null;
   isVisible?: boolean;
   isOutcome?: boolean;
+  nodeGroup?: string | null;
 };
 
 export const nodeGraphOverridesVar = makeVar<Record<string, NodeFieldOverrides>>({});
@@ -154,17 +156,25 @@ export const UPDATE_NODE = gql`
         ... on Node {
           id
           name
+          shortName
           description
           color
           isVisible
           isOutcome
+          editor {
+            nodeGroup
+          }
         }
         ... on ActionNode {
           id
           name
+          shortName
           description
           color
           isVisible
+          editor {
+            nodeGroup
+          }
         }
         ... on OperationInfo {
           ...EditorOperationInfoFields
@@ -173,6 +183,23 @@ export const UPDATE_NODE = gql`
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+/**
+ * Translatable node fields for a single node, resolved in the active request
+ * locale. The model editor uses this with `context: { locale }` to preview the
+ * translation in a non-default language; the resolver returns the matching
+ * `*_i18n` value with fallback to the default-language column.
+ */
+export const NODE_TRANSLATION = gql`
+  query NodeTranslation($nodeId: ID!) {
+    node(id: $nodeId) {
+      id
+      name
+      description
+      shortDescription
+    }
+  }
 `;
 
 export const AVAILABLE_DATASETS = gql`
