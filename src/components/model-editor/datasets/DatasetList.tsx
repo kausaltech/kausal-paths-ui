@@ -1,4 +1,4 @@
-import { type MouseEvent, useState } from 'react';
+import { type MouseEvent, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
@@ -22,6 +22,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -111,6 +112,28 @@ function DatasetRowActions({
   );
 }
 
+type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments' | 'source';
+type SortOrder = 'asc' | 'desc';
+
+type DatasetRow = NonNullable<
+  NonNullable<InstanceDatasetsQuery['instance']['editor']>['datasets']
+>[number];
+
+function getSortValue(ds: DatasetRow, key: SortKey): string | number {
+  switch (key) {
+    case 'name':
+      return ds.name?.toLowerCase() ?? '';
+    case 'dimensions':
+      return ds.dimensions.length;
+    case 'metrics':
+      return ds.metrics.length;
+    case 'comments':
+      return ds.dataPointComments.length;
+    case 'source':
+      return ds.externalRef?.datasetId?.toLowerCase() ?? '';
+  }
+}
+
 export default function DatasetList() {
   const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
@@ -120,6 +143,33 @@ export default function DatasetList() {
   const base = getDatasetsBase(pathname);
   const [notice, setNotice] = useState<string | null>(null);
   const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
+
+  const datasets = useMemo(
+    () => data?.instance.editor?.datasets ?? [],
+    [data?.instance.editor?.datasets]
+  );
+  const sortedDatasets = useMemo(() => {
+    const arr = [...datasets];
+    arr.sort((a, b) => {
+      const av = getSortValue(a, sortKey);
+      const bv = getSortValue(b, sortKey);
+      if (av < bv) return sortOrder === 'asc' ? -1 : 1;
+      if (av > bv) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [datasets, sortKey, sortOrder]);
 
   if (loading && !data) {
     return (
@@ -129,7 +179,6 @@ export default function DatasetList() {
     );
   }
   if (error) return <GraphQLError error={error} />;
-  const datasets = data?.instance.editor?.datasets ?? [];
 
   return (
     <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
@@ -155,18 +204,58 @@ export default function DatasetList() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Dimensions</TableCell>
-              <TableCell align="right">Metrics</TableCell>
-              <TableCell align="right">Comments</TableCell>
-              <TableCell>Source</TableCell>
+              <TableCell sortDirection={sortKey === 'name' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'name'}
+                  direction={sortKey === 'name' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'dimensions' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'dimensions'}
+                  direction={sortKey === 'dimensions' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('dimensions')}
+                >
+                  Dimensions
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'metrics' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'metrics'}
+                  direction={sortKey === 'metrics' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('metrics')}
+                >
+                  Metrics
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'comments' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'comments'}
+                  direction={sortKey === 'comments' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('comments')}
+                >
+                  Comments
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortKey === 'source' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'source'}
+                  direction={sortKey === 'source' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('source')}
+                >
+                  Source
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
                 Actions
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {datasets.length === 0 && (
+            {sortedDatasets.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
@@ -175,7 +264,7 @@ export default function DatasetList() {
                 </TableCell>
               </TableRow>
             )}
-            {datasets.map((ds) => (
+            {sortedDatasets.map((ds) => (
               <TableRow
                 key={ds.id}
                 hover
