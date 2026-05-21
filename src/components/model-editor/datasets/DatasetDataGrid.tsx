@@ -200,7 +200,35 @@ export default function DatasetDataGrid({
     }
   );
 
-  const { rows, years } = useMemo(() => buildGridData(dataset, extraYears), [dataset, extraYears]);
+  const { rows: baseRows, years } = useMemo(
+    () => buildGridData(dataset, extraYears),
+    [dataset, extraYears]
+  );
+  // Year-column sort. null = default (metric-grouped) order from buildGridData.
+  // Cycles on click: unset -> asc -> desc -> unset.
+  const [yearSort, setYearSort] = useState<{ year: number; direction: 'asc' | 'desc' } | null>(
+    null
+  );
+  const rows = useMemo(() => {
+    if (!yearSort) return baseRows;
+    const colId = yearColId(yearSort.year);
+    const valueOf = (row: GridRow): number | null => {
+      const pending = pendingEdits.get(pendingKey(row.id, colId));
+      if (pending) return pending.nextValue;
+      const cell = row.cells[colId];
+      return cell?.type === 'Value' ? cell.value : null;
+    };
+    const dir = yearSort.direction === 'asc' ? 1 : -1;
+    return [...baseRows].sort((a, b) => {
+      const av = valueOf(a);
+      const bv = valueOf(b);
+      // Nulls always sort to the end, regardless of direction.
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return (av - bv) * dir;
+    });
+  }, [baseRows, yearSort, pendingEdits]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
   // dataPointId -> { count, hasUnresolvedReview }. Drives the corner indicator
@@ -539,7 +567,11 @@ export default function DatasetDataGrid({
           const dim = dataset.dimensions.find((d) => dimColId(d.id) === id);
           title = dim?.name ?? '';
         } else if (id.startsWith(YEAR_COL_PREFIX)) {
-          title = id.slice(YEAR_COL_PREFIX.length);
+          const year = id.slice(YEAR_COL_PREFIX.length);
+          title = year;
+          if (yearSort && yearColId(yearSort.year) === id) {
+            title = `${year} ${yearSort.direction === 'asc' ? '↑' : '↓'}`;
+          }
         }
         return {
           id,
@@ -547,7 +579,7 @@ export default function DatasetDataGrid({
           width: colWidths[id] ?? defaultWidthForCol(id),
         };
       }),
-    [columnIds, dataset.dimensions, colWidths]
+    [columnIds, dataset.dimensions, colWidths, yearSort]
   );
 
   // Pin all dim columns + the Metric column. Year columns scroll.
@@ -651,6 +683,26 @@ export default function DatasetDataGrid({
       });
     },
     []
+  );
+
+  // Click a year-column header to sort rows by that year's value.
+  // Cycles asc -> desc -> unset on repeated clicks of the same column;
+  // jumping to a different column resets to asc. Selection is cleared so the
+  // user doesn't end up with a highlight on a row that shifted under them.
+  const onHeaderClicked = useCallback<NonNullable<DataEditorProps['onHeaderClicked']>>(
+    (colIndex) => {
+      const colId = columnIds[colIndex];
+      if (!colId || !isYearColId(colId)) return;
+      const year = yearFromColId(colId);
+      if (year === null) return;
+      setYearSort((prev) => {
+        if (!prev || prev.year !== year) return { year, direction: 'asc' };
+        if (prev.direction === 'asc') return { year, direction: 'desc' };
+        return null;
+      });
+      setGridSelection(EMPTY_SELECTION);
+    },
+    [columnIds]
   );
 
   // Document-level contextmenu listener: handles both initial open and
@@ -1150,6 +1202,7 @@ export default function DatasetDataGrid({
           coercePasteValue={coercePasteValue}
           onPaste
           onCellContextMenu={onCellContextMenu}
+          onHeaderClicked={onHeaderClicked}
           onHeaderContextMenu={onHeaderContextMenu}
           onColumnResize={onColumnResize}
           drawCell={drawCell}
