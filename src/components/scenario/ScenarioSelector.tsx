@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import {
   CircularProgress,
   FormControl,
@@ -122,6 +124,25 @@ export default function ScenarioSelector(props: { testId?: string }) {
       }
     },
   });
+
+  // Reconcile the activeScenarioVar with the fresh client-side GET_SCENARIOS
+  // result. The SSR-initialized var can be stale (the RSC Apollo client
+  // doesn't propagate the user's session cookie, so the backend returns
+  // default-as-active in SSR). Wait for the network to settle (no in-flight
+  // query/mutation) so we don't overwrite a just-set custom-scenario value
+  // before its corresponding refetch lands.
+  useEffect(() => {
+    if (loading || mutationLoading || !data) return;
+    const backendActive = data.scenarios.find((s) => s.isActive);
+    if (!backendActive) return;
+    if (activeScenario?.id === backendActive.id) return;
+    activeScenarioVar({
+      ...backendActive,
+      kind: null,
+      actualHistoricalYears: null,
+      isUserSelected: false,
+    });
+  }, [data, loading, mutationLoading, activeScenario?.id]);
 
   if (loading && !previousData) {
     return (

@@ -38,7 +38,11 @@ export function InstanceProviders({
   }
 
   if (!activeScenarioVar() && activeScenario) {
-    activeScenarioVar({ ...activeScenario, isUserSelected: true });
+    // isUserSelected=false marks this as a placeholder from SSR (the server's
+    // GET_INSTANCE_CONTEXT fetch may not propagate the user's session cookie,
+    // so isActive here can be stale). ScenarioSelector reconciles against the
+    // client-side GET_SCENARIOS result once it loads.
+    activeScenarioVar({ ...activeScenario, isUserSelected: false });
   }
 
   if (!yearRangeVar()) {
