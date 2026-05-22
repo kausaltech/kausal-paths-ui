@@ -94,7 +94,6 @@ export function useActionListData({
   const {
     data: detailData,
     previousData: detailPreviousData,
-    loading: detailLoading,
     error: detailError,
   } = useQuery<ImpactOverviewQuery, ImpactOverviewQueryVariables>(GET_IMPACT_OVERVIEW, {
     variables: { id: activeOverviewId ?? '' },
@@ -250,24 +249,24 @@ export function useActionListData({
     [filteredActions]
   );
 
-  // activeOverview metadata comes from the lightweight list — available immediately,
-  // doesn't need to wait for the heavy detail fetch.
-  const activeOverviewMeta = activeOverviewId
-    ? (impactOverviews?.find((o) => o.id === activeOverviewId) ?? null)
-    : null;
-  const activeOverviewInfo: ActiveOverviewInfo | null = activeOverviewMeta
+  // activeOverview metadata is driven by the detail (not the lightweight list),
+  // so column headers and per-row values always come from the same snapshot.
+  // This avoids the mixed state where headers update from the cached list
+  // before the new values arrive.
+  const activeOverviewInfo: ActiveOverviewInfo | null = activeOverviewDetail
     ? {
-        graphType: activeOverviewMeta.graphType ?? null,
-        indicatorUnit: activeOverviewMeta.indicatorUnit.htmlShort,
-        label: activeOverviewMeta.label,
+        graphType: activeOverviewDetail.graphType ?? null,
+        indicatorUnit: activeOverviewDetail.indicatorUnit.htmlShort,
+        label: activeOverviewDetail.label,
       }
     : null;
 
-  // Gate the list UI on first-load of either query. Switching between overviews
-  // doesn't count as "pending" — previous detail data carries over via previousData.
+  // Pending = we want detail for the current selection but have nothing to show.
+  // During switches, `activeOverviewDetail` falls back to the previous overview's
+  // data via Apollo's `previousData`, so pending stays false and the old snapshot
+  // keeps rendering until the new one arrives (atomic flip).
   const impactOverviewsPending =
-    (overviewsLoading && !overviewsData) ||
-    (activeOverviewId !== null && detailLoading && !detailData && !detailPreviousData);
+    (overviewsLoading && !overviewsData) || (activeOverviewId !== null && !activeOverviewDetail);
 
   return {
     usableActions,

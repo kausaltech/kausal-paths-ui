@@ -1,6 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 
-import { Box, Container, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Container,
+  FormControl,
+  FormLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
@@ -348,7 +356,15 @@ function ActionListPage({ page }: ActionListPageProps) {
       )}
 
       <Container fixed maxWidth="xl" sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4 }}>
-        {listType === 'list' ? (
+        {impactOverviewsPending ? (
+          // Hold the list/graph render until the active overview's detail arrives,
+          // so column headers and per-row values appear atomically. During switches
+          // between overviews, the previous detail carries over via Apollo's
+          // `previousData`, so this branch only fires on the very first load.
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress aria-label={t('loading')} />
+          </Box>
+        ) : listType === 'list' ? (
           <ActionsList
             id="list-view"
             actions={usableActions}
@@ -358,7 +374,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             sortBy={sortBy}
             sortAscending={ascending}
             activeOverview={activeOverview}
-            isLoading={areActionsLoading || impactOverviewsPending}
+            isLoading={areActionsLoading}
             refetching={isRefetchingWithStaleData}
             onChangeSort={(key) => {
               handleChangeSort(key);
