@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
 
-import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
@@ -19,7 +19,7 @@ type Entry = { action: string; returnOnInvestment: number };
 function buildEntries(
   startYear: number,
   endYear: number,
-  dataset?: ImpactOverviewsQuery['impactOverviews'][0]
+  dataset?: ImpactOverviewDetailFragment
 ): Entry[] {
   if (!dataset) return [];
   return dataset.actions.flatMap((action) => {
@@ -112,7 +112,7 @@ function getChartConfig(
 }
 
 type Props = {
-  data: ImpactOverviewsQuery['impactOverviews'][0] | undefined; // Single overview
+  data: ImpactOverviewDetailFragment | undefined; // Single overview
   isLoading: boolean;
 };
 

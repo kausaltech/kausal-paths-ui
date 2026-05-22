@@ -6,9 +6,13 @@ import { useQuery } from '@apollo/client/react';
 import {
   type ActionListQuery,
   DecisionLevel,
+  type ImpactOverviewDetailFragment,
+  type ImpactOverviewQuery,
+  type ImpactOverviewQueryVariables,
   type ImpactOverviewsQuery,
 } from '@/common/__generated__/graphql';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
+import { GET_IMPACT_OVERVIEW } from '@/queries/getImpactOverview';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type {
   ActionWithEfficiency,
@@ -19,7 +23,13 @@ import type {
 type UseActionListDataProps = {
   data: ActionListQuery | undefined;
   showOnlyMunicipalActions: boolean;
-  activeEfficiency: number;
+  /**
+   * The user's explicit overview pick:
+   *   - `undefined`: no pick yet — falls back to the first overview in the list
+   *   - `null`: user explicitly picked "emissions impact" (no overview)
+   *   - `string`: user picked a specific overview id
+   */
+  userSelectedOverviewId: string | null | undefined;
   yearRange: [number, number];
   actionGroup: string;
 };
@@ -31,18 +41,22 @@ type UseActionListDataResult = {
   actionGroups: NonNullable<ActionWithEfficiency['group']>[];
   hasEfficiency: boolean;
   activeOverview: ActiveOverviewInfo | null;
-  /** Overviews from GET_IMPACT_OVERVIEWS (the single canonical source). */
+  /** Resolved overview id (user pick or default-to-first). null = "emissions impact" / none. */
+  activeOverviewId: string | null;
+  /** Lightweight list of overviews (id, label, graphType, indicatorUnit) for the dropdown. */
   impactOverviews: ImpactOverviewsQuery['impactOverviews'] | undefined;
-  /** True while the overviews query is in-flight on first load (no cached data yet). */
+  /** Heavy detail for the currently selected overview, fetched on demand. */
+  activeOverviewDetail: ImpactOverviewDetailFragment | null;
+  /** True while either the list or the active detail is being fetched without cached data. */
   impactOverviewsPending: boolean;
-  /** Error from the overviews query. */
+  /** Error from either the list or the detail query. */
   impactOverviewsError: ErrorLike | undefined;
 };
 
 export function useActionListData({
   data,
   showOnlyMunicipalActions,
-  activeEfficiency,
+  userSelectedOverviewId,
   yearRange,
   actionGroup,
 }: UseActionListDataProps): UseActionListDataResult {
@@ -54,22 +68,49 @@ export function useActionListData({
     [data, showOnlyMunicipalActions]
   );
 
-  // Single canonical source for impactOverviews data — backend computation is
-  // expensive, so we fetch once here and share via Apollo cache with the
-  // graph-view component (which uses the same query).
+  // Lightweight list: powers the dropdown + activeOverview metadata (graphType, label).
+  // Cheap to fetch — no per-action values.
   const {
-    data: impactOverviewsData,
-    loading: impactOverviewsLoading,
-    error: impactOverviewsError,
+    data: overviewsData,
+    loading: overviewsLoading,
+    error: overviewsError,
   } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const impactOverviews = impactOverviewsData?.impactOverviews;
+  const impactOverviews = overviewsData?.impactOverviews;
   const hasEfficiency = impactOverviews ? impactOverviews.length > 0 : false;
 
+  // Resolve the effective overview id: user's explicit pick takes precedence;
+  // otherwise default to the first overview once the list arrives.
+  const activeOverviewId: string | null =
+    userSelectedOverviewId !== undefined
+      ? userSelectedOverviewId
+      : (impactOverviews?.[0]?.id ?? null);
+
+  // Heavy detail: fetched only for the overview the user has currently selected.
+  // Backend computation is expensive, so we avoid pulling actions/dim values for
+  // every overview when only one is shown at a time.
+  const {
+    data: detailData,
+    previousData: detailPreviousData,
+    loading: detailLoading,
+    error: detailError,
+  } = useQuery<ImpactOverviewQuery, ImpactOverviewQueryVariables>(GET_IMPACT_OVERVIEW, {
+    variables: { id: activeOverviewId ?? '' },
+    skip: !activeOverviewId,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  // Keep showing previous detail while the new one is in-flight so the UI doesn't
+  // flash empty between selections. If the user switched back to "no overview"
+  // (null), drop stale data instead of holding it over.
+  const activeOverviewDetail = activeOverviewId
+    ? (detailData?.impactOverview ?? detailPreviousData?.impactOverview ?? null)
+    : null;
+
   const costBenefitByActionId = useMemo(() => {
-    const overview = impactOverviewsData?.impactOverviews[activeEfficiency];
+    const overview = activeOverviewDetail;
     if (!overview || overview.graphType !== 'cost_benefit') {
       return new Map<string, CostBenefitTotals>();
     }
@@ -117,7 +158,7 @@ export function useActionListData({
       });
     }
     return map;
-  }, [impactOverviewsData, activeEfficiency, yearRange]);
+  }, [activeOverviewDetail, yearRange]);
 
   const usableActions = useMemo(
     () =>
@@ -132,7 +173,7 @@ export function useActionListData({
               ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ?? 0,
           };
 
-          const efficiencyType = impactOverviews?.[activeEfficiency];
+          const efficiencyType = activeOverviewDetail;
           const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
 
           if (!efficiencyType || !efficiencyAction) return out;
@@ -184,14 +225,7 @@ export function useActionListData({
           return out;
         })
         .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
-    [
-      impactOverviews,
-      actionGroup,
-      activeEfficiency,
-      yearRange,
-      filteredActions,
-      costBenefitByActionId,
-    ]
+    [activeOverviewDetail, actionGroup, yearRange, filteredActions, costBenefitByActionId]
   );
 
   const displayedActionsCount = useMemo(() => {
@@ -216,19 +250,24 @@ export function useActionListData({
     [filteredActions]
   );
 
-  const activeOverview = impactOverviews?.[activeEfficiency] ?? null;
-  const activeOverviewInfo: ActiveOverviewInfo | null = activeOverview
+  // activeOverview metadata comes from the lightweight list — available immediately,
+  // doesn't need to wait for the heavy detail fetch.
+  const activeOverviewMeta = activeOverviewId
+    ? (impactOverviews?.find((o) => o.id === activeOverviewId) ?? null)
+    : null;
+  const activeOverviewInfo: ActiveOverviewInfo | null = activeOverviewMeta
     ? {
-        graphType: activeOverview.graphType ?? null,
-        indicatorUnit: activeOverview.indicatorUnit.htmlShort,
-        label: activeOverview.label,
+        graphType: activeOverviewMeta.graphType ?? null,
+        indicatorUnit: activeOverviewMeta.indicatorUnit.htmlShort,
+        label: activeOverviewMeta.label,
       }
     : null;
 
-  // Surface loading/error to the caller so it can gate the list UI on first-load.
-  // We don't gate per-graphType anymore: since this is now the single source for
-  // overviews, anything that needs them blocks until they arrive.
-  const impactOverviewsPending = impactOverviewsLoading && !impactOverviewsData;
+  // Gate the list UI on first-load of either query. Switching between overviews
+  // doesn't count as "pending" — previous detail data carries over via previousData.
+  const impactOverviewsPending =
+    (overviewsLoading && !overviewsData) ||
+    (activeOverviewId !== null && detailLoading && !detailData && !detailPreviousData);
 
   return {
     usableActions,
@@ -237,8 +276,10 @@ export function useActionListData({
     actionGroups,
     hasEfficiency,
     activeOverview: activeOverviewInfo,
+    activeOverviewId,
     impactOverviews,
+    activeOverviewDetail,
     impactOverviewsPending,
-    impactOverviewsError,
+    impactOverviewsError: overviewsError ?? detailError,
   };
 }

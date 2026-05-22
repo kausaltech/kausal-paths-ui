@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 
 import { Box, CircularProgress, Container } from '@mui/material';
 
-import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
-import { type ActionListQuery, type ImpactOverviewsQuery } from '@/common/__generated__/graphql';
-import GraphQLError from '@/components/common/GraphQLError';
-import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
+import {
+  type ActionListQuery,
+  type ImpactOverviewDetailFragment,
+} from '@/common/__generated__/graphql';
 import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.types';
 import ActionsComparison from './ActionsComparison';
 import { CostBenefitAnalysis } from './CostBenefitAnalysis';
@@ -20,7 +20,9 @@ import { WedgeDiagram } from './WedgeDiagram';
 type ActionListGraphViewProps = {
   usableActions: ActionWithEfficiency[];
   visibleActionIds: Set<string>;
-  activeEfficiency: number;
+  activeOverviewDetail: ImpactOverviewDetailFragment | null;
+  /** True while the active overview detail is being fetched without cached data. */
+  detailPending: boolean;
   instanceActionGroups: ActionListQuery['instance']['actionGroups'];
   sortBy: SortActionsConfig;
   sortAscending: boolean;
@@ -31,7 +33,8 @@ type ActionListGraphViewProps = {
 export function ActionListGraphView({
   usableActions,
   visibleActionIds,
-  activeEfficiency,
+  activeOverviewDetail,
+  detailPending,
   instanceActionGroups,
   sortBy,
   sortAscending,
@@ -39,27 +42,24 @@ export function ActionListGraphView({
   yearRange,
 }: ActionListGraphViewProps) {
   const t = useTranslations('common');
-  const { data, loading, error } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
-    fetchPolicy: 'cache-and-network',
-  });
 
-  const selectedOverview = data?.impactOverviews[activeEfficiency];
-  const graphType = selectedOverview?.graphType;
+  const graphType = activeOverviewDetail?.graphType;
 
   const filteredOverview = useMemo(
     () =>
-      selectedOverview
+      activeOverviewDetail
         ? {
-            ...selectedOverview,
-            actions: selectedOverview.actions.filter((a) => visibleActionIds.has(a.action.id)),
+            ...activeOverviewDetail,
+            actions: activeOverviewDetail.actions.filter((a) => visibleActionIds.has(a.action.id)),
             // Keep scenario entries (floor/ceiling) regardless of the action-id
             // filter so the wedge always has its bounding lines.
             wedge:
-              selectedOverview.wedge?.filter((w) => w.isScenario || visibleActionIds.has(w.id)) ??
-              null,
+              activeOverviewDetail.wedge?.filter(
+                (w) => w.isScenario || visibleActionIds.has(w.id)
+              ) ?? null,
           }
         : undefined,
-    [selectedOverview, visibleActionIds]
+    [activeOverviewDetail, visibleActionIds]
   );
   const visibleUsableActions = useMemo(
     () => usableActions.filter((a) => visibleActionIds.has(a.id)),
@@ -70,16 +70,8 @@ export function ActionListGraphView({
     return visibleUsableActions.filter((a) => overviewActionIds.has(a.id));
   }, [filteredOverview, visibleUsableActions]);
 
-  if (error) {
-    return (
-      <Container fixed maxWidth="xl" sx={{ pt: 5 }}>
-        <GraphQLError error={error} />
-      </Container>
-    );
-  }
-
-  // Avoid flashing the default (ActionsComparison) graph while the query is loading
-  if (loading && !data) {
+  // Avoid flashing the default (ActionsComparison) graph while the detail loads
+  if (detailPending) {
     return (
       <Box
         sx={{
@@ -109,9 +101,9 @@ export function ActionListGraphView({
       );
     }
     case 'cost_benefit':
-      return <CostBenefitAnalysis data={filteredOverview} isLoading={loading} />;
+      return <CostBenefitAnalysis data={filteredOverview} isLoading={detailPending} />;
     case 'return_on_investment':
-      return <ReturnOnInvestment data={filteredOverview} isLoading={loading} />;
+      return <ReturnOnInvestment data={filteredOverview} isLoading={detailPending} />;
     case 'simple_effect':
       return (
         <SimpleEffect
@@ -119,7 +111,7 @@ export function ActionListGraphView({
           visibleActions={visibleUsableActions}
           sortBy={sortBy}
           sortAscending={sortAscending}
-          isLoading={loading}
+          isLoading={detailPending}
         />
       );
     case 'stacked_raw_impact':
@@ -129,7 +121,7 @@ export function ActionListGraphView({
           visibleActions={visibleUsableActions}
           sortBy={sortBy}
           sortAscending={sortAscending}
-          isLoading={loading}
+          isLoading={detailPending}
           yearRange={yearRange}
         />
       );
@@ -138,7 +130,7 @@ export function ActionListGraphView({
         <WedgeDiagram
           data={filteredOverview}
           actionLookup={visibleUsableActions}
-          isLoading={loading}
+          isLoading={detailPending}
           yearRange={yearRange}
         />
       );

@@ -169,7 +169,12 @@ function ActionListPage({ page }: ActionListPageProps) {
   // `previousData` is undefined, so we don't hide cells while the initial fetch runs.
   const isRefetchingWithStaleData = areActionsLoading && previousData !== undefined;
 
-  const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
+  // `undefined` = user hasn't picked anything yet (defaults to first overview).
+  // `null` = user explicitly picked "emissions impact".
+  // `string` = user picked a specific overview.
+  const [userSelectedOverviewId, setUserSelectedOverviewId] = useState<string | null | undefined>(
+    undefined
+  );
   const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');
 
   const {
@@ -179,13 +184,15 @@ function ActionListPage({ page }: ActionListPageProps) {
     actionGroups,
     hasEfficiency,
     activeOverview,
+    activeOverviewId,
     impactOverviews,
+    activeOverviewDetail,
     impactOverviewsPending,
     impactOverviewsError,
   } = useActionListData({
     data,
     showOnlyMunicipalActions: !!page.showOnlyMunicipalActions,
-    activeEfficiency,
+    userSelectedOverviewId,
     yearRange,
     actionGroup,
   });
@@ -269,8 +276,8 @@ function ActionListPage({ page }: ActionListPageProps) {
           <ActionListFilters
             hasEfficiency={hasEfficiency}
             impactOverviews={impactOverviews ?? []}
-            activeEfficiency={activeEfficiency}
-            setActiveEfficiency={setActiveEfficiency}
+            activeOverviewId={activeOverviewId}
+            setActiveOverviewId={setUserSelectedOverviewId}
             actionGroups={actionGroups}
             actionGroup={actionGroup}
             setActionGroup={setActionGroup}
@@ -365,7 +372,8 @@ function ActionListPage({ page }: ActionListPageProps) {
           <ActionListGraphView
             usableActions={usableActions}
             visibleActionIds={visibleActionIds}
-            activeEfficiency={activeEfficiency}
+            activeOverviewDetail={activeOverviewDetail}
+            detailPending={impactOverviewsPending}
             instanceActionGroups={data?.instance.actionGroups ?? []}
             sortBy={sortBy}
             sortAscending={ascending}

@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 
-import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
@@ -21,7 +21,7 @@ type VisibleAction = {
   group?: { color?: string | null } | null;
 };
 
-type OverviewAction = ImpactOverviewsQuery['impactOverviews'][0]['actions'][0];
+type OverviewAction = ImpactOverviewDetailFragment['actions'][0];
 
 type ActionSeries = {
   id: string;
@@ -133,7 +133,7 @@ function getChartConfig(
 }
 
 type Props = {
-  data: ImpactOverviewsQuery['impactOverviews'][0] | undefined;
+  data: ImpactOverviewDetailFragment | undefined;
   visibleActions: VisibleAction[];
   sortBy: SortActionsConfig;
   sortAscending: boolean;

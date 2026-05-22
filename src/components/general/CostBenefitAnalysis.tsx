@@ -16,7 +16,7 @@ import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
-import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
@@ -28,7 +28,7 @@ import { DimensionalMetric } from '@/data/metric';
  */
 
 type Props = {
-  data: ImpactOverviewsQuery['impactOverviews'][0] | undefined;
+  data: ImpactOverviewDetailFragment | undefined;
   isLoading: boolean;
 };
 

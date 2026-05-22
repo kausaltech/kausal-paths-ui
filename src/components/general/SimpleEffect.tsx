@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
 
-import type { ImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
@@ -23,7 +23,7 @@ function buildEntries(
   visibleActions: VisibleAction[],
   startYear: number,
   endYear: number,
-  dataset?: ImpactOverviewsQuery['impactOverviews'][0]
+  dataset?: ImpactOverviewDetailFragment
 ): Entry[] {
   return visibleActions.flatMap((vAction) => {
     const overviewAction = dataset?.actions.find((a) => a.action.id === vAction.id);
@@ -104,7 +104,7 @@ function getChartConfig(
 }
 
 type Props = {
-  data: ImpactOverviewsQuery['impactOverviews'][0] | undefined; // Single overview
+  data: ImpactOverviewDetailFragment | undefined; // Single overview
   visibleActions: VisibleAction[];
   sortBy: SortActionsConfig;
   sortAscending: boolean;

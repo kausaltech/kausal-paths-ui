@@ -8,21 +8,8 @@
       "OperationInfo",
       "OutputPortType"
     ],
-    "AddUserToInstancePayload": [
-      "OperationInfo",
-      "User",
-      "UserNotFoundError"
-    ],
-    "CreateDataPointCommentPayload": [
-      "DataPointComment",
-      "OperationInfo"
-    ],
     "CreateDataPointPayload": [
       "DataPoint",
-      "OperationInfo"
-    ],
-    "CreateDataSourcePayload": [
-      "DataSource",
       "OperationInfo"
     ],
     "CreateDimensionCategoriesPayload": [
@@ -46,14 +33,6 @@
       "OperationInfo",
       "ScenarioType"
     ],
-    "CreateSourceReferencePayload": [
-      "DatasetSourceReference",
-      "OperationInfo"
-    ],
-    "DeleteDataSourcePayload": [
-      "ModelDeletePayload",
-      "OperationInfo"
-    ],
     "EdgeTransformationUnion": [
       "AssignCategoryTransformationType",
       "FlattenTransformationType",
@@ -68,10 +47,6 @@
     "InputPortBindingUnion": [
       "DatasetPortType",
       "NodeEdgeType"
-    ],
-    "InviteUserToInstancePayload": [
-      "InstanceInvitation",
-      "OperationInfo"
     ],
     "NodeConfigUnion": [
       "ActionConfigType",
@@ -104,10 +79,6 @@
     "RegisterUserPayload": [
       "OperationInfo",
       "RegisterUserResult"
-    ],
-    "ResolveDataPointCommentPayload": [
-      "DataPointComment",
-      "OperationInfo"
     ],
     "SetInstanceLockedPayload": [
       "OperationInfo",
@@ -155,20 +126,8 @@
       "TimeBlock",
       "URLBlock"
     ],
-    "UnresolveDataPointCommentPayload": [
-      "DataPointComment",
-      "OperationInfo"
-    ],
-    "UpdateDataPointCommentPayload": [
-      "DataPointComment",
-      "OperationInfo"
-    ],
     "UpdateDataPointPayload": [
       "DataPoint",
-      "OperationInfo"
-    ],
-    "UpdateDataSourcePayload": [
-      "DataSource",
       "OperationInfo"
     ],
     "UpdateDimensionCategoriesPayload": [

@@ -83,9 +83,9 @@ const SortButtons = styled(ToggleButtonGroup)`
 
 type ActionListFiltersProps = {
   hasEfficiency: boolean;
-  impactOverviews: { label: string }[];
-  activeEfficiency: number;
-  setActiveEfficiency: (value: number) => void;
+  impactOverviews: { id: string; label: string }[];
+  activeOverviewId: string | null;
+  setActiveOverviewId: (value: string | null) => void;
   actionGroups: { id: string; name: string }[];
   actionGroup: string;
   setActionGroup: (value: string) => void;
@@ -100,8 +100,8 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
   const {
     hasEfficiency,
     impactOverviews,
-    activeEfficiency,
-    setActiveEfficiency,
+    activeOverviewId,
+    setActiveOverviewId,
     actionGroups,
     actionGroup,
     setActionGroup,
@@ -111,7 +111,6 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
     ascending,
     handleSortDirectionChange,
   } = props;
-  console.log('ActionListFilters render', props);
   const t = useTranslations('common');
   return (
     <SettingsForm className="text-light mt-4">
@@ -125,15 +124,15 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
               <StyledSelect
                 id="impact"
                 labelId="impact-label"
-                value={activeEfficiency}
-                onChange={(e) => setActiveEfficiency(Number(e.target.value))}
+                value={activeOverviewId ?? ''}
+                onChange={(e) => setActiveOverviewId((e.target.value as string) || null)}
                 size="small"
                 MenuProps={{ disablePortal: true }}
               >
-                <MenuItem value={-1}>{t('emissions-impact')}</MenuItem>
-                {impactOverviews.map((impactGroup, indx) => (
-                  <MenuItem value={indx} key={indx}>
-                    {impactGroup.label}
+                <MenuItem value="">{t('emissions-impact')}</MenuItem>
+                {impactOverviews.map((overview) => (
+                  <MenuItem value={overview.id} key={overview.id}>
+                    {overview.label}
                   </MenuItem>
                 ))}
               </StyledSelect>
