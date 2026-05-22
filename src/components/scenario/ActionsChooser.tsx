@@ -10,17 +10,19 @@ import {
   lighten,
 } from '@mui/material';
 
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { useQuery } from '@apollo/client/react';
 
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
-import type { ActionListQuery, ActionListQueryVariables } from '@/common/__generated__/graphql';
-import { activeGoalVar } from '@/common/cache';
+import type {
+  ActionsForChooserQuery,
+  ActionsForChooserQueryVariables,
+} from '@/common/__generated__/graphql';
 import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
-import { GET_ACTION_LIST } from '@/queries/getActionList';
+import { GET_ACTIONS_FOR_CHOOSER } from '@/queries/getActionsForChooser';
 import ActionParameters from '../general/ActionParameters';
 
 const ActionsList = styled.div`
@@ -114,18 +116,17 @@ function ActionListCard(props: ActionListCardProps) {
   );
 }
 
-type ActionsSummaryAction = ActionListQuery['actions'][0];
+type ActionsSummaryAction = ActionsForChooserQuery['actions'][0];
 
 export default function ActionsChooser() {
-  const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
-  const queryResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
-    variables: {
-      goal: activeGoal?.id ?? null,
-    },
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-  });
+  const queryResp = useQuery<ActionsForChooserQuery, ActionsForChooserQueryVariables>(
+    GET_ACTIONS_FOR_CHOOSER,
+    {
+      fetchPolicy: 'cache-and-network',
+      notifyOnNetworkStatusChange: true,
+    }
+  );
 
   const { error, loading, previousData } = queryResp;
   const data = queryResp.data ?? previousData;

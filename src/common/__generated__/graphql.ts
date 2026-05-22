@@ -12,10 +12,20 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date (isoformat) */
   Date: { input: any; output: any; }
+  /** Date with time (isoformat) */
   DateTime: { input: string; output: string; }
+  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
+  /**
+   * Allows use of a JSON String for input / output from the GraphQL schema.
+   *
+   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
+   * schema (one of the key benefits of GraphQL).
+   */
   JSONString: { input: string; output: string; }
+  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: number; output: number; }
   RichText: { input: string; output: string; }
   UUID: { input: string; output: string; }
@@ -98,6 +108,11 @@ export type CreateNodeInput = {
   tags: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
+export enum DataPointCommentReviewState {
+  Resolved = 'RESOLVED',
+  Unresolved = 'UNRESOLVED'
+}
+
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
@@ -146,6 +161,13 @@ export type InputPortInput = {
   supportedDimensions: InputMaybe<Array<Scalars['String']['input']>>;
   unit: InputMaybe<Scalars['String']['input']>;
 };
+
+export enum InstanceMemberRole {
+  Admin = 'ADMIN',
+  Reviewer = 'REVIEWER',
+  SuperAdmin = 'SUPER_ADMIN',
+  Viewer = 'VIEWER'
+}
 
 /** An enumeration. */
 export enum ModelAction {
@@ -215,7 +237,8 @@ export enum PrimaryLayoutClass {
 export type RegisterUserInput = {
   email: Scalars['String']['input'];
   firstName: InputMaybe<Scalars['String']['input']>;
-  frameworkId: Scalars['String']['input'];
+  frameworkId: InputMaybe<Scalars['ID']['input']>;
+  invitationToken: InputMaybe<Scalars['String']['input']>;
   lastName: InputMaybe<Scalars['String']['input']>;
   password: Scalars['String']['input'];
 };
@@ -2857,6 +2880,52 @@ export type ActionListQuery = (
       & { __typename: 'ActionImpact' }
     )> }
     & { __typename: 'ImpactOverviewType' }
+  )> }
+  & { __typename: 'Query' }
+);
+
+export type ActionsForChooserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ActionsForChooserQuery = (
+  { actions: Array<(
+    { id: string, name: string, parameters: Array<
+      | (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, boolValue: boolean | null, boolDefaultValue: boolean | null, node: (
+          { id: string }
+          & { __typename: 'ActionNode' | 'Node' }
+        ) | null }
+        & { __typename: 'BoolParameterType' }
+      )
+      | (
+        { minValue: number | null, maxValue: number | null, step: number | null, id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, numberValue: number | null, numberDefaultValue: number | null, unit: (
+          { id: string, htmlShort: string }
+          & { __typename: 'UnitType' }
+        ) | null, node: (
+          { id: string }
+          & { __typename: 'ActionNode' | 'Node' }
+        ) | null }
+        & { __typename: 'NumberParameterType' }
+      )
+      | (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, stringValue: string | null, stringDefaultValue: string | null, node: (
+          { id: string }
+          & { __typename: 'ActionNode' | 'Node' }
+        ) | null }
+        & { __typename: 'StringParameterType' }
+      )
+      | (
+        { id: string, label: string | null, description: string | null, nodeRelativeId: string | null, isCustomized: boolean, isCustomizable: boolean, node: (
+          { id: string }
+          & { __typename: 'ActionNode' | 'Node' }
+        ) | null }
+        & { __typename: 'UnknownParameterType' }
+      )
+    >, group: (
+      { id: string, name: string, color: string | null }
+      & { __typename: 'ActionGroupType' }
+    ) | null }
+    & { __typename: 'ActionNode' }
   )> }
   & { __typename: 'Query' }
 );

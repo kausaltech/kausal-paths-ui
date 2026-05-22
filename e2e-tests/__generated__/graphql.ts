@@ -12,10 +12,20 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** Date (isoformat) */
   Date: { input: any; output: any; }
+  /** Date with time (isoformat) */
   DateTime: { input: any; output: any; }
+  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
   JSON: { input: any; output: any; }
+  /**
+   * Allows use of a JSON String for input / output from the GraphQL schema.
+   *
+   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
+   * schema (one of the key benefits of GraphQL).
+   */
   JSONString: { input: any; output: any; }
+  /** GraphQL type for an integer that must be equal or greater than zero. */
   PositiveInt: { input: any; output: any; }
   RichText: { input: any; output: any; }
   UUID: { input: any; output: any; }
@@ -43,6 +53,11 @@ export enum ChangeTargetKind {
   Unknown = 'UNKNOWN'
 }
 
+export enum DataPointCommentReviewState {
+  Resolved = 'RESOLVED',
+  Unresolved = 'UNRESOLVED'
+}
+
 /** Which governance level is applicable for an action */
 export enum DecisionLevel {
   Eu = 'EU',
@@ -54,6 +69,37 @@ export enum DimensionKind {
   Common = 'COMMON',
   Node = 'NODE',
   Scenario = 'SCENARIO'
+}
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplateDefaultValueScalingChoices {
+  /** Population */
+  Population = 'POPULATION'
+}
+
+/** An enumeration. */
+export enum FrameworksMeasureTemplatePriorityChoices {
+  /** High */
+  High = 'HIGH',
+  /** Low */
+  Low = 'LOW',
+  /** Medium */
+  Medium = 'MEDIUM'
+}
+
+export enum InstanceMemberRole {
+  Admin = 'ADMIN',
+  Reviewer = 'REVIEWER',
+  SuperAdmin = 'SUPER_ADMIN',
+  Viewer = 'VIEWER'
+}
+
+/** An enumeration. */
+export enum ModelAction {
+  Add = 'ADD',
+  Change = 'CHANGE',
+  Delete = 'DELETE',
+  View = 'VIEW'
 }
 
 export enum NodeKind {
