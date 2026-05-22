@@ -281,15 +281,17 @@ export default function ActionsList({
     }
   };
 
-  // Totals for percent bars — excluded or missing-value actions don't contribute
+  // Sum of absolute values per column for percent bars. Using the net sum previously
+  // caused bars to overflow when positive and negative values cancel each other out
   const totals = useMemo(() => {
     return columns.reduce(
       (acc, col) => {
-        acc[col.key] = filteredActions.reduce((sum, a) => {
+        acc[col.key] = filteredActions.reduce((sumAbs, a) => {
           const enabledParam = findActionEnabledParam(a.parameters);
           const isIncluded = !refetching && (enabledParam?.boolValue ?? false);
           const v = col.getValue(a);
-          return isIncluded && v !== null ? sum + v : sum;
+
+          return isIncluded && v !== null ? sumAbs + Math.abs(v) : sumAbs;
         }, 0);
         return acc;
       },
