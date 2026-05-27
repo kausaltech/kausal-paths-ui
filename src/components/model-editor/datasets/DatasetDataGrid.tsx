@@ -162,6 +162,11 @@ export default function DatasetDataGrid({
   const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
   const [addYearsProgress, setAddYearsProgress] = useState<AddProgress | null>(null);
   const [gridSelection, setGridSelection] = useState<GridSelection>(EMPTY_SELECTION);
+  // True whenever any batch mutation is running. Used to gate toolbar actions
+  // that would otherwise let the user start an overlapping operation and race
+  // shared state (extraYears, pendingEdits, progress/error).
+  const isMutating =
+    saving || addProgress !== null || deleteProgress !== null || addYearsProgress !== null;
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const gridRef = useRef<DataEditorRef>(null);
   // Glide's onCellContextMenu fires through the React tree; the document-level
@@ -1030,7 +1035,7 @@ export default function DatasetDataGrid({
             variant="outlined"
             startIcon={<Trash />}
             onClick={handleDeleteSelected}
-            disabled={deleteProgress !== null}
+            disabled={isMutating}
             sx={!hasPending ? { mr: 'auto' } : undefined}
           >
             Delete {selectedRowCount} row{selectedRowCount === 1 ? '' : 's'}
@@ -1043,7 +1048,7 @@ export default function DatasetDataGrid({
             variant="outlined"
             startIcon={<Trash />}
             onClick={handleDeleteSelectedYears}
-            disabled={deleteProgress !== null}
+            disabled={isMutating}
             sx={!hasPending && selectedRowCount === 0 ? { mr: 'auto' } : undefined}
           >
             Delete {selectedYearCount} year{selectedYearCount === 1 ? '' : 's'}
@@ -1051,27 +1056,32 @@ export default function DatasetDataGrid({
         )}
         {hasPending && (
           <>
-            <Button size="small" onClick={handleDiscard} disabled={saving} color="inherit">
+            <Button size="small" onClick={handleDiscard} disabled={isMutating} color="inherit">
               Discard
             </Button>
             <Button
               size="small"
               variant="contained"
               onClick={() => void handleSave()}
-              disabled={saving}
+              disabled={isMutating}
             >
               {saving ? 'Saving…' : 'Save changes'}
             </Button>
           </>
         )}
-        <Button size="small" startIcon={<Plus />} onClick={() => setAddYearOpen(true)}>
+        <Button
+          size="small"
+          startIcon={<Plus />}
+          onClick={() => setAddYearOpen(true)}
+          disabled={isMutating}
+        >
           Add years
         </Button>
         <Button
           size="small"
           startIcon={<Plus />}
           onClick={() => setAddOpen(true)}
-          disabled={dataset.metrics.length === 0}
+          disabled={isMutating || dataset.metrics.length === 0}
         >
           Add rows
         </Button>
