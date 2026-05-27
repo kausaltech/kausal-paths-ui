@@ -13,7 +13,7 @@ import {
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-import { BoxArrowUpRight } from 'react-bootstrap-icons';
+import { ArrowClockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
 
 import type { MyEditableInstancesQuery } from '@/common/__generated__/graphql';
 
@@ -43,9 +43,12 @@ const GET_MY_EDITABLE_INSTANCES = gql`
 `;
 
 export default function MyModelsPage() {
-  const { data, loading } = useQuery<MyEditableInstancesQuery>(GET_MY_EDITABLE_INSTANCES, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data, loading, error, refetch } = useQuery<MyEditableInstancesQuery>(
+    GET_MY_EDITABLE_INSTANCES,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const instances = data?.me?.editableInstances ?? [];
 
@@ -67,6 +70,26 @@ export default function MyModelsPage() {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={24} />
         </Box>
+      ) : error && instances.length === 0 ? (
+        // A failed load leaves `instances` empty too, so check `error` first —
+        // otherwise a transient outage would masquerade as "no edit access".
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <Stack spacing={2} alignItems="flex-start">
+            <Typography variant="body1">Couldn&apos;t load your models</Typography>
+            <Typography variant="body2" color="text.secondary">
+              We couldn&apos;t reach the backend to load the models you can edit. Try again in a
+              moment.
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ArrowClockwise size={16} />}
+              onClick={() => void refetch()}
+            >
+              Retry
+            </Button>
+          </Stack>
+        </Paper>
       ) : instances.length === 0 ? (
         <Paper variant="outlined" sx={{ p: 3 }}>
           <Typography variant="body2" color="text.secondary">
