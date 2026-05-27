@@ -305,7 +305,9 @@ export default function DatasetDataGrid({
       }
 
       // Drop any pending edits on the affected rows — they refer to rows
-      // that no longer exist after the delete.
+      // that no longer exist after the delete. Deferred until after mutations
+      // succeed so a failed delete doesn't silently discard unsaved edits on
+      // rows that still exist.
       const dropPending = () => {
         setPendingEdits((prev) => {
           if (prev.size === 0) return prev;
@@ -343,10 +345,13 @@ export default function DatasetDataGrid({
         setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
       }
 
-      dropPending();
       setGridSelection(EMPTY_SELECTION);
       setDeleteProgress(null);
-      if (firstError) setError(firstError);
+      if (firstError) {
+        setError(firstError);
+      } else {
+        dropPending();
+      }
       void onMutated();
     },
     [deleteDataPoint, instance.id, dataset.id, onMutated]
