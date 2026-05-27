@@ -650,7 +650,12 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
     if (isDefault) return;
     void fetchTranslation({
       variables: { nodeId: node.id },
-      context: { locale: selectedLang },
+      // Locale rides in context (→ accept-language header), but Apollo keys its
+      // in-flight dedup on query + variables only. Two locales share the same
+      // key, so switching tabs while a request is in flight would otherwise
+      // reuse the previous locale's request. Disable dedup so each locale
+      // issues its own request with its own header.
+      context: { locale: selectedLang, queryDeduplication: false },
     });
   }, [fetchTranslation, isDefault, node.id, selectedLang]);
 
