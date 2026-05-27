@@ -220,8 +220,17 @@ export default function InstanceUsersPage() {
       const res = await removeInvitation({
         variables: { instanceId: instance.id, invitationId },
       });
-      const messages = res.data?.instanceAdmin.removeInvitation?.messages ?? [];
-      if (messages.length > 0) {
+      const payload = res.data?.instanceAdmin.removeInvitation;
+      const messages = payload?.messages ?? [];
+      if (!payload) {
+        // A null payload (e.g. permission/validation failure surfaced as
+        // partial data) is not a success — don't let the empty-messages
+        // fallback report a phantom revocation.
+        setToast({
+          message: 'Failed to revoke invitation: no response from server',
+          severity: 'error',
+        });
+      } else if (messages.length > 0) {
         setToast({
           message: `Failed to revoke invitation: ${formatOperationMessages(messages)}`,
           severity: 'error',
