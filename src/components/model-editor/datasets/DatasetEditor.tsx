@@ -1428,7 +1428,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                     const payload = muData?.instanceEditor.createDataSource;
                     if (payload?.__typename !== 'DataSource') return;
                     cache.updateQuery<InstanceDatasetQuery>(
-                      { query: GET_INSTANCE_DATASET },
+                      { query: GET_INSTANCE_DATASET, variables: { datasetId } },
                       (existing) => {
                         if (!existing?.instance.editor) return existing;
                         return {
