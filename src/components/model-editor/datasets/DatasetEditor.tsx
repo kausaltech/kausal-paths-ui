@@ -694,6 +694,7 @@ function SourcesPanel({
   selectedDataPointId,
   selectedCell,
   onAttachToDataset,
+  onAttachToDataPoint,
   onDetach,
   onCreateDataSource,
   onClearSelection,
@@ -703,6 +704,7 @@ function SourcesPanel({
   selectedDataPointId: string | null;
   selectedCell: SelectedCell | null;
   onAttachToDataset: (dataSourceId: string) => Promise<void>;
+  onAttachToDataPoint: (dataSourceId: string, dataPointId: string) => Promise<void>;
   onDetach: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
   onClearSelection: () => void;
@@ -719,9 +721,9 @@ function SourcesPanel({
     ? selectedRefs.length
     : datasetScopeRefs.length + dataPointRefs.length;
 
-  // Dataset-scope attach form. Kept inside the panel so it stays simple;
-  // hidden whenever a cell is selected because the form targets the dataset,
-  // not a data point.
+  // Attach form. Kept inside the panel so it stays simple. The same form
+  // serves both scopes: when a cell is selected it targets that data point,
+  // otherwise it targets the dataset.
   const [attachOpen, setAttachOpen] = useState(false);
   const [pickedSource, setPickedSource] = useState<DataSourceFieldsFragment | null>(null);
   const [attaching, setAttaching] = useState(false);
@@ -736,7 +738,11 @@ function SourcesPanel({
     setAttaching(true);
     setAttachError(null);
     try {
-      await onAttachToDataset(pickedSource.id);
+      if (selectedDataPointId !== null) {
+        await onAttachToDataPoint(pickedSource.id, selectedDataPointId);
+      } else {
+        await onAttachToDataset(pickedSource.id);
+      }
       resetAttachForm();
     } catch (e) {
       setAttachError(e instanceof Error ? e.message : String(e));
@@ -751,6 +757,13 @@ function SourcesPanel({
   const datasetScopeAttachedIds = useMemo(
     () => new Set(datasetScopeRefs.map((r) => r.dataSource.id)),
     [datasetScopeRefs]
+  );
+
+  // Same idea for the selected data point: grey out sources already attached
+  // to it so the picker only offers new ones.
+  const selectedDataPointAttachedIds = useMemo(
+    () => new Set(selectedRefs.map((r) => r.dataSource.id)),
+    [selectedRefs]
   );
 
   // "Define new" dialog state. On success we auto-select the new source in
@@ -783,6 +796,90 @@ function SourcesPanel({
     />
   );
 
+  // The toggle button and the collapsible form are shared between the
+  // dataset-scope and data-point-scope sections; only the set of
+  // already-attached ids (used to grey out options) differs.
+  const renderAttachButton = () => (
+    <Button
+      size="small"
+      startIcon={<Plus />}
+      variant={attachOpen ? 'outlined' : 'text'}
+      onClick={() => setAttachOpen((v) => !v)}
+    >
+      {t('datasets-attach-data-source')}
+    </Button>
+  );
+  const renderAttachForm = (attachedIds: Set<string>) => (
+    <Collapse in={attachOpen} unmountOnExit>
+      <Paper variant="outlined" sx={{ p: 2, mb: 1.5 }}>
+        <Stack spacing={1.5}>
+          <Autocomplete
+            size="small"
+            options={availableDataSources}
+            value={pickedSource}
+            onChange={(_, v) => setPickedSource(v)}
+            getOptionLabel={(o) => o.label || o.name}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+            getOptionDisabled={(o) => attachedIds.has(o.id)}
+            renderOption={(props, o) => {
+              const isAttached = attachedIds.has(o.id);
+              return (
+                <li {...props} key={o.id}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ width: '100%' }}
+                  >
+                    <span>{o.label || o.name}</span>
+                    {isAttached && (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('datasets-already-in-use')}
+                      </Typography>
+                    )}
+                  </Stack>
+                </li>
+              );
+            }}
+            disabled={attaching}
+            renderInput={(params) => (
+              <TextField {...params} label={t('datasets-data-source')} autoFocus />
+            )}
+            noOptionsText={t('datasets-no-data-sources-available')}
+          />
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<Plus />}
+            onClick={() => setDefineDialogOpen(true)}
+            disabled={attaching}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            {t('datasets-define-new')}
+          </Button>
+          {attachError && (
+            <Alert severity="error" onClose={() => setAttachError(null)}>
+              {attachError}
+            </Alert>
+          )}
+          <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Button size="small" variant="text" onClick={resetAttachForm} disabled={attaching}>
+              {t('common-cancel')}
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => void handleAttach()}
+              disabled={attaching || !pickedSource}
+            >
+              {attaching ? t('common-saving') : t('common-attach')}
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Collapse>
+  );
+
   return (
     <>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
@@ -801,13 +898,19 @@ function SourcesPanel({
       {selectedCell && <SelectedDataPointChips cell={selectedCell} />}
 
       {hasSelection ? (
-        selectedRefs.length === 0 ? (
-          <Typography color="text.secondary" variant="body2">
-            {t('datasets-no-sources-attached-datapoint')}
-          </Typography>
-        ) : (
-          <Stack spacing={1.5}>{selectedRefs.map((r) => renderCard(r))}</Stack>
-        )
+        <Box>
+          <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
+            {renderAttachButton()}
+          </Stack>
+          {renderAttachForm(selectedDataPointAttachedIds)}
+          {selectedRefs.length === 0 ? (
+            <Typography color="text.secondary" variant="body2">
+              {t('datasets-no-sources-attached-datapoint')}
+            </Typography>
+          ) : (
+            <Stack spacing={1.5}>{selectedRefs.map((r) => renderCard(r))}</Stack>
+          )}
+        </Box>
       ) : (
         <Stack spacing={3}>
           <Box>
@@ -823,88 +926,9 @@ function SourcesPanel({
                   ({datasetScopeRefs.length})
                 </Typography>
               </Typography>
-              <Button
-                size="small"
-                startIcon={<Plus />}
-                variant={attachOpen ? 'outlined' : 'text'}
-                onClick={() => setAttachOpen((v) => !v)}
-              >
-                {t('datasets-attach-data-source')}
-              </Button>
+              {renderAttachButton()}
             </Stack>
-            <Collapse in={attachOpen} unmountOnExit>
-              <Paper variant="outlined" sx={{ p: 2, mb: 1.5 }}>
-                <Stack spacing={1.5}>
-                  <Autocomplete
-                    size="small"
-                    options={availableDataSources}
-                    value={pickedSource}
-                    onChange={(_, v) => setPickedSource(v)}
-                    getOptionLabel={(o) => o.label || o.name}
-                    isOptionEqualToValue={(o, v) => o.id === v.id}
-                    getOptionDisabled={(o) => datasetScopeAttachedIds.has(o.id)}
-                    renderOption={(props, o) => {
-                      const isAttached = datasetScopeAttachedIds.has(o.id);
-                      return (
-                        <li {...props} key={o.id}>
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            sx={{ width: '100%' }}
-                          >
-                            <span>{o.label || o.name}</span>
-                            {isAttached && (
-                              <Typography variant="caption" color="text.secondary">
-                                {t('datasets-already-in-use')}
-                              </Typography>
-                            )}
-                          </Stack>
-                        </li>
-                      );
-                    }}
-                    disabled={attaching}
-                    renderInput={(params) => (
-                      <TextField {...params} label={t('datasets-data-source')} autoFocus />
-                    )}
-                    noOptionsText={t('datasets-no-data-sources-available')}
-                  />
-                  <Button
-                    size="small"
-                    variant="text"
-                    startIcon={<Plus />}
-                    onClick={() => setDefineDialogOpen(true)}
-                    disabled={attaching}
-                    sx={{ alignSelf: 'flex-start' }}
-                  >
-                    {t('datasets-define-new')}
-                  </Button>
-                  {attachError && (
-                    <Alert severity="error" onClose={() => setAttachError(null)}>
-                      {attachError}
-                    </Alert>
-                  )}
-                  <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={resetAttachForm}
-                      disabled={attaching}
-                    >
-                      {t('common-cancel')}
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      onClick={() => void handleAttach()}
-                      disabled={attaching || !pickedSource}
-                    >
-                      {attaching ? t('common-saving') : t('common-attach')}
-                    </Button>
-                  </Stack>
-                </Stack>
-              </Paper>
-            </Collapse>
+            {renderAttachForm(datasetScopeAttachedIds)}
             {datasetScopeRefs.length === 0 ? (
               <Typography color="text.secondary" variant="body2">
                 {t('datasets-no-sources-attached-dataset')}
@@ -1378,6 +1402,44 @@ export default function DatasetEditor({ datasetId }: Props) {
                           { storeFieldName }
                         ) => {
                           // Only modify the ALL-target list (the one we read).
+                          if (!storeFieldName.includes('"ALL"')) return existing;
+                          return [...existing, { __ref: refId }];
+                        },
+                      },
+                    });
+                  },
+                });
+                const payload = result.data?.instanceEditor.datasetEditor.createSourceReference;
+                if (payload?.__typename === 'OperationInfo') {
+                  throw new Error(payload.messages.map((m) => m.message).join('; '));
+                }
+              }}
+              onAttachToDataPoint={async (dataSourceId, dataPointId) => {
+                const result = await createSourceReference({
+                  variables: {
+                    instanceId: instance.id,
+                    datasetId: dataset.id,
+                    input: { dataSourceId, toDataset: false, dataPointId },
+                  },
+                  // Same ALL-target list the panel reads from; the new ref
+                  // carries its dataPoint, so the selected-data-point filter
+                  // picks it up without a full refetch.
+                  update: (cache, { data: muData }) => {
+                    const payload = muData?.instanceEditor.datasetEditor.createSourceReference;
+                    if (payload?.__typename !== 'DatasetSourceReference') return;
+                    const dsId = cache.identify({
+                      __typename: 'Dataset',
+                      id: dataset.id,
+                    });
+                    const refId = cache.identify(payload);
+                    if (!dsId || !refId) return;
+                    cache.modify({
+                      id: dsId,
+                      fields: {
+                        sourceReferences: (
+                          existing: readonly { __ref: string }[] = [],
+                          { storeFieldName }
+                        ) => {
                           if (!storeFieldName.includes('"ALL"')) return existing;
                           return [...existing, { __ref: refId }];
                         },
