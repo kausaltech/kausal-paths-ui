@@ -74,6 +74,22 @@ export default function EditorAccessGate({ children, chrome }: Props) {
     );
   }
 
+  const canEdit = data?.instance.editor != null;
+
+  // Exempt routes (e.g. the model picker under /model/user/) must stay reachable
+  // even without edit rights to the current instance. Short-circuit *before* the
+  // access-query loading/error branches so a backend hiccup can't strand users
+  // on a spinner or the "couldn't check access" screen. The query still runs in
+  // the background, so chrome appears if/when it confirms edit rights.
+  if (exempt) {
+    return (
+      <>
+        {children}
+        {canEdit && chrome}
+      </>
+    );
+  }
+
   // Wait for the first response before deciding — `data` is undefined on the
   // initial fetch, and rendering the denial screen here would flash for every
   // editor on every navigation.
@@ -108,17 +124,6 @@ export default function EditorAccessGate({ children, chrome }: Props) {
           </Stack>
         </Paper>
       </Container>
-    );
-  }
-
-  const canEdit = data?.instance.editor != null;
-
-  if (exempt) {
-    return (
-      <>
-        {children}
-        {canEdit && chrome}
-      </>
     );
   }
 
