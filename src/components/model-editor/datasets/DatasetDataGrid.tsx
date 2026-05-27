@@ -957,17 +957,24 @@ export default function DatasetDataGrid({
     // the freshly-saved values) before dropping the pending entries. Then
     // commit successes and failures in a single state update — the cell
     // renderer sees pending → baseValue swap with identical values, no flash.
-    await onMutated();
-
-    setPendingEdits((prev) => {
-      if (successKeys.length === 0 && failures.size === 0) return prev;
-      const next = new Map(prev);
-      for (const key of successKeys) next.delete(key);
-      for (const [key, { edit, error }] of failures) next.set(key, { ...edit, error });
-      return next;
-    });
-
-    setSaving(false);
+    // The refetch can reject (transient network/backend error); guard the
+    // cleanup in finally so `saving` is always cleared and the grid never
+    // gets stuck blocking further saves/discards.
+    let refetchError: string | null = null;
+    try {
+      await onMutated();
+    } catch (err) {
+      refetchError = err instanceof Error ? err.message : String(err);
+    } finally {
+      setPendingEdits((prev) => {
+        if (successKeys.length === 0 && failures.size === 0) return prev;
+        const next = new Map(prev);
+        for (const key of successKeys) next.delete(key);
+        for (const [key, { edit, error }] of failures) next.set(key, { ...edit, error });
+        return next;
+      });
+      setSaving(false);
+    }
 
     const failureCount = failures.size;
     if (failureCount > 0) {
@@ -975,6 +982,8 @@ export default function DatasetDataGrid({
         unexpected ??
           `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
       );
+    } else if (refetchError !== null) {
+      setError(`Saved, but refreshing the data failed: ${refetchError}`);
     }
   }, [
     pendingEdits,
