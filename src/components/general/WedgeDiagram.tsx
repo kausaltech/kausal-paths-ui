@@ -56,6 +56,7 @@ function getChartConfig(
   floorValues: (number | null)[],
   ceilingValues: (number | null)[],
   bands: ActionBand[],
+  floorLabel: string,
   ceilingLabel: string,
   unit: string,
   formatNumber: (value: number) => string,
@@ -63,21 +64,25 @@ function getChartConfig(
   forecastAreaStartIndex: number,
   forecastBackgroundColor: string,
   forecastLabel: string,
+  floorLineColor: string,
   ceilingLineColor: string
 ): EChartsCoreOption {
-  // Invisible baseline series carrying floor values so stacked bands sit on
-  // top of current_scenario instead of zero. Excluded from legend/tooltip.
+  // Stacked baseline carrying floor values so action bands sit on top of
+  // current_scenario instead of zero. Drawn prominently for debugging — the
+  // line should trace the actual current_scenario trajectory.
   const floorSeries: LineSeriesOption = {
     type: 'line',
-    name: '__floor__',
+    name: floorLabel,
     stack: 'wedge',
     data: floorValues,
     symbol: 'none',
-    lineStyle: { opacity: 0 },
+    lineStyle: {
+      width: 2,
+      color: floorLineColor,
+    },
     areaStyle: { opacity: 0 },
-    tooltip: { show: false },
-    silent: true,
-    z: 1,
+    itemStyle: { color: floorLineColor },
+    z: 4,
   };
 
   const bandSeries: LineSeriesOption[] = bands.map((b) => ({
@@ -133,8 +138,7 @@ function getChartConfig(
     legend: {
       type: 'plain',
       bottom: 0,
-      // Hide the invisible floor series from the legend.
-      data: [...bands.map((b) => b.name), ceilingLabel],
+      data: [floorLabel, ...bands.map((b) => b.name), ceilingLabel],
     },
     tooltip: {
       trigger: 'axis',
@@ -236,6 +240,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
   }, [years, forecastFrom]);
 
   const unit = data?.indicatorUnit?.short || '';
+  const floorLabel = floor?.label ?? 'Current scenario';
   const ceilingLabel = ceiling?.label ?? 'Baseline scenario';
 
   const chartData = useMemo(
@@ -245,6 +250,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         floorValues,
         ceilingValues,
         bands,
+        floorLabel,
         ceilingLabel,
         unit,
         formatNumber,
@@ -252,6 +258,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         forecastAreaStartIndex,
         theme.graphColors.blue030,
         'Forecast',
+        theme.graphColors.grey090,
         theme.graphColors.grey060
       ),
     [
@@ -259,12 +266,14 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
       floorValues,
       ceilingValues,
       bands,
+      floorLabel,
       ceilingLabel,
       unit,
       formatNumber,
       formatAxisLabel,
       forecastAreaStartIndex,
       theme.graphColors.blue030,
+      theme.graphColors.grey090,
       theme.graphColors.grey060,
     ]
   );
