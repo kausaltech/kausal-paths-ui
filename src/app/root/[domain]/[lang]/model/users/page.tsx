@@ -190,6 +190,10 @@ export default function InstanceUsersPage() {
   const me = data?.me ?? null;
   const currentEmail = (me?.email ?? session?.user.email ?? '').toLowerCase() || null;
   const rawMembers = data?.instance?.users ?? [];
+  // A failed load leaves `data` undefined, which we must not read as "empty
+  // member list" → "not an admin". Only an actual response (no error, instance
+  // present) lets us interpret an empty list as a real signal.
+  const loadSucceeded = !error && data?.instance != null;
   // Backend returns `instance.users` only to instance admins, owners, and
   // superusers; for everyone else it returns `[]`. Any instance with at least
   // an owner produces a non-empty list, so `users.length === 0` after the
@@ -344,7 +348,7 @@ export default function InstanceUsersPage() {
         )}
       </Box>
 
-      {!loading && !isAdminViewer && (
+      {!loading && loadSucceeded && !isAdminViewer && (
         <Alert severity="info" sx={{ mb: 2 }}>
           Only instance admins can manage users. Ask an admin of <strong>{instance.name}</strong> if
           you need to invite or remove users.
