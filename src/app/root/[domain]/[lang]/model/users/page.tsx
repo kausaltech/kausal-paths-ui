@@ -161,7 +161,9 @@ export default function InstanceUsersPage() {
   const [dialogStep, setDialogStep] = useState<DialogStep>('add');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(
+    null
+  );
 
   const { data, loading, error, refetch } = useQuery<InstanceUsersQuery>(GET_INSTANCE_USERS, {
     fetchPolicy: 'cache-and-network',
@@ -216,13 +218,19 @@ export default function InstanceUsersPage() {
       });
       const messages = res.data?.instanceAdmin.removeInvitation?.messages ?? [];
       if (messages.length > 0) {
-        setToast(`Failed to revoke invitation: ${formatOperationMessages(messages)}`);
+        setToast({
+          message: `Failed to revoke invitation: ${formatOperationMessages(messages)}`,
+          severity: 'error',
+        });
       } else {
-        setToast(`Revoked invitation for ${email}`);
+        setToast({ message: `Revoked invitation for ${email}`, severity: 'success' });
       }
       await refetch();
     } catch (e) {
-      setToast(e instanceof Error ? e.message : 'Failed to revoke invitation');
+      setToast({
+        message: e instanceof Error ? e.message : 'Failed to revoke invitation',
+        severity: 'error',
+      });
     } finally {
       setRevokingId(null);
     }
@@ -266,7 +274,7 @@ export default function InstanceUsersPage() {
         }
         if (payload.__typename === 'User') {
           setInviteOpen(false);
-          setToast(`Added ${payload.email} to ${instance.name}`);
+          setToast({ message: `Added ${payload.email} to ${instance.name}`, severity: 'success' });
           await refetch();
           return;
         }
@@ -294,7 +302,7 @@ export default function InstanceUsersPage() {
       }
       if (payload.__typename === 'InstanceInvitation') {
         setInviteOpen(false);
-        setToast(`Invitation sent to ${payload.email}`);
+        setToast({ message: `Invitation sent to ${payload.email}`, severity: 'success' });
         await refetch();
         return;
       }
@@ -549,8 +557,8 @@ export default function InstanceUsersPage() {
         onClose={() => setToast(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="success" onClose={() => setToast(null)}>
-          {toast ?? ''}
+        <Alert severity={toast?.severity ?? 'success'} onClose={() => setToast(null)}>
+          {toast?.message ?? ''}
         </Alert>
       </Snackbar>
     </Container>
