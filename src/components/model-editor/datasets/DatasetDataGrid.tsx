@@ -905,6 +905,30 @@ export default function DatasetDataGrid({
                 ),
               },
             },
+            // Append the new DataPoint to Dataset.dataPoints in the cache so
+            // the cell renders the persisted value as soon as the pending
+            // entry is dropped — even if the parent refetch (onMutated below)
+            // fails. Without this, a transient refetch error would leave the
+            // server-saved point absent from the cache, the cell would fall
+            // back to empty, and a user re-entry would create a duplicate.
+            update: (cache, { data: muData }) => {
+              const created = muData?.instanceEditor.datasetEditor.createDataPoint;
+              if (created?.__typename !== 'DataPoint') return;
+              const datasetCacheId = cache.identify({ __typename: 'Dataset', id: dataset.id });
+              const pointCacheId = cache.identify(created);
+              if (!datasetCacheId || !pointCacheId) return;
+              cache.modify({
+                id: datasetCacheId,
+                fields: {
+                  dataPoints: (existing: readonly { __ref: string }[] = []) => {
+                    // Defensive: skip if Apollo has already attached the ref
+                    // (e.g. a concurrent refetch landed first).
+                    if (existing.some((r) => r.__ref === pointCacheId)) return existing;
+                    return [...existing, { __ref: pointCacheId }];
+                  },
+                },
+              });
+            },
           });
           const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
           if (payload?.__typename === 'OperationInfo') {
