@@ -917,6 +917,21 @@ export default function DatasetDataGrid({
               const datasetCacheId = cache.identify({ __typename: 'Dataset', id: dataset.id });
               const pointCacheId = cache.identify(created);
               if (!datasetCacheId || !pointCacheId) return;
+              // CREATE_DATA_POINT returns DataPointFields, which does NOT
+              // include `comments`, but the active dataset query reads
+              // `dataPoint.comments` for every point. Seed the new point's
+              // comments to [] (a brand-new point has none) BEFORE exposing
+              // it via Dataset.dataPoints, so any re-render between this
+              // cache write and the parent refetch can't read undefined and
+              // crash code like `dp.comments.length`. Preserve any existing
+              // value as a defensive no-op if a concurrent refetch already
+              // populated it.
+              cache.modify({
+                id: pointCacheId,
+                fields: {
+                  comments: (existing: readonly { __ref: string }[] | undefined) => existing ?? [],
+                },
+              });
               cache.modify({
                 id: datasetCacheId,
                 fields: {
