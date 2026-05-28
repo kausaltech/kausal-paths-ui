@@ -61,11 +61,32 @@ export enum ChangeTargetKind {
   Unknown = 'UNKNOWN'
 }
 
+export type CreateDataPointCommentInput = {
+  isReview: Scalars['Boolean']['input'];
+  isSticky: Scalars['Boolean']['input'];
+  reviewState: InputMaybe<DataPointCommentReviewState>;
+  text: Scalars['String']['input'];
+};
+
 export type CreateDataPointInput = {
   date: Scalars['Date']['input'];
   dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
   metricId: Scalars['UUID']['input'];
   value: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type CreateDataSourceInput = {
+  authority: InputMaybe<Scalars['String']['input']>;
+  description: InputMaybe<Scalars['String']['input']>;
+  edition: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  url: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CreateDatasetSourceReferenceInput = {
+  dataPointId: InputMaybe<Scalars['UUID']['input']>;
+  dataSourceId: Scalars['UUID']['input'];
+  toDataset: Scalars['Boolean']['input'];
 };
 
 export type CreateDimensionCategoryInput = {
@@ -498,6 +519,125 @@ export type ModelEditorLandingDataQuery = (
   & { __typename: 'Query' }
 );
 
+export type MyEditableInstancesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyEditableInstancesQuery = (
+  { me: (
+    { id: string, email: string, editableInstances: Array<(
+      { id: string, identifier: string, name: string, themeIdentifier: string | null, frameworkConfig: (
+        { id: string, organizationName: string | null, viewUrl: string | null, framework: (
+          { id: string, identifier: string, name: string }
+          & { __typename: 'Framework' }
+        ) }
+        & { __typename: 'FrameworkConfig' }
+      ) | null }
+      & { __typename: 'InstanceType' }
+    )> }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
+export type InstanceUsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type InstanceUsersQuery = (
+  { me: (
+    { id: string, email: string, firstName: string, lastName: string }
+    & { __typename: 'User' }
+  ) | null, instance: (
+    { id: string, users: Array<(
+      { isOwner: boolean, role: InstanceMemberRole, user: (
+        { id: string, email: string, firstName: string, lastName: string }
+        & { __typename: 'User' }
+      ) }
+      & { __typename: 'InstanceMember' }
+    )>, invitations: Array<(
+      { id: string, email: string, expiresAt: string, createdAt: string }
+      & { __typename: 'InstanceInvitation' }
+    )> }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type AddUserToInstanceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  email: Scalars['String']['input'];
+}>;
+
+
+export type AddUserToInstanceMutation = (
+  { instanceAdmin: (
+    { addUserToInstance:
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, message: string, field: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+      | (
+        { id: string, email: string, firstName: string, lastName: string }
+        & { __typename: 'User' }
+      )
+      | (
+        { email: string }
+        & { __typename: 'UserNotFoundError' }
+      )
+     }
+    & { __typename: 'InstanceAdminMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type RemoveInvitationMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  invitationId: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveInvitationMutation = (
+  { instanceAdmin: (
+    { removeInvitation: (
+      { messages: Array<(
+        { kind: OperationMessageKind, message: string, field: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceAdminMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type InviteUserToInstanceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  email: Scalars['String']['input'];
+}>;
+
+
+export type InviteUserToInstanceMutation = (
+  { instanceAdmin: (
+    { inviteUserToInstance:
+      | (
+        { id: string, email: string, expiresAt: string }
+        & { __typename: 'InstanceInvitation' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, message: string, field: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceAdminMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -628,6 +768,17 @@ export type DimensionalPlotFragment = (
   & { __typename: 'DimensionalFlowType' }
 );
 
+export type ModelEditorAccessQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ModelEditorAccessQuery = (
+  { instance: (
+    { id: string, editor: { __typename: 'InstanceEditor' } | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
 export type EditorNodeSearchListQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -732,7 +883,7 @@ export type NodeGraphQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null, nodes: Array<
       | (
-        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
         ) | null, quantityKind: (
@@ -788,7 +939,7 @@ export type NodeGraphQuery = (
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
+        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
@@ -847,7 +998,7 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, quantityKind: (
@@ -904,7 +1055,7 @@ type EditorNodeFields_ActionNode_Fragment = (
 );
 
 type EditorNodeFields_Node_Fragment = (
-  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
+  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
@@ -1057,6 +1208,42 @@ export type DatasetSummaryFieldsFragment = (
   & { __typename: 'Dataset' }
 );
 
+export type DataPointCommentFieldsFragment = (
+  { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null, createdBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null, lastModifiedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'DataPointComment' }
+);
+
+export type DataSourceFieldsFragment = (
+  { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+  & { __typename: 'DataSource' }
+);
+
+export type DatasetSourceReferenceFieldsFragment = (
+  { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+    { id: string }
+    & { __typename: 'DataPoint' }
+  ) | null, dataSource: (
+    { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+    & { __typename: 'DataSource' }
+  ), createdBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null, lastModifiedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null }
+  & { __typename: 'DatasetSourceReference' }
+);
+
 export type DatasetDetailFieldsFragment = (
   { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
@@ -1077,6 +1264,18 @@ export type DatasetDetailFieldsFragment = (
     ), dimensionCategories: Array<(
       { uuid: string }
       & { __typename: 'DatasetDimensionCategory' }
+    )>, comments: Array<(
+      { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+        { id: string, firstName: string, lastName: string, email: string }
+        & { __typename: 'User' }
+      ) | null, createdBy: (
+        { id: string, firstName: string, lastName: string, email: string }
+        & { __typename: 'User' }
+      ) | null, lastModifiedBy: (
+        { id: string, firstName: string, lastName: string, email: string }
+        & { __typename: 'User' }
+      ) | null }
+      & { __typename: 'DataPointComment' }
     )> }
     & { __typename: 'DataPoint' }
   )>, portBindings: Array<(
@@ -1085,6 +1284,21 @@ export type DatasetDetailFieldsFragment = (
       & { __typename: 'NodePortRef' }
     ) }
     & { __typename: 'DatasetPortType' }
+  )>, sourceReferences: Array<(
+    { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+      { id: string }
+      & { __typename: 'DataPoint' }
+    ) | null, dataSource: (
+      { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+      & { __typename: 'DataSource' }
+    ), createdBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null, lastModifiedBy: (
+      { id: string, firstName: string, lastName: string, email: string }
+      & { __typename: 'User' }
+    ) | null }
+    & { __typename: 'DatasetSourceReference' }
   )> }
   & { __typename: 'Dataset' }
 );
@@ -1096,9 +1310,9 @@ export type InstanceDatasetsQuery = (
   { instance: (
     { id: string, editor: (
       { datasets: Array<(
-        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPoints: Array<(
+        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPointComments: Array<(
           { id: string }
-          & { __typename: 'DataPoint' }
+          & { __typename: 'DataPointComment' }
         )>, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
           & { __typename: 'DatasetExternalRefType' }
@@ -1118,13 +1332,15 @@ export type InstanceDatasetsQuery = (
   & { __typename: 'Query' }
 );
 
-export type InstanceDatasetQueryVariables = Exact<{ [key: string]: never; }>;
+export type InstanceDatasetQueryVariables = Exact<{
+  datasetId: Scalars['ID']['input'];
+}>;
 
 
 export type InstanceDatasetQuery = (
   { instance: (
     { id: string, editor: (
-      { datasets: Array<(
+      { dataset: (
         { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
           & { __typename: 'DatasetExternalRefType' }
@@ -1144,6 +1360,18 @@ export type InstanceDatasetQuery = (
           ), dimensionCategories: Array<(
             { uuid: string }
             & { __typename: 'DatasetDimensionCategory' }
+          )>, comments: Array<(
+            { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+              { id: string, firstName: string, lastName: string, email: string }
+              & { __typename: 'User' }
+            ) | null, createdBy: (
+              { id: string, firstName: string, lastName: string, email: string }
+              & { __typename: 'User' }
+            ) | null, lastModifiedBy: (
+              { id: string, firstName: string, lastName: string, email: string }
+              & { __typename: 'User' }
+            ) | null }
+            & { __typename: 'DataPointComment' }
           )> }
           & { __typename: 'DataPoint' }
         )>, portBindings: Array<(
@@ -1152,8 +1380,26 @@ export type InstanceDatasetQuery = (
             & { __typename: 'NodePortRef' }
           ) }
           & { __typename: 'DatasetPortType' }
+        )>, sourceReferences: Array<(
+          { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+            { id: string }
+            & { __typename: 'DataPoint' }
+          ) | null, dataSource: (
+            { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+            & { __typename: 'DataSource' }
+          ), createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DatasetSourceReference' }
         )> }
         & { __typename: 'Dataset' }
+      ) | null, dataSources: Array<(
+        { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+        & { __typename: 'DataSource' }
       )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
@@ -1303,6 +1549,216 @@ export type DeleteDataPointMutation = (
   { instanceEditor: (
     { datasetEditor: (
       { deleteDataPoint: (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      ) | null }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateDataPointCommentMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  dataPointId: Scalars['ID']['input'];
+  input: CreateDataPointCommentInput;
+}>;
+
+
+export type CreateDataPointCommentMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { createDataPointComment:
+        | (
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type ResolveDataPointCommentMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  commentId: Scalars['ID']['input'];
+}>;
+
+
+export type ResolveDataPointCommentMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { resolveDataPointComment:
+        | (
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UnresolveDataPointCommentMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  commentId: Scalars['ID']['input'];
+}>;
+
+
+export type UnresolveDataPointCommentMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { unresolveDataPointComment:
+        | (
+          { id: string, text: string, isSticky: boolean, isReview: boolean, reviewState: DataPointCommentReviewState | null, resolvedAt: string | null, createdAt: string, lastModifiedAt: string, resolvedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DataPointComment' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateSourceReferenceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  input: CreateDatasetSourceReferenceInput;
+}>;
+
+
+export type CreateSourceReferenceMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { createSourceReference:
+        | (
+          { id: string, createdAt: string, lastModifiedAt: string, dataPoint: (
+            { id: string }
+            & { __typename: 'DataPoint' }
+          ) | null, dataSource: (
+            { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+            & { __typename: 'DataSource' }
+          ), createdBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null, lastModifiedBy: (
+            { id: string, firstName: string, lastName: string, email: string }
+            & { __typename: 'User' }
+          ) | null }
+          & { __typename: 'DatasetSourceReference' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type CreateDataSourceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: CreateDataSourceInput;
+}>;
+
+
+export type CreateDataSourceMutation = (
+  { instanceEditor: (
+    { createDataSource:
+      | (
+        { id: string, name: string, label: string, authority: string | null, edition: string | null, url: string | null, description: string | null }
+        & { __typename: 'DataSource' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteSourceReferenceMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  datasetId: Scalars['ID']['input'];
+  referenceId: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteSourceReferenceMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { deleteSourceReference: (
         { messages: Array<(
           { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
           & { __typename: 'OperationMessage' }
@@ -1624,11 +2080,17 @@ export type UpdateNodeMutation = (
   { instanceEditor: (
     { updateNode:
       | (
-        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean }
+        { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, editor: (
+          { nodeGroup: string | null }
+          & { __typename: 'NodeEditor' }
+        ) | null }
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, name: string, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean }
+        { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
+          { nodeGroup: string | null }
+          & { __typename: 'NodeEditor' }
+        ) | null }
         & { __typename: 'Node' }
       )
       | (
@@ -1642,6 +2104,19 @@ export type UpdateNodeMutation = (
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }
+);
+
+export type NodeTranslationQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+}>;
+
+
+export type NodeTranslationQuery = (
+  { node: (
+    { id: string, name: string, description: string | null, shortDescription: string | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
 );
 
 export type AvailableDatasetsQueryVariables = Exact<{ [key: string]: never; }>;

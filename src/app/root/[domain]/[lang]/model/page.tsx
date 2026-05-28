@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import {
   Alert,
@@ -12,7 +12,6 @@ import {
   CardActionArea,
   CardContent,
   Chip,
-  CircularProgress,
   Container,
   Divider,
   List,
@@ -26,6 +25,7 @@ import {
 import { gql } from '@apollo/client';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import {
   ArrowRight,
   Box as BoxIcon,
@@ -33,6 +33,7 @@ import {
   CloudUpload,
   Database,
   Diagram2,
+  People,
 } from 'react-bootstrap-icons';
 
 import type {
@@ -52,7 +53,6 @@ import {
   editorPreviewModeVar,
   staleVersionNotificationVar,
 } from '@/components/model-editor/queries';
-import { useSession } from '@/lib/auth-client';
 
 const GET_LANDING_DATA = gql`
   query ModelEditorLandingData {
@@ -86,33 +86,26 @@ type LandingDataQuery = {
 
 type ToastState = { severity: 'success' | 'error'; message: string } | null;
 
-type LandingCard = {
-  title: string;
-  description: string;
-  href: string;
-  Icon: typeof Diagram2;
-};
-
-const CARDS: LandingCard[] = [
+const CARD_DEFS = [
   {
-    title: 'Nodes',
-    description: 'Edit the causal graph: nodes, edges, and formulas.',
+    titleKey: 'editor-cards-nodes',
+    descKey: 'editor-cards-nodes-desc',
     href: '/nodes',
     Icon: Diagram2,
   },
   {
-    title: 'Datasets',
-    description: 'Manage datasets that feed node inputs.',
+    titleKey: 'editor-cards-datasets',
+    descKey: 'editor-cards-datasets-desc',
     href: '/datasets',
     Icon: Database,
   },
   {
-    title: 'Dimensions',
-    description: 'Define dimensions and their categories.',
+    titleKey: 'editor-cards-dimensions',
+    descKey: 'editor-cards-dimensions-desc',
     href: '/dimensions',
     Icon: BoxIcon,
   },
-];
+] as const;
 
 function getModelEditorBase(pathname: string): string {
   const idx = pathname.indexOf('/model');
@@ -125,16 +118,15 @@ type EditedNodeRow = {
   editedFields: string[];
 };
 
-const FIELD_LABELS: Record<EditableNodeField, string> = {
-  shortName: 'Short name',
-  nodeGroup: 'Node group',
-  actionGroup: 'Action group',
-};
+const FIELD_LABEL_KEYS = {
+  shortDescription: 'editor-field-short-description',
+  actionGroup: 'editor-field-action-group',
+} as const satisfies Record<EditableNodeField, string>;
 
-function getEditedFieldLabels(edit: MockNodeEdit): string[] {
+function getEditedFieldLabels(edit: MockNodeEdit, t: ReturnType<typeof useTranslations>): string[] {
   const labels: string[] = [];
-  for (const key of Object.keys(FIELD_LABELS) as EditableNodeField[]) {
-    if (edit[key] !== undefined) labels.push(FIELD_LABELS[key]);
+  for (const key of Object.keys(FIELD_LABEL_KEYS) as EditableNodeField[]) {
+    if (edit[key] !== undefined) labels.push(t(FIELD_LABEL_KEYS[key]));
   }
   return labels;
 }
@@ -146,29 +138,33 @@ function formatDateTime(iso: string | null | undefined): string | null {
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-function formatRelative(iso: string | null | undefined): string | null {
+function formatRelative(
+  iso: string | null | undefined,
+  t: ReturnType<typeof useTranslations>
+): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   const deltaSec = Math.round((Date.now() - d.getTime()) / 1000);
-  if (deltaSec < 60) return 'just now';
-  if (deltaSec < 3600) return `${Math.round(deltaSec / 60)} min ago`;
-  if (deltaSec < 86400) return `${Math.round(deltaSec / 3600)} h ago`;
-  if (deltaSec < 2592000) return `${Math.round(deltaSec / 86400)} d ago`;
+  if (deltaSec < 60) return t('editor-relative-just-now');
+  if (deltaSec < 3600)
+    return t('editor-relative-minutes-ago', { count: Math.round(deltaSec / 60) });
+  if (deltaSec < 86400)
+    return t('editor-relative-hours-ago', { count: Math.round(deltaSec / 3600) });
+  if (deltaSec < 2592000)
+    return t('editor-relative-days-ago', { count: Math.round(deltaSec / 86400) });
   return null;
 }
 
 export default function ModelEditorLandingPage() {
-  const router = useRouter();
+  const t = useTranslations('model-editor');
   const pathname = usePathname();
   const instance = useInstance();
-  const { data: session, isPending } = useSession();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const previewMode = useReactiveVar(editorPreviewModeVar);
 
   const { data } = useQuery<LandingDataQuery>(GET_LANDING_DATA, {
     fetchPolicy: 'cache-and-network',
-    skip: !session?.user,
   });
 
   const [publish, { loading: publishing }] = useMutation<
@@ -183,29 +179,23 @@ export default function ModelEditorLandingPage() {
     const byId = new Map(nodes.map((n) => [n.id, n.name]));
     const rows: EditedNodeRow[] = [];
     for (const [id, edit] of Object.entries(nodeEdits)) {
-      const editedFields = getEditedFieldLabels(edit);
+      const editedFields = getEditedFieldLabels(edit, t);
       if (editedFields.length === 0) continue;
       rows.push({ id, originalName: byId.get(id) ?? id, editedFields });
     }
     return rows;
-  }, [nodeEdits, data]);
+  }, [nodeEdits, data, t]);
 
   const latestMockEdit = useMemo(() => {
     let latest: { at: Date; by: string } | null = null;
     for (const edit of Object.values(nodeEdits)) {
       if (!edit.editedAt) continue;
       if (!latest || edit.editedAt > latest.at) {
-        latest = { at: edit.editedAt, by: edit.editedBy ?? 'Unknown user' };
+        latest = { at: edit.editedAt, by: edit.editedBy ?? t('common-unknown-user') };
       }
     }
     return latest;
-  }, [nodeEdits]);
-
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.replace('/auth/sign-in');
-    }
-  }, [isPending, session, router]);
+  }, [nodeEdits, t]);
 
   // Seed the optimistic-locking token var whenever the query returns a new
   // value — mutations read from this var to gate writes via the backend's
@@ -215,26 +205,16 @@ export default function ModelEditorLandingPage() {
     draftHeadTokenVar(currentToken);
   }, [currentToken]);
 
-  if (isPending || !session?.user) {
-    return (
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   const base = getModelEditorBase(pathname);
   const editor = data?.instance.editor ?? null;
   const hasUnpublishedChanges = editor?.hasUnpublishedChanges ?? false;
   const hasMockEdits = editedRows.length > 0;
   const lastPublishedLabel = formatDateTime(editor?.lastPublishedAt);
-  const lastPublishedRelative = formatRelative(editor?.lastPublishedAt);
+  const lastPublishedRelative = formatRelative(editor?.lastPublishedAt, t);
   const firstPublishedLabel = formatDateTime(editor?.firstPublishedAt);
   const hasBeenPublished = editor?.firstPublishedAt != null;
   const isDraftView = previewMode === 'DRAFT';
-  const badgeLabel = isDraftView ? 'Draft' : 'Published';
+  const badgeLabel = isDraftView ? t('editor-draft') : t('editor-published');
   const badgeColor: 'warning' | 'success' = isDraftView ? 'warning' : 'success';
   const indicatorColor = isDraftView
     ? hasUnpublishedChanges
@@ -243,22 +223,22 @@ export default function ModelEditorLandingPage() {
     : 'success.main';
   const statusHeading = isDraftView
     ? hasUnpublishedChanges
-      ? 'Draft · unpublished changes'
+      ? t('editor-draft-unpublished')
       : hasBeenPublished
-        ? 'Draft · up to date with published'
-        : 'Draft · never published'
+        ? t('editor-draft-up-to-date')
+        : t('editor-draft-never-published')
     : hasBeenPublished
-      ? 'Viewing published revision'
-      : 'Viewing draft (no published revision yet)';
+      ? t('editor-published-revision')
+      : t('editor-published-no-revision');
   const statusDescription = isDraftView
     ? hasUnpublishedChanges
-      ? 'Edits to this model have not been published yet.'
+      ? t('editor-unpublished-changes')
       : hasBeenPublished
-        ? 'The draft has no changes over the published revision.'
-        : 'This model has never been published. Public readers see the draft as a bootstrap.'
+        ? t('editor-draft-no-changes')
+        : t('editor-never-published-bootstrap')
     : hasBeenPublished
-      ? 'Read-only preview of the live revision. Switch to Draft to edit.'
-      : 'No published revision exists yet — showing the draft.';
+      ? t('editor-read-only-desc')
+      : t('editor-no-published-revision');
 
   const handlePublish = async () => {
     try {
@@ -268,11 +248,12 @@ export default function ModelEditorLandingPage() {
       });
       const payload = result.data?.instanceEditor.publishModelInstance;
       if (payload?.__typename === 'OperationInfo') {
-        const msg = payload.messages.map((m) => m.message).join('; ') || 'Publish failed';
+        const msg =
+          payload.messages.map((m) => m.message).join('; ') || t('editor-model-publish-failed');
         setToast({ severity: 'error', message: msg });
         return;
       }
-      setToast({ severity: 'success', message: 'Model published.' });
+      setToast({ severity: 'success', message: t('editor-model-published-ok') });
     } catch (err) {
       const isStale =
         CombinedGraphQLErrors.is(err) &&
@@ -290,14 +271,25 @@ export default function ModelEditorLandingPage() {
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="overline" color="text.secondary">
-          Model editor
+          {t('editor-model-landing')}
         </Typography>
         <Typography variant="h1" sx={{ mt: 0.5 }}>
           {instance.name}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          {instance.leadParagraph ?? 'Edit the model for this instance.'}
+          {instance.leadParagraph ?? t('editor-edit-the-model')}
         </Typography>
+      </Box>
+
+      <Box sx={{ mb: 4 }}>
+        <Button
+          variant="outlined"
+          component={Link}
+          href={`${base}/users`}
+          startIcon={<People size={14} />}
+        >
+          {t('editor-manage-access')}
+        </Button>
       </Box>
 
       <Box
@@ -308,7 +300,7 @@ export default function ModelEditorLandingPage() {
           mb: 4,
         }}
       >
-        {CARDS.map(({ title, description, href, Icon }) => (
+        {CARD_DEFS.map(({ titleKey, descKey, href, Icon }) => (
           <Card key={href}>
             <CardActionArea component={Link} href={base + href} sx={{ height: '100%' }}>
               <CardContent
@@ -317,9 +309,9 @@ export default function ModelEditorLandingPage() {
                 <Box sx={{ color: 'primary.main' }}>
                   <Icon size={24} />
                 </Box>
-                <Typography variant="h3">{title}</Typography>
+                <Typography variant="h3">{t(titleKey)}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {description}
+                  {t(descKey)}
                 </Typography>
               </CardContent>
             </CardActionArea>
@@ -357,17 +349,21 @@ export default function ModelEditorLandingPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, mt: 1 }}>
               {lastPublishedLabel ? (
                 <Typography variant="caption" color="text.secondary">
-                  Last published {lastPublishedLabel}
-                  {lastPublishedRelative ? ` (${lastPublishedRelative})` : ''}
+                  {lastPublishedRelative
+                    ? t('editor-last-published-with-relative', {
+                        date: lastPublishedLabel,
+                        relative: lastPublishedRelative,
+                      })
+                    : t('editor-last-published', { date: lastPublishedLabel })}
                 </Typography>
               ) : (
                 <Typography variant="caption" color="text.secondary">
-                  Never published
+                  {t('editor-never-published')}
                 </Typography>
               )}
               {firstPublishedLabel && firstPublishedLabel !== lastPublishedLabel && (
                 <Typography variant="caption" color="text.secondary">
-                  First published {firstPublishedLabel}
+                  {t('editor-first-published', { date: firstPublishedLabel })}
                 </Typography>
               )}
             </Box>
@@ -383,7 +379,11 @@ export default function ModelEditorLandingPage() {
                 void handlePublish();
               }}
             >
-              {publishing ? 'Publishing…' : hasBeenPublished ? 'Publish' : 'Publish first revision'}
+              {publishing
+                ? t('common-publishing')
+                : hasBeenPublished
+                  ? t('common-publish')
+                  : t('common-publish-first-revision')}
             </Button>
           )}
         </Box>
@@ -392,13 +392,15 @@ export default function ModelEditorLandingPage() {
           <>
             <Divider sx={{ mt: 2, mb: 1 }} />
             <Typography variant="caption" sx={{ color: 'info.main', display: 'block', mb: 1 }}>
-              Mock preview · edits to short name, description, node group and action group are not
-              yet persisted
+              {t('editor-mock-preview')}
               {latestMockEdit
-                ? ` · last edited ${latestMockEdit.at.toLocaleString(undefined, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })} by ${latestMockEdit.by}`
+                ? t('editor-mock-preview-last-edited', {
+                    date: latestMockEdit.at.toLocaleString(undefined, {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    }),
+                    name: latestMockEdit.by,
+                  })
                 : ''}
             </Typography>
             <List dense disablePadding>
@@ -413,7 +415,7 @@ export default function ModelEditorLandingPage() {
                       component={Link}
                       href={`${base}/nodes?node=${encodeURIComponent(row.id)}`}
                     >
-                      View
+                      {t('common-view')}
                     </Button>
                   }
                   sx={{

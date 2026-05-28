@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import {
+  Alert,
   Autocomplete,
   Box,
   Button,
@@ -8,6 +9,8 @@ import {
   FormControlLabel,
   IconButton,
   Switch,
+  Tab,
+  Tabs,
   TextField,
   type Theme,
   Tooltip,
@@ -16,11 +19,13 @@ import {
 import { alpha } from '@mui/material/styles';
 
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
-import { useApolloClient, useMutation } from '@apollo/client/react';
-import { ArrowCounterclockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
+import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client/react';
+import { ArrowCounterclockwise, BoxArrowUpRight, X } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeFieldsFragment,
+  NodeTranslationQuery,
+  NodeTranslationQueryVariables,
   UpdateNodeInput,
   UpdateNodeMutation,
   UpdateNodeMutationVariables,
@@ -28,15 +33,18 @@ import type {
 import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import RichTextField from './RichTextField';
+import { getNativeLanguageName } from './languageLabel';
 import { type EditableNodeField, type MockNodeEdit, setMockNodeFieldEdit } from './mockEdits';
 import { getNodeGroup } from './nodeHelpers';
 import {
+  NODE_TRANSLATION,
   type NodeFieldOverrides,
   UPDATE_NODE,
   draftHeadTokenVar,
   patchNodeGraphOverride,
   staleVersionNotificationVar,
 } from './queries';
+import { useEditorApolloContext } from './useEditorApolloContext';
 import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 
 const metaChipSx = {
@@ -49,7 +57,7 @@ const metaChipSx = {
  * `mockNodeEditsVar`). Uses the theme's info palette so it's visually distinct
  * from the warning tint we reserve for actual pending/unsaved state.
  */
-const MOCK_TINT_ALPHA = 0.18;
+const MOCK_TINT_ALPHA = 0.09;
 function mockBg(theme: Theme) {
   return alpha(theme.palette.info.main, MOCK_TINT_ALPHA);
 }
@@ -70,7 +78,7 @@ function FieldLabel({
         sx={{ fontSize: 10, color: isMock ? 'info.main' : 'text.secondary' }}
       >
         {children}
-        {isMock ? ' · mock' : ''}
+        {isMock ? ' (uneditable)' : ''}
       </Typography>
       {onRevert && (
         <Tooltip title="Revert changes" placement="top">
@@ -109,6 +117,7 @@ function stripNulls(input: Partial<UpdateNodeInput>): UpdateNodeInput {
 function useUpdateNodeMutation() {
   const instance = useInstance();
   const client = useApolloClient();
+  const editorContext = useEditorApolloContext();
   const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
   return useCallback(
     async (nodeId: string, input: Partial<UpdateNodeInput>) => {
@@ -120,6 +129,7 @@ function useUpdateNodeMutation() {
             input: stripNulls(input),
             version: draftHeadTokenVar(),
           },
+          context: editorContext,
           // Re-fetch the token after a successful write so subsequent mutations
           // pass the new head and don't trip the stale-check.
           refetchQueries: ['EditorPublishState'],
@@ -130,11 +140,15 @@ function useUpdateNodeMutation() {
           // updated fields via the reactive-var overlay.
           const override: NodeFieldOverrides = {};
           if (input.name !== undefined) override.name = payload.name;
+          if (input.shortName !== undefined) override.shortName = payload.shortName;
           if (input.description !== undefined) override.description = payload.description;
           if (input.color !== undefined) override.color = payload.color;
           if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
           if (input.isOutcome !== undefined && payload.__typename === 'Node') {
             override.isOutcome = payload.isOutcome;
+          }
+          if (input.nodeGroup !== undefined) {
+            override.nodeGroup = payload.editor?.nodeGroup ?? null;
           }
           patchNodeGraphOverride(nodeId, override);
         }
@@ -152,7 +166,7 @@ function useUpdateNodeMutation() {
         throw err;
       }
     },
-    [instance.id, mutate, client]
+    [instance.id, mutate, client, editorContext]
   );
 }
 
@@ -228,63 +242,59 @@ function LiveTextField({ label, value, onCommit, placeholder }: LiveTextFieldPro
   );
 }
 
-type MockTextFieldProps = {
+type MockRichTextFieldProps = {
   label: string;
-  field: Extract<EditableNodeField, 'shortName' | 'nodeGroup'>;
+  field: Extract<EditableNodeField, 'shortDescription'>;
   nodeId: string;
   originalValue: string | null;
   currentValue: string | null | undefined;
   editorUserName: string;
-  multiline?: boolean;
   placeholder?: string;
 };
 
-function MockTextField({
+// Mock rich-text editor. Tiptap is seeded only at mount (see RichTextField),
+// so we re-key the inner component on revert to force a remount that re-reads
+// the original value.
+function MockRichTextField({
   label,
   field,
   nodeId,
   originalValue,
   currentValue,
   editorUserName,
-  multiline,
   placeholder,
-}: MockTextFieldProps) {
+}: MockRichTextFieldProps) {
   const value = currentValue ?? originalValue ?? '';
   const hasEdit = currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
+  const [revertTick, setRevertTick] = useState(0);
+
+  const handleCommit = (html: string | null) => {
+    setMockNodeFieldEdit(nodeId, field, html, originalValue, editorUserName);
+    return Promise.resolve();
+  };
 
   const handleRevert = () => {
     setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
+    setRevertTick((t) => t + 1);
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        '& .ProseMirror': { bgcolor: mockBg },
+      }}
+    >
       <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
         {label}
       </FieldLabel>
-      <TextField
+      <RichTextField
+        key={`${field}:${nodeId}:${revertTick}`}
+        label={label}
         value={value}
-        onChange={(e) => {
-          const next = e.target.value;
-          setMockNodeFieldEdit(
-            nodeId,
-            field,
-            next === '' ? null : next,
-            originalValue,
-            editorUserName
-          );
-        }}
-        size="small"
-        fullWidth
-        multiline={multiline}
-        minRows={multiline ? 2 : undefined}
-        maxRows={multiline ? 6 : undefined}
+        onCommit={handleCommit}
         placeholder={placeholder}
-        sx={mockSx()}
-        slotProps={{
-          input: {
-            sx: { fontSize: 13, color: hasEdit ? 'info.dark' : 'text.primary' },
-          },
-        }}
+        hideHeader
+        disabled
       />
     </Box>
   );
@@ -331,6 +341,7 @@ function ActionGroupMockField({
         isOptionEqualToValue={(a, b) => a.id === b.id}
         onChange={(_, next) => commit(next)}
         size="small"
+        disabled
         sx={mockSx()}
         renderOption={(props, option) => (
           <Box component="li" {...props} key={option.id}>
@@ -376,50 +387,52 @@ function ActionGroupMockField({
   );
 }
 
-type NodeGroupMockFieldProps = {
-  nodeId: string;
-  originalValue: string | null;
-  currentValue: string | null | undefined;
+type LiveNodeGroupFieldProps = {
+  value: string | null;
   options: readonly string[];
-  editorUserName: string;
+  onCommit: (next: string | null) => Promise<unknown>;
 };
 
-function NodeGroupMockField({
-  nodeId,
-  originalValue,
-  currentValue,
-  options,
-  editorUserName,
-}: NodeGroupMockFieldProps) {
-  const effective = currentValue === undefined ? originalValue : currentValue;
-  const value = effective ?? '';
-  const hasEdit = currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
+// Local-draft Autocomplete with freeSolo input. Same commit-on-blur pattern
+// as LiveTextField — the caller is expected to remount via `key={nodeId}` so
+// `draft` re-seeds from the new server value when switching nodes.
+function LiveNodeGroupField({ value, options, onCommit }: LiveNodeGroupFieldProps) {
+  const [draft, setDraft] = useState(value ?? '');
+  const [status, setStatus] = useState<SaveStatus>('idle');
 
-  const commit = (next: string | null) => {
-    setMockNodeFieldEdit(nodeId, 'nodeGroup', next, originalValue, editorUserName);
-  };
+  useEffect(() => {
+    if (status !== 'saved') return;
+    const t = setTimeout(() => setStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [status]);
 
-  const handleRevert = () => {
-    setMockNodeFieldEdit(nodeId, 'nodeGroup', originalValue, originalValue, editorUserName);
+  const commit = () => {
+    const normalized = draft.trim() === '' ? null : draft.trim();
+    if ((normalized ?? '') === (value ?? '')) return;
+    setStatus('saving');
+    onCommit(normalized).then(
+      () => setStatus('saved'),
+      () => setStatus('error')
+    );
   };
 
   return (
     <Box>
-      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        Node group
-      </FieldLabel>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <FieldLabel>Node group</FieldLabel>
+        <SaveStatusLabel status={status} />
+      </Box>
       <Autocomplete
-        value={value}
-        options={options}
+        value={draft}
+        inputValue={draft}
+        options={[...options]}
         freeSolo
-        onChange={(_, next) => commit(next && next !== '' ? next : null)}
+        onChange={(_, next) => setDraft(typeof next === 'string' ? next : (next ?? ''))}
         onInputChange={(_, next, reason) => {
-          if (reason === 'input' || reason === 'clear') {
-            commit(next && next !== '' ? next : null);
-          }
+          if (reason === 'input' || reason === 'clear' || reason === 'reset') setDraft(next);
         }}
+        onBlur={commit}
         size="small"
-        sx={mockSx()}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -427,7 +440,7 @@ function NodeGroupMockField({
             slotProps={{
               input: {
                 ...params.InputProps,
-                sx: { fontSize: 13, color: hasEdit ? 'info.dark' : 'text.primary' },
+                sx: { fontSize: 13 },
               },
             }}
           />
@@ -518,6 +531,21 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
         >
           {hasColor ? draft : 'No color'}
         </Typography>
+        {hasColor && (
+          <Tooltip title="Clear color" placement="top">
+            <IconButton
+              size="small"
+              aria-label="Clear color"
+              onClick={() => {
+                setDraft(null);
+                onCommit(null);
+              }}
+              sx={{ p: 0.25, color: 'text.secondary' }}
+            >
+              <X size={14} />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
     </Box>
   );
@@ -540,6 +568,213 @@ function LiveBooleanField({ label, value, onCommit }: LiveBooleanFieldProps) {
         sx={{ px: 0.5 }}
       />
     </Box>
+  );
+}
+
+function ReadOnlyTextField({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <Box>
+      <FieldLabel isMock>{label}</FieldLabel>
+      <TextField
+        value={value ?? ''}
+        size="small"
+        fullWidth
+        disabled
+        sx={mockSx()}
+        slotProps={{ input: { sx: { fontSize: 13 } } }}
+      />
+    </Box>
+  );
+}
+
+function ReadOnlyRichTextField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
+  return (
+    <Box sx={{ '& .ProseMirror': { bgcolor: mockBg } }}>
+      <FieldLabel isMock>{label}</FieldLabel>
+      <RichTextField
+        label={label}
+        value={value ?? ''}
+        onCommit={() => Promise.resolve()}
+        hideHeader
+        disabled
+      />
+    </Box>
+  );
+}
+
+export type NodeContentSectionProps = {
+  node: EditorNodeFieldsFragment;
+  editorUserName: string;
+  currentEdit: MockNodeEdit | undefined;
+};
+
+/**
+ * Translatable node-content fields (name, short description, description).
+ *
+ * Editor reads/writes always target the instance's default-language column
+ * (see useEditorApolloContext), so the default-language tab is editable.
+ * Other-language tabs show the resolved translation read-only — they re-run
+ * a small query with `context: { locale }` and `fetchPolicy: 'no-cache'` so
+ * each switch returns fresh data without colliding on Apollo's cache key.
+ */
+export function NodeContentSection({ node, editorUserName, currentEdit }: NodeContentSectionProps) {
+  const updateNode = useUpdateNodeMutation();
+  const readOnly = useIsEditorReadOnly();
+  const instance = useInstance();
+
+  const languages = [
+    instance.defaultLanguage,
+    ...instance.supportedLanguages.filter((l) => l !== instance.defaultLanguage),
+  ];
+  const showTabs = languages.length > 1;
+
+  const [selectedLang, setSelectedLang] = useState(instance.defaultLanguage);
+  const isDefault = selectedLang === instance.defaultLanguage;
+
+  // Apollo treats `context` as out-of-band metadata, not part of the
+  // operation's identity, so changing `selectedLang` while `variables` stays
+  // the same doesn't refetch on its own. Drive the fetch explicitly via
+  // useLazyQuery so each tab switch fires fresh with the latest locale.
+  const [fetchTranslation, { data: translationData, loading: translationLoading }] = useLazyQuery<
+    NodeTranslationQuery,
+    NodeTranslationQueryVariables
+  >(NODE_TRANSLATION, { fetchPolicy: 'no-cache' });
+
+  useEffect(() => {
+    if (isDefault) return;
+    void fetchTranslation({
+      variables: { nodeId: node.id },
+      // Locale rides in context (→ accept-language header), but Apollo keys its
+      // in-flight dedup on query + variables only. Two locales share the same
+      // key, so switching tabs while a request is in flight would otherwise
+      // reuse the previous locale's request. Disable dedup so each locale
+      // issues its own request with its own header.
+      context: { locale: selectedLang, queryDeduplication: false },
+    });
+  }, [fetchTranslation, isDefault, node.id, selectedLang]);
+
+  const translated = translationData?.node ?? null;
+
+  const langLabel = (code: string) =>
+    code === instance.defaultLanguage
+      ? `${code} · ${getNativeLanguageName(code)}`
+      : getNativeLanguageName(code);
+
+  const tabs = showTabs ? (
+    <Tabs
+      value={selectedLang}
+      onChange={(_, next: string) => setSelectedLang(next)}
+      variant="scrollable"
+      scrollButtons="auto"
+      sx={{
+        minHeight: 32,
+        mb: 1,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        '& .MuiTab-root': {
+          minHeight: 32,
+          minWidth: 0,
+          px: 1,
+          py: 0.25,
+          fontSize: 11,
+          textTransform: 'uppercase',
+          fontWeight: 600,
+          letterSpacing: 0.5,
+        },
+      }}
+    >
+      {languages.map((lang) => (
+        <Tab key={lang} value={lang} label={lang} title={langLabel(lang)} />
+      ))}
+    </Tabs>
+  ) : null;
+
+  const editableBody = (
+    <Box
+      component="fieldset"
+      disabled={readOnly}
+      sx={{ border: 0, p: 0, m: 0, minWidth: 0, display: 'contents' }}
+    >
+      <LiveTextField
+        key={`name:${node.id}`}
+        label="Name"
+        nodeId={node.id}
+        value={node.name ?? ''}
+        onCommit={(next) => updateNode(node.id, { name: next })}
+      />
+
+      <MockRichTextField
+        label="Short description"
+        field="shortDescription"
+        nodeId={node.id}
+        originalValue={node.shortDescription ?? null}
+        currentValue={currentEdit?.shortDescription}
+        editorUserName={editorUserName}
+        placeholder="Brief summary"
+      />
+
+      <RichTextField
+        key={`description:${node.id}`}
+        label="Description"
+        value={node.description ?? ''}
+        onCommit={(html) => updateNode(node.id, { description: html })}
+        disabled={readOnly}
+      />
+    </Box>
+  );
+
+  const readOnlyBody = (
+    <Box sx={{ display: 'contents' }}>
+      <Alert severity="info" sx={{ fontSize: 12, py: 0.5, '& .MuiAlert-message': { py: 0.25 } }}>
+        Content translations are not currently editable in model editor
+      </Alert>
+      {translationLoading ? (
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Loading translation…</Typography>
+      ) : (
+        <>
+          <ReadOnlyTextField label="Name" value={translated?.name} />
+          <ReadOnlyRichTextField label="Short description" value={translated?.shortDescription} />
+          <ReadOnlyRichTextField label="Description" value={translated?.description} />
+        </>
+      )}
+    </Box>
+  );
+
+  const body = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      {tabs}
+      {isDefault ? editableBody : readOnlyBody}
+      <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
+        <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<BoxArrowUpRight size={12} />}
+            sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
+          >
+            Open public page
+          </Button>
+        </NodeLink>
+      </Box>
+    </Box>
+  );
+
+  if (!readOnly || !isDefault) return body;
+  return (
+    <Tooltip
+      title="Read-only: you're viewing the published revision. Switch to Draft mode to edit."
+      placement="left"
+      arrow
+      followCursor
+    >
+      {body}
+    </Tooltip>
   );
 }
 
@@ -582,29 +817,12 @@ export default function NodeDetailsSection({
       }}
     >
       <LiveTextField
-        key={`name:${node.id}`}
-        label="Name"
-        nodeId={node.id}
-        value={node.name ?? ''}
-        onCommit={(next) => updateNode(node.id, { name: next })}
-      />
-
-      <MockTextField
+        key={`shortName:${node.id}`}
         label="Short name"
-        field="shortName"
         nodeId={node.id}
-        originalValue={node.shortName ?? null}
-        currentValue={currentEdit?.shortName}
-        editorUserName={editorUserName}
+        value={node.shortName ?? ''}
+        onCommit={(next) => updateNode(node.id, { shortName: next === '' ? null : next })}
         placeholder="Abbreviated label"
-      />
-
-      <RichTextField
-        key={`description:${node.id}`}
-        label="Description"
-        value={node.description ?? ''}
-        onCommit={(html) => updateNode(node.id, { description: html })}
-        disabled={readOnly}
       />
 
       <LiveColorField
@@ -616,12 +834,11 @@ export default function NodeDetailsSection({
         }}
       />
 
-      <NodeGroupMockField
-        nodeId={node.id}
-        originalValue={getNodeGroup(node)}
-        currentValue={currentEdit?.nodeGroup}
+      <LiveNodeGroupField
+        key={`nodeGroup:${node.id}`}
+        value={getNodeGroup(node)}
         options={nodeGroupOptions}
-        editorUserName={editorUserName}
+        onCommit={(next) => updateNode(node.id, { nodeGroup: next })}
       />
 
       {isActionNode && (
@@ -700,18 +917,16 @@ export default function NodeDetailsSection({
         </Box>
       )}
 
-      <Box sx={{ alignSelf: 'flex-end', '& a': { textDecoration: 'none', color: 'inherit' } }}>
-        <NodeLink node={{ id: node.identifier }} target="_blank" rel="noopener noreferrer">
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<BoxArrowUpRight size={12} />}
-            sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
-          >
-            Open public page
-          </Button>
-        </NodeLink>
-      </Box>
+      {node.editor?.tags && node.editor.tags.length > 0 && (
+        <Box>
+          <FieldLabel>Tags</FieldLabel>
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {node.editor.tags.map((tag) => (
+              <Chip key={tag} label={tag} size="small" variant="outlined" sx={metaChipSx} />
+            ))}
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 

@@ -63,6 +63,7 @@ import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
 import { useDeleteNode } from './useDeleteNode';
 import { useDuplicateAction } from './useDuplicateAction';
+import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
 
@@ -114,6 +115,7 @@ const GET_NODE_GRAPH = gql`
     name
     shortName
     description
+    shortDescription
     color
     isVisible
     uuid
@@ -936,17 +938,25 @@ function applyOverride(
 ): EditorNodeFieldsFragment {
   const merged: EditorNodeFieldsFragment = { ...node };
   if (override.name !== undefined) merged.name = override.name;
+  if (override.shortName !== undefined) merged.shortName = override.shortName;
   if (override.description !== undefined) merged.description = override.description;
   if (override.color !== undefined) merged.color = override.color;
   if (override.isVisible !== undefined) merged.isVisible = override.isVisible;
   if (override.isOutcome !== undefined && merged.__typename === 'Node') {
     merged.isOutcome = override.isOutcome;
   }
+  if (override.nodeGroup !== undefined && merged.editor) {
+    merged.editor = { ...merged.editor, nodeGroup: override.nodeGroup };
+  }
   return merged;
 }
 
 export default function NodeGraphEditor() {
-  const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, { fetchPolicy: 'no-cache' });
+  const editorContext = useEditorApolloContext();
+  const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, {
+    fetchPolicy: 'no-cache',
+    context: editorContext,
+  });
   const overrides = useReactiveVar(nodeGraphOverridesVar);
   // Keeps draftHeadTokenVar current while the graph is open.
   useEditorPublishState();

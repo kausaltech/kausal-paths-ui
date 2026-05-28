@@ -116,6 +116,8 @@ export type RichTextFieldProps = {
   onCommit: (html: string | null) => Promise<unknown>;
   placeholder?: string;
   disabled?: boolean;
+  /** Skip the built-in label/status header — caller provides its own. */
+  hideHeader?: boolean;
 };
 
 // Commit-on-blur rich text editor backed by Tiptap.
@@ -133,6 +135,7 @@ export default function RichTextField({
   onCommit,
   placeholder,
   disabled,
+  hideHeader,
 }: RichTextFieldProps) {
   const [status, setStatus] = useState<SaveStatus>('idle');
 
@@ -204,12 +207,16 @@ export default function RichTextField({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-        <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary' }}>
-          {label}
-        </Typography>
-        <SaveStatusLabel status={status} />
-      </Box>
+      {!hideHeader && (
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}
+        >
+          <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary' }}>
+            {label}
+          </Typography>
+          <SaveStatusLabel status={status} />
+        </Box>
+      )}
       <Box
         sx={{
           border: '1px solid',

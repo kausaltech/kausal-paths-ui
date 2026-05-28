@@ -1,62 +1,11 @@
 import 'next-intl';
 import { useLocale, useTranslations } from 'next-intl';
-import numbro from 'numbro';
-import numbroCs from 'numbro/dist/languages/cs-CZ.min.js';
-import numbroDa from 'numbro/dist/languages/da-DK.min.js';
-import numbroDeCh from 'numbro/dist/languages/de-CH.min.js';
-import numbroDe from 'numbro/dist/languages/de-DE.min.js';
-import numbroEl from 'numbro/dist/languages/el.min.js';
-import numbroEnGb from 'numbro/dist/languages/en-GB.min.js';
-import numbroEs from 'numbro/dist/languages/es-ES.min.js';
-import numbroFi from 'numbro/dist/languages/fi-FI.min.js';
-import numbroLv from 'numbro/dist/languages/lv-LV.min.js';
-import numbroPl from 'numbro/dist/languages/pl-PL.min.js';
-import numbroSv from 'numbro/dist/languages/sv-SE.min.js';
 
 import type nsCommon from '../../public/locales/en/common.json';
 import type nsErrors from '../../public/locales/en/errors.json';
+import type nsModelEditor from '../../public/locales/en/model-editor.json';
 
-type NL = numbro.NumbroLanguage;
-
-function numbroEsUs() {
-  const esUs = numbroEs as NL;
-  esUs.languageTag = 'es-US';
-  esUs.delimiters = {
-    thousands: ',',
-    decimal: '.',
-  };
-  esUs.currency = {
-    symbol: '$',
-    position: 'prefix',
-    code: 'USD',
-  };
-
-  return esUs;
-}
-
-const numbroLangs = {
-  de: numbroDe as NL,
-  'de-DE': numbroDe as NL,
-  'de-CH': numbroDeCh as NL,
-  'en-GB': numbroEnGb as NL,
-  fi: numbroFi as NL,
-  cs: numbroCs as NL,
-  da: numbroDa as NL,
-  lv: numbroLv as NL,
-  pl: numbroPl as NL,
-  'es-US': numbroEsUs(),
-  el: numbroEl as NL,
-  sv: numbroSv as NL,
-};
-
-Object.entries(numbroLangs).forEach(([lang, conf]) => {
-  numbro.registerLanguage({
-    ...conf,
-    languageTag: lang,
-  });
-});
-
-type ValidNamespace = 'common' | 'errors';
+type ValidNamespace = 'common' | 'errors' | 'model-editor';
 
 /**
  * Compatibility wrapper around next-intl's useTranslations hook.
@@ -82,6 +31,7 @@ declare module 'next-intl' {
     Messages: {
       common: typeof nsCommon;
       errors: typeof nsErrors;
+      'model-editor': typeof nsModelEditor;
     };
   }
 }
