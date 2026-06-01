@@ -232,11 +232,10 @@ export default function DatasetDataGrid({
     () => buildGridData(dataset, extraYears),
     [dataset, extraYears]
   );
-  // Year-column sort. null = default (metric-grouped) order from buildGridData.
-  // Cycles on click: unset -> asc -> desc -> unset.
-  const [yearSort, setYearSort] = useState<{ year: number; direction: 'asc' | 'desc' } | null>(
-    null
-  );
+  // Column sort. null = default (metric-grouped) order from buildGridData.
+  // Works for year columns (by numeric value) and dimension columns (by
+  // category label). Cycles on click: unset -> asc -> desc -> unset.
+  const [colSort, setColSort] = useState<{ colId: string; direction: 'asc' | 'desc' } | null>(null);
   const rows = useMemo(() => {
     // 1) Category filter: keep rows whose category in every filtered dimension
     // is in that dimension's allowed set.
@@ -248,28 +247,46 @@ export default function DatasetDataGrid({
         )
       );
     }
-    // 2) Year sort (operates on the filtered set).
-    if (yearSort) {
-      const colId = yearColId(yearSort.year);
-      const valueOf = (row: GridRow): number | null => {
-        const pending = pendingEdits.get(pendingKey(row.id, colId));
-        if (pending) return pending.nextValue;
-        const cell = row.cells[colId];
-        return cell?.type === 'Value' ? cell.value : null;
-      };
-      const dir = yearSort.direction === 'asc' ? 1 : -1;
-      result = [...result].sort((a, b) => {
-        const av = valueOf(a);
-        const bv = valueOf(b);
-        // Nulls always sort to the end, regardless of direction.
-        if (av === null && bv === null) return 0;
-        if (av === null) return 1;
-        if (bv === null) return -1;
-        return (av - bv) * dir;
-      });
+    // 2) Column sort (operates on the filtered set). Year columns sort by
+    // numeric value; dimension columns by category label. Empty cells (no
+    // value / no category) always sort to the end regardless of direction.
+    if (colSort) {
+      const { colId, direction } = colSort;
+      const dir = direction === 'asc' ? 1 : -1;
+      if (isYearColId(colId)) {
+        const valueOf = (row: GridRow): number | null => {
+          const pending = pendingEdits.get(pendingKey(row.id, colId));
+          if (pending) return pending.nextValue;
+          const cell = row.cells[colId];
+          return cell?.type === 'Value' ? cell.value : null;
+        };
+        result = [...result].sort((a, b) => {
+          const av = valueOf(a);
+          const bv = valueOf(b);
+          if (av === null && bv === null) return 0;
+          if (av === null) return 1;
+          if (bv === null) return -1;
+          return (av - bv) * dir;
+        });
+      } else if (colId.startsWith(DIM_COL_PREFIX)) {
+        const labelOf = (row: GridRow): string | null => {
+          const cell = row.cells[colId];
+          return cell?.type === 'DimensionCategory' && cell.categoryUuid !== null
+            ? cell.label
+            : null;
+        };
+        result = [...result].sort((a, b) => {
+          const al = labelOf(a);
+          const bl = labelOf(b);
+          if (al === null && bl === null) return 0;
+          if (al === null) return 1;
+          if (bl === null) return -1;
+          return al.localeCompare(bl) * dir;
+        });
+      }
     }
     return result;
-  }, [baseRows, categoryFilters, yearSort, pendingEdits]);
+  }, [baseRows, categoryFilters, colSort, pendingEdits]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
   // dataPointId -> { count, hasUnresolvedReview }. Drives the corner indicator
@@ -617,11 +634,11 @@ export default function DatasetDataGrid({
           const activeFilter = dim ? categoryFilters.get(dim.id) : undefined;
           if (activeFilter) title = `${title} (${activeFilter.size})`;
         } else if (id.startsWith(YEAR_COL_PREFIX)) {
-          const year = id.slice(YEAR_COL_PREFIX.length);
-          title = year;
-          if (yearSort && yearColId(yearSort.year) === id) {
-            title = `${year} ${yearSort.direction === 'asc' ? '↑' : '↓'}`;
-          }
+          title = id.slice(YEAR_COL_PREFIX.length);
+        }
+        // Sort-direction arrow on the active sort column (year or dimension).
+        if (colSort?.colId === id) {
+          title = `${title} ${colSort.direction === 'asc' ? '↑' : '↓'}`;
         }
         return {
           id,
@@ -632,7 +649,7 @@ export default function DatasetDataGrid({
           ...(isDim ? { hasMenu: true, menuIcon: GridColumnMenuIcon.Dots } : {}),
         };
       }),
-    [columnIds, dataset.dimensions, colWidths, yearSort, categoryFilters]
+    [columnIds, dataset.dimensions, colWidths, colSort, categoryFilters]
   );
 
   // Pin dim columns + the Metric column so they stay visible while year
@@ -769,19 +786,19 @@ export default function DatasetDataGrid({
     []
   );
 
-  // Click a year-column header to sort rows by that year's value.
-  // Cycles asc -> desc -> unset on repeated clicks of the same column;
-  // jumping to a different column resets to asc. Selection is cleared so the
-  // user doesn't end up with a highlight on a row that shifted under them.
+  // Click a year- or dimension-column header to sort rows by that column
+  // (year = numeric value, dimension = category label). Cycles asc -> desc ->
+  // unset on repeated clicks of the same column; jumping to a different column
+  // resets to asc. Selection is cleared so the user doesn't end up with a
+  // highlight on a row that shifted under them. (The dimension header's dots
+  // icon opens the filter instead — that's onHeaderMenuClick, not this.)
   const onHeaderClicked = useCallback<NonNullable<DataEditorProps['onHeaderClicked']>>(
     (colIndex) => {
       const colId = columnIds[colIndex];
-      if (!colId || !isYearColId(colId)) return;
-      const year = yearFromColId(colId);
-      if (year === null) return;
-      setYearSort((prev) => {
-        if (!prev || prev.year !== year) return { year, direction: 'asc' };
-        if (prev.direction === 'asc') return { year, direction: 'desc' };
+      if (!colId || (!isYearColId(colId) && !colId.startsWith(DIM_COL_PREFIX))) return;
+      setColSort((prev) => {
+        if (!prev || prev.colId !== colId) return { colId, direction: 'asc' };
+        if (prev.direction === 'asc') return { colId, direction: 'desc' };
         return null;
       });
       setGridSelection(EMPTY_SELECTION);
