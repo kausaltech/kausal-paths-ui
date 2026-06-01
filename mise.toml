@@ -14,10 +14,10 @@ postinstall = 'npm install -g corepack'
 experimental = true
 node.corepack = true
 
-[prepare]
+[deps]
 disable = ["npm", "yarn"]
 
-[prepare.pnpm]
+[deps.pnpm]
 auto = true
 
 [env]
