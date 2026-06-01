@@ -506,7 +506,11 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             value={hasColor ? draft : '#000000'}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={() => {
-              if (draft !== value) onCommit(draft);
+              // Normalize cleared state to '' rather than null: the backend's
+              // color column is a blank-able (not nullable) CharField, so an
+              // explicit null is stripped by stripNulls and the clear becomes a
+              // no-op. '' survives and is the backend's canonical "no color".
+              if ((draft ?? '') !== (value ?? '')) onCommit(draft ?? '');
             }}
             style={{
               position: 'absolute',
@@ -537,8 +541,10 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
               size="small"
               aria-label="Clear color"
               onClick={() => {
-                setDraft(null);
-                onCommit(null);
+                setDraft('');
+                // Send '' (not null): clears the blank-able CharField on the
+                // backend and survives stripNulls, unlike null.
+                onCommit('');
               }}
               sx={{ p: 0.25, color: 'text.secondary' }}
             >
@@ -821,7 +827,9 @@ export default function NodeDetailsSection({
         label="Short name"
         nodeId={node.id}
         value={node.shortName ?? ''}
-        onCommit={(next) => updateNode(node.id, { shortName: next === '' ? null : next })}
+        // Send '' to clear, not null: null is dropped by stripNulls (the backend
+        // can't take an explicit null here), making the clear a silent no-op.
+        onCommit={(next) => updateNode(node.id, { shortName: next })}
         placeholder="Abbreviated label"
       />
 
