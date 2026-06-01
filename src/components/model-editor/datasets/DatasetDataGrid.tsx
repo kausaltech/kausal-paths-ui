@@ -174,13 +174,14 @@ export default function DatasetDataGrid({
   // Measured width of the grid wrapper. Drives how many columns we can freeze
   // without squeezing the year columns off-screen (see freezeColumns).
   const [availableWidth, setAvailableWidth] = useState(0);
-  // Per-dimension row filter: dimensionId -> set of allowed category keys
-  // (category UUIDs, or NO_CATEGORY for the "no category" rows). Absence of an
-  // entry means "no filter on this dimension" (all categories shown).
+  // Per-column row filter, keyed by colId (METRIC_COL or a dimension column) ->
+  // set of allowed values: metricIds for the metric column; category UUIDs (or
+  // NO_CATEGORY for the "no category" rows) for dimension columns. Absence of an
+  // entry means "no filter on this column" (everything shown).
   const [categoryFilters, setCategoryFilters] = useState<Map<string, Set<string>>>(() => new Map());
-  // Open category-filter menu: which dim column + the header-cell bounds Glide
-  // reports (grid-relative) for anchoring the popper.
-  const [filterMenu, setFilterMenu] = useState<{ dimId: string; bounds: Rectangle } | null>(null);
+  // Open filter menu: which column + the header-cell bounds Glide reports (in
+  // client coords) for anchoring the popper.
+  const [filterMenu, setFilterMenu] = useState<{ colId: string; bounds: Rectangle } | null>(null);
   const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     mouseX: number;
@@ -237,14 +238,17 @@ export default function DatasetDataGrid({
   // category label). Cycles on click: unset -> asc -> desc -> unset.
   const [colSort, setColSort] = useState<{ colId: string; direction: 'asc' | 'desc' } | null>(null);
   const rows = useMemo(() => {
-    // 1) Category filter: keep rows whose category in every filtered dimension
-    // is in that dimension's allowed set.
+    // 1) Column filter: keep rows whose value in every filtered column is in
+    // that column's allowed set (metric column = metricId; dimension column =
+    // category UUID, or NO_CATEGORY for the "no category" rows).
     let result = baseRows;
     if (categoryFilters.size > 0) {
       result = result.filter((row) =>
-        [...categoryFilters].every(([dimId, allowed]) =>
-          allowed.has(row.categoryByDim[dimId] ?? NO_CATEGORY)
-        )
+        [...categoryFilters].every(([colId, allowed]) => {
+          if (colId === METRIC_COL) return allowed.has(row.metricId);
+          const dimId = colId.slice(DIM_COL_PREFIX.length);
+          return allowed.has(row.categoryByDim[dimId] ?? NO_CATEGORY);
+        })
       );
     }
     // 2) Column sort (operates on the filtered set). Year columns sort by
@@ -283,6 +287,12 @@ export default function DatasetDataGrid({
           if (bl === null) return -1;
           return al.localeCompare(bl) * dir;
         });
+      } else if (colId === METRIC_COL) {
+        const labelOf = (row: GridRow): string => {
+          const cell = row.cells[METRIC_COL];
+          return cell?.type === 'MetricHeader' ? cell.label : '';
+        };
+        result = [...result].sort((a, b) => labelOf(a).localeCompare(labelOf(b)) * dir);
       }
     }
     return result;
@@ -625,18 +635,23 @@ export default function DatasetDataGrid({
       columnIds.map((id) => {
         let title = '';
         const isDim = id.startsWith(DIM_COL_PREFIX);
-        if (id === METRIC_COL) {
+        const isMetric = id === METRIC_COL;
+        // The metric column and dimension columns can be sorted and filtered.
+        const isFilterable = isDim || isMetric;
+        if (isMetric) {
           title = 'Metric';
         } else if (isDim) {
           const dim = dataset.dimensions.find((d) => dimColId(d.id) === id);
           title = dim?.name ?? '';
-          // Append the count of allowed categories when a filter is active.
-          const activeFilter = dim ? categoryFilters.get(dim.id) : undefined;
-          if (activeFilter) title = `${title} (${activeFilter.size})`;
         } else if (id.startsWith(YEAR_COL_PREFIX)) {
           title = id.slice(YEAR_COL_PREFIX.length);
         }
-        // Sort-direction arrow on the active sort column (year or dimension).
+        // Append the count of allowed values when a filter is active here.
+        if (isFilterable) {
+          const activeFilter = categoryFilters.get(id);
+          if (activeFilter) title = `${title} (${activeFilter.size})`;
+        }
+        // Sort-direction arrow on the active sort column.
         if (colSort?.colId === id) {
           title = `${title} ${colSort.direction === 'asc' ? '↑' : '↓'}`;
         }
@@ -644,9 +659,9 @@ export default function DatasetDataGrid({
           id,
           title,
           width: colWidths[id] ?? defaultWidthForCol(id),
-          // Dimension columns get a header menu icon that opens the category
-          // filter (see onHeaderMenuClick).
-          ...(isDim ? { hasMenu: true, menuIcon: GridColumnMenuIcon.Dots } : {}),
+          // Filterable columns get a header menu icon that opens the filter
+          // (see onHeaderMenuClick).
+          ...(isFilterable ? { hasMenu: true, menuIcon: GridColumnMenuIcon.Dots } : {}),
         };
       }),
     [columnIds, dataset.dimensions, colWidths, colSort, categoryFilters]
@@ -795,7 +810,11 @@ export default function DatasetDataGrid({
   const onHeaderClicked = useCallback<NonNullable<DataEditorProps['onHeaderClicked']>>(
     (colIndex) => {
       const colId = columnIds[colIndex];
-      if (!colId || (!isYearColId(colId) && !colId.startsWith(DIM_COL_PREFIX))) return;
+      if (
+        !colId ||
+        (!isYearColId(colId) && !colId.startsWith(DIM_COL_PREFIX) && colId !== METRIC_COL)
+      )
+        return;
       setColSort((prev) => {
         if (!prev || prev.colId !== colId) return { colId, direction: 'asc' };
         if (prev.direction === 'asc') return { colId, direction: 'desc' };
@@ -806,69 +825,77 @@ export default function DatasetDataGrid({
     [columnIds]
   );
 
-  // Open the category-filter menu when a dimension column's header menu icon
-  // is clicked. `bounds` is the header cell rect in grid-relative coords.
+  // Open the filter menu when a filterable column's (metric or dimension)
+  // header menu icon is clicked. `bounds` is the header cell rect in client
+  // coords.
   const onHeaderMenuClick = useCallback<NonNullable<DataEditorProps['onHeaderMenuClick']>>(
     (colIndex, bounds) => {
       const colId = columnIds[colIndex];
-      if (!colId || !colId.startsWith(DIM_COL_PREFIX)) return;
-      const dim = dataset.dimensions.find((d) => dimColId(d.id) === colId);
-      if (!dim) return;
-      setFilterMenu({ dimId: dim.id, bounds });
+      if (!colId || (colId !== METRIC_COL && !colId.startsWith(DIM_COL_PREFIX))) return;
+      setFilterMenu({ colId, bounds });
     },
-    [columnIds, dataset.dimensions]
+    [columnIds]
   );
 
-  // Toggle one category in a dimension's filter. allKeys lets us collapse the
-  // filter back to "none" (show all) when every category ends up selected.
-  const toggleCategoryFilter = useCallback((dimId: string, key: string, allKeys: string[]) => {
+  // Toggle one value in a column's filter. allKeys lets us collapse the filter
+  // back to "none" (show all) when every value ends up selected.
+  const toggleCategoryFilter = useCallback((colId: string, key: string, allKeys: string[]) => {
     setCategoryFilters((prev) => {
       const next = new Map(prev);
-      // Absent entry means all categories are currently allowed.
-      const set = new Set(next.get(dimId) ?? allKeys);
+      // Absent entry means all values are currently allowed.
+      const set = new Set(next.get(colId) ?? allKeys);
       if (set.has(key)) set.delete(key);
       else set.add(key);
-      if (set.size >= allKeys.length) next.delete(dimId);
-      else next.set(dimId, set);
+      if (set.size >= allKeys.length) next.delete(colId);
+      else next.set(colId, set);
       return next;
     });
     // Row indices shift under the filter; drop any stale selection.
     setGridSelection(EMPTY_SELECTION);
   }, []);
 
-  const clearCategoryFilter = useCallback((dimId: string) => {
+  const clearCategoryFilter = useCallback((colId: string) => {
     setCategoryFilters((prev) => {
-      if (!prev.has(dimId)) return prev;
+      if (!prev.has(colId)) return prev;
       const next = new Map(prev);
-      next.delete(dimId);
+      next.delete(colId);
       return next;
     });
     setGridSelection(EMPTY_SELECTION);
   }, []);
 
-  // Dimension whose filter menu is open, and its selectable category options
-  // (including a "no category" entry when some rows lack a category here).
-  const filterMenuDim = useMemo(
-    () => (filterMenu ? (dataset.dimensions.find((d) => d.id === filterMenu.dimId) ?? null) : null),
-    [filterMenu, dataset.dimensions]
-  );
+  // Selectable options for the open filter menu, listing only values actually
+  // present in this dataset (in column order): metrics for the metric column,
+  // categories (+ a "no category" entry) for a dimension column.
   const filterMenuOptions = useMemo(() => {
-    if (!filterMenuDim) return [] as { key: string; label: string }[];
-    // Only categories actually used by rows in this dataset (keep dimension
-    // order). Plus a "(No category)" entry when some rows lack one here.
-    const present = new Set<string>();
-    let hasNull = false;
-    for (const r of baseRows) {
-      const cat = r.categoryByDim[filterMenuDim.id];
-      if (cat == null) hasNull = true;
-      else present.add(cat);
+    const empty = [] as { key: string; label: string }[];
+    if (!filterMenu) return empty;
+    const { colId } = filterMenu;
+    if (colId === METRIC_COL) {
+      const present = new Set(baseRows.map((r) => r.metricId));
+      return dataset.metrics
+        .filter((m) => present.has(m.id))
+        .map((m) => ({ key: m.id, label: m.label }));
     }
-    const opts = filterMenuDim.categories
-      .filter((c) => present.has(c.uuid))
-      .map((c) => ({ key: c.uuid, label: c.label }));
-    if (hasNull) opts.push({ key: NO_CATEGORY, label: '(No category)' });
-    return opts;
-  }, [filterMenuDim, baseRows]);
+    if (colId.startsWith(DIM_COL_PREFIX)) {
+      const dimId = colId.slice(DIM_COL_PREFIX.length);
+      const dim = dataset.dimensions.find((d) => d.id === dimId);
+      if (!dim) return empty;
+      const present = new Set<string>();
+      let hasNull = false;
+      for (const r of baseRows) {
+        const cat = r.categoryByDim[dimId];
+        if (cat == null) hasNull = true;
+        else present.add(cat);
+      }
+      const opts = dim.categories
+        .filter((c) => present.has(c.uuid))
+        .map((c) => ({ key: c.uuid, label: c.label }));
+      if (hasNull) opts.push({ key: NO_CATEGORY, label: '(No category)' });
+      return opts;
+    }
+    return empty;
+  }, [filterMenu, baseRows, dataset.metrics, dataset.dimensions]);
 
   // Document-level contextmenu listener: handles both initial open and
   // reposition-on-second-right-click. A wrapper-level listener wouldn't fire
@@ -1567,12 +1594,12 @@ export default function DatasetDataGrid({
               sx={{ pl: 1.5, pr: 0.5, py: 0.25 }}
             >
               <Typography variant="caption" color="text.secondary">
-                Filter by category
+                {filterMenu?.colId === METRIC_COL ? 'Filter by metric' : 'Filter by category'}
               </Typography>
               <Button
                 size="small"
-                onClick={() => filterMenuDim && clearCategoryFilter(filterMenuDim.id)}
-                disabled={!filterMenuDim || !categoryFilters.has(filterMenuDim.id)}
+                onClick={() => filterMenu && clearCategoryFilter(filterMenu.colId)}
+                disabled={!filterMenu || !categoryFilters.has(filterMenu.colId)}
               >
                 Clear
               </Button>
@@ -1581,20 +1608,20 @@ export default function DatasetDataGrid({
             <MenuList dense>
               {filterMenuOptions.length === 0 && (
                 <MenuItem disabled>
-                  <ListItemText>No categories</ListItemText>
+                  <ListItemText>No values</ListItemText>
                 </MenuItem>
               )}
               {filterMenuOptions.map((opt) => {
-                const selected = filterMenuDim ? categoryFilters.get(filterMenuDim.id) : undefined;
-                // Absent filter = every category allowed (all checked).
+                const selected = filterMenu ? categoryFilters.get(filterMenu.colId) : undefined;
+                // Absent filter = every value allowed (all checked).
                 const checked = selected ? selected.has(opt.key) : true;
                 return (
                   <MenuItem
                     key={opt.key}
                     onClick={() =>
-                      filterMenuDim &&
+                      filterMenu &&
                       toggleCategoryFilter(
-                        filterMenuDim.id,
+                        filterMenu.colId,
                         opt.key,
                         filterMenuOptions.map((o) => o.key)
                       )
