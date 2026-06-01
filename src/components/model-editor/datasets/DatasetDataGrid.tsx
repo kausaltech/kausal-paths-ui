@@ -93,9 +93,19 @@ const EMPTY_SELECTION: GridSelection = {
   rows: CompactSelection.empty(),
 };
 
-const DEFAULT_DIM_WIDTH = 160;
-const DEFAULT_METRIC_WIDTH = 180;
+const DEFAULT_DIM_WIDTH = 120;
+const DEFAULT_METRIC_WIDTH = 100;
 const DEFAULT_YEAR_WIDTH = 84;
+
+// Always keep at least this much horizontal space available for the scrollable
+// year columns, even when many dimension/metric columns would be pinned. Glide
+// can't scroll past frozen columns, so without this budget the year data
+// becomes unreachable on narrow viewports.
+const MIN_YEAR_AREA = DEFAULT_YEAR_WIDTH * 2;
+// Width of the left-hand row-marker column (rowMarkers="both"). Pinned via the
+// `rowMarkerWidth` prop (rather than Glide's row-count-dependent default) so we
+// can compute the exact x of the freeze boundary for the divider overlay below.
+const ROW_MARKER_WIDTH = 44;
 
 const YEAR_COL_PREFIX = 'col_year_';
 const DIM_COL_PREFIX = 'col_dim_';
@@ -153,6 +163,9 @@ export default function DatasetDataGrid({
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
   const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
+  // Measured width of the grid wrapper. Drives how many columns we can freeze
+  // without squeezing the year columns off-screen (see freezeColumns).
+  const [availableWidth, setAvailableWidth] = useState(0);
   const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     mouseX: number;
@@ -582,8 +595,39 @@ export default function DatasetDataGrid({
     [columnIds, dataset.dimensions, colWidths, yearSort]
   );
 
-  // Pin all dim columns + the Metric column. Year columns scroll.
-  const freezeColumns = dataset.dimensions.length + 1;
+  // Pin dim columns + the Metric column so they stay visible while year
+  // columns scroll — but never freeze so many that the year columns get pushed
+  // off-screen (Glide can't scroll past frozen columns). Freeze the leftmost
+  // pin candidates that fit within the wrapper width while reserving
+  // MIN_YEAR_AREA for the scrollable years; on narrow viewports this naturally
+  // drops to 0, leaving everything scrollable.
+  const freezeColumns = useMemo(() => {
+    const maxFreeze = dataset.dimensions.length + 1;
+    // Before the first measurement, assume there's room (avoids a flash of
+    // unpinned columns on wide screens).
+    if (availableWidth === 0) return maxFreeze;
+    const budget = availableWidth - ROW_MARKER_WIDTH - MIN_YEAR_AREA;
+    let used = 0;
+    let count = 0;
+    for (let i = 0; i < maxFreeze; i++) {
+      const w = colWidths[columnIds[i]] ?? defaultWidthForCol(columnIds[i]);
+      if (used + w > budget) break;
+      used += w;
+      count += 1;
+    }
+    return count;
+  }, [availableWidth, dataset.dimensions.length, columnIds, colWidths]);
+
+  // Summed width of the frozen columns. The freeze boundary (where Glide draws
+  // its 1px divider) sits at ROW_MARKER_WIDTH + this — used to position the
+  // overlay rule that thickens that divider.
+  const frozenWidth = useMemo(() => {
+    let w = 0;
+    for (let i = 0; i < freezeColumns; i++) {
+      w += colWidths[columnIds[i]] ?? defaultWidthForCol(columnIds[i]);
+    }
+    return w;
+  }, [freezeColumns, columnIds, colWidths]);
 
   const getCellContent = useCallback<DataEditorProps['getCellContent']>(
     (cell: Item) => {
@@ -725,6 +769,17 @@ export default function DatasetDataGrid({
     };
     document.addEventListener('contextmenu', handler);
     return () => document.removeEventListener('contextmenu', handler);
+  }, []);
+
+  // Track the grid wrapper's width so freezeColumns can adapt to the viewport.
+  useEffect(() => {
+    const el = gridWrapperRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      setAvailableWidth(entries[0]?.contentRect.width ?? 0);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   const applyEdit = useCallback(
@@ -1210,7 +1265,7 @@ export default function DatasetDataGrid({
           getCellsForSelection
           gridSelection={gridSelection}
           onGridSelectionChange={setGridSelection}
-          rowMarkers="both"
+          rowMarkers={{ kind: 'both', width: ROW_MARKER_WIDTH }}
           rowSelectionMode="multi"
           smoothScrollX
           smoothScrollY
@@ -1219,6 +1274,26 @@ export default function DatasetDataGrid({
           rowHeight={38}
           headerHeight={32}
         />
+        {/* Thicken the divider at the right edge of the last pinned column.
+            Glide draws a fixed 1px line there with no theme knob to widen it,
+            so we overlay a 2px rule at the freeze boundary. The boundary is
+            fixed regardless of horizontal scroll (frozen columns don't move),
+            so a static offset is correct. Hidden when nothing is pinned. */}
+        {freezeColumns > 0 && (
+          <Box
+            aria-hidden
+            sx={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: ROW_MARKER_WIDTH + frozenWidth,
+              width: '2px',
+              bgcolor: 'rgba(0, 0, 0, 0.16)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          />
+        )}
         {(() => {
           const overlay =
             deleteProgress !== null

@@ -32,7 +32,6 @@ import {
   ChatLeft,
   Database,
   Files,
-  Link45deg,
   PencilSquare,
   Plus,
   ThreeDotsVertical,
@@ -112,7 +111,7 @@ function DatasetRowActions({
   );
 }
 
-type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments' | 'source';
+type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments';
 type SortOrder = 'asc' | 'desc';
 
 type DatasetRow = NonNullable<
@@ -129,8 +128,6 @@ function getSortValue(ds: DatasetRow, key: SortKey): string | number {
       return ds.metrics.length;
     case 'comments':
       return ds.dataPointComments.length;
-    case 'source':
-      return ds.externalRef?.datasetId?.toLowerCase() ?? '';
   }
 }
 
@@ -240,15 +237,6 @@ export default function DatasetList() {
                   Comments
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={sortKey === 'source' ? sortOrder : false}>
-                <TableSortLabel
-                  active={sortKey === 'source'}
-                  direction={sortKey === 'source' ? sortOrder : 'asc'}
-                  onClick={() => handleSort('source')}
-                >
-                  Source
-                </TableSortLabel>
-              </TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
                 Actions
               </TableCell>
@@ -257,7 +245,7 @@ export default function DatasetList() {
           <TableBody>
             {sortedDatasets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={5}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
                     No datasets defined.
                   </Typography>
@@ -308,22 +296,6 @@ export default function DatasetList() {
                   ) : (
                     <Typography variant="body2" color="text.disabled">
                       —
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {ds.externalRef ? (
-                    <Tooltip title={ds.externalRef.repoUrl}>
-                      <Chip
-                        icon={<Link45deg size={14} />}
-                        label={ds.externalRef.datasetId}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </Tooltip>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Internal
                     </Typography>
                   )}
                 </TableCell>
