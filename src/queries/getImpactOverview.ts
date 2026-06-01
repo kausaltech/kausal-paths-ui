@@ -22,6 +22,10 @@ export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
         id
         short
       }
+      goals {
+        year
+        value
+      }
     }
     costNode {
       id
@@ -138,6 +142,15 @@ export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
         unit {
           id
           short
+        }
+        goals {
+          categories
+          groups
+          values {
+            year
+            value
+            isInterpolated
+          }
         }
         stackable
         forecastFrom

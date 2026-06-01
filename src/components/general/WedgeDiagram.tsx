@@ -21,6 +21,8 @@ type ActionLookupEntry = {
 
 type WedgeEntry = NonNullable<ImpactOverviewDetailFragment['wedge']>[0];
 
+type NodeGoal = ImpactOverviewDetailFragment['effectNode']['goals'][0];
+
 type ActionBand = {
   id: string;
   name: string;
@@ -51,13 +53,21 @@ function valuesForYears(entry: WedgeEntry, years: number[]): (number | null)[] {
   return years.map((y) => map.get(y) ?? null);
 }
 
+function goalValuesForYears(goals: readonly NodeGoal[], years: number[]): (number | null)[] {
+  const map = new Map<number, number>();
+  goals.forEach((g) => map.set(g.year, g.value));
+  return years.map((y) => map.get(y) ?? null);
+}
+
 function getChartConfig(
   years: number[],
   floorValues: (number | null)[],
   ceilingValues: (number | null)[],
   bands: ActionBand[],
+  goalValues: (number | null)[] | null,
   floorLabel: string,
   ceilingLabel: string,
+  goalLabel: string,
   unit: string,
   formatNumber: (value: number) => string,
   formatAxisLabel: (value: number) => string,
@@ -65,7 +75,8 @@ function getChartConfig(
   forecastBackgroundColor: string,
   forecastLabel: string,
   floorLineColor: string,
-  ceilingLineColor: string
+  ceilingLineColor: string,
+  goalLineColor: string
 ): EChartsCoreOption {
   // Stacked baseline carrying floor values so action bands sit on top of
   // current_scenario instead of zero. Drawn prominently for debugging — the
@@ -134,11 +145,45 @@ function getChartConfig(
         : undefined,
   };
 
+  const goalSeries: LineSeriesOption | null = goalValues
+    ? {
+        type: 'line',
+        name: goalLabel,
+        data: goalValues,
+        symbol: 'circle',
+        symbolSize: 8,
+        showSymbol: true,
+        smooth: true,
+        connectNulls: true,
+        lineStyle: {
+          type: 'dashed',
+          width: 2,
+          color: goalLineColor,
+        },
+        itemStyle: { color: goalLineColor },
+        z: 5,
+      }
+    : null;
+
+  const legendData = [
+    floorLabel,
+    ...bands.map((b) => b.name),
+    ceilingLabel,
+    ...(goalSeries ? [goalLabel] : []),
+  ];
+
+  const series: LineSeriesOption[] = [
+    floorSeries,
+    ...bandSeries,
+    ceilingSeries,
+    ...(goalSeries ? [goalSeries] : []),
+  ];
+
   return {
     legend: {
       type: 'plain',
       bottom: 0,
-      data: [floorLabel, ...bands.map((b) => b.name), ceilingLabel],
+      data: legendData,
     },
     tooltip: {
       trigger: 'axis',
@@ -163,7 +208,7 @@ function getChartConfig(
         formatter: (v: number) => `${formatAxisLabel(v)} ${unit}`,
       },
     },
-    series: [floorSeries, ...bandSeries, ceilingSeries],
+    series,
   };
 }
 
@@ -180,14 +225,19 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
   const formatAxisLabel = useAxisLabelFormatter();
   const activeScenario = useReactiveVar(activeScenarioVar);
   const [startYear, endYear] = yearRange;
-
+  console.log('Rendering WedgeDiagram with data:', data);
   // Stable reference for useMemo deps — `data?.wedge ?? []` would allocate
   // a new empty array each render.
   const wedge = useMemo(() => data?.wedge ?? [], [data]);
   const { floor, ceiling, bands: bandEntries } = useMemo(() => partition(wedge), [wedge]);
 
-  // Union of years across all wedge entries, filtered to yearRange. Mirrors
-  // StackedRawImpact — entries may report slightly different ranges.
+  // Goals from the effectNode (target values for the indicator). Independent
+  // of the wedge stack — rendered as connected dots overlaying the chart.
+  const goals = useMemo(() => data?.effectNode?.goals ?? [], [data]);
+
+  // Union of years across wedge entries AND goal years, filtered to yearRange.
+  // Including goal years means a goal at e.g. 2035 still gets a tick on the
+  // x-axis even if no wedge entry reports that year.
   const years = useMemo(() => {
     const set = new Set<number>();
     for (const e of wedge) {
@@ -195,8 +245,11 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         if (y >= startYear && y <= endYear) set.add(y);
       }
     }
+    for (const g of goals) {
+      if (g.year >= startYear && g.year <= endYear) set.add(g.year);
+    }
     return [...set].sort((a, b) => a - b);
-  }, [wedge, startYear, endYear]);
+  }, [wedge, goals, startYear, endYear]);
 
   const floorValues = useMemo(
     () => (floor ? valuesForYears(floor, years) : years.map(() => null)),
@@ -205,6 +258,11 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
   const ceilingValues = useMemo(
     () => (ceiling ? valuesForYears(ceiling, years) : years.map(() => null)),
     [ceiling, years]
+  );
+
+  const goalValues = useMemo(
+    () => (goals.length > 0 ? goalValuesForYears(goals, years) : null),
+    [goals, years]
   );
 
   // Build action bands in backend-given order. Look up display name/color
@@ -242,6 +300,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
   const unit = data?.indicatorUnit?.short || '';
   const floorLabel = floor?.label ?? 'Current scenario';
   const ceilingLabel = ceiling?.label ?? 'Baseline scenario';
+  const goalLabel = 'Goal';
 
   const chartData = useMemo(
     () =>
@@ -250,8 +309,10 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         floorValues,
         ceilingValues,
         bands,
+        goalValues,
         floorLabel,
         ceilingLabel,
+        goalLabel,
         unit,
         formatNumber,
         formatAxisLabel,
@@ -259,15 +320,18 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         theme.graphColors.blue030,
         'Forecast',
         theme.graphColors.grey090,
-        theme.graphColors.grey060
+        theme.graphColors.grey060,
+        theme.graphColors.red090
       ),
     [
       years,
       floorValues,
       ceilingValues,
       bands,
+      goalValues,
       floorLabel,
       ceilingLabel,
+      goalLabel,
       unit,
       formatNumber,
       formatAxisLabel,
@@ -275,6 +339,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
       theme.graphColors.blue030,
       theme.graphColors.grey090,
       theme.graphColors.grey060,
+      theme.graphColors.red090,
     ]
   );
 

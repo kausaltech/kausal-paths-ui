@@ -156,6 +156,7 @@ type ActionListPageProps = {
 function ActionListPage({ page }: ActionListPageProps) {
   const t = useTranslations('common');
   const instance = useInstance();
+  console.log('instance in ActionListPage:', instance);
   const activeGoal = useReactiveVar(activeGoalVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
