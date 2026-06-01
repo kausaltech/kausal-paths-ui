@@ -4,7 +4,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   ClickAwayListener,
+  Divider,
   LinearProgress,
   ListItemIcon,
   ListItemText,
@@ -27,8 +29,10 @@ import {
   type GridCell,
   GridCellKind,
   type GridColumn,
+  GridColumnMenuIcon,
   type GridSelection,
   type Item,
+  type Rectangle,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
 import { Bookmarks, ChatLeft, Clipboard, Files, Plus, Trash } from 'react-bootstrap-icons';
@@ -110,6 +114,10 @@ const ROW_MARKER_WIDTH = 44;
 const YEAR_COL_PREFIX = 'col_year_';
 const DIM_COL_PREFIX = 'col_dim_';
 
+// Sentinel filter key for rows with no category in a given dimension (the "—"
+// cells). A real UUID can never collide with this.
+const NO_CATEGORY = 'no-category';
+
 function formatNumber(value: number | null | undefined): string {
   if (value == null) return '';
   return value.toLocaleString(undefined, { maximumFractionDigits: 6 });
@@ -166,6 +174,13 @@ export default function DatasetDataGrid({
   // Measured width of the grid wrapper. Drives how many columns we can freeze
   // without squeezing the year columns off-screen (see freezeColumns).
   const [availableWidth, setAvailableWidth] = useState(0);
+  // Per-dimension row filter: dimensionId -> set of allowed category keys
+  // (category UUIDs, or NO_CATEGORY for the "no category" rows). Absence of an
+  // entry means "no filter on this dimension" (all categories shown).
+  const [categoryFilters, setCategoryFilters] = useState<Map<string, Set<string>>>(() => new Map());
+  // Open category-filter menu: which dim column + the header-cell bounds Glide
+  // reports (grid-relative) for anchoring the popper.
+  const [filterMenu, setFilterMenu] = useState<{ dimId: string; bounds: Rectangle } | null>(null);
   const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     mouseX: number;
@@ -223,25 +238,38 @@ export default function DatasetDataGrid({
     null
   );
   const rows = useMemo(() => {
-    if (!yearSort) return baseRows;
-    const colId = yearColId(yearSort.year);
-    const valueOf = (row: GridRow): number | null => {
-      const pending = pendingEdits.get(pendingKey(row.id, colId));
-      if (pending) return pending.nextValue;
-      const cell = row.cells[colId];
-      return cell?.type === 'Value' ? cell.value : null;
-    };
-    const dir = yearSort.direction === 'asc' ? 1 : -1;
-    return [...baseRows].sort((a, b) => {
-      const av = valueOf(a);
-      const bv = valueOf(b);
-      // Nulls always sort to the end, regardless of direction.
-      if (av === null && bv === null) return 0;
-      if (av === null) return 1;
-      if (bv === null) return -1;
-      return (av - bv) * dir;
-    });
-  }, [baseRows, yearSort, pendingEdits]);
+    // 1) Category filter: keep rows whose category in every filtered dimension
+    // is in that dimension's allowed set.
+    let result = baseRows;
+    if (categoryFilters.size > 0) {
+      result = result.filter((row) =>
+        [...categoryFilters].every(([dimId, allowed]) =>
+          allowed.has(row.categoryByDim[dimId] ?? NO_CATEGORY)
+        )
+      );
+    }
+    // 2) Year sort (operates on the filtered set).
+    if (yearSort) {
+      const colId = yearColId(yearSort.year);
+      const valueOf = (row: GridRow): number | null => {
+        const pending = pendingEdits.get(pendingKey(row.id, colId));
+        if (pending) return pending.nextValue;
+        const cell = row.cells[colId];
+        return cell?.type === 'Value' ? cell.value : null;
+      };
+      const dir = yearSort.direction === 'asc' ? 1 : -1;
+      result = [...result].sort((a, b) => {
+        const av = valueOf(a);
+        const bv = valueOf(b);
+        // Nulls always sort to the end, regardless of direction.
+        if (av === null && bv === null) return 0;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        return (av - bv) * dir;
+      });
+    }
+    return result;
+  }, [baseRows, categoryFilters, yearSort, pendingEdits]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
   // dataPointId -> { count, hasUnresolvedReview }. Drives the corner indicator
@@ -271,13 +299,15 @@ export default function DatasetDataGrid({
 
   // Flat list per existing row: [metricId, ...nonNullDimCategoryUuids]. Lets
   // AddRowsModal grey out combinations that would duplicate an existing row.
+  // Built from baseRows (not the filtered `rows`) so duplicate detection still
+  // accounts for rows hidden by an active category filter.
   const existingCombinations = useMemo<string[][]>(
     () =>
-      rows.map((r) => [
+      baseRows.map((r) => [
         r.metricId,
         ...Object.values(r.categoryByDim).filter((v): v is string => v !== null),
       ]),
-    [rows]
+    [baseRows]
   );
 
   const handleAddRows = useCallback(
@@ -404,8 +434,10 @@ export default function DatasetDataGrid({
       const colIds = yearsToDelete.map((y) => yearColId(y));
       const colIdSuffixes = colIds.map((c) => `|${c}`);
 
+      // Iterate baseRows, not the filtered `rows`: deleting a year must remove
+      // its data points across every row, including ones hidden by a filter.
       const ids: string[] = [];
-      for (const row of rows) {
+      for (const row of baseRows) {
         for (const colId of colIds) {
           const cell = row.cells[colId];
           if (cell?.type === 'Value' && cell.dataPointId !== null) ids.push(cell.dataPointId);
@@ -479,7 +511,7 @@ export default function DatasetDataGrid({
       }
       void onMutated();
     },
-    [deleteDataPoint, instance.id, dataset.id, rows, onMutated]
+    [deleteDataPoint, instance.id, dataset.id, baseRows, onMutated]
   );
 
   const handleAddYears = useCallback(
@@ -497,10 +529,11 @@ export default function DatasetDataGrid({
 
       // No rows to anchor against yet — the column is ephemeral until the
       // first row is added (the row's anchor will then create a real
-      // DataPoint in some year). Skip mutations.
-      if (rows.length === 0) return;
+      // DataPoint in some year). Skip mutations. Use baseRows so a category
+      // filter that hides every row doesn't block adding a year.
+      if (baseRows.length === 0) return;
 
-      const anchorRow = rows[0];
+      const anchorRow = baseRows[0];
       const dimensionCategoryIds = Object.values(anchorRow.categoryByDim).filter(
         (v): v is string => v !== null
       );
@@ -560,7 +593,7 @@ export default function DatasetDataGrid({
       }
       void onMutated();
     },
-    [createDataPoint, instance.id, dataset.id, rows, onMutated]
+    [createDataPoint, instance.id, dataset.id, baseRows, onMutated]
   );
 
   // Render order — drives both the columns array and the [col, row] -> colId
@@ -574,11 +607,15 @@ export default function DatasetDataGrid({
     () =>
       columnIds.map((id) => {
         let title = '';
+        const isDim = id.startsWith(DIM_COL_PREFIX);
         if (id === METRIC_COL) {
           title = 'Metric';
-        } else if (id.startsWith(DIM_COL_PREFIX)) {
+        } else if (isDim) {
           const dim = dataset.dimensions.find((d) => dimColId(d.id) === id);
           title = dim?.name ?? '';
+          // Append the count of allowed categories when a filter is active.
+          const activeFilter = dim ? categoryFilters.get(dim.id) : undefined;
+          if (activeFilter) title = `${title} (${activeFilter.size})`;
         } else if (id.startsWith(YEAR_COL_PREFIX)) {
           const year = id.slice(YEAR_COL_PREFIX.length);
           title = year;
@@ -590,9 +627,12 @@ export default function DatasetDataGrid({
           id,
           title,
           width: colWidths[id] ?? defaultWidthForCol(id),
+          // Dimension columns get a header menu icon that opens the category
+          // filter (see onHeaderMenuClick).
+          ...(isDim ? { hasMenu: true, menuIcon: GridColumnMenuIcon.Dots } : {}),
         };
       }),
-    [columnIds, dataset.dimensions, colWidths, yearSort]
+    [columnIds, dataset.dimensions, colWidths, yearSort, categoryFilters]
   );
 
   // Pin dim columns + the Metric column so they stay visible while year
@@ -748,6 +788,70 @@ export default function DatasetDataGrid({
     },
     [columnIds]
   );
+
+  // Open the category-filter menu when a dimension column's header menu icon
+  // is clicked. `bounds` is the header cell rect in grid-relative coords.
+  const onHeaderMenuClick = useCallback<NonNullable<DataEditorProps['onHeaderMenuClick']>>(
+    (colIndex, bounds) => {
+      const colId = columnIds[colIndex];
+      if (!colId || !colId.startsWith(DIM_COL_PREFIX)) return;
+      const dim = dataset.dimensions.find((d) => dimColId(d.id) === colId);
+      if (!dim) return;
+      setFilterMenu({ dimId: dim.id, bounds });
+    },
+    [columnIds, dataset.dimensions]
+  );
+
+  // Toggle one category in a dimension's filter. allKeys lets us collapse the
+  // filter back to "none" (show all) when every category ends up selected.
+  const toggleCategoryFilter = useCallback((dimId: string, key: string, allKeys: string[]) => {
+    setCategoryFilters((prev) => {
+      const next = new Map(prev);
+      // Absent entry means all categories are currently allowed.
+      const set = new Set(next.get(dimId) ?? allKeys);
+      if (set.has(key)) set.delete(key);
+      else set.add(key);
+      if (set.size >= allKeys.length) next.delete(dimId);
+      else next.set(dimId, set);
+      return next;
+    });
+    // Row indices shift under the filter; drop any stale selection.
+    setGridSelection(EMPTY_SELECTION);
+  }, []);
+
+  const clearCategoryFilter = useCallback((dimId: string) => {
+    setCategoryFilters((prev) => {
+      if (!prev.has(dimId)) return prev;
+      const next = new Map(prev);
+      next.delete(dimId);
+      return next;
+    });
+    setGridSelection(EMPTY_SELECTION);
+  }, []);
+
+  // Dimension whose filter menu is open, and its selectable category options
+  // (including a "no category" entry when some rows lack a category here).
+  const filterMenuDim = useMemo(
+    () => (filterMenu ? (dataset.dimensions.find((d) => d.id === filterMenu.dimId) ?? null) : null),
+    [filterMenu, dataset.dimensions]
+  );
+  const filterMenuOptions = useMemo(() => {
+    if (!filterMenuDim) return [] as { key: string; label: string }[];
+    // Only categories actually used by rows in this dataset (keep dimension
+    // order). Plus a "(No category)" entry when some rows lack one here.
+    const present = new Set<string>();
+    let hasNull = false;
+    for (const r of baseRows) {
+      const cat = r.categoryByDim[filterMenuDim.id];
+      if (cat == null) hasNull = true;
+      else present.add(cat);
+    }
+    const opts = filterMenuDim.categories
+      .filter((c) => present.has(c.uuid))
+      .map((c) => ({ key: c.uuid, label: c.label }));
+    if (hasNull) opts.push({ key: NO_CATEGORY, label: '(No category)' });
+    return opts;
+  }, [filterMenuDim, baseRows]);
 
   // Document-level contextmenu listener: handles both initial open and
   // reposition-on-second-right-click. A wrapper-level listener wouldn't fire
@@ -1259,6 +1363,7 @@ export default function DatasetDataGrid({
           onCellContextMenu={onCellContextMenu}
           onHeaderClicked={onHeaderClicked}
           onHeaderContextMenu={onHeaderContextMenu}
+          onHeaderMenuClick={onHeaderMenuClick}
           onColumnResize={onColumnResize}
           drawCell={drawCell}
           freezeColumns={freezeColumns}
@@ -1415,6 +1520,83 @@ export default function DatasetDataGrid({
                 </ListItemIcon>
                 <ListItemText>Data source</ListItemText>
               </MenuItem>
+            </MenuList>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
+      <Popper
+        open={filterMenu !== null}
+        anchorEl={
+          filterMenu !== null
+            ? {
+                // Glide already reports bounds in client/viewport coordinates
+                // (it adds the canvas rect offset), so use them as-is.
+                getBoundingClientRect: () => {
+                  const { x, y, width, height } = filterMenu.bounds;
+                  return new DOMRect(x, y, width, height);
+                },
+              }
+            : null
+        }
+        placement="bottom-start"
+        sx={{ zIndex: (theme) => theme.zIndex.modal }}
+      >
+        <ClickAwayListener onClickAway={() => setFilterMenu(null)}>
+          <Paper elevation={8} sx={{ minWidth: 200, maxHeight: 360, overflow: 'auto' }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ pl: 1.5, pr: 0.5, py: 0.25 }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                Filter by category
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => filterMenuDim && clearCategoryFilter(filterMenuDim.id)}
+                disabled={!filterMenuDim || !categoryFilters.has(filterMenuDim.id)}
+              >
+                Clear
+              </Button>
+            </Stack>
+            <Divider />
+            <MenuList dense>
+              {filterMenuOptions.length === 0 && (
+                <MenuItem disabled>
+                  <ListItemText>No categories</ListItemText>
+                </MenuItem>
+              )}
+              {filterMenuOptions.map((opt) => {
+                const selected = filterMenuDim ? categoryFilters.get(filterMenuDim.id) : undefined;
+                // Absent filter = every category allowed (all checked).
+                const checked = selected ? selected.has(opt.key) : true;
+                return (
+                  <MenuItem
+                    key={opt.key}
+                    onClick={() =>
+                      filterMenuDim &&
+                      toggleCategoryFilter(
+                        filterMenuDim.id,
+                        opt.key,
+                        filterMenuOptions.map((o) => o.key)
+                      )
+                    }
+                  >
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        size="small"
+                        checked={checked}
+                        tabIndex={-1}
+                        disableRipple
+                        sx={{ p: 0 }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText>{opt.label}</ListItemText>
+                  </MenuItem>
+                );
+              })}
             </MenuList>
           </Paper>
         </ClickAwayListener>

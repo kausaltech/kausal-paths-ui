@@ -544,13 +544,19 @@ function CategoryRowView({
           onChange={(e) => onChange({ ...row, label: e.target.value })}
           sx={{ flex: 2 }}
         />
-        <TextField
-          size="small"
-          label="Identifier"
-          value={row.identifier}
-          onChange={(e) => onChange({ ...row, identifier: e.target.value })}
-          sx={{ flex: 1 }}
-        />
+        <Tooltip
+          title={row.isNew ? '' : 'The identifier of an existing category cannot be changed.'}
+        >
+          <TextField
+            size="small"
+            label="Identifier"
+            value={row.identifier}
+            onChange={(e) => onChange({ ...row, identifier: e.target.value })}
+            // Identifiers are stable keys; only new (unsaved) categories may set one.
+            disabled={!row.isNew}
+            sx={{ flex: 1 }}
+          />
+        </Tooltip>
         <Tooltip title="Remove category">
           <IconButton size="small" onClick={onRemove}>
             <Trash size={18} />
