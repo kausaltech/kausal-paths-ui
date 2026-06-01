@@ -70,21 +70,28 @@ const getSortOptions = (
     ];
   }
 
-  if (
-    graphType === 'simple_effect' ||
-    graphType === 'stacked_raw_impact' ||
-    graphType === 'wedge_diagram'
-  ) {
+  if (graphType === 'simple_effect' || graphType === 'stacked_raw_impact') {
     // ActionsList omits the annual-impact column in simple-effect / stacked-raw-impact
     // mode, so don't offer an IMPACT sort that wouldn't have a matching column to read.
-    // wedge_diagram routes here for now so the dropdown isn't broken — full list-view
-    // integration is deferred.
     return [
       standard,
       {
         isHidden: !showAccumulatedEffects,
         key: 'CUM_IMPACT',
         label: t('actions-sort-cumulative-impact'),
+      },
+    ];
+  }
+
+  if (graphType === 'wedge_diagram') {
+    // The list shows a single annual-impact column (each action's wedge band
+    // value at the target year), so the only meaningful sort beyond the default
+    // ordering is by that impact.
+    return [
+      standard,
+      {
+        key: 'IMPACT',
+        label: t('actions-sort-impact'),
       },
     ];
   }
@@ -156,7 +163,6 @@ type ActionListPageProps = {
 function ActionListPage({ page }: ActionListPageProps) {
   const t = useTranslations('common');
   const instance = useInstance();
-  console.log('instance in ActionListPage:', instance);
   const activeGoal = useReactiveVar(activeGoalVar);
   const yearRange = useReactiveVar(yearRangeVar);
 
@@ -178,6 +184,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   // `previousData` is undefined, so we don't hide cells while the initial fetch runs.
   const isRefetchingWithStaleData = areActionsLoading && previousData !== undefined;
 
+  console.log('ActionListPage render', { data, areActionsLoading, isRefetchingWithStaleData });
   // `undefined` = user hasn't picked anything yet (defaults to first overview).
   // `null` = user explicitly picked "emissions impact".
   // `string` = user picked a specific overview.

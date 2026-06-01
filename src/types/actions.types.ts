@@ -28,6 +28,9 @@ export type ActionWithEfficiency = ActionListQuery['actions'][0] & {
   cumulativeCostName?: string;
   efficiencyCap?: number;
   costBenefit?: CostBenefitTotals;
+  /** Wedge-diagram band value at the target year (the action's annual contribution). */
+  wedgeAnnualImpact?: number;
+  wedgeAnnualImpactUnit?: string;
 };
 
 export type SortActionsBy = `${ActionSortOrder}` | 'CUM_EFFICIENCY' | 'CUM_COST';

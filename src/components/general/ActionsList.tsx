@@ -160,6 +160,20 @@ export default function ActionsList({
       return cols;
     }
 
+    // wedge_diagram: annual impact at the target year. The value is each
+    // action's wedge band height (its annual contribution to closing the gap),
+    // shown in the band's own unit so the column mirrors the diagram.
+    if (graphType === 'wedge_diagram') {
+      return [
+        {
+          key: 'IMPACT',
+          label: `${t('annual-impact')} ${yearRange[1]}`,
+          getValue: (a) => a.wedgeAnnualImpact ?? null,
+          getUnit: (a) => a.wedgeAnnualImpactUnit,
+        },
+      ];
+    }
+
     // cost_benefit: Benefit / Cost / Net Benefit (derived from effectDim)
     if (graphType === 'cost_benefit') {
       return [

@@ -159,6 +159,42 @@ export function useActionListData({
     return map;
   }, [activeOverviewDetail, yearRange]);
 
+  // Per-action annual contribution for the wedge diagram. Each non-scenario
+  // wedge entry is an action band keyed by action id; we read its value at the
+  // target year so the list column mirrors the band drawn in the diagram. The
+  // band metric carries its own (annual) unit, distinct from the cumulative
+  // effectUnit used by the total-impact column.
+  const wedgeAnnualByActionId = useMemo(() => {
+    const overview = activeOverviewDetail;
+    const map = new Map<string, { value: number; unit?: string }>();
+    if (!overview || overview.graphType !== 'wedge_diagram' || !overview.wedge) {
+      return map;
+    }
+    const targetYear = yearRange[1];
+    for (const entry of overview.wedge) {
+      if (entry.isScenario) continue;
+      const { years, values } = entry.metric;
+      // Prefer an exact hit on the target year; otherwise fall back to the
+      // latest reported year that doesn't exceed it, so a metric that stops a
+      // year short of the range end still yields a value instead of "—".
+      let idx = years.indexOf(targetYear);
+      if (idx === -1) {
+        let bestYear = -Infinity;
+        years.forEach((y, i) => {
+          if (y <= targetYear && y > bestYear) {
+            bestYear = y;
+            idx = i;
+          }
+        });
+      }
+      if (idx === -1) continue;
+      const value = values[idx];
+      if (value == null) continue;
+      map.set(entry.id, { value, unit: entry.metric.unit?.short ?? undefined });
+    }
+    return map;
+  }, [activeOverviewDetail, yearRange]);
+
   const usableActions = useMemo(
     () =>
       filteredActions
@@ -171,6 +207,15 @@ export function useActionListData({
                 ...(act.impactMetric?.forecastValues ?? []),
               ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ?? 0,
           };
+
+          // Wedge band value lives in overview.wedge (keyed by action id), which
+          // is populated independently of overview.actions — assign it before the
+          // early return so it survives even when the action has no efficiency row.
+          const wedgeAnnual = wedgeAnnualByActionId.get(act.id);
+          if (wedgeAnnual) {
+            out.wedgeAnnualImpact = wedgeAnnual.value;
+            out.wedgeAnnualImpactUnit = wedgeAnnual.unit;
+          }
 
           const efficiencyType = activeOverviewDetail;
           const efficiencyAction = efficiencyType?.actions.find((a) => a.action.id === act.id);
@@ -224,7 +269,14 @@ export function useActionListData({
           return out;
         })
         .filter((action) => actionGroup === 'ALL_ACTIONS' || actionGroup === action.group?.id),
-    [activeOverviewDetail, actionGroup, yearRange, filteredActions, costBenefitByActionId]
+    [
+      activeOverviewDetail,
+      actionGroup,
+      yearRange,
+      filteredActions,
+      costBenefitByActionId,
+      wedgeAnnualByActionId,
+    ]
   );
 
   const displayedActionsCount = useMemo(() => {
