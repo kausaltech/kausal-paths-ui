@@ -7,7 +7,6 @@ import {
   Autocomplete,
   Box,
   Button,
-  Checkbox,
   Chip,
   CircularProgress,
   Collapse,
@@ -16,7 +15,6 @@ import {
   DialogContent,
   DialogTitle,
   Drawer,
-  FormControlLabel,
   IconButton,
   Paper,
   Snackbar,
@@ -33,10 +31,7 @@ import {
   Bookmarks,
   CaretDownFill,
   CaretRightFill,
-  ChatLeft,
-  CheckCircle,
   DashCircle,
-  Hash,
   InfoCircle,
   Link45deg,
   PencilSquare,
@@ -53,7 +48,6 @@ import type {
   CreateDataSourceMutationVariables,
   CreateSourceReferenceMutation,
   CreateSourceReferenceMutationVariables,
-  DataPointCommentFieldsFragment,
   DataSourceFieldsFragment,
   DatasetConnectedNodesQuery,
   DatasetConnectedNodesQueryVariables,
@@ -73,20 +67,28 @@ import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
-import DataPointChangeHistorySection from './DataPointChangeHistorySection';
+import DataPointDetailsPanel from './DataPointDetailsPanel';
 import DatasetDataGrid from './DatasetDataGrid';
-import { extractYear } from './dataset-grid-data';
 import {
   CREATE_DATA_POINT_COMMENT,
   CREATE_DATA_SOURCE,
   CREATE_SOURCE_REFERENCE,
   DATASET_SUMMARY_FIELDS,
+  DATA_POINT_COMMENT_FIELDS,
   DELETE_SOURCE_REFERENCE,
   GET_DATASET_CONNECTED_NODES,
   GET_INSTANCE_DATASET,
   RESOLVE_DATA_POINT_COMMENT,
   UNRESOLVE_DATA_POINT_COMMENT,
 } from './queries';
+import {
+  type CommentWithDataPoint,
+  type SelectedCell,
+  SelectedDataPointChips,
+  formatCommentDate,
+  getUserName,
+  resolveSelectedCell,
+} from './shared';
 
 type Props = {
   datasetId: string;
@@ -158,380 +160,6 @@ function DimensionCategories({
         </>
       )}
     </Stack>
-  );
-}
-
-function getUserName(
-  user: { firstName: string; lastName: string; email: string } | null,
-  t: ReturnType<typeof useTranslations>
-): string {
-  if (!user) return t('common-unknown');
-  const full = `${user.firstName} ${user.lastName}`.trim();
-  return full || user.email;
-}
-
-function formatCommentDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-// Backend's UserModifiableModel sets `created_at` (auto_now_add) and
-// `last_modified_at` (auto_now) on the same .save(), but each evaluates
-// timezone.now() independently — so they always differ by microseconds.
-// Only treat the comment as edited if the gap is at least one second.
-function isCommentEdited(createdAt: string, lastModifiedAt: string): boolean {
-  return new Date(lastModifiedAt).getTime() - new Date(createdAt).getTime() >= 1000;
-}
-
-type SelectedCell = {
-  year: number;
-  metricLabel: string;
-  metricUnit: string;
-  categoryLabels: readonly string[];
-  value: number | null;
-};
-
-// Softer pastel backgrounds for the cell-identifier chips. Default text
-// colour stays dark enough to be readable on all three.
-const YEAR_CHIP_BG = '#dcfce7'; // light green
-const METRIC_CHIP_BG = '#dbeafe'; // light blue
-const CATEGORY_CHIP_BG = '#fee2e2'; // light salmon
-
-function SelectedDataPointChips({ cell }: { cell: SelectedCell }) {
-  return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-      <Chip size="small" label={cell.year} sx={{ bgcolor: YEAR_CHIP_BG }} />
-      <Chip
-        size="small"
-        label={cell.metricUnit ? `${cell.metricLabel} (${cell.metricUnit})` : cell.metricLabel}
-        sx={{ bgcolor: METRIC_CHIP_BG }}
-      />
-      {cell.categoryLabels.map((label, i) => (
-        <Chip key={`${i}-${label}`} size="small" label={label} sx={{ bgcolor: CATEGORY_CHIP_BG }} />
-      ))}
-      {cell.value != null && (
-        <Chip
-          size="small"
-          icon={<Hash size={14} />}
-          label={cell.value.toLocaleString(undefined, { maximumFractionDigits: 6 })}
-          variant="outlined"
-        />
-      )}
-    </Box>
-  );
-}
-
-function resolveSelectedCell(
-  dataset: DatasetDetailFieldsFragment,
-  dataPointId: string
-): SelectedCell | null {
-  const dp = dataset.dataPoints.find((d) => d.id === dataPointId);
-  if (!dp) return null;
-  const year = extractYear(dp.date);
-  const metric = dataset.metrics.find((m) => m.id === dp.metric.id);
-  const dpCatUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
-  const categoryLabels: string[] = [];
-  for (const dim of dataset.dimensions) {
-    for (const cat of dim.categories) {
-      if (dpCatUuids.has(cat.uuid)) {
-        categoryLabels.push(cat.label);
-        break;
-      }
-    }
-  }
-  return {
-    year,
-    metricLabel: metric?.label ?? dp.metric.id,
-    metricUnit: metric?.unit ?? '',
-    categoryLabels,
-    value: dp.value,
-  };
-}
-
-// Datapoint details drawer panel: identifies the selected data point with the
-// same category chips the comments/sources panels use, then shows its edit
-// history. (Comments and data sources keep their own panels for now.)
-function DataPointDetailsPanel({
-  dataPointId,
-  selectedCell,
-}: {
-  dataPointId: string | null;
-  selectedCell: SelectedCell | null;
-}) {
-  const t = useTranslations('model-editor');
-  return (
-    <>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        {t('datasets-datapoint-details')}
-      </Typography>
-      {dataPointId && selectedCell ? (
-        <>
-          <SelectedDataPointChips cell={selectedCell} />
-          <DataPointChangeHistorySection dataPointId={dataPointId} />
-        </>
-      ) : (
-        <Typography color="text.secondary" variant="body2">
-          {t('datasets-select-datapoint-for-details')}
-        </Typography>
-      )}
-    </>
-  );
-}
-
-type CommentWithDataPoint = DataPointCommentFieldsFragment & { dataPointId: string };
-
-export type AddCommentInput = {
-  text: string;
-  isReview: boolean;
-};
-
-function CommentsPanel({
-  comments,
-  selectedDataPointId,
-  selectedCell,
-  onSubmitComment,
-  onSetResolved,
-  onClearSelection,
-}: {
-  comments: readonly CommentWithDataPoint[];
-  selectedDataPointId: string | null;
-  selectedCell: SelectedCell | null;
-  onSubmitComment: (dataPointId: string, input: AddCommentInput) => Promise<void>;
-  onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
-  onClearSelection: () => void;
-}) {
-  const t = useTranslations('model-editor');
-  const hasSelection = selectedDataPointId !== null;
-  const visibleComments = hasSelection
-    ? comments.filter((c) => c.dataPointId === selectedDataPointId)
-    : comments;
-  const heading = hasSelection ? t('datasets-comments-on-datapoint') : t('datasets-comments-all');
-
-  const [formOpen, setFormOpen] = useState(false);
-  const [text, setText] = useState('');
-  const [isReview, setIsReview] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  // Per-comment busy state while a resolve/unresolve mutation is in flight,
-  // so multiple comments can be toggled independently.
-  const [resolvingIds, setResolvingIds] = useState<Set<string>>(() => new Set());
-
-  // Close & reset the form when the selection changes — the form targets a
-  // specific data point, so silently re-pointing it would be confusing.
-  useEffect(() => {
-    setFormOpen(false);
-    setText('');
-    setIsReview(false);
-    setSubmitError(null);
-  }, [selectedDataPointId]);
-
-  const handleSubmit = async () => {
-    if (selectedDataPointId === null || text.trim() === '' || submitting) return;
-    setSubmitting(true);
-    setSubmitError(null);
-    try {
-      await onSubmitComment(selectedDataPointId, { text: text.trim(), isReview });
-      setFormOpen(false);
-      setText('');
-      setIsReview(false);
-    } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleToggleResolved = async (commentId: string, resolved: boolean) => {
-    if (resolvingIds.has(commentId)) return;
-    setResolvingIds((prev) => new Set(prev).add(commentId));
-    try {
-      await onSetResolved(commentId, resolved);
-    } catch {
-      // Swallow — the Apollo cache won't update, so the checkbox snaps back.
-    } finally {
-      setResolvingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(commentId);
-        return next;
-      });
-    }
-  };
-
-  const addButton = (
-    <Button
-      fullWidth
-      variant={formOpen ? 'outlined' : 'contained'}
-      size="small"
-      startIcon={<Plus />}
-      disabled={!hasSelection}
-      onClick={() => setFormOpen((v) => !v)}
-      sx={{ mb: formOpen ? 1 : 2 }}
-    >
-      {hasSelection ? t('datasets-comment-datapoint') : t('datasets-select-datapoint-to-comment')}
-    </Button>
-  );
-
-  const form = (
-    <Collapse in={formOpen && hasSelection} unmountOnExit>
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Stack spacing={1.5}>
-          <TextField
-            label={t('datasets-comment')}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            multiline
-            minRows={3}
-            fullWidth
-            size="small"
-            autoFocus
-            disabled={submitting}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={isReview}
-                onChange={(e) => setIsReview(e.target.checked)}
-                disabled={submitting}
-              />
-            }
-            label={t('datasets-needs-review')}
-          />
-          {submitError && (
-            <Alert severity="error" onClose={() => setSubmitError(null)}>
-              {submitError}
-            </Alert>
-          )}
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
-            <Button
-              size="small"
-              variant="text"
-              onClick={() => {
-                setFormOpen(false);
-                setText('');
-                setIsReview(false);
-                setSubmitError(null);
-              }}
-              disabled={submitting}
-            >
-              {t('common-cancel')}
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => void handleSubmit()}
-              disabled={submitting || text.trim() === ''}
-            >
-              {submitting ? t('common-saving') : t('common-submit')}
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-    </Collapse>
-  );
-
-  return (
-    <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-        <Typography variant="h6">
-          {heading}{' '}
-          <Typography component="span" variant="body2" color="text.secondary">
-            ({visibleComments.length})
-          </Typography>
-        </Typography>
-        {hasSelection && (
-          <Button size="small" variant="text" onClick={onClearSelection}>
-            {t('datasets-show-all')}
-          </Button>
-        )}
-      </Stack>
-      {selectedCell && <SelectedDataPointChips cell={selectedCell} />}
-      {addButton}
-      {form}
-      {visibleComments.length === 0 ? (
-        <Typography color="text.secondary" variant="body2">
-          {hasSelection ? t('datasets-no-comments-datapoint') : t('datasets-no-comments-all')}
-        </Typography>
-      ) : (
-        <Stack spacing={1.5}>
-          {visibleComments.map((c) => {
-            const resolved = c.reviewState === DataPointCommentReviewState.Resolved;
-            const isResolving = resolvingIds.has(c.id);
-            const needsReview = c.isReview && !resolved;
-            return (
-              <Paper
-                key={c.id}
-                variant="outlined"
-                sx={{
-                  p: 2,
-                  bgcolor: needsReview ? 'warning.lighter' : undefined,
-                  borderColor: needsReview ? 'warning.light' : undefined,
-                }}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ mb: 1 }}
-                >
-                  <Typography variant="subtitle2">{getUserName(c.createdBy ?? null, t)}</Typography>
-                </Stack>
-                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
-                  {c.text}
-                </Typography>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="text.secondary">
-                    {formatCommentDate(c.createdAt)}
-                    {isCommentEdited(c.createdAt, c.lastModifiedAt) &&
-                      t('datasets-comment-edited-suffix')}
-                  </Typography>
-                  {c.isReview && (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          size="small"
-                          checked={resolved}
-                          disabled={isResolving}
-                          onChange={(e) => {
-                            void handleToggleResolved(c.id, e.target.checked);
-                          }}
-                          icon={<CheckCircle size={14} />}
-                          checkedIcon={<CheckCircle size={14} />}
-                        />
-                      }
-                      label={
-                        <Typography variant="caption">
-                          {resolved ? t('datasets-resolved') : t('datasets-resolve')}
-                        </Typography>
-                      }
-                      sx={{ m: 0 }}
-                    />
-                  )}
-                </Stack>
-                {resolved && c.resolvedAt && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'block', textAlign: 'right', mt: 0.25 }}
-                  >
-                    {t('datasets-resolved-by', {
-                      name: getUserName(c.resolvedBy ?? null, t),
-                      date: formatCommentDate(c.resolvedAt),
-                    })}
-                  </Typography>
-                )}
-              </Paper>
-            );
-          })}
-        </Stack>
-      )}
-    </>
   );
 }
 
@@ -1089,12 +717,10 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [name, setName] = useState('');
   const [syncedName, setSyncedName] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [openPanel, setOpenPanel] = useState<
-    'details' | 'comments' | 'sources' | 'datapoint' | null
-  >(null);
+  const [openPanel, setOpenPanel] = useState<'details' | 'sources' | 'datapoint' | null>(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
   // Bumped to ask DatasetDataGrid to clear its internal cell selection (so
-  // "Show all" in the comments panel also drops the visual cell highlight).
+  // "Show all" in the sources panel also drops the visual cell highlight).
   const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
@@ -1275,20 +901,6 @@ export default function DatasetEditor({ datasetId }: Props) {
                 {t('datasets-datapoint-details')}
               </Button>
               <Button
-                startIcon={<ChatLeft />}
-                variant={openPanel === 'comments' ? 'contained' : 'text'}
-                onClick={() => setOpenPanel((p) => (p === 'comments' ? null : 'comments'))}
-              >
-                {t('datasets-comments')}
-                {commentsWithDataPoint.length > 0 && (
-                  <Chip
-                    label={commentsWithDataPoint.length}
-                    size="small"
-                    sx={{ ml: 1, height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 11 } }}
-                  />
-                )}
-              </Button>
-              <Button
                 startIcon={<Bookmarks />}
                 variant={openPanel === 'sources' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'sources' ? null : 'sources'))}
@@ -1342,16 +954,10 @@ export default function DatasetEditor({ datasetId }: Props) {
       >
         <Box sx={{ p: 3, height: '100%', overflowY: 'auto' }}>
           {openPanel === 'datapoint' ? (
-            <DataPointDetailsPanel dataPointId={selectedDataPointId} selectedCell={selectedCell} />
-          ) : openPanel === 'comments' ? (
-            <CommentsPanel
-              comments={commentsWithDataPoint}
-              selectedDataPointId={selectedDataPointId}
+            <DataPointDetailsPanel
+              dataPointId={selectedDataPointId}
               selectedCell={selectedCell}
-              onClearSelection={() => {
-                setSelectedDataPointId(null);
-                setClearSelectionNonce((n) => n + 1);
-              }}
+              comments={commentsWithDataPoint}
               onSubmitComment={async (dataPointId, input) => {
                 const result = await createComment({
                   variables: {
@@ -1375,15 +981,26 @@ export default function DatasetEditor({ datasetId }: Props) {
                       __typename: 'DataPoint',
                       id: dataPointId,
                     });
-                    const commentRef = cache.identify(payload);
-                    if (!dpId || !commentRef) return;
+                    if (!dpId) return;
                     cache.modify({
                       id: dpId,
                       fields: {
-                        comments: (existing: readonly { __ref: string }[] = []) => [
-                          ...existing,
-                          { __ref: commentRef },
-                        ],
+                        // writeFragment guarantees the comment entity is fully
+                        // written (so the InstanceDataset read stays complete and
+                        // re-broadcasts) and returns a ref we can append. The
+                        // dedupe guard keeps a re-run from inserting twice.
+                        comments: (existing: readonly { __ref: string }[] = [], { readField }) => {
+                          const ref = cache.writeFragment({
+                            fragment: DATA_POINT_COMMENT_FIELDS,
+                            fragmentName: 'DataPointCommentFields',
+                            data: payload,
+                          });
+                          if (!ref) return existing;
+                          if (existing.some((e) => readField('id', e) === payload.id)) {
+                            return existing;
+                          }
+                          return [...existing, ref];
+                        },
                       },
                     });
                   },
@@ -1392,6 +1009,13 @@ export default function DatasetEditor({ datasetId }: Props) {
                 if (payload?.__typename === 'OperationInfo') {
                   throw new Error(payload.messages.map((m) => m.message).join('; '));
                 }
+                // The cache.modify above updates the normalised cache, but the
+                // SSR-hydrated InstanceDataset observer doesn't re-render from a
+                // passive cache broadcast in this runtime (only from its own
+                // fetch — same reason the grid refetches after every edit). So
+                // refetch to make the new comment show in both the panel and the
+                // grid's per-cell comment indicator without a manual reload.
+                await refetch();
               }}
               onSetResolved={async (commentId, resolved) => {
                 const variables = {
@@ -1407,6 +1031,10 @@ export default function DatasetEditor({ datasetId }: Props) {
                 if (payload?.__typename === 'OperationInfo') {
                   throw new Error(payload.messages.map((m) => m.message).join('; '));
                 }
+                // Same reactivity caveat as comment creation: refetch so the
+                // resolved/unresolved state (and the cell's needs-review tint)
+                // updates without a manual reload.
+                await refetch();
               }}
             />
           ) : openPanel === 'sources' ? (

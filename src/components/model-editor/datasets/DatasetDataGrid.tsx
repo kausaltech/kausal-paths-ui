@@ -80,7 +80,7 @@ type Props = {
   // ignored — only subsequent changes trigger a clear.
   clearSelectionNonce?: number;
   // Open one of the right-hand drawer panels (used by the cell context menu).
-  onOpenPanel?: (panel: 'comments' | 'sources') => void;
+  onOpenPanel?: (panel: 'datapoint' | 'sources') => void;
 };
 
 // Solid colour approximations of the original rgba tints — canvas doesn't
@@ -1545,7 +1545,7 @@ export default function DatasetDataGrid({
               <MenuItem
                 onClick={() => {
                   setContextMenu(null);
-                  onOpenPanel?.('comments');
+                  onOpenPanel?.('datapoint');
                 }}
               >
                 <ListItemIcon>
