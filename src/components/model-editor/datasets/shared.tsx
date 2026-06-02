@@ -26,10 +26,8 @@ import type {
   CreateDataSourceInput,
   DataPointCommentFieldsFragment,
   DataSourceFieldsFragment,
-  DatasetDetailFieldsFragment,
   DatasetSourceReferenceFieldsFragment,
 } from '@/common/__generated__/graphql';
-import { extractYear } from './dataset-grid-data';
 
 export type SelectedCell = {
   year: number;
@@ -75,33 +73,6 @@ export function SelectedDataPointChips({ cell }: { cell: SelectedCell }) {
       )}
     </Box>
   );
-}
-
-export function resolveSelectedCell(
-  dataset: DatasetDetailFieldsFragment,
-  dataPointId: string
-): SelectedCell | null {
-  const dp = dataset.dataPoints.find((d) => d.id === dataPointId);
-  if (!dp) return null;
-  const year = extractYear(dp.date);
-  const metric = dataset.metrics.find((m) => m.id === dp.metric.id);
-  const dpCatUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
-  const categoryLabels: string[] = [];
-  for (const dim of dataset.dimensions) {
-    for (const cat of dim.categories) {
-      if (dpCatUuids.has(cat.uuid)) {
-        categoryLabels.push(cat.label);
-        break;
-      }
-    }
-  }
-  return {
-    year,
-    metricLabel: metric?.label ?? dp.metric.id,
-    metricUnit: metric?.unit ?? '',
-    categoryLabels,
-    value: dp.value,
-  };
 }
 
 export function getUserName(

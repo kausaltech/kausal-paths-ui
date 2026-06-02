@@ -102,6 +102,7 @@
   "datasets-data-source": "Data source",
   "datasets-data-sources": "Data sources",
   "datasets-datapoint-details": "Data point details",
+  "datasets-datapoint-no-value": "This data point has no value.",
   "datasets-dataset": "Dataset",
   "datasets-dataset-details": "Dataset details",
   "datasets-dataset-not-found": "Dataset not found.",

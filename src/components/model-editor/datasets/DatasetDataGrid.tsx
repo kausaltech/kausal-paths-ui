@@ -63,6 +63,7 @@ import {
   yearColId,
 } from './dataset-grid-data';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
+import type { SelectedCell } from './shared';
 
 type Props = {
   dataset: DatasetDetailFieldsFragment;
@@ -75,6 +76,11 @@ type Props = {
    */
   onMutated: () => void | Promise<unknown>;
   onSelectedDataPointChange?: (dataPointId: string | null) => void;
+  // Reports the identifying details (year / metric / categories / value) of the
+  // focused data cell, or null when no data cell is focused. Reported for empty
+  // cells too — those have no backing DataPoint, so the details panel shows the
+  // chips with a "no value" hint instead of the full per-point sections.
+  onSelectedCellChange?: (cell: SelectedCell | null) => void;
   // Bumped by the parent to clear the grid's cell selection (e.g. when the
   // user clicks "Show all" in the comments panel). The initial value is
   // ignored — only subsequent changes trigger a clear.
@@ -89,9 +95,9 @@ type Props = {
 // pre-mix against white.
 const DIRTY_BG = '#fce8d4';
 const ERROR_BG = '#fbe1e1';
-// Year cell with no backing DataPoint (vs. a DataPoint whose value is null,
-// which is treated as a real "empty value" entry).
-const UNINITIATED_BG = '#f5f5f5';
+// Background for the read-only dimension/metric label columns, distinguishing
+// them from the editable (white) data cells.
+const LABEL_COL_BG = '#f5f5f5';
 
 const EMPTY_SELECTION: GridSelection = {
   columns: CompactSelection.empty(),
@@ -160,6 +166,7 @@ export default function DatasetDataGrid({
   dataset,
   onMutated,
   onSelectedDataPointChange,
+  onSelectedCellChange,
   clearSelectionNonce,
   onOpenPanel,
 }: Props) {
@@ -715,13 +722,9 @@ export default function DatasetDataGrid({
         const baseValue = committed?.type === 'Value' ? committed.value : null;
         const pending = pendingEdits.get(pendingKey(gridRow.id, colId));
         const value = pending ? pending.nextValue : baseValue;
-        const uninitiated =
-          !pending && committed?.type === 'Value' && committed.dataPointId === null;
-        const themeOverride = pending
-          ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG }
-          : uninitiated
-            ? { bgCell: UNINITIATED_BG }
-            : undefined;
+        // Empty (uninitiated) cells render with the default white background —
+        // only pending edits get a tint here.
+        const themeOverride = pending ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG } : undefined;
         return {
           kind: GridCellKind.Number,
           data: value ?? undefined,
@@ -747,7 +750,7 @@ export default function DatasetDataGrid({
         displayData: label,
         allowOverlay: false,
         readonly: true,
-        themeOverride: { bgCell: UNINITIATED_BG },
+        themeOverride: { bgCell: LABEL_COL_BG },
       };
     },
     [columnIds, rows, pendingEdits]
@@ -1035,22 +1038,49 @@ export default function DatasetDataGrid({
     []
   );
 
-  // Resolve the focused cell to a dataPointId (or null for non-Value cells)
-  // and report changes upward.
-  const selectedDataPointId = useMemo(() => {
-    const cell = gridSelection.current?.cell;
-    if (!cell) return null;
-    const [col, rowIndex] = cell;
+  // Resolve the focused cell into the identifying details the panel renders.
+  // `dataPointId` is the backing DataPoint id, or null for an uninitiated cell
+  // (a year cell with no DataPoint yet). `cell` carries the year / metric /
+  // category labels (built from the row's already-computed cells) for any
+  // focused data cell — empty or filled — and is null for read-only
+  // dimension/metric cells or when nothing is selected.
+  const selection = useMemo<{ dataPointId: string | null; cell: SelectedCell | null }>(() => {
+    const sel = gridSelection.current?.cell;
+    if (!sel) return { dataPointId: null, cell: null };
+    const [col, rowIndex] = sel;
     const colId = columnIds[col];
     const gridRow = rows[rowIndex];
-    if (!colId || !gridRow || !isYearColId(colId)) return null;
+    if (!colId || !gridRow || !isYearColId(colId)) return { dataPointId: null, cell: null };
     const cellData = gridRow.cells[colId];
-    return cellData?.type === 'Value' ? cellData.dataPointId : null;
-  }, [gridSelection, columnIds, rows]);
+    if (cellData?.type !== 'Value') return { dataPointId: null, cell: null };
+    const metricCell = gridRow.cells[METRIC_COL];
+    // Skip dimensions with no category (the "—" cells), matching the chips
+    // shown for a resolved data point.
+    const categoryLabels: string[] = [];
+    for (const dim of dataset.dimensions) {
+      const dimCell = gridRow.cells[dimColId(dim.id)];
+      if (dimCell?.type === 'DimensionCategory' && dimCell.categoryUuid !== null) {
+        categoryLabels.push(dimCell.label);
+      }
+    }
+    const cell: SelectedCell = {
+      year: cellData.year,
+      metricLabel: metricCell?.type === 'MetricHeader' ? metricCell.label : gridRow.metricId,
+      metricUnit: metricCell?.type === 'MetricHeader' ? metricCell.unit : '',
+      categoryLabels,
+      value: cellData.value,
+    };
+    return { dataPointId: cellData.dataPointId, cell };
+  }, [gridSelection, columnIds, rows, dataset.dimensions]);
+  const { dataPointId: selectedDataPointId, cell: selectedCell } = selection;
 
   useEffect(() => {
     onSelectedDataPointChange?.(selectedDataPointId);
   }, [selectedDataPointId, onSelectedDataPointChange]);
+
+  useEffect(() => {
+    onSelectedCellChange?.(selectedCell);
+  }, [selectedCell, onSelectedCellChange]);
 
   // Drop the cell selection when the parent bumps the nonce. The initial
   // value (whatever it is on first render) is captured and ignored — only

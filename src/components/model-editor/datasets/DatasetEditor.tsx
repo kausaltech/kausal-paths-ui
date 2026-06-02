@@ -79,7 +79,6 @@ import {
   type CommentWithDataPoint,
   type SelectedCell,
   SourceReferenceCard,
-  resolveSelectedCell,
 } from './shared';
 
 type Props = {
@@ -322,6 +321,10 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<'details' | 'datapoint' | null>(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
+  // Identifying details of the focused data cell (year / metric / categories /
+  // value), reported by the grid. Set for empty cells too — those have no
+  // dataPointId, so the panel shows the chips with a "no value" hint.
+  const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
 
@@ -343,12 +346,6 @@ export default function DatasetEditor({ datasetId }: Props) {
     () => data?.instance.editor?.dataSources ?? [],
     [data]
   );
-  const selectedCell = useMemo<SelectedCell | null>(
-    () =>
-      dataset && selectedDataPointId ? resolveSelectedCell(dataset, selectedDataPointId) : null,
-    [dataset, selectedDataPointId]
-  );
-
   // Sync local editable name with the fetched dataset whenever it changes.
   if (dataset && dataset.name !== syncedName) {
     setSyncedName(dataset.name);
@@ -613,6 +610,7 @@ export default function DatasetEditor({ datasetId }: Props) {
                 dataset={dataset}
                 onMutated={() => refetch()}
                 onSelectedDataPointChange={setSelectedDataPointId}
+                onSelectedCellChange={setSelectedCell}
                 onOpenPanel={setOpenPanel}
               />
             </Box>

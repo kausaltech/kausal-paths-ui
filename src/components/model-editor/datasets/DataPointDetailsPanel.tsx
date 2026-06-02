@@ -386,6 +386,13 @@ export default function DataPointDetailsPanel({
           />
           <DataPointChangeHistorySection dataPointId={dataPointId} />
         </>
+      ) : selectedCell ? (
+        <>
+          <SelectedDataPointChips cell={selectedCell} />
+          <Typography color="text.secondary" variant="body2">
+            {t('datasets-datapoint-no-value')}
+          </Typography>
+        </>
       ) : (
         <Typography color="text.secondary" variant="body2">
           {t('datasets-select-datapoint-for-details')}
