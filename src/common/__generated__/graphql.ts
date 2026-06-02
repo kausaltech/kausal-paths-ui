@@ -699,6 +699,7 @@ export type StreamFieldFragment =
 
 export type FrameworkConfigsQueryVariables = Exact<{
   identifier: Scalars['ID']['input'];
+  clientUrl: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1191,6 +1192,28 @@ export type DatasetPortDataQuery = (
     ) | null }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
+  & { __typename: 'Query' }
+);
+
+export type DataPointInstanceChangeHistoryQueryVariables = Exact<{
+  limit?: Scalars['Int']['input'];
+}>;
+
+
+export type DataPointInstanceChangeHistoryQuery = (
+  { instance: (
+    { id: string, editor: (
+      { changeHistory: Array<(
+        { uuid: string, createdAt: string, userEmail: string | null, entries: Array<(
+          { uuid: string, action: string, targetUuid: string | null, before: any | null, after: any | null, createdAt: string }
+          & { __typename: 'InstanceModelLogEntryType' }
+        )> }
+        & { __typename: 'InstanceChangeOperationType' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
   & { __typename: 'Query' }
 );
 

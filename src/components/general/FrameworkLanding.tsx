@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -16,6 +17,7 @@ import {
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+import * as Sentry from '@sentry/nextjs';
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 
 import type { StreamFieldFragment } from '@/common/__generated__/graphql';
@@ -25,15 +27,16 @@ import ThemableIllustration from '../common/ThemableIllustration';
 type FrameworkLandingData = Extract<StreamFieldFragment, { __typename: 'FrameworkLandingBlock' }>;
 
 const GET_FRAMEWORK_CONFIGS = gql`
-  query FrameworkConfigs($identifier: ID!) {
+  query FrameworkConfigs($identifier: ID!, $clientUrl: String) {
     framework(identifier: $identifier) {
       id
       configs {
         id
         organizationName
-        viewUrl
+        viewUrl(clientUrl: $clientUrl)
         instance {
           id
+          identifier
           name
         }
       }
@@ -45,7 +48,7 @@ type FrameworkConfigItem = {
   id: string;
   organizationName: string | null;
   viewUrl: string | null;
-  instance: { id: string; name: string } | null;
+  instance: { id: string; name: string; identifier: string } | null;
 };
 
 type FrameworkConfigsData = {
@@ -72,6 +75,9 @@ function InstanceCard({ config }: { config: FrameworkConfigItem }) {
             {config.organizationName}
           </Typography>
         )}
+        <Typography variant="caption" color="text.tertiary">
+          {config.instance?.identifier}
+        </Typography>
       </CardContent>
       <CardActions sx={{ justifyContent: 'flex-end' }}>
         {config.viewUrl ? (
@@ -106,13 +112,27 @@ export function FrameworkLanding({ block }: Props) {
   const isAuthenticated = !!session?.user;
   const firstName = session?.user ? getFirstName(session.user.name, session.user.email) : null;
 
-  const { data: configsData, loading: configsLoading } = useQuery<FrameworkConfigsData>(
-    GET_FRAMEWORK_CONFIGS,
-    {
-      variables: { identifier: framework?.identifier ?? '' },
-      skip: !isAuthenticated || !framework,
+  const {
+    data: configsData,
+    loading: configsLoading,
+    error: configsError,
+  } = useQuery<FrameworkConfigsData>(GET_FRAMEWORK_CONFIGS, {
+    variables: {
+      identifier: framework?.identifier ?? '',
+      clientUrl: typeof window !== 'undefined' ? window.location.href : null,
+    },
+    errorPolicy: 'all',
+    skip: !isAuthenticated || !framework,
+  });
+
+  useEffect(() => {
+    if (configsError) {
+      Sentry.captureException(configsError, {
+        tags: { query: 'FrameworkConfigs' },
+        extra: { frameworkIdentifier: framework?.identifier },
+      });
     }
-  );
+  }, [configsError, framework?.identifier]);
 
   if (!framework) return null;
 
@@ -180,7 +200,9 @@ export function FrameworkLanding({ block }: Props) {
                     <InstanceCard key={config.id} config={config} />
                   ))}
                 </Stack>
-              ) : null}
+              ) : (
+                <div>No instances found</div>
+              )}
             </>
           )}
         </Box>
