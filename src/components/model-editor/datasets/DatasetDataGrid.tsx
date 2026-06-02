@@ -79,8 +79,9 @@ type Props = {
   // user clicks "Show all" in the comments panel). The initial value is
   // ignored — only subsequent changes trigger a clear.
   clearSelectionNonce?: number;
-  // Open one of the right-hand drawer panels (used by the cell context menu).
-  onOpenPanel?: (panel: 'datapoint' | 'sources') => void;
+  // Open the data point details drawer panel (used by the cell context menu's
+  // Comment / Data source items, which both act on the focused data point).
+  onOpenPanel?: (panel: 'datapoint') => void;
 };
 
 // Solid colour approximations of the original rgba tints — canvas doesn't

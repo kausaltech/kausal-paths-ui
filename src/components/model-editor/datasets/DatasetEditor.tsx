@@ -23,7 +23,6 @@ import { useFragment, useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
-  Bookmarks,
   CaretDownFill,
   CaretRightFill,
   InfoCircle,
@@ -156,9 +155,10 @@ function DimensionCategories({
   );
 }
 
-// Dataset-scoped data sources (references not tied to a specific data point).
-// Per-data-point sources live in the data point details panel.
-function SourcesPanel({
+// Dataset-scoped data sources section in the dataset details panel (references
+// not tied to a specific data point). Per-data-point sources live in the data
+// point details panel.
+function DatasetSourcesSection({
   refs,
   availableDataSources,
   onAttachToDataset,
@@ -199,8 +199,8 @@ function SourcesPanel({
   };
 
   return (
-    <>
-      <Typography variant="h6" sx={{ mb: 2 }}>
+    <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+      <Typography variant="subtitle1" sx={{ mb: 2 }}>
         {t('datasets-data-sources')}{' '}
         <Typography component="span" variant="body2" color="text.secondary">
           ({datasetScopeRefs.length})
@@ -228,7 +228,7 @@ function SourcesPanel({
           ))}
         </Stack>
       )}
-    </>
+    </Paper>
   );
 }
 
@@ -320,7 +320,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [name, setName] = useState('');
   const [syncedName, setSyncedName] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [openPanel, setOpenPanel] = useState<'details' | 'sources' | 'datapoint' | null>(null);
+  const [openPanel, setOpenPanel] = useState<'details' | 'datapoint' | null>(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
@@ -597,20 +597,6 @@ export default function DatasetEditor({ datasetId }: Props) {
                 {t('datasets-datapoint-details')}
               </Button>
               <Button
-                startIcon={<Bookmarks />}
-                variant={openPanel === 'sources' ? 'contained' : 'text'}
-                onClick={() => setOpenPanel((p) => (p === 'sources' ? null : 'sources'))}
-              >
-                {t('datasets-data-sources')}
-                {sourceReferences.length > 0 && (
-                  <Chip
-                    label={sourceReferences.length}
-                    size="small"
-                    sx={{ ml: 1, height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 11 } }}
-                  />
-                )}
-              </Button>
-              <Button
                 startIcon={<Sliders />}
                 variant={openPanel === 'details' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'details' ? null : 'details'))}
@@ -737,14 +723,6 @@ export default function DatasetEditor({ datasetId }: Props) {
                 await refetch();
               }}
             />
-          ) : openPanel === 'sources' ? (
-            <SourcesPanel
-              refs={sourceReferences}
-              availableDataSources={availableDataSources}
-              onAttachToDataset={(dataSourceId) => handleAttachSource(dataSourceId, null)}
-              onDetach={handleDetachSource}
-              onCreateDataSource={handleCreateDataSource}
-            />
           ) : (
             <>
               <Typography variant="h6" sx={{ mb: 2 }}>
@@ -825,6 +803,15 @@ export default function DatasetEditor({ datasetId }: Props) {
                   )}
                 </Stack>
               </Paper>
+
+              {/* Data sources */}
+              <DatasetSourcesSection
+                refs={sourceReferences}
+                availableDataSources={availableDataSources}
+                onAttachToDataset={(dataSourceId) => handleAttachSource(dataSourceId, null)}
+                onDetach={handleDetachSource}
+                onCreateDataSource={handleCreateDataSource}
+              />
 
               {/* Connected nodes */}
               <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
