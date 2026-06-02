@@ -707,7 +707,7 @@ export type FrameworkConfigsQuery = (
   { framework: (
     { id: string, configs: Array<(
       { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-        { id: string, name: string }
+        { id: string, identifier: string, name: string }
         & { __typename: 'InstanceType' }
       ) | null }
       & { __typename: 'FrameworkConfig' }
@@ -1225,7 +1225,7 @@ export type DatasetSummaryFieldsFragment = (
     { id: string, name: string }
     & { __typename: 'DatasetDimension' }
   )>, metrics: Array<(
-    { id: string, label: string }
+    { id: string, label: string, unit: string }
     & { __typename: 'DatasetMetric' }
   )> }
   & { __typename: 'Dataset' }
@@ -1343,7 +1343,7 @@ export type InstanceDatasetsQuery = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string }
+          { id: string, label: string, unit: string }
           & { __typename: 'DatasetMetric' }
         )> }
         & { __typename: 'Dataset' }

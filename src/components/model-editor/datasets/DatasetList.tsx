@@ -175,6 +175,8 @@ export default function DatasetList() {
     () => data?.instance.editor?.datasets ?? [],
     [data?.instance.editor?.datasets]
   );
+
+  console.log('Datasets:', datasets);
   const sortedDatasets = useMemo(() => {
     const arr = [...datasets];
     arr.sort((a, b) => {
@@ -311,8 +313,28 @@ export default function DatasetList() {
                     )}
                   </Stack>
                 </TableCell>
-                <TableCell align="right">{ds.dimensions.length}</TableCell>
-                <TableCell align="right">{ds.metrics.length}</TableCell>
+                <TableCell align="right">
+                  {ds.dimensions.length > 0 ? (
+                    <Tooltip title={ds.dimensions.map((d) => d.name).join(', ')}>
+                      <Chip label={ds.dimensions.length} size="small" />
+                    </Tooltip>
+                  ) : (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="right">
+                  {ds.metrics.length > 0 ? (
+                    <Tooltip title={ds.metrics.map((m) => m.unit || m.label).join(', ')}>
+                      <Chip label={ds.metrics.length} size="small" />
+                    </Tooltip>
+                  ) : (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
                 <TableCell align="right">
                   {ds.dataPointComments.length > 0 ? (
                     <Stack

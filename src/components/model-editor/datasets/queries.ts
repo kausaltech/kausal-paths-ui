@@ -20,6 +20,7 @@ export const DATASET_SUMMARY_FIELDS = gql`
     metrics {
       id
       label
+      unit
     }
   }
 `;
