@@ -111,7 +111,7 @@ function DatasetRowActions({
   );
 }
 
-type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments';
+type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments' | 'lastModified';
 type SortOrder = 'asc' | 'desc';
 
 type DatasetRow = NonNullable<
@@ -128,7 +128,26 @@ function getSortValue(ds: DatasetRow, key: SortKey): string | number {
       return ds.metrics.length;
     case 'comments':
       return ds.dataPointComments.length;
+    case 'lastModified':
+      //return ds.lastModifiedAt ? new Date(ds.lastModifiedAt).getTime() : 0;
+      return '-';
   }
+}
+
+function formatTimestamp(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function formatRelativeTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const diffSec = Math.max(0, Math.round((Date.now() - d.getTime()) / 1000));
+  if (diffSec < 45) return 'just now';
+  if (diffSec < 60 * 60) return `${Math.round(diffSec / 60)} min ago`;
+  if (diffSec < 24 * 60 * 60) return `${Math.round(diffSec / 3600)} h ago`;
+  return formatTimestamp(iso);
 }
 
 export default function DatasetList() {
@@ -237,6 +256,18 @@ export default function DatasetList() {
                   Comments
                 </TableSortLabel>
               </TableCell>
+              <TableCell
+                align="right"
+                sortDirection={sortKey === 'lastModified' ? sortOrder : false}
+              >
+                <TableSortLabel
+                  active={sortKey === 'lastModified'}
+                  direction={sortKey === 'lastModified' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('lastModified')}
+                >
+                  Last edited
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
                 Actions
               </TableCell>
@@ -245,7 +276,7 @@ export default function DatasetList() {
           <TableBody>
             {sortedDatasets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
                     No datasets defined.
                   </Typography>
@@ -298,6 +329,19 @@ export default function DatasetList() {
                       —
                     </Typography>
                   )}
+                </TableCell>
+                <TableCell align="right">
+                  {/*ds?.lastModifiedAt ? (
+                    <Tooltip title={formatTimestamp(ds.lastModifiedAt)}>
+                      <Typography variant="body2" color="text.secondary" component="span">
+                        {formatRelativeTime(ds.lastModifiedAt)}
+                      </Typography>
+                    </Tooltip>
+                  ) : (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  )*/}
                 </TableCell>
                 <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                   <DatasetRowActions
