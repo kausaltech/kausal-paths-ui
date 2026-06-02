@@ -37,6 +37,7 @@ import {
   CheckCircle,
   DashCircle,
   Hash,
+  InfoCircle,
   Link45deg,
   PencilSquare,
   Plus,
@@ -72,6 +73,7 @@ import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
+import DataPointChangeHistorySection from './DataPointChangeHistorySection';
 import DatasetDataGrid from './DatasetDataGrid';
 import { extractYear } from './dataset-grid-data';
 import {
@@ -250,6 +252,36 @@ function resolveSelectedCell(
     categoryLabels,
     value: dp.value,
   };
+}
+
+// Datapoint details drawer panel: identifies the selected data point with the
+// same category chips the comments/sources panels use, then shows its edit
+// history. (Comments and data sources keep their own panels for now.)
+function DataPointDetailsPanel({
+  dataPointId,
+  selectedCell,
+}: {
+  dataPointId: string | null;
+  selectedCell: SelectedCell | null;
+}) {
+  const t = useTranslations('model-editor');
+  return (
+    <>
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        {t('datasets-datapoint-details')}
+      </Typography>
+      {dataPointId && selectedCell ? (
+        <>
+          <SelectedDataPointChips cell={selectedCell} />
+          <DataPointChangeHistorySection dataPointId={dataPointId} />
+        </>
+      ) : (
+        <Typography color="text.secondary" variant="body2">
+          {t('datasets-select-datapoint-for-details')}
+        </Typography>
+      )}
+    </>
+  );
 }
 
 type CommentWithDataPoint = DataPointCommentFieldsFragment & { dataPointId: string };
@@ -1057,7 +1089,9 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [name, setName] = useState('');
   const [syncedName, setSyncedName] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [openPanel, setOpenPanel] = useState<'details' | 'comments' | 'sources' | null>(null);
+  const [openPanel, setOpenPanel] = useState<
+    'details' | 'comments' | 'sources' | 'datapoint' | null
+  >(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
   // Bumped to ask DatasetDataGrid to clear its internal cell selection (so
   // "Show all" in the comments panel also drops the visual cell highlight).
@@ -1234,6 +1268,13 @@ export default function DatasetEditor({ datasetId }: Props) {
             </Box>
             <Stack direction="row" spacing={1}>
               <Button
+                startIcon={<InfoCircle />}
+                variant={openPanel === 'datapoint' ? 'contained' : 'text'}
+                onClick={() => setOpenPanel((p) => (p === 'datapoint' ? null : 'datapoint'))}
+              >
+                {t('datasets-datapoint-details')}
+              </Button>
+              <Button
                 startIcon={<ChatLeft />}
                 variant={openPanel === 'comments' ? 'contained' : 'text'}
                 onClick={() => setOpenPanel((p) => (p === 'comments' ? null : 'comments'))}
@@ -1300,7 +1341,9 @@ export default function DatasetEditor({ datasetId }: Props) {
         }}
       >
         <Box sx={{ p: 3, height: '100%', overflowY: 'auto' }}>
-          {openPanel === 'comments' ? (
+          {openPanel === 'datapoint' ? (
+            <DataPointDetailsPanel dataPointId={selectedDataPointId} selectedCell={selectedCell} />
+          ) : openPanel === 'comments' ? (
             <CommentsPanel
               comments={commentsWithDataPoint}
               selectedDataPointId={selectedDataPointId}
