@@ -1556,7 +1556,7 @@ export default function DatasetDataGrid({
               <MenuItem
                 onClick={() => {
                   setContextMenu(null);
-                  onOpenPanel?.('sources');
+                  onOpenPanel?.('datapoint');
                 }}
               >
                 <ListItemIcon>

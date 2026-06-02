@@ -1,19 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
   Alert,
-  Autocomplete,
   Box,
   Button,
   Chip,
   CircularProgress,
   Collapse,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Drawer,
   IconButton,
   Paper,
@@ -31,7 +26,6 @@ import {
   Bookmarks,
   CaretDownFill,
   CaretRightFill,
-  DashCircle,
   InfoCircle,
   Link45deg,
   PencilSquare,
@@ -82,11 +76,10 @@ import {
   UNRESOLVE_DATA_POINT_COMMENT,
 } from './queries';
 import {
+  AttachSourceForm,
   type CommentWithDataPoint,
   type SelectedCell,
-  SelectedDataPointChips,
-  formatCommentDate,
-  getUserName,
+  SourceReferenceCard,
   resolveSelectedCell,
 } from './shared';
 
@@ -163,272 +156,29 @@ function DimensionCategories({
   );
 }
 
-function DefineDataSourceDialog({
-  open,
-  onClose,
-  onCreate,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onCreate: (input: CreateDataSourceInput) => Promise<void>;
-}) {
-  const t = useTranslations('model-editor');
-  const [name, setName] = useState('');
-  const [authority, setAuthority] = useState('');
-  const [edition, setEdition] = useState('');
-  const [url, setUrl] = useState('');
-  const [description, setDescription] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Reset every time the dialog opens — otherwise stale values from the
-  // previous session would linger.
-  useEffect(() => {
-    if (open) {
-      setName('');
-      setAuthority('');
-      setEdition('');
-      setUrl('');
-      setDescription('');
-      setError(null);
-      setSubmitting(false);
-    }
-  }, [open]);
-
-  const handleSubmit = async () => {
-    if (!name.trim() || submitting) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      await onCreate({
-        name: name.trim(),
-        authority: authority.trim() || null,
-        edition: edition.trim() || null,
-        url: url.trim() || null,
-        description: description.trim() || null,
-      });
-      onClose();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onClose={submitting ? undefined : onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('datasets-define-data-source-title')}</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label={t('datasets-name')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            fullWidth
-            size="small"
-            autoFocus
-            disabled={submitting}
-          />
-          <TextField
-            label={t('datasets-authority')}
-            value={authority}
-            onChange={(e) => setAuthority(e.target.value)}
-            fullWidth
-            size="small"
-            disabled={submitting}
-            helperText={t('datasets-authority-helper')}
-          />
-          <TextField
-            label={t('datasets-edition')}
-            value={edition}
-            onChange={(e) => setEdition(e.target.value)}
-            fullWidth
-            size="small"
-            disabled={submitting}
-            helperText={t('datasets-edition-helper')}
-          />
-          <TextField
-            label={t('datasets-url')}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            fullWidth
-            size="small"
-            type="url"
-            disabled={submitting}
-          />
-          <TextField
-            label={t('datasets-description')}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            multiline
-            minRows={2}
-            fullWidth
-            size="small"
-            disabled={submitting}
-          />
-          {error && (
-            <Alert severity="error" onClose={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={submitting}>
-          {t('common-cancel')}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => void handleSubmit()}
-          disabled={submitting || !name.trim()}
-        >
-          {submitting ? t('common-creating') : t('common-create')}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-function SourceReferenceCard({
-  reference: r,
-  onDetach,
-  detaching,
-}: {
-  reference: DatasetSourceReferenceFieldsFragment;
-  onDetach: () => void;
-  detaching: boolean;
-}) {
-  const t = useTranslations('model-editor');
-  const ds = r.dataSource;
-  const meta = [ds.authority, ds.edition].filter((s): s is string => Boolean(s));
-  return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
-      <Stack spacing={0.5}>
-        <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
-          <Typography variant="subtitle2">{ds.name}</Typography>
-          <Tooltip title={t('datasets-detach-data-source')}>
-            <span>
-              <IconButton
-                size="small"
-                onClick={onDetach}
-                disabled={detaching}
-                aria-label={t('datasets-detach-data-source')}
-              >
-                <DashCircle size={14} />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-        {meta.length > 0 && (
-          <Typography variant="caption" color="text.secondary">
-            {meta.join(' · ')}
-          </Typography>
-        )}
-        {ds.description && (
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-            {ds.description}
-          </Typography>
-        )}
-        {ds.url && (
-          <Typography variant="caption">
-            <a href={ds.url} target="_blank" rel="noreferrer">
-              {ds.url}
-            </a>
-          </Typography>
-        )}
-        <Typography variant="caption" color="text.secondary" sx={{ pt: 0.5 }}>
-          {t('datasets-attached-by', {
-            name: getUserName(r.createdBy ?? null, t),
-            date: formatCommentDate(r.createdAt),
-          })}
-        </Typography>
-      </Stack>
-    </Paper>
-  );
-}
-
+// Dataset-scoped data sources (references not tied to a specific data point).
+// Per-data-point sources live in the data point details panel.
 function SourcesPanel({
   refs,
   availableDataSources,
-  selectedDataPointId,
-  selectedCell,
   onAttachToDataset,
-  onAttachToDataPoint,
   onDetach,
   onCreateDataSource,
-  onClearSelection,
 }: {
   refs: readonly DatasetSourceReferenceFieldsFragment[];
   availableDataSources: readonly DataSourceFieldsFragment[];
-  selectedDataPointId: string | null;
-  selectedCell: SelectedCell | null;
   onAttachToDataset: (dataSourceId: string) => Promise<void>;
-  onAttachToDataPoint: (dataSourceId: string, dataPointId: string) => Promise<void>;
   onDetach: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
-  onClearSelection: () => void;
 }) {
   const t = useTranslations('model-editor');
-  const hasSelection = selectedDataPointId !== null;
   const datasetScopeRefs = refs.filter((r) => r.dataPoint === null);
-  const dataPointRefs = refs.filter((r) => r.dataPoint !== null);
-  const selectedRefs = hasSelection
-    ? dataPointRefs.filter((r) => r.dataPoint?.id === selectedDataPointId)
-    : dataPointRefs;
-  const heading = hasSelection ? t('datasets-sources-on-datapoint') : t('datasets-data-sources');
-  const visibleCount = hasSelection
-    ? selectedRefs.length
-    : datasetScopeRefs.length + dataPointRefs.length;
-
-  // Attach form. Kept inside the panel so it stays simple. The same form
-  // serves both scopes: when a cell is selected it targets that data point,
-  // otherwise it targets the dataset.
-  const [attachOpen, setAttachOpen] = useState(false);
-  const [pickedSource, setPickedSource] = useState<DataSourceFieldsFragment | null>(null);
-  const [attaching, setAttaching] = useState(false);
-  const [attachError, setAttachError] = useState<string | null>(null);
-  const resetAttachForm = () => {
-    setAttachOpen(false);
-    setPickedSource(null);
-    setAttachError(null);
-  };
-  const handleAttach = async () => {
-    if (!pickedSource || attaching) return;
-    setAttaching(true);
-    setAttachError(null);
-    try {
-      if (selectedDataPointId !== null) {
-        await onAttachToDataPoint(pickedSource.id, selectedDataPointId);
-      } else {
-        await onAttachToDataset(pickedSource.id);
-      }
-      resetAttachForm();
-    } catch (e) {
-      setAttachError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setAttaching(false);
-    }
-  };
-
-  // dataSource ids already attached at dataset scope — used to grey out
-  // those options in the picker (the backend would also reject duplicates,
-  // but disabling them upfront is a clearer signal).
-  const datasetScopeAttachedIds = useMemo(
+  // Grey out sources already attached at dataset scope so the picker only
+  // offers new ones.
+  const attachedIds = useMemo(
     () => new Set(datasetScopeRefs.map((r) => r.dataSource.id)),
     [datasetScopeRefs]
   );
-
-  // Same idea for the selected data point: grey out sources already attached
-  // to it so the picker only offers new ones.
-  const selectedDataPointAttachedIds = useMemo(
-    () => new Set(selectedRefs.map((r) => r.dataSource.id)),
-    [selectedRefs]
-  );
-
-  // "Define new" dialog state. On success we auto-select the new source in
-  // the picker; the parent's cache update inserts it into availableDataSources.
-  const [defineDialogOpen, setDefineDialogOpen] = useState(false);
 
   // Per-ref busy state so multiple detach actions can be in flight.
   const [detachingIds, setDetachingIds] = useState<Set<string>>(() => new Set());
@@ -438,7 +188,7 @@ function SourcesPanel({
     try {
       await onDetach(referenceId);
     } catch {
-      // Swallow — the card stays in the list until the cache is updated.
+      // Swallow — the card stays until the cache/refetch updates.
     } finally {
       setDetachingIds((prev) => {
         const next = new Set(prev);
@@ -447,184 +197,37 @@ function SourcesPanel({
       });
     }
   };
-  const renderCard = (r: DatasetSourceReferenceFieldsFragment) => (
-    <SourceReferenceCard
-      key={r.id}
-      reference={r}
-      onDetach={() => void handleDetach(r.id)}
-      detaching={detachingIds.has(r.id)}
-    />
-  );
-
-  // The toggle button and the collapsible form are shared between the
-  // dataset-scope and data-point-scope sections; only the set of
-  // already-attached ids (used to grey out options) differs.
-  const renderAttachButton = () => (
-    <Button
-      size="small"
-      startIcon={<Plus />}
-      variant={attachOpen ? 'outlined' : 'text'}
-      onClick={() => setAttachOpen((v) => !v)}
-    >
-      {t('datasets-attach-data-source')}
-    </Button>
-  );
-  const renderAttachForm = (attachedIds: Set<string>) => (
-    <Collapse in={attachOpen} unmountOnExit>
-      <Paper variant="outlined" sx={{ p: 2, mb: 1.5 }}>
-        <Stack spacing={1.5}>
-          <Autocomplete
-            size="small"
-            options={availableDataSources}
-            value={pickedSource}
-            onChange={(_, v) => setPickedSource(v)}
-            getOptionLabel={(o) => o.label || o.name}
-            isOptionEqualToValue={(o, v) => o.id === v.id}
-            getOptionDisabled={(o) => attachedIds.has(o.id)}
-            renderOption={(props, o) => {
-              const isAttached = attachedIds.has(o.id);
-              return (
-                <li {...props} key={o.id}>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ width: '100%' }}
-                  >
-                    <span>{o.label || o.name}</span>
-                    {isAttached && (
-                      <Typography variant="caption" color="text.secondary">
-                        {t('datasets-already-in-use')}
-                      </Typography>
-                    )}
-                  </Stack>
-                </li>
-              );
-            }}
-            disabled={attaching}
-            renderInput={(params) => (
-              <TextField {...params} label={t('datasets-data-source')} autoFocus />
-            )}
-            noOptionsText={t('datasets-no-data-sources-available')}
-          />
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<Plus />}
-            onClick={() => setDefineDialogOpen(true)}
-            disabled={attaching}
-            sx={{ alignSelf: 'flex-start' }}
-          >
-            {t('datasets-define-new')}
-          </Button>
-          {attachError && (
-            <Alert severity="error" onClose={() => setAttachError(null)}>
-              {attachError}
-            </Alert>
-          )}
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
-            <Button size="small" variant="text" onClick={resetAttachForm} disabled={attaching}>
-              {t('common-cancel')}
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => void handleAttach()}
-              disabled={attaching || !pickedSource}
-            >
-              {attaching ? t('common-saving') : t('common-attach')}
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-    </Collapse>
-  );
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h6">
-          {heading}{' '}
-          <Typography component="span" variant="body2" color="text.secondary">
-            ({visibleCount})
-          </Typography>
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        {t('datasets-data-sources')}{' '}
+        <Typography component="span" variant="body2" color="text.secondary">
+          ({datasetScopeRefs.length})
         </Typography>
-        {hasSelection && (
-          <Button size="small" variant="text" onClick={onClearSelection}>
-            {t('datasets-show-all')}
-          </Button>
-        )}
-      </Stack>
-      {selectedCell && <SelectedDataPointChips cell={selectedCell} />}
-
-      {hasSelection ? (
-        <Box>
-          <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
-            {renderAttachButton()}
-          </Stack>
-          {renderAttachForm(selectedDataPointAttachedIds)}
-          {selectedRefs.length === 0 ? (
-            <Typography color="text.secondary" variant="body2">
-              {t('datasets-no-sources-attached-datapoint')}
-            </Typography>
-          ) : (
-            <Stack spacing={1.5}>{selectedRefs.map((r) => renderCard(r))}</Stack>
-          )}
-        </Box>
+      </Typography>
+      <AttachSourceForm
+        availableDataSources={availableDataSources}
+        attachedIds={attachedIds}
+        onAttach={onAttachToDataset}
+        onCreateDataSource={onCreateDataSource}
+      />
+      {datasetScopeRefs.length === 0 ? (
+        <Typography color="text.secondary" variant="body2">
+          {t('datasets-no-sources-attached-dataset')}
+        </Typography>
       ) : (
-        <Stack spacing={3}>
-          <Box>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 1 }}
-            >
-              <Typography variant="subtitle2">
-                {t('datasets-attached-to-dataset')}{' '}
-                <Typography component="span" variant="caption" color="text.secondary">
-                  ({datasetScopeRefs.length})
-                </Typography>
-              </Typography>
-              {renderAttachButton()}
-            </Stack>
-            {renderAttachForm(datasetScopeAttachedIds)}
-            {datasetScopeRefs.length === 0 ? (
-              <Typography color="text.secondary" variant="body2">
-                {t('datasets-no-sources-attached-dataset')}
-              </Typography>
-            ) : (
-              <Stack spacing={1.5}>{datasetScopeRefs.map((r) => renderCard(r))}</Stack>
-            )}
-          </Box>
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              {t('datasets-attached-to-data-points')}{' '}
-              <Typography component="span" variant="caption" color="text.secondary">
-                ({dataPointRefs.length})
-              </Typography>
-            </Typography>
-            {dataPointRefs.length === 0 ? (
-              <Typography color="text.secondary" variant="body2">
-                {t('datasets-no-sources-attached-datapoints')}
-              </Typography>
-            ) : (
-              <Stack spacing={1.5}>{dataPointRefs.map((r) => renderCard(r))}</Stack>
-            )}
-          </Box>
+        <Stack spacing={1.5}>
+          {datasetScopeRefs.map((r) => (
+            <SourceReferenceCard
+              key={r.id}
+              reference={r}
+              onDetach={() => void handleDetach(r.id)}
+              detaching={detachingIds.has(r.id)}
+            />
+          ))}
         </Stack>
       )}
-      <DefineDataSourceDialog
-        open={defineDialogOpen}
-        onClose={() => setDefineDialogOpen(false)}
-        onCreate={async (input) => {
-          const created = await onCreateDataSource(input);
-          // Preselect the newly created source so the user can hit "Attach"
-          // straight away. Also opens the attach form if it wasn't already.
-          setPickedSource(created);
-          setAttachOpen(true);
-        }}
-      />
     </>
   );
 }
@@ -719,9 +322,6 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<'details' | 'sources' | 'datapoint' | null>(null);
   const [selectedDataPointId, setSelectedDataPointId] = useState<string | null>(null);
-  // Bumped to ask DatasetDataGrid to clear its internal cell selection (so
-  // "Show all" in the sources panel also drops the visual cell highlight).
-  const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
 
@@ -836,6 +436,102 @@ export default function DatasetEditor({ datasetId }: Props) {
   const isExternal = dataset.isExternalPlaceholder;
   const nameDirty = name !== dataset.name;
 
+  // Source-reference handlers shared by the dataset-scope sources panel and the
+  // per-data-point sources section. Pass dataPointId=null to attach at dataset
+  // scope. Each refetches afterwards because, as with comments, the SSR-hydrated
+  // InstanceDataset observer doesn't re-render from a passive cache broadcast in
+  // this runtime (the cache.modify is kept for the instant case where it does).
+  const handleAttachSource = async (dataSourceId: string, dataPointId: string | null) => {
+    const result = await createSourceReference({
+      variables: {
+        instanceId: instance.id,
+        datasetId: dataset.id,
+        input: { dataSourceId, toDataset: dataPointId === null, dataPointId },
+      },
+      // Optimistically append the new ref to Dataset.sourceReferences(target: ALL).
+      update: (cache, { data: muData }) => {
+        const payload = muData?.instanceEditor.datasetEditor.createSourceReference;
+        if (payload?.__typename !== 'DatasetSourceReference') return;
+        const dsId = cache.identify({ __typename: 'Dataset', id: dataset.id });
+        const refId = cache.identify(payload);
+        if (!dsId || !refId) return;
+        cache.modify({
+          id: dsId,
+          fields: {
+            sourceReferences: (existing: readonly { __ref: string }[] = [], { storeFieldName }) => {
+              if (!storeFieldName.includes('"ALL"')) return existing;
+              return [...existing, { __ref: refId }];
+            },
+          },
+        });
+      },
+    });
+    const payload = result.data?.instanceEditor.datasetEditor.createSourceReference;
+    if (payload?.__typename === 'OperationInfo') {
+      throw new Error(payload.messages.map((m) => m.message).join('; '));
+    }
+    await refetch();
+  };
+
+  const handleDetachSource = async (referenceId: string) => {
+    const result = await deleteSourceReference({
+      variables: { instanceId: instance.id, datasetId: dataset.id, referenceId },
+      // Evict the normalised entity so Apollo drops dangling refs everywhere.
+      update: (cache, { data: muData }) => {
+        const messages = muData?.instanceEditor.datasetEditor.deleteSourceReference?.messages ?? [];
+        if (messages.length > 0) return;
+        cache.evict({
+          id: cache.identify({ __typename: 'DatasetSourceReference', id: referenceId }),
+        });
+        cache.gc();
+      },
+    });
+    const messages =
+      result.data?.instanceEditor.datasetEditor.deleteSourceReference?.messages ?? [];
+    if (messages.length > 0) {
+      throw new Error(messages.map((m) => m.message).join('; '));
+    }
+    await refetch();
+  };
+
+  const handleCreateDataSource = async (
+    input: CreateDataSourceInput
+  ): Promise<DataSourceFieldsFragment> => {
+    const result = await createDataSource({
+      variables: { instanceId: instance.id, input },
+      // Append to instance.editor.dataSources so the picker lists it; the
+      // caller preselects it, so no refetch is needed for the immediate flow.
+      update: (cache, { data: muData }) => {
+        const payload = muData?.instanceEditor.createDataSource;
+        if (payload?.__typename !== 'DataSource') return;
+        cache.updateQuery<InstanceDatasetQuery>(
+          { query: GET_INSTANCE_DATASET, variables: { datasetId } },
+          (existing) => {
+            if (!existing?.instance.editor) return existing;
+            return {
+              ...existing,
+              instance: {
+                ...existing.instance,
+                editor: {
+                  ...existing.instance.editor,
+                  dataSources: [...existing.instance.editor.dataSources, payload],
+                },
+              },
+            };
+          }
+        );
+      },
+    });
+    const payload = result.data?.instanceEditor.createDataSource;
+    if (!payload) {
+      throw new Error(t('datasets-create-data-source-no-payload'));
+    }
+    if (payload.__typename === 'OperationInfo') {
+      throw new Error(payload.messages.map((m) => m.message).join('; '));
+    }
+    return payload;
+  };
+
   return (
     <Box sx={{ display: 'flex', width: '100%' }}>
       <Box
@@ -931,7 +627,6 @@ export default function DatasetEditor({ datasetId }: Props) {
                 dataset={dataset}
                 onMutated={() => refetch()}
                 onSelectedDataPointChange={setSelectedDataPointId}
-                clearSelectionNonce={clearSelectionNonce}
                 onOpenPanel={setOpenPanel}
               />
             </Box>
@@ -958,6 +653,11 @@ export default function DatasetEditor({ datasetId }: Props) {
               dataPointId={selectedDataPointId}
               selectedCell={selectedCell}
               comments={commentsWithDataPoint}
+              sourceReferences={sourceReferences}
+              availableDataSources={availableDataSources}
+              onAttachSource={handleAttachSource}
+              onDetachSource={handleDetachSource}
+              onCreateDataSource={handleCreateDataSource}
               onSubmitComment={async (dataPointId, input) => {
                 const result = await createComment({
                   variables: {
@@ -1041,152 +741,9 @@ export default function DatasetEditor({ datasetId }: Props) {
             <SourcesPanel
               refs={sourceReferences}
               availableDataSources={availableDataSources}
-              selectedDataPointId={selectedDataPointId}
-              selectedCell={selectedCell}
-              onClearSelection={() => {
-                setSelectedDataPointId(null);
-                setClearSelectionNonce((n) => n + 1);
-              }}
-              onAttachToDataset={async (dataSourceId) => {
-                const result = await createSourceReference({
-                  variables: {
-                    instanceId: instance.id,
-                    datasetId: dataset.id,
-                    input: { dataSourceId, toDataset: true, dataPointId: null },
-                  },
-                  // Append the new ref to the Dataset.sourceReferences(target: ALL)
-                  // cache entry so the panel updates without a 48s refetch.
-                  update: (cache, { data: muData }) => {
-                    const payload = muData?.instanceEditor.datasetEditor.createSourceReference;
-                    if (payload?.__typename !== 'DatasetSourceReference') return;
-                    const dsId = cache.identify({
-                      __typename: 'Dataset',
-                      id: dataset.id,
-                    });
-                    const refId = cache.identify(payload);
-                    if (!dsId || !refId) return;
-                    cache.modify({
-                      id: dsId,
-                      fields: {
-                        sourceReferences: (
-                          existing: readonly { __ref: string }[] = [],
-                          { storeFieldName }
-                        ) => {
-                          // Only modify the ALL-target list (the one we read).
-                          if (!storeFieldName.includes('"ALL"')) return existing;
-                          return [...existing, { __ref: refId }];
-                        },
-                      },
-                    });
-                  },
-                });
-                const payload = result.data?.instanceEditor.datasetEditor.createSourceReference;
-                if (payload?.__typename === 'OperationInfo') {
-                  throw new Error(payload.messages.map((m) => m.message).join('; '));
-                }
-              }}
-              onAttachToDataPoint={async (dataSourceId, dataPointId) => {
-                const result = await createSourceReference({
-                  variables: {
-                    instanceId: instance.id,
-                    datasetId: dataset.id,
-                    input: { dataSourceId, toDataset: false, dataPointId },
-                  },
-                  // Same ALL-target list the panel reads from; the new ref
-                  // carries its dataPoint, so the selected-data-point filter
-                  // picks it up without a full refetch.
-                  update: (cache, { data: muData }) => {
-                    const payload = muData?.instanceEditor.datasetEditor.createSourceReference;
-                    if (payload?.__typename !== 'DatasetSourceReference') return;
-                    const dsId = cache.identify({
-                      __typename: 'Dataset',
-                      id: dataset.id,
-                    });
-                    const refId = cache.identify(payload);
-                    if (!dsId || !refId) return;
-                    cache.modify({
-                      id: dsId,
-                      fields: {
-                        sourceReferences: (
-                          existing: readonly { __ref: string }[] = [],
-                          { storeFieldName }
-                        ) => {
-                          if (!storeFieldName.includes('"ALL"')) return existing;
-                          return [...existing, { __ref: refId }];
-                        },
-                      },
-                    });
-                  },
-                });
-                const payload = result.data?.instanceEditor.datasetEditor.createSourceReference;
-                if (payload?.__typename === 'OperationInfo') {
-                  throw new Error(payload.messages.map((m) => m.message).join('; '));
-                }
-              }}
-              onDetach={async (referenceId) => {
-                const result = await deleteSourceReference({
-                  variables: {
-                    instanceId: instance.id,
-                    datasetId: dataset.id,
-                    referenceId,
-                  },
-                  // Evict the normalised entity so Apollo automatically drops
-                  // dangling refs from every cached sourceReferences list.
-                  update: (cache, { data: muData }) => {
-                    const messages =
-                      muData?.instanceEditor.datasetEditor.deleteSourceReference?.messages ?? [];
-                    if (messages.length > 0) return;
-                    cache.evict({
-                      id: cache.identify({
-                        __typename: 'DatasetSourceReference',
-                        id: referenceId,
-                      }),
-                    });
-                    cache.gc();
-                  },
-                });
-                const messages =
-                  result.data?.instanceEditor.datasetEditor.deleteSourceReference?.messages ?? [];
-                if (messages.length > 0) {
-                  throw new Error(messages.map((m) => m.message).join('; '));
-                }
-              }}
-              onCreateDataSource={async (input) => {
-                const result = await createDataSource({
-                  variables: { instanceId: instance.id, input },
-                  // Append the new source to instance.editor.dataSources via
-                  // updateQuery so the picker list refreshes without a full
-                  // refetch of the InstanceDataset query.
-                  update: (cache, { data: muData }) => {
-                    const payload = muData?.instanceEditor.createDataSource;
-                    if (payload?.__typename !== 'DataSource') return;
-                    cache.updateQuery<InstanceDatasetQuery>(
-                      { query: GET_INSTANCE_DATASET, variables: { datasetId } },
-                      (existing) => {
-                        if (!existing?.instance.editor) return existing;
-                        return {
-                          ...existing,
-                          instance: {
-                            ...existing.instance,
-                            editor: {
-                              ...existing.instance.editor,
-                              dataSources: [...existing.instance.editor.dataSources, payload],
-                            },
-                          },
-                        };
-                      }
-                    );
-                  },
-                });
-                const payload = result.data?.instanceEditor.createDataSource;
-                if (!payload) {
-                  throw new Error(t('datasets-create-data-source-no-payload'));
-                }
-                if (payload.__typename === 'OperationInfo') {
-                  throw new Error(payload.messages.map((m) => m.message).join('; '));
-                }
-                return payload;
-              }}
+              onAttachToDataset={(dataSourceId) => handleAttachSource(dataSourceId, null)}
+              onDetach={handleDetachSource}
+              onCreateDataSource={handleCreateDataSource}
             />
           ) : (
             <>

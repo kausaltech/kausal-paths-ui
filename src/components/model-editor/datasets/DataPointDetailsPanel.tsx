@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   Alert,
@@ -15,13 +15,20 @@ import {
 import { useTranslations } from 'next-intl';
 import { CheckCircle, Plus } from 'react-bootstrap-icons';
 
+import type {
+  CreateDataSourceInput,
+  DataSourceFieldsFragment,
+  DatasetSourceReferenceFieldsFragment,
+} from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import DataPointChangeHistorySection from './DataPointChangeHistorySection';
 import {
   type AddCommentInput,
+  AttachSourceForm,
   type CommentWithDataPoint,
   type SelectedCell,
   SelectedDataPointChips,
+  SourceReferenceCard,
   formatCommentDate,
   getUserName,
   isCommentEdited,
@@ -252,21 +259,107 @@ function DataPointCommentsSection({
   );
 }
 
+// Data sources attached to the selected data point. Like the comments section,
+// it operates within a single data-point context; dataset-scoped sources live
+// in the separate sources panel.
+function DataPointSourcesSection({
+  dataPointId,
+  sourceReferences,
+  availableDataSources,
+  onAttach,
+  onDetach,
+  onCreateDataSource,
+}: {
+  dataPointId: string;
+  sourceReferences: readonly DatasetSourceReferenceFieldsFragment[];
+  availableDataSources: readonly DataSourceFieldsFragment[];
+  onAttach: (dataSourceId: string, dataPointId: string) => Promise<void>;
+  onDetach: (referenceId: string) => Promise<void>;
+  onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
+}) {
+  const t = useTranslations('model-editor');
+  const refs = sourceReferences.filter((r) => r.dataPoint?.id === dataPointId);
+  // Grey out sources already attached to this data point so the picker only
+  // offers new ones.
+  const attachedIds = useMemo(() => new Set(refs.map((r) => r.dataSource.id)), [refs]);
+
+  // Per-ref busy state so multiple detach actions can be in flight.
+  const [detachingIds, setDetachingIds] = useState<Set<string>>(() => new Set());
+  const handleDetach = async (referenceId: string) => {
+    if (detachingIds.has(referenceId)) return;
+    setDetachingIds((prev) => new Set(prev).add(referenceId));
+    try {
+      await onDetach(referenceId);
+    } catch {
+      // Swallow — the card stays until the cache/refetch updates.
+    } finally {
+      setDetachingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(referenceId);
+        return next;
+      });
+    }
+  };
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+      <Typography variant="subtitle1" sx={{ mb: 2 }}>
+        {t('datasets-data-sources')}{' '}
+        <Typography component="span" variant="body2" color="text.secondary">
+          ({refs.length})
+        </Typography>
+      </Typography>
+      <AttachSourceForm
+        availableDataSources={availableDataSources}
+        attachedIds={attachedIds}
+        onAttach={(dataSourceId: string) => onAttach(dataSourceId, dataPointId)}
+        onCreateDataSource={onCreateDataSource}
+      />
+      {refs.length === 0 ? (
+        <Typography color="text.secondary" variant="body2">
+          {t('datasets-no-sources-attached-datapoint')}
+        </Typography>
+      ) : (
+        <Stack spacing={1.5}>
+          {refs.map((r) => (
+            <SourceReferenceCard
+              key={r.id}
+              reference={r}
+              onDetach={() => void handleDetach(r.id)}
+              detaching={detachingIds.has(r.id)}
+            />
+          ))}
+        </Stack>
+      )}
+    </Paper>
+  );
+}
+
 // Datapoint details drawer panel: identifies the selected data point with the
-// same category chips the sources panel uses, then shows its comments and edit
-// history.
+// same category chips the sources panel uses, then shows its comments, data
+// sources, and edit history.
 export default function DataPointDetailsPanel({
   dataPointId,
   selectedCell,
   comments,
+  sourceReferences,
+  availableDataSources,
   onSubmitComment,
   onSetResolved,
+  onAttachSource,
+  onDetachSource,
+  onCreateDataSource,
 }: {
   dataPointId: string | null;
   selectedCell: SelectedCell | null;
   comments: readonly CommentWithDataPoint[];
+  sourceReferences: readonly DatasetSourceReferenceFieldsFragment[];
+  availableDataSources: readonly DataSourceFieldsFragment[];
   onSubmitComment: (dataPointId: string, input: AddCommentInput) => Promise<void>;
   onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
+  onAttachSource: (dataSourceId: string, dataPointId: string) => Promise<void>;
+  onDetachSource: (referenceId: string) => Promise<void>;
+  onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
 }) {
   const t = useTranslations('model-editor');
   return (
@@ -282,6 +375,14 @@ export default function DataPointDetailsPanel({
             comments={comments}
             onSubmitComment={onSubmitComment}
             onSetResolved={onSetResolved}
+          />
+          <DataPointSourcesSection
+            dataPointId={dataPointId}
+            sourceReferences={sourceReferences}
+            availableDataSources={availableDataSources}
+            onAttach={onAttachSource}
+            onDetach={onDetachSource}
+            onCreateDataSource={onCreateDataSource}
           />
           <DataPointChangeHistorySection dataPointId={dataPointId} />
         </>
