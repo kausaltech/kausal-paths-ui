@@ -146,10 +146,22 @@ export function SourceReferenceCard({
           </Typography>
         )}
         {ds.url && (
-          <Typography variant="caption">
-            <a href={ds.url} target="_blank" rel="noreferrer">
-              {ds.url}
-            </a>
+          <Typography
+            variant="caption"
+            component="a"
+            href={ds.url}
+            target="_blank"
+            rel="noreferrer"
+            title={ds.url}
+            sx={{
+              display: 'block',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {ds.url}
           </Typography>
         )}
         <Typography variant="caption" color="text.secondary" sx={{ pt: 0.5 }}>
