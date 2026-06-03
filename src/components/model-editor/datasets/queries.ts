@@ -22,6 +22,13 @@ export const DATASET_SUMMARY_FIELDS = gql`
       label
       unit
     }
+    lastModifiedAt
+    lastModifiedBy {
+      id
+      firstName
+      lastName
+      email
+    }
   }
 `;
 

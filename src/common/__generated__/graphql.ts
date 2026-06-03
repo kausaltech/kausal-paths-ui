@@ -1218,7 +1218,7 @@ export type DataPointInstanceChangeHistoryQuery = (
 );
 
 export type DatasetSummaryFieldsFragment = (
-  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
     & { __typename: 'DatasetExternalRefType' }
   ) | null, dimensions: Array<(
@@ -1227,7 +1227,10 @@ export type DatasetSummaryFieldsFragment = (
   )>, metrics: Array<(
     { id: string, label: string, unit: string }
     & { __typename: 'DatasetMetric' }
-  )> }
+  )>, lastModifiedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null }
   & { __typename: 'Dataset' }
 );
 
@@ -1333,7 +1336,7 @@ export type InstanceDatasetsQuery = (
   { instance: (
     { id: string, editor: (
       { datasets: Array<(
-        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPointComments: Array<(
+        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, dataPointComments: Array<(
           { id: string }
           & { __typename: 'DataPointComment' }
         )>, externalRef: (
@@ -1345,7 +1348,10 @@ export type InstanceDatasetsQuery = (
         )>, metrics: Array<(
           { id: string, label: string, unit: string }
           & { __typename: 'DatasetMetric' }
-        )> }
+        )>, lastModifiedBy: (
+          { id: string, firstName: string, lastName: string, email: string }
+          & { __typename: 'User' }
+        ) | null }
         & { __typename: 'Dataset' }
       )> }
       & { __typename: 'InstanceEditor' }

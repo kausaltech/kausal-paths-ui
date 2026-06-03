@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import {
   ChatLeft,
   Database,
@@ -41,6 +42,7 @@ import {
 import type { InstanceDatasetsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
 import { GET_INSTANCE_DATASETS } from './queries';
+import { getUserName } from './shared';
 
 function getDatasetsBase(pathname: string): string {
   const idx = pathname.indexOf('/model');
@@ -129,8 +131,7 @@ function getSortValue(ds: DatasetRow, key: SortKey): string | number {
     case 'comments':
       return ds.dataPointComments.length;
     case 'lastModified':
-      //return ds.lastModifiedAt ? new Date(ds.lastModifiedAt).getTime() : 0;
-      return '-';
+      return ds.lastModifiedAt ? new Date(ds.lastModifiedAt).getTime() : 0;
   }
 }
 
@@ -151,6 +152,7 @@ function formatRelativeTime(iso: string): string {
 }
 
 export default function DatasetList() {
+  const t = useTranslations('model-editor');
   const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -176,7 +178,6 @@ export default function DatasetList() {
     [data?.instance.editor?.datasets]
   );
 
-  console.log('Datasets:', datasets);
   const sortedDatasets = useMemo(() => {
     const arr = [...datasets];
     arr.sort((a, b) => {
@@ -353,8 +354,14 @@ export default function DatasetList() {
                   )}
                 </TableCell>
                 <TableCell align="right">
-                  {/*ds?.lastModifiedAt ? (
-                    <Tooltip title={formatTimestamp(ds.lastModifiedAt)}>
+                  {ds.lastModifiedAt ? (
+                    <Tooltip
+                      title={
+                        ds.lastModifiedBy
+                          ? `${formatTimestamp(ds.lastModifiedAt)} · ${getUserName(ds.lastModifiedBy, t)}`
+                          : formatTimestamp(ds.lastModifiedAt)
+                      }
+                    >
                       <Typography variant="body2" color="text.secondary" component="span">
                         {formatRelativeTime(ds.lastModifiedAt)}
                       </Typography>
@@ -363,7 +370,7 @@ export default function DatasetList() {
                     <Typography variant="body2" color="text.disabled">
                       —
                     </Typography>
-                  )*/}
+                  )}
                 </TableCell>
                 <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                   <DatasetRowActions
