@@ -1,23 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  ClickAwayListener,
-  Divider,
-  LinearProgress,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
-  Snackbar,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Snackbar } from '@mui/material';
 
 import { useMutation } from '@apollo/client/react';
 import {
@@ -35,7 +18,6 @@ import {
   type Rectangle,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import { Bookmarks, ChatLeft, Clipboard, Files, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
   CreateDataPointMutation,
@@ -50,6 +32,25 @@ import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { type AddProgress, AddRowsModal } from './AddRowsModal';
 import { AddYearsModal } from './AddYearsModal';
+import { CellContextMenu, ColumnFilterMenu } from './DatasetDataGridMenus';
+import { DatasetDataGridProgressOverlay } from './DatasetDataGridProgressOverlay';
+import { DatasetDataGridToolbar } from './DatasetDataGridToolbar';
+import {
+  DIM_COL_PREFIX,
+  DIRTY_BG,
+  EMPTY_SELECTION,
+  ERROR_BG,
+  LABEL_COL_BG,
+  MIN_YEAR_AREA,
+  NO_CATEGORY,
+  ROW_MARKER_WIDTH,
+  YEAR_COL_PREFIX,
+  defaultWidthForCol,
+  formatNumber,
+  isYearColId,
+  useEnsurePortal,
+  yearFromColId,
+} from './DatasetDataGridUtils';
 import { NOT_APPLICABLE } from './DimensionCategoryList';
 import {
   type GridRow,
@@ -89,78 +90,6 @@ type Props = {
   // Comment / Data source items, which both act on the focused data point).
   onOpenPanel?: (panel: 'datapoint') => void;
 };
-
-// Solid colour approximations of the original rgba tints — canvas doesn't
-// composite the alpha against the row background the same way CSS does, so we
-// pre-mix against white.
-const DIRTY_BG = '#fce8d4';
-const ERROR_BG = '#fbe1e1';
-// Background for the read-only dimension/metric label columns, distinguishing
-// them from the editable (white) data cells.
-const LABEL_COL_BG = '#f5f5f5';
-
-const EMPTY_SELECTION: GridSelection = {
-  columns: CompactSelection.empty(),
-  rows: CompactSelection.empty(),
-};
-
-const DEFAULT_DIM_WIDTH = 120;
-const DEFAULT_METRIC_WIDTH = 100;
-const DEFAULT_YEAR_WIDTH = 84;
-
-// Always keep at least this much horizontal space available for the scrollable
-// year columns, even when many dimension/metric columns would be pinned. Glide
-// can't scroll past frozen columns, so without this budget the year data
-// becomes unreachable on narrow viewports.
-const MIN_YEAR_AREA = DEFAULT_YEAR_WIDTH * 2;
-// Width of the left-hand row-marker column (rowMarkers="both"). Pinned via the
-// `rowMarkerWidth` prop (rather than Glide's row-count-dependent default) so we
-// can compute the exact x of the freeze boundary for the divider overlay below.
-const ROW_MARKER_WIDTH = 44;
-
-const YEAR_COL_PREFIX = 'col_year_';
-const DIM_COL_PREFIX = 'col_dim_';
-
-// Sentinel filter key for rows with no category in a given dimension (the "—"
-// cells). A real UUID can never collide with this.
-const NO_CATEGORY = 'no-category';
-
-function formatNumber(value: number | null | undefined): string {
-  if (value == null) return '';
-  return value.toLocaleString(undefined, { maximumFractionDigits: 6 });
-}
-
-function defaultWidthForCol(colId: string): number {
-  if (colId === METRIC_COL) return DEFAULT_METRIC_WIDTH;
-  if (colId.startsWith(YEAR_COL_PREFIX)) return DEFAULT_YEAR_WIDTH;
-  return DEFAULT_DIM_WIDTH;
-}
-
-function isYearColId(colId: string): boolean {
-  return colId.startsWith(YEAR_COL_PREFIX);
-}
-
-// Glide's overlay editor portals into `#portal`. Mount one if missing so the
-// number-cell editor opens; left in place across unmounts so multiple grids
-// (or remounts) share a single portal node.
-function useEnsurePortal() {
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById('portal')) return;
-    const el = document.createElement('div');
-    el.id = 'portal';
-    el.style.position = 'fixed';
-    el.style.left = '0';
-    el.style.top = '0';
-    el.style.zIndex = '9999';
-    document.body.appendChild(el);
-  }, []);
-}
-
-function yearFromColId(colId: string): number | null {
-  const m = /^col_year_(\d+)$/.exec(colId);
-  return m ? Number(m[1]) : null;
-}
 
 export default function DatasetDataGrid({
   dataset,
@@ -1355,76 +1284,21 @@ export default function DatasetDataGrid({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="flex-end"
-        spacing={1}
-        sx={{ mb: 1 }}
-      >
-        {hasPending && (
-          <Typography variant="body2" color="warning.main" sx={{ mr: 'auto' }}>
-            {pendingCount} unsaved change{pendingCount === 1 ? '' : 's'}
-          </Typography>
-        )}
-        {selectedRowCount > 0 && (
-          <Button
-            size="small"
-            color="error"
-            variant="outlined"
-            startIcon={<Trash />}
-            onClick={handleDeleteSelected}
-            disabled={isMutating}
-            sx={!hasPending ? { mr: 'auto' } : undefined}
-          >
-            Delete {selectedRowCount} row{selectedRowCount === 1 ? '' : 's'}
-          </Button>
-        )}
-        {selectedYearCount > 0 && (
-          <Button
-            size="small"
-            color="error"
-            variant="outlined"
-            startIcon={<Trash />}
-            onClick={handleDeleteSelectedYears}
-            disabled={isMutating}
-            sx={!hasPending && selectedRowCount === 0 ? { mr: 'auto' } : undefined}
-          >
-            Delete {selectedYearCount} year{selectedYearCount === 1 ? '' : 's'}
-          </Button>
-        )}
-        {hasPending && (
-          <>
-            <Button size="small" onClick={handleDiscard} disabled={isMutating} color="inherit">
-              Discard
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => void handleSave()}
-              disabled={isMutating}
-            >
-              {saving ? 'Saving…' : 'Save changes'}
-            </Button>
-          </>
-        )}
-        <Button
-          size="small"
-          startIcon={<Plus />}
-          onClick={() => setAddYearOpen(true)}
-          disabled={isMutating}
-        >
-          Add years
-        </Button>
-        <Button
-          size="small"
-          startIcon={<Plus />}
-          onClick={() => setAddOpen(true)}
-          disabled={isMutating || dataset.metrics.length === 0}
-        >
-          Add rows
-        </Button>
-      </Stack>
+      <DatasetDataGridToolbar
+        hasPending={hasPending}
+        pendingCount={pendingCount}
+        selectedRowCount={selectedRowCount}
+        selectedYearCount={selectedYearCount}
+        isMutating={isMutating}
+        saving={saving}
+        disableAddRows={dataset.metrics.length === 0}
+        onDeleteSelectedRows={handleDeleteSelected}
+        onDeleteSelectedYears={handleDeleteSelectedYears}
+        onDiscard={handleDiscard}
+        onSave={() => void handleSave()}
+        onAddYears={() => setAddYearOpen(true)}
+        onAddRows={() => setAddOpen(true)}
+      />
       <Box ref={gridWrapperRef} sx={{ flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
         <DataEditor
           ref={gridRef}
@@ -1474,208 +1348,25 @@ export default function DatasetDataGrid({
             }}
           />
         )}
-        {(() => {
-          const overlay =
-            deleteProgress !== null
-              ? {
-                  progress: deleteProgress,
-                  label: `Deleting ${deleteProgress.current} of ${deleteProgress.total} data points…`,
-                }
-              : addYearsProgress !== null
-                ? {
-                    progress: addYearsProgress,
-                    label: `Adding ${addYearsProgress.current} of ${addYearsProgress.total} year${
-                      addYearsProgress.total === 1 ? '' : 's'
-                    }…`,
-                  }
-                : null;
-          if (!overlay) return null;
-          const { progress, label } = overlay;
-          return (
-            <Box
-              sx={{
-                position: 'absolute',
-                inset: 0,
-                bgcolor: 'rgba(255, 255, 255, 0.7)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1,
-                // Eat all pointer events so the user can't fire another delete
-                // or edit cells while mutations are in flight.
-                cursor: 'wait',
-              }}
-            >
-              <Box sx={{ width: '60%', maxWidth: 360 }}>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 0.5, textAlign: 'center' }}
-                >
-                  {label}
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={progress.total > 0 ? (progress.current / progress.total) * 100 : 0}
-                />
-              </Box>
-            </Box>
-          );
-        })()}
+        <DatasetDataGridProgressOverlay
+          deleteProgress={deleteProgress}
+          addYearsProgress={addYearsProgress}
+        />
       </Box>
-      <Popper
-        open={contextMenu !== null}
-        anchorEl={
-          contextMenu !== null
-            ? {
-                getBoundingClientRect: () =>
-                  new DOMRect(contextMenu.mouseX, contextMenu.mouseY, 0, 0),
-              }
-            : null
-        }
-        placement="bottom-start"
-        sx={{ zIndex: (theme) => theme.zIndex.modal }}
-      >
-        <ClickAwayListener
-          onClickAway={() => setContextMenu(null)}
-          // Right-click events also dismiss; the document-level listener above
-          // handles repositioning to a new cell when applicable.
-          mouseEvent="onMouseDown"
-        >
-          <Paper elevation={8}>
-            <MenuList autoFocus dense>
-              <MenuItem
-                onClick={() => {
-                  setContextMenu(null);
-                  // Glide's keyboard handlers only fire when the grid is
-                  // focused; the menu click moves focus to the MenuList.
-                  gridRef.current?.focus();
-                  void gridRef.current?.emit('copy');
-                }}
-              >
-                <ListItemIcon>
-                  <Files />
-                </ListItemIcon>
-                <ListItemText>Copy</ListItemText>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  setContextMenu(null);
-                  gridRef.current?.focus();
-                  // Reads via navigator.clipboard.readText — requires a user
-                  // gesture (the menu click qualifies) and a secure context.
-                  // No-ops silently if the browser denies permission.
-                  void gridRef.current?.emit('paste');
-                }}
-              >
-                <ListItemIcon>
-                  <Clipboard />
-                </ListItemIcon>
-                <ListItemText>Paste</ListItemText>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  setContextMenu(null);
-                  onOpenPanel?.('datapoint');
-                }}
-              >
-                <ListItemIcon>
-                  <ChatLeft />
-                </ListItemIcon>
-                <ListItemText>Comment</ListItemText>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  setContextMenu(null);
-                  onOpenPanel?.('datapoint');
-                }}
-              >
-                <ListItemIcon>
-                  <Bookmarks />
-                </ListItemIcon>
-                <ListItemText>Data source</ListItemText>
-              </MenuItem>
-            </MenuList>
-          </Paper>
-        </ClickAwayListener>
-      </Popper>
-      <Popper
-        open={filterMenu !== null}
-        anchorEl={
-          filterMenu !== null
-            ? {
-                // Glide already reports bounds in client/viewport coordinates
-                // (it adds the canvas rect offset), so use them as-is.
-                getBoundingClientRect: () => {
-                  const { x, y, width, height } = filterMenu.bounds;
-                  return new DOMRect(x, y, width, height);
-                },
-              }
-            : null
-        }
-        placement="bottom-start"
-        sx={{ zIndex: (theme) => theme.zIndex.modal }}
-      >
-        <ClickAwayListener onClickAway={() => setFilterMenu(null)}>
-          <Paper elevation={8} sx={{ minWidth: 200, maxHeight: 360, overflow: 'auto' }}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ pl: 1.5, pr: 0.5, py: 0.25 }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                {filterMenu?.colId === METRIC_COL ? 'Filter by metric' : 'Filter by category'}
-              </Typography>
-              <Button
-                size="small"
-                onClick={() => filterMenu && clearCategoryFilter(filterMenu.colId)}
-                disabled={!filterMenu || !categoryFilters.has(filterMenu.colId)}
-              >
-                Clear
-              </Button>
-            </Stack>
-            <Divider />
-            <MenuList dense>
-              {filterMenuOptions.length === 0 && (
-                <MenuItem disabled>
-                  <ListItemText>No values</ListItemText>
-                </MenuItem>
-              )}
-              {filterMenuOptions.map((opt) => {
-                const selected = filterMenu ? categoryFilters.get(filterMenu.colId) : undefined;
-                // Absent filter = every value allowed (all checked).
-                const checked = selected ? selected.has(opt.key) : true;
-                return (
-                  <MenuItem
-                    key={opt.key}
-                    onClick={() =>
-                      filterMenu &&
-                      toggleCategoryFilter(
-                        filterMenu.colId,
-                        opt.key,
-                        filterMenuOptions.map((o) => o.key)
-                      )
-                    }
-                  >
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        size="small"
-                        checked={checked}
-                        tabIndex={-1}
-                        disableRipple
-                        sx={{ p: 0 }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText>{opt.label}</ListItemText>
-                  </MenuItem>
-                );
-              })}
-            </MenuList>
-          </Paper>
-        </ClickAwayListener>
-      </Popper>
+      <CellContextMenu
+        contextMenu={contextMenu}
+        gridRef={gridRef}
+        onClose={() => setContextMenu(null)}
+        onOpenPanel={onOpenPanel}
+      />
+      <ColumnFilterMenu
+        filterMenu={filterMenu}
+        categoryFilters={categoryFilters}
+        filterMenuOptions={filterMenuOptions}
+        onClose={() => setFilterMenu(null)}
+        onClearFilter={clearCategoryFilter}
+        onToggleFilter={toggleCategoryFilter}
+      />
       <AddRowsModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
