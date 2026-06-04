@@ -75,18 +75,35 @@ function buildConfig(source: EditorNodeFieldsFragment): NodeConfigInput | null {
       } as NodeConfigInput;
     case 'SimpleConfigType':
       return { simple: { nodeClass: typeConfig.nodeClass } } as NodeConfigInput;
+    case 'FormulaConfigType':
+      return { formula: { formula: typeConfig.formula } } as NodeConfigInput;
+    case 'PipelineConfigType': {
+      // The query returns `operations` as JSON (a list of `{ operation }`
+      // objects); the input wants `[PipelineOperationInput!]`. Map element by
+      // element, dropping anything that doesn't carry an `operation` string.
+      const rawOperations = Array.isArray(typeConfig.operations)
+        ? (typeConfig.operations as unknown[])
+        : [];
+      const operations = rawOperations.flatMap((op) =>
+        op != null && typeof (op as { operation?: unknown }).operation === 'string'
+          ? [{ operation: (op as { operation: string }).operation }]
+          : []
+      );
+      return { pipeline: { operations } } as NodeConfigInput;
+    }
     default:
       return null;
   }
 }
 
-export type DuplicateActionResult = {
+export type DuplicateNodeResult = {
   ok: true;
+  newId: string;
   newIdentifier: string;
   newName: string;
 };
 
-export function useDuplicateAction() {
+export function useDuplicateNode() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
@@ -95,8 +112,13 @@ export function useDuplicateAction() {
   return useCallback(
     async (
       source: EditorNodeFieldsFragment,
-      allNodes: readonly EditorNodeFieldsFragment[]
-    ): Promise<DuplicateActionResult> => {
+      allNodes: readonly EditorNodeFieldsFragment[],
+      // Invoked with the new node's id after the create succeeds but *before*
+      // the graph is refetched. Lets the caller seed layout state (e.g. the
+      // copy's offset position) so the refetch-triggered layout pass sees it,
+      // rather than racing the refetch.
+      onCreated?: (newId: string) => void
+    ): Promise<DuplicateNodeResult> => {
       if (source.kind == null) {
         throw new Error(`Cannot duplicate node "${source.identifier}" — missing kind`);
       }
@@ -144,15 +166,21 @@ export function useDuplicateAction() {
             version: draftHeadTokenVar(),
           },
           context: editorContext,
-          refetchQueries: ['NodeGraph', 'EditorPublishState'],
-          awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.createNode;
         if (payload?.__typename === 'OperationInfo') {
           const message = payload.messages.map((m) => m.message).join('; ');
-          throw new Error(message || 'Failed to duplicate action');
+          throw new Error(message || 'Failed to duplicate node');
         }
-        return { ok: true, newIdentifier, newName };
+        if (!payload?.id) {
+          throw new Error('Failed to duplicate node — no id returned');
+        }
+        // Seed-before-refetch: the callback runs while the graph still shows
+        // the pre-duplication node set, so any layout state it writes is in
+        // place before the refetch below makes the copy appear.
+        onCreated?.(payload.id);
+        await client.refetchQueries({ include: ['NodeGraph', 'EditorPublishState'] });
+        return { ok: true, newId: payload.id, newIdentifier, newName };
       } catch (err) {
         const isStale =
           CombinedGraphQLErrors.is(err) &&

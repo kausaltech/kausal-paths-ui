@@ -927,7 +927,14 @@ export type NodeGraphQuery = (
                 { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 & { __typename: 'ActionConfigType' }
               )
-              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { formula: string }
+                & { __typename: 'FormulaConfigType' }
+              )
+              | (
+                { operations: any }
+                & { __typename: 'PipelineConfigType' }
+              )
               | (
                 { nodeClass: string }
                 & { __typename: 'SimpleConfigType' }
@@ -980,7 +987,14 @@ export type NodeGraphQuery = (
                 { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 & { __typename: 'ActionConfigType' }
               )
-              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { formula: string }
+                & { __typename: 'FormulaConfigType' }
+              )
+              | (
+                { operations: any }
+                & { __typename: 'PipelineConfigType' }
+              )
               | (
                 { nodeClass: string }
                 & { __typename: 'SimpleConfigType' }
@@ -1042,7 +1056,14 @@ type EditorNodeFields_ActionNode_Fragment = (
           { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
           & { __typename: 'ActionConfigType' }
         )
-        | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { formula: string }
+          & { __typename: 'FormulaConfigType' }
+        )
+        | (
+          { operations: any }
+          & { __typename: 'PipelineConfigType' }
+        )
         | (
           { nodeClass: string }
           & { __typename: 'SimpleConfigType' }
@@ -1096,7 +1117,14 @@ type EditorNodeFields_Node_Fragment = (
           { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
           & { __typename: 'ActionConfigType' }
         )
-        | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { formula: string }
+          & { __typename: 'FormulaConfigType' }
+        )
+        | (
+          { operations: any }
+          & { __typename: 'PipelineConfigType' }
+        )
         | (
           { nodeClass: string }
           & { __typename: 'SimpleConfigType' }

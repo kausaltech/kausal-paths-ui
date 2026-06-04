@@ -16,7 +16,7 @@ type Props = {
   onClose: () => void;
   onHideEdge: (edgeId: string) => void;
   onOpenActionWizard: (nodeId: string) => void;
-  onDuplicateAction: (nodeId: string) => void;
+  onDuplicateNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
 };
 
@@ -25,7 +25,7 @@ export default function NodeGraphContextMenu({
   onClose,
   onHideEdge,
   onOpenActionWizard,
-  onDuplicateAction,
+  onDuplicateNode,
   onDeleteNode,
 }: Props) {
   const readOnly = useIsEditorReadOnly();
@@ -42,9 +42,9 @@ export default function NodeGraphContextMenu({
     onClose();
   };
 
-  const handleDuplicateAction = () => {
+  const handleDuplicateNode = () => {
     if (state?.kind !== 'node') return;
-    onDuplicateAction(state.nodeId);
+    onDuplicateNode(state.nodeId);
     onClose();
   };
 
@@ -71,20 +71,23 @@ export default function NodeGraphContextMenu({
         </MenuItem>
       )}
       {!readOnly &&
-        state?.kind === 'node' &&
-        state.isAction && [
-          <MenuItem key="duplicate" onClick={handleDuplicateAction}>
+        state?.kind === 'node' && [
+          <MenuItem key="duplicate" onClick={handleDuplicateNode}>
             <ListItemIcon>
               <Copy size={14} />
             </ListItemIcon>
-            <ListItemText>Duplicate action</ListItemText>
+            <ListItemText>Duplicate node</ListItemText>
           </MenuItem>,
-          <MenuItem key="wizard" onClick={handleOpenActionWizard}>
-            <ListItemIcon>
-              <Magic size={14} />
-            </ListItemIcon>
-            <ListItemText>Action wizard (legacy)</ListItemText>
-          </MenuItem>,
+          ...(state.isAction
+            ? [
+                <MenuItem key="wizard" onClick={handleOpenActionWizard}>
+                  <ListItemIcon>
+                    <Magic size={14} />
+                  </ListItemIcon>
+                  <ListItemText>Action wizard (legacy)</ListItemText>
+                </MenuItem>,
+              ]
+            : []),
           <Divider key="divider" />,
         ]}
       {!readOnly && state?.kind === 'node' && (
