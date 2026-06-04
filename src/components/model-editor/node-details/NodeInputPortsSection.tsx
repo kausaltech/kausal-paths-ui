@@ -1,8 +1,10 @@
 import { useState } from 'react';
 
 import {
+  Alert,
   Box,
   Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -25,12 +27,37 @@ import type {
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
-import type { getNodeSpec } from '../nodeHelpers';
+import { getNodeSpec } from '../nodeHelpers';
+import { useCreateEdge } from '../useCreateEdge';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
 type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
 type InputPort = NodeSpec['inputPorts'][number];
+
+/**
+ * The source node's first output port compatible with `port` (same matching
+ * rules as NodeSelector). Returns its id for the edge's `fromPort`; `undefined`
+ * falls back to "output" (fine for single-output nodes).
+ */
+function matchingOutputPortId(
+  sourceNode: EditorNodeFieldsFragment,
+  port: InputPort
+): string | undefined {
+  const outputs = getNodeSpec(sourceNode)?.outputPorts ?? [];
+  const match = outputs.find((o) => {
+    if (port.quantity !== o.quantity) return false;
+    if (port.requiredDimensions.some((req) => !o.dimensions.includes(req))) return false;
+    if (
+      port.supportedDimensions.length > 0 &&
+      o.dimensions.some((d) => !port.supportedDimensions.includes(d))
+    ) {
+      return false;
+    }
+    return true;
+  });
+  return match?.id;
+}
 
 type PortInfoRowProps = {
   label: string;
@@ -104,6 +131,39 @@ export default function NodeInputPortsSection({
 }: NodeInputPortsSectionProps) {
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
+  const createEdge = useCreateEdge();
+  const [binding, setBinding] = useState(false);
+  const [bindError, setBindError] = useState<string | null>(null);
+
+  const closeDialog = () => {
+    setEditingPortId(null);
+    setBindError(null);
+  };
+
+  const handleSelectNode = (sourceNodeId: string) => {
+    if (!editingPort || binding) return;
+    const sourceNode = nodeMap.get(sourceNodeId);
+    const targetNode = nodeMap.get(currentNodeId);
+    if (!sourceNode || !targetNode) return;
+    setBinding(true);
+    setBindError(null);
+    createEdge({
+      fromNodeId: sourceNode.identifier,
+      toNodeId: targetNode.identifier,
+      fromPort: matchingOutputPortId(sourceNode, editingPort) ?? 'output',
+      toPort: editingPort.id,
+    })
+      .then(() => closeDialog())
+      .catch((err: unknown) =>
+        setBindError(err instanceof Error ? err.message : 'Failed to create edge')
+      )
+      .finally(() => setBinding(false));
+  };
+
+  const handleSelectDataset = () => {
+    // No backend mutation exists yet to bind a dataset to an input port.
+    setBindError('Binding a dataset to an input port is not supported yet.');
+  };
 
   if (ports.length === 0) return null;
 
@@ -269,31 +329,47 @@ export default function NodeInputPortsSection({
           </Box>
         );
       })}
-      <Dialog
-        open={editingPort !== null}
-        onClose={() => setEditingPortId(null)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          Select new input node
+          Select input source
           <IconButton
             aria-label="Close"
-            onClick={() => setEditingPortId(null)}
+            onClick={closeDialog}
             sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
           >
             <XIcon size={20} />
           </IconButton>
         </DialogTitle>
         <DialogContent>
+          {bindError && (
+            <Alert severity="error" onClose={() => setBindError(null)} sx={{ mb: 1, fontSize: 12 }}>
+              {bindError}
+            </Alert>
+          )}
           {editingPort && (
-            <PortBindingSelector
-              nodes={[...nodeMap.values()]}
-              port={editingPort}
-              currentNodeId={currentNodeId}
-              onSelectNode={() => setEditingPortId(null)}
-              onSelectDataset={() => setEditingPortId(null)}
-            />
+            <Box sx={{ position: 'relative' }}>
+              <PortBindingSelector
+                nodes={[...nodeMap.values()]}
+                port={editingPort}
+                currentNodeId={currentNodeId}
+                onSelectNode={handleSelectNode}
+                onSelectDataset={handleSelectDataset}
+              />
+              {binding && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(255,255,255,0.6)',
+                  }}
+                >
+                  <CircularProgress size={24} />
+                </Box>
+              )}
+            </Box>
           )}
         </DialogContent>
       </Dialog>

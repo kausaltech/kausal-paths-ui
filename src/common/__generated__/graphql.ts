@@ -50,6 +50,11 @@ export enum ActionSortOrder {
   Standard = 'STANDARD'
 }
 
+export type AssignCategoryTransformationInput = {
+  category: Scalars['String']['input'];
+  dimension: Scalars['String']['input'];
+};
+
 export enum ChangeTargetKind {
   DatasetPort = 'DATASET_PORT',
   DataPoint = 'DATA_POINT',
@@ -96,6 +101,15 @@ export type CreateDimensionCategoryInput = {
   label: Scalars['String']['input'];
   nextSibling: InputMaybe<Scalars['ID']['input']>;
   previousSibling: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type CreateEdgeInput = {
+  fromNodeId: Scalars['String']['input'];
+  fromPort: Scalars['String']['input'];
+  instanceId: Scalars['ID']['input'];
+  toNodeId: Scalars['String']['input'];
+  toPort: InputMaybe<Scalars['String']['input']>;
+  transformations: InputMaybe<Array<EdgeTransformationInput>>;
 };
 
 export type CreateInstanceInput = {
@@ -152,6 +166,16 @@ export enum DimensionKind {
   Node = 'NODE',
   Scenario = 'SCENARIO'
 }
+
+export type EdgeTransformationInput = {
+  assignCategory: InputMaybe<AssignCategoryTransformationInput>;
+  flatten: InputMaybe<FlattenTransformationInput>;
+  selectCategories: InputMaybe<SelectCategoriesTransformationInput>;
+};
+
+export type FlattenTransformationInput = {
+  dimension: Scalars['String']['input'];
+};
 
 export type FormulaConfigInput = {
   formula: Scalars['String']['input'];
@@ -270,6 +294,13 @@ export enum ScenarioKind {
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
 }
+
+export type SelectCategoriesTransformationInput = {
+  categories: Array<Scalars['String']['input']>;
+  dimension: Scalars['String']['input'];
+  exclude: Scalars['Boolean']['input'];
+  flatten: Scalars['Boolean']['input'];
+};
 
 export type SimpleConfigInput = {
   nodeClass: Scalars['String']['input'];
@@ -2090,6 +2121,69 @@ export type CreateNodeMutation = (
       | (
         { id: string, identifier: string, name: string, uuid: string }
         & { __typename: 'ActionNode' | 'Node' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type NodeParametersQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+}>;
+
+
+export type NodeParametersQuery = (
+  { node: (
+    { id: string, parameters: Array<
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean, boolValue: boolean | null }
+        & { __typename: 'BoolParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean, numberValue: number | null }
+        & { __typename: 'NumberParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean, stringValue: string | null }
+        & { __typename: 'StringParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean }
+        & { __typename: 'UnknownParameterType' }
+      )
+    > }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
+export type CreateEdgeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: CreateEdgeInput;
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type CreateEdgeMutation = (
+  { instanceEditor: (
+    { createEdge:
+      | (
+        { id: string, fromRef: (
+          { nodeId: string, portId: string }
+          & { __typename: 'NodePortRef' }
+        ), toRef: (
+          { nodeId: string, portId: string }
+          & { __typename: 'NodePortRef' }
+        ) }
+        & { __typename: 'NodeEdgeType' }
       )
       | (
         { messages: Array<(

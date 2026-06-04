@@ -10,11 +10,46 @@ import type {
   EditorNodeFieldsFragment,
   InputPortInput,
   NodeConfigInput,
+  NodeParametersQuery,
+  NodeParametersQueryVariables,
   OutputPortInput,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
-import { CREATE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
+import {
+  CREATE_NODE,
+  NODE_PARAMETERS,
+  draftHeadTokenVar,
+  staleVersionNotificationVar,
+} from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
+
+/**
+ * Map the source node's parameters to a `{ localId: value }` config the
+ * `createNode` `params` JSON accepts. Parameters hold node logic that isn't in
+ * `typeConfig` (e.g. a `formula` string on generic nodes, numeric constants),
+ * so copying them is what makes a duplicate behave like its source. Only
+ * customizable params with a concrete value are carried; unknown-typed and
+ * value-less params are skipped.
+ */
+function buildParams(
+  parameters: NonNullable<NodeParametersQuery['node']>['parameters']
+): Record<string, string | number | boolean> | null {
+  const out: Record<string, string | number | boolean> = {};
+  for (const p of parameters) {
+    if (!p.nodeRelativeId || !p.isCustomizable) continue;
+    const value =
+      p.__typename === 'BoolParameterType'
+        ? p.boolValue
+        : p.__typename === 'NumberParameterType'
+          ? p.numberValue
+          : p.__typename === 'StringParameterType'
+            ? p.stringValue
+            : undefined;
+    if (value === null || value === undefined) continue;
+    out[p.nodeRelativeId] = value;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
 
 function pickUniqueIdentifier(
   sourceIdentifier: string,
@@ -134,6 +169,22 @@ export function useDuplicateNode() {
       const newIdentifier = pickUniqueIdentifier(source.identifier, existingIdentifiers);
       const newName = `Copy of ${source.name}`;
       const { inputPorts, outputPorts } = buildPortInputs(source);
+
+      // Parameters carry node logic (e.g. a formula string, constants) that
+      // isn't in `typeConfig`; the NodeGraph query doesn't fetch them, so pull
+      // them for just this node before building the input.
+      let params: Record<string, string | number | boolean> | null = null;
+      try {
+        const { data } = await client.query<NodeParametersQuery, NodeParametersQueryVariables>({
+          query: NODE_PARAMETERS,
+          variables: { nodeId: source.id },
+          context: editorContext,
+          fetchPolicy: 'network-only',
+        });
+        if (data?.node?.parameters) params = buildParams(data.node.parameters);
+      } catch {
+        // Non-fatal: fall back to no params rather than blocking duplication.
+      }
       const input: CreateNodeInput = {
         identifier: newIdentifier,
         name: newName,
@@ -155,7 +206,7 @@ export function useDuplicateNode() {
         i18n: null,
         minimumYear: null,
         outputMetrics: null,
-        params: null,
+        params,
       };
 
       try {
