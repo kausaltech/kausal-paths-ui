@@ -75,3 +75,22 @@ export function yearFromColId(colId: string): number | null {
   const m = /^col_year_(\d+)$/.exec(colId);
   return m ? Number(m[1]) : null;
 }
+
+// Derive single-value category-filter pins for the importer: a dimension whose
+// active filter narrows the view to exactly one real category becomes a pin for
+// data the paste doesn't mention (e.g. the sector when only "Private Haushalte"
+// is shown). Multi-value filters, the "no category" sentinel, and unfiltered
+// dimensions yield no pin (the importer asks instead). Returns dimId -> uuid.
+export function filterPinsForDimensions(
+  categoryFilters: ReadonlyMap<string, ReadonlySet<string>>,
+  dimensions: readonly { id: string }[]
+): Record<string, string> {
+  const pins: Record<string, string> = {};
+  for (const dim of dimensions) {
+    const allowed = categoryFilters.get(`${DIM_COL_PREFIX}${dim.id}`);
+    if (!allowed || allowed.size !== 1) continue;
+    const [only] = allowed;
+    if (only !== NO_CATEGORY) pins[dim.id] = only;
+  }
+  return pins;
+}

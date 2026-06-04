@@ -46,6 +46,7 @@ import {
   ROW_MARKER_WIDTH,
   YEAR_COL_PREFIX,
   defaultWidthForCol,
+  filterPinsForDimensions,
   formatNumber,
   isYearColId,
   useEnsurePortal,
@@ -63,6 +64,8 @@ import {
   pendingKey,
   yearColId,
 } from './dataset-grid-data';
+import ImportModal from './import/ImportModal';
+import { useDatasetImport } from './import/useDatasetImport';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
 import type { SelectedCell } from './shared';
 
@@ -170,6 +173,21 @@ export default function DatasetDataGrid({
     () => buildGridData(dataset, extraYears),
     [dataset, extraYears]
   );
+
+  // Dimensional paste / import. Lives entirely in the hook + ImportModal; the
+  // grid only supplies state (and gets back `onPaste` + the modal props), so
+  // none of the import orchestration bloats this component.
+  const filterPins = useMemo(
+    () => filterPinsForDimensions(categoryFilters, dataset.dimensions),
+    [categoryFilters, dataset.dimensions]
+  );
+  const importer = useDatasetImport({
+    dataset,
+    existingYears: years,
+    filterPins,
+    instanceId: instance.id,
+    onCommitted: onMutated,
+  });
   // Column sort. null = default (metric-grouped) order from buildGridData.
   // Works for year columns (by numeric value) and dimension columns (by
   // category label). Cycles on click: unset -> asc -> desc -> unset.
@@ -1308,7 +1326,9 @@ export default function DatasetDataGrid({
           onCellEdited={onCellEdited}
           onCellsEdited={onCellsEdited}
           coercePasteValue={coercePasteValue}
-          onPaste
+          // Dimensional pastes (a year-header table) open the import modal;
+          // everything else falls through to Glide's positional paste.
+          onPaste={importer.onPaste}
           onCellContextMenu={onCellContextMenu}
           onHeaderClicked={onHeaderClicked}
           onHeaderContextMenu={onHeaderContextMenu}
@@ -1387,6 +1407,7 @@ export default function DatasetDataGrid({
           void handleAddYears(newYears);
         }}
       />
+      <ImportModal {...importer.modalProps} />
       <Snackbar
         open={error !== null}
         autoHideDuration={5000}

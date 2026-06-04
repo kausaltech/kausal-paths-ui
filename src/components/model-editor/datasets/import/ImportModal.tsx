@@ -1,0 +1,517 @@
+import { useEffect, useMemo, useState } from 'react';
+
+import {
+  Alert,
+  Autocomplete,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControl,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
+
+import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
+import type { AddProgress } from '../AddRowsModal';
+import { extractYear } from '../dataset-grid-data';
+import type { DetectedTable } from './parse';
+import {
+  type ColumnMapping,
+  type DatasetSchema,
+  type ImportPlan,
+  type LabelResolution,
+  type PlanDimension,
+  type TriageItem,
+  buildImportPlan,
+  collectTriageItems,
+  defaultResolution,
+  inferColumnMapping,
+  resolutionKey,
+} from './plan';
+
+export interface ImportCommit {
+  matrix: string[][];
+  detected: DetectedTable;
+  mapping: ColumnMapping;
+  pinnedCategoryByDimension: Record<string, string>;
+  metricId: string;
+  /** Effective decision per triage key (defaults already applied). */
+  resolutions: Record<string, LabelResolution>;
+  /** The triage items, so the commit step can recover labels for new categories. */
+  triage: TriageItem[];
+}
+
+export interface ImportModalProps {
+  open: boolean;
+  /** Clipboard matrix + detected structure for the active session, or null. */
+  matrix: string[][] | null;
+  detected: DetectedTable | null;
+  dataset: DatasetDetailFieldsFragment;
+  existingYears: number[];
+  /** dimId -> uuid auto-pins derived from the grid's active category filter. */
+  filterPins: Record<string, string>;
+  committing: boolean;
+  progress: AddProgress | null;
+  error: string | null;
+  onClose: () => void;
+  onCommit: (commit: ImportCommit) => void;
+}
+
+const IGNORE = '';
+
+function pickDefaultMetricId(metrics: DatasetDetailFieldsFragment['metrics']): string {
+  const value = metrics.find((m) => m.label.toLowerCase() === 'value' || m.name === 'Value');
+  return value?.id ?? metrics[0]?.id ?? '';
+}
+
+export default function ImportModal({
+  open,
+  matrix,
+  detected,
+  dataset,
+  existingYears,
+  filterPins,
+  committing,
+  progress,
+  error,
+  onClose,
+  onCommit,
+}: ImportModalProps) {
+  const planDimensions = useMemo<PlanDimension[]>(
+    () =>
+      dataset.dimensions.map((d) => ({
+        id: d.id,
+        label: d.name,
+        categories: d.categories.map((c) => ({
+          uuid: c.uuid,
+          identifier: c.identifier ?? null,
+          label: c.label,
+        })),
+      })),
+    [dataset.dimensions]
+  );
+
+  const schema = useMemo<DatasetSchema>(
+    () => ({
+      dimensions: planDimensions,
+      metrics: dataset.metrics.map((m) => ({
+        id: m.id,
+        label: m.label,
+        name: m.name,
+        unit: m.unit,
+      })),
+      existingPoints: dataset.dataPoints.map((dp) => ({
+        metricId: dp.metric.id,
+        categoryUuids: dp.dimensionCategories.map((c) => c.uuid),
+        year: extractYear(dp.date),
+        value: dp.value,
+      })),
+      existingYears,
+    }),
+    [planDimensions, dataset.metrics, dataset.dataPoints, existingYears]
+  );
+
+  // Session-scoped UI state. Re-initialised whenever a new paste arrives
+  // (keyed on the `detected` object identity).
+  const [mapping, setMapping] = useState<ColumnMapping>({ dimensionByColumn: {} });
+  const [pins, setPins] = useState<Record<string, string>>({});
+  const [metricId, setMetricId] = useState('');
+  const [resolutions, setResolutions] = useState<Record<string, LabelResolution>>({});
+
+  useEffect(() => {
+    if (!detected) return;
+    setMapping(inferColumnMapping(detected, planDimensions));
+    setMetricId(pickDefaultMetricId(dataset.metrics));
+    setPins({});
+    setResolutions({});
+  }, [detected, planDimensions, dataset.metrics]);
+
+  const mappedDimIds = useMemo(() => new Set(Object.values(mapping.dimensionByColumn)), [mapping]);
+  const mappedDimCount = mappedDimIds.size;
+  const pinnableDims = useMemo(
+    () => planDimensions.filter((d) => !mappedDimIds.has(d.id)),
+    [planDimensions, mappedDimIds]
+  );
+
+  // Effective pin = explicit override, else the filter-derived auto-pin.
+  const effectivePin = (dimId: string) => pins[dimId] ?? filterPins[dimId] ?? '';
+  const pinnedCategoryByDimension = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const d of pinnableDims) {
+      const v = effectivePin(d.id);
+      if (v !== '') out[d.id] = v;
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pinnableDims, pins, filterPins]);
+
+  const plan = useMemo<ImportPlan | null>(() => {
+    if (!matrix || !detected || metricId === '' || mappedDimCount === 0) return null;
+    return buildImportPlan(matrix, detected, schema, mapping, {
+      pinnedCategoryByDimension,
+      metricId,
+    });
+  }, [matrix, detected, schema, mapping, pinnedCategoryByDimension, metricId, mappedDimCount]);
+
+  const triage = useMemo(
+    () => (plan ? collectTriageItems(plan, planDimensions) : []),
+    [plan, planDimensions]
+  );
+
+  const resolutionFor = (item: TriageItem): LabelResolution =>
+    resolutions[resolutionKey(item.dimensionId, item.label)] ?? defaultResolution(item);
+
+  // Live tallies that reflect triage decisions (the plan's own counts predate them).
+  const newCategoryCount = triage.filter((it) => resolutionFor(it).kind === 'create').length;
+  const discardCount = triage.filter((it) => resolutionFor(it).kind === 'discard').length;
+
+  const allPinned = pinnableDims.every((d) => effectivePin(d.id) !== '');
+  const canCommit =
+    !committing && plan !== null && metricId !== '' && mappedDimCount > 0 && allPinned;
+
+  function setColumnDimension(col: number, dimId: string) {
+    setMapping((prev) => {
+      const next: Record<number, string> = {};
+      // Keep other columns, but ensure a dimension maps to at most one column.
+      for (const [c, d] of Object.entries(prev.dimensionByColumn)) {
+        if (Number(c) === col) continue;
+        if (dimId !== IGNORE && d === dimId) continue;
+        next[Number(c)] = d;
+      }
+      if (dimId !== IGNORE) next[col] = dimId;
+      return { dimensionByColumn: next };
+    });
+  }
+
+  function setResolution(item: TriageItem, res: LabelResolution) {
+    setResolutions((prev) => ({ ...prev, [resolutionKey(item.dimensionId, item.label)]: res }));
+  }
+
+  function handleImport() {
+    if (!canCommit || !matrix || !detected) return;
+    const effective: Record<string, LabelResolution> = {};
+    for (const it of triage) {
+      effective[resolutionKey(it.dimensionId, it.label)] = resolutionFor(it);
+    }
+    onCommit({
+      matrix,
+      detected,
+      mapping,
+      pinnedCategoryByDimension,
+      metricId,
+      resolutions: effective,
+      triage,
+    });
+  }
+
+  const years = detected?.yearColumns.map((y) => y.year) ?? [];
+
+  return (
+    <Dialog open={open} onClose={committing ? undefined : onClose} maxWidth="lg" fullWidth>
+      <DialogTitle>Import data</DialogTitle>
+      <DialogContent dividers>
+        {!detected ? (
+          <Typography color="text.secondary">No tabular data detected in the paste.</Typography>
+        ) : (
+          <Stack spacing={3}>
+            {/* Structure */}
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Detected
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Chip size="small" label={`${detected.dataRowIndices.length} data rows`} />
+                <Chip
+                  size="small"
+                  label={
+                    years.length > 0
+                      ? `Years ${years[0]}–${years[years.length - 1]} (${years.length})`
+                      : 'No years'
+                  }
+                />
+              </Stack>
+            </Box>
+
+            {/* Mapping */}
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Columns
+              </Typography>
+              <Stack spacing={1.5}>
+                {detected.textColumns.map((col, i) => (
+                  <Stack key={col} direction="row" spacing={2} alignItems="center">
+                    <Typography sx={{ minWidth: 180 }} variant="body2">
+                      {detected.textColumnHeaders[i] || <em>column {col + 1}</em>}
+                    </Typography>
+                    <FormControl size="small" sx={{ minWidth: 220 }}>
+                      <InputLabel>Maps to dimension</InputLabel>
+                      <Select
+                        label="Maps to dimension"
+                        value={mapping.dimensionByColumn[col] ?? IGNORE}
+                        onChange={(e) => setColumnDimension(col, e.target.value)}
+                      >
+                        <MenuItem value={IGNORE}>
+                          <em>Ignore this column</em>
+                        </MenuItem>
+                        {planDimensions.map((d) => (
+                          <MenuItem key={d.id} value={d.id}>
+                            {d.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                ))}
+                {mappedDimCount === 0 && (
+                  <Alert severity="warning">
+                    Map at least one column to a dimension — otherwise every row would target the
+                    same category.
+                  </Alert>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Fixed pins for dimensions absent from the paste + metric */}
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Applies to
+              </Typography>
+              <Stack spacing={1.5}>
+                <FormControl size="small" sx={{ minWidth: 260 }}>
+                  <InputLabel>Metric</InputLabel>
+                  <Select
+                    label="Metric"
+                    value={metricId}
+                    onChange={(e) => setMetricId(e.target.value)}
+                  >
+                    {dataset.metrics.map((m) => (
+                      <MenuItem key={m.id} value={m.id}>
+                        {m.unit ? `${m.label} (${m.unit})` : m.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {pinnableDims.map((d) => {
+                  const isFromFilter = pins[d.id] === undefined && filterPins[d.id] !== undefined;
+                  return (
+                    <Stack key={d.id} direction="row" spacing={2} alignItems="center">
+                      <Typography sx={{ minWidth: 180 }} variant="body2">
+                        {d.label}
+                      </Typography>
+                      <FormControl
+                        size="small"
+                        sx={{ minWidth: 220 }}
+                        error={effectivePin(d.id) === ''}
+                      >
+                        <InputLabel>Category</InputLabel>
+                        <Select
+                          label="Category"
+                          value={effectivePin(d.id)}
+                          onChange={(e) => setPins((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                        >
+                          {d.categories.map((c) => (
+                            <MenuItem key={c.uuid} value={c.uuid}>
+                              {c.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {isFromFilter && (
+                        <Chip
+                          size="small"
+                          color="info"
+                          variant="outlined"
+                          label="from active filter"
+                        />
+                      )}
+                    </Stack>
+                  );
+                })}
+              </Stack>
+            </Box>
+
+            {/* Preview */}
+            {plan && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Preview
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  <Chip size="small" color="success" label={`${plan.counts.greenRows} matched`} />
+                  {plan.counts.yellowRows > 0 && (
+                    <Chip size="small" color="warning" label={`${plan.counts.yellowRows} fuzzy`} />
+                  )}
+                  {plan.counts.redRows > 0 && (
+                    <Chip size="small" color="error" label={`${plan.counts.redRows} unmatched`} />
+                  )}
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={`${plan.counts.cellsToCreate} values to add`}
+                  />
+                  {plan.counts.cellsToOverwrite > 0 && (
+                    <Chip
+                      size="small"
+                      color="warning"
+                      label={`${plan.counts.cellsToOverwrite} values overwritten`}
+                    />
+                  )}
+                  {plan.newYears.length > 0 && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={`+${plan.newYears.length} new year columns`}
+                    />
+                  )}
+                  {newCategoryCount > 0 && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={`+${newCategoryCount} new categories`}
+                    />
+                  )}
+                  {discardCount > 0 && (
+                    <Chip size="small" variant="outlined" label={`${discardCount} discarded`} />
+                  )}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Triage */}
+            {triage.length > 0 && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Needs attention ({triage.length})
+                </Typography>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Pasted label</TableCell>
+                      <TableCell>Dimension</TableCell>
+                      <TableCell>Decision</TableCell>
+                      <TableCell>Map to</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {triage.map((item) => {
+                      const res = resolutionFor(item);
+                      const dim = planDimensions.find((d) => d.id === item.dimensionId);
+                      const selectedCat =
+                        res.kind === 'existing'
+                          ? (dim?.categories.find((c) => c.uuid === res.categoryUuid) ?? null)
+                          : null;
+                      return (
+                        <TableRow key={resolutionKey(item.dimensionId, item.label)}>
+                          <TableCell>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Chip
+                                size="small"
+                                color={item.matchClass === 'fuzzy' ? 'warning' : 'error'}
+                                label={item.label}
+                              />
+                            </Stack>
+                          </TableCell>
+                          <TableCell>{item.dimensionLabel}</TableCell>
+                          <TableCell>
+                            <ToggleButtonGroup
+                              size="small"
+                              exclusive
+                              value={res.kind}
+                              onChange={(_, kind: LabelResolution['kind'] | null) => {
+                                if (!kind) return;
+                                if (kind === 'existing') {
+                                  setResolution(item, {
+                                    kind: 'existing',
+                                    categoryUuid: item.candidates[0]?.uuid ?? '',
+                                  });
+                                } else {
+                                  setResolution(item, { kind });
+                                }
+                              }}
+                            >
+                              <ToggleButton value="existing">Map</ToggleButton>
+                              <ToggleButton value="create">New</ToggleButton>
+                              <ToggleButton value="discard">Discard</ToggleButton>
+                            </ToggleButtonGroup>
+                          </TableCell>
+                          <TableCell sx={{ minWidth: 260 }}>
+                            {res.kind === 'existing' && dim && (
+                              <Autocomplete
+                                size="small"
+                                options={dim.categories}
+                                getOptionLabel={(c) => c.label}
+                                isOptionEqualToValue={(a, b) => a.uuid === b.uuid}
+                                value={selectedCat}
+                                onChange={(_, v) =>
+                                  setResolution(
+                                    item,
+                                    v
+                                      ? { kind: 'existing', categoryUuid: v.uuid }
+                                      : { kind: 'create' }
+                                  )
+                                }
+                                renderInput={(params) => (
+                                  <TextField {...params} label="Existing category" />
+                                )}
+                              />
+                            )}
+                            {res.kind === 'create' && (
+                              <Typography variant="caption" color="text.secondary">
+                                Creates “{item.label}”
+                              </Typography>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </Box>
+            )}
+
+            {error && <Alert severity="error">{error}</Alert>}
+            {committing && progress && (
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                  Importing {progress.current} of {progress.total}…
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress.total > 0 ? (progress.current / progress.total) * 100 : 0}
+                />
+              </Box>
+            )}
+          </Stack>
+        )}
+      </DialogContent>
+      <Divider />
+      <DialogActions>
+        <Button onClick={onClose} disabled={committing}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={handleImport} disabled={!canCommit}>
+          {plan
+            ? `Import ${plan.counts.cellsToCreate + plan.counts.cellsToOverwrite} values`
+            : 'Import'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
