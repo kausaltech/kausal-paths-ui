@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 import { NextIntlClientProvider } from 'next-intl';
 
-import { EDITOR_UI_LOCALE_COOKIE } from '@/common/editor-locale';
+import { EDITOR_UI_LOCALE_COOKIE, resolveEditorUiLocale } from '@/common/editor-locale';
 import ModelEditorShell from '@/components/model-editor/ModelEditorShell';
 import { importLocales } from '@/config/i18n';
 
@@ -25,7 +25,7 @@ type Props = {
 export default async function ModelEditorLayout({ children, params }: Props) {
   const { lang } = await params;
   const cookieStore = await cookies();
-  const uiLocale = cookieStore.get(EDITOR_UI_LOCALE_COOKIE)?.value || lang;
+  const uiLocale = resolveEditorUiLocale(cookieStore.get(EDITOR_UI_LOCALE_COOKIE)?.value, lang);
   const messages = await importLocales(uiLocale);
 
   return (

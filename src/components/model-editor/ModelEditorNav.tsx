@@ -30,6 +30,7 @@ import {
 
 import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import {
   BoxArrowUpRight,
   Box as BoxIcon,
@@ -109,8 +110,15 @@ type DimensionSearchListQuery = {
   instance: { id: string; editor: { dimensions: SearchItem[] } | null };
 };
 
+type NavLabelKey =
+  | 'editor-nav-model'
+  | 'editor-nav-nodes'
+  | 'editor-nav-datasets'
+  | 'editor-nav-dimensions'
+  | 'editor-nav-users';
+
 type TabDef = {
-  label: string;
+  labelKey: NavLabelKey;
   matches: (path: string) => boolean;
   href: string;
   Icon: ComponentType<{ size?: number }>;
@@ -118,7 +126,7 @@ type TabDef = {
 
 const TABS: TabDef[] = [
   {
-    label: 'Model',
+    labelKey: 'editor-nav-model',
     matches: (path) =>
       !path.includes('/model/nodes') &&
       !path.includes('/model/datasets') &&
@@ -128,25 +136,25 @@ const TABS: TabDef[] = [
     Icon: House,
   },
   {
-    label: 'Nodes',
+    labelKey: 'editor-nav-nodes',
     matches: (path) => path.includes('/model/nodes'),
     href: '/nodes',
     Icon: Diagram2,
   },
   {
-    label: 'Datasets',
+    labelKey: 'editor-nav-datasets',
     matches: (path) => path.includes('/model/datasets'),
     href: '/datasets',
     Icon: Database,
   },
   {
-    label: 'Dimensions',
+    labelKey: 'editor-nav-dimensions',
     matches: (path) => path.includes('/model/dimensions'),
     href: '/dimensions',
     Icon: BoxIcon,
   },
   {
-    label: 'Users',
+    labelKey: 'editor-nav-users',
     matches: (path) => path.includes('/model/users'),
     href: '/users',
     Icon: People,
@@ -167,16 +175,20 @@ function getSearchMode(pathname: string): SearchMode | null {
   return null;
 }
 
-const PLACEHOLDERS: Record<SearchMode, string> = {
-  nodes: 'Search nodes…',
-  datasets: 'Search datasets…',
-  dimensions: 'Search dimensions…',
+const SEARCH_PLACEHOLDER_KEY: Record<
+  SearchMode,
+  'nodes-search-nodes' | 'nav-search-datasets' | 'nav-search-dimensions'
+> = {
+  nodes: 'nodes-search-nodes',
+  datasets: 'nav-search-datasets',
+  dimensions: 'nav-search-dimensions',
 };
 
 const MAX_RESULTS = 10;
 const ALL_OUTCOMES_VALUE = '__all__';
 
 export default function ModelEditorNav() {
+  const t = useTranslations('model-editor');
   const pathname = usePathname();
   const router = useRouter();
   const instance = useInstance();
@@ -279,7 +291,7 @@ export default function ModelEditorNav() {
           endIcon={<ArrowDropDown />}
           sx={{ textTransform: 'none', px: 1.5, borderRadius: 0 }}
         >
-          {activeTab.label}
+          {t(activeTab.labelKey)}
         </Button>
       </Box>
 
@@ -291,7 +303,7 @@ export default function ModelEditorNav() {
             <TextField
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={PLACEHOLDERS[mode]}
+              placeholder={t(SEARCH_PLACEHOLDER_KEY[mode])}
               size="small"
               sx={{ flex: 1 }}
               slotProps={{
@@ -306,7 +318,7 @@ export default function ModelEditorNav() {
                       <IconButton
                         size="small"
                         onClick={() => setQuery('')}
-                        aria-label="Clear search"
+                        aria-label={t('nodes-clear-search')}
                         edge="end"
                       >
                         <XLg size={12} />
@@ -321,9 +333,9 @@ export default function ModelEditorNav() {
                 title={
                   filtersAvailable
                     ? filtersOpen
-                      ? 'Hide filters'
-                      : 'Show filters'
-                    : 'No filters available'
+                      ? t('editor-hide-filters')
+                      : t('editor-show-filters')
+                    : t('editor-no-filters-available')
                 }
               >
                 <span>
@@ -345,10 +357,10 @@ export default function ModelEditorNav() {
               <Divider />
               <Box sx={{ p: 1 }}>
                 <FormControl size="small" fullWidth>
-                  <InputLabel id="outcome-filter-label">Outcome node</InputLabel>
+                  <InputLabel id="outcome-filter-label">{t('editor-outcome-node')}</InputLabel>
                   <Select
                     labelId="outcome-filter-label"
-                    label="Outcome node"
+                    label={t('editor-outcome-node')}
                     value={filters.outcomeId ?? ALL_OUTCOMES_VALUE}
                     onChange={(e) =>
                       nodeFiltersVar({
@@ -357,7 +369,7 @@ export default function ModelEditorNav() {
                       })
                     }
                   >
-                    <MenuItem value={ALL_OUTCOMES_VALUE}>All outcomes</MenuItem>
+                    <MenuItem value={ALL_OUTCOMES_VALUE}>{t('editor-outcome-all')}</MenuItem>
                     {outcomeNodes.map((n) => (
                       <MenuItem key={n.id} value={n.id}>
                         {n.name}
@@ -388,7 +400,7 @@ export default function ModelEditorNav() {
               ) : (
                 <Box sx={{ px: 2, py: 1.5 }}>
                   <Typography variant="body2" color="text.secondary">
-                    No matches.
+                    {t('common-no-matches')}
                   </Typography>
                 </Box>
               )}
@@ -405,19 +417,19 @@ export default function ModelEditorNav() {
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         slotProps={{ list: { dense: true } }}
       >
-        {TABS.map((t) => (
+        {TABS.map((tab) => (
           <MenuItem
-            key={t.label}
-            selected={t === activeTab}
+            key={tab.labelKey}
+            selected={tab === activeTab}
             onClick={() => {
               setAnchorEl(null);
-              if (t !== activeTab) router.push(base + t.href);
+              if (tab !== activeTab) router.push(base + tab.href);
             }}
           >
             <ListItemIcon>
-              <t.Icon size={16} />
+              <tab.Icon size={16} />
             </ListItemIcon>
-            <ListItemText>{t.label}</ListItemText>
+            <ListItemText>{t(tab.labelKey)}</ListItemText>
           </MenuItem>
         ))}
         <Divider />
@@ -430,7 +442,7 @@ export default function ModelEditorNav() {
           <ListItemIcon>
             <Compass size={16} />
           </ListItemIcon>
-          <ListItemText>Explore</ListItemText>
+          <ListItemText>{t('common-explore')}</ListItemText>
           <BoxArrowUpRight size={12} style={{ marginLeft: 12, opacity: 0.6 }} />
         </MenuItem>
       </Menu>
@@ -442,11 +454,9 @@ export default function ModelEditorNav() {
 // `ApolloWrapper.detectPreviewMode`. Restore the interactive handler +
 // dynamic label once the backend DRAFT hydrate bug is fixed.
 function PreviewModeToggle() {
+  const t = useTranslations('model-editor');
   return (
-    <Tooltip
-      title="Draft mode is not yet available — all edits apply directly to the published model."
-      placement="right"
-    >
+    <Tooltip title={t('editor-draft-mode-disabled')} placement="right">
       <Box
         component="span"
         sx={{
@@ -462,7 +472,7 @@ function PreviewModeToggle() {
       >
         <Switch checked={false} disabled size="small" color="success" />
         <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
-          Published
+          {t('editor-published')}
         </Typography>
       </Box>
     </Tooltip>

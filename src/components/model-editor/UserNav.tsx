@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { BoxArrowRight, Boxes, ChevronDown, Gear } from 'react-bootstrap-icons';
 
 import { authClient, useSession } from '@/lib/auth-client';
@@ -39,6 +40,7 @@ function getInitials(name: string | null | undefined, email: string | null | und
 }
 
 export default function UserNav() {
+  const t = useTranslations('model-editor');
   const { data: session } = useSession();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const pathname = usePathname();
@@ -91,7 +93,7 @@ export default function UserNav() {
           '&:hover': { bgcolor: 'action.hover' },
           '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
         }}
-        aria-label="Account menu"
+        aria-label={t('users-account-menu')}
         aria-haspopup="menu"
         aria-expanded={Boolean(anchorEl)}
       >
@@ -137,7 +139,7 @@ export default function UserNav() {
           <ListItemIcon>
             <Boxes size={16} />
           </ListItemIcon>
-          My models
+          {t('common-my-models')}
         </MenuItem>
         <MenuItem
           component={Link}
@@ -147,13 +149,13 @@ export default function UserNav() {
           <ListItemIcon>
             <Gear size={16} />
           </ListItemIcon>
-          Settings
+          {t('settings-title')}
         </MenuItem>
         <MenuItem onClick={handleSignOut}>
           <ListItemIcon>
             <BoxArrowRight size={16} />
           </ListItemIcon>
-          Sign out
+          {t('common-sign-out')}
         </MenuItem>
       </Menu>
     </Paper>
