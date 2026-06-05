@@ -1,14 +1,19 @@
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
 
-import { Copy, EyeSlash, Magic, Trash } from 'react-bootstrap-icons';
+import { Copy, EyeSlash, Lightning, Magic, PlusSquare, Trash } from 'react-bootstrap-icons';
 
+import type { NewNodeKind } from './useCreateNode';
 import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 
 export type ContextMenuState =
   | ({
       mouseX: number;
       mouseY: number;
-    } & ({ kind: 'node'; nodeId: string; isAction: boolean } | { kind: 'edge'; edgeId: string }))
+    } & (
+      | { kind: 'node'; nodeId: string; isAction: boolean }
+      | { kind: 'edge'; edgeId: string }
+      | { kind: 'pane'; flowX: number; flowY: number }
+    ))
   | null;
 
 type Props = {
@@ -18,6 +23,7 @@ type Props = {
   onOpenActionWizard: (nodeId: string) => void;
   onDuplicateNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
+  onNewNode: (flowX: number, flowY: number, kind: NewNodeKind) => void;
 };
 
 export default function NodeGraphContextMenu({
@@ -27,6 +33,7 @@ export default function NodeGraphContextMenu({
   onOpenActionWizard,
   onDuplicateNode,
   onDeleteNode,
+  onNewNode,
 }: Props) {
   const readOnly = useIsEditorReadOnly();
 
@@ -51,6 +58,12 @@ export default function NodeGraphContextMenu({
   const handleDeleteNode = () => {
     if (state?.kind !== 'node') return;
     onDeleteNode(state.nodeId);
+    onClose();
+  };
+
+  const handleNewNode = (kind: NewNodeKind) => {
+    if (state?.kind !== 'pane') return;
+    onNewNode(state.flowX, state.flowY, kind);
     onClose();
   };
 
@@ -98,7 +111,22 @@ export default function NodeGraphContextMenu({
           <ListItemText>Delete node</ListItemText>
         </MenuItem>
       )}
-      {readOnly && state?.kind === 'node' && (
+      {!readOnly &&
+        state?.kind === 'pane' && [
+          <MenuItem key="new-node" onClick={() => handleNewNode('formula')}>
+            <ListItemIcon>
+              <PlusSquare size={14} />
+            </ListItemIcon>
+            <ListItemText>New node</ListItemText>
+          </MenuItem>,
+          <MenuItem key="new-action" onClick={() => handleNewNode('action')}>
+            <ListItemIcon>
+              <Lightning size={14} />
+            </ListItemIcon>
+            <ListItemText>New action</ListItemText>
+          </MenuItem>,
+        ]}
+      {readOnly && (state?.kind === 'node' || state?.kind === 'pane') && (
         <MenuItem disabled>
           <ListItemText
             primary="Read-only"

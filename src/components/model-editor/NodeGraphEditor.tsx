@@ -68,6 +68,7 @@ import {
 } from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { type NewNodeKind, useCreateNode } from './useCreateNode';
 import { useDeleteNode } from './useDeleteNode';
 import { useDuplicateNode } from './useDuplicateNode';
 import { useEditorApolloContext } from './useEditorApolloContext';
@@ -440,7 +441,7 @@ function FlowEditor(props: {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedNodeKey = searchParams.get('node');
-  const { fitView, getNodes, setViewport } = useReactFlow();
+  const { fitView, getNodes, setViewport, screenToFlowPosition } = useReactFlow();
   const handledNodeKeyRef = useRef<string | null>(null);
   // Captured once so later URL changes (e.g. deselecting a node) don't
   // re-toggle RF's built-in `fitView` prop and refit the whole graph.
@@ -687,6 +688,23 @@ function FlowEditor(props: {
     [nodeMap]
   );
 
+  const onPaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      event.preventDefault();
+      // Translate the click to flow coordinates so a new node lands where the
+      // user right-clicked, regardless of pan/zoom.
+      const flow = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      setContextMenu({
+        kind: 'pane',
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+        flowX: flow.x,
+        flowY: flow.y,
+      });
+    },
+    [screenToFlowPosition]
+  );
+
   const handleHideEdge = useCallback((edgeId: string) => {
     setUserHiddenEdgeIds((prev) => new Set([...prev, edgeId]));
   }, []);
@@ -750,6 +768,43 @@ function FlowEditor(props: {
         .finally(() => setIsDuplicating(false));
     },
     [duplicateNode, getNodes, instanceId, isDuplicating, nodeMap, props.nodes]
+  );
+
+  const createNode = useCreateNode();
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Create a node immediately at the right-click position with sensible
+  // defaults (unit/quantity are editable afterward in the details panel) and
+  // select it, rather than prompting up front.
+  const handleNewNode = useCallback(
+    (flowX: number, flowY: number, kind: NewNodeKind) => {
+      if (isCreating) return;
+      setIsCreating(true);
+      const existingIdentifiers = new Set(props.nodes.map((n) => n.identifier));
+      const name = kind === 'action' ? 'My Action' : 'My Node';
+      createNode(
+        { name, unit: 'kt/a', quantity: 'emissions', kind, existingIdentifiers },
+        // Seed the position at the right-click location before the refetch, so
+        // the node lands there and the layout pass keeps the viewport (a pure
+        // addition served from cache — see useLayoutNodes).
+        (newId) => saveUserPosition(instanceId, newId, flowX, flowY)
+      )
+        .then((result) => {
+          setPendingSelectNodeId(result.newId);
+          setDuplicateFeedback({
+            kind: 'success',
+            message: `Created "${result.newIdentifier}"`,
+          });
+        })
+        .catch((err: unknown) =>
+          setDuplicateFeedback({
+            kind: 'error',
+            message: err instanceof Error ? err.message : 'Failed to create node',
+          })
+        )
+        .finally(() => setIsCreating(false));
+    },
+    [createNode, instanceId, isCreating, props.nodes]
   );
 
   // Adjust-state-during-render: once the copy is present in React Flow's own
@@ -845,6 +900,7 @@ function FlowEditor(props: {
               onEdgeClick={onEdgeClick}
               onEdgeContextMenu={onEdgeContextMenu}
               onNodeContextMenu={onNodeContextMenu}
+              onPaneContextMenu={onPaneContextMenu}
               onMoveEnd={handleMoveEnd}
               nodeTypes={nodeTypes}
               minZoom={0.2}
@@ -870,6 +926,7 @@ function FlowEditor(props: {
               onOpenActionWizard={handleOpenActionWizard}
               onDuplicateNode={handleDuplicateNode}
               onDeleteNode={handleRequestDeleteNode}
+              onNewNode={handleNewNode}
             />
             <Drawer
               variant="persistent"
@@ -942,7 +999,7 @@ function FlowEditor(props: {
         </Suspense>
       )}
       <Backdrop
-        open={isDuplicating || isDeleting}
+        open={isDuplicating || isDeleting || isCreating}
         sx={(theme) => ({
           zIndex: theme.zIndex.modal + 1,
           flexDirection: 'column',
@@ -952,7 +1009,7 @@ function FlowEditor(props: {
       >
         <CircularProgress color="inherit" />
         <Typography variant="body2">
-          {isDeleting ? 'Deleting node…' : 'Duplicating node…'}
+          {isDeleting ? 'Deleting node…' : isCreating ? 'Creating node…' : 'Duplicating node…'}
         </Typography>
       </Backdrop>
       <Dialog
