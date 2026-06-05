@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { BoxArrowRight, Boxes, ChevronDown } from 'react-bootstrap-icons';
+import { BoxArrowRight, Boxes, ChevronDown, Gear } from 'react-bootstrap-icons';
 
 import { authClient, useSession } from '@/lib/auth-client';
 
@@ -138,6 +138,16 @@ export default function UserNav() {
             <Boxes size={16} />
           </ListItemIcon>
           My models
+        </MenuItem>
+        <MenuItem
+          component={Link}
+          href={`${getModelEditorBase(pathname)}/settings`}
+          onClick={() => setAnchorEl(null)}
+        >
+          <ListItemIcon>
+            <Gear size={16} />
+          </ListItemIcon>
+          Settings
         </MenuItem>
         <MenuItem onClick={handleSignOut}>
           <ListItemIcon>

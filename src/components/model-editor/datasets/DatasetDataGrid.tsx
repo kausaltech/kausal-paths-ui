@@ -18,6 +18,7 @@ import {
   type Rectangle,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
+import { useLocale } from 'next-intl';
 
 import type {
   CreateDataPointMutation,
@@ -104,6 +105,17 @@ export default function DatasetDataGrid({
 }: Props) {
   useEnsurePortal();
   const instance = useInstance();
+  // Collate by the editor interface language for now. Locale-aware so sorting
+  // respects language-specific ordering (e.g. German umlauts, Scandinavian
+  // å/ä/ö). `numeric` keeps labels like "Zone 2" / "Zone 10" in natural order.
+  // TODO: the labels are backend *content* strings, so ideally this should
+  // collate by the content locale (the `[lang]` URL segment) rather than the
+  // UI language — revisit once content-language sorting is needed.
+  const locale = useLocale();
+  const collator = useMemo(
+    () => new Intl.Collator(locale, { numeric: true, sensitivity: 'variant' }),
+    [locale]
+  );
   const [addOpen, setAddOpen] = useState(false);
   const [addYearOpen, setAddYearOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -240,18 +252,18 @@ export default function DatasetDataGrid({
           if (al === null && bl === null) return 0;
           if (al === null) return 1;
           if (bl === null) return -1;
-          return al.localeCompare(bl) * dir;
+          return collator.compare(al, bl) * dir;
         });
       } else if (colId === METRIC_COL) {
         const labelOf = (row: GridRow): string => {
           const cell = row.cells[METRIC_COL];
           return cell?.type === 'MetricHeader' ? cell.label : '';
         };
-        result = [...result].sort((a, b) => labelOf(a).localeCompare(labelOf(b)) * dir);
+        result = [...result].sort((a, b) => collator.compare(labelOf(a), labelOf(b)) * dir);
       }
     }
     return result;
-  }, [baseRows, categoryFilters, colSort, pendingEdits]);
+  }, [baseRows, categoryFilters, colSort, pendingEdits, collator]);
   const rowById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
   // dataPointId -> { count, hasUnresolvedReview }. Drives the corner indicator
