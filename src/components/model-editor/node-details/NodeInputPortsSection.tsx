@@ -27,36 +27,24 @@ import type {
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
-import { getNodeSpec } from '../nodeHelpers';
+import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { useCreateEdge } from '../useCreateEdge';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
-type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
-type InputPort = NodeSpec['inputPorts'][number];
-
 /**
- * The source node's first output port compatible with `port` (same matching
- * rules as NodeSelector). Returns its id for the edge's `fromPort`; `undefined`
- * falls back to "output" (fine for single-output nodes).
+ * The source node's first output port compatible with `port`. Returns its id
+ * for the edge's `fromPort`. When no port matches the criteria, falls back to
+ * the node's first output port id so the edge mutation always receives a valid
+ * port UUID.
  */
 function matchingOutputPortId(
   sourceNode: EditorNodeFieldsFragment,
   port: InputPort
 ): string | undefined {
   const outputs = getNodeSpec(sourceNode)?.outputPorts ?? [];
-  const match = outputs.find((o) => {
-    if (port.quantity !== o.quantity) return false;
-    if (port.requiredDimensions.some((req) => !o.dimensions.includes(req))) return false;
-    if (
-      port.supportedDimensions.length > 0 &&
-      o.dimensions.some((d) => !port.supportedDimensions.includes(d))
-    ) {
-      return false;
-    }
-    return true;
-  });
-  return match?.id;
+  const match = outputs.find((o) => outputMatchesPort(port, o));
+  return (match ?? outputs[0])?.id;
 }
 
 type PortInfoRowProps = {

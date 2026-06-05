@@ -4,12 +4,8 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { getNodeSpec } from '../nodeHelpers';
+import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { ConnectedNodeChip, getStyleForNode } from './shared';
-
-type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
-type InputPort = NodeSpec['inputPorts'][number];
-type OutputPort = NodeSpec['outputPorts'][number];
 
 type Props = {
   nodes: readonly EditorNodeFieldsFragment[];
@@ -18,22 +14,9 @@ type Props = {
   onSelect?: (nodeId: string) => void;
 };
 
-function outputMatches(port: InputPort, output: OutputPort): boolean {
-  if (port.quantity !== output.quantity) return false;
-  for (const req of port.requiredDimensions) {
-    if (!output.dimensions.includes(req)) return false;
-  }
-  if (port.supportedDimensions.length > 0) {
-    for (const d of output.dimensions) {
-      if (!port.supportedDimensions.includes(d)) return false;
-    }
-  }
-  return true;
-}
-
 function nodeMatches(node: EditorNodeFieldsFragment, port: InputPort): boolean {
   const outputs = getNodeSpec(node)?.outputPorts ?? [];
-  return outputs.some((o) => outputMatches(port, o));
+  return outputs.some((o) => outputMatchesPort(port, o));
 }
 
 export default function NodeSelector({ nodes, port, currentNodeId, onSelect }: Props) {
