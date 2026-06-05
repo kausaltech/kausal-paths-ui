@@ -1,17 +1,146 @@
-import { Box, Stack, Tooltip, Typography } from '@mui/material';
+import { useState } from 'react';
 
-import { InfoSquare } from 'react-bootstrap-icons';
+import {
+  Alert,
+  Autocomplete,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+
+import { InfoSquare, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
+  OutputPortInput,
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import type { getNodeSpec } from '../nodeHelpers';
+import { QUANTITY_SUGGESTIONS } from '../quantities';
+import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
+import { useUpdateOutputPorts } from '../useUpdateOutputPorts';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
 type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
 type OutputPort = NodeSpec['outputPorts'][number];
+
+type PortPatch = { unit: string; quantity: string };
+
+/**
+ * Convert the node's current output ports to the input shape, preserving each
+ * port's `id` (so edges/bindings keyed on it survive) and other fields. The
+ * caller applies the edited port's changes on top before sending the whole list.
+ */
+function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
+  return ports.map((p) => ({
+    id: p.id,
+    unit: p.unit?.standard ?? '',
+    quantity: p.quantity ?? null,
+    label: p.label ?? null,
+    columnId: p.columnId ?? null,
+    dimensions: [...p.dimensions],
+    isEditable: true,
+  }));
+}
+
+/**
+ * Edit one output port's unit + quantity. Mirrors the input-port editor: a
+ * pencil button opens this dialog. Mounted only while a port is being edited,
+ * so its drafts seed from that port.
+ */
+function OutputPortEditDialog({
+  port,
+  onClose,
+  onSave,
+}: {
+  port: OutputPort;
+  onClose: () => void;
+  onSave: (patch: PortPatch) => Promise<void>;
+}) {
+  const [unit, setUnit] = useState(port.unit?.standard ?? '');
+  const [quantity, setQuantity] = useState(port.quantity ?? '');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const canSave = unit.trim() !== '' && quantity.trim() !== '' && !submitting;
+
+  const handleSave = () => {
+    if (!canSave) return;
+    setSubmitting(true);
+    setError(null);
+    onSave({ unit: unit.trim(), quantity: quantity.trim() })
+      .then(() => onClose())
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to save'))
+      .finally(() => setSubmitting(false));
+  };
+
+  return (
+    <Dialog open onClose={submitting ? undefined : onClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ pr: 6 }}>
+        Edit output port
+        <IconButton
+          aria-label="Close"
+          onClick={onClose}
+          disabled={submitting}
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
+        >
+          <XIcon size={20} />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        {error && (
+          <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 1.5, fontSize: 12 }}>
+            {error}
+          </Alert>
+        )}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 0.5 }}>
+          <TextField
+            autoFocus
+            label="Unit"
+            placeholder="e.g. kt/a"
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            size="small"
+            fullWidth
+            slotProps={{ input: { sx: { fontSize: 13 } } }}
+          />
+          <Autocomplete
+            freeSolo
+            options={QUANTITY_SUGGESTIONS}
+            inputValue={quantity}
+            onInputChange={(_, next) => setQuantity(next)}
+            size="small"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Quantity"
+                placeholder="e.g. emissions"
+                slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
+              />
+            )}
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={submitting}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} variant="contained" disabled={!canSave}>
+          {submitting ? 'Saving…' : 'Save'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 type PortInfoRowProps = {
   label: string;
@@ -44,6 +173,7 @@ function PortTooltipContent({ port, edgeCount }: { port: OutputPort; edgeCount: 
 }
 
 type NodeOutputPortsSectionProps = {
+  nodeId: string;
   ports: readonly OutputPort[];
   outgoingByPort: ReadonlyMap<string, readonly EditorNodeEdgeFragment[]>;
   nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
@@ -55,6 +185,7 @@ type NodeOutputPortsSectionProps = {
 };
 
 export default function NodeOutputPortsSection({
+  nodeId,
   ports,
   outgoingByPort,
   nodeMap,
@@ -64,6 +195,20 @@ export default function NodeOutputPortsSection({
   onSelectNode,
   onHover,
 }: NodeOutputPortsSectionProps) {
+  const readOnly = useIsEditorReadOnly();
+  const updateOutputPorts = useUpdateOutputPorts();
+  const [editingPortId, setEditingPortId] = useState<string | null>(null);
+  const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
+
+  // Resend the whole port list (ids preserved) with the edited port's
+  // unit/quantity applied — updateNode replaces output ports wholesale.
+  const savePort = (portId: string, patch: PortPatch) => {
+    const next = portsToInput(ports).map((p) =>
+      p.id === portId ? { ...p, unit: patch.unit, quantity: patch.quantity || null } : p
+    );
+    return updateOutputPorts(nodeId, next);
+  };
+
   if (ports.length === 0) return null;
 
   return (
@@ -118,44 +263,66 @@ export default function NodeOutputPortsSection({
                 <InfoSquare size={10} aria-label="Port info" />
               </Typography>
             </Tooltip>
-            {connectedEdges.length > 0 ? (
-              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                {connectedEdges.map((e) => {
-                  const targetNode = nodeMap.get(e.toRef.nodeId);
-                  const highlighted = hoveredNodeId === e.toRef.nodeId;
-                  return (
-                    <Box
-                      key={e.id}
-                      sx={
-                        highlighted
-                          ? {
-                              '& .MuiChip-root': {
-                                borderColor: 'primary.main',
-                                bgcolor: 'action.hover',
-                              },
-                            }
-                          : undefined
-                      }
-                    >
-                      <ConnectedNodeChip
-                        nodeId={e.toRef.nodeId}
-                        label={targetNode?.name ?? e.toRef.nodeId}
-                        style={
-                          targetNode ? getStyleForNode(targetNode) : getNodeStyle('', '', false)
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
+                {connectedEdges.length > 0 ? (
+                  connectedEdges.map((e) => {
+                    const targetNode = nodeMap.get(e.toRef.nodeId);
+                    const highlighted = hoveredNodeId === e.toRef.nodeId;
+                    return (
+                      <Box
+                        key={e.id}
+                        sx={
+                          highlighted
+                            ? {
+                                '& .MuiChip-root': {
+                                  borderColor: 'primary.main',
+                                  bgcolor: 'action.hover',
+                                },
+                              }
+                            : undefined
                         }
-                        onSelect={onSelectNode}
-                        onHover={onHover}
-                      />
-                    </Box>
-                  );
-                })}
+                      >
+                        <ConnectedNodeChip
+                          nodeId={e.toRef.nodeId}
+                          label={targetNode?.name ?? e.toRef.nodeId}
+                          style={
+                            targetNode ? getStyleForNode(targetNode) : getNodeStyle('', '', false)
+                          }
+                          onSelect={onSelectNode}
+                          onHover={onHover}
+                        />
+                      </Box>
+                    );
+                  })
+                ) : (
+                  <NotConnectedChip />
+                )}
               </Box>
-            ) : (
-              <NotConnectedChip />
-            )}
+              {!readOnly && (
+                <Tooltip title="Edit output port" placement="left">
+                  <IconButton
+                    size="small"
+                    onClick={() => setEditingPortId(port.id)}
+                    aria-label="Edit output port"
+                    sx={{ p: 0.5, color: 'text.secondary' }}
+                  >
+                    <PencilSquare size={12} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
         );
       })}
+      {editingPort && (
+        <OutputPortEditDialog
+          key={editingPort.id}
+          port={editingPort}
+          onClose={() => setEditingPortId(null)}
+          onSave={(patch) => savePort(editingPort.id, patch)}
+        />
+      )}
     </CollapsibleSection>
   );
 }

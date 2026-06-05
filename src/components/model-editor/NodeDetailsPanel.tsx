@@ -334,6 +334,7 @@ export default function NodeDetailsPanel({
       </CollapsibleSection>
 
       <NodeOutputPortsSection
+        nodeId={node.id}
         ports={outputPorts}
         outgoingByPort={outgoingByPort}
         nodeMap={nodeMap}
