@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Box, Chip, Collapse, Typography } from '@mui/material';
 
-import { CaretDownFill, CaretRightFill, DashCircle } from 'react-bootstrap-icons';
+import { CaretDownFill, CaretRightFill, DashCircle, XCircleFill } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { type NodeStyle, getNodeStyle } from '../ElkNode';
@@ -24,6 +24,10 @@ type ConnectedNodeChipProps = {
   style: NodeStyle;
   onSelect: (nodeId: string) => void;
   onHover: (nodeId: string | null) => void;
+  /** When provided, renders a remove affordance that unbinds this source. */
+  onDelete?: () => void;
+  /** Disables interaction while a delete is in flight. */
+  deleting?: boolean;
 };
 
 const CHIP_LABEL_MAX = 35;
@@ -34,6 +38,8 @@ export function ConnectedNodeChip({
   style,
   onSelect,
   onHover,
+  onDelete,
+  deleting = false,
 }: ConnectedNodeChipProps) {
   const truncated =
     label.length > CHIP_LABEL_MAX ? `${label.slice(0, CHIP_LABEL_MAX - 1)}…` : label;
@@ -44,9 +50,12 @@ export function ConnectedNodeChip({
       title={label}
       size="small"
       variant="outlined"
+      disabled={deleting}
       onClick={() => onSelect(nodeId)}
       onMouseEnter={() => onHover(nodeId)}
       onMouseLeave={() => onHover(null)}
+      onDelete={onDelete}
+      deleteIcon={onDelete ? <XCircleFill size={14} aria-label="Remove input source" /> : undefined}
       sx={{
         cursor: 'pointer',
         maxWidth: '100%',

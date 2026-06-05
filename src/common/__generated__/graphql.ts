@@ -2198,6 +2198,27 @@ export type CreateEdgeMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type DeleteEdgeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  edgeId: Scalars['ID']['input'];
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type DeleteEdgeMutation = (
+  { instanceEditor: (
+    { deleteEdge: (
+      { messages: Array<(
+        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type DeleteNodeMutationVariables = Exact<{
   instanceId: Scalars['ID']['input'];
   nodeId: Scalars['ID']['input'];

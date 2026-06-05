@@ -192,6 +192,17 @@ export const CREATE_EDGE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+export const DELETE_EDGE = gql`
+  mutation DeleteEdge($instanceId: ID!, $edgeId: ID!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      deleteEdge(edgeId: $edgeId) {
+        ...EditorOperationInfoFields
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
 export const DELETE_NODE = gql`
   mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {

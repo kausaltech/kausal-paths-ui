@@ -29,6 +29,7 @@ import type {
 import { getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { useCreateEdge } from '../useCreateEdge';
+import { useDeleteEdge } from '../useDeleteEdge';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
@@ -120,32 +121,65 @@ export default function NodeInputPortsSection({
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
   const createEdge = useCreateEdge();
+  const deleteEdge = useDeleteEdge();
   const [binding, setBinding] = useState(false);
   const [bindError, setBindError] = useState<string | null>(null);
+  const [removingEdgeId, setRemovingEdgeId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const closeDialog = () => {
     setEditingPortId(null);
     setBindError(null);
   };
 
-  const handleSelectNode = (sourceNodeId: string) => {
+  const handleSelectNode = async (sourceNodeId: string) => {
     if (!editingPort || binding) return;
     const sourceNode = nodeMap.get(sourceNodeId);
     const targetNode = nodeMap.get(currentNodeId);
     if (!sourceNode || !targetNode) return;
     setBinding(true);
     setBindError(null);
-    createEdge({
-      fromNodeId: sourceNode.identifier,
-      toNodeId: targetNode.identifier,
-      fromPort: matchingOutputPortId(sourceNode, editingPort) ?? 'output',
-      toPort: editingPort.id,
-    })
-      .then(() => closeDialog())
-      .catch((err: unknown) =>
-        setBindError(err instanceof Error ? err.message : 'Failed to create edge')
-      )
-      .finally(() => setBinding(false));
+    try {
+      // createEdge only appends; a non-multi port holds a single binding, so
+      // replace any existing edge(s) before adding the new source. (If a delete
+      // succeeds but the create then fails, the port is left empty — the
+      // refetch surfaces that honestly and the user can re-pick.)
+      if (!editingPort.multi) {
+        const existing = incomingByPort.get(editingPort.id) ?? [];
+        for (const edge of existing) {
+          await deleteEdge(edge.id);
+        }
+      }
+      await createEdge({
+        fromNodeId: sourceNode.identifier,
+        toNodeId: targetNode.identifier,
+        fromPort: matchingOutputPortId(sourceNode, editingPort) ?? 'output',
+        toPort: editingPort.id,
+      });
+      closeDialog();
+    } catch (err) {
+      setBindError(err instanceof Error ? err.message : 'Failed to create edge');
+    } finally {
+      setBinding(false);
+    }
+  };
+
+  const handleRemoveEdge = async (edgeId: string) => {
+    if (removingEdgeId) return;
+    setRemovingEdgeId(edgeId);
+    setRemoveError(null);
+    setBindError(null);
+    try {
+      await deleteEdge(edgeId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to remove input source';
+      // Surface the error where the action was taken: the dialog (when open)
+      // or the inline section alert.
+      if (editingPortId) setBindError(message);
+      else setRemoveError(message);
+    } finally {
+      setRemovingEdgeId(null);
+    }
   };
 
   const handleSelectDataset = () => {
@@ -161,6 +195,11 @@ export default function NodeInputPortsSection({
       open={open}
       onToggle={onToggle}
     >
+      {removeError && (
+        <Alert severity="error" onClose={() => setRemoveError(null)} sx={{ fontSize: 12 }}>
+          {removeError}
+        </Alert>
+      )}
       {ports.map((port, index) => {
         const connectedEdges = incomingByPort.get(port.id) ?? [];
         type DatasetBinding = Extract<
@@ -254,6 +293,8 @@ export default function NodeInputPortsSection({
                           }
                           onSelect={onSelectNode}
                           onHover={onHover}
+                          onDelete={() => void handleRemoveEdge(e.id)}
+                          deleting={removingEdgeId === e.id}
                         />
                       </Box>
                     );
@@ -319,7 +360,9 @@ export default function NodeInputPortsSection({
       })}
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          Select input source
+          {editingPort && (incomingByPort.get(editingPort.id) ?? []).length > 0
+            ? 'Replace input source'
+            : 'Select input source'}
           <IconButton
             aria-label="Close"
             onClick={closeDialog}
@@ -340,8 +383,15 @@ export default function NodeInputPortsSection({
                 nodes={[...nodeMap.values()]}
                 port={editingPort}
                 currentNodeId={currentNodeId}
-                onSelectNode={handleSelectNode}
+                currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
+                  edgeId: e.id,
+                  node: nodeMap.get(e.fromRef.nodeId) ?? null,
+                  nodeRef: e.fromRef.nodeId,
+                }))}
+                removingEdgeId={removingEdgeId}
+                onSelectNode={(id) => void handleSelectNode(id)}
                 onSelectDataset={handleSelectDataset}
+                onRemoveSource={(edgeId) => void handleRemoveEdge(edgeId)}
               />
               {binding && (
                 <Box

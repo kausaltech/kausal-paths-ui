@@ -11,6 +11,8 @@ type Props = {
   nodes: readonly EditorNodeFieldsFragment[];
   port: InputPort;
   currentNodeId: string;
+  /** Node ids already bound to this port; excluded from the candidate list. */
+  excludeNodeIds?: ReadonlySet<string>;
   onSelect?: (nodeId: string) => void;
 };
 
@@ -19,9 +21,15 @@ function nodeMatches(node: EditorNodeFieldsFragment, port: InputPort): boolean {
   return outputs.some((o) => outputMatchesPort(port, o));
 }
 
-export default function NodeSelector({ nodes, port, currentNodeId, onSelect }: Props) {
+export default function NodeSelector({
+  nodes,
+  port,
+  currentNodeId,
+  excludeNodeIds,
+  onSelect,
+}: Props) {
   const candidates = nodes
-    .filter((n) => n.id !== currentNodeId && nodeMatches(n, port))
+    .filter((n) => n.id !== currentNodeId && !excludeNodeIds?.has(n.id) && nodeMatches(n, port))
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
   return (
