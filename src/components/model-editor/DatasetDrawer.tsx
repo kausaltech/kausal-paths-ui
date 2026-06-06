@@ -20,6 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { Link45deg, PencilSquare, X } from 'react-bootstrap-icons';
 
 import {
@@ -39,6 +40,7 @@ function DatasetMetadata({
   usedDimensionKeys?: ReadonlySet<string>;
   usedCategoryKeysByDimension?: ReadonlyMap<string, ReadonlySet<string>>;
 }) {
+  const t = useTranslations('model-editor');
   const visibleDimensions = usedDimensionKeys
     ? dataset.dimensions.filter(
         (dim) => usedDimensionKeys.has(dim.id) || usedDimensionKeys.has(dim.name)
@@ -55,7 +57,7 @@ function DatasetMetadata({
             variant="outlined"
           />
           {dataset.externalRef.commit && (
-            <Tooltip title="Repo commit">
+            <Tooltip title={t('datasets-repo-commit')}>
               <Chip
                 label={dataset.externalRef.commit.slice(0, 8)}
                 size="small"
@@ -68,7 +70,7 @@ function DatasetMetadata({
       )}
       {dataset.isExternalPlaceholder && (
         <Chip
-          label="External placeholder (no local data)"
+          label={t('datasets-external-placeholder')}
           size="small"
           color="warning"
           variant="outlined"
@@ -79,14 +81,16 @@ function DatasetMetadata({
       {visibleDimensions.length > 0 && (
         <Box sx={{ mb: 1.5 }}>
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-            Dimensions
+            {t('datasets-dimensions')}
           </Typography>
           <TableContainer sx={{ mt: 0.5 }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>Dimension</TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>Categories</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-dimension')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>
+                    {t('datasets-categories')}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -126,15 +130,15 @@ function DatasetMetadata({
       {dataset.metrics.length > 0 && (
         <Box>
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-            Metrics
+            {t('datasets-metrics')}
           </Typography>
           <TableContainer sx={{ mt: 0.5 }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>Label</TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>Unit</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-label')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-name')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-unit')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -157,6 +161,7 @@ function DatasetMetadata({
 }
 
 function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: string | null }) {
+  const t = useTranslations('model-editor');
   const usedDimensionKeys = new Set<string>();
   const usedCategoryKeysByDimension = new Map<string, Set<string>>();
   for (const metric of port.metrics) {
@@ -187,7 +192,7 @@ function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: 
       >
         {port.boundMetric ? (
           <Typography variant="body2" color="text.secondary">
-            Bound metric: <strong>{port.boundMetric.label}</strong>
+            {t('datasets-bound-metric', { label: port.boundMetric.label })}
           </Typography>
         ) : (
           <Box />
@@ -201,7 +206,7 @@ function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: 
             startIcon={<PencilSquare size={12} />}
             sx={{ textTransform: 'none', py: 0.25, fontSize: 12 }}
           >
-            Edit dataset
+            {t('datasets-edit-dataset')}
           </Button>
         )}
       </Box>
@@ -222,7 +227,7 @@ function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: 
         </Box>
       ) : (
         <Typography variant="body2" color="text.disabled">
-          No data points available
+          {t('datasets-no-data-points')}
         </Typography>
       )}
     </Box>
@@ -239,6 +244,7 @@ type Props = {
 };
 
 export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width, zIndex }: Props) {
+  const t = useTranslations('model-editor');
   const { datasetPorts, loading, error, fetch } = useDatasetData(nodeId);
   const pathname = usePathname();
 
@@ -249,7 +255,9 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
   }, [open, nodeId, bindingId]);
 
   const filtered = bindingId ? datasetPorts.filter((p) => p.bindingId === bindingId) : datasetPorts;
-  const title = `Input dataset${filtered.length === 1 ? `: ${filtered[0].dataset.name}` : ''}`;
+  const title = t('datasets-input-dataset', {
+    name: filtered.length === 1 ? `: ${filtered[0].dataset.name}` : '',
+  });
 
   // Model-editor base URL (locale + instance prefix) derived from the current
   // pathname so edit links land on the same instance the user is editing.
@@ -303,12 +311,12 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
         )}
         {error && (
           <Typography color="error" sx={{ py: 2 }}>
-            Failed to load dataset: {error.message}
+            {t('datasets-failed-to-load-dataset', { error: error.message })}
           </Typography>
         )}
         {!loading && filtered.length === 0 && !error && (
           <Typography color="text.secondary" sx={{ py: 2 }}>
-            No dataset bindings found.
+            {t('datasets-no-bindings')}
           </Typography>
         )}
         {filtered.map((port, idx) => (
