@@ -62,6 +62,7 @@ function DatasetRowActions({
   onDelete,
   onOpenChange,
 }: DatasetRowActionsProps) {
+  const t = useTranslations('model-editor');
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = (e: MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
@@ -77,8 +78,8 @@ function DatasetRowActions({
   };
   return (
     <>
-      <Tooltip title="Actions">
-        <IconButton size="small" onClick={open} aria-label="Dataset actions">
+      <Tooltip title={t('datasets-actions')}>
+        <IconButton size="small" onClick={open} aria-label={t('datasets-actions-menu')}>
           <ThreeDotsVertical />
         </IconButton>
       </Tooltip>
@@ -94,19 +95,19 @@ function DatasetRowActions({
           <ListItemIcon>
             <PencilSquare size={14} />
           </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
+          <ListItemText>{t('datasets-edit')}</ListItemText>
         </MenuItem>
         <MenuItem onClick={wrap(onDuplicate)}>
           <ListItemIcon>
             <Files size={14} />
           </ListItemIcon>
-          <ListItemText>Duplicate</ListItemText>
+          <ListItemText>{t('datasets-duplicate')}</ListItemText>
         </MenuItem>
         <MenuItem onClick={wrap(onDelete)}>
           <ListItemIcon>
             <Trash size={14} />
           </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
+          <ListItemText>{t('datasets-delete')}</ListItemText>
         </MenuItem>
       </Menu>
     </>
@@ -141,13 +142,15 @@ function formatTimestamp(iso: string): string {
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-function formatRelativeTime(iso: string): string {
+function formatRelativeTime(iso: string, t: ReturnType<typeof useTranslations>): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   const diffSec = Math.max(0, Math.round((Date.now() - d.getTime()) / 1000));
-  if (diffSec < 45) return 'just now';
-  if (diffSec < 60 * 60) return `${Math.round(diffSec / 60)} min ago`;
-  if (diffSec < 24 * 60 * 60) return `${Math.round(diffSec / 3600)} h ago`;
+  if (diffSec < 45) return t('editor-relative-just-now');
+  if (diffSec < 60 * 60)
+    return t('editor-relative-minutes-ago', { count: Math.round(diffSec / 60) });
+  if (diffSec < 24 * 60 * 60)
+    return t('editor-relative-hours-ago', { count: Math.round(diffSec / 3600) });
   return formatTimestamp(iso);
 }
 
@@ -204,19 +207,19 @@ export default function DatasetList() {
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Database size={22} />
-          <Typography variant="h5">Datasets</Typography>
+          <Typography variant="h5">{t('datasets-title')}</Typography>
         </Stack>
         <Button
           variant="contained"
           startIcon={<Plus />}
-          onClick={() => setNotice('Creating datasets is not yet implemented.')}
+          onClick={() => setNotice(t('datasets-creating-not-implemented'))}
         >
-          New dataset
+          {t('datasets-new-dataset')}
         </Button>
       </Stack>
       {data?.instance.editor === null && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Model editor data is not available for this instance.
+          {t('datasets-editor-data-unavailable')}
         </Alert>
       )}
       <TableContainer component={Paper}>
@@ -229,7 +232,7 @@ export default function DatasetList() {
                   direction={sortKey === 'name' ? sortOrder : 'asc'}
                   onClick={() => handleSort('name')}
                 >
-                  Name
+                  {t('datasets-name')}
                 </TableSortLabel>
               </TableCell>
               <TableCell align="right" sortDirection={sortKey === 'dimensions' ? sortOrder : false}>
@@ -238,7 +241,7 @@ export default function DatasetList() {
                   direction={sortKey === 'dimensions' ? sortOrder : 'asc'}
                   onClick={() => handleSort('dimensions')}
                 >
-                  Dimensions
+                  {t('datasets-dimensions')}
                 </TableSortLabel>
               </TableCell>
               <TableCell align="right" sortDirection={sortKey === 'metrics' ? sortOrder : false}>
@@ -247,7 +250,7 @@ export default function DatasetList() {
                   direction={sortKey === 'metrics' ? sortOrder : 'asc'}
                   onClick={() => handleSort('metrics')}
                 >
-                  Metrics
+                  {t('datasets-metrics')}
                 </TableSortLabel>
               </TableCell>
               <TableCell align="right" sortDirection={sortKey === 'comments' ? sortOrder : false}>
@@ -256,7 +259,7 @@ export default function DatasetList() {
                   direction={sortKey === 'comments' ? sortOrder : 'asc'}
                   onClick={() => handleSort('comments')}
                 >
-                  Comments
+                  {t('datasets-comments')}
                 </TableSortLabel>
               </TableCell>
               <TableCell
@@ -268,11 +271,11 @@ export default function DatasetList() {
                   direction={sortKey === 'lastModified' ? sortOrder : 'asc'}
                   onClick={() => handleSort('lastModified')}
                 >
-                  Last edited
+                  {t('datasets-last-edited')}
                 </TableSortLabel>
               </TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
-                Actions
+                {t('datasets-actions')}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -281,7 +284,7 @@ export default function DatasetList() {
               <TableRow>
                 <TableCell colSpan={6}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
-                    No datasets defined.
+                    {t('datasets-none-defined')}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -310,7 +313,12 @@ export default function DatasetList() {
                       )}
                     </Box>
                     {ds.isExternalPlaceholder && (
-                      <Chip label="Placeholder" size="small" color="warning" variant="outlined" />
+                      <Chip
+                        label={t('datasets-placeholder')}
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                      />
                     )}
                   </Stack>
                 </TableCell>
@@ -363,7 +371,7 @@ export default function DatasetList() {
                       }
                     >
                       <Typography variant="body2" color="text.secondary" component="span">
-                        {formatRelativeTime(ds.lastModifiedAt)}
+                        {formatRelativeTime(ds.lastModifiedAt, t)}
                       </Typography>
                     </Tooltip>
                   ) : (
@@ -376,9 +384,11 @@ export default function DatasetList() {
                   <DatasetRowActions
                     onEdit={() => router.push(`${base}/${encodeURIComponent(ds.id)}`)}
                     onDuplicate={() =>
-                      setNotice(`Duplicating "${ds.name}" is not yet implemented.`)
+                      setNotice(t('datasets-duplicating-not-implemented', { name: ds.name }))
                     }
-                    onDelete={() => setNotice(`Deleting "${ds.name}" is not yet implemented.`)}
+                    onDelete={() =>
+                      setNotice(t('datasets-deleting-not-implemented', { name: ds.name }))
+                    }
                     onOpenChange={(open) => setOpenMenuRowId(open ? ds.id : null)}
                   />
                 </TableCell>
