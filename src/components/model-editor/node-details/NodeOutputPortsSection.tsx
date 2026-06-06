@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { InfoSquare, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
 
 import type {
@@ -66,6 +67,7 @@ function OutputPortEditDialog({
   onClose: () => void;
   onSave: (patch: PortPatch) => Promise<void>;
 }) {
+  const t = useTranslations('model-editor');
   const [unit, setUnit] = useState(port.unit?.standard ?? '');
   const [quantity, setQuantity] = useState(port.quantity ?? '');
   const [submitting, setSubmitting] = useState(false);
@@ -79,16 +81,18 @@ function OutputPortEditDialog({
     setError(null);
     onSave({ unit: unit.trim(), quantity: quantity.trim() })
       .then(() => onClose())
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to save'))
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err.message : t('common-save-failed'))
+      )
       .finally(() => setSubmitting(false));
   };
 
   return (
     <Dialog open onClose={submitting ? undefined : onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ pr: 6 }}>
-        Edit output port
+        {t('nodes-edit-output-port')}
         <IconButton
-          aria-label="Close"
+          aria-label={t('common-close')}
           onClick={onClose}
           disabled={submitting}
           sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
@@ -105,8 +109,8 @@ function OutputPortEditDialog({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 0.5 }}>
           <TextField
             autoFocus
-            label="Unit"
-            placeholder="e.g. kt/a"
+            label={t('nodes-port-unit')}
+            placeholder={t('nodes-port-unit-hint')}
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             size="small"
@@ -122,8 +126,8 @@ function OutputPortEditDialog({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Quantity"
-                placeholder="e.g. emissions"
+                label={t('nodes-port-quantity')}
+                placeholder={t('nodes-port-quantity-hint')}
                 slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
               />
             )}
@@ -132,10 +136,10 @@ function OutputPortEditDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('common-cancel')}
         </Button>
         <Button onClick={handleSave} variant="contained" disabled={!canSave}>
-          {submitting ? 'Saving…' : 'Save'}
+          {submitting ? t('common-saving') : t('common-save')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -157,17 +161,18 @@ function PortInfoRow({ label, value }: PortInfoRowProps) {
 }
 
 function PortTooltipContent({ port, edgeCount }: { port: OutputPort; edgeCount: number }) {
+  const t = useTranslations('model-editor');
   return (
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
-      <PortInfoRow label="ID" value={port.id} />
-      <PortInfoRow label="Label" value={port.label ?? '—'} />
-      <PortInfoRow label="Quantity" value={port.quantity ?? '—'} />
-      <PortInfoRow label="Unit" value={port.unit?.short ?? '—'} />
+      <PortInfoRow label={t('nodes-port-id')} value={port.id} />
+      <PortInfoRow label={t('nodes-port-label-field')} value={port.label ?? '—'} />
+      <PortInfoRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
+      <PortInfoRow label={t('nodes-port-unit')} value={port.unit?.short ?? '—'} />
       <PortInfoRow
-        label="Dimensions"
+        label={t('datasets-dimensions')}
         value={port.dimensions.length ? port.dimensions.join(', ') : '—'}
       />
-      <PortInfoRow label="Edges" value={String(edgeCount)} />
+      <PortInfoRow label={t('nodes-port-edges')} value={String(edgeCount)} />
     </Stack>
   );
 }
@@ -195,6 +200,7 @@ export default function NodeOutputPortsSection({
   onSelectNode,
   onHover,
 }: NodeOutputPortsSectionProps) {
+  const t = useTranslations('model-editor');
   const readOnly = useIsEditorReadOnly();
   const updateOutputPorts = useUpdateOutputPorts();
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
@@ -213,7 +219,7 @@ export default function NodeOutputPortsSection({
 
   return (
     <CollapsibleSection
-      title={`Node output ports (${ports.length})`}
+      title={t('nodes-output-ports', { count: ports.length })}
       open={open}
       onToggle={onToggle}
     >
@@ -259,8 +265,10 @@ export default function NodeOutputPortsSection({
                   cursor: 'help',
                 }}
               >
-                Port: {port.label ?? derivedPortName ?? `#${index + 1}`}
-                <InfoSquare size={10} aria-label="Port info" />
+                {t('nodes-port-label', {
+                  label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                })}
+                <InfoSquare size={10} aria-label={t('nodes-port-info')} />
               </Typography>
             </Tooltip>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -300,11 +308,11 @@ export default function NodeOutputPortsSection({
                 )}
               </Box>
               {!readOnly && (
-                <Tooltip title="Edit output port" placement="left">
+                <Tooltip title={t('nodes-edit-output-port')} placement="left">
                   <IconButton
                     size="small"
                     onClick={() => setEditingPortId(port.id)}
-                    aria-label="Edit output port"
+                    aria-label={t('nodes-edit-output-port')}
                     sx={{ p: 0.5, color: 'text.secondary' }}
                   >
                     <PencilSquare size={12} />

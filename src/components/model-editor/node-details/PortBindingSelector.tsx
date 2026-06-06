@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
+
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import type { InputPort } from '../nodeHelpers';
@@ -49,6 +51,7 @@ function CriterionRow({ label, value }: { label: string; value: string }) {
 }
 
 function PortCriteria({ port }: { port: InputPort }) {
+  const t = useTranslations('model-editor');
   return (
     <Box
       sx={{
@@ -64,16 +67,16 @@ function PortCriteria({ port }: { port: InputPort }) {
         variant="caption"
         sx={{ fontSize: 10, color: 'text.secondary', textTransform: 'uppercase', mb: 0.25 }}
       >
-        Port requirements
+        {t('nodes-port-requirements')}
       </Typography>
-      <CriterionRow label="Quantity" value={port.quantity ?? '—'} />
-      <CriterionRow label="Unit" value={port.unit?.short ?? '—'} />
+      <CriterionRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
+      <CriterionRow label={t('nodes-port-unit')} value={port.unit?.short ?? '—'} />
       <CriterionRow
-        label="Required dims"
+        label={t('nodes-port-required-dims')}
         value={port.requiredDimensions.length ? port.requiredDimensions.join(', ') : '—'}
       />
       <CriterionRow
-        label="Supported dims"
+        label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
     </Box>
@@ -90,6 +93,7 @@ export default function PortBindingSelector({
   onSelectDataset,
   onRemoveSource,
 }: Props) {
+  const t = useTranslations('model-editor');
   const [tab, setTab] = useState<SourceKind>('node');
 
   const excludeNodeIds = new Set(
@@ -113,7 +117,7 @@ export default function PortBindingSelector({
             variant="caption"
             sx={{ fontSize: 10, color: 'text.secondary', textTransform: 'uppercase' }}
           >
-            Current input source
+            {t('nodes-current-input-source')}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {currentSources.map((source) => (
@@ -142,8 +146,8 @@ export default function PortBindingSelector({
         variant="fullWidth"
         sx={{ minHeight: 32, '& .MuiTab-root': { minHeight: 32, fontSize: 12 } }}
       >
-        <Tab value="node" label="Nodes" />
-        <Tab value="dataset" label="Datasets" />
+        <Tab value="node" label={t('editor-nav-nodes')} />
+        <Tab value="dataset" label={t('editor-nav-datasets')} />
       </Tabs>
       {tab === 'node' ? (
         <NodeSelector

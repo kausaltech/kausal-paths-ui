@@ -5,6 +5,7 @@ import { Box, Chip, IconButton, Typography } from '@mui/material';
 import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useReactFlow } from '@xyflow/react';
+import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { BarChartLine, X } from 'react-bootstrap-icons';
@@ -77,10 +78,11 @@ export default function NodeDetailsPanel({
   onShowMetrics,
   onShowDataset,
 }: NodeDetailsPanelProps) {
+  const t = useTranslations('model-editor');
   const { setCenter, getZoom, getNodes } = useReactFlow();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const { data: session } = useSession();
-  const editorUserName = session?.user?.name ?? session?.user?.email ?? 'Unknown user';
+  const editorUserName = session?.user?.name ?? session?.user?.email ?? t('common-unknown-user');
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [contentOpen, setContentOpen] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -204,7 +206,7 @@ export default function NodeDetailsPanel({
       </Box>
 
       <CollapsibleSection
-        title="Node content"
+        title={t('nodes-content')}
         open={contentOpen}
         onToggle={() => setContentOpen((v) => !v)}
       >
@@ -212,7 +214,7 @@ export default function NodeDetailsPanel({
       </CollapsibleSection>
 
       <CollapsibleSection
-        title="Node details"
+        title={t('nodes-details')}
         open={detailsOpen}
         onToggle={() => setDetailsOpen((v) => !v)}
       >
@@ -233,7 +235,7 @@ export default function NodeDetailsPanel({
 
       {explanation && (
         <CollapsibleSection
-          title="Node explanation"
+          title={t('nodes-explanation')}
           open={explanationOpen}
           onToggle={() => setExplanationOpen((v) => !v)}
         >
@@ -287,14 +289,14 @@ export default function NodeDetailsPanel({
       />
 
       <CollapsibleSection
-        title="Node result data"
+        title={t('nodes-output-data')}
         open={nodeDataOpen}
         onToggle={() => setNodeDataOpen((v) => !v)}
       >
         {formula && (
           <Box>
             <Typography variant="body2" sx={{ fontSize: 10, color: 'text.secondary', mb: 0.5 }}>
-              Formula
+              {t('nodes-formula')}
             </Typography>
             <Box
               component="pre"
@@ -317,8 +319,8 @@ export default function NodeDetailsPanel({
         )}
         <Chip
           icon={<BarChartLine size={18} />}
-          label="Show node data"
-          title="show node data"
+          label={t('nodes-output-data-show')}
+          title={t('nodes-output-data-show')}
           variant="outlined"
           onClick={() => onShowMetrics?.(node.id, node.name ?? null)}
           sx={{

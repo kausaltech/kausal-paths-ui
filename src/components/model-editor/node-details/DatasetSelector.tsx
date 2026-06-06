@@ -1,6 +1,7 @@
 import { Box, Chip, Typography } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { Database } from 'react-bootstrap-icons';
@@ -37,6 +38,7 @@ function metricMatches(port: InputPort, metric: Metric): boolean {
 }
 
 export default function DatasetSelector({ port, onSelect }: Props) {
+  const t = useTranslations('model-editor');
   const { data, loading } = useQuery<AvailableDatasetsQuery, AvailableDatasetsQueryVariables>(
     AVAILABLE_DATASETS,
     { fetchPolicy: 'cache-and-network' }
@@ -61,11 +63,11 @@ export default function DatasetSelector({ port, onSelect }: Props) {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {loading && candidates.length === 0 ? (
         <Typography variant="caption" sx={{ fontSize: 11, color: 'text.secondary', py: 1 }}>
-          Loading…
+          {t('common-loading')}
         </Typography>
       ) : candidates.length === 0 ? (
         <Typography variant="caption" sx={{ fontSize: 11, color: 'text.secondary', py: 1 }}>
-          No compatible datasets in this model.
+          {t('nodes-no-compatible-datasets')}
         </Typography>
       ) : (
         <OverlayScrollbarsComponent
@@ -102,7 +104,7 @@ export default function DatasetSelector({ port, onSelect }: Props) {
         </OverlayScrollbarsComponent>
       )}
       <Typography variant="caption" sx={{ fontSize: 10, color: 'text.secondary' }}>
-        {candidates.length} compatible dataset metric{candidates.length === 1 ? '' : 's'}
+        {t('nodes-compatible-dataset-metrics', { count: candidates.length })}
       </Typography>
     </Box>
   );

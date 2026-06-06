@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 
@@ -28,6 +29,7 @@ export default function NodeSelector({
   excludeNodeIds,
   onSelect,
 }: Props) {
+  const t = useTranslations('model-editor');
   const candidates = nodes
     .filter((n) => n.id !== currentNodeId && !excludeNodeIds?.has(n.id) && nodeMatches(n, port))
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -36,7 +38,7 @@ export default function NodeSelector({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {candidates.length === 0 ? (
         <Typography variant="caption" sx={{ fontSize: 11, color: 'text.secondary', py: 1 }}>
-          No compatible nodes in this model.
+          {t('nodes-no-compatible-nodes')}
         </Typography>
       ) : (
         <OverlayScrollbarsComponent
@@ -64,7 +66,7 @@ export default function NodeSelector({
         </OverlayScrollbarsComponent>
       )}
       <Typography variant="caption" sx={{ fontSize: 10, color: 'text.secondary' }}>
-        {candidates.length} compatible node{candidates.length === 1 ? '' : 's'}
+        {t('nodes-compatible-nodes', { count: candidates.length })}
       </Typography>
     </Box>
   );

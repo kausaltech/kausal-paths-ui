@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Box, Chip, Collapse, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { CaretDownFill, CaretRightFill, DashCircle, XCircleFill } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
@@ -41,6 +42,7 @@ export function ConnectedNodeChip({
   onDelete,
   deleting = false,
 }: ConnectedNodeChipProps) {
+  const t = useTranslations('model-editor');
   const truncated =
     label.length > CHIP_LABEL_MAX ? `${label.slice(0, CHIP_LABEL_MAX - 1)}…` : label;
   return (
@@ -55,7 +57,9 @@ export function ConnectedNodeChip({
       onMouseEnter={() => onHover(nodeId)}
       onMouseLeave={() => onHover(null)}
       onDelete={onDelete}
-      deleteIcon={onDelete ? <XCircleFill size={14} aria-label="Remove input source" /> : undefined}
+      deleteIcon={
+        onDelete ? <XCircleFill size={14} aria-label={t('nodes-remove-input-source')} /> : undefined
+      }
       sx={{
         cursor: 'pointer',
         maxWidth: '100%',
@@ -70,10 +74,11 @@ export function ConnectedNodeChip({
 }
 
 export function NotConnectedChip() {
+  const t = useTranslations('model-editor');
   return (
     <Chip
       icon={<DashCircle size={14} />}
-      label="Not connected"
+      label={t('nodes-not-connected')}
       size="small"
       variant="outlined"
       sx={{

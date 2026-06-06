@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import {
   BarChartLine,
   Database,
@@ -63,6 +64,7 @@ function PortInfoRow({ label, value }: PortInfoRowProps) {
 }
 
 function PortTooltipContent({ port }: { port: InputPort }) {
+  const t = useTranslations('model-editor');
   const datasetBindingCount = port.bindings.filter(
     (b) => b.__typename === 'DatasetPortType'
   ).length;
@@ -70,22 +72,29 @@ function PortTooltipContent({ port }: { port: InputPort }) {
 
   return (
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
-      <PortInfoRow label="ID" value={port.id} />
-      <PortInfoRow label="Label" value={port.label ?? '—'} />
-      <PortInfoRow label="Quantity" value={port.quantity ?? '—'} />
-      <PortInfoRow label="Unit" value={port.unit?.short ?? '—'} />
-      <PortInfoRow label="Multi" value={port.multi ? 'Yes' : 'No'} />
+      <PortInfoRow label={t('nodes-port-id')} value={port.id} />
+      <PortInfoRow label={t('nodes-port-label-field')} value={port.label ?? '—'} />
+      <PortInfoRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
+      <PortInfoRow label={t('nodes-port-unit')} value={port.unit?.short ?? '—'} />
       <PortInfoRow
-        label="Required dims"
+        label={t('nodes-port-multi')}
+        value={port.multi ? t('nodes-port-multi-yes') : t('nodes-port-multi-no')}
+      />
+      <PortInfoRow
+        label={t('nodes-port-required-dims')}
         value={port.requiredDimensions.length ? port.requiredDimensions.join(', ') : '—'}
       />
       <PortInfoRow
-        label="Supported dims"
+        label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
       <PortInfoRow
-        label="Bindings"
-        value={`${port.bindings.length} (${edgeBindingCount} edge, ${datasetBindingCount} dataset)`}
+        label={t('nodes-port-bindings')}
+        value={t('nodes-port-bindings-value', {
+          total: port.bindings.length,
+          edges: edgeBindingCount,
+          datasets: datasetBindingCount,
+        })}
       />
     </Stack>
   );
@@ -118,6 +127,7 @@ export default function NodeInputPortsSection({
   onShowDataset,
   onShowMetrics,
 }: NodeInputPortsSectionProps) {
+  const t = useTranslations('model-editor');
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
   const createEdge = useCreateEdge();
@@ -158,7 +168,7 @@ export default function NodeInputPortsSection({
       });
       closeDialog();
     } catch (err) {
-      setBindError(err instanceof Error ? err.message : 'Failed to create edge');
+      setBindError(err instanceof Error ? err.message : t('nodes-failed-create-edge'));
     } finally {
       setBinding(false);
     }
@@ -172,7 +182,7 @@ export default function NodeInputPortsSection({
     try {
       await deleteEdge(edgeId);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to remove input source';
+      const message = err instanceof Error ? err.message : t('nodes-failed-remove-input-source');
       // Surface the error where the action was taken: the dialog (when open)
       // or the inline section alert.
       if (editingPortId) setBindError(message);
@@ -184,14 +194,14 @@ export default function NodeInputPortsSection({
 
   const handleSelectDataset = () => {
     // No backend mutation exists yet to bind a dataset to an input port.
-    setBindError('Binding a dataset to an input port is not supported yet.');
+    setBindError(t('nodes-binding-dataset-not-supported'));
   };
 
   if (ports.length === 0) return null;
 
   return (
     <CollapsibleSection
-      title={`Node input ports (${ports.length})`}
+      title={t('nodes-input-ports', { count: ports.length })}
       open={open}
       onToggle={onToggle}
     >
@@ -260,9 +270,11 @@ export default function NodeInputPortsSection({
                   cursor: 'help',
                 }}
               >
-                Port: {port.label ?? derivedPortName ?? `#${index + 1}`}
-                {port.multi ? ' (multi)' : ''}
-                <InfoSquare size={10} aria-label="Port info" />
+                {t('nodes-port-label', {
+                  label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                })}
+                {port.multi ? t('nodes-port-multi-suffix') : ''}
+                <InfoSquare size={10} aria-label={t('nodes-port-info')} />
               </Typography>
             </Tooltip>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -330,24 +342,24 @@ export default function NodeInputPortsSection({
                   <NotConnectedChip />
                 </Box>
               )}
-              <Tooltip title="Select input node" placement="left">
+              <Tooltip title={t('nodes-port-select-input')} placement="left">
                 <IconButton
                   size="small"
                   onClick={() => setEditingPortId(port.id)}
-                  aria-label="Select input node"
+                  aria-label={t('nodes-port-select-input')}
                   sx={{ p: 0.5, color: 'text.secondary' }}
                 >
                   <PencilSquare size={12} />
                 </IconButton>
               </Tooltip>
               {singleSourceNode && onShowMetrics && (
-                <Tooltip title="Show source node output data" placement="left">
+                <Tooltip title={t('nodes-port-show-source-data')} placement="left">
                   <IconButton
                     size="small"
                     onClick={() =>
                       onShowMetrics(singleSourceNode.id, singleSourceNode.name ?? null)
                     }
-                    aria-label="Show source node output data"
+                    aria-label={t('nodes-port-show-source-data')}
                     sx={{ p: 0.5, color: 'text.secondary' }}
                   >
                     <BarChartLine size={12} />
@@ -361,10 +373,10 @@ export default function NodeInputPortsSection({
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
           {editingPort && (incomingByPort.get(editingPort.id) ?? []).length > 0
-            ? 'Replace input source'
-            : 'Select input source'}
+            ? t('nodes-replace-input-source')
+            : t('nodes-select-input-source')}
           <IconButton
-            aria-label="Close"
+            aria-label={t('common-close')}
             onClick={closeDialog}
             sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
           >
