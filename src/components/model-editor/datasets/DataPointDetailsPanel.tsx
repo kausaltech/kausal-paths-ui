@@ -21,6 +21,7 @@ import type {
   DatasetSourceReferenceFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
+import { useEditorDateFormat } from '../useEditorDateFormat';
 import DataPointChangeHistorySection from './DataPointChangeHistorySection';
 import {
   type AddCommentInput,
@@ -29,7 +30,6 @@ import {
   type SelectedCell,
   SelectedDataPointChips,
   SourceReferenceCard,
-  formatCommentDate,
   getUserName,
   isCommentEdited,
 } from './shared';
@@ -49,6 +49,7 @@ function DataPointCommentsSection({
   onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
 }) {
   const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const visibleComments = comments.filter((c) => c.dataPointId === dataPointId);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -211,7 +212,7 @@ function DataPointCommentsSection({
                 </Typography>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Typography variant="caption" color="text.secondary">
-                    {formatCommentDate(c.createdAt)}
+                    {df.dateTime(c.createdAt)}
                     {isCommentEdited(c.createdAt, c.lastModifiedAt) &&
                       t('datasets-comment-edited-suffix')}
                   </Typography>
@@ -246,7 +247,7 @@ function DataPointCommentsSection({
                   >
                     {t('datasets-resolved-by', {
                       name: getUserName(c.resolvedBy ?? null, t),
-                      date: formatCommentDate(c.resolvedAt),
+                      date: df.dateTime(c.resolvedAt),
                     })}
                   </Typography>
                 )}

@@ -39,6 +39,7 @@ import {
   type RemoveInvitationMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { useEditorDateFormat } from '@/components/model-editor/useEditorDateFormat';
 import { useSession } from '@/lib/auth-client';
 
 const GET_INSTANCE_USERS = gql`
@@ -159,6 +160,7 @@ type DialogStep = 'add' | 'invite';
 
 export default function InstanceUsersPage() {
   const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const instance = useInstance();
   const { data: session } = useSession();
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -514,8 +516,8 @@ export default function InstanceUsersPage() {
                       </Box>
                       <Typography variant="body2" color="text.secondary">
                         {expired
-                          ? t('users-expired', { date: expires.toLocaleDateString() })
-                          : t('users-expires', { date: expires.toLocaleDateString() })}
+                          ? t('users-expired', { date: df.date(expires) })
+                          : t('users-expires', { date: df.date(expires) })}
                       </Typography>
                     </Box>
                     <Tooltip title={t('common-revoke-invitation')}>

@@ -6,6 +6,8 @@ import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
+import { useEditorDateFormat } from '../useEditorDateFormat';
+
 // There's no per-datapoint `changeHistory` field on the backend (only Node /
 // NodeEdge / DatasetPort implement EditableEntity), so we read the instance-
 // wide audit trail and filter to the entries that target this data point. The
@@ -88,28 +90,6 @@ const FIELD_LABEL_KEY: Record<string, FieldLabelKey> = {
 // Snapshot bookkeeping keys — never user-meaningful as a "field changed".
 const IGNORED_FIELDS = new Set(['uuid', 'dataset_uuid']);
 
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function formatRelativeTime(
-  iso: string,
-  now: number,
-  t: ReturnType<typeof useTranslations>
-): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const diffSec = Math.max(0, Math.round((now - d.getTime()) / 1000));
-  if (diffSec < 45) return t('editor-relative-just-now');
-  if (diffSec < 60 * 60)
-    return t('editor-relative-minutes-ago', { count: Math.round(diffSec / 60) });
-  if (diffSec < 24 * 60 * 60)
-    return t('editor-relative-hours-ago', { count: Math.round(diffSec / 3600) });
-  return formatTimestamp(iso);
-}
-
 // Returns the raw snapshot keys that changed; the row maps them to translated
 // labels (FIELD_LABEL_KEY) at render time, falling back to the raw key.
 function computeChangedFields(before: unknown, after: unknown): string[] {
@@ -128,6 +108,7 @@ function computeChangedFields(before: unknown, after: unknown): string[] {
 
 function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
   const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const actionKey = ACTION_LABEL_KEY[row.action];
   return (
     <Box sx={{ px: 1, py: 0.75, borderRadius: 0.5, bgcolor: 'grey.100' }}>
@@ -155,9 +136,9 @@ function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
         <Typography
           variant="caption"
           sx={{ fontSize: 10, color: 'text.secondary', whiteSpace: 'nowrap' }}
-          title={formatTimestamp(row.createdAt)}
+          title={df.dateTime(row.createdAt)}
         >
-          {formatRelativeTime(row.createdAt, now, t)}
+          {df.relativeTime(row.createdAt, now)}
         </Typography>
       </Box>
       {row.userEmail && (

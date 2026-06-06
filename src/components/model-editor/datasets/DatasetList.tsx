@@ -41,6 +41,7 @@ import {
 
 import type { InstanceDatasetsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
+import { useEditorDateFormat } from '../useEditorDateFormat';
 import { GET_INSTANCE_DATASETS } from './queries';
 import { getUserName } from './shared';
 
@@ -136,26 +137,9 @@ function getSortValue(ds: DatasetRow, key: SortKey): string | number {
   }
 }
 
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function formatRelativeTime(iso: string, t: ReturnType<typeof useTranslations>): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const diffSec = Math.max(0, Math.round((Date.now() - d.getTime()) / 1000));
-  if (diffSec < 45) return t('editor-relative-just-now');
-  if (diffSec < 60 * 60)
-    return t('editor-relative-minutes-ago', { count: Math.round(diffSec / 60) });
-  if (diffSec < 24 * 60 * 60)
-    return t('editor-relative-hours-ago', { count: Math.round(diffSec / 3600) });
-  return formatTimestamp(iso);
-}
-
 export default function DatasetList() {
   const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -166,6 +150,8 @@ export default function DatasetList() {
   const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  // Captured once at mount; relative timestamps are good-enough without ticking.
+  const [now] = useState(() => Date.now());
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -366,12 +352,12 @@ export default function DatasetList() {
                     <Tooltip
                       title={
                         ds.lastModifiedBy
-                          ? `${formatTimestamp(ds.lastModifiedAt)} · ${getUserName(ds.lastModifiedBy, t)}`
-                          : formatTimestamp(ds.lastModifiedAt)
+                          ? `${df.dateTime(ds.lastModifiedAt)} · ${getUserName(ds.lastModifiedBy, t)}`
+                          : df.dateTime(ds.lastModifiedAt)
                       }
                     >
                       <Typography variant="body2" color="text.secondary" component="span">
-                        {formatRelativeTime(ds.lastModifiedAt, t)}
+                        {df.relativeTime(ds.lastModifiedAt, now)}
                       </Typography>
                     </Tooltip>
                   ) : (

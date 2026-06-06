@@ -28,6 +28,7 @@ import type {
   DataSourceFieldsFragment,
   DatasetSourceReferenceFieldsFragment,
 } from '@/common/__generated__/graphql';
+import { useEditorDateFormat } from '../useEditorDateFormat';
 
 export type SelectedCell = {
   year: number;
@@ -84,17 +85,6 @@ export function getUserName(
   return full || user.email;
 }
 
-export function formatCommentDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 // Backend's UserModifiableModel sets `created_at` (auto_now_add) and
 // `last_modified_at` (auto_now) on the same .save(), but each evaluates
 // timezone.now() independently — so they always differ by microseconds.
@@ -115,6 +105,7 @@ export function SourceReferenceCard({
   detaching: boolean;
 }) {
   const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const ds = r.dataSource;
   const meta = [ds.authority, ds.edition].filter((s): s is string => Boolean(s));
   return (
@@ -167,7 +158,7 @@ export function SourceReferenceCard({
         <Typography variant="caption" color="text.secondary" sx={{ pt: 0.5 }}>
           {t('datasets-attached-by', {
             name: getUserName(r.createdBy ?? null, t),
-            date: formatCommentDate(r.createdAt),
+            date: df.dateTime(r.createdAt),
           })}
         </Typography>
       </Stack>
