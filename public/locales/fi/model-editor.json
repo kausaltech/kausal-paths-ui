@@ -311,8 +311,10 @@
   "users-invite-title": "Lähetä kutsu",
   "users-invite-users": "Kutsu käyttäjiä",
   "users-member": "Sinä",
+  "users-no-server-response": "Ei vastausta palvelimelta",
   "users-no-users": "Yhdelläkään käyttäjällä ei ole vielä pääsyä tähän malliin.",
   "users-not-member": "Ei tämän mallin jäsen — näytetään, koska pääkäyttäjät voivat käyttää jokaista mallia.",
+  "users-operation-failed": "Toiminto epäonnistui",
   "users-owner": "Omistaja",
   "users-pending-invitations": "Odottavat kutsut",
   "users-pending-invitations-desc": "Kutsut, joita ei ole vielä hyväksytty.",
@@ -323,6 +325,8 @@
   "users-role-reviewer": "Tarkastaja",
   "users-role-super-admin": "Pääylläpitäjä",
   "users-role-viewer": "Katselija",
+  "users-send-invitation": "Lähetä kutsu",
+  "users-sending": "Lähetetään…",
   "users-superuser": "Pääkäyttäjä",
   "users-title": "Käyttäjät"
 }

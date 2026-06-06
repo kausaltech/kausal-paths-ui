@@ -311,8 +311,10 @@
   "users-invite-title": "Eine Einladung senden",
   "users-invite-users": "Benutzer einladen",
   "users-member": "Sie",
+  "users-no-server-response": "Keine Antwort vom Server",
   "users-no-users": "Noch keine Benutzer haben Zugriff auf dieses Modell.",
   "users-not-member": "Kein Mitglied dieses Modells — angezeigt, weil Superuser auf jedes Modell zugreifen können.",
+  "users-operation-failed": "Vorgang fehlgeschlagen",
   "users-owner": "Eigentümer",
   "users-pending-invitations": "Ausstehende Einladungen",
   "users-pending-invitations-desc": "Einladungen, die noch nicht angenommen wurden.",
@@ -323,6 +325,8 @@
   "users-role-reviewer": "Prüfer",
   "users-role-super-admin": "Super-Administrator",
   "users-role-viewer": "Betrachter",
+  "users-send-invitation": "Einladung senden",
+  "users-sending": "Senden…",
   "users-superuser": "Superuser",
   "users-title": "Benutzer"
 }

@@ -311,8 +311,10 @@
   "users-invite-title": "Send an invitation",
   "users-invite-users": "Invite users",
   "users-member": "You",
+  "users-no-server-response": "No response from server",
   "users-no-users": "No users have access to this model yet.",
   "users-not-member": "Not a member of this model — shown because superusers can access every model.",
+  "users-operation-failed": "Operation failed",
   "users-owner": "Owner",
   "users-pending-invitations": "Pending invitations",
   "users-pending-invitations-desc": "Invitations that haven't been accepted yet.",
@@ -323,6 +325,8 @@
   "users-role-reviewer": "Reviewer",
   "users-role-super-admin": "Super admin",
   "users-role-viewer": "Viewer",
+  "users-send-invitation": "Send invitation",
+  "users-sending": "Sending…",
   "users-superuser": "Superuser",
   "users-title": "Users"
 }

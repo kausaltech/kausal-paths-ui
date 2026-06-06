@@ -25,6 +25,7 @@ import {
 
 import { gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { PersonPlus, XLg } from 'react-bootstrap-icons';
 
 import {
@@ -140,11 +141,14 @@ function getInitials(name: string | null | undefined, email: string | null | und
   return source.slice(0, 2).toUpperCase();
 }
 
-const ROLE_LABEL: Record<InstanceMemberRole, string> = {
-  [InstanceMemberRole.Admin]: 'Admin',
-  [InstanceMemberRole.Reviewer]: 'Reviewer',
-  [InstanceMemberRole.SuperAdmin]: 'Super admin',
-  [InstanceMemberRole.Viewer]: 'Viewer',
+const ROLE_LABEL_KEY: Record<
+  InstanceMemberRole,
+  'users-role-admin' | 'users-role-reviewer' | 'users-role-super-admin' | 'users-role-viewer'
+> = {
+  [InstanceMemberRole.Admin]: 'users-role-admin',
+  [InstanceMemberRole.Reviewer]: 'users-role-reviewer',
+  [InstanceMemberRole.SuperAdmin]: 'users-role-super-admin',
+  [InstanceMemberRole.Viewer]: 'users-role-viewer',
 };
 
 // Loose email check — server is the source of truth, this just catches the
@@ -154,6 +158,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 type DialogStep = 'add' | 'invite';
 
 export default function InstanceUsersPage() {
+  const t = useTranslations('model-editor');
   const instance = useInstance();
   const { data: session } = useSession();
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -227,21 +232,21 @@ export default function InstanceUsersPage() {
         // partial data) is not a success — don't let the empty-messages
         // fallback report a phantom revocation.
         setToast({
-          message: 'Failed to revoke invitation: no response from server',
+          message: t('users-failed-to-revoke', { error: t('users-no-server-response') }),
           severity: 'error',
         });
       } else if (messages.length > 0) {
         setToast({
-          message: `Failed to revoke invitation: ${formatOperationMessages(messages)}`,
+          message: t('users-failed-to-revoke', { error: formatOperationMessages(messages) }),
           severity: 'error',
         });
       } else {
-        setToast({ message: `Revoked invitation for ${email}`, severity: 'success' });
+        setToast({ message: t('users-revoked', { email }), severity: 'success' });
       }
       await refetch();
     } catch (e) {
       setToast({
-        message: e instanceof Error ? e.message : 'Failed to revoke invitation',
+        message: e instanceof Error ? e.message : t('users-failed-to-revoke-short'),
         severity: 'error',
       });
     } finally {
@@ -265,14 +270,14 @@ export default function InstanceUsersPage() {
   const formatOperationMessages = (
     messages: ReadonlyArray<{ message: string; field: string | null }>
   ) => {
-    if (messages.length === 0) return 'Operation failed';
+    if (messages.length === 0) return t('users-operation-failed');
     return messages.map((m) => (m.field ? `${m.field}: ${m.message}` : m.message)).join('; ');
   };
 
   const handleSubmit = async () => {
     const trimmed = inviteEmail.trim();
     if (!EMAIL_RE.test(trimmed)) {
-      setEmailError('Enter a valid email address');
+      setEmailError(t('users-email-invalid'));
       return;
     }
     setSubmitError(null);
@@ -282,12 +287,18 @@ export default function InstanceUsersPage() {
         const res = await addUser({ variables: { instanceId: instance.id, email: trimmed } });
         const payload = res.data?.instanceAdmin.addUserToInstance;
         if (!payload) {
-          setSubmitError('No response from server');
+          setSubmitError(t('users-no-server-response'));
           return;
         }
         if (payload.__typename === 'User') {
           setInviteOpen(false);
-          setToast({ message: `Added ${payload.email} to ${instance.name}`, severity: 'success' });
+          setToast({
+            message: t('users-added-to-instance', {
+              email: payload.email,
+              instanceName: instance.name,
+            }),
+            severity: 'success',
+          });
           await refetch();
           return;
         }
@@ -300,7 +311,7 @@ export default function InstanceUsersPage() {
           return;
         }
       } catch (e) {
-        setSubmitError(e instanceof Error ? e.message : 'Failed to add user');
+        setSubmitError(e instanceof Error ? e.message : t('users-failed-to-add'));
       }
       return;
     }
@@ -310,12 +321,15 @@ export default function InstanceUsersPage() {
       const res = await inviteUser({ variables: { instanceId: instance.id, email: trimmed } });
       const payload = res.data?.instanceAdmin.inviteUserToInstance;
       if (!payload) {
-        setSubmitError('No response from server');
+        setSubmitError(t('users-no-server-response'));
         return;
       }
       if (payload.__typename === 'InstanceInvitation') {
         setInviteOpen(false);
-        setToast({ message: `Invitation sent to ${payload.email}`, severity: 'success' });
+        setToast({
+          message: t('users-invitation-sent', { email: payload.email }),
+          severity: 'success',
+        });
         await refetch();
         return;
       }
@@ -324,7 +338,7 @@ export default function InstanceUsersPage() {
         return;
       }
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Failed to send invitation');
+      setSubmitError(e instanceof Error ? e.message : t('users-failed-to-send-invite'));
     }
   };
 
@@ -344,29 +358,28 @@ export default function InstanceUsersPage() {
             {instance.name}
           </Typography>
           <Typography variant="h1" sx={{ mt: 0.5 }}>
-            Users
+            {t('users-title')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            People with access to this instance.
+            {t('users-people-with-access')}
           </Typography>
         </Box>
         {isAdminViewer && (
           <Button variant="contained" startIcon={<PersonPlus size={14} />} onClick={openInvite}>
-            Invite users
+            {t('users-invite-users')}
           </Button>
         )}
       </Box>
 
       {!loading && loadSucceeded && !isAdminViewer && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Only instance admins can manage users. Ask an admin of <strong>{instance.name}</strong> if
-          you need to invite or remove users.
+          {t('users-admin-only', { instanceName: instance.name })}
         </Alert>
       )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load users: {error.message}
+          {t('users-failed-to-load', { error: error.message })}
         </Alert>
       )}
 
@@ -377,7 +390,7 @@ export default function InstanceUsersPage() {
       ) : !isAdminViewer ? null : members.length === 0 && !isSuperuser ? (
         <Paper variant="outlined" sx={{ p: 3 }}>
           <Typography variant="body2" color="text.secondary">
-            No users have access to this instance yet.
+            {t('users-no-users')}
           </Typography>
         </Paper>
       ) : (
@@ -396,8 +409,8 @@ export default function InstanceUsersPage() {
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
                       {[me.firstName, me.lastName].filter(Boolean).join(' ').trim() || me.email}
                     </Typography>
-                    <Chip label="You" size="small" />
-                    <Chip label="Superuser" size="small" color="secondary" />
+                    <Chip label={t('users-member')} size="small" />
+                    <Chip label={t('users-superuser')} size="small" color="secondary" />
                   </Box>
                   {([me.firstName, me.lastName].filter(Boolean).join(' ').trim()
                     ? true
@@ -411,8 +424,7 @@ export default function InstanceUsersPage() {
                     color="text.secondary"
                     sx={{ mt: 0.5, display: 'block' }}
                   >
-                    Not a member of this instance — shown because superusers can access every
-                    instance.
+                    {t('users-not-member')}
                   </Typography>
                 </Box>
               </Box>
@@ -442,11 +454,20 @@ export default function InstanceUsersPage() {
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
                         {fullName || member.user.email}
                       </Typography>
-                      {isCurrentUser && <Chip label="You" size="small" />}
+                      {isCurrentUser && <Chip label={t('users-member')} size="small" />}
                       {member.isOwner && (
-                        <Chip label="Owner" size="small" color="primary" variant="outlined" />
+                        <Chip
+                          label={t('users-owner')}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
                       )}
-                      <Chip label={ROLE_LABEL[member.role]} size="small" variant="outlined" />
+                      <Chip
+                        label={t(ROLE_LABEL_KEY[member.role])}
+                        size="small"
+                        variant="outlined"
+                      />
                     </Box>
                     {fullName && (
                       <Typography variant="body2" color="text.secondary">
@@ -464,10 +485,10 @@ export default function InstanceUsersPage() {
       {invitations.length > 0 && (
         <Box sx={{ mt: 4 }}>
           <Typography variant="h6" sx={{ mb: 1 }}>
-            Pending invitations
+            {t('users-pending-invitations')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Invitations that haven&apos;t been accepted yet.
+            {t('users-pending-invitations-desc')}
           </Typography>
           <Stack spacing={1}>
             {invitations.map((inv) => {
@@ -484,21 +505,26 @@ export default function InstanceUsersPage() {
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {inv.email}
                         </Typography>
-                        <Chip label="Pending" size="small" color="warning" variant="outlined" />
+                        <Chip
+                          label={t('users-pending-status')}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                        />
                       </Box>
                       <Typography variant="body2" color="text.secondary">
                         {expired
-                          ? `Expired ${expires.toLocaleDateString()}`
-                          : `Expires ${expires.toLocaleDateString()}`}
+                          ? t('users-expired', { date: expires.toLocaleDateString() })
+                          : t('users-expires', { date: expires.toLocaleDateString() })}
                       </Typography>
                     </Box>
-                    <Tooltip title="Revoke invitation">
+                    <Tooltip title={t('common-revoke-invitation')}>
                       <span>
                         <IconButton
                           size="small"
                           onClick={() => void handleRevoke(inv.id, inv.email)}
                           disabled={revokingId === inv.id}
-                          aria-label="Revoke invitation"
+                          aria-label={t('common-revoke-invitation')}
                         >
                           <XLg size={14} />
                         </IconButton>
@@ -513,22 +539,22 @@ export default function InstanceUsersPage() {
       )}
 
       <Dialog open={inviteOpen} onClose={closeInvite} fullWidth maxWidth="xs">
-        <DialogTitle>{dialogStep === 'add' ? 'Add a user' : 'Send an invitation'}</DialogTitle>
+        <DialogTitle>
+          {dialogStep === 'add' ? t('users-add-user') : t('users-invite-title')}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 0.5 }}>
             {dialogStep === 'add' ? (
               <Typography variant="body2" color="text.secondary">
-                Add an existing user as an admin of <strong>{instance.name}</strong>. If they
-                don&apos;t have an account yet, we&apos;ll offer to send an invitation.
+                {t('users-add-user-desc', { instanceName: instance.name })}
               </Typography>
             ) : (
               <Alert severity="info" sx={{ mb: 0 }}>
-                No account exists for <strong>{inviteEmail.trim()}</strong>. Send an invitation
-                email with a sign-up link?
+                {t('users-email-not-found-desc', { email: inviteEmail.trim() })}
               </Alert>
             )}
             <TextField
-              label="Email address"
+              label={t('users-email-address')}
               type="email"
               value={inviteEmail}
               onChange={(e) => {
@@ -550,16 +576,16 @@ export default function InstanceUsersPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeInvite} color="inherit" disabled={submitLoading}>
-            Cancel
+            {t('common-cancel')}
           </Button>
           <Button onClick={() => void handleSubmit()} variant="contained" disabled={submitLoading}>
             {submitLoading
               ? dialogStep === 'add'
-                ? 'Adding…'
-                : 'Sending…'
+                ? t('common-adding')
+                : t('users-sending')
               : dialogStep === 'add'
-                ? 'Add user'
-                : 'Send invitation'}
+                ? t('users-add-user-button')
+                : t('users-send-invitation')}
           </Button>
         </DialogActions>
       </Dialog>
