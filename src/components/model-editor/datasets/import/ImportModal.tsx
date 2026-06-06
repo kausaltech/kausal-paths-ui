@@ -28,6 +28,8 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
+
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 import type { AddProgress } from '../AddRowsModal';
 import { extractYear } from '../dataset-grid-data';
@@ -94,6 +96,7 @@ export default function ImportModal({
   onClose,
   onCommit,
 }: ImportModalProps) {
+  const t = useTranslations('model-editor');
   const planDimensions = useMemo<PlanDimension[]>(
     () =>
       dataset.dimensions.map((d) => ({
@@ -225,25 +228,32 @@ export default function ImportModal({
 
   return (
     <Dialog open={open} onClose={committing ? undefined : onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Import data</DialogTitle>
+      <DialogTitle>{t('import-title')}</DialogTitle>
       <DialogContent dividers>
         {!detected ? (
-          <Typography color="text.secondary">No tabular data detected in the paste.</Typography>
+          <Typography color="text.secondary">{t('import-no-data')}</Typography>
         ) : (
           <Stack spacing={3}>
             {/* Structure */}
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Detected
+                {t('import-detected')}
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                <Chip size="small" label={`${detected.dataRowIndices.length} data rows`} />
+                <Chip
+                  size="small"
+                  label={t('import-data-rows', { count: detected.dataRowIndices.length })}
+                />
                 <Chip
                   size="small"
                   label={
                     years.length > 0
-                      ? `Years ${years[0]}–${years[years.length - 1]} (${years.length})`
-                      : 'No years'
+                      ? t('import-years-range', {
+                          first: years[0],
+                          last: years[years.length - 1],
+                          count: years.length,
+                        })
+                      : t('import-no-years')
                   }
                 />
               </Stack>
@@ -252,23 +262,25 @@ export default function ImportModal({
             {/* Mapping */}
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Columns
+                {t('datasets-columns')}
               </Typography>
               <Stack spacing={1.5}>
                 {detected.textColumns.map((col, i) => (
                   <Stack key={col} direction="row" spacing={2} alignItems="center">
                     <Typography sx={{ minWidth: 180 }} variant="body2">
-                      {detected.textColumnHeaders[i] || <em>column {col + 1}</em>}
+                      {detected.textColumnHeaders[i] || (
+                        <em>{t('import-column-n', { number: col + 1 })}</em>
+                      )}
                     </Typography>
                     <FormControl size="small" sx={{ minWidth: 220 }}>
-                      <InputLabel>Maps to dimension</InputLabel>
+                      <InputLabel>{t('import-maps-to-dimension')}</InputLabel>
                       <Select
-                        label="Maps to dimension"
+                        label={t('import-maps-to-dimension')}
                         value={mapping.dimensionByColumn[col] ?? IGNORE}
                         onChange={(e) => setColumnDimension(col, e.target.value)}
                       >
                         <MenuItem value={IGNORE}>
-                          <em>Ignore this column</em>
+                          <em>{t('import-ignore-column')}</em>
                         </MenuItem>
                         {planDimensions.map((d) => (
                           <MenuItem key={d.id} value={d.id}>
@@ -280,10 +292,7 @@ export default function ImportModal({
                   </Stack>
                 ))}
                 {mappedDimCount === 0 && (
-                  <Alert severity="warning">
-                    Map at least one column to a dimension — otherwise every row would target the
-                    same category.
-                  </Alert>
+                  <Alert severity="warning">{t('import-map-one-warning')}</Alert>
                 )}
               </Stack>
             </Box>
@@ -291,13 +300,13 @@ export default function ImportModal({
             {/* Fixed pins for dimensions absent from the paste + metric */}
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Applies to
+                {t('import-applies-to')}
               </Typography>
               <Stack spacing={1.5}>
                 <FormControl size="small" sx={{ minWidth: 260 }}>
-                  <InputLabel>Metric</InputLabel>
+                  <InputLabel>{t('datasets-metric')}</InputLabel>
                   <Select
-                    label="Metric"
+                    label={t('datasets-metric')}
                     value={metricId}
                     onChange={(e) => setMetricId(e.target.value)}
                   >
@@ -320,9 +329,9 @@ export default function ImportModal({
                         sx={{ minWidth: 220 }}
                         error={effectivePin(d.id) === ''}
                       >
-                        <InputLabel>Category</InputLabel>
+                        <InputLabel>{t('import-category')}</InputLabel>
                         <Select
-                          label="Category"
+                          label={t('import-category')}
                           value={effectivePin(d.id)}
                           onChange={(e) => setPins((prev) => ({ ...prev, [d.id]: e.target.value }))}
                         >
@@ -338,7 +347,7 @@ export default function ImportModal({
                           size="small"
                           color="info"
                           variant="outlined"
-                          label="from active filter"
+                          label={t('import-from-filter')}
                         />
                       )}
                     </Stack>
@@ -351,44 +360,62 @@ export default function ImportModal({
             {plan && (
               <Box>
                 <Typography variant="subtitle2" gutterBottom>
-                  Preview
+                  {t('import-preview')}
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  <Chip size="small" color="success" label={`${plan.counts.greenRows} matched`} />
+                  <Chip
+                    size="small"
+                    color="success"
+                    label={t('import-matched', { count: plan.counts.greenRows })}
+                  />
                   {plan.counts.yellowRows > 0 && (
-                    <Chip size="small" color="warning" label={`${plan.counts.yellowRows} fuzzy`} />
+                    <Chip
+                      size="small"
+                      color="warning"
+                      label={t('import-fuzzy', { count: plan.counts.yellowRows })}
+                    />
                   )}
                   {plan.counts.redRows > 0 && (
-                    <Chip size="small" color="error" label={`${plan.counts.redRows} unmatched`} />
+                    <Chip
+                      size="small"
+                      color="error"
+                      label={t('import-unmatched', { count: plan.counts.redRows })}
+                    />
                   )}
                   <Chip
                     size="small"
                     variant="outlined"
-                    label={`${plan.counts.cellsToCreate} values to add`}
+                    label={t('import-values-to-add', { count: plan.counts.cellsToCreate })}
                   />
                   {plan.counts.cellsToOverwrite > 0 && (
                     <Chip
                       size="small"
                       color="warning"
-                      label={`${plan.counts.cellsToOverwrite} values overwritten`}
+                      label={t('import-values-overwritten', {
+                        count: plan.counts.cellsToOverwrite,
+                      })}
                     />
                   )}
                   {plan.newYears.length > 0 && (
                     <Chip
                       size="small"
                       variant="outlined"
-                      label={`+${plan.newYears.length} new year columns`}
+                      label={t('import-new-year-columns', { count: plan.newYears.length })}
                     />
                   )}
                   {newCategoryCount > 0 && (
                     <Chip
                       size="small"
                       variant="outlined"
-                      label={`+${newCategoryCount} new categories`}
+                      label={t('import-new-categories', { count: newCategoryCount })}
                     />
                   )}
                   {discardCount > 0 && (
-                    <Chip size="small" variant="outlined" label={`${discardCount} discarded`} />
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={t('import-discarded', { count: discardCount })}
+                    />
                   )}
                 </Stack>
               </Box>
@@ -398,15 +425,15 @@ export default function ImportModal({
             {triage.length > 0 && (
               <Box>
                 <Typography variant="subtitle2" gutterBottom>
-                  Needs attention ({triage.length})
+                  {t('import-needs-attention', { count: triage.length })}
                 </Typography>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Pasted label</TableCell>
-                      <TableCell>Dimension</TableCell>
-                      <TableCell>Decision</TableCell>
-                      <TableCell>Map to</TableCell>
+                      <TableCell>{t('import-pasted-label')}</TableCell>
+                      <TableCell>{t('datasets-dimension')}</TableCell>
+                      <TableCell>{t('import-decision')}</TableCell>
+                      <TableCell>{t('import-map-to')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -446,9 +473,11 @@ export default function ImportModal({
                                 }
                               }}
                             >
-                              <ToggleButton value="existing">Map</ToggleButton>
-                              <ToggleButton value="create">New</ToggleButton>
-                              <ToggleButton value="discard">Discard</ToggleButton>
+                              <ToggleButton value="existing">
+                                {t('import-decision-map')}
+                              </ToggleButton>
+                              <ToggleButton value="create">{t('import-decision-new')}</ToggleButton>
+                              <ToggleButton value="discard">{t('common-discard')}</ToggleButton>
                             </ToggleButtonGroup>
                           </TableCell>
                           <TableCell sx={{ minWidth: 260 }}>
@@ -468,13 +497,13 @@ export default function ImportModal({
                                   )
                                 }
                                 renderInput={(params) => (
-                                  <TextField {...params} label="Existing category" />
+                                  <TextField {...params} label={t('import-existing-category')} />
                                 )}
                               />
                             )}
                             {res.kind === 'create' && (
                               <Typography variant="caption" color="text.secondary">
-                                Creates “{item.label}”
+                                {t('import-creates', { label: item.label })}
                               </Typography>
                             )}
                           </TableCell>
@@ -490,7 +519,7 @@ export default function ImportModal({
             {committing && progress && (
               <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                  Importing {progress.current} of {progress.total}…
+                  {t('import-progress', { current: progress.current, total: progress.total })}
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -504,12 +533,14 @@ export default function ImportModal({
       <Divider />
       <DialogActions>
         <Button onClick={onClose} disabled={committing}>
-          Cancel
+          {t('common-cancel')}
         </Button>
         <Button variant="contained" onClick={handleImport} disabled={!canCommit}>
           {plan
-            ? `Import ${plan.counts.cellsToCreate + plan.counts.cellsToOverwrite} values`
-            : 'Import'}
+            ? t('import-confirm', {
+                count: plan.counts.cellsToCreate + plan.counts.cellsToOverwrite,
+              })
+            : t('import-action')}
         </Button>
       </DialogActions>
     </Dialog>
