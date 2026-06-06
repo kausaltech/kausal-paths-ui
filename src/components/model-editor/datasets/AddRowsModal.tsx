@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { X } from 'react-bootstrap-icons';
 
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
@@ -99,7 +100,8 @@ function getStatus(
   dimensions: Dimension[],
   selectedCategories: SelectedCategories,
   selectedCombinations: string[][],
-  existingCombinations: string[][]
+  existingCombinations: string[][],
+  t: ReturnType<typeof useTranslations>
 ): Status {
   const metricHasSelection = selectedCategories.metric?.length > 0;
   const allDimensionsHaveSelections = dimensions.every(
@@ -110,7 +112,7 @@ function getStatus(
   if (!hasSelections) {
     return {
       ...ERROR_STATUS,
-      message: 'Select a metric and a category for every dimension',
+      message: t('datasets-add-rows-select-prompt'),
     };
   }
 
@@ -124,17 +126,23 @@ function getStatus(
   if (totalNew === 0) {
     return {
       ...ERROR_STATUS,
-      message: 'All selected combinations already exist',
+      message: t('datasets-add-rows-all-exist'),
     };
   }
 
-  const creationText = `Will create ${totalNew} new row${totalNew === 1 ? '' : 's'}`;
   if (totalExisting === 0) {
-    return { ...SUCCESS_STATUS, message: creationText, newRows: newCombinations };
+    return {
+      ...SUCCESS_STATUS,
+      message: t('datasets-add-rows-will-create', { count: totalNew }),
+      newRows: newCombinations,
+    };
   }
   return {
     ...SUCCESS_STATUS,
-    message: `${creationText} (${totalExisting} already exist${totalExisting === 1 ? 's' : ''})`,
+    message: t('datasets-add-rows-will-create-some', {
+      newCount: totalNew,
+      existingCount: totalExisting,
+    }),
     newRows: newCombinations,
   };
 }
@@ -198,6 +206,7 @@ export function AddRowsModal({
   isAdding = false,
   progress = null,
 }: Props) {
+  const t = useTranslations('model-editor');
   const [selectedCategories, setSelectedCategories] = useState<SelectedCategories>({ metric: [] });
 
   const selectedCombinations = useMemo(
@@ -209,7 +218,8 @@ export function AddRowsModal({
     dimensions,
     selectedCategories,
     selectedCombinations,
-    existingCombinations
+    existingCombinations,
+    t
   );
 
   function handleCategorySelect(key: string, category: Metric | DimensionCategory | NotApplicable) {
@@ -219,7 +229,7 @@ export function AddRowsModal({
   return (
     <Dialog maxWidth="md" fullWidth open={open} onClose={onClose}>
       <DialogTitle sx={DIALOG_TITLE_SX}>
-        Add rows
+        {t('datasets-add-rows')}
         <IconButton onClick={onClose} size="small">
           <X />
         </IconButton>
@@ -227,7 +237,7 @@ export function AddRowsModal({
 
       <DialogContent sx={{ p: 0, m: 0, display: 'flex', flexDirection: 'column' }}>
         <Typography variant="body2" color="text.secondary" sx={{ px: HORIZONTAL_PADDING }}>
-          Select metric and dimension category combinations to add as new rows
+          {t('datasets-add-rows-desc')}
         </Typography>
 
         <Stack direction="row" alignItems="stretch" sx={CATEGORY_SELECTOR_WRAPPER_SX}>
@@ -255,7 +265,10 @@ export function AddRowsModal({
         {isAdding && progress ? (
           <Box sx={{ flex: 1, mr: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-              Adding {progress.current} of {progress.total} data points…
+              {t('datasets-add-rows-progress', {
+                current: progress.current,
+                total: progress.total,
+              })}
             </Typography>
             <LinearProgress
               variant="determinate"
@@ -272,7 +285,7 @@ export function AddRowsModal({
 
         <Stack direction="row" spacing={2}>
           <Button onClick={onClose} disabled={isAdding}>
-            Cancel
+            {t('common-cancel')}
           </Button>
           <Button
             variant="contained"
@@ -280,7 +293,7 @@ export function AddRowsModal({
             disabled={!status.isValid || isAdding}
             sx={{ whiteSpace: 'nowrap', minWidth: 'auto' }}
           >
-            Add {status.newRows.length} row{status.newRows.length === 1 ? '' : 's'}
+            {t('datasets-add-rows-confirm', { count: status.newRows.length })}
           </Button>
         </Stack>
       </DialogActions>

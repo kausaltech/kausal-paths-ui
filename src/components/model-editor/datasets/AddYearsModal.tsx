@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { X } from 'react-bootstrap-icons';
 
 const MIN_YEAR = 1900;
@@ -37,24 +38,28 @@ function getYearRange(startStr: string, endStr: string): number[] {
 
 type ValidationError = { field: 'start' | 'end'; message: string } | null;
 
-function getValidationError(startStr: string, endStr: string): ValidationError {
+function getValidationError(
+  startStr: string,
+  endStr: string,
+  t: ReturnType<typeof useTranslations>
+): ValidationError {
   if (!isValidYearStr(startStr)) {
     return {
       field: 'start',
-      message: `Start year must be between ${MIN_YEAR} and ${MAX_YEAR}`,
+      message: t('datasets-add-years-start-range', { min: MIN_YEAR, max: MAX_YEAR }),
     };
   }
   const hasEnd = endStr.trim() !== '';
   if (hasEnd && !isValidYearStr(endStr)) {
     return {
       field: 'end',
-      message: `End year must be between ${MIN_YEAR} and ${MAX_YEAR}`,
+      message: t('datasets-add-years-end-range', { min: MIN_YEAR, max: MAX_YEAR }),
     };
   }
   if (hasEnd && parseInt(endStr, 10) < parseInt(startStr, 10)) {
     return {
       field: 'end',
-      message: 'End year must be greater than or equal to the start year',
+      message: t('datasets-add-years-end-before-start'),
     };
   }
   return null;
@@ -68,6 +73,7 @@ type Props = {
 };
 
 export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Props) {
+  const t = useTranslations('model-editor');
   const latestYear =
     existingYears.length > 0 ? Math.max(...existingYears) : new Date().getFullYear();
   const nextYear = Math.min(latestYear + 1, MAX_YEAR);
@@ -95,7 +101,7 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
 
   const validateYears = useCallback(
     (startStr: string, endStr: string) => {
-      const error = getValidationError(startStr, endStr);
+      const error = getValidationError(startStr, endStr, t);
       if (error) {
         setStartError(error.field === 'start' ? error.message : '');
         setEndError(error.field === 'end' ? error.message : '');
@@ -110,14 +116,10 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
       const years = getYearRange(startStr, hasEnd ? endStr : startStr);
       const existingCount = years.filter((y) => existingYears.includes(y)).length;
       setInfoMessage(
-        existingCount > 0
-          ? `${existingCount} year${existingCount === 1 ? '' : 's'} from this range already exist${
-              existingCount === 1 ? 's' : ''
-            }`
-          : ''
+        existingCount > 0 ? t('datasets-add-years-already-exist', { count: existingCount }) : ''
       );
     },
-    [existingYears]
+    [existingYears, t]
   );
 
   // Debounce live validation as the user types — avoids the error message
@@ -138,7 +140,7 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
     // Re-validate synchronously: the debounced effect may not have run yet for
     // the current inputs, so relying on startError/endError state would let an
     // out-of-range value (e.g. 1800) slip through.
-    const error = getValidationError(startYear, endYear);
+    const error = getValidationError(startYear, endYear, t);
     if (error) {
       setStartError(error.field === 'start' ? error.message : '');
       setEndError(error.field === 'end' ? error.message : '');
@@ -166,7 +168,9 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
       }}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1.5}>
-        <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.2rem', p: 0 }}>Add years</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.2rem', p: 0 }}>
+          {t('datasets-add-years')}
+        </DialogTitle>
         <IconButton onClick={onClose} size="small">
           <X />
         </IconButton>
@@ -174,12 +178,12 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
 
       <DialogContent sx={{ pt: 1, pb: 2 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Add a single year, or a range by entering both first and last year.
+          {t('datasets-add-years-desc')}
         </Typography>
         <Box display="flex" gap={2} mb={1}>
           <Box flex={1}>
             <Typography fontWeight="bold" sx={{ mb: 0.5 }}>
-              First year
+              {t('datasets-add-years-first')}
             </Typography>
             <TextField
               type="number"
@@ -196,7 +200,7 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
           </Box>
           <Box flex={1}>
             <Typography fontWeight="bold" sx={{ mb: 0.5 }}>
-              Last year
+              {t('datasets-add-years-last')}
             </Typography>
             <TextField
               type="number"
@@ -249,9 +253,9 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>{t('common-cancel')}</Button>
         <Button onClick={handleConfirm} variant="contained" disabled={!canConfirm}>
-          Add {newYearCount} year{newYearCount === 1 ? '' : 's'}
+          {t('datasets-add-years-confirm', { count: newYearCount })}
         </Button>
       </DialogActions>
     </Dialog>

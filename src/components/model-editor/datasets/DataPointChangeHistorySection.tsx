@@ -4,6 +4,7 @@ import { Box, Chip, Paper, Typography } from '@mui/material';
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 
 // There's no per-datapoint `changeHistory` field on the backend (only Node /
 // NodeEdge / DatasetPort implement EditableEntity), so we read the instance-
@@ -59,26 +60,33 @@ type HistoryRowData = {
   userEmail: string | null;
 };
 
-const ACTION_LABELS: Record<string, string> = {
-  'dataset.datapoint.create': 'Created',
-  'dataset.datapoint.update': 'Updated',
-  'dataset.datapoint.delete': 'Deleted',
+type ActionLabelKey =
+  | 'datasets-history-created'
+  | 'datasets-history-updated'
+  | 'datasets-history-deleted';
+
+const ACTION_LABEL_KEY: Record<string, ActionLabelKey> = {
+  'dataset.datapoint.create': 'datasets-history-created',
+  'dataset.datapoint.update': 'datasets-history-updated',
+  'dataset.datapoint.delete': 'datasets-history-deleted',
 };
 
-// Human-readable names for the snapshot keys in _data_point_snapshot.
-const FIELD_LABELS: Record<string, string> = {
-  value: 'value',
-  date: 'year',
-  dimension_category_uuids: 'categories',
-  metric_uuid: 'metric',
+type FieldLabelKey =
+  | 'datasets-history-field-value'
+  | 'datasets-history-field-year'
+  | 'datasets-history-field-categories'
+  | 'datasets-history-field-metric';
+
+// Translation keys for the snapshot keys in _data_point_snapshot.
+const FIELD_LABEL_KEY: Record<string, FieldLabelKey> = {
+  value: 'datasets-history-field-value',
+  date: 'datasets-history-field-year',
+  dimension_category_uuids: 'datasets-history-field-categories',
+  metric_uuid: 'datasets-history-field-metric',
 };
 
 // Snapshot bookkeeping keys — never user-meaningful as a "field changed".
 const IGNORED_FIELDS = new Set(['uuid', 'dataset_uuid']);
-
-function actionLabel(action: string): string {
-  return ACTION_LABELS[action] ?? action;
-}
 
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
@@ -86,16 +94,24 @@ function formatTimestamp(iso: string): string {
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-function formatRelativeTime(iso: string, now: number): string {
+function formatRelativeTime(
+  iso: string,
+  now: number,
+  t: ReturnType<typeof useTranslations>
+): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   const diffSec = Math.max(0, Math.round((now - d.getTime()) / 1000));
-  if (diffSec < 45) return 'just now';
-  if (diffSec < 60 * 60) return `${Math.round(diffSec / 60)} min ago`;
-  if (diffSec < 24 * 60 * 60) return `${Math.round(diffSec / 3600)} h ago`;
+  if (diffSec < 45) return t('editor-relative-just-now');
+  if (diffSec < 60 * 60)
+    return t('editor-relative-minutes-ago', { count: Math.round(diffSec / 60) });
+  if (diffSec < 24 * 60 * 60)
+    return t('editor-relative-hours-ago', { count: Math.round(diffSec / 3600) });
   return formatTimestamp(iso);
 }
 
+// Returns the raw snapshot keys that changed; the row maps them to translated
+// labels (FIELD_LABEL_KEY) at render time, falling back to the raw key.
 function computeChangedFields(before: unknown, after: unknown): string[] {
   const b = (before ?? {}) as Record<string, unknown>;
   const a = (after ?? {}) as Record<string, unknown>;
@@ -104,13 +120,15 @@ function computeChangedFields(before: unknown, after: unknown): string[] {
   for (const key of keys) {
     if (IGNORED_FIELDS.has(key)) continue;
     if (JSON.stringify(b[key]) !== JSON.stringify(a[key])) {
-      changed.push(FIELD_LABELS[key] ?? key);
+      changed.push(key);
     }
   }
   return changed;
 }
 
 function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
+  const t = useTranslations('model-editor');
+  const actionKey = ACTION_LABEL_KEY[row.action];
   return (
     <Box sx={{ px: 1, py: 0.75, borderRadius: 0.5, bgcolor: 'grey.100' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -118,25 +136,28 @@ function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
           variant="caption"
           sx={{ fontSize: 11, fontWeight: 600, color: 'text.primary', minWidth: 64 }}
         >
-          {actionLabel(row.action)}
+          {actionKey ? t(actionKey) : row.action}
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.25, flex: 1, minWidth: 0 }}>
-          {row.changedFields.map((label) => (
-            <Chip
-              key={label}
-              label={label}
-              size="small"
-              variant="outlined"
-              sx={{ height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 10 } }}
-            />
-          ))}
+          {row.changedFields.map((field) => {
+            const fieldKey = FIELD_LABEL_KEY[field];
+            return (
+              <Chip
+                key={field}
+                label={fieldKey ? t(fieldKey) : field}
+                size="small"
+                variant="outlined"
+                sx={{ height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 10 } }}
+              />
+            );
+          })}
         </Box>
         <Typography
           variant="caption"
           sx={{ fontSize: 10, color: 'text.secondary', whiteSpace: 'nowrap' }}
           title={formatTimestamp(row.createdAt)}
         >
-          {formatRelativeTime(row.createdAt, now)}
+          {formatRelativeTime(row.createdAt, now, t)}
         </Typography>
       </Box>
       {row.userEmail && (
@@ -144,7 +165,7 @@ function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
           variant="caption"
           sx={{ display: 'block', fontSize: 10, color: 'text.secondary' }}
         >
-          by {row.userEmail}
+          {t('datasets-history-by', { email: row.userEmail })}
         </Typography>
       )}
     </Box>
@@ -152,6 +173,7 @@ function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
 }
 
 export default function DataPointChangeHistorySection({ dataPointId }: { dataPointId: string }) {
+  const t = useTranslations('model-editor');
   const { data, loading } = useQuery<InstanceChangeHistoryQuery>(INSTANCE_CHANGE_HISTORY, {
     variables: { limit: 100 },
     fetchPolicy: 'cache-and-network',
@@ -183,22 +205,22 @@ export default function DataPointChangeHistorySection({ dataPointId }: { dataPoi
   // panel stays open.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(t);
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
   }, []);
 
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Typography variant="subtitle1" sx={{ mb: 2 }}>
-        Edit history
+        {t('datasets-edit-history')}
       </Typography>
       {loading && rows.length === 0 ? (
         <Typography variant="caption" color="text.secondary">
-          Loading…
+          {t('common-loading')}
         </Typography>
       ) : rows.length === 0 ? (
         <Typography variant="caption" color="text.secondary">
-          No recorded changes for this data point.
+          {t('datasets-no-change-history')}
         </Typography>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>

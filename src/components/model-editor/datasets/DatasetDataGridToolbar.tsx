@@ -1,5 +1,6 @@
 import { Button, Stack, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { Plus, Trash } from 'react-bootstrap-icons';
 
 type Props = {
@@ -33,11 +34,12 @@ export function DatasetDataGridToolbar({
   onAddYears,
   onAddRows,
 }: Props) {
+  const t = useTranslations('model-editor');
   return (
     <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} sx={{ mb: 1 }}>
       {hasPending && (
         <Typography variant="body2" color="warning.main" sx={{ mr: 'auto' }}>
-          {pendingCount} unsaved change{pendingCount === 1 ? '' : 's'}
+          {t('datasets-unsaved-changes', { count: pendingCount })}
         </Typography>
       )}
       {selectedRowCount > 0 && (
@@ -50,7 +52,7 @@ export function DatasetDataGridToolbar({
           disabled={isMutating}
           sx={!hasPending ? { mr: 'auto' } : undefined}
         >
-          Delete {selectedRowCount} row{selectedRowCount === 1 ? '' : 's'}
+          {t('datasets-delete-rows', { count: selectedRowCount })}
         </Button>
       )}
       {selectedYearCount > 0 && (
@@ -63,21 +65,21 @@ export function DatasetDataGridToolbar({
           disabled={isMutating}
           sx={!hasPending && selectedRowCount === 0 ? { mr: 'auto' } : undefined}
         >
-          Delete {selectedYearCount} year{selectedYearCount === 1 ? '' : 's'}
+          {t('datasets-delete-years', { count: selectedYearCount })}
         </Button>
       )}
       {hasPending && (
         <>
           <Button size="small" onClick={onDiscard} disabled={isMutating} color="inherit">
-            Discard
+            {t('common-discard')}
           </Button>
           <Button size="small" variant="contained" onClick={onSave} disabled={isMutating}>
-            {saving ? 'Saving…' : 'Save changes'}
+            {saving ? t('common-saving') : t('common-save-changes')}
           </Button>
         </>
       )}
       <Button size="small" startIcon={<Plus />} onClick={onAddYears} disabled={isMutating}>
-        Add years
+        {t('datasets-add-years')}
       </Button>
       <Button
         size="small"
@@ -85,7 +87,7 @@ export function DatasetDataGridToolbar({
         onClick={onAddRows}
         disabled={isMutating || disableAddRows}
       >
-        Add rows
+        {t('datasets-add-rows')}
       </Button>
     </Stack>
   );
