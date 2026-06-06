@@ -17,7 +17,7 @@ export const EDITOR_UI_LOCALE_COOKIE = 'paths-editor-ui-locale';
  * the Settings language selector. Add a locale here once its `model-editor`
  * (and shared `common` / `errors`) message bundles are translated.
  */
-export const AVAILABLE_EDITOR_UI_LOCALES = ['en', 'de'] as const;
+export const AVAILABLE_EDITOR_UI_LOCALES = ['en', 'de', 'fi'] as const;
 
 export type EditorUiLocale = (typeof AVAILABLE_EDITOR_UI_LOCALES)[number];
 
