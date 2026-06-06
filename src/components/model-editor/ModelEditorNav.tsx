@@ -436,7 +436,7 @@ export default function ModelEditorNav() {
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
-            router.push('/');
+            window.open('/', '_blank', 'noopener,noreferrer');
           }}
         >
           <ListItemIcon>
