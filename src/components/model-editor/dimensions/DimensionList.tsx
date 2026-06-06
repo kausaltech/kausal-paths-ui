@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { Pencil, Plus, Trash } from 'react-bootstrap-icons';
 
 import type { InstanceDimensionsQuery } from '@/common/__generated__/graphql';
@@ -35,6 +36,7 @@ function getDimensionsBase(pathname: string): string {
 }
 
 export default function DimensionList() {
+  const t = useTranslations('model-editor');
   const { data, loading, error } = useQuery<InstanceDimensionsQuery>(GET_INSTANCE_DIMENSIONS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -56,29 +58,29 @@ export default function DimensionList() {
   return (
     <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h5">Dimensions</Typography>
+        <Typography variant="h5">{t('dimensions-title')}</Typography>
         <Button
           variant="contained"
           startIcon={<Plus />}
-          onClick={() => setNotice('Creating dimensions is not yet implemented.')}
+          onClick={() => setNotice(t('dimensions-creating-not-implemented'))}
         >
-          New dimension
+          {t('dimensions-new-dimension')}
         </Button>
       </Stack>
       {data?.instance.editor === null && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Model editor data is not available for this instance.
+          {t('dimensions-editor-data-unavailable')}
         </Alert>
       )}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Identifier</TableCell>
-              <TableCell align="right">Categories</TableCell>
+              <TableCell>{t('dimensions-name')}</TableCell>
+              <TableCell>{t('dimensions-identifier')}</TableCell>
+              <TableCell align="right">{t('dimensions-categories')}</TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
-                Actions
+                {t('dimensions-actions')}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -87,7 +89,7 @@ export default function DimensionList() {
               <TableRow>
                 <TableCell colSpan={4}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
-                    No dimensions defined.
+                    {t('dimensions-none-defined')}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -105,7 +107,7 @@ export default function DimensionList() {
                 </TableCell>
                 <TableCell align="right">{dim.categories.length}</TableCell>
                 <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                  <Tooltip title="Edit">
+                  <Tooltip title={t('dimensions-edit')}>
                     <IconButton
                       size="small"
                       onClick={() => router.push(`${base}/${encodeURIComponent(dim.id)}`)}
@@ -113,10 +115,12 @@ export default function DimensionList() {
                       <Pencil size={18} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Delete">
+                  <Tooltip title={t('dimensions-delete')}>
                     <IconButton
                       size="small"
-                      onClick={() => setNotice(`Deleting "${dim.name}" is not yet implemented.`)}
+                      onClick={() =>
+                        setNotice(t('dimensions-deleting-not-implemented', { name: dim.name }))
+                      }
                     >
                       <Trash size={18} />
                     </IconButton>
