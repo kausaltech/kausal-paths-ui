@@ -37,6 +37,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
+import { getModelEditorSection } from '../paths';
 import {
   CREATE_DIMENSION_CATEGORIES,
   DELETE_DIMENSION_CATEGORY,
@@ -76,11 +77,6 @@ function toRows(dim: InstanceDimensionFieldsFragment): CategoryRow[] {
     }));
 }
 
-function getListBase(pathname: string): string {
-  const idx = pathname.indexOf('/model');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model/dimensions' : '/model/dimensions';
-}
-
 function genUuid(): string {
   // crypto.randomUUID is available in modern browsers and Node 14+
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -109,7 +105,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
   const instance = useInstance();
   const router = useRouter();
   const pathname = usePathname();
-  const listBase = getListBase(pathname);
+  const listBase = getModelEditorSection(pathname, 'dimensions');
 
   const dimension = useMemo(
     () => data?.instance.editor?.dimensions.find((d) => d.id === dimensionId) ?? null,

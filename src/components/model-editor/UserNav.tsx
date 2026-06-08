@@ -19,11 +19,7 @@ import { useTranslations } from 'next-intl';
 import { BoxArrowRight, Boxes, ChevronDown, Gear } from 'react-bootstrap-icons';
 
 import { authClient, useSession } from '@/lib/auth-client';
-
-function getModelEditorBase(pathname: string): string {
-  const idx = pathname.indexOf('/model');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
-}
+import { getModelEditorBase } from './paths';
 
 function getFirstName(name: string | null | undefined, email: string | null | undefined): string {
   if (name && name.trim()) return name.trim().split(/\s+/)[0];

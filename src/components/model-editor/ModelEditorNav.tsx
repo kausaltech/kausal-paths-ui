@@ -47,6 +47,7 @@ import {
 
 import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
+import { getModelEditorBase } from './paths';
 
 const GET_NODE_SEARCH_LIST = gql`
   query EditorNodeSearchList {
@@ -160,11 +161,6 @@ const TABS: TabDef[] = [
     Icon: People,
   },
 ];
-
-function getModelEditorBase(pathname: string): string {
-  const idx = pathname.indexOf('/model');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
-}
 
 type SearchMode = 'nodes' | 'datasets' | 'dimensions';
 

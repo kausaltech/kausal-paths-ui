@@ -46,6 +46,7 @@ import {
   type MockNodeEdit,
   mockNodeEditsVar,
 } from '@/components/model-editor/mockEdits';
+import { getModelEditorBase } from '@/components/model-editor/paths';
 import {
   INSTANCE_EDITOR_PUBLISH_STATE,
   PUBLISH_MODEL_INSTANCE,
@@ -107,11 +108,6 @@ const CARD_DEFS = [
     Icon: BoxIcon,
   },
 ] as const;
-
-function getModelEditorBase(pathname: string): string {
-  const idx = pathname.indexOf('/model');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
-}
 
 type EditedNodeRow = {
   id: string;
