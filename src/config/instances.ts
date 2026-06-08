@@ -82,6 +82,12 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
       url: 'https://climateaction.hollywoodfl.org',
     },
   },
+  'muenchen-bisko': {
+    watchLink: {
+      title: 'Maßnahmenplan',
+      url: 'https://demo-muenchen.watch.de.kausal.tech/',
+    },
+  },
   'muenchen-demo': {
     watchLink: {
       title: 'Maßnahmenplan',
