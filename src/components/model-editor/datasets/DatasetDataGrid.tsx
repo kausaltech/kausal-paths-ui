@@ -20,7 +20,6 @@ import { useLocale } from 'next-intl';
 
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
-import { useInstance } from '@/common/instance';
 import { AddRowsModal } from './AddRowsModal';
 import { AddYearsModal } from './AddYearsModal';
 import { CellContextMenu, ColumnFilterMenu } from './DatasetDataGridMenus';
@@ -47,9 +46,13 @@ import {
   type GridRow,
   METRIC_COL,
   type PendingEdit,
+  type StagedCategory,
+  type StagedRow,
   buildGridData,
   dimColId,
+  extractYear,
   pendingKey,
+  rowKey,
   yearColId,
 } from './dataset-grid-data';
 import ImportModal from './import/ImportModal';
@@ -91,7 +94,6 @@ export default function DatasetDataGrid({
   onOpenPanel,
 }: Props) {
   useEnsurePortal();
-  const instance = useInstance();
   // Collate by the editor interface language for now. Locale-aware so sorting
   // respects language-specific ordering (e.g. German umlauts, Scandinavian
   // å/ä/ö). `numeric` keeps labels like "Zone 2" / "Zone 10" in natural order.
@@ -108,6 +110,11 @@ export default function DatasetDataGrid({
   // it live in `useDataPointEditing`.
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
   const [extraYears, setExtraYears] = useState<Set<number>>(() => new Set());
+  // Staged (uncommitted) structural additions from an import: new categories to
+  // create and the new rows the staged values attach to. Like `pendingEdits`,
+  // owned here because buildGridData reads them; written by `useDataPointEditing`.
+  const [stagedCategories, setStagedCategories] = useState<StagedCategory[]>([]);
+  const [stagedRows, setStagedRows] = useState<StagedRow[]>([]);
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
   // Measured width of the grid wrapper. Drives how many columns we can freeze
   // without squeezing the year columns off-screen (see freezeColumns).
@@ -135,24 +142,17 @@ export default function DatasetDataGrid({
   const pendingContextRowRef = useRef<GridRow | null>(null);
 
   const { rows: baseRows, years } = useMemo(
-    () => buildGridData(dataset, extraYears),
-    [dataset, extraYears]
+    () => buildGridData(dataset, extraYears, { categories: stagedCategories, rows: stagedRows }),
+    [dataset, extraYears, stagedCategories, stagedRows]
   );
 
-  // Dimensional paste / import. Lives entirely in the hook + ImportModal; the
-  // grid only supplies state (and gets back `onPaste` + the modal props), so
-  // none of the import orchestration bloats this component.
+  // Dimensional paste / import. Auto-pins for dimensions the user has filtered
+  // to a single category; the importer itself is wired up after the edit hook
+  // (it stages into `pendingEdits` rather than mutating directly).
   const filterPins = useMemo(
     () => filterPinsForDimensions(categoryFilters, dataset.dimensions),
     [categoryFilters, dataset.dimensions]
   );
-  const importer = useDatasetImport({
-    dataset,
-    existingYears: years,
-    filterPins,
-    instanceId: instance.id,
-    onCommitted: onMutated,
-  });
   // Column sort. null = default (metric-grouped) order from buildGridData.
   // Works for year columns (by numeric value) and dimension columns (by
   // category label). Cycles on click: unset -> asc -> desc -> unset.
@@ -278,9 +278,39 @@ export default function DatasetDataGrid({
     pendingEdits,
     setPendingEdits,
     setExtraYears,
+    stagedCategories,
+    setStagedCategories,
+    stagedRows,
+    setStagedRows,
     onMutated,
     onClearSelection,
   });
+
+  // Dimensional paste: the importer stages its result into the grid's edit
+  // state (categories / rows / values) via `stageImport` instead of mutating —
+  // the user then reviews the dirty cells and commits with Save changes.
+  const importer = useDatasetImport({
+    dataset,
+    existingYears: years,
+    filterPins,
+    onStage: editing.stageImport,
+  });
+
+  // Staged (uncommitted) structure, used both to tint it like dirty cells and
+  // to decide whether there are unsaved changes. Committed years are backed by
+  // data points; everything else in `extraYears` is an uncommitted column.
+  const committedYears = useMemo(
+    () => new Set(dataset.dataPoints.map((dp) => extractYear(dp.date))),
+    [dataset.dataPoints]
+  );
+  const stagedRowIds = useMemo(
+    () => new Set(stagedRows.map((r) => rowKey(r.metricId, r.categoryByDim))),
+    [stagedRows]
+  );
+  const uncommittedYears = useMemo(
+    () => new Set([...extraYears].filter((y) => !committedYears.has(y))),
+    [extraYears, committedYears]
+  );
 
   const columns = useMemo<GridColumn[]>(
     () =>
@@ -361,14 +391,22 @@ export default function DatasetDataGrid({
       if (!colId || !gridRow) {
         return { kind: GridCellKind.Loading, allowOverlay: false } as GridCell;
       }
+      // A cell belongs to staged (uncommitted) structure when its row was added
+      // but isn't backed by data yet, or its year column is newly added. Tint
+      // those like dirty cells so added rows/years read as "unsaved".
+      const isStagedRow = stagedRowIds.has(gridRow.id);
       if (isYearColId(colId)) {
         const committed = gridRow.cells[colId];
         const baseValue = committed?.type === 'Value' ? committed.value : null;
         const pending = pendingEdits.get(pendingKey(gridRow.id, colId));
         const value = pending ? pending.nextValue : baseValue;
-        // Empty (uninitiated) cells render with the default white background —
-        // only pending edits get a tint here.
-        const themeOverride = pending ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG } : undefined;
+        const isStagedYear = uncommittedYears.has(yearFromColId(colId) ?? -1);
+        // Pending edits win; otherwise staged rows/years get the dirty tint too.
+        const themeOverride = pending
+          ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG }
+          : isStagedRow || isStagedYear
+            ? { bgCell: DIRTY_BG }
+            : undefined;
         return {
           kind: GridCellKind.Number,
           data: value ?? undefined,
@@ -394,10 +432,11 @@ export default function DatasetDataGrid({
         displayData: label,
         allowOverlay: false,
         readonly: true,
-        themeOverride: { bgCell: LABEL_COL_BG },
+        // Staged rows tint their label cells too, so the whole row reads as new.
+        themeOverride: { bgCell: isStagedRow ? DIRTY_BG : LABEL_COL_BG },
       };
     },
-    [columnIds, rows, pendingEdits]
+    [columnIds, rows, pendingEdits, stagedRowIds, uncommittedYears]
   );
 
   const onCellContextMenu = useCallback<NonNullable<DataEditorProps['onCellContextMenu']>>(
@@ -749,7 +788,10 @@ export default function DatasetDataGrid({
     [columnIds, rows, commentInfoByDataPointId, dataPointIdsWithSource]
   );
 
-  const pendingCount = pendingEdits.size;
+  // "Unsaved changes" spans value edits plus staged structure (added/imported
+  // rows and added year columns not yet backed by data). Without this, adding
+  // an empty row/year wouldn't enable Save / Discard.
+  const pendingCount = pendingEdits.size + stagedRows.length + uncommittedYears.size;
   const hasPending = pendingCount > 0;
   const selectedRowCount = gridSelection.rows.length;
 
@@ -845,7 +887,7 @@ export default function DatasetDataGrid({
         )}
         <DatasetDataGridProgressOverlay
           deleteProgress={editing.deleteProgress}
-          addYearsProgress={editing.addYearsProgress}
+          saveProgress={editing.saveProgress}
         />
       </Box>
       <CellContextMenu
@@ -868,19 +910,13 @@ export default function DatasetDataGrid({
         metrics={dataset.metrics}
         dimensions={dataset.dimensions}
         existingCombinations={existingCombinations}
-        isAdding={editing.addProgress !== null}
-        progress={editing.addProgress}
-        onAdd={(selectedMetricIds, newRows) => {
-          void editing.handleAddRows(selectedMetricIds, newRows);
-        }}
+        onAdd={(selectedMetricIds, newRows) => editing.handleAddRows(selectedMetricIds, newRows)}
       />
       <AddYearsModal
         open={editing.addYearsOpen}
         existingYears={years}
         onClose={editing.closeAddYears}
-        onAddYears={(newYears) => {
-          void editing.handleAddYears(newYears);
-        }}
+        onAddYears={(newYears) => editing.handleAddYears(newYears)}
       />
       <ImportModal {...importer.modalProps} />
       <Snackbar

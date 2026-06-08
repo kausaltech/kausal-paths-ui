@@ -1,30 +1,23 @@
 import { Box, LinearProgress, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
+
 import type { AddProgress } from './AddRowsModal';
 
 type Props = {
   deleteProgress: AddProgress | null;
-  addYearsProgress: AddProgress | null;
+  saveProgress: AddProgress | null;
 };
 
-export function DatasetDataGridProgressOverlay({ deleteProgress, addYearsProgress }: Props) {
-  const overlay =
+export function DatasetDataGridProgressOverlay({ deleteProgress, saveProgress }: Props) {
+  const t = useTranslations('model-editor');
+  const active = deleteProgress ?? saveProgress;
+  if (active === null) return null;
+  const progress = active;
+  const label =
     deleteProgress !== null
-      ? {
-          progress: deleteProgress,
-          label: `Deleting ${deleteProgress.current} of ${deleteProgress.total} data points…`,
-        }
-      : addYearsProgress !== null
-        ? {
-            progress: addYearsProgress,
-            label: `Adding ${addYearsProgress.current} of ${addYearsProgress.total} year${
-              addYearsProgress.total === 1 ? '' : 's'
-            }…`,
-          }
-        : null;
-
-  if (!overlay) return null;
-  const { progress, label } = overlay;
+      ? t('datasets-deleting-progress', { current: active.current, total: active.total })
+      : t('datasets-saving-progress', { current: active.current, total: active.total });
 
   return (
     <Box

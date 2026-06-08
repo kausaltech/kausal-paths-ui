@@ -6,6 +6,9 @@ import { type EditableGridCell, GridCellKind } from '@glideapps/glide-data-grid'
 import type {
   CreateDataPointMutation,
   CreateDataPointMutationVariables,
+  CreateDimensionCategoriesMutation,
+  CreateDimensionCategoriesMutationVariables,
+  CreateDimensionCategoryInput,
   DatasetDetailFieldsFragment,
   DeleteDataPointMutation,
   DeleteDataPointMutationVariables,
@@ -13,15 +16,21 @@ import type {
   UpdateDataPointMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { CREATE_DIMENSION_CATEGORIES } from '../dimensions/queries';
 import type { AddProgress } from './AddRowsModal';
 import { isYearColId, yearFromColId } from './DatasetDataGridUtils';
 import { NOT_APPLICABLE } from './DimensionCategoryList';
 import {
   type GridRow,
+  type ImportStagePayload,
   type PendingEdit,
+  type StagedCategory,
+  type StagedRow,
   asUpdateInput,
   diffKind,
+  extractYear,
   pendingKey,
+  rowKey,
   yearColId,
 } from './dataset-grid-data';
 import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
@@ -52,6 +61,12 @@ type Params = {
   setPendingEdits: Dispatch<SetStateAction<Map<string, PendingEdit>>>;
   /** Ephemeral year columns not yet backed by data points. */
   setExtraYears: Dispatch<SetStateAction<Set<number>>>;
+  /** Staged (uncommitted) new categories from an import; read by buildGridData. */
+  stagedCategories: StagedCategory[];
+  setStagedCategories: Dispatch<SetStateAction<StagedCategory[]>>;
+  /** Staged (uncommitted) new rows from an import or "Add rows"; read by buildGridData. */
+  stagedRows: StagedRow[];
+  setStagedRows: Dispatch<SetStateAction<StagedRow[]>>;
   /** Refetch the dataset; awaited by `handleSave` before clearing successes. */
   onMutated: () => void | Promise<unknown>;
   /** Clear the grid's cell/row/column selection after a destructive op. */
@@ -75,6 +90,10 @@ export function useDataPointEditing({
   pendingEdits,
   setPendingEdits,
   setExtraYears,
+  stagedCategories,
+  setStagedCategories,
+  stagedRows,
+  setStagedRows,
   onMutated,
   onClearSelection,
 }: Params) {
@@ -83,17 +102,14 @@ export function useDataPointEditing({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [addProgress, setAddProgress] = useState<AddProgress | null>(null);
+  const [saveProgress, setSaveProgress] = useState<AddProgress | null>(null);
   const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
-  const [addYearsProgress, setAddYearsProgress] = useState<AddProgress | null>(null);
   const [addRowsOpen, setAddRowsOpen] = useState(false);
   const [addYearsOpen, setAddYearsOpen] = useState(false);
 
-  // True whenever any batch mutation is running. Used to gate toolbar actions
-  // that would otherwise let the user start an overlapping operation and race
-  // shared state (extraYears, pendingEdits, progress/error).
-  const isMutating =
-    saving || addProgress !== null || deleteProgress !== null || addYearsProgress !== null;
+  // True whenever a server operation is running. Adding rows/years is now a
+  // local staging op (committed via Save), so only saving and deletes count.
+  const isMutating = saving || deleteProgress !== null;
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
     CREATE_DATA_POINT
@@ -101,6 +117,10 @@ export function useDataPointEditing({
   const [updateDataPoint] = useMutation<UpdateDataPointMutation, UpdateDataPointMutationVariables>(
     UPDATE_DATA_POINT
   );
+  const [createDimensionCategories] = useMutation<
+    CreateDimensionCategoriesMutation,
+    CreateDimensionCategoriesMutationVariables
+  >(CREATE_DIMENSION_CATEGORIES);
   const [deleteDataPoint] = useMutation<DeleteDataPointMutation, DeleteDataPointMutationVariables>(
     DELETE_DATA_POINT,
     {
@@ -121,57 +141,32 @@ export function useDataPointEditing({
   );
 
   const handleAddRows = useCallback(
-    async (selectedMetricIds: string[], newRows: string[][]) => {
+    (selectedMetricIds: string[], newRows: string[][]) => {
       if (newRows.length === 0) return;
       const metricIdSet = new Set(selectedMetricIds);
-      // One anchor DataPoint per new row: enough to make the row render. Other
-      // year cells stay backed by no DataPoint and are created lazily as the
-      // user edits them. Earliest existing year is the anchor; current year if
-      // the dataset is brand-new.
-      const anchorYear = years.length > 0 ? years[0] : new Date().getUTCFullYear();
-      setAddProgress({ current: 0, total: newRows.length });
-
-      let failureCount = 0;
-      let firstError: string | null = null;
-
-      for (const row of newRows) {
-        const metricId = row.find((id) => metricIdSet.has(id));
-        if (metricId) {
-          const dimensionCategoryIds = row.filter((id) => id !== metricId && id !== NOT_APPLICABLE);
-          try {
-            const result = await createDataPoint({
-              variables: {
-                instanceId: instance.id,
-                datasetId: dataset.id,
-                input: {
-                  date: `${anchorYear}-01-01`,
-                  metricId,
-                  dimensionCategoryIds,
-                  value: null,
-                },
-              },
-            });
-            const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
-            if (payload?.__typename === 'OperationInfo') {
-              failureCount += 1;
-              firstError ??= payload.messages.map((m) => m.message).join('; ');
-            }
-          } catch (err) {
-            failureCount += 1;
-            firstError ??= err instanceof Error ? err.message : String(err);
-          }
+      // Each combo is [metricId, ...categoryUuids] (with NOT_APPLICABLE
+      // placeholders for dimensions the row doesn't use). Turn it into a staged
+      // row keyed exactly like buildGridData so the empty preview row renders
+      // and (once filled or saved) its values / anchor attach to it.
+      const staged: StagedRow[] = [];
+      for (const combo of newRows) {
+        const metricId = combo.find((id) => metricIdSet.has(id));
+        if (!metricId) continue;
+        const comboCats = new Set(combo.filter((id) => id !== metricId && id !== NOT_APPLICABLE));
+        const categoryByDim: Record<string, string | null> = {};
+        for (const dim of dataset.dimensions) {
+          categoryByDim[dim.id] = dim.categories.find((c) => comboCats.has(c.uuid))?.uuid ?? null;
         }
-        setAddProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+        staged.push({ metricId, categoryByDim });
       }
-
-      setAddProgress(null);
+      // Stage as empty preview rows — nothing is written until Save changes.
+      setStagedRows((prev) => {
+        const seen = new Set(prev.map((r) => rowKey(r.metricId, r.categoryByDim)));
+        return [...prev, ...staged.filter((r) => !seen.has(rowKey(r.metricId, r.categoryByDim)))];
+      });
       setAddRowsOpen(false);
-      if (failureCount > 0) {
-        setError(firstError ?? `Failed to add ${failureCount} row${failureCount === 1 ? '' : 's'}`);
-      }
-      void onMutated();
     },
-    [createDataPoint, instance.id, dataset.id, years, onMutated]
+    [dataset.dimensions, setStagedRows]
   );
 
   const handleDeleteRows = useCallback(
@@ -334,85 +329,18 @@ export function useDataPointEditing({
   );
 
   const handleAddYears = useCallback(
-    async (newYears: number[]) => {
+    (newYears: number[]) => {
       if (newYears.length === 0) return;
-
-      // Update extraYears immediately for visual feedback while mutations are
-      // in flight. After refetch, the year is in dataset.dataPoints; the
-      // extraYears entry then merges in as a no-op (Set semantics).
+      // Stage the columns. They render empty until the user enters values; an
+      // added-but-empty year is given a null anchor data point at Save time
+      // (see handleSave) so the column persists across a refetch.
       setExtraYears((prev) => {
         const next = new Set(prev);
         for (const y of newYears) next.add(y);
         return next;
       });
-
-      // No rows to anchor against yet — the column is ephemeral until the
-      // first row is added (the row's anchor will then create a real
-      // DataPoint in some year). Skip mutations. Use baseRows so a category
-      // filter that hides every row doesn't block adding a year.
-      if (baseRows.length === 0) return;
-
-      const anchorRow = baseRows[0];
-      const dimensionCategoryIds = Object.values(anchorRow.categoryByDim).filter(
-        (v): v is string => v !== null
-      );
-
-      setAddYearsProgress({ current: 0, total: newYears.length });
-      let failureCount = 0;
-      let firstError: string | null = null;
-      const failedYears: number[] = [];
-
-      for (const year of newYears) {
-        try {
-          const result = await createDataPoint({
-            variables: {
-              instanceId: instance.id,
-              datasetId: dataset.id,
-              input: {
-                date: `${year}-01-01`,
-                metricId: anchorRow.metricId,
-                dimensionCategoryIds,
-                value: null,
-              },
-            },
-          });
-          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
-          if (payload?.__typename === 'OperationInfo') {
-            failureCount += 1;
-            failedYears.push(year);
-            firstError ??= payload.messages.map((m) => m.message).join('; ');
-          }
-        } catch (err) {
-          failureCount += 1;
-          failedYears.push(year);
-          firstError ??= err instanceof Error ? err.message : String(err);
-        }
-        setAddYearsProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
-      }
-
-      setAddYearsProgress(null);
-      if (failedYears.length > 0) {
-        // Roll back the optimistic extraYears entries for years whose anchor
-        // DataPoint failed to create — otherwise the column would linger
-        // without any backing data until a full reload.
-        setExtraYears((prev) => {
-          if (prev.size === 0) return prev;
-          const next = new Set(prev);
-          let changed = false;
-          for (const y of failedYears) {
-            if (next.delete(y)) changed = true;
-          }
-          return changed ? next : prev;
-        });
-      }
-      if (failureCount > 0) {
-        setError(
-          firstError ?? `Failed to add ${failureCount} year${failureCount === 1 ? '' : 's'}`
-        );
-      }
-      void onMutated();
     },
-    [createDataPoint, instance.id, dataset.id, baseRows, onMutated, setExtraYears]
+    [setExtraYears]
   );
 
   const applyEdit = useCallback(
@@ -458,10 +386,60 @@ export function useDataPointEditing({
 
   const handleDiscard = useCallback(() => {
     setPendingEdits(new Map());
-  }, [setPendingEdits]);
+    // Drop all uncommitted staging: imported/added categories and rows, plus
+    // added year columns. Committed years stay (they're backed by data points,
+    // not by `extraYears`), so clearing the set only removes preview-only ones.
+    setStagedCategories([]);
+    setStagedRows([]);
+    setExtraYears(new Set());
+  }, [setPendingEdits, setStagedCategories, setStagedRows, setExtraYears]);
+
+  // Merge an import's result into the grid's staged state: new categories /
+  // rows render immediately and the values show as pending edits, so the user
+  // reviews and commits with the same Save / Discard controls as manual edits.
+  const stageImport = useCallback(
+    (payload: ImportStagePayload) => {
+      setStagedCategories((prev) => {
+        const seen = new Set(prev.map((c) => c.uuid));
+        return [...prev, ...payload.categories.filter((c) => !seen.has(c.uuid))];
+      });
+      setStagedRows((prev) => {
+        const seen = new Set(prev.map((r) => rowKey(r.metricId, r.categoryByDim)));
+        return [
+          ...prev,
+          ...payload.rows.filter((r) => !seen.has(rowKey(r.metricId, r.categoryByDim))),
+        ];
+      });
+      if (payload.years.length > 0) {
+        setExtraYears((prev) => {
+          const next = new Set(prev);
+          for (const y of payload.years) next.add(y);
+          return next;
+        });
+      }
+      setPendingEdits((prev) => {
+        const next = new Map(prev);
+        for (const edit of payload.edits) {
+          // A no-op edit (import value equals the committed value) carries no
+          // change; skip so it doesn't show as dirty.
+          if (edit.nextValue === edit.originalValue) continue;
+          next.set(pendingKey(edit.rowId, edit.colId), edit);
+        }
+        return next;
+      });
+    },
+    [setStagedCategories, setStagedRows, setExtraYears, setPendingEdits]
+  );
 
   const handleSave = useCallback(async () => {
-    if (pendingEdits.size === 0 || saving) return;
+    if (saving) return;
+    // Committed years are backed by data points; everything else in `years`
+    // (added / imported columns) is uncommitted and may need an anchor.
+    const committedYears = new Set(dataset.dataPoints.map((dp) => extractYear(dp.date)));
+    const hasUncommittedYears = years.some((y) => !committedYears.has(y));
+    // Run when there's anything to commit: value edits, staged rows, or added
+    // year columns (the latter two persist via anchors even with no values).
+    if (pendingEdits.size === 0 && stagedRows.length === 0 && !hasUncommittedYears) return;
     setSaving(true);
 
     const baseVars = { instanceId: instance.id, datasetId: dataset.id };
@@ -475,7 +453,99 @@ export function useDataPointEditing({
     const failures = new Map<string, { edit: PendingEdit; error: string }>();
     let unexpected: string | null = null;
 
+    // Rows / years the user is giving a value this save don't need an anchor —
+    // the value create persists them. Derived from intent up front so the save
+    // progress total is exact and the anchor list is known before the loop.
+    const valueCreateRowIds = new Set<string>();
+    const valueCreateYears = new Set<number>();
+    for (const [, edit] of queued) {
+      if (edit.dataPointId === null && edit.nextValue !== null) {
+        valueCreateRowIds.add(edit.rowId);
+        valueCreateYears.add(edit.year);
+      }
+    }
+
+    // Anchor targets: empty staged rows (at the earliest year) and added year
+    // columns with no committed data and no value this save get a null-valued
+    // data point so the added structure survives the refetch.
+    type Anchor = { metricId: string; categoryByDim: Record<string, string | null>; year: number };
+    const anchors: Anchor[] = [];
+    const anchorSeen = new Set<string>();
+    const anchorYear = years.length > 0 ? years[0] : new Date().getUTCFullYear();
+    const queueAnchor = (
+      metricId: string,
+      categoryByDim: Record<string, string | null>,
+      year: number
+    ) => {
+      const k = `${rowKey(metricId, categoryByDim)}|${year}`;
+      if (anchorSeen.has(k)) return;
+      anchorSeen.add(k);
+      anchors.push({ metricId, categoryByDim, year });
+    };
+    for (const sr of stagedRows) {
+      if (valueCreateRowIds.has(rowKey(sr.metricId, sr.categoryByDim))) continue;
+      queueAnchor(sr.metricId, sr.categoryByDim, anchorYear);
+    }
+    const yearAnchorRow = baseRows[0] ?? stagedRows[0] ?? null;
+    if (yearAnchorRow) {
+      for (const y of years) {
+        if (committedYears.has(y) || valueCreateYears.has(y)) continue;
+        queueAnchor(yearAnchorRow.metricId, yearAnchorRow.categoryByDim, y);
+      }
+    }
+
+    // Create any staged (import) categories referenced by a staged row before
+    // the data-point loop, so the value creates / anchors below can reference
+    // real uuids. All-or-nothing: on failure, abort the save and keep everything
+    // staged so the user can fix it and retry. (Every staged row will be
+    // persisted via a value or an anchor, so all referenced categories apply.)
+    const stagedUuidsInUse = new Set<string>();
+    for (const sr of stagedRows) {
+      for (const u of Object.values(sr.categoryByDim)) if (u) stagedUuidsInUse.add(u);
+    }
+    const categoriesToCreate = stagedCategories.filter((c) => stagedUuidsInUse.has(c.uuid));
+    if (categoriesToCreate.length > 0) {
+      try {
+        const result = await createDimensionCategories({
+          variables: {
+            instanceId: instance.id,
+            // The backend rejects explicit `null` on the Maybe[ID] sibling
+            // fields, so omit them entirely (append to the end). Mirrors the
+            // dimension editor's `addSiblings` handling.
+            input: categoriesToCreate.map(
+              (c) =>
+                ({
+                  dimensionId: c.dimensionId,
+                  id: c.uuid,
+                  label: c.label,
+                  identifier: c.identifier,
+                }) as CreateDimensionCategoryInput
+            ),
+          },
+        });
+        const payload = result.data?.instanceEditor.createDimensionCategories;
+        if (payload?.__typename === 'OperationInfo') {
+          throw new Error(payload.messages.map((m) => m.message).join('; '));
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setSaving(false);
+        return;
+      }
+    }
+
+    // Saving is one mutation per data point + per anchor (sequential), so drive
+    // a determinate progress bar over the combined total. `tick` no-ops when no
+    // progress is shown (nothing to do).
+    const totalOps = queued.length + anchors.length;
+    if (totalOps > 0) setSaveProgress({ current: 0, total: totalOps });
+    const tick = () =>
+      setSaveProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+
     for (const [key, edit] of queued) {
+      // Tick once per edit up front so the count advances on every path
+      // (including the no-op skips below), not just the mutating ones.
+      tick();
       const row = rowById.get(edit.rowId);
       if (!row) {
         successKeys.push(key);
@@ -593,6 +663,37 @@ export function useDataPointEditing({
       }
     }
 
+    // Execute the anchors computed up front (null-valued data points that keep
+    // empty staged rows / added years alive across the refetch).
+    const anchorFailedRowIds = new Set<string>();
+    let anchorError: string | null = null;
+    for (const a of anchors) {
+      tick();
+      try {
+        const r = await createDataPoint({
+          variables: {
+            ...baseVars,
+            input: {
+              date: `${a.year}-01-01`,
+              value: null,
+              metricId: a.metricId,
+              dimensionCategoryIds: Object.values(a.categoryByDim).filter(
+                (v): v is string => v !== null
+              ),
+            },
+          },
+        });
+        const p = r.data?.instanceEditor.datasetEditor.createDataPoint;
+        if (p?.__typename === 'OperationInfo') {
+          anchorError ??= p.messages.map((m) => m.message).join('; ');
+          anchorFailedRowIds.add(rowKey(a.metricId, a.categoryByDim));
+        }
+      } catch (err) {
+        anchorError ??= err instanceof Error ? err.message : String(err);
+        anchorFailedRowIds.add(rowKey(a.metricId, a.categoryByDim));
+      }
+    }
+
     // Wait for the parent to refetch the dataset (so the Apollo cache holds
     // the freshly-saved values) before dropping the pending entries. Then
     // commit successes and failures in a single state update — the cell
@@ -613,6 +714,17 @@ export function useDataPointEditing({
         for (const [key, { edit, error }] of failures) next.set(key, { ...edit, error });
         return next;
       });
+      // Staged categories are now created server-side (and will arrive via the
+      // refetch); drop them. Keep only the staged rows still referenced by a
+      // failed value edit or a failed anchor — succeeded rows come back as real
+      // data, so dropping them avoids a phantom row over the refetched one.
+      const keptRowIds = new Set<string>(anchorFailedRowIds);
+      for (const [, { edit }] of failures) keptRowIds.add(edit.rowId);
+      setStagedCategories([]);
+      setStagedRows((prev) =>
+        prev.filter((r) => keptRowIds.has(rowKey(r.metricId, r.categoryByDim)))
+      );
+      setSaveProgress(null);
       setSaving(false);
     }
 
@@ -622,6 +734,8 @@ export function useDataPointEditing({
         unexpected ??
           `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
       );
+    } else if (anchorError !== null) {
+      setError(`Saved, but some added rows/years couldn't be persisted: ${anchorError}`);
     } else if (refetchError !== null) {
       setError(`Saved, but refreshing the data failed: ${refetchError}`);
     }
@@ -629,13 +743,20 @@ export function useDataPointEditing({
     pendingEdits,
     saving,
     instance.id,
-    dataset.id,
+    dataset,
     rowById,
+    baseRows,
+    years,
+    stagedCategories,
+    stagedRows,
     createDataPoint,
     updateDataPoint,
     deleteDataPoint,
+    createDimensionCategories,
     onMutated,
     setPendingEdits,
+    setStagedCategories,
+    setStagedRows,
   ]);
 
   return useMemo(
@@ -644,9 +765,8 @@ export function useDataPointEditing({
       saving,
       error,
       setError,
-      addProgress,
+      saveProgress,
       deleteProgress,
-      addYearsProgress,
       isMutating,
       // add-modal state
       addRowsOpen,
@@ -659,6 +779,7 @@ export function useDataPointEditing({
       applyEdit,
       handleSave,
       handleDiscard,
+      stageImport,
       // bulk handlers
       handleAddRows,
       handleDeleteRows,
@@ -668,15 +789,15 @@ export function useDataPointEditing({
     [
       saving,
       error,
-      addProgress,
+      saveProgress,
       deleteProgress,
-      addYearsProgress,
       isMutating,
       addRowsOpen,
       addYearsOpen,
       applyEdit,
       handleSave,
       handleDiscard,
+      stageImport,
       handleAddRows,
       handleDeleteRows,
       handleDeleteYears,

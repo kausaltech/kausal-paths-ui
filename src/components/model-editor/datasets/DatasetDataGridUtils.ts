@@ -9,6 +9,9 @@ import { METRIC_COL } from './dataset-grid-data';
 // pre-mix against white.
 export const DIRTY_BG = '#fce8d4';
 export const ERROR_BG = '#fbe1e1';
+// Background for rows / year columns staged for deletion (a muted red, distinct
+// from the brighter ERROR_BG used for failed edits).
+export const DELETED_BG = '#f3d4d4';
 // Background for the read-only dimension/metric label columns, distinguishing
 // them from the editable (white) data cells.
 export const LABEL_COL_BG = '#f5f5f5';

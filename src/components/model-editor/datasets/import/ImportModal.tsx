@@ -13,7 +13,6 @@ import {
   Divider,
   FormControl,
   InputLabel,
-  LinearProgress,
   MenuItem,
   Select,
   Stack,
@@ -31,7 +30,6 @@ import {
 import { useTranslations } from 'next-intl';
 
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
-import type { AddProgress } from '../AddRowsModal';
 import { extractYear } from '../dataset-grid-data';
 import type { DetectedTable } from './parse';
 import {
@@ -69,10 +67,11 @@ export interface ImportModalProps {
   existingYears: number[];
   /** dimId -> uuid auto-pins derived from the grid's active category filter. */
   filterPins: Record<string, string>;
+  /** Reserved for surfacing a staging-time validation error (rare). */
   committing: boolean;
-  progress: AddProgress | null;
   error: string | null;
   onClose: () => void;
+  /** Stages the import into the grid's edit state (see useDatasetImport). */
   onCommit: (commit: ImportCommit) => void;
 }
 
@@ -91,7 +90,6 @@ export default function ImportModal({
   existingYears,
   filterPins,
   committing,
-  progress,
   error,
   onClose,
   onCommit,
@@ -516,32 +514,26 @@ export default function ImportModal({
             )}
 
             {error && <Alert severity="error">{error}</Alert>}
-            {committing && progress && (
-              <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                  {t('import-progress', { current: progress.current, total: progress.total })}
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={progress.total > 0 ? (progress.current / progress.total) * 100 : 0}
-                />
-              </Box>
-            )}
           </Stack>
         )}
       </DialogContent>
       <Divider />
-      <DialogActions>
-        <Button onClick={onClose} disabled={committing}>
-          {t('common-cancel')}
-        </Button>
-        <Button variant="contained" onClick={handleImport} disabled={!canCommit}>
-          {plan
-            ? t('import-confirm', {
-                count: plan.counts.cellsToCreate + plan.counts.cellsToOverwrite,
-              })
-            : t('import-action')}
-        </Button>
+      <DialogActions sx={{ justifyContent: 'space-between' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
+          {t('import-stage-hint')}
+        </Typography>
+        <Box>
+          <Button onClick={onClose} disabled={committing}>
+            {t('common-cancel')}
+          </Button>
+          <Button variant="contained" onClick={handleImport} disabled={!canCommit}>
+            {plan
+              ? t('import-stage-confirm', {
+                  count: plan.counts.cellsToCreate + plan.counts.cellsToOverwrite,
+                })
+              : t('import-action')}
+          </Button>
+        </Box>
       </DialogActions>
     </Dialog>
   );

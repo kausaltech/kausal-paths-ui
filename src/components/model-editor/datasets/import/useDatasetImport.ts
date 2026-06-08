@@ -1,32 +1,25 @@
 import { useCallback, useState } from 'react';
 
-import { useMutation } from '@apollo/client/react';
 import type { Item } from '@glideapps/glide-data-grid';
 
-import type {
-  CreateDataPointMutation,
-  CreateDataPointMutationVariables,
-  CreateDimensionCategoriesMutation,
-  CreateDimensionCategoriesMutationVariables,
-  CreateDimensionCategoryInput,
-  DatasetDetailFieldsFragment,
-  UpdateDataPointMutation,
-  UpdateDataPointMutationVariables,
-} from '@/common/__generated__/graphql';
-import { CREATE_DIMENSION_CATEGORIES } from '../../dimensions/queries';
-import type { AddProgress } from '../AddRowsModal';
-import { asUpdateInput, extractYear } from '../dataset-grid-data';
-import { CREATE_DATA_POINT, UPDATE_DATA_POINT } from '../queries';
+import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
+import {
+  type ImportStagePayload,
+  type PendingEdit,
+  type StagedCategory,
+  type StagedRow,
+  extractYear,
+  rowKey,
+  yearColId,
+} from '../dataset-grid-data';
 import type { ImportCommit, ImportModalProps } from './ImportModal';
 import { detectDimensionalPaste } from './parse';
 import {
   type DatasetSchema,
   buildImportPlan,
   defaultResolution,
-  groupAliasWrites,
   pointKey,
   resolutionKey,
-  rowCategoryResolution,
   slugifyIdentifier,
 } from './plan';
 
@@ -36,9 +29,13 @@ export interface UseDatasetImportArgs {
   existingYears: number[];
   /** dimId -> uuid auto-pins from the grid's single-value category filters. */
   filterPins: Record<string, string>;
-  instanceId: string;
-  /** The grid's refetch (`onMutated`); awaited after a commit. */
-  onCommitted: () => void | Promise<unknown>;
+  /**
+   * Merge the import's result into the grid's staged edit state. The import no
+   * longer writes to the server itself: staged categories / rows / values show
+   * as dirty cells and are committed (or discarded) via the grid's Save / Cancel
+   * controls — the same review-before-commit flow as manual edits.
+   */
+  onStage: (payload: ImportStagePayload) => void;
 }
 
 export interface UseDatasetImportResult {
@@ -49,43 +46,17 @@ export interface UseDatasetImportResult {
   modalProps: ImportModalProps;
 }
 
-// TODO(alias-backend): once `aliases` is exposed on the category GraphQL type
-// and accepted by UpdateDimensionCategoryInput, replace this stub with one
-// updateDimensionCategories call per category, sending the merged alias list
-// produced by groupAliasWrites. Until then, mapping a fuzzy/unmatched label to
-// an existing category imports the data but doesn't persist the mapping, so
-// next year's import sees the same label as fuzzy again.
-function persistCategoryAliases(aliasesByCategory: Record<string, string[]>): void {
-  if (process.env.NODE_ENV !== 'production' && Object.keys(aliasesByCategory).length > 0) {
-    console.debug('[dataset-import] alias persistence pending backend support:', aliasesByCategory);
-  }
-}
-
 export function useDatasetImport({
   dataset,
   existingYears,
   filterPins,
-  instanceId,
-  onCommitted,
+  onStage,
 }: UseDatasetImportArgs): UseDatasetImportResult {
   const [session, setSession] = useState<{
     matrix: string[][];
     detected: ReturnType<typeof detectDimensionalPaste>;
   } | null>(null);
-  const [committing, setCommitting] = useState(false);
-  const [progress, setProgress] = useState<AddProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
-    CREATE_DATA_POINT
-  );
-  const [updateDataPoint] = useMutation<UpdateDataPointMutation, UpdateDataPointMutationVariables>(
-    UPDATE_DATA_POINT
-  );
-  const [createDimensionCategories] = useMutation<
-    CreateDimensionCategoriesMutation,
-    CreateDimensionCategoriesMutationVariables
-  >(CREATE_DIMENSION_CATEGORIES);
 
   const onPaste = useCallback((_target: Item, values: readonly (readonly string[])[]) => {
     const matrix = values.map((r) => [...r]);
@@ -97,10 +68,9 @@ export function useDatasetImport({
   }, []);
 
   const onClose = useCallback(() => {
-    if (committing) return;
     setSession(null);
     setError(null);
-  }, [committing]);
+  }, []);
 
   const buildSchema = useCallback((): DatasetSchema => {
     return {
@@ -129,158 +99,116 @@ export function useDatasetImport({
     };
   }, [dataset, existingYears]);
 
-  const handleCommit = useCallback(
-    async (commit: ImportCommit) => {
-      setCommitting(true);
-      setError(null);
-      const baseVars = { instanceId, datasetId: dataset.id };
-
-      // 1. Resolve each triage decision to a uuid (or null = discard), and
-      // collect the categories to create + alias mappings to persist.
+  const handleStage = useCallback(
+    (commit: ImportCommit) => {
+      // 1. Resolve each triage decision to a uuid (or null = discard). New
+      // categories get a client-generated uuid now and are staged for creation
+      // at save time (see useDataPointEditing.handleSave); the same uuid is used
+      // immediately in row keys and value edits so nothing needs remapping.
       const uuidByKey = new Map<string, string | null>();
-      const createInputs: CreateDimensionCategoryInput[] = [];
-      const aliasResolutions: { categoryUuid: string; alias: string }[] = [];
+      const stagedCategories: StagedCategory[] = [];
       for (const item of commit.triage) {
         const key = resolutionKey(item.dimensionId, item.label);
         const res = commit.resolutions[key] ?? defaultResolution(item);
         if (res.kind === 'existing') {
           uuidByKey.set(key, res.categoryUuid);
-          // The user mapped a non-exact label to a category → that's an alias.
-          aliasResolutions.push({ categoryUuid: res.categoryUuid, alias: item.label });
         } else if (res.kind === 'discard') {
           uuidByKey.set(key, null);
         } else {
-          // Generate the uuid client-side so it's known without re-reading.
           const id = crypto.randomUUID();
           uuidByKey.set(key, id);
-          createInputs.push({
+          stagedCategories.push({
             dimensionId: item.dimensionId,
-            label: item.label,
-            id,
+            uuid: id,
             identifier: slugifyIdentifier(item.label),
-            previousSibling: null,
-            nextSibling: null,
+            label: item.label,
           });
         }
       }
 
-      // 2. Create any new categories first (one batched call).
-      if (createInputs.length > 0) {
-        try {
-          const result = await createDimensionCategories({
-            variables: { instanceId, input: createInputs },
-          });
-          const payload = result.data?.instanceEditor.createDimensionCategories;
-          if (payload?.__typename === 'OperationInfo') {
-            throw new Error(payload.messages.map((m) => m.message).join('; '));
-          }
-        } catch (err) {
-          setError(err instanceof Error ? err.message : String(err));
-          setCommitting(false);
-          return;
-        }
-      }
-
-      // 3. Rebuild the plan (pure, cheap) and turn it into per-cell operations.
+      // 2. Rebuild the plan (pure) and the existing-point index.
       const schema = buildSchema();
       const plan = buildImportPlan(commit.matrix, commit.detected, schema, commit.mapping, {
         pinnedCategoryByDimension: commit.pinnedCategoryByDimension,
         metricId: commit.metricId,
       });
 
-      const existingIndex = new Map<string, string>();
+      const existingByKey = new Map<string, { id: string; value: number | null }>();
       for (const dp of dataset.dataPoints) {
-        existingIndex.set(
+        existingByKey.set(
           pointKey(
             dp.metric.id,
             dp.dimensionCategories.map((c) => c.uuid),
             extractYear(dp.date)
           ),
-          dp.id
+          { id: dp.id, value: dp.value }
         );
       }
-
-      type Op =
-        | { kind: 'create'; year: number; value: number; categoryUuids: string[] }
-        | { kind: 'update'; value: number; dataPointId: string };
-      const ops: Op[] = [];
-      for (const row of plan.rows) {
-        const { categoryUuids, discard } = rowCategoryResolution(
-          row,
-          commit.pinnedCategoryByDimension,
-          uuidByKey
-        );
-        if (discard) continue;
-        for (const cell of row.cells) {
-          const id = existingIndex.get(pointKey(commit.metricId, categoryUuids, cell.year));
-          if (id) ops.push({ kind: 'update', value: cell.value, dataPointId: id });
-          else ops.push({ kind: 'create', year: cell.year, value: cell.value, categoryUuids });
+      // Row keys already backed by data points — those don't need a staged row.
+      const existingRowKeys = new Set<string>();
+      for (const dp of dataset.dataPoints) {
+        const categoryByDim: Record<string, string | null> = {};
+        const dpUuids = new Set(dp.dimensionCategories.map((c) => c.uuid));
+        for (const dim of dataset.dimensions) {
+          categoryByDim[dim.id] = dim.categories.find((c) => dpUuids.has(c.uuid))?.uuid ?? null;
         }
+        existingRowKeys.add(rowKey(dp.metric.id, categoryByDim));
       }
 
-      // 4. Execute with a determinate progress bar (sequential, mirroring the
-      // grid's other batch handlers).
-      setProgress({ current: 0, total: ops.length });
-      let firstError: string | null = null;
-      for (const op of ops) {
-        try {
-          if (op.kind === 'update') {
-            const r = await updateDataPoint({
-              variables: {
-                ...baseVars,
-                dataPointId: op.dataPointId,
-                input: asUpdateInput({ value: op.value }),
-              },
-            });
-            const p = r.data?.instanceEditor.datasetEditor.updateDataPoint;
-            if (p?.__typename === 'OperationInfo') {
-              firstError ??= p.messages.map((m) => m.message).join('; ');
+      // 3. Turn the plan into staged rows + per-cell value edits.
+      const stagedRows: StagedRow[] = [];
+      const stagedRowKeys = new Set<string>();
+      const edits: PendingEdit[] = [];
+      for (const planRow of plan.rows) {
+        // Resolve every dimension to a uuid (or null when absent), discarding
+        // the row if any mapped label resolved to "discard".
+        const categoryByDim: Record<string, string | null> = {};
+        let discard = false;
+        for (const dim of dataset.dimensions) {
+          const match = planRow.matchByDimension[dim.id];
+          if (match) {
+            if (match.matchClass === 'exact' && match.categoryUuid) {
+              categoryByDim[dim.id] = match.categoryUuid;
+            } else {
+              const u = uuidByKey.get(resolutionKey(dim.id, match.source));
+              if (u === null || u === undefined) {
+                discard = true;
+                break;
+              }
+              categoryByDim[dim.id] = u;
             }
+          } else if (commit.pinnedCategoryByDimension[dim.id] !== undefined) {
+            categoryByDim[dim.id] = commit.pinnedCategoryByDimension[dim.id];
           } else {
-            const r = await createDataPoint({
-              variables: {
-                ...baseVars,
-                input: {
-                  date: `${op.year}-01-01`,
-                  value: op.value,
-                  metricId: commit.metricId,
-                  dimensionCategoryIds: op.categoryUuids,
-                },
-              },
-            });
-            const p = r.data?.instanceEditor.datasetEditor.createDataPoint;
-            if (p?.__typename === 'OperationInfo') {
-              firstError ??= p.messages.map((m) => m.message).join('; ');
-            }
+            categoryByDim[dim.id] = null;
           }
-        } catch (err) {
-          firstError ??= err instanceof Error ? err.message : String(err);
         }
-        setProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+        if (discard) continue;
+
+        const categoryUuids = Object.values(categoryByDim).filter((v): v is string => v !== null);
+        const id = rowKey(commit.metricId, categoryByDim);
+        if (!existingRowKeys.has(id) && !stagedRowKeys.has(id)) {
+          stagedRowKeys.add(id);
+          stagedRows.push({ metricId: commit.metricId, categoryByDim });
+        }
+
+        for (const cell of planRow.cells) {
+          const existing = existingByKey.get(pointKey(commit.metricId, categoryUuids, cell.year));
+          edits.push({
+            rowId: id,
+            colId: yearColId(cell.year),
+            year: cell.year,
+            dataPointId: existing?.id ?? null,
+            nextValue: cell.value,
+            originalValue: existing?.value ?? null,
+          });
+        }
       }
 
-      // 5. Persist alias mappings (placeholder until backend support lands).
-      persistCategoryAliases(groupAliasWrites(aliasResolutions, {}));
-
-      setProgress(null);
-      try {
-        await onCommitted();
-      } catch {
-        // Refetch failure is non-fatal here; the values are saved server-side.
-      }
-      setCommitting(false);
-      if (firstError) setError(firstError);
-      else setSession(null); // Close only on a clean commit.
+      onStage({ categories: stagedCategories, rows: stagedRows, edits, years: plan.newYears });
+      setSession(null);
     },
-    [
-      instanceId,
-      dataset,
-      buildSchema,
-      createDataPoint,
-      updateDataPoint,
-      createDimensionCategories,
-      onCommitted,
-    ]
+    [dataset, buildSchema, onStage]
   );
 
   return {
@@ -292,11 +220,12 @@ export function useDatasetImport({
       dataset,
       existingYears,
       filterPins,
-      committing,
-      progress,
+      // Staging is synchronous and local, so there's no in-flight commit to
+      // report. Kept for prop compatibility with the modal.
+      committing: false,
       error,
       onClose,
-      onCommit: (c) => void handleCommit(c),
+      onCommit: handleStage,
     },
   };
 }
