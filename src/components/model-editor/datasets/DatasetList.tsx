@@ -2,6 +2,9 @@ import { type MouseEvent, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -9,6 +12,7 @@ import {
   CircularProgress,
   Container,
   IconButton,
+  Link,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -31,6 +35,7 @@ import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
   ChatLeft,
+  ChevronDown,
   Database,
   Files,
   PencilSquare,
@@ -167,8 +172,21 @@ export default function DatasetList() {
     [data?.instance.editor?.datasets]
   );
 
+  // External placeholder datasets live in a separate, read-only section.
+  const mainDatasets = useMemo(
+    () => datasets.filter((ds) => !ds.isExternalPlaceholder),
+    [datasets]
+  );
+  const externalDatasets = useMemo(
+    () =>
+      datasets
+        .filter((ds) => ds.isExternalPlaceholder)
+        .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+    [datasets]
+  );
+
   const sortedDatasets = useMemo(() => {
-    const arr = [...datasets];
+    const arr = [...mainDatasets];
     arr.sort((a, b) => {
       const av = getSortValue(a, sortKey);
       const bv = getSortValue(b, sortKey);
@@ -177,7 +195,7 @@ export default function DatasetList() {
       return 0;
     });
     return arr;
-  }, [datasets, sortKey, sortOrder]);
+  }, [mainDatasets, sortKey, sortOrder]);
 
   if (loading && !data) {
     return (
@@ -284,29 +302,19 @@ export default function DatasetList() {
                 onClick={() => router.push(`${base}/${encodeURIComponent(ds.id)}`)}
               >
                 <TableCell>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box>
-                      <Box component="span">{ds.name}</Box>
-                      {ds.identifier && (
-                        <Typography
-                          variant="caption"
-                          component="div"
-                          color="text.disabled"
-                          sx={{ fontFamily: 'monospace', lineHeight: 1.2 }}
-                        >
-                          {ds.identifier}
-                        </Typography>
-                      )}
-                    </Box>
-                    {ds.isExternalPlaceholder && (
-                      <Chip
-                        label={t('datasets-placeholder')}
-                        size="small"
-                        color="warning"
-                        variant="outlined"
-                      />
+                  <Box>
+                    <Box component="span">{ds.name}</Box>
+                    {ds.identifier && (
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        color="text.disabled"
+                        sx={{ fontFamily: 'monospace', lineHeight: 1.2 }}
+                      >
+                        {ds.identifier}
+                      </Typography>
                     )}
-                  </Stack>
+                  </Box>
                 </TableCell>
                 <TableCell align="right">
                   {ds.dimensions.length > 0 ? (
@@ -383,6 +391,59 @@ export default function DatasetList() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {externalDatasets.length > 0 && (
+        <Accordion sx={{ mt: 3 }} disableGutters>
+          <AccordionSummary expandIcon={<ChevronDown />}>
+            <Typography variant="subtitle1">
+              {t('datasets-external-datasets')} ({externalDatasets.length})
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('datasets-name')}</TableCell>
+                    <TableCell>{t('datasets-identifier')}</TableCell>
+                    <TableCell>{t('datasets-source')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {externalDatasets.map((ds) => {
+                    const repoUrl = ds.externalRef?.repoUrl ?? null;
+                    return (
+                      <TableRow key={ds.id}>
+                        <TableCell>{ds.name}</TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace' }}>
+                          {ds.identifier || '—'}
+                        </TableCell>
+                        <TableCell>
+                          {repoUrl ? (
+                            <Link
+                              href={repoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ wordBreak: 'break-all' }}
+                            >
+                              {repoUrl}
+                            </Link>
+                          ) : (
+                            <Typography variant="body2" color="text.disabled">
+                              —
+                            </Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </AccordionDetails>
+        </Accordion>
+      )}
+
       <Snackbar
         open={notice !== null}
         autoHideDuration={4000}
