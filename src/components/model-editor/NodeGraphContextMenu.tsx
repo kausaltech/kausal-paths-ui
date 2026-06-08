@@ -1,5 +1,6 @@
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { Copy, EyeSlash, Lightning, Magic, PlusSquare, Trash } from 'react-bootstrap-icons';
 
 import type { NewNodeKind } from './useCreateNode';
@@ -35,6 +36,7 @@ export default function NodeGraphContextMenu({
   onDeleteNode,
   onNewNode,
 }: Props) {
+  const t = useTranslations('model-editor');
   const readOnly = useIsEditorReadOnly();
 
   const handleHideEdge = () => {
@@ -80,7 +82,7 @@ export default function NodeGraphContextMenu({
           <ListItemIcon>
             <EyeSlash size={14} />
           </ListItemIcon>
-          <ListItemText>Hide edge</ListItemText>
+          <ListItemText>{t('nodes-hide-edge')}</ListItemText>
         </MenuItem>
       )}
       {!readOnly &&
@@ -89,7 +91,7 @@ export default function NodeGraphContextMenu({
             <ListItemIcon>
               <Copy size={14} />
             </ListItemIcon>
-            <ListItemText>Duplicate node</ListItemText>
+            <ListItemText>{t('nodes-duplicate-node')}</ListItemText>
           </MenuItem>,
           ...(state.isAction
             ? [
@@ -97,7 +99,7 @@ export default function NodeGraphContextMenu({
                   <ListItemIcon>
                     <Magic size={14} />
                   </ListItemIcon>
-                  <ListItemText>Action wizard (legacy)</ListItemText>
+                  <ListItemText>{t('nodes-action-wizard')}</ListItemText>
                 </MenuItem>,
               ]
             : []),
@@ -108,7 +110,7 @@ export default function NodeGraphContextMenu({
           <ListItemIcon sx={{ color: 'inherit' }}>
             <Trash size={14} />
           </ListItemIcon>
-          <ListItemText>Delete node</ListItemText>
+          <ListItemText>{t('nodes-delete-context-menu')}</ListItemText>
         </MenuItem>
       )}
       {!readOnly &&
@@ -117,20 +119,20 @@ export default function NodeGraphContextMenu({
             <ListItemIcon>
               <PlusSquare size={14} />
             </ListItemIcon>
-            <ListItemText>New node</ListItemText>
+            <ListItemText>{t('nodes-new-node')}</ListItemText>
           </MenuItem>,
           <MenuItem key="new-action" onClick={() => handleNewNode('action')}>
             <ListItemIcon>
               <Lightning size={14} />
             </ListItemIcon>
-            <ListItemText>New action</ListItemText>
+            <ListItemText>{t('nodes-new-action')}</ListItemText>
           </MenuItem>,
         ]}
       {readOnly && (state?.kind === 'node' || state?.kind === 'pane') && (
         <MenuItem disabled>
           <ListItemText
-            primary="Read-only"
-            secondary="Switch to Draft to edit."
+            primary={t('nodes-read-only')}
+            secondary={t('nodes-read-only-short-desc')}
             slotProps={{
               primary: { sx: { fontSize: 12 } },
               secondary: { sx: { fontSize: 11 } },
