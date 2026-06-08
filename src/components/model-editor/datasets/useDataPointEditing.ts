@@ -67,6 +67,12 @@ type Params = {
   /** Staged (uncommitted) new rows from an import or "Add rows"; read by buildGridData. */
   stagedRows: StagedRow[];
   setStagedRows: Dispatch<SetStateAction<StagedRow[]>>;
+  /** Committed rows marked for deletion (by row id); their data points are deleted on Save. */
+  stagedDeletedRowIds: Set<string>;
+  setStagedDeletedRowIds: Dispatch<SetStateAction<Set<string>>>;
+  /** Committed year columns marked for deletion; their data points are deleted on Save. */
+  stagedDeletedYears: Set<number>;
+  setStagedDeletedYears: Dispatch<SetStateAction<Set<number>>>;
   /** Refetch the dataset; awaited by `handleSave` before clearing successes. */
   onMutated: () => void | Promise<unknown>;
   /** Clear the grid's cell/row/column selection after a destructive op. */
@@ -94,6 +100,10 @@ export function useDataPointEditing({
   setStagedCategories,
   stagedRows,
   setStagedRows,
+  stagedDeletedRowIds,
+  setStagedDeletedRowIds,
+  stagedDeletedYears,
+  setStagedDeletedYears,
   onMutated,
   onClearSelection,
 }: Params) {
@@ -103,13 +113,12 @@ export function useDataPointEditing({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveProgress, setSaveProgress] = useState<AddProgress | null>(null);
-  const [deleteProgress, setDeleteProgress] = useState<AddProgress | null>(null);
   const [addRowsOpen, setAddRowsOpen] = useState(false);
   const [addYearsOpen, setAddYearsOpen] = useState(false);
 
-  // True whenever a server operation is running. Adding rows/years is now a
-  // local staging op (committed via Save), so only saving and deletes count.
-  const isMutating = saving || deleteProgress !== null;
+  // Adding and deleting rows/years are now local staging ops (committed via
+  // Save), so the only server work is the save itself.
+  const isMutating = saving;
 
   const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
     CREATE_DATA_POINT
@@ -170,105 +179,51 @@ export function useDataPointEditing({
   );
 
   const handleDeleteRows = useCallback(
-    async (rowsToDelete: GridRow[]) => {
+    (rowsToDelete: GridRow[]) => {
       if (rowsToDelete.length === 0) return;
-      const rowIdPrefixes = rowsToDelete.map((r) => `${r.id}|`);
-      const allIds: string[] = [];
-      for (const row of rowsToDelete) {
-        for (const c of Object.values(row.cells)) {
-          if (c.type === 'Value' && c.dataPointId !== null) allIds.push(c.dataPointId);
-        }
+      const ids = rowsToDelete.map((r) => r.id);
+      const stagedRowKeys = new Set(stagedRows.map((r) => rowKey(r.metricId, r.categoryByDim)));
+      // Staged (uncommitted) rows just vanish — there's nothing on the server to
+      // delete. Committed rows are marked; their data points are deleted on Save.
+      const stagedToRemove = new Set(ids.filter((id) => stagedRowKeys.has(id)));
+      const committedToDelete = ids.filter((id) => !stagedRowKeys.has(id));
+      if (stagedToRemove.size > 0) {
+        setStagedRows((prev) =>
+          prev.filter((r) => !stagedToRemove.has(rowKey(r.metricId, r.categoryByDim)))
+        );
       }
-
-      // Drop any pending edits on the affected rows — they refer to rows
-      // that no longer exist after the delete. Deferred until after mutations
-      // succeed so a failed delete doesn't silently discard unsaved edits on
-      // rows that still exist.
-      const dropPending = () => {
-        setPendingEdits((prev) => {
-          if (prev.size === 0) return prev;
-          const next = new Map(prev);
-          for (const key of next.keys()) {
-            if (rowIdPrefixes.some((p) => key.startsWith(p))) next.delete(key);
-          }
+      if (committedToDelete.length > 0) {
+        setStagedDeletedRowIds((prev) => {
+          const next = new Set(prev);
+          for (const id of committedToDelete) next.add(id);
           return next;
         });
-      };
-
-      if (allIds.length === 0) {
-        // Phantom rows — no DataPoints exist yet (only pending edits).
-        dropPending();
-        onClearSelection();
-        return;
       }
-
-      setDeleteProgress({ current: 0, total: allIds.length });
-      let firstError: string | null = null;
-      for (const id of allIds) {
-        try {
-          const result = await deleteDataPoint({
-            variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
-          });
-          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
-          if (msgs.length > 0) {
-            firstError ??= msgs.map((m) => m.message).join('; ');
-            break;
-          }
-        } catch (err) {
-          firstError ??= err instanceof Error ? err.message : String(err);
-          break;
+      // Drop pending edits on the affected rows — moot once the row is going
+      // away (or already gone). Discard restores committed state.
+      const prefixes = ids.map((id) => `${id}|`);
+      setPendingEdits((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Map(prev);
+        for (const key of next.keys()) {
+          if (prefixes.some((p) => key.startsWith(p))) next.delete(key);
         }
-        setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
-      }
-
+        return next;
+      });
       onClearSelection();
-      setDeleteProgress(null);
-      if (firstError) {
-        setError(firstError);
-      } else {
-        dropPending();
-      }
-      void onMutated();
     },
-    [deleteDataPoint, instance.id, dataset.id, onMutated, setPendingEdits, onClearSelection]
+    [stagedRows, setStagedRows, setStagedDeletedRowIds, setPendingEdits, onClearSelection]
   );
 
   const handleDeleteYears = useCallback(
-    async (yearsToDelete: number[]) => {
+    (yearsToDelete: number[]) => {
       if (yearsToDelete.length === 0) return;
-      const colIds = yearsToDelete.map((y) => yearColId(y));
-      const colIdSuffixes = colIds.map((c) => `|${c}`);
+      const committedYears = new Set(dataset.dataPoints.map((dp) => extractYear(dp.date)));
+      const colIdSuffixes = yearsToDelete.map((y) => `|${yearColId(y)}`);
 
-      // Iterate baseRows, not the filtered `rows`: deleting a year must remove
-      // its data points across every row, including ones hidden by a filter.
-      const ids: string[] = [];
-      for (const row of baseRows) {
-        for (const colId of colIds) {
-          const cell = row.cells[colId];
-          if (cell?.type === 'Value' && cell.dataPointId !== null) ids.push(cell.dataPointId);
-        }
-      }
-
-      // Drop pending edits in the affected columns. pendingKey is
-      // `${rowId}|${colId}`; rowId can contain `|` itself but never ends with
-      // `|col_year_NNNN`, so suffix-match is unambiguous. Deferred until after
-      // mutations succeed so a failure doesn't silently discard unsaved edits.
-      const dropPendingForYears = () => {
-        setPendingEdits((prev) => {
-          if (prev.size === 0) return prev;
-          const next = new Map(prev);
-          for (const key of next.keys()) {
-            if (colIdSuffixes.some((s) => key.endsWith(s))) next.delete(key);
-          }
-          return next;
-        });
-      };
-
-      // Remove from extraYears regardless of whether DataPoints exist — the
-      // user's intent is to remove the columns. Safe to do optimistically:
-      // for purely ephemeral years there are no mutations to fail; for years
-      // backed by real DataPoints, a failed delete will reintroduce the
-      // column via dataset.dataPoints after refetch.
+      // Added (uncommitted) columns just vanish; committed years are marked so
+      // their data points are deleted on Save (a column with committed data also
+      // present in extraYears is removed from both so it can't linger empty).
       setExtraYears((prev) => {
         if (prev.size === 0) return prev;
         const next = new Set(prev);
@@ -278,54 +233,28 @@ export function useDataPointEditing({
         }
         return changed ? next : prev;
       });
-
-      // Clear the column selection — the columns are gone.
-      onClearSelection();
-
-      if (ids.length === 0) {
-        // Phantom columns (extraYears only): no mutations can fail, so it's
-        // safe to drop pending edits in those columns now.
-        dropPendingForYears();
-        return;
+      const committedToDelete = yearsToDelete.filter((y) => committedYears.has(y));
+      if (committedToDelete.length > 0) {
+        setStagedDeletedYears((prev) => {
+          const next = new Set(prev);
+          for (const y of committedToDelete) next.add(y);
+          return next;
+        });
       }
-
-      setDeleteProgress({ current: 0, total: ids.length });
-      let firstError: string | null = null;
-      for (const id of ids) {
-        try {
-          const result = await deleteDataPoint({
-            variables: { instanceId: instance.id, datasetId: dataset.id, dataPointId: id },
-          });
-          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
-          if (msgs.length > 0) {
-            firstError ??= msgs.map((m) => m.message).join('; ');
-            break;
-          }
-        } catch (err) {
-          firstError ??= err instanceof Error ? err.message : String(err);
-          break;
+      // Drop pending edits in the affected columns (moot). `pendingKey` is
+      // `${rowId}|${colId}`; rowId never ends with `|col_year_NNNN`, so the
+      // suffix match is unambiguous.
+      setPendingEdits((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Map(prev);
+        for (const key of next.keys()) {
+          if (colIdSuffixes.some((s) => key.endsWith(s))) next.delete(key);
         }
-        setDeleteProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
-      }
-
-      setDeleteProgress(null);
-      if (firstError) {
-        setError(firstError);
-      } else {
-        dropPendingForYears();
-      }
-      void onMutated();
+        return next;
+      });
+      onClearSelection();
     },
-    [
-      deleteDataPoint,
-      instance.id,
-      dataset.id,
-      baseRows,
-      onMutated,
-      setPendingEdits,
-      setExtraYears,
-      onClearSelection,
-    ]
+    [dataset.dataPoints, setExtraYears, setStagedDeletedYears, setPendingEdits, onClearSelection]
   );
 
   const handleAddYears = useCallback(
@@ -386,13 +315,23 @@ export function useDataPointEditing({
 
   const handleDiscard = useCallback(() => {
     setPendingEdits(new Map());
-    // Drop all uncommitted staging: imported/added categories and rows, plus
-    // added year columns. Committed years stay (they're backed by data points,
-    // not by `extraYears`), so clearing the set only removes preview-only ones.
+    // Drop all uncommitted staging: imported/added categories and rows, added
+    // year columns, and rows/years marked for deletion. Committed years stay
+    // (they're backed by data points, not `extraYears`), so clearing the set
+    // only removes preview-only ones.
     setStagedCategories([]);
     setStagedRows([]);
     setExtraYears(new Set());
-  }, [setPendingEdits, setStagedCategories, setStagedRows, setExtraYears]);
+    setStagedDeletedRowIds(new Set());
+    setStagedDeletedYears(new Set());
+  }, [
+    setPendingEdits,
+    setStagedCategories,
+    setStagedRows,
+    setExtraYears,
+    setStagedDeletedRowIds,
+    setStagedDeletedYears,
+  ]);
 
   // Merge an import's result into the grid's staged state: new categories /
   // rows render immediately and the values show as pending edits, so the user
@@ -437,9 +376,16 @@ export function useDataPointEditing({
     // (added / imported columns) is uncommitted and may need an anchor.
     const committedYears = new Set(dataset.dataPoints.map((dp) => extractYear(dp.date)));
     const hasUncommittedYears = years.some((y) => !committedYears.has(y));
-    // Run when there's anything to commit: value edits, staged rows, or added
-    // year columns (the latter two persist via anchors even with no values).
-    if (pendingEdits.size === 0 && stagedRows.length === 0 && !hasUncommittedYears) return;
+    // Run when there's anything to commit: value edits, staged rows, added year
+    // columns (persisted via anchors), or rows/years marked for deletion.
+    if (
+      pendingEdits.size === 0 &&
+      stagedRows.length === 0 &&
+      !hasUncommittedYears &&
+      stagedDeletedRowIds.size === 0 &&
+      stagedDeletedYears.size === 0
+    )
+      return;
     setSaving(true);
 
     const baseVars = { instanceId: instance.id, datasetId: dataset.id };
@@ -494,6 +440,22 @@ export function useDataPointEditing({
       }
     }
 
+    // Data points to delete: every committed point in a row or year column
+    // marked for deletion. Computed from `baseRows` so filter-hidden rows are
+    // covered too.
+    const deletionIds: string[] = [];
+    const deletionSeen = new Set<string>();
+    for (const row of baseRows) {
+      const rowDeleted = stagedDeletedRowIds.has(row.id);
+      for (const cell of Object.values(row.cells)) {
+        if (cell.type !== 'Value' || cell.dataPointId === null) continue;
+        if (!rowDeleted && !stagedDeletedYears.has(cell.year)) continue;
+        if (deletionSeen.has(cell.dataPointId)) continue;
+        deletionSeen.add(cell.dataPointId);
+        deletionIds.push(cell.dataPointId);
+      }
+    }
+
     // Create any staged (import) categories referenced by a staged row before
     // the data-point loop, so the value creates / anchors below can reference
     // real uuids. All-or-nothing: on failure, abort the save and keep everything
@@ -537,7 +499,7 @@ export function useDataPointEditing({
     // Saving is one mutation per data point + per anchor (sequential), so drive
     // a determinate progress bar over the combined total. `tick` no-ops when no
     // progress is shown (nothing to do).
-    const totalOps = queued.length + anchors.length;
+    const totalOps = queued.length + anchors.length + deletionIds.length;
     if (totalOps > 0) setSaveProgress({ current: 0, total: totalOps });
     const tick = () =>
       setSaveProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
@@ -694,6 +656,20 @@ export function useDataPointEditing({
       }
     }
 
+    // Delete the data points of rows / years staged for deletion. Kept staged
+    // (for retry) on failure; cleared on full success in the finally below.
+    let deleteError: string | null = null;
+    for (const id of deletionIds) {
+      tick();
+      try {
+        const r = await deleteDataPoint({ variables: { ...baseVars, dataPointId: id } });
+        const msgs = r.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
+        if (msgs.length > 0) deleteError ??= msgs.map((m) => m.message).join('; ');
+      } catch (err) {
+        deleteError ??= err instanceof Error ? err.message : String(err);
+      }
+    }
+
     // Wait for the parent to refetch the dataset (so the Apollo cache holds
     // the freshly-saved values) before dropping the pending entries. Then
     // commit successes and failures in a single state update — the cell
@@ -724,6 +700,12 @@ export function useDataPointEditing({
       setStagedRows((prev) =>
         prev.filter((r) => keptRowIds.has(rowKey(r.metricId, r.categoryByDim)))
       );
+      // Clear the deletion marks only when every delete succeeded; otherwise
+      // keep them so the still-present rows/years stay marked for a retry.
+      if (deleteError === null) {
+        setStagedDeletedRowIds(new Set());
+        setStagedDeletedYears(new Set());
+      }
       setSaveProgress(null);
       setSaving(false);
     }
@@ -734,6 +716,8 @@ export function useDataPointEditing({
         unexpected ??
           `Saved with ${failureCount} error${failureCount === 1 ? '' : 's'}. Hover failed cells for details.`
       );
+    } else if (deleteError !== null) {
+      setError(`Saved, but some rows/years couldn't be deleted: ${deleteError}`);
     } else if (anchorError !== null) {
       setError(`Saved, but some added rows/years couldn't be persisted: ${anchorError}`);
     } else if (refetchError !== null) {
@@ -749,6 +733,8 @@ export function useDataPointEditing({
     years,
     stagedCategories,
     stagedRows,
+    stagedDeletedRowIds,
+    stagedDeletedYears,
     createDataPoint,
     updateDataPoint,
     deleteDataPoint,
@@ -757,6 +743,8 @@ export function useDataPointEditing({
     setPendingEdits,
     setStagedCategories,
     setStagedRows,
+    setStagedDeletedRowIds,
+    setStagedDeletedYears,
   ]);
 
   return useMemo(
@@ -766,7 +754,6 @@ export function useDataPointEditing({
       error,
       setError,
       saveProgress,
-      deleteProgress,
       isMutating,
       // add-modal state
       addRowsOpen,
@@ -790,7 +777,6 @@ export function useDataPointEditing({
       saving,
       error,
       saveProgress,
-      deleteProgress,
       isMutating,
       addRowsOpen,
       addYearsOpen,

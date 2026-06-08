@@ -26,6 +26,7 @@ import { CellContextMenu, ColumnFilterMenu } from './DatasetDataGridMenus';
 import { DatasetDataGridProgressOverlay } from './DatasetDataGridProgressOverlay';
 import { DatasetDataGridToolbar } from './DatasetDataGridToolbar';
 import {
+  DELETED_BG,
   DIM_COL_PREFIX,
   DIRTY_BG,
   EMPTY_SELECTION,
@@ -115,6 +116,10 @@ export default function DatasetDataGrid({
   // owned here because buildGridData reads them; written by `useDataPointEditing`.
   const [stagedCategories, setStagedCategories] = useState<StagedCategory[]>([]);
   const [stagedRows, setStagedRows] = useState<StagedRow[]>([]);
+  // Committed rows / year columns marked for deletion; their data points are
+  // removed on Save. Rendered with the deleted tint until then.
+  const [stagedDeletedRowIds, setStagedDeletedRowIds] = useState<Set<string>>(() => new Set());
+  const [stagedDeletedYears, setStagedDeletedYears] = useState<Set<number>>(() => new Set());
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
   // Measured width of the grid wrapper. Drives how many columns we can freeze
   // without squeezing the year columns off-screen (see freezeColumns).
@@ -282,6 +287,10 @@ export default function DatasetDataGrid({
     setStagedCategories,
     stagedRows,
     setStagedRows,
+    stagedDeletedRowIds,
+    setStagedDeletedRowIds,
+    stagedDeletedYears,
+    setStagedDeletedYears,
     onMutated,
     onClearSelection,
   });
@@ -393,26 +402,33 @@ export default function DatasetDataGrid({
       }
       // A cell belongs to staged (uncommitted) structure when its row was added
       // but isn't backed by data yet, or its year column is newly added. Tint
-      // those like dirty cells so added rows/years read as "unsaved".
+      // those like dirty cells so added rows/years read as "unsaved". Rows /
+      // years marked for deletion get a red tint and are read-only.
       const isStagedRow = stagedRowIds.has(gridRow.id);
+      const isDeletedRow = stagedDeletedRowIds.has(gridRow.id);
       if (isYearColId(colId)) {
         const committed = gridRow.cells[colId];
         const baseValue = committed?.type === 'Value' ? committed.value : null;
         const pending = pendingEdits.get(pendingKey(gridRow.id, colId));
         const value = pending ? pending.nextValue : baseValue;
-        const isStagedYear = uncommittedYears.has(yearFromColId(colId) ?? -1);
-        // Pending edits win; otherwise staged rows/years get the dirty tint too.
-        const themeOverride = pending
-          ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG }
-          : isStagedRow || isStagedYear
-            ? { bgCell: DIRTY_BG }
-            : undefined;
+        const year = yearFromColId(colId) ?? -1;
+        const isDeleted = isDeletedRow || stagedDeletedYears.has(year);
+        const isStagedYear = uncommittedYears.has(year);
+        // Deletion wins; then pending edits; then staged-add tint.
+        const themeOverride = isDeleted
+          ? { bgCell: DELETED_BG }
+          : pending
+            ? { bgCell: pending.error ? ERROR_BG : DIRTY_BG }
+            : isStagedRow || isStagedYear
+              ? { bgCell: DIRTY_BG }
+              : undefined;
         return {
           kind: GridCellKind.Number,
           data: value ?? undefined,
           displayData: formatNumber(value),
-          allowOverlay: true,
-          readonly: false,
+          allowOverlay: !isDeleted,
+          // Don't let the user edit a cell that's about to be deleted.
+          readonly: isDeleted,
           contentAlign: 'right',
           themeOverride,
         };
@@ -432,11 +448,22 @@ export default function DatasetDataGrid({
         displayData: label,
         allowOverlay: false,
         readonly: true,
-        // Staged rows tint their label cells too, so the whole row reads as new.
-        themeOverride: { bgCell: isStagedRow ? DIRTY_BG : LABEL_COL_BG },
+        // Deleted rows tint red; staged rows tint dirty — both span the whole
+        // row (label cells included) so the row reads as deleted / new.
+        themeOverride: {
+          bgCell: isDeletedRow ? DELETED_BG : isStagedRow ? DIRTY_BG : LABEL_COL_BG,
+        },
       };
     },
-    [columnIds, rows, pendingEdits, stagedRowIds, uncommittedYears]
+    [
+      columnIds,
+      rows,
+      pendingEdits,
+      stagedRowIds,
+      uncommittedYears,
+      stagedDeletedRowIds,
+      stagedDeletedYears,
+    ]
   );
 
   const onCellContextMenu = useCallback<NonNullable<DataEditorProps['onCellContextMenu']>>(
@@ -791,7 +818,12 @@ export default function DatasetDataGrid({
   // "Unsaved changes" spans value edits plus staged structure (added/imported
   // rows and added year columns not yet backed by data). Without this, adding
   // an empty row/year wouldn't enable Save / Discard.
-  const pendingCount = pendingEdits.size + stagedRows.length + uncommittedYears.size;
+  const pendingCount =
+    pendingEdits.size +
+    stagedRows.length +
+    uncommittedYears.size +
+    stagedDeletedRowIds.size +
+    stagedDeletedYears.size;
   const hasPending = pendingCount > 0;
   const selectedRowCount = gridSelection.rows.length;
 
@@ -885,10 +917,7 @@ export default function DatasetDataGrid({
             }}
           />
         )}
-        <DatasetDataGridProgressOverlay
-          deleteProgress={editing.deleteProgress}
-          saveProgress={editing.saveProgress}
-        />
+        <DatasetDataGridProgressOverlay saveProgress={editing.saveProgress} />
       </Box>
       <CellContextMenu
         contextMenu={contextMenu}

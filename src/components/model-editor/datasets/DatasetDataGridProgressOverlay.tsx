@@ -5,19 +5,17 @@ import { useTranslations } from 'next-intl';
 import type { AddProgress } from './AddRowsModal';
 
 type Props = {
-  deleteProgress: AddProgress | null;
   saveProgress: AddProgress | null;
 };
 
-export function DatasetDataGridProgressOverlay({ deleteProgress, saveProgress }: Props) {
+export function DatasetDataGridProgressOverlay({ saveProgress }: Props) {
   const t = useTranslations('model-editor');
-  const active = deleteProgress ?? saveProgress;
-  if (active === null) return null;
-  const progress = active;
-  const label =
-    deleteProgress !== null
-      ? t('datasets-deleting-progress', { current: active.current, total: active.total })
-      : t('datasets-saving-progress', { current: active.current, total: active.total });
+  if (saveProgress === null) return null;
+  const progress = saveProgress;
+  const label = t('datasets-saving-progress', {
+    current: saveProgress.current,
+    total: saveProgress.total,
+  });
 
   return (
     <Box
