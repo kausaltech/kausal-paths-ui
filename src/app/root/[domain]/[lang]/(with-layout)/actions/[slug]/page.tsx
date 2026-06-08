@@ -241,9 +241,6 @@ export default function ActionPage() {
 
   return (
     <>
-      <title>
-        {site.title} | {action.name}
-      </title>
       <HeaderSection>
         <Container fixed maxWidth="xl">
           <PageHeader>

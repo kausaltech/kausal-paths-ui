@@ -97,7 +97,6 @@ export default function PathsError({ statusCode, title: titleProp, err }: PathsE
   if (!theme) {
     return (
       <>
-        <title>{title}</title>
         <main id="container">
           <div id="card">
             <h1>{title}</h1>
