@@ -23,7 +23,7 @@ import type {
   InstanceGoalOutcomeQueryVariables,
 } from '@/common/__generated__/graphql';
 import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/common/cache';
-import { useTranslation } from '@/common/i18n';
+import { useTranslations } from '@/common/i18n';
 import { useFeatures, useInstance } from '@/common/instance';
 import InlineError from '@/components/common/InlineError';
 import { useSiteWithSetter } from '@/context/site';
@@ -131,7 +131,7 @@ const ScenarioPanel = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isPanelFixed, isPanelMini, initialHeight } = useIsPanelStuck(containerRef);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { t } = useTranslation();
+  const t = useTranslations('common');
   const [site] = useSiteWithSetter();
   const instance = useInstance();
   const editBtnRef = useRef<HTMLButtonElement>(null);
