@@ -3,5 +3,6 @@
   "not-found-intro": "404 Sivua ei löydy.",
   "generic-title": "Virhe tapahtui",
   "instance-protected": "Sivusto ei ole julkinen tällä hetkellä.",
-  "download-error": "Lataus epäonnistui. Yritä uudelleen myöhemmin."
+  "download-error": "Lataus epäonnistui. Yritä uudelleen myöhemmin.",
+  "error-details": "Virheen tiedot"
 }

@@ -7,5 +7,6 @@
   "not-found-intro": "404 Ikke fundet.",
   "network-error": "Netværksfejl",
   "instance-protected": "Siden er ikke offentlig på nuværende tidspunkt.",
-  "download-error": "Download mislykkedes. Prøv igen senere."
+  "download-error": "Download mislykkedes. Prøv igen senere.",
+  "error-details": "Fejldetaljer"
 }

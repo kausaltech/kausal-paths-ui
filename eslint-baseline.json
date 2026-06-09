@@ -198,9 +198,6 @@
     }
   },
   "src/components/pages/OutcomePage.tsx": {
-    "@typescript-eslint/only-throw-error": {
-      "count": 1
-    },
     "no-extra-boolean-cast": {
       "count": 1
     }

@@ -15,6 +15,7 @@ import { gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { Sliders } from 'react-bootstrap-icons';
 
+import { logApolloError } from '@common/logging/apollo';
 import { useTheme } from '@common/themes';
 
 import type {
@@ -24,6 +25,7 @@ import type {
 import { activeGoalVar, scenarioEditorDrawerOpenVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useFeatures, useInstance } from '@/common/instance';
+import InlineError from '@/components/common/InlineError';
 import { useSiteWithSetter } from '@/context/site';
 import GoalSelector from '../general/GoalSelector';
 import NormalizationWidget from '../general/NormalizationWidget';
@@ -154,11 +156,15 @@ const ScenarioPanel = () => {
       variables: {
         goal: activeGoal?.id ?? '',
       },
+      errorPolicy: 'all',
     }
   );
 
+  if (error) {
+    logApolloError(error, { component: 'ScenarioPanel' });
+  }
+
   // if (loading) return <Skeleton variant="text" width={100} height={24} />;
-  if (error) return <div>error!</div>;
   if (hideNodeDetails) return null;
 
   const minYear = site.minYear;
@@ -223,6 +229,11 @@ const ScenarioPanel = () => {
               </Typography>
             </Collapse>
             <Grid container spacing={2} sx={{ alignItems: 'flex-end' }}>
+              {error && (
+                <Grid size={{ xs: 12 }}>
+                  <InlineError error={error} />
+                </Grid>
+              )}
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                   <ScenarioSelector testId="scenario-panel" />

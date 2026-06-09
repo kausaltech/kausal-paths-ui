@@ -4,7 +4,6 @@ import { Box, Container, useTheme } from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 
-import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
 
@@ -15,8 +14,8 @@ import type {
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
+import InlineError from '@/components/common/InlineError';
 import { PageHero } from '@/components/common/PageHero';
-import Error from '@/components/common/PathsError';
 import GET_OUTCOME_NODE from '@/queries/getOutcomeNode';
 import OutcomeBlock from '../general/OutcomeBlock';
 import ScenarioPanel from '../scenario/ScenarioPanel';
@@ -76,6 +75,7 @@ export default function OutcomePage(props: OutcomePageProps) {
       componentName: 'Page',
     },
     fetchPolicy: 'cache-and-network',
+    errorPolicy: 'all',
     notifyOnNetworkStatusChange: true,
   });
   const { loading, error, previousData } = queryResp;
@@ -83,11 +83,6 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   if (error) {
     logApolloError(error, { component: 'OutcomePage' });
-    if (isLocalDev) {
-      throw error;
-    } else {
-      return <Error statusCode={500} />;
-    }
   }
 
   const outcomeNode = data && data.node;
@@ -105,11 +100,14 @@ export default function OutcomePage(props: OutcomePageProps) {
       <Container fixed maxWidth="xl" sx={{ py: 1 }}>
         <Box my={3}>
           <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
-          <OutcomeBlock
-            loading={loading}
-            outcomeNode={outcomeNode}
-            activeScenario={activeScenario}
-          />
+          {error && <InlineError error={error} />}
+          {(!error || outcomeNode) && (
+            <OutcomeBlock
+              loading={loading}
+              outcomeNode={outcomeNode}
+              activeScenario={activeScenario}
+            />
+          )}
         </Box>
       </Container>
     </Box>
