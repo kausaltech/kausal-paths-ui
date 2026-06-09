@@ -16,7 +16,7 @@ import {
   type Rectangle,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
@@ -102,6 +102,7 @@ export default function DatasetDataGrid({
   // collate by the content locale (the `[lang]` URL segment) rather than the
   // UI language — revisit once content-language sorting is needed.
   const locale = useLocale();
+  const t = useTranslations('model-editor');
   const collator = useMemo(
     () => new Intl.Collator(locale, { numeric: true, sensitivity: 'variant' }),
     [locale]
@@ -330,7 +331,7 @@ export default function DatasetDataGrid({
         // The metric column and dimension columns can be sorted and filtered.
         const isFilterable = isDim || isMetric;
         if (isMetric) {
-          title = 'Metric';
+          title = t('datasets-metric');
         } else if (isDim) {
           const dim = dataset.dimensions.find((d) => dimColId(d.id) === id);
           title = dim?.name ?? '';
@@ -355,7 +356,7 @@ export default function DatasetDataGrid({
           ...(isFilterable ? { hasMenu: true, menuIcon: GridColumnMenuIcon.Dots } : {}),
         };
       }),
-    [columnIds, dataset.dimensions, colWidths, colSort, categoryFilters]
+    [columnIds, dataset.dimensions, colWidths, colSort, categoryFilters, t]
   );
 
   // Pin dim columns + the Metric column so they stay visible while year
