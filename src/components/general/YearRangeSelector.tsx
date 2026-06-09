@@ -67,6 +67,12 @@ interface YearRangeSelectorProps {
   maxYear: number;
   maxHistoricalYear?: number | null;
   yearsWithGoals?: number[];
+  /**
+   * Optional baseline/reference year that may sit before the continuous
+   * historical data (a gap year). When set and outside the normal range, it is
+   * offered as a separate section in the start-year dropdown.
+   */
+  referenceYear?: number | null;
 }
 
 /*
@@ -76,7 +82,7 @@ Mark the years with goals with a dot.
 */
 
 const YearRangeSelector = (props: YearRangeSelectorProps) => {
-  const { minYear, maxYear, maxHistoricalYear, yearsWithGoals } = props;
+  const { minYear, maxYear, maxHistoricalYear, yearsWithGoals, referenceYear } = props;
 
   const { t } = useTranslation();
   // State of display settings
@@ -91,9 +97,17 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
     [minYear, yearRange, maxHistoricalYear]
   );
   const availableTargetYears = useMemo(
-    () => availableYears(yearRange[0] + 1, maxYear, maxHistoricalYear),
-    [yearRange, maxYear, maxHistoricalYear]
+    // Never offer years from the reference-year gap (before minYear) as targets
+    () => availableYears(Math.max(yearRange[0] + 1, minYear), maxYear, maxHistoricalYear),
+    [yearRange, minYear, maxYear, maxHistoricalYear]
   );
+
+  // Only show the reference year as a separate section when it falls outside the
+  // normal range (the gap scenario); otherwise it already appears as a normal year.
+  const referenceYearOption =
+    referenceYear != null && !availableReferenceYears.all.includes(referenceYear)
+      ? referenceYear
+      : null;
 
   const YearOption = (year: number) => {
     if (yearsWithGoals?.includes(year)) {
@@ -125,6 +139,9 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
             id: 'reference-year',
           }}
         >
+          {referenceYearOption != null && (
+            <optgroup label={t('plot-baseline')}>{YearOption(referenceYearOption)}</optgroup>
+          )}
           {availableReferenceYears.historical && availableReferenceYears.historical.length > 0 && (
             <optgroup label={t('table-historical')}>
               {availableReferenceYears.historical.map((year) => YearOption(year))}
