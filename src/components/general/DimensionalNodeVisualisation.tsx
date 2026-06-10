@@ -18,6 +18,7 @@ import { kebabCase } from 'lodash-es';
 import { FiletypeCsv, FiletypePng, FiletypeXls, ThreeDotsVertical } from 'react-bootstrap-icons';
 
 import { type ChartHandle } from '@common/components/Chart';
+import NodeGraph, { type NodeGraphLabels } from '@common/components/paths/NodeGraph';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
@@ -26,6 +27,7 @@ import { activeGoalVar } from '@/common/cache';
 import { genColorsFromTheme, setUniqueColors } from '@/common/colors';
 import { type TFunction, useTranslations } from '@/common/i18n';
 import { type InstanceContextType, useInstance } from '@/common/instance';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import SelectDropdown from '@/components/common/SelectDropdown';
 import { useSiteWithSetter } from '@/context/site';
 import {
@@ -39,7 +41,6 @@ import {
   getProgressTrackingScenario,
   metricHasProgressTrackingScenario,
 } from '@/utils/progress-tracking';
-import NodeGraph from './NodeGraph';
 
 const Tools = styled.div`
   position: absolute;
@@ -268,6 +269,8 @@ export default function DimensionalNodeVisualisation({
   const theme = useTheme();
   const [site] = useSiteWithSetter();
   const instance = useInstance();
+  const formatValue = useNumberFormatter();
+  const formatAxisValue = useAxisLabelFormatter();
   const scenarios = site?.scenarios ?? [];
   const hasProgressTracking = metricHasProgressTrackingScenario(metric, scenarios);
   const metrics = useMemo(() => {
@@ -561,6 +564,22 @@ export default function DimensionalNodeVisualisation({
   const chartTitle =
     `${title}` + (subtitle && activeDimensionLabel ? `: ${activeDimensionLabel}` : '');
 
+  // Naughtily use showRefreshPrompt to determine if this is a NZP instance
+  const predictionLabel = instance.features.showRefreshPrompt
+    ? t('common.planned')
+    : t('common.pred');
+  // The common NodeGraph reads bare keys against a flat message namespace; this
+  // app's messages are namespaced, so inject the already-translated strings.
+  const labels: NodeGraphLabels = {
+    total: t('common.plot-total'),
+    goal: t('common.target'),
+    baseline: t('common.plot-baseline'),
+    progress: t('common.calculated-emissions'),
+    measured: t('common.plot-measured'),
+    comparisonYear: t('common.comparison-year'),
+    forecast: t('common.table-scenario-forecast'),
+  };
+
   return (
     <>
       {controls}
@@ -573,10 +592,19 @@ export default function DimensionalNodeVisualisation({
           baselineTable={baselineTable}
           progressTable={progressTable}
           totalTable={totalTable}
-          unit={getLongUnit(metrics.default, metric.unit.htmlShort, t)}
+          unit={{
+            htmlLong: getLongUnit(metrics.default, metric.unit.htmlShort, t),
+            htmlShort: metric.unit.htmlShort,
+          }}
           referenceYear={referenceYear}
           forecastRange={visibleForecastRange}
           categoryColors={categoryColors}
+          theme={theme}
+          formatValue={formatValue}
+          formatAxisValue={formatAxisValue}
+          maximumFractionDigits={instance.features?.maximumFractionDigits ?? undefined}
+          predictionLabel={predictionLabel}
+          labels={labels}
           baselineLabel={site?.baselineName}
           showTotalLine={hasNegativeValues && metric.stackable && dataCategories.length > 1}
           onClickMeasuredEmissions={onClickMeasuredEmissions}
