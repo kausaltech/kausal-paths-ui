@@ -1,5 +1,7 @@
 import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
+
 import type { DatasetDetailFieldsFragment } from '@/common/__generated__/graphql';
 
 export const NOT_APPLICABLE = 'NOT_APPLICABLE';
@@ -56,8 +58,9 @@ export function DimensionCategoryList({
   selectedCategories,
   withNotApplicable = false,
 }: Props) {
+  const t = useTranslations('model-editor');
   const isMetric = metrics !== undefined;
-  const name = isMetric ? 'Metric' : dimension.name;
+  const name = isMetric ? t('datasets-metric') : dimension.name;
   const items: Array<Metric | DimensionCategory> = isMetric ? metrics : dimension.categories;
   const isNASelected = selectedCategories.includes(NOT_APPLICABLE);
 
@@ -106,13 +109,13 @@ export function DimensionCategoryList({
           display: withNotApplicable ? 'none' : 'block',
         }}
       >
-        <Chip aria-hidden="true" disabled label="Not applicable" />
+        <Chip aria-hidden="true" disabled label={t('datasets-not-applicable')} />
       </Box>
 
       {withNotApplicable && (
         <Box sx={{ pr: HORIZONTAL_CHIP_SPACING }}>
           <Chip
-            label="Not applicable"
+            label={t('datasets-not-applicable')}
             onClick={() => onSelect(NOT_APPLICABLE)}
             color={isNASelected ? 'warning' : 'default'}
           />

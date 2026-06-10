@@ -1,45 +1,36 @@
-'use client';
-
 import type { ReactNode } from 'react';
+import { cookies } from 'next/headers';
 
-import { Box, ScopedCssBaseline } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
+import { NextIntlClientProvider } from 'next-intl';
 
-import '@fontsource-variable/inter';
-
-import EditorAccessGate from '@/components/model-editor/EditorAccessGate';
-import ModelEditorNav from '@/components/model-editor/ModelEditorNav';
-import StaleVersionNotice from '@/components/model-editor/StaleVersionNotice';
-import UserNav from '@/components/model-editor/UserNav';
-import { createEditorTheme } from '@/components/model-editor/theme';
+import { EDITOR_UI_LOCALE_COOKIE, resolveEditorUiLocale } from '@/common/editor-locale';
+import ModelEditorShell from '@/components/model-editor/ModelEditorShell';
+import { importLocales } from '@/config/i18n';
 
 type Props = {
   children: ReactNode;
+  params: Promise<{ domain: string; lang: string }>;
 };
 
-export default function ModelEditorLayout({ children }: Props) {
+/**
+ * Server layout for the model editor. The editor's *interface* language is a
+ * per-user preference held in a cookie, independent of the `[lang]` URL segment
+ * (which keeps driving the *content* language sent to the backend). We resolve
+ * the preferred UI locale here, load its next-intl messages, and override the
+ * locale for the editor subtree with a nested `NextIntlClientProvider` — other
+ * config (timeZone, formats) is inherited from the ancestor provider. Falls
+ * back to the content locale when no preference is set, so behaviour is
+ * unchanged until the user picks an interface language in Settings.
+ */
+export default async function ModelEditorLayout({ children, params }: Props) {
+  const { lang } = await params;
+  const cookieStore = await cookies();
+  const uiLocale = resolveEditorUiLocale(cookieStore.get(EDITOR_UI_LOCALE_COOKIE)?.value, lang);
+  const messages = await importLocales(uiLocale);
+
   return (
-    <ThemeProvider theme={createEditorTheme}>
-      <ScopedCssBaseline
-        sx={{
-          position: 'relative',
-          height: '100dvh',
-          width: '100%',
-          overflow: 'hidden',
-        }}
-      >
-        <EditorAccessGate
-          chrome={
-            <>
-              <ModelEditorNav />
-              <StaleVersionNotice />
-            </>
-          }
-        >
-          <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>{children}</Box>
-        </EditorAccessGate>
-        <UserNav />
-      </ScopedCssBaseline>
-    </ThemeProvider>
+    <NextIntlClientProvider locale={uiLocale} messages={messages}>
+      <ModelEditorShell>{children}</ModelEditorShell>
+    </NextIntlClientProvider>
   );
 }

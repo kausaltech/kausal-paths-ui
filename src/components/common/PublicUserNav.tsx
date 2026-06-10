@@ -122,6 +122,8 @@ export default function PublicUserNav() {
             <Button
               component={Link}
               href="/model"
+              target="_blank"
+              rel="noopener noreferrer"
               size="small"
               variant="text"
               startIcon={<PencilSquare size={12} />}

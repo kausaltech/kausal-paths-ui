@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 
 import type {
   NodeChangeHistoryQuery,
@@ -11,6 +12,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { CollapsibleSection } from './node-details/shared';
 import { NODE_CHANGE_HISTORY } from './queries';
+import { useEditorDateFormat } from './useEditorDateFormat';
 
 type Props = {
   nodeId: string;
@@ -18,53 +20,43 @@ type Props = {
   onToggle: () => void;
 };
 
-const ACTION_LABELS: Record<string, string> = {
-  'node.create': 'Created',
-  'node.update': 'Updated',
-  'node.delete': 'Deleted',
+type ActionLabelKey = 'nodes-history-created' | 'nodes-history-updated' | 'nodes-history-deleted';
+
+const ACTION_LABEL_KEY: Record<string, ActionLabelKey> = {
+  'node.create': 'nodes-history-created',
+  'node.update': 'nodes-history-updated',
+  'node.delete': 'nodes-history-deleted',
 };
 
-// Human-readable field names for snapshot keys that appear in before/after
-// payloads. Unknown keys render as-is.
-const FIELD_LABELS: Record<string, string> = {
-  name: 'name',
-  short_description: 'short name',
-  description: 'description',
-  goal: 'goal',
-  color: 'color',
-  order: 'order',
-  is_visible: 'visibility',
-  is_outcome: 'outcome',
-  indicator_node: 'indicator',
-  spec: 'configuration',
+type FieldLabelKey =
+  | 'nodes-history-field-name'
+  | 'nodes-history-field-short-name'
+  | 'nodes-history-field-description'
+  | 'nodes-history-field-goal'
+  | 'nodes-history-field-color'
+  | 'nodes-history-field-order'
+  | 'nodes-history-field-visibility'
+  | 'nodes-history-field-outcome'
+  | 'nodes-history-field-indicator'
+  | 'nodes-history-field-configuration';
+
+// Translation keys for the snapshot keys that appear in before/after payloads.
+// Unknown keys render as their raw snapshot key.
+const FIELD_LABEL_KEY: Record<string, FieldLabelKey> = {
+  name: 'nodes-history-field-name',
+  short_description: 'nodes-history-field-short-name',
+  description: 'nodes-history-field-description',
+  goal: 'nodes-history-field-goal',
+  color: 'nodes-history-field-color',
+  order: 'nodes-history-field-order',
+  is_visible: 'nodes-history-field-visibility',
+  is_outcome: 'nodes-history-field-outcome',
+  indicator_node: 'nodes-history-field-indicator',
+  spec: 'nodes-history-field-configuration',
 };
 
-function actionLabel(action: string): string {
-  return ACTION_LABELS[action] ?? action;
-}
-
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function formatRelativeTime(iso: string, now: number): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const diffSec = Math.max(0, Math.round((now - d.getTime()) / 1000));
-  if (diffSec < 45) return 'just now';
-  if (diffSec < 60 * 60) {
-    const mins = Math.round(diffSec / 60);
-    return `${mins} min ago`;
-  }
-  if (diffSec < 24 * 60 * 60) {
-    const hours = Math.round(diffSec / 3600);
-    return `${hours} h ago`;
-  }
-  return formatTimestamp(iso);
-}
-
+// Returns the raw snapshot keys that changed; the row maps them to translated
+// labels (FIELD_LABEL_KEY) at render time, falling back to the raw key.
 function computeChangedFields(before: unknown, after: unknown): string[] {
   const b = (before ?? {}) as Record<string, unknown>;
   const a = (after ?? {}) as Record<string, unknown>;
@@ -74,15 +66,18 @@ function computeChangedFields(before: unknown, after: unknown): string[] {
   const changed: string[] = [];
   for (const key of keys) {
     if (JSON.stringify(b[key]) !== JSON.stringify(a[key])) {
-      changed.push(FIELD_LABELS[key] ?? key);
+      changed.push(key);
     }
   }
   return changed;
 }
 
 function HistoryRow({ entry, now }: { entry: NodeHistoryEntryFragment; now: number }) {
+  const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const isUpdate = entry.action === 'node.update';
   const changedFields = isUpdate ? computeChangedFields(entry.before, entry.after) : [];
+  const actionKey = ACTION_LABEL_KEY[entry.action];
 
   return (
     <Box
@@ -100,31 +95,35 @@ function HistoryRow({ entry, now }: { entry: NodeHistoryEntryFragment; now: numb
         variant="caption"
         sx={{ fontSize: 11, fontWeight: 600, color: 'text.primary', minWidth: 64 }}
       >
-        {actionLabel(entry.action)}
+        {actionKey ? t(actionKey) : entry.action}
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.25, flex: 1, minWidth: 0 }}>
-        {changedFields.map((label) => (
-          <Chip
-            key={label}
-            label={label}
-            size="small"
-            variant="outlined"
-            sx={{ height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 10 } }}
-          />
-        ))}
+        {changedFields.map((field) => {
+          const fieldKey = FIELD_LABEL_KEY[field];
+          return (
+            <Chip
+              key={field}
+              label={fieldKey ? t(fieldKey) : field}
+              size="small"
+              variant="outlined"
+              sx={{ height: 18, '& .MuiChip-label': { px: 0.75, fontSize: 10 } }}
+            />
+          );
+        })}
       </Box>
       <Typography
         variant="caption"
         sx={{ fontSize: 10, color: 'text.secondary', whiteSpace: 'nowrap' }}
-        title={formatTimestamp(entry.createdAt)}
+        title={df.dateTime(entry.createdAt)}
       >
-        {formatRelativeTime(entry.createdAt, now)}
+        {df.relativeTime(entry.createdAt, now)}
       </Typography>
     </Box>
   );
 }
 
 export default function NodeChangeHistorySection({ nodeId, open, onToggle }: Props) {
+  const t = useTranslations('model-editor');
   const { data, loading } = useQuery<NodeChangeHistoryQuery, NodeChangeHistoryQueryVariables>(
     NODE_CHANGE_HISTORY,
     {
@@ -144,19 +143,19 @@ export default function NodeChangeHistorySection({ nodeId, open, onToggle }: Pro
   // the reference on first render is pure.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(t);
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
   }, []);
 
   return (
-    <CollapsibleSection title="Recent changes" open={open} onToggle={onToggle}>
+    <CollapsibleSection title={t('nodes-recent-changes')} open={open} onToggle={onToggle}>
       {loading && entries.length === 0 ? (
         <Typography variant="caption" color="text.secondary">
-          Loading…
+          {t('common-loading')}
         </Typography>
       ) : entries.length === 0 ? (
         <Typography variant="caption" color="text.secondary">
-          No recorded changes for this node.
+          {t('nodes-no-change-history')}
         </Typography>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>

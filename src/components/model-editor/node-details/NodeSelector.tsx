@@ -1,51 +1,44 @@
 import { Box, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { getNodeSpec } from '../nodeHelpers';
+import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { ConnectedNodeChip, getStyleForNode } from './shared';
-
-type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
-type InputPort = NodeSpec['inputPorts'][number];
-type OutputPort = NodeSpec['outputPorts'][number];
 
 type Props = {
   nodes: readonly EditorNodeFieldsFragment[];
   port: InputPort;
   currentNodeId: string;
+  /** Node ids already bound to this port; excluded from the candidate list. */
+  excludeNodeIds?: ReadonlySet<string>;
   onSelect?: (nodeId: string) => void;
 };
 
-function outputMatches(port: InputPort, output: OutputPort): boolean {
-  if (port.quantity !== output.quantity) return false;
-  for (const req of port.requiredDimensions) {
-    if (!output.dimensions.includes(req)) return false;
-  }
-  if (port.supportedDimensions.length > 0) {
-    for (const d of output.dimensions) {
-      if (!port.supportedDimensions.includes(d)) return false;
-    }
-  }
-  return true;
-}
-
 function nodeMatches(node: EditorNodeFieldsFragment, port: InputPort): boolean {
   const outputs = getNodeSpec(node)?.outputPorts ?? [];
-  return outputs.some((o) => outputMatches(port, o));
+  return outputs.some((o) => outputMatchesPort(port, o));
 }
 
-export default function NodeSelector({ nodes, port, currentNodeId, onSelect }: Props) {
+export default function NodeSelector({
+  nodes,
+  port,
+  currentNodeId,
+  excludeNodeIds,
+  onSelect,
+}: Props) {
+  const t = useTranslations('model-editor');
   const candidates = nodes
-    .filter((n) => n.id !== currentNodeId && nodeMatches(n, port))
+    .filter((n) => n.id !== currentNodeId && !excludeNodeIds?.has(n.id) && nodeMatches(n, port))
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {candidates.length === 0 ? (
         <Typography variant="caption" sx={{ fontSize: 11, color: 'text.secondary', py: 1 }}>
-          No compatible nodes in this model.
+          {t('nodes-no-compatible-nodes')}
         </Typography>
       ) : (
         <OverlayScrollbarsComponent
@@ -73,7 +66,7 @@ export default function NodeSelector({ nodes, port, currentNodeId, onSelect }: P
         </OverlayScrollbarsComponent>
       )}
       <Typography variant="caption" sx={{ fontSize: 10, color: 'text.secondary' }}>
-        {candidates.length} compatible node{candidates.length === 1 ? '' : 's'}
+        {t('nodes-compatible-nodes', { count: candidates.length })}
       </Typography>
     </Box>
   );

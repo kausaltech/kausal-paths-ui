@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
 import { Box, CircularProgress, Drawer, IconButton, Tab, Tabs, Typography } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import { X } from 'react-bootstrap-icons';
 
 import { useSiteWithSetter } from '@/context/site';
@@ -22,6 +23,7 @@ type Props = {
 type ViewMode = 'table' | 'graph';
 
 export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, zIndex }: Props) {
+  const t = useTranslations('model-editor');
   const { portMetrics, loading, fetch } = useNodeMetric(nodeId);
   const [view, setView] = useState<ViewMode>('table');
   const [site] = useSiteWithSetter();
@@ -76,7 +78,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
         }}
       >
         <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600 }}>
-          Output data {nodeName ? `: ${nodeName}` : ''}
+          {t('metric-output-data', { nodeName: nodeName ? `: ${nodeName}` : '' })}
         </Typography>
         <IconButton size="small" onClick={onClose}>
           <X size={20} />
@@ -88,8 +90,8 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
         variant="fullWidth"
         sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0, minHeight: 36 }}
       >
-        <Tab value="table" label="Table" sx={{ minHeight: 36, py: 0.5 }} />
-        <Tab value="graph" label="Graph" sx={{ minHeight: 36, py: 0.5 }} />
+        <Tab value="table" label={t('metric-table')} sx={{ minHeight: 36, py: 0.5 }} />
+        <Tab value="graph" label={t('metric-graph')} sx={{ minHeight: 36, py: 0.5 }} />
       </Tabs>
       <Box sx={{ p: 2, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {loading && portMetrics.length === 0 ? (
@@ -124,7 +126,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
                       </Suspense>
                     ) : (
                       <Typography variant="body2" color="text.secondary">
-                        No data available
+                        {t('metric-no-data')}
                       </Typography>
                     )
                   ) : pm.rawMetric ? (
@@ -137,7 +139,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
                     />
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      No data available
+                      {t('metric-no-data')}
                     </Typography>
                   )}
                 </Box>

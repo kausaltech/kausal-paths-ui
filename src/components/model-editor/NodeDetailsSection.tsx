@@ -20,6 +20,7 @@ import { alpha } from '@mui/material/styles';
 
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { ArrowCounterclockwise, BoxArrowUpRight, X } from 'react-bootstrap-icons';
 
 import type {
@@ -71,6 +72,7 @@ function FieldLabel({
   onRevert?: () => void;
   isMock?: boolean;
 }) {
+  const t = useTranslations('model-editor');
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, mb: 0.5, minHeight: 16 }}>
       <Typography
@@ -78,14 +80,14 @@ function FieldLabel({
         sx={{ fontSize: 10, color: isMock ? 'info.main' : 'text.secondary' }}
       >
         {children}
-        {isMock ? ' (uneditable)' : ''}
+        {isMock ? t('nodes-uneditable') : ''}
       </Typography>
       {onRevert && (
-        <Tooltip title="Revert changes" placement="top">
+        <Tooltip title={t('nodes-revert-changes')} placement="top">
           <IconButton
             size="small"
             onClick={onRevert}
-            aria-label="Revert changes"
+            aria-label={t('nodes-revert-changes')}
             sx={{ p: 0.125, color: 'warning.main' }}
           >
             <ArrowCounterclockwise size={11} />
@@ -181,13 +183,14 @@ type LiveTextFieldProps = {
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 function SaveStatusLabel({ status }: { status: SaveStatus }) {
+  const t = useTranslations('model-editor');
   if (status === 'idle') return null;
   const { text, color } =
     status === 'saving'
-      ? { text: 'Saving…', color: 'text.secondary' as const }
+      ? { text: t('common-saving'), color: 'text.secondary' as const }
       : status === 'saved'
-        ? { text: 'Saved', color: 'success.main' as const }
-        : { text: 'Save failed', color: 'error.main' as const };
+        ? { text: t('common-saved'), color: 'success.main' as const }
+        : { text: t('common-save-failed'), color: 'error.main' as const };
   return (
     <Typography variant="caption" sx={{ fontSize: 10, color }}>
       {text}
@@ -317,6 +320,7 @@ function ActionGroupMockField({
   options,
   editorUserName,
 }: ActionGroupMockFieldProps) {
+  const t = useTranslations('model-editor');
   const effective = currentValue === undefined ? originalValue : currentValue;
   const selected = options.find((o) => o.id === effective) ?? null;
   const hasEdit = currentValue !== undefined && (currentValue ?? null) !== (originalValue ?? null);
@@ -332,7 +336,7 @@ function ActionGroupMockField({
   return (
     <Box>
       <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        Action group
+        {t('editor-field-action-group')}
       </FieldLabel>
       <Autocomplete
         value={selected}
@@ -362,7 +366,7 @@ function ActionGroupMockField({
         renderInput={(params) => (
           <TextField
             {...params}
-            placeholder="No action group"
+            placeholder={t('nodes-field-no-action-group')}
             slotProps={{
               input: {
                 ...params.InputProps,
@@ -397,13 +401,14 @@ type LiveNodeGroupFieldProps = {
 // as LiveTextField — the caller is expected to remount via `key={nodeId}` so
 // `draft` re-seeds from the new server value when switching nodes.
 function LiveNodeGroupField({ value, options, onCommit }: LiveNodeGroupFieldProps) {
+  const t = useTranslations('model-editor');
   const [draft, setDraft] = useState(value ?? '');
   const [status, setStatus] = useState<SaveStatus>('idle');
 
   useEffect(() => {
     if (status !== 'saved') return;
-    const t = setTimeout(() => setStatus('idle'), 1500);
-    return () => clearTimeout(t);
+    const id = setTimeout(() => setStatus('idle'), 1500);
+    return () => clearTimeout(id);
   }, [status]);
 
   const commit = () => {
@@ -419,7 +424,7 @@ function LiveNodeGroupField({ value, options, onCommit }: LiveNodeGroupFieldProp
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-        <FieldLabel>Node group</FieldLabel>
+        <FieldLabel>{t('nodes-field-node-group')}</FieldLabel>
         <SaveStatusLabel status={status} />
       </Box>
       <Autocomplete
@@ -436,7 +441,7 @@ function LiveNodeGroupField({ value, options, onCommit }: LiveNodeGroupFieldProp
         renderInput={(params) => (
           <TextField
             {...params}
-            placeholder="No group"
+            placeholder={t('nodes-no-group')}
             slotProps={{
               input: {
                 ...params.InputProps,
@@ -457,6 +462,7 @@ type LiveColorFieldProps = {
 };
 
 function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
+  const t = useTranslations('model-editor');
   // Local draft so the color input reflects the user's in-progress pick
   // while the native picker is open. Committing on every `onChange` would
   // fire a mutation for each micro-movement in the picker — and back-to-
@@ -469,7 +475,7 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
 
   return (
     <Box>
-      <FieldLabel>Color</FieldLabel>
+      <FieldLabel>{t('nodes-field-color')}</FieldLabel>
       <Box
         sx={{
           display: 'flex',
@@ -506,7 +512,11 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             value={hasColor ? draft : '#000000'}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={() => {
-              if (draft !== value) onCommit(draft);
+              // Normalize cleared state to '' rather than null: the backend's
+              // color column is a blank-able (not nullable) CharField, so an
+              // explicit null is stripped by stripNulls and the clear becomes a
+              // no-op. '' survives and is the backend's canonical "no color".
+              if ((draft ?? '') !== (value ?? '')) onCommit(draft ?? '');
             }}
             style={{
               position: 'absolute',
@@ -529,16 +539,18 @@ function LiveColorField({ nodeId, value, onCommit }: LiveColorFieldProps) {
             flex: 1,
           }}
         >
-          {hasColor ? draft : 'No color'}
+          {hasColor ? draft : t('nodes-no-color')}
         </Typography>
         {hasColor && (
-          <Tooltip title="Clear color" placement="top">
+          <Tooltip title={t('nodes-clear-color')} placement="top">
             <IconButton
               size="small"
-              aria-label="Clear color"
+              aria-label={t('nodes-clear-color')}
               onClick={() => {
-                setDraft(null);
-                onCommit(null);
+                setDraft('');
+                // Send '' (not null): clears the blank-able CharField on the
+                // backend and survives stripNulls, unlike null.
+                onCommit('');
               }}
               sx={{ p: 0.25, color: 'text.secondary' }}
             >
@@ -624,6 +636,7 @@ export type NodeContentSectionProps = {
  * each switch returns fresh data without colliding on Apollo's cache key.
  */
 export function NodeContentSection({ node, editorUserName, currentEdit }: NodeContentSectionProps) {
+  const t = useTranslations('model-editor');
   const updateNode = useUpdateNodeMutation();
   const readOnly = useIsEditorReadOnly();
   const instance = useInstance();
@@ -703,25 +716,25 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
     >
       <LiveTextField
         key={`name:${node.id}`}
-        label="Name"
+        label={t('nodes-field-name')}
         nodeId={node.id}
         value={node.name ?? ''}
         onCommit={(next) => updateNode(node.id, { name: next })}
       />
 
       <MockRichTextField
-        label="Short description"
+        label={t('nodes-short-description')}
         field="shortDescription"
         nodeId={node.id}
         originalValue={node.shortDescription ?? null}
         currentValue={currentEdit?.shortDescription}
         editorUserName={editorUserName}
-        placeholder="Brief summary"
+        placeholder={t('nodes-short-description-hint')}
       />
 
       <RichTextField
         key={`description:${node.id}`}
-        label="Description"
+        label={t('nodes-description')}
         value={node.description ?? ''}
         onCommit={(html) => updateNode(node.id, { description: html })}
         disabled={readOnly}
@@ -732,15 +745,20 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
   const readOnlyBody = (
     <Box sx={{ display: 'contents' }}>
       <Alert severity="info" sx={{ fontSize: 12, py: 0.5, '& .MuiAlert-message': { py: 0.25 } }}>
-        Content translations are not currently editable in model editor
+        {t('nodes-translations-readonly')}
       </Alert>
       {translationLoading ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Loading translation…</Typography>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+          {t('nodes-loading-translation')}
+        </Typography>
       ) : (
         <>
-          <ReadOnlyTextField label="Name" value={translated?.name} />
-          <ReadOnlyRichTextField label="Short description" value={translated?.shortDescription} />
-          <ReadOnlyRichTextField label="Description" value={translated?.description} />
+          <ReadOnlyTextField label={t('nodes-field-name')} value={translated?.name} />
+          <ReadOnlyRichTextField
+            label={t('nodes-short-description')}
+            value={translated?.shortDescription}
+          />
+          <ReadOnlyRichTextField label={t('nodes-description')} value={translated?.description} />
         </>
       )}
     </Box>
@@ -758,7 +776,7 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
             startIcon={<BoxArrowUpRight size={12} />}
             sx={{ fontSize: 11, py: 0.25, textTransform: 'none' }}
           >
-            Open public page
+            {t('nodes-open-public-page')}
           </Button>
         </NodeLink>
       </Box>
@@ -767,12 +785,7 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
 
   if (!readOnly || !isDefault) return body;
   return (
-    <Tooltip
-      title="Read-only: you're viewing the published revision. Switch to Draft mode to edit."
-      placement="left"
-      arrow
-      followCursor
-    >
+    <Tooltip title={t('editor-read-only-desc')} placement="left" arrow followCursor>
       {body}
     </Tooltip>
   );
@@ -793,6 +806,7 @@ export default function NodeDetailsSection({
   nodeGroupOptions,
   actionGroupOptions,
 }: NodeDetailsSectionProps) {
+  const t = useTranslations('model-editor');
   const updateNode = useUpdateNodeMutation();
   const readOnly = useIsEditorReadOnly();
 
@@ -818,11 +832,13 @@ export default function NodeDetailsSection({
     >
       <LiveTextField
         key={`shortName:${node.id}`}
-        label="Short name"
+        label={t('nodes-field-short-name')}
         nodeId={node.id}
         value={node.shortName ?? ''}
-        onCommit={(next) => updateNode(node.id, { shortName: next === '' ? null : next })}
-        placeholder="Abbreviated label"
+        // Send '' to clear, not null: null is dropped by stripNulls (the backend
+        // can't take an explicit null here), making the clear a silent no-op.
+        onCommit={(next) => updateNode(node.id, { shortName: next })}
+        placeholder={t('nodes-field-short-name-hint')}
       />
 
       <LiveColorField
@@ -853,7 +869,7 @@ export default function NodeDetailsSection({
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <LiveBooleanField
-          label="Visible"
+          label={t('nodes-field-visible')}
           value={node.isVisible ?? true}
           onCommit={(next) => {
             void updateNode(node.id, { isVisible: next });
@@ -861,7 +877,7 @@ export default function NodeDetailsSection({
         />
         {supportsOutcome && (
           <LiveBooleanField
-            label="Outcome"
+            label={t('nodes-field-outcome')}
             value={originalIsOutcome}
             onCommit={(next) => {
               void updateNode(node.id, { isOutcome: next });
@@ -871,7 +887,7 @@ export default function NodeDetailsSection({
       </Box>
 
       <Box>
-        <FieldLabel>Identifier</FieldLabel>
+        <FieldLabel>{t('nodes-field-identifier')}</FieldLabel>
         <Box
           sx={{
             width: '100%',
@@ -899,7 +915,7 @@ export default function NodeDetailsSection({
 
       {(node.quantityKind ?? originalIsOutcome) && (
         <Box>
-          <FieldLabel>Quantity</FieldLabel>
+          <FieldLabel>{t('nodes-port-quantity')}</FieldLabel>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {node.quantityKind && (
               <Chip
@@ -911,7 +927,7 @@ export default function NodeDetailsSection({
               />
             )}
             {originalIsOutcome && (
-              <Chip label="outcome" size="small" color="primary" sx={metaChipSx} />
+              <Chip label={t('nodes-outcome-chip')} size="small" color="primary" sx={metaChipSx} />
             )}
           </Box>
         </Box>
@@ -919,7 +935,7 @@ export default function NodeDetailsSection({
 
       {node.editor?.tags && node.editor.tags.length > 0 && (
         <Box>
-          <FieldLabel>Tags</FieldLabel>
+          <FieldLabel>{t('nodes-field-tags')}</FieldLabel>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {node.editor.tags.map((tag) => (
               <Chip key={tag} label={tag} size="small" variant="outlined" sx={metaChipSx} />
@@ -932,12 +948,7 @@ export default function NodeDetailsSection({
 
   if (!readOnly) return body;
   return (
-    <Tooltip
-      title="Read-only: you're viewing the published revision. Switch to Draft mode to edit."
-      placement="left"
-      arrow
-      followCursor
-    >
+    <Tooltip title={t('editor-read-only-desc')} placement="left" arrow followCursor>
       {body}
     </Tooltip>
   );

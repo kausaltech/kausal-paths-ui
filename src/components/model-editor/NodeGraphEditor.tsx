@@ -23,6 +23,7 @@ import {
   type Edge,
   MarkerType,
   type NodeChange,
+  type OnMoveEnd,
   type OnNodesChange,
   type OnSelectionChangeFunc,
 } from '@xyflow/react';
@@ -58,11 +59,18 @@ import MetricsDrawer from './MetricsDrawer';
 import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
-import { clearLayoutCache, saveUserPosition } from './layoutCache';
+import {
+  clearLayoutCache,
+  loadLayoutCache,
+  loadViewport,
+  saveUserPosition,
+  saveViewport,
+} from './layoutCache';
 import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
 import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
+import { type NewNodeKind, useCreateNode } from './useCreateNode';
 import { useDeleteNode } from './useDeleteNode';
-import { useDuplicateAction } from './useDuplicateAction';
+import { useDuplicateNode } from './useDuplicateNode';
 import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
@@ -211,6 +219,12 @@ const GET_NODE_GRAPH = gql`
             parent
             noEffectValue
           }
+          ... on FormulaConfigType {
+            formula
+          }
+          ... on PipelineConfigType {
+            operations
+          }
         }
       }
     }
@@ -244,6 +258,10 @@ function getNodeBorderColor(node: EditorNodeFieldsFragment): string {
   const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   return getNodeStyle(node.kind ?? '', nodeClass ?? '', isOutcome).border;
 }
+
+// Diagonal gap, in flow coordinates, between a duplicated node and its source
+// so the copy is visibly distinct without drifting far from the original.
+const DUPLICATE_OFFSET = 48;
 
 const DRAWER_WIDTH = 360;
 const OVERLAY_DRAWER_WIDTH = 600;
@@ -423,7 +441,7 @@ function FlowEditor(props: {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedNodeKey = searchParams.get('node');
-  const { fitView, getNodes } = useReactFlow();
+  const { fitView, getNodes, setViewport, screenToFlowPosition } = useReactFlow();
   const handledNodeKeyRef = useRef<string | null>(null);
   // Captured once so later URL changes (e.g. deselecting a node) don't
   // re-toggle RF's built-in `fitView` prop and refit the whole graph.
@@ -516,8 +534,23 @@ function FlowEditor(props: {
   const instance = useInstance();
   const instanceId = instance.id;
 
+  // Captured once on mount: the viewport (pan + zoom) the user left this
+  // instance at. When present (and not overridden by a deep-link), we restore
+  // it instead of fitting the whole graph — see the restore effect below.
+  const [savedViewport] = useState(() => loadViewport(instanceId));
+  const viewportRestoredRef = useRef(false);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+
+  const handleMoveEnd = useCallback<OnMoveEnd>(
+    (_event, viewport) => {
+      // Persist the viewport after every pan/zoom gesture (and after
+      // programmatic fits), so the next visit restores where the user was.
+      saveViewport(instanceId, viewport);
+    },
+    [instanceId]
+  );
 
   const handleNodesChange = useCallback<OnNodesChange<ElkNodeType>>(
     (changes: NodeChange<ElkNodeType>[]) => {
@@ -552,9 +585,24 @@ function FlowEditor(props: {
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
   const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, resetCounter, {
-    skipFitView: !initialFitView,
+    // Suppress the initial fit when we have a saved viewport to restore (the
+    // effect below sets it once layout is current), so the graph doesn't flash
+    // "show everything" before snapping to the user's last view.
+    skipFitView: !initialFitView || savedViewport !== null,
   });
   const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
+
+  // Restore the saved viewport once the initial layout is applied. Gated like
+  // the deep-link effect (which takes precedence when `?node=` is present) and
+  // runs once per mount.
+  useEffect(() => {
+    if (savedViewport === null) return;
+    if (requestedNodeKey !== null) return;
+    if (!isLayoutCurrent) return;
+    if (viewportRestoredRef.current) return;
+    viewportRestoredRef.current = true;
+    void setViewport(savedViewport);
+  }, [savedViewport, requestedNodeKey, isLayoutCurrent, setViewport]);
 
   // Deep-link: /model/nodes?node=<identifier> opens the panel on that
   // node and centers the graph on it. Waits for ELK layout to be *applied*
@@ -640,6 +688,23 @@ function FlowEditor(props: {
     [nodeMap]
   );
 
+  const onPaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      event.preventDefault();
+      // Translate the click to flow coordinates so a new node lands where the
+      // user right-clicked, regardless of pan/zoom.
+      const flow = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      setContextMenu({
+        kind: 'pane',
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+        flowX: flow.x,
+        flowY: flow.y,
+      });
+    },
+    [screenToFlowPosition]
+  );
+
   const handleHideEdge = useCallback((edgeId: string) => {
     setUserHiddenEdgeIds((prev) => new Set([...prev, edgeId]));
   }, []);
@@ -654,26 +719,41 @@ function FlowEditor(props: {
     [nodeMap]
   );
 
-  const duplicateAction = useDuplicateAction();
+  const duplicateNode = useDuplicateNode();
   const [duplicateFeedback, setDuplicateFeedback] = useState<
     { kind: 'success'; message: string } | { kind: 'error'; message: string } | null
   >(null);
   const [isDuplicating, setIsDuplicating] = useState(false);
-  // Holds the new node's identifier between "mutation resolved" and
-  // "props.nodes contains the new node". Resetting the layout before the
-  // refetch lands leaves ELK laying out the old set with cached positions,
-  // which is exactly the mess we're trying to avoid.
-  const [pendingDuplicateIdentifier, setPendingDuplicateIdentifier] = useState<string | null>(null);
+  // Holds the copy's id until it's present in React Flow's own node state, so
+  // the selection block below can attach the `selected` flag.
+  const [pendingSelectNodeId, setPendingSelectNodeId] = useState<string | null>(null);
 
-  const handleDuplicateAction = useCallback(
+  const handleDuplicateNode = useCallback(
     (nodeId: string) => {
       const node = nodeMap.get(nodeId);
       if (!node) return;
       if (isDuplicating) return;
+      // Capture the source position now, while the original is on screen and
+      // stationary.
+      const sourcePos = getNodes().find((n) => n.id === node.id)?.position ??
+        loadLayoutCache(instanceId)[node.id] ?? { x: 0, y: 0 };
       setIsDuplicating(true);
-      duplicateAction(node, props.nodes)
+      duplicateNode(node, props.nodes, (newId) => {
+        // Runs before the graph refetches (see `useDuplicateNode`): seed the
+        // copy's offset position so the refetch-triggered layout pass finds it
+        // already cached. Every node is then cached, so that pass takes its
+        // no-ELK, no-refit path (see `useLayoutNodes`) — the copy lands at the
+        // offset and the viewport stays put. Doing this in `.then()` instead
+        // would race the refetch and sometimes drop the copy top-left.
+        saveUserPosition(
+          instanceId,
+          newId,
+          sourcePos.x + DUPLICATE_OFFSET,
+          sourcePos.y + DUPLICATE_OFFSET
+        );
+      })
         .then((result) => {
-          setPendingDuplicateIdentifier(result.newIdentifier);
+          setPendingSelectNodeId(result.newId);
           setDuplicateFeedback({
             kind: 'success',
             message: `Duplicated "${node.name}" as "${result.newIdentifier}"`,
@@ -682,24 +762,59 @@ function FlowEditor(props: {
         .catch((err: unknown) =>
           setDuplicateFeedback({
             kind: 'error',
-            message: err instanceof Error ? err.message : 'Failed to duplicate action',
+            message: err instanceof Error ? err.message : 'Failed to duplicate node',
           })
         )
         .finally(() => setIsDuplicating(false));
     },
-    [duplicateAction, isDuplicating, nodeMap, props.nodes]
+    [duplicateNode, getNodes, instanceId, isDuplicating, nodeMap, props.nodes]
   );
 
-  // Adjust-state-during-render: once the refetched nodes contain the new
-  // identifier, trigger a layout reset in the same render. Using an effect
-  // would cascade renders; this runs exactly once when the node lands.
-  if (
-    pendingDuplicateIdentifier !== null &&
-    props.nodes.some((n) => n.identifier === pendingDuplicateIdentifier)
-  ) {
-    clearLayoutCache(instanceId);
-    setResetCounter((c) => c + 1);
-    setPendingDuplicateIdentifier(null);
+  const createNode = useCreateNode();
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Create a node immediately at the right-click position with sensible
+  // defaults (unit/quantity are editable afterward in the details panel) and
+  // select it, rather than prompting up front.
+  const handleNewNode = useCallback(
+    (flowX: number, flowY: number, kind: NewNodeKind) => {
+      if (isCreating) return;
+      setIsCreating(true);
+      const existingIdentifiers = new Set(props.nodes.map((n) => n.identifier));
+      const name = kind === 'action' ? 'My Action' : 'My Node';
+      createNode(
+        { name, unit: 'kt/a', quantity: 'emissions', kind, existingIdentifiers },
+        // Seed the position at the right-click location before the refetch, so
+        // the node lands there and the layout pass keeps the viewport (a pure
+        // addition served from cache — see useLayoutNodes).
+        (newId) => saveUserPosition(instanceId, newId, flowX, flowY)
+      )
+        .then((result) => {
+          setPendingSelectNodeId(result.newId);
+          setDuplicateFeedback({
+            kind: 'success',
+            message: `Created "${result.newIdentifier}"`,
+          });
+        })
+        .catch((err: unknown) =>
+          setDuplicateFeedback({
+            kind: 'error',
+            message: err instanceof Error ? err.message : 'Failed to create node',
+          })
+        )
+        .finally(() => setIsCreating(false));
+    },
+    [createNode, instanceId, isCreating, props.nodes]
+  );
+
+  // Adjust-state-during-render: once the copy is present in React Flow's own
+  // node state, drive RF's selection to it (which fires `onSelectionChange` →
+  // opens the details panel). Gating on RF state lets the `selected` flag
+  // actually attach; an effect-based version would trip the cascading-render
+  // lint and add a render hop.
+  if (pendingSelectNodeId !== null && nodes.some((n) => n.id === pendingSelectNodeId)) {
+    setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === pendingSelectNodeId })));
+    setPendingSelectNodeId(null);
   }
 
   const deleteNode = useDeleteNode();
@@ -785,6 +900,8 @@ function FlowEditor(props: {
               onEdgeClick={onEdgeClick}
               onEdgeContextMenu={onEdgeContextMenu}
               onNodeContextMenu={onNodeContextMenu}
+              onPaneContextMenu={onPaneContextMenu}
+              onMoveEnd={handleMoveEnd}
               nodeTypes={nodeTypes}
               minZoom={0.2}
               maxZoom={5}
@@ -807,8 +924,9 @@ function FlowEditor(props: {
               onClose={() => setContextMenu(null)}
               onHideEdge={handleHideEdge}
               onOpenActionWizard={handleOpenActionWizard}
-              onDuplicateAction={handleDuplicateAction}
+              onDuplicateNode={handleDuplicateNode}
               onDeleteNode={handleRequestDeleteNode}
+              onNewNode={handleNewNode}
             />
             <Drawer
               variant="persistent"
@@ -881,7 +999,7 @@ function FlowEditor(props: {
         </Suspense>
       )}
       <Backdrop
-        open={isDuplicating || isDeleting}
+        open={isDuplicating || isDeleting || isCreating}
         sx={(theme) => ({
           zIndex: theme.zIndex.modal + 1,
           flexDirection: 'column',
@@ -891,7 +1009,7 @@ function FlowEditor(props: {
       >
         <CircularProgress color="inherit" />
         <Typography variant="body2">
-          {isDeleting ? 'Deleting node…' : 'Duplicating action…'}
+          {isDeleting ? 'Deleting node…' : isCreating ? 'Creating node…' : 'Duplicating node…'}
         </Typography>
       </Backdrop>
       <Dialog

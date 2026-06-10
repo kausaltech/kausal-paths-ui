@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 
 import { useMutation, useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft, GripVertical, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
@@ -36,6 +37,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
+import { getModelEditorSection } from '../paths';
 import {
   CREATE_DIMENSION_CATEGORIES,
   DELETE_DIMENSION_CATEGORY,
@@ -75,11 +77,6 @@ function toRows(dim: InstanceDimensionFieldsFragment): CategoryRow[] {
     }));
 }
 
-function getListBase(pathname: string): string {
-  const idx = pathname.indexOf('/model');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model/dimensions' : '/model/dimensions';
-}
-
 function genUuid(): string {
   // crypto.randomUUID is available in modern browsers and Node 14+
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -104,10 +101,11 @@ export default function DimensionEditor({ dimensionId }: Props) {
     GET_INSTANCE_DIMENSIONS,
     { fetchPolicy: 'cache-and-network' }
   );
+  const t = useTranslations('model-editor');
   const instance = useInstance();
   const router = useRouter();
   const pathname = usePathname();
-  const listBase = getListBase(pathname);
+  const listBase = getModelEditorSection(pathname, 'dimensions');
 
   const dimension = useMemo(
     () => data?.instance.editor?.dimensions.find((d) => d.id === dimensionId) ?? null,
@@ -300,7 +298,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
       if (accumulatedErrors.length > 0) {
         setErrors(accumulatedErrors);
       } else {
-        setToast('Changes saved');
+        setToast(t('common-changes-saved'));
       }
     } catch (err) {
       setErrors([err instanceof Error ? err.message : String(err)]);
@@ -321,10 +319,10 @@ export default function DimensionEditor({ dimensionId }: Props) {
     return (
       <Container maxWidth="md" sx={{ pt: 20, pb: 3, mx: 0 }}>
         <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
-          Back to dimensions
+          {t('dimensions-back-to-dimensions')}
         </Button>
         <Alert severity="warning" sx={{ mt: 2 }}>
-          Dimension not found.
+          {t('dimensions-not-found')}
         </Alert>
       </Container>
     );
@@ -333,25 +331,25 @@ export default function DimensionEditor({ dimensionId }: Props) {
   return (
     <Container maxWidth="md" sx={{ pt: 20, pb: 3, mx: 0 }}>
       <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)} sx={{ mb: 2 }}>
-        Back to dimensions
+        {t('dimensions-back-to-dimensions')}
       </Button>
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
-          Dimension
+          {t('dimensions-dimension')}
         </Typography>
         <Stack spacing={2}>
           <TextField
-            label="Name"
+            label={t('dimensions-name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             fullWidth
           />
           <TextField
-            label="Identifier"
+            label={t('dimensions-identifier')}
             value={dimension.identifier}
             disabled
-            helperText="The identifier cannot be changed."
+            helperText={t('dimensions-identifier-helper')}
             fullWidth
           />
         </Stack>
@@ -359,15 +357,15 @@ export default function DimensionEditor({ dimensionId }: Props) {
 
       <Paper sx={{ p: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-          <Typography variant="h6">Categories</Typography>
+          <Typography variant="h6">{t('dimensions-categories')}</Typography>
           <Button startIcon={<Plus />} onClick={handleAddCategory}>
-            Add category
+            {t('dimensions-add-category')}
           </Button>
         </Stack>
         <Divider sx={{ mb: 2 }} />
         {rows.length === 0 && (
           <Typography color="text.secondary" sx={{ py: 2 }}>
-            No categories. Add one to get started.
+            {t('dimensions-no-categories')}
           </Typography>
         )}
         <Stack spacing={1}>
@@ -400,7 +398,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
             }
           }}
         >
-          Discard changes
+          {t('common-discard-changes')}
         </Button>
         <Button
           variant="contained"
@@ -409,7 +407,7 @@ export default function DimensionEditor({ dimensionId }: Props) {
             void handleSave();
           }}
         >
-          {saving ? 'Saving…' : 'Save changes'}
+          {saving ? t('common-saving') : t('common-save-changes')}
         </Button>
       </Stack>
 
@@ -459,6 +457,7 @@ function CategoryRowView({
   onChange,
   onRemove,
 }: CategoryRowViewProps) {
+  const t = useTranslations('model-editor');
   const [dragOver, setDragOver] = useState<'before' | 'after' | null>(null);
   const isDragging = draggingId === row.id;
 
@@ -532,26 +531,30 @@ function CategoryRowView({
           backgroundColor: 'background.paper',
         }}
       >
-        <Tooltip title="Drag to reorder">
+        <Tooltip title={t('dimensions-drag-to-reorder')}>
           <Box sx={{ cursor: 'grab', display: 'flex', color: 'text.secondary' }}>
             <GripVertical size={20} />
           </Box>
         </Tooltip>
         <TextField
           size="small"
-          label="Label"
+          label={t('dimensions-label')}
           value={row.label}
           onChange={(e) => onChange({ ...row, label: e.target.value })}
           sx={{ flex: 2 }}
         />
-        <TextField
-          size="small"
-          label="Identifier"
-          value={row.identifier}
-          onChange={(e) => onChange({ ...row, identifier: e.target.value })}
-          sx={{ flex: 1 }}
-        />
-        <Tooltip title="Remove category">
+        <Tooltip title={row.isNew ? '' : t('dimensions-category-identifier-locked')}>
+          <TextField
+            size="small"
+            label={t('dimensions-identifier')}
+            value={row.identifier}
+            onChange={(e) => onChange({ ...row, identifier: e.target.value })}
+            // Identifiers are stable keys; only new (unsaved) categories may set one.
+            disabled={!row.isNew}
+            sx={{ flex: 1 }}
+          />
+        </Tooltip>
+        <Tooltip title={t('dimensions-remove-category')}>
           <IconButton size="small" onClick={onRemove}>
             <Trash size={18} />
           </IconButton>

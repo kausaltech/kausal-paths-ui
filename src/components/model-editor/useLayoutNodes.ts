@@ -179,6 +179,9 @@ export default function useLayoutNodes(
   // Data-only updates (e.g. a node rename) reuse the same structure, so we
   // skip the viewport refit and preserve the user's zoom/pan.
   const lastFitStructureRef = useRef<string | null>(null);
+  // The node-id set at the last fit, so we can recognise a pure addition (a
+  // duplicated node appearing) and skip the refit it would otherwise trigger.
+  const lastFitNodeIdsRef = useRef<ReadonlySet<string> | null>(null);
   // Supersession refs — let async callbacks detect whether a newer layout
   // request has arrived without relying on effect cleanup (cleanup would
   // also fire on the transient `nodesInitialized` flip that `setNodes`
@@ -239,7 +242,11 @@ export default function useLayoutNodes(
     const structureKey = `${resetTrigger}:${structuralSignature(nodes)}`;
     const structureUnchanged = lastFitStructureRef.current === structureKey;
 
-    const finishWith = (laidOut: ElkNodeType[]) => {
+    // `fromCacheOnly` means no ELK ran: existing nodes kept their positions and
+    // any new node was already placed in the cache by the caller (e.g. a
+    // duplicated node seeded at an offset). A refit there would needlessly yank
+    // the viewport, so we only fit on the initial layout or an explicit reset.
+    const finishWith = (laidOut: ElkNodeType[], fromCacheOnly: boolean) => {
       if (!isCurrent()) return;
       // Sort each node's handles by the Y of their connected peers so edges
       // line up with the source/target vertical order, minimising crossings.
@@ -252,10 +259,24 @@ export default function useLayoutNodes(
       });
       requestAnimationFrame(() => {
         if (!isCurrent()) return;
-        if (!skipFitView && !structureUnchanged) {
-          fitView();
+        // A pure addition: every previously-fitted node is still present and at
+        // least one node was added. With `fromCacheOnly` this is a duplication
+        // served from cache (existing nodes unmoved, the new node pre-placed),
+        // so a refit would needlessly yank the viewport. Filtering removes/swaps
+        // nodes (not a pure addition) and still refits; reset/delete clear the
+        // cache so ELK runs (not cache-only) and they refit too.
+        const prevIds = lastFitNodeIdsRef.current;
+        const currentIds = new Set(nodes.map((n) => n.id));
+        const isPureAddition =
+          prevIds !== null &&
+          currentIds.size > prevIds.size &&
+          [...prevIds].every((id) => currentIds.has(id));
+        const stableAdditiveChange = fromCacheOnly && isPureAddition;
+        if (!skipFitView && !structureUnchanged && !stableAdditiveChange) {
+          void fitView();
         }
         lastFitStructureRef.current = structureKey;
+        lastFitNodeIdsRef.current = currentIds;
         setAppliedNodes(sourceNodes);
         const metrics = computeLayoutMetrics(withPorts, edges);
         console.log(formatMetrics(metrics));
@@ -267,7 +288,7 @@ export default function useLayoutNodes(
         const cached = cache[node.id];
         return cached ? { ...node, position: { x: cached.x, y: cached.y } } : node;
       });
-      finishWith(fromCache);
+      finishWith(fromCache, true);
       return;
     }
 
@@ -285,7 +306,7 @@ export default function useLayoutNodes(
           .filter((n) => cache[n.id]?.source !== 'user')
           .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y }));
         saveAutoPositions(instanceId, autoPositions);
-        finishWith(merged);
+        finishWith(merged, false);
       },
       (err) => {
         console.error('ELK layout failed:', err);

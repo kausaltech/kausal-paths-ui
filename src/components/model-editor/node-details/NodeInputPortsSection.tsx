@@ -1,8 +1,10 @@
 import { useState } from 'react';
 
 import {
+  Alert,
   Box,
   Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -12,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useTranslations } from 'next-intl';
 import {
   BarChartLine,
   Database,
@@ -25,12 +28,26 @@ import type {
   EditorNodeFieldsFragment,
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
-import type { getNodeSpec } from '../nodeHelpers';
+import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
+import { useCreateEdge } from '../useCreateEdge';
+import { useDeleteEdge } from '../useDeleteEdge';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
-type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
-type InputPort = NodeSpec['inputPorts'][number];
+/**
+ * The source node's first output port compatible with `port`. Returns its id
+ * for the edge's `fromPort`. When no port matches the criteria, falls back to
+ * the node's first output port id so the edge mutation always receives a valid
+ * port UUID.
+ */
+function matchingOutputPortId(
+  sourceNode: EditorNodeFieldsFragment,
+  port: InputPort
+): string | undefined {
+  const outputs = getNodeSpec(sourceNode)?.outputPorts ?? [];
+  const match = outputs.find((o) => outputMatchesPort(port, o));
+  return (match ?? outputs[0])?.id;
+}
 
 type PortInfoRowProps = {
   label: string;
@@ -47,6 +64,7 @@ function PortInfoRow({ label, value }: PortInfoRowProps) {
 }
 
 function PortTooltipContent({ port }: { port: InputPort }) {
+  const t = useTranslations('model-editor');
   const datasetBindingCount = port.bindings.filter(
     (b) => b.__typename === 'DatasetPortType'
   ).length;
@@ -54,22 +72,29 @@ function PortTooltipContent({ port }: { port: InputPort }) {
 
   return (
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
-      <PortInfoRow label="ID" value={port.id} />
-      <PortInfoRow label="Label" value={port.label ?? '—'} />
-      <PortInfoRow label="Quantity" value={port.quantity ?? '—'} />
-      <PortInfoRow label="Unit" value={port.unit?.short ?? '—'} />
-      <PortInfoRow label="Multi" value={port.multi ? 'Yes' : 'No'} />
+      <PortInfoRow label={t('nodes-port-id')} value={port.id} />
+      <PortInfoRow label={t('nodes-port-label-field')} value={port.label ?? '—'} />
+      <PortInfoRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
+      <PortInfoRow label={t('nodes-port-unit')} value={port.unit?.short ?? '—'} />
       <PortInfoRow
-        label="Required dims"
+        label={t('nodes-port-multi')}
+        value={port.multi ? t('nodes-port-multi-yes') : t('nodes-port-multi-no')}
+      />
+      <PortInfoRow
+        label={t('nodes-port-required-dims')}
         value={port.requiredDimensions.length ? port.requiredDimensions.join(', ') : '—'}
       />
       <PortInfoRow
-        label="Supported dims"
+        label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
       <PortInfoRow
-        label="Bindings"
-        value={`${port.bindings.length} (${edgeBindingCount} edge, ${datasetBindingCount} dataset)`}
+        label={t('nodes-port-bindings')}
+        value={t('nodes-port-bindings-value', {
+          total: port.bindings.length,
+          edges: edgeBindingCount,
+          datasets: datasetBindingCount,
+        })}
       />
     </Stack>
   );
@@ -102,17 +127,89 @@ export default function NodeInputPortsSection({
   onShowDataset,
   onShowMetrics,
 }: NodeInputPortsSectionProps) {
+  const t = useTranslations('model-editor');
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
+  const createEdge = useCreateEdge();
+  const deleteEdge = useDeleteEdge();
+  const [binding, setBinding] = useState(false);
+  const [bindError, setBindError] = useState<string | null>(null);
+  const [removingEdgeId, setRemovingEdgeId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+
+  const closeDialog = () => {
+    setEditingPortId(null);
+    setBindError(null);
+  };
+
+  const handleSelectNode = async (sourceNodeId: string) => {
+    if (!editingPort || binding) return;
+    const sourceNode = nodeMap.get(sourceNodeId);
+    const targetNode = nodeMap.get(currentNodeId);
+    if (!sourceNode || !targetNode) return;
+    setBinding(true);
+    setBindError(null);
+    try {
+      // createEdge only appends; a non-multi port holds a single binding, so
+      // replace any existing edge(s) before adding the new source. (If a delete
+      // succeeds but the create then fails, the port is left empty — the
+      // refetch surfaces that honestly and the user can re-pick.)
+      if (!editingPort.multi) {
+        const existing = incomingByPort.get(editingPort.id) ?? [];
+        for (const edge of existing) {
+          await deleteEdge(edge.id);
+        }
+      }
+      await createEdge({
+        fromNodeId: sourceNode.identifier,
+        toNodeId: targetNode.identifier,
+        fromPort: matchingOutputPortId(sourceNode, editingPort) ?? 'output',
+        toPort: editingPort.id,
+      });
+      closeDialog();
+    } catch (err) {
+      setBindError(err instanceof Error ? err.message : t('nodes-failed-create-edge'));
+    } finally {
+      setBinding(false);
+    }
+  };
+
+  const handleRemoveEdge = async (edgeId: string) => {
+    if (removingEdgeId) return;
+    setRemovingEdgeId(edgeId);
+    setRemoveError(null);
+    setBindError(null);
+    try {
+      await deleteEdge(edgeId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('nodes-failed-remove-input-source');
+      // Surface the error where the action was taken: the dialog (when open)
+      // or the inline section alert.
+      if (editingPortId) setBindError(message);
+      else setRemoveError(message);
+    } finally {
+      setRemovingEdgeId(null);
+    }
+  };
+
+  const handleSelectDataset = () => {
+    // No backend mutation exists yet to bind a dataset to an input port.
+    setBindError(t('nodes-binding-dataset-not-supported'));
+  };
 
   if (ports.length === 0) return null;
 
   return (
     <CollapsibleSection
-      title={`Node input ports (${ports.length})`}
+      title={t('nodes-input-ports', { count: ports.length })}
       open={open}
       onToggle={onToggle}
     >
+      {removeError && (
+        <Alert severity="error" onClose={() => setRemoveError(null)} sx={{ fontSize: 12 }}>
+          {removeError}
+        </Alert>
+      )}
       {ports.map((port, index) => {
         const connectedEdges = incomingByPort.get(port.id) ?? [];
         type DatasetBinding = Extract<
@@ -173,9 +270,11 @@ export default function NodeInputPortsSection({
                   cursor: 'help',
                 }}
               >
-                Port: {port.label ?? derivedPortName ?? `#${index + 1}`}
-                {port.multi ? ' (multi)' : ''}
-                <InfoSquare size={10} aria-label="Port info" />
+                {t('nodes-port-label', {
+                  label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                })}
+                {port.multi ? t('nodes-port-multi-suffix') : ''}
+                <InfoSquare size={10} aria-label={t('nodes-port-info')} />
               </Typography>
             </Tooltip>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -206,6 +305,8 @@ export default function NodeInputPortsSection({
                           }
                           onSelect={onSelectNode}
                           onHover={onHover}
+                          onDelete={() => void handleRemoveEdge(e.id)}
+                          deleting={removingEdgeId === e.id}
                         />
                       </Box>
                     );
@@ -241,24 +342,24 @@ export default function NodeInputPortsSection({
                   <NotConnectedChip />
                 </Box>
               )}
-              <Tooltip title="Select input node" placement="left">
+              <Tooltip title={t('nodes-port-select-input')} placement="left">
                 <IconButton
                   size="small"
                   onClick={() => setEditingPortId(port.id)}
-                  aria-label="Select input node"
+                  aria-label={t('nodes-port-select-input')}
                   sx={{ p: 0.5, color: 'text.secondary' }}
                 >
                   <PencilSquare size={12} />
                 </IconButton>
               </Tooltip>
               {singleSourceNode && onShowMetrics && (
-                <Tooltip title="Show source node output data" placement="left">
+                <Tooltip title={t('nodes-port-show-source-data')} placement="left">
                   <IconButton
                     size="small"
                     onClick={() =>
                       onShowMetrics(singleSourceNode.id, singleSourceNode.name ?? null)
                     }
-                    aria-label="Show source node output data"
+                    aria-label={t('nodes-port-show-source-data')}
                     sx={{ p: 0.5, color: 'text.secondary' }}
                   >
                     <BarChartLine size={12} />
@@ -269,31 +370,56 @@ export default function NodeInputPortsSection({
           </Box>
         );
       })}
-      <Dialog
-        open={editingPort !== null}
-        onClose={() => setEditingPortId(null)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          Select new input node
+          {editingPort && (incomingByPort.get(editingPort.id) ?? []).length > 0
+            ? t('nodes-replace-input-source')
+            : t('nodes-select-input-source')}
           <IconButton
-            aria-label="Close"
-            onClick={() => setEditingPortId(null)}
+            aria-label={t('common-close')}
+            onClick={closeDialog}
             sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
           >
             <XIcon size={20} />
           </IconButton>
         </DialogTitle>
         <DialogContent>
+          {bindError && (
+            <Alert severity="error" onClose={() => setBindError(null)} sx={{ mb: 1, fontSize: 12 }}>
+              {bindError}
+            </Alert>
+          )}
           {editingPort && (
-            <PortBindingSelector
-              nodes={[...nodeMap.values()]}
-              port={editingPort}
-              currentNodeId={currentNodeId}
-              onSelectNode={() => setEditingPortId(null)}
-              onSelectDataset={() => setEditingPortId(null)}
-            />
+            <Box sx={{ position: 'relative' }}>
+              <PortBindingSelector
+                nodes={[...nodeMap.values()]}
+                port={editingPort}
+                currentNodeId={currentNodeId}
+                currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
+                  edgeId: e.id,
+                  node: nodeMap.get(e.fromRef.nodeId) ?? null,
+                  nodeRef: e.fromRef.nodeId,
+                }))}
+                removingEdgeId={removingEdgeId}
+                onSelectNode={(id) => void handleSelectNode(id)}
+                onSelectDataset={handleSelectDataset}
+                onRemoveSource={(edgeId) => void handleRemoveEdge(edgeId)}
+              />
+              {binding && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(255,255,255,0.6)',
+                  }}
+                >
+                  <CircularProgress size={24} />
+                </Box>
+              )}
+            </Box>
           )}
         </DialogContent>
       </Dialog>

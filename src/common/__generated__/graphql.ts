@@ -50,6 +50,11 @@ export enum ActionSortOrder {
   Standard = 'STANDARD'
 }
 
+export type AssignCategoryTransformationInput = {
+  category: Scalars['String']['input'];
+  dimension: Scalars['String']['input'];
+};
+
 export enum ChangeTargetKind {
   DatasetPort = 'DATASET_PORT',
   DataPoint = 'DATA_POINT',
@@ -96,6 +101,15 @@ export type CreateDimensionCategoryInput = {
   label: Scalars['String']['input'];
   nextSibling: InputMaybe<Scalars['ID']['input']>;
   previousSibling: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type CreateEdgeInput = {
+  fromNodeId: Scalars['String']['input'];
+  fromPort: Scalars['String']['input'];
+  instanceId: Scalars['ID']['input'];
+  toNodeId: Scalars['String']['input'];
+  toPort: InputMaybe<Scalars['String']['input']>;
+  transformations: InputMaybe<Array<EdgeTransformationInput>>;
 };
 
 export type CreateInstanceInput = {
@@ -152,6 +166,16 @@ export enum DimensionKind {
   Node = 'NODE',
   Scenario = 'SCENARIO'
 }
+
+export type EdgeTransformationInput = {
+  assignCategory: InputMaybe<AssignCategoryTransformationInput>;
+  flatten: InputMaybe<FlattenTransformationInput>;
+  selectCategories: InputMaybe<SelectCategoriesTransformationInput>;
+};
+
+export type FlattenTransformationInput = {
+  dimension: Scalars['String']['input'];
+};
 
 export type FormulaConfigInput = {
   formula: Scalars['String']['input'];
@@ -270,6 +294,13 @@ export enum ScenarioKind {
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
 }
+
+export type SelectCategoriesTransformationInput = {
+  categories: Array<Scalars['String']['input']>;
+  dimension: Scalars['String']['input'];
+  exclude: Scalars['Boolean']['input'];
+  flatten: Scalars['Boolean']['input'];
+};
 
 export type SimpleConfigInput = {
   nodeClass: Scalars['String']['input'];
@@ -699,6 +730,7 @@ export type StreamFieldFragment =
 
 export type FrameworkConfigsQueryVariables = Exact<{
   identifier: Scalars['ID']['input'];
+  clientUrl: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -706,7 +738,7 @@ export type FrameworkConfigsQuery = (
   { framework: (
     { id: string, configs: Array<(
       { id: string, organizationName: string | null, viewUrl: string | null, instance: (
-        { id: string, name: string }
+        { id: string, identifier: string, name: string }
         & { __typename: 'InstanceType' }
       ) | null }
       & { __typename: 'FrameworkConfig' }
@@ -926,7 +958,14 @@ export type NodeGraphQuery = (
                 { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 & { __typename: 'ActionConfigType' }
               )
-              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { formula: string }
+                & { __typename: 'FormulaConfigType' }
+              )
+              | (
+                { operations: any }
+                & { __typename: 'PipelineConfigType' }
+              )
               | (
                 { nodeClass: string }
                 & { __typename: 'SimpleConfigType' }
@@ -979,7 +1018,14 @@ export type NodeGraphQuery = (
                 { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
                 & { __typename: 'ActionConfigType' }
               )
-              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+              | (
+                { formula: string }
+                & { __typename: 'FormulaConfigType' }
+              )
+              | (
+                { operations: any }
+                & { __typename: 'PipelineConfigType' }
+              )
               | (
                 { nodeClass: string }
                 & { __typename: 'SimpleConfigType' }
@@ -1041,7 +1087,14 @@ type EditorNodeFields_ActionNode_Fragment = (
           { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
           & { __typename: 'ActionConfigType' }
         )
-        | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { formula: string }
+          & { __typename: 'FormulaConfigType' }
+        )
+        | (
+          { operations: any }
+          & { __typename: 'PipelineConfigType' }
+        )
         | (
           { nodeClass: string }
           & { __typename: 'SimpleConfigType' }
@@ -1095,7 +1148,14 @@ type EditorNodeFields_Node_Fragment = (
           { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
           & { __typename: 'ActionConfigType' }
         )
-        | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+        | (
+          { formula: string }
+          & { __typename: 'FormulaConfigType' }
+        )
+        | (
+          { operations: any }
+          & { __typename: 'PipelineConfigType' }
+        )
         | (
           { nodeClass: string }
           & { __typename: 'SimpleConfigType' }
@@ -1194,17 +1254,42 @@ export type DatasetPortDataQuery = (
   & { __typename: 'Query' }
 );
 
+export type DataPointInstanceChangeHistoryQueryVariables = Exact<{
+  limit?: Scalars['Int']['input'];
+}>;
+
+
+export type DataPointInstanceChangeHistoryQuery = (
+  { instance: (
+    { id: string, editor: (
+      { changeHistory: Array<(
+        { uuid: string, createdAt: string, userEmail: string | null, entries: Array<(
+          { uuid: string, action: string, targetUuid: string | null, before: any | null, after: any | null, createdAt: string }
+          & { __typename: 'InstanceModelLogEntryType' }
+        )> }
+        & { __typename: 'InstanceChangeOperationType' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
 export type DatasetSummaryFieldsFragment = (
-  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
     & { __typename: 'DatasetExternalRefType' }
   ) | null, dimensions: Array<(
     { id: string, name: string }
     & { __typename: 'DatasetDimension' }
   )>, metrics: Array<(
-    { id: string, label: string }
+    { id: string, label: string, unit: string }
     & { __typename: 'DatasetMetric' }
-  )> }
+  )>, lastModifiedBy: (
+    { id: string, firstName: string, lastName: string, email: string }
+    & { __typename: 'User' }
+  ) | null }
   & { __typename: 'Dataset' }
 );
 
@@ -1310,7 +1395,7 @@ export type InstanceDatasetsQuery = (
   { instance: (
     { id: string, editor: (
       { datasets: Array<(
-        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, dataPointComments: Array<(
+        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, dataPointComments: Array<(
           { id: string }
           & { __typename: 'DataPointComment' }
         )>, externalRef: (
@@ -1320,9 +1405,12 @@ export type InstanceDatasetsQuery = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string }
+          { id: string, label: string, unit: string }
           & { __typename: 'DatasetMetric' }
-        )> }
+        )>, lastModifiedBy: (
+          { id: string, firstName: string, lastName: string, email: string }
+          & { __typename: 'User' }
+        ) | null }
         & { __typename: 'Dataset' }
       )> }
       & { __typename: 'InstanceEditor' }
@@ -2042,6 +2130,90 @@ export type CreateNodeMutation = (
         & { __typename: 'OperationInfo' }
       )
      }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type NodeParametersQueryVariables = Exact<{
+  nodeId: Scalars['ID']['input'];
+}>;
+
+
+export type NodeParametersQuery = (
+  { node: (
+    { id: string, parameters: Array<
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean, boolValue: boolean | null }
+        & { __typename: 'BoolParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean, numberValue: number | null }
+        & { __typename: 'NumberParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean, stringValue: string | null }
+        & { __typename: 'StringParameterType' }
+      )
+      | (
+        { id: string, nodeRelativeId: string | null, isCustomizable: boolean }
+        & { __typename: 'UnknownParameterType' }
+      )
+    > }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
+export type CreateEdgeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  input: CreateEdgeInput;
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type CreateEdgeMutation = (
+  { instanceEditor: (
+    { createEdge:
+      | (
+        { id: string, fromRef: (
+          { nodeId: string, portId: string }
+          & { __typename: 'NodePortRef' }
+        ), toRef: (
+          { nodeId: string, portId: string }
+          & { __typename: 'NodePortRef' }
+        ) }
+        & { __typename: 'NodeEdgeType' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteEdgeMutationVariables = Exact<{
+  instanceId: Scalars['ID']['input'];
+  edgeId: Scalars['ID']['input'];
+  version: InputMaybe<Scalars['UUID']['input']>;
+}>;
+
+
+export type DeleteEdgeMutation = (
+  { instanceEditor: (
+    { deleteEdge: (
+      { messages: Array<(
+        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }

@@ -30,7 +30,7 @@ async function importLocale(locale: string, file: LocaleFile) {
 
 type TranslationWithNamespaces = { [x: string]: Record<string, string> };
 
-async function importLocales(
+export async function importLocales(
   locale: string,
   mergeTranslations?: TranslationWithNamespaces
 ): Promise<TranslationWithNamespaces> {

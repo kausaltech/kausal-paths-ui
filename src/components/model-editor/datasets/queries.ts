@@ -20,6 +20,14 @@ export const DATASET_SUMMARY_FIELDS = gql`
     metrics {
       id
       label
+      unit
+    }
+    lastModifiedAt
+    lastModifiedBy {
+      id
+      firstName
+      lastName
+      email
     }
   }
 `;

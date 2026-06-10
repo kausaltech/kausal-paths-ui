@@ -137,6 +137,72 @@ export const CREATE_NODE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+/**
+ * A node's parameter values, resolved in the editor slice. Used by node
+ * duplication to carry the source node's parameters (e.g. a `formula` string,
+ * numeric constants) — these hold node logic that isn't part of `typeConfig`.
+ * Fetched on demand rather than in the NodeGraph query, which spans the whole
+ * model and would bloat with per-node parameter lists.
+ */
+export const NODE_PARAMETERS = gql`
+  query NodeParameters($nodeId: ID!) {
+    node(id: $nodeId) {
+      id
+      parameters {
+        __typename
+        id
+        nodeRelativeId
+        isCustomizable
+        ... on BoolParameterType {
+          boolValue: value
+        }
+        ... on NumberParameterType {
+          numberValue: value
+        }
+        ... on StringParameterType {
+          stringValue: value
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_EDGE = gql`
+  mutation CreateEdge($instanceId: ID!, $input: CreateEdgeInput!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      createEdge(input: $input) {
+        __typename
+        ... on NodeEdgeType {
+          id
+          fromRef {
+            nodeId
+            portId
+          }
+          toRef {
+            nodeId
+            portId
+          }
+        }
+        ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_EDGE = gql`
+  mutation DeleteEdge($instanceId: ID!, $edgeId: ID!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      deleteEdge(edgeId: $edgeId) {
+        ...EditorOperationInfoFields
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
 export const DELETE_NODE = gql`
   mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {

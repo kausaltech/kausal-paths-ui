@@ -21,6 +21,7 @@ import {
   type Item,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
+import { useTranslations } from 'next-intl';
 
 import {
   type DimensionalMetric,
@@ -57,6 +58,7 @@ export default function MetricDataViewer({
   compact = false,
   fillHeight = false,
 }: MetricDataViewerProps) {
+  const t = useTranslations('model-editor');
   const hasDimensions = metric.dimensions.length > 0;
   const [viewMode, setViewMode] = useState<ViewMode>(hasDimensions ? 'pivot' : 'flat');
   const [pivotDimId, setPivotDimId] = useState<string>(() => metric.dimensions[0]?.id ?? '');
@@ -84,7 +86,7 @@ export default function MetricDataViewer({
       return year != null && year >= forecastFrom;
     };
     const yearSpec: ColumnSpec = {
-      col: { id: 'year', title: 'Year', width: colWidths.year ?? 80 },
+      col: { id: 'year', title: t('metric-col-year'), width: colWidths.year ?? 80 },
       sortable: true,
       getCell: (rowIndex) => {
         const value = rows[rowIndex]?.year as number | undefined;
@@ -117,7 +119,7 @@ export default function MetricDataViewer({
       getSortValue: (rowIndex) => (rows[rowIndex]?.[cat.id] as number | null | undefined) ?? null,
     }));
     return [yearSpec, ...catSpecs];
-  }, [pivotData, forecastFrom, colWidths]);
+  }, [pivotData, forecastFrom, colWidths, t]);
 
   const filteredMetric = useMemo(() => {
     if (viewMode !== 'flat') return metric;
@@ -166,7 +168,7 @@ export default function MetricDataViewer({
       };
     });
     const yearSpec: ColumnSpec = {
-      col: { id: 'year', title: 'Year', width: colWidths.year ?? 80 },
+      col: { id: 'year', title: t('metric-col-year'), width: colWidths.year ?? 80 },
       sortable: true,
       getCell: (rowIndex) => {
         const value = flatRows[rowIndex]?.year as number | undefined;
@@ -185,7 +187,7 @@ export default function MetricDataViewer({
     const valSpec: ColumnSpec = {
       col: {
         id: 'value',
-        title: `Value (${metric.unit.short})`,
+        title: t('metric-col-value', { unit: metric.unit.short }),
         width: colWidths.value ?? 130,
       },
       sortable: true,
@@ -204,7 +206,7 @@ export default function MetricDataViewer({
       getSortValue: (rowIndex) => (flatRows[rowIndex]?.value as number | null | undefined) ?? null,
     };
     return [...dimSpecs, yearSpec, valSpec];
-  }, [filteredMetric, viewMode, flatRows, metric.unit.short, forecastFrom, colWidths]);
+  }, [filteredMetric, viewMode, flatRows, metric.unit.short, forecastFrom, colWidths, t]);
 
   const isPivot = viewMode === 'pivot' && !!pivotData;
   const specs = isPivot ? pivotSpecs : flatSpecs;
@@ -286,7 +288,7 @@ export default function MetricDataViewer({
         <Chip label={metric.unit.short} size="small" variant="outlined" />
         {metric.forecastFrom != null && (
           <Chip
-            label={`Forecast from ${metric.forecastFrom}`}
+            label={t('metric-forecast-from', { year: metric.forecastFrom })}
             size="small"
             color="info"
             variant="outlined"
@@ -302,18 +304,18 @@ export default function MetricDataViewer({
             }}
             size="small"
           >
-            <ToggleButton value="pivot">Pivot</ToggleButton>
-            <ToggleButton value="flat">Flat</ToggleButton>
+            <ToggleButton value="pivot">{t('metric-view-pivot')}</ToggleButton>
+            <ToggleButton value="flat">{t('metric-view-flat')}</ToggleButton>
           </ToggleButtonGroup>
         )}
       </Box>
 
       {viewMode === 'pivot' && metric.dimensions.length > 1 && (
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel id="pivot-dim-label">Pivot dimension</InputLabel>
+          <InputLabel id="pivot-dim-label">{t('metric-pivot-dimension')}</InputLabel>
           <Select
             labelId="pivot-dim-label"
-            label="Pivot dimension"
+            label={t('metric-pivot-dimension')}
             value={pivotDimId}
             onChange={(e) => setPivotDimId(e.target.value)}
           >
@@ -337,7 +339,12 @@ export default function MetricDataViewer({
                 multiple
                 value={filters[dim.id] ?? []}
                 onChange={(e) => handleFilterChange(dim.id, e.target.value as string[])}
-                renderValue={(selected) => `${selected.length} of ${dim.categories.length}`}
+                renderValue={(selected) =>
+                  t('metric-selected-of', {
+                    selected: selected.length,
+                    total: dim.categories.length,
+                  })
+                }
               >
                 {dim.categories.map((cat) => (
                   <MenuItem key={cat.id} value={cat.id}>

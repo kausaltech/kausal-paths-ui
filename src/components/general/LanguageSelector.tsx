@@ -6,6 +6,7 @@ import styled from '@common/themes/styled';
 import { transientOptions } from '@common/themes/styles/styled';
 
 import { useInstance } from '@/common/instance';
+import { getLanguageCodeLabel, getLanguageName } from '@/common/languages';
 import { Link } from '@/common/links';
 import Icon from '@/components/common/icon';
 
@@ -51,26 +52,6 @@ const StyledDropdownMenu = styled(DropdownMenu)`
   right: 0;
 `;
 
-const languageNames = {
-  fi: 'Suomi',
-  en: 'English',
-  de: 'Deutsch',
-  sv: 'Svenska',
-  cs: 'Čeština',
-  da: 'Dansk',
-  lv: 'Latviešu',
-  pl: 'Polski',
-  es: 'Español',
-  el: 'Ελληνικά',
-};
-
-function getLanguageCodeLabel(lang: string) {
-  if (lang.includes('-')) {
-    return lang.split('-')[0];
-  }
-  return lang;
-}
-
 function LanguageSelector({ mobile }: { mobile: boolean }) {
   const theme = useTheme();
   const locale = useLocale();
@@ -95,7 +76,7 @@ function LanguageSelector({ mobile }: { mobile: boolean }) {
         {locales.map((locale) => (
           <DropdownItem key={locale} tag="div">
             <Link locale={locale} href="/" onClick={handleLocaleChange}>
-              {languageNames[getLanguageCodeLabel(locale)]}
+              {getLanguageName(locale)}
             </Link>
           </DropdownItem>
         ))}

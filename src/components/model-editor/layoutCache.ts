@@ -6,11 +6,19 @@ export type CachedPosition = {
   source: CachedPositionSource;
 };
 
+/** Persisted React Flow viewport (pan + zoom). */
+export type CachedViewport = {
+  x: number;
+  y: number;
+  zoom: number;
+};
+
 type StoredPayload = {
   version: 1;
   instanceId: string;
   updatedAt: string;
   positions: Record<string, CachedPosition>;
+  viewport?: CachedViewport;
 };
 
 const SCHEMA_VERSION = 1;
@@ -96,6 +104,30 @@ export function saveUserPosition(instanceId: string, nodeId: string, x: number, 
   if (!isBrowser()) return;
   const payload = readPayload(instanceId) ?? emptyPayload(instanceId);
   payload.positions[nodeId] = { x, y, source: 'user' };
+  payload.updatedAt = new Date().toISOString();
+  writePayload(payload);
+}
+
+/** Read the persisted viewport (pan + zoom), if any. */
+export function loadViewport(instanceId: string): CachedViewport | null {
+  const v = readPayload(instanceId)?.viewport;
+  if (
+    !v ||
+    typeof v.x !== 'number' ||
+    typeof v.y !== 'number' ||
+    typeof v.zoom !== 'number' ||
+    !Number.isFinite(v.zoom)
+  ) {
+    return null;
+  }
+  return v;
+}
+
+/** Persist the current viewport (pan + zoom). Leaves cached positions intact. */
+export function saveViewport(instanceId: string, viewport: CachedViewport): void {
+  if (!isBrowser()) return;
+  const payload = readPayload(instanceId) ?? emptyPayload(instanceId);
+  payload.viewport = { x: viewport.x, y: viewport.y, zoom: viewport.zoom };
   payload.updatedAt = new Date().toISOString();
   writePayload(payload);
 }

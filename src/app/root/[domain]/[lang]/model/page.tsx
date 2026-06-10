@@ -46,6 +46,7 @@ import {
   type MockNodeEdit,
   mockNodeEditsVar,
 } from '@/components/model-editor/mockEdits';
+import { getModelEditorBase } from '@/components/model-editor/paths';
 import {
   INSTANCE_EDITOR_PUBLISH_STATE,
   PUBLISH_MODEL_INSTANCE,
@@ -53,6 +54,7 @@ import {
   editorPreviewModeVar,
   staleVersionNotificationVar,
 } from '@/components/model-editor/queries';
+import { useEditorDateFormat } from '@/components/model-editor/useEditorDateFormat';
 
 const GET_LANDING_DATA = gql`
   query ModelEditorLandingData {
@@ -107,11 +109,6 @@ const CARD_DEFS = [
   },
 ] as const;
 
-function getModelEditorBase(pathname: string): string {
-  const idx = pathname.indexOf('/model');
-  return idx >= 0 ? pathname.slice(0, idx) + '/model' : '/model';
-}
-
 type EditedNodeRow = {
   id: string;
   originalName: string;
@@ -129,13 +126,6 @@ function getEditedFieldLabels(edit: MockNodeEdit, t: ReturnType<typeof useTransl
     if (edit[key] !== undefined) labels.push(t(FIELD_LABEL_KEYS[key]));
   }
   return labels;
-}
-
-function formatDateTime(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 function formatRelative(
@@ -158,6 +148,7 @@ function formatRelative(
 
 export default function ModelEditorLandingPage() {
   const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const pathname = usePathname();
   const instance = useInstance();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
@@ -209,9 +200,11 @@ export default function ModelEditorLandingPage() {
   const editor = data?.instance.editor ?? null;
   const hasUnpublishedChanges = editor?.hasUnpublishedChanges ?? false;
   const hasMockEdits = editedRows.length > 0;
-  const lastPublishedLabel = formatDateTime(editor?.lastPublishedAt);
+  const lastPublishedLabel = editor?.lastPublishedAt ? df.dateTime(editor.lastPublishedAt) : null;
   const lastPublishedRelative = formatRelative(editor?.lastPublishedAt, t);
-  const firstPublishedLabel = formatDateTime(editor?.firstPublishedAt);
+  const firstPublishedLabel = editor?.firstPublishedAt
+    ? df.dateTime(editor.firstPublishedAt)
+    : null;
   const hasBeenPublished = editor?.firstPublishedAt != null;
   const isDraftView = previewMode === 'DRAFT';
   const badgeLabel = isDraftView ? t('editor-draft') : t('editor-published');
@@ -395,10 +388,7 @@ export default function ModelEditorLandingPage() {
               {t('editor-mock-preview')}
               {latestMockEdit
                 ? t('editor-mock-preview-last-edited', {
-                    date: latestMockEdit.at.toLocaleString(undefined, {
-                      dateStyle: 'medium',
-                      timeStyle: 'short',
-                    }),
+                    date: df.dateTime(latestMockEdit.at),
                     name: latestMockEdit.by,
                   })
                 : ''}

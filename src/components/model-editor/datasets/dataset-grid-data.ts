@@ -53,6 +53,44 @@ export type PendingEdit = {
   error?: string;
 };
 
+/**
+ * A dimension category staged by an import but not yet created on the server.
+ * Carries a client-generated `uuid` (used immediately in row keys / data-point
+ * inputs) plus the `identifier` to send when `Save changes` creates it.
+ */
+export type StagedCategory = {
+  dimensionId: string;
+  uuid: string;
+  identifier: string;
+  label: string;
+};
+
+/**
+ * A row (metric + category combination) staged by an import that has no backing
+ * data points yet. Rendered as an empty row so staged value edits have cells to
+ * attach to; `categoryByDim` may reference {@link StagedCategory} uuids.
+ */
+export type StagedRow = {
+  metricId: string;
+  categoryByDim: Record<string, string | null>;
+};
+
+/**
+ * Everything an import contributes to the grid's staged (uncommitted) state.
+ * Merged in by the grid so the changes show as dirty cells/rows and are
+ * committed (or discarded) via the grid's existing Save / Discard controls.
+ */
+export type ImportStagePayload = {
+  /** New categories to create when the edits are saved. */
+  categories: StagedCategory[];
+  /** New rows (combinations) the value edits attach to. */
+  rows: StagedRow[];
+  /** Per-cell value edits, in the same shape as manual edits. */
+  edits: PendingEdit[];
+  /** Years the import introduces that aren't already columns. */
+  years: number[];
+};
+
 export type Dataset = DatasetDetailFieldsFragment;
 export type DataPoint = Dataset['dataPoints'][number];
 
@@ -80,7 +118,13 @@ export function rowKey(metricId: string, categoryByDim: Record<string, string | 
 
 export function buildGridData(
   dataset: Dataset,
-  extraYears: ReadonlySet<number>
+  extraYears: ReadonlySet<number>,
+  staged?: {
+    /** Not-yet-created categories, so their labels render on staged rows. */
+    categories?: readonly StagedCategory[];
+    /** Not-yet-persisted rows (new metric/category combinations). */
+    rows?: readonly StagedRow[];
+  }
 ): {
   rows: GridRow[];
   years: number[];
@@ -91,6 +135,11 @@ export function buildGridData(
     for (const cat of dim.categories) {
       catLabelByUuid.set(cat.uuid, { label: cat.label, dimensionId: dim.id });
     }
+  }
+  // Staged categories aren't in `dataset.dimensions` yet; register their labels
+  // so staged rows referencing them render the label rather than the raw uuid.
+  for (const cat of staged?.categories ?? []) {
+    catLabelByUuid.set(cat.uuid, { label: cat.label, dimensionId: cat.dimensionId });
   }
 
   const rowsByKey = new Map<string, GridRow>();
@@ -142,6 +191,38 @@ export function buildGridData(
         year,
       };
     }
+  }
+
+  // Staged rows (new metric/category combinations from an import) that aren't
+  // already backed by data points. Added as empty rows so staged value edits
+  // have cells to attach to; year cells are filled by the loop below.
+  for (const stagedRow of staged?.rows ?? []) {
+    const key = rowKey(stagedRow.metricId, stagedRow.categoryByDim);
+    if (rowsByKey.has(key)) continue;
+    const metric = metricById.get(stagedRow.metricId);
+    const cells: Record<string, RowCell> = {
+      [METRIC_COL]: {
+        type: 'MetricHeader',
+        metricId: stagedRow.metricId,
+        label: metric?.label ?? stagedRow.metricId,
+        unit: metric?.unit ?? '',
+      },
+    };
+    for (const dim of dataset.dimensions) {
+      const catUuid = stagedRow.categoryByDim[dim.id] ?? null;
+      cells[dimColId(dim.id)] = {
+        type: 'DimensionCategory',
+        dimensionId: dim.id,
+        categoryUuid: catUuid,
+        label: catUuid ? (catLabelByUuid.get(catUuid)?.label ?? catUuid) : '—',
+      };
+    }
+    rowsByKey.set(key, {
+      id: key,
+      metricId: stagedRow.metricId,
+      categoryByDim: { ...stagedRow.categoryByDim },
+      cells,
+    });
   }
 
   // User-added empty year columns are merged in so they render alongside

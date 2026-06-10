@@ -1,7 +1,10 @@
-import { type MouseEvent, useState } from 'react';
+import { type MouseEvent, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -9,6 +12,7 @@ import {
   CircularProgress,
   Container,
   IconButton,
+  Link,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -22,16 +26,18 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import {
   ChatLeft,
+  ChevronDown,
   Database,
   Files,
-  Link45deg,
   PencilSquare,
   Plus,
   ThreeDotsVertical,
@@ -40,7 +46,9 @@ import {
 
 import type { InstanceDatasetsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
+import { useEditorDateFormat } from '../useEditorDateFormat';
 import { GET_INSTANCE_DATASETS } from './queries';
+import { getUserName } from './shared';
 
 function getDatasetsBase(pathname: string): string {
   const idx = pathname.indexOf('/model');
@@ -60,6 +68,7 @@ function DatasetRowActions({
   onDelete,
   onOpenChange,
 }: DatasetRowActionsProps) {
+  const t = useTranslations('model-editor');
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = (e: MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
@@ -75,8 +84,8 @@ function DatasetRowActions({
   };
   return (
     <>
-      <Tooltip title="Actions">
-        <IconButton size="small" onClick={open} aria-label="Dataset actions">
+      <Tooltip title={t('datasets-actions')}>
+        <IconButton size="small" onClick={open} aria-label={t('datasets-actions-menu')}>
           <ThreeDotsVertical />
         </IconButton>
       </Tooltip>
@@ -92,26 +101,50 @@ function DatasetRowActions({
           <ListItemIcon>
             <PencilSquare size={14} />
           </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
+          <ListItemText>{t('datasets-edit')}</ListItemText>
         </MenuItem>
         <MenuItem onClick={wrap(onDuplicate)}>
           <ListItemIcon>
             <Files size={14} />
           </ListItemIcon>
-          <ListItemText>Duplicate</ListItemText>
+          <ListItemText>{t('datasets-duplicate')}</ListItemText>
         </MenuItem>
         <MenuItem onClick={wrap(onDelete)}>
           <ListItemIcon>
             <Trash size={14} />
           </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
+          <ListItemText>{t('datasets-delete')}</ListItemText>
         </MenuItem>
       </Menu>
     </>
   );
 }
 
+type SortKey = 'name' | 'dimensions' | 'metrics' | 'comments' | 'lastModified';
+type SortOrder = 'asc' | 'desc';
+
+type DatasetRow = NonNullable<
+  NonNullable<InstanceDatasetsQuery['instance']['editor']>['datasets']
+>[number];
+
+function getSortValue(ds: DatasetRow, key: SortKey): string | number {
+  switch (key) {
+    case 'name':
+      return ds.name?.toLowerCase() ?? '';
+    case 'dimensions':
+      return ds.dimensions.length;
+    case 'metrics':
+      return ds.metrics.length;
+    case 'comments':
+      return ds.dataPointComments.length;
+    case 'lastModified':
+      return ds.lastModifiedAt ? new Date(ds.lastModifiedAt).getTime() : 0;
+  }
+}
+
 export default function DatasetList() {
+  const t = useTranslations('model-editor');
+  const df = useEditorDateFormat();
   const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -120,6 +153,49 @@ export default function DatasetList() {
   const base = getDatasetsBase(pathname);
   const [notice, setNotice] = useState<string | null>(null);
   const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  // Captured once at mount; relative timestamps are good-enough without ticking.
+  const [now] = useState(() => Date.now());
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
+
+  const datasets = useMemo(
+    () => data?.instance.editor?.datasets ?? [],
+    [data?.instance.editor?.datasets]
+  );
+
+  // External placeholder datasets live in a separate, read-only section.
+  const mainDatasets = useMemo(
+    () => datasets.filter((ds) => !ds.isExternalPlaceholder),
+    [datasets]
+  );
+  const externalDatasets = useMemo(
+    () =>
+      datasets
+        .filter((ds) => ds.isExternalPlaceholder)
+        .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+    [datasets]
+  );
+
+  const sortedDatasets = useMemo(() => {
+    const arr = [...mainDatasets];
+    arr.sort((a, b) => {
+      const av = getSortValue(a, sortKey);
+      const bv = getSortValue(b, sortKey);
+      if (av < bv) return sortOrder === 'asc' ? -1 : 1;
+      if (av > bv) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [mainDatasets, sortKey, sortOrder]);
 
   if (loading && !data) {
     return (
@@ -129,53 +205,95 @@ export default function DatasetList() {
     );
   }
   if (error) return <GraphQLError error={error} />;
-  const datasets = data?.instance.editor?.datasets ?? [];
 
   return (
     <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Database size={22} />
-          <Typography variant="h5">Datasets</Typography>
+          <Typography variant="h5">{t('datasets-title')}</Typography>
         </Stack>
         <Button
           variant="contained"
           startIcon={<Plus />}
-          onClick={() => setNotice('Creating datasets is not yet implemented.')}
+          onClick={() => setNotice(t('datasets-creating-not-implemented'))}
         >
-          New dataset
+          {t('datasets-new-dataset')}
         </Button>
       </Stack>
       {data?.instance.editor === null && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Model editor data is not available for this instance.
+          {t('datasets-editor-data-unavailable')}
         </Alert>
       )}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Dimensions</TableCell>
-              <TableCell align="right">Metrics</TableCell>
-              <TableCell align="right">Comments</TableCell>
-              <TableCell>Source</TableCell>
+              <TableCell sortDirection={sortKey === 'name' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'name'}
+                  direction={sortKey === 'name' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('name')}
+                >
+                  {t('datasets-name')}
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'dimensions' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'dimensions'}
+                  direction={sortKey === 'dimensions' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('dimensions')}
+                >
+                  {t('datasets-dimensions')}
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'metrics' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'metrics'}
+                  direction={sortKey === 'metrics' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('metrics')}
+                >
+                  {t('datasets-metrics')}
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'comments' ? sortOrder : false}>
+                <TableSortLabel
+                  active={sortKey === 'comments'}
+                  direction={sortKey === 'comments' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('comments')}
+                >
+                  {t('datasets-comments')}
+                </TableSortLabel>
+              </TableCell>
+              <TableCell
+                align="right"
+                sortDirection={sortKey === 'lastModified' ? sortOrder : false}
+              >
+                <TableSortLabel
+                  active={sortKey === 'lastModified'}
+                  direction={sortKey === 'lastModified' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('lastModified')}
+                >
+                  {t('datasets-last-edited')}
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right" sx={{ width: 120 }}>
-                Actions
+                {t('datasets-actions')}
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {datasets.length === 0 && (
+            {sortedDatasets.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6}>
                   <Typography color="text.secondary" sx={{ py: 2 }}>
-                    No datasets defined.
+                    {t('datasets-none-defined')}
                   </Typography>
                 </TableCell>
               </TableRow>
             )}
-            {datasets.map((ds) => (
+            {sortedDatasets.map((ds) => (
               <TableRow
                 key={ds.id}
                 hover
@@ -184,27 +302,42 @@ export default function DatasetList() {
                 onClick={() => router.push(`${base}/${encodeURIComponent(ds.id)}`)}
               >
                 <TableCell>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box>
-                      <Box component="span">{ds.name}</Box>
-                      {ds.identifier && (
-                        <Typography
-                          variant="caption"
-                          component="div"
-                          color="text.disabled"
-                          sx={{ fontFamily: 'monospace', lineHeight: 1.2 }}
-                        >
-                          {ds.identifier}
-                        </Typography>
-                      )}
-                    </Box>
-                    {ds.isExternalPlaceholder && (
-                      <Chip label="Placeholder" size="small" color="warning" variant="outlined" />
+                  <Box>
+                    <Box component="span">{ds.name}</Box>
+                    {ds.identifier && (
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        color="text.disabled"
+                        sx={{ fontFamily: 'monospace', lineHeight: 1.2 }}
+                      >
+                        {ds.identifier}
+                      </Typography>
                     )}
-                  </Stack>
+                  </Box>
                 </TableCell>
-                <TableCell align="right">{ds.dimensions.length}</TableCell>
-                <TableCell align="right">{ds.metrics.length}</TableCell>
+                <TableCell align="right">
+                  {ds.dimensions.length > 0 ? (
+                    <Tooltip title={ds.dimensions.map((d) => d.name).join(', ')}>
+                      <Chip label={ds.dimensions.length} size="small" />
+                    </Tooltip>
+                  ) : (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="right">
+                  {ds.metrics.length > 0 ? (
+                    <Tooltip title={ds.metrics.map((m) => m.unit || m.label).join(', ')}>
+                      <Chip label={ds.metrics.length} size="small" />
+                    </Tooltip>
+                  ) : (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
                 <TableCell align="right">
                   {ds.dataPointComments.length > 0 ? (
                     <Stack
@@ -222,19 +355,22 @@ export default function DatasetList() {
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell>
-                  {ds.externalRef ? (
-                    <Tooltip title={ds.externalRef.repoUrl}>
-                      <Chip
-                        icon={<Link45deg size={14} />}
-                        label={ds.externalRef.datasetId}
-                        size="small"
-                        variant="outlined"
-                      />
+                <TableCell align="right">
+                  {ds.lastModifiedAt ? (
+                    <Tooltip
+                      title={
+                        ds.lastModifiedBy
+                          ? `${df.dateTime(ds.lastModifiedAt)} · ${getUserName(ds.lastModifiedBy, t)}`
+                          : df.dateTime(ds.lastModifiedAt)
+                      }
+                    >
+                      <Typography variant="body2" color="text.secondary" component="span">
+                        {df.relativeTime(ds.lastModifiedAt, now)}
+                      </Typography>
                     </Tooltip>
                   ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Internal
+                    <Typography variant="body2" color="text.disabled">
+                      —
                     </Typography>
                   )}
                 </TableCell>
@@ -242,9 +378,11 @@ export default function DatasetList() {
                   <DatasetRowActions
                     onEdit={() => router.push(`${base}/${encodeURIComponent(ds.id)}`)}
                     onDuplicate={() =>
-                      setNotice(`Duplicating "${ds.name}" is not yet implemented.`)
+                      setNotice(t('datasets-duplicating-not-implemented', { name: ds.name }))
                     }
-                    onDelete={() => setNotice(`Deleting "${ds.name}" is not yet implemented.`)}
+                    onDelete={() =>
+                      setNotice(t('datasets-deleting-not-implemented', { name: ds.name }))
+                    }
                     onOpenChange={(open) => setOpenMenuRowId(open ? ds.id : null)}
                   />
                 </TableCell>
@@ -253,6 +391,59 @@ export default function DatasetList() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {externalDatasets.length > 0 && (
+        <Accordion sx={{ mt: 3 }} disableGutters>
+          <AccordionSummary expandIcon={<ChevronDown />}>
+            <Typography variant="subtitle1">
+              {t('datasets-external-datasets')} ({externalDatasets.length})
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('datasets-name')}</TableCell>
+                    <TableCell>{t('datasets-identifier')}</TableCell>
+                    <TableCell>{t('datasets-source')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {externalDatasets.map((ds) => {
+                    const repoUrl = ds.externalRef?.repoUrl ?? null;
+                    return (
+                      <TableRow key={ds.id}>
+                        <TableCell>{ds.name}</TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace' }}>
+                          {ds.identifier || '—'}
+                        </TableCell>
+                        <TableCell>
+                          {repoUrl ? (
+                            <Link
+                              href={repoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ wordBreak: 'break-all' }}
+                            >
+                              {repoUrl}
+                            </Link>
+                          ) : (
+                            <Typography variant="body2" color="text.disabled">
+                              —
+                            </Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </AccordionDetails>
+        </Accordion>
+      )}
+
       <Snackbar
         open={notice !== null}
         autoHideDuration={4000}

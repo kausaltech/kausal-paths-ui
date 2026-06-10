@@ -10,11 +10,46 @@ import type {
   EditorNodeFieldsFragment,
   InputPortInput,
   NodeConfigInput,
+  NodeParametersQuery,
+  NodeParametersQueryVariables,
   OutputPortInput,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
-import { CREATE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
+import {
+  CREATE_NODE,
+  NODE_PARAMETERS,
+  draftHeadTokenVar,
+  staleVersionNotificationVar,
+} from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
+
+/**
+ * Map the source node's parameters to a `{ localId: value }` config the
+ * `createNode` `params` JSON accepts. Parameters hold node logic that isn't in
+ * `typeConfig` (e.g. a `formula` string on generic nodes, numeric constants),
+ * so copying them is what makes a duplicate behave like its source. Only
+ * customizable params with a concrete value are carried; unknown-typed and
+ * value-less params are skipped.
+ */
+function buildParams(
+  parameters: NonNullable<NodeParametersQuery['node']>['parameters']
+): Record<string, string | number | boolean> | null {
+  const out: Record<string, string | number | boolean> = {};
+  for (const p of parameters) {
+    if (!p.nodeRelativeId || !p.isCustomizable) continue;
+    const value =
+      p.__typename === 'BoolParameterType'
+        ? p.boolValue
+        : p.__typename === 'NumberParameterType'
+          ? p.numberValue
+          : p.__typename === 'StringParameterType'
+            ? p.stringValue
+            : undefined;
+    if (value === null || value === undefined) continue;
+    out[p.nodeRelativeId] = value;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
 
 function pickUniqueIdentifier(
   sourceIdentifier: string,
@@ -75,18 +110,35 @@ function buildConfig(source: EditorNodeFieldsFragment): NodeConfigInput | null {
       } as NodeConfigInput;
     case 'SimpleConfigType':
       return { simple: { nodeClass: typeConfig.nodeClass } } as NodeConfigInput;
+    case 'FormulaConfigType':
+      return { formula: { formula: typeConfig.formula } } as NodeConfigInput;
+    case 'PipelineConfigType': {
+      // The query returns `operations` as JSON (a list of `{ operation }`
+      // objects); the input wants `[PipelineOperationInput!]`. Map element by
+      // element, dropping anything that doesn't carry an `operation` string.
+      const rawOperations = Array.isArray(typeConfig.operations)
+        ? (typeConfig.operations as unknown[])
+        : [];
+      const operations = rawOperations.flatMap((op) =>
+        op != null && typeof (op as { operation?: unknown }).operation === 'string'
+          ? [{ operation: (op as { operation: string }).operation }]
+          : []
+      );
+      return { pipeline: { operations } } as NodeConfigInput;
+    }
     default:
       return null;
   }
 }
 
-export type DuplicateActionResult = {
+export type DuplicateNodeResult = {
   ok: true;
+  newId: string;
   newIdentifier: string;
   newName: string;
 };
 
-export function useDuplicateAction() {
+export function useDuplicateNode() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
@@ -95,8 +147,13 @@ export function useDuplicateAction() {
   return useCallback(
     async (
       source: EditorNodeFieldsFragment,
-      allNodes: readonly EditorNodeFieldsFragment[]
-    ): Promise<DuplicateActionResult> => {
+      allNodes: readonly EditorNodeFieldsFragment[],
+      // Invoked with the new node's id after the create succeeds but *before*
+      // the graph is refetched. Lets the caller seed layout state (e.g. the
+      // copy's offset position) so the refetch-triggered layout pass sees it,
+      // rather than racing the refetch.
+      onCreated?: (newId: string) => void
+    ): Promise<DuplicateNodeResult> => {
       if (source.kind == null) {
         throw new Error(`Cannot duplicate node "${source.identifier}" — missing kind`);
       }
@@ -112,6 +169,22 @@ export function useDuplicateAction() {
       const newIdentifier = pickUniqueIdentifier(source.identifier, existingIdentifiers);
       const newName = `Copy of ${source.name}`;
       const { inputPorts, outputPorts } = buildPortInputs(source);
+
+      // Parameters carry node logic (e.g. a formula string, constants) that
+      // isn't in `typeConfig`; the NodeGraph query doesn't fetch them, so pull
+      // them for just this node before building the input.
+      let params: Record<string, string | number | boolean> | null = null;
+      try {
+        const { data } = await client.query<NodeParametersQuery, NodeParametersQueryVariables>({
+          query: NODE_PARAMETERS,
+          variables: { nodeId: source.id },
+          context: editorContext,
+          fetchPolicy: 'network-only',
+        });
+        if (data?.node?.parameters) params = buildParams(data.node.parameters);
+      } catch {
+        // Non-fatal: fall back to no params rather than blocking duplication.
+      }
       const input: CreateNodeInput = {
         identifier: newIdentifier,
         name: newName,
@@ -133,7 +206,7 @@ export function useDuplicateAction() {
         i18n: null,
         minimumYear: null,
         outputMetrics: null,
-        params: null,
+        params,
       };
 
       try {
@@ -144,15 +217,21 @@ export function useDuplicateAction() {
             version: draftHeadTokenVar(),
           },
           context: editorContext,
-          refetchQueries: ['NodeGraph', 'EditorPublishState'],
-          awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.createNode;
         if (payload?.__typename === 'OperationInfo') {
           const message = payload.messages.map((m) => m.message).join('; ');
-          throw new Error(message || 'Failed to duplicate action');
+          throw new Error(message || 'Failed to duplicate node');
         }
-        return { ok: true, newIdentifier, newName };
+        if (!payload?.id) {
+          throw new Error('Failed to duplicate node — no id returned');
+        }
+        // Seed-before-refetch: the callback runs while the graph still shows
+        // the pre-duplication node set, so any layout state it writes is in
+        // place before the refetch below makes the copy appear.
+        onCreated?.(payload.id);
+        await client.refetchQueries({ include: ['NodeGraph', 'EditorPublishState'] });
+        return { ok: true, newId: payload.id, newIdentifier, newName };
       } catch (err) {
         const isStale =
           CombinedGraphQLErrors.is(err) &&
