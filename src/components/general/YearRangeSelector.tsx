@@ -102,12 +102,13 @@ const YearRangeSelector = (props: YearRangeSelectorProps) => {
     [yearRange, minYear, maxYear, maxHistoricalYear]
   );
 
-  // Only show the reference year as a separate section when it falls outside the
-  // normal range (the gap scenario); otherwise it already appears as a normal year.
+  // Only show the reference year as a separate section when it is a genuine gap
+  // year sitting before the normal data range (i.e. before minYear); otherwise
+  // it either already appears as a normal year, or — if it's inside the range but
+  // outside the currently-selectable subset — offering it would create an invalid
+  // range (start year after the target year).
   const referenceYearOption =
-    referenceYear != null && !availableReferenceYears.all.includes(referenceYear)
-      ? referenceYear
-      : null;
+    referenceYear != null && referenceYear < minYear ? referenceYear : null;
 
   const YearOption = (year: number) => {
     if (yearsWithGoals?.includes(year)) {
