@@ -593,8 +593,11 @@ export default function DimensionalNodeVisualisation({
           progressTable={progressTable}
           totalTable={totalTable}
           unit={{
+            // getLongUnit applies the CO2e correction (see its FIXME). The shared
+            // NodeGraph uses htmlShort for tooltip rows, so apply it there too or
+            // tooltips regress to the raw unit while the axis shows CO2e.
             htmlLong: getLongUnit(metrics.default, metric.unit.htmlShort, t),
-            htmlShort: metric.unit.htmlShort,
+            htmlShort: getLongUnit(metrics.default, metric.unit.htmlShort, t),
           }}
           referenceYear={referenceYear}
           forecastRange={visibleForecastRange}
