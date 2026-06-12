@@ -287,6 +287,7 @@ const ScenarioPanel = () => {
                 maxYear={maxYear}
                 maxHistoricalYear={maxHistoricalYear}
                 yearsWithGoals={yearsWithGoals}
+                referenceYear={instance.referenceYear}
               />
 
               {availableNormalizations.length > 0 && <NormalizationWidget />}
