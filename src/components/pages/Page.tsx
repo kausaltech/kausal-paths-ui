@@ -126,11 +126,6 @@ function Page(props: PageProps) {
   }
   return (
     <>
-      {site ? (
-        <title>
-          {site.title} | {page.title}
-        </title>
-      ) : null}
       {headerExtra}
       <Suspense fallback={<PageLoader theme={theme} />}>{pageContent}</Suspense>
     </>

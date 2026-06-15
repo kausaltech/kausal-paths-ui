@@ -155,9 +155,6 @@ export default function NodePage() {
 
   return (
     <>
-      <title>
-        {site.title} | {node.name}
-      </title>
       <HeaderSection $color={node.color || undefined}>
         <Container fixed maxWidth="xl">
           <PageHeader>
