@@ -3,5 +3,7 @@
   "not-found-intro": "404 Sidan hittas inte.",
   "instance-protected": "Webbplatsen är för närvarande inte offentlig.",
   "download-error": "Nedladdningen misslyckades. Försök igen senare.",
-  "error-details": "Felinformation"
+  "error-details": "Felinformation",
+  "generic-title": "Det uppstod ett fel i data",
+  "generic-intro": "Vi stötte på ett fel när data för den här sidan laddades, vilket kan påverka hur den visas. Vårt team har meddelats."
 }
