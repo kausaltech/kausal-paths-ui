@@ -91,9 +91,14 @@ function testInstance(instanceId: string) {
 
         const requestTracker = new InflightRequests(page);
         await actionToggle.click();
-        await expect(scenarioSelectInput).toHaveValue('custom');
+        // Switching to the "custom" scenario waits on the parameter mutation +
+        // refetch, which can exceed the 5s default expect timeout (test.slow()
+        // extends the test timeout, not per-assertion expect timeouts).
+        await expect(scenarioSelectInput).toHaveValue('custom', { timeout: 15000 });
         await ctx.waitForLoaded(page);
-        await expect.poll(() => requestTracker.inflightRequests().length, { timeout: 15000 }).toBe(0);
+        await expect
+          .poll(() => requestTracker.inflightRequests().length, { timeout: 15000 })
+          .toBe(0);
         requestTracker.stop();
         await expect(outcomeCardSet).toBeVisible();
         await expect(outcomeCardSet).toHaveAttribute('data-scenario-id', 'custom');
