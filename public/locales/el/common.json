@@ -74,7 +74,8 @@
   "nav-menu-open": "Ανοιχτή πλοήγηση",
   "nav-menu-close": "Κλείστε την πλοήγηση",
   "front-page": "Πρώτη σελίδα",
-  "actions-count": "Εμφάνιση ενεργειών {count}",
+  "actions-count": "Εμφάνιση {shown} από {total} ενέργειες",
+  "actions-count-active": "Εμφάνιση {shown} από {total} ενεργές ενέργειες",
   "actions-as-graph": "Γράφημα",
   "actions-as-list": "Λίστα",
   "actions-as-efficiency": "Αποδοτικότητα",
@@ -168,5 +169,6 @@
   "cost-efficiency-subtitle": "Αποδοτικότητα κόστους των δράσεων στο σενάριο ''{activeScenario}''.",
   "cost-benefit-subtitle": "Κόστος-όφελος των δράσεων στο σενάριο ''{activeScenario}''.",
   "simple-effect-subtitle": "Επιλεγμένη επίπτωση των δράσεων στο σενάριο ''{activeScenario}''.",
+  "share-of-impact": "Μερίδιο επίδρασης",
   "return-on-investment-subtitle": "Απόδοση της επένδυσης (ROI) των δράσεων στο σενάριο ''{activeScenario}''."
 }

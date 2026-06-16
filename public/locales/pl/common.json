@@ -62,7 +62,8 @@
   "nav-menu-open": "Otwórz nawigację",
   "nav-menu-close": "Zamknij nawigację",
   "front-page": "Strona główna",
-  "actions-count": "Wyświetlono {count} działań",
+  "actions-count": "Wyświetlono {shown} z {total} działań",
+  "actions-count-active": "Wyświetlono {shown} z {total} aktywnych działań",
   "actions-as-graph": "Wykres",
   "actions-as-list": "Lista",
   "actions-as-efficiency": "Efektywność",
@@ -164,5 +165,6 @@
   "cost-efficiency-subtitle": "Efektywność kosztowa działań w scenariuszu ''{activeScenario}''.",
   "cost-benefit-subtitle": "Koszty i korzyści działań w scenariuszu ''{activeScenario}''.",
   "simple-effect-subtitle": "Wybrany wpływ działań w scenariuszu ''{activeScenario}''.",
+  "share-of-impact": "Udział we wpływie",
   "return-on-investment-subtitle": "Zwrot z inwestycji (ROI) działań w scenariuszu ''{activeScenario}''."
 }

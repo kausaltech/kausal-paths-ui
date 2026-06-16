@@ -160,16 +160,17 @@ export default function ActionsList({
       return cols;
     }
 
-    // wedge_diagram: annual impact at the target year. The value is each
-    // action's wedge band height (its annual contribution to closing the gap),
-    // shown in the band's own unit so the column mirrors the diagram.
+    // wedge_diagram: each action's share of the gap between the current and
+    // baseline scenarios over the year range. 100% is the area between the
+    // floor and ceiling lines in the diagram; the action's percentage is its
+    // wedge's proportion of that.
     if (graphType === 'wedge_diagram') {
       return [
         {
           key: 'IMPACT',
-          label: `${t('annual-impact')} ${yearRange[1]}`,
-          getValue: (a) => a.wedgeAnnualImpact ?? null,
-          getUnit: (a) => a.wedgeAnnualImpactUnit,
+          label: `${t('share-of-impact')} ${yearRange[0]}–${yearRange[1]}`,
+          getValue: (a) => a.wedgeImpactShare ?? null,
+          getUnit: () => '%',
         },
       ];
     }

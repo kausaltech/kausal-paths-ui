@@ -11,6 +11,7 @@ import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphq
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 
 type Entry = { action: string; returnOnInvestment: number };
 
@@ -63,7 +64,7 @@ function getChartConfig(
     ],
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (value: number) => `${formatNumber(value || 0)} ${unit}`,
+      formatter: createAxisTooltipFormatter((value) => `${formatNumber(value ?? 0)} ${unit}`),
     },
     grid: {
       containLabel: true,

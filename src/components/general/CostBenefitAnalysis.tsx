@@ -20,6 +20,7 @@ import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphq
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 import { DimensionalMetric } from '@/data/metric';
 
 /**
@@ -198,7 +199,9 @@ function getActionChartConfig(
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: number) => `${formatNumber(value)} ${unitLabel}`,
+      formatter: createAxisTooltipFormatter((value) =>
+        value == null ? '—' : `${formatNumber(value)} ${unitLabel}`
+      ),
     },
     series: [
       {

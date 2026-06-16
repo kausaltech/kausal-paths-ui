@@ -70,7 +70,8 @@
   "will_be_implemented": "Es implementada",
   "nav-menu-open": "Abrir navegación",
   "nav-menu-close": "Cerrar navegación",
-  "actions-count": "Mostrar {count} acción(es)",
+  "actions-count": "Mostrando {shown} de {total} acciones",
+  "actions-count-active": "Mostrando {shown} de {total} acciones activas",
   "actions-as-graph": "Gráfico",
   "actions-as-list": "Lista",
   "actions-as-efficiency": "Eficacia",
@@ -167,5 +168,6 @@
   "cost-efficiency-subtitle": "Eficiencia de costes de las acciones en el escenario ''{activeScenario}''.",
   "cost-benefit-subtitle": "Coste-beneficio de las acciones en el escenario ''{activeScenario}''.",
   "simple-effect-subtitle": "Impacto seleccionado de las acciones en el escenario ''{activeScenario}''.",
+  "share-of-impact": "Proporción del impacto",
   "return-on-investment-subtitle": "Retorno de la inversión (ROI) de las acciones en el escenario ''{activeScenario}''."
 }

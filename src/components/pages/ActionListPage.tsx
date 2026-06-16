@@ -184,7 +184,6 @@ function ActionListPage({ page }: ActionListPageProps) {
   // `previousData` is undefined, so we don't hide cells while the initial fetch runs.
   const isRefetchingWithStaleData = areActionsLoading && previousData !== undefined;
 
-  console.log('ActionListPage render', { data, areActionsLoading, isRefetchingWithStaleData });
   // `undefined` = user hasn't picked anything yet (defaults to first overview).
   // `null` = user explicitly picked "emissions impact".
   // `string` = user picked a specific overview.
@@ -197,6 +196,8 @@ function ActionListPage({ page }: ActionListPageProps) {
     usableActions,
     displayedActionsCount,
     totalActionsCount,
+    displayedActiveActionsCount,
+    totalActiveActionsCount,
     actionGroups,
     hasEfficiency,
     activeOverview,
@@ -318,7 +319,15 @@ function ActionListPage({ page }: ActionListPageProps) {
                 <span>{t('loading')}</span>
               ) : (
                 <span>
-                  {t('actions-count', { count: `${displayedActionsCount}/${totalActionsCount}` })}
+                  {listType === 'graph'
+                    ? t('actions-count-active', {
+                        shown: displayedActiveActionsCount,
+                        total: totalActiveActionsCount,
+                      })
+                    : t('actions-count', {
+                        shown: displayedActionsCount,
+                        total: totalActionsCount,
+                      })}
                 </span>
               )}
             </ActionCount>

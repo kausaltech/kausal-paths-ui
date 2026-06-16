@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { useReactiveVar } from '@apollo/client/react';
-import type { LineSeriesOption } from 'echarts';
+import type { LineSeriesOption, TooltipComponentFormatterCallbackParams } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
 
 import { Chart } from '@common/components/Chart';
@@ -11,6 +11,7 @@ import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphq
 import { activeScenarioVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { truncateLabel } from '@/components/charts/chartTooltip';
 
 type ActionLookupEntry = {
   id: string;
@@ -179,6 +180,36 @@ function getChartConfig(
     ...(goalSeries ? [goalSeries] : []),
   ];
 
+  // Tooltip shows action bands as percentages of that year's gap
+  // (ceiling − floor), computed client-side until the backend provides shares
+  // directly. The chart itself stays in absolute units; the scenario and goal
+  // lines keep absolute values since they are the totals a share is measured
+  // against.
+  const bandNames = new Set(bands.map((b) => b.name));
+  const gaps = years.map((_, i) => {
+    const f = floorValues[i];
+    const c = ceilingValues[i];
+    return f != null && c != null ? c - f : null;
+  });
+  const formatTooltip = (params: TooltipComponentFormatterCallbackParams): string => {
+    const items = Array.isArray(params) ? params : [params];
+    const rows = items.map((p) => {
+      const value = typeof p.value === 'number' ? p.value : null;
+      let formatted = '—';
+      if (value != null) {
+        if (p.seriesName != null && bandNames.has(p.seriesName)) {
+          const gap = gaps[p.dataIndex];
+          formatted = gap ? `${formatNumber((value / gap) * 100)} %` : '—';
+        } else {
+          formatted = `${formatNumber(value)} ${unit}`;
+        }
+      }
+      const marker = typeof p.marker === 'string' ? p.marker : '';
+      return `${marker}${truncateLabel(p.seriesName ?? '')}&nbsp;&nbsp;<b>${formatted}</b>`;
+    });
+    return [`<b>${items[0]?.name ?? ''}</b>`, ...rows].join('<br/>');
+  };
+
   return {
     legend: {
       type: 'plain',
@@ -187,8 +218,7 @@ function getChartConfig(
     },
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (value: number | null) =>
-        value == null ? '—' : `${formatNumber(value)} ${unit}`,
+      formatter: formatTooltip,
     },
     grid: {
       containLabel: true,
@@ -346,7 +376,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
   const title = `${data?.label || 'Wedge diagram'} (${startYear} - ${endYear})`;
   const subtitle =
     data?.indicatorLabel ||
-    `Contributions of actions closing the gap between current and baseline scenarios in "${activeScenario?.name ?? ''}".`;
+    `Contributions of actions in "${activeScenario?.name ?? ''}" scenario compared to ${ceilingLabel}.`;
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>

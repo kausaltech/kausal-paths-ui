@@ -62,7 +62,8 @@
   "nav-menu-open": "Otevřít navigaci",
   "nav-menu-close": "Zavřít navigaci",
   "front-page": "Úvodní stránka",
-  "actions-count": "Zobrazeno {count} akcí",
+  "actions-count": "Zobrazeno {shown} z {total} akcí",
+  "actions-count-active": "Zobrazeno {shown} z {total} aktivních akcí",
   "actions-as-graph": "Graf",
   "actions-as-list": "Seznam",
   "actions-as-efficiency": "Efektivita",
@@ -164,5 +165,6 @@
   "cost-efficiency-subtitle": "Nákladová efektivita opatření ve scénáři ''{activeScenario}''.",
   "cost-benefit-subtitle": "Náklady a přínosy opatření ve scénáři ''{activeScenario}''.",
   "simple-effect-subtitle": "Vybraný dopad opatření ve scénáři ''{activeScenario}''.",
+  "share-of-impact": "Podíl na dopadu",
   "return-on-investment-subtitle": "Návratnost investic (ROI) opatření ve scénáři ''{activeScenario}''."
 }

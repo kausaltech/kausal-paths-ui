@@ -11,7 +11,7 @@ import {
   type ImpactOverviewQueryVariables,
   type ImpactOverviewsQuery,
 } from '@/common/__generated__/graphql';
-import { summarizeYearlyValuesBetween } from '@/common/preprocess';
+import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
 import { GET_IMPACT_OVERVIEW } from '@/queries/getImpactOverview';
 import { GET_IMPACT_OVERVIEWS } from '@/queries/getImpactOverviews';
 import type {
@@ -19,6 +19,13 @@ import type {
   ActiveOverviewInfo,
   CostBenefitTotals,
 } from '@/types/actions.types';
+
+type WedgeEntry = NonNullable<ImpactOverviewDetailFragment['wedge']>[0];
+
+// Reads only `parameters`, so accept any action shape (raw query action or the
+// enriched ActionWithEfficiency) — both carry the same parameter list.
+const isActionActive = (action: Pick<ActionWithEfficiency, 'parameters'>) =>
+  findActionEnabledParam(action.parameters)?.boolValue ?? false;
 
 type UseActionListDataProps = {
   data: ActionListQuery | undefined;
@@ -36,8 +43,14 @@ type UseActionListDataProps = {
 
 type UseActionListDataResult = {
   usableActions: ActionWithEfficiency[];
+  /** Actions left after the type filter — the list view shows these (active + disabled). */
   displayedActionsCount: number;
+  /** All actions before the type filter — the list view's denominator. */
   totalActionsCount: number;
+  /** Active (scenario-enabled) actions left after the type filter — the graph view shows these. */
+  displayedActiveActionsCount: number;
+  /** All active actions before the type filter — the graph view's denominator. */
+  totalActiveActionsCount: number;
   actionGroups: NonNullable<ActionWithEfficiency['group']>[];
   hasEfficiency: boolean;
   activeOverview: ActiveOverviewInfo | null;
@@ -159,38 +172,42 @@ export function useActionListData({
     return map;
   }, [activeOverviewDetail, yearRange]);
 
-  // Per-action annual contribution for the wedge diagram. Each non-scenario
-  // wedge entry is an action band keyed by action id; we read its value at the
-  // target year so the list column mirrors the band drawn in the diagram. The
-  // band metric carries its own (annual) unit, distinct from the cumulative
-  // effectUnit used by the total-impact column.
-  const wedgeAnnualByActionId = useMemo(() => {
+  // Per-action share of the wedge for the list column, computed client-side
+  // until the backend provides it directly. 100% is the gap area between the
+  // current scenario (floor) and baseline scenario (ceiling) over the selected
+  // year range; each action's share is its band area as a proportion of that.
+  const wedgeShareByActionId = useMemo(() => {
     const overview = activeOverviewDetail;
-    const map = new Map<string, { value: number; unit?: string }>();
+    const map = new Map<string, number>();
     if (!overview || overview.graphType !== 'wedge_diagram' || !overview.wedge) {
       return map;
     }
-    const targetYear = yearRange[1];
-    for (const entry of overview.wedge) {
-      if (entry.isScenario) continue;
-      const { years, values } = entry.metric;
-      // Prefer an exact hit on the target year; otherwise fall back to the
-      // latest reported year that doesn't exceed it, so a metric that stops a
-      // year short of the range end still yields a value instead of "—".
-      let idx = years.indexOf(targetYear);
-      if (idx === -1) {
-        let bestYear = -Infinity;
-        years.forEach((y, i) => {
-          if (y <= targetYear && y > bestYear) {
-            bestYear = y;
-            idx = i;
-          }
-        });
-      }
-      if (idx === -1) continue;
-      const value = values[idx];
-      if (value == null) continue;
-      map.set(entry.id, { value, unit: entry.metric.unit?.short ?? undefined });
+    const [startYear, endYear] = yearRange;
+    const areaInRange = (entry: WedgeEntry) =>
+      entry.metric.years.reduce(
+        (sum, year, i) =>
+          year >= startYear && year <= endYear ? sum + (entry.metric.values[i] ?? 0) : sum,
+        0
+      );
+
+    const scenarios = overview.wedge.filter((e) => e.isScenario);
+    const bands = overview.wedge.filter((e) => !e.isScenario);
+    // Same floor/ceiling resolution as WedgeDiagram's partition(): match by id,
+    // fall back to the order pinned in the wedge-diagram spec.
+    const floor = scenarios.find((e) => e.id === 'current_scenario') ?? scenarios[0];
+    const ceiling = scenarios.find((e) => e.id === 'baseline_scenario') ?? scenarios[1];
+
+    // Band areas sum to the gap area by backend construction; derive the
+    // denominator from the scenarios per the definition above, falling back to
+    // the band total if the scenario entries are missing.
+    const bandAreas = bands.map((b) => ({ id: b.id, area: areaInRange(b) }));
+    const gapArea =
+      floor && ceiling
+        ? areaInRange(ceiling) - areaInRange(floor)
+        : bandAreas.reduce((sum, b) => sum + b.area, 0);
+    if (!gapArea) return map;
+    for (const band of bandAreas) {
+      map.set(band.id, (band.area / gapArea) * 100);
     }
     return map;
   }, [activeOverviewDetail, yearRange]);
@@ -208,13 +225,12 @@ export function useActionListData({
               ].find((dataPoint) => dataPoint.year === yearRange[1])?.value ?? 0,
           };
 
-          // Wedge band value lives in overview.wedge (keyed by action id), which
-          // is populated independently of overview.actions — assign it before the
+          // Wedge shares live in overview.wedge (keyed by action id), which is
+          // populated independently of overview.actions — assign it before the
           // early return so it survives even when the action has no efficiency row.
-          const wedgeAnnual = wedgeAnnualByActionId.get(act.id);
-          if (wedgeAnnual) {
-            out.wedgeAnnualImpact = wedgeAnnual.value;
-            out.wedgeAnnualImpactUnit = wedgeAnnual.unit;
+          const wedgeShare = wedgeShareByActionId.get(act.id);
+          if (wedgeShare !== undefined) {
+            out.wedgeImpactShare = wedgeShare;
           }
 
           const efficiencyType = activeOverviewDetail;
@@ -275,18 +291,32 @@ export function useActionListData({
       yearRange,
       filteredActions,
       costBenefitByActionId,
-      wedgeAnnualByActionId,
+      wedgeShareByActionId,
     ]
   );
 
-  const displayedActionsCount = useMemo(() => {
+  // Numerators: what each view shows after the type filter. The list shows every
+  // usable action (active and disabled); the graph shows only the active ones.
+  // Both honour the list's ungrouped-hiding rule so the counts match what renders.
+  const { displayedActionsCount, displayedActiveActionsCount } = useMemo(() => {
     const hasAnyGroup = usableActions.some((a) => a.group);
-    return hasAnyGroup ? usableActions.filter((a) => a.group).length : usableActions.length;
+    const displayed = hasAnyGroup ? usableActions.filter((a) => a.group) : usableActions;
+    return {
+      displayedActionsCount: displayed.length,
+      displayedActiveActionsCount: displayed.filter(isActionActive).length,
+    };
   }, [usableActions]);
 
-  const totalActionsCount = useMemo(() => {
+  // Denominators: each view's full universe, before the type filter. The list
+  // counts against all actions; the graph counts against the active ones only,
+  // since disabled actions never appear in it.
+  const { totalActionsCount, totalActiveActionsCount } = useMemo(() => {
     const hasAnyGroup = filteredActions.some((a) => a.group);
-    return hasAnyGroup ? filteredActions.filter((a) => a.group).length : filteredActions.length;
+    const total = hasAnyGroup ? filteredActions.filter((a) => a.group) : filteredActions;
+    return {
+      totalActionsCount: total.length,
+      totalActiveActionsCount: total.filter(isActionActive).length,
+    };
   }, [filteredActions]);
 
   const actionGroups = useMemo(
@@ -324,6 +354,8 @@ export function useActionListData({
     usableActions,
     displayedActionsCount,
     totalActionsCount,
+    displayedActiveActionsCount,
+    totalActiveActionsCount,
     actionGroups,
     hasEfficiency,
     activeOverview: activeOverviewInfo,

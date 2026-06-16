@@ -62,7 +62,8 @@
   "nav-menu-open": "Åbn navigation",
   "nav-menu-close": "Luk navigation",
   "front-page": "Forside",
-  "actions-count": "Viser {count} handlinger",
+  "actions-count": "Viser {shown} af {total} handlinger",
+  "actions-count-active": "Viser {shown} af {total} aktive handlinger",
   "actions-as-graph": "Graf",
   "actions-as-list": "Liste",
   "actions-as-efficiency": "Effektivitet",
@@ -164,5 +165,6 @@
   "cost-efficiency-subtitle": "Omkostningseffektivitet for handlinger i scenariet ''{activeScenario}''.",
   "cost-benefit-subtitle": "Omkostninger og fordele for handlinger i scenariet ''{activeScenario}''.",
   "simple-effect-subtitle": "Udvalgt effekt af handlinger i scenariet ''{activeScenario}''.",
+  "share-of-impact": "Andel af effekten",
   "return-on-investment-subtitle": "Investeringsafkast (ROI) for handlinger i scenariet ''{activeScenario}''."
 }

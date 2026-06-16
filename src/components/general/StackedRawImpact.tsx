@@ -12,6 +12,7 @@ import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphq
 import { activeScenarioVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 import type { SortActionsConfig } from '@/types/actions.types';
 
 type VisibleAction = {
@@ -106,8 +107,9 @@ function getChartConfig(
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      valueFormatter: (value: number | null) =>
-        value == null ? '—' : `${formatNumber(value)} ${unit}`,
+      formatter: createAxisTooltipFormatter((value) =>
+        value == null ? '—' : `${formatNumber(value)} ${unit}`
+      ),
     },
     grid: {
       // `containLabel: true` keeps axis labels inside the box; the legend at the

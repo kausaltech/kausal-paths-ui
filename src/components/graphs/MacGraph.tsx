@@ -12,6 +12,7 @@ import styled from '@common/themes/styled';
 import type { ActionListQuery } from '@/common/__generated__/graphql';
 import { Link } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
+import { truncateLabel } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 
 const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
@@ -252,7 +253,7 @@ function MacGraph(props: MacGraphProps) {
     () =>
       isEmpty ? (
         <EmptyPlot>
-          <h4>{t('actions-count', { count: 0 })}</h4>
+          <h4>{t('actions-count', { shown: 0, total: 0 })}</h4>
         </EmptyPlot>
       ) : (
         <Plot
@@ -261,7 +262,8 @@ function MacGraph(props: MacGraphProps) {
               type: 'bar',
               x: xPlacement,
               y: data['efficiency'],
-              text: data['actions'],
+              // Only feeds the hover (%{text}); the full name shows in the panel below.
+              text: data['actions'].map((name) => truncateLabel(name)),
               width: data['impact'],
               marker: {
                 color: data.colors,

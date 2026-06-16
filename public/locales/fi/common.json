@@ -68,7 +68,8 @@
   "total-effect-until": "Kokonaisvaikutus",
   "total-impact": "Kokonaisvaikutus",
   "will_be_implemented": "Toteutetaan",
-  "actions-count": "Näytetään {count} toimenpidettä",
+  "actions-count": "Näytetään {shown}/{total} toimenpidettä",
+  "actions-count-active": "Näytetään {shown}/{total} aktiivista toimenpidettä",
   "actions-as-graph": "Kaaviona",
   "actions-as-list": "Listana",
   "actions-as-efficiency": "Vaikuttavuus",
@@ -156,5 +157,6 @@
   "cost-efficiency-subtitle": "Toimenpiteiden kustannusvaikuttavuus skenaariossa ''{activeScenario}''.",
   "cost-benefit-subtitle": "Toimenpiteiden kustannus-hyötysuhde skenaariossa ''{activeScenario}''.",
   "simple-effect-subtitle": "Toimenpiteiden valittu vaikutus skenaariossa ''{activeScenario}''.",
+  "share-of-impact": "Osuus vaikutuksesta",
   "return-on-investment-subtitle": "Toimenpiteiden tuotto-odotus (ROI) skenaariossa ''{activeScenario}''."
 }
