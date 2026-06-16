@@ -1,7 +1,7 @@
 import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 
 /** Tooltip labels (action names) are capped at this many characters across all graphs. */
-export const MAX_TOOLTIP_LABEL_LENGTH = 50;
+export const MAX_TOOLTIP_LABEL_LENGTH = 42;
 
 /** Truncate a label to `max` characters, appending an ellipsis when it overflows. */
 export function truncateLabel(label: string, max = MAX_TOOLTIP_LABEL_LENGTH): string {
@@ -53,10 +53,14 @@ export function createAxisTooltipFormatter(formatValue: (value: number | null) =
     const items = (Array.isArray(params) ? params : [params]) as AxisTooltipParam[];
     if (items.length === 0) return '';
     const title = truncateLabel(String(items[0].axisValueLabel ?? items[0].name ?? ''));
+    // The series name only disambiguates when more than one series is present;
+    // for a single-series chart the title already labels the row, so showing the
+    // name (ECharts auto-generates "series0" for unnamed series) is just noise.
+    const showSeriesName = items.length > 1;
     const rows = items.map((p) => {
       const marker = typeof p.marker === 'string' ? p.marker : '';
-      const name = truncateLabel(String(p.seriesName ?? ''));
-      return `${marker}${name}&nbsp;&nbsp;<b>${formatValue(extractValue(p))}</b>`;
+      const name = showSeriesName ? `${truncateLabel(String(p.seriesName ?? ''))}&nbsp;&nbsp;` : '';
+      return `${marker}${name}<b>${formatValue(extractValue(p))}</b>`;
     });
     return [`<b>${title}</b>`, ...rows].join('<br/>');
   };

@@ -157,6 +157,6 @@
   "cost-efficiency-subtitle": "Toimenpiteiden kustannusvaikuttavuus skenaariossa ''{activeScenario}''.",
   "cost-benefit-subtitle": "Toimenpiteiden kustannus-hyötysuhde skenaariossa ''{activeScenario}''.",
   "simple-effect-subtitle": "Toimenpiteiden valittu vaikutus skenaariossa ''{activeScenario}''.",
-  "share-of-impact": "Osuus vaikutuksesta",
+  "share-of-impact": "Osuus kumulatiivisesta vaikutuksesta",
   "return-on-investment-subtitle": "Toimenpiteiden tuotto-odotus (ROI) skenaariossa ''{activeScenario}''."
 }

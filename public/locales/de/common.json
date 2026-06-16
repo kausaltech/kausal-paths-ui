@@ -131,7 +131,7 @@
   "view-details": "Details anzeigen",
   "simple-effect": "Andere Wirkung",
   "simple-effect-subtitle": "Ausgewählte Auswirkungen der Maßnahmen im Szenario ''{activeScenario}''.",
-  "share-of-impact": "Anteil an der Wirkung",
+  "share-of-impact": "Anteil an der kumulierten Wirkung",
   "stacked-raw-impact": "Gestapelte Auswirkungen",
   "stacked-raw-impact-subtitle": "Jährliche Kosten (+) und Einsparungen (−) der Maßnahmen im Szenario ''{activeScenario}''.",
   "emission-drivers": "Emissionstreiber",

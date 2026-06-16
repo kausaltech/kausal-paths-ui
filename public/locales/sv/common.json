@@ -149,6 +149,6 @@
   "cost-efficiency-subtitle": "Kostnadseffektivitet för åtgärder i scenariot ''{activeScenario}''.",
   "cost-benefit-subtitle": "Kostnad-nytta för åtgärder i scenariot ''{activeScenario}''.",
   "simple-effect-subtitle": "Vald påverkan av åtgärder i scenariot ''{activeScenario}''.",
-  "share-of-impact": "Andel av påverkan",
+  "share-of-impact": "Andel av kumulativ påverkan",
   "return-on-investment-subtitle": "Avkastning på investering (ROI) för åtgärder i scenariot ''{activeScenario}''."
 }

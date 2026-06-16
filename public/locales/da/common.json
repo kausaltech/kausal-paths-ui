@@ -165,6 +165,6 @@
   "cost-efficiency-subtitle": "Omkostningseffektivitet for handlinger i scenariet ''{activeScenario}''.",
   "cost-benefit-subtitle": "Omkostninger og fordele for handlinger i scenariet ''{activeScenario}''.",
   "simple-effect-subtitle": "Udvalgt effekt af handlinger i scenariet ''{activeScenario}''.",
-  "share-of-impact": "Andel af effekten",
+  "share-of-impact": "Andel af den kumulative effekt",
   "return-on-investment-subtitle": "Investeringsafkast (ROI) for handlinger i scenariet ''{activeScenario}''."
 }

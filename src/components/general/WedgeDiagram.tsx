@@ -31,6 +31,21 @@ type ActionBand = {
   values: (number | null)[];
 };
 
+// Horizontal-line legend icons (thin filled bars) for the scenario lines, so
+// their legend entries read as lines instead of the default line-with-circle.
+// The dashed variant (a row of short bars) mirrors the baseline line's style.
+const LINE_LEGEND_ICON = 'path://M0,5 L40,5 L40,7 L0,7 Z';
+const DASHED_LINE_LEGEND_ICON =
+  'path://M0,5 L12,5 L12,7 L0,7 Z M16,5 L28,5 L28,7 L16,7 Z M32,5 L40,5 L40,7 L32,7 Z';
+
+// Tooltip row markers that mirror the graph rather than ECharts' default round
+// dot: a solid/dashed line swatch for the scenario and goal lines, a filled
+// square for the action bands.
+const lineTooltipMarker = (color: string, dashed: boolean) =>
+  `<span style="display:inline-block;width:16px;height:0;border-top:2px ${dashed ? 'dashed' : 'solid'} ${color};vertical-align:middle;margin-right:6px"></span>`;
+const squareTooltipMarker = (color: string) =>
+  `<span style="display:inline-block;width:10px;height:10px;background:${color};vertical-align:middle;margin-right:6px"></span>`;
+
 // Backend invariant from the wedge-diagram spec:
 // - wedge[0] is current_scenario (floor)
 // - wedge[1] is baseline_scenario (ceiling)
@@ -94,7 +109,9 @@ function getChartConfig(
     },
     areaStyle: { opacity: 0 },
     itemStyle: { color: floorLineColor },
-    z: 4,
+    // Below the baseline line so both stay visible where the scenarios run
+    // parallel; still above the action bands (z 2).
+    z: 3,
   };
 
   const bandSeries: LineSeriesOption[] = bands.map((b) => ({
@@ -126,7 +143,8 @@ function getChartConfig(
       color: ceilingLineColor,
     },
     itemStyle: { color: ceilingLineColor },
-    z: 3,
+    // Drawn above the floor line so both remain visible when they run parallel.
+    z: 4,
     // Forecast markArea attached here (rather than on a band) so a single
     // overlay covers the chart regardless of band visibility.
     markArea:
@@ -167,9 +185,9 @@ function getChartConfig(
     : null;
 
   const legendData = [
-    floorLabel,
+    { name: floorLabel, icon: LINE_LEGEND_ICON },
     ...bands.map((b) => b.name),
-    ceilingLabel,
+    { name: ceilingLabel, icon: DASHED_LINE_LEGEND_ICON },
     ...(goalSeries ? [goalLabel] : []),
   ];
 
@@ -194,18 +212,35 @@ function getChartConfig(
   const formatTooltip = (params: TooltipComponentFormatterCallbackParams): string => {
     const items = Array.isArray(params) ? params : [params];
     const rows = items.map((p) => {
+      const name = p.seriesName ?? '';
+      const isBand = bandNames.has(name);
       const value = typeof p.value === 'number' ? p.value : null;
       let formatted = '—';
       if (value != null) {
-        if (p.seriesName != null && bandNames.has(p.seriesName)) {
+        if (isBand) {
           const gap = gaps[p.dataIndex];
           formatted = gap ? `${formatNumber((value / gap) * 100)} %` : '—';
         } else {
           formatted = `${formatNumber(value)} ${unit}`;
         }
       }
-      const marker = typeof p.marker === 'string' ? p.marker : '';
-      return `${marker}${truncateLabel(p.seriesName ?? '')}&nbsp;&nbsp;<b>${formatted}</b>`;
+      // Match the graph: bands are filled areas (square), the scenario/goal
+      // lines are solid (current) or dashed (baseline, goal). Fall back to
+      // ECharts' default marker if a series isn't one we recognise.
+      const color = typeof p.color === 'string' ? p.color : undefined;
+      let marker: string;
+      if (isBand) {
+        marker = squareTooltipMarker(color ?? floorLineColor);
+      } else if (name === floorLabel) {
+        marker = lineTooltipMarker(color ?? floorLineColor, false);
+      } else if (name === ceilingLabel) {
+        marker = lineTooltipMarker(color ?? ceilingLineColor, true);
+      } else if (name === goalLabel) {
+        marker = lineTooltipMarker(color ?? goalLineColor, true);
+      } else {
+        marker = typeof p.marker === 'string' ? p.marker : '';
+      }
+      return `${marker}${truncateLabel(name)}&nbsp;&nbsp;<b>${formatted}</b>`;
     });
     return [`<b>${items[0]?.name ?? ''}</b>`, ...rows].join('<br/>');
   };
@@ -349,8 +384,8 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         forecastAreaStartIndex,
         theme.graphColors.blue030,
         'Forecast',
-        theme.graphColors.grey090,
-        theme.graphColors.grey060,
+        theme.graphColors.blue050,
+        theme.graphColors.grey040,
         theme.graphColors.red090
       ),
     [
@@ -367,8 +402,8 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
       formatAxisLabel,
       forecastAreaStartIndex,
       theme.graphColors.blue030,
-      theme.graphColors.grey090,
-      theme.graphColors.grey060,
+      theme.graphColors.blue050,
+      theme.graphColors.grey040,
       theme.graphColors.red090,
     ]
   );

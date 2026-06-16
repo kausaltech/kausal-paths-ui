@@ -154,6 +154,6 @@
   "cost-efficiency-subtitle": "Darbību izmaksu efektivitāte scenārijā ''{activeScenario}''.",
   "cost-benefit-subtitle": "Darbību izmaksu un ieguvumu attiecība scenārijā ''{activeScenario}''.",
   "simple-effect-subtitle": "Darbību izvēlētā ietekme scenārijā ''{activeScenario}''.",
-  "share-of-impact": "Ietekmes daļa",
+  "share-of-impact": "Daļa no kumulatīvās ietekmes",
   "return-on-investment-subtitle": "Darbību ieguldījumu atdeve (ROI) scenārijā ''{activeScenario}''."
 }

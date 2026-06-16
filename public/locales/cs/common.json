@@ -165,6 +165,6 @@
   "cost-efficiency-subtitle": "Nákladová efektivita opatření ve scénáři ''{activeScenario}''.",
   "cost-benefit-subtitle": "Náklady a přínosy opatření ve scénáři ''{activeScenario}''.",
   "simple-effect-subtitle": "Vybraný dopad opatření ve scénáři ''{activeScenario}''.",
-  "share-of-impact": "Podíl na dopadu",
+  "share-of-impact": "Podíl na kumulativním dopadu",
   "return-on-investment-subtitle": "Návratnost investic (ROI) opatření ve scénáři ''{activeScenario}''."
 }

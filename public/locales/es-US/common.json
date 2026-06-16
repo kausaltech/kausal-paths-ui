@@ -168,6 +168,6 @@
   "cost-efficiency-subtitle": "Eficiencia de costes de las acciones en el escenario ''{activeScenario}''.",
   "cost-benefit-subtitle": "Coste-beneficio de las acciones en el escenario ''{activeScenario}''.",
   "simple-effect-subtitle": "Impacto seleccionado de las acciones en el escenario ''{activeScenario}''.",
-  "share-of-impact": "Proporción del impacto",
+  "share-of-impact": "Proporción del impacto acumulado",
   "return-on-investment-subtitle": "Retorno de la inversión (ROI) de las acciones en el escenario ''{activeScenario}''."
 }
