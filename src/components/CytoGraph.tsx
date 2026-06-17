@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return*/
 // Ignore linting for this file, this component can be deprecated soon and the code is not worth fixing at this point
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import Cytoscape, {
@@ -9,6 +10,7 @@ import Cytoscape, {
   type NodeDefinition,
 } from 'cytoscape';
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
+// @ts-expect-error - No types available for cytoscape-elk
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
 //import pdfExport from 'cytoscape-pdf-export';
 import { readableColor } from 'polished';
@@ -512,6 +514,7 @@ export default function CytoGraph(props: CytoGraphProps) {
     }
     const registerPdfExport = async () => {
       try {
+        // @ts-expect-error - No types available for cytoscape-pdf-export
         const pdfExport = (await import('cytoscape-pdf-export')).default;
         if (!Cytoscape?.pdf) {
           Cytoscape.use(pdfExport);

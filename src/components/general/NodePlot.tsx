@@ -2,6 +2,7 @@ import dynamic from 'next/dynamic';
 
 import type Plotly from 'plotly.js';
 import { tint, transparentize } from 'polished';
+// @ts-expect-error - No types available for react-json-to-csv
 import CsvDownload from 'react-json-to-csv';
 
 import { useTheme } from '@common/themes';

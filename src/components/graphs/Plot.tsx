@@ -1,17 +1,29 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 // Plotly doesnt type well, let's disable the linting for this file until it's properly deprecated
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
+// @ts-expect-error - No types available
 import cs from 'plotly.js-locales/cs';
+// @ts-expect-error - No types available
 import da from 'plotly.js-locales/da';
+// @ts-expect-error - No types available
 import de from 'plotly.js-locales/de';
+// @ts-expect-error - No types available
 import de_ch from 'plotly.js-locales/de-ch';
+// @ts-expect-error - No types available
 import el from 'plotly.js-locales/el';
+// @ts-expect-error - No types available
 import es from 'plotly.js-locales/es';
+// @ts-expect-error - No types available
 import fi from 'plotly.js-locales/fi';
+// @ts-expect-error - No types available
 import lv from 'plotly.js-locales/lv';
+// @ts-expect-error - No types available
 import pl from 'plotly.js-locales/pl';
+// @ts-expect-error - No types available
 import sv from 'plotly.js-locales/sv';
+// @ts-expect-error - No types available
 import Plotly from 'plotly.js/dist/plotly-basic';
 import type { PlotParams } from 'react-plotly.js';
 import createPlotlyComponent from 'react-plotly.js/factory';
