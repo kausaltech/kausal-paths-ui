@@ -83,14 +83,26 @@ function testInstance(instanceId: string) {
         test.skip(ctx.getVisibleActions().length === 0, 'No visible actions for instance');
         const actionsChooser = scenarioEditor.getByTestId('actions-chooser');
         await expect(actionsChooser).toBeVisible();
+        // Let ActionsChooser's cache-and-network refetch settle so the list
+        // doesn't re-render (and replace the switch node) mid-click.
+        await ctx.waitForLoaded(page);
+
         const actionToggle = actionsChooser
           .getByTestId('action-list-item')
           .getByRole('switch')
           .first();
         await expect(actionToggle).toBeVisible();
+        await expect(actionToggle).toBeEnabled();
 
         const requestTracker = new InflightRequests(page);
-        await actionToggle.click();
+        // Retry the click until it actually fires the mutation. The switch goes
+        // disabled while the mutation is in flight, which proves onChange ran
+        // (handles the SSR-hydration / remount race that only shows up on CI).
+        // Once disabled we stop clicking, so the toggle is never flipped back.
+        await expect(async () => {
+          await actionToggle.click();
+          await expect(actionToggle).toBeDisabled({ timeout: 2000 });
+        }).toPass({ timeout: 15000 });
         // Switching to the "custom" scenario waits on the parameter mutation +
         // refetch, which can exceed the 5s default expect timeout (test.slow()
         // extends the test timeout, not per-assertion expect timeouts).
