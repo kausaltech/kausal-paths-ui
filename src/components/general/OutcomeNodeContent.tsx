@@ -101,7 +101,7 @@ const OutcomeNodeContent = ({
   const outcomeChange = getMetricChange(nodesBase, nodesTotal);
   const unit = node.metric?.unit?.htmlLong || node.metric?.unit?.htmlShort;
 
-  const showNodeLinks = !instance.features?.hideNodeDetails;
+  const showNodeLinks = !instance.features?.hideScenarioEditor;
   const maximumFractionDigits = instance.features?.maximumFractionDigits ?? undefined;
 
   // TODO: Remove showRefreshPrompt check when node help text is moved to the backend

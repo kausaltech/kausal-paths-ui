@@ -30,7 +30,7 @@ const GET_INSTANCE_CONTEXT = gql`
       leadTitle
       leadParagraph
       features {
-        hideNodeDetails
+        hideScenarioEditor
         maximumFractionDigits
         baselineVisibleInGraphs
         showAccumulatedEffects

@@ -56,7 +56,7 @@ export default function OutcomePage(props: OutcomePageProps) {
 
   const activeScenario = useReactiveVar(activeScenarioVar);
 
-  const showSettingsPanel = !instance.features?.hideNodeDetails;
+  const showSettingsPanel = !instance.features?.hideScenarioEditor;
   const pageLeadTitle = page.leadTitle || instance.leadTitle;
   const pageLeadParagraph = page.leadParagraph || instance.leadParagraph;
 

@@ -141,9 +141,9 @@ export default function ActionPage() {
   const site = useSite();
   const [activeDownstreamNode, setActiveDownstreamNode] = useState<string | undefined>(undefined);
   const theme = useTheme();
-  const { hideNodeDetails } = useFeatures();
+  const { hideScenarioEditor } = useFeatures();
 
-  const isScenarioEditable = !hideNodeDetails;
+  const isScenarioEditable = !hideScenarioEditor;
 
   const queryResp = useQuery<ActionContentQuery, ActionContentQueryVariables>(GET_ACTION_CONTENT, {
     fetchPolicy: 'cache-and-network',
