@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   Alert,
@@ -129,20 +129,14 @@ export default function ImportModal({
     [planDimensions, dataset.metrics, dataset.dataPoints, existingYears]
   );
 
-  // Session-scoped UI state. Re-initialised whenever a new paste arrives
-  // (keyed on the `detected` object identity).
-  const [mapping, setMapping] = useState<ColumnMapping>({ dimensionByColumn: {} });
+  // Session-scoped UI state. The modal is keyed by the paste matrix at the
+  // call site, so these initial values are recomputed for each import session.
+  const [mapping, setMapping] = useState<ColumnMapping>(() =>
+    detected ? inferColumnMapping(detected, planDimensions) : { dimensionByColumn: {} }
+  );
   const [pins, setPins] = useState<Record<string, string>>({});
-  const [metricId, setMetricId] = useState('');
+  const [metricId, setMetricId] = useState(() => pickDefaultMetricId(dataset.metrics));
   const [resolutions, setResolutions] = useState<Record<string, LabelResolution>>({});
-
-  useEffect(() => {
-    if (!detected) return;
-    setMapping(inferColumnMapping(detected, planDimensions));
-    setMetricId(pickDefaultMetricId(dataset.metrics));
-    setPins({});
-    setResolutions({});
-  }, [detected, planDimensions, dataset.metrics]);
 
   const mappedDimIds = useMemo(() => new Set(Object.values(mapping.dimensionByColumn)), [mapping]);
   const mappedDimCount = mappedDimIds.size;

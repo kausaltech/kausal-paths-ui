@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   Alert,
@@ -60,15 +60,6 @@ function DataPointCommentsSection({
   // Per-comment busy state while a resolve/unresolve mutation is in flight,
   // so multiple comments can be toggled independently.
   const [resolvingIds, setResolvingIds] = useState<Set<string>>(() => new Set());
-
-  // Close & reset the form when the selection changes — the form targets a
-  // specific data point, so silently re-pointing it would be confusing.
-  useEffect(() => {
-    setFormOpen(false);
-    setText('');
-    setIsReview(false);
-    setSubmitError(null);
-  }, [dataPointId]);
 
   const handleSubmit = async () => {
     if (text.trim() === '' || submitting) return;
@@ -372,6 +363,7 @@ export default function DataPointDetailsPanel({
         <>
           <SelectedDataPointChips cell={selectedCell} />
           <DataPointCommentsSection
+            key={dataPointId}
             dataPointId={dataPointId}
             comments={comments}
             onSubmitComment={onSubmitComment}

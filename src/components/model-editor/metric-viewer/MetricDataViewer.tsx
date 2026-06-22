@@ -134,7 +134,7 @@ export default function MetricDataViewer({
 
   const flatRows = useMemo(() => {
     if (viewMode !== 'flat') return [];
-    return filteredMetric.toRows() as Array<Record<string, unknown>>;
+    return filteredMetric.toRows() satisfies Array<Record<string, unknown>>;
   }, [filteredMetric, viewMode]);
 
   const flatSpecs = useMemo<ColumnSpec[]>(() => {
@@ -182,7 +182,7 @@ export default function MetricDataViewer({
           themeOverride: isForecastRow(rowIndex) ? FORECAST_OVERRIDE : undefined,
         };
       },
-      getSortValue: (rowIndex) => (flatRows[rowIndex]?.year as number | undefined) ?? null,
+      getSortValue: (rowIndex) => flatRows[rowIndex]?.year ?? null,
     };
     const valSpec: ColumnSpec = {
       col: {
@@ -203,7 +203,7 @@ export default function MetricDataViewer({
           themeOverride: isForecastRow(rowIndex) ? FORECAST_OVERRIDE : undefined,
         };
       },
-      getSortValue: (rowIndex) => (flatRows[rowIndex]?.value as number | null | undefined) ?? null,
+      getSortValue: (rowIndex) => flatRows[rowIndex]?.value ?? null,
     };
     return [...dimSpecs, yearSpec, valSpec];
   }, [filteredMetric, viewMode, flatRows, metric.unit.short, forecastFrom, colWidths, t]);
@@ -236,7 +236,7 @@ export default function MetricDataViewer({
       const realRow = sortedIndex ? (sortedIndex[row] ?? row) : row;
       const spec = specs[col];
       if (!spec) {
-        return { kind: GridCellKind.Loading, allowOverlay: false } as GridCell;
+        return { kind: GridCellKind.Loading, allowOverlay: false } satisfies GridCell;
       }
       return spec.getCell(realRow);
     },

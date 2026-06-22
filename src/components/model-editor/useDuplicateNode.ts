@@ -107,24 +107,22 @@ function buildConfig(source: EditorNodeFieldsFragment): NodeConfigInput | null {
           parent: typeConfig.parent ?? null,
           noEffectValue: typeConfig.noEffectValue ?? null,
         },
-      } as NodeConfigInput;
+      } satisfies NodeConfigInput;
     case 'SimpleConfigType':
-      return { simple: { nodeClass: typeConfig.nodeClass } } as NodeConfigInput;
+      return { simple: { nodeClass: typeConfig.nodeClass } } satisfies NodeConfigInput;
     case 'FormulaConfigType':
-      return { formula: { formula: typeConfig.formula } } as NodeConfigInput;
+      return { formula: { formula: typeConfig.formula } } satisfies NodeConfigInput;
     case 'PipelineConfigType': {
       // The query returns `operations` as JSON (a list of `{ operation }`
       // objects); the input wants `[PipelineOperationInput!]`. Map element by
       // element, dropping anything that doesn't carry an `operation` string.
-      const rawOperations = Array.isArray(typeConfig.operations)
-        ? (typeConfig.operations as unknown[])
-        : [];
+      const rawOperations = Array.isArray(typeConfig.operations) ? typeConfig.operations : [];
       const operations = rawOperations.flatMap((op) =>
         op != null && typeof (op as { operation?: unknown }).operation === 'string'
           ? [{ operation: (op as { operation: string }).operation }]
           : []
       );
-      return { pipeline: { operations } } as NodeConfigInput;
+      return { pipeline: { operations } } satisfies NodeConfigInput;
     }
     default:
       return null;

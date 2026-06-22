@@ -1,61 +1,31 @@
-export type Maybe<T> = T | null;
-export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+/** Internal type. DO NOT USE DIRECTLY. */
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-/** All built-in and custom scalars, mapped to their actual values */
-export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
-  /** Date (isoformat) */
-  Date: { input: any; output: any; }
-  /** Date with time (isoformat) */
-  DateTime: { input: string; output: string; }
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf). */
-  JSON: { input: any; output: any; }
-  /**
-   * Allows use of a JSON String for input / output from the GraphQL schema.
-   *
-   * Use of this type is *not recommended* as you lose the benefits of having a defined, static
-   * schema (one of the key benefits of GraphQL).
-   */
-  JSONString: { input: string; output: string; }
-  /** GraphQL type for an integer that must be equal or greater than zero. */
-  PositiveInt: { input: number; output: number; }
-  RichText: { input: string; output: string; }
-  UUID: { input: string; output: string; }
-  _Any: { input: any; output: any; }
-};
-
 export type ActionConfigInput = {
-  decisionLevel: InputMaybe<DecisionLevel>;
-  group: InputMaybe<Scalars['String']['input']>;
-  noEffectValue: InputMaybe<Scalars['Float']['input']>;
-  nodeClass: Scalars['String']['input'];
-  parent: InputMaybe<Scalars['String']['input']>;
+  decisionLevel: DecisionLevel | null | undefined;
+  group: string | null | undefined;
+  noEffectValue: number | null | undefined;
+  nodeClass: string;
+  parent: string | null | undefined;
 };
 
 /** An enumeration. */
-export enum ActionSortOrder {
+export const enum ActionSortOrder {
   /** Cumulative impact */
   CumImpact = 'CUM_IMPACT',
   /** Impact */
   Impact = 'IMPACT',
   /** Standard */
   Standard = 'STANDARD'
-}
-
-export type AssignCategoryTransformationInput = {
-  category: Scalars['String']['input'];
-  dimension: Scalars['String']['input'];
 };
 
-export enum ChangeTargetKind {
+export type AssignCategoryTransformationInput = {
+  category: string;
+  dimension: string;
+};
+
+export const enum ChangeTargetKind {
   DatasetPort = 'DATASET_PORT',
   DataPoint = 'DATA_POINT',
   Dimension = 'DIMENSION',
@@ -64,203 +34,177 @@ export enum ChangeTargetKind {
   Instance = 'INSTANCE',
   Node = 'NODE',
   Unknown = 'UNKNOWN'
-}
+};
 
 export type CreateDataPointCommentInput = {
-  isReview: Scalars['Boolean']['input'];
-  isSticky: Scalars['Boolean']['input'];
-  reviewState: InputMaybe<DataPointCommentReviewState>;
-  text: Scalars['String']['input'];
+  isReview: boolean;
+  isSticky: boolean;
+  reviewState: DataPointCommentReviewState | null | undefined;
+  text: string;
 };
 
 export type CreateDataPointInput = {
-  date: Scalars['Date']['input'];
-  dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
-  metricId: Scalars['UUID']['input'];
-  value: InputMaybe<Scalars['Float']['input']>;
+  date: string;
+  dimensionCategoryIds: Array<string> | null | undefined;
+  metricId: string;
+  value: number | null | undefined;
 };
 
 export type CreateDataSourceInput = {
-  authority: InputMaybe<Scalars['String']['input']>;
-  description: InputMaybe<Scalars['String']['input']>;
-  edition: InputMaybe<Scalars['String']['input']>;
-  name: Scalars['String']['input'];
-  url: InputMaybe<Scalars['String']['input']>;
+  authority: string | null | undefined;
+  description: string | null | undefined;
+  edition: string | null | undefined;
+  name: string;
+  url: string | null | undefined;
 };
 
 export type CreateDatasetSourceReferenceInput = {
-  dataPointId: InputMaybe<Scalars['UUID']['input']>;
-  dataSourceId: Scalars['UUID']['input'];
-  toDataset: Scalars['Boolean']['input'];
+  dataPointId: string | null | undefined;
+  dataSourceId: string;
+  toDataset: boolean;
 };
 
 export type CreateDimensionCategoryInput = {
-  dimensionId: Scalars['UUID']['input'];
-  id: InputMaybe<Scalars['UUID']['input']>;
-  identifier: InputMaybe<Scalars['String']['input']>;
-  label: Scalars['String']['input'];
-  nextSibling: InputMaybe<Scalars['ID']['input']>;
-  previousSibling: InputMaybe<Scalars['ID']['input']>;
+  dimensionId: string;
+  id: string | null | undefined;
+  identifier: string | null | undefined;
+  label: string;
+  nextSibling: string | number | null | undefined;
+  previousSibling: string | number | null | undefined;
 };
 
 export type CreateEdgeInput = {
-  fromNodeId: Scalars['String']['input'];
-  fromPort: Scalars['String']['input'];
-  instanceId: Scalars['ID']['input'];
-  toNodeId: Scalars['String']['input'];
-  toPort: InputMaybe<Scalars['String']['input']>;
-  transformations: InputMaybe<Array<EdgeTransformationInput>>;
+  fromNodeId: string;
+  fromPort: string;
+  instanceId: string | number;
+  toNodeId: string;
+  toPort: string | null | undefined;
+  transformations: Array<EdgeTransformationInput> | null | undefined;
 };
 
 export type CreateInstanceInput = {
-  frameworkId: Scalars['String']['input'];
-  identifier: Scalars['String']['input'];
-  name: Scalars['String']['input'];
-  organizationName: Scalars['String']['input'];
+  frameworkId: string;
+  identifier: string;
+  name: string;
+  organizationName: string;
 };
 
 export type CreateNodeInput = {
-  allowNulls: Scalars['Boolean']['input'];
-  color: InputMaybe<Scalars['String']['input']>;
+  allowNulls: boolean;
+  color: string | null | undefined;
   config: NodeConfigInput;
-  description: InputMaybe<Scalars['String']['input']>;
-  i18n: InputMaybe<Scalars['JSON']['input']>;
-  identifier: Scalars['ID']['input'];
-  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  inputPorts: InputMaybe<Array<InputPortInput>>;
-  isOutcome: Scalars['Boolean']['input'];
-  isVisible: Scalars['Boolean']['input'];
+  description: string | null | undefined;
+  i18n: Record<string, unknown> | unknown[] | null | undefined;
+  identifier: string | number;
+  inputDimensions: Array<string> | null | undefined;
+  inputPorts: Array<InputPortInput> | null | undefined;
+  isOutcome: boolean;
+  isVisible: boolean;
   kind: NodeKind;
-  minimumYear: InputMaybe<Scalars['Int']['input']>;
-  name: Scalars['String']['input'];
-  nodeGroup: InputMaybe<Scalars['ID']['input']>;
-  order: InputMaybe<Scalars['Int']['input']>;
-  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
-  outputPorts: InputMaybe<Array<OutputPortInput>>;
-  params: InputMaybe<Scalars['JSON']['input']>;
-  shortName: InputMaybe<Scalars['String']['input']>;
-  tags: InputMaybe<Array<Scalars['String']['input']>>;
+  minimumYear: number | null | undefined;
+  name: string;
+  nodeGroup: string | number | null | undefined;
+  order: number | null | undefined;
+  outputDimensions: Array<string> | null | undefined;
+  outputMetrics: Array<OutputMetricInput> | null | undefined;
+  outputPorts: Array<OutputPortInput> | null | undefined;
+  params: Record<string, unknown> | unknown[] | null | undefined;
+  shortName: string | null | undefined;
+  tags: Array<string> | null | undefined;
 };
 
-export enum DataPointCommentReviewState {
+export const enum DataPointCommentReviewState {
   Resolved = 'RESOLVED',
   Unresolved = 'UNRESOLVED'
-}
+};
 
 /** Which governance level is applicable for an action */
-export enum DecisionLevel {
+export const enum DecisionLevel {
   Eu = 'EU',
   Municipality = 'MUNICIPALITY',
   Nation = 'NATION'
-}
+};
 
 /** Desired (benificial) direction for the values of the output of a node */
-export enum DesiredOutcome {
+export const enum DesiredOutcome {
   Decreasing = 'decreasing',
   Increasing = 'increasing'
-}
+};
 
-export enum DimensionKind {
+export const enum DimensionKind {
   Common = 'COMMON',
   Node = 'NODE',
   Scenario = 'SCENARIO'
-}
-
-export type EdgeTransformationInput = {
-  assignCategory: InputMaybe<AssignCategoryTransformationInput>;
-  flatten: InputMaybe<FlattenTransformationInput>;
-  selectCategories: InputMaybe<SelectCategoriesTransformationInput>;
 };
 
+export type EdgeTransformationInput =
+  {   assignCategory: AssignCategoryTransformationInput; flatten?: never; selectCategories?: never; }
+  |  { assignCategory?: never;   flatten: FlattenTransformationInput; selectCategories?: never; }
+  |  { assignCategory?: never; flatten?: never;   selectCategories: SelectCategoriesTransformationInput; };
+
 export type FlattenTransformationInput = {
-  dimension: Scalars['String']['input'];
+  dimension: string;
 };
 
 export type FormulaConfigInput = {
-  formula: Scalars['String']['input'];
+  formula: string;
 };
-
-/** An enumeration. */
-export enum FrameworksMeasureTemplateDefaultValueScalingChoices {
-  /** Population */
-  Population = 'POPULATION'
-}
-
-/** An enumeration. */
-export enum FrameworksMeasureTemplatePriorityChoices {
-  /** High */
-  High = 'HIGH',
-  /** Low */
-  Low = 'LOW',
-  /** Medium */
-  Medium = 'MEDIUM'
-}
 
 export type InputPortInput = {
-  id: InputMaybe<Scalars['UUID']['input']>;
-  label: InputMaybe<Scalars['String']['input']>;
-  multi: Scalars['Boolean']['input'];
-  quantity: InputMaybe<Scalars['String']['input']>;
-  requiredDimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  supportedDimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  unit: InputMaybe<Scalars['String']['input']>;
+  id: string | null | undefined;
+  label: string | null | undefined;
+  multi: boolean;
+  quantity: string | null | undefined;
+  requiredDimensions: Array<string> | null | undefined;
+  supportedDimensions: Array<string> | null | undefined;
+  unit: string | null | undefined;
 };
 
-export enum InstanceMemberRole {
+export const enum InstanceMemberRole {
   Admin = 'ADMIN',
   Reviewer = 'REVIEWER',
   SuperAdmin = 'SUPER_ADMIN',
   Viewer = 'VIEWER'
-}
-
-/** An enumeration. */
-export enum ModelAction {
-  Add = 'ADD',
-  Change = 'CHANGE',
-  Delete = 'DELETE',
-  View = 'VIEW'
-}
-
-export type NodeConfigInput = {
-  action: InputMaybe<ActionConfigInput>;
-  formula: InputMaybe<FormulaConfigInput>;
-  pipeline: InputMaybe<PipelineConfigInput>;
-  simple: InputMaybe<SimpleConfigInput>;
 };
 
-export enum NodeKind {
+export type NodeConfigInput =
+  {   action: ActionConfigInput; formula?: never; pipeline?: never; simple?: never; }
+  |  { action?: never;   formula: FormulaConfigInput; pipeline?: never; simple?: never; }
+  |  { action?: never; formula?: never;   pipeline: PipelineConfigInput; simple?: never; }
+  |  { action?: never; formula?: never; pipeline?: never;   simple: SimpleConfigInput; };
+
+export const enum NodeKind {
   Action = 'ACTION',
   Formula = 'FORMULA',
   Pipeline = 'PIPELINE',
   Simple = 'SIMPLE'
-}
+};
 
-export enum OperationMessageKind {
+export const enum OperationMessageKind {
   Error = 'ERROR',
   Info = 'INFO',
   Permission = 'PERMISSION',
   Validation = 'VALIDATION',
   Warning = 'WARNING'
-}
+};
 
 export type OutputMetricInput = {
-  columnId: InputMaybe<Scalars['String']['input']>;
-  id: Scalars['String']['input'];
-  label: InputMaybe<Scalars['String']['input']>;
-  portId: InputMaybe<Scalars['UUID']['input']>;
-  quantity: InputMaybe<Scalars['String']['input']>;
-  unit: Scalars['String']['input'];
+  columnId: string | null | undefined;
+  id: string;
+  label: string | null | undefined;
+  portId: string | null | undefined;
+  quantity: string | null | undefined;
+  unit: string;
 };
 
 export type OutputPortInput = {
-  columnId: InputMaybe<Scalars['String']['input']>;
-  dimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  id: InputMaybe<Scalars['UUID']['input']>;
-  isEditable: Scalars['Boolean']['input'];
-  label: InputMaybe<Scalars['String']['input']>;
-  quantity: InputMaybe<Scalars['String']['input']>;
-  unit: Scalars['String']['input'];
+  columnId: string | null | undefined;
+  dimensions: Array<string> | null | undefined;
+  id: string | null | undefined;
+  isEditable: boolean;
+  label: string | null | undefined;
+  quantity: string | null | undefined;
+  unit: string;
 };
 
 export type PipelineConfigInput = {
@@ -268,91 +212,86 @@ export type PipelineConfigInput = {
 };
 
 export type PipelineOperationInput = {
-  operation: Scalars['String']['input'];
+  operation: string;
 };
 
-export enum PrimaryLayoutClass {
+export const enum PrimaryLayoutClass {
   Action = 'ACTION',
   ContextSource = 'CONTEXT_SOURCE',
   Core = 'CORE',
   GhostableContextSource = 'GHOSTABLE_CONTEXT_SOURCE',
   Outcome = 'OUTCOME'
-}
-
-export type RegisterUserInput = {
-  email: Scalars['String']['input'];
-  firstName: InputMaybe<Scalars['String']['input']>;
-  frameworkId: InputMaybe<Scalars['ID']['input']>;
-  invitationToken: InputMaybe<Scalars['String']['input']>;
-  lastName: InputMaybe<Scalars['String']['input']>;
-  password: Scalars['String']['input'];
 };
 
-export enum ScenarioKind {
+export type RegisterUserInput = {
+  email: string;
+  firstName: string | null | undefined;
+  frameworkId: string | number | null | undefined;
+  invitationToken: string | null | undefined;
+  lastName: string | null | undefined;
+  password: string;
+};
+
+export const enum ScenarioKind {
   Baseline = 'BASELINE',
   Custom = 'CUSTOM',
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
-}
+};
 
 export type SelectCategoriesTransformationInput = {
-  categories: Array<Scalars['String']['input']>;
-  dimension: Scalars['String']['input'];
-  exclude: Scalars['Boolean']['input'];
-  flatten: Scalars['Boolean']['input'];
+  categories: Array<string>;
+  dimension: string;
+  exclude: boolean;
+  flatten: boolean;
 };
 
 export type SimpleConfigInput = {
-  nodeClass: Scalars['String']['input'];
+  nodeClass: string;
 };
 
 export type UpdateDataPointInput = {
-  date: InputMaybe<Scalars['Date']['input']>;
-  dimensionCategoryIds: InputMaybe<Array<Scalars['UUID']['input']>>;
-  metricId: InputMaybe<Scalars['UUID']['input']>;
-  value: InputMaybe<Scalars['Float']['input']>;
+  date: string | null | undefined;
+  dimensionCategoryIds: Array<string> | null | undefined;
+  metricId: string | null | undefined;
+  value: number | null | undefined;
 };
 
 export type UpdateDimensionCategoryInput = {
-  categoryId: Scalars['UUID']['input'];
-  identifier: InputMaybe<Scalars['String']['input']>;
-  label: InputMaybe<Scalars['String']['input']>;
-  nextSibling: InputMaybe<Scalars['ID']['input']>;
-  previousSibling: InputMaybe<Scalars['ID']['input']>;
+  categoryId: string;
+  identifier: string | null | undefined;
+  label: string | null | undefined;
+  nextSibling: string | number | null | undefined;
+  previousSibling: string | number | null | undefined;
 };
 
 export type UpdateDimensionInput = {
-  dimensionId: Scalars['UUID']['input'];
-  name: InputMaybe<Scalars['String']['input']>;
+  dimensionId: string;
+  name: string | null | undefined;
 };
 
 export type UpdateNodeInput = {
-  allowNulls: InputMaybe<Scalars['Boolean']['input']>;
-  color: InputMaybe<Scalars['String']['input']>;
-  config: InputMaybe<NodeConfigInput>;
-  description: InputMaybe<Scalars['String']['input']>;
-  i18n: InputMaybe<Scalars['JSON']['input']>;
-  inputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  inputPorts: InputMaybe<Array<InputPortInput>>;
-  isOutcome: InputMaybe<Scalars['Boolean']['input']>;
-  isVisible: InputMaybe<Scalars['Boolean']['input']>;
-  kind: InputMaybe<NodeKind>;
-  minimumYear: InputMaybe<Scalars['Int']['input']>;
-  name: InputMaybe<Scalars['String']['input']>;
-  nodeGroup: InputMaybe<Scalars['ID']['input']>;
-  order: InputMaybe<Scalars['Int']['input']>;
-  outputDimensions: InputMaybe<Array<Scalars['String']['input']>>;
-  outputMetrics: InputMaybe<Array<OutputMetricInput>>;
-  outputPorts: InputMaybe<Array<OutputPortInput>>;
-  params: InputMaybe<Scalars['JSON']['input']>;
-  shortName: InputMaybe<Scalars['String']['input']>;
-  tags: InputMaybe<Array<Scalars['String']['input']>>;
+  allowNulls: boolean | null | undefined;
+  color: string | null | undefined;
+  config: NodeConfigInput | null | undefined;
+  description: string | null | undefined;
+  i18n: Record<string, unknown> | unknown[] | null | undefined;
+  inputDimensions: Array<string> | null | undefined;
+  inputPorts: Array<InputPortInput> | null | undefined;
+  isOutcome: boolean | null | undefined;
+  isVisible: boolean | null | undefined;
+  kind: NodeKind | null | undefined;
+  minimumYear: number | null | undefined;
+  name: string | null | undefined;
+  nodeGroup: string | number | null | undefined;
+  order: number | null | undefined;
+  outputDimensions: Array<string> | null | undefined;
+  outputMetrics: Array<OutputMetricInput> | null | undefined;
+  outputPorts: Array<OutputPortInput> | null | undefined;
+  params: Record<string, unknown> | unknown[] | null | undefined;
+  shortName: string | null | undefined;
+  tags: Array<string> | null | undefined;
 };
-
-export enum VisualizationKind {
-  Group = 'group',
-  Node = 'node'
-}
 
 export type CytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -411,8 +350,8 @@ export type CytoscapeNodesQuery = (
 );
 
 export type NodePageQueryVariables = Exact<{
-  node: Scalars['ID']['input'];
-  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
+  node: string | number;
+  scenarios: Array<string> | null | undefined;
 }>;
 
 
@@ -464,7 +403,7 @@ export type NodePageQuery = (
 );
 
 export type CreateInstanceFrameworkNameQueryVariables = Exact<{
-  identifier: Scalars['ID']['input'];
+  identifier: string | number;
 }>;
 
 
@@ -499,7 +438,7 @@ export type CreateInstanceMutation = (
 );
 
 export type FrameworkNameQueryVariables = Exact<{
-  identifier: Scalars['ID']['input'];
+  identifier: string | number;
 }>;
 
 
@@ -594,8 +533,8 @@ export type InstanceUsersQuery = (
 );
 
 export type AddUserToInstanceMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  email: Scalars['String']['input'];
+  instanceId: string | number;
+  email: string;
 }>;
 
 
@@ -624,8 +563,8 @@ export type AddUserToInstanceMutation = (
 );
 
 export type RemoveInvitationMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  invitationId: Scalars['ID']['input'];
+  instanceId: string | number;
+  invitationId: string | number;
 }>;
 
 
@@ -644,8 +583,8 @@ export type RemoveInvitationMutation = (
 );
 
 export type InviteUserToInstanceMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  email: Scalars['String']['input'];
+  instanceId: string | number;
+  email: string;
 }>;
 
 
@@ -729,8 +668,8 @@ export type StreamFieldFragment =
 ;
 
 export type FrameworkConfigsQueryVariables = Exact<{
-  identifier: Scalars['ID']['input'];
-  clientUrl: InputMaybe<Scalars['String']['input']>;
+  identifier: string | number;
+  clientUrl: string | null | undefined;
 }>;
 
 
@@ -749,7 +688,7 @@ export type FrameworkConfigsQuery = (
 );
 
 export type SetNormalizationFromWidgetMutationVariables = Exact<{
-  id: InputMaybe<Scalars['ID']['input']>;
+  id: string | number | null | undefined;
 }>;
 
 
@@ -762,10 +701,10 @@ export type SetNormalizationFromWidgetMutation = (
 );
 
 export type SetParameterMutationVariables = Exact<{
-  parameterId: Scalars['ID']['input'];
-  boolValue: InputMaybe<Scalars['Boolean']['input']>;
-  numberValue: InputMaybe<Scalars['Float']['input']>;
-  stringValue: InputMaybe<Scalars['String']['input']>;
+  parameterId: string | number;
+  boolValue: boolean | null | undefined;
+  numberValue: number | null | undefined;
+  stringValue: string | null | undefined;
 }>;
 
 
@@ -866,7 +805,7 @@ export type EditorDimensionSearchListQuery = (
 );
 
 export type NodeExplanationQueryVariables = Exact<{
-  node: Scalars['ID']['input'];
+  node: string | number;
 }>;
 
 
@@ -963,7 +902,7 @@ export type NodeGraphQuery = (
                 & { __typename: 'FormulaConfigType' }
               )
               | (
-                { operations: any }
+                { operations: Record<string, unknown> | unknown[] }
                 & { __typename: 'PipelineConfigType' }
               )
               | (
@@ -1023,7 +962,7 @@ export type NodeGraphQuery = (
                 & { __typename: 'FormulaConfigType' }
               )
               | (
-                { operations: any }
+                { operations: Record<string, unknown> | unknown[] }
                 & { __typename: 'PipelineConfigType' }
               )
               | (
@@ -1092,7 +1031,7 @@ type EditorNodeFields_ActionNode_Fragment = (
           & { __typename: 'FormulaConfigType' }
         )
         | (
-          { operations: any }
+          { operations: Record<string, unknown> | unknown[] }
           & { __typename: 'PipelineConfigType' }
         )
         | (
@@ -1153,7 +1092,7 @@ type EditorNodeFields_Node_Fragment = (
           & { __typename: 'FormulaConfigType' }
         )
         | (
-          { operations: any }
+          { operations: Record<string, unknown> | unknown[] }
           & { __typename: 'PipelineConfigType' }
         )
         | (
@@ -1185,7 +1124,7 @@ export type EditorNodeEdgeFragment = (
 );
 
 export type DatasetPortDataQueryVariables = Exact<{
-  nodeId: Scalars['ID']['input'];
+  nodeId: string | number;
 }>;
 
 
@@ -1255,7 +1194,7 @@ export type DatasetPortDataQuery = (
 );
 
 export type DataPointInstanceChangeHistoryQueryVariables = Exact<{
-  limit?: Scalars['Int']['input'];
+  limit?: number;
 }>;
 
 
@@ -1264,7 +1203,7 @@ export type DataPointInstanceChangeHistoryQuery = (
     { id: string, editor: (
       { changeHistory: Array<(
         { uuid: string, createdAt: string, userEmail: string | null, entries: Array<(
-          { uuid: string, action: string, targetUuid: string | null, before: any | null, after: any | null, createdAt: string }
+          { uuid: string, action: string, targetUuid: string | null, before: Record<string, unknown> | unknown[] | null, after: Record<string, unknown> | unknown[] | null, createdAt: string }
           & { __typename: 'InstanceModelLogEntryType' }
         )> }
         & { __typename: 'InstanceChangeOperationType' }
@@ -1343,7 +1282,7 @@ export type DatasetDetailFieldsFragment = (
     { id: string, name: string | null, label: string, unit: string, previousSibling: string | null, nextSibling: string | null }
     & { __typename: 'DatasetMetric' }
   )>, dataPoints: Array<(
-    { id: string, date: any, value: number | null, metric: (
+    { id: string, date: string, value: number | null, metric: (
       { id: string }
       & { __typename: 'DatasetMetric' }
     ), dimensionCategories: Array<(
@@ -1421,7 +1360,7 @@ export type InstanceDatasetsQuery = (
 );
 
 export type InstanceDatasetQueryVariables = Exact<{
-  datasetId: Scalars['ID']['input'];
+  datasetId: string | number;
 }>;
 
 
@@ -1442,7 +1381,7 @@ export type InstanceDatasetQuery = (
           { id: string, name: string | null, label: string, unit: string, previousSibling: string | null, nextSibling: string | null }
           & { __typename: 'DatasetMetric' }
         )>, dataPoints: Array<(
-          { id: string, date: any, value: number | null, metric: (
+          { id: string, date: string, value: number | null, metric: (
             { id: string }
             & { __typename: 'DatasetMetric' }
           ), dimensionCategories: Array<(
@@ -1497,7 +1436,7 @@ export type InstanceDatasetQuery = (
 );
 
 export type DatasetConnectedNodesQueryVariables = Exact<{
-  ids: Array<Scalars['ID']['input']>;
+  ids: Array<string | number>;
 }>;
 
 
@@ -1543,7 +1482,7 @@ export type DatasetConnectedNodesQuery = (
 );
 
 export type DataPointFieldsFragment = (
-  { id: string, date: any, value: number | null, metric: (
+  { id: string, date: string, value: number | null, metric: (
     { id: string }
     & { __typename: 'DatasetMetric' }
   ), dimensionCategories: Array<(
@@ -1554,8 +1493,8 @@ export type DataPointFieldsFragment = (
 );
 
 export type CreateDataPointMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
   input: CreateDataPointInput;
 }>;
 
@@ -1565,7 +1504,7 @@ export type CreateDataPointMutation = (
     { datasetEditor: (
       { createDataPoint:
         | (
-          { id: string, date: any, value: number | null, metric: (
+          { id: string, date: string, value: number | null, metric: (
             { id: string }
             & { __typename: 'DatasetMetric' }
           ), dimensionCategories: Array<(
@@ -1590,9 +1529,9 @@ export type CreateDataPointMutation = (
 );
 
 export type UpdateDataPointMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
-  dataPointId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
+  dataPointId: string | number;
   input: UpdateDataPointInput;
 }>;
 
@@ -1602,7 +1541,7 @@ export type UpdateDataPointMutation = (
     { datasetEditor: (
       { updateDataPoint:
         | (
-          { id: string, date: any, value: number | null, metric: (
+          { id: string, date: string, value: number | null, metric: (
             { id: string }
             & { __typename: 'DatasetMetric' }
           ), dimensionCategories: Array<(
@@ -1627,9 +1566,9 @@ export type UpdateDataPointMutation = (
 );
 
 export type DeleteDataPointMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
-  dataPointId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
+  dataPointId: string | number;
 }>;
 
 
@@ -1651,9 +1590,9 @@ export type DeleteDataPointMutation = (
 );
 
 export type CreateDataPointCommentMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
-  dataPointId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
+  dataPointId: string | number;
   input: CreateDataPointCommentInput;
 }>;
 
@@ -1691,9 +1630,9 @@ export type CreateDataPointCommentMutation = (
 );
 
 export type ResolveDataPointCommentMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
-  commentId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
+  commentId: string | number;
 }>;
 
 
@@ -1730,9 +1669,9 @@ export type ResolveDataPointCommentMutation = (
 );
 
 export type UnresolveDataPointCommentMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
-  commentId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
+  commentId: string | number;
 }>;
 
 
@@ -1769,8 +1708,8 @@ export type UnresolveDataPointCommentMutation = (
 );
 
 export type CreateSourceReferenceMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
   input: CreateDatasetSourceReferenceInput;
 }>;
 
@@ -1811,7 +1750,7 @@ export type CreateSourceReferenceMutation = (
 );
 
 export type CreateDataSourceMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
+  instanceId: string | number;
   input: CreateDataSourceInput;
 }>;
 
@@ -1837,9 +1776,9 @@ export type CreateDataSourceMutation = (
 );
 
 export type DeleteSourceReferenceMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  datasetId: Scalars['ID']['input'];
-  referenceId: Scalars['ID']['input'];
+  instanceId: string | number;
+  datasetId: string | number;
+  referenceId: string | number;
 }>;
 
 
@@ -1897,7 +1836,7 @@ export type InstanceDimensionsQuery = (
 );
 
 export type UpdateDimensionMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
+  instanceId: string | number;
   input: UpdateDimensionInput;
 }>;
 
@@ -1926,7 +1865,7 @@ export type UpdateDimensionMutation = (
 );
 
 export type CreateDimensionCategoriesMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
+  instanceId: string | number;
   input: Array<CreateDimensionCategoryInput>;
 }>;
 
@@ -1955,7 +1894,7 @@ export type CreateDimensionCategoriesMutation = (
 );
 
 export type UpdateDimensionCategoriesMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
+  instanceId: string | number;
   input: Array<UpdateDimensionCategoryInput>;
 }>;
 
@@ -1984,8 +1923,8 @@ export type UpdateDimensionCategoriesMutation = (
 );
 
 export type DeleteDimensionCategoryMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  categoryId: Scalars['UUID']['input'];
+  instanceId: string | number;
+  categoryId: string;
 }>;
 
 
@@ -2004,7 +1943,7 @@ export type DeleteDimensionCategoryMutation = (
 );
 
 export type NodeOutputDataQueryVariables = Exact<{
-  nodeId: Scalars['ID']['input'];
+  nodeId: string | number;
 }>;
 
 
@@ -2080,8 +2019,8 @@ export type EditorPublishStateQuery = (
 );
 
 export type PublishModelInstanceMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  version: InputMaybe<Scalars['UUID']['input']>;
+  instanceId: string | number;
+  version: string | null | undefined;
 }>;
 
 
@@ -2109,9 +2048,9 @@ export type PublishModelInstanceMutation = (
 );
 
 export type CreateNodeMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
+  instanceId: string | number;
   input: CreateNodeInput;
-  version: InputMaybe<Scalars['UUID']['input']>;
+  version: string | null | undefined;
 }>;
 
 
@@ -2136,7 +2075,7 @@ export type CreateNodeMutation = (
 );
 
 export type NodeParametersQueryVariables = Exact<{
-  nodeId: Scalars['ID']['input'];
+  nodeId: string | number;
 }>;
 
 
@@ -2166,9 +2105,9 @@ export type NodeParametersQuery = (
 );
 
 export type CreateEdgeMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
+  instanceId: string | number;
   input: CreateEdgeInput;
-  version: InputMaybe<Scalars['UUID']['input']>;
+  version: string | null | undefined;
 }>;
 
 
@@ -2199,9 +2138,9 @@ export type CreateEdgeMutation = (
 );
 
 export type DeleteEdgeMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  edgeId: Scalars['ID']['input'];
-  version: InputMaybe<Scalars['UUID']['input']>;
+  instanceId: string | number;
+  edgeId: string | number;
+  version: string | null | undefined;
 }>;
 
 
@@ -2220,9 +2159,9 @@ export type DeleteEdgeMutation = (
 );
 
 export type DeleteNodeMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  nodeId: Scalars['ID']['input'];
-  version: InputMaybe<Scalars['UUID']['input']>;
+  instanceId: string | number;
+  nodeId: string | number;
+  version: string | null | undefined;
 }>;
 
 
@@ -2241,10 +2180,10 @@ export type DeleteNodeMutation = (
 );
 
 export type UpdateNodeMutationVariables = Exact<{
-  instanceId: Scalars['ID']['input'];
-  nodeId: Scalars['ID']['input'];
+  instanceId: string | number;
+  nodeId: string | number;
   input: UpdateNodeInput;
-  version: InputMaybe<Scalars['UUID']['input']>;
+  version: string | null | undefined;
 }>;
 
 
@@ -2279,7 +2218,7 @@ export type UpdateNodeMutation = (
 );
 
 export type NodeTranslationQueryVariables = Exact<{
-  nodeId: Scalars['ID']['input'];
+  nodeId: string | number;
 }>;
 
 
@@ -2312,20 +2251,20 @@ export type AvailableDatasetsQuery = (
 );
 
 export type NodeHistoryEntryFragment = (
-  { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: any | null, after: any | null }
+  { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: Record<string, unknown> | unknown[] | null, after: Record<string, unknown> | unknown[] | null }
   & { __typename: 'InstanceModelLogEntryType' }
 );
 
 export type NodeChangeHistoryQueryVariables = Exact<{
-  nodeId: Scalars['ID']['input'];
-  limit?: Scalars['Int']['input'];
+  nodeId: string | number;
+  limit?: number;
 }>;
 
 
 export type NodeChangeHistoryQuery = (
   { node: (
     { uuid: string, id: string, changeHistory: Array<(
-      { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: any | null, after: any | null }
+      { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: Record<string, unknown> | unknown[] | null, after: Record<string, unknown> | unknown[] | null }
       & { __typename: 'InstanceModelLogEntryType' }
     )> }
     & { __typename: 'ActionNode' | 'Node' }
@@ -2376,7 +2315,7 @@ export type ModelEditorDimensionalMetricFieldsFragment = (
 );
 
 export type InstanceGoalOutcomeQueryVariables = Exact<{
-  goal: Scalars['ID']['input'];
+  goal: string | number;
 }>;
 
 
@@ -2401,7 +2340,7 @@ export type InstanceGoalOutcomeQuery = (
 );
 
 export type ActivateScenarioMutationVariables = Exact<{
-  scenarioId: Scalars['ID']['input'];
+  scenarioId: string | number;
 }>;
 
 
@@ -2443,7 +2382,7 @@ export type DimensionalMetricFragment = (
 );
 
 export type AvailableInstancesQueryVariables = Exact<{
-  hostname: Scalars['String']['input'];
+  hostname: string;
 }>;
 
 
@@ -2763,9 +2702,9 @@ export type CausalGridNodeFragment =
 ;
 
 export type CausalChainQueryVariables = Exact<{
-  node: Scalars['ID']['input'];
-  goal: InputMaybe<Scalars['ID']['input']>;
-  untilNode: InputMaybe<Scalars['ID']['input']>;
+  node: string | number;
+  goal: string | number | null | undefined;
+  untilNode: string | number | null | undefined;
 }>;
 
 
@@ -2992,9 +2931,9 @@ export type CausalChainQuery = (
 );
 
 export type ActionContentQueryVariables = Exact<{
-  node: Scalars['ID']['input'];
-  goal: InputMaybe<Scalars['ID']['input']>;
-  downstreamDepth: InputMaybe<Scalars['Int']['input']>;
+  node: string | number;
+  goal: string | number | null | undefined;
+  downstreamDepth: number | null | undefined;
 }>;
 
 
@@ -3368,8 +3307,8 @@ export type ActionContentQuery = (
 );
 
 export type ActionImpactsQueryVariables = Exact<{
-  impact1: Scalars['ID']['input'];
-  impact2: Scalars['ID']['input'];
+  impact1: string | number;
+  impact2: string | number;
 }>;
 
 
@@ -3412,7 +3351,7 @@ export type ActionImpactsQuery = (
 );
 
 export type ActionListQueryVariables = Exact<{
-  goal: InputMaybe<Scalars['ID']['input']>;
+  goal: string | number | null | undefined;
 }>;
 
 
@@ -3637,7 +3576,7 @@ export type ImpactOverviewsQuery = (
 );
 
 export type NodeVisualizationsQueryVariables = Exact<{
-  nodeId: Scalars['ID']['input'];
+  nodeId: string | number;
 }>;
 
 
@@ -3799,9 +3738,9 @@ export type OutcomeNodeFieldsFragment = (
 );
 
 export type OutcomeNodeQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
-  goal: InputMaybe<Scalars['ID']['input']>;
-  scenarios: InputMaybe<Array<Scalars['String']['input']>>;
+  id: string | number;
+  goal: string | number | null | undefined;
+  scenarios: Array<string> | null | undefined;
 }>;
 
 
@@ -4205,7 +4144,7 @@ export type DashboardPageFieldsFragment = (
 );
 
 export type PageQueryVariables = Exact<{
-  path: Scalars['String']['input'];
+  path: string;
 }>;
 
 

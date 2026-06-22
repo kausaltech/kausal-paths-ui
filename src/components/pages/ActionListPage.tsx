@@ -202,9 +202,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     [t, activeOverview?.graphType, instance.features.showAccumulatedEffects]
   );
 
-  const [sortKey, setSortKey] = useState<SortActionsBy>(
-    (page.defaultSortOrder as SortActionsBy | null) ?? 'STANDARD'
-  );
+  const [sortKey, setSortKey] = useState<SortActionsBy>(page.defaultSortOrder ?? 'STANDARD');
 
   // Derive the effective sort config from the (possibly filtered) options.
   // If the desired key isn't in the current graph-type's options, fall back to STANDARD
@@ -315,7 +313,7 @@ function ActionListPage({ page }: ActionListPageProps) {
                   id="view-select"
                   labelId="view-select-label"
                   value={listType}
-                  onChange={(e) => setListType(e.target.value as ViewType)}
+                  onChange={(e) => setListType(e.target.value)}
                   size="small"
                   MenuProps={{ disablePortal: true }}
                 >

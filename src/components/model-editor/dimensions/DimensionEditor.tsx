@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
@@ -102,7 +102,6 @@ export default function DimensionEditor({ dimensionId }: Props) {
     { fetchPolicy: 'cache-and-network' }
   );
   const t = useTranslations('model-editor');
-  const instance = useInstance();
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getModelEditorSection(pathname, 'dimensions');
@@ -112,21 +111,55 @@ export default function DimensionEditor({ dimensionId }: Props) {
     [data, dimensionId]
   );
 
-  const [name, setName] = useState('');
-  const [rows, setRows] = useState<CategoryRow[]>([]);
+  if (loading && !data) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (error) return <GraphQLError error={error} />;
+  if (!dimension) {
+    return (
+      <Container maxWidth="md" sx={{ pt: 20, pb: 3, mx: 0 }}>
+        <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
+          {t('dimensions-back-to-dimensions')}
+        </Button>
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          {t('dimensions-not-found')}
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <DimensionEditorForm
+      key={dimension.id}
+      dimension={dimension}
+      listBase={listBase}
+      refetch={refetch}
+    />
+  );
+}
+
+type DimensionEditorFormProps = {
+  dimension: InstanceDimensionFieldsFragment;
+  listBase: string;
+  refetch: () => Promise<unknown>;
+};
+
+function DimensionEditorForm({ dimension, listBase, refetch }: DimensionEditorFormProps) {
+  const t = useTranslations('model-editor');
+  const instance = useInstance();
+  const router = useRouter();
+
+  const [name, setName] = useState(dimension.name);
+  const [rows, setRows] = useState<CategoryRow[]>(() => toRows(dimension));
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (dimension) {
-      setName(dimension.name);
-      setRows(toRows(dimension));
-      setDeletedIds([]);
-    }
-  }, [dimension]);
 
   const isDirty = useMemo(() => {
     if (!dimension) return false;
@@ -306,27 +339,6 @@ export default function DimensionEditor({ dimensionId }: Props) {
       setSaving(false);
     }
   };
-
-  if (loading && !data) {
-    return (
-      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-  if (error) return <GraphQLError error={error} />;
-  if (!dimension) {
-    return (
-      <Container maxWidth="md" sx={{ pt: 20, pb: 3, mx: 0 }}>
-        <Button startIcon={<ArrowLeft />} onClick={() => router.push(listBase)}>
-          {t('dimensions-back-to-dimensions')}
-        </Button>
-        <Alert severity="warning" sx={{ mt: 2 }}>
-          {t('dimensions-not-found')}
-        </Alert>
-      </Container>
-    );
-  }
 
   return (
     <Container maxWidth="md" sx={{ pt: 20, pb: 3, mx: 0 }}>

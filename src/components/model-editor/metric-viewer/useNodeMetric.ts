@@ -87,5 +87,5 @@ export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
     }));
   }, [data]);
 
-  return { loading, error: error as Error | undefined, portMetrics, fetch };
+  return { loading, error, portMetrics, fetch };
 }
