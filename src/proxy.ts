@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { CombinedGraphQLErrors } from '@apollo/client';
 import * as Sentry from '@sentry/nextjs';
 import { getSessionCookie } from 'better-auth/cookies';
 import type { Bindings } from 'pino';
@@ -10,7 +11,13 @@ import {
   REQUEST_CORRELATION_ID_HEADER,
 } from '@common/constants/headers.mjs';
 import { HEALTH_CHECK_PUBLIC_PATH } from '@common/constants/routes.mjs';
-import { getDeploymentType, getSpotlightUrl, getWildcardDomains, isLocalDev } from '@common/env';
+import {
+  getDeploymentType,
+  getSpotlightUrl,
+  getWildcardDomains,
+  isLocalDev,
+  isProductionDeployment,
+} from '@common/env';
 import { envToBool } from '@common/env/utils';
 import { getTraceLogBindings } from '@common/logging/init';
 import { LOGGER_CORRELATION_ID, generateCorrelationID, getLogger } from '@common/logging/logger';
@@ -106,7 +113,12 @@ function _protectedResponse(req: NextRequest, headers: Headers, hostname: string
   return NextResponse.rewrite(rewrittenUrl, { request: { headers } });
 }
 
-function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | 'server-error') {
+function errorResponse(
+  req: NextRequest,
+  headers: Headers,
+  kind: 'not-found' | 'server-error',
+  error?: unknown
+) {
   const reqInit: { request: { headers: Headers }; status?: number } = {
     request: { headers },
   };
@@ -116,7 +128,13 @@ function errorResponse(req: NextRequest, headers: Headers, kind: 'not-found' | '
     reqInit.status = 500;
   }
   // Return a simple response since we don't have proper error pages yet in the rewrite target
-  return new Response(kind === 'not-found' ? 'Not found' : 'Internal server error', reqInit);
+  let msg = kind === 'not-found' ? 'Not found' : 'Internal server error';
+  if (!isProductionDeployment() && error) {
+    if (CombinedGraphQLErrors.is(error) || error instanceof Error) {
+      msg += `\n\n${error.toString()}`;
+    }
+  }
+  return new Response(msg, reqInit);
 }
 
 const NON_PAGE_PATHS = ['api', 'static', '_next', 'favicon.ico'];
@@ -319,7 +337,7 @@ async function proxy(req: NextRequest) {
       const resp = NextResponse.next(reqInit);
       return resp;
     }
-    return errorResponse(req, reqHeaders, 'server-error');
+    return errorResponse(req, reqHeaders, 'server-error', error);
   }
   const match = determineMatchingInstance(instances, path);
   setInstanceHeaders(reqHeaders, instances, match?.instance ?? null);
