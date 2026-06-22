@@ -434,7 +434,7 @@ function SiteFooter(props: SiteFooterProps) {
             {utilityLinks &&
               utilityLinks.map((page) => (
                 <UtilityItem key={page.id}>
-                  <a href={page.slug}>
+                  <Link href={page.slug}>
                     {page.icon && (
                       <Icon
                         name={page.icon}
@@ -444,7 +444,7 @@ function SiteFooter(props: SiteFooterProps) {
                       />
                     )}
                     {page.name}
-                  </a>
+                  </Link>
                 </UtilityItem>
               ))}
             <UtilityItem>

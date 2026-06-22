@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 
 import {
   Avatar,
@@ -19,6 +18,7 @@ import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { BoxArrowRight, ChevronDown, PencilSquare } from 'react-bootstrap-icons';
 
+import { Link } from '@/common/links';
 import { authClient, useSession } from '@/lib/auth-client';
 
 const CAN_EDIT_MODEL = gql`
