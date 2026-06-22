@@ -37,5 +37,5 @@ run = 'pnpx @graphql-inspector/cli introspect ${PATHS_BACKEND_URL}/v1/graphql/ -
 [tasks.portless]
 description = "Run the backend with Portless"
 run = "portless --name paths-ui --app-port 8051 pnpm dev"
-env = { PORTLESS_WILDCARD = "1", "PORTLESS_TLD" = "dev", WILDCARD_DOMAINS = "paths-ui.dev" }
+env = { PORTLESS_WILDCARD = "1", "PORTLESS_TLD" = "test", WILDCARD_DOMAINS = "paths-ui.test" }
 raw = true
