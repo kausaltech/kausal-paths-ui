@@ -273,14 +273,17 @@ function getLoggerForRequest(req: NextRequest, host: string, path: string) {
     req.headers.forEach((value, key) => {
       debugHeaders[key] = value;
     });
-    logger.trace(debugHeaders, 'incoming headers');
+    const headersStr = Object.entries(debugHeaders)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+    logger.trace(`incoming headers:\n${headersStr}\n`);
   }
   return { logger, reqId };
 }
 
 async function proxy(req: NextRequest) {
   const { nextUrl } = req;
-  const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || req.nextUrl.host;
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
   const hostname = host.split(':')[0];
   const path = nextUrl.pathname;
   const pathParts = splitPath(path);
