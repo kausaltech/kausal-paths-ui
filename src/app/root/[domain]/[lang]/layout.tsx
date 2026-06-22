@@ -74,13 +74,17 @@ function buildSiteContext(
   const instance = data.instance;
   const assetPrefix = getAssetPrefix();
 
+  const siteTitle = instance?.frameworkConfig?.framework?.name
+    ? `${instance.frameworkConfig.framework.name}: ${instance.name}`
+    : instance.name;
+
   const siteContext = {
     scenarios,
     parameters,
     menuPages,
     footerPages,
     additionalLinkPages,
-    title: instance.name,
+    title: siteTitle,
     owner: instance.owner!,
     apolloConfig: {
       instanceHostname: ctx.instanceHostname,
