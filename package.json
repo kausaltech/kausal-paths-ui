@@ -11,6 +11,7 @@
     "start": "next start",
     "graphql-codegen": "graphql-codegen --config codegen.ts && prettier --write ./src/common/__generated__/graphql.ts ./e2e-tests/__generated__/graphql.ts",
     "prettier:fix": "prettier --write --cache ./",
+    "prettier:check": "prettier --check --cache ./",
     "typecheck": "tsc -b",
     "typecheck:baseline": "tsc -b | tsc-baseline -p tsc-baseline.json check",
     "typecheck:baseline:ci": "tsc -b | tsc-baseline -p tsc-baseline.json check --error-format gitlab 2>&1 | node kausal_common/scripts/gitlab-to-rdjsonl.js",

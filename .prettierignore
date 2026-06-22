@@ -4,4 +4,6 @@
 **/.hg
 **/node_modules
 **/__generated__/**
+e2e-tests/playwright-report/**
+e2e-tests/test-results/**
 next-env.d.ts
