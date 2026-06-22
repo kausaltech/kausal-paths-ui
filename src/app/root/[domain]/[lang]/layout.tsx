@@ -139,15 +139,18 @@ export async function generateMetadata(props: LayoutProps): Promise<Metadata> {
   const data = resp!;
   const theme = await loadTheme(data.instance.themeIdentifier || 'default');
 
+  const siteName = data.instance?.frameworkConfig?.framework?.name
+    ? `${data.instance.frameworkConfig.framework.name}: ${data.instance.name}`
+    : data.instance.name;
   return {
     robots: 'noindex, nofollow',
-    title: data.instance.name,
+    title: siteName,
     description: data.instance.leadParagraph,
     openGraph: {
       title: data.instance.name,
       description: data.instance.leadParagraph ?? undefined,
       type: 'website',
-      siteName: data.instance.name,
+      siteName: siteName,
       images: [`${getAssetPrefix()}/static/themes/default/images/og-image-default.png`],
     },
     metadataBase: new URL(origin),
