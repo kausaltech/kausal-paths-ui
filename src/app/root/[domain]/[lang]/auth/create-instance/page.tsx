@@ -62,7 +62,23 @@ function slugify(text: string): string {
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-');
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+// Generate a short, URL-safe random suffix to ensure identifier uniqueness.
+function randomSuffix(length = 6): string {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+}
+
+// Build a unique identifier from the framework and the user-provided name,
+// hidden from the user: {framework}-{slugified-name}-{hash}
+function generateIdentifier(frameworkId: string, name: string): string {
+  const parts = [slugify(frameworkId), slugify(name), randomSuffix()].filter(Boolean);
+  return parts.join('-');
 }
 
 export default function CreateInstancePage() {
@@ -74,8 +90,6 @@ export default function CreateInstancePage() {
   const isLogoBitmap = theme.themeLogoUrl?.endsWith('.png');
 
   const [name, setName] = useState('');
-  const [identifier, setIdentifier] = useState('');
-  const [identifierTouched, setIdentifierTouched] = useState(false);
   const [organizationName, setOrganizationName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<{ instanceId: string; instanceName: string } | null>(null);
@@ -87,13 +101,6 @@ export default function CreateInstancePage() {
     skip: !frameworkId,
   });
   const frameworkName = frameworkData?.framework?.name;
-
-  const handleNameChange = (value: string) => {
-    setName(value);
-    if (!identifierTouched) {
-      setIdentifier(slugify(value));
-    }
-  };
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -110,7 +117,7 @@ export default function CreateInstancePage() {
           input: {
             frameworkId,
             name,
-            identifier,
+            identifier: generateIdentifier(frameworkId, name),
             organizationName,
           },
         },
@@ -190,22 +197,11 @@ export default function CreateInstancePage() {
                 <TextField
                   label="Instance name"
                   value={name}
-                  onChange={(e) => handleNameChange(e.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                   required
                   fullWidth
                   autoFocus
                   helperText="A descriptive name for your instance, e.g. your city name"
-                />
-                <TextField
-                  label="Identifier"
-                  value={identifier}
-                  onChange={(e) => {
-                    setIdentifier(e.target.value);
-                    setIdentifierTouched(true);
-                  }}
-                  required
-                  fullWidth
-                  helperText="A unique URL-safe identifier (auto-generated from the name)"
                 />
                 <TextField
                   label="Organization name"
