@@ -171,6 +171,7 @@ export default function InstanceUsersPage() {
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(
     null
   );
+  const [time, setTime] = useState(() => Date.now());
 
   const { data, loading, error, refetch } = useQuery<InstanceUsersQuery>(GET_INSTANCE_USERS, {
     fetchPolicy: 'cache-and-network',
@@ -495,7 +496,7 @@ export default function InstanceUsersPage() {
           <Stack spacing={1}>
             {invitations.map((inv) => {
               const expires = new Date(inv.expiresAt);
-              const expired = expires.getTime() < Date.now();
+              const expired = expires.getTime() < time;
               return (
                 <Paper key={inv.id} variant="outlined" sx={{ p: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

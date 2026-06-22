@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   CircularProgress,
@@ -110,11 +110,6 @@ const NumberWidget = (props: NumberWidgetProps) => {
   };
 
   const step = getStep(min, max, defaultStep, defaultValue);
-
-  useEffect(() => {
-    setValue(initialValue);
-    setInputValue(initialValue.toString());
-  }, [initialValue]);
 
   const validateNumber = (value: number) => {
     const isValid = value >= min && value <= max && !isNaN(value);
@@ -308,6 +303,7 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
     case 'NumberParameterType':
       return (
         <NumberWidget
+          key={`${parameter.id}:${parameter.numberValue ?? 0}`}
           id={parameter.id}
           initialValue={parameter.numberValue ?? 0}
           defaultValue={parameter.numberDefaultValue ?? 0}

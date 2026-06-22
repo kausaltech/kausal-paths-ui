@@ -124,7 +124,7 @@ export default function CreateInstancePage() {
         return;
       }
 
-      setCreated(data.createInstance as { instanceId: string; instanceName: string });
+      setCreated(data.createInstance satisfies { instanceId: string; instanceName: string });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

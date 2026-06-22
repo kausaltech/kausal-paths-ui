@@ -1,14 +1,4 @@
 {
-  "kausal_common/src/components/Chart.tsx": {
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
-  "kausal_common/src/components/DelayedCircularProgress.tsx": {
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
   "kausal_common/src/themes/next-config.mjs": {
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
@@ -18,11 +8,6 @@
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
-    }
-  },
-  "kausal_common/src/utils/lru-cache.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 5
     }
   },
   "src/app/root/[domain]/[lang]/(with-layout)/actions/[slug]/page.tsx": {

@@ -129,5 +129,5 @@ export function useDatasetData(nodeId: string | null): UseDatasetDataResult {
     return results;
   }, [data]);
 
-  return { loading, error: error as Error | undefined, datasetPorts, fetch };
+  return { loading, error, datasetPorts, fetch };
 }

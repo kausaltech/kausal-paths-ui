@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   Box,
@@ -57,19 +57,6 @@ export default function ActionWizard({
     }
     return base;
   });
-
-  useEffect(() => {
-    if (!open) return;
-    if (initialSourceAction) {
-      setState((prev) => ({
-        ...prev,
-        ...deriveStateFromSource(initialSourceAction, edges, nodes),
-      }));
-      setActiveStep(1);
-    }
-    // Only re-run when the preselected action or open state changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSourceAction, open]);
 
   const updateState = useCallback((partial: Partial<WizardState>) => {
     setState((prev) => ({ ...prev, ...partial }));

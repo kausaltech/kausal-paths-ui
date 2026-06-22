@@ -98,7 +98,7 @@ export default function OutcomeBlock(props: OutcomeBlockProps) {
     (node): node is OutcomeNodeFieldsFragment => 'id' in node && typeof node.id === 'string'
   );
   const allNodes = new Map(validNodes.map((node) => [node.id, node]));
-  allNodes.set(outcomeNode.id, outcomeNode as OutcomeNodeFieldsFragment);
+  allNodes.set(outcomeNode.id, outcomeNode satisfies OutcomeNodeFieldsFragment);
 
   const activeNodeId =
     lastActiveNodeId && allNodes.has(lastActiveNodeId) ? lastActiveNodeId : outcomeNode.id;

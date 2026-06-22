@@ -1,28 +1,34 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
+import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
-import { type TypescriptOperationTypesPluginConfig } from 'graphql-codegen-typescript-operation-types';
 
 import graphqlConfig, { getSchema } from './graphql.config.ts';
 
-type GraphQLOpConfig = TypeScriptDocumentsPluginConfig & TypescriptOperationTypesPluginConfig;
+type GraphQLOpConfig = TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig;
 
-const tsoConfig: GraphQLOpConfig = {
+const tsoConfig = {
   arrayInputCoercion: false,
   avoidOptionals: true,
   immutableTypes: false,
   mergeFragmentTypes: true,
   nonOptionalTypename: true,
   onlyOperationTypes: true,
-  preResolveTypes: true,
+  constEnums: true,
+  enumsAsTypes: false,
   useTypeImports: true,
+  strictScalars: true,
+  enumType: 'native-const',
   scalars: {
     UUID: 'string',
     RichText: 'string',
     PositiveInt: 'number',
     DateTime: 'string',
     JSONString: 'string',
+    Date: 'string',
+    JSON: 'Record<string, unknown> | unknown[]',
+    _Any: 'unknown',
   },
-};
+} satisfies GraphQLOpConfig;
 
 const generalExcludes = [
   '!**/node_modules/**',
@@ -55,15 +61,16 @@ const config: CodegenConfig = {
     //   } satisfies ApolloClientHelpersConfig,
     // },
     'src/common/__generated__/graphql.ts': {
-      plugins: ['graphql-codegen-typescript-operation-types', 'typescript-operations'],
+      plugins: ['typescript-operations'],
       documents: [e2eTestsExclude, ...apolloConfigDocs],
       config: tsoConfig,
     },
     'e2e-tests/__generated__/graphql.ts': {
-      plugins: ['graphql-codegen-typescript-operation-types', 'typescript-operations'],
+      plugins: ['typescript-operations'],
       config: {
         onlyOperationTypes: true,
         useTypeImports: true,
+        nonOptionalTypename: true,
       } satisfies GraphQLOpConfig,
       documents: [appExclude, ...apolloConfigDocs],
     },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Alert,
@@ -183,20 +183,6 @@ export function DefineDataSourceDialog({
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Reset every time the dialog opens — otherwise stale values from the
-  // previous session would linger.
-  useEffect(() => {
-    if (open) {
-      setName('');
-      setAuthority('');
-      setEdition('');
-      setUrl('');
-      setDescription('');
-      setError(null);
-      setSubmitting(false);
-    }
-  }, [open]);
 
   const handleSubmit = async () => {
     if (!name.trim() || submitting) return;
@@ -414,6 +400,7 @@ export function AttachSourceForm({
         </Paper>
       </Collapse>
       <DefineDataSourceDialog
+        key={defineOpen ? 'open' : 'closed'}
         open={defineOpen}
         onClose={() => setDefineOpen(false)}
         onCreate={async (input) => {

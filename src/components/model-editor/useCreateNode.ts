@@ -93,7 +93,7 @@ export function useCreateNode() {
       const isAction = kind === 'action';
       const config: NodeConfigInput = isAction
         ? ({ action: { nodeClass: GENERIC_ACTION_CLASS } } as NodeConfigInput)
-        : ({ formula: { formula: '0' } } as NodeConfigInput);
+        : ({ formula: { formula: '0' } } satisfies NodeConfigInput);
       const input: CreateNodeInput = {
         identifier: newIdentifier,
         name,

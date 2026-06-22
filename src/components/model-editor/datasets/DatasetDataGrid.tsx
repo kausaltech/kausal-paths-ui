@@ -399,7 +399,7 @@ export default function DatasetDataGrid({
       const colId = columnIds[col];
       const gridRow = rows[row];
       if (!colId || !gridRow) {
-        return { kind: GridCellKind.Loading, allowOverlay: false } as GridCell;
+        return { kind: GridCellKind.Loading, allowOverlay: false } satisfies GridCell;
       }
       // A cell belongs to staged (uncommitted) structure when its row was added
       // but isn't backed by data yet, or its year column is newly added. Tint
@@ -948,7 +948,10 @@ export default function DatasetDataGrid({
         onClose={editing.closeAddYears}
         onAddYears={(newYears) => editing.handleAddYears(newYears)}
       />
-      <ImportModal {...importer.modalProps} />
+      <ImportModal
+        key={importer.modalProps.matrix?.map((row) => row.join('\t')).join('\n') ?? 'empty'}
+        {...importer.modalProps}
+      />
       <Snackbar
         open={editing.error !== null}
         autoHideDuration={5000}

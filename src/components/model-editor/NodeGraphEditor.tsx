@@ -987,6 +987,7 @@ function FlowEditor(props: {
       {wizardOpen && (
         <Suspense fallback={null}>
           <ActionWizard
+            key={wizardSourceAction?.id ?? 'blank'}
             open={wizardOpen}
             onClose={() => {
               setWizardOpen(false);

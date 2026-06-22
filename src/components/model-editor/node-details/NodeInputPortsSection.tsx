@@ -237,8 +237,9 @@ export default function NodeInputPortsSection({
         // fragment fetches `tags` at runtime.
         const singleEdgeTags =
           connectedEdges.length === 1
-            ? ((connectedEdges[0] as (typeof connectedEdges)[0] & { tags: readonly string[] })
-                .tags ?? [])
+            ? ((
+                connectedEdges[0] satisfies (typeof connectedEdges)[0] & { tags: readonly string[] }
+              ).tags ?? [])
             : [];
         const hasSingleDataset = datasetBindings.length === 1 && connectedEdges.length === 0;
         const derivedPortName = port.label
