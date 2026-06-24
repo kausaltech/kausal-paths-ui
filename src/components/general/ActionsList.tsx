@@ -97,14 +97,14 @@ export default function ActionsList({
   const formatNumber = useNumberFormatter();
   const theme = useTheme();
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
-  const { hideNodeDetails } = useFeatures();
+  const { hideScenarioEditor } = useFeatures();
 
   const cardBgPrimary = theme.cardBackground?.primary ?? theme.palette.background.paper;
   const cardBgSecondary = theme.cardBackground?.secondary ?? theme.palette.background.default;
   const textPrimary = theme.textColor?.primary ?? theme.palette.text.primary;
   const textSecondary = theme.textColor?.secondary ?? theme.palette.text.primary;
   const textTertiary = theme.textColor?.tertiary ?? theme.palette.text.secondary;
-  const isScenarioEditable = !hideNodeDetails;
+  const isScenarioEditable = !hideScenarioEditor;
 
   // hide ungrouped actions if at least one group exists
   const filteredActions = useMemo(() => {

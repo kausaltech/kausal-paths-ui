@@ -124,7 +124,7 @@ const RELATIVE_STYLES = {
 const DRAWER_WIDTH = 320;
 
 const ScenarioPanel = () => {
-  const { hideNodeDetails } = useFeatures();
+  const { hideScenarioEditor } = useFeatures();
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isPanelFixed, isPanelMini, initialHeight } = useIsPanelStuck(containerRef);
@@ -150,7 +150,7 @@ const ScenarioPanel = () => {
   const { error, data } = useQuery<InstanceGoalOutcomeQuery, InstanceGoalOutcomeQueryVariables>(
     GET_INSTANCE_GOAL_OUTCOME,
     {
-      skip: !!hideNodeDetails,
+      skip: !!hideScenarioEditor,
       variables: {
         goal: activeGoal?.id ?? '',
       },
@@ -159,7 +159,7 @@ const ScenarioPanel = () => {
 
   // if (loading) return <Skeleton variant="text" width={100} height={24} />;
   if (error) return <div>error!</div>;
-  if (hideNodeDetails) return null;
+  if (hideScenarioEditor) return null;
 
   const minYear = site.minYear;
   const maxYear = site.maxYear;
