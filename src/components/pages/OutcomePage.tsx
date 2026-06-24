@@ -79,13 +79,18 @@ export default function OutcomePage(props: OutcomePageProps) {
     notifyOnNetworkStatusChange: true,
   });
   const { loading, error, previousData } = queryResp;
-  const data = queryResp.data ?? previousData;
+  // Fall back to previousData only when the latest fetch did not error. After a
+  // failed refetch (e.g. goal/scenario change), previousData holds the prior
+  // selection's data, which would be stale under the current selectors. With
+  // errorPolicy 'all', queryResp.data still carries verified partial data for
+  // the current selection on a partial error, and is undefined on a hard failure.
+  const data = error ? queryResp.data : (queryResp.data ?? previousData);
 
   if (error) {
     logApolloError(error, { component: 'OutcomePage' });
   }
 
-  const outcomeNode = data && data.node;
+  const outcomeNode = data?.node;
 
   return (
     <Box
