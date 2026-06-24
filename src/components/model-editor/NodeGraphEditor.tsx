@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 import {
   Alert,
@@ -437,7 +437,6 @@ function FlowEditor(props: {
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedNodeKey = searchParams.get('node');
@@ -630,8 +629,11 @@ function FlowEditor(props: {
   }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, fitView, setNodes]);
 
   // Mirror the current selection back into the URL (`?node=<identifier>`) so
-  // the view is linkable/refreshable. Uses `router.replace` to avoid adding a
-  // history entry per click, and syncs `handledNodeKeyRef` so the deep-link
+  // the view is linkable/refreshable. Uses `window.history.replaceState` rather
+  // than `router.replace` so the update stays shallow: `router.replace`
+  // soft-navigates and re-renders the route's Server Components, which re-runs
+  // the layout's `InstanceContext` fetch on every node click. `useSearchParams`
+  // still observes the change. Syncs `handledNodeKeyRef` so the deep-link
   // effect above doesn't re-pan/re-zoom in response to our own URL update.
   useEffect(() => {
     const target = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
@@ -652,8 +654,8 @@ function FlowEditor(props: {
     else params.delete('node');
     const query = params.toString();
     handledNodeKeyRef.current = nextKey;
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }, [selectedNodeId, nodeMap, requestedNodeKey, searchParams, router, pathname]);
+    window.history.replaceState(null, '', query ? `${pathname}?${query}` : pathname);
+  }, [selectedNodeId, nodeMap, requestedNodeKey, searchParams, pathname]);
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
     if (selected.length !== 1) {
