@@ -137,10 +137,11 @@ export const enum DimensionKind {
   Scenario = 'SCENARIO'
 };
 
-export type EdgeTransformationInput =
-  {   assignCategory: AssignCategoryTransformationInput; flatten?: never; selectCategories?: never; }
-  |  { assignCategory?: never;   flatten: FlattenTransformationInput; selectCategories?: never; }
-  |  { assignCategory?: never; flatten?: never;   selectCategories: SelectCategoriesTransformationInput; };
+export type EdgeTransformationInput = {
+  assignCategory: AssignCategoryTransformationInput | null | undefined;
+  flatten: FlattenTransformationInput | null | undefined;
+  selectCategories: SelectCategoriesTransformationInput | null | undefined;
+};
 
 export type FlattenTransformationInput = {
   dimension: string;
@@ -167,11 +168,12 @@ export const enum InstanceMemberRole {
   Viewer = 'VIEWER'
 };
 
-export type NodeConfigInput =
-  {   action: ActionConfigInput; formula?: never; pipeline?: never; simple?: never; }
-  |  { action?: never;   formula: FormulaConfigInput; pipeline?: never; simple?: never; }
-  |  { action?: never; formula?: never;   pipeline: PipelineConfigInput; simple?: never; }
-  |  { action?: never; formula?: never; pipeline?: never;   simple: SimpleConfigInput; };
+export type NodeConfigInput = {
+  action: ActionConfigInput | null | undefined;
+  formula: FormulaConfigInput | null | undefined;
+  pipeline: PipelineConfigInput | null | undefined;
+  simple: SimpleConfigInput | null | undefined;
+};
 
 export const enum NodeKind {
   Action = 'ACTION',
@@ -3477,16 +3479,110 @@ export type ActionsForChooserQuery = (
   & { __typename: 'Query' }
 );
 
-export type ImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
+export type ImpactOverviewDetailFragment = (
+  { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, effectNode: (
+    { id: string, name: string, shortDescription: string | null, unit: (
+      { id: string, short: string }
+      & { __typename: 'UnitType' }
+    ) | null, goals: Array<(
+      { year: number, value: number }
+      & { __typename: 'NodeGoal' }
+    )> }
+    & { __typename: 'Node' }
+  ), costNode: (
+    { id: string, name: string, shortDescription: string | null, unit: (
+      { id: string, short: string }
+      & { __typename: 'UnitType' }
+    ) | null }
+    & { __typename: 'Node' }
+  ) | null, effectUnit: (
+    { id: string, short: string, long: string, htmlShort: string }
+    & { __typename: 'UnitType' }
+  ) | null, indicatorUnit: (
+    { id: string, short: string, long: string, htmlShort: string }
+    & { __typename: 'UnitType' }
+  ), costUnit: (
+    { id: string, short: string, long: string, htmlShort: string }
+    & { __typename: 'UnitType' }
+  ) | null, actions: Array<(
+    { unitAdjustmentMultiplier: number | null, action: (
+      { id: string, name: string, group: (
+        { id: string, name: string, color: string | null }
+        & { __typename: 'ActionGroupType' }
+      ) | null }
+      & { __typename: 'ActionNode' }
+    ), costValues: Array<(
+      { value: number, year: number }
+      & { __typename: 'YearlyValue' }
+    )> | null, impactValues: Array<(
+      { value: number, year: number }
+      & { __typename: 'YearlyValue' }
+    ) | null> | null, effectDim: (
+      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
+          { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+          & { __typename: 'MetricDimensionCategoryType' }
+        )>, groups: Array<(
+          { id: string, originalId: string, label: string, color: string | null, order: number | null }
+          & { __typename: 'MetricDimensionCategoryGroupType' }
+        )> }
+        & { __typename: 'MetricDimensionType' }
+      )>, goals: Array<(
+        { categories: Array<string>, groups: Array<string>, values: Array<(
+          { year: number, value: number, isInterpolated: boolean }
+          & { __typename: 'MetricYearlyGoalType' }
+        )> }
+        & { __typename: 'DimensionalMetricGoalEntry' }
+      )>, unit: (
+        { id: string, htmlShort: string, short: string }
+        & { __typename: 'UnitType' }
+      ), normalizedBy: (
+        { id: string, name: string }
+        & { __typename: 'NormalizerNodeType' }
+      ) | null }
+      & { __typename: 'DimensionalMetricType' }
+    ), costDim: (
+      { years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string }
+        & { __typename: 'MetricDimensionType' }
+      )> }
+      & { __typename: 'DimensionalMetricType' }
+    ) | null }
+    & { __typename: 'ActionImpact' }
+  )>, wedge: Array<(
+    { id: string, label: string, isScenario: boolean, metric: (
+      { years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+        { id: string, short: string }
+        & { __typename: 'UnitType' }
+      ), goals: Array<(
+        { categories: Array<string>, groups: Array<string>, values: Array<(
+          { year: number, value: number, isInterpolated: boolean }
+          & { __typename: 'MetricYearlyGoalType' }
+        )> }
+        & { __typename: 'DimensionalMetricGoalEntry' }
+      )> }
+      & { __typename: 'DimensionalMetricType' }
+    ) }
+    & { __typename: 'WedgeEntryType' }
+  )> | null }
+  & { __typename: 'ImpactOverviewType' }
+);
+
+export type ImpactOverviewQueryVariables = Exact<{
+  id: string | number;
+}>;
 
 
-export type ImpactOverviewsQuery = (
-  { impactOverviews: Array<(
+export type ImpactOverviewQuery = (
+  { impactOverview: (
     { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, effectNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
         { id: string, short: string }
         & { __typename: 'UnitType' }
-      ) | null }
+      ) | null, goals: Array<(
+        { year: number, value: number }
+        & { __typename: 'NodeGoal' }
+      )> }
       & { __typename: 'Node' }
     ), costNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
@@ -3553,11 +3649,31 @@ export type ImpactOverviewsQuery = (
         { years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
           { id: string, short: string }
           & { __typename: 'UnitType' }
-        ) }
+        ), goals: Array<(
+          { categories: Array<string>, groups: Array<string>, values: Array<(
+            { year: number, value: number, isInterpolated: boolean }
+            & { __typename: 'MetricYearlyGoalType' }
+          )> }
+          & { __typename: 'DimensionalMetricGoalEntry' }
+        )> }
         & { __typename: 'DimensionalMetricType' }
       ) }
       & { __typename: 'WedgeEntryType' }
     )> | null }
+    & { __typename: 'ImpactOverviewType' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
+export type ImpactOverviewsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ImpactOverviewsQuery = (
+  { impactOverviews: Array<(
+    { id: string, graphType: string | null, label: string, indicatorUnit: (
+      { id: string, short: string, long: string, htmlShort: string }
+      & { __typename: 'UnitType' }
+    ) }
     & { __typename: 'ImpactOverviewType' }
   )> }
   & { __typename: 'Query' }
