@@ -331,6 +331,8 @@ function DimensionEditorForm({ dimension, listBase, refetch }: DimensionEditorFo
       if (accumulatedErrors.length > 0) {
         setErrors(accumulatedErrors);
       } else {
+        setRows((prev) => prev.map((row) => ({ ...row, isNew: false })));
+        setDeletedIds([]);
         setToast(t('common-changes-saved'));
       }
     } catch (err) {
