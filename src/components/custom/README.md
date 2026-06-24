@@ -9,4 +9,10 @@ and loaded dynamically.
 
 1. Add a component to be loaded dynamically in `src/components/custom/[theme-name]` e.g. `src/components/custom/sunnydale/GlobalNav`
 2. Add the component to the `CUSTOM_COMPONENTS` map
-3. Use the `useCustomComponents` hook wherever this custom component may be rendered
+3. Add (or reuse) a "slot" component (e.g. `GlobalNavSlot`) that resolves the
+   custom-or-fallback implementation for the active theme and renders it, then
+   use that slot wherever the component may be rendered.
+
+The slot must select the component and render it in the same scope (rather than
+returning it from a hook) so the React Compiler can verify the rendered
+component is static; see the comment in `index.tsx`.
