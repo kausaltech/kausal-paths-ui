@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { usePathname } from 'next/navigation';
 
 import { Box, Drawer, styled, useTheme } from '@mui/material';
@@ -11,12 +10,11 @@ import { useReactiveVar } from '@apollo/client/react';
 import { scenarioEditorDrawerOpenVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
-import Footer from '@/components/common/Footer';
-import GlobalNav from '@/components/common/GlobalNav';
+import { formatUrl } from '@/common/links';
 import ScenarioEditor from '@/components/scenario/ScenarioEditor';
 import { useSiteOrNull } from '@/context/site';
 import IntroModal from './common/IntroModal';
-import { useCustomComponent } from './custom';
+import { FooterSlot, GlobalNavSlot } from './custom';
 import { RefreshPrompt } from './general/RefreshPrompt';
 
 const DRAWER_WIDTH = 320;
@@ -79,7 +77,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const site = useSiteOrNull();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { menuPages, iconBase: fallbackIconBase, ogImage, additionalLinkPages } = site || {};
+  const { menuPages, additionalLinkPages } = site ?? {};
   const drawerOpen = useReactiveVar(scenarioEditorDrawerOpenVar);
 
   const handleDrawerClose = () => {
@@ -87,8 +85,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   };
 
   let activePage: MenuPage | undefined;
-
-  const iconBase = theme.name ? `/static/themes/${theme.name}/images/favicon` : fallbackIconBase;
 
   const rawMenu = Array.isArray(menuPages) ? menuPages : [];
   const menuItems: MenuPage[] = rawMenu.filter(isMenuPage).map((page) => ({
@@ -104,15 +100,23 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     urlPath: page.urlPath,
   }));
 
-  menuItems.forEach((page) => {
-    if (pathname === page.urlPath) {
+  // `urlPath` is the raw backend path (e.g. `/some-page`), while `pathname`
+  // includes the instance basePath and locale prefix. Resolve each menu page to
+  // its full path before comparing.
+  const resolvedMenuItems = menuItems.map((page) => ({
+    page,
+    fullPath: formatUrl(site, page.urlPath),
+  }));
+
+  resolvedMenuItems.forEach(({ page, fullPath }) => {
+    if (pathname === fullPath) {
       activePage = page;
     }
   });
 
   if (!activePage) {
-    menuItems.forEach((page) => {
-      if (pathname.startsWith(page.urlPath)) {
+    resolvedMenuItems.forEach(({ page, fullPath }) => {
+      if (pathname.startsWith(fullPath)) {
         activePage = page;
       }
     });
@@ -125,9 +129,6 @@ const Layout = ({ children }: React.PropsWithChildren) => {
     urlPath: page.urlPath,
     active: page === activePage,
   }));
-
-  const NavComponent = useCustomComponent('GlobalNav', GlobalNav);
-  const FooterComponent = useCustomComponent('Footer', Footer);
 
   const instance = useInstance();
 
@@ -215,7 +216,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             minHeight: '100vh',
           }}
         >
-          <NavComponent
+          <GlobalNavSlot
             siteTitle={site?.title || ''}
             ownerName={site?.owner || undefined}
             navItems={navItems}
@@ -227,14 +228,12 @@ const Layout = ({ children }: React.PropsWithChildren) => {
             </Box>
             {children}
           </Box>
-          <FooterComponent additionalLinks={additionalLinkItems} />
+          <FooterSlot additionalLinks={additionalLinkItems} />
         </Box>
       </Box>
       {introModalEnabled && <IntroModal title={title} paragraph={paragraph} />}
     </>
   );
 };
-
-export const getLayout = (page) => <Layout>{page}</Layout>;
 
 export default Layout;

@@ -19,6 +19,14 @@ const GET_INSTANCE_CONTEXT = gql`
       id
       name
       themeIdentifier
+      frameworkConfig {
+        id
+        framework {
+          id
+          identifier
+          name
+        }
+      }
       owner
       defaultLanguage
       supportedLanguages

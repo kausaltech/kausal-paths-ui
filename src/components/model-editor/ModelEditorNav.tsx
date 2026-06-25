@@ -47,6 +47,7 @@ import {
 
 import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
+import { Link as AppLink } from '@/common/links';
 import { getModelEditorBase } from './paths';
 
 const GET_NODE_SEARCH_LIST = gql`
@@ -430,10 +431,11 @@ export default function ModelEditorNav() {
         ))}
         <Divider />
         <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            window.open('/', '_blank', 'noopener,noreferrer');
-          }}
+          component={AppLink}
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setAnchorEl(null)}
         >
           <ListItemIcon>
             <Compass size={16} />

@@ -101,7 +101,7 @@ const SiteTitle = styled.div`
     font-size: ${(props) => props.theme.fontSizeMd};
   }
 `;
-const HomeLink = styled.a<{ $hideLogoOnMobile?: boolean }>`
+const HomeLink = styled(Link)<{ $hideLogoOnMobile?: boolean }>`
   display: flex;
   align-items: center;
   color: ${(props) => props.theme.brandNavColor};

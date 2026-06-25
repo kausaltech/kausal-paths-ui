@@ -54,17 +54,6 @@
       "count": 1
     }
   },
-  "src/components/Layout.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "react-hooks/static-components": {
-      "count": 2
-    }
-  },
   "src/components/common/ErrorMessage.tsx": {
     "react/prop-types": {
       "count": 1

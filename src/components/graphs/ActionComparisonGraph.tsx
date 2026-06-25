@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
+import { Link } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
 import Icon from '@/components/common/icon';
 
@@ -167,14 +168,14 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
       {plot}
       {hoverId !== null && (
         <ActionDescription color={data.colors[hoverId] ?? undefined}>
-          <a href={`/actions/${actionIds[hoverId]}/`}>
+          <Link href={`/actions/${actionIds[hoverId]}/`}>
             <HoverGroupTag color={data.colors[hoverId] ?? undefined}>
               {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>
               {data.actions[hoverId]} <Icon name="arrowRight" />
             </h4>
-          </a>
+          </Link>
           <Grid container spacing={2}>
             <Grid size={{ md: 3 }} sx={{ display: 'flex', alignItems: 'end' }}>
               <HoverValue>
