@@ -1,5 +1,7 @@
 import { gql, makeVar } from '@apollo/client';
 
+import type { NodeErrorPhase, NodeStatus } from '@/common/__generated__/graphql';
+
 // NodeGraph uses fetchPolicy: 'no-cache' for size reasons, so Apollo's
 // normalized cache updates from the updateNode mutation don't reach it.
 // This reactive var lets NodeDetailsSection push updated fields to any
@@ -22,6 +24,38 @@ export function patchNodeGraphOverride(nodeId: string, patch: NodeFieldOverrides
     ...current,
     [nodeId]: { ...(current[nodeId] ?? {}), ...patch },
   });
+}
+
+/**
+ * Per-node fault-tolerance status, surfaced in the editor's node cards and
+ * details panel. Lives in a reactive var (not the Apollo cache) because the
+ * NodeGraph query runs `fetchPolicy: 'no-cache'`, so the async compute-status
+ * passes can't reach graph consumers through normalized cache updates.
+ *
+ * Lifecycle:
+ *  - Phase 1 (structural NodeGraph query, compute: false) seeds init-time
+ *    status with `pending: true` — compute-phase status is not yet known.
+ *  - Phase 2 (NodeStatuses query, compute: true) replaces each entry and
+ *    clears `pending`.
+ *  - After an edit, the edited node + its downstream cone are marked pending
+ *    and re-fetched via NodeStatusDownstream.
+ */
+export type NodeStatusError = { phase: NodeErrorPhase; message: string };
+export type NodeStatusEntry = {
+  status: NodeStatus;
+  errors: NodeStatusError[];
+  /** True while a compute-phase result for this node is still in flight. */
+  pending: boolean;
+};
+
+export const nodeStatusVar = makeVar<Record<string, NodeStatusEntry>>({});
+
+/**
+ * Merge settled compute-phase status entries in, clearing `pending`. Used by
+ * the phase-2 pass once the backend has finished computing.
+ */
+export function setNodeStatuses(entries: Record<string, NodeStatusEntry>): void {
+  nodeStatusVar({ ...nodeStatusVar(), ...entries });
 }
 
 /**
@@ -281,6 +315,34 @@ export const AVAILABLE_DATASETS = gql`
             id
             label
             unit
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Compute-phase node status. Resolving `status`/`errors` with `compute: true`
+ * forces the backend to evaluate the model in fault-tolerant mode (every editor
+ * operation sets `tolerateNodeFailures`), so runtime failures surface as node
+ * status rather than aborting the whole computation. Nodes that already failed
+ * at init time are returned unchanged — `compute: true` can't proceed past a
+ * broken initialization — so a phase-2 result wholly replaces a node's entry.
+ *
+ * Whole-graph pass, fired once after the structural NodeGraph query resolves.
+ */
+export const NODE_STATUSES = gql`
+  query NodeStatuses {
+    instance {
+      id
+      nodes {
+        id
+        editor {
+          status(compute: true)
+          errors(compute: true) {
+            phase
+            message
           }
         }
       }

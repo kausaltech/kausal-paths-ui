@@ -1,1 +1,12 @@
-{}
+{
+  "editor-status-checking": "Kontroluje se model…",
+  "editor-status-problem-count": "{count, plural, one {# problém} few {# problémy} other {# problémů}}",
+  "nodes-problem-no-detail": "Nejsou k dispozici žádné další podrobnosti.",
+  "nodes-problem-phase-compute": "Výpočet",
+  "nodes-problem-phase-init": "Inicializace",
+  "nodes-problems": "Problémy",
+  "nodes-status-checking": "Kontroluje se…",
+  "nodes-status-degraded": "Zhoršené",
+  "nodes-status-failed": "Selhalo",
+  "nodes-status-incomplete": "Neúplné"
+}

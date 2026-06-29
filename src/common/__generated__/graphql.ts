@@ -175,11 +175,23 @@ export type NodeConfigInput = {
   simple: SimpleConfigInput | null | undefined;
 };
 
+export const enum NodeErrorPhase {
+  Computation = 'COMPUTATION',
+  Initialization = 'INITIALIZATION'
+};
+
 export const enum NodeKind {
   Action = 'ACTION',
   Formula = 'FORMULA',
   Pipeline = 'PIPELINE',
   Simple = 'SIMPLE'
+};
+
+export const enum NodeStatus {
+  Degraded = 'DEGRADED',
+  Failed = 'FAILED',
+  Incomplete = 'INCOMPLETE',
+  Ok = 'OK'
 };
 
 export const enum OperationMessageKind {
@@ -863,7 +875,10 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+            { phase: NodeErrorPhase, message: string }
+            & { __typename: 'NodeError' }
+          )>, layoutMeta: (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
@@ -923,7 +938,10 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+            { phase: NodeErrorPhase, message: string }
+            & { __typename: 'NodeError' }
+          )>, layoutMeta: (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
@@ -992,7 +1010,10 @@ type EditorNodeFields_ActionNode_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+      { phase: NodeErrorPhase, message: string }
+      & { __typename: 'NodeError' }
+    )>, layoutMeta: (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
@@ -1053,7 +1074,10 @@ type EditorNodeFields_Node_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, layoutMeta: (
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+      { phase: NodeErrorPhase, message: string }
+      & { __typename: 'NodeError' }
+    )>, layoutMeta: (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
@@ -2247,6 +2271,26 @@ export type AvailableDatasetsQuery = (
       )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type NodeStatusesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type NodeStatusesQuery = (
+  { instance: (
+    { id: string, nodes: Array<(
+      { id: string, editor: (
+        { status: NodeStatus | null, errors: Array<(
+          { phase: NodeErrorPhase, message: string }
+          & { __typename: 'NodeError' }
+        )> }
+        & { __typename: 'NodeEditor' }
+      ) | null }
+      & { __typename: 'ActionNode' | 'Node' }
+    )> }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }

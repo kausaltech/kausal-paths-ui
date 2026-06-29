@@ -8,11 +8,13 @@ import { useReactFlow } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
-import { BarChartLine, X } from 'react-bootstrap-icons';
+import { BarChartLine, ExclamationTriangleFill, X, XCircleFill } from 'react-bootstrap-icons';
 
-import type {
-  EditorNodeEdgeFragment,
-  EditorNodeFieldsFragment,
+import {
+  type EditorNodeEdgeFragment,
+  type EditorNodeFieldsFragment,
+  NodeErrorPhase,
+  NodeStatus,
 } from '@/common/__generated__/graphql';
 import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
@@ -22,6 +24,7 @@ import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
 import { CollapsibleSection, getStyleForNode } from './node-details/shared';
 import { getNodeGroup, getNodeSpec } from './nodeHelpers';
+import { type NodeStatusEntry, nodeStatusVar } from './queries';
 
 const GET_NODE_EXPLANATION = gql`
   query NodeExplanation($node: ID!) {
@@ -55,6 +58,74 @@ type NodeExplanationQuery = {
   } | null;
 };
 
+/**
+ * Fault-tolerance status for a node: a severity line plus a list of errors,
+ * each tagged with the phase (setup vs calculation) it arose in. Rendered only
+ * when the node's status is not OK.
+ */
+function NodeProblemsContent({
+  entry,
+  t,
+}: {
+  entry: NodeStatusEntry;
+  t: ReturnType<typeof useTranslations<'model-editor'>>;
+}) {
+  const isError = entry.status === NodeStatus.Failed;
+  const color = isError ? 'error.main' : 'warning.main';
+  const StatusIcon = isError ? XCircleFill : ExclamationTriangleFill;
+  const statusLabel =
+    entry.status === NodeStatus.Failed
+      ? t('nodes-status-failed')
+      : entry.status === NodeStatus.Incomplete
+        ? t('nodes-status-incomplete')
+        : t('nodes-status-degraded');
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color }}>
+        <StatusIcon size={16} />
+        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 13 }}>
+          {statusLabel}
+        </Typography>
+        {entry.pending && (
+          <Typography variant="caption" sx={{ ml: 'auto', color: 'text.secondary' }}>
+            {t('nodes-status-checking')}
+          </Typography>
+        )}
+      </Box>
+      {entry.errors.map((err, i) => (
+        <Box key={i} sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start' }}>
+          <Chip
+            label={
+              err.phase === NodeErrorPhase.Initialization
+                ? t('nodes-problem-phase-init')
+                : t('nodes-problem-phase-compute')
+            }
+            size="small"
+            sx={{ height: 18, fontSize: 10, flexShrink: 0, '& .MuiChip-label': { px: 0.75 } }}
+          />
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: 12,
+              lineHeight: 1.4,
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {err.message}
+          </Typography>
+        </Box>
+      ))}
+      {entry.errors.length === 0 && (
+        <Typography variant="body2" sx={{ fontSize: 12, color: 'text.secondary' }}>
+          {t('nodes-problem-no-detail')}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
 export type ActionGroupOption = { id: string; name: string; color: string | null };
 
 export type NodeDetailsPanelProps = {
@@ -81,9 +152,11 @@ export default function NodeDetailsPanel({
   const t = useTranslations('model-editor');
   const { setCenter, getZoom, getNodes } = useReactFlow();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const statusEntry = useReactiveVar(nodeStatusVar)[node?.id ?? ''];
   const { data: session } = useSession();
   const editorUserName = session?.user?.name ?? session?.user?.email ?? t('common-unknown-user');
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [problemsOpen, setProblemsOpen] = useState(true);
   const [contentOpen, setContentOpen] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [explanationOpen, setExplanationOpen] = useState(true);
@@ -204,6 +277,16 @@ export default function NodeDetailsPanel({
           <X size={20} />
         </IconButton>
       </Box>
+
+      {statusEntry && statusEntry.status !== NodeStatus.Ok && (
+        <CollapsibleSection
+          title={t('nodes-problems')}
+          open={problemsOpen}
+          onToggle={() => setProblemsOpen((v) => !v)}
+        >
+          <NodeProblemsContent entry={statusEntry} t={t} />
+        </CollapsibleSection>
+      )}
 
       <CollapsibleSection
         title={t('nodes-content')}

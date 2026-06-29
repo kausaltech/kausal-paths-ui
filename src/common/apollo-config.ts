@@ -24,6 +24,14 @@ declare module '@apollo/client/core' {
   export interface DefaultContext extends Partial<DefaultApolloContext> {
     instanceHostname?: string;
     locale?: string;
+    /**
+     * Opt the operation into the backend's fault-tolerant mode: node failures
+     * are quarantined and reported via `editor.status`/`editor.errors` instead
+     * of aborting the whole computation. Set per-operation by the model editor
+     * (see `useEditorApolloContext`); attaches `tolerateNodeFailures` to the
+     * injected `@instance` directive.
+     */
+    tolerateNodeFailures?: boolean;
   }
 }
 
@@ -123,7 +131,9 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
     };
     // A per-operation `context.locale` (e.g. set by the model editor to force
     // default-language content) wins over the client-default locale.
-    const effectiveLocale = operation.getContext().locale ?? locale;
+    const opContext = operation.getContext();
+    const effectiveLocale = opContext.locale ?? locale;
+    const tolerateNodeFailures = opContext.tolerateNodeFailures === true;
 
     const definitions = operation.query.definitions.map((def) => {
       if (def.kind !== Kind.OPERATION_DEFINITION) return def;
@@ -182,6 +192,16 @@ const makeInstanceMiddleware = (opts: ApolloClientOpts) => {
           },
         });
         variables['_preview'] = preview;
+      }
+      if (tolerateNodeFailures) {
+        instanceArgs.push({
+          name: 'tolerateNodeFailures',
+          variable: {
+            name: '_tolerateNodeFailures',
+            type: 'Boolean',
+          },
+        });
+        variables['_tolerateNodeFailures'] = true;
       }
       if (instanceArgs.length && !directiveExists(directives, 'instance')) {
         const directive = createOperationDirective({
