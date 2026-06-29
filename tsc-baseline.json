@@ -52,36 +52,6 @@
       "count": 1,
       "message": "Parameter 'y' implicitly has an 'any' type."
     },
-    "4237492c707e0d97d57c3549bd4b060397d7d7da": {
-      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"plot-total\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 168 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
-    },
-    "987171d305887e8d79f67717510084cdb07c23d3": {
-      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"target\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 168 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
-    },
-    "0ca613f7caece3c1ab3b461f93c4b1fb99cd07ad": {
-      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"plot-baseline\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 168 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
-    },
-    "f2cbcc9226298058764ff07798a1f99ef300ed8c": {
-      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"calculated-emissions\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 168 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
-    },
-    "8df76c58a4be677b0fcf6abe8eae15f41e10c95d": {
-      "file": "kausal_common/src/components/paths/NodeGraph.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"table-scenario-forecast\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 168 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
-    },
     "838182a273f9a9159ac1f2ddaf4c9ec8e0418271": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS7053",
@@ -100,11 +70,11 @@
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
     },
-    "6cd9ed2e2ab9c16a1378bd3f34ba94917b36aab4": {
+    "8bcd93c418533516c72ee473097cc0b8c5bc58be": {
       "file": "kausal_common/src/components/PopoverTip.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 168 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
+      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 170 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
     "3c9d4541d8bb98fa8666722a22b523ebb7ae71d6": {
       "file": "kausal_common/src/logging/edge.ts",
@@ -117,24 +87,6 @@
       "code": "TS2345",
       "count": 1,
       "message": "Argument of type 'Buffer<ArrayBuffer>' is not assignable to parameter of type 'ArrayBuffer'."
-    },
-    "2c0529d97850e2fd34ae193c1c41e8ac555aef9c": {
-      "file": "src/app/root/[domain]/[lang]/model/users/page.tsx",
-      "code": "TS2305",
-      "count": 1,
-      "message": "Module '\"@/common/__generated__/graphql\"' has no exported member 'InstanceMemberRole'."
-    },
-    "1c2e8e0b338f394417c23e214b92c8ddfe51dc20": {
-      "file": "src/common/__generated__/graphql.ts",
-      "code": "TS2304",
-      "count": 7,
-      "message": "Cannot find name 'DataPointCommentReviewState'."
-    },
-    "f7d6c4794d45e4f564bcd3c5eb5dffc27a716d9b": {
-      "file": "src/common/__generated__/graphql.ts",
-      "code": "TS2304",
-      "count": 1,
-      "message": "Cannot find name 'InstanceMemberRole'."
     },
     "2a983aa13299302055052654393cd4f85c0d669b": {
       "file": "src/common/preprocess.ts",
@@ -424,89 +376,65 @@
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
     },
-    "ae82c1181051d280e5b70b0d74fc545fcc8122b1": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "0f8ca443646d0bd3200a8066f57615dce0c3d4f5": {
+      "file": "src/components/model-editor/useCreateNode.ts",
+      "code": "TS2322",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/cs'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/cs.js' implicitly has an 'any' type."
+      "message": "Type 'NodeConfigInput | { formula: { formula: string; }; }' is not assignable to type 'NodeConfigInput'."
     },
-    "0bfbf0319215a5414184473827bcb4ef5c2aba72": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "2e34097e213b947c88587312a47d5f05fa00c0b4": {
+      "file": "src/components/model-editor/useCreateNode.ts",
+      "code": "TS1360",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/da'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/da.js' implicitly has an 'any' type."
+      "message": "Type '{ formula: { formula: string; }; }' does not satisfy the expected type 'NodeConfigInput'."
     },
-    "4178142fb395e9fd69538c5f3f51d4c7dab458b3": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "7f09a940323a2794ee8c230b004b7eeced7762fc": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/de'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/de.js' implicitly has an 'any' type."
+      "message": "Type '{ action: { nodeClass: string; decisionLevel: DecisionLevel | null; group: string | null; parent: string | null; noEffectValue: number | null; }; }' is missing the following properties from type 'NodeConfigInput': formula, pipeline, simple"
     },
-    "7b707c6634aeb6b669dd367bf888d168819d9feb": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "04337c606360e07a7189586c0618f31fdef89d5b": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/de-ch'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/de-ch.js' implicitly has an 'any' type."
+      "message": "Type '{ action: { nodeClass: string; decisionLevel: DecisionLevel | null; group: string | null; parent: string | null; noEffectValue: number | null; }; }' does not satisfy the expected type 'NodeConfigInput'."
     },
-    "da4909d75aca84d89d7a3fdc3b4becb864d1a4f5": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "c8d5cf7ea3f3ad05063652b831f6e29c828ac07d": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/el'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/el.js' implicitly has an 'any' type."
+      "message": "Type '{ simple: { nodeClass: string; }; }' is missing the following properties from type 'NodeConfigInput': action, formula, pipeline"
     },
-    "1b844c7a998751cfd4d41a67db75f47dc48e1f00": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "d5fcaa42db7bb41125635c835977c1de1e55b751": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/es'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/es.js' implicitly has an 'any' type."
+      "message": "Type '{ simple: { nodeClass: string; }; }' does not satisfy the expected type 'NodeConfigInput'."
     },
-    "8a6f8bbd81425ced3d762928cb80146c871fa400": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "45f782e0ed6a145eb98f45931da416f8814f1234": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/fi'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/fi.js' implicitly has an 'any' type."
+      "message": "Type '{ formula: { formula: string; }; }' is missing the following properties from type 'NodeConfigInput': action, pipeline, simple"
     },
-    "4c0ac5e4dd2a6e7121a636d35d6becaee7770ac9": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "7dafdb2b9c2956835ee062360f243a4a1b5da3c1": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/lv'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/lv.js' implicitly has an 'any' type."
+      "message": "Type '{ formula: { formula: string; }; }' does not satisfy the expected type 'NodeConfigInput'."
     },
-    "072af83912fd373522c4085ecf3769eb8df30e33": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "0b2356ddabfd5331239284fb8db162f20ad0863b": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/pl'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/pl.js' implicitly has an 'any' type."
+      "message": "Type '{ pipeline: { operations: { operation: string; }[]; }; }' is missing the following properties from type 'NodeConfigInput': action, formula, simple"
     },
-    "650e9e4babe9eb0e5dd7bf1d0e7be34f41d84490": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
+    "679fd728e47d8b77777cae961d23e5a1dc8c85e8": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
       "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js-locales/sv'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js-locales@3.5.0/node_modules/plotly.js-locales/sv.js' implicitly has an 'any' type."
-    },
-    "53edd3400a9360e78e96af17f88bbdd872cd65b7": {
-      "file": "src/components/graphs/Plot.tsx",
-      "code": "TS7016",
-      "count": 1,
-      "message": "Could not find a declaration file for module 'plotly.js/dist/plotly-basic'. '/Users/tero/Projects/Kausal/kausal-paths-ui/node_modules/.pnpm/plotly.js@3.5.0_mapbox-gl@1.13.3/node_modules/plotly.js/dist/plotly-basic.js' implicitly has an 'any' type."
-    },
-    "e8db2f478295efcbd76c7cdc26ae40e81306f81a": {
-      "file": "src/components/Layout.tsx",
-      "code": "TS7006",
-      "count": 1,
-      "message": "Parameter 'page' implicitly has an 'any' type."
-    },
-    "67af1a644756d0e6658fe97ade1acc559928c71b": {
-      "file": "src/components/model-editor/datasets/DatasetDataGrid.tsx",
-      "code": "TS2305",
-      "count": 1,
-      "message": "Module '\"@/common/__generated__/graphql\"' has no exported member 'DataPointCommentReviewState'."
-    },
-    "e2e0a70595301f2837311fbd81a5d9b24e876ca0": {
-      "file": "src/components/model-editor/datasets/DatasetEditor.tsx",
-      "code": "TS2305",
-      "count": 1,
-      "message": "Module '\"@/common/__generated__/graphql\"' has no exported member 'DataPointCommentReviewState'."
+      "message": "Type '{ pipeline: { operations: { operation: string; }[]; }; }' does not satisfy the expected type 'NodeConfigInput'."
     },
     "a7ca7397817f5ac924f5b6432183a1342914f976": {
       "file": "src/components/pages/DashboardPage.tsx",
