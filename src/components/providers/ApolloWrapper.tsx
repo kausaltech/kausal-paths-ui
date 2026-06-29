@@ -16,6 +16,8 @@ type Props = {
   locale: string;
   instanceIdentifier: string;
   instanceHostname: string;
+  /** Base path the instance is served under (e.g. `/modeling`), or `''` at the host root. */
+  basePath: string;
 } & React.PropsWithChildren;
 
 /** Matches a `/model` path segment (the model editor routes). */
@@ -47,12 +49,19 @@ function detectPreviewMode(serverPathname: string | null): PreviewMode | null {
   return editorPreviewModeVar();
 }
 
-export function ApolloWrapper({ locale, instanceIdentifier, instanceHostname, children }: Props) {
+export function ApolloWrapper({
+  locale,
+  instanceIdentifier,
+  instanceHostname,
+  basePath,
+  children,
+}: Props) {
   const pathname = usePathname();
   const opts = {
     locale,
     instanceIdentifier,
     instanceHostname,
+    basePath,
     previewMode: () => detectPreviewMode(pathname),
     onInvalidToken: recoverFromInvalidToken,
   };

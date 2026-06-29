@@ -361,6 +361,17 @@ async function proxy(req: NextRequest) {
   reqHeaders.set(BASE_PATH_HEADER, basePath);
   reqHeaders.set(REQUEST_CORRELATION_ID_HEADER, reqId);
   if (!shouldAddInstanceHeaders(match.parts)) {
+    // Non-page paths (api, static, _next, …). When the instance is served under
+    // a base path, the request arrives prefixed (e.g. `/modeling/api/graphql`)
+    // but the route handlers live at the root (`/api/graphql`). Rewrite to the
+    // base-path-stripped path (`match.path`) so the handler is reached.
+    // For root-hosted instances these paths are short-circuited earlier in
+    // `handleNonPagePaths`, so we only reach here when there's a prefix to strip.
+    if (basePath) {
+      const rewrittenUrl = new URL(match.path, req.url);
+      rewrittenUrl.search = nextUrl.search;
+      return NextResponse.rewrite(rewrittenUrl, reqInit);
+    }
     return NextResponse.next(reqInit);
   }
   if (!instances.length) {
@@ -401,7 +412,9 @@ async function proxy(req: NextRequest) {
   if (requiresAuth) {
     const sessionCookie = getSessionCookie(req);
     if (!sessionCookie) {
-      const signInUrl = new URL('/auth/sign-in', req.url);
+      // Keep the redirect within the instance base path (e.g. `/modeling/auth/sign-in`);
+      // `basePath` is `''` for root-hosted instances.
+      const signInUrl = new URL(`${basePath}/auth/sign-in`, req.url);
       // Preserve the originally requested URL (pre-rewrite, so including any
       // instance basePath) so sign-in can return the user to it.
       signInUrl.searchParams.set('next', nextUrl.pathname + nextUrl.search);
