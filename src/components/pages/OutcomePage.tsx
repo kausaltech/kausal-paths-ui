@@ -4,7 +4,6 @@ import { Box, Container, useTheme } from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 
-import { isLocalDev } from '@common/env';
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
 
@@ -15,8 +14,8 @@ import type {
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
+import InlineError from '@/components/common/InlineError';
 import { PageHero } from '@/components/common/PageHero';
-import Error from '@/components/common/PathsError';
 import GET_OUTCOME_NODE from '@/queries/getOutcomeNode';
 import OutcomeBlock from '../general/OutcomeBlock';
 import ScenarioPanel from '../scenario/ScenarioPanel';
@@ -76,21 +75,22 @@ export default function OutcomePage(props: OutcomePageProps) {
       componentName: 'Page',
     },
     fetchPolicy: 'cache-and-network',
+    errorPolicy: 'all',
     notifyOnNetworkStatusChange: true,
   });
   const { loading, error, previousData } = queryResp;
-  const data = queryResp.data ?? previousData;
+  // Fall back to previousData only when the latest fetch did not error. After a
+  // failed refetch (e.g. goal/scenario change), previousData holds the prior
+  // selection's data, which would be stale under the current selectors. With
+  // errorPolicy 'all', queryResp.data still carries verified partial data for
+  // the current selection on a partial error, and is undefined on a hard failure.
+  const data = error ? queryResp.data : (queryResp.data ?? previousData);
 
   if (error) {
     logApolloError(error, { component: 'OutcomePage' });
-    if (isLocalDev) {
-      throw error;
-    } else {
-      return <Error statusCode={500} />;
-    }
   }
 
-  const outcomeNode = data && data.node;
+  const outcomeNode = data?.node;
 
   return (
     <Box
@@ -105,11 +105,14 @@ export default function OutcomePage(props: OutcomePageProps) {
       <Container fixed maxWidth="xl" sx={{ py: 1 }}>
         <Box my={3}>
           <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
-          <OutcomeBlock
-            loading={loading}
-            outcomeNode={outcomeNode}
-            activeScenario={activeScenario}
-          />
+          {error && <InlineError error={error} />}
+          {(!error || outcomeNode) && (
+            <OutcomeBlock
+              loading={loading}
+              outcomeNode={outcomeNode}
+              activeScenario={activeScenario}
+            />
+          )}
         </Box>
       </Container>
     </Box>
