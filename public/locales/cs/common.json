@@ -166,5 +166,6 @@
   "cost-benefit-subtitle": "Náklady a přínosy opatření ve scénáři ''{activeScenario}''.",
   "simple-effect-subtitle": "Vybraný dopad opatření ve scénáři ''{activeScenario}''.",
   "share-of-impact": "Podíl na kumulativním dopadu",
-  "return-on-investment-subtitle": "Návratnost investic (ROI) opatření ve scénáři ''{activeScenario}''."
+  "return-on-investment-subtitle": "Návratnost investic (ROI) opatření ve scénáři ''{activeScenario}''.",
+  "node-open": "Zobrazit datový uzel"
 }

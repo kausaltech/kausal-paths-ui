@@ -89,7 +89,7 @@
   "change-over-time": "Förändring",
   "time-series": "Tidsföljder",
   "table": "Tabell",
-  "details": "Mer detaljer",
+  "details": "Detaljer",
   "active-actions": "{count}/{total} aktiva åtgärder",
   "sort-direction": "Sortera",
   "sort-ascending": "Sortera stigande",
@@ -150,5 +150,6 @@
   "cost-benefit-subtitle": "Kostnad-nytta för åtgärder i scenariot ''{activeScenario}''.",
   "simple-effect-subtitle": "Vald påverkan av åtgärder i scenariot ''{activeScenario}''.",
   "share-of-impact": "Andel av kumulativ påverkan",
-  "return-on-investment-subtitle": "Avkastning på investering (ROI) för åtgärder i scenariot ''{activeScenario}''."
+  "return-on-investment-subtitle": "Avkastning på investering (ROI) för åtgärder i scenariot ''{activeScenario}''.",
+  "node-open": "Visa datanod"
 }

@@ -89,6 +89,7 @@
   "cost-efficiency-subtitle": "Cost efficiency of actions in ''{activeScenario}'' scenario.",
   "reduction": "reduction",
   "plot-choose-dimension": "Choose dimension",
+  "node-open": "See data node",
   "normalization": "Normalization",
   "normalize-by": "Normalize by {node}",
   "change-target": "Change target",

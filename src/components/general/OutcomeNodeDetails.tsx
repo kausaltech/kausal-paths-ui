@@ -130,7 +130,7 @@ const OutcomeNodeDetails = ({ node, t }: OutcomeNodeDetailsProps) => {
         </ActionsList>
       </Box>
       <p>
-        <NodeLink node={node}>{t('read-more')}</NodeLink>
+        <NodeLink node={node}>{t('node-open')}</NodeLink>
       </p>
     </Box>
   );

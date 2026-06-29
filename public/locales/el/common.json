@@ -170,5 +170,6 @@
   "cost-benefit-subtitle": "Κόστος-όφελος των δράσεων στο σενάριο ''{activeScenario}''.",
   "simple-effect-subtitle": "Επιλεγμένη επίπτωση των δράσεων στο σενάριο ''{activeScenario}''.",
   "share-of-impact": "Μερίδιο της σωρευτικής επίδρασης",
-  "return-on-investment-subtitle": "Απόδοση της επένδυσης (ROI) των δράσεων στο σενάριο ''{activeScenario}''."
+  "return-on-investment-subtitle": "Απόδοση της επένδυσης (ROI) των δράσεων στο σενάριο ''{activeScenario}''.",
+  "node-open": "Προβολή κόμβου δεδομένων"
 }
