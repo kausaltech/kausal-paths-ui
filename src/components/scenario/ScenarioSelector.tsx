@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import {
   CircularProgress,
   FormControl,
@@ -122,6 +124,32 @@ export default function ScenarioSelector(props: { testId?: string }) {
       }
     },
   });
+
+  // Reconcile the activeScenarioVar with the fresh client-side GET_SCENARIOS
+  // result. The SSR-initialized var can be stale (the RSC Apollo client
+  // doesn't propagate the user's session cookie, so the backend returns
+  // default-as-active in SSR). This is a one-time hydration fix: run it only
+  // for the first settled client-side result. After that, scenario changes are
+  // owned by the mutations (ACTIVATE_SCENARIO here and SET_PARAMETER in
+  // ParameterWidget). Continuing to reconcile would race those mutations and
+  // stomp a just-set "custom" scenario back to "default" whenever a refetch
+  // observes pre-commit backend state (read-after-write lag, worse under CI
+  // load).
+  const hasReconciledRef = useRef(false);
+  useEffect(() => {
+    if (hasReconciledRef.current) return;
+    if (loading || mutationLoading || !data) return;
+    const backendActive = data.scenarios.find((s) => s.isActive);
+    if (!backendActive) return;
+    hasReconciledRef.current = true;
+    if (activeScenario?.id === backendActive.id) return;
+    activeScenarioVar({
+      ...backendActive,
+      kind: null,
+      actualHistoricalYears: null,
+      isUserSelected: false,
+    });
+  }, [data, loading, mutationLoading, activeScenario?.id]);
 
   if (loading && !previousData) {
     return (

@@ -1,7 +1,10 @@
 import { useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
-import { type ActionListQuery, type ImpactOverviewsQuery } from '@/common/__generated__/graphql';
+import {
+  type ActionListQuery,
+  type ImpactOverviewDetailFragment,
+} from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 import MacGraph from '@/components/graphs/MacGraph';
@@ -10,7 +13,7 @@ import type { ActionWithEfficiency, SortActionsConfig } from '@/types/actions.ty
 type EfficiencyGraphProps = {
   id?: string;
   actions: ActionWithEfficiency[];
-  impactOverviews: ImpactOverviewsQuery['impactOverviews'][number] | undefined;
+  impactOverviews: ImpactOverviewDetailFragment | undefined;
   actionGroups: ActionListQuery['instance']['actionGroups'];
   sortBy: SortActionsConfig['sortKey'];
   sortAscending: boolean;

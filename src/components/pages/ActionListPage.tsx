@@ -1,6 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 
-import { Box, Container, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Container,
+  FormControl,
+  FormLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
@@ -62,15 +70,28 @@ const getSortOptions = (
     ];
   }
 
-  if (graphType === 'simple_effect') {
-    // ActionsList omits the annual-impact column in simple-effect mode, so
-    // don't offer an IMPACT sort that wouldn't have a matching column to read.
+  if (graphType === 'simple_effect' || graphType === 'stacked_raw_impact') {
+    // ActionsList omits the annual-impact column in simple-effect / stacked-raw-impact
+    // mode, so don't offer an IMPACT sort that wouldn't have a matching column to read.
     return [
       standard,
       {
         isHidden: !showAccumulatedEffects,
         key: 'CUM_IMPACT',
         label: t('actions-sort-cumulative-impact'),
+      },
+    ];
+  }
+
+  if (graphType === 'wedge_diagram') {
+    // The list shows a single annual-impact column (each action's wedge band
+    // value at the target year), so the only meaningful sort beyond the default
+    // ordering is by that impact.
+    return [
+      standard,
+      {
+        key: 'IMPACT',
+        label: t('actions-sort-impact'),
       },
     ];
   }
@@ -163,22 +184,32 @@ function ActionListPage({ page }: ActionListPageProps) {
   // `previousData` is undefined, so we don't hide cells while the initial fetch runs.
   const isRefetchingWithStaleData = areActionsLoading && previousData !== undefined;
 
-  const [activeEfficiency, setActiveEfficiency] = useState<number>(0);
+  // `undefined` = user hasn't picked anything yet (defaults to first overview).
+  // `null` = user explicitly picked "emissions impact".
+  // `string` = user picked a specific overview.
+  const [userSelectedOverviewId, setUserSelectedOverviewId] = useState<string | null | undefined>(
+    undefined
+  );
   const [actionGroup, setActionGroup] = useState<string>('ALL_ACTIONS');
 
   const {
     usableActions,
     displayedActionsCount,
     totalActionsCount,
+    displayedActiveActionsCount,
+    totalActiveActionsCount,
     actionGroups,
     hasEfficiency,
     activeOverview,
-    costBenefitDataPending,
-    costBenefitDataError,
+    activeOverviewId,
+    impactOverviews,
+    activeOverviewDetail,
+    impactOverviewsPending,
+    impactOverviewsError,
   } = useActionListData({
     data,
     showOnlyMunicipalActions: !!page.showOnlyMunicipalActions,
-    activeEfficiency,
+    userSelectedOverviewId,
     yearRange,
     actionGroup,
   });
@@ -241,7 +272,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   ];
   const hasMultipleViews = viewOptions.length > 1;
 
-  const displayError = error ?? costBenefitDataError;
+  const displayError = error ?? impactOverviewsError;
   if (displayError) {
     return (
       <Container fixed maxWidth="xl" sx={{ pt: 5 }}>
@@ -261,9 +292,9 @@ function ActionListPage({ page }: ActionListPageProps) {
         {data && (
           <ActionListFilters
             hasEfficiency={hasEfficiency}
-            impactOverviews={data.impactOverviews}
-            activeEfficiency={activeEfficiency}
-            setActiveEfficiency={setActiveEfficiency}
+            impactOverviews={impactOverviews ?? []}
+            activeOverviewId={activeOverviewId}
+            setActiveOverviewId={setUserSelectedOverviewId}
             actionGroups={actionGroups}
             actionGroup={actionGroup}
             setActionGroup={setActionGroup}
@@ -288,7 +319,15 @@ function ActionListPage({ page }: ActionListPageProps) {
                 <span>{t('loading')}</span>
               ) : (
                 <span>
-                  {t('actions-count', { count: `${displayedActionsCount}/${totalActionsCount}` })}
+                  {listType === 'graph'
+                    ? t('actions-count-active', {
+                        shown: displayedActiveActionsCount,
+                        total: totalActiveActionsCount,
+                      })
+                    : t('actions-count', {
+                        shown: displayedActionsCount,
+                        total: totalActionsCount,
+                      })}
                 </span>
               )}
             </ActionCount>
@@ -334,7 +373,15 @@ function ActionListPage({ page }: ActionListPageProps) {
       )}
 
       <Container fixed maxWidth="xl" sx={{ mb: 5, mt: hasMultipleViews ? 0 : 4 }}>
-        {listType === 'list' ? (
+        {impactOverviewsPending ? (
+          // Hold the list/graph render until the active overview's detail arrives,
+          // so column headers and per-row values appear atomically. During switches
+          // between overviews, the previous detail carries over via Apollo's
+          // `previousData`, so this branch only fires on the very first load.
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress aria-label={t('loading')} />
+          </Box>
+        ) : listType === 'list' ? (
           <ActionsList
             id="list-view"
             actions={usableActions}
@@ -344,7 +391,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             sortBy={sortBy}
             sortAscending={ascending}
             activeOverview={activeOverview}
-            isLoading={areActionsLoading || costBenefitDataPending}
+            isLoading={areActionsLoading}
             refetching={isRefetchingWithStaleData}
             onChangeSort={(key) => {
               handleChangeSort(key);
@@ -358,7 +405,8 @@ function ActionListPage({ page }: ActionListPageProps) {
           <ActionListGraphView
             usableActions={usableActions}
             visibleActionIds={visibleActionIds}
-            activeEfficiency={activeEfficiency}
+            activeOverviewDetail={activeOverviewDetail}
+            detailPending={impactOverviewsPending}
             instanceActionGroups={data?.instance.actionGroups ?? []}
             sortBy={sortBy}
             sortAscending={ascending}

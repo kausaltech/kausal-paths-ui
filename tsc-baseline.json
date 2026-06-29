@@ -70,11 +70,11 @@
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
     },
-    "edb494d480789db593614664ba9b174afacf2ea1": {
+    "8bcd93c418533516c72ee473097cc0b8c5bc58be": {
       "file": "kausal_common/src/components/PopoverTip.tsx",
       "code": "TS2345",
       "count": 1,
-      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 166 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
+      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 170 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
     "3c9d4541d8bb98fa8666722a22b523ebb7ae71d6": {
       "file": "kausal_common/src/logging/edge.ts",
@@ -375,6 +375,66 @@
       "code": "TS7053",
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
+    },
+    "0f8ca443646d0bd3200a8066f57615dce0c3d4f5": {
+      "file": "src/components/model-editor/useCreateNode.ts",
+      "code": "TS2322",
+      "count": 1,
+      "message": "Type 'NodeConfigInput | { formula: { formula: string; }; }' is not assignable to type 'NodeConfigInput'."
+    },
+    "2e34097e213b947c88587312a47d5f05fa00c0b4": {
+      "file": "src/components/model-editor/useCreateNode.ts",
+      "code": "TS1360",
+      "count": 1,
+      "message": "Type '{ formula: { formula: string; }; }' does not satisfy the expected type 'NodeConfigInput'."
+    },
+    "7f09a940323a2794ee8c230b004b7eeced7762fc": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
+      "count": 1,
+      "message": "Type '{ action: { nodeClass: string; decisionLevel: DecisionLevel | null; group: string | null; parent: string | null; noEffectValue: number | null; }; }' is missing the following properties from type 'NodeConfigInput': formula, pipeline, simple"
+    },
+    "04337c606360e07a7189586c0618f31fdef89d5b": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
+      "count": 1,
+      "message": "Type '{ action: { nodeClass: string; decisionLevel: DecisionLevel | null; group: string | null; parent: string | null; noEffectValue: number | null; }; }' does not satisfy the expected type 'NodeConfigInput'."
+    },
+    "c8d5cf7ea3f3ad05063652b831f6e29c828ac07d": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
+      "count": 1,
+      "message": "Type '{ simple: { nodeClass: string; }; }' is missing the following properties from type 'NodeConfigInput': action, formula, pipeline"
+    },
+    "d5fcaa42db7bb41125635c835977c1de1e55b751": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
+      "count": 1,
+      "message": "Type '{ simple: { nodeClass: string; }; }' does not satisfy the expected type 'NodeConfigInput'."
+    },
+    "45f782e0ed6a145eb98f45931da416f8814f1234": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
+      "count": 1,
+      "message": "Type '{ formula: { formula: string; }; }' is missing the following properties from type 'NodeConfigInput': action, pipeline, simple"
+    },
+    "7dafdb2b9c2956835ee062360f243a4a1b5da3c1": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
+      "count": 1,
+      "message": "Type '{ formula: { formula: string; }; }' does not satisfy the expected type 'NodeConfigInput'."
+    },
+    "0b2356ddabfd5331239284fb8db162f20ad0863b": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS2739",
+      "count": 1,
+      "message": "Type '{ pipeline: { operations: { operation: string; }[]; }; }' is missing the following properties from type 'NodeConfigInput': action, formula, simple"
+    },
+    "679fd728e47d8b77777cae961d23e5a1dc8c85e8": {
+      "file": "src/components/model-editor/useDuplicateNode.ts",
+      "code": "TS1360",
+      "count": 1,
+      "message": "Type '{ pipeline: { operations: { operation: string; }[]; }; }' does not satisfy the expected type 'NodeConfigInput'."
     },
     "a7ca7397817f5ac924f5b6432183a1342914f976": {
       "file": "src/components/pages/DashboardPage.tsx",

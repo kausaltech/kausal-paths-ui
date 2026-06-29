@@ -28,6 +28,11 @@ export type ActionWithEfficiency = ActionListQuery['actions'][0] & {
   cumulativeCostName?: string;
   efficiencyCap?: number;
   costBenefit?: CostBenefitTotals;
+  /**
+   * Wedge-diagram share: the action's band area over the selected year range
+   * as a percentage of the gap area between the current and baseline scenarios.
+   */
+  wedgeImpactShare?: number;
 };
 
 export type SortActionsBy = `${ActionSortOrder}` | 'CUM_EFFICIENCY' | 'CUM_COST';

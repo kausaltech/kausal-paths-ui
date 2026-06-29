@@ -59,7 +59,8 @@
   "nav-menu-open": "Atvērt navigāciju",
   "nav-menu-close": "Aizvērt navigāciju",
   "front-page": "Sākumlapa",
-  "actions-count": "Rāda {count} darbības",
+  "actions-count": "Rāda {shown} no {total} darbībām",
+  "actions-count-active": "Rāda {shown} no {total} aktīvām darbībām",
   "actions-as-graph": "Diagramma",
   "actions-as-list": "Saraksts",
   "actions-as-efficiency": "Efektivitāte",
@@ -153,5 +154,6 @@
   "cost-efficiency-subtitle": "Darbību izmaksu efektivitāte scenārijā ''{activeScenario}''.",
   "cost-benefit-subtitle": "Darbību izmaksu un ieguvumu attiecība scenārijā ''{activeScenario}''.",
   "simple-effect-subtitle": "Darbību izvēlētā ietekme scenārijā ''{activeScenario}''.",
+  "share-of-impact": "Daļa no kumulatīvās ietekmes",
   "return-on-investment-subtitle": "Darbību ieguldījumu atdeve (ROI) scenārijā ''{activeScenario}''."
 }

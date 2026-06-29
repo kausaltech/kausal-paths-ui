@@ -121,21 +121,21 @@ export default function ActionsList({
   const columns: ColumnDef[] = useMemo(() => {
     const graphType = activeOverview?.graphType ?? null;
 
-    // simple_effect and no-overview: impact columns only (from impactMetric).
-    // When a specific simple-effect overview is selected, actions absent from it
-    // show "—" rather than the default scenario impact, which would be a different
-    // metric with a different unit and would mislead readers. The annual-impact
-    // column is omitted in that case, since it would mix in the default scenario
-    // impact (and the overview's effectUnit may not be the right unit for a
-    // single-year value).
-    if (!graphType || graphType === 'simple_effect') {
-      const isSimpleEffect = graphType === 'simple_effect';
+    // simple_effect / stacked_raw_impact and no-overview: impact columns only
+    // (from impactMetric). When a specific overview is selected, actions absent
+    // from it show "—" rather than the default scenario impact, which would be
+    // a different metric with a different unit and would mislead readers. The
+    // annual-impact column is omitted in those cases, since it would mix in the
+    // default scenario impact (and the overview's effectUnit may not be the
+    // right unit for a single-year value).
+    if (!graphType || graphType === 'simple_effect' || graphType === 'stacked_raw_impact') {
+      const isOverviewImpact = graphType === 'simple_effect' || graphType === 'stacked_raw_impact';
       const cols: ColumnDef[] = [
         {
           key: 'CUM_IMPACT',
           label: `${activeOverview?.label ?? t('total-impact')} ${yearRange[0]}–${yearRange[1]}`,
           getValue: (a) => {
-            if (isSimpleEffect) return a.cumulativeImpact ?? null;
+            if (isOverviewImpact) return a.cumulativeImpact ?? null;
             return (
               a.cumulativeImpact ??
               (a.impactMetric
@@ -144,12 +144,12 @@ export default function ActionsList({
             );
           },
           getUnit: (a) => {
-            if (isSimpleEffect) return a.cumulativeImpactUnit;
+            if (isOverviewImpact) return a.cumulativeImpactUnit;
             return a.cumulativeImpactUnit ?? a.impactMetric?.yearlyCumulativeUnit?.htmlShort;
           },
         },
       ];
-      if (!isSimpleEffect) {
+      if (!isOverviewImpact) {
         cols.push({
           key: 'IMPACT',
           label: `${t('annual-impact')} ${yearRange[1]}`,
@@ -158,6 +158,21 @@ export default function ActionsList({
         });
       }
       return cols;
+    }
+
+    // wedge_diagram: each action's share of the gap between the current and
+    // baseline scenarios over the year range. 100% is the area between the
+    // floor and ceiling lines in the diagram; the action's percentage is its
+    // wedge's proportion of that.
+    if (graphType === 'wedge_diagram') {
+      return [
+        {
+          key: 'IMPACT',
+          label: `${t('share-of-impact')} ${yearRange[0]}–${yearRange[1]}`,
+          getValue: (a) => a.wedgeImpactShare ?? null,
+          getUnit: () => '%',
+        },
+      ];
     }
 
     // cost_benefit: Benefit / Cost / Net Benefit (derived from effectDim)

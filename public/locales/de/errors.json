@@ -1,6 +1,6 @@
 {
-  "generic-title": "Ein Fehler ist aufgetreten",
-  "generic-intro": "Huch! Wir haben zur Zeit technische Schwierigkeiten und können die angeforderte Seite nicht anzeigen. Unser Team wurde darüber informiert.",
+  "generic-title": "Es ist ein Fehler in den Daten aufgetreten",
+  "generic-intro": "Beim Laden der Daten für diese Seite ist ein Fehler aufgetreten, der die Anzeige beeinträchtigen kann. Unser Team wurde benachrichtigt.",
   "generic-apology": "Wir entschuldigen uns für die Unannehmlichkeiten. Bitte versuchen Sie es später noch einmal. Danke für Ihre Geduld.",
   "error-label": "Fehlercode",
   "not-found-title": "Seite nicht gefunden",

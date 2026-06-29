@@ -64,7 +64,8 @@
   "actions-sort-cost": "Kostnad",
   "actions-as-graph": "Diagram över åtgärder",
   "actions-as-list": "Lista av åtgärder",
-  "actions-count": "{count} åtgärder",
+  "actions-count": "Visar {shown} av {total} åtgärder",
+  "actions-count-active": "Visar {shown} av {total} aktiva åtgärder",
   "actions-sort-impact": "Påverkan",
   "mac-axis-impact": "påverkan",
   "efficiency": "Nettokostnad per besparad energi eller utsläpp",
@@ -148,5 +149,6 @@
   "cost-efficiency-subtitle": "Kostnadseffektivitet för åtgärder i scenariot ''{activeScenario}''.",
   "cost-benefit-subtitle": "Kostnad-nytta för åtgärder i scenariot ''{activeScenario}''.",
   "simple-effect-subtitle": "Vald påverkan av åtgärder i scenariot ''{activeScenario}''.",
+  "share-of-impact": "Andel av kumulativ påverkan",
   "return-on-investment-subtitle": "Avkastning på investering (ROI) för åtgärder i scenariot ''{activeScenario}''."
 }

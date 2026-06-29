@@ -6,93 +6,11 @@ export const GET_IMPACT_OVERVIEWS = gql`
       id
       graphType
       label
-      costLabel
-      effectLabel
-      indicatorLabel
-      costCategoryLabel
-      effectCategoryLabel
-      description
-      stakeholderDimension
-      outcomeDimension
-      effectNode {
-        id
-      }
-      effectUnit {
-        id
-        short
-        long
-      }
       indicatorUnit {
         id
         short
         long
-      }
-      costUnit {
-        id
-        short
-        long
-      }
-      actions {
-        action {
-          id
-          name
-        }
-        unitAdjustmentMultiplier
-        effectDim {
-          id
-          name
-          dimensions {
-            id
-            label
-            originalId
-            helpText
-            categories {
-              id
-              originalId
-              label
-              color
-              order
-              group
-            }
-            groups {
-              id
-              originalId
-              label
-              color
-              order
-            }
-          }
-          goals {
-            categories
-            groups
-            values {
-              year
-              value
-              isInterpolated
-            }
-          }
-          unit {
-            id
-            htmlShort
-            short
-          }
-          stackable
-          normalizedBy {
-            id
-            name
-          }
-          forecastFrom
-          years
-          values
-        }
-        # eslint-disable-next-line @graphql-eslint/require-selections -- id omitted intentionally to avoid cache issues
-        costDim {
-          dimensions {
-            id
-          }
-          years
-          values
-        }
+        htmlShort
       }
     }
   }

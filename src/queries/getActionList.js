@@ -63,63 +63,6 @@ const GET_ACTION_LIST = gql`
         color
       }
     }
-    impactOverviews {
-      id
-      graphType
-      label
-      plotLimitForIndicator
-      indicatorUnit {
-        id
-        htmlShort
-      }
-      costUnit {
-        id
-        htmlShort
-      }
-      effectUnit {
-        id
-        htmlShort
-      }
-      costNode {
-        id
-        name
-        shortDescription
-        unit {
-          id
-          short
-        }
-      }
-      effectNode {
-        id
-        name
-        shortDescription
-        unit {
-          id
-          short
-        }
-      }
-      actions {
-        action {
-          id
-          group {
-            id
-            name
-            color
-          }
-        }
-        unitAdjustmentMultiplier
-        # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: migrate to new properties
-        costValues {
-          value
-          year
-        }
-        # eslint-disable-next-line @graphql-eslint/no-deprecated -- TODO: migrate to new properties
-        impactValues {
-          value
-          year
-        }
-      }
-    }
   }
 
   ${ACTION_PARAMETER_FRAGMENT}
