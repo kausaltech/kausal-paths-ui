@@ -54,6 +54,13 @@ export type PreviewMode = 'DRAFT' | 'PUBLISHED';
 export type ApolloClientOpts = {
   instanceHostname?: string;
   instanceIdentifier?: string;
+  /**
+   * Base path the instance is served under (e.g. `/modeling`), or `''` for
+   * instances served at the host root. On the client the GraphQL request goes
+   * through the Next.js proxy route, which is only reachable under this prefix
+   * when the host root belongs to a different app. See `getApolloClientConfig`.
+   */
+  basePath?: string;
   wildcardDomains?: string[];
   authorizationToken?: string | undefined;
   clientIp?: string | null;
@@ -272,7 +279,14 @@ export function getApolloClientConfig(opts: ApolloClientOpts): {
   cache: InMemoryCacheConfig;
 } {
   const ssrMode = typeof window === 'undefined';
-  const uri = ssrMode ? getPathsGraphQLUrl() : GRAPHQL_CLIENT_PROXY_PATH;
+  // On the server we talk to the backend directly via an absolute URL. On the
+  // client the request goes through the Next.js proxy route (`/api/graphql`).
+  // When the instance is served under a base path (e.g. `/modeling` on a domain
+  // whose root is owned by another app), a bare `/api/graphql` would be routed
+  // to that other app, so we prefix the proxy path with the instance base path.
+  // For root-hosted instances `basePath` is `''`, leaving the path unchanged.
+  const clientUri = `${opts.basePath ?? ''}${GRAPHQL_CLIENT_PROXY_PATH}`;
+  const uri = ssrMode ? getPathsGraphQLUrl() : clientUri;
 
   const httpLink = new HttpLink({
     uri,
