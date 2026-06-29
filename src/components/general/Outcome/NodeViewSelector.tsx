@@ -5,7 +5,7 @@ import type { SelectChangeEvent } from '@mui/material';
 
 import {
   BarChartLineFill,
-  BoxArrowUpRight,
+  Diagram3Fill,
   InfoCircleFill,
   PieChartFill,
   Table,
@@ -91,9 +91,7 @@ const NodeViewSelector = ({
     },
     {
       id: 'node-page',
-      icon: (
-        <BoxArrowUpRight aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />
-      ),
+      icon: <Diagram3Fill aria-hidden="true" focusable="false" color={theme.textColor.tertiary} />,
       label: t('common.node-open'),
       show: true,
     },

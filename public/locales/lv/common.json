@@ -155,5 +155,6 @@
   "cost-benefit-subtitle": "Darbību izmaksu un ieguvumu attiecība scenārijā ''{activeScenario}''.",
   "simple-effect-subtitle": "Darbību izvēlētā ietekme scenārijā ''{activeScenario}''.",
   "share-of-impact": "Daļa no kumulatīvās ietekmes",
-  "return-on-investment-subtitle": "Darbību ieguldījumu atdeve (ROI) scenārijā ''{activeScenario}''."
+  "return-on-investment-subtitle": "Darbību ieguldījumu atdeve (ROI) scenārijā ''{activeScenario}''.",
+  "node-open": "Skatīt datu mezglu"
 }

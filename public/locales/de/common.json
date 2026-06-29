@@ -168,5 +168,6 @@
   "calculation": "Berechnung",
   "calculation-visible": "Berechnung sichtbar",
   "calculation-hidden": "Berechnung ausgeblendet",
-  "loading-calculation": "Berechnung wird geladen…"
+  "loading-calculation": "Berechnung wird geladen…",
+  "node-open": "Datenknoten anzeigen"
 }

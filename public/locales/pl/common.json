@@ -166,5 +166,6 @@
   "cost-benefit-subtitle": "Koszty i korzyści działań w scenariuszu ''{activeScenario}''.",
   "simple-effect-subtitle": "Wybrany wpływ działań w scenariuszu ''{activeScenario}''.",
   "share-of-impact": "Udział w skumulowanym wpływie",
-  "return-on-investment-subtitle": "Zwrot z inwestycji (ROI) działań w scenariuszu ''{activeScenario}''."
+  "return-on-investment-subtitle": "Zwrot z inwestycji (ROI) działań w scenariuszu ''{activeScenario}''.",
+  "node-open": "Zobacz węzeł danych"
 }
