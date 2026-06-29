@@ -16,8 +16,15 @@ import { useInstance } from '@/common/instance';
  *
  * Wired up via `makeInstanceMiddleware` (apollo-config), which reads
  * `context.locale` per-operation and falls back to the client-level locale.
+ *
+ * Also opts every editor operation into the backend's fault-tolerant mode
+ * (`tolerateNodeFailures`), so a broken node is quarantined and surfaced via
+ * `editor.status`/`editor.errors` instead of aborting the whole computation.
  */
 export function useEditorApolloContext(): DefaultContext {
   const instance = useInstance();
-  return useMemo(() => ({ locale: instance.defaultLanguage }), [instance.defaultLanguage]);
+  return useMemo(
+    () => ({ locale: instance.defaultLanguage, tolerateNodeFailures: true }),
+    [instance.defaultLanguage]
+  );
 }

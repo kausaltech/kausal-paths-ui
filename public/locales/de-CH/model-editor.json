@@ -1,1 +1,12 @@
-{}
+{
+  "editor-status-checking": "Modell wird geprüft…",
+  "editor-status-problem-count": "{count, plural, one {# Problem} other {# Probleme}}",
+  "nodes-problem-no-detail": "Keine weiteren Details verfügbar.",
+  "nodes-problem-phase-compute": "Berechnung",
+  "nodes-problem-phase-init": "Initialisierung",
+  "nodes-problems": "Probleme",
+  "nodes-status-checking": "Wird geprüft…",
+  "nodes-status-degraded": "Beeinträchtigt",
+  "nodes-status-failed": "Fehlgeschlagen",
+  "nodes-status-incomplete": "Unvollständig"
+}

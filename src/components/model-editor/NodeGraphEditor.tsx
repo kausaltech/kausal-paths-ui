@@ -74,6 +74,7 @@ import { useDuplicateNode } from './useDuplicateNode';
 import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
 import useLayoutNodes from './useLayoutNodes';
+import { useNodeStatuses } from './useNodeStatuses';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
 
@@ -149,6 +150,13 @@ const GET_NODE_GRAPH = gql`
       tags
       inputDimensions
       outputDimensions
+      # Phase 1: init-time status only (compute: false). Compute-phase status is
+      # fetched asynchronously afterwards via the NodeStatuses query.
+      status
+      errors {
+        phase
+        message
+      }
       layoutMeta {
         primaryClass
         isHub
@@ -1081,6 +1089,8 @@ export default function NodeGraphEditor() {
   const overrides = useReactiveVar(nodeGraphOverridesVar);
   // Keeps draftHeadTokenVar current while the graph is open.
   useEditorPublishState();
+  // Seeds init-time node status and asynchronously fetches compute-phase status.
+  useNodeStatuses(data.instance.nodes);
   const editor = data.instance.editor;
 
   const nodesWithOverrides = useMemo(() => {

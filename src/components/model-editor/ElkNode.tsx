@@ -24,6 +24,7 @@ import {
   Diagram2,
   Diagram3,
   Droplet,
+  ExclamationTriangleFill,
   Flag,
   Gear,
   Intersect,
@@ -31,10 +32,13 @@ import {
   QuestionCircle,
   Signpost,
   Sliders,
+  XCircleFill,
   XSquare,
 } from 'react-bootstrap-icons';
 
+import { NodeStatus } from '@/common/__generated__/graphql';
 import { mockNodeEditsVar } from './mockEdits';
+import { type NodeStatusEntry, nodeStatusVar } from './queries';
 
 export type NodeGraphInteraction = {
   highlightedNodeIds: ReadonlySet<string>;
@@ -252,6 +256,46 @@ export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean
   return { bg, border, icon: <Icon size={ICON_SIZE} />, label };
 }
 
+// Fault-tolerance status, mapped to a visual severity. `OK` (and `undefined`,
+// i.e. not yet known) draw nothing — only problems should pull the eye.
+type StatusSeverity = 'error' | 'warning';
+const STATUS_COLORS: Record<StatusSeverity, string> = {
+  error: '#d32f2f',
+  warning: '#ed6c02',
+};
+
+function getStatusSeverity(status: NodeStatus | undefined): StatusSeverity | null {
+  if (status === NodeStatus.Failed) return 'error';
+  if (status === NodeStatus.Incomplete || status === NodeStatus.Degraded) return 'warning';
+  return null;
+}
+
+function NodeStatusBadge({ entry }: { entry: NodeStatusEntry | undefined }) {
+  const severity = getStatusSeverity(entry?.status);
+  if (!severity) return null;
+  const Icon = severity === 'error' ? XCircleFill : ExclamationTriangleFill;
+  const title = entry?.errors[0]?.message ?? '';
+  return (
+    <Tooltip title={title} placement="top" arrow disableHoverListener={!title}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -6,
+          right: -6,
+          zIndex: 1,
+          color: STATUS_COLORS[severity],
+          backgroundColor: 'white',
+          borderRadius: '50%',
+          lineHeight: 0,
+          display: 'flex',
+        }}
+      >
+        <Icon size={14} />
+      </Box>
+    </Tooltip>
+  );
+}
+
 export type HiddenContextRef = { id: string; label: string; color?: string };
 export type DatasetRef = { id: string; label: string };
 
@@ -293,6 +337,8 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   );
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const hasMockEdit = Boolean(nodeEdits[id]);
+  const statusEntry = useReactiveVar(nodeStatusVar)[id];
+  const statusSeverity = getStatusSeverity(statusEntry?.status);
   const highlighted = highlightedNodeIds.has(id);
   const active = activeNodeId === id;
   const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
@@ -382,6 +428,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
           </Fragment>
         );
       })}
+      {statusSeverity && <NodeStatusBadge entry={statusEntry} />}
       {showContent ? (
         <Box
           sx={{
@@ -451,7 +498,9 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             width: active ? 12 : 8,
             height: active ? 12 : 8,
             borderRadius: '50%',
-            backgroundColor: data.color || style.border,
+            backgroundColor: statusSeverity
+              ? STATUS_COLORS[statusSeverity]
+              : data.color || style.border,
             outline: active ? `2px solid ${style.border}` : 'none',
             outlineOffset: active ? '1px' : undefined,
           }}

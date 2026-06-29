@@ -1,1 +1,12 @@
-{}
+{
+  "editor-status-checking": "Kontrollerar modellen…",
+  "editor-status-problem-count": "{count, plural, one {# problem} other {# problem}}",
+  "nodes-problem-no-detail": "Inga ytterligare detaljer tillgängliga.",
+  "nodes-problem-phase-compute": "Beräkning",
+  "nodes-problem-phase-init": "Initiering",
+  "nodes-problems": "Problem",
+  "nodes-status-checking": "Kontrollerar…",
+  "nodes-status-degraded": "Försämrad",
+  "nodes-status-failed": "Misslyckades",
+  "nodes-status-incomplete": "Ofullständig"
+}

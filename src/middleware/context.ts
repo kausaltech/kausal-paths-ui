@@ -124,7 +124,7 @@ async function fetchInstances(hostname: string, { req, logger }: InstanceFetchCt
 
 const instanceCache = new SWRCache<string, AvailableInstanceFragment[], InstanceFetchCtx>({
   fetcher: fetchInstances,
-  ttl: 2_000,
+  ttl: 30_000,
 });
 
 export async function getInstancesForRequest(req: NextRequest, hostname: string, logger: Logger) {

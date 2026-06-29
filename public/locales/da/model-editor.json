@@ -1,1 +1,12 @@
-{}
+{
+  "editor-status-checking": "Kontrollerer model…",
+  "editor-status-problem-count": "{count, plural, one {# problem} other {# problemer}}",
+  "nodes-problem-no-detail": "Ingen yderligere detaljer tilgængelige.",
+  "nodes-problem-phase-compute": "Beregning",
+  "nodes-problem-phase-init": "Initialisering",
+  "nodes-problems": "Problemer",
+  "nodes-status-checking": "Kontrollerer…",
+  "nodes-status-degraded": "Forringet",
+  "nodes-status-failed": "Mislykkedes",
+  "nodes-status-incomplete": "Ufuldstændig"
+}

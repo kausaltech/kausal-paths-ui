@@ -1,1 +1,12 @@
-{}
+{
+  "editor-status-checking": "Pārbauda modeli…",
+  "editor-status-problem-count": "{count, plural, zero {# problēmu} one {# problēma} other {# problēmas}}",
+  "nodes-problem-no-detail": "Nav pieejama papildu informācija.",
+  "nodes-problem-phase-compute": "Aprēķins",
+  "nodes-problem-phase-init": "Inicializācija",
+  "nodes-problems": "Problēmas",
+  "nodes-status-checking": "Pārbauda…",
+  "nodes-status-degraded": "Pasliktināts",
+  "nodes-status-failed": "Neizdevās",
+  "nodes-status-incomplete": "Nepilnīgs"
+}

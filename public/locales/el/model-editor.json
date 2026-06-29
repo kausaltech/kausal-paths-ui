@@ -1,1 +1,12 @@
-{}
+{
+  "editor-status-checking": "Έλεγχος μοντέλου…",
+  "editor-status-problem-count": "{count, plural, one {# πρόβλημα} other {# προβλήματα}}",
+  "nodes-problem-no-detail": "Δεν υπάρχουν περαιτέρω λεπτομέρειες.",
+  "nodes-problem-phase-compute": "Υπολογισμός",
+  "nodes-problem-phase-init": "Αρχικοποίηση",
+  "nodes-problems": "Προβλήματα",
+  "nodes-status-checking": "Έλεγχος…",
+  "nodes-status-degraded": "Υποβαθμισμένο",
+  "nodes-status-failed": "Απέτυχε",
+  "nodes-status-incomplete": "Ελλιπές"
+}

@@ -8,6 +8,7 @@ import { ArrowDropDown } from '@mui/icons-material';
 import {
   Box,
   Button,
+  CircularProgress,
   Divider,
   FormControl,
   IconButton,
@@ -34,9 +35,11 @@ import { useTranslations } from 'next-intl';
 import {
   BoxArrowUpRight,
   Box as BoxIcon,
+  CheckCircleFill,
   Compass,
   Database,
   Diagram2,
+  ExclamationTriangleFill,
   Funnel,
   FunnelFill,
   House,
@@ -45,10 +48,12 @@ import {
   XLg,
 } from 'react-bootstrap-icons';
 
+import { NodeStatus } from '@/common/__generated__/graphql';
 import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { Link as AppLink } from '@/common/links';
 import { getModelEditorBase } from './paths';
+import { nodeStatusVar } from './queries';
 
 const GET_NODE_SEARCH_LIST = gql`
   query EditorNodeSearchList {
@@ -184,6 +189,55 @@ const SEARCH_PLACEHOLDER_KEY: Record<
 const MAX_RESULTS = 10;
 const ALL_OUTCOMES_VALUE = '__all__';
 
+/**
+ * Model-wide fault-tolerance status, derived from `nodeStatusVar`. Shows a
+ * spinner while the async compute pass is in flight, then a problem count (or
+ * an all-clear tick once a clean compute has settled). Stays silent until the
+ * first status arrives so it doesn't flash on load.
+ */
+function ModelStatusIndicator() {
+  const t = useTranslations('model-editor');
+  const statuses = useReactiveVar(nodeStatusVar);
+  const entries = Object.values(statuses);
+  if (entries.length === 0) return null;
+
+  const pending = entries.some((e) => e.pending);
+  const problemCount = entries.filter((e) => e.status !== NodeStatus.Ok).length;
+
+  let icon: React.ReactNode;
+  let label: string;
+  let color: string;
+  if (pending) {
+    icon = <CircularProgress size={14} thickness={5} color="inherit" />;
+    label = t('editor-status-checking');
+    color = 'text.secondary';
+  } else if (problemCount > 0) {
+    icon = <ExclamationTriangleFill size={14} />;
+    label = t('editor-status-problem-count', { count: problemCount });
+    color = 'warning.main';
+  } else {
+    icon = <CheckCircleFill size={14} />;
+    label = '';
+    color = 'success.main';
+  }
+
+  return (
+    <Tooltip title={label} arrow>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, color, flexShrink: 0 }}
+        aria-label={label}
+      >
+        {icon}
+        {label && (
+          <Typography variant="caption" sx={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+            {label}
+          </Typography>
+        )}
+      </Box>
+    </Tooltip>
+  );
+}
+
 export default function ModelEditorNav() {
   const t = useTranslations('model-editor');
   const pathname = usePathname();
@@ -279,7 +333,10 @@ export default function ModelEditorNav() {
 
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
         <PreviewModeToggle />
-        <Divider orientation="vertical" flexItem sx={{ ml: 'auto' }} />
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
+          <ModelStatusIndicator />
+        </Box>
+        <Divider orientation="vertical" flexItem />
         <Button
           size="small"
           color="inherit"
