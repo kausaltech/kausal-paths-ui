@@ -13,6 +13,7 @@ import { logApolloError } from '@common/logging/apollo';
 import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
+import { useFeatures } from '@/common/instance';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import Error from '@/components/common/PathsError';
 import { StreamField } from '@/components/common/StreamField';
@@ -56,9 +57,10 @@ function Page(props: PageProps) {
   const { path, headerExtra } = props;
 
   const site = useSiteOrNull();
+  const { showRefreshPrompt } = useFeatures();
   const baselineScenario = site ? getBaselineScenario(site.scenarios) : undefined;
   const scenarios =
-    site && !!getProgressTrackingScenario(site.scenarios)
+    site && showRefreshPrompt && !!getProgressTrackingScenario(site.scenarios)
       ? ['default', 'progress_tracking', ...(baselineScenario ? [baselineScenario.id] : [])]
       : null;
   const activeGoal = useReactiveVar(activeGoalVar);
