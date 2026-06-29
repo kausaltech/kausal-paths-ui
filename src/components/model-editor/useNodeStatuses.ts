@@ -47,12 +47,14 @@ export function useNodeStatuses(nodes: readonly StatusNode[]): void {
   const context = useEditorApolloContext();
 
   useEffect(() => {
-    // Reconcile: keep settled status for surviving nodes, seed new nodes as
-    // pending, drop removed ones.
+    // Reconcile: adopt the fresh init-time status/errors carried by the
+    // refetched node (a structural edit may have changed it), but preserve the
+    // prior `pending` flag so settled nodes don't flash back to "checking".
+    // New nodes start pending; removed ones are dropped.
     const prev = nodeStatusVar();
     const seeded: Record<string, NodeStatusEntry> = {};
     for (const node of nodes) {
-      seeded[node.id] = prev[node.id] ?? toEntry(node, true);
+      seeded[node.id] = toEntry(node, prev[node.id]?.pending ?? true);
     }
     nodeStatusVar(seeded);
 
