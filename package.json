@@ -33,7 +33,7 @@
     "@emotion/styled": "^11.14.1",
     "@fontsource-variable/inter": "^5.2.8",
     "@glideapps/glide-data-grid": "^6.0.3",
-    "@kausal/themes": "^0.8.18",
+    "@kausal/themes": "^0.8.22",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@mui/material-nextjs": "^7.3.9",
@@ -178,7 +178,7 @@
   },
   "type": "module",
   "optionalDependencies": {
-    "@kausal-private/themes-private": "^0.5.107"
+    "@kausal-private/themes-private": "^0.5.113"
   },
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
