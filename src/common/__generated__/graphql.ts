@@ -3524,7 +3524,10 @@ export type ActionsForChooserQuery = (
 );
 
 export type ImpactOverviewDetailFragment = (
-  { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, effectNode: (
+  { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, goal: Array<(
+    { year: number, value: number }
+    & { __typename: 'NodeGoal' }
+  )>, effectNode: (
     { id: string, name: string, shortDescription: string | null, unit: (
       { id: string, short: string }
       & { __typename: 'UnitType' }
@@ -3619,7 +3622,10 @@ export type ImpactOverviewQueryVariables = Exact<{
 
 export type ImpactOverviewQuery = (
   { impactOverview: (
-    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, effectNode: (
+    { id: string, graphType: string | null, label: string, costLabel: string | null, effectLabel: string | null, indicatorLabel: string | null, costCategoryLabel: string | null, effectCategoryLabel: string | null, description: string | null, stakeholderDimension: string | null, outcomeDimension: string | null, plotLimitForIndicator: number | null, goal: Array<(
+      { year: number, value: number }
+      & { __typename: 'NodeGoal' }
+    )>, effectNode: (
       { id: string, name: string, shortDescription: string | null, unit: (
         { id: string, short: string }
         & { __typename: 'UnitType' }

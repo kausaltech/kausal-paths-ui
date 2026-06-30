@@ -14,6 +14,10 @@ export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
     stakeholderDimension
     outcomeDimension
     plotLimitForIndicator
+    goal {
+      year
+      value
+    }
     effectNode {
       id
       name

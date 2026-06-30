@@ -298,7 +298,7 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
 
   // Goals from the effectNode (target values for the indicator). Independent
   // of the wedge stack — rendered as connected dots overlaying the chart.
-  const goals = useMemo(() => data?.effectNode?.goals ?? [], [data]);
+  const goals = useMemo(() => data?.goal ?? [], [data]);
 
   // Union of years across wedge entries AND goal years, filtered to yearRange.
   // Including goal years means a goal at e.g. 2035 still gets a tick on the
