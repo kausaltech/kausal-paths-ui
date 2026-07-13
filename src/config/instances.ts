@@ -18,6 +18,24 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
       url: 'https://cork-planner.watch-test.kausal.tech/',
     },
   },
+  'augsburg-bisko': {
+    watchLink: {
+      title: 'Das Blue City Klimaschutzprogramm',
+      url: 'https://klimabilanz.augsburg.de/',
+    },
+  },
+  'bayreuth-bisko': {
+    watchLink: {
+      title: 'Monitoring Bayreuth',
+      url: 'https://monitoring.bayreuth.de/',
+    },
+  },
+  'duesseldorf-bisko': {
+    watchLink: {
+      title: 'Klimaschutz-Monitor',
+      url: 'https://duesseldorf-klima.watch.de.kausal.tech/',
+    },
+  },
   espoo: {
     instanceId: 'espoo',
     watchLink: {
@@ -98,6 +116,12 @@ const instanceConfigs: Record<string, InstanceFixedConfigToBeRemoved> = {
     watchLink: {
       title: 'Klima-Monitor-Potsdam',
       url: 'https://klima-monitor.potsdam.de/',
+    },
+  },
+  'reutlingen-klimabilanz': {
+    watchLink: {
+      title: 'Klimaplan-Monitor Reutlingen',
+      url: 'https://reutlingen-klima.watch-test.kausal.tech/',
     },
   },
   saskatoon: {
