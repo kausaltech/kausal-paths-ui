@@ -70,7 +70,7 @@
     "will_be_implemented": "Es implementada",
     "nav-menu-open": "Abrir navegación",
     "nav-menu-close": "Cerrar navegación",
-    "actions-count": "Mostrando {shown} de {total} acciones",
+    "actions-count": "Mostrar {{ count }} acción(es)",
     "actions-count-active": "Mostrando {shown} de {total} acciones activas",
     "actions-as-graph": "Gráfico",
     "actions-as-list": "Lista",
