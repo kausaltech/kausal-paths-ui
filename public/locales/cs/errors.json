@@ -1,12 +1,12 @@
 {
-  "generic-title": "Došlo k chybě v datech",
-  "generic-intro": "Při načítání dat pro tuto stránku došlo k chybě, která může ovlivnit její zobrazení. Náš tým byl informován.",
-  "generic-apology": "Omlouváme se za případné nepříjemnosti, které to může způsobit. Zkuste to prosím později a děkujeme za vaši trpělivost.",
-  "error-label": "Kód chyby",
-  "not-found-title": "Stránka nenalezena",
-  "not-found-intro": "404 Nenalezeno.",
-  "network-error": "Chyba sítě",
-  "instance-protected": "Tento web není v současnosti veřejně přístupný.",
-  "download-error": "Stahování se nezdařilo. Zkuste to prosím znovu později.",
-  "error-details": "Podrobnosti chyby"
+    "generic-title": "Došlo k chybě",
+    "generic-intro": "Jejda! V tuto chvíli máme některé technické potíže a nemůžeme zobrazit požadovanou stránku. Náš tým byl informován.",
+    "generic-apology": "Omlouváme se za případné nepříjemnosti, které to může způsobit. Zkuste to prosím později a děkujeme za vaši trpělivost.",
+    "error-label": "Kód chyby",
+    "not-found-title": "Stránka nenalezena",
+    "not-found-intro": "404 Nenalezeno.",
+    "network-error": "Chyba sítě",
+    "instance-protected": "Tento web není v současnosti veřejně přístupný.",
+    "download-error": "Stahování se nezdařilo. Zkuste to prosím znovu později.",
+    "error-details": "Podrobnosti chyby"
 }
