@@ -1,12 +1,12 @@
 {
-  "generic-title": "Der opstod en fejl i data",
-  "generic-intro": "Vi stødte på en fejl under indlæsning af data til denne side, hvilket kan påvirke, hvordan den vises. Vores team er blevet underrettet.",
-  "generic-apology": "Vi beklager eventuelle ulejligheder, dette kan medføre. Prøv venligst igen senere, og tak for din tålmodighed.",
-  "error-label": "Fejlkode",
-  "not-found-title": "Side ikke fundet",
-  "not-found-intro": "404 Ikke fundet.",
-  "network-error": "Netværksfejl",
-  "instance-protected": "Siden er ikke offentlig på nuværende tidspunkt.",
-  "download-error": "Download mislykkedes. Prøv igen senere.",
-  "error-details": "Fejldetaljer"
+    "generic-title": "Der opstod en fejl",
+    "generic-intro": "Ups! Vi oplever nogle tekniske vanskeligheder i øjeblikket og kan ikke vise den ønskede side. Vores team er blevet underrettet.",
+    "generic-apology": "Vi beklager eventuelle ulejligheder, dette kan medføre. Prøv venligst igen senere, og tak for din tålmodighed.",
+    "error-label": "Fejlkode",
+    "not-found-title": "Side ikke fundet",
+    "not-found-intro": "404 Ikke fundet.",
+    "network-error": "Netværksfejl",
+    "instance-protected": "Siden er ikke offentlig på nuværende tidspunkt.",
+    "download-error": "Download mislykkedes. Prøv igen senere.",
+    "error-details": "Fejldetaljer"
 }
