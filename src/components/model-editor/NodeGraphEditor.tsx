@@ -1,29 +1,13 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-import {
-  Alert,
-  Backdrop,
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Drawer,
-  Snackbar,
-  Typography,
-} from '@mui/material';
+import { Box, CircularProgress, Drawer } from '@mui/material';
 
-import { gql } from '@apollo/client';
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
 import {
   type Edge,
   MarkerType,
   type NodeChange,
-  type OnMoveEnd,
   type OnNodesChange,
   type OnSelectionChangeFunc,
 } from '@xyflow/react';
@@ -53,27 +37,25 @@ import ElkNode, {
   type ElkNodeType,
   type HiddenContextRef,
   NodeGraphInteractionContext,
-  getNodeStyle,
 } from './ElkNode';
 import MetricsDrawer from './MetricsDrawer';
+import NodeCrudDialogs from './NodeCrudDialogs';
 import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
+import { clearLayoutCache, loadViewport, saveUserPosition } from './layoutCache';
 import {
-  clearLayoutCache,
-  loadLayoutCache,
-  loadViewport,
-  saveUserPosition,
-  saveViewport,
-} from './layoutCache';
-import { getNodeLayoutMeta, getNodeSpec, getNodeType } from './nodeHelpers';
-import { type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
-import { type NewNodeKind, useCreateNode } from './useCreateNode';
-import { useDeleteNode } from './useDeleteNode';
-import { useDuplicateNode } from './useDuplicateNode';
+  computeSnippedEdgeIds,
+  computeUpstreamNodeIds,
+  convertToElk,
+  getNodeBorderColor,
+} from './nodeGraphTransforms';
+import { GET_NODE_GRAPH, type NodeFieldOverrides, nodeGraphOverridesVar } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
+import { useGraphNavigation } from './useGraphNavigation';
 import useLayoutNodes from './useLayoutNodes';
+import { useNodeCrudActions } from './useNodeCrudActions';
 import { useNodeStatuses } from './useNodeStatuses';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
@@ -82,358 +64,9 @@ const nodeTypes = {
   elk: ElkNode,
 };
 
-const GET_NODE_GRAPH = gql`
-  query NodeGraph {
-    instance {
-      id
-      identifier
-      actionGroups {
-        id
-        name
-        color
-      }
-      editor {
-        graphLayout {
-          thresholds {
-            hubDegree
-            ghostableOutDegree
-            ghostableTotalDegree
-            ghostableAvgOutgoingSpan
-          }
-          coreNodeIds
-          ghostableContextSourceIds
-          hubIds
-          actionIds
-          outcomeIds
-          mainGraphNodeIds
-        }
-        edges {
-          id
-          ...EditorNodeEdge
-        }
-      }
-      nodes {
-        id
-        ...EditorNodeFields
-      }
-    }
-  }
-  fragment EditorNodeFields on NodeInterface {
-    id
-    identifier
-    name
-    shortName
-    description
-    shortDescription
-    color
-    isVisible
-    uuid
-    kind
-    quantityKind {
-      icon
-      id
-      label
-    }
-    ... on Node {
-      isOutcome
-    }
-    ... on ActionNode {
-      group {
-        id
-        name
-        color
-      }
-    }
-    editor {
-      nodeGroup
-      nodeType
-      tags
-      inputDimensions
-      outputDimensions
-      # Phase 1: init-time status only (compute: false). Compute-phase status is
-      # fetched asynchronously afterwards via the NodeStatuses query.
-      status
-      errors {
-        phase
-        message
-      }
-      layoutMeta {
-        primaryClass
-        isHub
-        ghostable
-        ghostTargets
-        canonicalRail
-        topologicalLayer
-        inDegree
-        outDegree
-        totalDegree
-        avgOutgoingSpan
-        maxOutgoingSpan
-        hasActionAncestor
-      }
-      spec {
-        inputPorts {
-          id
-          label
-          multi
-          quantity
-          unit {
-            id
-            short
-            standard
-          }
-          requiredDimensions
-          supportedDimensions
-          bindings {
-            __typename
-            ... on DatasetPortType {
-              id
-              dataset {
-                id
-                identifier
-                name
-              }
-              metric {
-                id
-                label
-              }
-            }
-            ... on NodeEdgeType {
-              id
-            }
-          }
-        }
-        outputPorts {
-          id
-          label
-          quantity
-          columnId
-          unit {
-            id
-            short
-            standard
-          }
-          dimensions
-        }
-        typeConfig {
-          __typename
-          ... on SimpleConfigType {
-            nodeClass
-          }
-          ... on ActionConfigType {
-            nodeClass
-            decisionLevel
-            group
-            parent
-            noEffectValue
-          }
-          ... on FormulaConfigType {
-            formula
-          }
-          ... on PipelineConfigType {
-            operations
-          }
-        }
-      }
-    }
-  }
-  fragment EditorNodeEdge on NodeEdgeType {
-    id
-    tags
-    fromRef {
-      nodeId
-      portId
-    }
-    toRef {
-      nodeId
-      portId
-    }
-  }
-`;
-
-const EDGE_MARKER: Edge['markerEnd'] = {
-  type: MarkerType.ArrowClosed,
-  width: 12,
-  height: 12,
-  color: '#b0bec5',
-};
-
-function getNodeBorderColor(node: EditorNodeFieldsFragment): string {
-  const spec = getNodeSpec(node);
-  const typeConfig = spec?.typeConfig;
-  const nodeClass =
-    typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : getNodeType(node);
-  const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
-  return getNodeStyle(node.kind ?? '', nodeClass ?? '', isOutcome).border;
-}
-
-// Diagonal gap, in flow coordinates, between a duplicated node and its source
-// so the copy is visibly distinct without drifting far from the original.
-const DUPLICATE_OFFSET = 48;
-
 const DRAWER_WIDTH = 360;
 const OVERLAY_DRAWER_WIDTH = 600;
 const PANEL_PEEK_WIDTH = 48;
-
-/** Walk edges backwards from a set of root node IDs and return all upstream node IDs (inclusive). */
-function computeUpstreamNodeIds(
-  rootIds: ReadonlySet<string>,
-  edges: readonly EditorNodeEdgeFragment[],
-  allNodeIds: ReadonlySet<string>
-): Set<string> {
-  const reverseAdj = new Map<string, string[]>();
-  for (const edge of edges) {
-    if (!allNodeIds.has(edge.fromRef.nodeId) || !allNodeIds.has(edge.toRef.nodeId)) continue;
-    const list = reverseAdj.get(edge.toRef.nodeId) ?? [];
-    list.push(edge.fromRef.nodeId);
-    reverseAdj.set(edge.toRef.nodeId, list);
-  }
-  const visited = new Set<string>();
-  const stack = [...rootIds];
-  while (stack.length > 0) {
-    const id = stack.pop()!;
-    if (visited.has(id)) continue;
-    visited.add(id);
-    for (const upstream of reverseAdj.get(id) ?? []) {
-      if (!visited.has(upstream)) stack.push(upstream);
-    }
-  }
-  return visited;
-}
-
-const SPAN_THRESHOLD = 8;
-const FANOUT_THRESHOLD = 5;
-
-function computeSnippedEdgeIds(
-  edges: readonly EditorNodeEdgeFragment[],
-  nodes: readonly EditorNodeFieldsFragment[]
-): Set<string> {
-  const nodeById = new Map(nodes.map((n: EditorNodeFieldsFragment) => [n.id, n]));
-  const snipped = new Set<string>();
-
-  const outDegree = new Map<string, number>();
-  for (const e of edges) {
-    outDegree.set(e.fromRef.nodeId, (outDegree.get(e.fromRef.nodeId) ?? 0) + 1);
-  }
-
-  for (const edge of edges) {
-    const src = nodeById.get(edge.fromRef.nodeId);
-    const tgt = nodeById.get(edge.toRef.nodeId);
-    const srcLayoutMeta = src ? getNodeLayoutMeta(src) : null;
-    const tgtLayoutMeta = tgt ? getNodeLayoutMeta(tgt) : null;
-    if (!srcLayoutMeta || !tgtLayoutMeta) continue;
-
-    const span = Math.abs(tgtLayoutMeta.topologicalLayer - srcLayoutMeta.topologicalLayer);
-    const srcOutDegree = outDegree.get(edge.fromRef.nodeId) ?? 0;
-
-    if (span > SPAN_THRESHOLD) {
-      snipped.add(edge.id);
-    } else if (srcOutDegree >= FANOUT_THRESHOLD && span > 3) {
-      snipped.add(edge.id);
-    }
-  }
-
-  return snipped;
-}
-
-function convertToElk(
-  nodes: readonly EditorNodeFieldsFragment[],
-  edges: readonly EditorNodeEdgeFragment[],
-  hiddenSourcesByNodeAndPort: ReadonlyMap<string, ReadonlyMap<string, HiddenContextRef[]>>
-) {
-  const nodeIds = new Set(nodes.map((n) => n.id));
-
-  const sourceHandlesFromEdges = new Map<string, Set<string>>();
-  const targetHandlesFromEdges = new Map<string, Set<string>>();
-  for (const edge of edges) {
-    if (!nodeIds.has(edge.fromRef.nodeId) || !nodeIds.has(edge.toRef.nodeId)) continue;
-    if (!sourceHandlesFromEdges.has(edge.fromRef.nodeId))
-      sourceHandlesFromEdges.set(edge.fromRef.nodeId, new Set());
-    sourceHandlesFromEdges.get(edge.fromRef.nodeId)!.add(edge.fromRef.portId);
-    if (!targetHandlesFromEdges.has(edge.toRef.nodeId))
-      targetHandlesFromEdges.set(edge.toRef.nodeId, new Set());
-    targetHandlesFromEdges.get(edge.toRef.nodeId)!.add(edge.toRef.portId);
-  }
-
-  const nodesById = new Map(nodes.map((n) => [n.id, n]));
-  const validEdges = edges.filter((edge) => {
-    const src = nodesById.get(edge.fromRef.nodeId);
-    const tgt = nodesById.get(edge.toRef.nodeId);
-    if (src) {
-      const outPorts = getNodeSpec(src)?.outputPorts;
-      if (!outPorts || !outPorts.some((p) => p.id === edge.fromRef.portId)) {
-        console.warn(
-          `Skipping edge ${edge.id}: fromPort="${edge.fromRef.portId}" not found on node "${src.identifier}"`
-        );
-        return false;
-      }
-    }
-    if (tgt) {
-      const inPorts = getNodeSpec(tgt)?.inputPorts;
-      if (!inPorts || !inPorts.some((p) => p.id === edge.toRef.portId)) {
-        console.warn(
-          `Skipping edge ${edge.id}: toPort="${edge.toRef.portId}" not found on node "${tgt.identifier}"`
-        );
-        return false;
-      }
-    }
-    return true;
-  });
-
-  const elkNodes = nodes.map((node: EditorNodeFieldsFragment) => {
-    const spec = getNodeSpec(node);
-    const inputPorts = spec?.inputPorts ?? [];
-    const outputPorts = spec?.outputPorts ?? [];
-    const srcHandles = outputPorts.map((p) => ({ id: p.id }));
-    const hiddenSourcesForNode = hiddenSourcesByNodeAndPort.get(node.id);
-    const tgtHandles = inputPorts.map((p) => ({
-      id: p.id,
-      multi: p.multi,
-      datasets: p.bindings.flatMap((b) =>
-        b.__typename === 'DatasetPortType' && b.dataset != null && b.metric != null
-          ? [{ id: b.id, label: `${b.dataset.name} → ${b.metric.label}` }]
-          : []
-      ),
-      hiddenSources: hiddenSourcesForNode?.get(p.id),
-    }));
-
-    const typeConfig = spec?.typeConfig;
-    const nodeClass =
-      typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : getNodeType(node);
-
-    const elkNode: ElkNodeType = {
-      id: node.id,
-      data: {
-        label: node.name,
-        kind: node.kind ?? '',
-        nodeClass: nodeClass ?? '',
-        color: node.color ?? '',
-        isOutcome: node.__typename === 'Node' ? (node.isOutcome ?? false) : false,
-        quantityKind: node.quantityKind ?? null,
-        sourceHandles: srcHandles,
-        targetHandles: tgtHandles,
-      },
-      position: { x: 0, y: 0 },
-      type: 'elk',
-    };
-    return elkNode;
-  });
-
-  const elkNodesById = new Map(elkNodes.map((node) => [node.id, node]));
-
-  const elkEdges = validEdges
-    .filter((edge) => elkNodesById.has(edge.fromRef.nodeId) && elkNodesById.has(edge.toRef.nodeId))
-    .map<Edge>((edge) => ({
-      id: edge.id,
-      source: edge.fromRef.nodeId,
-      sourceHandle: edge.fromRef.portId,
-      target: edge.toRef.nodeId,
-      targetHandle: edge.toRef.portId,
-      markerEnd: EDGE_MARKER,
-    }));
-
-  return { nodes: elkNodes, edges: elkEdges };
-}
 
 function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
@@ -445,14 +78,11 @@ function FlowEditor(props: {
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const requestedNodeKey = searchParams.get('node');
-  const { fitView, getNodes, setViewport, screenToFlowPosition } = useReactFlow();
-  const handledNodeKeyRef = useRef<string | null>(null);
+  const { screenToFlowPosition } = useReactFlow();
   // Captured once so later URL changes (e.g. deselecting a node) don't
   // re-toggle RF's built-in `fitView` prop and refit the whole graph.
-  const [initialFitView] = useState(() => requestedNodeKey === null);
+  const [initialFitView] = useState(() => searchParams.get('node') === null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -543,21 +173,11 @@ function FlowEditor(props: {
 
   // Captured once on mount: the viewport (pan + zoom) the user left this
   // instance at. When present (and not overridden by a deep-link), we restore
-  // it instead of fitting the whole graph — see the restore effect below.
+  // it instead of fitting the whole graph — see useGraphNavigation.
   const [savedViewport] = useState(() => loadViewport(instanceId));
-  const viewportRestoredRef = useRef(false);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-
-  const handleMoveEnd = useCallback<OnMoveEnd>(
-    (_event, viewport) => {
-      // Persist the viewport after every pan/zoom gesture (and after
-      // programmatic fits), so the next visit restores where the user was.
-      saveViewport(instanceId, viewport);
-    },
-    [instanceId]
-  );
 
   const handleNodesChange = useCallback<OnNodesChange<ElkNodeType>>(
     (changes: NodeChange<ElkNodeType>[]) => {
@@ -592,78 +212,22 @@ function FlowEditor(props: {
   }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
 
   const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, resetCounter, {
-    // Suppress the initial fit when we have a saved viewport to restore (the
-    // effect below sets it once layout is current), so the graph doesn't flash
-    // "show everything" before snapping to the user's last view.
+    // Suppress the initial fit when we have a saved viewport to restore
+    // (useGraphNavigation sets it once layout is current), so the graph doesn't
+    // flash "show everything" before snapping to the user's last view.
     skipFitView: !initialFitView || savedViewport !== null,
   });
   const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
 
-  // Restore the saved viewport once the initial layout is applied. Gated like
-  // the deep-link effect (which takes precedence when `?node=` is present) and
-  // runs once per mount.
-  useEffect(() => {
-    if (savedViewport === null) return;
-    if (requestedNodeKey !== null) return;
-    if (!isLayoutCurrent) return;
-    if (viewportRestoredRef.current) return;
-    viewportRestoredRef.current = true;
-    void setViewport(savedViewport);
-  }, [savedViewport, requestedNodeKey, isLayoutCurrent, setViewport]);
-
-  // Deep-link: /model/nodes?node=<identifier> opens the panel on that
-  // node and centers the graph on it. Waits for ELK layout to be *applied*
-  // (positions written back to React Flow) so `fitView` reads real coords.
-  useEffect(() => {
-    if (!requestedNodeKey) return;
-    if (!isLayoutCurrent) return;
-    if (handledNodeKeyRef.current === requestedNodeKey) return;
-
-    const target =
-      props.nodes.find((n) => n.identifier === requestedNodeKey) ??
-      props.nodes.find((n) => n.id === requestedNodeKey);
-    if (!target) return;
-
-    const rfNodes = getNodes();
-    const targetRfNode = rfNodes.find((n) => n.id === target.id);
-    if (!targetRfNode) return;
-
-    handledNodeKeyRef.current = requestedNodeKey;
-    // Drive RF's own selection state; `onSelectionChange` fires with this
-    // node and updates `selectedNodeId`, which opens the details panel.
-    setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === target.id })));
-    // fitView with a single node centers and zooms on it natively.
-    void fitView({ nodes: [{ id: target.id }], maxZoom: 1.2, duration: 400, padding: 0.4 });
-  }, [requestedNodeKey, isLayoutCurrent, props.nodes, getNodes, fitView, setNodes]);
-
-  // Mirror the current selection back into the URL (`?node=<identifier>`) so
-  // the view is linkable/refreshable. Uses `window.history.replaceState` rather
-  // than `router.replace` so the update stays shallow: `router.replace`
-  // soft-navigates and re-renders the route's Server Components, which re-runs
-  // the layout's `InstanceContext` fetch on every node click. `useSearchParams`
-  // still observes the change. Syncs `handledNodeKeyRef` so the deep-link
-  // effect above doesn't re-pan/re-zoom in response to our own URL update.
-  useEffect(() => {
-    const target = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
-    const nextKey = target?.identifier ?? target?.id ?? null;
-    if (nextKey === requestedNodeKey) return;
-    // On fresh load with `?node=xxx`, the deep-link effect hasn't populated
-    // selection yet. Don't strip the param in that window, or the target
-    // never gets focused.
-    if (
-      nextKey === null &&
-      requestedNodeKey !== null &&
-      handledNodeKeyRef.current !== requestedNodeKey
-    ) {
-      return;
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    if (nextKey) params.set('node', nextKey);
-    else params.delete('node');
-    const query = params.toString();
-    handledNodeKeyRef.current = nextKey;
-    window.history.replaceState(null, '', query ? `${pathname}?${query}` : pathname);
-  }, [selectedNodeId, nodeMap, requestedNodeKey, searchParams, pathname]);
+  const { onMoveEnd } = useGraphNavigation({
+    instanceId,
+    nodes: props.nodes,
+    nodeMap,
+    selectedNodeId,
+    isLayoutCurrent,
+    savedViewport,
+    setNodes,
+  });
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
     if (selected.length !== 1) {
@@ -729,93 +293,26 @@ function FlowEditor(props: {
     [nodeMap]
   );
 
-  const duplicateNode = useDuplicateNode();
-  const [duplicateFeedback, setDuplicateFeedback] = useState<
-    { kind: 'success'; message: string } | { kind: 'error'; message: string } | null
-  >(null);
-  const [isDuplicating, setIsDuplicating] = useState(false);
-  // Holds the copy's id until it's present in React Flow's own node state, so
-  // the selection block below can attach the `selected` flag.
+  // Holds a new node's id (from create / duplicate) until it's present in
+  // React Flow's own node state, so the selection block below can attach the
+  // `selected` flag.
   const [pendingSelectNodeId, setPendingSelectNodeId] = useState<string | null>(null);
 
-  const handleDuplicateNode = useCallback(
+  const handleNodeDeleted = useCallback(
     (nodeId: string) => {
-      const node = nodeMap.get(nodeId);
-      if (!node) return;
-      if (isDuplicating) return;
-      // Capture the source position now, while the original is on screen and
-      // stationary.
-      const sourcePos = getNodes().find((n) => n.id === node.id)?.position ??
-        loadLayoutCache(instanceId)[node.id] ?? { x: 0, y: 0 };
-      setIsDuplicating(true);
-      duplicateNode(node, props.nodes, (newId) => {
-        // Runs before the graph refetches (see `useDuplicateNode`): seed the
-        // copy's offset position so the refetch-triggered layout pass finds it
-        // already cached. Every node is then cached, so that pass takes its
-        // no-ELK, no-refit path (see `useLayoutNodes`) — the copy lands at the
-        // offset and the viewport stays put. Doing this in `.then()` instead
-        // would race the refetch and sometimes drop the copy top-left.
-        saveUserPosition(
-          instanceId,
-          newId,
-          sourcePos.x + DUPLICATE_OFFSET,
-          sourcePos.y + DUPLICATE_OFFSET
-        );
-      })
-        .then((result) => {
-          setPendingSelectNodeId(result.newId);
-          setDuplicateFeedback({
-            kind: 'success',
-            message: `Duplicated "${node.name}" as "${result.newIdentifier}"`,
-          });
-        })
-        .catch((err: unknown) =>
-          setDuplicateFeedback({
-            kind: 'error',
-            message: err instanceof Error ? err.message : 'Failed to duplicate node',
-          })
-        )
-        .finally(() => setIsDuplicating(false));
+      setSelectedNodeId((prev) => (prev === nodeId ? null : prev));
+      handleResetLayout();
     },
-    [duplicateNode, getNodes, instanceId, isDuplicating, nodeMap, props.nodes]
+    [handleResetLayout]
   );
 
-  const createNode = useCreateNode();
-  const [isCreating, setIsCreating] = useState(false);
-
-  // Create a node immediately at the right-click position with sensible
-  // defaults (unit/quantity are editable afterward in the details panel) and
-  // select it, rather than prompting up front.
-  const handleNewNode = useCallback(
-    (flowX: number, flowY: number, kind: NewNodeKind) => {
-      if (isCreating) return;
-      setIsCreating(true);
-      const existingIdentifiers = new Set(props.nodes.map((n) => n.identifier));
-      const name = kind === 'action' ? 'My Action' : 'My Node';
-      createNode(
-        { name, unit: 'kt/a', quantity: 'emissions', kind, existingIdentifiers },
-        // Seed the position at the right-click location before the refetch, so
-        // the node lands there and the layout pass keeps the viewport (a pure
-        // addition served from cache — see useLayoutNodes).
-        (newId) => saveUserPosition(instanceId, newId, flowX, flowY)
-      )
-        .then((result) => {
-          setPendingSelectNodeId(result.newId);
-          setDuplicateFeedback({
-            kind: 'success',
-            message: `Created "${result.newIdentifier}"`,
-          });
-        })
-        .catch((err: unknown) =>
-          setDuplicateFeedback({
-            kind: 'error',
-            message: err instanceof Error ? err.message : 'Failed to create node',
-          })
-        )
-        .finally(() => setIsCreating(false));
-    },
-    [createNode, instanceId, isCreating, props.nodes]
-  );
+  const crud = useNodeCrudActions({
+    instanceId,
+    allNodes: props.nodes,
+    nodeMap,
+    onCreated: setPendingSelectNodeId,
+    onDeleted: handleNodeDeleted,
+  });
 
   // Adjust-state-during-render: once the copy is present in React Flow's own
   // node state, drive RF's selection to it (which fires `onSelectionChange` →
@@ -826,42 +323,6 @@ function FlowEditor(props: {
     setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === pendingSelectNodeId })));
     setPendingSelectNodeId(null);
   }
-
-  const deleteNode = useDeleteNode();
-  const [deleteConfirmNode, setDeleteConfirmNode] = useState<EditorNodeFieldsFragment | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleRequestDeleteNode = useCallback(
-    (nodeId: string) => {
-      const node = nodeMap.get(nodeId);
-      if (!node) return;
-      setDeleteConfirmNode(node);
-    },
-    [nodeMap]
-  );
-
-  const handleConfirmDelete = useCallback(() => {
-    const node = deleteConfirmNode;
-    if (!node || isDeleting) return;
-    setIsDeleting(true);
-    deleteNode(node.id)
-      .then(() => {
-        if (selectedNodeId === node.id) setSelectedNodeId(null);
-        clearLayoutCache(instanceId);
-        setResetCounter((c) => c + 1);
-        setDuplicateFeedback({ kind: 'success', message: `Deleted "${node.name}"` });
-      })
-      .catch((err: unknown) =>
-        setDuplicateFeedback({
-          kind: 'error',
-          message: err instanceof Error ? err.message : 'Failed to delete node',
-        })
-      )
-      .finally(() => {
-        setIsDeleting(false);
-        setDeleteConfirmNode(null);
-      });
-  }, [deleteConfirmNode, deleteNode, instanceId, isDeleting, selectedNodeId]);
 
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
@@ -911,7 +372,7 @@ function FlowEditor(props: {
               onEdgeContextMenu={onEdgeContextMenu}
               onNodeContextMenu={onNodeContextMenu}
               onPaneContextMenu={onPaneContextMenu}
-              onMoveEnd={handleMoveEnd}
+              onMoveEnd={onMoveEnd}
               nodeTypes={nodeTypes}
               minZoom={0.2}
               maxZoom={5}
@@ -934,9 +395,9 @@ function FlowEditor(props: {
               onClose={() => setContextMenu(null)}
               onHideEdge={handleHideEdge}
               onOpenActionWizard={handleOpenActionWizard}
-              onDuplicateNode={handleDuplicateNode}
-              onDeleteNode={handleRequestDeleteNode}
-              onNewNode={handleNewNode}
+              onDuplicateNode={crud.duplicateNode}
+              onDeleteNode={crud.requestDeleteNode}
+              onNewNode={crud.createNodeAt}
             />
             <Drawer
               variant="persistent"
@@ -1009,54 +470,7 @@ function FlowEditor(props: {
           />
         </Suspense>
       )}
-      <Backdrop
-        open={isDuplicating || isDeleting || isCreating}
-        sx={(theme) => ({
-          zIndex: theme.zIndex.modal + 1,
-          flexDirection: 'column',
-          gap: 2,
-          color: 'common.white',
-        })}
-      >
-        <CircularProgress color="inherit" />
-        <Typography variant="body2">
-          {isDeleting ? 'Deleting node…' : isCreating ? 'Creating node…' : 'Duplicating node…'}
-        </Typography>
-      </Backdrop>
-      <Dialog
-        open={deleteConfirmNode !== null && !isDeleting}
-        onClose={() => setDeleteConfirmNode(null)}
-      >
-        <DialogTitle>Delete node?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Permanently delete &quot;{deleteConfirmNode?.name}&quot; and all of its edges. This
-            cannot be undone without reverting to the last published revision.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmNode(null)}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Snackbar
-        open={duplicateFeedback !== null}
-        autoHideDuration={duplicateFeedback?.kind === 'error' ? null : 4000}
-        onClose={() => setDuplicateFeedback(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        {duplicateFeedback ? (
-          <Alert
-            onClose={() => setDuplicateFeedback(null)}
-            severity={duplicateFeedback.kind === 'success' ? 'success' : 'error'}
-            variant="filled"
-          >
-            {duplicateFeedback.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
+      <NodeCrudDialogs crud={crud} />
     </NodeGraphInteractionContext>
   );
 }
