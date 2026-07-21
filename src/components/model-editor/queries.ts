@@ -91,6 +91,181 @@ export const editorPreviewModeVar = makeVar<EditorPreviewMode>('PUBLISHED');
  */
 export const staleVersionNotificationVar = makeVar<boolean>(false);
 
+/**
+ * The whole-model structural query behind the node graph editor. Runs with
+ * `fetchPolicy: 'no-cache'` (see NodeGraphEditor) because the result spans the
+ * entire model; updates reach graph consumers via the reactive vars above
+ * instead of normalized-cache writes.
+ */
+export const GET_NODE_GRAPH = gql`
+  query NodeGraph {
+    instance {
+      id
+      identifier
+      actionGroups {
+        id
+        name
+        color
+      }
+      editor {
+        graphLayout {
+          thresholds {
+            hubDegree
+            ghostableOutDegree
+            ghostableTotalDegree
+            ghostableAvgOutgoingSpan
+          }
+          coreNodeIds
+          ghostableContextSourceIds
+          hubIds
+          actionIds
+          outcomeIds
+          mainGraphNodeIds
+        }
+        edges {
+          id
+          ...EditorNodeEdge
+        }
+      }
+      nodes {
+        id
+        ...EditorNodeFields
+      }
+    }
+  }
+  fragment EditorNodeFields on NodeInterface {
+    id
+    identifier
+    name
+    shortName
+    description
+    shortDescription
+    color
+    isVisible
+    uuid
+    kind
+    quantityKind {
+      icon
+      id
+      label
+    }
+    ... on Node {
+      isOutcome
+    }
+    ... on ActionNode {
+      group {
+        id
+        name
+        color
+      }
+    }
+    editor {
+      nodeGroup
+      nodeType
+      tags
+      inputDimensions
+      outputDimensions
+      # Phase 1: init-time status only (compute: false). Compute-phase status is
+      # fetched asynchronously afterwards via the NodeStatuses query.
+      status
+      errors {
+        phase
+        message
+      }
+      layoutMeta {
+        primaryClass
+        isHub
+        ghostable
+        ghostTargets
+        canonicalRail
+        topologicalLayer
+        inDegree
+        outDegree
+        totalDegree
+        avgOutgoingSpan
+        maxOutgoingSpan
+        hasActionAncestor
+      }
+      spec {
+        inputPorts {
+          id
+          label
+          multi
+          quantity
+          unit {
+            id
+            short
+            standard
+          }
+          requiredDimensions
+          supportedDimensions
+          bindings {
+            __typename
+            ... on DatasetPortType {
+              id
+              dataset {
+                id
+                identifier
+                name
+              }
+              metric {
+                id
+                label
+              }
+            }
+            ... on NodeEdgeType {
+              id
+            }
+          }
+        }
+        outputPorts {
+          id
+          label
+          quantity
+          columnId
+          unit {
+            id
+            short
+            standard
+          }
+          dimensions
+        }
+        typeConfig {
+          __typename
+          ... on SimpleConfigType {
+            nodeClass
+          }
+          ... on ActionConfigType {
+            nodeClass
+            decisionLevel
+            group
+            parent
+            noEffectValue
+          }
+          ... on FormulaConfigType {
+            formula
+          }
+          ... on PipelineConfigType {
+            operations
+          }
+        }
+      }
+    }
+  }
+  fragment EditorNodeEdge on NodeEdgeType {
+    id
+    tags
+    fromRef {
+      nodeId
+      portId
+    }
+    toRef {
+      nodeId
+      portId
+    }
+  }
+`;
+
 const EDITOR_OPERATION_INFO_FIELDS = gql`
   fragment EditorOperationInfoFields on OperationInfo {
     messages {
