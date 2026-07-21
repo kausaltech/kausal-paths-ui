@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { Box, Container, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material';
 
-import { type ObservableQuery } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import type { Theme } from '@kausal/themes/types';
 
@@ -25,7 +24,7 @@ import { useSiteOrNull } from '@/context/site';
 import GET_PAGE from '@/queries/getPage';
 import { getBaselineScenario, getProgressTrackingScenario } from '@/utils/progress-tracking';
 
-export type PageRefetchCallback = ObservableQuery<PageQuery>['refetch'];
+export type PageRefetchCallback = useQuery.Result<PageQuery, PageQueryVariables>['refetch'];
 
 const PageLoader = ({ theme }: { theme: Theme }) => {
   return (
