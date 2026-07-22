@@ -34,7 +34,7 @@ Migrate one component at a time, easiest first. Each migration should:
 | 4    | `src/components/graphs/MacGraph.tsx`                         | ⬜                                  |
 | 5    | `src/components/general/NodePlot.tsx`                        | ⬜                                  |
 | 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ⬜                                  |
-| 7    | `kausal_common/src/components/paths/DimensionalPieGraph.tsx` | ⬜ (shared, see notes)              |
+| 7    | `kausal_common/src/components/paths/DimensionalPieGraph.tsx` | ✅ Migrated (shared, see notes)     |
 | 8    | Final cleanup (delete `Plot.tsx`, drop deps)                 | ⬜                                  |
 
 Find any stragglers with: `grep -rln plotly src/ kausal_common/src/`
@@ -144,20 +144,29 @@ target, value, lineStyle}] }`. Node/link colors (including the
   responsiveness bug (see TODO in file) — migrating to `Chart` fixes resize
   handling for free. Remove the leftover `console.log`/`useEffect` debug too.
 
-### 7. DimensionalPieGraph (`kausal_common/src/components/paths/DimensionalPieGraph.tsx`)
+### 7. DimensionalPieGraph (done)
 
-Lives in the shared `kausal_common` submodule, so migrating it affects other
-apps (e.g. kausal-web-ui) — coordinate accordingly. Scaled donut charts (one
-per column category, sized relative to the largest total) with a center total
-annotation and hover text.
+`kausal_common/src/components/paths/DimensionalPieGraph.tsx` — migrated to
+ECharts using the shared `Chart` wrapper (one `Chart` per column-category
+donut, center total as a centered `title`, percentages in legend names as
+before, preformatted HTML tooltips). Pie sizing changed deliberately: pies
+now scale so their **area** is proportional to the column total
+(radius ∝ √(total/maxTotal)). The old Plotly domain math (`±0.95 × ratio`
+around the center) saturated at container size for ratios above ~0.53, so
+most pies rendered equally large; the new scaling is subtler than a linear
+radius map but actually informative. Notes:
 
-- Imports the app-local Plotly wrapper via `@/components/graphs/Plot` — this
-  is why final cleanup can't delete `Plot.tsx` until this component is
-  migrated (or the app stops using it).
-- ECharts `pie` series with `radius: ['x%', 'y%']` gives the donut; the
-  center total becomes a `title` (text centered) or `graphic` element; pie
-  scaling maps to per-plot `radius`.
-- `PieChart` is already registered in the shared `Chart.tsx`.
+- It lives in the shared submodule and is also used by **kausal-watch-ui**
+  (`src/components/paths/outcome/OutcomeNodeContent.tsx`); both apps pin the
+  `feature/common-outcome-pie` branch. The props interface was kept identical,
+  and watch-ui already uses the shared `Chart` wrapper elsewhere
+  (`IndicatorSparkline`), so it picks the change up when it bumps its
+  submodule pointer — verify visually there too.
+- It no longer imports the app-local `@/components/graphs/Plot`, so it no
+  longer blocks final cleanup in this repo.
+- Deliberate simplifications: tooltip/unit HTML goes through
+  `sanitizeHtmlUnit`; legend item clicks disabled via `selectedMode: false`
+  (was Plotly `itemclick: false`); the dead modebar config dropped.
 
 ### 8. Final cleanup
 
