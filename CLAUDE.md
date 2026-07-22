@@ -13,6 +13,7 @@ Design docs live in [docs/](docs/). Read the relevant one before making changes 
 - [docs/authentication.md](docs/authentication.md) — better-auth setup, cookie inventory, token flow per layer, token refresh design (proxy + route handler), multi-pod rotation race tradeoffs.
 - [docs/trailhead-auth-mvp.md](docs/trailhead-auth-mvp.md) — Trailhead / CADS self-service flow: registration, instance creation, invitations. Architecture decisions and implementation layers.
 - [docs/model-layout-persistence.md](docs/model-layout-persistence.md) — Node graph layout caching (localStorage, per-instance), ELK re-layout rules, user-drag persistence.
+- [docs/plotly-to-echarts-migration.md](docs/plotly-to-echarts-migration.md) — Plan and status for removing the Plotly dependency (component-by-component ECharts migration).
 
 ## Development Commands
 
