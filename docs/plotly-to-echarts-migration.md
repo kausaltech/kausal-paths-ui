@@ -26,28 +26,34 @@ Migrate one component at a time, easiest first. Each migration should:
 
 ## Status
 
-| Step | Component                                         | Status                  |
-| ---- | ------------------------------------------------- | ----------------------- |
-| 1    | `src/components/general/BarGraph.tsx`             | ✅ Deleted (was unused) |
-| 2    | `src/components/general/DimensionalBarGraph.tsx`  | ✅ Migrated             |
-| 3    | `src/components/graphs/ActionComparisonGraph.tsx` | ⬜                      |
-| 4    | `src/components/graphs/MacGraph.tsx`              | ⬜                      |
-| 5    | `src/components/general/NodePlot.tsx`             | ⬜                      |
-| 6    | `src/components/graphs/DimensionalFlow.tsx`       | ⬜                      |
-| 7    | Final cleanup (delete `Plot.tsx`, drop deps)      | ⬜                      |
+| Step | Component                                                    | Status                              |
+| ---- | ------------------------------------------------------------ | ----------------------------------- |
+| 1    | `src/components/general/BarGraph.tsx`                        | ✅ Deleted (was unused)             |
+| 2    | `src/components/general/DimensionalBarGraph.tsx`             | ✅ Deleted (replaced by shared pie) |
+| 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ⬜                                  |
+| 4    | `src/components/graphs/MacGraph.tsx`                         | ⬜                                  |
+| 5    | `src/components/general/NodePlot.tsx`                        | ⬜                                  |
+| 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ⬜                                  |
+| 7    | `kausal_common/src/components/paths/DimensionalPieGraph.tsx` | ⬜ (shared, see notes)              |
+| 8    | Final cleanup (delete `Plot.tsx`, drop deps)                 | ⬜                                  |
 
-Find any stragglers with: `grep -rln plotly src/`
+Find any stragglers with: `grep -rln plotly src/ kausal_common/src/`
 
 ### Step 2 notes (done)
 
-`DimensionalBarGraph` intentional behavior changes vs. the Plotly version:
+`DimensionalBarGraph` was first migrated to ECharts, then replaced entirely by
+the shared, Plotly-based
+`kausal_common/src/components/paths/DimensionalPieGraph.tsx` (used by
+`OutcomeNodeContent`'s single-year view). Two wiring notes from that
+replacement:
 
-- Percentage labels moved inside segments (`labelLayout.hideOverlap`) instead
-  of Plotly's `outside`; the artificial 25% y-axis headroom is gone.
-- Negative values stack downward below zero natively, replacing the old
-  `base: -datum` overlap trick with a `[0, max]` clamped range.
-- Added an axis tooltip with formatted value + unit (was `hovermode: false`).
-- Year title and HTML unit render as React elements above the chart.
+- `src/common/cache.ts` now aliases `activeGoalVar` from
+  `@common/apollo/paths-cache` instead of defining its own, so shared paths
+  components observe the goal this app sets. The cast there is because the
+  app's goal fragment doesn't query `separateYears`.
+- The pie graph's `@generated/paths/graphql` import doesn't resolve in this
+  repo (type-only, erased at build) — its TS error is baselined, same as
+  kausal_common's `DimensionalNodeVisualisation`.
 
 ## Remaining components
 
@@ -138,7 +144,22 @@ target, value, lineStyle}] }`. Node/link colors (including the
   responsiveness bug (see TODO in file) — migrating to `Chart` fixes resize
   handling for free. Remove the leftover `console.log`/`useEffect` debug too.
 
-### 7. Final cleanup
+### 7. DimensionalPieGraph (`kausal_common/src/components/paths/DimensionalPieGraph.tsx`)
+
+Lives in the shared `kausal_common` submodule, so migrating it affects other
+apps (e.g. kausal-web-ui) — coordinate accordingly. Scaled donut charts (one
+per column category, sized relative to the largest total) with a center total
+annotation and hover text.
+
+- Imports the app-local Plotly wrapper via `@/components/graphs/Plot` — this
+  is why final cleanup can't delete `Plot.tsx` until this component is
+  migrated (or the app stops using it).
+- ECharts `pie` series with `radius: ['x%', 'y%']` gives the donut; the
+  center total becomes a `title` (text centered) or `graphic` element; pie
+  scaling maps to per-plot `radius`.
+- `PieChart` is already registered in the shared `Chart.tsx`.
+
+### 8. Final cleanup
 
 - Delete `src/components/graphs/Plot.tsx` (both `Plot` and `BasicPlot`).
 - Remove from `package.json`: `plotly.js`, `plotly.js-locales`,

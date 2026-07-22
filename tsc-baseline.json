@@ -52,6 +52,12 @@
       "count": 1,
       "message": "Parameter 'y' implicitly has an 'any' type."
     },
+    "45a2db91cd0222a1fd7a4165a86c742effb38c94": {
+      "file": "kausal_common/src/components/paths/DimensionalPieGraph.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@generated/paths/graphql' or its corresponding type declarations."
+    },
     "838182a273f9a9159ac1f2ddaf4c9ec8e0418271": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS7053",

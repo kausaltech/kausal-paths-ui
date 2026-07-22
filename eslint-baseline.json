@@ -133,14 +133,6 @@
       "count": 1
     }
   },
-  "src/components/general/DimensionalBarGraph.tsx": {
-    "no-prototype-builtins": {
-      "count": 2
-    },
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
   "src/components/general/DimensionalNodeVisualisation.tsx": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 2
