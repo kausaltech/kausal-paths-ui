@@ -1,12 +1,7 @@
 {
-    "network-error": "Nätverksfel",
-    "not-found-intro": "404 Sidan hittas inte.",
-    "instance-protected": "Webbplatsen är för närvarande inte offentlig.",
-    "download-error": "Nedladdningen misslyckades. Försök igen senare.",
-    "error-details": "Felinformation",
-    "generic-title": "",
-    "generic-intro": "",
-    "generic-apology": "",
-    "error-label": "",
-    "not-found-title": ""
+  "network-error": "Nätverksfel",
+  "not-found-intro": "404 Sidan hittas inte.",
+  "instance-protected": "Webbplatsen är för närvarande inte offentlig.",
+  "download-error": "Nedladdningen misslyckades. Försök igen senare.",
+  "error-details": "Felinformation"
 }
