@@ -18,8 +18,9 @@ import {
 } from '@/common/__generated__/graphql';
 import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
-import NodeDetailsSection, { NodeContentSection } from './NodeDetailsSection';
+import NodeDetailsSection from './NodeDetailsSection';
 import { mockNodeEditsVar } from './mockEdits';
+import { NodeContentSection } from './node-details/NodeContentSection';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
 import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
 import { CollapsibleSection, getStyleForNode } from './node-details/shared';
