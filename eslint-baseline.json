@@ -115,11 +115,6 @@
       "count": 1
     }
   },
-  "src/components/general/BarGraph.tsx": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
-    }
-  },
   "src/components/general/CausalGrid.tsx": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 4
@@ -139,9 +134,6 @@
     }
   },
   "src/components/general/DimensionalBarGraph.tsx": {
-    "@typescript-eslint/no-unsafe-unary-minus": {
-      "count": 1
-    },
     "no-prototype-builtins": {
       "count": 2
     },

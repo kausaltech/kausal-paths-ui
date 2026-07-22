@@ -1,18 +1,39 @@
 import { useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
 
 import { useReactiveVar } from '@apollo/client/react';
+import type { BarSeriesOption } from 'echarts';
+import type { EChartsCoreOption } from 'echarts/core';
 import { isEqual } from 'lodash-es';
 
+import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
+import styled from '@common/themes/styled';
 
 import type { DimensionalNodeMetricFragment } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import type { InstanceGoal } from '@/common/instance';
+import { useNumberFormatter } from '@/common/numbers';
+import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 import { DimensionalMetric, type SliceConfig } from '@/data/metric';
 
-const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
+const GraphContainer = styled.div`
+  margin: 0 auto;
+  min-width: 300px;
+  max-width: 600px;
+`;
+
+const YearLabel = styled.div`
+  font-size: 1.25rem;
+  font-weight: 700;
+`;
+
+// The unit comes from the backend as an HTML snippet (sub/superscripts),
+// which ECharts canvas text can't render — so it lives outside the chart.
+const UnitLabel = styled.div`
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.textColor.secondary};
+`;
 
 function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal | null) {
   /**
@@ -47,6 +68,79 @@ function getDefaultSliceConfig(cube: DimensionalMetric, activeGoal: InstanceGoal
   return defaultConfig;
 }
 
+type YearData = ReturnType<DimensionalMetric['getSingleYear']>;
+
+function getChartConfig(
+  yearData: YearData,
+  fallbackColor: string,
+  tooltipFormatter: ReturnType<typeof createAxisTooltipFormatter>
+): EChartsCoreOption {
+  const [rowType, colType] = yearData.categoryTypes;
+
+  const columnLabels = colType.options.map(
+    (colId) => yearData.allLabels.find((l) => l.id === colId)?.label ?? colId
+  );
+  const colTotals = colType.options.map((_, cIdx) =>
+    yearData.rows.reduce((acc, row) => acc + (row[cIdx] ?? 0), 0)
+  );
+
+  const series: BarSeriesOption[] = rowType.options.flatMap((rowId, rIdx) => {
+    const dimDetails = yearData.allLabels.find((l) => l.id === rowId);
+    const values = yearData.rows[rIdx];
+    // A category with no data in any column would only clutter the legend
+    if (values.every((v) => !v)) return [];
+    return [
+      {
+        type: 'bar',
+        name: dimDetails?.label ?? rowId,
+        stack: 'total',
+        barWidth: '50%',
+        itemStyle: { color: dimDetails?.color || fallbackColor },
+        labelLayout: { hideOverlap: true },
+        data: values.map((value, cIdx) => {
+          const portion = colTotals[cIdx] ? (value ?? 0) / colTotals[cIdx] : 0;
+          return {
+            value,
+            label: {
+              // A label for the whole (portion === 1) or an empty segment is just noise
+              show: portion > 0 && portion < 1,
+              position: 'inside' as const,
+              formatter: portion >= 0.01 ? `${Math.round(portion * 100)}%` : '<1%',
+            },
+          };
+        }),
+      },
+    ];
+  });
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: tooltipFormatter,
+    },
+    legend: {
+      type: 'plain',
+      bottom: 0,
+    },
+    grid: {
+      containLabel: true,
+      top: 20,
+      bottom: 60,
+      left: 10,
+      right: 10,
+    },
+    xAxis: {
+      type: 'category',
+      data: columnLabels,
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series,
+  };
+}
+
 type DimensionalBarGraphProps = {
   metric: NonNullable<DimensionalNodeMetricFragment['metricDim']>;
   endYear: number;
@@ -56,6 +150,7 @@ type DimensionalBarGraphProps = {
 const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const formatNumber = useNumberFormatter();
   const activeGoal = useReactiveVar(activeGoalVar);
   const cube = useMemo(() => new DimensionalMetric(metric), [metric]);
   const defaultConfig = getDefaultSliceConfig(cube, activeGoal);
@@ -73,9 +168,10 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
     setSliceConfig(newDefault);
   }, [activeGoal, cube, sliceConfig]);
 
-  const yearData = cube.getSingleYear(endYear, sliceConfig.categories);
-
-  const plotData: Partial<Plotly.PlotData>[] = [];
+  const yearData = useMemo(
+    () => cube.getSingleYear(endYear, sliceConfig.categories),
+    [cube, endYear, sliceConfig]
+  );
 
   let longUnit = metric.unit.htmlShort;
   // FIXME: Nasty hack to show 'CO2e' where it might be applicable until
@@ -88,130 +184,24 @@ const DimensionalBarGraph = ({ metric, endYear }: DimensionalBarGraphProps) => {
     }
   }
 
-  let maxTotal = 0;
-  yearData.categoryTypes[1].options.forEach((colId, cIdx) => {
-    const colTotals = yearData.rows.reduce((acc, row) => {
-      return row[cIdx] + acc;
-    }, 0);
-    // Remember the largest total for scaling the y-axis
-    if (Math.abs(colTotals) > maxTotal) {
-      maxTotal = Math.abs(colTotals);
-    }
-    yearData.categoryTypes[0].options.forEach((rowId, rIdx) => {
-      const datum = yearData.rows[rIdx][cIdx];
-      const portion = datum / colTotals;
-      const displayPortions = portion >= 0.01 ? Math.round((datum / colTotals) * 100) : '<1';
-      const textTemplate = portion && portion !== 1 && portion !== 0 ? '%{meta[0]}%' : '';
-      const dimDetails = yearData.allLabels.find((l) => l.id === rowId);
-      plotData.push({
-        type: 'bar',
-        x: [yearData.allLabels.find((l) => l.id === colId)?.label],
-        y: [datum],
-        meta: [displayPortions],
-        textposition: 'outside',
-        texttemplate: textTemplate,
-        textangle: 0,
-        name: dimDetails?.label,
-        base: datum < 0 ? [-datum] : undefined,
-        width: 0.5,
-        marker: {
-          color: dimDetails?.color || theme.graphColors.grey050,
-        },
-        showlegend: datum !== 0,
-      });
-    });
-  });
-
-  const range = [0, maxTotal * 1.25];
-
-  const layout: Partial<Plotly.Layout> = {
-    height: 400,
-    hovermode: false,
-    barmode: 'stack',
-    title: {
-      text: endYear + '',
-      font: {
-        family: theme.fontFamily,
-        size: 20,
-      },
-      xref: 'paper',
-      x: 0,
-    },
-    annotations: [
-      // Places y-axis title on top of the y-axis
-      {
-        xref: 'paper',
-        yref: 'paper',
-        yshift: 10,
-        x: 0,
-        xanchor: 'left',
-        y: 1,
-        yanchor: 'bottom',
-        text: longUnit || undefined,
-        font: {
-          family: theme.fontFamily,
-          size: 14,
-        },
-        showarrow: false,
-      },
-    ],
-    modebar: {
-      remove: [
-        'zoom2d',
-        'zoomIn2d',
-        'zoomOut2d',
-        'pan2d',
-        'select2d',
-        'lasso2d',
-        'autoScale2d',
-        'resetScale2d',
-      ],
-      color: theme.graphColors.grey090,
-      bgcolor: theme.graphColors.grey010,
-      activecolor: theme.brandDark,
-    },
-    yaxis: {
-      range: range,
-      tickfont: {
-        family: theme.fontFamily,
-      },
-    },
-    xaxis: {
-      tickfont: {
-        family: theme.fontFamily,
-      },
-    },
-    dragmode: false,
-    showlegend: true,
-    legend: {
-      orientation: 'h',
-      yanchor: 'top',
-      y: -0.2,
-      xanchor: 'right',
-      x: 1,
-      itemclick: false,
-      itemdoubleclick: false,
-    },
-  };
-
-  const plotConfig = {
-    displaylogo: false,
-    responsive: true,
-  };
+  const chartData = useMemo(
+    () =>
+      getChartConfig(
+        yearData,
+        theme.graphColors.grey050,
+        createAxisTooltipFormatter((value) =>
+          value == null ? '—' : `${formatNumber(value)} ${longUnit ?? ''}`
+        )
+      ),
+    [yearData, theme.graphColors.grey050, formatNumber, longUnit]
+  );
 
   return (
-    <>
-      <div className="mt-3">
-        <Plot
-          data={plotData}
-          layout={layout}
-          useResizeHandler
-          config={plotConfig}
-          style={{ minWidth: '300px', maxWidth: '600px' }}
-          noValidate
-        />
-      </div>
-    </>
+    <GraphContainer className="mt-3">
+      <YearLabel>{endYear}</YearLabel>
+      {!!longUnit && <UnitLabel dangerouslySetInnerHTML={{ __html: longUnit }} />}
+      <Chart isLoading={false} data={chartData} height="400px" />
+    </GraphContainer>
   );
 };
 
