@@ -32,7 +32,7 @@ Migrate one component at a time, easiest first. Each migration should:
 | 2    | `src/components/general/DimensionalBarGraph.tsx`             | ✅ Deleted (replaced by shared pie) |
 | 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ✅ Migrated                         |
 | 4    | `src/components/graphs/MacGraph.tsx`                         | ✅ Migrated                         |
-| 5    | `src/components/general/NodePlot.tsx`                        | ⬜                                  |
+| 5    | `src/components/general/NodePlot.tsx`                        | ✅ Migrated                         |
 | 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ⬜                                  |
 | 7    | `kausal_common/src/components/paths/DimensionalPieGraph.tsx` | ✅ Migrated (shared, see notes)     |
 | 8    | Final cleanup (delete `Plot.tsx`, drop deps)                 | ⬜                                  |
@@ -100,35 +100,30 @@ Notes from the migration:
 - `stripHtml` (backend HTML units → canvas axis titles) now lives in
   `chartTooltip.ts`, shared with ActionComparisonGraph.
 
-### 5. NodePlot (`src/components/general/NodePlot.tsx`)
+### 5. NodePlot (done)
 
-The most widely used: `CausalGrid`, `CausalCard`, and the action detail page
-(`(with-layout)/actions/[slug]/page.tsx`). Multi-series time-series chart:
+The most widely used: `CausalGrid`, `CausalCard`, and the action detail page.
+Now a category-axis (years) multi-series line chart via the shared `Chart`
+wrapper; all series are aligned to the year union with `null` gaps. Notes:
 
-- Historical line (spline, optional `filled` area, markers when ≤8 points).
-- Dotted 2-point join segment between last historical and first forecast
-  point (no legend, no hover).
-- Forecast line (green when the node is an action or has impact).
-- Impact band: "without action" line with `fill: 'tonexty'` up to the
-  forecast line → in ECharts, a stacked-area pair (invisible base series +
-  delta series) or two `areaStyle` series; check how the shared
-  [`NodeGraph`](../kausal_common/src/components/paths/NodeGraph.tsx) renders
-  similar bands and reuse its approach if possible.
-- Optional baseline forecast (dashed grey, gated by
-  `instance.features.baselineVisibleInGraphs`).
-- Target-year goal: horizontal dotted red line (Plotly `shape`) → `markLine`
-  (`MarkLineComponent` is registered).
-- Unified hover (`hovermode: 'x unified'`) → `tooltip.trigger: 'axis'` with
-  `createAxisTooltipFormatter`; unit HTML is fine inside the tooltip.
-- Plotly used a date x-axis padded ~Nov(startYear−1)–Feb(endYear); a category
-  axis of years (like other migrated charts) is simpler — `boundaryGap` and
-  spline smoothing (`smooth: true`) cover the visual intent.
-- The weird tiny second x-axis (`xaxis` domain `[0, 0.03]`) only created a
-  detached y-axis gutter — drop it.
-- `compact` prop: smaller height (200 vs 300), no legend, tighter margins.
-- The CSV download (`react-json-to-csv`) is pure React — keep untouched.
-- `metricToPlot` (`src/common/preprocess.ts`) is chart-library-agnostic
-  (returns `{x, y}` arrays) — keep using it.
+- The dotted historical→forecast connector and the impact band's delta series
+  are helper series named `__join` / `__impact-band`: excluded from the
+  legend via explicit `legend.data` and filtered out of the tooltip formatter
+  (which also drops series with no value at the hovered year, mimicking
+  Plotly's unified hover).
+- Impact band = forecast series doubles as stack base + a stacked delta
+  series with `areaStyle` fills up to the "without action" level; a separate
+  zero-width line carries the absolute "without action" values for
+  legend/tooltip. Its legend label changed from "action impact" to "without
+  this action" (`plot-without-action`) — clearer, since that's what the line
+  is.
+- Goal: `markLine` (dotted red) + a single-point series at the target year
+  for the legend entry.
+- Plotly's date x-axis with Nov/Feb padding became a plain year category
+  axis (`boundaryGap: false`); the vestigial second x-axis is gone.
+- `rangemode: 'tozero'` for emissions → `yAxis.scale = quantity !==
+'emissions'`.
+- CSV download and `metricToPlot` untouched, as planned.
 
 ### 6. DimensionalFlow (`src/components/graphs/DimensionalFlow.tsx`)
 

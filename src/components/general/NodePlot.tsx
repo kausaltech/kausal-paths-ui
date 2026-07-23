@@ -1,26 +1,44 @@
-import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
 
-import type Plotly from 'plotly.js';
+import type { LineSeriesOption } from 'echarts';
+import type { EChartsCoreOption } from 'echarts/core';
 import { tint, transparentize } from 'polished';
 // @ts-expect-error - No types available for react-json-to-csv
 import CsvDownload from 'react-json-to-csv';
 
+import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { metricToPlot } from '@/common/preprocess';
+import { createAxisTooltipFormatter, stripHtml } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 import { useSite } from '@/context/site';
 import type { CausalGridNode } from './CausalGrid';
 
-const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
+// Helper series that must not appear in the legend or the tooltip
+const JOIN_SERIES = '__join';
+
+// Legend icon drawing a dashed horizontal line (three filled dashes), for
+// symbol-less dashed series where ECharts would otherwise show a filled circle
+const DASHED_LINE_ICON = 'path://M0,0 h8 v4 h-8 z M12,0 h8 v4 h-8 z M24,0 h8 v4 h-8 z';
+
+// Stable identity so hook dependencies don't churn when there's no data
+const EMPTY_PLOT: { x: number[]; y: number[] } = { x: [], y: [] };
 
 const PlotWrapper = styled.div<{ $compact?: boolean }>`
   margin: 0 auto;
+  padding: 1em 0.5rem;
   max-width: ${(props) => (props.$compact ? '480px' : '100%')};
   overflow-x: auto;
+  background-color: ${({ theme }) => theme.themeColors.white};
+
+  > div {
+    min-width: ${(props) => (props.$compact ? '320px' : '600px')};
+  }
 `;
 
 const Tools = styled.div`
@@ -69,43 +87,38 @@ const NodePlot = (props: NodePlotProps) => {
   const instance = useInstance();
   const theme = useTheme();
   const site = useSite();
+  const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
 
-  const systemFont =
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif';
   const plotColor = color || theme.graphColors.blue070;
-  const shapes: Partial<Plotly.Shape>[] = [];
-  const plotData: Partial<Plotly.PlotData>[] = [];
-  const rangeMode = quantity === 'emissions' ? 'tozero' : 'normal';
 
-  const formatHover = (name: string, color: string) => {
-    const out = {
-      hovertemplate: `${name}<br /><b>%{y:.3r}</b> ${metric?.unit?.htmlShort}<extra></extra>`,
-      hoverlabel: {
-        bgcolor: color,
-        font: {
-          family: systemFont,
-        },
-      },
-    };
-    return out;
-  };
-
-  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length) return null;
-
-  const hasImpact =
+  const hasImpact = Boolean(
     impactMetric?.forecastValues.length &&
-    impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0);
+    impactMetric.forecastValues.find((dataPoint) => dataPoint.value !== 0)
+  );
+  const scenarioPlotColor =
+    hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
 
-  const baselineForecast = metricToPlot(metric, 'baselineForecastValues', startYear, endYear);
+  const baselineForecast = metric
+    ? metricToPlot(metric, 'baselineForecastValues', startYear, endYear)
+    : EMPTY_PLOT;
+  const historical = metric
+    ? metricToPlot(metric, 'historicalValues', startYear, endYear)
+    : EMPTY_PLOT;
+  const forecast = metric ? metricToPlot(metric, 'forecastValues', startYear, endYear) : EMPTY_PLOT;
+  const impactHistorical =
+    hasImpact && impactMetric
+      ? metricToPlot(impactMetric, 'historicalValues', startYear, endYear)
+      : null;
+  const impactForecast =
+    hasImpact && impactMetric
+      ? metricToPlot(impactMetric, 'forecastValues', startYear, endYear)
+      : null;
 
-  const historical = metricToPlot(metric, 'historicalValues', startYear, endYear);
-  const forecast = metricToPlot(metric, 'forecastValues', startYear, endYear);
-  const impactHistorical = hasImpact
-    ? metricToPlot(impactMetric, 'historicalValues', startYear, endYear)
-    : null;
-  const impactForecast = hasImpact
-    ? metricToPlot(impactMetric, 'forecastValues', startYear, endYear)
-    : null;
+  const baselineName = site.baselineName;
+  const showBaseline = !isAction && !!baselineName && instance.features.baselineVisibleInGraphs;
+  const showGoal = !compact && targetYearGoal != null;
+  const targetName = `${t('target')} ${targetYear}`;
 
   // create downloadable table
   const tableColumns = [
@@ -134,258 +147,296 @@ const NodePlot = (props: NodePlotProps) => {
 
   const downloadableTable = downloadableHistorical.concat(downloadableForecast);
 
-  const filledStyles: Partial<Plotly.PlotData> = filled
-    ? {
-        fill: 'tozeroy',
-        marker: { opacity: 0 },
-        line: {
-          color: 'white',
-          width: 1,
-          dash: 'solid',
-          shape: 'spline',
-        } satisfies Partial<Plotly.ScatterLine>,
-      }
-    : {};
+  const chartData: EChartsCoreOption = useMemo(() => {
+    // The full requested range, like Plotly's explicit axis range — the axis
+    // shows all years even when the data covers only part of them
+    const years: number[] = [];
+    for (let year = startYear; year <= endYear; year++) {
+      years.push(year);
+    }
+    const yearIndex = new Map(years.map((year, i) => [year, i]));
 
-  plotData.push({
-    x: historical.x,
-    y: historical.y,
-    xaxis: 'x2',
-    yaxis: 'y1',
-    marker: { size: 8 },
-    name: t('plot-actualized'),
-    type: 'scatter',
-    mode: historical.x.length > 8 ? 'lines' : 'lines+markers',
-    line: {
+    const align = (xs: number[], ys: (number | null)[]) => {
+      const values: (number | null)[] = years.map(() => null);
+      xs.forEach((year, i) => {
+        const idx = yearIndex.get(year);
+        if (idx != null) values[idx] = ys[i];
+      });
+      return values;
+    };
+
+    // The impact band's legend/series name and fill color
+    const bandName = t('plot-action-impact');
+    const bandColor = transparentize(0.85, scenarioPlotColor);
+
+    // Fill styles for the `filled` variant: solid area, thin white line
+    const filledStyles: Partial<LineSeriesOption> = filled
+      ? {
+          areaStyle: { opacity: 1 },
+          lineStyle: { color: theme.themeColors.white, width: 1 },
+          showSymbol: false,
+        }
+      : {};
+
+    const series: LineSeriesOption[] = [];
+
+    series.push({
+      type: 'line',
+      name: t('plot-actualized'),
+      data: align(historical.x, historical.y),
       color: plotColor,
-      shape: 'spline',
-      width: 3,
-    } satisfies Partial<Plotly.ScatterLine>,
-    fillcolor: plotColor,
-    // @ts-expect-error ¿qué?
-    smoothing: true,
-    ...filledStyles,
-    ...formatHover(t('plot-actualized'), plotColor),
-  });
+      smooth: true,
+      lineStyle: { width: 3 },
+      showSymbol: historical.x.length <= 8,
+      symbolSize: 8,
+      ...filledStyles,
+      // Horizontal dotted goal line spanning the whole plot
+      markLine: showGoal
+        ? {
+            silent: true,
+            symbol: 'none',
+            label: { show: false },
+            lineStyle: {
+              color: theme.graphColors.red070,
+              width: 2,
+              type: 'dotted',
+            },
+            data: [{ yAxis: targetYearGoal }],
+          }
+        : undefined,
+    });
 
-  const scenarioPlotColor =
-    hasImpact || isAction ? theme.graphColors.green050 : tint(0.3, plotColor);
-  // Two-entry trace to join historical and scenario together
-  if (historical?.x && forecast?.x) {
-    const joinTrace: Partial<Plotly.PlotData> = {
-      x: [historical.x[historical.x.length - 1], forecast.x[0]],
-      y: [historical.y[historical.y.length - 1], forecast.y[0]],
-      xaxis: 'x2',
-      yaxis: 'y1',
-      marker: { size: 8 },
-      name: t('plot-scenario'),
-      type: 'scatter',
-      line: {
+    // Dotted two-point connector between the last historical and the first
+    // forecast point; hidden from the legend and the tooltip.
+    const lastHistYear = historical.x[historical.x.length - 1];
+    const firstForecastYear = forecast.x[0];
+    if (lastHistYear != null && firstForecastYear != null) {
+      series.push({
+        type: 'line',
+        name: JOIN_SERIES,
+        data: align(
+          [lastHistYear, firstForecastYear],
+          [historical.y[historical.y.length - 1], forecast.y[0]]
+        ),
         color: scenarioPlotColor,
-        width: 3,
-        dash: 'dot',
-      },
-      mode: 'lines',
-      hoverinfo: 'skip',
-      showlegend: false,
-      fillcolor: scenarioPlotColor,
+        lineStyle: { width: 3, type: 'dotted' },
+        showSymbol: false,
+        ...(filled ? { areaStyle: { color: scenarioPlotColor, opacity: 1 } } : {}),
+      });
+    }
+
+    const forecastSeries: LineSeriesOption = {
+      type: 'line',
+      name: t('plot-scenario'),
+      data: align(forecast.x, forecast.y),
+      color: scenarioPlotColor,
+      smooth: true,
+      lineStyle: { width: 3 },
+      showSymbol: forecast.x.length <= 8,
+      symbolSize: 8,
       ...filledStyles,
     };
-    plotData.push(joinTrace);
-  }
 
-  plotData.push({
-    x: forecast.x,
-    y: forecast.y,
-    xaxis: 'x2',
-    yaxis: 'y1',
-    marker: { size: 8 },
-    mode: forecast.x.length > 8 ? 'lines' : 'lines+markers',
-    name: t('plot-scenario'),
-    type: 'scatter',
-    line: {
-      color: scenarioPlotColor,
-      shape: 'spline',
-      width: 3,
-    } satisfies Partial<Plotly.ScatterLine>,
-    // @ts-expect-error - Plotly types are not up to date
-    smoothing: true,
-    fillcolor: scenarioPlotColor,
-    ...filledStyles,
-    ...formatHover(t('plot-scenario'), scenarioPlotColor),
-  });
+    if (hasImpact && impactMetric) {
+      // The impact band shows the difference between the forecast with and
+      // without this action: the forecast series doubles as the stack base
+      // and a delta series fills the area up to the "without action" level.
+      // The delta usually has the opposite sign of the forecast, so the
+      // default 'samesign' strategy would start a separate stack at zero —
+      // 'all' stacks it onto the forecast regardless of sign.
+      forecastSeries.stack = 'impact-band';
+      forecastSeries.stackStrategy = 'all';
 
-  if (hasImpact) {
-    const impact = metricToPlot(metric, 'forecastValues', startYear, endYear);
+      const withoutActionY = isAction
+        ? // An action's visualised impact without this action applied is always the value of the most recent actualised datapoint or zero
+          new Array<number>(forecast.y.length).fill(
+            historical.y.length ? historical.y[historical.y.length - 1] : 0
+          )
+        : forecast.y.map((dataPoint, index) => {
+            if (impactMetric.forecastValues.length > index) {
+              return dataPoint - impactMetric.forecastValues[index].value;
+            }
+            return dataPoint;
+          });
 
-    const withoutActionY = isAction
-      ? // An action's visualised impact without this action applied is always the value of the most recent actualised datapoint or zero
-        new Array(impact.y.length).fill(
-          historical.y.length ? historical.y[historical.y.length - 1] : 0
-        )
-      : impact.y.map((dataPoint, index) => {
-          if (impactMetric.forecastValues.length > index) {
-            return dataPoint - impactMetric.forecastValues[index].value;
-          }
+      series.push(forecastSeries);
 
-          return dataPoint;
-        });
-
-    plotData.push({
-      x: impact.x,
-      y: withoutActionY,
-      xaxis: 'x2',
-      yaxis: 'y1',
-      mode: 'lines',
-      name: t('plot-action-impact'),
-      type: 'scatter',
-      fill: 'tonexty',
-      fillcolor: transparentize(0.85, scenarioPlotColor),
-      line: { width: 0 },
-      ...formatHover(t('plot-without-action'), tint(0.45, scenarioPlotColor)),
-    });
-  }
-
-  if (!isAction && site.baselineName && instance.features.baselineVisibleInGraphs) {
-    plotData.push({
-      x: baselineForecast.x,
-      y: baselineForecast.y,
-      xaxis: 'x2',
-      yaxis: 'y1',
-      mode: 'lines',
-      name: site.baselineName,
-      type: 'scatter',
-      line: {
-        color: theme.graphColors.grey060,
-        shape: 'spline',
-        width: 2,
-        dash: 'dash',
-      },
-      ...formatHover(site.baselineName, theme.graphColors.grey030),
-    });
-  }
-
-  if (!compact && targetYearGoal) {
-    shapes.push({
-      type: 'line',
-      yref: 'y',
-      x0: Date.parse(`Nov 1, ${startYear - 1}`),
-      y0: targetYearGoal,
-      x1: Date.parse(`Feb 1, ${endYear}`),
-      y1: targetYearGoal,
-      line: {
-        color: theme.graphColors.red070,
-        width: 2,
-        dash: 'dot',
-      },
-    });
-    plotData.push({
-      x: [endYear],
-      y: [targetYearGoal],
-      type: 'scatter',
-      xaxis: 'x2',
-      yaxis: 'y',
-      name: `${t('target')} ${targetYear}`,
-      line: {
-        color: theme.graphColors.red070,
-        width: 2,
-        dash: 'dot',
-      },
-    });
-  }
-  const layout: Partial<Plotly.Layout> = {
-    height: compact ? 200 : 300,
-    margin: compact
-      ? {
-          t: 24,
-          r: 0,
-          b: 0,
-          l: 42,
-        }
-      : {
-          t: 24,
-          r: 24,
-          b: 48,
-          l: 12,
+      // The band series is named for its legend entry ("Action impact" with
+      // a colored box), but its values are deltas, so it stays hidden from
+      // the tooltip — the "without action" series below carries the readable
+      // absolute values there.
+      series.push({
+        type: 'line',
+        name: bandName,
+        stack: 'impact-band',
+        stackStrategy: 'all',
+        data: align(
+          forecast.x,
+          withoutActionY.map((value, i) => value - forecast.y[i])
+        ),
+        color: bandColor,
+        lineStyle: { width: 0 },
+        showSymbol: false,
+        silent: true,
+        areaStyle: {
+          color: bandColor,
+          opacity: 1,
         },
-    xaxis: {
-      domain: [0, 0.03],
-      anchor: 'y',
-      nticks: 1,
-      ticklen: 10,
-    },
-    yaxis: {
-      domain: [0, 1],
-      anchor: 'x',
-      ticklen: 10,
-      gridcolor: theme.graphColors.grey005,
-      tickcolor: theme.graphColors.grey030,
-      title: {
-        text: metric?.unit?.htmlShort,
+      });
+
+      // Invisible line carrying the absolute "without action" values for the
+      // tooltip (not shown in the legend).
+      series.push({
+        type: 'line',
+        name: t('plot-without-action'),
+        data: align(forecast.x, withoutActionY),
+        color: tint(0.45, scenarioPlotColor),
+        lineStyle: { width: 0 },
+        showSymbol: false,
+      });
+    } else {
+      series.push(forecastSeries);
+    }
+
+    if (showBaseline) {
+      series.push({
+        type: 'line',
+        name: baselineName,
+        data: align(baselineForecast.x, baselineForecast.y),
+        color: theme.graphColors.grey060,
+        smooth: true,
+        lineStyle: { width: 2, type: 'dashed' },
+        // 'none' (rather than showSymbol: false) also removes the round
+        // marker from the legend entry
+        symbol: 'none',
+      });
+    }
+
+    // Single point at the target year, mainly to get a legend entry for the
+    // goal line
+    if (showGoal && yearIndex.has(endYear)) {
+      series.push({
+        type: 'line',
+        name: targetName,
+        data: align([endYear], [targetYearGoal]),
+        color: theme.graphColors.red070,
+        lineStyle: { width: 2, type: 'dotted' },
+        symbolSize: 8,
+      });
+    }
+
+    const legendItems = [
+      t('plot-actualized'),
+      t('plot-scenario'),
+      // Colored box marking the impact band
+      ...(hasImpact ? [{ name: bandName, icon: 'rect' }] : []),
+      ...(showBaseline ? [{ name: baselineName, icon: DASHED_LINE_ICON }] : []),
+      ...(showGoal ? [targetName] : []),
+    ];
+
+    const baseFormatter = createAxisTooltipFormatter((value) =>
+      value == null ? '—' : `${formatNumber(value)} ${metric?.unit?.htmlShort ?? ''}`
+    );
+
+    return {
+      backgroundColor: theme.themeColors.white,
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: unknown) => {
+          // Hide helper series and series without data at the hovered year
+          const list: unknown[] = Array.isArray(params) ? params : [params];
+          const items = list.filter((p) => {
+            const { seriesName, value } = p as { seriesName?: string; value?: unknown };
+            if (seriesName === JOIN_SERIES || seriesName === bandName) return false;
+            return value != null;
+          });
+          if (items.length === 0) return '';
+          return baseFormatter(items as Parameters<typeof baseFormatter>[0]);
+        },
       },
-      rangemode: rangeMode,
-    },
-    xaxis2: {
-      domain: [0.075, 1],
-      anchor: 'y2',
-      ticklen: 10,
-      type: 'date',
-      nticks: compact ? 10 : 20,
-      // dtick: nrYears > 15 ? 'M24' : 'M12',
-      range: [Date.parse(`Nov 1, ${startYear - 1}`), Date.parse(`Feb 1, ${endYear}`)],
-      gridcolor: theme.graphColors.grey005,
-      tickcolor: theme.graphColors.grey030,
-      hoverformat: '<b>%Y</b>',
-    },
-    yaxis2: {
-      domain: [0, 1],
-      anchor: 'x2',
-    },
-    hovermode: 'x unified',
-    hoverlabel: {
-      bgcolor: 'white',
-    },
-    autosize: true,
-    font: {
-      family: systemFont,
-    },
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    showlegend: compact ? false : true,
-    legend: {
-      orientation: 'h',
-      yanchor: 'top',
-      y: -0.2,
-      xanchor: 'right',
-      x: 1,
-    },
-    grid: { rows: 1, columns: 2, pattern: 'independent' },
-    shapes,
-  };
+      grid: {
+        containLabel: true,
+        top: 24,
+        left: 10,
+        right: 15,
+        bottom: compact ? 10 : 40,
+      },
+      legend: {
+        show: !compact,
+        type: 'plain',
+        bottom: 0,
+        data: legendItems,
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: years.map(String),
+      },
+      yAxis: {
+        type: 'value',
+        name: stripHtml(metric?.unit?.htmlShort ?? ''),
+        axisLabel: {
+          formatter: (value: number) => formatAxisLabel(value),
+        },
+        // Fewer, coarser ticks (the default hint of 5 often rounds down to a
+        // small interval and produces ~10 labels)
+        splitNumber: compact ? 3 : 4,
+        // Plotly's rangemode: emissions are clamped to zero, other quantities
+        // may float
+        scale: quantity !== 'emissions',
+      },
+      series,
+    };
+  }, [
+    historical,
+    forecast,
+    baselineForecast,
+    impactMetric,
+    hasImpact,
+    isAction,
+    filled,
+    compact,
+    quantity,
+    showBaseline,
+    showGoal,
+    targetYearGoal,
+    targetName,
+    startYear,
+    endYear,
+    plotColor,
+    scenarioPlotColor,
+    metric?.unit?.htmlShort,
+    baselineName,
+    formatNumber,
+    formatAxisLabel,
+    t,
+    theme,
+  ]);
+
+  if (!metric?.historicalValues?.length && !metric?.forecastValues?.length) return null;
 
   return (
     <>
       <PlotWrapper $compact={compact} aria-hidden="true">
-        <Plot
-          data={plotData}
-          layout={layout}
-          useResizeHandler
-          style={{ minWidth: compact ? '320px' : '600px', width: '100%' }}
-          config={{ displayModeBar: false }}
-          noValidate
+        <Chart
+          isLoading={false}
+          data={chartData}
+          height={compact ? '200px' : '300px'}
+          withResizeLegend={!compact}
         />
+        {!compact && (
+          <Tools>
+            <CsvDownload
+              data={downloadableTable}
+              filename={`${metric?.id}.csv`}
+              className="btn btn-link btn-sm"
+            >
+              <Icon name="download" />
+              {` ${t('download-data')} (.csv)`}
+            </CsvDownload>
+          </Tools>
+        )}
       </PlotWrapper>
-      {!compact && (
-        <Tools>
-          <CsvDownload
-            data={downloadableTable}
-            filename={`${metric?.id}.csv`}
-            className="btn btn-link btn-sm"
-          >
-            <Icon name="download" />
-            {` ${t('download-data')} (.csv)`}
-          </CsvDownload>
-        </Tools>
-      )}
     </>
   );
 };
