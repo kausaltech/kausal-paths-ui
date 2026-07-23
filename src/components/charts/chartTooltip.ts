@@ -13,7 +13,15 @@ export function truncateLabel(label: string, max = MAX_TOOLTIP_LABEL_LENGTH): st
  * can be used in canvas-rendered text like axis titles.
  */
 export function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '');
+  // Strip repeatedly: a single pass can splice new tags together
+  // (e.g. `<<b>script>` → `<script>`), which CodeQL rightly flags.
+  let out = html;
+  let prev: string;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev);
+  return out;
 }
 
 // Minimal view of the per-series params ECharts passes to an axis-trigger tooltip
