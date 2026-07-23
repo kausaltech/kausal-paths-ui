@@ -31,7 +31,7 @@ Migrate one component at a time, easiest first. Each migration should:
 | 1    | `src/components/general/BarGraph.tsx`                        | ✅ Deleted (was unused)             |
 | 2    | `src/components/general/DimensionalBarGraph.tsx`             | ✅ Deleted (replaced by shared pie) |
 | 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ✅ Migrated                         |
-| 4    | `src/components/graphs/MacGraph.tsx`                         | ⬜                                  |
+| 4    | `src/components/graphs/MacGraph.tsx`                         | ✅ Migrated                         |
 | 5    | `src/components/general/NodePlot.tsx`                        | ⬜                                  |
 | 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ⬜                                  |
 | 7    | `kausal_common/src/components/paths/DimensionalPieGraph.tsx` | ✅ Migrated (shared, see notes)     |
@@ -76,25 +76,29 @@ un-gated from `hasEfficiency`). Notes from the migration:
   instead of Plotly's `.3r`.
 - Per-bar colors/white borders map to per-datum `itemStyle`.
 
-### 4. MacGraph (`src/components/graphs/MacGraph.tsx`)
+### 4. MacGraph (done)
 
 Used by `src/components/general/EfficiencyGraph.tsx`. A MAC curve: bars with
-**per-bar variable widths** (width = impact, height = efficiency, bars laid
-end-to-end along a linear x-axis via the computed `xPlacement` midpoints).
+per-bar variable widths (width = impact, height = efficiency), now a `custom`
+series whose data is `[xStart, xEnd, efficiency]` with a rect `renderItem`.
+Notes from the migration:
 
-- ECharts' `bar` series cannot do per-datum widths → use a `custom` series
-  (`CustomChart` is already registered in `Chart.tsx`). Give each datum
-  `[xStart, xEnd, efficiency]` and a `renderItem` that returns a rect from
-  those coordinates; keep a linear `value` x-axis with the unit ticksuffix.
-- The running-total placement logic (`xPlacement`, `negativeSideWidth`)
-  carries over unchanged; only the rendering changes.
-- The red negative-side backdrop (Plotly `shapes`) becomes a `markArea` (or a
-  second custom-series rect) spanning `x < 0`.
-- Same hover→detail-panel pattern as ActionComparisonGraph (do that one first
-  and reuse the wrapper event support). Hover highlight (per-bar border color/
-  width) maps to `emphasis.itemStyle` on the custom series.
-- The old CSS hack hiding `.hoverlayer .axistext` (internal xPlacement values
-  leaking into the hover callout) becomes unnecessary — delete it.
+- `AxisPointerComponent` was added to the shared `Chart.tsx` registration —
+  needed for a standalone axis pointer when the tooltip is item-trigger.
+- Hover → detail panel: the x-axis has an always-on axis pointer
+  (`label: {show: false}` replaces the old CSS hack that hid Plotly's
+  meaningless x-callout), and `updateAxisPointer` maps the pointer's x to a
+  bar's `[start, end]` range — Plotly's `hovermode: 'x'` equivalent, works
+  even above/below bars.
+- The hovered bar's darker border uses native emphasis (`styleEmphasis` in
+  `renderItem`) and only triggers when hovering the bar itself — slightly
+  narrower than the old React-state-driven border, but avoids a full
+  `setOption` per hover. Verify visually along with the `markArea`/`markLine`
+  negative-side backdrop (both attached to the custom series).
+- `api.style()` is deprecated in ECharts 6 — the rect style (per-action fill,
+  white borders) is built explicitly in `renderItem` instead.
+- `stripHtml` (backend HTML units → canvas axis titles) now lives in
+  `chartTooltip.ts`, shared with ActionComparisonGraph.
 
 ### 5. NodePlot (`src/components/general/NodePlot.tsx`)
 

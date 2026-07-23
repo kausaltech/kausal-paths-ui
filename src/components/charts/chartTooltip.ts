@@ -8,6 +8,14 @@ export function truncateLabel(label: string, max = MAX_TOOLTIP_LABEL_LENGTH): st
   return label.length > max ? `${label.slice(0, max - 1)}…` : label;
 }
 
+/**
+ * Strip HTML tags, e.g. from backend HTML units (`unit.htmlShort`) so they
+ * can be used in canvas-rendered text like axis titles.
+ */
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '');
+}
+
 // Minimal view of the per-series params ECharts passes to an axis-trigger tooltip
 // formatter. Typed loosely because the public CallbackDataParams omits the
 // axis/dataset fields we read here.

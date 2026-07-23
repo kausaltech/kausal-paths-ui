@@ -12,7 +12,7 @@ import styled from '@common/themes/styled';
 
 import { Link } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
-import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
+import { createAxisTooltipFormatter, stripHtml } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 
 const GraphContainer = styled.div`
@@ -82,7 +82,7 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
   const chartData: EChartsCoreOption = useMemo(() => {
     // The unit arrives as an HTML snippet (sub/superscripts); axis titles are
     // canvas text, so strip the markup there (the tooltip below keeps it).
-    const plainUnit = (effectUnit ?? '').replace(/<[^>]*>/g, '');
+    const plainUnit = stripHtml(effectUnit ?? '');
     const series: BarSeriesOption = {
       type: 'bar',
       name: impactName,
