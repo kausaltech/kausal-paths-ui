@@ -11,7 +11,7 @@ import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import { Link } from '@/common/links';
-import { useNumberFormatter } from '@/common/numbers';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { createAxisTooltipFormatter, stripHtml } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 
@@ -72,6 +72,7 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
   const theme = useTheme();
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
 
   const [hoverId, setHoverId] = useState<number | null>(null);
 
@@ -126,10 +127,13 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
         name: `${impactName} (${plainUnit})`,
         nameLocation: 'middle',
         nameGap: 45,
+        axisLabel: {
+          formatter: (value: number) => formatAxisLabel(value),
+        },
       },
       series: [series],
     };
-  }, [data, effectUnit, impactName, formatNumber, t, theme]);
+  }, [data, effectUnit, impactName, formatNumber, formatAxisLabel, t, theme]);
 
   // Fires when the axis pointer moves to another category, so hovering
   // anywhere in a column selects the action — even when its bar is tiny.
