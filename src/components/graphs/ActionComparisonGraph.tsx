@@ -1,23 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
 
 import { Grid } from '@mui/material';
 
+import type { BarSeriesOption } from 'echarts';
+import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';
 
+import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import { Link } from '@/common/links';
 import { useNumberFormatter } from '@/common/numbers';
+import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 
-const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
-
 const GraphContainer = styled.div`
-  .js-plotly-plot {
-    margin-bottom: 1rem;
-  }
+  margin-bottom: 1rem;
 `;
 
 const ActionDescription = styled.div`
@@ -80,92 +79,85 @@ function ActionComparisonGraph(props: ActionComparisonGraphProps) {
     setHoverId(null);
   }, [data]);
 
-  const layout = useMemo(
-    () => ({
-      height: 300,
-      barmode: 'relative' as const,
-      hoverlabel: {
-        bgcolor: theme.themeColors.white,
-        bordercolor: theme.graphColors.grey030,
-        font: {
-          family: theme.fontFamily,
-          color: theme.graphColors.grey090,
+  const chartData: EChartsCoreOption = useMemo(() => {
+    // The unit arrives as an HTML snippet (sub/superscripts); axis titles are
+    // canvas text, so strip the markup there (the tooltip below keeps it).
+    const plainUnit = (effectUnit ?? '').replace(/<[^>]*>/g, '');
+    const series: BarSeriesOption = {
+      type: 'bar',
+      name: impactName,
+      data: data.impact.map((value, i) => ({
+        value,
+        itemStyle: {
+          color: data.colors[i] ?? theme.graphColors.grey050,
+          opacity: 0.9,
+          borderColor: theme.themeColors.white,
+          borderWidth: 2,
         },
-      },
-      hovermode: 'x unified' as const,
-      hoverdistance: 10,
-      yaxis: {
-        title: {
-          text: `${impactName} (${effectUnit})`,
-        },
-      },
-      xaxis: {
-        title: {
-          text: t('actions'),
-        },
-        showgrid: true,
-        showticklabels: false,
-      },
-      margin: {
-        l: 50,
-        r: 0,
-        b: 60,
-        t: 10,
-        pad: 0,
-      },
-      paper_bgcolor: theme.themeColors.white,
-      plot_bgcolor: theme.themeColors.white,
-    }),
-    [theme, effectUnit, impactName, t]
-  );
+      })),
+    };
 
-  const handleHover = useCallback(
-    (evt: { points: { pointIndex: number }[] }) => {
-      const hoveredIndex = evt.points[0].pointIndex;
-      setHoverId(hoveredIndex);
-      return null;
+    return {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: createAxisTooltipFormatter((value) =>
+          value == null ? '—' : `${formatNumber(value)} ${effectUnit ?? ''}`
+        ),
+      },
+      grid: {
+        containLabel: true,
+        left: 10,
+        right: 10,
+        top: 10,
+        bottom: 10,
+      },
+      xAxis: {
+        type: 'category',
+        data: data.actions,
+        name: t('actions'),
+        nameLocation: 'middle',
+        nameGap: 16,
+        axisLabel: { show: false },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: 'value',
+        name: `${impactName} (${plainUnit})`,
+        nameLocation: 'middle',
+        nameGap: 45,
+      },
+      series: [series],
+    };
+  }, [data, effectUnit, impactName, formatNumber, t, theme]);
+
+  // Fires when the axis pointer moves to another category, so hovering
+  // anywhere in a column selects the action — even when its bar is tiny.
+  const handleAxisPointer = useCallback(
+    (params: unknown) => {
+      const axesInfo = (params as { axesInfo?: { value?: unknown }[] }).axesInfo;
+      const value = axesInfo?.[0]?.value;
+      if (typeof value !== 'number') return;
+      const index = Math.round(value);
+      if (index >= 0 && index < data.actions.length) {
+        setHoverId(index);
+      }
     },
-    [setHoverId]
+    [data.actions.length]
   );
-
-  const plot = useMemo(
-    () => (
-      <Plot
-        data={[
-          {
-            type: 'bar',
-            x: data.actions,
-            y: data.impact,
-            text: data.actions,
-            name: impactName,
-            marker: {
-              color: data.colors,
-              opacity: 0.9,
-              line: {
-                color: theme.themeColors.white,
-                width: 2,
-              },
-            },
-            textposition: 'none',
-            customdata: data.impact,
-            hovertemplate: `%{y:.3r} ${effectUnit}`,
-          },
-        ]}
-        layout={layout}
-        useResizeHandler
-        style={{ width: '100%' }}
-        config={{ displayModeBar: false }}
-        onHover={(evt) => handleHover(evt)}
-      />
-    ),
-    [data, theme, layout, handleHover, effectUnit, impactName]
-  );
+  const onEvents = useMemo(() => ({ updateAxisPointer: handleAxisPointer }), [handleAxisPointer]);
 
   if (data.actions?.length < 1) return null;
 
   return (
     <GraphContainer>
-      {plot}
+      <Chart
+        isLoading={false}
+        data={chartData}
+        height="300px"
+        withResizeLegend={false}
+        onEvents={onEvents}
+      />
       {hoverId !== null && (
         <ActionDescription color={data.colors[hoverId] ?? undefined}>
           <Link href={`/actions/${actionIds[hoverId]}/`}>

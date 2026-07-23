@@ -30,7 +30,7 @@ Migrate one component at a time, easiest first. Each migration should:
 | ---- | ------------------------------------------------------------ | ----------------------------------- |
 | 1    | `src/components/general/BarGraph.tsx`                        | ✅ Deleted (was unused)             |
 | 2    | `src/components/general/DimensionalBarGraph.tsx`             | ✅ Deleted (replaced by shared pie) |
-| 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ⬜                                  |
+| 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ✅ Migrated                         |
 | 4    | `src/components/graphs/MacGraph.tsx`                         | ⬜                                  |
 | 5    | `src/components/general/NodePlot.tsx`                        | ⬜                                  |
 | 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ⬜                                  |
@@ -57,22 +57,24 @@ replacement:
 
 ## Remaining components
 
-### 3. ActionComparisonGraph (`src/components/graphs/ActionComparisonGraph.tsx`)
+### 3. ActionComparisonGraph (done)
 
-Used by `src/components/general/ActionsComparison.tsx`. A `barmode: 'relative'`
-bar chart of action impacts where hovering a bar populates a React detail
-panel (`ActionDescription`) below the chart.
+Used by `src/components/general/ActionsComparison.tsx` (the default graph on
+the actions page; reachable on all instances since the graph view was
+un-gated from `hasEfficiency`). Notes from the migration:
 
-- Replace Plotly `onHover` with the ECharts `mouseover` event on the chart
-  instance. The `Chart` wrapper currently exposes only `onZrClick` and a
-  `ChartHandle` ref with `getDataURL` — either extend the wrapper with a
-  generic event prop (e.g. `onMouseOver`) or extend `ChartHandle` to expose
-  the instance for event binding. Extending the wrapper benefits MacGraph too.
-- Keep the detail-panel React code as-is; only the hovered index changes
-  source.
-- Tooltip labels use `truncateLabel` from `chartTooltip.ts` (MacGraph already
-  imports it).
-- Remove the `.js-plotly-plot` selector from its styled `GraphContainer`.
+- The shared `Chart` wrapper gained a generic `onEvents` prop
+  (`Record<eventName, handler>`), bound once at chart init through a ref —
+  handler identity changes don't re-init the chart, but the set of event
+  names must stay stable. MacGraph should reuse this.
+- Hover → detail panel now uses the `updateAxisPointer` event (axis-pointer
+  category index) instead of Plotly's `onHover`: hovering anywhere in a
+  column selects the action, even when its bar is tiny. The panel itself is
+  unchanged.
+- Axis titles are canvas text, so the y-axis unit strips the HTML markup;
+  the tooltip (DOM) keeps the HTML unit, formatted via `useNumberFormatter`
+  instead of Plotly's `.3r`.
+- Per-bar colors/white borders map to per-datum `itemStyle`.
 
 ### 4. MacGraph (`src/components/graphs/MacGraph.tsx`)
 

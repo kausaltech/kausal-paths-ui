@@ -68,7 +68,7 @@ const ActionsComparison = ({
     impact: sortedActions.map((action) => action.impact),
   };
 
-  const metricName = sortedActions[0].impactMetric?.name;
+  const metricName = sortedActions[0]?.impactMetric?.name;
   // FIXME: Running impact metric name through translation as a quickfix until they are translated in the backend
   const translatedMetricName = t.has(metricName as Parameters<TFunction>[0])
     ? t(metricName as Parameters<TFunction>[0])
