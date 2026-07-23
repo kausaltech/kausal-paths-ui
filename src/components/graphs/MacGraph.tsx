@@ -143,7 +143,8 @@ function MacGraph(props: MacGraphProps) {
           height: Math.abs(bottomRight[1] - topLeft[1]),
         },
         style: {
-          fill: data.colors[params.dataIndex] ?? theme.graphColors.grey050,
+          // `||` rather than `??`: actions without an own or group color get ''
+          fill: data.colors[params.dataIndex] || theme.graphColors.grey050,
           stroke: theme.themeColors.white,
           lineWidth: 2,
           opacity: 0.9,
@@ -299,7 +300,7 @@ function MacGraph(props: MacGraphProps) {
       {hoverId !== null && (
         <ActionDescription>
           <Link href={`/actions/${actionIds[hoverId]}/`}>
-            <HoverGroupTag color={data.colors[hoverId]}>
+            <HoverGroupTag color={data.colors[hoverId] || theme.graphColors.grey050}>
               {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>
