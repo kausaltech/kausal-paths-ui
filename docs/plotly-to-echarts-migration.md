@@ -33,9 +33,9 @@ Migrate one component at a time, easiest first. Each migration should:
 | 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ✅ Migrated                         |
 | 4    | `src/components/graphs/MacGraph.tsx`                         | ✅ Migrated                         |
 | 5    | `src/components/general/NodePlot.tsx`                        | ✅ Migrated                         |
-| 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ⬜                                  |
+| 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ✅ Migrated                         |
 | 7    | `kausal_common/src/components/paths/DimensionalPieGraph.tsx` | ✅ Migrated (shared, see notes)     |
-| 8    | Final cleanup (delete `Plot.tsx`, drop deps)                 | ⬜                                  |
+| 8    | Final cleanup (delete `Plot.tsx`, drop deps)                 | ✅ Done                             |
 
 Find any stragglers with: `grep -rln plotly src/ kausal_common/src/`
 
@@ -125,25 +125,31 @@ wrapper; all series are aligned to the year union with `null` gaps. Notes:
 'emissions'`.
 - CSV download and `metricToPlot` untouched, as planned.
 
-### 6. DimensionalFlow (`src/components/graphs/DimensionalFlow.tsx`)
+### 6. DimensionalFlow (done)
 
-Used by the action detail page (imported as `DimensionalPlot`). A Sankey
-diagram of action impact flows for the selected end year.
+Used by the action detail page (imported as `DimensionalPlot`). A Sankey of
+action impact flows for the selected end year. Notes from the migration:
 
-- ECharts has `SankeyChart` (in `echarts/charts`) but it is **not registered**
-  in `Chart.tsx`. Register it lazily if reasonable so every chart consumer
-  doesn't pay for the sankey module; otherwise add it to the shared
-  `echarts.use([...])` list and note the bundle impact.
-- Restructure `makeFrame`'s parallel-arrays output (`link.source/target/value`
-  index arrays) into ECharts `{ nodes: [{name, itemStyle}], links: [{source,
-target, value, lineStyle}] }`. Node/link colors (including the
-  `tint`/`transparentize` link colors) map to `itemStyle.color` /
-  `lineStyle.color`.
-- Plotly's `valueformat: ',.3r'` + HTML unit in hover → sankey tooltip
-  formatter with `formatNumber` + `unit.htmlLong`.
-- This one uses `BasicPlot` (the imperative Plotly wrapper) and has a known
-  responsiveness bug (see TODO in file) — migrating to `Chart` fixes resize
-  handling for free. Remove the leftover `console.log`/`useEffect` debug too.
+- `SankeyChart` is registered by `DimensionalFlow` itself
+  (`echarts.use([SankeyChart])` at module level), NOT in the shared
+  `Chart.tsx` list: `echarts.use` is a global registry, and since only the
+  actions route imports this component, the ~48K sankey module lands in that
+  route's chunk instead of every chart-bearing page. Follow this pattern for
+  other rarely-used chart types.
+- ECharts sankey links reference nodes **by name**, and the same flow node
+  appears in several columns with identical labels — so nodes get unique
+  internal names (`start:`/`now:`/`remaining:` + id) and carry a
+  `displayName` rendered via label/tooltip formatters.
+- The `tint`/`transparentize` link colors carry their own alpha, so links set
+  `lineStyle.opacity: 1` to avoid double-fading with ECharts' 0.2 default.
+- Null/non-positive link values are skipped instead of passed through.
+- Tooltips: `formatNumber` + `unit.htmlLong` for both nodes and edges
+  (edges show "from → to").
+- The old `BasicPlot` resize bug is gone for free (shared wrapper has a
+  ResizeObserver); the leftover `console.log` debug was dropped.
+- Verify visually: the three parallel `start→now` links per source
+  (remaining / impact / other) rendering as distinct ribbons is the least
+  common ECharts sankey pattern used here.
 
 ### 7. DimensionalPieGraph (done)
 
@@ -169,17 +175,21 @@ radius map but actually informative. Notes:
   `sanitizeHtmlUnit`; legend item clicks disabled via `selectedMode: false`
   (was Plotly `itemclick: false`); the dead modebar config dropped.
 
-### 8. Final cleanup
+### 8. Final cleanup (done)
 
-- Delete `src/components/graphs/Plot.tsx` (both `Plot` and `BasicPlot`).
-- Remove from `package.json`: `plotly.js`, `plotly.js-locales`,
-  `react-plotly.js`, `@types/plotly.js`, `@types/react-plotly.js`.
-- `grep -rn plotly src/ package.json` must come up empty (also check for
-  `.js-plotly-plot` CSS selectors and `react-plotly` type imports).
-- Prune baselines: `pnpm lint:baseline:update` and
-  `pnpm typecheck:baseline:update` (then `prettier --write` both baseline
-  JSON files — the tools write them unformatted).
-- Check `next.config.ts` / webpack config for any plotly-specific settings.
+`Plot.tsx` deleted; `plotly.js`, `plotly.js-locales`, `react-plotly.js` and
+both `@types` packages removed; baselines pruned; CLAUDE.md tech-stack line
+updated. `grep -rln plotly src/ package.json` comes up empty. No
+plotly-specific settings existed in `next.config.ts`.
+
+Deliberately kept: the `.js-plotly-plot` / `.plotly` print-CSS selectors in
+`kausal_common/src/themes/ThemedGlobalStyles.tsx` — the shared submodule also
+serves **kausal-watch-ui**, which still uses Plotly for its own graphs.
+
+Post-migration trivia: the old Plotly sankey (`BasicPlot`) turned out to be
+broken in production (rendered an empty axes box — the unresolved
+responsiveness TODO), so the ECharts migration fixed it rather than merely
+matching it.
 
 ## Verification per step
 

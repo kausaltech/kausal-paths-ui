@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 
 import { gql } from '@apollo/client';
 import { useReactiveVar } from '@apollo/client/react';
+import { SankeyChart } from 'echarts/charts';
 import type { EChartsCoreOption } from 'echarts/core';
+import * as echarts from 'echarts/core';
 import { tint, transparentize } from 'polished';
 
 import { Chart } from '@common/components/Chart';
@@ -12,6 +14,11 @@ import type { DimensionalPlotFragment } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { genColorsFromTheme } from '@/common/colors';
 import { useNumberFormatter } from '@/common/numbers';
+
+// The sankey module is registered here rather than in the shared Chart
+// wrapper: this is the only chart using it, and this way it's bundled into
+// the actions route chunk instead of every chart-bearing page.
+echarts.use([SankeyChart]);
 
 type DimensionalPlotProps = {
   flow: DimensionalPlotFragment;
