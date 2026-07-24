@@ -3,20 +3,22 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client/react';
 import type { BarSeriesOption } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
+import { getEChartsLocaleStrings } from '@common/components/register-echarts-locales';
 
 import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { type EChartsLocalePack, formatAriaTemplate } from '@/components/charts/chartAria';
 import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 import type { SortActionsConfig } from '@/types/actions.types';
 
 type VisibleAction = { id: string; name: string };
 
-type Entry = { action: string; simpleEffect: number };
+export type SimpleEffectEntry = { action: string; simpleEffect: number };
 
 // Actions absent from the overview are omitted rather than coerced to 0, so the
 // chart doesn't conflate "no data for this action" with "this action had zero effect".
@@ -25,7 +27,7 @@ function buildEntries(
   startYear: number,
   endYear: number,
   dataset?: ImpactOverviewDetailFragment
-): Entry[] {
+): SimpleEffectEntry[] {
   return visibleActions.flatMap((vAction) => {
     const overviewAction = dataset?.actions.find((a) => a.action.id === vAction.id);
     if (!overviewAction) return [];
@@ -37,20 +39,47 @@ function buildEntries(
   });
 }
 
-function getChartConfig(
-  entries: Entry[],
+// Also reused by ActionsComparison (the emissions-impact default graph),
+// which feeds it entries built from action impact metrics instead of an
+// impact overview
+export function getSimpleEffectChartConfig(
+  entries: SimpleEffectEntry[],
   unit: string,
   formatNumber: (value: number) => string,
   formatAxisLabel: (value: number) => string,
   sortBy: SortActionsConfig,
-  sortAscending: boolean
+  sortAscending: boolean,
+  aria: { title: string; localePack: EChartsLocalePack }
 ): EChartsCoreOption {
   const sorted =
     sortBy.key === 'STANDARD'
       ? entries
       : [...entries].sort((a, b) => (sortAscending ? 1 : -1) * (a.simpleEffect - b.simpleEffect));
 
+  // Screen-reader description in ECharts' own locale-pack wording, but with
+  // the chart title, every bar included, and values rounded like the rest of
+  // the UI (the native generator reads raw dataset rows: index + full-
+  // precision value)
+  const ariaTemplates = aria.localePack.aria;
+  const ariaDescription =
+    (aria.title
+      ? formatAriaTemplate(ariaTemplates?.general?.withTitle, { title: aria.title })
+      : formatAriaTemplate(ariaTemplates?.general?.withoutTitle)) +
+    formatAriaTemplate(ariaTemplates?.series?.single?.prefix) +
+    formatAriaTemplate(ariaTemplates?.series?.single?.withoutName, {
+      seriesType: aria.localePack.series?.typeNames?.bar ?? 'bar chart',
+    }) +
+    (ariaTemplates?.data?.allData ?? '') +
+    // Plain "name: value" pairs instead of the pack's "the data for {name}
+    // is {value}" — repeating that phrase per bar is tedious to listen to,
+    // and a colon-separated pair needs no translation
+    sorted
+      .map((entry) => `${entry.action}: ${formatNumber(entry.simpleEffect)} ${unit}`)
+      .join(', ') +
+    (ariaTemplates?.data?.separator?.end ?? '.');
+
   return {
+    aria: { enabled: true, label: { description: ariaDescription } },
     dataset: [
       {
         dimensions: ['action', 'simpleEffect'],
@@ -71,8 +100,13 @@ function getChartConfig(
     xAxis: {
       type: 'value',
       position: 'top',
+      // The unit is shown once as the axis title instead of repeating it on
+      // every tick label
+      name: unit,
+      nameLocation: 'middle',
+      nameGap: 32,
       axisLabel: {
-        formatter: (v: number) => `${formatAxisLabel(v)} ${unit}`,
+        formatter: (v: number) => formatAxisLabel(v),
       },
     },
 
@@ -116,6 +150,7 @@ type Props = {
 
 export function SimpleEffect({ data, visibleActions, sortBy, sortAscending, isLoading }: Props) {
   const t = useTranslations('common');
+  const locale = useLocale();
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const [startYear, endYear] = useReactiveVar(yearRangeVar);
@@ -125,13 +160,25 @@ export function SimpleEffect({ data, visibleActions, sortBy, sortAscending, isLo
     [visibleActions, startYear, endYear, data]
   );
   const unit = data?.indicatorUnit?.short || '';
+  const title = `${data?.label || t('simple-effect')} (${startYear} - ${endYear})`;
   const chartData = useMemo(
-    () => getChartConfig(entries, unit, formatNumber, formatAxisLabel, sortBy, sortAscending),
-    [entries, unit, sortBy, sortAscending, formatNumber, formatAxisLabel]
+    () =>
+      getSimpleEffectChartConfig(
+        entries,
+        unit,
+        formatNumber,
+        formatAxisLabel,
+        sortBy,
+        sortAscending,
+        {
+          title,
+          localePack: getEChartsLocaleStrings(locale),
+        }
+      ),
+    [entries, unit, sortBy, sortAscending, formatNumber, formatAxisLabel, title, locale]
   );
   const bars = entries.length;
   const chartHeight = bars ? bars * 60 + 110 : 400;
-  const title = `${data?.label || t('simple-effect')} (${startYear} - ${endYear})`;
   const subtitle =
     data?.indicatorLabel ||
     t('simple-effect-subtitle', { activeScenario: activeScenario?.name ?? '' });
