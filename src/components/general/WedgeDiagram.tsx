@@ -3,14 +3,17 @@ import { useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client/react';
 import type { LineSeriesOption, TooltipComponentFormatterCallbackParams } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
+import { useLocale } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
+import { getEChartsLocaleStrings } from '@common/components/register-echarts-locales';
 import { useTheme } from '@common/themes';
 
 import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
+import { type EChartsLocalePack, formatAriaTemplate } from '@/components/charts/chartAria';
 import { truncateLabel } from '@/components/charts/chartTooltip';
 
 type ActionLookupEntry = {
@@ -92,7 +95,8 @@ function getChartConfig(
   forecastLabel: string,
   floorLineColor: string,
   ceilingLineColor: string,
-  goalLineColor: string
+  goalLineColor: string,
+  aria: { title: string; scenarioName: string; localePack: EChartsLocalePack }
 ): EChartsCoreOption {
   // Stacked baseline carrying floor values so action bands sit on top of
   // current_scenario instead of zero. Drawn prominently for debugging — the
@@ -245,7 +249,35 @@ function getChartConfig(
     return [`<b>${items[0]?.name ?? ''}</b>`, ...rows].join('<br/>');
   };
 
+  // Screen-reader description: title, then a per-year summary of the key
+  // lines (baseline, current scenario, goal and the gap to it) — the values a
+  // sighted user reads off the chart — instead of enumerating the 20+ action
+  // band series, whose individual wedges are too thin to be informative.
+  // English literals follow this file's existing convention (floorLabel etc.
+  // arrive untranslated too).
+  const ariaTemplates = aria.localePack.aria;
+  const fmtValue = (value: number) => `${formatNumber(value)} ${unit}`;
+  const yearSummaries = years.map((year, i) => {
+    const parts: string[] = [];
+    const ceil = ceilingValues[i];
+    const floor = floorValues[i];
+    if (ceil != null) parts.push(`${ceilingLabel} ${fmtValue(ceil)}`);
+    if (floor != null) parts.push(`${floorLabel} ${fmtValue(floor)}`);
+    const goal = goalValues?.[i];
+    if (goal != null) {
+      parts.push(`${goalLabel} ${fmtValue(goal)}`);
+      if (floor != null) parts.push(`Gap to goal ${fmtValue(floor - goal)}`);
+    }
+    return `${year}: ${parts.join(', ')}`;
+  });
+  const ariaDescription =
+    formatAriaTemplate(ariaTemplates?.general?.withTitle, { title: aria.title }) +
+    `. ${bands.length} actions in "${aria.scenarioName}" scenario affect each year as: ` +
+    yearSummaries.join('. ') +
+    '.';
+
   return {
+    aria: { enabled: true, label: { description: ariaDescription } },
     legend: {
       type: 'plain',
       bottom: 0,
@@ -286,6 +318,7 @@ type Props = {
 
 export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props) {
   const theme = useTheme();
+  const locale = useLocale();
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
   const activeScenario = useReactiveVar(activeScenarioVar);
@@ -367,6 +400,11 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
   const ceilingLabel = ceiling?.label ?? 'Baseline scenario';
   const goalLabel = 'Goal';
 
+  const title = `${data?.label || 'Wedge diagram'} (${startYear} - ${endYear})`;
+  const subtitle =
+    data?.indicatorLabel ||
+    `Contributions of actions in "${activeScenario?.name ?? ''}" scenario compared to ${ceilingLabel}.`;
+
   const chartData = useMemo(
     () =>
       getChartConfig(
@@ -386,7 +424,12 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
         'Forecast',
         theme.graphColors.blue050,
         theme.graphColors.grey040,
-        theme.graphColors.red090
+        theme.graphColors.red090,
+        {
+          title,
+          scenarioName: activeScenario?.name ?? '',
+          localePack: getEChartsLocaleStrings(locale),
+        }
       ),
     [
       years,
@@ -405,13 +448,11 @@ export function WedgeDiagram({ data, actionLookup, isLoading, yearRange }: Props
       theme.graphColors.blue050,
       theme.graphColors.grey040,
       theme.graphColors.red090,
+      title,
+      activeScenario?.name,
+      locale,
     ]
   );
-
-  const title = `${data?.label || 'Wedge diagram'} (${startYear} - ${endYear})`;
-  const subtitle =
-    data?.indicatorLabel ||
-    `Contributions of actions in "${activeScenario?.name ?? ''}" scenario compared to ${ceilingLabel}.`;
 
   return (
     <ChartWrapper title={title} subtitle={subtitle} isLoading={isLoading}>
