@@ -2,11 +2,13 @@ import { useMemo } from 'react';
 
 import type { LineSeriesOption } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
+import { useLocale } from 'next-intl';
 import { tint, transparentize } from 'polished';
 // @ts-expect-error - No types available for react-json-to-csv
 import CsvDownload from 'react-json-to-csv';
 
 import { Chart } from '@common/components/Chart';
+import { getEChartsLocaleStrings } from '@common/components/register-echarts-locales';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
@@ -19,8 +21,10 @@ import Icon from '@/components/common/icon';
 import { useSite } from '@/context/site';
 import type { CausalGridNode } from './CausalGrid';
 
-// Helper series that must not appear in the legend or the tooltip
-const JOIN_SERIES = '__join';
+// The historical→forecast connector helper series is unnamed: it must not
+// appear in the legend or tooltip, and the aria description then reads it as
+// an anonymous line series instead of announcing an internal name
+const JOIN_SERIES = '';
 
 // Legend icon drawing a dashed horizontal line (three filled dashes), for
 // symbol-less dashed series where ECharts would otherwise show a filled circle
@@ -28,6 +32,22 @@ const DASHED_LINE_ICON = 'path://M0,0 h8 v4 h-8 z M12,0 h8 v4 h-8 z M24,0 h8 v4 
 
 // Stable identity so hook dependencies don't churn when there's no data
 const EMPTY_PLOT: { x: number[]; y: number[] } = { x: [], y: [] };
+
+// The subset of the ECharts locale-pack shape used for the aria description
+type EChartsLocalePack = {
+  aria?: {
+    general?: { withTitle?: string; withoutTitle?: string };
+    series?: {
+      single?: { prefix?: string; withName?: string };
+      multiple?: {
+        prefix?: string;
+        withName?: string;
+        separator?: { middle?: string; end?: string };
+      };
+    };
+  };
+  series?: { typeNames?: { line?: string } };
+};
 
 const PlotWrapper = styled.div<{ $compact?: boolean }>`
   margin: 0 auto;
@@ -84,6 +104,7 @@ const NodePlot = (props: NodePlotProps) => {
   } = props;
 
   const { t } = useTranslation();
+  const locale = useLocale();
   const instance = useInstance();
   const theme = useTheme();
   const site = useSite();
@@ -116,6 +137,10 @@ const NodePlot = (props: NodePlotProps) => {
       : null;
 
   const baselineName = site.baselineName;
+  // Extracted so the memo below can depend on the specific properties
+  // (whole-object deps would defeat the React Compiler's memoization)
+  const metricName = metric?.name;
+  const unitHtml = metric?.unit?.htmlShort ?? '';
   const showBaseline = !isAction && !!baselineName && instance.features.baselineVisibleInGraphs;
   const showGoal = !compact && targetYearGoal != null;
   const targetName = `${t('target')} ${targetYear}`;
@@ -207,7 +232,9 @@ const NodePlot = (props: NodePlotProps) => {
     });
 
     // Dotted two-point connector between the last historical and the first
-    // forecast point; hidden from the legend and the tooltip.
+    // forecast point; hidden from the legend and the tooltip. Deliberately
+    // unnamed so the aria description reads it as an anonymous line series
+    // instead of announcing an internal name.
     const lastHistYear = historical.x[historical.x.length - 1];
     const firstForecastYear = forecast.x[0];
     if (lastHistYear != null && firstForecastYear != null) {
@@ -237,7 +264,24 @@ const NodePlot = (props: NodePlotProps) => {
       ...filledStyles,
     };
 
-    if (hasImpact && impactMetric) {
+    // The forecast level if this action weren't applied (only on charts
+    // showing an action's impact); also feeds the aria description below
+    const withoutActionY =
+      hasImpact && impactMetric
+        ? isAction
+          ? // An action's visualised impact without this action applied is always the value of the most recent actualised datapoint or zero
+            new Array<number>(forecast.y.length).fill(
+              historical.y.length ? historical.y[historical.y.length - 1] : 0
+            )
+          : forecast.y.map((dataPoint, index) => {
+              if (impactMetric.forecastValues.length > index) {
+                return dataPoint - impactMetric.forecastValues[index].value;
+              }
+              return dataPoint;
+            })
+        : null;
+
+    if (withoutActionY) {
       // The impact band shows the difference between the forecast with and
       // without this action: the forecast series doubles as the stack base
       // and a delta series fills the area up to the "without action" level.
@@ -246,18 +290,6 @@ const NodePlot = (props: NodePlotProps) => {
       // 'all' stacks it onto the forecast regardless of sign.
       forecastSeries.stack = 'impact-band';
       forecastSeries.stackStrategy = 'all';
-
-      const withoutActionY = isAction
-        ? // An action's visualised impact without this action applied is always the value of the most recent actualised datapoint or zero
-          new Array<number>(forecast.y.length).fill(
-            historical.y.length ? historical.y[historical.y.length - 1] : 0
-          )
-        : forecast.y.map((dataPoint, index) => {
-            if (impactMetric.forecastValues.length > index) {
-              return dataPoint - impactMetric.forecastValues[index].value;
-            }
-            return dataPoint;
-          });
 
       series.push(forecastSeries);
 
@@ -325,21 +357,79 @@ const NodePlot = (props: NodePlotProps) => {
       });
     }
 
+    // Series without any data points are left out of the legend (like they
+    // are left out of the aria description)
     const legendItems = [
-      t('plot-actualized'),
-      t('plot-scenario'),
+      ...(historical.x.length > 0 ? [t('plot-actualized')] : []),
+      ...(forecast.x.length > 0 ? [t('plot-scenario')] : []),
       // Colored box marking the impact band
       ...(hasImpact ? [{ name: bandName, icon: 'rect' }] : []),
-      ...(showBaseline ? [{ name: baselineName, icon: DASHED_LINE_ICON }] : []),
+      ...(showBaseline && baselineForecast.x.length > 0
+        ? [{ name: baselineName, icon: DASHED_LINE_ICON }]
+        : []),
       ...(showGoal ? [targetName] : []),
     ];
 
     const baseFormatter = createAxisTooltipFormatter((value) =>
-      value == null ? '—' : `${formatNumber(value)} ${metric?.unit?.htmlShort ?? ''}`
+      value == null ? '—' : `${formatNumber(value)} ${unitHtml}`
     );
+
+    // Screen-reader description in ECharts' own style and wording, composed
+    // from the locale packs' aria templates (no translations to maintain) —
+    // but with our own title (node name + unit) and series selection: helper
+    // and dataless series are skipped, and each series carries its year
+    // range with the first and last values. The native generator can't do
+    // this: it describes every series by its literal name and enumerates
+    // raw data (null-padded years as NaN).
+    const unitText = stripHtml(unitHtml);
+    const describeSeries = (name: string, xs: number[], ys: number[]) => {
+      if (xs.length === 0) return null;
+      const point = (i: number) => `${xs[i]}: ${formatNumber(ys[i])} ${unitText}`;
+      return xs.length === 1
+        ? `${name} (${point(0)})`
+        : `${name} (${point(0)} – ${point(xs.length - 1)})`;
+    };
+    const describedSeries = [
+      describeSeries(t('plot-actualized'), historical.x, historical.y),
+      // Unlike in the legend, spell out that the scenario series is a
+      // forecast ("Valittu skenaario – Ennuste"); composed from two existing
+      // keys with their own casing (German nouns must stay capitalized)
+      describeSeries(`${t('plot-scenario')} – ${t('forecast')}`, forecast.x, forecast.y),
+      ...(withoutActionY
+        ? [
+            describeSeries(
+              bandName,
+              forecast.x,
+              withoutActionY.map((value, i) => value - forecast.y[i])
+            ),
+            describeSeries(t('plot-without-action'), forecast.x, withoutActionY),
+          ]
+        : []),
+      showBaseline ? describeSeries(baselineName, baselineForecast.x, baselineForecast.y) : null,
+      showGoal ? `${targetName}: ${formatNumber(targetYearGoal)} ${unitText}` : null,
+    ].filter((entry): entry is string => entry != null);
+    const localePack = getEChartsLocaleStrings(locale) as EChartsLocalePack;
+    const fmt = (template: string | undefined, values: Record<string, string | number> = {}) =>
+      (template ?? '').replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
+    const many = describedSeries.length > 1;
+    const seriesTpl = many ? localePack.aria?.series?.multiple : localePack.aria?.series?.single;
+    const lineTypeName = localePack.series?.typeNames?.line ?? 'line chart';
+    const chartTitle = metricName ? `${metricName}, ${unitText}` : null;
+    const ariaDescription =
+      (chartTitle
+        ? fmt(localePack.aria?.general?.withTitle, { title: chartTitle })
+        : fmt(localePack.aria?.general?.withoutTitle)) +
+      fmt(seriesTpl?.prefix, { seriesCount: describedSeries.length }) +
+      describedSeries
+        .map((name, idx) =>
+          fmt(seriesTpl?.withName, { seriesId: idx, seriesType: lineTypeName, seriesName: name })
+        )
+        .join(localePack.aria?.series?.multiple?.separator?.middle ?? '') +
+      (many ? (localePack.aria?.series?.multiple?.separator?.end ?? '') : '');
 
     return {
       backgroundColor: theme.themeColors.white,
+      aria: { enabled: true, label: { description: ariaDescription } },
       tooltip: {
         trigger: 'axis',
         formatter: (params: unknown) => {
@@ -347,7 +437,8 @@ const NodePlot = (props: NodePlotProps) => {
           const list: unknown[] = Array.isArray(params) ? params : [params];
           const items = list.filter((p) => {
             const { seriesName, value } = p as { seriesName?: string; value?: unknown };
-            if (seriesName === JOIN_SERIES || seriesName === bandName) return false;
+            // Unnamed series = the join helper
+            if (!seriesName || seriesName === bandName) return false;
             return value != null;
           });
           if (items.length === 0) return '';
@@ -374,7 +465,7 @@ const NodePlot = (props: NodePlotProps) => {
       },
       yAxis: {
         type: 'value',
-        name: stripHtml(metric?.unit?.htmlShort ?? ''),
+        name: unitText,
         axisLabel: {
           formatter: (value: number) => formatAxisLabel(value),
         },
@@ -405,7 +496,9 @@ const NodePlot = (props: NodePlotProps) => {
     endYear,
     plotColor,
     scenarioPlotColor,
-    metric?.unit?.htmlShort,
+    unitHtml,
+    metricName,
+    locale,
     baselineName,
     formatNumber,
     formatAxisLabel,
@@ -417,12 +510,13 @@ const NodePlot = (props: NodePlotProps) => {
 
   return (
     <>
-      <PlotWrapper $compact={compact} aria-hidden="true">
+      <PlotWrapper $compact={compact}>
         <Chart
           isLoading={false}
           data={chartData}
           height={compact ? '200px' : '300px'}
           withResizeLegend={!compact}
+          locale={locale}
         />
         {!compact && (
           <Tools>
