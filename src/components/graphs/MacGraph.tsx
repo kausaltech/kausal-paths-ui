@@ -1,31 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
 
 import { Grid } from '@mui/material';
 
+import type {
+  CustomSeriesOption,
+  CustomSeriesRenderItemAPI,
+  CustomSeriesRenderItemParams,
+} from 'echarts';
+import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';
-import type Plotly from 'plotly.js';
 
+import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import type { ActionListQuery } from '@/common/__generated__/graphql';
 import { Link } from '@/common/links';
-import { useNumberFormatter } from '@/common/numbers';
-import { truncateLabel } from '@/components/charts/chartTooltip';
+import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
+import { stripHtml, truncateLabel } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 
-const Plot = dynamic(() => import('@/components/graphs/Plot'), { ssr: false });
-
 const GraphContainer = styled.div`
-  .js-plotly-plot {
-    margin-bottom: 1rem;
-  }
-  /* Hide the x-axis value callout that Plotly draws in hovermode "x" —
-     the underlying x-coordinate is an internal xPlacement value, not user-meaningful. */
-  .js-plotly-plot .hoverlayer .axistext {
-    display: none;
-  }
+  margin-bottom: 1rem;
 `;
 
 const ActionDescription = styled.div`
@@ -69,17 +65,6 @@ const EmptyPlot = styled.div`
   margin: 0 0 2rem;
 `;
 
-/*
-  const macData = {
-    ids: sortedActions.map((action) => action.id),
-    actions: sortedActions.map((action) => action.name),
-    colors: sortedActions.map((action) => action.color || action.group?.color),
-    groups: sortedActions.map((action) => action.group?.id),
-    cost: sortedActions.map((action) => action.cumulativeCost),
-    efficiency: sortedActions.map((action) => action.cumulativeEfficiency),
-    impact: sortedActions.map((action) => action.cumulativeImpact),
-  };
-*/
 type MacGraphProps = {
   data: {
     ids: string[];
@@ -115,139 +100,181 @@ function MacGraph(props: MacGraphProps) {
   const theme = useTheme();
   const t = useTranslations('common');
   const formatNumber = useNumberFormatter();
+  const formatAxisLabel = useAxisLabelFormatter();
 
   const [hoverId, setHoverId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Update the document title using the browser API
     setHoverId(null);
   }, [data]);
   // TODO: Add sorting of data here
 
   const isEmpty = data.actions?.length < 1;
 
-  const { xPlacement, negativeSideWidth } = useMemo(() => {
-    const result = data['impact'].reduce(
-      (acc, bar) => {
-        const barWidth = Math.abs(bar);
-        if (bar < 0) {
-          const newNegativeSideWidth = acc.negativeSideWidth + barWidth;
-          acc.xPlacement.push(-newNegativeSideWidth + barWidth - barWidth / 2);
-          acc.negativeSideWidth = newNegativeSideWidth;
-        } else {
-          const newTotalSaving = acc.totalSaving + barWidth;
-          acc.xPlacement.push(newTotalSaving - barWidth + barWidth / 2);
-          acc.totalSaving = newTotalSaving;
-        }
-        return acc;
-      },
-      { xPlacement: [] as number[], negativeSideWidth: 0, totalSaving: 0 }
-    );
-
-    return { xPlacement: result.xPlacement, negativeSideWidth: result.negativeSideWidth };
+  // Each bar's x-range, laid end-to-end: bar width = impact. Positive impacts
+  // tile rightwards from zero, negative ones leftwards.
+  const { bars, negativeSideWidth } = useMemo(() => {
+    const items: { start: number; end: number }[] = [];
+    let positiveWidth = 0;
+    let negativeWidth = 0;
+    data.impact.forEach((impact) => {
+      const width = Math.abs(impact);
+      if (impact < 0) {
+        items.push({ start: -negativeWidth - width, end: -negativeWidth });
+        negativeWidth += width;
+      } else {
+        items.push({ start: positiveWidth, end: positiveWidth + width });
+        positiveWidth += width;
+      }
+    });
+    return { bars: items, negativeSideWidth: negativeWidth };
   }, [data]);
 
-  const negativeSide = useMemo<Partial<Plotly.Shape>[]>(
-    () =>
-      negativeSideWidth > 0
-        ? [
-            {
-              type: 'rect' as const,
-              // x-reference is assigned to the x-values
-              xref: 'x' as const,
-              // y-reference is assigned to the plot paper [0,1]
-              yref: 'paper' as const,
-              x0: -negativeSideWidth,
-              y0: 0,
-              x1: 0,
-              y1: 1,
-              fillcolor: theme.graphColors.red030,
-              opacity: 0.2,
-              line: {
-                width: 0,
+  const chartData: EChartsCoreOption = useMemo(() => {
+    const renderBar = (params: CustomSeriesRenderItemParams, api: CustomSeriesRenderItemAPI) => {
+      const topLeft = api.coord([api.value(0), api.value(2)]);
+      const bottomRight = api.coord([api.value(1), 0]);
+      return {
+        type: 'rect' as const,
+        shape: {
+          x: topLeft[0],
+          y: Math.min(topLeft[1], bottomRight[1]),
+          width: bottomRight[0] - topLeft[0],
+          height: Math.abs(bottomRight[1] - topLeft[1]),
+        },
+        style: {
+          // `||` rather than `??`: actions without an own or group color get ''
+          fill: data.colors[params.dataIndex] || theme.graphColors.grey050,
+          stroke: theme.themeColors.white,
+          lineWidth: 2,
+          opacity: 0.9,
+        },
+        styleEmphasis: {
+          stroke: theme.graphColors.grey090,
+          lineWidth: 3,
+        },
+      };
+    };
+
+    const series: CustomSeriesOption = {
+      type: 'custom',
+      name: impactName,
+      // Both range edges feed the x-axis extent so the last bar isn't clipped
+      encode: { x: [0, 1], y: 2 },
+      data: bars.map((bar, i) => ({
+        name: data.actions[i],
+        value: [bar.start, bar.end, data.efficiency[i]],
+      })),
+      renderItem: renderBar,
+      // Red backdrop marking the negative (net-saving) side
+      markArea:
+        negativeSideWidth > 0
+          ? {
+              silent: true,
+              itemStyle: {
+                color: theme.graphColors.red030,
+                opacity: 0.2,
               },
-            },
-            {
-              type: 'line' as const,
-              xref: 'x' as const,
-              yref: 'paper' as const,
-              x0: 0,
-              y0: 0,
-              x1: 0,
-              y1: 1,
-              line: {
+              data: [[{ xAxis: -negativeSideWidth }, { xAxis: 0 }]],
+            }
+          : undefined,
+      markLine:
+        negativeSideWidth > 0
+          ? {
+              silent: true,
+              symbol: 'none',
+              label: { show: false },
+              lineStyle: {
                 color: theme.graphColors.red030,
                 width: 1,
               },
-            },
-          ]
-        : [],
-    [theme, negativeSideWidth]
-  );
+              data: [{ xAxis: 0 }],
+            }
+          : undefined,
+    };
 
-  const layout = useMemo(
-    () => ({
-      height: 450,
-      barmode: 'relative' as const,
-      hoverlabel: {
-        bgcolor: theme.themeColors.white,
-        bordercolor: theme.graphColors.grey030,
-        font: {
-          family: theme.fontFamily,
-          color: theme.graphColors.grey090,
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: unknown) => {
+          // Axis-pointer-triggered calls pass an array of per-series params
+          const p = Array.isArray(params) ? (params[0] as unknown) : params;
+          const i = (p as { dataIndex?: number } | undefined)?.dataIndex;
+          if (typeof i !== 'number' || data.actions[i] == null) return '';
+          return (
+            `<b>${truncateLabel(data.actions[i])}</b><br/>` +
+            `${efficiencyName}: <b>${formatNumber(data.efficiency[i])}</b> ${indicatorUnit}<br/>` +
+            `${impactName}: <b>${formatNumber(data.impact[i])}</b> ${effectUnit}`
+          );
         },
       },
-      hovermode: 'x' as const,
-      hoverdistance: 10,
-      yaxis: {
-        title: {
-          text: `${efficiencyName} (${indicatorUnit})`,
+      grid: {
+        containLabel: true,
+        left: 10,
+        right: 10,
+        top: 10,
+        bottom: 10,
+      },
+      xAxis: {
+        type: 'value',
+        name: `${impactName} (${stripHtml(effectUnit)})`,
+        nameLocation: 'middle',
+        nameGap: 30,
+        axisLabel: {
+          formatter: (value: number) => `${formatAxisLabel(value)} ${stripHtml(effectUnit)}`,
+        },
+        // Track the pointer across the whole plot so hovering above or below
+        // a bar still selects the action under the cursor; the label callout
+        // would show the meaningless internal x-position, so hide it. The
+        // tooltip is item-triggered — the axis pointer must not also trigger
+        // it (that path passes array params the formatter isn't meant for).
+        axisPointer: {
+          show: true,
+          snap: false,
+          triggerTooltip: false,
+          label: { show: false },
+          lineStyle: {
+            color: theme.graphColors.grey030,
+            width: 1,
+          },
         },
       },
-      xaxis: {
-        ticksuffix: ` ${effectUnit}`,
-        title: {
-          text: `${impactName} (${effectUnit})`,
+      yAxis: {
+        type: 'value',
+        name: `${efficiencyName} (${stripHtml(indicatorUnit)})`,
+        nameLocation: 'middle',
+        nameGap: 55,
+        axisLabel: {
+          formatter: (value: number) => formatAxisLabel(value),
         },
-        showgrid: true,
-        showspikes: false,
       },
-      margin: {
-        l: 50,
-        r: 0,
-        b: 60,
-        t: 10,
-        pad: 0,
-      },
-      shapes: negativeSide,
-      paper_bgcolor: theme.themeColors.white,
-      plot_bgcolor: theme.themeColors.white,
-    }),
-    [theme, efficiencyName, indicatorUnit, effectUnit, impactName, negativeSide]
-  );
+      series: [series],
+    };
+  }, [
+    bars,
+    data,
+    negativeSideWidth,
+    impactName,
+    effectUnit,
+    efficiencyName,
+    indicatorUnit,
+    formatNumber,
+    formatAxisLabel,
+    theme,
+  ]);
 
-  const handleHover = useCallback(
-    (evt: Plotly.PlotHoverEvent) => {
-      // console.log("HOVERED", evt);
-      const hoveredIndex: number = evt.points[0].pointIndex;
-      //const hoverColors = data.colors;
-      //hoverColors[hoveredIndex] = "#333";
-      //setBarColors(hoverColors);
-      setHoverId(hoveredIndex);
-      return null;
+  // The bars tile the x-axis contiguously, so the axis-pointer position maps
+  // directly to a bar's x-range (mirrors Plotly's hovermode 'x' snapping).
+  const handleAxisPointer = useCallback(
+    (params: unknown) => {
+      const value = (params as { axesInfo?: { value?: unknown }[] }).axesInfo?.[0]?.value;
+      if (typeof value !== 'number') return;
+      const index = bars.findIndex((bar) => value >= bar.start && value <= bar.end);
+      if (index >= 0) setHoverId(index);
     },
-    [setHoverId]
+    [bars]
   );
-
-  const barLineColors = useMemo(
-    () =>
-      data.ids.map((_, i) => (i === hoverId ? theme.graphColors.grey090 : theme.themeColors.white)),
-    [hoverId, data.ids, theme.graphColors.grey090, theme.themeColors.white]
-  );
-  const barLineWidths = useMemo(
-    () => data.ids.map((_, i) => (i === hoverId ? 3 : 2)),
-    [hoverId, data.ids]
-  );
+  const onEvents = useMemo(() => ({ updateAxisPointer: handleAxisPointer }), [handleAxisPointer]);
 
   const plot = useMemo(
     () =>
@@ -256,40 +283,15 @@ function MacGraph(props: MacGraphProps) {
           <h4>{t('actions-count', { shown: 0, total: 0 })}</h4>
         </EmptyPlot>
       ) : (
-        <Plot
-          data={[
-            {
-              type: 'bar',
-              x: xPlacement,
-              y: data['efficiency'],
-              // Only feeds the hover (%{text}); the full name shows in the panel below.
-              text: data['actions'].map((name) => truncateLabel(name)),
-              width: data['impact'],
-              marker: {
-                color: data.colors,
-                opacity: 0.9,
-                line: {
-                  color: barLineColors,
-                  width: barLineWidths,
-                },
-              },
-              textposition: 'none',
-              customdata: data['impact'],
-              hovertemplate:
-                '<b>%{text}</b><br><br>' +
-                '%{yaxis.title.text}: %{y:.3r}<br>' +
-                '%{xaxis.title.text}: %{customdata:.3r}<br>' +
-                '<extra></extra>',
-            },
-          ]}
-          layout={layout}
-          useResizeHandler
-          style={{ width: '100%' }}
-          config={{ displayModeBar: false }}
-          onHover={(evt) => handleHover(evt)}
+        <Chart
+          isLoading={false}
+          data={chartData}
+          height="450px"
+          withResizeLegend={false}
+          onEvents={onEvents}
         />
       ),
-    [isEmpty, t, xPlacement, data, layout, handleHover, barLineColors, barLineWidths]
+    [isEmpty, t, chartData, onEvents]
   );
 
   return (
@@ -298,7 +300,7 @@ function MacGraph(props: MacGraphProps) {
       {hoverId !== null && (
         <ActionDescription>
           <Link href={`/actions/${actionIds[hoverId]}/`}>
-            <HoverGroupTag color={data.colors[hoverId]}>
+            <HoverGroupTag color={data.colors[hoverId] || theme.graphColors.grey050}>
               {actionGroups.find((group) => group.id === data.groups[hoverId])?.name}
             </HoverGroupTag>
             <h4>

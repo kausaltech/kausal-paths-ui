@@ -52,6 +52,12 @@
       "count": 1,
       "message": "Parameter 'y' implicitly has an 'any' type."
     },
+    "45a2db91cd0222a1fd7a4165a86c742effb38c94": {
+      "file": "kausal_common/src/components/paths/DimensionalPieGraph.tsx",
+      "code": "TS2307",
+      "count": 1,
+      "message": "Cannot find module '@generated/paths/graphql' or its corresponding type declarations."
+    },
     "838182a273f9a9159ac1f2ddaf4c9ec8e0418271": {
       "file": "kausal_common/src/components/paths/NodeGraph.tsx",
       "code": "TS7053",
@@ -69,12 +75,6 @@
       "code": "TS7053",
       "count": 1,
       "message": "Element implicitly has an 'any' type because expression of type 'number' can't be used to index type 'string | number | Date | Dictionary<OptionDataValue> | OptionDataValue[] | OptionDataItemObject<OptionDataValue>'."
-    },
-    "8bcd93c418533516c72ee473097cc0b8c5bc58be": {
-      "file": "kausal_common/src/components/PopoverTip.tsx",
-      "code": "TS2345",
-      "count": 1,
-      "message": "Argument of type '\"definition\"' is not assignable to parameter of type 'NamespacedMessageKeys<{ common: { \"abbr-per-annum\": string; \"action-impact\": string; action: string; \"action-name\": string; actions: string; \"actions-available\": string; \"actions-influencing-this\": string; \"affected-by\": string; ... 170 more ...; \"loading-calculation\": string; }; errors: { ...; }; 'model-editor': { ...'."
     },
     "3c9d4541d8bb98fa8666722a22b523ebb7ae71d6": {
       "file": "kausal_common/src/logging/edge.ts",
@@ -292,24 +292,6 @@
       "count": 1,
       "message": "Argument of type '{ id: string; name: string; stackable: boolean; forecastFrom: number | null; years: number[]; values: number[]; dimensions: ({ id: string; label: string; originalId: string | null; helpText: string | null; categories: ({ ...; } & { ...; })[]; groups: ({ ...; } & { ...; })[]; } & { ...; })[]; goals: ({ ...; } & { ......' is not assignable to parameter of type 'Metric'."
     },
-    "dd21b4e98c85c5fea7bc5992a1694f0240647011": {
-      "file": "src/components/general/DimensionalBarGraph.tsx",
-      "code": "TS2531",
-      "count": 1,
-      "message": "Object is possibly 'null'."
-    },
-    "dbaa04f07c0266c9bf4578b16229e445910dcfc1": {
-      "file": "src/components/general/DimensionalBarGraph.tsx",
-      "code": "TS18047",
-      "count": 4,
-      "message": "'datum' is possibly 'null'."
-    },
-    "c165cd940b4d926b4ab2720184ec218ab89cb6ce": {
-      "file": "src/components/general/DimensionalBarGraph.tsx",
-      "code": "TS2322",
-      "count": 1,
-      "message": "Type 'string | undefined' is not assignable to type 'Datum[]'."
-    },
     "c7df3f084ee77941de45b5cabf4b942fde50d33c": {
       "file": "src/components/general/DimensionalNodeVisualisation.tsx",
       "code": "TS2339",
@@ -442,17 +424,11 @@
       "count": 1,
       "message": "Type '{ short: string; htmlShort: string; htmlLong: string; } | undefined' is not assignable to type 'Omit<UnitFieldsFragment, \"__typename\"> | undefined'."
     },
-    "40349565ccb78ec27ab97684838a9f71c264e61b": {
-      "file": "src/components/pages/Page.tsx",
-      "code": "TS2322",
-      "count": 3,
-      "message": "Type '(variables?: Partial<Exact<{ path: string; }>> | undefined) => Promise<QueryResult<PageQuery>>' is not assignable to type '(variables?: Partial<OperationVariables> | undefined) => ResultPromise<QueryResult<PageQuery>>'."
-    },
-    "fc3ecd5e869274150b34ffe25cc6c4ab74b83673": {
+    "49ef996c671d80eab0638904810f75ac2eaaaac5": {
       "file": "src/components/pages/Page.tsx",
       "code": "TS2322",
       "count": 1,
-      "message": "Type '{ id: string | null; title: string; body: (({ id: string | null; blockType: string; field: string; } & { __typename: \"ActionImpactBlock\" | \"BlockQuoteBlock\" | \"BooleanBlock\" | \"CallToActionBlock\" | ... 15 more ... | \"IntegerBlock\"; }) | ... 5 more ... | null)[] | null; } & { ...; }' is not assignable to type '{ id: string | null; title: string; body: (({ id: string | null; blockType: string; field: string; } & { __typename: \"ActionImpactBlock\" | \"BlockQuoteBlock\" | \"BooleanBlock\" | \"CallToActionBlock\" | ... 15 more ... | \"IntegerBlock\"; }) | ... 5 more ... | null)[] | null; } & { ...; } & { ...; }'."
+      "message": "Type '{ id: string | null; title: string; body: (({ id: string | null; blockType: string; field: string; } & { __typename: \"CurrentProgressBarBlock\" | \"GoalProgressBarBlock\" | \"CategoryBreakdownBlock\" | ... 16 more ... | \"IntegerBlock\"; }) | ... 5 more ... | null)[] | null; } & { ...; }' is not assignable to type '{ id: string | null; title: string; body: (({ id: string | null; blockType: string; field: string; } & { __typename: \"CurrentProgressBarBlock\" | \"GoalProgressBarBlock\" | \"CategoryBreakdownBlock\" | ... 16 more ... | \"IntegerBlock\"; }) | ... 5 more ... | null)[] | null; } & { ...; } & { ...; }'."
     },
     "206816150b003a0388def0ce44f1a17572e94da6": {
       "file": "src/components/pages/StaticPage.tsx",

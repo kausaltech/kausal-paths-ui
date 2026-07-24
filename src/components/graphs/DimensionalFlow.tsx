@@ -1,16 +1,24 @@
-import { useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
 
 import { gql } from '@apollo/client';
 import { useReactiveVar } from '@apollo/client/react';
-import type Plotly from 'plotly.js';
+import { SankeyChart } from 'echarts/charts';
+import type { EChartsCoreOption } from 'echarts/core';
+import * as echarts from 'echarts/core';
 import { tint, transparentize } from 'polished';
 
+import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
 
 import type { DimensionalPlotFragment } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { genColorsFromTheme } from '@/common/colors';
+import { useNumberFormatter } from '@/common/numbers';
+
+// The sankey module is registered here rather than in the shared Chart
+// wrapper: this is the only chart using it, and this way it's bundled into
+// the actions route chunk instead of every chart-bearing page.
+echarts.use([SankeyChart]);
 
 type DimensionalPlotProps = {
   flow: DimensionalPlotFragment;
@@ -18,174 +26,155 @@ type DimensionalPlotProps = {
 
 type Flow = DimensionalPlotFragment;
 
-type FlowNode = DimensionalPlotFragment['nodes'][0] & {
-  idx: number;
+type FlowNode = Flow['nodes'][0] & {
   color: string;
-  linkColor?: string;
+  linkColor: string;
 };
 
-type FlowLink = DimensionalPlotFragment['links'][0];
+type FlowLink = Flow['links'][0];
 
-type DataWithSankey = Plotly.Data & {
-  link: {
-    source: number[];
-    target: number[];
-    value: (number | null)[];
-    color: (string | null)[];
-  };
-  node: {
-    pad: number;
-    thickness: number;
-    line: {
-      color: string;
-      width: number;
-    };
-    label: string[];
-    hovertemplate?: string;
-    color?: string[];
-  };
-  ids?: string[];
-  valueformat?: string;
+// The same flow node appears in several sankey columns (start year, selected
+// year, remaining), and ECharts sankey links reference nodes by name — so
+// nodes get unique internal names and carry the visible text separately.
+type SankeyNode = {
+  name: string;
+  displayName: string;
+  itemStyle: { color: string };
 };
 
-function makeFrame(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<string, FlowNode>) {
-  const nodes = Array.from(nodeMap.values());
-  const data: DataWithSankey = {
-    type: 'sankey',
-    orientation: 'h',
-    link: {
-      source: [],
-      target: [],
-      value: [],
-      color: [],
-      //label: [],
-      //hovertemplate: `%{label}<extra>%{value:,.3r} ${flow.unit.htmlLong}</extra>`,
-    },
-    ids: [],
-    node: {
-      hovertemplate: `%{label}<extra>%{value:,.3r} ${flow.unit.htmlLong}</extra>`,
-      pad: 15,
-      thickness: 30,
-      line: {
-        color: 'black',
-        width: 0.5,
-      },
-      label: nodes.map((node) => `${link.year}: ${node.label}`),
-      color: nodes.map((node) => node.color),
-    },
-    valueformat: `,.3r`,
+type SankeyLink = {
+  source: string;
+  target: string;
+  value: number;
+  lineStyle: { color: string; opacity: number };
+};
+
+function makeSankey(flow: Flow, start: FlowLink, link: FlowLink, nodeMap: Map<string, FlowNode>) {
+  const nodes: SankeyNode[] = [];
+  const links: SankeyLink[] = [];
+
+  const addNode = (name: string, displayName: string, color: string) => {
+    nodes.push({ name, displayName, itemStyle: { color } });
+  };
+  const addLink = (source: string, target: string, value: number | null, color: string) => {
+    if (value == null || value <= 0) return;
+    // The link colors carry their own alpha; ECharts' default link opacity
+    // (0.2) would double-fade them
+    links.push({ source, target, value, lineStyle: { color, opacity: 1 } });
   };
 
-  function newFlow(
-    idPrefix: string,
-    src: number,
-    dest: number,
-    val: number | null,
-    color: string | undefined
-  ) {
-    data.link.source.push(src);
-    data.link.target.push(dest);
-    data.link.value.push(val);
-    data.link.color.push(color ?? null);
-    data.ids!.push(`${idPrefix}-${src}-${dest}`);
-  }
+  // Middle column: every flow node at the currently selected year
+  nodeMap.forEach((node) => {
+    addNode(`now:${node.id}`, `${link.year}: ${node.label}`, node.color);
+  });
 
+  // Action impacts: source → target flows in the selected year
   link.sources.forEach((srcId, idx) => {
     const src = nodeMap.get(srcId)!;
-    const target = nodeMap.get(link.targets[idx])!;
-    const value = link.values[idx];
-    newFlow('action', src.idx, target.idx, value, src.linkColor);
+    addLink(`now:${srcId}`, `now:${link.targets[idx]}`, link.values[idx], src.linkColor);
   });
 
   const impactSum = new Map<string, number>();
   link.sources.forEach((id, idx) => {
-    const newVal = (impactSum.get(id) ?? 0) + (link.values[idx] ?? 0);
-    impactSum.set(id, newVal);
+    impactSum.set(id, (impactSum.get(id) ?? 0) + (link.values[idx] ?? 0));
   });
 
-  function newNode(node: FlowNode, label: string | null = null) {
-    const idx = data.node.label.length;
-    data.node.label.push(label ?? node.label);
-    data.node.color!.push(node.color);
-    return idx;
-  }
-
+  // Left column: each source at the start year; right column: what remains
+  // of it at the selected year
   flow.sources.forEach((srcId, srcIdx) => {
     const src = nodeMap.get(srcId)!;
-    const startIdx = newNode(src, `${start.year.toString()}: ${src.label}`);
+    addNode(`start:${srcId}`, `${start.year}: ${src.label}`, src.color);
+    addNode(`remaining:${srcId}`, `${link.year}: ${src.label}`, src.color);
+
     const startVal = start.absoluteSourceValues[srcIdx];
-
     const remainingVal = link.absoluteSourceValues[srcIdx];
-    const remainingIdx = newNode(src, `${link.year.toString()}: ${src.label}`);
+    const impact = impactSum.get(srcId) ?? 0;
+    const remainingColor = tint(0.5, src.linkColor);
 
-    const impact = impactSum.get(srcId)!;
-    const remainingLinkColor = src.linkColor ? tint(0.5, src.linkColor) : undefined;
-    newFlow('start-remaining', startIdx, src.idx, remainingVal, remainingLinkColor);
-    newFlow('start-impact', startIdx, src.idx, impact, src.linkColor);
-    newFlow('start-other', startIdx, src.idx, startVal - impact - remainingVal, remainingLinkColor);
-
-    newFlow('action-remaining', src.idx, remainingIdx, remainingVal, remainingLinkColor);
+    addLink(`start:${srcId}`, `now:${srcId}`, remainingVal, remainingColor);
+    addLink(`start:${srcId}`, `now:${srcId}`, impact, src.linkColor);
+    addLink(`start:${srcId}`, `now:${srcId}`, startVal - impact - remainingVal, remainingColor);
+    addLink(`now:${srcId}`, `remaining:${srcId}`, remainingVal, remainingColor);
   });
 
-  return data;
+  return { nodes, links };
 }
-
-const BasicPlot = dynamic(() => import('@/components/graphs/Plot').then((mod) => mod.BasicPlot), {
-  ssr: false,
-});
 
 export default function DimensionalFlow(props: DimensionalPlotProps) {
   const { flow } = props;
   const theme = useTheme();
-  const [_startYear, endYear] = useReactiveVar(yearRangeVar);
+  const formatNumber = useNumberFormatter();
+  const [, endYear] = useReactiveVar(yearRangeVar);
 
-  useEffect(() => {
-    console.log('flow changed');
-  }, [flow]);
-
-  const data = useMemo(() => {
+  const chartData: EChartsCoreOption = useMemo(() => {
     const year = Math.max(flow.links[0].year + 1, endYear);
     const flowNodesWithoutColors = flow.nodes.filter((node) => !node.color);
     const colors = genColorsFromTheme(theme, flowNodesWithoutColors.length);
     let colorIdx = 0;
     const nodeMap = new Map(
-      flow.nodes.map((node, idx) => {
+      flow.nodes.map((node) => {
+        const color = node.color ?? colors[colorIdx++];
         const out: FlowNode = {
           ...node,
-          idx,
-          color: node.color ?? colors[colorIdx++],
+          color,
+          linkColor: transparentize(0.4, tint(0.5, color)),
         };
-        out.linkColor = transparentize(0.4, tint(0.5, out.color));
         return [out.id, out];
       })
     );
     const start = flow.links[0];
     const current = flow.links.find((link) => link.year == year)!;
-    return [makeFrame(flow, start, current, nodeMap)];
-  }, [flow, endYear, theme]);
+    const { nodes, links } = makeSankey(flow, start, current, nodeMap);
 
-  const layout = useMemo(() => {
-    const out: Partial<Plotly.Layout> = {
-      height: 300,
-      margin: {
-        t: 24,
-        r: 24,
-        b: 24,
-        l: 24,
+    const displayNames = new Map(nodes.map((node) => [node.name, node.displayName]));
+    const unit = flow.unit.htmlLong;
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: unknown) => {
+          const p = params as {
+            dataType?: string;
+            name?: string;
+            value?: number;
+            data?: { source?: string; target?: string; displayName?: string };
+          };
+          const value =
+            typeof p.value === 'number' ? `<b>${formatNumber(p.value)}</b> ${unit}` : '';
+          if (p.dataType === 'edge' && p.data?.source && p.data?.target) {
+            const from = displayNames.get(p.data.source) ?? p.data.source;
+            const to = displayNames.get(p.data.target) ?? p.data.target;
+            return `${from} → ${to}<br/>${value}`;
+          }
+          return `${p.data?.displayName ?? p.name ?? ''}<br/>${value}`;
+        },
       },
+      series: [
+        {
+          type: 'sankey',
+          left: 24,
+          top: 24,
+          bottom: 24,
+          nodeWidth: 30,
+          nodeGap: 15,
+          draggable: false,
+          emphasis: { focus: 'adjacency' },
+          itemStyle: {
+            borderColor: 'black',
+            borderWidth: 0.5,
+          },
+          label: {
+            formatter: (params: unknown) =>
+              (params as { data?: { displayName?: string } }).data?.displayName ?? '',
+          },
+          data: nodes,
+          links,
+        },
+      ],
     };
-    return out;
-  }, []);
-  const config = useMemo(() => {
-    const out: Partial<Plotly.Config> = {
-      displayModeBar: false,
-    };
-    return out;
-  }, []);
+  }, [flow, endYear, theme, formatNumber]);
 
-  // TODO: How to have useResizeHandler work with usePlotlyBasic?
-  // The resulting graph is not responsive with this implementation.
-  return <BasicPlot data={data} layout={layout} config={config} style={{ width: '100%' }} />;
+  return <Chart isLoading={false} data={chartData} height="300px" withResizeLegend={false} />;
 }
 
 DimensionalFlow.fragment = gql`

@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 
 import { Box } from '@mui/material';
 
+import DimensionalPieGraph from '@common/components/paths/DimensionalPieGraph';
 import styled from '@common/themes/styled';
 
 import type { OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
 import Loader from '@/components/common/Loader';
-import DimensionalBarGraph from '@/components/general/DimensionalBarGraph';
 import { useSiteWithSetter } from '@/context/site';
 import { getLatestProgressYear, hasProgressTracking } from '@/utils/progress-tracking';
 import DataTable from './DataTable';
@@ -89,7 +89,7 @@ const OutcomeNodeContent = ({
   const { showRefreshPrompt } = useFeatures();
 */
   const [activeTabId, setActiveTabId] = useState('graph');
-  const showDistribution = instance.id === 'zuerich' && subNodes.length > 1;
+  const showDistribution = instance.id.startsWith('zuerich') && subNodes.length > 1;
   /*
   const nodesTotal = getMetricValue(node, endYear);
   const nodesBase = getMetricValue(node, startYear);
@@ -139,10 +139,10 @@ const OutcomeNodeContent = ({
   const singleYearGraph = useMemo(
     () => (
       <div>
-        <DimensionalBarGraph metric={node.metricDim!} endYear={endYear} />
+        <DimensionalPieGraph metric={node.metricDim!} endYear={endYear} instance={instance} t={t} />
       </div>
     ),
-    [node, endYear]
+    [node, endYear, instance, t]
   );
 
   return (
