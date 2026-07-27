@@ -24,6 +24,16 @@ type DimensionalPlotProps = {
   flow: DimensionalPlotFragment;
 };
 
+// Tooltips render as DOM HTML (unlike the canvas-drawn node labels), so
+// backend-sourced label text must be escaped before interpolation.
+const escapeHtml = (text: string) =>
+  text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 type Flow = DimensionalPlotFragment;
 
 type FlowNode = Flow['nodes'][0] & {
@@ -130,6 +140,7 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
     const unit = flow.unit.htmlLong;
 
     return {
+      aria: { enabled: true },
       tooltip: {
         trigger: 'item',
         formatter: (params: unknown) => {
@@ -144,9 +155,9 @@ export default function DimensionalFlow(props: DimensionalPlotProps) {
           if (p.dataType === 'edge' && p.data?.source && p.data?.target) {
             const from = displayNames.get(p.data.source) ?? p.data.source;
             const to = displayNames.get(p.data.target) ?? p.data.target;
-            return `${from} → ${to}<br/>${value}`;
+            return `${escapeHtml(from)} → ${escapeHtml(to)}<br/>${value}`;
           }
-          return `${p.data?.displayName ?? p.name ?? ''}<br/>${value}`;
+          return `${escapeHtml(p.data?.displayName ?? p.name ?? '')}<br/>${value}`;
         },
       },
       series: [
