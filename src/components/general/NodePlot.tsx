@@ -8,6 +8,7 @@ import { tint, transparentize } from 'polished';
 import CsvDownload from 'react-json-to-csv';
 
 import { Chart } from '@common/components/Chart';
+import { type EChartsLocalePack, formatAriaTemplate } from '@common/components/chart-aria';
 import { getEChartsLocaleStrings } from '@common/components/register-echarts-locales';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
@@ -34,21 +35,6 @@ const DASHED_LINE_ICON = 'path://M0,0 h8 v4 h-8 z M12,0 h8 v4 h-8 z M24,0 h8 v4 
 const EMPTY_PLOT: { x: number[]; y: number[] } = { x: [], y: [] };
 
 // The subset of the ECharts locale-pack shape used for the aria description
-type EChartsLocalePack = {
-  aria?: {
-    general?: { withTitle?: string; withoutTitle?: string };
-    series?: {
-      single?: { prefix?: string; withName?: string };
-      multiple?: {
-        prefix?: string;
-        withName?: string;
-        separator?: { middle?: string; end?: string };
-      };
-    };
-  };
-  series?: { typeNames?: { line?: string } };
-};
-
 const PlotWrapper = styled.div<{ $compact?: boolean }>`
   margin: 0 auto;
   padding: 1em 0.5rem;
@@ -408,9 +394,8 @@ const NodePlot = (props: NodePlotProps) => {
       showBaseline ? describeSeries(baselineName, baselineForecast.x, baselineForecast.y) : null,
       showGoal ? `${targetName}: ${formatNumber(targetYearGoal)} ${unitText}` : null,
     ].filter((entry): entry is string => entry != null);
-    const localePack = getEChartsLocaleStrings(locale) as EChartsLocalePack;
-    const fmt = (template: string | undefined, values: Record<string, string | number> = {}) =>
-      (template ?? '').replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
+    const localePack: EChartsLocalePack = getEChartsLocaleStrings(locale);
+    const fmt = formatAriaTemplate;
     const many = describedSeries.length > 1;
     const seriesTpl = many ? localePack.aria?.series?.multiple : localePack.aria?.series?.single;
     const lineTypeName = localePack.series?.typeNames?.line ?? 'line chart';
