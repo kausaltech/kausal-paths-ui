@@ -14,6 +14,7 @@ import type { DimensionalPlotFragment } from '@/common/__generated__/graphql';
 import { yearRangeVar } from '@/common/cache';
 import { genColorsFromTheme } from '@/common/colors';
 import { useNumberFormatter } from '@/common/numbers';
+import { escapeHtml } from '@/components/charts/chartTooltip';
 
 // The sankey module is registered here rather than in the shared Chart
 // wrapper: this is the only chart using it, and this way it's bundled into
@@ -23,16 +24,6 @@ echarts.use([SankeyChart]);
 type DimensionalPlotProps = {
   flow: DimensionalPlotFragment;
 };
-
-// Tooltips render as DOM HTML (unlike the canvas-drawn node labels), so
-// backend-sourced label text must be escaped before interpolation.
-const escapeHtml = (text: string) =>
-  text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 
 type Flow = DimensionalPlotFragment;
 

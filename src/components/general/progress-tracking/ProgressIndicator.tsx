@@ -257,6 +257,7 @@ function getChartConfig(
   const hasBaselineSeries = !!baselineName && measuredEmissionsData.baseline.length > 0;
 
   return {
+    aria: { enabled: true },
     title: {
       show: false,
     },

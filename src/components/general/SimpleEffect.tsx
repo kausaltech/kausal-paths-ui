@@ -6,13 +6,13 @@ import type { EChartsCoreOption } from 'echarts/core';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
+import { type EChartsLocalePack, formatAriaTemplate } from '@common/components/chart-aria';
 import { getEChartsLocaleStrings } from '@common/components/register-echarts-locales';
 
 import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-import { type EChartsLocalePack, formatAriaTemplate } from '@/components/charts/chartAria';
 import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
 import type { SortActionsConfig } from '@/types/actions.types';
 

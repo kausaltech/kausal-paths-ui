@@ -17,7 +17,7 @@ import styled from '@common/themes/styled';
 import type { ActionListQuery } from '@/common/__generated__/graphql';
 import { Link } from '@/common/links';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
-import { stripHtml, truncateLabel } from '@/components/charts/chartTooltip';
+import { escapeHtml, stripHtml, truncateLabel } from '@/components/charts/chartTooltip';
 import Icon from '@/components/common/icon';
 
 const GraphContainer = styled.div`
@@ -194,6 +194,7 @@ function MacGraph(props: MacGraphProps) {
     };
 
     return {
+      aria: { enabled: true },
       tooltip: {
         trigger: 'item',
         formatter: (params: unknown) => {
@@ -201,10 +202,11 @@ function MacGraph(props: MacGraphProps) {
           const p = Array.isArray(params) ? (params[0] as unknown) : params;
           const i = (p as { dataIndex?: number } | undefined)?.dataIndex;
           if (typeof i !== 'number' || data.actions[i] == null) return '';
+          // Escape everything backend-sourced; only the units are intended HTML
           return (
-            `<b>${truncateLabel(data.actions[i])}</b><br/>` +
-            `${efficiencyName}: <b>${formatNumber(data.efficiency[i])}</b> ${indicatorUnit}<br/>` +
-            `${impactName}: <b>${formatNumber(data.impact[i])}</b> ${effectUnit}`
+            `<b>${escapeHtml(truncateLabel(data.actions[i]))}</b><br/>` +
+            `${escapeHtml(efficiencyName)}: <b>${formatNumber(data.efficiency[i])}</b> ${indicatorUnit}<br/>` +
+            `${escapeHtml(impactName)}: <b>${formatNumber(data.impact[i])}</b> ${effectUnit}`
           );
         },
       },

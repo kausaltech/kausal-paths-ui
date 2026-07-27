@@ -160,11 +160,6 @@
       "count": 2
     }
   },
-  "src/components/graphs/ActionComparisonGraph.tsx": {
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
   "src/components/graphs/MacGraph.tsx": {
     "react-hooks/set-state-in-effect": {
       "count": 1

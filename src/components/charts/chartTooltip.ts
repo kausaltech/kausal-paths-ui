@@ -9,6 +9,20 @@ export function truncateLabel(label: string, max = MAX_TOOLTIP_LABEL_LENGTH): st
 }
 
 /**
+ * Escape backend-sourced text (action/node names) before interpolating it
+ * into tooltip HTML strings — ECharts renders tooltips as DOM HTML, unlike
+ * canvas-drawn labels.
+ */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Strip HTML tags, e.g. from backend HTML units (`unit.htmlShort`) so they
  * can be used in canvas-rendered text like axis titles.
  */

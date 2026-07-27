@@ -30,7 +30,7 @@ Migrate one component at a time, easiest first. Each migration should:
 | ---- | ------------------------------------------------------------ | ----------------------------------- |
 | 1    | `src/components/general/BarGraph.tsx`                        | ✅ Deleted (was unused)             |
 | 2    | `src/components/general/DimensionalBarGraph.tsx`             | ✅ Deleted (replaced by shared pie) |
-| 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ✅ Migrated                         |
+| 3    | `src/components/graphs/ActionComparisonGraph.tsx`            | ✅ Migrated, later retired          |
 | 4    | `src/components/graphs/MacGraph.tsx`                         | ✅ Migrated                         |
 | 5    | `src/components/general/NodePlot.tsx`                        | ✅ Migrated                         |
 | 6    | `src/components/graphs/DimensionalFlow.tsx`                  | ✅ Migrated                         |
@@ -57,11 +57,20 @@ replacement:
 
 ## Remaining components
 
-### 3. ActionComparisonGraph (done)
+### 3. ActionComparisonGraph (done; since retired)
 
-Used by `src/components/general/ActionsComparison.tsx` (the default graph on
-the actions page; reachable on all instances since the graph view was
-un-gated from `hasEfficiency`). Notes from the migration:
+**Update:** after the ECharts migration, `ActionComparisonGraph` was deleted
+entirely — `ActionsComparison` (the default emissions-impact graph on the
+actions page) now renders `SimpleEffect`'s horizontal bar chart via the
+exported `getSimpleEffectChartConfig`, feeding it entries built from the
+actions' own `impactMetric` (target-year values; overviews don't exist in
+that mode). Trade-off: the per-action colors and the hover detail panel with
+the action link are gone; gained visible action names + value labels and one
+less chart implementation. The `onEvents`/axis-pointer notes below remain
+relevant for MacGraph.
+
+Original migration notes (was used by `ActionsComparison`, reachable on all
+instances since the graph view was un-gated from `hasEfficiency`):
 
 - The shared `Chart` wrapper gained a generic `onEvents` prop
   (`Record<eventName, handler>`), bound once at chart init through a ref —

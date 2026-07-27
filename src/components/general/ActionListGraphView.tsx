@@ -139,7 +139,6 @@ export function ActionListGraphView({
         <ActionsComparison
           id="comparison-view"
           actions={visibleUsableActions}
-          actionGroups={instanceActionGroups}
           sortBy={sortBy.sortKey}
           sortAscending={sortAscending}
           refetching={refetching}

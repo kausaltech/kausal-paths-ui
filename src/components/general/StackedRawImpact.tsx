@@ -98,6 +98,7 @@ function getChartConfig(
   }));
 
   return {
+    aria: { enabled: true },
     legend: {
       // 'plain' (default) wraps to multiple lines when items overflow the width,
       // unlike 'scroll' which keeps everything on a single scrollable line.

@@ -6,6 +6,7 @@ import type { EChartsCoreOption } from 'echarts/core';
 import { useLocale } from 'next-intl';
 
 import { Chart } from '@common/components/Chart';
+import { type EChartsLocalePack, formatAriaTemplate } from '@common/components/chart-aria';
 import { getEChartsLocaleStrings } from '@common/components/register-echarts-locales';
 import { useTheme } from '@common/themes';
 
@@ -13,7 +14,6 @@ import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphq
 import { activeScenarioVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-import { type EChartsLocalePack, formatAriaTemplate } from '@/components/charts/chartAria';
 import { truncateLabel } from '@/components/charts/chartTooltip';
 
 type ActionLookupEntry = {

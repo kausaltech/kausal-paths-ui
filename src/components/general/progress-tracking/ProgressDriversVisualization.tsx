@@ -338,6 +338,7 @@ export function ProgressDriversVisualization({
     });
 
     const option: EChartsOption = {
+      aria: { enabled: true },
       tooltip: {
         trigger: 'axis',
         textStyle: {
