@@ -11,7 +11,6 @@ import { type TFunction, useTranslation } from '@/common/i18n';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { summarizeYearlyValuesBetween } from '@/common/preprocess';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-import { stripHtml } from '@/components/charts/chartTooltip';
 import {
   type SimpleEffectEntry,
   getSimpleEffectChartConfig,
@@ -96,7 +95,7 @@ const ActionsComparison = ({
     () =>
       getSimpleEffectChartConfig(
         entries,
-        stripHtml(effectUnit ?? ''),
+        effectUnit ?? '',
         formatNumber,
         formatAxisLabel,
         NO_RESORT,

@@ -13,7 +13,7 @@ import type { ImpactOverviewDetailFragment } from '@/common/__generated__/graphq
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useAxisLabelFormatter, useNumberFormatter } from '@/common/numbers';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
-import { createAxisTooltipFormatter } from '@/components/charts/chartTooltip';
+import { createAxisTooltipFormatter, stripHtml } from '@/components/charts/chartTooltip';
 import type { SortActionsConfig } from '@/types/actions.types';
 
 type VisibleAction = { id: string; name: string };
@@ -44,13 +44,16 @@ function buildEntries(
 // impact overview
 export function getSimpleEffectChartConfig(
   entries: SimpleEffectEntry[],
-  unit: string,
+  // May contain sub/superscript markup (unit.htmlShort): rendered as-is in the
+  // HTML tooltip, stripped for canvas-drawn text (axis title, bar labels, aria)
+  unitHtml: string,
   formatNumber: (value: number) => string,
   formatAxisLabel: (value: number) => string,
   sortBy: SortActionsConfig,
   sortAscending: boolean,
   aria: { title: string; localePack: EChartsLocalePack }
 ): EChartsCoreOption {
+  const unitText = stripHtml(unitHtml);
   const sorted =
     sortBy.key === 'STANDARD'
       ? entries
@@ -74,7 +77,7 @@ export function getSimpleEffectChartConfig(
     // is {value}" — repeating that phrase per bar is tedious to listen to,
     // and a colon-separated pair needs no translation
     sorted
-      .map((entry) => `${entry.action}: ${formatNumber(entry.simpleEffect)} ${unit}`)
+      .map((entry) => `${entry.action}: ${formatNumber(entry.simpleEffect)} ${unitText}`)
       .join(', ') +
     (ariaTemplates?.data?.separator?.end ?? '.');
 
@@ -89,7 +92,7 @@ export function getSimpleEffectChartConfig(
     tooltip: {
       trigger: 'axis',
       formatter: createAxisTooltipFormatter((value) =>
-        value == null ? '—' : `${formatNumber(value)} ${unit}`
+        value == null ? '—' : `${formatNumber(value)} ${unitHtml}`
       ),
     },
     grid: {
@@ -102,7 +105,7 @@ export function getSimpleEffectChartConfig(
       position: 'top',
       // The unit is shown once as the axis title instead of repeating it on
       // every tick label
-      name: unit,
+      name: unitText,
       nameLocation: 'middle',
       nameGap: 32,
       axisLabel: {
@@ -112,6 +115,9 @@ export function getSimpleEffectChartConfig(
 
     yAxis: {
       type: 'category',
+      // ECharts puts the first category at the bottom by default; invert so
+      // the sorted entries read top-to-bottom like the actions table
+      inverse: true,
       splitArea: { show: true },
       axisLine: { show: false },
       axisLabel: { show: true, width: 175, overflow: 'break' },
@@ -132,7 +138,7 @@ export function getSimpleEffectChartConfig(
           position: 'right',
           formatter(params) {
             const value = (params.value as { simpleEffect?: number } | undefined)?.simpleEffect;
-            return value ? `${formatNumber(value)} ${unit}` : '';
+            return value ? `${formatNumber(value)} ${unitText}` : '';
           },
         },
       } satisfies BarSeriesOption,
