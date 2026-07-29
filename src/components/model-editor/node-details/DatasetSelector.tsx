@@ -30,11 +30,17 @@ type Props = {
 };
 
 function metricMatches(port: InputPort, metric: Metric): boolean {
-  // Mock filter: accept any metric when the port has no unit constraint,
-  // otherwise match the short-unit string. Backend-side compatibility rules
-  // (dimensions, quantities) aren't modeled on metrics yet.
-  if (!port.unit?.short) return true;
-  return metric.unit === port.unit.short;
+  if (!port.unit) return true;
+  if (!metric.unitInfo) return false;
+
+  const portDimensions = new Map(
+    port.unit.dimensionality.map(({ dimension, value }) => [dimension, value])
+  );
+  const metricDimensions = metric.unitInfo.dimensionality;
+  return (
+    portDimensions.size === metricDimensions.length &&
+    metricDimensions.every(({ dimension, value }) => portDimensions.get(dimension) === value)
+  );
 }
 
 export default function DatasetSelector({ port, onSelect }: Props) {

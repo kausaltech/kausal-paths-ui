@@ -93,7 +93,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const menuItems: MenuPage[] = rawMenu.filter(isMenuPage).map((page) => ({
     id: typeof page.id === 'string' ? page.id : null,
     title: page.title,
-    menuLabel: typeof page.menuLabel === 'string' ? page.menuLabel : null,
+    menuLabel: null,
     urlPath: page.urlPath,
   }));
 

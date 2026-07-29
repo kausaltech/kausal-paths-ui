@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -7,6 +7,9 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Divider,
   Drawer,
   IconButton,
@@ -21,13 +24,15 @@ import {
 } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { Link45deg, PencilSquare, X } from 'react-bootstrap-icons';
+import { Link45deg, PencilSquare, Sliders, X } from 'react-bootstrap-icons';
 
 import {
   type DatasetInfo,
   type DatasetPortData,
   useDatasetData,
 } from './dataset-viewer/useDatasetData';
+import BindingEditor from './node-details/BindingEditor';
+import { useDeleteBinding } from './usePortBindings';
 
 const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 
@@ -160,7 +165,15 @@ function DatasetMetadata({
   );
 }
 
-function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: string | null }) {
+function DatasetPortView({
+  port,
+  editHref,
+  onEditBinding,
+}: {
+  port: DatasetPortData;
+  editHref: string | null;
+  onEditBinding: () => void;
+}) {
   const t = useTranslations('model-editor');
   const usedDimensionKeys = new Set<string>();
   const usedCategoryKeysByDimension = new Map<string, Set<string>>();
@@ -197,18 +210,29 @@ function DatasetPortView({ port, editHref }: { port: DatasetPortData; editHref: 
         ) : (
           <Box />
         )}
-        {editHref && (
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
           <Button
-            component={Link}
-            href={editHref}
             size="small"
             variant="outlined"
-            startIcon={<PencilSquare size={12} />}
+            startIcon={<Sliders size={12} />}
+            onClick={onEditBinding}
             sx={{ textTransform: 'none', py: 0.25, fontSize: 12 }}
           >
-            {t('datasets-edit-dataset')}
+            {t('bindings-edit')}
           </Button>
-        )}
+          {editHref && (
+            <Button
+              component={Link}
+              href={editHref}
+              size="small"
+              variant="outlined"
+              startIcon={<PencilSquare size={12} />}
+              sx={{ textTransform: 'none', py: 0.25, fontSize: 12 }}
+            >
+              {t('datasets-edit-dataset')}
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <DatasetMetadata
@@ -247,6 +271,8 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
   const t = useTranslations('model-editor');
   const { datasetPorts, loading, error, fetch } = useDatasetData(nodeId);
   const pathname = usePathname();
+  const deleteBinding = useDeleteBinding();
+  const [editingPort, setEditingPort] = useState<DatasetPortData | null>(null);
 
   useEffect(() => {
     if (open && nodeId) fetch();
@@ -329,6 +355,7 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
             )}
             <DatasetPortView
               port={port}
+              onEditBinding={() => setEditingPort(port)}
               editHref={
                 editorBase ? `${editorBase}/datasets/${encodeURIComponent(port.dataset.id)}` : null
               }
@@ -337,6 +364,42 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
           </Box>
         ))}
       </Box>
+      <Dialog
+        open={editingPort !== null}
+        onClose={() => setEditingPort(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ pr: 6 }}>
+          {t('bindings-edit')}
+          <IconButton
+            aria-label={t('common-close')}
+            onClick={() => setEditingPort(null)}
+            sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
+          >
+            <X size={20} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {editingPort && (
+            <BindingEditor
+              binding={{
+                id: editingPort.bindingId,
+                kind: 'dataset',
+                tags: editingPort.tags,
+                transformations: editingPort.transformations,
+                metricId: editingPort.boundMetric?.id,
+                metrics: editingPort.dataset.metrics,
+              }}
+              onSaved={() => {
+                setEditingPort(null);
+                fetch();
+              }}
+              onDelete={() => deleteBinding(editingPort.bindingId)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Drawer>
   );
 }

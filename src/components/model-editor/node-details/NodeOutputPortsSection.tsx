@@ -44,6 +44,7 @@ type PortPatch = { unit: string; quantity: string };
 function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
   return ports.map((p) => ({
     id: p.id,
+    identifier: p.identifier ?? null,
     unit: p.unit?.standard ?? '',
     quantity: p.quantity ?? null,
     label: p.label ?? null,
@@ -227,7 +228,7 @@ export default function NodeOutputPortsSection({
         const connectedEdges = outgoingByPort.get(port.id) ?? [];
         const singleTargetNode =
           connectedEdges.length === 1
-            ? (nodeMap.get(connectedEdges[0].toRef.nodeId) ?? null)
+            ? (nodeMap.get(connectedEdges[0].portRef.nodeId) ?? null)
             : null;
         // For a port with no explicit label and exactly one outgoing edge,
         // use the name downstream formulas reference this output by:
@@ -276,8 +277,8 @@ export default function NodeOutputPortsSection({
               <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
                 {connectedEdges.length > 0 ? (
                   connectedEdges.map((e) => {
-                    const targetNode = nodeMap.get(e.toRef.nodeId);
-                    const highlighted = hoveredNodeId === e.toRef.nodeId;
+                    const targetNode = nodeMap.get(e.portRef.nodeId);
+                    const highlighted = hoveredNodeId === e.portRef.nodeId;
                     return (
                       <Box
                         key={e.id}
@@ -293,8 +294,8 @@ export default function NodeOutputPortsSection({
                         }
                       >
                         <ConnectedNodeChip
-                          nodeId={e.toRef.nodeId}
-                          label={targetNode?.name ?? e.toRef.nodeId}
+                          nodeId={e.portRef.nodeId}
+                          label={targetNode?.name ?? e.portRef.nodeId}
                           style={
                             targetNode ? getStyleForNode(targetNode) : getNodeStyle('', '', false)
                           }

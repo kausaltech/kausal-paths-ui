@@ -146,7 +146,7 @@ export const DATASET_DETAIL_FIELDS = gql`
     }
     portBindings {
       id
-      nodeRef {
+      portRef {
         nodeId
         portId
       }

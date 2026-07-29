@@ -205,8 +205,8 @@ export default function NodeDetailsPanel({
   ).sort();
 
   const incomingByPort = new Map<string, EditorNodeEdgeFragment[]>();
-  for (const e of edges.filter((e) => e.toRef.nodeId === node.id)) {
-    const portId = e.toRef.portId;
+  for (const e of edges.filter((e) => e.portRef.nodeId === node.id)) {
+    const portId = e.portRef.portId;
     const list = incomingByPort.get(portId) ?? [];
     list.push(e);
     incomingByPort.set(portId, list);

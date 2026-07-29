@@ -87,13 +87,13 @@ export function deriveStateFromSource(
   }));
 
   const edgeMappings: DraftEdgeMapping[] = outgoingEdges.map((edge) => {
-    const targetNode = nodesById.get(edge.toRef.nodeId);
+    const targetNode = nodesById.get(edge.portRef.nodeId);
     return {
       id: edge.id,
       outputMetricPortId: edge.fromRef.portId,
-      targetNodeId: edge.toRef.nodeId,
-      targetNodeName: targetNode?.name ?? edge.toRef.nodeId,
-      targetPortId: edge.toRef.portId,
+      targetNodeId: edge.portRef.nodeId,
+      targetNodeName: targetNode?.name ?? edge.portRef.nodeId,
+      targetPortId: edge.portRef.portId,
       tags: [],
       fromDimensions: [],
       toDimensions: [],

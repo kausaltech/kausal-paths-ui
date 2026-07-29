@@ -75,6 +75,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
   // lists on the new node.
   const inputPorts: InputPortInput[] = (spec?.inputPorts ?? []).map((port) => ({
     id: crypto.randomUUID(),
+    identifier: port.identifier ?? null,
     label: port.label ?? null,
     multi: port.multi,
     quantity: port.quantity ?? null,
@@ -84,6 +85,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
   }));
   const outputPorts: OutputPortInput[] = (spec?.outputPorts ?? []).map((port) => ({
     id: crypto.randomUUID(),
+    identifier: port.identifier ?? null,
     columnId: port.columnId ?? null,
     label: port.label ?? null,
     quantity: port.quantity ?? null,

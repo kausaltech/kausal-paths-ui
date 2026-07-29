@@ -20,6 +20,8 @@ export type CreateEdgeArgs = {
   fromPort?: string;
   /** Target input port id; null lets the backend resolve/append one. */
   toPort?: string | null;
+  /** Atomically displace the current binding on an occupied non-multi port. */
+  replace?: boolean;
 };
 
 /**
@@ -34,7 +36,13 @@ export function useCreateEdge() {
   const [mutate] = useMutation<CreateEdgeMutation, CreateEdgeMutationVariables>(CREATE_EDGE);
 
   return useCallback(
-    async ({ fromNodeId, toNodeId, fromPort = 'output', toPort = null }: CreateEdgeArgs) => {
+    async ({
+      fromNodeId,
+      toNodeId,
+      fromPort = 'output',
+      toPort = null,
+      replace = false,
+    }: CreateEdgeArgs) => {
       try {
         const result = await mutate({
           variables: {
@@ -45,6 +53,7 @@ export function useCreateEdge() {
               toNodeId,
               fromPort,
               toPort,
+              replace,
               // Optional in the schema (defaults to null), but codegen types it
               // as required — send it explicitly.
               transformations: null,

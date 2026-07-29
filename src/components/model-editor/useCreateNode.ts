@@ -83,6 +83,7 @@ export function useCreateNode() {
       const newIdentifier = pickUniqueIdentifier(toIdentifierBase(name), existingIdentifiers);
       const outputPort: OutputPortInput = {
         id: crypto.randomUUID(),
+        identifier: null,
         unit,
         columnId: null,
         label: null,

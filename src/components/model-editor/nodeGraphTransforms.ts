@@ -37,10 +37,10 @@ export function computeUpstreamNodeIds(
 ): Set<string> {
   const reverseAdj = new Map<string, string[]>();
   for (const edge of edges) {
-    if (!allNodeIds.has(edge.fromRef.nodeId) || !allNodeIds.has(edge.toRef.nodeId)) continue;
-    const list = reverseAdj.get(edge.toRef.nodeId) ?? [];
+    if (!allNodeIds.has(edge.fromRef.nodeId) || !allNodeIds.has(edge.portRef.nodeId)) continue;
+    const list = reverseAdj.get(edge.portRef.nodeId) ?? [];
     list.push(edge.fromRef.nodeId);
-    reverseAdj.set(edge.toRef.nodeId, list);
+    reverseAdj.set(edge.portRef.nodeId, list);
   }
   const visited = new Set<string>();
   const stack = [...rootIds];
@@ -72,7 +72,7 @@ export function computeSnippedEdgeIds(
 
   for (const edge of edges) {
     const src = nodeById.get(edge.fromRef.nodeId);
-    const tgt = nodeById.get(edge.toRef.nodeId);
+    const tgt = nodeById.get(edge.portRef.nodeId);
     const srcLayoutMeta = src ? getNodeLayoutMeta(src) : null;
     const tgtLayoutMeta = tgt ? getNodeLayoutMeta(tgt) : null;
     if (!srcLayoutMeta || !tgtLayoutMeta) continue;
@@ -100,19 +100,19 @@ export function convertToElk(
   const sourceHandlesFromEdges = new Map<string, Set<string>>();
   const targetHandlesFromEdges = new Map<string, Set<string>>();
   for (const edge of edges) {
-    if (!nodeIds.has(edge.fromRef.nodeId) || !nodeIds.has(edge.toRef.nodeId)) continue;
+    if (!nodeIds.has(edge.fromRef.nodeId) || !nodeIds.has(edge.portRef.nodeId)) continue;
     if (!sourceHandlesFromEdges.has(edge.fromRef.nodeId))
       sourceHandlesFromEdges.set(edge.fromRef.nodeId, new Set());
     sourceHandlesFromEdges.get(edge.fromRef.nodeId)!.add(edge.fromRef.portId);
-    if (!targetHandlesFromEdges.has(edge.toRef.nodeId))
-      targetHandlesFromEdges.set(edge.toRef.nodeId, new Set());
-    targetHandlesFromEdges.get(edge.toRef.nodeId)!.add(edge.toRef.portId);
+    if (!targetHandlesFromEdges.has(edge.portRef.nodeId))
+      targetHandlesFromEdges.set(edge.portRef.nodeId, new Set());
+    targetHandlesFromEdges.get(edge.portRef.nodeId)!.add(edge.portRef.portId);
   }
 
   const nodesById = new Map(nodes.map((n) => [n.id, n]));
   const validEdges = edges.filter((edge) => {
     const src = nodesById.get(edge.fromRef.nodeId);
-    const tgt = nodesById.get(edge.toRef.nodeId);
+    const tgt = nodesById.get(edge.portRef.nodeId);
     if (src) {
       const outPorts = getNodeSpec(src)?.outputPorts;
       if (!outPorts || !outPorts.some((p) => p.id === edge.fromRef.portId)) {
@@ -124,9 +124,9 @@ export function convertToElk(
     }
     if (tgt) {
       const inPorts = getNodeSpec(tgt)?.inputPorts;
-      if (!inPorts || !inPorts.some((p) => p.id === edge.toRef.portId)) {
+      if (!inPorts || !inPorts.some((p) => p.id === edge.portRef.portId)) {
         console.warn(
-          `Skipping edge ${edge.id}: toPort="${edge.toRef.portId}" not found on node "${tgt.identifier}"`
+          `Skipping edge ${edge.id}: toPort="${edge.portRef.portId}" not found on node "${tgt.identifier}"`
         );
         return false;
       }
@@ -176,13 +176,15 @@ export function convertToElk(
   const elkNodesById = new Map(elkNodes.map((node) => [node.id, node]));
 
   const elkEdges = validEdges
-    .filter((edge) => elkNodesById.has(edge.fromRef.nodeId) && elkNodesById.has(edge.toRef.nodeId))
+    .filter(
+      (edge) => elkNodesById.has(edge.fromRef.nodeId) && elkNodesById.has(edge.portRef.nodeId)
+    )
     .map<Edge>((edge) => ({
       id: edge.id,
       source: edge.fromRef.nodeId,
       sourceHandle: edge.fromRef.portId,
-      target: edge.toRef.nodeId,
-      targetHandle: edge.toRef.portId,
+      target: edge.portRef.nodeId,
+      targetHandle: edge.portRef.portId,
       markerEnd: EDGE_MARKER,
     }));
 
