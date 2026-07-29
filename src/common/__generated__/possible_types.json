@@ -21,6 +21,10 @@
       "User",
       "UserNotFoundError"
     ],
+    "BindDatasetPayload": [
+      "DatasetPortType",
+      "OperationInfo"
+    ],
     "CreateDataPointCommentPayload": [
       "DataPointComment",
       "OperationInfo"
@@ -62,11 +66,6 @@
       "ModelDeletePayload",
       "OperationInfo"
     ],
-    "EdgeTransformationUnion": [
-      "AssignCategoryTransformationType",
-      "FlattenTransformationType",
-      "SelectCategoriesTransformationType"
-    ],
     "EditableEntity": [
       "ActionNode",
       "DatasetPortType",
@@ -104,6 +103,42 @@
       "NumberParameterType",
       "StringParameterType",
       "UnknownParameterType"
+    ],
+    "PortTransformation": [
+      "AssignCategoryType",
+      "AssignDimensionType",
+      "DropNullsType",
+      "EnsureUnitType",
+      "FilterColumnType",
+      "FilterDimensionType",
+      "FilterTemporalType",
+      "FlattenType",
+      "IndexTemporalType",
+      "RemapLegacyYearsType",
+      "RenameColumnType",
+      "RenameItemType",
+      "SelectCategoriesType",
+      "SelectMetricType",
+      "SetForecastFromType",
+      "TagOperationType"
+    ],
+    "PortTransformationUnion": [
+      "AssignCategoryType",
+      "AssignDimensionType",
+      "DropNullsType",
+      "EnsureUnitType",
+      "FilterColumnType",
+      "FilterDimensionType",
+      "FilterTemporalType",
+      "FlattenType",
+      "IndexTemporalType",
+      "RemapLegacyYearsType",
+      "RenameColumnType",
+      "RenameItemType",
+      "SelectCategoriesType",
+      "SelectMetricType",
+      "SetForecastFromType",
+      "TagOperationType"
     ],
     "PublishModelInstancePayload": [
       "InstanceType",
@@ -179,12 +214,20 @@
       "DataSource",
       "OperationInfo"
     ],
+    "UpdateDatasetBindingPayload": [
+      "DatasetPortType",
+      "OperationInfo"
+    ],
     "UpdateDimensionCategoriesPayload": [
       "InstanceDimension",
       "OperationInfo"
     ],
     "UpdateDimensionPayload": [
       "InstanceDimension",
+      "OperationInfo"
+    ],
+    "UpdateEdgeBindingPayload": [
+      "NodeEdgeType",
       "OperationInfo"
     ],
     "UpdateNodePayload": [

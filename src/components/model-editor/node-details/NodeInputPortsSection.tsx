@@ -20,6 +20,7 @@ import {
   Database,
   InfoSquare,
   PencilSquare,
+  Sliders,
   X as XIcon,
 } from 'react-bootstrap-icons';
 
@@ -30,7 +31,8 @@ import type {
 import { getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { useCreateEdge } from '../useCreateEdge';
-import { useDeleteEdge } from '../useDeleteEdge';
+import { useBindDataset, useDeleteBinding } from '../usePortBindings';
+import BindingEditor, { type BindingEditorValue } from './BindingEditor';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
@@ -131,11 +133,13 @@ export default function NodeInputPortsSection({
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
   const createEdge = useCreateEdge();
-  const deleteEdge = useDeleteEdge();
+  const bindDataset = useBindDataset();
+  const deleteBinding = useDeleteBinding();
   const [binding, setBinding] = useState(false);
   const [bindError, setBindError] = useState<string | null>(null);
   const [removingEdgeId, setRemovingEdgeId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [editingBinding, setEditingBinding] = useState<BindingEditorValue | null>(null);
 
   const closeDialog = () => {
     setEditingPortId(null);
@@ -150,21 +154,12 @@ export default function NodeInputPortsSection({
     setBinding(true);
     setBindError(null);
     try {
-      // createEdge only appends; a non-multi port holds a single binding, so
-      // replace any existing edge(s) before adding the new source. (If a delete
-      // succeeds but the create then fails, the port is left empty — the
-      // refetch surfaces that honestly and the user can re-pick.)
-      if (!editingPort.multi) {
-        const existing = incomingByPort.get(editingPort.id) ?? [];
-        for (const edge of existing) {
-          await deleteEdge(edge.id);
-        }
-      }
       await createEdge({
         fromNodeId: sourceNode.identifier,
         toNodeId: targetNode.identifier,
         fromPort: matchingOutputPortId(sourceNode, editingPort) ?? 'output',
         toPort: editingPort.id,
+        replace: !editingPort.multi && editingPort.bindings.length > 0,
       });
       closeDialog();
     } catch (err) {
@@ -180,7 +175,7 @@ export default function NodeInputPortsSection({
     setRemoveError(null);
     setBindError(null);
     try {
-      await deleteEdge(edgeId);
+      await deleteBinding(edgeId);
     } catch (err) {
       const message = err instanceof Error ? err.message : t('nodes-failed-remove-input-source');
       // Surface the error where the action was taken: the dialog (when open)
@@ -192,9 +187,24 @@ export default function NodeInputPortsSection({
     }
   };
 
-  const handleSelectDataset = () => {
-    // No backend mutation exists yet to bind a dataset to an input port.
-    setBindError(t('nodes-binding-dataset-not-supported'));
+  const handleSelectDataset = async (datasetId: string, metricId: string) => {
+    if (!editingPort || binding) return;
+    setBinding(true);
+    setBindError(null);
+    try {
+      await bindDataset({
+        nodeId: currentNodeId,
+        portId: editingPort.id,
+        datasetId,
+        metricId,
+        replace: !editingPort.multi && editingPort.bindings.length > 0,
+      });
+      closeDialog();
+    } catch (err) {
+      setBindError(err instanceof Error ? err.message : t('bindings-bind-dataset-failed'));
+    } finally {
+      setBinding(false);
+    }
   };
 
   if (ports.length === 0) return null;
@@ -287,16 +297,18 @@ export default function NodeInputPortsSection({
                     return (
                       <Box
                         key={e.id}
-                        sx={
-                          highlighted
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          ...(highlighted
                             ? {
                                 '& .MuiChip-root': {
                                   borderColor: 'primary.main',
                                   bgcolor: 'action.hover',
                                 },
                               }
-                            : undefined
-                        }
+                            : {}),
+                        }}
                       >
                         <ConnectedNodeChip
                           nodeId={e.fromRef.nodeId}
@@ -309,33 +321,70 @@ export default function NodeInputPortsSection({
                           onDelete={() => void handleRemoveEdge(e.id)}
                           deleting={removingEdgeId === e.id}
                         />
+                        <Tooltip title={t('bindings-edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setEditingBinding({
+                                id: e.id,
+                                kind: 'edge',
+                                tags: e.tags,
+                                transformations: e.transformations,
+                              })
+                            }
+                            aria-label={t('bindings-edit')}
+                            sx={{ p: 0.5 }}
+                          >
+                            <Sliders size={12} />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     );
                   })}
                   {datasetBindings.map((ds) => (
-                    <Chip
-                      key={ds.id}
-                      icon={<Database size={18} />}
-                      label={`${ds.dataset.name} → ${ds.metric.label}`}
-                      title={`${ds.dataset.name} → ${ds.metric.label}`}
-                      variant="outlined"
-                      onClick={() => onShowDataset?.(ds.id)}
-                      sx={{
-                        maxWidth: '100%',
-                        cursor: 'pointer',
-                        minHeight: 32,
-                        height: 'auto',
-                        fontSize: 12,
-                        borderRadius: 1,
-                        py: 0.25,
-                        '& .MuiChip-label': {
-                          px: 1.25,
-                          whiteSpace: 'normal',
-                          overflowWrap: 'anywhere',
-                          lineHeight: 1.3,
-                        },
-                      }}
-                    />
+                    <Box key={ds.id} sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Chip
+                        icon={<Database size={18} />}
+                        label={`${ds.dataset.name} → ${ds.metric.label}`}
+                        title={`${ds.dataset.name} → ${ds.metric.label}`}
+                        variant="outlined"
+                        onClick={() => onShowDataset?.(ds.id)}
+                        sx={{
+                          maxWidth: '100%',
+                          cursor: 'pointer',
+                          minHeight: 32,
+                          height: 'auto',
+                          fontSize: 12,
+                          borderRadius: 1,
+                          py: 0.25,
+                          '& .MuiChip-label': {
+                            px: 1.25,
+                            whiteSpace: 'normal',
+                            overflowWrap: 'anywhere',
+                            lineHeight: 1.3,
+                          },
+                        }}
+                      />
+                      <Tooltip title={t('bindings-edit')}>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            setEditingBinding({
+                              id: ds.id,
+                              kind: 'dataset',
+                              tags: ds.tags,
+                              transformations: ds.transformations,
+                              metricId: ds.metric.id,
+                              metrics: ds.dataset.metrics,
+                            })
+                          }
+                          aria-label={t('bindings-edit')}
+                          sx={{ p: 0.5 }}
+                        >
+                          <Sliders size={12} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   ))}
                 </Box>
               ) : (
@@ -373,7 +422,7 @@ export default function NodeInputPortsSection({
       })}
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          {editingPort && (incomingByPort.get(editingPort.id) ?? []).length > 0
+          {editingPort && editingPort.bindings.length > 0 && !editingPort.multi
             ? t('nodes-replace-input-source')
             : t('nodes-select-input-source')}
           <IconButton
@@ -403,7 +452,9 @@ export default function NodeInputPortsSection({
                 }))}
                 removingEdgeId={removingEdgeId}
                 onSelectNode={(id) => void handleSelectNode(id)}
-                onSelectDataset={handleSelectDataset}
+                onSelectDataset={(datasetId, metricId) =>
+                  void handleSelectDataset(datasetId, metricId)
+                }
                 onRemoveSource={(edgeId) => void handleRemoveEdge(edgeId)}
               />
               {binding && (
@@ -421,6 +472,32 @@ export default function NodeInputPortsSection({
                 </Box>
               )}
             </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={editingBinding !== null}
+        onClose={() => setEditingBinding(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ pr: 6 }}>
+          {t('bindings-edit')}
+          <IconButton
+            aria-label={t('common-close')}
+            onClick={() => setEditingBinding(null)}
+            sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
+          >
+            <XIcon size={20} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {editingBinding && (
+            <BindingEditor
+              binding={editingBinding}
+              onSaved={() => setEditingBinding(null)}
+              onDelete={() => deleteBinding(editingBinding.id)}
+            />
           )}
         </DialogContent>
       </Dialog>

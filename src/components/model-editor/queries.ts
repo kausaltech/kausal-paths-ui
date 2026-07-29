@@ -91,6 +91,72 @@ export const editorPreviewModeVar = makeVar<EditorPreviewMode>('PUBLISHED');
  */
 export const staleVersionNotificationVar = makeVar<boolean>(false);
 
+export const EDITOR_PORT_TRANSFORMATION = gql`
+  fragment EditorPortTransformation on PortTransformation {
+    kind
+    isSystemManaged
+    ... on FilterDimensionType {
+      dimension
+      groups
+      categories
+      exclude
+      flatten
+    }
+    ... on AssignDimensionType {
+      dimension
+      category
+    }
+    ... on FilterTemporalType {
+      minYear
+      maxYear
+    }
+    ... on FilterColumnType {
+      column
+      value
+      values
+      ref
+      dropCol
+      exclude
+      flatten
+    }
+    ... on RenameColumnType {
+      column
+      newName
+    }
+    ... on RenameItemType {
+      column
+      oldItem
+      newItem
+    }
+    ... on SetForecastFromType {
+      year
+    }
+    ... on EnsureUnitType {
+      unit {
+        id
+        short
+        standard
+      }
+    }
+    ... on TagOperationType {
+      tag
+    }
+    ... on SelectCategoriesType {
+      dimension
+      categories
+      flatten
+      exclude
+    }
+    ... on AssignCategoryType {
+      dimension
+      category
+    }
+    ... on FlattenType {
+      dimension
+    }
+  }
+`;
+
 /**
  * The whole-model structural query behind the node graph editor. Runs with
  * `fetchPolicy: 'no-cache'` (see NodeGraphEditor) because the result spans the
@@ -98,6 +164,7 @@ export const staleVersionNotificationVar = makeVar<boolean>(false);
  * instead of normalized-cache writes.
  */
 export const GET_NODE_GRAPH = gql`
+  # eslint-disable @graphql-eslint/selection-set-depth -- editor/spec/binding transformation nesting exceeds the generic limit.
   query NodeGraph {
     instance {
       id
@@ -189,6 +256,7 @@ export const GET_NODE_GRAPH = gql`
       spec {
         inputPorts {
           id
+          identifier
           label
           multi
           quantity
@@ -196,6 +264,10 @@ export const GET_NODE_GRAPH = gql`
             id
             short
             standard
+            dimensionality {
+              dimension
+              value
+            }
           }
           requiredDimensions
           supportedDimensions
@@ -203,23 +275,45 @@ export const GET_NODE_GRAPH = gql`
             __typename
             ... on DatasetPortType {
               id
+              tags
+              portRef {
+                nodeId
+                portId
+              }
               dataset {
                 id
                 identifier
                 name
+                metrics {
+                  id
+                  label
+                  unit
+                }
               }
               metric {
                 id
                 label
               }
+              transformations {
+                ...EditorPortTransformation
+              }
             }
             ... on NodeEdgeType {
               id
+              tags
+              portRef {
+                nodeId
+                portId
+              }
+              transformations {
+                ...EditorPortTransformation
+              }
             }
           }
         }
         outputPorts {
           id
+          identifier
           label
           quantity
           columnId
@@ -259,11 +353,15 @@ export const GET_NODE_GRAPH = gql`
       nodeId
       portId
     }
-    toRef {
+    portRef {
       nodeId
       portId
     }
+    transformations {
+      ...EditorPortTransformation
+    }
   }
+  ${EDITOR_PORT_TRANSFORMATION}
 `;
 
 const EDITOR_OPERATION_INFO_FIELDS = gql`
@@ -387,12 +485,92 @@ export const CREATE_EDGE = gql`
             nodeId
             portId
           }
-          toRef {
+          portRef {
             nodeId
             portId
           }
         }
         ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const BIND_DATASET = gql`
+  mutation BindDataset($instanceId: ID!, $nodeId: ID!, $input: BindDatasetInput!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      nodeEditor(nodeId: $nodeId) {
+        bindDataset(input: $input) {
+          __typename
+          ... on DatasetPortType {
+            id
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_DATASET_BINDING = gql`
+  mutation UpdateDatasetBinding(
+    $instanceId: ID!
+    $bindingId: ID!
+    $input: UpdateDatasetBindingInput!
+    $version: UUID
+  ) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      bindingEditor(bindingId: $bindingId) {
+        updateDatasetBinding(input: $input) {
+          __typename
+          ... on DatasetPortType {
+            id
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_EDGE_BINDING = gql`
+  mutation UpdateEdgeBinding(
+    $instanceId: ID!
+    $bindingId: ID!
+    $input: UpdateEdgeBindingInput!
+    $version: UUID
+  ) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      bindingEditor(bindingId: $bindingId) {
+        updateEdgeBinding(input: $input) {
+          __typename
+          ... on NodeEdgeType {
+            id
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_BINDING = gql`
+  mutation DeleteBinding($instanceId: ID!, $bindingId: ID!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      bindingEditor(bindingId: $bindingId) {
+        deleteBinding {
           ...EditorOperationInfoFields
         }
       }
@@ -489,7 +667,13 @@ export const AVAILABLE_DATASETS = gql`
           metrics {
             id
             label
-            unit
+            unitInfo {
+              id
+              dimensionality {
+                dimension
+                value
+              }
+            }
           }
         }
       }

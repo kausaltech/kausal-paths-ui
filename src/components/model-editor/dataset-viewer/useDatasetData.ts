@@ -8,7 +8,7 @@ import {
   type DatasetPortDataQueryVariables,
 } from '@/common/__generated__/graphql';
 import { DimensionalMetric } from '../dimensional-metric';
-import { DIMENSIONAL_METRIC_FIELDS } from '../queries';
+import { DIMENSIONAL_METRIC_FIELDS, EDITOR_PORT_TRANSFORMATION } from '../queries';
 
 const GET_DATASET_PORT_DATA = gql`
   # eslint-disable @graphql-eslint/selection-set-depth -- editor/spec nesting plus dataset metadata exceeds the generic limit.
@@ -23,6 +23,10 @@ const GET_DATASET_PORT_DATA = gql`
               __typename
               ... on DatasetPortType {
                 id
+                tags
+                transformations {
+                  ...EditorPortTransformation
+                }
                 dataset {
                   id
                   identifier
@@ -65,6 +69,7 @@ const GET_DATASET_PORT_DATA = gql`
     }
   }
   ${DIMENSIONAL_METRIC_FIELDS}
+  ${EDITOR_PORT_TRANSFORMATION}
 `;
 
 type DatasetInputPort = NonNullable<
@@ -83,6 +88,8 @@ export type DatasetPortData = {
   portId: DatasetInputPort['id'];
   dataset: DatasetInfo;
   boundMetric: DatasetPortBinding['metric'];
+  tags: DatasetPortBinding['tags'];
+  transformations: DatasetPortBinding['transformations'];
   metrics: DimensionalMetric[];
 };
 
@@ -122,6 +129,8 @@ export function useDatasetData(nodeId: string | null): UseDatasetDataResult {
           portId: port.id,
           dataset: binding.dataset,
           boundMetric: binding.metric,
+          tags: binding.tags,
+          transformations: binding.transformations,
           metrics,
         });
       }

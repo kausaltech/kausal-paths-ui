@@ -133,7 +133,7 @@ function FlowEditor(props: {
           !userHiddenEdgeIds.has(edge.id) &&
           (upstreamFilteredNodeIds === null ||
             (upstreamFilteredNodeIds.has(edge.fromRef.nodeId) &&
-              upstreamFilteredNodeIds.has(edge.toRef.nodeId)))
+              upstreamFilteredNodeIds.has(edge.portRef.nodeId)))
       ),
     [props.edges, autoSnippedEdgeIds, userHiddenEdgeIds, upstreamFilteredNodeIds]
   );
@@ -145,14 +145,14 @@ function FlowEditor(props: {
     for (const edge of props.edges) {
       if (!autoSnippedEdgeIds.has(edge.id)) continue;
       const srcNode = nodeMap.get(edge.fromRef.nodeId);
-      const tgtNode = nodeMap.get(edge.toRef.nodeId);
+      const tgtNode = nodeMap.get(edge.portRef.nodeId);
       if (!srcNode || !tgtNode) continue;
-      if (!visibleNodeIdsSet.has(edge.toRef.nodeId)) continue;
-      const perPort = refs.get(edge.toRef.nodeId) ?? new Map<string, HiddenContextRef[]>();
-      const list = perPort.get(edge.toRef.portId) ?? [];
+      if (!visibleNodeIdsSet.has(edge.portRef.nodeId)) continue;
+      const perPort = refs.get(edge.portRef.nodeId) ?? new Map<string, HiddenContextRef[]>();
+      const list = perPort.get(edge.portRef.portId) ?? [];
       list.push({ id: srcNode.id, label: srcNode.name, color: getNodeBorderColor(srcNode) });
-      perPort.set(edge.toRef.portId, list);
-      refs.set(edge.toRef.nodeId, perPort);
+      perPort.set(edge.portRef.portId, list);
+      refs.set(edge.portRef.nodeId, perPort);
     }
     for (const perPort of refs.values()) {
       for (const list of perPort.values()) {
