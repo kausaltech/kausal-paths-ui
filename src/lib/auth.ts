@@ -30,6 +30,11 @@ function getAllowedHosts(): string[] {
     }
   }
 
+  if (hosts.length === 0) {
+    // This can happen during a build
+    hosts.push('localhost');
+  }
+
   return hosts;
 }
 
