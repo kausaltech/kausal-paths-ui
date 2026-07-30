@@ -1,7 +1,7 @@
-[prepare]
+[deps]
 disable = ["npm", "yarn"]
 
-[prepare.pnpm]
+[deps.pnpm]
 auto = true
 
 [env]
