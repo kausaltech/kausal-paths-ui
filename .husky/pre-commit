@@ -1,20 +1,4 @@
 # shellcheck disable=SC2148
 [ -n "$CI" ] && exit 0
 
-# Check that the active node version matches what is in
-# the project's .nvmrc
-
-if [ -z "$husky_skip_init" ]; then
-  ACTIVE_NODE_VER=$(node -v | sed -e 's/^v//')
-  REQUIRED_NODE_VER=$(sed -e 's/^v//' < .nvmrc)
-
-  if ! (echo "$ACTIVE_NODE_VER" | grep -q "^$REQUIRED_NODE_VER"); then
-    echo "❌ node version mismatch"
-    echo "   active node version: ${ACTIVE_NODE_VER}"
-    echo "   project requires: ${REQUIRED_NODE_VER}"
-    echo "Did you forget to run \"nvm use\"?"
-    exit 1
-  fi
-fi
-
-npx --yes lint-staged
+pnpx lint-staged
