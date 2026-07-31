@@ -113,9 +113,9 @@ function getChartConfig(
       ),
     },
     grid: {
-      // `containLabel: true` keeps axis labels inside the box; the legend at the
-      // bottom is sized via the Chart wrapper's `withResizeLegend` behaviour.
-      containLabel: true,
+      // The legend at the bottom is sized via the Chart wrapper's
+      // `withResizeLegend` behaviour.
+      outerBoundsMode: 'same',
       top: 20,
       bottom: 60,
       left: 20,

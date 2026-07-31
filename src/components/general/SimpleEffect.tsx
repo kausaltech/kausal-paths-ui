@@ -96,7 +96,7 @@ export function getSimpleEffectChartConfig(
       ),
     },
     grid: {
-      containLabel: true,
+      outerBoundsMode: 'same',
       top: 80,
       bottom: 30,
     },

@@ -211,7 +211,7 @@ function MacGraph(props: MacGraphProps) {
         },
       },
       grid: {
-        containLabel: true,
+        outerBoundsMode: 'same',
         left: 10,
         right: 10,
         top: 10,

@@ -172,7 +172,7 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
       valueFormatter: (value: number) => `${formatNumber(value)} ${unit}`,
     },
     grid: {
-      containLabel: true,
+      outerBoundsMode: 'same',
       top: 0,
       bottom: 0,
       left: 40,

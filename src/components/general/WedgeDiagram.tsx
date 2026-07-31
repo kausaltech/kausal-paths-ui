@@ -288,7 +288,7 @@ function getChartConfig(
       formatter: formatTooltip,
     },
     grid: {
-      containLabel: true,
+      outerBoundsMode: 'same',
       top: 20,
       bottom: 60,
       left: 20,

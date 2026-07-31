@@ -431,7 +431,7 @@ const NodePlot = (props: NodePlotProps) => {
         },
       },
       grid: {
-        containLabel: true,
+        outerBoundsMode: 'same',
         top: 24,
         left: 10,
         right: 15,

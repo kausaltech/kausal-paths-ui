@@ -351,7 +351,7 @@ function getChartConfig(
       right: '4%',
       bottom: '3%',
       top: '10%',
-      containLabel: true,
+      outerBoundsMode: 'same',
       tooltip: {
         trigger: 'axis',
       },
