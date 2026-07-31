@@ -87,10 +87,21 @@ function testInstance(instanceId: string) {
         // doesn't re-render (and replace the switch node) mid-click.
         await ctx.waitForLoaded(page);
 
-        const actionToggle = actionsChooser
+        const actionToggles = await actionsChooser
           .getByTestId('action-list-item')
           .getByRole('switch')
-          .first();
+          .all();
+        let actionToggle: Locator | null = null;
+        for (const toggle of actionToggles) {
+          if ((await toggle.isEnabled()) && (await toggle.isChecked())) {
+            actionToggle = toggle;
+            break;
+          }
+        }
+        if (!actionToggle) {
+          test.fail(!actionToggle, 'No enabled action toggle found');
+          throw new Error('No enabled action toggle found');
+        }
         await expect(actionToggle).toBeVisible();
         await expect(actionToggle).toBeEnabled();
 

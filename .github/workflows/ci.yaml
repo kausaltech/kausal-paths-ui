@@ -27,6 +27,7 @@ jobs:
       build_id: ${{ needs.build.outputs.build_id }}
       s3_endpoint: ${{ vars.BUILD_S3_ENDPOINT }}
       s3_bucket: ${{ vars.BUILD_S3_BUCKET }}
+      playwright_version: '1.62.0'
     secrets: inherit
 
   deploy:
