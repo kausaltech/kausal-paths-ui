@@ -1,18 +1,17 @@
 {
-  "extends": "../kausal_common/configs/tsconfig.base.json",
+  "extends": "../kausal_common/configs/tsconfig.node.base.json",
   "compilerOptions": {
     "paths": {
       "@common/*": ["../kausal_common/src/*"],
       "@e2e-common/*": ["../kausal_common/e2e-tests/*"],
       "@/*": ["./*"]
     },
+    "rootDir": "..",
     "outDir": "tests-out",
     "noEmit": false,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "esModuleInterop": false,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "moduleDetection": "auto",
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true

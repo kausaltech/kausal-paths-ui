@@ -33,6 +33,12 @@ on:
         required: false
         type: number
         default: 2
+      playwright_version:
+        description: 'Playwright image to use for testing'
+        required: false
+        type: string
+        default: '1.59.1'
+
 
     secrets:
       AWS_ACCESS_KEY_ID:
@@ -50,7 +56,7 @@ jobs:
     name: Run tests
     runs-on: runner-prod
     container:
-      image: harbor.kausal.tech/library/playwright:v1.59.1
+      image: harbor.kausal.tech/library/playwright:v${{ inputs.playwright_version }}
     env:
       TEST_INSTANCE_IDENTIFIERS: ${{ inputs.instance_identifiers }}
       PATHS_BACKEND_URL: ${{ inputs.backend_base_url }}
