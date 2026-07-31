@@ -28,7 +28,7 @@ export type PageRefetchCallback = useQuery.Result<PageQuery, PageQueryVariables>
 
 const PageLoader = ({ theme }: { theme: Theme }) => {
   return (
-    <Box sx={{ py: 4, backgroundColor: theme.brandDark }}>
+    <Box sx={{ py: 4, backgroundColor: theme.brandDark }} aria-busy="true">
       <Container fixed maxWidth="xl">
         <Box
           sx={{
