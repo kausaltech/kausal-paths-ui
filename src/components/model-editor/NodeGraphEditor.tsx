@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { Box, CircularProgress, Drawer } from '@mui/material';
@@ -6,10 +6,10 @@ import { Box, CircularProgress, Drawer } from '@mui/material';
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
 import {
   type Edge,
+  type EdgeMouseHandler,
   MarkerType,
-  type NodeChange,
-  type OnNodesChange,
-  type OnSelectionChangeFunc,
+  type NodeMouseHandler,
+  type OnNodeDrag,
 } from '@xyflow/react';
 import {
   Background,
@@ -18,8 +18,6 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -67,6 +65,152 @@ const nodeTypes = {
 const DRAWER_WIDTH = 360;
 const OVERLAY_DRAWER_WIDTH = 600;
 const PANEL_PEEK_WIDTH = 48;
+const NODE_POINTER_THRESHOLD = 4;
+
+type FlowCanvasProps = {
+  instanceId: string;
+  graphNodes: readonly EditorNodeFieldsFragment[];
+  nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
+  layoutedNodes: ElkNodeType[];
+  layoutedEdges: Edge[];
+  inspectedNodeId: string | null;
+  layoutResetCounter: number;
+  onInspectNode: (nodeId: string | null) => void;
+  onResetLayout: () => void;
+  onEdgeContextMenu: EdgeMouseHandler;
+  onNodeContextMenu: NodeMouseHandler<ElkNodeType>;
+  onPaneContextMenu: (event: React.MouseEvent | MouseEvent) => void;
+};
+
+/**
+ * Owns React Flow's high-frequency interaction state. Nodes are intentionally
+ * uncontrolled: dragging updates React Flow's internal store without rendering
+ * the editor shell and its drawers on every pointer movement.
+ */
+const FlowCanvas = memo(function FlowCanvas({
+  instanceId,
+  graphNodes,
+  nodeMap,
+  layoutedNodes,
+  layoutedEdges,
+  inspectedNodeId,
+  layoutResetCounter,
+  onInspectNode,
+  onResetLayout,
+  onEdgeContextMenu,
+  onNodeContextMenu,
+  onPaneContextMenu,
+}: FlowCanvasProps) {
+  const searchParams = useSearchParams();
+  const { setEdges, setNodes } = useReactFlow<ElkNodeType>();
+  // Captured once so later URL changes don't alter initial viewport behaviour.
+  const [initialFitView] = useState(() => searchParams.get('node') === null);
+  const [savedViewport] = useState(() => loadViewport(instanceId));
+
+  useEffect(() => {
+    // Keep RF selection as canvas-local interaction state when graph data is
+    // replaced. Inspection is independent and is not driven by this flag.
+    setNodes((prev) => {
+      const selectedIds = new Set(prev.filter((n) => n.selected).map((n) => n.id));
+      return layoutedNodes.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
+    });
+  }, [layoutedNodes, setNodes]);
+
+  const displayedEdges = useMemo<Edge[]>(() => {
+    if (!inspectedNodeId) return layoutedEdges;
+    return layoutedEdges.map((edge): Edge => {
+      const otherId =
+        edge.source === inspectedNodeId
+          ? edge.target
+          : edge.target === inspectedNodeId
+            ? edge.source
+            : null;
+      if (otherId === null) return edge;
+      const other = nodeMap.get(otherId);
+      if (!other) return edge;
+      const color = getNodeBorderColor(other);
+      return {
+        ...edge,
+        style: { ...edge.style, stroke: color, strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color },
+        zIndex: 10,
+      };
+    });
+  }, [inspectedNodeId, layoutedEdges, nodeMap]);
+
+  useEffect(() => {
+    setEdges(displayedEdges);
+  }, [displayedEdges, setEdges]);
+
+  const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, layoutResetCounter, {
+    skipFitView: !initialFitView || savedViewport !== null,
+  });
+  const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
+
+  const { onMoveEnd } = useGraphNavigation({
+    instanceId,
+    nodes: graphNodes,
+    nodeMap,
+    inspectedNodeId,
+    onInspectNode,
+    isLayoutCurrent,
+    savedViewport,
+  });
+
+  const handleNodeClick = useCallback<NodeMouseHandler<ElkNodeType>>(
+    (_event, node) => {
+      onInspectNode(node.id);
+    },
+    [onInspectNode]
+  );
+
+  const handleEdgeClick = useCallback<EdgeMouseHandler>(
+    (_event, edge) => {
+      onInspectNode(edge.source);
+    },
+    [onInspectNode]
+  );
+
+  const handleNodeDragStop = useCallback<OnNodeDrag<ElkNodeType>>(
+    (_event, node, draggedNodes) => {
+      const movedNodes = draggedNodes.length > 0 ? draggedNodes : [node];
+      for (const movedNode of movedNodes) {
+        saveUserPosition(instanceId, movedNode.id, movedNode.position.x, movedNode.position.y);
+      }
+    },
+    [instanceId]
+  );
+
+  return (
+    <ReactFlow
+      defaultNodes={layoutedNodes}
+      defaultEdges={displayedEdges}
+      onNodeClick={handleNodeClick}
+      onNodeDragStop={handleNodeDragStop}
+      onEdgeClick={handleEdgeClick}
+      onEdgeContextMenu={onEdgeContextMenu}
+      onNodeContextMenu={onNodeContextMenu}
+      onPaneClick={() => onInspectNode(null)}
+      onPaneContextMenu={onPaneContextMenu}
+      onMoveEnd={onMoveEnd}
+      nodeTypes={nodeTypes}
+      selectNodesOnDrag={false}
+      nodeDragThreshold={NODE_POINTER_THRESHOLD}
+      nodeClickDistance={NODE_POINTER_THRESHOLD}
+      minZoom={0.2}
+      maxZoom={5}
+      fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
+    >
+      <Background color="#f0f0f0" />
+      <Controls>
+        <ControlButton onClick={onResetLayout} title="Reset layout" aria-label="Reset layout">
+          <ArrowCounterclockwise />
+        </ControlButton>
+      </Controls>
+      <MiniMap nodeStrokeWidth={3} />
+    </ReactFlow>
+  );
+});
 
 function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
@@ -74,15 +218,11 @@ function FlowEditor(props: {
   outcomeNodeIds: readonly string[];
   actionGroups: readonly { id: string; name: string; color: string | null }[];
 }) {
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [inspectedNodeId, setInspectedNodeId] = useState<string | null>(null);
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
-  const searchParams = useSearchParams();
   const { screenToFlowPosition } = useReactFlow();
-  // Captured once so later URL changes (e.g. deselecting a node) don't
-  // re-toggle RF's built-in `fitView` prop and refit the whole graph.
-  const [initialFitView] = useState(() => searchParams.get('node') === null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardSourceAction, setWizardSourceAction] = useState<EditorNodeFieldsFragment | null>(
     null
@@ -95,11 +235,11 @@ function FlowEditor(props: {
   const overlayOpen = overlay !== null;
 
   // Adjust-state-during-render (React's recommended pattern) to reset the
-  // overlay when the selected node changes, without the cascading render that
+  // overlay when the inspected node changes, without the cascading render that
   // an effect-based reset would cause.
-  const [prevSelectedNodeId, setPrevSelectedNodeId] = useState(selectedNodeId);
-  if (prevSelectedNodeId !== selectedNodeId) {
-    setPrevSelectedNodeId(selectedNodeId);
+  const [prevInspectedNodeId, setPrevInspectedNodeId] = useState(inspectedNodeId);
+  if (prevInspectedNodeId !== inspectedNodeId) {
+    setPrevInspectedNodeId(inspectedNodeId);
     setOverlay(null);
   }
 
@@ -171,75 +311,11 @@ function FlowEditor(props: {
   const instance = useInstance();
   const instanceId = instance.id;
 
-  // Captured once on mount: the viewport (pan + zoom) the user left this
-  // instance at. When present (and not overridden by a deep-link), we restore
-  // it instead of fitting the whole graph — see useGraphNavigation.
-  const [savedViewport] = useState(() => loadViewport(instanceId));
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-
-  const handleNodesChange = useCallback<OnNodesChange<ElkNodeType>>(
-    (changes: NodeChange<ElkNodeType>[]) => {
-      onNodesChange(changes);
-      for (const change of changes) {
-        if (
-          change.type === 'position' &&
-          change.dragging === false &&
-          change.position !== undefined
-        ) {
-          saveUserPosition(instanceId, change.id, change.position.x, change.position.y);
-        }
-      }
-    },
-    [onNodesChange, instanceId]
-  );
-
-  const [resetCounter, setResetCounter] = useState(0);
+  const [layoutResetCounter, setLayoutResetCounter] = useState(0);
   const handleResetLayout = useCallback(() => {
     clearLayoutCache(instanceId);
-    setResetCounter((c) => c + 1);
+    setLayoutResetCounter((counter) => counter + 1);
   }, [instanceId]);
-
-  useEffect(() => {
-    // Functional updater preserves the `selected` flag from the current RF
-    // state so replacing nodes after a save doesn't close the details panel.
-    setNodes((prev) => {
-      const selectedIds = new Set(prev.filter((n) => n.selected).map((n) => n.id));
-      return layoutedNodes.map((n) => (selectedIds.has(n.id) ? { ...n, selected: true } : n));
-    });
-    setEdges(layoutedEdges);
-  }, [layoutedEdges, layoutedNodes, setEdges, setNodes]);
-
-  const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, resetCounter, {
-    // Suppress the initial fit when we have a saved viewport to restore
-    // (useGraphNavigation sets it once layout is current), so the graph doesn't
-    // flash "show everything" before snapping to the user's last view.
-    skipFitView: !initialFitView || savedViewport !== null,
-  });
-  const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
-
-  const { onMoveEnd } = useGraphNavigation({
-    instanceId,
-    nodes: props.nodes,
-    nodeMap,
-    selectedNodeId,
-    isLayoutCurrent,
-    savedViewport,
-    setNodes,
-  });
-
-  const onSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selected }) => {
-    if (selected.length !== 1) {
-      setSelectedNodeId(null);
-      return;
-    }
-    setSelectedNodeId(selected[0].id);
-  }, []);
-
-  const onEdgeClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
-    setSelectedNodeId(edge.source);
-  }, []);
 
   const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.preventDefault();
@@ -293,14 +369,13 @@ function FlowEditor(props: {
     [nodeMap]
   );
 
-  // Holds a new node's id (from create / duplicate) until it's present in
-  // React Flow's own node state, so the selection block below can attach the
-  // `selected` flag.
-  const [pendingSelectNodeId, setPendingSelectNodeId] = useState<string | null>(null);
+  // Holds a new node's id until it is present in the visible graph. Inspection
+  // is editor state, so it does not need to manipulate React Flow selection.
+  const [pendingInspectNodeId, setPendingInspectNodeId] = useState<string | null>(null);
 
   const handleNodeDeleted = useCallback(
     (nodeId: string) => {
-      setSelectedNodeId((prev) => (prev === nodeId ? null : prev));
+      setInspectedNodeId((prev) => (prev === nodeId ? null : prev));
       handleResetLayout();
     },
     [handleResetLayout]
@@ -310,86 +385,53 @@ function FlowEditor(props: {
     instanceId,
     allNodes: props.nodes,
     nodeMap,
-    onCreated: setPendingSelectNodeId,
+    onCreated: setPendingInspectNodeId,
     onDeleted: handleNodeDeleted,
   });
 
-  // Adjust-state-during-render: once the copy is present in React Flow's own
-  // node state, drive RF's selection to it (which fires `onSelectionChange` →
-  // opens the details panel). Gating on RF state lets the `selected` flag
-  // actually attach; an effect-based version would trip the cascading-render
-  // lint and add a render hop.
-  if (pendingSelectNodeId !== null && nodes.some((n) => n.id === pendingSelectNodeId)) {
-    setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === pendingSelectNodeId })));
-    setPendingSelectNodeId(null);
+  // Adjust state during render once a newly created node reaches graph data.
+  if (
+    pendingInspectNodeId !== null &&
+    visibleNodes.some((node) => node.id === pendingInspectNodeId)
+  ) {
+    setInspectedNodeId(pendingInspectNodeId);
+    setPendingInspectNodeId(null);
   }
 
   const handleSnippedNodeClick = useCallback((nodeId: string) => {
-    setSelectedNodeId(nodeId);
+    setInspectedNodeId(nodeId);
   }, []);
 
   const interactionCtx = useMemo(
     () => ({
       highlightedNodeIds,
-      activeNodeId: selectedNodeId,
+      activeNodeId: inspectedNodeId,
       onHiddenContextClick: handleSnippedNodeClick,
     }),
-    [highlightedNodeIds, selectedNodeId, handleSnippedNodeClick]
+    [highlightedNodeIds, inspectedNodeId, handleSnippedNodeClick]
   );
 
-  const selectedNode = selectedNodeId ? (nodeMap.get(selectedNodeId) ?? null) : null;
-
-  const displayedEdges = useMemo<Edge[]>(() => {
-    if (!selectedNodeId) return edges;
-    return edges.map((e): Edge => {
-      const otherId =
-        e.source === selectedNodeId ? e.target : e.target === selectedNodeId ? e.source : null;
-      if (otherId === null) return e;
-      const other = nodeMap.get(otherId);
-      if (!other) return e;
-      const color = getNodeBorderColor(other);
-      return {
-        ...e,
-        style: { ...e.style, stroke: color, strokeWidth: 2 },
-        markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color },
-        zIndex: 10,
-      };
-    });
-  }, [edges, selectedNodeId, nodeMap]);
+  const inspectedNode = inspectedNodeId ? (nodeMap.get(inspectedNodeId) ?? null) : null;
 
   return (
     <NodeGraphInteractionContext value={interactionCtx}>
       <Box sx={{ display: 'flex', width: '100%', height: '100%' }}>
         <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ flex: 1, position: 'relative' }}>
-            <ReactFlow
-              nodes={nodes}
-              edges={displayedEdges}
-              onNodesChange={handleNodesChange}
-              onEdgesChange={onEdgesChange}
-              onSelectionChange={onSelectionChange}
-              onEdgeClick={onEdgeClick}
+            <FlowCanvas
+              instanceId={instanceId}
+              graphNodes={props.nodes}
+              nodeMap={nodeMap}
+              layoutedNodes={layoutedNodes}
+              layoutedEdges={layoutedEdges}
+              inspectedNodeId={inspectedNodeId}
+              layoutResetCounter={layoutResetCounter}
+              onInspectNode={setInspectedNodeId}
+              onResetLayout={handleResetLayout}
               onEdgeContextMenu={onEdgeContextMenu}
               onNodeContextMenu={onNodeContextMenu}
               onPaneContextMenu={onPaneContextMenu}
-              onMoveEnd={onMoveEnd}
-              nodeTypes={nodeTypes}
-              minZoom={0.2}
-              maxZoom={5}
-              fitViewOptions={{ maxZoom: 1, padding: 0.2 }}
-            >
-              <Background color="#f0f0f0" />
-              <Controls>
-                <ControlButton
-                  onClick={handleResetLayout}
-                  title="Reset layout"
-                  aria-label="Reset layout"
-                >
-                  <ArrowCounterclockwise />
-                </ControlButton>
-              </Controls>
-              <MiniMap nodeStrokeWidth={3} />
-            </ReactFlow>
+            />
             <NodeGraphContextMenu
               state={contextMenu}
               onClose={() => setContextMenu(null)}
@@ -402,7 +444,7 @@ function FlowEditor(props: {
             <Drawer
               variant="persistent"
               anchor="right"
-              open={!!selectedNode}
+              open={!!inspectedNode}
               slotProps={{
                 paper: {
                   onClick: () => {
@@ -426,12 +468,12 @@ function FlowEditor(props: {
               }}
             >
               <NodeDetailsPanel
-                node={selectedNode}
+                node={inspectedNode}
                 allNodes={props.nodes}
                 edges={props.edges}
                 actionGroups={props.actionGroups}
-                onClose={() => setSelectedNodeId(null)}
-                onSelectNode={setSelectedNodeId}
+                onClose={() => setInspectedNodeId(null)}
+                onSelectNode={setInspectedNodeId}
                 onShowMetrics={(nodeId, nodeName) =>
                   setOverlay({ kind: 'metrics', nodeId, nodeName })
                 }
@@ -446,9 +488,9 @@ function FlowEditor(props: {
               width={OVERLAY_DRAWER_WIDTH}
             />
             <DatasetDrawer
-              nodeId={selectedNode?.id ?? null}
+              nodeId={inspectedNode?.id ?? null}
               bindingId={overlay?.kind === 'dataset' ? overlay.bindingId : null}
-              open={overlay?.kind === 'dataset' && !!selectedNode}
+              open={overlay?.kind === 'dataset' && !!inspectedNode}
               onClose={() => setOverlay(null)}
               width={OVERLAY_DRAWER_WIDTH}
             />
