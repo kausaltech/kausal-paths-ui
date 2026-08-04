@@ -62,6 +62,11 @@ type UseActionListDataResult = {
   activeOverviewDetail: ImpactOverviewDetailFragment | null;
   /** True while either the list or the active detail is being fetched without cached data. */
   impactOverviewsPending: boolean;
+  /**
+   * True while a newly selected overview's detail is in flight and the previous
+   * overview's data is still being shown (the `previousData` fallback).
+   */
+  isOverviewSwitching: boolean;
   /** Error from either the list or the detail query. */
   impactOverviewsError: ErrorLike | undefined;
 };
@@ -107,6 +112,7 @@ export function useActionListData({
   const {
     data: detailData,
     previousData: detailPreviousData,
+    loading: detailLoading,
     error: detailError,
   } = useQuery<ImpactOverviewQuery, ImpactOverviewQueryVariables>(GET_IMPACT_OVERVIEW, {
     variables: { id: activeOverviewId ?? '' },
@@ -350,6 +356,10 @@ export function useActionListData({
   const impactOverviewsPending =
     (overviewsLoading && !overviewsData) || (activeOverviewId !== null && !activeOverviewDetail);
 
+  // Switching = the detail fetch is running but we're not in the pending (blank)
+  // state, i.e. the previous overview's snapshot is what's on screen.
+  const isOverviewSwitching = detailLoading && !impactOverviewsPending;
+
   return {
     usableActions,
     displayedActionsCount,
@@ -363,6 +373,7 @@ export function useActionListData({
     impactOverviews,
     activeOverviewDetail,
     impactOverviewsPending,
+    isOverviewSwitching,
     impactOverviewsError: overviewsError ?? detailError,
   };
 }
