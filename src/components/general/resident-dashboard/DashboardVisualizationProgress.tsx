@@ -93,7 +93,6 @@ const getBarOption = (
       axisTick: { show: false },
       axisLabel: { customValues: [min, max], formatter: formatNumber },
     },
-    containLabel: true,
     yAxis: {
       type: 'category',
       axisLine: {

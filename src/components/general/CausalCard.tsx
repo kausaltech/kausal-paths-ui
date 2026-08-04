@@ -32,7 +32,7 @@ const NodeCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
   width: 100%;
   padding: 0.5rem;
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
+  background-color: ${({ theme }) => theme.cardBackground.primary};
   white-space: normal;
 
   &.type-action .card {
@@ -105,7 +105,7 @@ const CardContent = styled.div`
 
 const PlotWrapper = styled.div`
   display: none;
-  background-color: ${({ theme }) => theme.cardBackground.secondary};
+  background-color: ${({ theme }) => theme.themeColors.white};
   border-radius: 0;
 
   .x2sstick text,

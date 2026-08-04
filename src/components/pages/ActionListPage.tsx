@@ -205,6 +205,7 @@ function ActionListPage({ page }: ActionListPageProps) {
     impactOverviews,
     activeOverviewDetail,
     impactOverviewsPending,
+    isOverviewSwitching,
     impactOverviewsError,
   } = useActionListData({
     data,
@@ -295,6 +296,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             impactOverviews={impactOverviews ?? []}
             activeOverviewId={activeOverviewId}
             setActiveOverviewId={setUserSelectedOverviewId}
+            isOverviewLoading={isOverviewSwitching}
             actionGroups={actionGroups}
             actionGroup={actionGroup}
             setActionGroup={setActionGroup}
@@ -392,7 +394,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             sortAscending={ascending}
             activeOverview={activeOverview}
             isLoading={areActionsLoading}
-            refetching={isRefetchingWithStaleData}
+            refetching={isRefetchingWithStaleData || isOverviewSwitching}
             onChangeSort={(key) => {
               handleChangeSort(key);
               setAscending(true);
@@ -410,7 +412,7 @@ function ActionListPage({ page }: ActionListPageProps) {
             instanceActionGroups={data?.instance.actionGroups ?? []}
             sortBy={sortBy}
             sortAscending={ascending}
-            refetching={isRefetchingWithStaleData}
+            refetching={isRefetchingWithStaleData || isOverviewSwitching}
             yearRange={yearRange}
           />
         )}

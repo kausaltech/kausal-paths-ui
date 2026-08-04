@@ -67,7 +67,7 @@ function getChartConfig(
       formatter: createAxisTooltipFormatter((value) => `${formatNumber(value ?? 0)} ${unit}`),
     },
     grid: {
-      containLabel: true,
+      outerBoundsMode: 'same',
       top: 80,
       bottom: 30,
     },

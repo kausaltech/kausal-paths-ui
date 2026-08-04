@@ -1,5 +1,6 @@
 import {
   Box,
+  CircularProgress,
   FormControl,
   FormLabel,
   Grid,
@@ -86,6 +87,8 @@ type ActionListFiltersProps = {
   impactOverviews: { id: string; label: string }[];
   activeOverviewId: string | null;
   setActiveOverviewId: (value: string | null) => void;
+  /** True while the selected overview's data is being fetched. */
+  isOverviewLoading?: boolean;
   actionGroups: { id: string; name: string }[];
   actionGroup: string;
   setActionGroup: (value: string) => void;
@@ -102,6 +105,7 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
     impactOverviews,
     activeOverviewId,
     setActiveOverviewId,
+    isOverviewLoading,
     actionGroups,
     actionGroup,
     setActionGroup,
@@ -120,6 +124,14 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
             <StyledFormControl>
               <StyledFormLabel id="impact-label" htmlFor="impact">
                 {t('actions-impact-on')}
+                {isOverviewLoading && (
+                  <CircularProgress
+                    size={14}
+                    color="inherit"
+                    sx={{ ml: 1, verticalAlign: 'middle' }}
+                    aria-label={t('loading')}
+                  />
+                )}
               </StyledFormLabel>
               <StyledSelect
                 id="impact"
@@ -127,6 +139,9 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
                 value={activeOverviewId ?? ''}
                 onChange={(e) => setActiveOverviewId((e.target.value as string) || null)}
                 size="small"
+                // An empty string means the built-in "emissions impact" choice, not
+                // "no selection" — render its label instead of a blank value area.
+                displayEmpty
                 MenuProps={{ disablePortal: true }}
               >
                 <MenuItem value="">{t('emissions-impact')}</MenuItem>

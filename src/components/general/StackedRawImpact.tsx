@@ -98,6 +98,7 @@ function getChartConfig(
   }));
 
   return {
+    aria: { enabled: true },
     legend: {
       // 'plain' (default) wraps to multiple lines when items overflow the width,
       // unlike 'scroll' which keeps everything on a single scrollable line.
@@ -112,9 +113,9 @@ function getChartConfig(
       ),
     },
     grid: {
-      // `containLabel: true` keeps axis labels inside the box; the legend at the
-      // bottom is sized via the Chart wrapper's `withResizeLegend` behaviour.
-      containLabel: true,
+      // The legend at the bottom is sized via the Chart wrapper's
+      // `withResizeLegend` behaviour.
+      outerBoundsMode: 'same',
       top: 20,
       bottom: 60,
       left: 20,

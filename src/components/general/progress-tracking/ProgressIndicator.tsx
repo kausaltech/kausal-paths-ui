@@ -257,6 +257,7 @@ function getChartConfig(
   const hasBaselineSeries = !!baselineName && measuredEmissionsData.baseline.length > 0;
 
   return {
+    aria: { enabled: true },
     title: {
       show: false,
     },
@@ -350,7 +351,7 @@ function getChartConfig(
       right: '4%',
       bottom: '3%',
       top: '10%',
-      containLabel: true,
+      outerBoundsMode: 'same',
       tooltip: {
         trigger: 'axis',
       },
