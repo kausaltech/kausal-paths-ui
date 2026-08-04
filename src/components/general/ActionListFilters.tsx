@@ -139,6 +139,9 @@ const ActionListFilters = (props: ActionListFiltersProps) => {
                 value={activeOverviewId ?? ''}
                 onChange={(e) => setActiveOverviewId((e.target.value as string) || null)}
                 size="small"
+                // An empty string means the built-in "emissions impact" choice, not
+                // "no selection" — render its label instead of a blank value area.
+                displayEmpty
                 MenuProps={{ disablePortal: true }}
               >
                 <MenuItem value="">{t('emissions-impact')}</MenuItem>
