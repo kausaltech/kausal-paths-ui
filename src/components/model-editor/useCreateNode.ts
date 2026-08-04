@@ -35,11 +35,36 @@ function pickUniqueIdentifier(base: string, existing: ReadonlySet<string>): stri
 }
 
 /** Which kind of node the "New …" flow creates. */
-export type NewNodeKind = 'formula' | 'action';
+export type NewNodeKind = 'additive' | 'formula' | 'action';
 
 // Generic action node class (nodes.actions.simple.GenericAction) — the most
 // general action; the user refines its behavior afterward.
 const GENERIC_ACTION_CLASS = 'simple.GenericAction';
+
+// Additive node class (nodes.simple.AdditiveNode) — sums its inputs. With no
+// inputs yet, the backend marks it INCOMPLETE and returns an empty output, so
+// it's safe to create bare.
+const ADDITIVE_NODE_CLASS = 'simple.AdditiveNode';
+
+function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeConfigInput } {
+  switch (kind) {
+    case 'action':
+      return {
+        nodeKind: NodeKind.Action,
+        config: { action: { nodeClass: GENERIC_ACTION_CLASS } } as NodeConfigInput,
+      };
+    case 'additive':
+      return {
+        nodeKind: NodeKind.Simple,
+        config: { simple: { nodeClass: ADDITIVE_NODE_CLASS } } satisfies NodeConfigInput,
+      };
+    case 'formula':
+      return {
+        nodeKind: NodeKind.Formula,
+        config: { formula: { formula: '0' } } satisfies NodeConfigInput,
+      };
+  }
+}
 
 export type CreateNodeArgs = {
   name: string;
@@ -63,7 +88,8 @@ export type CreateNodeResult = {
  * Create a new node with a single output port. A `formula` node defaults to the
  * formula "0" (a valid no-input computation, so the model still computes before
  * the user fills in the real expression — an empty formula would crash compute);
- * an `action` node uses the generic action class. Both are refined afterward.
+ * an `additive` node uses the AdditiveNode class (sums its inputs once wired);
+ * an `action` node uses the generic action class. All are refined afterward.
  *
  * Mirrors `useDuplicateNode`: the create and the NodeGraph refetch are split by
  * an `onCreated` callback so the caller can seed layout state (the node's
@@ -91,14 +117,11 @@ export function useCreateNode() {
         dimensions: [],
         isEditable: true,
       };
-      const isAction = kind === 'action';
-      const config: NodeConfigInput = isAction
-        ? ({ action: { nodeClass: GENERIC_ACTION_CLASS } } as NodeConfigInput)
-        : ({ formula: { formula: '0' } } satisfies NodeConfigInput);
+      const { nodeKind, config } = configForKind(kind);
       const input: CreateNodeInput = {
         identifier: newIdentifier,
         name,
-        kind: isAction ? NodeKind.Action : NodeKind.Formula,
+        kind: nodeKind,
         config,
         color: null,
         isVisible: true,
