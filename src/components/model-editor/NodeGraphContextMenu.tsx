@@ -1,10 +1,74 @@
+import { useState } from 'react';
+
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { Copy, EyeSlash, Lightning, Magic, PlusSquare, Trash } from 'react-bootstrap-icons';
+import {
+  ChevronRight,
+  Copy,
+  EyeSlash,
+  Lightning,
+  Magic,
+  PlusLg,
+  PlusSquare,
+  Trash,
+} from 'react-bootstrap-icons';
 
 import type { NewNodeKind } from './useCreateNode';
 import { useIsEditorReadOnly } from './useIsEditorReadOnly';
+
+/**
+ * A menu item that opens a submenu to its right on hover or click. The nested
+ * Menu is rendered as a React child of the item, so pointer events on the
+ * portaled submenu still bubble to this item in the React tree — that keeps
+ * the submenu open while the pointer is over it (the mui-nested-menu pattern).
+ * The popover itself is pointer-transparent (no backdrop) so the parent menu
+ * stays interactive; only the list accepts pointer events.
+ */
+function SubMenuItem({
+  icon,
+  label,
+  children,
+  ...menuItemProps
+}: {
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  children: React.ReactNode;
+} & React.ComponentProps<typeof MenuItem>) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  return (
+    <MenuItem
+      {...menuItemProps}
+      onMouseEnter={(e) => setAnchorEl(e.currentTarget)}
+      onMouseLeave={() => setAnchorEl(null)}
+      onClick={(e) => setAnchorEl(e.currentTarget)}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowRight' || e.key === 'Enter') setAnchorEl(e.currentTarget);
+        if (e.key === 'ArrowLeft' || e.key === 'Escape') setAnchorEl(null);
+      }}
+    >
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText>{label}</ListItemText>
+      <ChevronRight size={12} style={{ marginLeft: 16 }} />
+      <Menu
+        open={anchorEl !== null}
+        anchorEl={anchorEl}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        onClose={() => setAnchorEl(null)}
+        autoFocus={false}
+        disableAutoFocus
+        disableEnforceFocus
+        hideBackdrop
+        style={{ pointerEvents: 'none' }}
+        slotProps={{ list: { dense: true, sx: { pointerEvents: 'auto' } } }}
+      >
+        {children}
+      </Menu>
+    </MenuItem>
+  );
+}
 
 export type ContextMenuState =
   | ({
@@ -115,12 +179,28 @@ export default function NodeGraphContextMenu({
       )}
       {!readOnly &&
         state?.kind === 'pane' && [
-          <MenuItem key="new-node" onClick={() => handleNewNode('formula')}>
-            <ListItemIcon>
-              <PlusSquare size={14} />
-            </ListItemIcon>
-            <ListItemText>{t('nodes-new-node')}</ListItemText>
-          </MenuItem>,
+          <SubMenuItem key="new-node" icon={<PlusSquare size={14} />} label={t('nodes-add-node')}>
+            <MenuItem onClick={() => handleNewNode('additive')}>
+              <ListItemIcon>
+                <PlusLg size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-additive')}
+                secondary={t('nodes-node-type-additive-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+            <MenuItem onClick={() => handleNewNode('formula')}>
+              <ListItemIcon>
+                <span style={{ fontSize: 13, fontStyle: 'italic', fontFamily: 'serif' }}>fx</span>
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-formula')}
+                secondary={t('nodes-node-type-formula-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+          </SubMenuItem>,
           <MenuItem key="new-action" onClick={() => handleNewNode('action')}>
             <ListItemIcon>
               <Lightning size={14} />
