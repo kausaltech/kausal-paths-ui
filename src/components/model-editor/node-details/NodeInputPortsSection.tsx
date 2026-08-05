@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Dialog,
@@ -20,6 +21,7 @@ import {
   Database,
   InfoSquare,
   PencilSquare,
+  Plus,
   Sliders,
   X as XIcon,
 } from 'react-bootstrap-icons';
@@ -31,7 +33,8 @@ import type {
 import { getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { useCreateEdge } from '../useCreateEdge';
-import { useBindDataset, useDeleteBinding } from '../usePortBindings';
+import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
+import { useAddInputPort, useBindDataset, useDeleteBinding } from '../usePortBindings';
 import BindingEditor, { type BindingEditorValue } from './BindingEditor';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
@@ -130,15 +133,19 @@ export default function NodeInputPortsSection({
   onShowMetrics,
 }: NodeInputPortsSectionProps) {
   const t = useTranslations('model-editor');
+  const readOnly = useIsEditorReadOnly();
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
   const createEdge = useCreateEdge();
   const bindDataset = useBindDataset();
   const deleteBinding = useDeleteBinding();
+  const addInputPort = useAddInputPort();
+  const [addingPort, setAddingPort] = useState(false);
   const [binding, setBinding] = useState(false);
   const [bindError, setBindError] = useState<string | null>(null);
   const [removingEdgeId, setRemovingEdgeId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [addPortError, setAddPortError] = useState<string | null>(null);
   const [editingBinding, setEditingBinding] = useState<BindingEditorValue | null>(null);
 
   const closeDialog = () => {
@@ -207,7 +214,18 @@ export default function NodeInputPortsSection({
     }
   };
 
-  if (ports.length === 0) return null;
+  const handleAddPort = async () => {
+    if (addingPort) return;
+    setAddingPort(true);
+    setAddPortError(null);
+    try {
+      await addInputPort({ nodeId: currentNodeId });
+    } catch (err) {
+      setAddPortError(err instanceof Error ? err.message : t('nodes-failed-add-input-port'));
+    } finally {
+      setAddingPort(false);
+    }
+  };
 
   return (
     <CollapsibleSection
@@ -219,6 +237,16 @@ export default function NodeInputPortsSection({
         <Alert severity="error" onClose={() => setRemoveError(null)} sx={{ fontSize: 12 }}>
           {removeError}
         </Alert>
+      )}
+      {addPortError && (
+        <Alert severity="error" onClose={() => setAddPortError(null)} sx={{ fontSize: 12 }}>
+          {addPortError}
+        </Alert>
+      )}
+      {ports.length === 0 && (
+        <Typography variant="body2" sx={{ fontSize: 11, color: 'text.secondary' }}>
+          {t('nodes-no-input-ports')}
+        </Typography>
       )}
       {ports.map((port, index) => {
         const connectedEdges = incomingByPort.get(port.id) ?? [];
@@ -420,6 +448,19 @@ export default function NodeInputPortsSection({
           </Box>
         );
       })}
+      {!readOnly && (
+        <Box>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={addingPort ? <CircularProgress size={12} /> : <Plus />}
+            onClick={() => void handleAddPort()}
+            disabled={addingPort}
+          >
+            {t('nodes-add-input-port')}
+          </Button>
+        </Box>
+      )}
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
           {editingPort && editingPort.bindings.length > 0 && !editingPort.multi

@@ -3058,6 +3058,37 @@ export type UpdateEdgeBindingMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type AddInputPortMutationVariables = Exact<{
+  instanceId: string | number;
+  nodeId: string | number;
+  input: InputPortInput;
+  version: string | null | undefined;
+}>;
+
+
+export type AddInputPortMutation = (
+  { instanceEditor: (
+    { nodeEditor: (
+      { addInputPort:
+        | (
+          { id: string }
+          & { __typename: 'InputPortType' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'NodeEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type DeleteBindingMutationVariables = Exact<{
   instanceId: string | number;
   bindingId: string | number;
