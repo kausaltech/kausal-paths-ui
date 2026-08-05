@@ -1,3 +1,7 @@
+# Kausal Paths UI
+
+![Climate-4-CAST Project, funded by the EU Interreg Baltic Sea Region Programme](/../../../kausal-paths/blob/main/docs/logos/logo-climate-4-cast.png)
+
 ## Getting Started
 
 ### Prerequisites
