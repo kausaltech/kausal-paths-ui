@@ -7,6 +7,7 @@ import {
   type CreateNodeInput,
   type CreateNodeMutation,
   type CreateNodeMutationVariables,
+  type InputPortInput,
   type NodeConfigInput,
   NodeKind,
   type OutputPortInput,
@@ -54,6 +55,32 @@ const SIMPLE_NODE_CLASSES: Record<
   multiplicative: 'simple.MultiplicativeNode',
 };
 
+// Minimum input ports each kind needs to express its operation: subtraction
+// and multiplication are binary, addition needs one operand; the placeholder
+// formula "0" and the generic action compute without inputs. The ports are
+// bare (no unit/quantity, so any source is accepted) and further inputs
+// auto-append ports via createEdge.
+const MIN_INPUT_PORTS: Record<NewNodeKind, number> = {
+  additive: 1,
+  subtractive: 2,
+  multiplicative: 2,
+  formula: 0,
+  action: 0,
+};
+
+function bareInputPort(): InputPortInput {
+  return {
+    id: crypto.randomUUID(),
+    identifier: null,
+    label: null,
+    quantity: null,
+    unit: null,
+    multi: false,
+    requiredDimensions: null,
+    supportedDimensions: null,
+  };
+}
+
 function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeConfigInput } {
   switch (kind) {
     case 'action':
@@ -95,7 +122,8 @@ export type CreateNodeResult = {
 };
 
 /**
- * Create a new node with a single output port. A `formula` node defaults to the
+ * Create a new node with a single output port and the minimum input ports its
+ * kind needs (see MIN_INPUT_PORTS). A `formula` node defaults to the
  * formula "0" (a valid no-input computation, so the model still computes before
  * the user fills in the real expression — an empty formula would crash compute);
  * an arithmetic node (`additive`/`subtractive`/`multiplicative`) uses the
@@ -140,7 +168,7 @@ export function useCreateNode() {
         shortName: null,
         description: null,
         nodeGroup: null,
-        inputPorts: [],
+        inputPorts: Array.from({ length: MIN_INPUT_PORTS[kind] }, bareInputPort),
         outputPorts: [outputPort],
         inputDimensions: null,
         outputDimensions: null,
