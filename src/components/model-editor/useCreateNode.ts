@@ -35,16 +35,24 @@ function pickUniqueIdentifier(base: string, existing: ReadonlySet<string>): stri
 }
 
 /** Which kind of node the "New …" flow creates. */
-export type NewNodeKind = 'additive' | 'formula' | 'action';
+export type NewNodeKind = 'additive' | 'subtractive' | 'multiplicative' | 'formula' | 'action';
 
 // Generic action node class (nodes.actions.simple.GenericAction) — the most
 // general action; the user refines its behavior afterward.
 const GENERIC_ACTION_CLASS = 'simple.GenericAction';
 
-// Additive node class (nodes.simple.AdditiveNode) — sums its inputs. With no
-// inputs yet, the backend marks it INCOMPLETE and returns an empty output, so
-// it's safe to create bare.
-const ADDITIVE_NODE_CLASS = 'simple.AdditiveNode';
+// Arithmetic node classes (nodes/simple.py). A bare AdditiveNode is marked
+// INCOMPLETE by the backend and returns an empty output; Subtractive and
+// Multiplicative need inputs to compute, so until wired they show up as
+// FAILED (the editor requests tolerateNodeFailures, so the graph still loads).
+const SIMPLE_NODE_CLASSES: Record<
+  Extract<NewNodeKind, 'additive' | 'subtractive' | 'multiplicative'>,
+  string
+> = {
+  additive: 'simple.AdditiveNode',
+  subtractive: 'simple.SubtractiveNode',
+  multiplicative: 'simple.MultiplicativeNode',
+};
 
 function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeConfigInput } {
   switch (kind) {
@@ -54,9 +62,11 @@ function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeCon
         config: { action: { nodeClass: GENERIC_ACTION_CLASS } } as NodeConfigInput,
       };
     case 'additive':
+    case 'subtractive':
+    case 'multiplicative':
       return {
         nodeKind: NodeKind.Simple,
-        config: { simple: { nodeClass: ADDITIVE_NODE_CLASS } } satisfies NodeConfigInput,
+        config: { simple: { nodeClass: SIMPLE_NODE_CLASSES[kind] } } satisfies NodeConfigInput,
       };
     case 'formula':
       return {
@@ -88,8 +98,9 @@ export type CreateNodeResult = {
  * Create a new node with a single output port. A `formula` node defaults to the
  * formula "0" (a valid no-input computation, so the model still computes before
  * the user fills in the real expression — an empty formula would crash compute);
- * an `additive` node uses the AdditiveNode class (sums its inputs once wired);
- * an `action` node uses the generic action class. All are refined afterward.
+ * an arithmetic node (`additive`/`subtractive`/`multiplicative`) uses the
+ * corresponding simple node class (see SIMPLE_NODE_CLASSES); an `action` node
+ * uses the generic action class. All are refined afterward.
  *
  * Mirrors `useDuplicateNode`: the create and the NodeGraph refetch are split by
  * an `onCreated` callback so the caller can seed layout state (the node's
