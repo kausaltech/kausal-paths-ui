@@ -566,6 +566,25 @@ export const UPDATE_EDGE_BINDING = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
+export const ADD_INPUT_PORT = gql`
+  mutation AddInputPort($instanceId: ID!, $nodeId: ID!, $input: InputPortInput!, $version: UUID) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      nodeEditor(nodeId: $nodeId) {
+        addInputPort(input: $input) {
+          __typename
+          ... on InputPortType {
+            id
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
 export const DELETE_BINDING = gql`
   mutation DeleteBinding($instanceId: ID!, $bindingId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {

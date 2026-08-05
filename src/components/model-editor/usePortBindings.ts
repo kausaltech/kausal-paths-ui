@@ -4,6 +4,8 @@ import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
 import type {
+  AddInputPortMutation,
+  AddInputPortMutationVariables,
   BindDatasetMutation,
   BindDatasetMutationVariables,
   DatasetTransformationInput,
@@ -17,6 +19,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import {
+  ADD_INPUT_PORT,
   BIND_DATASET,
   DELETE_BINDING,
   UPDATE_DATASET_BINDING,
@@ -86,6 +89,49 @@ export function useBindDataset() {
           awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.nodeEditor.bindDataset;
+        if (payload?.__typename === 'OperationInfo') operationError(payload);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
+    [editorContext, handleError, instanceId, mutate]
+  );
+}
+
+/**
+ * Append a bare input port to a node. All port attributes default to null
+ * (any quantity/unit accepted); the port starts unbound and is wired up
+ * afterward via the binding selector.
+ */
+export function useAddInputPort() {
+  const { instanceId, editorContext, handleError } = useBindingMutationContext();
+  const [mutate] = useMutation<AddInputPortMutation, AddInputPortMutationVariables>(ADD_INPUT_PORT);
+
+  return useCallback(
+    async (args: { nodeId: string; label?: string; multi?: boolean }) => {
+      try {
+        const result = await mutate({
+          variables: {
+            instanceId,
+            nodeId: args.nodeId,
+            input: {
+              id: null,
+              identifier: null,
+              label: args.label ?? null,
+              quantity: null,
+              unit: null,
+              multi: args.multi ?? false,
+              requiredDimensions: null,
+              supportedDimensions: null,
+            },
+            version: draftHeadTokenVar(),
+          },
+          context: editorContext,
+          refetchQueries,
+          awaitRefetchQueries: true,
+        });
+        const payload = result.data?.instanceEditor.nodeEditor.addInputPort;
         if (payload?.__typename === 'OperationInfo') operationError(payload);
       } catch (error) {
         handleError(error);
