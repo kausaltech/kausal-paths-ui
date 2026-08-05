@@ -6,12 +6,14 @@ import { useTranslations } from 'next-intl';
 import {
   ChevronRight,
   Copy,
+  DashLg,
   EyeSlash,
   Lightning,
   Magic,
   PlusLg,
   PlusSquare,
   Trash,
+  XLg,
 } from 'react-bootstrap-icons';
 
 import type { NewNodeKind } from './useCreateNode';
@@ -187,6 +189,26 @@ export default function NodeGraphContextMenu({
               <ListItemText
                 primary={t('nodes-node-type-additive')}
                 secondary={t('nodes-node-type-additive-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+            <MenuItem onClick={() => handleNewNode('subtractive')}>
+              <ListItemIcon>
+                <DashLg size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-subtractive')}
+                secondary={t('nodes-node-type-subtractive-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+            <MenuItem onClick={() => handleNewNode('multiplicative')}>
+              <ListItemIcon>
+                <XLg size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-multiplicative')}
+                secondary={t('nodes-node-type-multiplicative-desc')}
                 slotProps={{ secondary: { sx: { fontSize: 11 } } }}
               />
             </MenuItem>
