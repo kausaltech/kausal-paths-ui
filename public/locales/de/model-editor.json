@@ -435,6 +435,7 @@
   "nodes-port-requirements": "Port-Anforderungen",
   "nodes-port-select-input": "Eingabeknoten auswählen",
   "nodes-port-show-source-data": "Ausgabedaten des Quellknotens anzeigen",
+  "nodes-port-show-source-dataset": "Eingabedaten des Quelldatensatzes anzeigen",
   "nodes-port-supported-dims": "Unterstützte Dim.",
   "nodes-port-unit": "Einheit",
   "nodes-port-unit-hint": "z. B. kt/a",

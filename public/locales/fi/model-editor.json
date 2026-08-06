@@ -435,6 +435,7 @@
   "nodes-port-requirements": "Portin vaatimukset",
   "nodes-port-select-input": "Valitse tulosolmu",
   "nodes-port-show-source-data": "Näytä lähdesolmun tulostiedot",
+  "nodes-port-show-source-dataset": "Näytä lähdetietoaineiston syötetiedot",
   "nodes-port-supported-dims": "Tuetut dim.",
   "nodes-port-unit": "Yksikkö",
   "nodes-port-unit-hint": "esim. kt/a",
