@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -16,10 +17,16 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { ArrowDown, ArrowUp, Check2, Filter, Lock, Plus, Trash } from 'react-bootstrap-icons';
 
-import type { EditorPortTransformationFragment } from '@/common/__generated__/graphql';
+import type {
+  EditorPortTransformationFragment,
+  InstanceDimensionFieldsFragment,
+  InstanceDimensionsQuery,
+} from '@/common/__generated__/graphql';
+import { GET_INSTANCE_DIMENSIONS } from '../dimensions/queries';
 import {
   toDatasetTransformationInputs,
   toEdgeTransformationInputs,
@@ -92,10 +99,132 @@ function isStructured(transformation: EditorPortTransformationFragment): boolean
   );
 }
 
+/**
+ * Select over the instance's dimensions; transformation `dimension` values are
+ * dimension identifiers. Falls back to a plain text field while the dimension
+ * list is unavailable, and keeps an out-of-list value selectable so opening an
+ * older transformation never silently clears it.
+ */
+function DimensionSelect({
+  value,
+  disabled,
+  options,
+  onChange,
+}: {
+  value: string;
+  disabled: boolean;
+  options: readonly InstanceDimensionFieldsFragment[];
+  onChange: (value: string) => void;
+}) {
+  const t = useTranslations('model-editor');
+  if (options.length === 0) {
+    return (
+      <TextField
+        label={t('bindings-dimension')}
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        size="small"
+        fullWidth
+      />
+    );
+  }
+  const known = options.some((dim) => dim.identifier === value);
+  return (
+    <TextField
+      select
+      label={t('bindings-dimension')}
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+      size="small"
+      fullWidth
+    >
+      {value !== '' && !known && <MenuItem value={value}>{value}</MenuItem>}
+      {options.map((dim) => (
+        <MenuItem key={dim.id} value={dim.identifier}>
+          {dim.name} ({dim.identifier})
+        </MenuItem>
+      ))}
+    </TextField>
+  );
+}
+
+type CategoryOption = { identifier: string; label: string };
+
+/**
+ * Multi-select over the chosen dimension's categories; transformation
+ * `categories` values are category identifiers. Known identifiers render as
+ * labeled chips, out-of-list values stay selectable as raw identifiers, and
+ * freeSolo keeps arbitrary identifiers typeable. Falls back to the
+ * comma-separated text field when the dimension's categories are unknown.
+ */
+function CategoryMultiSelect({
+  value,
+  disabled,
+  dimension,
+  onChange,
+}: {
+  value: readonly string[];
+  disabled: boolean;
+  dimension: InstanceDimensionFieldsFragment | null;
+  onChange: (values: string[]) => void;
+}) {
+  const t = useTranslations('model-editor');
+  const options: CategoryOption[] = (dimension?.categories ?? [])
+    .filter((category) => category.identifier != null)
+    .map((category) => ({ identifier: category.identifier!, label: category.label }));
+  if (options.length === 0) {
+    return (
+      <TextField
+        label={t('bindings-categories')}
+        value={value.join(', ')}
+        disabled={disabled}
+        onChange={(event) => onChange(splitList(event.target.value))}
+        size="small"
+        fullWidth
+      />
+    );
+  }
+  const byIdentifier = new Map(options.map((option) => [option.identifier, option]));
+  return (
+    <Autocomplete
+      multiple
+      freeSolo
+      disabled={disabled}
+      options={options}
+      value={value.map((identifier) => byIdentifier.get(identifier) ?? identifier)}
+      onChange={(_, next) =>
+        onChange(next.map((item) => (typeof item === 'string' ? item : item.identifier)))
+      }
+      getOptionLabel={(option) => (typeof option === 'string' ? option : option.label)}
+      isOptionEqualToValue={(option, selected) => {
+        const optionId = typeof option === 'string' ? option : option.identifier;
+        const selectedId = typeof selected === 'string' ? selected : selected.identifier;
+        return optionId === selectedId;
+      }}
+      renderOption={(props, option) => {
+        const identifier = typeof option === 'string' ? option : option.identifier;
+        return (
+          <li {...props} key={identifier}>
+            {typeof option === 'string' ? option : `${option.label} (${option.identifier})`}
+          </li>
+        );
+      }}
+      size="small"
+      renderInput={(params) => <TextField {...params} label={t('bindings-categories')} />}
+    />
+  );
+}
+
 export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
   const t = useTranslations('model-editor');
   const updateDatasetBinding = useUpdateDatasetBinding();
   const updateEdgeBinding = useUpdateEdgeBinding();
+  const { data: dimensionsData } = useQuery<InstanceDimensionsQuery>(GET_INSTANCE_DIMENSIONS, {
+    fetchPolicy: 'cache-first',
+  });
+  const dimensionOptions = dimensionsData?.instance?.editor?.dimensions ?? [];
   const [transformations, setTransformations] = useState<EditorPortTransformationFragment[]>(() =>
     binding.transformations.map((entry) => ({
       ...entry,
@@ -324,36 +453,46 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
 
                   {transformation.__typename === 'FilterDimensionType' && (
                     <>
-                      <TextField
-                        label={t('bindings-dimension')}
+                      <DimensionSelect
                         value={transformation.dimension}
                         disabled={readOnly}
-                        onChange={(event) =>
-                          patchTransformation(index, { dimension: event.target.value })
-                        }
-                        size="small"
-                        fullWidth
+                        options={dimensionOptions}
+                        onChange={(dimension) => {
+                          if (dimension === transformation.dimension) return;
+                          // Categories and groups are scoped to the dimension;
+                          // carrying them over would silently filter on values
+                          // the new dimension doesn't have.
+                          patchTransformation(index, { dimension, categories: [], groups: [] });
+                        }}
                       />
-                      <TextField
-                        label={t('bindings-categories')}
-                        value={transformation.categories.join(', ')}
-                        disabled={readOnly}
-                        onChange={(event) =>
-                          patchTransformation(index, { categories: splitList(event.target.value) })
+                      <CategoryMultiSelect
+                        value={transformation.categories}
+                        disabled={readOnly || transformation.dimension === ''}
+                        dimension={
+                          dimensionOptions.find(
+                            (dim) => dim.identifier === transformation.dimension
+                          ) ?? null
                         }
-                        size="small"
-                        fullWidth
+                        onChange={(categories) => patchTransformation(index, { categories })}
                       />
-                      <TextField
-                        label={t('bindings-groups')}
-                        value={transformation.groups.join(', ')}
-                        disabled={readOnly}
-                        onChange={(event) =>
-                          patchTransformation(index, { groups: splitList(event.target.value) })
-                        }
-                        size="small"
-                        fullWidth
-                      />
+                      {/* Category groups only exist on YAML-era dimensions (the
+                          editor's DB-backed dimensions have none), so the field
+                          only shows for imported transformations that already
+                          filter by group. No options to offer — freeSolo chips. */}
+                      {transformation.groups.length > 0 && (
+                        <Autocomplete
+                          multiple
+                          freeSolo
+                          options={[] as string[]}
+                          value={[...transformation.groups]}
+                          disabled={readOnly}
+                          onChange={(_, groups) => patchTransformation(index, { groups })}
+                          size="small"
+                          renderInput={(params) => (
+                            <TextField {...params} label={t('bindings-groups')} />
+                          )}
+                        />
+                      )}
                       <Stack direction="row" spacing={1}>
                         <FormControlLabel
                           control={
@@ -387,15 +526,14 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
 
                   {transformation.__typename === 'AssignDimensionType' && (
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                      <TextField
-                        label={t('bindings-dimension')}
+                      <DimensionSelect
                         value={transformation.dimension}
                         disabled={readOnly}
-                        onChange={(event) =>
-                          patchTransformation(index, { dimension: event.target.value })
-                        }
-                        size="small"
-                        fullWidth
+                        options={dimensionOptions}
+                        onChange={(dimension) => {
+                          if (dimension === transformation.dimension) return;
+                          patchTransformation(index, { dimension, category: '' });
+                        }}
                       />
                       <TextField
                         label={t('bindings-category')}

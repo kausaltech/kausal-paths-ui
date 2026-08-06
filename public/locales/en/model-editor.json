@@ -2,7 +2,7 @@
   "bindings-add-assignment": "Add assignment",
   "bindings-add-filter": "Add filter",
   "bindings-bind-dataset-failed": "Failed to bind dataset",
-  "bindings-categories": "Categories (comma-separated)",
+  "bindings-categories": "Categories",
   "bindings-category": "Category",
   "bindings-delete": "Delete binding",
   "bindings-delete-failed": "Failed to delete binding",
