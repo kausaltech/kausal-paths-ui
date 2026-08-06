@@ -246,33 +246,46 @@ export default function NodeOutputPortsSection({
             ? (singleEdgeTags[0] ?? singleTargetNode.identifier)
             : null;
 
+        const quantityAndUnit = [port.quantity, port.unit?.short].filter(Boolean).join(' · ');
+
         return (
           <Box key={port.id}>
-            <Tooltip
-              title={<PortTooltipContent port={port} edgeCount={connectedEdges.length} />}
-              placement="right"
-              arrow
-              enterDelay={200}
-            >
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  fontSize: 10,
-                  color: 'text.secondary',
-                  mb: 0,
-                  cursor: 'help',
-                }}
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              <Tooltip
+                title={<PortTooltipContent port={port} edgeCount={connectedEdges.length} />}
+                placement="right"
+                arrow
+                enterDelay={200}
               >
-                {t('nodes-port-label', {
-                  label: port.label ?? derivedPortName ?? `#${index + 1}`,
-                })}
-                <InfoSquare size={10} aria-label={t('nodes-port-info')} />
-              </Typography>
-            </Tooltip>
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    fontSize: 10,
+                    color: 'text.secondary',
+                    mb: 0,
+                    cursor: 'help',
+                  }}
+                >
+                  {t('nodes-port-label', {
+                    label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                  })}
+                  <InfoSquare size={10} aria-label={t('nodes-port-info')} />
+                </Typography>
+              </Tooltip>
+              {quantityAndUnit && (
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{ fontSize: 10, color: 'text.disabled' }}
+                >
+                  {quantityAndUnit}
+                </Typography>
+              )}
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
                 {connectedEdges.length > 0 ? (

@@ -20,7 +20,6 @@ import {
   BarChartLine,
   Database,
   InfoSquare,
-  PencilSquare,
   Plus,
   Sliders,
   X as XIcon,
@@ -288,34 +287,47 @@ export default function NodeInputPortsSection({
               ? (singleEdgeTags[0] ?? singleSourceNode.identifier)
               : null;
 
+        const quantityAndUnit = [port.quantity, port.unit?.short].filter(Boolean).join(' · ');
+
         return (
           <Box key={port.id}>
-            <Tooltip
-              title={<PortTooltipContent port={port} />}
-              placement="right"
-              arrow
-              enterDelay={200}
-            >
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  fontSize: 10,
-                  color: 'text.secondary',
-                  mb: 0,
-                  cursor: 'help',
-                }}
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              <Tooltip
+                title={<PortTooltipContent port={port} />}
+                placement="right"
+                arrow
+                enterDelay={200}
               >
-                {t('nodes-port-label', {
-                  label: port.label ?? derivedPortName ?? `#${index + 1}`,
-                })}
-                {port.multi ? t('nodes-port-multi-suffix') : ''}
-                <InfoSquare size={10} aria-label={t('nodes-port-info')} />
-              </Typography>
-            </Tooltip>
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    fontSize: 10,
+                    color: 'text.secondary',
+                    mb: 0,
+                    cursor: 'help',
+                  }}
+                >
+                  {t('nodes-port-label', {
+                    label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                  })}
+                  {port.multi ? t('nodes-port-multi-suffix') : ''}
+                  <InfoSquare size={10} aria-label={t('nodes-port-info')} />
+                </Typography>
+              </Tooltip>
+              {quantityAndUnit && (
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{ fontSize: 10, color: 'text.disabled' }}
+                >
+                  {quantityAndUnit}
+                </Typography>
+              )}
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {hasConnections ? (
                 <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
@@ -417,19 +429,17 @@ export default function NodeInputPortsSection({
                 </Box>
               ) : (
                 <Box sx={{ flex: 1 }}>
-                  <NotConnectedChip />
+                  {readOnly ? (
+                    <NotConnectedChip />
+                  ) : (
+                    <Tooltip title={t('nodes-port-select-input')} placement="right">
+                      <span>
+                        <NotConnectedChip onClick={() => setEditingPortId(port.id)} />
+                      </span>
+                    </Tooltip>
+                  )}
                 </Box>
               )}
-              <Tooltip title={t('nodes-port-select-input')} placement="left">
-                <IconButton
-                  size="small"
-                  onClick={() => setEditingPortId(port.id)}
-                  aria-label={t('nodes-port-select-input')}
-                  sx={{ p: 0.5, color: 'text.secondary' }}
-                >
-                  <PencilSquare size={12} />
-                </IconButton>
-              </Tooltip>
               {singleSourceNode && onShowMetrics && (
                 <Tooltip title={t('nodes-port-show-source-data')} placement="left">
                   <IconButton

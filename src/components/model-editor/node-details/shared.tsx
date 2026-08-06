@@ -73,7 +73,11 @@ export function ConnectedNodeChip({
   );
 }
 
-export function NotConnectedChip() {
+/**
+ * With `onClick`, the chip is the affordance for connecting the port: it
+ * becomes clickable and hints at the action on hover.
+ */
+export function NotConnectedChip({ onClick }: { onClick?: () => void }) {
   const t = useTranslations('model-editor');
   return (
     <Chip
@@ -81,6 +85,7 @@ export function NotConnectedChip() {
       label={t('nodes-not-connected')}
       size="small"
       variant="outlined"
+      onClick={onClick}
       sx={{
         alignSelf: 'flex-start',
         borderRadius: 1,
@@ -88,6 +93,15 @@ export function NotConnectedChip() {
         borderColor: 'divider',
         bgcolor: 'transparent',
         '& .MuiChip-icon': { color: 'text.disabled' },
+        ...(onClick
+          ? {
+              '&:hover': {
+                bgcolor: 'action.hover',
+                color: 'text.secondary',
+                borderColor: 'text.secondary',
+              },
+            }
+          : {}),
       }}
     />
   );
