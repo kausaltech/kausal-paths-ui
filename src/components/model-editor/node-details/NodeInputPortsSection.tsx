@@ -457,6 +457,26 @@ export default function NodeInputPortsSection({
                       )}
                     </Box>
                   ))}
+                  {!readOnly && port.multi && (
+                    <Tooltip title={t('nodes-port-select-input')} placement="right">
+                      <Chip
+                        icon={<Plus size={14} />}
+                        label={t('nodes-port-add-input')}
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setEditingPortId(port.id)}
+                        sx={{
+                          alignSelf: 'center',
+                          borderRadius: 1,
+                          borderStyle: 'dashed',
+                          color: 'text.secondary',
+                          borderColor: 'divider',
+                          '& .MuiChip-icon': { color: 'text.secondary' },
+                          '&:hover': { borderColor: 'text.secondary' },
+                        }}
+                      />
+                    </Tooltip>
+                  )}
                 </Box>
               ) : (
                 <Box sx={{ flex: 1 }}>

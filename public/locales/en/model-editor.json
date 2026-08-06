@@ -444,6 +444,7 @@
   "nodes-output-data": "Node result data",
   "nodes-output-data-show": "Show node data",
   "nodes-output-ports": "Node output ports ({count})",
+  "nodes-port-add-input": "Add input",
   "nodes-port-bindings": "Bindings",
   "nodes-port-bindings-value": "{total} ({edges} edge, {datasets} dataset)",
   "nodes-port-edges": "Edges",

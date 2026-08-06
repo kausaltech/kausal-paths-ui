@@ -418,6 +418,7 @@
   "nodes-output-data": "Solmun tulostiedot",
   "nodes-output-data-show": "Näytä solmun tiedot",
   "nodes-output-ports": "Solmun lähtöportit ({count})",
+  "nodes-port-add-input": "Lisää syöte",
   "nodes-port-bindings": "Sidokset",
   "nodes-port-bindings-value": "{total} ({edges} kaari, {datasets} tietoaineisto)",
   "nodes-port-edges": "Kaaret",

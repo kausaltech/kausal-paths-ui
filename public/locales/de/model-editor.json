@@ -418,6 +418,7 @@
   "nodes-output-data": "Knoten-Ergebnisdaten",
   "nodes-output-data-show": "Knotendaten anzeigen",
   "nodes-output-ports": "Knoten-Ausgabe-Ports ({count})",
+  "nodes-port-add-input": "Eingabe hinzufügen",
   "nodes-port-bindings": "Zuordnungen",
   "nodes-port-bindings-value": "{total} ({edges} Kante, {datasets} Datensatz)",
   "nodes-port-edges": "Kanten",
