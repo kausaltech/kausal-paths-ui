@@ -143,7 +143,7 @@ export function useCreateNode() {
   return useCallback(
     async (
       { name, unit, quantity, kind, existingIdentifiers }: CreateNodeArgs,
-      onCreated?: (newId: string) => void
+      onCreated?: (newId: string) => void | Promise<void>
     ): Promise<CreateNodeResult> => {
       const newIdentifier = pickUniqueIdentifier(toIdentifierBase(name), existingIdentifiers);
       const outputPort: OutputPortInput = {
@@ -166,6 +166,7 @@ export function useCreateNode() {
         isVisible: true,
         isOutcome: false,
         shortName: null,
+        shortDescription: null,
         description: null,
         nodeGroup: null,
         inputPorts: Array.from({ length: MIN_INPUT_PORTS[kind] }, bareInputPort),
@@ -194,7 +195,7 @@ export function useCreateNode() {
         if (!payload?.id) {
           throw new Error('Failed to create node — no id returned');
         }
-        onCreated?.(payload.id);
+        await onCreated?.(payload.id);
         await client.refetchQueries({ include: ['NodeGraph', 'EditorPublishState'] });
         return { ok: true, newId: payload.id, newIdentifier };
       } catch (err) {

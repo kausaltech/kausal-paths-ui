@@ -79,6 +79,20 @@ export function loadLayoutCache(instanceId: string): Record<string, CachedPositi
   return payload.positions;
 }
 
+/** Replace cached positions with a fresh backend snapshot while retaining the local viewport. */
+export function replaceLayoutPositions(
+  instanceId: string,
+  positions: Readonly<Record<string, CachedPosition>>
+): void {
+  if (!isBrowser()) return;
+  const previous = readPayload(instanceId);
+  writePayload({
+    ...emptyPayload(instanceId),
+    positions: { ...positions },
+    viewport: previous?.viewport,
+  });
+}
+
 /**
  * Merge a batch of ELK-produced positions into the cache. Never downgrades
  * an existing `user` entry back to `auto`.

@@ -130,6 +130,7 @@ export type CreateNodeInput = {
   outputMetrics: Array<OutputMetricInput> | null | undefined;
   outputPorts: Array<OutputPortInput> | null | undefined;
   params: Record<string, unknown> | unknown[] | null | undefined;
+  shortDescription: string | null | undefined;
   shortName: string | null | undefined;
   tags: Array<string> | null | undefined;
 };
@@ -254,6 +255,11 @@ export const enum NodeKind {
   Formula = 'FORMULA',
   Pipeline = 'PIPELINE',
   Simple = 'SIMPLE'
+};
+
+export const enum NodeLayoutSource {
+  Auto = 'AUTO',
+  User = 'USER'
 };
 
 export const enum NodeStatus {
@@ -407,8 +413,16 @@ export type UpdateNodeInput = {
   outputMetrics: Array<OutputMetricInput> | null | undefined;
   outputPorts: Array<OutputPortInput> | null | undefined;
   params: Record<string, unknown> | unknown[] | null | undefined;
+  shortDescription: string | null | undefined;
   shortName: string | null | undefined;
   tags: Array<string> | null | undefined;
+};
+
+export type UpdateNodeLayoutInput = {
+  nodeId: string | number;
+  source: NodeLayoutSource;
+  x: number;
+  y: number;
 };
 
 export type CytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
@@ -2029,7 +2043,10 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
+            { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+            & { __typename: 'NodeLayout' }
+          ) | null, errors: Array<(
             { phase: NodeErrorPhase, message: string }
             & { __typename: 'NodeError' }
           )>, layoutMeta: (
@@ -2208,7 +2225,10 @@ export type NodeGraphQuery = (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
+            { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+            & { __typename: 'NodeLayout' }
+          ) | null, errors: Array<(
             { phase: NodeErrorPhase, message: string }
             & { __typename: 'NodeError' }
           )>, layoutMeta: (
@@ -2396,7 +2416,10 @@ type EditorNodeFields_ActionNode_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
+      { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+      & { __typename: 'NodeLayout' }
+    ) | null, errors: Array<(
       { phase: NodeErrorPhase, message: string }
       & { __typename: 'NodeError' }
     )>, layoutMeta: (
@@ -2576,7 +2599,10 @@ type EditorNodeFields_Node_Fragment = (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
-    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, errors: Array<(
+    { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
+      { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+      & { __typename: 'NodeLayout' }
+    ) | null, errors: Array<(
       { phase: NodeErrorPhase, message: string }
       & { __typename: 'NodeError' }
     )>, layoutMeta: (
@@ -3144,6 +3170,54 @@ export type DeleteNodeMutationVariables = Exact<{
 export type DeleteNodeMutation = (
   { instanceEditor: (
     { deleteNode: (
+      { messages: Array<(
+        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+        & { __typename: 'OperationMessage' }
+      )> }
+      & { __typename: 'OperationInfo' }
+    ) | null }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateNodeLayoutsMutationVariables = Exact<{
+  instanceId: string | number;
+  input: Array<UpdateNodeLayoutInput>;
+}>;
+
+
+export type UpdateNodeLayoutsMutation = (
+  { instanceEditor: (
+    { updateNodeLayouts:
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+      | (
+        { layouts: Array<(
+          { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+          & { __typename: 'NodeLayout' }
+        )> }
+        & { __typename: 'UpdateNodeLayoutsResult' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type ClearNodeLayoutsMutationVariables = Exact<{
+  instanceId: string | number;
+}>;
+
+
+export type ClearNodeLayoutsMutation = (
+  { instanceEditor: (
+    { clearNodeLayouts: (
       { messages: Array<(
         { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
         & { __typename: 'OperationMessage' }

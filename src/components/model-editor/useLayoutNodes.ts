@@ -4,7 +4,12 @@ import { type Edge, useNodesInitialized, useReactFlow } from '@xyflow/react';
 import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
 
 import { type ElkNodeType, type HandleData } from './ElkNode';
-import { loadLayoutCache, saveAutoPositions } from './layoutCache';
+import {
+  type CachedPosition,
+  loadLayoutCache,
+  replaceLayoutPositions,
+  saveAutoPositions,
+} from './layoutCache';
 import { computeLayoutMetrics, formatMetrics } from './layoutMetrics';
 
 const NODE_WIDTH = 150;
@@ -167,10 +172,15 @@ function structuralSignature(nodes: readonly ElkNodeType[]): string {
 export default function useLayoutNodes(
   instanceId: string,
   sourceNodes: readonly ElkNodeType[],
+  persistedPositions: Readonly<Record<string, CachedPosition>>,
   resetTrigger: number,
-  options: Options = {}
+  options: Options & {
+    onSaveAutoPositions?: (
+      positions: ReadonlyArray<{ id: string; x: number; y: number }>
+    ) => Promise<void>;
+  } = {}
 ): readonly ElkNodeType[] | null {
-  const { skipFitView = false } = options;
+  const { skipFitView = false, onSaveAutoPositions } = options;
   const nodesInitialized = useNodesInitialized();
   const { getEdges, setNodes, fitView } = useReactFlow<ElkNodeType>();
   const lastSourceNodesRef = useRef<readonly ElkNodeType[] | null>(null);
@@ -195,6 +205,7 @@ export default function useLayoutNodes(
   // flag a late ELK promise / rAF would still drive setNodes / setAppliedNodes.
   const unmountedRef = useRef(false);
   const [appliedNodes, setAppliedNodes] = useState<readonly ElkNodeType[] | null>(null);
+  const hydratedInstanceRef = useRef<string | null>(null);
 
   useEffect(() => {
     latestSourceNodesRef.current = sourceNodes;
@@ -233,6 +244,10 @@ export default function useLayoutNodes(
     const nodes = sourceNodes as ElkNodeType[];
     const edges = getEdges();
 
+    if (hydratedInstanceRef.current !== instanceId) {
+      replaceLayoutPositions(instanceId, persistedPositions);
+      hydratedInstanceRef.current = instanceId;
+    }
     const cache = loadLayoutCache(instanceId);
     const missing = nodes.filter((n) => !(n.id in cache));
 
@@ -306,6 +321,9 @@ export default function useLayoutNodes(
           .filter((n) => cache[n.id]?.source !== 'user')
           .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y }));
         saveAutoPositions(instanceId, autoPositions);
+        void onSaveAutoPositions?.(autoPositions).catch((err: unknown) => {
+          console.error('Failed to persist automatic node layout', err);
+        });
         finishWith(merged, false);
       },
       (err) => {
@@ -321,6 +339,8 @@ export default function useLayoutNodes(
     setNodes,
     fitView,
     skipFitView,
+    persistedPositions,
+    onSaveAutoPositions,
   ]);
 
   return appliedNodes;
