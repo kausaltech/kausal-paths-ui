@@ -28,6 +28,7 @@ import type {
   EditorNodeFieldsFragment,
   NodeGraphQuery,
 } from '@/common/__generated__/graphql';
+import { NodeLayoutSource } from '@/common/__generated__/graphql';
 import { nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import DatasetDrawer from './DatasetDrawer';
@@ -41,7 +42,13 @@ import NodeCrudDialogs from './NodeCrudDialogs';
 import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
-import { clearLayoutCache, loadViewport, saveUserPosition } from './layoutCache';
+import {
+  type CachedPosition,
+  type CachedPositionSource,
+  clearLayoutCache,
+  loadViewport,
+  saveUserPosition,
+} from './layoutCache';
 import {
   computeSnippedEdgeIds,
   computeUpstreamNodeIds,
@@ -55,6 +62,7 @@ import { useGraphNavigation } from './useGraphNavigation';
 import useLayoutNodes from './useLayoutNodes';
 import { useNodeCrudActions } from './useNodeCrudActions';
 import { useNodeStatuses } from './useNodeStatuses';
+import { useClearNodeLayouts, useUpdateNodeLayouts } from './useUpdateNodeLayouts';
 
 const ActionWizard = lazy(() => import('./action-wizard/ActionWizard'));
 
@@ -73,6 +81,7 @@ type FlowCanvasProps = {
   nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
   layoutedNodes: ElkNodeType[];
   layoutedEdges: Edge[];
+  persistedPositions: Readonly<Record<string, CachedPosition>>;
   inspectedNodeId: string | null;
   layoutResetCounter: number;
   onInspectNode: (nodeId: string | null) => void;
@@ -80,6 +89,10 @@ type FlowCanvasProps = {
   onEdgeContextMenu: EdgeMouseHandler;
   onNodeContextMenu: NodeMouseHandler<ElkNodeType>;
   onPaneContextMenu: (event: React.MouseEvent | MouseEvent) => void;
+  onSaveLayouts: (
+    positions: ReadonlyArray<{ id: string; x: number; y: number }>,
+    source: CachedPositionSource
+  ) => Promise<void>;
 };
 
 /**
@@ -93,6 +106,7 @@ const FlowCanvas = memo(function FlowCanvas({
   nodeMap,
   layoutedNodes,
   layoutedEdges,
+  persistedPositions,
   inspectedNodeId,
   layoutResetCounter,
   onInspectNode,
@@ -100,6 +114,7 @@ const FlowCanvas = memo(function FlowCanvas({
   onEdgeContextMenu,
   onNodeContextMenu,
   onPaneContextMenu,
+  onSaveLayouts,
 }: FlowCanvasProps) {
   const searchParams = useSearchParams();
   const { setEdges, setNodes } = useReactFlow<ElkNodeType>();
@@ -142,9 +157,16 @@ const FlowCanvas = memo(function FlowCanvas({
     setEdges(displayedEdges);
   }, [displayedEdges, setEdges]);
 
-  const appliedLayoutNodes = useLayoutNodes(instanceId, layoutedNodes, layoutResetCounter, {
-    skipFitView: !initialFitView || savedViewport !== null,
-  });
+  const appliedLayoutNodes = useLayoutNodes(
+    instanceId,
+    layoutedNodes,
+    persistedPositions,
+    layoutResetCounter,
+    {
+      skipFitView: !initialFitView || savedViewport !== null,
+      onSaveAutoPositions: (positions) => onSaveLayouts(positions, 'auto'),
+    }
+  );
   const isLayoutCurrent = appliedLayoutNodes === layoutedNodes;
 
   const { onMoveEnd } = useGraphNavigation({
@@ -177,8 +199,18 @@ const FlowCanvas = memo(function FlowCanvas({
       for (const movedNode of movedNodes) {
         saveUserPosition(instanceId, movedNode.id, movedNode.position.x, movedNode.position.y);
       }
+      void onSaveLayouts(
+        movedNodes.map((movedNode) => ({
+          id: movedNode.id,
+          x: movedNode.position.x,
+          y: movedNode.position.y,
+        })),
+        'user'
+      ).catch((err: unknown) => {
+        console.error('Failed to persist dragged node layout', err);
+      });
     },
-    [instanceId]
+    [instanceId, onSaveLayouts]
   );
 
   return (
@@ -310,12 +342,55 @@ function FlowEditor(props: {
 
   const instance = useInstance();
   const instanceId = instance.id;
+  const updateNodeLayouts = useUpdateNodeLayouts();
+  const clearNodeLayouts = useClearNodeLayouts();
+  const persistedPositions = useMemo<Record<string, CachedPosition>>(
+    () =>
+      Object.fromEntries(
+        props.nodes.flatMap((node) => {
+          const layout = node.editor?.layout;
+          if (!layout) return [];
+          return [
+            [
+              node.id,
+              {
+                x: layout.x,
+                y: layout.y,
+                source: layout.source === NodeLayoutSource.User ? 'user' : 'auto',
+              },
+            ],
+          ];
+        })
+      ),
+    [props.nodes]
+  );
+  const handleSaveLayouts = useCallback(
+    (
+      positions: ReadonlyArray<{ id: string; x: number; y: number }>,
+      source: CachedPositionSource
+    ) =>
+      updateNodeLayouts(
+        positions.map((position) => ({
+          nodeId: position.id,
+          x: position.x,
+          y: position.y,
+          source: source === 'user' ? NodeLayoutSource.User : NodeLayoutSource.Auto,
+        }))
+      ),
+    [updateNodeLayouts]
+  );
 
   const [layoutResetCounter, setLayoutResetCounter] = useState(0);
   const handleResetLayout = useCallback(() => {
-    clearLayoutCache(instanceId);
-    setLayoutResetCounter((counter) => counter + 1);
-  }, [instanceId]);
+    void clearNodeLayouts()
+      .then(() => {
+        clearLayoutCache(instanceId);
+        setLayoutResetCounter((counter) => counter + 1);
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to clear persisted node layouts', err);
+      });
+  }, [clearNodeLayouts, instanceId]);
 
   const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.preventDefault();
@@ -387,6 +462,7 @@ function FlowEditor(props: {
     nodeMap,
     onCreated: setPendingInspectNodeId,
     onDeleted: handleNodeDeleted,
+    onSaveLayouts: handleSaveLayouts,
   });
 
   // Adjust state during render once a newly created node reaches graph data.
@@ -424,6 +500,7 @@ function FlowEditor(props: {
               nodeMap={nodeMap}
               layoutedNodes={layoutedNodes}
               layoutedEdges={layoutedEdges}
+              persistedPositions={persistedPositions}
               inspectedNodeId={inspectedNodeId}
               layoutResetCounter={layoutResetCounter}
               onInspectNode={setInspectedNodeId}
@@ -431,6 +508,7 @@ function FlowEditor(props: {
               onEdgeContextMenu={onEdgeContextMenu}
               onNodeContextMenu={onNodeContextMenu}
               onPaneContextMenu={onPaneContextMenu}
+              onSaveLayouts={handleSaveLayouts}
             />
             <NodeGraphContextMenu
               state={contextMenu}

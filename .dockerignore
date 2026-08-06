@@ -10,3 +10,5 @@ node_modules
 /public/static/themes/
 /.pnpm-store
 *.bak
+**/node_modules
+schema.graphql

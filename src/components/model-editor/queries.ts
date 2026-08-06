@@ -227,6 +227,12 @@ export const GET_NODE_GRAPH = gql`
       }
     }
     editor {
+      layout {
+        nodeId
+        x
+        y
+        source
+      }
       nodeGroup
       nodeType
       tags
@@ -613,6 +619,38 @@ export const DELETE_NODE = gql`
   mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       deleteNode(nodeId: $nodeId) {
+        ...EditorOperationInfoFields
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_NODE_LAYOUTS = gql`
+  mutation UpdateNodeLayouts($instanceId: ID!, $input: [UpdateNodeLayoutInput!]!) {
+    instanceEditor(instanceId: $instanceId) {
+      updateNodeLayouts(input: $input) {
+        ... on UpdateNodeLayoutsResult {
+          layouts {
+            nodeId
+            x
+            y
+            source
+          }
+        }
+        ... on OperationInfo {
+          ...EditorOperationInfoFields
+        }
+      }
+    }
+  }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const CLEAR_NODE_LAYOUTS = gql`
+  mutation ClearNodeLayouts($instanceId: ID!) {
+    instanceEditor(instanceId: $instanceId) {
+      clearNodeLayouts {
         ...EditorOperationInfoFields
       }
     }

@@ -152,7 +152,7 @@ export function useDuplicateNode() {
       // the graph is refetched. Lets the caller seed layout state (e.g. the
       // copy's offset position) so the refetch-triggered layout pass sees it,
       // rather than racing the refetch.
-      onCreated?: (newId: string) => void
+      onCreated?: (newId: string) => void | Promise<void>
     ): Promise<DuplicateNodeResult> => {
       if (source.kind == null) {
         throw new Error(`Cannot duplicate node "${source.identifier}" — missing kind`);
@@ -193,6 +193,7 @@ export function useDuplicateNode() {
         isVisible: source.isVisible,
         isOutcome: source.__typename === 'Node' ? source.isOutcome : false,
         shortName: source.shortName ?? null,
+        shortDescription: source.shortDescription ?? null,
         description: source.description ?? null,
         nodeGroup: source.editor?.nodeGroup ?? null,
         inputPorts,
@@ -229,7 +230,7 @@ export function useDuplicateNode() {
         // Seed-before-refetch: the callback runs while the graph still shows
         // the pre-duplication node set, so any layout state it writes is in
         // place before the refetch below makes the copy appear.
-        onCreated?.(payload.id);
+        await onCreated?.(payload.id);
         await client.refetchQueries({ include: ['NodeGraph', 'EditorPublishState'] });
         return { ok: true, newId: payload.id, newIdentifier, newName };
       } catch (err) {

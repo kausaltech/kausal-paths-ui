@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { loadLayoutCache, saveUserPosition } from './layoutCache';
+import { type CachedPositionSource, loadLayoutCache, saveUserPosition } from './layoutCache';
 import { type NewNodeKind, useCreateNode } from './useCreateNode';
 import { useDeleteNode } from './useDeleteNode';
 import { useDuplicateNode } from './useDuplicateNode';
@@ -24,6 +24,10 @@ type Params = {
   onCreated: (newId: string) => void;
   /** Called after a delete resolves, before the feedback snackbar shows. */
   onDeleted: (nodeId: string) => void;
+  onSaveLayouts: (
+    positions: ReadonlyArray<{ id: string; x: number; y: number }>,
+    source: CachedPositionSource
+  ) => Promise<void>;
 };
 
 /**
@@ -39,6 +43,7 @@ export function useNodeCrudActions({
   nodeMap,
   onCreated,
   onDeleted,
+  onSaveLayouts,
 }: Params) {
   const { getNodes } = useReactFlow();
   const [feedback, setFeedback] = useState<NodeCrudFeedback | null>(null);
@@ -57,7 +62,7 @@ export function useNodeCrudActions({
       const sourcePos = getNodes().find((n) => n.id === node.id)?.position ??
         loadLayoutCache(instanceId)[node.id] ?? { x: 0, y: 0 };
       setIsDuplicating(true);
-      duplicateNodeMutation(node, allNodes, (newId) => {
+      duplicateNodeMutation(node, allNodes, async (newId) => {
         // Runs before the graph refetches (see `useDuplicateNode`): seed the
         // copy's offset position so the refetch-triggered layout pass finds it
         // already cached. Every node is then cached, so that pass takes its
@@ -69,6 +74,16 @@ export function useNodeCrudActions({
           newId,
           sourcePos.x + DUPLICATE_OFFSET,
           sourcePos.y + DUPLICATE_OFFSET
+        );
+        await onSaveLayouts(
+          [
+            {
+              id: newId,
+              x: sourcePos.x + DUPLICATE_OFFSET,
+              y: sourcePos.y + DUPLICATE_OFFSET,
+            },
+          ],
+          'user'
         );
       })
         .then((result) => {
@@ -86,7 +101,16 @@ export function useNodeCrudActions({
         )
         .finally(() => setIsDuplicating(false));
     },
-    [duplicateNodeMutation, getNodes, instanceId, isDuplicating, nodeMap, allNodes, onCreated]
+    [
+      duplicateNodeMutation,
+      getNodes,
+      instanceId,
+      isDuplicating,
+      nodeMap,
+      allNodes,
+      onCreated,
+      onSaveLayouts,
+    ]
   );
 
   const createNodeMutation = useCreateNode();
@@ -106,7 +130,10 @@ export function useNodeCrudActions({
         // Seed the position at the right-click location before the refetch, so
         // the node lands there and the layout pass keeps the viewport (a pure
         // addition served from cache — see useLayoutNodes).
-        (newId) => saveUserPosition(instanceId, newId, flowX, flowY)
+        async (newId) => {
+          saveUserPosition(instanceId, newId, flowX, flowY);
+          await onSaveLayouts([{ id: newId, x: flowX, y: flowY }], 'user');
+        }
       )
         .then((result) => {
           onCreated(result.newId);
@@ -123,7 +150,7 @@ export function useNodeCrudActions({
         )
         .finally(() => setIsCreating(false));
     },
-    [createNodeMutation, instanceId, isCreating, allNodes, onCreated]
+    [createNodeMutation, instanceId, isCreating, allNodes, onCreated, onSaveLayouts]
   );
 
   const deleteNodeMutation = useDeleteNode();
