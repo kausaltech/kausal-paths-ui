@@ -123,6 +123,10 @@ function DimensionSelect({
         label={t('bindings-dimension')}
         value={value}
         disabled={disabled}
+        placeholder={t('bindings-dimension-placeholder')}
+        // Keep the label floated so the placeholder shows while unfocused,
+        // matching the categories field.
+        slotProps={{ inputLabel: { shrink: true } }}
         onChange={(event) => onChange(event.target.value)}
         size="small"
         fullWidth
@@ -139,6 +143,26 @@ function DimensionSelect({
       onChange={(event) => onChange(event.target.value)}
       size="small"
       fullWidth
+      // Selects have no native placeholder: float the label and render the
+      // empty value as placeholder-styled text, matching the categories field.
+      slotProps={{
+        inputLabel: { shrink: true },
+        select: {
+          displayEmpty: true,
+          renderValue: (selected) => {
+            const identifier = selected as string;
+            if (identifier === '') {
+              return (
+                <Box component="span" sx={{ color: 'text.disabled' }}>
+                  {t('bindings-dimension-placeholder')}
+                </Box>
+              );
+            }
+            const dim = options.find((entry) => entry.identifier === identifier);
+            return dim ? `${dim.name} (${dim.identifier})` : identifier;
+          },
+        },
+      }}
     >
       {value !== '' && !known && <MenuItem value={value}>{value}</MenuItem>}
       {options.map((dim) => (
@@ -220,12 +244,20 @@ function CategoryMultiSelect({
 }) {
   const t = useTranslations('model-editor');
   const options = categoryOptionsFor(dimension);
+  // An empty selection means the filter passes every category through, so
+  // surface that as a placeholder while nothing is selected.
+  const emptyPlaceholder = dimension
+    ? t('bindings-categories-all-placeholder', { dimension: dimension.name })
+    : undefined;
   if (options.length === 0) {
     return (
       <TextField
         label={t('bindings-categories')}
         value={value.join(', ')}
         disabled={disabled}
+        placeholder={emptyPlaceholder}
+        // Keep the label floated so the placeholder shows while unfocused.
+        slotProps={{ inputLabel: { shrink: true } }}
         onChange={(event) => onChange(splitList(event.target.value))}
         size="small"
         fullWidth
@@ -245,7 +277,15 @@ function CategoryMultiSelect({
       isOptionEqualToValue={categoryOptionEquals}
       renderOption={renderCategoryOption}
       size="small"
-      renderInput={(params) => <TextField {...params} label={t('bindings-categories')} />}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={t('bindings-categories')}
+          placeholder={value.length === 0 ? emptyPlaceholder : undefined}
+          // Keep the label floated so the placeholder shows while unfocused.
+          slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
+        />
+      )}
     />
   );
 }
@@ -558,6 +598,15 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
 
                   {transformation.__typename === 'FilterDimensionType' && (
                     <>
+                      {/* Padding, not margin: the parent Stack zeroes child
+                          margins with a higher-specificity selector. */}
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', pb: 1.5 }}
+                      >
+                        {t('bindings-filter-dimension-help')}
+                      </Typography>
                       <DimensionSelect
                         value={transformation.dimension}
                         disabled={readOnly}
@@ -627,28 +676,37 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                   )}
 
                   {transformation.__typename === 'AssignDimensionType' && (
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                      <DimensionSelect
-                        value={transformation.dimension}
-                        disabled={readOnly}
-                        options={dimensionOptions}
-                        onChange={(dimension) => changeTransformationDimension(index, dimension)}
-                      />
-                      <CategorySelect
-                        // Remount on dimension change: the single-select's
-                        // uncontrolled input text otherwise survives an
-                        // external value clear (stale label stays visible).
-                        key={transformation.dimension || 'no-dimension'}
-                        value={transformation.category}
-                        disabled={readOnly || transformation.dimension === ''}
-                        dimension={
-                          dimensionOptions.find(
-                            (dim) => dim.identifier === transformation.dimension
-                          ) ?? null
-                        }
-                        onChange={(category) => patchTransformation(index, { category })}
-                      />
-                    </Stack>
+                    <>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', pb: 1.5 }}
+                      >
+                        {t('bindings-assign-dimension-help')}
+                      </Typography>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                        <DimensionSelect
+                          value={transformation.dimension}
+                          disabled={readOnly}
+                          options={dimensionOptions}
+                          onChange={(dimension) => changeTransformationDimension(index, dimension)}
+                        />
+                        <CategorySelect
+                          // Remount on dimension change: the single-select's
+                          // uncontrolled input text otherwise survives an
+                          // external value clear (stale label stays visible).
+                          key={transformation.dimension || 'no-dimension'}
+                          value={transformation.category}
+                          disabled={readOnly || transformation.dimension === ''}
+                          dimension={
+                            dimensionOptions.find(
+                              (dim) => dim.identifier === transformation.dimension
+                            ) ?? null
+                          }
+                          onChange={(category) => patchTransformation(index, { category })}
+                        />
+                      </Stack>
+                    </>
                   )}
                 </Stack>
               </Paper>
