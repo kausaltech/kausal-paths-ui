@@ -461,6 +461,7 @@
   "nodes-port-requirements": "Port requirements",
   "nodes-port-select-input": "Select input node",
   "nodes-port-show-source-data": "Show source node output data",
+  "nodes-port-show-source-dataset": "Show source dataset input data",
   "nodes-port-supported-dims": "Supported dims",
   "nodes-port-unit": "Unit",
   "nodes-port-unit-hint": "e.g. kt/a",

@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Paper,
   Stack,
   Tooltip,
   Typography,
@@ -22,6 +23,7 @@ import {
   InfoSquare,
   Plus,
   Sliders,
+  XCircleFill,
   X as XIcon,
 } from 'react-bootstrap-icons';
 
@@ -290,8 +292,8 @@ export default function NodeInputPortsSection({
         const quantityAndUnit = [port.quantity, port.unit?.short].filter(Boolean).join(' · ');
 
         return (
-          <Box key={port.id}>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+          <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
               <Tooltip
                 title={<PortTooltipContent port={port} />}
                 placement="right"
@@ -378,6 +380,18 @@ export default function NodeInputPortsSection({
                             <Sliders size={12} />
                           </IconButton>
                         </Tooltip>
+                        {sourceNode && onShowMetrics && (
+                          <Tooltip title={t('nodes-port-show-source-data')}>
+                            <IconButton
+                              size="small"
+                              onClick={() => onShowMetrics(sourceNode.id, sourceNode.name ?? null)}
+                              aria-label={t('nodes-port-show-source-data')}
+                              sx={{ p: 0.5, color: 'text.secondary' }}
+                            >
+                              <BarChartLine size={12} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </Box>
                     );
                   })}
@@ -389,6 +403,11 @@ export default function NodeInputPortsSection({
                         title={`${ds.dataset.name} → ${ds.metric.label}`}
                         variant="outlined"
                         onClick={() => onShowDataset?.(ds.id)}
+                        disabled={removingEdgeId === ds.id}
+                        onDelete={() => void handleRemoveEdge(ds.id)}
+                        deleteIcon={
+                          <XCircleFill size={14} aria-label={t('nodes-remove-input-source')} />
+                        }
                         sx={{
                           maxWidth: '100%',
                           cursor: 'pointer',
@@ -424,6 +443,18 @@ export default function NodeInputPortsSection({
                           <Sliders size={12} />
                         </IconButton>
                       </Tooltip>
+                      {onShowDataset && (
+                        <Tooltip title={t('nodes-port-show-source-dataset')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => onShowDataset(ds.id)}
+                            aria-label={t('nodes-port-show-source-dataset')}
+                            sx={{ p: 0.5, color: 'text.secondary' }}
+                          >
+                            <BarChartLine size={12} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   ))}
                 </Box>
@@ -440,36 +471,22 @@ export default function NodeInputPortsSection({
                   )}
                 </Box>
               )}
-              {singleSourceNode && onShowMetrics && (
-                <Tooltip title={t('nodes-port-show-source-data')} placement="left">
-                  <IconButton
-                    size="small"
-                    onClick={() =>
-                      onShowMetrics(singleSourceNode.id, singleSourceNode.name ?? null)
-                    }
-                    aria-label={t('nodes-port-show-source-data')}
-                    sx={{ p: 0.5, color: 'text.secondary' }}
-                  >
-                    <BarChartLine size={12} />
-                  </IconButton>
-                </Tooltip>
-              )}
             </Box>
-          </Box>
+          </Paper>
         );
       })}
       {!readOnly && (
-        <Box>
+        <Paper variant="outlined" sx={{ p: 1 }}>
           <Button
             size="small"
-            variant="outlined"
             startIcon={addingPort ? <CircularProgress size={12} /> : <Plus />}
             onClick={() => void handleAddPort()}
             disabled={addingPort}
+            sx={{ textTransform: 'none' }}
           >
             {t('nodes-add-input-port')}
           </Button>
-        </Box>
+        </Paper>
       )}
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
