@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -13,18 +14,13 @@ import {
   Divider,
   Drawer,
   IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Paper,
   Tooltip,
   Typography,
 } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { Link45deg, PencilSquare, Sliders, X } from 'react-bootstrap-icons';
+import { PencilSquare, Sliders, X } from 'react-bootstrap-icons';
 
 import {
   type DatasetInfo,
@@ -36,43 +32,119 @@ import { useDeleteBinding } from './usePortBindings';
 
 const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 
+type DimmableChipItem = {
+  key: string;
+  label: string;
+  /** Shown as a tooltip on the chip when set. */
+  tooltip?: string;
+  /** True when the binding doesn't use this entry. */
+  dimmed: boolean;
+};
+
+/**
+ * A wrapping chip row where the entries the binding uses are always shown and
+ * the unused (dimmed) ones collapse behind a "+N unused" toggle. `items` is
+ * expected to be sorted used-first.
+ */
+function DimmableChipRow({ items }: { items: readonly DimmableChipItem[] }) {
+  const t = useTranslations('model-editor');
+  const [expanded, setExpanded] = useState(false);
+  const unusedCount = items.filter((item) => item.dimmed).length;
+  const visible = expanded ? items : items.filter((item) => !item.dimmed);
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+      {visible.map(({ key, label, tooltip, dimmed }) => {
+        const chip = (
+          <Chip
+            key={key}
+            label={label}
+            size="small"
+            variant="outlined"
+            sx={dimmed ? { color: 'text.disabled', borderColor: 'divider' } : undefined}
+          />
+        );
+        return tooltip ? (
+          <Tooltip key={key} title={tooltip}>
+            {chip}
+          </Tooltip>
+        ) : (
+          chip
+        );
+      })}
+      {unusedCount > 0 && (
+        <Chip
+          label={
+            expanded
+              ? t('datasets-categories-show-less')
+              : t('datasets-categories-show-unused', { count: unusedCount })
+          }
+          size="small"
+          variant="outlined"
+          onClick={() => setExpanded((v) => !v)}
+          sx={{ color: 'text.secondary', borderStyle: 'dashed' }}
+        />
+      )}
+    </Box>
+  );
+}
+
 function DatasetMetadata({
   dataset,
   usedDimensionKeys,
   usedCategoryKeysByDimension,
+  boundMetric,
 }: {
   dataset: DatasetInfo;
   usedDimensionKeys?: ReadonlySet<string>;
   usedCategoryKeysByDimension?: ReadonlyMap<string, ReadonlySet<string>>;
+  /** The metric this binding carries; the rest of the dataset's metrics are collapsed. */
+  boundMetric?: { id: string; name: string | null } | null;
 }) {
   const t = useTranslations('model-editor');
-  const visibleDimensions = usedDimensionKeys
-    ? dataset.dimensions.filter(
-        (dim) => usedDimensionKeys.has(dim.id) || usedDimensionKeys.has(dim.name)
-      )
-    : dataset.dimensions;
+  // The full dataset schema, with anything the binding's transformations
+  // filter out shown dimmed (like the unused metrics) rather than hidden.
+  // Used entries sort first; the sorts are stable so dataset order holds
+  // within each group. Without usage info, everything renders normally.
+  const dimensionItems = dataset.dimensions
+    .map((dim) => {
+      const dimUsed = usedDimensionKeys
+        ? usedDimensionKeys.has(dim.id) || usedDimensionKeys.has(dim.name)
+        : true;
+      const catKeys = usedCategoryKeysByDimension?.get(dim.name);
+      const items: DimmableChipItem[] = dim.categories
+        .map((category) => ({
+          key: category.uuid,
+          label: category.label,
+          dimmed:
+            !dimUsed ||
+            (catKeys != null &&
+              !(
+                catKeys.has(category.label) ||
+                (category.identifier != null && catKeys.has(category.identifier))
+              )),
+        }))
+        .sort((a, b) => Number(a.dimmed) - Number(b.dimmed));
+      return { dim, dimUsed, items };
+    })
+    .sort((a, b) => Number(b.dimUsed) - Number(a.dimUsed));
+  // Fall back to showing all metrics equally when the bound metric can't be
+  // matched (whole-frame bindings, or a stale metric reference).
+  const boundMetricRow = boundMetric
+    ? (dataset.metrics.find(
+        (m) => m.id === boundMetric.id || (boundMetric.name !== null && m.name === boundMetric.name)
+      ) ?? null)
+    : null;
+  // Bound metric first; the stable sort keeps the rest in dataset order.
+  const metricItems: DimmableChipItem[] = dataset.metrics
+    .map((m) => ({
+      key: m.id,
+      label: `${m.name ?? m.label} (${m.unit})`,
+      tooltip: m.label ?? undefined,
+      dimmed: boundMetricRow != null && m.id !== boundMetricRow.id,
+    }))
+    .sort((a, b) => Number(a.dimmed) - Number(b.dimmed));
   return (
     <Box sx={{ mb: 2 }}>
-      {dataset.externalRef && (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-          <Chip
-            icon={<Link45deg size={14} />}
-            label={dataset.externalRef.datasetId}
-            size="small"
-            variant="outlined"
-          />
-          {dataset.externalRef.commit && (
-            <Tooltip title={t('datasets-repo-commit')}>
-              <Chip
-                label={dataset.externalRef.commit.slice(0, 8)}
-                size="small"
-                variant="outlined"
-                sx={{ fontFamily: 'monospace' }}
-              />
-            </Tooltip>
-          )}
-        </Box>
-      )}
       {dataset.isExternalPlaceholder && (
         <Chip
           label={t('datasets-external-placeholder')}
@@ -83,83 +155,43 @@ function DatasetMetadata({
         />
       )}
 
-      {visibleDimensions.length > 0 && (
-        <Box sx={{ mb: 1.5 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-            {t('datasets-dimensions')}
-          </Typography>
-          <TableContainer sx={{ mt: 0.5 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-dimension')}</TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>
-                    {t('datasets-categories')}
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {visibleDimensions.map((dim) => {
-                  const catKeys = usedCategoryKeysByDimension?.get(dim.name);
-                  const visibleCategories = catKeys
-                    ? dim.categories.filter(
-                        (c) =>
-                          catKeys.has(c.label) ||
-                          (c.identifier != null && catKeys.has(c.identifier))
-                      )
-                    : dim.categories;
-                  return (
-                    <TableRow key={dim.id}>
-                      <TableCell sx={{ py: 0.5 }}>{dim.name}</TableCell>
-                      <TableCell sx={{ py: 0.5 }}>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                          {visibleCategories.map((cat) => (
-                            <Chip
-                              key={cat.uuid}
-                              label={cat.label}
-                              size="small"
-                              variant="outlined"
-                            />
-                          ))}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
-
       {dataset.metrics.length > 0 && (
-        <Box>
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+        <Paper variant="outlined" sx={{ p: 1.5, mb: 1.5 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+          >
             {t('datasets-metrics')}
           </Typography>
-          <TableContainer sx={{ mt: 0.5 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-label')}</TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-name')}</TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 0.5 }}>{t('datasets-unit')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {dataset.metrics.map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell sx={{ py: 0.5 }}>{m.label}</TableCell>
-                    <TableCell sx={{ py: 0.5, fontFamily: 'monospace', fontSize: 12 }}>
-                      {m.name ?? '–'}
-                    </TableCell>
-                    <TableCell sx={{ py: 0.5 }}>{m.unit}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+          <DimmableChipRow items={metricItems} />
+        </Paper>
+      )}
+
+      {dimensionItems.length > 0 && (
+        <Paper variant="outlined" sx={{ p: 1.5 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+          >
+            {t('datasets-categories')}
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {dimensionItems.map(({ dim, dimUsed, items }) => (
+              <Box key={dim.id}>
+                <Typography
+                  variant="caption"
+                  color={dimUsed ? 'text.secondary' : 'text.disabled'}
+                  sx={{ display: 'block', mb: 0.5 }}
+                >
+                  {dim.name}
+                </Typography>
+                <DimmableChipRow items={items} />
+              </Box>
+            ))}
+          </Box>
+        </Paper>
       )}
     </Box>
   );
@@ -175,6 +207,20 @@ function DatasetPortView({
   onEditBinding: () => void;
 }) {
   const t = useTranslations('model-editor');
+  // Show the bound metric's data first; DimensionalMetric names are the
+  // dataset's metric column names, so match on the binding's metric name.
+  const boundMetricName = port.boundMetric?.name ?? null;
+  const orderedMetrics = boundMetricName
+    ? [...port.metrics].sort(
+        (a, b) => Number(b.name === boundMetricName) - Number(a.name === boundMetricName)
+      )
+    : port.metrics;
+  // A metric-named binding without a select-metric step passes all metric
+  // columns through to the node — usually a misconfiguration worth flagging.
+  const missingSelectMetric =
+    port.boundMetric != null &&
+    port.dataset.metrics.length > 1 &&
+    !port.transformations.some((tr) => tr.__typename === 'SelectMetricType');
   const usedDimensionKeys = new Set<string>();
   const usedCategoryKeysByDimension = new Map<string, Set<string>>();
   for (const metric of port.metrics) {
@@ -198,18 +244,11 @@ function DatasetPortView({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-end',
           gap: 1,
           mb: 1,
         }}
       >
-        {port.boundMetric ? (
-          <Typography variant="body2" color="text.secondary">
-            {t('datasets-bound-metric', { label: port.boundMetric.label })}
-          </Typography>
-        ) : (
-          <Box />
-        )}
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           <Button
             size="small"
@@ -235,15 +274,31 @@ function DatasetPortView({
         </Box>
       </Box>
 
+      {missingSelectMetric && (
+        <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
+          {t('datasets-missing-select-metric', {
+            metric: port.boundMetric?.label ?? port.boundMetric?.name ?? '',
+          })}
+        </Alert>
+      )}
+
       <DatasetMetadata
         dataset={port.dataset}
         usedDimensionKeys={usedDimensionKeys}
         usedCategoryKeysByDimension={usedCategoryKeysByDimension}
+        boundMetric={port.boundMetric}
       />
 
-      {port.metrics.length > 0 ? (
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+      >
+        {t('datasets-input-data-header')}
+      </Typography>
+      {orderedMetrics.length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {port.metrics.map((metric) => (
+          {orderedMetrics.map((metric) => (
             <Suspense key={metric.id} fallback={<CircularProgress size={20} />}>
               <MetricDataViewer metric={metric} />
             </Suspense>
