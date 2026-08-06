@@ -152,6 +152,54 @@ function DimensionSelect({
 
 type CategoryOption = { identifier: string; label: string };
 
+function categoryOptionsFor(dimension: InstanceDimensionFieldsFragment | null): CategoryOption[] {
+  return (dimension?.categories ?? [])
+    .filter((category) => category.identifier != null)
+    .map((category) => ({ identifier: category.identifier!, label: category.label }));
+}
+
+function categoryOptionLabel(option: string | CategoryOption): string {
+  return typeof option === 'string' ? option : option.label;
+}
+
+function categoryOptionEquals(
+  option: string | CategoryOption,
+  selected: string | CategoryOption
+): boolean {
+  const optionId = typeof option === 'string' ? option : option.identifier;
+  const selectedId = typeof selected === 'string' ? selected : selected.identifier;
+  return optionId === selectedId;
+}
+
+/**
+ * Normalize a committed Autocomplete item to a category identifier. Free-typed
+ * text may be a label (the input displays labels), so match it against the
+ * options before falling back to the raw string.
+ */
+function toCategoryIdentifier(
+  options: readonly CategoryOption[],
+  item: string | CategoryOption
+): string {
+  if (typeof item !== 'string') return item.identifier;
+  const match = options.find(
+    (option) =>
+      option.identifier === item || option.label.toLowerCase() === item.trim().toLowerCase()
+  );
+  return match ? match.identifier : item;
+}
+
+function renderCategoryOption(
+  props: React.HTMLAttributes<HTMLLIElement> & { key: React.Key },
+  option: string | CategoryOption
+) {
+  const identifier = typeof option === 'string' ? option : option.identifier;
+  return (
+    <li {...props} key={identifier}>
+      {typeof option === 'string' ? option : `${option.label} (${option.identifier})`}
+    </li>
+  );
+}
+
 /**
  * Multi-select over the chosen dimension's categories; transformation
  * `categories` values are category identifiers. Known identifiers render as
@@ -171,9 +219,7 @@ function CategoryMultiSelect({
   onChange: (values: string[]) => void;
 }) {
   const t = useTranslations('model-editor');
-  const options: CategoryOption[] = (dimension?.categories ?? [])
-    .filter((category) => category.identifier != null)
-    .map((category) => ({ identifier: category.identifier!, label: category.label }));
+  const options = categoryOptionsFor(dimension);
   if (options.length === 0) {
     return (
       <TextField
@@ -194,25 +240,63 @@ function CategoryMultiSelect({
       disabled={disabled}
       options={options}
       value={value.map((identifier) => byIdentifier.get(identifier) ?? identifier)}
-      onChange={(_, next) =>
-        onChange(next.map((item) => (typeof item === 'string' ? item : item.identifier)))
-      }
-      getOptionLabel={(option) => (typeof option === 'string' ? option : option.label)}
-      isOptionEqualToValue={(option, selected) => {
-        const optionId = typeof option === 'string' ? option : option.identifier;
-        const selectedId = typeof selected === 'string' ? selected : selected.identifier;
-        return optionId === selectedId;
-      }}
-      renderOption={(props, option) => {
-        const identifier = typeof option === 'string' ? option : option.identifier;
-        return (
-          <li {...props} key={identifier}>
-            {typeof option === 'string' ? option : `${option.label} (${option.identifier})`}
-          </li>
-        );
-      }}
+      onChange={(_, next) => onChange(next.map((item) => toCategoryIdentifier(options, item)))}
+      getOptionLabel={categoryOptionLabel}
+      isOptionEqualToValue={categoryOptionEquals}
+      renderOption={renderCategoryOption}
       size="small"
       renderInput={(params) => <TextField {...params} label={t('bindings-categories')} />}
+    />
+  );
+}
+
+/**
+ * Single-select counterpart of CategoryMultiSelect, for `assign_dimension`'s
+ * category. Same conventions: identifier values, label display, out-of-list
+ * values preserved, text-field fallback when the dimension is unknown.
+ */
+function CategorySelect({
+  value,
+  disabled,
+  dimension,
+  onChange,
+}: {
+  value: string;
+  disabled: boolean;
+  dimension: InstanceDimensionFieldsFragment | null;
+  onChange: (value: string) => void;
+}) {
+  const t = useTranslations('model-editor');
+  const options = categoryOptionsFor(dimension);
+  if (options.length === 0) {
+    return (
+      <TextField
+        label={t('bindings-category')}
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        size="small"
+        fullWidth
+      />
+    );
+  }
+  const byIdentifier = new Map(options.map((option) => [option.identifier, option]));
+  return (
+    <Autocomplete
+      // No autoSelect: it commits the input's *text* (the label, not the
+      // identifier) on blur, and a late blur — e.g. clicking straight into the
+      // dimension select — would overwrite a just-cleared value.
+      freeSolo
+      disabled={disabled}
+      options={options}
+      value={value === '' ? null : (byIdentifier.get(value) ?? value)}
+      onChange={(_, next) => onChange(next == null ? '' : toCategoryIdentifier(options, next))}
+      getOptionLabel={categoryOptionLabel}
+      isOptionEqualToValue={categoryOptionEquals}
+      renderOption={renderCategoryOption}
+      size="small"
+      fullWidth
+      renderInput={(params) => <TextField {...params} label={t('bindings-category')} />}
     />
   );
 }
@@ -244,6 +328,27 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
       current.map((entry, entryIndex) =>
         entryIndex === index ? ({ ...entry, ...patch } as EditorPortTransformationFragment) : entry
       )
+    );
+  };
+
+  // Change a transformation's dimension, clearing its dimension-scoped fields
+  // (categories/groups/category). Done inside the updater against the current
+  // entry, so it stays correct even if events interleave (e.g. a blur-commit
+  // from the category field landing around the same click).
+  const changeTransformationDimension = (index: number, dimension: string) => {
+    setTransformations((current) =>
+      current.map((entry, entryIndex) => {
+        if (entryIndex !== index) return entry;
+        if (entry.__typename === 'FilterDimensionType') {
+          if (entry.dimension === dimension) return entry;
+          return { ...entry, dimension, categories: [], groups: [] };
+        }
+        if (entry.__typename === 'AssignDimensionType') {
+          if (entry.dimension === dimension) return entry;
+          return { ...entry, dimension, category: '' };
+        }
+        return entry;
+      })
     );
   };
 
@@ -457,15 +562,12 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                         value={transformation.dimension}
                         disabled={readOnly}
                         options={dimensionOptions}
-                        onChange={(dimension) => {
-                          if (dimension === transformation.dimension) return;
-                          // Categories and groups are scoped to the dimension;
-                          // carrying them over would silently filter on values
-                          // the new dimension doesn't have.
-                          patchTransformation(index, { dimension, categories: [], groups: [] });
-                        }}
+                        onChange={(dimension) => changeTransformationDimension(index, dimension)}
                       />
                       <CategoryMultiSelect
+                        // Remount on dimension change so the Autocomplete's
+                        // internal input state can never survive it.
+                        key={transformation.dimension || 'no-dimension'}
                         value={transformation.categories}
                         disabled={readOnly || transformation.dimension === ''}
                         dimension={
@@ -530,20 +632,21 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                         value={transformation.dimension}
                         disabled={readOnly}
                         options={dimensionOptions}
-                        onChange={(dimension) => {
-                          if (dimension === transformation.dimension) return;
-                          patchTransformation(index, { dimension, category: '' });
-                        }}
+                        onChange={(dimension) => changeTransformationDimension(index, dimension)}
                       />
-                      <TextField
-                        label={t('bindings-category')}
+                      <CategorySelect
+                        // Remount on dimension change: the single-select's
+                        // uncontrolled input text otherwise survives an
+                        // external value clear (stale label stays visible).
+                        key={transformation.dimension || 'no-dimension'}
                         value={transformation.category}
-                        disabled={readOnly}
-                        onChange={(event) =>
-                          patchTransformation(index, { category: event.target.value })
+                        disabled={readOnly || transformation.dimension === ''}
+                        dimension={
+                          dimensionOptions.find(
+                            (dim) => dim.identifier === transformation.dimension
+                          ) ?? null
                         }
-                        size="small"
-                        fullWidth
+                        onChange={(category) => patchTransformation(index, { category })}
                       />
                     </Stack>
                   )}
