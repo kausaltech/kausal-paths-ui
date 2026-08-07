@@ -429,6 +429,7 @@
   "nodes-port-add-input": "Lisää syöte",
   "nodes-port-bindings": "Sidokset",
   "nodes-port-bindings-value": "{total} ({edges} kaari, {datasets} tietoaineisto)",
+  "nodes-port-dimensions": "Dimensiot",
   "nodes-port-edges": "Kaaret",
   "nodes-port-id": "Tunnus",
   "nodes-port-info": "Portin tiedot",

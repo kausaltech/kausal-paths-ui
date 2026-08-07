@@ -30,12 +30,13 @@ import type { getNodeSpec } from '../nodeHelpers';
 import { QUANTITY_SUGGESTIONS } from '../quantities';
 import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useUpdateOutputPorts } from '../useUpdateOutputPorts';
+import DimensionsSelect from './DimensionsSelect';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
 type NodeSpec = NonNullable<ReturnType<typeof getNodeSpec>>;
 type OutputPort = NodeSpec['outputPorts'][number];
 
-type PortPatch = { unit: string; quantity: string };
+type PortPatch = { unit: string; quantity: string; dimensions: string[] };
 
 /**
  * Convert the node's current output ports to the input shape, preserving each
@@ -56,9 +57,9 @@ function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
 }
 
 /**
- * Edit one output port's unit + quantity. Mirrors the input-port editor: a
- * pencil button opens this dialog. Mounted only while a port is being edited,
- * so its drafts seed from that port.
+ * Edit one output port's unit + quantity + dimensions. Mirrors the input-port
+ * editor: opened from the port's quantity/unit text. Mounted only while a
+ * port is being edited, so its drafts seed from that port.
  */
 function OutputPortEditDialog({
   port,
@@ -72,6 +73,7 @@ function OutputPortEditDialog({
   const t = useTranslations('model-editor');
   const [unit, setUnit] = useState(port.unit?.standard ?? '');
   const [quantity, setQuantity] = useState(port.quantity ?? '');
+  const [dimensions, setDimensions] = useState<string[]>([...port.dimensions]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,7 +83,7 @@ function OutputPortEditDialog({
     if (!canSave) return;
     setSubmitting(true);
     setError(null);
-    onSave({ unit: unit.trim(), quantity: quantity.trim() })
+    onSave({ unit: unit.trim(), quantity: quantity.trim(), dimensions })
       .then(() => onClose())
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : t('common-save-failed'))
@@ -133,6 +135,11 @@ function OutputPortEditDialog({
                 slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
               />
             )}
+          />
+          <DimensionsSelect
+            label={t('nodes-port-dimensions')}
+            value={dimensions}
+            onChange={setDimensions}
           />
         </Box>
       </DialogContent>
@@ -209,12 +216,18 @@ export default function NodeOutputPortsSection({
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
 
   // Resend the whole port list (ids preserved) with the edited port's
-  // unit/quantity applied — updateNode replaces output ports wholesale.
+  // unit/quantity/dimensions applied — updateNode replaces output ports
+  // wholesale. The node-level outputDimensions (what the engine actually
+  // validates output frames against) is kept in sync as the union of the
+  // ports' dimension lists.
   const savePort = (portId: string, patch: PortPatch) => {
     const next = portsToInput(ports).map((p) =>
-      p.id === portId ? { ...p, unit: patch.unit, quantity: patch.quantity || null } : p
+      p.id === portId
+        ? { ...p, unit: patch.unit, quantity: patch.quantity || null, dimensions: patch.dimensions }
+        : p
     );
-    return updateOutputPorts(nodeId, next);
+    const outputDimensions = [...new Set(next.flatMap((p) => p.dimensions ?? []))];
+    return updateOutputPorts(nodeId, next, outputDimensions);
   };
 
   if (ports.length === 0) return null;

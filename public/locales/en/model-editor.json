@@ -456,6 +456,7 @@
   "nodes-port-add-input": "Add input",
   "nodes-port-bindings": "Bindings",
   "nodes-port-bindings-value": "{total} ({edges} edge, {datasets} dataset)",
+  "nodes-port-dimensions": "Dimensions",
   "nodes-port-edges": "Edges",
   "nodes-port-id": "ID",
   "nodes-port-info": "Port info",

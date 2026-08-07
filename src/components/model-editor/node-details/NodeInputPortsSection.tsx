@@ -48,6 +48,7 @@ import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useAddInputPort, useBindDataset, useDeleteBinding } from '../usePortBindings';
 import { useUpdateInputPorts } from '../useUpdateOutputPorts';
 import BindingEditor, { type BindingEditorValue } from './BindingEditor';
+import DimensionsSelect from './DimensionsSelect';
 import PortBindingSelector from './PortBindingSelector';
 import {
   CollapsibleSection,
@@ -171,6 +172,8 @@ type PortSettingsFields = {
   label: string | null;
   quantity: string | null;
   unit: string | null;
+  requiredDimensions: string[];
+  supportedDimensions: string[];
 };
 
 /**
@@ -221,6 +224,12 @@ function InputPortSettingsDialog({
   const [label, setLabel] = useState(initial?.label ?? '');
   const [quantity, setQuantity] = useState(initial?.quantity ?? '');
   const [unit, setUnit] = useState(initial?.unit ?? '');
+  const [requiredDimensions, setRequiredDimensions] = useState<string[]>(
+    initial?.requiredDimensions ?? []
+  );
+  const [supportedDimensions, setSupportedDimensions] = useState<string[]>(
+    initial?.supportedDimensions ?? []
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -241,6 +250,8 @@ function InputPortSettingsDialog({
           label: label.trim() || null,
           quantity: quantity.trim() || null,
           unit: unit.trim() || null,
+          requiredDimensions,
+          supportedDimensions,
         }),
       t('common-save-failed')
     );
@@ -305,6 +316,16 @@ function InputPortSettingsDialog({
             size="small"
             fullWidth
             slotProps={{ input: { sx: { fontSize: 13 } } }}
+          />
+          <DimensionsSelect
+            label={t('nodes-port-required-dims')}
+            value={requiredDimensions}
+            onChange={setRequiredDimensions}
+          />
+          <DimensionsSelect
+            label={t('nodes-port-supported-dims')}
+            value={supportedDimensions}
+            onChange={setSupportedDimensions}
           />
         </Box>
       </DialogContent>
@@ -817,6 +838,8 @@ export default function NodeInputPortsSection({
             label: settingsPort.label ?? null,
             quantity: settingsPort.quantity ?? null,
             unit: settingsPort.unit?.standard ?? null,
+            requiredDimensions: [...settingsPort.requiredDimensions],
+            supportedDimensions: [...settingsPort.supportedDimensions],
           }}
           onClose={() => setSettingsPortId(null)}
           onSubmit={(fields) => saveSettingsPort(settingsPort.id, fields)}
