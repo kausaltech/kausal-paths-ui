@@ -10,6 +10,9 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
   Paper,
   Stack,
   Tooltip,
@@ -18,6 +21,7 @@ import {
 
 import { useTranslations } from 'next-intl';
 import {
+  ArrowLeft,
   BarChartLine,
   Database,
   InfoSquare,
@@ -40,19 +44,19 @@ import BindingEditor, { type BindingEditorValue } from './BindingEditor';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
 
+type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
+
 /**
- * The source node's first output port compatible with `port`. Returns its id
- * for the edge's `fromPort`. When no port matches the criteria, falls back to
- * the node's first output port id so the edge mutation always receives a valid
- * port UUID.
+ * The source node's output ports compatible with `port`. On bare ports (no
+ * quantity/unit constraints) every output matches, so the list length tells
+ * whether the source port choice is unambiguous.
  */
-function matchingOutputPortId(
+function compatibleOutputPorts(
   sourceNode: EditorNodeFieldsFragment,
   port: InputPort
-): string | undefined {
+): OutputPort[] {
   const outputs = getNodeSpec(sourceNode)?.outputPorts ?? [];
-  const match = outputs.find((o) => outputMatchesPort(port, o));
-  return (match ?? outputs[0])?.id;
+  return outputs.filter((o) => outputMatchesPort(port, o));
 }
 
 type PortInfoRowProps = {
@@ -148,24 +152,30 @@ export default function NodeInputPortsSection({
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [addPortError, setAddPortError] = useState<string | null>(null);
   const [editingBinding, setEditingBinding] = useState<BindingEditorValue | null>(null);
+  // Set when the picked source node has several compatible output ports; the
+  // dialog then shows a port-choice step instead of the node selector.
+  const [sourcePortChoice, setSourcePortChoice] = useState<{
+    node: EditorNodeFieldsFragment;
+    outputs: OutputPort[];
+  } | null>(null);
 
   const closeDialog = () => {
     setEditingPortId(null);
+    setSourcePortChoice(null);
     setBindError(null);
   };
 
-  const handleSelectNode = async (sourceNodeId: string) => {
+  const connectSource = async (sourceNode: EditorNodeFieldsFragment, fromPort: string) => {
     if (!editingPort || binding) return;
-    const sourceNode = nodeMap.get(sourceNodeId);
     const targetNode = nodeMap.get(currentNodeId);
-    if (!sourceNode || !targetNode) return;
+    if (!targetNode) return;
     setBinding(true);
     setBindError(null);
     try {
       await createEdge({
         fromNodeId: sourceNode.identifier,
         toNodeId: targetNode.identifier,
-        fromPort: matchingOutputPortId(sourceNode, editingPort) ?? 'output',
+        fromPort,
         toPort: editingPort.id,
         replace: !editingPort.multi && editingPort.bindings.length > 0,
       });
@@ -175,6 +185,21 @@ export default function NodeInputPortsSection({
     } finally {
       setBinding(false);
     }
+  };
+
+  const handleSelectNode = (sourceNodeId: string) => {
+    if (!editingPort || binding) return;
+    const sourceNode = nodeMap.get(sourceNodeId);
+    if (!sourceNode) return;
+    const compatible = compatibleOutputPorts(sourceNode, editingPort);
+    // More than one output would fit (common with bare, anything-goes input
+    // ports): let the user pick instead of silently taking the first one.
+    if (compatible.length > 1) {
+      setSourcePortChoice({ node: sourceNode, outputs: compatible });
+      return;
+    }
+    const fallback = getNodeSpec(sourceNode)?.outputPorts[0];
+    void connectSource(sourceNode, (compatible[0] ?? fallback)?.id ?? 'output');
   };
 
   const handleRemoveEdge = async (edgeId: string) => {
@@ -510,9 +535,11 @@ export default function NodeInputPortsSection({
       )}
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          {editingPort && editingPort.bindings.length > 0 && !editingPort.multi
-            ? t('nodes-replace-input-source')
-            : t('nodes-select-input-source')}
+          {sourcePortChoice
+            ? t('nodes-select-output-port')
+            : editingPort && editingPort.bindings.length > 0 && !editingPort.multi
+              ? t('nodes-replace-input-source')
+              : t('nodes-select-input-source')}
           <IconButton
             aria-label={t('common-close')}
             onClick={closeDialog}
@@ -527,39 +554,76 @@ export default function NodeInputPortsSection({
               {bindError}
             </Alert>
           )}
-          {editingPort && (
-            <Box sx={{ position: 'relative' }}>
-              <PortBindingSelector
-                nodes={[...nodeMap.values()]}
-                port={editingPort}
-                currentNodeId={currentNodeId}
-                currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
-                  edgeId: e.id,
-                  node: nodeMap.get(e.fromRef.nodeId) ?? null,
-                  nodeRef: e.fromRef.nodeId,
-                }))}
-                removingEdgeId={removingEdgeId}
-                onSelectNode={(id) => void handleSelectNode(id)}
-                onSelectDataset={(datasetId, metricId) =>
-                  void handleSelectDataset(datasetId, metricId)
-                }
-                onRemoveSource={(edgeId) => void handleRemoveEdge(edgeId)}
-              />
-              {binding && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: 'rgba(255,255,255,0.6)',
-                  }}
-                >
-                  <CircularProgress size={24} />
-                </Box>
-              )}
+          {sourcePortChoice ? (
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                {t('nodes-select-output-port-desc', {
+                  node: sourcePortChoice.node.name ?? sourcePortChoice.node.identifier,
+                })}
+              </Typography>
+              <List dense>
+                {sourcePortChoice.outputs.map((output, outputIndex) => (
+                  <ListItemButton
+                    key={output.id}
+                    disabled={binding}
+                    onClick={() => void connectSource(sourcePortChoice.node, output.id)}
+                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 0.5 }}
+                  >
+                    <ListItemText
+                      primary={output.label ?? output.identifier ?? `#${outputIndex + 1}`}
+                      secondary={
+                        [output.quantity, output.unit?.short].filter(Boolean).join(' · ') ||
+                        undefined
+                      }
+                    />
+                  </ListItemButton>
+                ))}
+              </List>
+              <Button
+                size="small"
+                startIcon={<ArrowLeft size={14} />}
+                onClick={() => setSourcePortChoice(null)}
+                disabled={binding}
+                sx={{ textTransform: 'none' }}
+              >
+                {t('nodes-select-output-port-back')}
+              </Button>
             </Box>
+          ) : (
+            editingPort && (
+              <Box sx={{ position: 'relative' }}>
+                <PortBindingSelector
+                  nodes={[...nodeMap.values()]}
+                  port={editingPort}
+                  currentNodeId={currentNodeId}
+                  currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
+                    edgeId: e.id,
+                    node: nodeMap.get(e.fromRef.nodeId) ?? null,
+                    nodeRef: e.fromRef.nodeId,
+                  }))}
+                  removingEdgeId={removingEdgeId}
+                  onSelectNode={(id) => handleSelectNode(id)}
+                  onSelectDataset={(datasetId, metricId) =>
+                    void handleSelectDataset(datasetId, metricId)
+                  }
+                  onRemoveSource={(edgeId) => void handleRemoveEdge(edgeId)}
+                />
+                {binding && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: 'rgba(255,255,255,0.6)',
+                    }}
+                  >
+                    <CircularProgress size={24} />
+                  </Box>
+                )}
+              </Box>
+            )
           )}
         </DialogContent>
       </Dialog>
