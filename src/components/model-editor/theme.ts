@@ -139,7 +139,18 @@ const editorComponents: ThemeOptions['components'] = {
       },
     },
   },
+  // Keep empty fields visually empty: labels float permanently above the
+  // field instead of sitting inside it as pseudo-placeholder text (which
+  // also suppresses real placeholders until focus). Forcing `shrink` via
+  // defaultProps bypasses the FormControl state the outlined border reads,
+  // so `notched` must be forced too — otherwise the floated label would
+  // overlap an unbroken border line. A label-less field renders a
+  // zero-width notch, so plain placeholder-only inputs are unaffected.
+  MuiInputLabel: {
+    defaultProps: { shrink: true },
+  },
   MuiOutlinedInput: {
+    defaultProps: { notched: true },
     styleOverrides: {
       root: { transition: 'none' },
       notchedOutline: { transition: 'none' },
@@ -306,6 +317,17 @@ const editorComponents: ThemeOptions['components'] = {
           color: '#ffffff',
           borderRadius: 6,
         },
+      },
+    },
+  },
+  MuiDialogContent: {
+    styleOverrides: {
+      root: {
+        // MUI zeroes the top padding when content follows a DialogTitle.
+        // With permanently floated labels (MuiInputLabel shrink above), the
+        // first field's label extends above its border and would be clipped
+        // by the content's scroll box — keep enough padding for it.
+        '.MuiDialogTitle-root + &': { paddingTop: 12 },
       },
     },
   },

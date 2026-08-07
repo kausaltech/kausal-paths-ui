@@ -478,7 +478,7 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
   };
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2.5}>
       {error && <Alert severity="error">{error}</Alert>}
       <TextField
         label={t('bindings-tags')}
@@ -523,7 +523,7 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
             const next = transformations[index + 1];
             return (
               <Paper key={`${transformation.kind}-${index}`} variant="outlined" sx={{ p: 1.25 }}>
-                <Stack spacing={1}>
+                <Stack spacing={1.5}>
                   <Stack direction="row" alignItems="center" spacing={0.75}>
                     <Typography
                       variant="caption"

@@ -108,7 +108,7 @@ function OutputPortEditDialog({
             {error}
           </Alert>
         )}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 0.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             autoFocus
             label={t('nodes-port-unit')}
