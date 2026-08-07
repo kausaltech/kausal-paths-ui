@@ -12,6 +12,8 @@ type Props = {
   locale: string;
   instanceIdentifier: string;
   instanceHostname: string;
+  /** Base path the instance is served under (e.g. `/modeling`), or `''` at the host root. */
+  basePath: string;
 } & React.PropsWithChildren;
 
 /**
@@ -27,11 +29,18 @@ function detectPreviewMode() {
   return null;
 }
 
-export function ApolloWrapper({ locale, instanceIdentifier, instanceHostname, children }: Props) {
+export function ApolloWrapper({
+  locale,
+  instanceIdentifier,
+  instanceHostname,
+  basePath,
+  children,
+}: Props) {
   const opts = {
     locale,
     instanceIdentifier,
     instanceHostname,
+    basePath,
     previewMode: detectPreviewMode,
   };
   const clientConfig = getApolloClientConfig(opts);
