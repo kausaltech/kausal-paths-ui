@@ -13,7 +13,6 @@ import {
 } from '@xyflow/react';
 import {
   Background,
-  ControlButton,
   Controls,
   MiniMap,
   ReactFlow,
@@ -21,7 +20,6 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowCounterclockwise } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -236,10 +234,7 @@ const FlowCanvas = memo(function FlowCanvas({
     >
       <Background color="#f0f0f0" />
       <Controls>
-        <ControlButton onClick={onResetLayout} title="Reset layout" aria-label="Reset layout">
-          <ArrowCounterclockwise />
-        </ControlButton>
-        <NodeDisplaySettingsMenu />
+        <NodeDisplaySettingsMenu onResetLayout={onResetLayout} />
       </Controls>
       <MiniMap nodeStrokeWidth={3} />
     </ReactFlow>

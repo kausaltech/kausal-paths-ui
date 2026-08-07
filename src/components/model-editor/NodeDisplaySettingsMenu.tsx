@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-import { Box, FormControlLabel, Popover, Switch, Typography } from '@mui/material';
+import { Box, Button, Divider, FormControlLabel, Popover, Switch, Typography } from '@mui/material';
 
 import { useReactiveVar } from '@apollo/client/react';
 import { ControlButton } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
-import { Eye } from 'react-bootstrap-icons';
+import { ArrowCounterclockwise, Eye } from 'react-bootstrap-icons';
 
 import {
   type NodeDisplaySettings,
@@ -13,12 +13,16 @@ import {
   setNodeDisplaySetting,
 } from './displaySettings';
 
+type Props = {
+  onResetLayout: () => void;
+};
+
 /**
  * Eye button for the React Flow controls (bottom left) that opens a popover
  * of node display toggles. Toggles write to `nodeDisplaySettingsVar`, which
  * each node card subscribes to directly.
  */
-export default function NodeDisplaySettingsMenu() {
+export default function NodeDisplaySettingsMenu({ onResetLayout }: Props) {
   const t = useTranslations('model-editor');
   const settings = useReactiveVar(nodeDisplaySettingsVar);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -60,6 +64,19 @@ export default function NodeDisplaySettingsMenu() {
               label={<Typography variant="body2">{label}</Typography>}
             />
           ))}
+          <Divider sx={{ my: 1 }} />
+          <Button
+            size="small"
+            color="inherit"
+            startIcon={<ArrowCounterclockwise size={14} />}
+            onClick={() => {
+              setAnchorEl(null);
+              onResetLayout();
+            }}
+            sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+          >
+            {t('nodes-reset-layout')}
+          </Button>
         </Box>
       </Popover>
     </>
