@@ -359,6 +359,7 @@
   "nodes-compatible-nodes": "{count, plural, one {# yhteensopiva solmu} other {# yhteensopivaa solmua}}",
   "nodes-content": "Solmun sisältö",
   "nodes-current-input-source": "Nykyinen syötelähde",
+  "nodes-datasets-show-other": "+{count} muuta mittaria",
   "nodes-delete-confirm": "Poistetaanko solmu?",
   "nodes-delete-port": "Poista portti",
   "nodes-delete-port-bound": "Poista ensin portin liitännät",

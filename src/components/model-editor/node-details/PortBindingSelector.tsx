@@ -27,6 +27,12 @@ type Props = {
   currentNodeId: string;
   currentSources?: readonly CurrentInputSource[];
   removingEdgeId?: string | null;
+  /**
+   * Offer dataset bindings as a source. Off for node types whose computation
+   * only operates on input nodes (e.g. multiplicative nodes) — a dataset
+   * bound to such a node is silently ignored or fails at compute time.
+   */
+  allowDatasets?: boolean;
   onSelectNode?: (nodeId: string) => void;
   onSelectDataset?: (datasetId: string, metricId: string) => void;
   onRemoveSource?: (edgeId: string) => void;
@@ -89,12 +95,14 @@ export default function PortBindingSelector({
   currentNodeId,
   currentSources,
   removingEdgeId,
+  allowDatasets = true,
   onSelectNode,
   onSelectDataset,
   onRemoveSource,
 }: Props) {
   const t = useTranslations('model-editor');
   const [tab, setTab] = useState<SourceKind>('node');
+  const activeTab: SourceKind = allowDatasets ? tab : 'node';
 
   const excludeNodeIds = new Set(
     (currentSources ?? []).map((s) => s.node?.id).filter((id): id is string => id != null)
@@ -140,16 +148,18 @@ export default function PortBindingSelector({
         </Box>
       )}
       <PortCriteria port={port} />
-      <Tabs
-        value={tab}
-        onChange={(_, next: SourceKind) => setTab(next)}
-        variant="fullWidth"
-        sx={{ minHeight: 32, '& .MuiTab-root': { minHeight: 32, fontSize: 12 } }}
-      >
-        <Tab value="node" label={t('editor-nav-nodes')} />
-        <Tab value="dataset" label={t('editor-nav-datasets')} />
-      </Tabs>
-      {tab === 'node' ? (
+      {allowDatasets && (
+        <Tabs
+          value={activeTab}
+          onChange={(_, next: SourceKind) => setTab(next)}
+          variant="fullWidth"
+          sx={{ minHeight: 32, '& .MuiTab-root': { minHeight: 32, fontSize: 12 } }}
+        >
+          <Tab value="node" label={t('editor-nav-nodes')} />
+          <Tab value="dataset" label={t('editor-nav-datasets')} />
+        </Tabs>
+      )}
+      {activeTab === 'node' ? (
         <NodeSelector
           nodes={nodes}
           port={port}

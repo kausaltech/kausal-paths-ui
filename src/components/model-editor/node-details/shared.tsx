@@ -6,17 +6,27 @@ import { useTranslations } from 'next-intl';
 import { CaretDownFill, CaretRightFill, DashCircle, XCircleFill } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
-import { type NodeStyle, getNodeStyle } from '../ElkNode';
+import { type CategoryKey, type NodeStyle, getNodeCategory, getNodeStyle } from '../ElkNode';
 import { getNodeSpec, getNodeType } from '../nodeHelpers';
 
-export function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
+function getNodeClassParts(node: EditorNodeFieldsFragment) {
   const spec = getNodeSpec(node);
   const typeConfig = spec?.typeConfig;
   const nodeClass: string =
     typeConfig && 'nodeClass' in typeConfig ? typeConfig.nodeClass : getNodeType(node);
   const isOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   const kind: string = node.kind ?? '';
+  return { kind, nodeClass, isOutcome };
+}
+
+export function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
+  const { kind, nodeClass, isOutcome } = getNodeClassParts(node);
   return getNodeStyle(kind, nodeClass, isOutcome);
+}
+
+export function getCategoryForNode(node: EditorNodeFieldsFragment): CategoryKey {
+  const { kind, nodeClass, isOutcome } = getNodeClassParts(node);
+  return getNodeCategory(kind, nodeClass, isOutcome);
 }
 
 type ConnectedNodeChipProps = {
