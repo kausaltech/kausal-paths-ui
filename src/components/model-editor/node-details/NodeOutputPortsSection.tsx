@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Paper,
   Stack,
   TextField,
   Tooltip,
@@ -17,7 +18,7 @@ import {
 } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { InfoSquare, PencilSquare, X as XIcon } from 'react-bootstrap-icons';
+import { InfoSquare, Sliders, X as XIcon } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -249,8 +250,8 @@ export default function NodeOutputPortsSection({
         const quantityAndUnit = [port.quantity, port.unit?.short].filter(Boolean).join(' · ');
 
         return (
-          <Box key={port.id}>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+          <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
               <Tooltip
                 title={<PortTooltipContent port={port} edgeCount={connectedEdges.length} />}
                 placement="right"
@@ -321,21 +322,21 @@ export default function NodeOutputPortsSection({
                 ) : (
                   <NotConnectedChip />
                 )}
+                {!readOnly && (
+                  <Tooltip title={t('nodes-edit-output-port')}>
+                    <IconButton
+                      size="small"
+                      onClick={() => setEditingPortId(port.id)}
+                      aria-label={t('nodes-edit-output-port')}
+                      sx={{ p: 0.5, color: 'text.secondary' }}
+                    >
+                      <Sliders size={12} />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
-              {!readOnly && (
-                <Tooltip title={t('nodes-edit-output-port')} placement="left">
-                  <IconButton
-                    size="small"
-                    onClick={() => setEditingPortId(port.id)}
-                    aria-label={t('nodes-edit-output-port')}
-                    sx={{ p: 0.5, color: 'text.secondary' }}
-                  >
-                    <PencilSquare size={12} />
-                  </IconButton>
-                </Tooltip>
-              )}
             </Box>
-          </Box>
+          </Paper>
         );
       })}
       {editingPort && (

@@ -442,7 +442,7 @@
   "nodes-open-public-page": "Open public page",
   "nodes-outcome-chip": "outcome",
   "nodes-output-data": "Node result data",
-  "nodes-output-data-show": "Show node data",
+  "nodes-output-data-show": "Show node output",
   "nodes-output-ports": "Node output ports ({count})",
   "nodes-port-add-input": "Add input",
   "nodes-port-bindings": "Bindings",

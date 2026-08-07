@@ -416,7 +416,7 @@
   "nodes-open-public-page": "Öffentliche Seite öffnen",
   "nodes-outcome-chip": "Ergebnis",
   "nodes-output-data": "Knoten-Ergebnisdaten",
-  "nodes-output-data-show": "Knotendaten anzeigen",
+  "nodes-output-data-show": "Knotenausgabe anzeigen",
   "nodes-output-ports": "Knoten-Ausgabe-Ports ({count})",
   "nodes-port-add-input": "Eingabe hinzufügen",
   "nodes-port-bindings": "Zuordnungen",
