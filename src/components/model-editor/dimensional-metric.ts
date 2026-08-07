@@ -222,7 +222,11 @@ export class DimensionalMetric {
     const newCatSizes = newDimensions.map((d) => d.categories.length);
     const catIndices = new Array<number>(newDimensions.length).fill(0);
 
-    const totalCombinations = newCatSizes.reduce((a, b) => a * b, 1) || 1;
+    // No `|| 1` fallback: a kept dimension with zero categories means the
+    // cube is empty (0 combinations), and forcing one iteration would index
+    // past its empty category list. Summing over the last dimension still
+    // yields 1 combination, since reduce over [] with initial 1 returns 1.
+    const totalCombinations = newCatSizes.reduce((a, b) => a * b, 1);
     for (let combo = 0; combo < totalCombinations; combo++) {
       const keyParts: string[] = [];
       for (let d = 0; d < newDimensions.length; d++) {

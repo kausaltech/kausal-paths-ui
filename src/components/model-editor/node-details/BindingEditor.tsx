@@ -381,7 +381,7 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
         if (entryIndex !== index) return entry;
         if (entry.__typename === 'FilterDimensionType') {
           if (entry.dimension === dimension) return entry;
-          return { ...entry, dimension, categories: [], groups: [] };
+          return { ...entry, dimension, categories: [], groups: [], exclude: false };
         }
         if (entry.__typename === 'AssignDimensionType') {
           if (entry.dimension === dimension) return entry;
@@ -624,7 +624,16 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                             (dim) => dim.identifier === transformation.dimension
                           ) ?? null
                         }
-                        onChange={(categories) => patchTransformation(index, { categories })}
+                        onChange={(categories) =>
+                          // Exclude is only meaningful against selected
+                          // categories (the backend skips the filter entirely
+                          // when none are set), so clearing them resets it
+                          // rather than leaving a no-op exclude on the binding.
+                          patchTransformation(index, {
+                            categories,
+                            ...(categories.length === 0 ? { exclude: false } : {}),
+                          })
+                        }
                       />
                       {/* Category groups only exist on YAML-era dimensions (the
                           editor's DB-backed dimensions have none), so the field
@@ -645,19 +654,29 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                         />
                       )}
                       <Stack direction="row" spacing={1}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              size="small"
-                              checked={transformation.exclude}
-                              disabled={readOnly}
-                              onChange={(_, checked) =>
-                                patchTransformation(index, { exclude: checked })
-                              }
-                            />
+                        <Tooltip
+                          title={
+                            transformation.categories.length === 0
+                              ? t('bindings-exclude-needs-categories')
+                              : ''
                           }
-                          label={t('bindings-exclude')}
-                        />
+                        >
+                          <span>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  size="small"
+                                  checked={transformation.exclude}
+                                  disabled={readOnly || transformation.categories.length === 0}
+                                  onChange={(_, checked) =>
+                                    patchTransformation(index, { exclude: checked })
+                                  }
+                                />
+                              }
+                              label={t('bindings-exclude')}
+                            />
+                          </span>
+                        </Tooltip>
                         <FormControlLabel
                           control={
                             <Checkbox

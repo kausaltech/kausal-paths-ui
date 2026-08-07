@@ -12,6 +12,7 @@
   "bindings-dimension-placeholder": "Select a dimension",
   "bindings-edit": "Edit binding",
   "bindings-exclude": "Exclude matches",
+  "bindings-exclude-needs-categories": "Select categories first — with none selected, the filter has no matches to exclude. Use Flatten to remove the whole dimension.",
   "bindings-filter-dimension-help": "Keeps only the selected categories of a dimension (or excludes them). Flatten sums over the remaining categories and removes the dimension.",
   "bindings-flatten": "Flatten dimension",
   "bindings-groups": "Groups (comma-separated)",
