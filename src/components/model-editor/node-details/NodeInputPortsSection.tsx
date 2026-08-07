@@ -38,6 +38,7 @@ import {
 import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
+  InputPortInput,
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
@@ -45,6 +46,7 @@ import { QUANTITY_SUGGESTIONS } from '../quantities';
 import { useCreateEdge } from '../useCreateEdge';
 import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useAddInputPort, useBindDataset, useDeleteBinding } from '../usePortBindings';
+import { useUpdateInputPorts } from '../useUpdateOutputPorts';
 import BindingEditor, { type BindingEditorValue } from './BindingEditor';
 import PortBindingSelector from './PortBindingSelector';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
@@ -142,6 +144,25 @@ type PortSettingsFields = {
   quantity: string | null;
   unit: string | null;
 };
+
+/**
+ * Convert the node's current input ports to the mutation input shape,
+ * preserving each port's `id` — `updateNode` replaces the input-port list
+ * wholesale, and edges/bindings are keyed on those ids. The caller applies
+ * the edited port's changes on top (or drops a port) before sending.
+ */
+function inputPortsToInput(ports: readonly InputPort[]): InputPortInput[] {
+  return ports.map((p) => ({
+    id: p.id,
+    identifier: p.identifier ?? null,
+    label: p.label ?? null,
+    quantity: p.quantity ?? null,
+    unit: p.unit?.standard ?? null,
+    multi: p.multi ?? false,
+    requiredDimensions: [...p.requiredDimensions],
+    supportedDimensions: [...p.supportedDimensions],
+  }));
+}
 
 /**
  * Create or edit an input port's settings. Every field is optional: an empty
@@ -324,9 +345,22 @@ export default function NodeInputPortsSection({
   const bindDataset = useBindDataset();
   const deleteBinding = useDeleteBinding();
   const addInputPort = useAddInputPort();
+  const updateInputPorts = useUpdateInputPorts();
   const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
+
+  // Resend the whole port list (ids preserved) with the edited port's fields
+  // applied — updateNode replaces input ports wholesale.
+  const saveSettingsPort = (portId: string, fields: PortSettingsFields) => {
+    const next = inputPortsToInput(ports).map((p) => (p.id === portId ? { ...p, ...fields } : p));
+    return updateInputPorts(currentNodeId, next);
+  };
+
+  const deleteSettingsPort = (portId: string) => {
+    const next = inputPortsToInput(ports).filter((p) => p.id !== portId);
+    return updateInputPorts(currentNodeId, next);
+  };
   const [binding, setBinding] = useState(false);
   const [bindError, setBindError] = useState<string | null>(null);
   const [removingEdgeId, setRemovingEdgeId] = useState<string | null>(null);
@@ -736,10 +770,8 @@ export default function NodeInputPortsSection({
             unit: settingsPort.unit?.standard ?? null,
           }}
           onClose={() => setSettingsPortId(null)}
-          // TODO: wire both to `updateNode(input: { inputPorts })` whole-list
-          // replacement (mirroring useUpdateOutputPorts), preserving port ids.
-          onSubmit={() => Promise.reject(new Error('Not implemented yet'))}
-          onDelete={() => Promise.reject(new Error('Not implemented yet'))}
+          onSubmit={(fields) => saveSettingsPort(settingsPort.id, fields)}
+          onDelete={() => deleteSettingsPort(settingsPort.id)}
           deleteDisabled={settingsPort.bindings.length > 0}
         />
       )}
