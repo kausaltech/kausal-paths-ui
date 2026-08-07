@@ -2,11 +2,13 @@ import { useState } from 'react';
 
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Chip,
   CircularProgress,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -15,6 +17,7 @@ import {
   ListItemText,
   Paper,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -27,6 +30,7 @@ import {
   InfoSquare,
   Plus,
   Sliders,
+  Trash,
   XCircleFill,
   X as XIcon,
 } from 'react-bootstrap-icons';
@@ -37,6 +41,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
+import { QUANTITY_SUGGESTIONS } from '../quantities';
 import { useCreateEdge } from '../useCreateEdge';
 import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useAddInputPort, useBindDataset, useDeleteBinding } from '../usePortBindings';
@@ -73,19 +78,41 @@ function PortInfoRow({ label, value }: PortInfoRowProps) {
   );
 }
 
+/**
+ * The unit of the port's bound dataset metric. Ports created in the editor
+ * carry no unit constraint of their own (null = accept anything), so this is
+ * the only unit information available for them — shown as the effective unit
+ * without implying the port is constrained to it.
+ */
+function boundDatasetUnit(port: InputPort): string | null {
+  for (const binding of port.bindings) {
+    if (binding.__typename !== 'DatasetPortType') continue;
+    const metric = binding.dataset?.metrics.find((m) => m.id === binding.metric?.id);
+    if (metric?.unit) return metric.unit;
+  }
+  return null;
+}
+
 function PortTooltipContent({ port }: { port: InputPort }) {
   const t = useTranslations('model-editor');
   const datasetBindingCount = port.bindings.filter(
     (b) => b.__typename === 'DatasetPortType'
   ).length;
   const edgeBindingCount = port.bindings.filter((b) => b.__typename === 'NodeEdgeType').length;
+  const datasetUnit = port.unit ? null : boundDatasetUnit(port);
 
   return (
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
       <PortInfoRow label={t('nodes-port-id')} value={port.id} />
       <PortInfoRow label={t('nodes-port-label-field')} value={port.label ?? '—'} />
       <PortInfoRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
-      <PortInfoRow label={t('nodes-port-unit')} value={port.unit?.short ?? '—'} />
+      <PortInfoRow
+        label={t('nodes-port-unit')}
+        value={
+          port.unit?.short ??
+          (datasetUnit ? t('nodes-port-unit-from-dataset', { unit: datasetUnit }) : '—')
+        }
+      />
       <PortInfoRow
         label={t('nodes-port-multi')}
         value={port.multi ? t('nodes-port-multi-yes') : t('nodes-port-multi-no')}
@@ -107,6 +134,158 @@ function PortTooltipContent({ port }: { port: InputPort }) {
         })}
       />
     </Stack>
+  );
+}
+
+type PortSettingsFields = {
+  label: string | null;
+  quantity: string | null;
+  unit: string | null;
+};
+
+/**
+ * Create or edit an input port's settings. Every field is optional: an empty
+ * quantity/unit leaves the port unconstrained (it accepts any input), which
+ * is how bare ports have always been created. In edit mode (`onDelete` set) a
+ * delete action is offered, disabled while the port still has bindings — the
+ * backend drops the port definition without cleaning up bindings that
+ * reference it, so connections must be removed first.
+ */
+function InputPortSettingsDialog({
+  title,
+  submitLabel,
+  initial,
+  onClose,
+  onSubmit,
+  onDelete,
+  deleteDisabled = false,
+}: {
+  title: string;
+  submitLabel: string;
+  initial?: PortSettingsFields;
+  onClose: () => void;
+  onSubmit: (fields: PortSettingsFields) => Promise<void>;
+  onDelete?: () => Promise<void>;
+  deleteDisabled?: boolean;
+}) {
+  const t = useTranslations('model-editor');
+  const [label, setLabel] = useState(initial?.label ?? '');
+  const [quantity, setQuantity] = useState(initial?.quantity ?? '');
+  const [unit, setUnit] = useState(initial?.unit ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = (action: () => Promise<void>, fallbackMessage: string) => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    action()
+      .then(() => onClose())
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : fallbackMessage))
+      .finally(() => setBusy(false));
+  };
+
+  const handleSubmit = () =>
+    run(
+      () =>
+        onSubmit({
+          label: label.trim() || null,
+          quantity: quantity.trim() || null,
+          unit: unit.trim() || null,
+        }),
+      t('common-save-failed')
+    );
+
+  const handleDelete = () => {
+    if (!onDelete) return;
+    run(onDelete, t('common-save-failed'));
+  };
+
+  return (
+    <Dialog open onClose={busy ? undefined : onClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ pr: 6 }}>
+        {title}
+        <IconButton
+          aria-label={t('common-close')}
+          onClick={onClose}
+          disabled={busy}
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
+        >
+          <XIcon size={20} />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        {error && (
+          <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 1.5, fontSize: 12 }}>
+            {error}
+          </Alert>
+        )}
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+          {t('nodes-add-input-port-hint')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <TextField
+            autoFocus
+            label={t('nodes-port-label-field')}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            size="small"
+            fullWidth
+            slotProps={{ input: { sx: { fontSize: 13 } } }}
+          />
+          <Autocomplete
+            freeSolo
+            options={QUANTITY_SUGGESTIONS}
+            inputValue={quantity}
+            onInputChange={(_, next) => setQuantity(next)}
+            size="small"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={t('nodes-port-quantity')}
+                placeholder={t('nodes-port-quantity-hint')}
+                slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
+              />
+            )}
+          />
+          <TextField
+            label={t('nodes-port-unit')}
+            placeholder={t('nodes-port-unit-hint')}
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            size="small"
+            fullWidth
+            slotProps={{ input: { sx: { fontSize: 13 } } }}
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        {onDelete && (
+          <>
+            <Tooltip title={deleteDisabled ? t('nodes-delete-port-bound') : ''}>
+              <span>
+                <Button
+                  color="error"
+                  startIcon={<Trash size={14} />}
+                  onClick={handleDelete}
+                  disabled={busy || deleteDisabled}
+                  sx={{ textTransform: 'none' }}
+                >
+                  {t('nodes-delete-port')}
+                </Button>
+              </span>
+            </Tooltip>
+            <Box sx={{ flex: 1 }} />
+          </>
+        )}
+        <Button onClick={onClose} disabled={busy}>
+          {t('common-cancel')}
+        </Button>
+        <Button onClick={handleSubmit} variant="contained" disabled={busy}>
+          {busy ? t('common-saving') : submitLabel}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -145,12 +324,13 @@ export default function NodeInputPortsSection({
   const bindDataset = useBindDataset();
   const deleteBinding = useDeleteBinding();
   const addInputPort = useAddInputPort();
-  const [addingPort, setAddingPort] = useState(false);
+  const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
+  const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
+  const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
   const [binding, setBinding] = useState(false);
   const [bindError, setBindError] = useState<string | null>(null);
   const [removingEdgeId, setRemovingEdgeId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
-  const [addPortError, setAddPortError] = useState<string | null>(null);
   const [editingBinding, setEditingBinding] = useState<BindingEditorValue | null>(null);
   // Set when the picked source node has several compatible output ports; the
   // dialog then shows a port-choice step instead of the node selector.
@@ -240,19 +420,6 @@ export default function NodeInputPortsSection({
     }
   };
 
-  const handleAddPort = async () => {
-    if (addingPort) return;
-    setAddingPort(true);
-    setAddPortError(null);
-    try {
-      await addInputPort({ nodeId: currentNodeId });
-    } catch (err) {
-      setAddPortError(err instanceof Error ? err.message : t('nodes-failed-add-input-port'));
-    } finally {
-      setAddingPort(false);
-    }
-  };
-
   return (
     <CollapsibleSection
       title={t('nodes-input-ports', { count: ports.length })}
@@ -262,11 +429,6 @@ export default function NodeInputPortsSection({
       {removeError && (
         <Alert severity="error" onClose={() => setRemoveError(null)} sx={{ fontSize: 12 }}>
           {removeError}
-        </Alert>
-      )}
-      {addPortError && (
-        <Alert severity="error" onClose={() => setAddPortError(null)} sx={{ fontSize: 12 }}>
-          {addPortError}
         </Alert>
       )}
       {ports.length === 0 && (
@@ -314,7 +476,9 @@ export default function NodeInputPortsSection({
               ? (singleEdgeTags[0] ?? singleSourceNode.identifier)
               : null;
 
-        const quantityAndUnit = [port.quantity, port.unit?.short].filter(Boolean).join(' · ');
+        const quantityAndUnit =
+          [port.quantity, port.unit?.short].filter(Boolean).join(' · ') ||
+          t('nodes-port-unrestricted');
 
         return (
           <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>
@@ -345,7 +509,7 @@ export default function NodeInputPortsSection({
                   <InfoSquare size={10} aria-label={t('nodes-port-info')} />
                 </Typography>
               </Tooltip>
-              {quantityAndUnit && (
+              {readOnly ? (
                 <Typography
                   component="span"
                   variant="body2"
@@ -353,6 +517,28 @@ export default function NodeInputPortsSection({
                 >
                   {quantityAndUnit}
                 </Typography>
+              ) : (
+                <Tooltip title={t('nodes-edit-input-port')} placement="right">
+                  <Typography
+                    component="button"
+                    type="button"
+                    variant="body2"
+                    onClick={() => setSettingsPortId(port.id)}
+                    sx={{
+                      fontSize: 10,
+                      color: 'text.disabled',
+                      background: 'none',
+                      border: 'none',
+                      p: 0,
+                      cursor: 'pointer',
+                      textDecoration: 'underline dotted',
+                      textUnderlineOffset: 2,
+                      '&:hover': { color: 'text.secondary' },
+                    }}
+                  >
+                    {quantityAndUnit}
+                  </Typography>
+                </Tooltip>
               )}
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -524,14 +710,38 @@ export default function NodeInputPortsSection({
         <Paper variant="outlined" sx={{ p: 1 }}>
           <Button
             size="small"
-            startIcon={addingPort ? <CircularProgress size={12} /> : <Plus />}
-            onClick={() => void handleAddPort()}
-            disabled={addingPort}
+            startIcon={<Plus />}
+            onClick={() => setAddPortDialogOpen(true)}
             sx={{ textTransform: 'none' }}
           >
             {t('nodes-add-input-port')}
           </Button>
         </Paper>
+      )}
+      {addPortDialogOpen && (
+        <InputPortSettingsDialog
+          title={t('nodes-add-input-port')}
+          submitLabel={t('common-add')}
+          onClose={() => setAddPortDialogOpen(false)}
+          onSubmit={(fields) => addInputPort({ nodeId: currentNodeId, ...fields })}
+        />
+      )}
+      {settingsPort && (
+        <InputPortSettingsDialog
+          title={t('nodes-edit-input-port')}
+          submitLabel={t('common-save')}
+          initial={{
+            label: settingsPort.label ?? null,
+            quantity: settingsPort.quantity ?? null,
+            unit: settingsPort.unit?.standard ?? null,
+          }}
+          onClose={() => setSettingsPortId(null)}
+          // TODO: wire both to `updateNode(input: { inputPorts })` whole-list
+          // replacement (mirroring useUpdateOutputPorts), preserving port ids.
+          onSubmit={() => Promise.reject(new Error('Not implemented yet'))}
+          onDelete={() => Promise.reject(new Error('Not implemented yet'))}
+          deleteDisabled={settingsPort.bindings.length > 0}
+        />
       )}
       <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
