@@ -150,7 +150,10 @@ export function useCreateNode() {
         id: crypto.randomUUID(),
         identifier: null,
         unit,
-        columnId: null,
+        // The physical metric column of a single-output node is the runtime
+        // default 'Value' (backend VALUE_COLUMN). Leaving this null breaks
+        // metric lookups keyed on it (e.g. the output data preview resolver).
+        columnId: 'Value',
         label: null,
         quantity,
         dimensions: [],
