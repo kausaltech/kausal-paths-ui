@@ -50,7 +50,12 @@ function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
     unit: p.unit?.standard ?? '',
     quantity: p.quantity ?? null,
     label: p.label ?? null,
-    columnId: p.columnId ?? null,
+    // Backfill: a single output port's physical metric column is the runtime
+    // default 'Value' (backend VALUE_COLUMN). Editor-created ports predating
+    // this had columnId null, which breaks metric lookups keyed on it (e.g.
+    // the output data preview) — saving any port edit repairs them. Multi-port
+    // nodes keep whatever they have; their columns are genuinely distinct.
+    columnId: p.columnId ?? (ports.length === 1 ? 'Value' : null),
     dimensions: [...p.dimensions],
     isEditable: true,
   }));
