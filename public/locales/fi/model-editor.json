@@ -360,6 +360,7 @@
   "nodes-content": "Solmun sisältö",
   "nodes-current-input-source": "Nykyinen syötelähde",
   "nodes-datasets-show-other": "+{count} muuta mittaria",
+  "nodes-datasets-single-limit": "Tämä solmutyyppi tukee vain yhtä syötetietoaineistoa, ja yksi on jo kytketty. Poista ensin nykyinen tietoaineistokytkentä.",
   "nodes-delete-confirm": "Poistetaanko solmu?",
   "nodes-delete-port": "Poista portti",
   "nodes-delete-port-bound": "Poista ensin portin liitännät",

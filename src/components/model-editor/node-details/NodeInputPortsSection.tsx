@@ -40,7 +40,7 @@ import type {
   EditorNodeFieldsFragment,
   InputPortInput,
 } from '@/common/__generated__/graphql';
-import { getNodeStyle } from '../ElkNode';
+import { type CategoryKey, getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { QUANTITY_SUGGESTIONS } from '../quantities';
 import { useCreateEdge } from '../useCreateEdge';
@@ -58,6 +58,28 @@ import {
 } from './shared';
 
 type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
+
+/**
+ * Node categories whose backend classes only operate on input *nodes* —
+ * dataset bindings are ignored (SubtractiveNode) or fail the computation
+ * (MultiplicativeNode "must receive at least two inputs"), so datasets are
+ * not offered as an input source at all.
+ */
+const NODES_ONLY_CATEGORIES: ReadonlySet<CategoryKey> = new Set(['multiplicative', 'subtractive']);
+
+/**
+ * Node categories whose backend classes read their dataset through
+ * `get_input_dataset_pl`, which raises when more than one dataset is bound
+ * to the node (AdditiveNode family, GenericNode/GenericAction default
+ * operation chains). WeightedSum/Lever-style GenericNode subclasses override
+ * the operation chain and are exempt.
+ */
+const SINGLE_DATASET_CATEGORIES: ReadonlySet<CategoryKey> = new Set([
+  'additive',
+  'mix',
+  'generic',
+  'action',
+]);
 
 /**
  * The source node's output ports compatible with `port`. On bare ports (no
@@ -356,12 +378,26 @@ export default function NodeInputPortsSection({
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
 
-  // Multiplicative nodes multiply their input *nodes*; the backend doesn't
-  // support dataset bindings as operands (MultiplicativeNode._compute ignores
-  // them and fails with "must receive at least two inputs"), so don't offer
-  // datasets as an input source for them.
   const currentNode = nodeMap.get(currentNodeId);
-  const allowDatasetInputs = !currentNode || getCategoryForNode(currentNode) !== 'multiplicative';
+  const currentCategory = currentNode ? getCategoryForNode(currentNode) : null;
+  const allowDatasetInputs =
+    currentCategory === null || !NODES_ONLY_CATEGORIES.has(currentCategory);
+
+  /**
+   * When the node's class supports only a single input dataset, block adding
+   * one that would become the second. Selecting a dataset on a non-multi port
+   * replaces that port's own bindings, so only a dataset bound to *another*
+   * port — or one already on this port when it's multi (selection adds) —
+   * hits the limit.
+   */
+  const singleDatasetLimitReason = (port: InputPort): string | undefined => {
+    if (currentCategory === null || !SINGLE_DATASET_CATEGORIES.has(currentCategory))
+      return undefined;
+    const hasDataset = (p: InputPort) => p.bindings.some((b) => b.__typename === 'DatasetPortType');
+    const boundElsewhere = ports.some((p) => p.id !== port.id && hasDataset(p));
+    const addsToMulti = Boolean(port.multi) && hasDataset(port);
+    return boundElsewhere || addsToMulti ? t('nodes-datasets-single-limit') : undefined;
+  };
 
   // Resend the whole port list (ids preserved) with the edited port's fields
   // applied — updateNode replaces input ports wholesale.
@@ -852,6 +888,7 @@ export default function NodeInputPortsSection({
                   port={editingPort}
                   currentNodeId={currentNodeId}
                   allowDatasets={allowDatasetInputs}
+                  datasetsDisabledReason={singleDatasetLimitReason(editingPort)}
                   currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
                     edgeId: e.id,
                     node: nodeMap.get(e.fromRef.nodeId) ?? null,

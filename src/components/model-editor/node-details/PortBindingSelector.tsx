@@ -33,6 +33,12 @@ type Props = {
    * bound to such a node is silently ignored or fails at compute time.
    */
   allowDatasets?: boolean;
+  /**
+   * When set, the Datasets tab stays visible but shows this message instead
+   * of the selector — for temporary limits (e.g. node types that support a
+   * single input dataset and already have one bound).
+   */
+  datasetsDisabledReason?: string;
   onSelectNode?: (nodeId: string) => void;
   onSelectDataset?: (datasetId: string, metricId: string) => void;
   onRemoveSource?: (edgeId: string) => void;
@@ -96,6 +102,7 @@ export default function PortBindingSelector({
   currentSources,
   removingEdgeId,
   allowDatasets = true,
+  datasetsDisabledReason,
   onSelectNode,
   onSelectDataset,
   onRemoveSource,
@@ -167,6 +174,10 @@ export default function PortBindingSelector({
           excludeNodeIds={excludeNodeIds}
           onSelect={onSelectNode}
         />
+      ) : datasetsDisabledReason ? (
+        <Typography variant="caption" sx={{ fontSize: 11, color: 'text.secondary', py: 1 }}>
+          {datasetsDisabledReason}
+        </Typography>
       ) : (
         <DatasetSelector port={port} onSelect={onSelectDataset} />
       )}
