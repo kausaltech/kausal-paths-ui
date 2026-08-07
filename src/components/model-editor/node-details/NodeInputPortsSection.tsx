@@ -223,7 +223,7 @@ function InputPortSettingsDialog({
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
           {t('nodes-add-input-port-hint')}
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             autoFocus
             label={t('nodes-port-label-field')}
