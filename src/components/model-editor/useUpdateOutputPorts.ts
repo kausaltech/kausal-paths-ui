@@ -4,6 +4,7 @@ import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
 import type {
+  InputPortInput,
   OutputPortInput,
   UpdateNodeInput,
   UpdateNodeMutation,
@@ -14,29 +15,29 @@ import { UPDATE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './q
 import { useEditorApolloContext } from './useEditorApolloContext';
 
 /**
- * Replace a node's output ports. `updateNode` swaps the whole `output_ports`
- * list, so the caller must pass *all* ports (with their existing `id`s
- * preserved, or edges/bindings keyed on them are orphaned). Used to edit a
- * port's unit/quantity.
+ * Shared core for whole-list port replacement via `updateNode`. The mutation
+ * swaps the given port list wholesale, so callers must pass *all* ports (with
+ * their existing `id`s preserved, or edges/bindings keyed on them are
+ * orphaned).
  *
  * Unlike scalar field edits — which ride the `nodeGraphOverridesVar` overlay —
  * port changes aren't covered by that overlay, so we refetch the (no-cache)
  * NodeGraph to surface them.
  */
-export function useUpdateOutputPorts() {
+function useUpdateNodePorts() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
   const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
 
   return useCallback(
-    async (nodeId: string, outputPorts: OutputPortInput[]) => {
+    async (nodeId: string, input: UpdateNodeInput, failureMessage: string) => {
       try {
         const result = await mutate({
           variables: {
             instanceId: instance.id,
             nodeId,
-            input: { outputPorts } as UpdateNodeInput,
+            input,
             version: draftHeadTokenVar(),
           },
           context: editorContext,
@@ -46,7 +47,7 @@ export function useUpdateOutputPorts() {
         const payload = result.data?.instanceEditor.updateNode;
         if (payload?.__typename === 'OperationInfo') {
           const message = payload.messages.map((m) => m.message).join('; ');
-          throw new Error(message || 'Failed to update output ports');
+          throw new Error(message || failureMessage);
         }
       } catch (err) {
         const isStale =
@@ -60,5 +61,25 @@ export function useUpdateOutputPorts() {
       }
     },
     [client, instance.id, mutate, editorContext]
+  );
+}
+
+/** Replace a node's output ports. Used to edit a port's unit/quantity. */
+export function useUpdateOutputPorts() {
+  const updatePorts = useUpdateNodePorts();
+  return useCallback(
+    (nodeId: string, outputPorts: OutputPortInput[]) =>
+      updatePorts(nodeId, { outputPorts } as UpdateNodeInput, 'Failed to update output ports'),
+    [updatePorts]
+  );
+}
+
+/** Replace a node's input ports. Used to edit a port's settings or delete a port. */
+export function useUpdateInputPorts() {
+  const updatePorts = useUpdateNodePorts();
+  return useCallback(
+    (nodeId: string, inputPorts: InputPortInput[]) =>
+      updatePorts(nodeId, { inputPorts } as UpdateNodeInput, 'Failed to update input ports'),
+    [updatePorts]
   );
 }
