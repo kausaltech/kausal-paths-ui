@@ -16,23 +16,18 @@ import { useInstance } from '@/common/instance';
 import { CREATE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
 
-/** Slugify a name into an identifier seed; falls back to "node". */
-function toIdentifierBase(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  return slug || 'node';
-}
-
-function pickUniqueIdentifier(base: string, existing: ReadonlySet<string>): string {
-  if (!existing.has(base)) return base;
-  for (let i = 2; i < 1000; i += 1) {
-    const candidate = `${base}_${i}`;
-    if (!existing.has(candidate)) return candidate;
+/**
+ * Editor-created nodes get an opaque random identifier (e.g. "node_3f8a2c1d")
+ * instead of a name-derived slug: identifiers are permanent (updateNode has
+ * no identifier field, and edges/formulas/history key on it) while names
+ * change freely, so a name-derived id drifts into being misleading. Meaning
+ * lives in the name; the identifier is just a key.
+ */
+function randomNodeIdentifier(existing: ReadonlySet<string>): string {
+  for (;;) {
+    const id = `node_${crypto.randomUUID().replaceAll('-', '').slice(0, 8)}`;
+    if (!existing.has(id)) return id;
   }
-  throw new Error(`Could not find a unique identifier for "${base}"`);
 }
 
 /** Which kind of node the "New …" flow creates. */
@@ -145,7 +140,7 @@ export function useCreateNode() {
       { name, unit, quantity, kind, existingIdentifiers }: CreateNodeArgs,
       onCreated?: (newId: string) => void | Promise<void>
     ): Promise<CreateNodeResult> => {
-      const newIdentifier = pickUniqueIdentifier(toIdentifierBase(name), existingIdentifiers);
+      const newIdentifier = randomNodeIdentifier(existingIdentifiers);
       const outputPort: OutputPortInput = {
         id: crypto.randomUUID(),
         identifier: null,
