@@ -100,16 +100,22 @@ export function useBindDataset() {
 }
 
 /**
- * Append a bare input port to a node. All port attributes default to null
- * (any quantity/unit accepted); the port starts unbound and is wired up
- * afterward via the binding selector.
+ * Append an input port to a node. Constraint fields (quantity/unit) are
+ * optional — null means the port accepts anything. The port starts unbound
+ * and is wired up afterward via the binding selector.
  */
 export function useAddInputPort() {
   const { instanceId, editorContext, handleError } = useBindingMutationContext();
   const [mutate] = useMutation<AddInputPortMutation, AddInputPortMutationVariables>(ADD_INPUT_PORT);
 
   return useCallback(
-    async (args: { nodeId: string; label?: string; multi?: boolean }) => {
+    async (args: {
+      nodeId: string;
+      label?: string | null;
+      multi?: boolean;
+      quantity?: string | null;
+      unit?: string | null;
+    }) => {
       try {
         const result = await mutate({
           variables: {
@@ -119,8 +125,8 @@ export function useAddInputPort() {
               id: null,
               identifier: null,
               label: args.label ?? null,
-              quantity: null,
-              unit: null,
+              quantity: args.quantity ?? null,
+              unit: args.unit ?? null,
               multi: args.multi ?? false,
               requiredDimensions: null,
               supportedDimensions: null,

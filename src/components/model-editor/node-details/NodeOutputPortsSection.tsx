@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { InfoSquare, Sliders, X as XIcon } from 'react-bootstrap-icons';
+import { InfoSquare, X as XIcon } from 'react-bootstrap-icons';
 
 import type {
   EditorNodeEdgeFragment,
@@ -247,7 +247,9 @@ export default function NodeOutputPortsSection({
             ? (singleEdgeTags[0] ?? singleTargetNode.identifier)
             : null;
 
-        const quantityAndUnit = [port.quantity, port.unit?.short].filter(Boolean).join(' · ');
+        const quantityAndUnit =
+          [port.quantity, port.unit?.short].filter(Boolean).join(' · ') ||
+          t('nodes-port-unrestricted');
 
         return (
           <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>
@@ -277,7 +279,7 @@ export default function NodeOutputPortsSection({
                   <InfoSquare size={10} aria-label={t('nodes-port-info')} />
                 </Typography>
               </Tooltip>
-              {quantityAndUnit && (
+              {readOnly ? (
                 <Typography
                   component="span"
                   variant="body2"
@@ -285,6 +287,28 @@ export default function NodeOutputPortsSection({
                 >
                   {quantityAndUnit}
                 </Typography>
+              ) : (
+                <Tooltip title={t('nodes-edit-output-port')} placement="right">
+                  <Typography
+                    component="button"
+                    type="button"
+                    variant="body2"
+                    onClick={() => setEditingPortId(port.id)}
+                    sx={{
+                      fontSize: 10,
+                      color: 'text.disabled',
+                      background: 'none',
+                      border: 'none',
+                      p: 0,
+                      cursor: 'pointer',
+                      textDecoration: 'underline dotted',
+                      textUnderlineOffset: 2,
+                      '&:hover': { color: 'text.secondary' },
+                    }}
+                  >
+                    {quantityAndUnit}
+                  </Typography>
+                </Tooltip>
               )}
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -321,18 +345,6 @@ export default function NodeOutputPortsSection({
                   })
                 ) : (
                   <NotConnectedChip />
-                )}
-                {!readOnly && (
-                  <Tooltip title={t('nodes-edit-output-port')}>
-                    <IconButton
-                      size="small"
-                      onClick={() => setEditingPortId(port.id)}
-                      aria-label={t('nodes-edit-output-port')}
-                      sx={{ p: 0.5, color: 'text.secondary' }}
-                    >
-                      <Sliders size={12} />
-                    </IconButton>
-                  </Tooltip>
                 )}
               </Box>
             </Box>
