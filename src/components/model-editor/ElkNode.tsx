@@ -37,6 +37,7 @@ import {
 } from 'react-bootstrap-icons';
 
 import { NodeStatus } from '@/common/__generated__/graphql';
+import { nodeDisplaySettingsVar } from './displaySettings';
 import { mockNodeEditsVar } from './mockEdits';
 import { type NodeStatusEntry, nodeStatusVar } from './queries';
 
@@ -336,6 +337,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
     NodeGraphInteractionContext
   );
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
+  const display = useReactiveVar(nodeDisplaySettingsVar);
   const hasMockEdit = Boolean(nodeEdits[id]);
   const statusEntry = useReactiveVar(nodeStatusVar)[id];
   const statusSeverity = getStatusSeverity(statusEntry?.status);
@@ -451,34 +453,36 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             minHeight: 8 * Math.max(targetCount, sourceCount),
           }}
         >
-          <Box
-            sx={{
-              px: '5px',
-              py: '2px',
-              backgroundColor: 'grey.100',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '3px',
-            }}
-          >
-            <Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>
-            <Typography
-              variant="caption"
-              sx={{ fontSize: 9, lineHeight: 1.2, color: style.border, fontWeight: 500 }}
+          {display.showNodeType && (
+            <Box
+              sx={{
+                px: '5px',
+                py: '2px',
+                backgroundColor: 'grey.100',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+              }}
             >
-              {style.label}
-            </Typography>
-            {data.quantityKind?.icon && (
+              <Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>
               <Typography
-                component="span"
-                title={data.quantityKind.label}
-                sx={{ fontSize: 11, lineHeight: 1, ml: 'auto' }}
+                variant="caption"
+                sx={{ fontSize: 9, lineHeight: 1.2, color: style.border, fontWeight: 500 }}
               >
-                {data.quantityKind.icon}
+                {style.label}
               </Typography>
-            )}
-          </Box>
-          <Box sx={{ px: '5px', py: '3px' }}>
+              {data.quantityKind?.icon && (
+                <Typography
+                  component="span"
+                  title={data.quantityKind.label}
+                  sx={{ fontSize: 11, lineHeight: 1, ml: 'auto' }}
+                >
+                  {data.quantityKind.icon}
+                </Typography>
+              )}
+            </Box>
+          )}
+          <Box sx={{ px: '5px', py: '3px', display: 'flex', alignItems: 'flex-start', gap: '3px' }}>
             <Typography
               variant="body2"
               sx={{
@@ -490,6 +494,17 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
             >
               {data.label}
             </Typography>
+            {/* The quantity kind is domain classification, not node type — keep
+                it visible by moving it here when the type strip is hidden. */}
+            {!display.showNodeType && data.quantityKind?.icon && (
+              <Typography
+                component="span"
+                title={data.quantityKind.label}
+                sx={{ fontSize: 11, lineHeight: 1.25, ml: 'auto' }}
+              >
+                {data.quantityKind.icon}
+              </Typography>
+            )}
           </Box>
         </Box>
       ) : (
