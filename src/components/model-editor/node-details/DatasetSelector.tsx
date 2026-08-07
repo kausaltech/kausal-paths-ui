@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Box, Chip, Typography } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
@@ -43,8 +45,35 @@ function metricMatches(port: InputPort, metric: Metric): boolean {
   );
 }
 
+const normalizeQuantityName = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+
+/**
+ * Whether the metric's column name/label matches the port's quantity.
+ *
+ * Dataset metrics don't declare a quantity, so this is a naming-convention
+ * heuristic: dataset columns are conventionally named after quantities
+ * ("emissions", "emission_factor", …). Callers must treat it as a soft
+ * signal — datasets that don't follow the convention still hold compatible
+ * data — hence the collapsed "other metrics" escape hatch in the list below.
+ */
+function metricNameMatchesQuantity(port: InputPort, metric: Metric): boolean {
+  if (!port.quantity) return true;
+  const quantity = normalizeQuantityName(port.quantity);
+  // `name` cast: codegen is blocked by unrelated schema drift; the query
+  // fetches `name` (the DataFrame column name) at runtime.
+  const columnName = (metric as Metric & { name?: string | null }).name;
+  return [columnName, metric.label].some(
+    (name) => name != null && normalizeQuantityName(name) === quantity
+  );
+}
+
 export default function DatasetSelector({ port, onSelect }: Props) {
   const t = useTranslations('model-editor');
+  const [showAll, setShowAll] = useState(false);
   const { data, loading } = useQuery<AvailableDatasetsQuery, AvailableDatasetsQueryVariables>(
     AVAILABLE_DATASETS,
     { fetchPolicy: 'cache-and-network' }
@@ -64,6 +93,15 @@ export default function DatasetSelector({ port, onSelect }: Props) {
     if (byName !== 0) return byName;
     return a.metric.label.localeCompare(b.metric.label);
   });
+
+  // Quantity is a soft signal (see metricNameMatchesQuantity): candidates
+  // whose name matches the port's quantity show first; the rest collapse
+  // behind a toggle. When nothing matches the naming convention, the split
+  // would hide everything useful, so it's skipped entirely.
+  const preferred = candidates.filter((c) => metricNameMatchesQuantity(port, c.metric));
+  const split = preferred.length > 0 && preferred.length < candidates.length;
+  const visible = split && !showAll ? preferred : candidates;
+  const hiddenCount = candidates.length - preferred.length;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -85,7 +123,7 @@ export default function DatasetSelector({ port, onSelect }: Props) {
           style={{ maxHeight: 200 }}
         >
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, pr: 0.5 }}>
-            {candidates.map(({ dataset, metric }) => {
+            {visible.map(({ dataset, metric }) => {
               const label = `${dataset.name} → ${metric.label}`;
               return (
                 <Chip
@@ -106,6 +144,26 @@ export default function DatasetSelector({ port, onSelect }: Props) {
                 />
               );
             })}
+            {split && (
+              <Chip
+                label={
+                  showAll
+                    ? t('datasets-categories-show-less')
+                    : t('nodes-datasets-show-other', { count: hiddenCount })
+                }
+                variant="outlined"
+                onClick={() => setShowAll((v) => !v)}
+                sx={{
+                  height: 28,
+                  fontSize: 12,
+                  borderRadius: 1,
+                  borderStyle: 'dashed',
+                  color: 'text.secondary',
+                  cursor: 'pointer',
+                  '& .MuiChip-label': { px: 1 },
+                }}
+              />
+            )}
           </Box>
         </OverlayScrollbarsComponent>
       )}

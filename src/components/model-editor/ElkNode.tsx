@@ -69,7 +69,7 @@ const ICON_SIZE = 14;
 // Simple nodes are further split by the Python subclass into arithmetic
 // operators (additive/multiplicative/…) and aggregation patterns
 // (coalesce/weightedSum/dataset/…).
-type CategoryKey =
+export type CategoryKey =
   | 'outcome'
   | 'action'
   | 'formula'
@@ -223,7 +223,7 @@ const CLASS_CATEGORY: Record<string, CategoryKey> = {
   WastewaterTreatmentEmissions: 'generic',
 };
 
-function getCategory(kind: string, nodeClass: string, isOutcome: boolean): CategoryKey {
+export function getNodeCategory(kind: string, nodeClass: string, isOutcome: boolean): CategoryKey {
   if (isOutcome) return 'outcome';
   switch (kind.toLowerCase()) {
     case 'action':
@@ -253,7 +253,7 @@ function getCategory(kind: string, nodeClass: string, isOutcome: boolean): Categ
 }
 
 export function getNodeStyle(kind: string, nodeClass: string, isOutcome: boolean): NodeStyle {
-  const { bg, border, Icon, label } = CATEGORY_STYLES[getCategory(kind, nodeClass, isOutcome)];
+  const { bg, border, Icon, label } = CATEGORY_STYLES[getNodeCategory(kind, nodeClass, isOutcome)];
   return { bg, border, icon: <Icon size={ICON_SIZE} />, label };
 }
 

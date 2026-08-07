@@ -359,6 +359,7 @@
   "nodes-compatible-nodes": "{count, plural, one {# kompatibler Knoten} other {# kompatible Knoten}}",
   "nodes-content": "Knoteninhalt",
   "nodes-current-input-source": "Aktuelle Eingabequelle",
+  "nodes-datasets-show-other": "+{count} weitere Metriken",
   "nodes-delete-confirm": "Knoten löschen?",
   "nodes-delete-port": "Port löschen",
   "nodes-delete-port-bound": "Zuerst die Verbindungen des Ports entfernen",

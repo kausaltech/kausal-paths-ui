@@ -723,6 +723,7 @@ export const AVAILABLE_DATASETS = gql`
           name
           metrics {
             id
+            name
             label
             unitInfo {
               id

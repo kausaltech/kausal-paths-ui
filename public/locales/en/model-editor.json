@@ -386,6 +386,7 @@
   "nodes-compatible-nodes": "{count, plural, one {# compatible node} other {# compatible nodes}}",
   "nodes-content": "Node content",
   "nodes-current-input-source": "Current input source",
+  "nodes-datasets-show-other": "+{count} other metrics",
   "nodes-delete-confirm": "Delete node?",
   "nodes-delete-port": "Delete port",
   "nodes-delete-port-bound": "Remove the port's connections first",

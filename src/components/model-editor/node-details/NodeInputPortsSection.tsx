@@ -49,7 +49,13 @@ import { useAddInputPort, useBindDataset, useDeleteBinding } from '../usePortBin
 import { useUpdateInputPorts } from '../useUpdateOutputPorts';
 import BindingEditor, { type BindingEditorValue } from './BindingEditor';
 import PortBindingSelector from './PortBindingSelector';
-import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
+import {
+  CollapsibleSection,
+  ConnectedNodeChip,
+  NotConnectedChip,
+  getCategoryForNode,
+  getStyleForNode,
+} from './shared';
 
 type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
 
@@ -349,6 +355,13 @@ export default function NodeInputPortsSection({
   const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
+
+  // Multiplicative nodes multiply their input *nodes*; the backend doesn't
+  // support dataset bindings as operands (MultiplicativeNode._compute ignores
+  // them and fails with "must receive at least two inputs"), so don't offer
+  // datasets as an input source for them.
+  const currentNode = nodeMap.get(currentNodeId);
+  const allowDatasetInputs = !currentNode || getCategoryForNode(currentNode) !== 'multiplicative';
 
   // Resend the whole port list (ids preserved) with the edited port's fields
   // applied — updateNode replaces input ports wholesale.
@@ -838,6 +851,7 @@ export default function NodeInputPortsSection({
                   nodes={[...nodeMap.values()]}
                   port={editingPort}
                   currentNodeId={currentNodeId}
+                  allowDatasets={allowDatasetInputs}
                   currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
                     edgeId: e.id,
                     node: nodeMap.get(e.fromRef.nodeId) ?? null,
