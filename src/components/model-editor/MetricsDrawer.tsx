@@ -1,6 +1,15 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
-import { Box, CircularProgress, Drawer, IconButton, Tab, Tabs, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Drawer,
+  IconButton,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material';
 
 import { useTranslations } from 'next-intl';
 import { X } from 'react-bootstrap-icons';
@@ -24,7 +33,7 @@ type ViewMode = 'table' | 'graph';
 
 export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, zIndex }: Props) {
   const t = useTranslations('model-editor');
-  const { portMetrics, loading, fetch } = useNodeMetric(nodeId);
+  const { portMetrics, loading, error, fetch } = useNodeMetric(nodeId);
   const [view, setView] = useState<ViewMode>('table');
   const [site] = useSiteWithSetter();
 
@@ -98,6 +107,12 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={24} />
           </Box>
+        ) : error && portMetrics.length === 0 ? (
+          // Nothing rendered at all (network failure, or the whole query
+          // errored): surface the message instead of an empty drawer.
+          <Alert severity="error" sx={{ fontSize: 12 }}>
+            {t('metric-output-error', { error: error.message })}
+          </Alert>
         ) : (
           <Box
             sx={{
@@ -119,7 +134,11 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
                   <Typography variant="subtitle2" sx={{ mb: 0.5, flexShrink: 0 }}>
                     {portLabel}
                   </Typography>
-                  {view === 'table' ? (
+                  {pm.errorMessage && !pm.rawMetric ? (
+                    <Alert severity="error" sx={{ fontSize: 12 }}>
+                      {t('metric-output-error', { error: pm.errorMessage })}
+                    </Alert>
+                  ) : view === 'table' ? (
                     pm.metric ? (
                       <Suspense fallback={<CircularProgress size={20} />}>
                         <MetricDataViewer metric={pm.metric} fillHeight />
