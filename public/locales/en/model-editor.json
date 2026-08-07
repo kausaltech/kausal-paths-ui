@@ -387,6 +387,7 @@
   "nodes-content": "Node content",
   "nodes-current-input-source": "Current input source",
   "nodes-datasets-show-other": "+{count} other metrics",
+  "nodes-datasets-single-limit": "This node type supports a single input dataset, and one is already bound. Remove the existing dataset binding first.",
   "nodes-delete-confirm": "Delete node?",
   "nodes-delete-port": "Delete port",
   "nodes-delete-port-bound": "Remove the port's connections first",

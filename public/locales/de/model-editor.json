@@ -360,6 +360,7 @@
   "nodes-content": "Knoteninhalt",
   "nodes-current-input-source": "Aktuelle Eingabequelle",
   "nodes-datasets-show-other": "+{count} weitere Metriken",
+  "nodes-datasets-single-limit": "Dieser Knotentyp unterstützt nur einen Eingabedatensatz, und einer ist bereits verknüpft. Zuerst die bestehende Datensatzbindung entfernen.",
   "nodes-delete-confirm": "Knoten löschen?",
   "nodes-delete-port": "Port löschen",
   "nodes-delete-port-bound": "Zuerst die Verbindungen des Ports entfernen",
