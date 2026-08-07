@@ -363,6 +363,8 @@
   "nodes-delete-context-menu": "Poista solmu",
   "nodes-description": "Kuvaus",
   "nodes-details": "Solmun tiedot",
+  "nodes-display-node-type": "Solmun tyyppi",
+  "nodes-display-settings": "Näyttöasetukset",
   "nodes-duplicate-action": "Monista toimenpide",
   "nodes-duplicate-node": "Monista solmu",
   "nodes-edit-output-port": "Muokkaa lähtöporttia",

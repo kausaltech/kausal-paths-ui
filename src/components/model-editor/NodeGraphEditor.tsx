@@ -40,6 +40,7 @@ import ElkNode, {
 import MetricsDrawer from './MetricsDrawer';
 import NodeCrudDialogs from './NodeCrudDialogs';
 import NodeDetailsPanel from './NodeDetailsPanel';
+import NodeDisplaySettingsMenu from './NodeDisplaySettingsMenu';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
 import {
@@ -238,6 +239,7 @@ const FlowCanvas = memo(function FlowCanvas({
         <ControlButton onClick={onResetLayout} title="Reset layout" aria-label="Reset layout">
           <ArrowCounterclockwise />
         </ControlButton>
+        <NodeDisplaySettingsMenu />
       </Controls>
       <MiniMap nodeStrokeWidth={3} />
     </ReactFlow>

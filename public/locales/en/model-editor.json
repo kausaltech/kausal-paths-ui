@@ -389,6 +389,8 @@
   "nodes-delete-context-menu": "Delete node",
   "nodes-description": "Description",
   "nodes-details": "Node details",
+  "nodes-display-node-type": "Node type",
+  "nodes-display-settings": "Display settings",
   "nodes-duplicate-action": "Duplicate action",
   "nodes-duplicate-node": "Duplicate node",
   "nodes-edit-output-port": "Edit output port",

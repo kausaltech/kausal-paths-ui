@@ -363,6 +363,8 @@
   "nodes-delete-context-menu": "Knoten löschen",
   "nodes-description": "Beschreibung",
   "nodes-details": "Knotendetails",
+  "nodes-display-node-type": "Knotentyp",
+  "nodes-display-settings": "Anzeigeeinstellungen",
   "nodes-duplicate-action": "Maßnahme duplizieren",
   "nodes-duplicate-node": "Knoten duplizieren",
   "nodes-edit-output-port": "Ausgabeport bearbeiten",
