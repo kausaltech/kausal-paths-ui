@@ -429,6 +429,7 @@
   "nodes-port-add-input": "Eingabe hinzufügen",
   "nodes-port-bindings": "Zuordnungen",
   "nodes-port-bindings-value": "{total} ({edges} Kante, {datasets} Datensatz)",
+  "nodes-port-dimensions": "Dimensionen",
   "nodes-port-edges": "Kanten",
   "nodes-port-id": "ID",
   "nodes-port-info": "Port-Info",
