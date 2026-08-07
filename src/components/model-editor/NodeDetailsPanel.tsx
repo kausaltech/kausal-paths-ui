@@ -230,7 +230,9 @@ export default function NodeDetailsPanel({
   const headerStyle = getStyleForNode(node);
 
   return (
-    <Box sx={{ p: 0 }}>
+    // Generous bottom padding so the last section clears the panel edge when
+    // scrolled to the end.
+    <Box sx={{ p: 0, pb: 8 }}>
       <Box
         sx={{
           display: 'flex',

@@ -416,7 +416,7 @@
   "nodes-open-public-page": "Avaa julkinen sivu",
   "nodes-outcome-chip": "tulos",
   "nodes-output-data": "Solmun tulostiedot",
-  "nodes-output-data-show": "Näytä solmun tiedot",
+  "nodes-output-data-show": "Näytä solmun tulos",
   "nodes-output-ports": "Solmun lähtöportit ({count})",
   "nodes-port-add-input": "Lisää syöte",
   "nodes-port-bindings": "Sidokset",
