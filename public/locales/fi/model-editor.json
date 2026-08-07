@@ -336,6 +336,7 @@
   "metric-graph": "Kaavio",
   "metric-no-data": "Ei tietoja saatavilla",
   "metric-output-data": "Tulostiedot{nodeName}",
+  "metric-output-error": "Tulosteen laskenta epäonnistui: {error}",
   "metric-pivot-dimension": "Pivot-dimensio",
   "metric-selected-of": "{selected}/{total}",
   "metric-table": "Taulukko",

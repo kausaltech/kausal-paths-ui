@@ -336,6 +336,7 @@
   "metric-graph": "Diagramm",
   "metric-no-data": "Keine Daten verfügbar",
   "metric-output-data": "Ausgabedaten{nodeName}",
+  "metric-output-error": "Ausgabe konnte nicht berechnet werden: {error}",
   "metric-pivot-dimension": "Pivot-Dimension",
   "metric-selected-of": "{selected} von {total}",
   "metric-table": "Tabelle",

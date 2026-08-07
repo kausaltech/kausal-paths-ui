@@ -363,6 +363,7 @@
   "metric-graph": "Graph",
   "metric-no-data": "No data available",
   "metric-output-data": "Output data{nodeName}",
+  "metric-output-error": "Failed to compute output: {error}",
   "metric-pivot-dimension": "Pivot dimension",
   "metric-selected-of": "{selected} of {total}",
   "metric-table": "Table",
