@@ -53,11 +53,33 @@ function formatNumber(value: number | null | undefined, maxDigits: number): stri
   return value.toLocaleString(undefined, { maximumFractionDigits: maxDigits });
 }
 
-export default function MetricDataViewer({
-  metric,
-  compact = false,
-  fillHeight = false,
-}: MetricDataViewerProps) {
+/**
+ * A cube with no values, or with a dimension that has no categories (seen on
+ * freshly created dataset bindings before any data exists), has nothing to
+ * show — and the pivot/flat transforms assume every dimension is non-empty.
+ */
+export default function MetricDataViewer(props: MetricDataViewerProps) {
+  const t = useTranslations('model-editor');
+  const { metric } = props;
+  const isEmpty = metric.size === 0 || metric.dimensions.some((d) => d.categories.length === 0);
+  if (isEmpty) {
+    return (
+      <Box>
+        {!props.compact && (
+          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            {metric.name}
+          </Typography>
+        )}
+        <Typography variant="body2" color="text.disabled">
+          {t('metric-no-data')}
+        </Typography>
+      </Box>
+    );
+  }
+  return <MetricDataGrid {...props} />;
+}
+
+function MetricDataGrid({ metric, compact = false, fillHeight = false }: MetricDataViewerProps) {
   const t = useTranslations('model-editor');
   const hasDimensions = metric.dimensions.length > 0;
   const [viewMode, setViewMode] = useState<ViewMode>(hasDimensions ? 'pivot' : 'flat');
