@@ -24,7 +24,7 @@
   "bindings-save-failed": "Failed to save binding",
   "bindings-system-managed": "System managed",
   "bindings-tags": "Tags",
-  "bindings-tags-help": "Comma-separated binding tags",
+  "bindings-tags-help": "Free-form tags. Some node types react to specific tags (e.g. non_additive forces an input into the multiplication), and the first tag also names this input in formulas.",
   "bindings-transformations": "Transformations",
   "action-wizard-back": "Back",
   "action-wizard-basic-info-action-group": "Action Group",

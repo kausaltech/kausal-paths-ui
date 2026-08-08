@@ -48,6 +48,14 @@ type Props = {
   onDelete: () => Promise<void>;
 };
 
+/**
+ * Cross-cutting tags that backend node classes react to. Tags are free-form
+ * (the field stays freeSolo): many classes grep for their own specific tags,
+ * and the first tag on an edge doubles as the input's alias in formulas —
+ * but these general ones are worth discovering from the editor.
+ */
+const TAG_SUGGESTIONS = ['non_additive', 'impute', 'other_node', 'historical', 'goal', 'emissions'];
+
 function splitList(value: string): string[] {
   return value
     .split(',')
@@ -357,7 +365,7 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
       ...('values' in entry ? { values: [...entry.values] } : {}),
     }))
   );
-  const [tags, setTags] = useState(binding.tags.join(', '));
+  const [tags, setTags] = useState<string[]>([...binding.tags]);
   const [metricId, setMetricId] = useState(binding.metricId ?? '');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -446,14 +454,14 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
         await updateDatasetBinding({
           bindingId: binding.id,
           transformations: toDatasetTransformationInputs(transformations),
-          tags: splitList(tags),
+          tags,
           metricId: metricId || undefined,
         });
       } else {
         await updateEdgeBinding({
           bindingId: binding.id,
           transformations: toEdgeTransformationInputs(transformations),
-          tags: splitList(tags),
+          tags,
         });
       }
       onSaved();
@@ -480,13 +488,17 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
   return (
     <Stack spacing={2.5}>
       {error && <Alert severity="error">{error}</Alert>}
-      <TextField
-        label={t('bindings-tags')}
+      <Autocomplete
+        multiple
+        freeSolo
+        autoSelect
+        options={TAG_SUGGESTIONS}
         value={tags}
-        onChange={(event) => setTags(event.target.value)}
-        helperText={t('bindings-tags-help')}
+        onChange={(_, next) => setTags(next)}
         size="small"
-        fullWidth
+        renderInput={(params) => (
+          <TextField {...params} label={t('bindings-tags')} helperText={t('bindings-tags-help')} />
+        )}
       />
       {binding.kind === 'dataset' && binding.metrics && binding.metrics.length > 0 && (
         <TextField
