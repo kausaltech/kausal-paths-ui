@@ -14,6 +14,8 @@ type Props = {
   currentNodeId: string;
   /** Node ids already bound to this port; excluded from the candidate list. */
   excludeNodeIds?: ReadonlySet<string>;
+  /** Free-text filter over node name and identifier (case-insensitive substring). */
+  searchQuery?: string;
   onSelect?: (nodeId: string) => void;
 };
 
@@ -27,11 +29,23 @@ export default function NodeSelector({
   port,
   currentNodeId,
   excludeNodeIds,
+  searchQuery,
   onSelect,
 }: Props) {
   const t = useTranslations('model-editor');
+  const query = searchQuery?.trim().toLowerCase() ?? '';
+  const matchesSearch = (n: EditorNodeFieldsFragment) =>
+    query === '' ||
+    (n.name ?? '').toLowerCase().includes(query) ||
+    n.identifier.toLowerCase().includes(query);
   const candidates = nodes
-    .filter((n) => n.id !== currentNodeId && !excludeNodeIds?.has(n.id) && nodeMatches(n, port))
+    .filter(
+      (n) =>
+        n.id !== currentNodeId &&
+        !excludeNodeIds?.has(n.id) &&
+        nodeMatches(n, port) &&
+        matchesSearch(n)
+    )
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
   return (

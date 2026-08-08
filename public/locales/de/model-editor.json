@@ -465,6 +465,7 @@
   "nodes-revert-changes": "Änderungen rückgängig machen",
   "nodes-search-nodes": "Knoten suchen…",
   "nodes-select-input": "Neuen Eingabeknoten auswählen",
+  "nodes-search-sources": "Nach Name filtern…",
   "nodes-select-input-source": "Eingabequelle auswählen",
   "nodes-select-output-port": "Ausgabeport auswählen",
   "nodes-select-output-port-back": "Zurück zur Quellenauswahl",
