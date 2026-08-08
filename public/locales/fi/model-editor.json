@@ -465,6 +465,7 @@
   "nodes-revert-changes": "Kumoa muutokset",
   "nodes-search-nodes": "Hae solmuja…",
   "nodes-select-input": "Valitse uusi tulosolmu",
+  "nodes-search-sources": "Suodata nimellä…",
   "nodes-select-input-source": "Valitse syötelähde",
   "nodes-select-output-port": "Valitse lähtöportti",
   "nodes-select-output-port-back": "Takaisin lähteen valintaan",

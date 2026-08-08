@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
-import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { Box, InputAdornment, Tab, Tabs, TextField, Typography } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
+import { Search } from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
@@ -109,6 +110,7 @@ export default function PortBindingSelector({
 }: Props) {
   const t = useTranslations('model-editor');
   const [tab, setTab] = useState<SourceKind>('node');
+  const [search, setSearch] = useState('');
   const activeTab: SourceKind = allowDatasets ? tab : 'node';
 
   const excludeNodeIds = new Set(
@@ -155,6 +157,24 @@ export default function PortBindingSelector({
         </Box>
       )}
       <PortCriteria port={port} />
+      <TextField
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder={t('nodes-search-sources')}
+        size="small"
+        fullWidth
+        autoFocus
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={13} />
+              </InputAdornment>
+            ),
+            sx: { fontSize: 13 },
+          },
+        }}
+      />
       {allowDatasets && (
         <Tabs
           value={activeTab}
@@ -172,6 +192,7 @@ export default function PortBindingSelector({
           port={port}
           currentNodeId={currentNodeId}
           excludeNodeIds={excludeNodeIds}
+          searchQuery={search}
           onSelect={onSelectNode}
         />
       ) : datasetsDisabledReason ? (
@@ -179,7 +200,7 @@ export default function PortBindingSelector({
           {datasetsDisabledReason}
         </Typography>
       ) : (
-        <DatasetSelector port={port} onSelect={onSelectDataset} />
+        <DatasetSelector port={port} searchQuery={search} onSelect={onSelectDataset} />
       )}
     </Box>
   );

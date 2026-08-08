@@ -492,6 +492,7 @@
   "nodes-revert-changes": "Revert changes",
   "nodes-search-nodes": "Search nodes…",
   "nodes-select-input": "Select new input node",
+  "nodes-search-sources": "Filter by name…",
   "nodes-select-input-source": "Select input source",
   "nodes-select-output-port": "Select output port",
   "nodes-select-output-port-back": "Back to source selection",

@@ -28,6 +28,8 @@ type Candidate = {
 
 type Props = {
   port: InputPort;
+  /** Free-text filter over dataset name/identifier and metric label (case-insensitive substring). */
+  searchQuery?: string;
   onSelect?: (datasetId: string, metricId: string) => void;
 };
 
@@ -71,19 +73,26 @@ function metricNameMatchesQuantity(port: InputPort, metric: Metric): boolean {
   );
 }
 
-export default function DatasetSelector({ port, onSelect }: Props) {
+export default function DatasetSelector({ port, searchQuery, onSelect }: Props) {
   const t = useTranslations('model-editor');
   const [showAll, setShowAll] = useState(false);
+  const query = searchQuery?.trim().toLowerCase() ?? '';
   const { data, loading } = useQuery<AvailableDatasetsQuery, AvailableDatasetsQueryVariables>(
     AVAILABLE_DATASETS,
     { fetchPolicy: 'cache-and-network' }
   );
 
+  const matchesSearch = (candidate: Candidate) =>
+    query === '' ||
+    [candidate.dataset.name, candidate.dataset.identifier, candidate.metric.label].some(
+      (value) => value != null && value.toLowerCase().includes(query)
+    );
+
   const datasets = data?.instance.editor?.datasets ?? [];
   const candidates: Candidate[] = [];
   for (const dataset of datasets) {
     for (const metric of dataset.metrics) {
-      if (metricMatches(port, metric)) {
+      if (metricMatches(port, metric) && matchesSearch({ dataset, metric })) {
         candidates.push({ dataset, metric });
       }
     }
@@ -97,9 +106,11 @@ export default function DatasetSelector({ port, onSelect }: Props) {
   // Quantity is a soft signal (see metricNameMatchesQuantity): candidates
   // whose name matches the port's quantity show first; the rest collapse
   // behind a toggle. When nothing matches the naming convention, the split
-  // would hide everything useful, so it's skipped entirely.
+  // would hide everything useful, so it's skipped entirely — and an active
+  // search bypasses the collapse too, since the user is asking for a
+  // specific thing by name.
   const preferred = candidates.filter((c) => metricNameMatchesQuantity(port, c.metric));
-  const split = preferred.length > 0 && preferred.length < candidates.length;
+  const split = query === '' && preferred.length > 0 && preferred.length < candidates.length;
   const visible = split && !showAll ? preferred : candidates;
   const hiddenCount = candidates.length - preferred.length;
 
