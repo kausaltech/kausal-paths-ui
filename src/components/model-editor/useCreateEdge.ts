@@ -12,22 +12,18 @@ import { CREATE_EDGE, draftHeadTokenVar, staleVersionNotificationVar } from './q
 import { useEditorApolloContext } from './useEditorApolloContext';
 
 export type CreateEdgeArgs = {
-  /** Source node *identifier* (not the GraphQL global id). */
-  fromNodeId: string;
-  /** Target node *identifier* (not the GraphQL global id). */
-  toNodeId: string;
-  /** Source output port id; defaults to "output" (single-output nodes). */
-  fromPort?: string;
-  /** Target input port id; null lets the backend resolve/append one. */
-  toPort?: string | null;
+  fromNodeUuid: string;
+  toNodeUuid: string;
+  fromPort: string;
+  toPort: string;
   /** Atomically displace the current binding on an occupied non-multi port. */
   replace?: boolean;
 };
 
 /**
- * Create a node→node edge. `createEdge` resolves nodes by identifier, so the
- * caller must pass identifiers, not global ids. The NodeGraph query is
- * `no-cache`, so we refetch it (and the publish state) to surface the new edge.
+ * Create a node→node edge using canonical node and port UUIDs. The NodeGraph
+ * query is `no-cache`, so we refetch it (and the publish state) to surface the
+ * new edge.
  */
 export function useCreateEdge() {
   const instance = useInstance();
@@ -37,10 +33,10 @@ export function useCreateEdge() {
 
   return useCallback(
     async ({
-      fromNodeId,
-      toNodeId,
-      fromPort = 'output',
-      toPort = null,
+      fromNodeUuid,
+      toNodeUuid,
+      fromPort,
+      toPort,
       replace = false,
     }: CreateEdgeArgs) => {
       try {
@@ -49,10 +45,12 @@ export function useCreateEdge() {
             instanceId: instance.id,
             input: {
               instanceId: instance.id,
-              fromNodeId,
-              toNodeId,
-              fromPort,
-              toPort,
+              fromRef: { nodeUuid: fromNodeUuid, portId: fromPort },
+              portRef: { nodeUuid: toNodeUuid, portId: toPort },
+              fromNodeId: null,
+              fromPort: null,
+              toNodeId: null,
+              toPort: null,
               replace,
               // Optional in the schema (defaults to null), but codegen types it
               // as required — send it explicitly.

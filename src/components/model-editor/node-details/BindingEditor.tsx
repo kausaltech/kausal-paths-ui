@@ -93,8 +93,6 @@ function transformationSummary(transformation: EditorPortTransformationFragment)
       return `${transformation.dimension}: ${transformation.categories.join(', ') || '—'}`;
     case 'AssignCategoryType':
       return `${transformation.dimension}: ${transformation.category}`;
-    case 'FlattenType':
-      return transformation.dimension;
     default:
       return null;
   }

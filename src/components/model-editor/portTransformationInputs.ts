@@ -118,8 +118,6 @@ export function toEdgeTransformationInputs(
             category: transformation.category,
           },
         };
-      case 'FlattenType':
-        return { flatten: { dimension: transformation.dimension } };
       default:
         throw new Error(`Edge transformation "${transformation.kind}" cannot be written`);
     }

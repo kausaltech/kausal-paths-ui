@@ -457,8 +457,8 @@ export default function NodeInputPortsSection({
     setBindError(null);
     try {
       await createEdge({
-        fromNodeId: sourceNode.identifier,
-        toNodeId: targetNode.identifier,
+        fromNodeUuid: sourceNode.uuid,
+        toNodeUuid: targetNode.uuid,
         fromPort,
         toPort: editingPort.id,
         replace: !editingPort.multi && editingPort.bindings.length > 0,

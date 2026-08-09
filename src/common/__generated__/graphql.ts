@@ -93,12 +93,18 @@ export type CreateDimensionCategoryInput = {
 };
 
 export type CreateEdgeInput = {
-  fromNodeId: string;
-  fromPort: string;
+  /** @deprecated Use fromRef instead. */
+  fromNodeId: string | null | undefined;
+  /** @deprecated Use fromRef instead. */
+  fromPort: string | null | undefined;
+  fromRef: NodePortRefInput | null | undefined;
   instanceId: string | number;
+  portRef: NodePortRefInput | null | undefined;
   /** Atomically displace whatever occupies the target port — an edge or a dataset binding — instead of rejecting the edge. Validation runs first, so a rejected edge leaves the old binding untouched. Requires an explicit `toPort` (an auto-selected port is never occupied) and is not valid for `multi` ports. */
   replace: boolean;
-  toNodeId: string;
+  /** @deprecated Use portRef instead. */
+  toNodeId: string | null | undefined;
+  /** @deprecated Use portRef instead. */
   toPort: string | null | undefined;
   transformations: Array<EdgeTransformationInput> | null | undefined;
 };
@@ -260,6 +266,11 @@ export const enum NodeKind {
 export const enum NodeLayoutSource {
   Auto = 'AUTO',
   User = 'USER'
+};
+
+export type NodePortRefInput = {
+  nodeUuid: string;
+  portId: string;
 };
 
 export const enum NodeStatus {
@@ -977,7 +988,7 @@ export type DatasetPortDataQuery = (
                 )
                 | (
                   { kind: string, isSystemManaged: boolean }
-                  & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                  & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
                 )
                 | (
                   { kind: string, isSystemManaged: boolean, unit: (
@@ -997,10 +1008,6 @@ export type DatasetPortDataQuery = (
                 | (
                   { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                   & { __typename: 'FilterTemporalType' }
-                )
-                | (
-                  { dimension: string, kind: string, isSystemManaged: boolean }
-                  & { __typename: 'FlattenType' }
                 )
                 | (
                   { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -1883,9 +1890,9 @@ type EditorPortTransformation_AssignCategoryType_AssignDimensionType_Fragment = 
   & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
 );
 
-type EditorPortTransformation_Oe3yXrlFz5EsyA6IfIdpdMNn7MnNdJdHOuB98DdaEs_Fragment = (
+type EditorPortTransformation_9seAyb1TGvOWzoMrcFsDtAlrL4DyElHi6k5eFlsEmM_Fragment = (
   { kind: string, isSystemManaged: boolean }
-  & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+  & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
 );
 
 type EditorPortTransformation_EnsureUnitType_Fragment = (
@@ -1909,11 +1916,6 @@ type EditorPortTransformation_FilterDimensionType_Fragment = (
 type EditorPortTransformation_FilterTemporalType_Fragment = (
   { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
   & { __typename: 'FilterTemporalType' }
-);
-
-type EditorPortTransformation_FlattenType_Fragment = (
-  { dimension: string, kind: string, isSystemManaged: boolean }
-  & { __typename: 'FlattenType' }
 );
 
 type EditorPortTransformation_RenameColumnType_Fragment = (
@@ -1943,12 +1945,11 @@ type EditorPortTransformation_TagOperationType_Fragment = (
 
 export type EditorPortTransformationFragment =
   | EditorPortTransformation_AssignCategoryType_AssignDimensionType_Fragment
-  | EditorPortTransformation_Oe3yXrlFz5EsyA6IfIdpdMNn7MnNdJdHOuB98DdaEs_Fragment
+  | EditorPortTransformation_9seAyb1TGvOWzoMrcFsDtAlrL4DyElHi6k5eFlsEmM_Fragment
   | EditorPortTransformation_EnsureUnitType_Fragment
   | EditorPortTransformation_FilterColumnType_Fragment
   | EditorPortTransformation_FilterDimensionType_Fragment
   | EditorPortTransformation_FilterTemporalType_Fragment
-  | EditorPortTransformation_FlattenType_Fragment
   | EditorPortTransformation_RenameColumnType_Fragment
   | EditorPortTransformation_RenameItemType_Fragment
   | EditorPortTransformation_SelectCategoriesType_Fragment
@@ -1973,10 +1974,10 @@ export type NodeGraphQuery = (
         & { __typename: 'GraphLayout' }
       ), edges: Array<(
         { id: string, tags: Array<string>, fromRef: (
-          { nodeId: string, portId: string }
+          { nodeUuid: string, nodeId: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), portRef: (
-          { nodeId: string, portId: string }
+          { nodeUuid: string, nodeId: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), transformations: Array<
           | (
@@ -1985,7 +1986,7 @@ export type NodeGraphQuery = (
           )
           | (
             { kind: string, isSystemManaged: boolean }
-            & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+            & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
           )
           | (
             { kind: string, isSystemManaged: boolean, unit: (
@@ -2005,10 +2006,6 @@ export type NodeGraphQuery = (
           | (
             { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
             & { __typename: 'FilterTemporalType' }
-          )
-          | (
-            { dimension: string, kind: string, isSystemManaged: boolean }
-            & { __typename: 'FlattenType' }
           )
           | (
             { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2081,7 +2078,7 @@ export type NodeGraphQuery = (
                     )
                     | (
                       { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
                     )
                     | (
                       { kind: string, isSystemManaged: boolean, unit: (
@@ -2101,10 +2098,6 @@ export type NodeGraphQuery = (
                     | (
                       { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                       & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { dimension: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FlattenType' }
                     )
                     | (
                       { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2140,7 +2133,7 @@ export type NodeGraphQuery = (
                     )
                     | (
                       { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
                     )
                     | (
                       { kind: string, isSystemManaged: boolean, unit: (
@@ -2160,10 +2153,6 @@ export type NodeGraphQuery = (
                     | (
                       { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                       & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { dimension: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FlattenType' }
                     )
                     | (
                       { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2263,7 +2252,7 @@ export type NodeGraphQuery = (
                     )
                     | (
                       { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
                     )
                     | (
                       { kind: string, isSystemManaged: boolean, unit: (
@@ -2283,10 +2272,6 @@ export type NodeGraphQuery = (
                     | (
                       { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                       & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { dimension: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FlattenType' }
                     )
                     | (
                       { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2322,7 +2307,7 @@ export type NodeGraphQuery = (
                     )
                     | (
                       { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
                     )
                     | (
                       { kind: string, isSystemManaged: boolean, unit: (
@@ -2342,10 +2327,6 @@ export type NodeGraphQuery = (
                     | (
                       { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                       & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { dimension: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FlattenType' }
                     )
                     | (
                       { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2454,7 +2435,7 @@ type EditorNodeFields_ActionNode_Fragment = (
               )
               | (
                 { kind: string, isSystemManaged: boolean }
-                & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
               )
               | (
                 { kind: string, isSystemManaged: boolean, unit: (
@@ -2474,10 +2455,6 @@ type EditorNodeFields_ActionNode_Fragment = (
               | (
                 { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                 & { __typename: 'FilterTemporalType' }
-              )
-              | (
-                { dimension: string, kind: string, isSystemManaged: boolean }
-                & { __typename: 'FlattenType' }
               )
               | (
                 { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2513,7 +2490,7 @@ type EditorNodeFields_ActionNode_Fragment = (
               )
               | (
                 { kind: string, isSystemManaged: boolean }
-                & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
               )
               | (
                 { kind: string, isSystemManaged: boolean, unit: (
@@ -2533,10 +2510,6 @@ type EditorNodeFields_ActionNode_Fragment = (
               | (
                 { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                 & { __typename: 'FilterTemporalType' }
-              )
-              | (
-                { dimension: string, kind: string, isSystemManaged: boolean }
-                & { __typename: 'FlattenType' }
               )
               | (
                 { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2637,7 +2610,7 @@ type EditorNodeFields_Node_Fragment = (
               )
               | (
                 { kind: string, isSystemManaged: boolean }
-                & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
               )
               | (
                 { kind: string, isSystemManaged: boolean, unit: (
@@ -2657,10 +2630,6 @@ type EditorNodeFields_Node_Fragment = (
               | (
                 { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                 & { __typename: 'FilterTemporalType' }
-              )
-              | (
-                { dimension: string, kind: string, isSystemManaged: boolean }
-                & { __typename: 'FlattenType' }
               )
               | (
                 { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2696,7 +2665,7 @@ type EditorNodeFields_Node_Fragment = (
               )
               | (
                 { kind: string, isSystemManaged: boolean }
-                & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
               )
               | (
                 { kind: string, isSystemManaged: boolean, unit: (
@@ -2716,10 +2685,6 @@ type EditorNodeFields_Node_Fragment = (
               | (
                 { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
                 & { __typename: 'FilterTemporalType' }
-              )
-              | (
-                { dimension: string, kind: string, isSystemManaged: boolean }
-                & { __typename: 'FlattenType' }
               )
               | (
                 { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2784,10 +2749,10 @@ export type EditorNodeFieldsFragment =
 
 export type EditorNodeEdgeFragment = (
   { id: string, tags: Array<string>, fromRef: (
-    { nodeId: string, portId: string }
+    { nodeUuid: string, nodeId: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), portRef: (
-    { nodeId: string, portId: string }
+    { nodeUuid: string, nodeId: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), transformations: Array<
     | (
@@ -2796,7 +2761,7 @@ export type EditorNodeEdgeFragment = (
     )
     | (
       { kind: string, isSystemManaged: boolean }
-      & { __typename: 'DropNullsType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
     )
     | (
       { kind: string, isSystemManaged: boolean, unit: (
@@ -2816,10 +2781,6 @@ export type EditorNodeEdgeFragment = (
     | (
       { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
       & { __typename: 'FilterTemporalType' }
-    )
-    | (
-      { dimension: string, kind: string, isSystemManaged: boolean }
-      & { __typename: 'FlattenType' }
     )
     | (
       { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
@@ -2970,10 +2931,10 @@ export type CreateEdgeMutation = (
     { createEdge:
       | (
         { id: string, fromRef: (
-          { nodeId: string, portId: string }
+          { nodeUuid: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), portRef: (
-          { nodeId: string, portId: string }
+          { nodeUuid: string, portId: string }
           & { __typename: 'NodePortRef' }
         ) }
         & { __typename: 'NodeEdgeType' }
@@ -3288,7 +3249,7 @@ export type AvailableDatasetsQuery = (
     { id: string, editor: (
       { datasets: Array<(
         { id: string, identifier: string | null, name: string, metrics: Array<(
-          { id: string, label: string, unitInfo: (
+          { id: string, name: string | null, label: string, unitInfo: (
             { id: string, dimensionality: Array<(
               { dimension: string, value: number }
               & { __typename: 'UnitDimensionality' }

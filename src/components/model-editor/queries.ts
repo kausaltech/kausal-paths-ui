@@ -151,9 +151,6 @@ export const EDITOR_PORT_TRANSFORMATION = gql`
       dimension
       category
     }
-    ... on FlattenType {
-      dimension
-    }
   }
 `;
 
@@ -356,10 +353,12 @@ export const GET_NODE_GRAPH = gql`
     id
     tags
     fromRef {
+      nodeUuid
       nodeId
       portId
     }
     portRef {
+      nodeUuid
       nodeId
       portId
     }
@@ -488,11 +487,11 @@ export const CREATE_EDGE = gql`
         ... on NodeEdgeType {
           id
           fromRef {
-            nodeId
+            nodeUuid
             portId
           }
           portRef {
-            nodeId
+            nodeUuid
             portId
           }
         }
