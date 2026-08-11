@@ -16,6 +16,7 @@ const GET_NODE_OUTPUT_DATA = gql`
   query NodeOutputData($nodeId: ID!) {
     node(id: $nodeId) {
       id
+      __typename
       name
       editor {
         spec {
@@ -34,6 +35,22 @@ const GET_NODE_OUTPUT_DATA = gql`
               ...ModelEditorDimensionalMetricFields
             }
           }
+        }
+      }
+      # Action nodes' per-port output is not implemented on the backend, so
+      # fetch the action's own effect metric and the candidate impact targets
+      # instead.
+      ... on ActionNode {
+        isEnabled
+        metricDim {
+          ...ModelEditorDimensionalMetricFields
+        }
+        downstreamNodes {
+          id
+          name
+        }
+        outcomes: downstreamNodes(onlyOutcome: true) {
+          id
         }
       }
     }
@@ -56,10 +73,25 @@ type PortMetric = {
   errorMessage: string | null;
 };
 
+/** Extra data available when the inspected node is an action. */
+export type ActionMetricInfo = {
+  isEnabled: boolean;
+  /** The action's own output: its effect relative to the no-action case. */
+  effect: ModelEditorDimensionalMetricFieldsFragment | null;
+  /** Parsed cube of `effect`, for the table viewer. */
+  effectMetric: DimensionalMetric | null;
+  /** Candidate targets for the impact view, in causal order. */
+  downstreamNodes: { id: string; name: string }[];
+  /** Preferred initial impact target (first downstream outcome node). */
+  defaultTargetId: string | null;
+};
+
 type UseNodeMetricResult = {
   loading: boolean;
   error?: Error;
   portMetrics: PortMetric[];
+  /** Non-null when the node is an action node. */
+  action: ActionMetricInfo | null;
   fetch: () => void;
 };
 
@@ -110,5 +142,23 @@ export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
     }));
   }, [data, portErrorsByIndex]);
 
-  return { loading, error, portMetrics, fetch };
+  const action = useMemo<ActionMetricInfo | null>(() => {
+    const node = data?.node;
+    if (!node || node.__typename !== 'ActionNode') return null;
+    const downstreamNodes = node.downstreamNodes.map((n) => ({ id: n.id, name: n.name }));
+    const outcomeIds = new Set(node.outcomes.map((n) => n.id));
+    const defaultTargetId =
+      downstreamNodes.find((n) => outcomeIds.has(n.id))?.id ??
+      downstreamNodes[downstreamNodes.length - 1]?.id ??
+      null;
+    return {
+      isEnabled: node.isEnabled,
+      effect: node.metricDim ?? null,
+      effectMetric: node.metricDim ? new DimensionalMetric(node.metricDim) : null,
+      downstreamNodes,
+      defaultTargetId,
+    };
+  }, [data]);
+
+  return { loading, error, portMetrics, action, fetch };
 }

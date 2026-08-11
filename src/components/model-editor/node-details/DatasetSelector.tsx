@@ -65,9 +65,8 @@ const normalizeQuantityName = (value: string) =>
 function metricNameMatchesQuantity(port: InputPort, metric: Metric): boolean {
   if (!port.quantity) return true;
   const quantity = normalizeQuantityName(port.quantity);
-  // `name` cast: codegen is blocked by unrelated schema drift; the query
-  // fetches `name` (the DataFrame column name) at runtime.
-  const columnName = (metric as Metric & { name?: string | null }).name;
+  // `name` is the DataFrame column name.
+  const columnName = metric.name;
   return [columnName, metric.label].some(
     (name) => name != null && normalizeQuantityName(name) === quantity
   );

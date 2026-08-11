@@ -1829,52 +1829,150 @@ export type DeleteDimensionCategoryMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type ActionNodeImpactQueryVariables = Exact<{
+  nodeId: string | number;
+  targetNodeId: string | number;
+}>;
+
+
+export type ActionNodeImpactQuery = (
+  { node: (
+    { id: string, impactMetric: (
+      { id: string | null, name: string | null, unit: (
+        { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+        & { __typename: 'UnitType' }
+      ) | null, historicalValues: Array<(
+        { year: number, value: number }
+        & { __typename: 'YearlyValue' }
+      )>, forecastValues: Array<(
+        { year: number, value: number }
+        & { __typename: 'YearlyValue' }
+      )> }
+      & { __typename: 'ForecastMetricType' }
+    ) | null }
+    & { __typename: 'ActionNode' | 'Node' }
+  ) | null }
+  & { __typename: 'Query' }
+);
+
 export type NodeOutputDataQueryVariables = Exact<{
   nodeId: string | number;
 }>;
 
 
 export type NodeOutputDataQuery = (
-  { node: (
-    { id: string, name: string, editor: (
-      { spec: (
-        { outputPorts: Array<(
-          { id: string, label: string | null, quantity: string | null, unit: (
-            { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
-            & { __typename: 'UnitType' }
-          ), output: (
-            { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+  { node:
+    | (
+      { isEnabled: boolean, id: string, name: string, metricDim: (
+        { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+          { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+          & { __typename: 'UnitType' }
+        ), dimensions: Array<(
+          { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
+            { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+            & { __typename: 'MetricDimensionCategoryType' }
+          )>, groups: Array<(
+            { id: string, originalId: string, label: string, color: string | null, order: number | null }
+            & { __typename: 'MetricDimensionCategoryGroupType' }
+          )> }
+          & { __typename: 'MetricDimensionType' }
+        )>, normalizedBy: (
+          { id: string, name: string }
+          & { __typename: 'NormalizerNodeType' }
+        ) | null, goals: Array<(
+          { categories: Array<string>, groups: Array<string>, values: Array<(
+            { year: number, value: number, isInterpolated: boolean }
+            & { __typename: 'MetricYearlyGoalType' }
+          )> }
+          & { __typename: 'DimensionalMetricGoalEntry' }
+        )> }
+        & { __typename: 'DimensionalMetricType' }
+      ) | null, downstreamNodes: Array<(
+        { id: string, name: string }
+        & { __typename: 'ActionNode' | 'Node' }
+      )>, outcomes: Array<(
+        { id: string }
+        & { __typename: 'ActionNode' | 'Node' }
+      )>, editor: (
+        { spec: (
+          { outputPorts: Array<(
+            { id: string, label: string | null, quantity: string | null, unit: (
               { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
               & { __typename: 'UnitType' }
-            ), dimensions: Array<(
-              { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
-                { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
-                & { __typename: 'MetricDimensionCategoryType' }
-              )>, groups: Array<(
-                { id: string, originalId: string, label: string, color: string | null, order: number | null }
-                & { __typename: 'MetricDimensionCategoryGroupType' }
+            ), output: (
+              { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+                { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+                & { __typename: 'UnitType' }
+              ), dimensions: Array<(
+                { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
+                  { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+                  & { __typename: 'MetricDimensionCategoryType' }
+                )>, groups: Array<(
+                  { id: string, originalId: string, label: string, color: string | null, order: number | null }
+                  & { __typename: 'MetricDimensionCategoryGroupType' }
+                )> }
+                & { __typename: 'MetricDimensionType' }
+              )>, normalizedBy: (
+                { id: string, name: string }
+                & { __typename: 'NormalizerNodeType' }
+              ) | null, goals: Array<(
+                { categories: Array<string>, groups: Array<string>, values: Array<(
+                  { year: number, value: number, isInterpolated: boolean }
+                  & { __typename: 'MetricYearlyGoalType' }
+                )> }
+                & { __typename: 'DimensionalMetricGoalEntry' }
               )> }
-              & { __typename: 'MetricDimensionType' }
-            )>, normalizedBy: (
-              { id: string, name: string }
-              & { __typename: 'NormalizerNodeType' }
-            ) | null, goals: Array<(
-              { categories: Array<string>, groups: Array<string>, values: Array<(
-                { year: number, value: number, isInterpolated: boolean }
-                & { __typename: 'MetricYearlyGoalType' }
-              )> }
-              & { __typename: 'DimensionalMetricGoalEntry' }
-            )> }
-            & { __typename: 'DimensionalMetricType' }
-          ) | null }
-          & { __typename: 'OutputPortType' }
-        )> }
-        & { __typename: 'NodeSpecType' }
+              & { __typename: 'DimensionalMetricType' }
+            ) | null }
+            & { __typename: 'OutputPortType' }
+          )> }
+          & { __typename: 'NodeSpecType' }
+        ) | null }
+        & { __typename: 'NodeEditor' }
       ) | null }
-      & { __typename: 'NodeEditor' }
-    ) | null }
-    & { __typename: 'ActionNode' | 'Node' }
-  ) | null }
+      & { __typename: 'ActionNode' }
+    )
+    | (
+      { id: string, name: string, editor: (
+        { spec: (
+          { outputPorts: Array<(
+            { id: string, label: string | null, quantity: string | null, unit: (
+              { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+              & { __typename: 'UnitType' }
+            ), output: (
+              { id: string, name: string, measureDatapointYears: Array<number>, years: Array<number>, values: Array<number>, stackable: boolean, forecastFrom: number | null, unit: (
+                { id: string, short: string, long: string, htmlShort: string, htmlLong: string }
+                & { __typename: 'UnitType' }
+              ), dimensions: Array<(
+                { id: string, originalId: string | null, label: string, helpText: string | null, kind: DimensionKind, categories: Array<(
+                  { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
+                  & { __typename: 'MetricDimensionCategoryType' }
+                )>, groups: Array<(
+                  { id: string, originalId: string, label: string, color: string | null, order: number | null }
+                  & { __typename: 'MetricDimensionCategoryGroupType' }
+                )> }
+                & { __typename: 'MetricDimensionType' }
+              )>, normalizedBy: (
+                { id: string, name: string }
+                & { __typename: 'NormalizerNodeType' }
+              ) | null, goals: Array<(
+                { categories: Array<string>, groups: Array<string>, values: Array<(
+                  { year: number, value: number, isInterpolated: boolean }
+                  & { __typename: 'MetricYearlyGoalType' }
+                )> }
+                & { __typename: 'DimensionalMetricGoalEntry' }
+              )> }
+              & { __typename: 'DimensionalMetricType' }
+            ) | null }
+            & { __typename: 'OutputPortType' }
+          )> }
+          & { __typename: 'NodeSpecType' }
+        ) | null }
+        & { __typename: 'NodeEditor' }
+      ) | null }
+      & { __typename: 'Node' }
+    )
+   | null }
   & { __typename: 'Query' }
 );
 
@@ -3288,7 +3386,7 @@ export type AvailableDatasetsQuery = (
     { id: string, editor: (
       { datasets: Array<(
         { id: string, identifier: string | null, name: string, metrics: Array<(
-          { id: string, label: string, unitInfo: (
+          { id: string, name: string | null, label: string, unitInfo: (
             { id: string, dimensionality: Array<(
               { dimension: string, value: number }
               & { __typename: 'UnitDimensionality' }
