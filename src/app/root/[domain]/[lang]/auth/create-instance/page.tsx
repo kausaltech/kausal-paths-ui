@@ -82,6 +82,23 @@ function generateIdentifier(frameworkId: string, name: string): string {
   return parts.join('-');
 }
 
+// Render field labels above the input instead of in the outline notch, so
+// focus styling drawn around the input cannot overlap the label text.
+const textFieldSlotProps = {
+  inputLabel: {
+    shrink: true,
+    sx: {
+      position: 'relative',
+      transform: 'none',
+      maxWidth: 'none',
+      mb: 0.5,
+      fontSize: '0.875rem',
+      fontWeight: 500,
+    },
+  },
+  input: { notched: false },
+} as const;
+
 export default function CreateInstancePage() {
   const t = useTranslations('common');
   const theme = useTheme();
@@ -204,6 +221,7 @@ export default function CreateInstancePage() {
                   fullWidth
                   autoFocus
                   helperText={t('create-model-name-helper')}
+                  slotProps={textFieldSlotProps}
                 />
                 <TextField
                   label={t('create-model-org-label')}
@@ -212,6 +230,7 @@ export default function CreateInstancePage() {
                   required
                   fullWidth
                   helperText={t('create-model-org-helper')}
+                  slotProps={textFieldSlotProps}
                 />
                 {error && <Alert severity="error">{error}</Alert>}
                 <Stack direction="row" spacing={2}>
