@@ -18,7 +18,8 @@ import {
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import * as Sentry from '@sentry/nextjs';
-import { BoxArrowUpRight } from 'react-bootstrap-icons';
+import { useTranslations } from 'next-intl';
+import { Compass, PencilSquare } from 'react-bootstrap-icons';
 
 import type { StreamFieldFragment } from '@/common/__generated__/graphql';
 import { useSession } from '@/lib/auth-client';
@@ -62,6 +63,7 @@ function getFirstName(name: string | null | undefined, email: string | null | un
 }
 
 function InstanceCard({ config }: { config: FrameworkConfigItem }) {
+  const t = useTranslations('common');
   const name = config.instance?.name ?? config.organizationName ?? 'Unnamed instance';
 
   return (
@@ -81,15 +83,26 @@ function InstanceCard({ config }: { config: FrameworkConfigItem }) {
       </CardContent>
       <CardActions sx={{ justifyContent: 'flex-end' }}>
         {config.viewUrl ? (
-          <Button
-            size="small"
-            href={config.viewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            endIcon={<BoxArrowUpRight />}
-          >
-            Open
-          </Button>
+          <>
+            <Button
+              size="small"
+              href={`${config.viewUrl.replace(/\/$/, '')}/model`}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<PencilSquare size={12} />}
+            >
+              {t('edit-model')}
+            </Button>
+            <Button
+              size="small"
+              href={config.viewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<Compass size={12} />}
+            >
+              {t('explore')}
+            </Button>
+          </>
         ) : (
           <Button size="small" disabled>
             Missing link from config
@@ -105,6 +118,7 @@ type Props = {
 };
 
 export function FrameworkLanding({ block }: Props) {
+  const t = useTranslations('common');
   const router = useRouter();
   const { data: session } = useSession();
   const { heading, body, framework } = block;
@@ -180,7 +194,7 @@ export function FrameworkLanding({ block }: Props) {
                 size="large"
                 onClick={() => router.push(`/auth/create-instance?framework=${identifier}`)}
               >
-                Create a new instance
+                {t('create-new-model')}
               </Button>
             )}
           </Stack>
@@ -188,7 +202,7 @@ export function FrameworkLanding({ block }: Props) {
           {isAuthenticated && (
             <>
               <Typography variant="h5" component="h2" gutterBottom>
-                Your instances
+                Your models
               </Typography>
               {configsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
