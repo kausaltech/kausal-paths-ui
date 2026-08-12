@@ -52,6 +52,12 @@ const GET_NODE_OUTPUT_DATA = gql`
         outcomes: downstreamNodes(onlyOutcome: true) {
           id
         }
+        # Multi-output actions have no single "own" metric (metricDim is null);
+        # the effect preview then falls back to per-direct-child impact.
+        directDownstream: downstreamNodes(maxDepth: 1) {
+          id
+          name
+        }
       }
     }
   }
@@ -84,6 +90,11 @@ export type ActionMetricInfo = {
   downstreamNodes: { id: string; name: string }[];
   /** Preferred initial impact target (first downstream outcome node). */
   defaultTargetId: string | null;
+  /**
+   * The action's direct downstream neighbours. Used as effect-preview targets
+   * when the action has no single own output metric (`effect` is null).
+   */
+  directDownstream: { id: string; name: string }[];
 };
 
 type UseNodeMetricResult = {
@@ -157,6 +168,7 @@ export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
       effectMetric: node.metricDim ? new DimensionalMetric(node.metricDim) : null,
       downstreamNodes,
       defaultTargetId,
+      directDownstream: node.directDownstream.map((n) => ({ id: n.id, name: n.name })),
     };
   }, [data]);
 

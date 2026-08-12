@@ -1893,6 +1893,9 @@ export type NodeOutputDataQuery = (
       )>, outcomes: Array<(
         { id: string }
         & { __typename: 'ActionNode' | 'Node' }
+      )>, directDownstream: Array<(
+        { id: string, name: string }
+        & { __typename: 'ActionNode' | 'Node' }
       )>, editor: (
         { spec: (
           { outputPorts: Array<(

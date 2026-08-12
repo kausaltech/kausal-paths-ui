@@ -93,6 +93,24 @@ function MetricSection({
   );
 }
 
+/** Uppercase strip naming a drawer section, above its picker and content. */
+function SectionHeader({ children }: { children: string }) {
+  return (
+    <Typography
+      variant="overline"
+      sx={{
+        fontSize: 11,
+        fontWeight: 600,
+        lineHeight: 1.5,
+        color: 'text.secondary',
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
 export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, zIndex }: Props) {
   const t = useTranslations('model-editor');
   const { portMetrics, action, loading, error, fetch } = useNodeMetric(nodeId);
@@ -102,10 +120,15 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
   // Impact target for action nodes; initialised to the first downstream
   // outcome node once the node data arrives.
   const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
+  // Effect-preview target: only relevant for multi-output actions, whose own
+  // effect series (metricDim) is null; the preview then shows the impact on a
+  // chosen direct downstream neighbour instead.
+  const [effectNodeId, setEffectNodeId] = useState<string | null>(null);
   const [lastNodeId, setLastNodeId] = useState(nodeId);
   if (nodeId !== lastNodeId) {
     setLastNodeId(nodeId);
     setTargetNodeId(null);
+    setEffectNodeId(null);
   }
   const effectiveTargetId =
     targetNodeId && action?.downstreamNodes.some((n) => n.id === targetNodeId)
@@ -114,6 +137,15 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
   const impact = useActionImpact(
     open && action ? nodeId : null,
     open && action ? effectiveTargetId : null
+  );
+  const needsEffectFallback = action != null && !action.effect;
+  const effectiveEffectId =
+    effectNodeId && action?.directDownstream.some((n) => n.id === effectNodeId)
+      ? effectNodeId
+      : (action?.directDownstream[0]?.id ?? null);
+  const effectImpact = useActionImpact(
+    open && needsEffectFallback ? nodeId : null,
+    open && needsEffectFallback ? effectiveEffectId : null
   );
 
   useEffect(() => {
@@ -170,7 +202,9 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
         }}
       >
         <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600 }}>
-          {t('metric-output-data', { nodeName: nodeName ? `: ${nodeName}` : '' })}
+          {t(action ? 'metric-action-impact-title' : 'metric-output-data', {
+            nodeName: nodeName ? `: ${nodeName}` : '',
+          })}
         </Typography>
         <IconButton size="small" onClick={onClose}>
           <X size={20} />
@@ -214,16 +248,74 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
                 {t('metric-action-disabled')}
               </Alert>
             )}
-            <MetricSection
-              title={t('metric-action-effect')}
-              metric={action.effectMetric}
-              rawMetric={action.effect}
-              view={view}
-              yearRange={yearRange}
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+              <SectionHeader>{t('metric-action-section-direct')}</SectionHeader>
+              {!needsEffectFallback ? (
+                <MetricSection
+                  title={t('metric-action-effect')}
+                  metric={action.effectMetric}
+                  rawMetric={action.effect}
+                  view={view}
+                  yearRange={yearRange}
+                />
+              ) : action.directDownstream.length > 0 ? (
+                // Multi-output action: no single own effect series exists, so
+                // preview the effect as the impact on a direct downstream node.
+                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                  {action.directDownstream.length > 1 && (
+                    // mt gives the floating label headroom so the scroll
+                    // container doesn't clip it at the top.
+                    <FormControl size="small" sx={{ mt: 1, mb: 1.5, flexShrink: 0 }}>
+                      <InputLabel id="effect-target-label">
+                        {t('metric-action-effect-target')}
+                      </InputLabel>
+                      <Select
+                        labelId="effect-target-label"
+                        label={t('metric-action-effect-target')}
+                        value={effectiveEffectId ?? ''}
+                        onChange={(e) => setEffectNodeId(e.target.value)}
+                      >
+                        {action.directDownstream.map((n) => (
+                          <MenuItem key={n.id} value={n.id}>
+                            {n.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                  {effectImpact.loading && !effectImpact.rawMetric ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                      <CircularProgress size={20} />
+                    </Box>
+                  ) : (
+                    <MetricSection
+                      title={t('metric-action-effect-on', {
+                        nodeName:
+                          action.directDownstream.find((n) => n.id === effectiveEffectId)?.name ??
+                          '',
+                      })}
+                      metric={effectImpact.metric}
+                      rawMetric={effectImpact.rawMetric}
+                      errorMessage={effectImpact.error?.message ?? null}
+                      view={view}
+                      yearRange={yearRange}
+                    />
+                  )}
+                </Box>
+              ) : (
+                <MetricSection
+                  title={t('metric-action-effect')}
+                  metric={null}
+                  rawMetric={null}
+                  view={view}
+                  yearRange={yearRange}
+                />
+              )}
+            </Box>
             {action.downstreamNodes.length > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                <FormControl size="small" sx={{ mb: 1.5, flexShrink: 0 }}>
+                <SectionHeader>{t('metric-action-section-outcome')}</SectionHeader>
+                <FormControl size="small" sx={{ mt: 1, mb: 1.5, flexShrink: 0 }}>
                   <InputLabel id="impact-target-label">
                     {t('metric-action-impact-target')}
                   </InputLabel>
