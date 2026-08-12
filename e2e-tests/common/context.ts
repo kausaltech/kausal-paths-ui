@@ -10,7 +10,7 @@ import type {
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
 import { shouldIgnoreConsoleMessage } from '@e2e-common/console-output.js';
 import { type ConsoleMessage, test as baseTest } from '@playwright/test';
-import { type Page, type PageScreenshotOptions, type Response, expect } from '@playwright/test';
+import { type Request, type Page, type PageScreenshotOptions, type Response, expect } from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
@@ -141,6 +141,34 @@ function initI18n(lang: string) {
     errCallback
   );
 }
+
+export class InflightRequests {
+  private _page: Page;
+  private _requests: Set<Request>;
+  private onStarted: (request: Request) => void;
+  private onFinished: (request: Request) => void;
+
+  constructor(page: Page) {
+    this._page = page;
+    this._requests = new Set();
+    this.onFinished = (request: Request) => this._requests.delete(request);
+    this.onStarted = (request: Request) => this._requests.add(request);
+    this._page.on('request', this.onStarted);
+    this._page.on('requestfinished', this.onFinished);
+    this._page.on('requestfailed', this.onFinished);
+  }
+
+  inflightRequests() {
+    return Array.from(this._requests);
+  }
+
+  stop() {
+    this._page.removeListener('request', this.onStarted);
+    this._page.removeListener('requestfinished', this.onFinished);
+    this._page.removeListener('requestfailed', this.onFinished);
+  }
+}
+
 
 export class InstanceContext {
   instance: InstanceInfo;
@@ -296,6 +324,20 @@ export class InstanceContext {
       timeout: opts.timeout || 20000,
     });
   }
+
+  async waitForNetworkIdle(page: Page, opts: { timeout?: number } = {}, work: () => Promise<void>) {
+    const inflight = new InflightRequests(page);
+    try {
+      await work();
+      await expect
+        .poll(() => inflight.inflightRequests().length, {
+          timeout: opts.timeout || 10000,
+        })
+        .toBe(0);
+    } finally {
+      inflight.stop();
+    }
+  };
 
   async waitForNavbarVisible(page: Page) {
     const brandingNav = page.locator('nav#branding-navigation-bar').first();

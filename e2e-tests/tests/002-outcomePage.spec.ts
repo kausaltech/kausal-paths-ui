@@ -1,34 +1,8 @@
 import type { Locator, Page, Request } from 'playwright';
 
 import { expect } from '@/common/base-test.js';
-import { getIdentifiersToTest, runInstanceTests } from '@/common/context.js';
+import { getIdentifiersToTest, runInstanceTests, InflightRequests } from '@/common/context.js';
 
-class InflightRequests {
-  private _page: Page;
-  private _requests: Set<Request>;
-  private onStarted: (request: Request) => void;
-  private onFinished: (request: Request) => void;
-
-  constructor(page: Page) {
-    this._page = page;
-    this._requests = new Set();
-    this.onFinished = (request: Request) => this._requests.delete(request);
-    this.onStarted = (request: Request) => this._requests.add(request);
-    this._page.on('request', this.onStarted);
-    this._page.on('requestfinished', this.onFinished);
-    this._page.on('requestfailed', this.onFinished);
-  }
-
-  inflightRequests() {
-    return Array.from(this._requests);
-  }
-
-  stop() {
-    this._page.removeListener('request', this.onStarted);
-    this._page.removeListener('requestfinished', this.onFinished);
-    this._page.removeListener('requestfailed', this.onFinished);
-  }
-}
 
 function testInstance(instanceId: string) {
   runInstanceTests(instanceId, ({ test }) => {
@@ -105,24 +79,21 @@ function testInstance(instanceId: string) {
         await expect(actionToggle).toBeVisible();
         await expect(actionToggle).toBeEnabled();
 
-        const requestTracker = new InflightRequests(page);
-        // Retry the click until it actually fires the mutation. The switch goes
-        // disabled while the mutation is in flight, which proves onChange ran
-        // (handles the SSR-hydration / remount race that only shows up on CI).
-        // Once disabled we stop clicking, so the toggle is never flipped back.
-        await expect(async () => {
-          await actionToggle.click();
-          await expect(actionToggle).toBeDisabled({ timeout: 2000 });
-        }).toPass({ timeout: 15000 });
-        // Switching to the "custom" scenario waits on the parameter mutation +
+        await ctx.waitForNetworkIdle(page, { timeout: 15000 }, async () => {
+          // Retry the click until it actually fires the mutation. The switch goes
+          // disabled while the mutation is in flight, which proves onChange ran
+          // (handles the SSR-hydration / remount race that only shows up on CI).
+          // Once disabled we stop clicking, so the toggle is never flipped back.
+          await expect(async () => {
+            await actionToggle.click();
+            await expect(actionToggle).toBeDisabled({ timeout: 2000 });
+          }).toPass({ timeout: 15000 });
+          await ctx.waitForLoaded(page);
+        });
+        // Switching to the "custom" scenario waits on the parameter mutation           // Switching to the "custom" scenario waits on the parameter mutation +
         // refetch, which can exceed the 5s default expect timeout (test.slow()
         // extends the test timeout, not per-assertion expect timeouts).
         await expect(scenarioSelectInput).toHaveValue('custom', { timeout: 15000 });
-        await ctx.waitForLoaded(page);
-        await expect
-          .poll(() => requestTracker.inflightRequests().length, { timeout: 15000 })
-          .toBe(0);
-        requestTracker.stop();
         await expect(outcomeCardSet).toBeVisible();
         await expect(outcomeCardSet).toHaveAttribute('data-scenario-id', 'custom');
         await ctx.takeScreenshot(page, 'scenario-edit-modified');
@@ -144,8 +115,10 @@ function testInstance(instanceId: string) {
           throw new Error('Default scenario not found');
         }
         await expect(defaultOption).toBeVisible();
-        await defaultOption.click();
-        await ctx.waitForLoaded(page);
+        await ctx.waitForNetworkIdle(page, { timeout: 15000 }, async () => {
+          await defaultOption.click();
+          await ctx.waitForLoaded(page);
+        });
         await expect(outcomeCardSet).toHaveAttribute('data-scenario-id', 'default');
       });
 
