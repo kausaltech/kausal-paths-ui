@@ -380,6 +380,7 @@
   "nodes-delete-context-menu": "Poista solmu",
   "nodes-description": "Kuvaus",
   "nodes-details": "Solmun tiedot",
+  "nodes-display-action-groups": "Toimenpideryhmät",
   "nodes-display-node-type": "Solmun tyyppi",
   "nodes-display-settings": "Näyttöasetukset",
   "nodes-duplicate-action": "Monista toimenpide",

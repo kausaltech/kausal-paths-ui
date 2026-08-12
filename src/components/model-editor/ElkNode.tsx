@@ -319,6 +319,8 @@ export type HandleData = {
 
 export type QuantityKindData = { icon?: string | null; id: string; label: string };
 
+export type ActionGroupData = { id: string; name: string; color: string | null };
+
 export type ElkNodeData = {
   label: string;
   kind: string;
@@ -327,6 +329,8 @@ export type ElkNodeData = {
   isOutcome: boolean;
   /** Action nodes only: whether the action is on in the active scenario. */
   isEnabled?: boolean | null;
+  /** Action nodes only: the action group the node belongs to, if any. */
+  actionGroup?: ActionGroupData | null;
   quantityKind?: QuantityKindData | null;
   nodeHeight?: number;
   sourceHandles: HandleData[];
@@ -499,28 +503,73 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
               )}
             </Box>
           )}
-          <Box sx={{ px: '5px', py: '3px', display: 'flex', alignItems: 'flex-start', gap: '3px' }}>
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: 11,
-                lineHeight: 1.25,
-                hyphens: 'auto',
-                wordBreak: 'break-word',
-              }}
+          <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <Box
+              sx={{ px: '5px', py: '3px', display: 'flex', alignItems: 'flex-start', gap: '3px' }}
             >
-              {data.label}
-            </Typography>
-            {/* The quantity kind is domain classification, not node type — keep
-                it visible by moving it here when the type strip is hidden. */}
-            {!display.showNodeType && data.quantityKind?.icon && (
               <Typography
-                component="span"
-                title={data.quantityKind.label}
-                sx={{ fontSize: 11, lineHeight: 1.25, ml: 'auto' }}
+                variant="body2"
+                sx={{
+                  fontSize: 11,
+                  lineHeight: 1.25,
+                  hyphens: 'auto',
+                  wordBreak: 'break-word',
+                }}
               >
-                {data.quantityKind.icon}
+                {data.label}
               </Typography>
+              {/* The quantity kind is domain classification, not node type — keep
+                  it visible by moving it here when the type strip is hidden. */}
+              {!display.showNodeType && data.quantityKind?.icon && (
+                <Typography
+                  component="span"
+                  title={data.quantityKind.label}
+                  sx={{ fontSize: 11, lineHeight: 1.25, ml: 'auto' }}
+                >
+                  {data.quantityKind.icon}
+                </Typography>
+              )}
+            </Box>
+            {/* Action group: a colored dot + the group name under the action
+                name, separated from it by a hairline. */}
+            {display.showActionGroups && data.actionGroup && (
+              <Box
+                title={data.actionGroup.name}
+                sx={{
+                  px: '5px',
+                  pt: '2px',
+                  pb: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  borderTop: '1px solid',
+                  borderColor: 'grey.300',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    backgroundColor: data.actionGroup.color ?? style.border,
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: 9,
+                    lineHeight: 1.2,
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {data.actionGroup.name}
+                </Typography>
+              </Box>
             )}
           </Box>
         </Box>

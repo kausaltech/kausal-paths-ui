@@ -164,6 +164,10 @@ export function convertToElk(
         color: node.color ?? '',
         isOutcome: node.__typename === 'Node' ? (node.isOutcome ?? false) : false,
         isEnabled: node.__typename === 'ActionNode' ? node.isEnabled : null,
+        actionGroup:
+          node.__typename === 'ActionNode' && node.group
+            ? { id: node.group.id, name: node.group.name, color: node.group.color }
+            : null,
         quantityKind: node.quantityKind ?? null,
         sourceHandles: srcHandles,
         targetHandles: tgtHandles,

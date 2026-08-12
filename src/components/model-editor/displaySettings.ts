@@ -8,10 +8,13 @@ import { makeVar } from '@apollo/client';
 export type NodeDisplaySettings = {
   /** Show the category header strip (icon + computational-type label) on node cards. */
   showNodeType: boolean;
+  /** Show the action group row (color dot + group name) on action node cards. */
+  showActionGroups: boolean;
 };
 
 const DEFAULT_SETTINGS: NodeDisplaySettings = {
   showNodeType: true,
+  showActionGroups: true,
 };
 
 const STORAGE_KEY = 'paths:node-display-settings:v1';
