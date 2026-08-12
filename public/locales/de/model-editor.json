@@ -357,6 +357,8 @@
   "models-no-edit-access": "Sie haben noch keinen Bearbeitungszugriff auf Modelle.",
   "nav-search-datasets": "Datensätze suchen…",
   "nav-search-dimensions": "Dimensionen suchen…",
+  "nodes-action-off": "Maßnahme ist deaktiviert",
+  "nodes-action-on": "Maßnahme ist aktiviert",
   "nodes-action-wizard": "Maßnahmen-Assistent (Legacy)",
   "nodes-add-input-port": "Eingabeport hinzufügen",
   "nodes-add-input-port-hint": "Alle Felder sind optional. Größe und Einheit leer lassen, um beliebige Eingaben zu akzeptieren.",

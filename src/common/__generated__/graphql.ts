@@ -958,6 +958,29 @@ export type NodeExplanationQuery = (
   & { __typename: 'Query' }
 );
 
+export type SetActionEnabledMutationVariables = Exact<{
+  parameterId: string | number;
+  enabled: boolean;
+}>;
+
+
+export type SetActionEnabledMutation = (
+  { setParameter: (
+    { ok: boolean, parameter:
+      | (
+        { id: string, boolValue: boolean | null }
+        & { __typename: 'BoolParameterType' }
+      )
+      | (
+        { id: string }
+        & { __typename: 'NumberParameterType' | 'StringParameterType' | 'UnknownParameterType' }
+      )
+     | null }
+    & { __typename: 'SetParameterResult' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type DatasetPortDataQueryVariables = Exact<{
   nodeId: string | number;
 }>;

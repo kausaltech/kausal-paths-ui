@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 
-import { Box, Chip, IconButton, Typography } from '@mui/material';
+import { Box, Chip, FormControlLabel, IconButton, Switch, Typography } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useReactFlow } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
@@ -15,6 +15,8 @@ import {
   type EditorNodeFieldsFragment,
   NodeErrorPhase,
   NodeStatus,
+  type SetActionEnabledMutation,
+  type SetActionEnabledMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
@@ -38,6 +40,22 @@ const GET_NODE_EXPLANATION = gql`
         nodeRelativeId
         ... on StringParameterType {
           stringValue: value
+        }
+      }
+    }
+  }
+`;
+
+// Turning an action on/off is a session-level parameter change (same
+// mechanism as the public UI), not an edit to the model itself.
+const SET_ACTION_ENABLED = gql`
+  mutation SetActionEnabled($parameterId: ID!, $enabled: Boolean!) {
+    setParameter(id: $parameterId, boolValue: $enabled) {
+      ok
+      parameter {
+        id
+        ... on BoolParameterType {
+          boolValue: value
         }
       }
     }
@@ -123,6 +141,67 @@ function NodeProblemsContent({
           {t('nodes-problem-no-detail')}
         </Typography>
       )}
+    </Box>
+  );
+}
+
+/**
+ * On/off switch for an action node, shown under the panel header. Applies to
+ * the active scenario (session-level, like the public UI's action toggles),
+ * so it doesn't modify the model.
+ */
+function ActionEnabledToggle({
+  isEnabled,
+  paramId,
+}: {
+  isEnabled: boolean;
+  /** Global id of the action's `enabled` parameter; null until known. */
+  paramId: string | null;
+}) {
+  const t = useTranslations('model-editor');
+  // Keep the switch at its requested position until the refetched node data
+  // confirms it, so it doesn't snap back while queries reload.
+  const [pending, setPending] = useState<boolean | null>(null);
+  const [setParameter, { loading }] = useMutation<
+    SetActionEnabledMutation,
+    SetActionEnabledMutationVariables
+  >(SET_ACTION_ENABLED, {
+    refetchQueries: 'active',
+    awaitRefetchQueries: true,
+  });
+
+  const checked = pending ?? isEnabled;
+  const handleChange = (next: boolean) => {
+    if (!paramId || loading) return;
+    setPending(next);
+    void setParameter({ variables: { parameterId: paramId, enabled: next } }).finally(() => {
+      setPending(null);
+    });
+  };
+
+  return (
+    <Box
+      sx={{
+        px: 2,
+        py: 0.5,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        backgroundColor: 'grey.50',
+      }}
+    >
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={checked}
+            disabled={!paramId || loading}
+            onChange={(e) => handleChange(e.target.checked)}
+          />
+        }
+        label={checked ? t('nodes-action-on') : t('nodes-action-off')}
+        slotProps={{ typography: { sx: { fontSize: 13, ml: 0.5 } } }}
+        sx={{ m: 0 }}
+      />
     </Box>
   );
 }
@@ -226,6 +305,12 @@ export default function NodeDetailsPanel({
     explanationData?.node?.parameters?.find(
       (p) => p.__typename === 'StringParameterType' && p.nodeRelativeId === 'formula'
     )?.stringValue ?? null;
+  // Guard against parameters of the previously inspected node: the toggle
+  // must never send another action's parameter id.
+  const enabledParamId =
+    explanationData?.node?.id === node.id
+      ? (explanationData.node.parameters.find((p) => p.nodeRelativeId === 'enabled')?.id ?? null)
+      : null;
 
   const headerStyle = getStyleForNode(node);
 
@@ -280,6 +365,10 @@ export default function NodeDetailsPanel({
           <X size={20} />
         </IconButton>
       </Box>
+
+      {node.__typename === 'ActionNode' && (
+        <ActionEnabledToggle isEnabled={node.isEnabled} paramId={enabledParamId} />
+      )}
 
       {statusEntry && statusEntry.status !== NodeStatus.Ok && (
         <CollapsibleSection

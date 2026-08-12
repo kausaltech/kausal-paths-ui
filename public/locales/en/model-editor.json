@@ -384,6 +384,8 @@
   "models-no-edit-access": "You don't have edit access to any models yet.",
   "nav-search-datasets": "Search datasets…",
   "nav-search-dimensions": "Search dimensions…",
+  "nodes-action-off": "Action is off",
+  "nodes-action-on": "Action is on",
   "nodes-action-wizard": "Action wizard (legacy)",
   "nodes-add-input-port": "Add input port",
   "nodes-add-input-port-hint": "All fields are optional. Leave quantity and unit empty to accept any input.",
