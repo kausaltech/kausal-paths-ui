@@ -16,6 +16,7 @@ import {
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { BoxArrowRight, ChevronDown, PencilSquare } from 'react-bootstrap-icons';
 
 import { Link } from '@/common/links';
@@ -54,6 +55,7 @@ function getInitials(name: string | null | undefined, email: string | null | und
 }
 
 export default function PublicUserNav() {
+  const t = useTranslations('common');
   const { data: session } = useSession();
   const { data: modelData } = useQuery<CanEditModelData>(CAN_EDIT_MODEL, {
     skip: !session?.user,
@@ -129,7 +131,7 @@ export default function PublicUserNav() {
               startIcon={<PencilSquare size={12} />}
               sx={{ fontSize: 12, py: 0.25, px: 0.75, textTransform: 'none' }}
             >
-              Edit model
+              {t('edit-model')}
             </Button>
           </>
         )}

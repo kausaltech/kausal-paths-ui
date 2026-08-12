@@ -7,6 +7,7 @@ import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } fr
 
 import { gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
 
@@ -81,7 +82,25 @@ function generateIdentifier(frameworkId: string, name: string): string {
   return parts.join('-');
 }
 
+// Render field labels above the input instead of in the outline notch, so
+// focus styling drawn around the input cannot overlap the label text.
+const textFieldSlotProps = {
+  inputLabel: {
+    shrink: true,
+    sx: {
+      position: 'relative',
+      transform: 'none',
+      maxWidth: 'none',
+      mb: 0.5,
+      fontSize: '0.875rem',
+      fontWeight: 500,
+    },
+  },
+  input: { notched: false },
+} as const;
+
 export default function CreateInstancePage() {
+  const t = useTranslations('common');
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,7 +126,7 @@ export default function CreateInstancePage() {
     setError(null);
 
     if (!frameworkId) {
-      setError('Framework not specified');
+      setError(t('error-framework-not-specified'));
       return;
     }
 
@@ -127,7 +146,7 @@ export default function CreateInstancePage() {
         const messages = data
           ? (data.createInstance as { messages: { message: string }[] }).messages
           : [];
-        setError(messages.map((m) => m.message).join(', ') || 'Instance creation failed');
+        setError(messages.map((m) => m.message).join(', ') || t('create-model-failed'));
         return;
       }
 
@@ -136,13 +155,13 @@ export default function CreateInstancePage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An unexpected error occurred');
+        setError(t('error-unexpected'));
       }
     }
   };
 
   const isSuccess = !!created;
-  const newInstanceName = created?.instanceName || 'My instance';
+  const newInstanceName = created?.instanceName || t('my-model');
 
   return (
     <Container maxWidth="sm">
@@ -174,42 +193,44 @@ export default function CreateInstancePage() {
               </Box>
             )}
             <Typography variant="h4" component="h1" gutterBottom>
-              {isSuccess ? 'All set!' : 'Create a new instance'}
+              {isSuccess ? t('create-model-all-set') : t('create-new-model')}
             </Typography>
             {!isSuccess && frameworkName && (
               <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                Using {frameworkName} framework
+                {t('create-model-using-framework', { framework: frameworkName })}
               </Typography>
             )}
           </Box>
           {isSuccess ? (
             <Stack spacing={2}>
               <Alert severity="success">
-                Instance &ldquo;{newInstanceName}&rdquo; created successfully.
+                {t('create-model-success', { name: newInstanceName })}
               </Alert>
               <Button variant="contained" size="large" onClick={() => router.push('/')} fullWidth>
-                Return to front page
+                {t('return-to-front')}
               </Button>
             </Stack>
           ) : (
             <Box component="form" onSubmit={(e) => void handleSubmit(e)}>
               <Stack spacing={2}>
                 <TextField
-                  label="Instance name"
+                  label={t('create-model-name-label')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                   fullWidth
                   autoFocus
-                  helperText="A descriptive name for your instance, e.g. your city name"
+                  helperText={t('create-model-name-helper')}
+                  slotProps={textFieldSlotProps}
                 />
                 <TextField
-                  label="Organization name"
+                  label={t('create-model-org-label')}
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   required
                   fullWidth
-                  helperText="The organization responsible for this instance"
+                  helperText={t('create-model-org-helper')}
+                  slotProps={textFieldSlotProps}
                 />
                 {error && <Alert severity="error">{error}</Alert>}
                 <Stack direction="row" spacing={2}>
@@ -223,7 +244,7 @@ export default function CreateInstancePage() {
                     fullWidth
                     sx={{ justifyContent: 'flex-start' }}
                   >
-                    Back
+                    {t('back')}
                   </Button>
                   <Button
                     type="submit"
@@ -233,7 +254,7 @@ export default function CreateInstancePage() {
                     loadingPosition="start"
                     fullWidth
                   >
-                    {loading ? 'Creating a new instance...' : 'Create instance'}
+                    {loading ? t('create-model-creating') : t('create-model-submit')}
                   </Button>
                 </Stack>
               </Stack>
