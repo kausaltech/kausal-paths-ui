@@ -1910,13 +1910,7 @@ export type NodeOutputDataQuery = (
           & { __typename: 'DimensionalMetricGoalEntry' }
         )> }
         & { __typename: 'DimensionalMetricType' }
-      ) | null, downstreamNodes: Array<(
-        { id: string, name: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, outcomes: Array<(
-        { id: string }
-        & { __typename: 'ActionNode' | 'Node' }
-      )>, directDownstream: Array<(
+      ) | null, directDownstream: Array<(
         { id: string, name: string }
         & { __typename: 'ActionNode' | 'Node' }
       )>, editor: (

@@ -30,6 +30,11 @@ const MetricDataViewer = lazy(() => import('./metric-viewer/MetricDataViewer'));
 type Props = {
   nodeId: string | null;
   nodeName: string | null;
+  /**
+   * The model's outcome nodes: candidate targets for the action impact
+   * section, whether or not the inspected action actually affects them.
+   */
+  outcomeNodes: readonly { id: string; name: string }[];
   open: boolean;
   onClose: () => void;
   width: number;
@@ -111,14 +116,22 @@ function SectionHeader({ children }: { children: string }) {
   );
 }
 
-export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, zIndex }: Props) {
+export default function MetricsDrawer({
+  nodeId,
+  nodeName,
+  outcomeNodes,
+  open,
+  onClose,
+  width,
+  zIndex,
+}: Props) {
   const t = useTranslations('model-editor');
   const { portMetrics, action, loading, error, fetch } = useNodeMetric(nodeId);
   const [view, setView] = useState<ViewMode>('table');
   const [site] = useSiteWithSetter();
 
-  // Impact target for action nodes; initialised to the first downstream
-  // outcome node once the node data arrives.
+  // Impact target for action nodes; defaults to the model's first outcome
+  // node. All outcome nodes are offered, even ones this action can't reach.
   const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
   // Effect-preview target: only relevant for multi-output actions, whose own
   // effect series (metricDim) is null; the preview then shows the impact on a
@@ -131,9 +144,9 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
     setEffectNodeId(null);
   }
   const effectiveTargetId =
-    targetNodeId && action?.downstreamNodes.some((n) => n.id === targetNodeId)
+    targetNodeId && outcomeNodes.some((n) => n.id === targetNodeId)
       ? targetNodeId
-      : (action?.defaultTargetId ?? null);
+      : (outcomeNodes[0]?.id ?? null);
   const impact = useActionImpact(
     open && action ? nodeId : null,
     open && action ? effectiveTargetId : null
@@ -169,7 +182,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
 
   const hasContent = action != null || portMetrics.length > 0;
   const targetName =
-    action?.downstreamNodes.find((n) => n.id === effectiveTargetId)?.name ?? effectiveTargetId;
+    outcomeNodes.find((n) => n.id === effectiveTargetId)?.name ?? effectiveTargetId;
 
   return (
     <Drawer
@@ -312,7 +325,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
                 />
               )}
             </Box>
-            {action.downstreamNodes.length > 0 && (
+            {outcomeNodes.length > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <SectionHeader>{t('metric-action-section-outcome')}</SectionHeader>
                 <FormControl size="small" sx={{ mt: 1, mb: 1.5, flexShrink: 0 }}>
@@ -325,7 +338,7 @@ export default function MetricsDrawer({ nodeId, nodeName, open, onClose, width, 
                     value={effectiveTargetId ?? ''}
                     onChange={(e) => setTargetNodeId(e.target.value)}
                   >
-                    {action.downstreamNodes.map((n) => (
+                    {outcomeNodes.map((n) => (
                       <MenuItem key={n.id} value={n.id}>
                         {n.name}
                       </MenuItem>

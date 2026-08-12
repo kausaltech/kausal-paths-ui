@@ -305,6 +305,9 @@ export default function NodeDetailsPanel({
     explanationData?.node?.parameters?.find(
       (p) => p.__typename === 'StringParameterType' && p.nodeRelativeId === 'formula'
     )?.stringValue ?? null;
+  const previewLabel = t(
+    node.__typename === 'ActionNode' ? 'nodes-output-data-show-action' : 'nodes-output-data-show'
+  );
   // Guard against parameters of the previously inspected node: the toggle
   // must never send another action's parameter id.
   const enabledParamId =
@@ -494,8 +497,8 @@ export default function NodeDetailsPanel({
         )}
         <Chip
           icon={<BarChartLine size={18} />}
-          label={t('nodes-output-data-show')}
-          title={t('nodes-output-data-show')}
+          label={previewLabel}
+          title={previewLabel}
           variant="outlined"
           onClick={() => onShowMetrics?.(node.id, node.name ?? null)}
           sx={{
