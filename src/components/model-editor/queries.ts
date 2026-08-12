@@ -220,6 +220,7 @@ export const GET_NODE_GRAPH = gql`
       isOutcome
     }
     ... on ActionNode {
+      isEnabled
       group {
         id
         name

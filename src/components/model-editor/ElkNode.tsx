@@ -32,6 +32,8 @@ import {
   QuestionCircle,
   Signpost,
   Sliders,
+  ToggleOff,
+  ToggleOn,
   XCircleFill,
   XSquare,
 } from 'react-bootstrap-icons';
@@ -323,6 +325,8 @@ export type ElkNodeData = {
   nodeClass: string;
   color: string;
   isOutcome: boolean;
+  /** Action nodes only: whether the action is on in the active scenario. */
+  isEnabled?: boolean | null;
   quantityKind?: QuantityKindData | null;
   nodeHeight?: number;
   sourceHandles: HandleData[];
@@ -344,6 +348,19 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   const highlighted = highlightedNodeIds.has(id);
   const active = activeNodeId === id;
   const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
+  // Action nodes show their on/off state in the active scenario instead of
+  // the generic category icon.
+  const isAction = getNodeCategory(data.kind, data.nodeClass, data.isOutcome) === 'action';
+  const typeIcon =
+    isAction && data.isEnabled != null ? (
+      data.isEnabled ? (
+        <ToggleOn size={ICON_SIZE} />
+      ) : (
+        <ToggleOff size={ICON_SIZE} />
+      )
+    ) : (
+      style.icon
+    );
 
   const targetCount = data.targetHandles.length;
   const sourceCount = data.sourceHandles.length;
@@ -464,7 +481,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 gap: '3px',
               }}
             >
-              <Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>
+              <Box sx={{ color: style.border, display: 'flex' }}>{typeIcon}</Box>
               <Typography
                 variant="caption"
                 sx={{ fontSize: 9, lineHeight: 1.2, color: style.border, fontWeight: 500 }}

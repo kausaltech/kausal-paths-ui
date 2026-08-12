@@ -2134,7 +2134,7 @@ export type NodeGraphQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null, nodes: Array<
       | (
-        { id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+        { id: string, isEnabled: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
         ) | null, quantityKind: (
@@ -2507,7 +2507,7 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+  { isEnabled: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
   ) | null, quantityKind: (
