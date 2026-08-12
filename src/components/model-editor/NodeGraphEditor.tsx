@@ -274,6 +274,16 @@ function FlowEditor(props: {
 
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
 
+  // The model's outcome nodes (explicitly flagged in the model, e.g. net
+  // emissions): impact targets offered by the action metrics drawer.
+  const outcomeNodes = useMemo(
+    () =>
+      props.nodes
+        .filter((n) => n.__typename === 'Node' && n.isOutcome)
+        .map((n) => ({ id: n.id, name: n.name })),
+    [props.nodes]
+  );
+
   const allNodeIdsSet = useMemo(() => new Set(props.nodes.map((n) => n.id)), [props.nodes]);
 
   const autoSnippedEdgeIds = useMemo(
@@ -558,6 +568,7 @@ function FlowEditor(props: {
             <MetricsDrawer
               nodeId={overlay?.kind === 'metrics' ? overlay.nodeId : null}
               nodeName={overlay?.kind === 'metrics' ? overlay.nodeName : null}
+              outcomeNodes={outcomeNodes}
               open={overlay?.kind === 'metrics'}
               onClose={() => setOverlay(null)}
               width={OVERLAY_DRAWER_WIDTH}

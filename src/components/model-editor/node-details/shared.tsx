@@ -3,7 +3,14 @@ import type { ReactNode } from 'react';
 import { Box, Chip, Collapse, Typography } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
-import { CaretDownFill, CaretRightFill, DashCircle, XCircleFill } from 'react-bootstrap-icons';
+import {
+  CaretDownFill,
+  CaretRightFill,
+  DashCircle,
+  ToggleOff,
+  ToggleOn,
+  XCircleFill,
+} from 'react-bootstrap-icons';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { type CategoryKey, type NodeStyle, getNodeCategory, getNodeStyle } from '../ElkNode';
@@ -21,7 +28,14 @@ function getNodeClassParts(node: EditorNodeFieldsFragment) {
 
 export function getStyleForNode(node: EditorNodeFieldsFragment): NodeStyle {
   const { kind, nodeClass, isOutcome } = getNodeClassParts(node);
-  return getNodeStyle(kind, nodeClass, isOutcome);
+  const style = getNodeStyle(kind, nodeClass, isOutcome);
+  // Actions show their on/off state in the active scenario instead of the
+  // generic category icon, matching the node cards in the graph.
+  if (node.__typename === 'ActionNode') {
+    const Icon = node.isEnabled ? ToggleOn : ToggleOff;
+    return { ...style, icon: <Icon size={14} /> };
+  }
+  return style;
 }
 
 export function getCategoryForNode(node: EditorNodeFieldsFragment): CategoryKey {

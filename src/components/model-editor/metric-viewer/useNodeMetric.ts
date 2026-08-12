@@ -16,6 +16,7 @@ const GET_NODE_OUTPUT_DATA = gql`
   query NodeOutputData($nodeId: ID!) {
     node(id: $nodeId) {
       id
+      __typename
       name
       editor {
         spec {
@@ -34,6 +35,21 @@ const GET_NODE_OUTPUT_DATA = gql`
               ...ModelEditorDimensionalMetricFields
             }
           }
+        }
+      }
+      # Action nodes' per-port output is not implemented on the backend, so
+      # fetch the action's own effect metric and the candidate impact targets
+      # instead.
+      ... on ActionNode {
+        isEnabled
+        metricDim {
+          ...ModelEditorDimensionalMetricFields
+        }
+        # Multi-output actions have no single "own" metric (metricDim is null);
+        # the effect preview then falls back to per-direct-child impact.
+        directDownstream: downstreamNodes(maxDepth: 1) {
+          id
+          name
         }
       }
     }
@@ -56,10 +72,26 @@ type PortMetric = {
   errorMessage: string | null;
 };
 
+/** Extra data available when the inspected node is an action. */
+export type ActionMetricInfo = {
+  isEnabled: boolean;
+  /** The action's own output: its effect relative to the no-action case. */
+  effect: ModelEditorDimensionalMetricFieldsFragment | null;
+  /** Parsed cube of `effect`, for the table viewer. */
+  effectMetric: DimensionalMetric | null;
+  /**
+   * The action's direct downstream neighbours. Used as effect-preview targets
+   * when the action has no single own output metric (`effect` is null).
+   */
+  directDownstream: { id: string; name: string }[];
+};
+
 type UseNodeMetricResult = {
   loading: boolean;
   error?: Error;
   portMetrics: PortMetric[];
+  /** Non-null when the node is an action node. */
+  action: ActionMetricInfo | null;
   fetch: () => void;
 };
 
@@ -110,5 +142,16 @@ export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
     }));
   }, [data, portErrorsByIndex]);
 
-  return { loading, error, portMetrics, fetch };
+  const action = useMemo<ActionMetricInfo | null>(() => {
+    const node = data?.node;
+    if (!node || node.__typename !== 'ActionNode') return null;
+    return {
+      isEnabled: node.isEnabled,
+      effect: node.metricDim ?? null,
+      effectMetric: node.metricDim ? new DimensionalMetric(node.metricDim) : null,
+      directDownstream: node.directDownstream.map((n) => ({ id: n.id, name: n.name })),
+    };
+  }, [data]);
+
+  return { loading, error, portMetrics, action, fetch };
 }

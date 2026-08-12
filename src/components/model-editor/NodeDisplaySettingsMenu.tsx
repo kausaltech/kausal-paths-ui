@@ -29,6 +29,7 @@ export default function NodeDisplaySettingsMenu({ onResetLayout }: Props) {
 
   const toggles: { key: keyof NodeDisplaySettings; label: string }[] = [
     { key: 'showNodeType', label: t('nodes-display-node-type') },
+    { key: 'showActionGroups', label: t('nodes-display-action-groups') },
   ];
 
   return (

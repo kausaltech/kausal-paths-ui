@@ -32,6 +32,8 @@ import {
   QuestionCircle,
   Signpost,
   Sliders,
+  ToggleOff,
+  ToggleOn,
   XCircleFill,
   XSquare,
 } from 'react-bootstrap-icons';
@@ -317,12 +319,18 @@ export type HandleData = {
 
 export type QuantityKindData = { icon?: string | null; id: string; label: string };
 
+export type ActionGroupData = { id: string; name: string; color: string | null };
+
 export type ElkNodeData = {
   label: string;
   kind: string;
   nodeClass: string;
   color: string;
   isOutcome: boolean;
+  /** Action nodes only: whether the action is on in the active scenario. */
+  isEnabled?: boolean | null;
+  /** Action nodes only: the action group the node belongs to, if any. */
+  actionGroup?: ActionGroupData | null;
   quantityKind?: QuantityKindData | null;
   nodeHeight?: number;
   sourceHandles: HandleData[];
@@ -344,6 +352,19 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
   const highlighted = highlightedNodeIds.has(id);
   const active = activeNodeId === id;
   const style = getNodeStyle(data.kind, data.nodeClass, data.isOutcome);
+  // Action nodes show their on/off state in the active scenario instead of
+  // the generic category icon.
+  const isAction = getNodeCategory(data.kind, data.nodeClass, data.isOutcome) === 'action';
+  const typeIcon =
+    isAction && data.isEnabled != null ? (
+      data.isEnabled ? (
+        <ToggleOn size={ICON_SIZE} />
+      ) : (
+        <ToggleOff size={ICON_SIZE} />
+      )
+    ) : (
+      style.icon
+    );
 
   const targetCount = data.targetHandles.length;
   const sourceCount = data.sourceHandles.length;
@@ -387,10 +408,25 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
               if (stubs.length === 0) return null;
               const count = stubs.length;
               const gap = 6;
-              const width = 22;
+              const svgWidth = 22;
+              const width = 12 + svgWidth; // icon + arrow
+              // Stop the arrow tip just before the visible port dot so the
+              // stub doesn't touch it. Node edges are left untouched.
+              const tipGap = 4;
               return stubs.map((stub, idx) => {
                 const offsetPx = (idx - (count - 1) / 2) * gap;
                 const color = active ? stub.activeColor : STUB_DEFAULT_COLOR;
+                // Mirror the edge arrows. React Flow's ArrowClosed marker
+                // renders its 5x8 polyline at 0.6 scale (12/12 marker over a
+                // 20x20 viewBox) in stroke-width units — a 3x4.8 triangle
+                // body with a 0.6 round-joined outline at stroke 1, doubling
+                // when the selected edge style sets strokeWidth 2. The head
+                // scales about its tip, so the tip stays put.
+                const shaftWidth = active ? 2 : 1;
+                const headScale = active ? 2 : 1;
+                const headLength = 3 * headScale;
+                const headHalfHeight = 2.4 * headScale;
+                const headOutline = 0.6 * headScale;
                 return (
                   <Tooltip key={stub.key} title={stub.label} placement="left" arrow>
                     <Box
@@ -401,26 +437,46 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                       }}
                       sx={{
                         position: 'absolute',
-                        left: -width,
+                        left: -(width + tipGap),
                         top: `calc(${top} + ${offsetPx}px)`,
                         transform: 'translateY(-50%)',
                         width,
                         height: 12,
                         display: 'flex',
                         alignItems: 'center',
+                        // Anchor at the card edge so the arrow tip meets the
+                        // handle regardless of the icon's width.
+                        justifyContent: 'flex-end',
                         cursor: stub.onClick ? 'pointer' : 'default',
                         color,
                         '&:hover': { color: stub.activeColor },
                       }}
                     >
                       {stub.icon}
+                      {/* Arrow sized to match the React Flow edge markers
+                          (EDGE_MARKER in nodeGraphTransforms), so dataset and
+                          node arrows read as the same kind of connector. */}
                       <Box
                         component="svg"
-                        viewBox="0 0 10 6"
-                        sx={{ width: 10, height: 6, overflow: 'visible', flexShrink: 0 }}
+                        viewBox={`0 0 ${svgWidth} 12`}
+                        sx={{ width: svgWidth, height: 12, overflow: 'visible', flexShrink: 0 }}
                       >
-                        <line x1="0" y1="3" x2="6" y2="3" stroke="currentColor" strokeWidth="1" />
-                        <polygon points="6,0 10,3 6,6" fill="currentColor" />
+                        <line
+                          x1="0"
+                          y1="6"
+                          x2={svgWidth - headLength}
+                          y2="6"
+                          stroke="currentColor"
+                          strokeWidth={shaftWidth}
+                        />
+                        <polyline
+                          points={`${svgWidth - headLength},${6 - headHalfHeight} ${svgWidth},6 ${svgWidth - headLength},${6 + headHalfHeight} ${svgWidth - headLength},${6 - headHalfHeight}`}
+                          fill="currentColor"
+                          stroke="currentColor"
+                          strokeWidth={headOutline}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </Box>
                     </Box>
                   </Tooltip>
@@ -464,7 +520,7 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
                 gap: '3px',
               }}
             >
-              <Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>
+              <Box sx={{ color: style.border, display: 'flex' }}>{typeIcon}</Box>
               <Typography
                 variant="caption"
                 sx={{ fontSize: 9, lineHeight: 1.2, color: style.border, fontWeight: 500 }}
@@ -482,28 +538,73 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
               )}
             </Box>
           )}
-          <Box sx={{ px: '5px', py: '3px', display: 'flex', alignItems: 'flex-start', gap: '3px' }}>
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: 11,
-                lineHeight: 1.25,
-                hyphens: 'auto',
-                wordBreak: 'break-word',
-              }}
+          <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <Box
+              sx={{ px: '5px', py: '3px', display: 'flex', alignItems: 'flex-start', gap: '3px' }}
             >
-              {data.label}
-            </Typography>
-            {/* The quantity kind is domain classification, not node type — keep
-                it visible by moving it here when the type strip is hidden. */}
-            {!display.showNodeType && data.quantityKind?.icon && (
               <Typography
-                component="span"
-                title={data.quantityKind.label}
-                sx={{ fontSize: 11, lineHeight: 1.25, ml: 'auto' }}
+                variant="body2"
+                sx={{
+                  fontSize: 11,
+                  lineHeight: 1.25,
+                  hyphens: 'auto',
+                  wordBreak: 'break-word',
+                }}
               >
-                {data.quantityKind.icon}
+                {data.label}
               </Typography>
+              {/* The quantity kind is domain classification, not node type — keep
+                  it visible by moving it here when the type strip is hidden. */}
+              {!display.showNodeType && data.quantityKind?.icon && (
+                <Typography
+                  component="span"
+                  title={data.quantityKind.label}
+                  sx={{ fontSize: 11, lineHeight: 1.25, ml: 'auto' }}
+                >
+                  {data.quantityKind.icon}
+                </Typography>
+              )}
+            </Box>
+            {/* Action group: a colored dot + the group name under the action
+                name, separated from it by a hairline. */}
+            {display.showActionGroups && data.actionGroup && (
+              <Box
+                title={data.actionGroup.name}
+                sx={{
+                  px: '5px',
+                  pt: '2px',
+                  pb: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  borderTop: '1px solid',
+                  borderColor: 'grey.300',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    backgroundColor: data.actionGroup.color ?? style.border,
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: 9,
+                    lineHeight: 1.2,
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {data.actionGroup.name}
+                </Typography>
+              </Box>
             )}
           </Box>
         </Box>

@@ -4,6 +4,7 @@ import { type Edge, useNodesInitialized, useReactFlow } from '@xyflow/react';
 import ELK, { type ElkNode as ElkGraphNode } from 'elkjs/lib/elk.bundled.js';
 
 import { type ElkNodeType, type HandleData } from './ElkNode';
+import { nodeDisplaySettingsVar } from './displaySettings';
 import {
   type CachedPosition,
   loadLayoutCache,
@@ -16,9 +17,33 @@ const NODE_WIDTH = 150;
 const NODE_HEIGHT = 50;
 const HANDLE_SPACING = 12;
 
-function getMinNodeHeight(node: ElkNodeType): number {
+// Height-estimation terms, mirroring what ElkNode actually renders. They
+// don't need to be pixel-perfect — ELK only needs heights honest enough that
+// vertical spacing and layer assignment hold up (errors of a few px disappear
+// into `elk.spacing.nodeNode`). Deliberately estimated instead of measured:
+// React Flow's measured sizes are unusable when the zoomed-out dot view is
+// active, and estimates are stable across zoom and cache hydration.
+/** Label chars per line: ~140px of content at 11px with wrapping/hyphens. */
+const LABEL_CHARS_PER_LINE = 24;
+/** Label line: 11px at 1.25 line-height. */
+const LABEL_LINE_HEIGHT = 14;
+/** Label block vertical padding (3px top + bottom). */
+const LABEL_PADDING_Y = 6;
+/** Category header strip: icon (14px) + 2px paddings + borders. */
+const TYPE_STRIP_HEIGHT = 19;
+/** Action group row: 9px caption at 1.2 + paddings + hairline border. */
+const GROUP_ROW_HEIGHT = 16;
+
+function estimateNodeHeight(
+  node: ElkNodeType,
+  { showNodeType, showActionGroups }: { showNodeType: boolean; showActionGroups: boolean }
+): number {
+  const labelLines = Math.max(1, Math.ceil(node.data.label.length / LABEL_CHARS_PER_LINE));
+  let contentHeight = LABEL_PADDING_Y + labelLines * LABEL_LINE_HEIGHT;
+  if (showNodeType) contentHeight += TYPE_STRIP_HEIGHT;
+  if (showActionGroups && node.data.actionGroup) contentHeight += GROUP_ROW_HEIGHT;
   const portCount = Math.max(node.data.targetHandles.length, node.data.sourceHandles.length);
-  return Math.max(NODE_HEIGHT, portCount * HANDLE_SPACING + 16);
+  return Math.max(NODE_HEIGHT, portCount * HANDLE_SPACING + 16, contentHeight);
 }
 
 const ELK_OPTIONS: Record<string, string> = {
@@ -38,12 +63,13 @@ const elk = new ELK({
 });
 
 async function getElkLayoutedNodes(nodes: ElkNodeType[], edges: Edge[]): Promise<ElkNodeType[]> {
+  const displaySettings = nodeDisplaySettingsVar();
   const graph = {
     id: 'root',
     layoutOptions: ELK_OPTIONS,
     children: nodes.map((n) => {
       const w = NODE_WIDTH;
-      const h = getMinNodeHeight(n);
+      const h = estimateNodeHeight(n, displaySettings);
 
       const targetPorts = n.data.targetHandles.map((t) => ({
         id: `${n.id}:${t.id}`,
