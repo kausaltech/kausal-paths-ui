@@ -380,6 +380,11 @@ export type UpdateDataPointInput = {
   value: number | null | undefined;
 };
 
+export type UpdateDataPointItemInput = {
+  dataPointId: string | number;
+  input: UpdateDataPointInput;
+};
+
 /** Change what a dataset binding carries or does. */
 export type UpdateDatasetBindingInput = {
   metricId: string | number | null | undefined;
@@ -1412,26 +1417,29 @@ export type DataPointFieldsFragment = (
   & { __typename: 'DataPoint' }
 );
 
-export type CreateDataPointMutationVariables = Exact<{
+export type CreateDataPointsMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;
-  input: CreateDataPointInput;
+  input: Array<CreateDataPointInput>;
 }>;
 
 
-export type CreateDataPointMutation = (
+export type CreateDataPointsMutation = (
   { instanceEditor: (
     { datasetEditor: (
-      { createDataPoint:
+      { createDataPoints:
         | (
-          { id: string, date: string, value: number | null, metric: (
-            { id: string }
-            & { __typename: 'DatasetMetric' }
-          ), dimensionCategories: Array<(
-            { uuid: string }
-            & { __typename: 'DatasetDimensionCategory' }
+          { dataPoints: Array<(
+            { id: string, date: string, value: number | null, metric: (
+              { id: string }
+              & { __typename: 'DatasetMetric' }
+            ), dimensionCategories: Array<(
+              { uuid: string }
+              & { __typename: 'DatasetDimensionCategory' }
+            )> }
+            & { __typename: 'DataPoint' }
           )> }
-          & { __typename: 'DataPoint' }
+          & { __typename: 'DataPointsMutationResult' }
         )
         | (
           { messages: Array<(
@@ -1448,27 +1456,29 @@ export type CreateDataPointMutation = (
   & { __typename: 'Mutation' }
 );
 
-export type UpdateDataPointMutationVariables = Exact<{
+export type UpdateDataPointsMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;
-  dataPointId: string | number;
-  input: UpdateDataPointInput;
+  input: Array<UpdateDataPointItemInput>;
 }>;
 
 
-export type UpdateDataPointMutation = (
+export type UpdateDataPointsMutation = (
   { instanceEditor: (
     { datasetEditor: (
-      { updateDataPoint:
+      { updateDataPoints:
         | (
-          { id: string, date: string, value: number | null, metric: (
-            { id: string }
-            & { __typename: 'DatasetMetric' }
-          ), dimensionCategories: Array<(
-            { uuid: string }
-            & { __typename: 'DatasetDimensionCategory' }
+          { dataPoints: Array<(
+            { id: string, date: string, value: number | null, metric: (
+              { id: string }
+              & { __typename: 'DatasetMetric' }
+            ), dimensionCategories: Array<(
+              { uuid: string }
+              & { __typename: 'DatasetDimensionCategory' }
+            )> }
+            & { __typename: 'DataPoint' }
           )> }
-          & { __typename: 'DataPoint' }
+          & { __typename: 'DataPointsMutationResult' }
         )
         | (
           { messages: Array<(
@@ -1485,23 +1495,29 @@ export type UpdateDataPointMutation = (
   & { __typename: 'Mutation' }
 );
 
-export type DeleteDataPointMutationVariables = Exact<{
+export type DeleteDataPointsMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;
-  dataPointId: string | number;
+  dataPointIds: Array<string | number>;
 }>;
 
 
-export type DeleteDataPointMutation = (
+export type DeleteDataPointsMutation = (
   { instanceEditor: (
     { datasetEditor: (
-      { deleteDataPoint: (
-        { messages: Array<(
-          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
-          & { __typename: 'OperationMessage' }
-        )> }
-        & { __typename: 'OperationInfo' }
-      ) | null }
+      { deleteDataPoints:
+        | (
+          { deletedDataPointIds: Array<string> }
+          & { __typename: 'DeleteDataPointsResult' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
       & { __typename: 'DatasetEditorMutation' }
     ) }
     & { __typename: 'InstanceEditorMutation' }

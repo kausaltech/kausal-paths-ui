@@ -34,6 +34,10 @@
       "DataPoint",
       "OperationInfo"
     ],
+    "CreateDataPointsPayload": [
+      "DataPointsMutationResult",
+      "OperationInfo"
+    ],
     "CreateDataSourcePayload": [
       "DataSource",
       "OperationInfo"
@@ -62,6 +66,10 @@
     ],
     "CreateSourceReferencePayload": [
       "DatasetSourceReference",
+      "OperationInfo"
+    ],
+    "DeleteDataPointsPayload": [
+      "DeleteDataPointsResult",
       "OperationInfo"
     ],
     "DeleteDataSourcePayload": [
@@ -211,6 +219,10 @@
     ],
     "UpdateDataPointPayload": [
       "DataPoint",
+      "OperationInfo"
+    ],
+    "UpdateDataPointsPayload": [
+      "DataPointsMutationResult",
       "OperationInfo"
     ],
     "UpdateDataSourcePayload": [
