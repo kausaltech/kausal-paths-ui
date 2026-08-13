@@ -2935,6 +2935,20 @@ export type EditorOperationInfoFieldsFragment = (
   & { __typename: 'OperationInfo' }
 );
 
+export type ConstraintViolationsFieldsFragment = (
+  { conflicts: Array<(
+    { code: string, message: string, origins: Array<(
+      { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+      & { __typename: 'ConstraintOrigin' }
+    )>, value: (
+      { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+      & { __typename: 'ConstraintValueRef' }
+    ) | null }
+    & { __typename: 'ConstraintConflict' }
+  )> }
+  & { __typename: 'ConstraintViolations' }
+);
+
 export type InstanceEditorPublishStateFragment = (
   { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
   & { __typename: 'InstanceEditor' }
@@ -2963,7 +2977,19 @@ export type PublishModelInstanceMutationVariables = Exact<{
 export type PublishModelInstanceMutation = (
   { instanceEditor: (
     { publishModelInstance:
-      | { __typename: 'ConstraintViolations' }
+      | (
+        { conflicts: Array<(
+          { code: string, message: string, origins: Array<(
+            { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+            & { __typename: 'ConstraintOrigin' }
+          )>, value: (
+            { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+            & { __typename: 'ConstraintValueRef' }
+          ) | null }
+          & { __typename: 'ConstraintConflict' }
+        )> }
+        & { __typename: 'ConstraintViolations' }
+      )
       | (
         { id: string, editor: (
           { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
@@ -3051,7 +3077,19 @@ export type CreateEdgeMutationVariables = Exact<{
 export type CreateEdgeMutation = (
   { instanceEditor: (
     { createEdge:
-      | { __typename: 'ConstraintViolations' }
+      | (
+        { conflicts: Array<(
+          { code: string, message: string, origins: Array<(
+            { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+            & { __typename: 'ConstraintOrigin' }
+          )>, value: (
+            { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+            & { __typename: 'ConstraintValueRef' }
+          ) | null }
+          & { __typename: 'ConstraintConflict' }
+        )> }
+        & { __typename: 'ConstraintViolations' }
+      )
       | (
         { id: string, fromRef: (
           { nodeUuid: string, portId: string }
@@ -3087,7 +3125,19 @@ export type BindDatasetMutation = (
   { instanceEditor: (
     { nodeEditor: (
       { bindDataset:
-        | { __typename: 'ConstraintViolations' }
+        | (
+          { conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'ConstraintViolations' }
+        )
         | (
           { id: string }
           & { __typename: 'DatasetPortType' }
@@ -3119,7 +3169,19 @@ export type UpdateDatasetBindingMutation = (
   { instanceEditor: (
     { bindingEditor: (
       { updateDatasetBinding:
-        | { __typename: 'ConstraintViolations' }
+        | (
+          { conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'ConstraintViolations' }
+        )
         | (
           { id: string }
           & { __typename: 'DatasetPortType' }
@@ -3151,7 +3213,19 @@ export type UpdateEdgeBindingMutation = (
   { instanceEditor: (
     { bindingEditor: (
       { updateEdgeBinding:
-        | { __typename: 'ConstraintViolations' }
+        | (
+          { conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'ConstraintViolations' }
+        )
         | (
           { id: string }
           & { __typename: 'NodeEdgeType' }

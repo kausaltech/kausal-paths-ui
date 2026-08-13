@@ -247,6 +247,7 @@
   "editor-cards-dimensions-desc": "Dimensionen und ihre Kategorien definieren.",
   "editor-cards-nodes": "Knoten",
   "editor-cards-nodes-desc": "Den Wirkungsgraphen bearbeiten: Knoten, Kanten und Formeln.",
+  "editor-constraint-conflicts-title": "Änderung abgelehnt: sie würde Konflikte im Modell verursachen",
   "editor-draft": "Entwurf",
   "editor-draft-mode-disabled": "Der Entwurfsmodus ist noch nicht verfügbar — alle Änderungen wirken sich direkt auf das veröffentlichte Modell aus.",
   "editor-draft-never-published": "Entwurf · nie veröffentlicht",

@@ -41,6 +41,7 @@ import NodeDetailsPanel from './NodeDetailsPanel';
 import NodeDisplaySettingsMenu from './NodeDisplaySettingsMenu';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
+import { nodeNamesByUuidVar } from './constraintViolations';
 import {
   type CachedPosition,
   type CachedPositionSource,
@@ -273,6 +274,12 @@ function FlowEditor(props: {
   }
 
   const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
+
+  // Keep the uuid → name lookup current so the constraint-violations notice
+  // can name the nodes a conflict points at (conflicts reference UUIDs only).
+  useEffect(() => {
+    nodeNamesByUuidVar(new Map(props.nodes.map((n) => [n.uuid, n.name])));
+  }, [props.nodes]);
 
   // The model's outcome nodes (explicitly flagged in the model, e.g. net
   // emissions): impact targets offered by the action metrics drawer.

@@ -247,6 +247,7 @@
   "editor-cards-dimensions-desc": "Määritä dimensiot ja niiden luokat.",
   "editor-cards-nodes": "Solmut",
   "editor-cards-nodes-desc": "Muokkaa kausaaligraafia: solmut, kaaret ja kaavat.",
+  "editor-constraint-conflicts-title": "Muutos hylättiin: se aiheuttaisi ristiriitoja malliin",
   "editor-draft": "Luonnos",
   "editor-draft-mode-disabled": "Luonnostila ei ole vielä käytettävissä — kaikki muutokset vaikuttavat suoraan julkaistuun malliin.",
   "editor-draft-never-published": "Luonnos · ei koskaan julkaistu",

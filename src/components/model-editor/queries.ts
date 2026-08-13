@@ -382,6 +382,35 @@ const EDITOR_OPERATION_INFO_FIELDS = gql`
   }
 `;
 
+/**
+ * Structural conflicts the constraint solver found in a rejected write.
+ * Returned instead of the success type by createEdge, bindDataset,
+ * updateDatasetBinding, updateEdgeBinding and publishModelInstance; nothing
+ * was written when this comes back.
+ */
+export const CONSTRAINT_VIOLATIONS_FIELDS = gql`
+  fragment ConstraintViolationsFields on ConstraintViolations {
+    conflicts {
+      code
+      message
+      origins {
+        kind
+        nodeUuid
+        portId
+        bindingId
+        transformationIndex
+      }
+      value {
+        kind
+        direction
+        nodeUuid
+        portId
+        bindingId
+      }
+    }
+  }
+`;
+
 export const INSTANCE_EDITOR_PUBLISH_STATE = gql`
   fragment InstanceEditorPublishState on InstanceEditor {
     live
@@ -418,11 +447,15 @@ export const PUBLISH_MODEL_INSTANCE = gql`
         ... on OperationInfo {
           ...EditorOperationInfoFields
         }
+        ... on ConstraintViolations {
+          ...ConstraintViolationsFields
+        }
       }
     }
   }
   ${INSTANCE_EDITOR_PUBLISH_STATE}
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const CREATE_NODE = gql`
@@ -500,10 +533,14 @@ export const CREATE_EDGE = gql`
         ... on OperationInfo {
           ...EditorOperationInfoFields
         }
+        ... on ConstraintViolations {
+          ...ConstraintViolationsFields
+        }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const BIND_DATASET = gql`
@@ -518,11 +555,15 @@ export const BIND_DATASET = gql`
           ... on OperationInfo {
             ...EditorOperationInfoFields
           }
+          ... on ConstraintViolations {
+            ...ConstraintViolationsFields
+          }
         }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const UPDATE_DATASET_BINDING = gql`
@@ -542,11 +583,15 @@ export const UPDATE_DATASET_BINDING = gql`
           ... on OperationInfo {
             ...EditorOperationInfoFields
           }
+          ... on ConstraintViolations {
+            ...ConstraintViolationsFields
+          }
         }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const UPDATE_EDGE_BINDING = gql`
@@ -566,11 +611,15 @@ export const UPDATE_EDGE_BINDING = gql`
           ... on OperationInfo {
             ...EditorOperationInfoFields
           }
+          ... on ConstraintViolations {
+            ...ConstraintViolationsFields
+          }
         }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const ADD_INPUT_PORT = gql`

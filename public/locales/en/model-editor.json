@@ -274,6 +274,7 @@
   "editor-cards-dimensions-desc": "Define dimensions and their categories.",
   "editor-cards-nodes": "Nodes",
   "editor-cards-nodes-desc": "Edit the causal graph: nodes, edges, and formulas.",
+  "editor-constraint-conflicts-title": "Change rejected: it would create conflicts in the model",
   "editor-draft": "Draft",
   "editor-draft-mode-disabled": "Draft mode is not yet available — all edits apply directly to the published model.",
   "editor-draft-never-published": "Draft · never published",

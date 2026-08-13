@@ -41,6 +41,7 @@ import type {
   PublishModelInstanceMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { constraintViolationsVar } from '@/components/model-editor/constraintViolations';
 import {
   type EditableNodeField,
   type MockNodeEdit,
@@ -240,6 +241,12 @@ export default function ModelEditorLandingPage() {
         refetchQueries: ['EditorPublishState', 'ModelEditorLandingData'],
       });
       const payload = result.data?.instanceEditor.publishModelInstance;
+      if (payload?.__typename === 'ConstraintViolations') {
+        // Publishing is blocked while the draft has structural conflicts;
+        // the top-level ConstraintViolationsNotice lists them.
+        constraintViolationsVar(payload.conflicts);
+        return;
+      }
       if (payload?.__typename === 'OperationInfo') {
         const msg =
           payload.messages.map((m) => m.message).join('; ') || t('editor-model-publish-failed');
