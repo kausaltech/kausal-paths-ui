@@ -482,6 +482,7 @@
   "nodes-port-derived-dims": "Derived dims",
   "nodes-port-derived-dims-unknown": "Not determined",
   "nodes-port-derived-shape": "Derived shape",
+  "nodes-port-derived-value": "{value} (derived)",
   "nodes-port-dimensions": "Dimensions",
   "nodes-port-edges": "Edges",
   "nodes-port-id": "ID",

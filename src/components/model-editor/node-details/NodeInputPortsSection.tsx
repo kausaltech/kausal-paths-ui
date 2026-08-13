@@ -59,6 +59,7 @@ import {
   getCategoryForNode,
   getStyleForNode,
 } from './shared';
+import { useDimensionNames } from './useDimensionNames';
 
 type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
 
@@ -135,11 +136,15 @@ function PortTooltipContent({
   roleLabel: string | null;
 }) {
   const t = useTranslations('model-editor');
+  const dimensionNames = useDimensionNames();
   const datasetBindingCount = port.bindings.filter(
     (b) => b.__typename === 'DatasetPortType'
   ).length;
   const edgeBindingCount = port.bindings.filter((b) => b.__typename === 'NodeEdgeType').length;
   const datasetUnit = port.unit ? null : boundDatasetUnit(port);
+  const shape = port.effectiveShape ?? null;
+  const shapeDimensions =
+    shape?.dimensionUuids?.map((uuid) => dimensionNames.get(uuid) ?? uuid) ?? null;
 
   return (
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
@@ -166,6 +171,24 @@ function PortTooltipContent({
         label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
+      {shape && (
+        <>
+          <PortInfoRow
+            label={t('nodes-port-derived-shape')}
+            value={`${shape.quantity ?? '—'} · ${shape.unit?.short ?? '—'}`}
+          />
+          <PortInfoRow
+            label={t('nodes-port-derived-dims')}
+            value={
+              shapeDimensions === null
+                ? t('nodes-port-derived-dims-unknown')
+                : shapeDimensions.length > 0
+                  ? shapeDimensions.join(', ')
+                  : '—'
+            }
+          />
+        </>
+      )}
       <PortInfoRow
         label={t('nodes-port-bindings')}
         value={t('nodes-port-bindings-value', {
@@ -633,9 +656,22 @@ export default function NodeInputPortsSection({
               ? (singleEdgeTags[0] ?? singleSourceNode.identifier)
               : null;
 
+        // Declared constraints when the port has any; otherwise fall back to
+        // the solver-derived shape (marked as derived — it's a fact about
+        // the current wiring, not a constraint the port imposes).
+        const declaredQuantityAndUnit = [port.quantity, port.unit?.short]
+          .filter(Boolean)
+          .join(' · ');
+        const derivedQuantityAndUnit = declaredQuantityAndUnit
+          ? ''
+          : [port.effectiveShape?.quantity, port.effectiveShape?.unit?.short]
+              .filter(Boolean)
+              .join(' · ');
         const quantityAndUnit =
-          [port.quantity, port.unit?.short].filter(Boolean).join(' · ') ||
-          t('nodes-port-unrestricted');
+          declaredQuantityAndUnit ||
+          (derivedQuantityAndUnit
+            ? t('nodes-port-derived-value', { value: derivedQuantityAndUnit })
+            : t('nodes-port-unrestricted'));
 
         return (
           <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>

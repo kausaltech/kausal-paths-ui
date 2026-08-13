@@ -455,6 +455,7 @@
   "nodes-port-derived-dims": "Abgeleitete Dimensionen",
   "nodes-port-derived-dims-unknown": "Nicht bestimmbar",
   "nodes-port-derived-shape": "Abgeleitete Form",
+  "nodes-port-derived-value": "{value} (abgeleitet)",
   "nodes-port-dimensions": "Dimensionen",
   "nodes-port-edges": "Kanten",
   "nodes-port-id": "ID",

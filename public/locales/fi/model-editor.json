@@ -455,6 +455,7 @@
   "nodes-port-derived-dims": "Johdetut dimensiot",
   "nodes-port-derived-dims-unknown": "Ei määritettävissä",
   "nodes-port-derived-shape": "Johdettu muoto",
+  "nodes-port-derived-value": "{value} (johdettu)",
   "nodes-port-dimensions": "Dimensiot",
   "nodes-port-edges": "Kaaret",
   "nodes-port-id": "Tunnus",
