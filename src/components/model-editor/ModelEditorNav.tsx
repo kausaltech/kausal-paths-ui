@@ -45,6 +45,7 @@ import {
   House,
   People,
   Search,
+  Signpost2,
   XLg,
 } from 'react-bootstrap-icons';
 
@@ -86,6 +87,19 @@ const GET_DATASET_SEARCH_LIST = gql`
     }
   }
 `;
+
+const GET_ACTIVE_SCENARIO = gql`
+  query EditorActiveScenario {
+    activeScenario {
+      id
+      name
+    }
+  }
+`;
+
+type ActiveScenarioQuery = {
+  activeScenario: { id: string; name: string } | null;
+};
 
 const GET_DIMENSION_SEARCH_LIST = gql`
   query EditorDimensionSearchList {
@@ -196,6 +210,41 @@ const ALL_OUTCOMES_VALUE = '__all__';
  * an all-clear tick once a clean compute has settled). Stays silent until the
  * first status arrives so it doesn't flash on load.
  */
+/**
+ * Name of the scenario the editor's computations currently run under. The
+ * scenario is session-level state shared with the public UI (selections and
+ * action toggles there change it), so without this indicator the editor's
+ * numbers can silently reflect a scenario picked elsewhere.
+ */
+function ActiveScenarioIndicator() {
+  const t = useTranslations('model-editor');
+  const { data } = useQuery<ActiveScenarioQuery>(GET_ACTIVE_SCENARIO, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const scenario = data?.activeScenario ?? null;
+  if (!scenario) return null;
+
+  return (
+    <Tooltip title={t('editor-active-scenario')} arrow>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          color: 'text.secondary',
+          minWidth: 0,
+        }}
+        aria-label={t('editor-active-scenario')}
+      >
+        <Signpost2 size={12} style={{ flexShrink: 0 }} />
+        <Typography variant="caption" noWrap sx={{ fontSize: 11 }}>
+          {scenario.name}
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
+}
+
 function ModelStatusIndicator() {
   const t = useTranslations('model-editor');
   const statuses = useReactiveVar(nodeStatusVar);
@@ -337,10 +386,7 @@ export default function ModelEditorNav() {
 
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
         <PreviewModeToggle />
-        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
-          <ModelStatusIndicator />
-        </Box>
-        <Divider orientation="vertical" flexItem />
+        <Divider orientation="vertical" flexItem sx={{ ml: 'auto' }} />
         <Button
           size="small"
           color="inherit"
@@ -352,6 +398,21 @@ export default function ModelEditorNav() {
           {t(activeTab.labelKey)}
         </Button>
       </Box>
+
+      {/* Computation context for the node graph: the active scenario and the
+          model-wide fault status. Both describe the computed values shown on
+          the graph, so the row only appears on the Nodes view. */}
+      {mode === 'nodes' && (
+        <>
+          <Divider />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1.5, py: 0.5 }}>
+            <ActiveScenarioIndicator />
+            <Box sx={{ ml: 'auto', flexShrink: 0 }}>
+              <ModelStatusIndicator />
+            </Box>
+          </Box>
+        </>
+      )}
 
       {mode !== null && (
         <>
