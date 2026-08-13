@@ -12,6 +12,7 @@ import {
   CardActionArea,
   CardContent,
   Chip,
+  Collapse,
   Container,
   Divider,
   List,
@@ -29,6 +30,8 @@ import { useTranslations } from 'next-intl';
 import {
   ArrowRight,
   Box as BoxIcon,
+  CaretDownFill,
+  CaretRightFill,
   CircleFill,
   CloudUpload,
   Database,
@@ -83,6 +86,31 @@ const GET_LANDING_DATA = gql`
         }
       }
     }
+    scenarios {
+      id
+      identifier
+      name
+      isDefault
+      allActionsEnabled
+    }
+    parameters {
+      __typename
+      id
+      label
+      ... on BoolParameterType {
+        boolDefault: defaultValue
+      }
+      ... on NumberParameterType {
+        numberDefault: defaultValue
+        unit {
+          id
+          short
+        }
+      }
+      ... on StringParameterType {
+        stringDefault: defaultValue
+      }
+    }
   }
   ${INSTANCE_EDITOR_PUBLISH_STATE}
 `;
@@ -93,6 +121,39 @@ type LandingConflict = {
   origins: { nodeUuid: string | null }[];
   value: { nodeUuid: string | null } | null;
 };
+
+type LandingScenario = {
+  id: string;
+  identifier: string;
+  name: string;
+  isDefault: boolean;
+  allActionsEnabled: boolean;
+};
+
+type LandingParameter = {
+  __typename: string;
+  id: string;
+  label: string | null;
+  boolDefault?: boolean | null;
+  numberDefault?: number | null;
+  unit?: { short: string } | null;
+  stringDefault?: string | null;
+};
+
+function formatParameterDefault(p: LandingParameter): string {
+  switch (p.__typename) {
+    case 'BoolParameterType':
+      return p.boolDefault == null ? '—' : String(p.boolDefault);
+    case 'NumberParameterType':
+      return p.numberDefault == null
+        ? '—'
+        : `${p.numberDefault}${p.unit?.short ? ` ${p.unit.short}` : ''}`;
+    case 'StringParameterType':
+      return p.stringDefault ?? '—';
+    default:
+      return '—';
+  }
+}
 
 type LandingDataQuery = {
   instance: {
@@ -108,6 +169,8 @@ type LandingDataQuery = {
       constraintConflicts: LandingConflict[];
     } | null;
   };
+  scenarios: LandingScenario[];
+  parameters: LandingParameter[];
 };
 
 type ToastState = { severity: 'success' | 'error'; message: string } | null;
@@ -152,6 +215,17 @@ function getEditedFieldLabels(edit: MockNodeEdit, t: ReturnType<typeof useTransl
   return labels;
 }
 
+function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', gap: 2, alignItems: 'baseline' }}>
+      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 180, flexShrink: 0 }}>
+        {label}
+      </Typography>
+      <Box sx={{ minWidth: 0 }}>{children}</Box>
+    </Box>
+  );
+}
+
 function formatRelative(
   iso: string | null | undefined,
   t: ReturnType<typeof useTranslations>
@@ -188,6 +262,7 @@ export default function ModelEditorLandingPage() {
   >(PUBLISH_MODEL_INSTANCE);
 
   const [toast, setToast] = useState<ToastState>(null);
+  const [conflictsOpen, setConflictsOpen] = useState(false);
 
   const editedRows = useMemo<EditedNodeRow[]>(() => {
     const nodes = data?.instance.nodes ?? [];
@@ -233,6 +308,10 @@ export default function ModelEditorLandingPage() {
     () => new Map((data?.instance.nodes ?? []).map((n) => [n.uuid, n.name])),
     [data]
   );
+  // The root `parameters` query returns only the instance-level (global)
+  // parameters that are visible — node-scoped ones are never included, so no
+  // filtering is needed here.
+  const globalParameters = data?.parameters ?? [];
   const conflictNodeNames = (conflict: LandingConflict): string[] => {
     const uuids = [...conflict.origins.map((o) => o.nodeUuid), conflict.value?.nodeUuid ?? null];
     return [...new Set(uuids.filter((u): u is string => u != null))]
@@ -431,26 +510,40 @@ export default function ModelEditorLandingPage() {
 
         {isDraftView && blockingConflicts.length > 0 && (
           <Alert severity="warning" sx={{ mt: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-              {t('editor-publish-blocked-conflicts', { count: blockingConflicts.length })}
-            </Typography>
-            <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
-              {blockingConflicts.map((conflict, i) => {
-                const names = conflictNodeNames(conflict);
-                return (
-                  <Box component="li" key={i}>
-                    <Typography variant="body2" sx={{ fontSize: 13 }}>
-                      {conflict.message}
-                    </Typography>
-                    {names.length > 0 && (
-                      <Typography variant="caption" color="text.secondary">
-                        {names.join(', ')}
-                      </Typography>
-                    )}
-                  </Box>
-                );
-              })}
+            <Box
+              onClick={() => setConflictsOpen((v) => !v)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+            >
+              {conflictsOpen ? <CaretDownFill size={11} /> : <CaretRightFill size={11} />}
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {t('editor-publish-blocked-conflicts', { count: blockingConflicts.length })}
+              </Typography>
             </Box>
+            <Collapse in={conflictsOpen}>
+              <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5 }}>
+                {blockingConflicts.map((conflict, i) => {
+                  const names = conflictNodeNames(conflict);
+                  return (
+                    <Box component="li" key={i}>
+                      <Typography variant="body2" sx={{ fontSize: 13 }}>
+                        {conflict.message}
+                      </Typography>
+                      {names.length > 0 && (
+                        <Typography variant="caption" color="text.secondary">
+                          {names.join(', ')}
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Collapse>
           </Alert>
         )}
 
@@ -525,6 +618,81 @@ export default function ModelEditorLandingPage() {
             </List>
           </>
         )}
+      </Paper>
+
+      {/* General model properties from the instance configuration. Read-only
+          for now; this box is where they'll become editable. */}
+      <Paper variant="outlined" sx={{ p: 3, mt: 3 }}>
+        <Typography variant="h3" sx={{ fontSize: 18, mb: 0.5 }}>
+          {t('editor-model-properties')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {t('editor-model-properties-hint')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <PropertyRow label={t('editor-prop-framework')}>
+            <Typography variant="body2">
+              {instance.frameworkConfig?.framework?.name ?? '—'}
+            </Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-owner')}>
+            <Typography variant="body2">{instance.owner ?? '—'}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-reference-year')}>
+            <Typography variant="body2">{instance.referenceYear ?? '—'}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-historical-range')}>
+            <Typography variant="body2">
+              {instance.minimumHistoricalYear}–{instance.maximumHistoricalYear ?? '—'}
+            </Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-model-end-year')}>
+            <Typography variant="body2">{instance.modelEndYear}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-target-year')}>
+            <Typography variant="body2">{instance.targetYear ?? '—'}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-languages')}>
+            <Typography variant="body2">
+              {[
+                `${instance.defaultLanguage} (${t('editor-prop-default-marker')})`,
+                ...instance.supportedLanguages.filter((l) => l !== instance.defaultLanguage),
+              ].join(', ')}
+            </Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-scenarios')}>
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {(data?.scenarios ?? []).map((scenario) => (
+                <Chip
+                  key={scenario.id}
+                  label={
+                    scenario.isDefault
+                      ? `${scenario.name} (${t('editor-prop-default-marker')})`
+                      : scenario.name
+                  }
+                  size="small"
+                  variant="outlined"
+                  color={scenario.isDefault ? 'primary' : 'default'}
+                  title={scenario.identifier}
+                />
+              ))}
+              {data?.scenarios?.length === 0 && <Typography variant="body2">—</Typography>}
+            </Box>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-parameters')}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+              {globalParameters.map((p) => (
+                <Typography key={p.id} variant="body2" title={p.id}>
+                  {p.label ?? p.id}:{' '}
+                  <Box component="span" sx={{ color: 'text.secondary' }}>
+                    {formatParameterDefault(p)}
+                  </Box>
+                </Typography>
+              ))}
+              {globalParameters.length === 0 && <Typography variant="body2">—</Typography>}
+            </Box>
+          </PropertyRow>
+        </Box>
       </Paper>
 
       <Snackbar

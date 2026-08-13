@@ -645,7 +645,30 @@ export type ModelEditorLandingDataQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
-  ) }
+  ), scenarios: Array<(
+    { id: string, identifier: string, name: string, isDefault: boolean, allActionsEnabled: boolean }
+    & { __typename: 'ScenarioType' }
+  )>, parameters: Array<
+    | (
+      { id: string, label: string | null, boolDefault: boolean | null }
+      & { __typename: 'BoolParameterType' }
+    )
+    | (
+      { id: string, label: string | null, numberDefault: number | null, unit: (
+        { id: string, short: string }
+        & { __typename: 'UnitType' }
+      ) | null }
+      & { __typename: 'NumberParameterType' }
+    )
+    | (
+      { id: string, label: string | null, stringDefault: string | null }
+      & { __typename: 'StringParameterType' }
+    )
+    | (
+      { id: string, label: string | null }
+      & { __typename: 'UnknownParameterType' }
+    )
+  > }
   & { __typename: 'Query' }
 );
 
@@ -940,6 +963,17 @@ export type EditorDatasetSearchListQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type EditorActiveScenarioQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorActiveScenarioQuery = (
+  { activeScenario: (
+    { id: string, name: string }
+    & { __typename: 'ScenarioType' }
   ) }
   & { __typename: 'Query' }
 );
