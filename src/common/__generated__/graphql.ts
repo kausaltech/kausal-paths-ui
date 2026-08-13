@@ -628,7 +628,7 @@ export type ModelEditorLandingDataQueryVariables = Exact<{ [key: string]: never;
 
 export type ModelEditorLandingDataQuery = (
   { instance: (
-    { id: string, nodes: Array<(
+    { id: string, siteTitle: string, nodes: Array<(
       { id: string, name: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, editor: (
@@ -646,11 +646,8 @@ export type MyEditableInstancesQueryVariables = Exact<{ [key: string]: never; }>
 export type MyEditableInstancesQuery = (
   { me: (
     { id: string, email: string, editableInstances: Array<(
-      { id: string, identifier: string, name: string, themeIdentifier: string | null, frameworkConfig: (
-        { id: string, organizationName: string | null, viewUrl: string | null, framework: (
-          { id: string, identifier: string, name: string }
-          & { __typename: 'Framework' }
-        ) }
+      { id: string, identifier: string, name: string, siteTitle: string, themeIdentifier: string | null, frameworkConfig: (
+        { id: string, organizationName: string | null, viewUrl: string | null }
         & { __typename: 'FrameworkConfig' }
       ) | null }
       & { __typename: 'InstanceType' }
@@ -2975,7 +2972,7 @@ export type EditorPublishStateQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type EditorPublishStateQuery = (
   { instance: (
-    { id: string, editor: (
+    { id: string, siteTitle: string, editor: (
       { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
       & { __typename: 'InstanceEditor' }
     ) | null }
@@ -5719,7 +5716,7 @@ export type InstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type InstanceContextQuery = (
   { instance: (
-    { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string, leadParagraph: string | null, frameworkConfig: (
+    { id: string, name: string, siteTitle: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string, leadParagraph: string | null, frameworkConfig: (
       { id: string, framework: (
         { id: string, identifier: string, name: string }
         & { __typename: 'Framework' }

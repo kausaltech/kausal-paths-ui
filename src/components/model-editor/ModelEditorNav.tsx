@@ -244,6 +244,9 @@ export default function ModelEditorNav() {
   const pathname = usePathname();
   const router = useRouter();
   const instance = useInstance();
+  // Framework-aware display title; the static instance context only carries
+  // the plain name.
+  const { siteTitle } = useEditorPublishState();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [query, setQuery] = useState('');
   const base = getModelEditorBase(pathname);
@@ -327,7 +330,7 @@ export default function ModelEditorNav() {
           '&:hover': { color: 'primary.main' },
         }}
       >
-        {instance.name}
+        {siteTitle ?? instance.name}
       </MuiLink>
 
       <Divider />
@@ -527,7 +530,7 @@ function PreviewModeToggle() {
   const t = useTranslations('model-editor');
   const client = useApolloClient();
   const mode = useReactiveVar(editorPreviewModeVar);
-  const publishState = useEditorPublishState();
+  const { editor: publishState } = useEditorPublishState();
   const viewingPublished = mode === 'PUBLISHED';
   // Before the first publish there is no published revision to preview —
   // the backend would just serve the working copy again.

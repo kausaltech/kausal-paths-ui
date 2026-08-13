@@ -61,6 +61,7 @@ const GET_LANDING_DATA = gql`
   query ModelEditorLandingData {
     instance {
       id
+      siteTitle
       nodes {
         id
         name
@@ -76,6 +77,7 @@ const GET_LANDING_DATA = gql`
 type LandingDataQuery = {
   instance: {
     id: string;
+    siteTitle: string;
     nodes: { id: string; name: string }[];
     editor: {
       live: boolean;
@@ -274,7 +276,7 @@ export default function ModelEditorLandingPage() {
           {t('editor-model-landing')}
         </Typography>
         <Typography variant="h1" sx={{ mt: 0.5 }}>
-          {instance.name}
+          {data?.instance.siteTitle ?? instance.name}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
           {instance.leadParagraph ?? t('editor-edit-the-model')}

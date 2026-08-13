@@ -74,9 +74,9 @@ function buildSiteContext(
   const instance = data.instance;
   const assetPrefix = getAssetPrefix();
 
-  const siteTitle = instance?.frameworkConfig?.framework?.name
-    ? `${instance.frameworkConfig.framework.name}: ${instance.name}`
-    : instance.name;
+  // Framework-aware display title, composed by the backend (it knows e.g.
+  // not to prefix the framework's root instance).
+  const siteTitle = instance.siteTitle;
 
   const siteContext = {
     scenarios,
@@ -143,9 +143,7 @@ export async function generateMetadata(props: LayoutProps): Promise<Metadata> {
   const data = resp!;
   const theme = await loadTheme(data.instance.themeIdentifier || 'default');
 
-  const siteName = data.instance?.frameworkConfig?.framework?.name
-    ? `${data.instance.frameworkConfig.framework.name}: ${data.instance.name}`
-    : data.instance.name;
+  const siteName = data.instance.siteTitle;
   return {
     robots: 'noindex, nofollow',
     title: siteName,

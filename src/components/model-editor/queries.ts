@@ -422,6 +422,7 @@ export const GET_INSTANCE_EDITOR_PUBLISH_STATE = gql`
   query EditorPublishState {
     instance {
       id
+      siteTitle
       editor {
         ...InstanceEditorPublishState
       }

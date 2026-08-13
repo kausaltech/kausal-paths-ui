@@ -13,9 +13,11 @@ import {
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-import { ArrowClockwise, BoxArrowUpRight } from 'react-bootstrap-icons';
+import { useTranslations } from 'next-intl';
+import { ArrowClockwise, Compass, PencilSquare } from 'react-bootstrap-icons';
 
 import type { MyEditableInstancesQuery } from '@/common/__generated__/graphql';
+import { useInstance } from '@/common/instance';
 
 const GET_MY_EDITABLE_INSTANCES = gql`
   query MyEditableInstances {
@@ -26,16 +28,12 @@ const GET_MY_EDITABLE_INSTANCES = gql`
         id
         identifier
         name
+        siteTitle
         themeIdentifier
         frameworkConfig {
           id
           organizationName
           viewUrl
-          framework {
-            id
-            identifier
-            name
-          }
         }
       }
     }
@@ -43,6 +41,8 @@ const GET_MY_EDITABLE_INSTANCES = gql`
 `;
 
 export default function MyModelsPage() {
+  const t = useTranslations('model-editor');
+  const currentInstance = useInstance();
   const { data, loading, error, refetch } = useQuery<MyEditableInstancesQuery>(
     GET_MY_EDITABLE_INSTANCES,
     {
@@ -99,39 +99,58 @@ export default function MyModelsPage() {
       ) : (
         <Stack spacing={2}>
           {instances.map((instance) => {
-            const framework = instance.frameworkConfig?.framework;
             const orgName = instance.frameworkConfig?.organizationName;
             const viewUrl = instance.frameworkConfig?.viewUrl;
+            const editUrl = viewUrl ? `${viewUrl.replace(/\/$/, '')}/model` : null;
+            const isCurrent = instance.id === currentInstance.id;
             return (
               <Paper key={instance.id} variant="outlined" sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                       <Typography variant="h3" sx={{ fontSize: 16 }}>
-                        {instance.name}
+                        {instance.siteTitle}
                       </Typography>
-                      {framework && <Chip label={framework.name} size="small" />}
+                      {isCurrent && (
+                        <Chip
+                          label={t('editor-this-model')}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      )}
                     </Box>
                     {orgName && (
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                         {orgName}
                       </Typography>
                     )}
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.disabled">
                       {instance.identifier}
                     </Typography>
                   </Box>
-                  {viewUrl && (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      endIcon={<BoxArrowUpRight size={12} />}
-                      href={viewUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open
-                    </Button>
+                  {editUrl && viewUrl && (
+                    <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                      {/* Same-tab navigation: entering another model's editor
+                          replaces this session's context on purpose. */}
+                      <Button
+                        size="small"
+                        href={editUrl}
+                        disabled={isCurrent}
+                        startIcon={<PencilSquare size={12} />}
+                      >
+                        {t('common-edit-model')}
+                      </Button>
+                      <Button
+                        size="small"
+                        href={viewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        startIcon={<Compass size={12} />}
+                      >
+                        {t('common-explore')}
+                      </Button>
+                    </Box>
                   )}
                 </Box>
               </Paper>
