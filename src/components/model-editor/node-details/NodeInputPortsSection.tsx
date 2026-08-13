@@ -188,6 +188,7 @@ function inputPortsToInput(ports: readonly InputPort[]): InputPortInput[] {
     identifier: p.identifier ?? null,
     label: p.label ?? null,
     quantity: p.quantity ?? null,
+    role: p.role ?? null,
     unit: p.unit?.standard ?? null,
     multi: p.multi ?? false,
     requiredDimensions: [...p.requiredDimensions],

@@ -130,6 +130,7 @@ export function useAddInputPort() {
               quantity: args.quantity ?? null,
               unit: args.unit ?? null,
               multi: args.multi ?? false,
+              role: null,
               requiredDimensions: args.requiredDimensions?.length ? args.requiredDimensions : null,
               supportedDimensions: args.supportedDimensions?.length
                 ? args.supportedDimensions

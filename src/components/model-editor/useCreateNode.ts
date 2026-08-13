@@ -68,6 +68,7 @@ function bareInputPort(): InputPortInput {
     id: crypto.randomUUID(),
     identifier: null,
     label: null,
+    role: null,
     quantity: null,
     unit: null,
     multi: false,

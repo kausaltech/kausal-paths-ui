@@ -264,6 +264,7 @@ export const GET_NODE_GRAPH = gql`
           label
           multi
           quantity
+          role
           unit {
             id
             short

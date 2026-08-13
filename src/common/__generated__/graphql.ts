@@ -234,6 +234,9 @@ export type InputPortInput = {
   multi: boolean;
   quantity: string | null | undefined;
   requiredDimensions: Array<string> | null | undefined;
+  /** Semantic role from the node class's input port declarations. */
+  role: string | null | undefined;
+  /** @deprecated Never had solver semantics and is no longer stored. */
   supportedDimensions: Array<string> | null | undefined;
   unit: string | null | undefined;
 };
@@ -2169,7 +2172,7 @@ export type NodeGraphQuery = (
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
             { inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
                 { id: string, short: string, standard: string, dimensionality: Array<(
                   { dimension: string, value: number }
                   & { __typename: 'UnitDimensionality' }
@@ -2343,7 +2346,7 @@ export type NodeGraphQuery = (
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
             { inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
                 { id: string, short: string, standard: string, dimensionality: Array<(
                   { dimension: string, value: number }
                   & { __typename: 'UnitDimensionality' }
@@ -2526,7 +2529,7 @@ type EditorNodeFields_ActionNode_Fragment = (
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
       { inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
           { id: string, short: string, standard: string, dimensionality: Array<(
             { dimension: string, value: number }
             & { __typename: 'UnitDimensionality' }
@@ -2701,7 +2704,7 @@ type EditorNodeFields_Node_Fragment = (
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
       { inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
           { id: string, short: string, standard: string, dimensionality: Array<(
             { dimension: string, value: number }
             & { __typename: 'UnitDimensionality' }
@@ -2960,6 +2963,7 @@ export type PublishModelInstanceMutationVariables = Exact<{
 export type PublishModelInstanceMutation = (
   { instanceEditor: (
     { publishModelInstance:
+      | { __typename: 'ConstraintViolations' }
       | (
         { id: string, editor: (
           { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
@@ -3047,6 +3051,7 @@ export type CreateEdgeMutationVariables = Exact<{
 export type CreateEdgeMutation = (
   { instanceEditor: (
     { createEdge:
+      | { __typename: 'ConstraintViolations' }
       | (
         { id: string, fromRef: (
           { nodeUuid: string, portId: string }
@@ -3082,6 +3087,7 @@ export type BindDatasetMutation = (
   { instanceEditor: (
     { nodeEditor: (
       { bindDataset:
+        | { __typename: 'ConstraintViolations' }
         | (
           { id: string }
           & { __typename: 'DatasetPortType' }
@@ -3113,6 +3119,7 @@ export type UpdateDatasetBindingMutation = (
   { instanceEditor: (
     { bindingEditor: (
       { updateDatasetBinding:
+        | { __typename: 'ConstraintViolations' }
         | (
           { id: string }
           & { __typename: 'DatasetPortType' }
@@ -3144,6 +3151,7 @@ export type UpdateEdgeBindingMutation = (
   { instanceEditor: (
     { bindingEditor: (
       { updateEdgeBinding:
+        | { __typename: 'ConstraintViolations' }
         | (
           { id: string }
           & { __typename: 'NodeEdgeType' }

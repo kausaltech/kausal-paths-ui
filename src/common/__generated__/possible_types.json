@@ -22,6 +22,7 @@
       "UserNotFoundError"
     ],
     "BindDatasetPayload": [
+      "ConstraintViolations",
       "DatasetPortType",
       "OperationInfo"
     ],
@@ -42,6 +43,7 @@
       "OperationInfo"
     ],
     "CreateEdgePayload": [
+      "ConstraintViolations",
       "NodeEdgeType",
       "OperationInfo"
     ],
@@ -141,6 +143,7 @@
       "TagOperationType"
     ],
     "PublishModelInstancePayload": [
+      "ConstraintViolations",
       "InstanceType",
       "OperationInfo"
     ],
@@ -215,6 +218,7 @@
       "OperationInfo"
     ],
     "UpdateDatasetBindingPayload": [
+      "ConstraintViolations",
       "DatasetPortType",
       "OperationInfo"
     ],
@@ -227,6 +231,7 @@
       "OperationInfo"
     ],
     "UpdateEdgeBindingPayload": [
+      "ConstraintViolations",
       "NodeEdgeType",
       "OperationInfo"
     ],
