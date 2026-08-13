@@ -64,27 +64,48 @@ const GET_LANDING_DATA = gql`
       siteTitle
       nodes {
         id
+        uuid
         name
       }
       editor {
         ...InstanceEditorPublishState
+        # Structural conflicts in the draft; publishing is blocked while any
+        # exist, so surface them before the user hits the button.
+        constraintConflicts {
+          code
+          message
+          origins {
+            nodeUuid
+          }
+          value {
+            nodeUuid
+          }
+        }
       }
     }
   }
   ${INSTANCE_EDITOR_PUBLISH_STATE}
 `;
 
+type LandingConflict = {
+  code: string;
+  message: string;
+  origins: { nodeUuid: string | null }[];
+  value: { nodeUuid: string | null } | null;
+};
+
 type LandingDataQuery = {
   instance: {
     id: string;
     siteTitle: string;
-    nodes: { id: string; name: string }[];
+    nodes: { id: string; uuid: string; name: string }[];
     editor: {
       live: boolean;
       hasUnpublishedChanges: boolean;
       firstPublishedAt: string | null;
       lastPublishedAt: string | null;
       draftHeadToken: string | null;
+      constraintConflicts: LandingConflict[];
     } | null;
   };
 };
@@ -202,6 +223,22 @@ export default function ModelEditorLandingPage() {
   const base = getModelEditorBase(pathname);
   const editor = data?.instance.editor ?? null;
   const hasUnpublishedChanges = editor?.hasUnpublishedChanges ?? false;
+  // Structural conflicts block publishing server-side; resolve the nodes
+  // each conflict points at so the list reads by name, not UUID. Until the
+  // check result has arrived, treat publishability as unknown — the button
+  // must not be enabled on the optimistic default.
+  const conflictsKnown = editor?.constraintConflicts != null;
+  const blockingConflicts = editor?.constraintConflicts ?? [];
+  const nodeNameByUuid = useMemo(
+    () => new Map((data?.instance.nodes ?? []).map((n) => [n.uuid, n.name])),
+    [data]
+  );
+  const conflictNodeNames = (conflict: LandingConflict): string[] => {
+    const uuids = [...conflict.origins.map((o) => o.nodeUuid), conflict.value?.nodeUuid ?? null];
+    return [...new Set(uuids.filter((u): u is string => u != null))]
+      .map((u) => nodeNameByUuid.get(u))
+      .filter((n): n is string => n != null);
+  };
   const hasMockEdits = editedRows.length > 0;
   const lastPublishedLabel = editor?.lastPublishedAt ? df.dateTime(editor.lastPublishedAt) : null;
   const lastPublishedRelative = formatRelative(editor?.lastPublishedAt, t);
@@ -376,19 +413,46 @@ export default function ModelEditorLandingPage() {
               color="primary"
               size="small"
               startIcon={<CloudUpload size={14} />}
-              disabled={publishing}
+              disabled={publishing || !conflictsKnown || blockingConflicts.length > 0}
               onClick={() => {
                 void handlePublish();
               }}
             >
               {publishing
                 ? t('common-publishing')
-                : hasBeenPublished
-                  ? t('common-publish')
-                  : t('common-publish-first-revision')}
+                : !conflictsKnown
+                  ? t('editor-checking-conflicts')
+                  : hasBeenPublished
+                    ? t('common-publish')
+                    : t('common-publish-first-revision')}
             </Button>
           )}
         </Box>
+
+        {isDraftView && blockingConflicts.length > 0 && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+              {t('editor-publish-blocked-conflicts', { count: blockingConflicts.length })}
+            </Typography>
+            <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+              {blockingConflicts.map((conflict, i) => {
+                const names = conflictNodeNames(conflict);
+                return (
+                  <Box component="li" key={i}>
+                    <Typography variant="body2" sx={{ fontSize: 13 }}>
+                      {conflict.message}
+                    </Typography>
+                    {names.length > 0 && (
+                      <Typography variant="caption" color="text.secondary">
+                        {names.join(', ')}
+                      </Typography>
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+          </Alert>
+        )}
 
         {hasMockEdits && (
           <>

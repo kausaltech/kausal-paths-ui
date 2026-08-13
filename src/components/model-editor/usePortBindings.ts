@@ -113,6 +113,8 @@ export function useAddInputPort() {
   return useCallback(
     async (args: {
       nodeId: string;
+      /** Semantic role from the node class's input port declarations. */
+      role?: string | null;
       label?: string | null;
       multi?: boolean;
       quantity?: string | null;
@@ -132,7 +134,7 @@ export function useAddInputPort() {
               quantity: args.quantity ?? null,
               unit: args.unit ?? null,
               multi: args.multi ?? false,
-              role: null,
+              role: args.role ?? null,
               requiredDimensions: args.requiredDimensions?.length ? args.requiredDimensions : null,
               supportedDimensions: args.supportedDimensions?.length
                 ? args.supportedDimensions

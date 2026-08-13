@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Box, InputAdornment, Tab, Tabs, TextField, Typography } from '@mui/material';
 
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { Search } from 'react-bootstrap-icons';
 
@@ -47,6 +49,42 @@ type Props = {
 
 type SourceKind = 'node' | 'dataset';
 
+const GET_EDITOR_DIMENSION_NAMES = gql`
+  query EditorDimensionNames {
+    instance {
+      id
+      editor {
+        dimensions {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+type EditorDimensionNamesQuery = {
+  instance: {
+    id: string;
+    editor: { dimensions: { id: string; name: string }[] } | null;
+  };
+};
+
+/**
+ * uuid → display name for the model's dimensions, for rendering the solver's
+ * `effectiveShape` dimension references. Unresolvable uuids (shouldn't
+ * happen) fall back to the raw uuid so the row stays truthful.
+ */
+function useDimensionNames(): Map<string, string> {
+  const { data } = useQuery<EditorDimensionNamesQuery>(GET_EDITOR_DIMENSION_NAMES, {
+    fetchPolicy: 'cache-first',
+  });
+  return useMemo(
+    () => new Map((data?.instance.editor?.dimensions ?? []).map((d) => [d.id, d.name])),
+    [data]
+  );
+}
+
 function CriterionRow({ label, value }: { label: string; value: string }) {
   return (
     <Box sx={{ display: 'flex', gap: 1, fontSize: 11, alignItems: 'baseline' }}>
@@ -65,6 +103,10 @@ function CriterionRow({ label, value }: { label: string; value: string }) {
 
 function PortCriteria({ port }: { port: InputPort }) {
   const t = useTranslations('model-editor');
+  const dimensionNames = useDimensionNames();
+  const shape = port.effectiveShape ?? null;
+  const shapeDimensions =
+    shape?.dimensionUuids?.map((uuid) => dimensionNames.get(uuid) ?? uuid) ?? null;
   return (
     <Box
       sx={{
@@ -92,6 +134,27 @@ function PortCriteria({ port }: { port: InputPort }) {
         label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
+      {/* Solver-derived shape of the value actually delivered to this port —
+          what the constraint solver worked out from the bindings, as opposed
+          to the declared constraints above. */}
+      {shape && (
+        <>
+          <CriterionRow
+            label={t('nodes-port-derived-shape')}
+            value={`${shape.quantity ?? '—'} · ${shape.unit?.short ?? '—'}`}
+          />
+          <CriterionRow
+            label={t('nodes-port-derived-dims')}
+            value={
+              shapeDimensions === null
+                ? t('nodes-port-derived-dims-unknown')
+                : shapeDimensions.length > 0
+                  ? shapeDimensions.join(', ')
+                  : '—'
+            }
+          />
+        </>
+      )}
     </Box>
   );
 }

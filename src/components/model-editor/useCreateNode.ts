@@ -7,7 +7,6 @@ import {
   type CreateNodeInput,
   type CreateNodeMutation,
   type CreateNodeMutationVariables,
-  type InputPortInput,
   type NodeConfigInput,
   NodeKind,
   type OutputPortInput,
@@ -49,33 +48,6 @@ const SIMPLE_NODE_CLASSES: Record<
   subtractive: 'simple.SubtractiveNode',
   multiplicative: 'simple.MultiplicativeNode',
 };
-
-// Minimum input ports each kind needs to express its operation: subtraction
-// and multiplication are binary, addition needs one operand; the placeholder
-// formula "0" and the generic action compute without inputs. The ports are
-// bare (no unit/quantity, so any source is accepted) and further inputs
-// auto-append ports via createEdge.
-const MIN_INPUT_PORTS: Record<NewNodeKind, number> = {
-  additive: 1,
-  subtractive: 2,
-  multiplicative: 2,
-  formula: 0,
-  action: 0,
-};
-
-function bareInputPort(): InputPortInput {
-  return {
-    id: crypto.randomUUID(),
-    identifier: null,
-    label: null,
-    role: null,
-    quantity: null,
-    unit: null,
-    multi: false,
-    requiredDimensions: null,
-    supportedDimensions: null,
-  };
-}
 
 function configForKind(kind: NewNodeKind): { nodeKind: NodeKind; config: NodeConfigInput } {
   switch (kind) {
@@ -168,7 +140,12 @@ export function useCreateNode() {
         shortDescription: null,
         description: null,
         nodeGroup: null,
-        inputPorts: Array.from({ length: MIN_INPUT_PORTS[kind] }, bareInputPort),
+        // null lets the backend instantiate the class-declared default ports
+        // (each input role's defaultCount, with role + label attached — e.g.
+        // two factor ports on a multiplicative node). Passing an explicit
+        // list would suppress those defaults with role-less bare ports.
+        // Further inputs auto-append ports via createEdge.
+        inputPorts: null,
         outputPorts: [outputPort],
         inputDimensions: null,
         outputDimensions: null,

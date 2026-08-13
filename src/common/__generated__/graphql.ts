@@ -629,10 +629,19 @@ export type ModelEditorLandingDataQueryVariables = Exact<{ [key: string]: never;
 export type ModelEditorLandingDataQuery = (
   { instance: (
     { id: string, siteTitle: string, nodes: Array<(
-      { id: string, name: string }
+      { id: string, uuid: string, name: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, constraintConflicts: Array<(
+        { code: string, message: string, origins: Array<(
+          { nodeUuid: string | null }
+          & { __typename: 'ConstraintOrigin' }
+        )>, value: (
+          { nodeUuid: string | null }
+          & { __typename: 'ConstraintValueRef' }
+        ) | null }
+        & { __typename: 'ConstraintConflict' }
+      )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
@@ -2019,6 +2028,23 @@ export type NodeOutputDataQuery = (
   & { __typename: 'Query' }
 );
 
+export type EditorDimensionNamesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorDimensionNamesQuery = (
+  { instance: (
+    { id: string, editor: (
+      { dimensions: Array<(
+        { id: string, name: string }
+        & { __typename: 'InstanceDimension' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
 type EditorPortTransformation_AssignCategoryType_AssignDimensionType_Fragment = (
   { dimension: string, category: string, kind: string, isSystemManaged: boolean }
   & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
@@ -2184,8 +2210,17 @@ export type NodeGraphQuery = (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
-            { inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+            { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+              { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+              & { __typename: 'InputPortDeclaration' }
+            )>, inputPorts: Array<(
+              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+                { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+                  { id: string, short: string, htmlShort: string }
+                  & { __typename: 'UnitType' }
+                ) | null }
+                & { __typename: 'EffectiveShape' }
+              ) | null, unit: (
                 { id: string, short: string, standard: string, dimensionality: Array<(
                   { dimension: string, value: number }
                   & { __typename: 'UnitDimensionality' }
@@ -2358,8 +2393,17 @@ export type NodeGraphQuery = (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
-            { inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+            { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+              { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+              & { __typename: 'InputPortDeclaration' }
+            )>, inputPorts: Array<(
+              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+                { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+                  { id: string, short: string, htmlShort: string }
+                  & { __typename: 'UnitType' }
+                ) | null }
+                & { __typename: 'EffectiveShape' }
+              ) | null, unit: (
                 { id: string, short: string, standard: string, dimensionality: Array<(
                   { dimension: string, value: number }
                   & { __typename: 'UnitDimensionality' }
@@ -2541,8 +2585,17 @@ type EditorNodeFields_ActionNode_Fragment = (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
-      { inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+      { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+        { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+        & { __typename: 'InputPortDeclaration' }
+      )>, inputPorts: Array<(
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+          { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+            { id: string, short: string, htmlShort: string }
+            & { __typename: 'UnitType' }
+          ) | null }
+          & { __typename: 'EffectiveShape' }
+        ) | null, unit: (
           { id: string, short: string, standard: string, dimensionality: Array<(
             { dimension: string, value: number }
             & { __typename: 'UnitDimensionality' }
@@ -2716,8 +2769,17 @@ type EditorNodeFields_Node_Fragment = (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
-      { inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+      { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+        { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+        & { __typename: 'InputPortDeclaration' }
+      )>, inputPorts: Array<(
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+          { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+            { id: string, short: string, htmlShort: string }
+            & { __typename: 'UnitType' }
+          ) | null }
+          & { __typename: 'EffectiveShape' }
+        ) | null, unit: (
           { id: string, short: string, standard: string, dimensionality: Array<(
             { dimension: string, value: number }
             & { __typename: 'UnitDimensionality' }

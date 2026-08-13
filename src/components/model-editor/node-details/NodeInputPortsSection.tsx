@@ -15,6 +15,8 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -124,7 +126,14 @@ function boundDatasetUnit(port: InputPort): string | null {
   return null;
 }
 
-function PortTooltipContent({ port }: { port: InputPort }) {
+function PortTooltipContent({
+  port,
+  roleLabel,
+}: {
+  port: InputPort;
+  /** Human label of the declared role this port instantiates, if any. */
+  roleLabel: string | null;
+}) {
   const t = useTranslations('model-editor');
   const datasetBindingCount = port.bindings.filter(
     (b) => b.__typename === 'DatasetPortType'
@@ -136,6 +145,7 @@ function PortTooltipContent({ port }: { port: InputPort }) {
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
       <PortInfoRow label={t('nodes-port-id')} value={port.id} />
       <PortInfoRow label={t('nodes-port-label-field')} value={port.label ?? '—'} />
+      <PortInfoRow label={t('nodes-port-role')} value={roleLabel ?? '—'} />
       <PortInfoRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
       <PortInfoRow
         label={t('nodes-port-unit')}
@@ -397,6 +407,7 @@ export default function NodeInputPortsSection({
   const addInputPort = useAddInputPort();
   const updateInputPorts = useUpdateInputPorts();
   const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
+  const [addPortMenuAnchor, setAddPortMenuAnchor] = useState<HTMLElement | null>(null);
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
 
@@ -404,6 +415,46 @@ export default function NodeInputPortsSection({
   const currentCategory = currentNode ? getCategoryForNode(currentNode) : null;
   const allowDatasetInputs =
     currentCategory === null || !NODES_ONLY_CATEGORIES.has(currentCategory);
+
+  // Add-port affordances from the node class's declared input roles: a
+  // repeatable role can always take another port instance, a non-repeatable
+  // one at most one. Free-form ports are a separate, class-gated capability
+  // (instance-authored algebra: formula/pipeline nodes).
+  const spec = currentNode?.editor?.spec;
+  const availableRoles = (spec?.inputPortDeclarations ?? []).filter(
+    (d) => d.repeatable || d.instantiatedPortIds.length === 0
+  );
+  // `supportsAuthoredPorts` is presentation guidance, not enforced by the
+  // backend (addInputPort accepts free-form ports on any class). Honor it
+  // only while the role options offer an alternative — otherwise deleting a
+  // node's ports would dead-end with no way to add one back.
+  const showAuthoredPortAdd = (spec?.supportsAuthoredPorts ?? true) || availableRoles.length === 0;
+  // Ways to add a port: one per role with capacity, plus the free-form
+  // dialog. A single option runs directly from the "Add port" button; with
+  // several, the button opens a menu of them.
+  const addPortOptions = [
+    ...availableRoles.map((decl) => ({
+      key: `role:${decl.role}`,
+      label: decl.label ?? decl.role,
+      action: () => {
+        void addInputPort({ nodeId: currentNodeId, role: decl.role }).catch(() => {});
+      },
+    })),
+    ...(showAuthoredPortAdd
+      ? [
+          {
+            key: 'custom',
+            label: t('nodes-add-port-custom'),
+            action: () => setAddPortDialogOpen(true),
+          },
+        ]
+      : []),
+  ];
+  // role → declaration's human label, for showing which role an existing
+  // port instantiates (and naming unlabeled role ports).
+  const roleLabelByRole = new Map(
+    (spec?.inputPortDeclarations ?? []).map((d) => [d.role, d.label ?? d.role])
+  );
 
   /**
    * When the node's class supports only a single input dataset, block adding
@@ -573,6 +624,7 @@ export default function NodeInputPortsSection({
               ).tags ?? [])
             : [];
         const hasSingleDataset = datasetBindings.length === 1 && connectedEdges.length === 0;
+        const roleLabel = port.role ? (roleLabelByRole.get(port.role) ?? port.role) : null;
         const derivedPortName = port.label
           ? null
           : hasSingleDataset
@@ -589,7 +641,7 @@ export default function NodeInputPortsSection({
           <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
               <Tooltip
-                title={<PortTooltipContent port={port} />}
+                title={<PortTooltipContent port={port} roleLabel={roleLabel} />}
                 placement="right"
                 arrow
                 enterDelay={200}
@@ -608,7 +660,7 @@ export default function NodeInputPortsSection({
                   }}
                 >
                   {t('nodes-port-label', {
-                    label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                    label: port.label ?? roleLabel ?? derivedPortName ?? `#${index + 1}`,
                   })}
                   {port.multi ? t('nodes-port-multi-suffix') : ''}
                   <InfoSquare size={10} aria-label={t('nodes-port-info')} />
@@ -811,16 +863,37 @@ export default function NodeInputPortsSection({
           </Paper>
         );
       })}
-      {!readOnly && (
+      {!readOnly && addPortOptions.length > 0 && (
         <Paper variant="outlined" sx={{ p: 1 }}>
           <Button
             size="small"
             startIcon={<Plus />}
-            onClick={() => setAddPortDialogOpen(true)}
+            onClick={(event) => {
+              if (addPortOptions.length === 1) addPortOptions[0].action();
+              else setAddPortMenuAnchor(event.currentTarget);
+            }}
             sx={{ textTransform: 'none' }}
           >
-            {t('nodes-add-input-port')}
+            {t('nodes-add-port')}
           </Button>
+          <Menu
+            anchorEl={addPortMenuAnchor}
+            open={addPortMenuAnchor !== null}
+            onClose={() => setAddPortMenuAnchor(null)}
+            slotProps={{ list: { dense: true } }}
+          >
+            {addPortOptions.map((option) => (
+              <MenuItem
+                key={option.key}
+                onClick={() => {
+                  setAddPortMenuAnchor(null);
+                  option.action();
+                }}
+              >
+                {option.label}
+              </MenuItem>
+            ))}
+          </Menu>
         </Paper>
       )}
       {addPortDialogOpen && (

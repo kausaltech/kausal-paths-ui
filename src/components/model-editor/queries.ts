@@ -255,6 +255,19 @@ export const GET_NODE_GRAPH = gql`
         hasActionAncestor
       }
       spec {
+        # Add-port affordances: declared semantic input roles (a repeatable
+        # role can always take another port instance, a non-repeatable one at
+        # most one) and whether free-form authored ports are allowed.
+        supportsAuthoredPorts
+        inputPortDeclarations {
+          role
+          label
+          multi
+          repeatable
+          minCount
+          defaultCount
+          instantiatedPortIds
+        }
         inputPorts {
           id
           identifier
@@ -262,6 +275,19 @@ export const GET_NODE_GRAPH = gql`
           multi
           quantity
           role
+          # Solver-derived shape of the aggregate value delivered to this
+          # port; null when the solver couldn't determine it.
+          effectiveShape {
+            quantity
+            dimensionUuids
+            requiredDimensionUuids
+            forbiddenDimensionUuids
+            unit {
+              id
+              short
+              htmlShort
+            }
+          }
           unit {
             id
             short
