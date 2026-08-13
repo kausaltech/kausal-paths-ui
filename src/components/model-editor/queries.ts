@@ -71,17 +71,14 @@ export const draftHeadTokenVar = makeVar<string | null>(null);
 
 /**
  * Which slice the editor is viewing. DRAFT is the editor's working copy;
- * PUBLISHED is whatever is currently live (read-only preview). The Apollo
- * link reads this on every operation — toggling re-runs any refetched query
- * against the new slice.
- *
- * Currently pinned to PUBLISHED because preview-mode routing is gated off
- * in `ApolloWrapper.detectPreviewMode` while the backend DRAFT hydrate bug
- * is being fixed. All edits land on the published revision in place. Flip
- * the default back to DRAFT once the backend is repaired.
+ * PUBLISHED is whatever is currently live (read-only preview — see
+ * `useIsEditorReadOnly`). `ApolloWrapper.detectPreviewMode` reads this
+ * lazily on every operation issued from an editor route and attaches it as
+ * the `preview` arg on the `@instance` directive; the toggle in
+ * `ModelEditorNav` re-runs all active queries against the new slice.
  */
 export type EditorPreviewMode = 'DRAFT' | 'PUBLISHED';
-export const editorPreviewModeVar = makeVar<EditorPreviewMode>('PUBLISHED');
+export const editorPreviewModeVar = makeVar<EditorPreviewMode>('DRAFT');
 
 /**
  * Set to true when a mutation is rejected with a `stale_version` error —

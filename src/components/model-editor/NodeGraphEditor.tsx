@@ -59,6 +59,7 @@ import { GET_NODE_GRAPH, type NodeFieldOverrides, nodeGraphOverridesVar } from '
 import { useEditorApolloContext } from './useEditorApolloContext';
 import { useEditorPublishState } from './useEditorPublishState';
 import { useGraphNavigation } from './useGraphNavigation';
+import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 import useLayoutNodes from './useLayoutNodes';
 import { useNodeCrudActions } from './useNodeCrudActions';
 import { useNodeStatuses } from './useNodeStatuses';
@@ -118,6 +119,7 @@ const FlowCanvas = memo(function FlowCanvas({
 }: FlowCanvasProps) {
   const searchParams = useSearchParams();
   const { setEdges, setNodes } = useReactFlow<ElkNodeType>();
+  const readOnly = useIsEditorReadOnly();
   // Captured once so later URL changes don't alter initial viewport behaviour.
   const [initialFitView] = useState(() => searchParams.get('node') === null);
   const [savedViewport] = useState(() => loadViewport(instanceId));
@@ -227,6 +229,9 @@ const FlowCanvas = memo(function FlowCanvas({
       onMoveEnd={onMoveEnd}
       nodeTypes={nodeTypes}
       selectNodesOnDrag={false}
+      // The published view is a read-only preview — dragging would persist
+      // positions into the draft layout from the wrong slice.
+      nodesDraggable={!readOnly}
       nodeDragThreshold={NODE_POINTER_THRESHOLD}
       nodeClickDistance={NODE_POINTER_THRESHOLD}
       minZoom={0.2}

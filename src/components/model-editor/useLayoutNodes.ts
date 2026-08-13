@@ -12,6 +12,7 @@ import {
   saveAutoPositions,
 } from './layoutCache';
 import { computeLayoutMetrics, formatMetrics } from './layoutMetrics';
+import { editorPreviewModeVar } from './queries';
 
 const NODE_WIDTH = 150;
 const NODE_HEIGHT = 50;
@@ -270,9 +271,13 @@ export default function useLayoutNodes(
     const nodes = sourceNodes as ElkNodeType[];
     const edges = getEdges();
 
-    if (hydratedInstanceRef.current !== instanceId) {
+    // Re-hydrate the position cache when the instance — or the viewed slice —
+    // changes: draft and published each carry their own persisted layout, so
+    // a slice toggle must not keep showing the other slice's positions.
+    const hydrateKey = `${instanceId}:${editorPreviewModeVar()}`;
+    if (hydratedInstanceRef.current !== hydrateKey) {
       replaceLayoutPositions(instanceId, persistedPositions);
-      hydratedInstanceRef.current = instanceId;
+      hydratedInstanceRef.current = hydrateKey;
     }
     const cache = loadLayoutCache(instanceId);
     const missing = nodes.filter((n) => !(n.id in cache));
