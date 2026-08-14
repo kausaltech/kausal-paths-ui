@@ -11,6 +11,24 @@ const Loader = styled.div`
   align-items: center;
 `;
 
+/**
+ * Self-contained screen-reader-only style. The Bootstrap `.visually-hidden`
+ * class this used to rely on is a public-UI global that isn't loaded on all
+ * routes (e.g. the model editor), where the label would render as visible
+ * unstyled text.
+ */
+const VisuallyHidden = styled.div`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+`;
+
 interface ContentLoaderProps {
   fullPage?: boolean;
 }
@@ -32,7 +50,7 @@ const ContentLoader = ({ fullPage = false }: ContentLoaderProps) => {
   return (
     <Loader aria-busy="true" style={{ height: fullPage ? 'calc(100vh - 24rem)' : '3rem' }}>
       <KausalProgress />
-      <div className="visually-hidden">{t('loading')}</div>
+      <VisuallyHidden>{t('loading')}</VisuallyHidden>
     </Loader>
   );
 };
