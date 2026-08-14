@@ -628,11 +628,20 @@ export type ModelEditorLandingDataQueryVariables = Exact<{ [key: string]: never;
 
 export type ModelEditorLandingDataQuery = (
   { instance: (
-    { id: string, siteTitle: string, nodes: Array<(
+    { id: string, siteTitle: string, users: Array<(
+      { user: (
+        { id: string }
+        & { __typename: 'User' }
+      ) }
+      & { __typename: 'InstanceMember' }
+    )>, nodes: Array<(
       { id: string, uuid: string, name: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, constraintConflicts: Array<(
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, latestChange: Array<(
+        { uuid: string, createdAt: string }
+        & { __typename: 'InstanceChangeOperationType' }
+      )>, constraintConflicts: Array<(
         { code: string, message: string, origins: Array<(
           { nodeUuid: string | null }
           & { __typename: 'ConstraintOrigin' }

@@ -20,6 +20,7 @@ import {
   ListItemText,
   Paper,
   Snackbar,
+  Stack,
   Typography,
 } from '@mui/material';
 
@@ -36,6 +37,7 @@ import {
   CloudUpload,
   Database,
   Diagram2,
+  House,
   People,
 } from 'react-bootstrap-icons';
 
@@ -65,6 +67,11 @@ const GET_LANDING_DATA = gql`
     instance {
       id
       siteTitle
+      users {
+        user {
+          id
+        }
+      }
       nodes {
         id
         uuid
@@ -72,6 +79,12 @@ const GET_LANDING_DATA = gql`
       }
       editor {
         ...InstanceEditorPublishState
+        # Most recent draft edit, shown while the model has no published
+        # revision yet.
+        latestChange: changeHistory(limit: 1) {
+          uuid
+          createdAt
+        }
         # Structural conflicts in the draft; publishing is blocked while any
         # exist, so surface them before the user hits the button.
         constraintConflicts {
@@ -159,6 +172,7 @@ type LandingDataQuery = {
   instance: {
     id: string;
     siteTitle: string;
+    users: { user: { id: string } }[];
     nodes: { id: string; uuid: string; name: string }[];
     editor: {
       live: boolean;
@@ -166,6 +180,7 @@ type LandingDataQuery = {
       firstPublishedAt: string | null;
       lastPublishedAt: string | null;
       draftHeadToken: string | null;
+      latestChange: { uuid: string; createdAt: string }[];
       constraintConflicts: LandingConflict[];
     } | null;
   };
@@ -321,6 +336,10 @@ export default function ModelEditorLandingPage() {
   const hasMockEdits = editedRows.length > 0;
   const lastPublishedLabel = editor?.lastPublishedAt ? df.dateTime(editor.lastPublishedAt) : null;
   const lastPublishedRelative = formatRelative(editor?.lastPublishedAt, t);
+  // Shown instead of a publish timestamp while nothing has been published.
+  const latestEditAt = editor?.latestChange?.[0]?.createdAt ?? null;
+  const latestEditLabel = latestEditAt ? df.dateTime(latestEditAt) : null;
+  const latestEditRelative = formatRelative(latestEditAt, t);
   const firstPublishedLabel = editor?.firstPublishedAt
     ? df.dateTime(editor.firstPublishedAt)
     : null;
@@ -388,26 +407,10 @@ export default function ModelEditorLandingPage() {
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="overline" color="text.secondary">
-          {t('editor-model-landing')}
-        </Typography>
-        <Typography variant="h1" sx={{ mt: 0.5 }}>
-          {data?.instance.siteTitle ?? instance.name}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          {instance.leadParagraph ?? t('editor-edit-the-model')}
-        </Typography>
-      </Box>
-
-      <Box sx={{ mb: 4 }}>
-        <Button
-          variant="outlined"
-          component={Link}
-          href={`${base}/users`}
-          startIcon={<People size={14} />}
-        >
-          {t('editor-manage-access')}
-        </Button>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <House size={22} />
+          <Typography variant="h5">{t('editor-nav-model')}</Typography>
+        </Stack>
       </Box>
 
       <Box
@@ -473,6 +476,15 @@ export default function ModelEditorLandingPage() {
                         relative: lastPublishedRelative,
                       })
                     : t('editor-last-published', { date: lastPublishedLabel })}
+                </Typography>
+              ) : latestEditLabel ? (
+                <Typography variant="caption" color="text.secondary">
+                  {latestEditRelative
+                    ? t('editor-last-edited-with-relative', {
+                        date: latestEditLabel,
+                        relative: latestEditRelative,
+                      })
+                    : t('editor-last-edited', { date: latestEditLabel })}
                 </Typography>
               ) : (
                 <Typography variant="caption" color="text.secondary">
@@ -630,6 +642,9 @@ export default function ModelEditorLandingPage() {
           {t('editor-model-properties-hint')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <PropertyRow label={t('editor-prop-name')}>
+            <Typography variant="body2">{instance.name}</Typography>
+          </PropertyRow>
           <PropertyRow label={t('editor-prop-framework')}>
             <Typography variant="body2">
               {instance.frameworkConfig?.framework?.name ?? '—'}
@@ -654,14 +669,19 @@ export default function ModelEditorLandingPage() {
           </PropertyRow>
           <PropertyRow label={t('editor-prop-languages')}>
             <Typography variant="body2">
-              {[
-                `${instance.defaultLanguage} (${t('editor-prop-default-marker')})`,
-                ...instance.supportedLanguages.filter((l) => l !== instance.defaultLanguage),
-              ].join(', ')}
+              {/* Bold marks the default language. */}
+              <Box component="span" sx={{ fontWeight: 600 }}>
+                {instance.defaultLanguage}
+              </Box>
+              {instance.supportedLanguages
+                .filter((l) => l !== instance.defaultLanguage)
+                .map((l) => `, ${l}`)
+                .join('')}
             </Typography>
           </PropertyRow>
           <PropertyRow label={t('editor-prop-scenarios')}>
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {(data?.scenarios ?? []).length === 0 && <Typography variant="body2">—</Typography>}
               {(data?.scenarios ?? []).map((scenario) => (
                 <Chip
                   key={scenario.id}
@@ -676,7 +696,6 @@ export default function ModelEditorLandingPage() {
                   title={scenario.identifier}
                 />
               ))}
-              {data?.scenarios?.length === 0 && <Typography variant="body2">—</Typography>}
             </Box>
           </PropertyRow>
           <PropertyRow label={t('editor-prop-parameters')}>
@@ -691,6 +710,20 @@ export default function ModelEditorLandingPage() {
               ))}
               {globalParameters.length === 0 && <Typography variant="body2">—</Typography>}
             </Box>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-users')}>
+            <Typography variant="body2">
+              {data?.instance.users.length ?? '—'}
+              {' · '}
+              <Typography
+                component={Link}
+                href={`${base}/users`}
+                variant="body2"
+                sx={{ color: 'primary.main' }}
+              >
+                {t('editor-prop-manage-access')}
+              </Typography>
+            </Typography>
           </PropertyRow>
         </Box>
       </Paper>
