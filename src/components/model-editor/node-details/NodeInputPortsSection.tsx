@@ -444,14 +444,18 @@ export default function NodeInputPortsSection({
   // one at most one. Free-form ports are a separate, class-gated capability
   // (instance-authored algebra: formula/pipeline nodes).
   const spec = currentNode?.editor?.spec;
-  const availableRoles = (spec?.inputPortDeclarations ?? []).filter(
+  const portDeclarations = spec?.inputPortDeclarations ?? [];
+  const availableRoles = portDeclarations.filter(
     (d) => d.repeatable || d.instantiatedPortIds.length === 0
   );
   // `supportsAuthoredPorts` is presentation guidance, not enforced by the
-  // backend (addInputPort accepts free-form ports on any class). Honor it
-  // only while the role options offer an alternative — otherwise deleting a
-  // node's ports would dead-end with no way to add one back.
-  const showAuthoredPortAdd = (spec?.supportsAuthoredPorts ?? true) || availableRoles.length === 0;
+  // backend (addInputPort accepts free-form ports on any class). Override it
+  // only for classes with NO declarations at all — deleting such a node's
+  // ports would otherwise dead-end with no way to add one back. When
+  // declarations exist but every non-repeatable role is instantiated, the
+  // fixed-role class is legitimately full: no custom fallback.
+  const showAuthoredPortAdd =
+    (spec?.supportsAuthoredPorts ?? true) || portDeclarations.length === 0;
   // Ways to add a port: one per role with capacity, plus the free-form
   // dialog. A single option runs directly from the "Add port" button; with
   // several, the button opens a menu of them.
@@ -460,7 +464,12 @@ export default function NodeInputPortsSection({
       key: `role:${decl.role}`,
       label: decl.label ?? decl.role,
       action: () => {
-        void addInputPort({ nodeId: currentNodeId, role: decl.role }).catch(() => {});
+        // Carry the declaration's `multi` — an omitted multi serializes as
+        // false, which would turn a multi-role port into a single-input one
+        // (bindings replacing instead of appending).
+        void addInputPort({ nodeId: currentNodeId, role: decl.role, multi: decl.multi }).catch(
+          () => {}
+        );
       },
     })),
     ...(showAuthoredPortAdd
