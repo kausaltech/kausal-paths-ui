@@ -243,6 +243,7 @@
   "dimensions-remove-category": "Kategorie entfernen",
   "dimensions-title": "Dimensionen",
   "editor-active-scenario": "Aktives Szenario",
+  "editor-app-version": "Version: {version} · {env}",
   "editor-cards-datasets": "Datensätze",
   "editor-cards-datasets-desc": "Datensätze verwalten, die Knoteneingaben speisen.",
   "editor-cards-dimensions": "Dimensionen",

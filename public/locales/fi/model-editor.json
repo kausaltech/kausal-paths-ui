@@ -243,6 +243,7 @@
   "dimensions-remove-category": "Poista luokka",
   "dimensions-title": "Dimensiot",
   "editor-active-scenario": "Aktiivinen skenaario",
+  "editor-app-version": "Versio: {version} · {env}",
   "editor-cards-datasets": "Tietoaineistot",
   "editor-cards-datasets-desc": "Hallitse tietoaineistoja, jotka syöttävät tietoa solmujen tuloihin.",
   "editor-cards-dimensions": "Dimensiot",

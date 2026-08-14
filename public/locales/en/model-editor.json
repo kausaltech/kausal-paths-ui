@@ -270,6 +270,7 @@
   "dimensions-remove-category": "Remove category",
   "dimensions-title": "Dimensions",
   "editor-active-scenario": "Active scenario",
+  "editor-app-version": "Version: {version} · {env}",
   "editor-cards-datasets": "Datasets",
   "editor-cards-datasets-desc": "Manage datasets that feed node inputs.",
   "editor-cards-dimensions": "Dimensions",
