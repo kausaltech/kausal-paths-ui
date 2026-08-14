@@ -327,6 +327,11 @@ export default function ModelEditorLandingPage() {
   // parameters that are visible — node-scoped ones are never included, so no
   // filtering is needed here.
   const globalParameters = data?.parameters ?? [];
+  // The backend returns `instance.users` only to instance admins, owners and
+  // superusers — everyone else gets `[]`. Any real instance has at least an
+  // owner, so an empty list means the count is restricted (or still
+  // loading), not zero.
+  const memberCount = data?.instance.users.length ?? 0;
   const conflictNodeNames = (conflict: LandingConflict): string[] => {
     const uuids = [...conflict.origins.map((o) => o.nodeUuid), conflict.value?.nodeUuid ?? null];
     return [...new Set(uuids.filter((u): u is string => u != null))]
@@ -713,7 +718,7 @@ export default function ModelEditorLandingPage() {
           </PropertyRow>
           <PropertyRow label={t('editor-prop-users')}>
             <Typography variant="body2">
-              {data?.instance.users.length ?? '—'}
+              {memberCount > 0 ? memberCount : '—'}
               {' · '}
               <Typography
                 component={Link}
