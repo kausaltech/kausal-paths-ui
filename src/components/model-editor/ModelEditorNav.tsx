@@ -1,6 +1,6 @@
 'use client';
 
-import { type ComponentType, useMemo, useState } from 'react';
+import { type ComponentType, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -30,7 +30,7 @@ import {
 } from '@mui/material';
 
 import { gql } from '@apollo/client';
-import { useQuery, useReactiveVar } from '@apollo/client/react';
+import { useApolloClient, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
   BoxArrowUpRight,
@@ -45,6 +45,7 @@ import {
   House,
   People,
   Search,
+  Signpost2,
   XLg,
 } from 'react-bootstrap-icons';
 
@@ -53,7 +54,8 @@ import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { Link as AppLink } from '@/common/links';
 import { getModelEditorBase } from './paths';
-import { nodeStatusVar } from './queries';
+import { editorPreviewModeVar, nodeGraphOverridesVar, nodeStatusVar } from './queries';
+import { useEditorPublishState } from './useEditorPublishState';
 
 const GET_NODE_SEARCH_LIST = gql`
   query EditorNodeSearchList {
@@ -85,6 +87,19 @@ const GET_DATASET_SEARCH_LIST = gql`
     }
   }
 `;
+
+const GET_ACTIVE_SCENARIO = gql`
+  query EditorActiveScenario {
+    activeScenario {
+      id
+      name
+    }
+  }
+`;
+
+type ActiveScenarioQuery = {
+  activeScenario: { id: string; name: string } | null;
+};
 
 const GET_DIMENSION_SEARCH_LIST = gql`
   query EditorDimensionSearchList {
@@ -195,6 +210,41 @@ const ALL_OUTCOMES_VALUE = '__all__';
  * an all-clear tick once a clean compute has settled). Stays silent until the
  * first status arrives so it doesn't flash on load.
  */
+/**
+ * Name of the scenario the editor's computations currently run under. The
+ * scenario is session-level state shared with the public UI (selections and
+ * action toggles there change it), so without this indicator the editor's
+ * numbers can silently reflect a scenario picked elsewhere.
+ */
+function ActiveScenarioIndicator() {
+  const t = useTranslations('model-editor');
+  const { data } = useQuery<ActiveScenarioQuery>(GET_ACTIVE_SCENARIO, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const scenario = data?.activeScenario ?? null;
+  if (!scenario) return null;
+
+  return (
+    <Tooltip title={t('editor-active-scenario')} arrow>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          color: 'text.secondary',
+          minWidth: 0,
+        }}
+        aria-label={t('editor-active-scenario')}
+      >
+        <Signpost2 size={12} style={{ flexShrink: 0 }} />
+        <Typography variant="caption" noWrap sx={{ fontSize: 11 }}>
+          {scenario.name}
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
+}
+
 function ModelStatusIndicator() {
   const t = useTranslations('model-editor');
   const statuses = useReactiveVar(nodeStatusVar);
@@ -243,6 +293,9 @@ export default function ModelEditorNav() {
   const pathname = usePathname();
   const router = useRouter();
   const instance = useInstance();
+  // Framework-aware display title; the static instance context only carries
+  // the plain name.
+  const { siteTitle } = useEditorPublishState();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [query, setQuery] = useState('');
   const base = getModelEditorBase(pathname);
@@ -326,17 +379,14 @@ export default function ModelEditorNav() {
           '&:hover': { color: 'primary.main' },
         }}
       >
-        {instance.name}
+        {siteTitle ?? instance.name}
       </MuiLink>
 
       <Divider />
 
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
         <PreviewModeToggle />
-        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
-          <ModelStatusIndicator />
-        </Box>
-        <Divider orientation="vertical" flexItem />
+        <Divider orientation="vertical" flexItem sx={{ ml: 'auto' }} />
         <Button
           size="small"
           color="inherit"
@@ -348,6 +398,21 @@ export default function ModelEditorNav() {
           {t(activeTab.labelKey)}
         </Button>
       </Box>
+
+      {/* Computation context for the node graph: the active scenario and the
+          model-wide fault status. Both describe the computed values shown on
+          the graph, so the row only appears on the Nodes view. */}
+      {mode === 'nodes' && (
+        <>
+          <Divider />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1.5, py: 0.5 }}>
+            <ActiveScenarioIndicator />
+            <Box sx={{ ml: 'auto', flexShrink: 0 }}>
+              <ModelStatusIndicator />
+            </Box>
+          </Box>
+        </>
+      )}
 
       {mode !== null && (
         <>
@@ -505,13 +570,60 @@ export default function ModelEditorNav() {
   );
 }
 
-// Disabled while preview-mode routing is gated off in
-// `ApolloWrapper.detectPreviewMode`. Restore the interactive handler +
-// dynamic label once the backend DRAFT hydrate bug is fixed.
+/**
+ * Frozen while the backend's PUBLISHED slice is unsafe to request: the
+ * `editor.*` structural fields (edges, layout, spec) ignore the slice and
+ * serve live draft rows, and worse, the published-slice hydrate can stomp
+ * draft rows with snapshot values — losing draft edits. Flip this once the
+ * backend resolves `editor.*` from the published snapshot and the hydrate
+ * no longer mutates draft state.
+ */
+const PUBLISHED_PREVIEW_ENABLED = false;
+
+/**
+ * Switch between the DRAFT working copy (editable) and a read-only preview
+ * of the PUBLISHED revision. Writes to `editorPreviewModeVar`, which the
+ * Apollo link reads per operation ({@link useIsEditorReadOnly} gates editing
+ * surfaces from the same var), then re-runs all active queries so everything
+ * on screen reflects the selected slice.
+ */
 function PreviewModeToggle() {
   const t = useTranslations('model-editor');
+  const client = useApolloClient();
+  const mode = useReactiveVar(editorPreviewModeVar);
+  const { editor: publishState } = useEditorPublishState();
+  const viewingPublished = mode === 'PUBLISHED';
+  // Before the first publish there is no published revision to preview —
+  // the backend would just serve the working copy again.
+  const neverPublished = publishState !== null && publishState.firstPublishedAt == null;
+  const frozen = !PUBLISHED_PREVIEW_ENABLED || neverPublished;
+  useEffect(() => {
+    if (frozen && editorPreviewModeVar() === 'PUBLISHED') {
+      editorPreviewModeVar('DRAFT');
+    }
+  }, [frozen]);
+
+  const handleChange = (published: boolean) => {
+    editorPreviewModeVar(published ? 'PUBLISHED' : 'DRAFT');
+    // The overrides overlay bridges committed edits into the no-cache
+    // NodeGraph rendering. It's draft-slice state — clear it so it can't
+    // paint draft values over the other slice's data (the server already
+    // has the edits; a refetch in draft view restores them).
+    nodeGraphOverridesVar({});
+    void client.refetchQueries({ include: 'active' });
+  };
+
   return (
-    <Tooltip title={t('editor-draft-mode-disabled')} placement="right">
+    <Tooltip
+      title={t(
+        !PUBLISHED_PREVIEW_ENABLED
+          ? 'editor-preview-toggle-coming-soon'
+          : neverPublished
+            ? 'editor-preview-toggle-unavailable'
+            : 'editor-preview-toggle-hint'
+      )}
+      placement="right"
+    >
       <Box
         component="span"
         sx={{
@@ -521,13 +633,20 @@ function PreviewModeToggle() {
           px: 1,
           py: 0.5,
           userSelect: 'none',
-          color: 'success.main',
-          opacity: 0.6,
+          color: viewingPublished ? 'success.main' : 'warning.main',
+          opacity: frozen ? 0.6 : 1,
         }}
       >
-        <Switch checked={false} disabled size="small" color="success" />
+        <Switch
+          checked={viewingPublished}
+          onChange={(e) => handleChange(e.target.checked)}
+          disabled={frozen}
+          size="small"
+          color="success"
+          slotProps={{ input: { 'aria-label': t('editor-preview-toggle-hint') } }}
+        />
         <Typography variant="overline" sx={{ color: 'inherit', fontWeight: 600, lineHeight: 1 }}>
-          {t('editor-published')}
+          {viewingPublished ? t('editor-published') : t('editor-draft')}
         </Typography>
       </Box>
     </Tooltip>

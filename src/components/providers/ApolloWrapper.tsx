@@ -7,6 +7,7 @@ import {
 } from '@apollo/client-integration-nextjs';
 
 import { getApolloClientConfig } from '@/common/apollo-config';
+import { editorPreviewModeVar } from '@/components/model-editor/queries';
 
 type Props = {
   locale: string;
@@ -14,17 +15,28 @@ type Props = {
   instanceHostname: string;
 } & React.PropsWithChildren;
 
+/** Matches a `/model` path segment (the model editor routes). */
+const EDITOR_ROUTE_RE = /(^|\/)model(\/|$)/;
+
 /**
- * Preview-mode routing is disabled while the backend's
- * `_create_from_published_revision` hydrate bug is being fixed. Returning
- * `null` keeps the `preview` arg off the `@instance` directive so the
- * backend serves its publish-first default everywhere. Re-enable by
- * threading `editorPreviewModeVar` / the `?preview=` URL param back through
- * here once the backend hydrate no longer stomps snapshot specs with live
- * DB state.
+ * Which slice (`preview` arg on the `@instance` directive) an operation
+ * should run against. Invoked lazily per operation, so toggling the editor's
+ * draft/published switch takes effect without recreating the Apollo client.
+ *
+ * Only editor routes get an explicit slice — the public UI must always see
+ * the backend's publish-first default, so a slice selection can never leak
+ * out of the editor.
+ *
+ * DRAFT deliberately sends no arg: the backend's default path IS the
+ * editable working copy for editor operations (mutations force DRAFT
+ * server-side). Explicitly requesting the DRAFT slice makes the backend
+ * re-hydrate the draft per request, minting a fresh head token that breaks
+ * optimistic locking — every mutation would be rejected as stale.
  */
 function detectPreviewMode() {
-  return null;
+  if (typeof window === 'undefined') return null;
+  if (!EDITOR_ROUTE_RE.test(window.location.pathname)) return null;
+  return editorPreviewModeVar() === 'PUBLISHED' ? 'PUBLISHED' : null;
 }
 
 export function ApolloWrapper({ locale, instanceIdentifier, instanceHostname, children }: Props) {

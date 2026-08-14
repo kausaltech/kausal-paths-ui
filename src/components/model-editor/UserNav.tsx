@@ -18,6 +18,8 @@ import {
 import { useTranslations } from 'next-intl';
 import { BoxArrowRight, Boxes, ChevronDown, Gear } from 'react-bootstrap-icons';
 
+import { getRuntimeConfig } from '@common/env';
+
 import { authClient, useSession } from '@/lib/auth-client';
 import { getModelEditorBase } from './paths';
 
@@ -153,6 +155,19 @@ export default function UserNav() {
           </ListItemIcon>
           {t('common-sign-out')}
         </MenuItem>
+        <Divider />
+        {/* Build identity (BUILD_ID, baked into the image) plus the runtime
+            deployment type. The same build id across environments means the
+            same UI features; the id also matches server logs and the Sentry
+            release, so a screenshot pins the exact build. */}
+        <Box sx={{ px: 2, py: 0.5 }}>
+          <Typography variant="caption" color="text.disabled">
+            {t('editor-app-version', {
+              version: getRuntimeConfig().buildId,
+              env: getRuntimeConfig().deploymentType,
+            })}
+          </Typography>
+        </Box>
       </Menu>
     </Paper>
   );

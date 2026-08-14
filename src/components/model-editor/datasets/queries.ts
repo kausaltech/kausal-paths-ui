@@ -239,14 +239,16 @@ export const DATA_POINT_FIELDS = gql`
   }
 `;
 
-export const CREATE_DATA_POINT = gql`
-  mutation CreateDataPoint($instanceId: ID!, $datasetId: ID!, $input: CreateDataPointInput!) {
+export const CREATE_DATA_POINTS = gql`
+  mutation CreateDataPoints($instanceId: ID!, $datasetId: ID!, $input: [CreateDataPointInput!]!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
-        createDataPoint(input: $input) {
+        createDataPoints(input: $input) {
           __typename
-          ... on DataPoint {
-            ...DataPointFields
+          ... on DataPointsMutationResult {
+            dataPoints {
+              ...DataPointFields
+            }
           }
           ... on OperationInfo {
             ...OperationInfoFields
@@ -259,19 +261,20 @@ export const CREATE_DATA_POINT = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const UPDATE_DATA_POINT = gql`
-  mutation UpdateDataPoint(
+export const UPDATE_DATA_POINTS = gql`
+  mutation UpdateDataPoints(
     $instanceId: ID!
     $datasetId: ID!
-    $dataPointId: ID!
-    $input: UpdateDataPointInput!
+    $input: [UpdateDataPointItemInput!]!
   ) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
-        updateDataPoint(dataPointId: $dataPointId, input: $input) {
+        updateDataPoints(input: $input) {
           __typename
-          ... on DataPoint {
-            ...DataPointFields
+          ... on DataPointsMutationResult {
+            dataPoints {
+              ...DataPointFields
+            }
           }
           ... on OperationInfo {
             ...OperationInfoFields
@@ -284,12 +287,18 @@ export const UPDATE_DATA_POINT = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_DATA_POINT = gql`
-  mutation DeleteDataPoint($instanceId: ID!, $datasetId: ID!, $dataPointId: ID!) {
+export const DELETE_DATA_POINTS = gql`
+  mutation DeleteDataPoints($instanceId: ID!, $datasetId: ID!, $dataPointIds: [ID!]!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
-        deleteDataPoint(dataPointId: $dataPointId) {
-          ...OperationInfoFields
+        deleteDataPoints(dataPointIds: $dataPointIds) {
+          __typename
+          ... on DeleteDataPointsResult {
+            deletedDataPointIds
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
         }
       }
     }

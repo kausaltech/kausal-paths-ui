@@ -71,17 +71,14 @@ export const draftHeadTokenVar = makeVar<string | null>(null);
 
 /**
  * Which slice the editor is viewing. DRAFT is the editor's working copy;
- * PUBLISHED is whatever is currently live (read-only preview). The Apollo
- * link reads this on every operation — toggling re-runs any refetched query
- * against the new slice.
- *
- * Currently pinned to PUBLISHED because preview-mode routing is gated off
- * in `ApolloWrapper.detectPreviewMode` while the backend DRAFT hydrate bug
- * is being fixed. All edits land on the published revision in place. Flip
- * the default back to DRAFT once the backend is repaired.
+ * PUBLISHED is whatever is currently live (read-only preview — see
+ * `useIsEditorReadOnly`). `ApolloWrapper.detectPreviewMode` reads this
+ * lazily on every operation issued from an editor route and attaches it as
+ * the `preview` arg on the `@instance` directive; the toggle in
+ * `ModelEditorNav` re-runs all active queries against the new slice.
  */
 export type EditorPreviewMode = 'DRAFT' | 'PUBLISHED';
-export const editorPreviewModeVar = makeVar<EditorPreviewMode>('PUBLISHED');
+export const editorPreviewModeVar = makeVar<EditorPreviewMode>('DRAFT');
 
 /**
  * Set to true when a mutation is rejected with a `stale_version` error —
@@ -258,12 +255,39 @@ export const GET_NODE_GRAPH = gql`
         hasActionAncestor
       }
       spec {
+        # Add-port affordances: declared semantic input roles (a repeatable
+        # role can always take another port instance, a non-repeatable one at
+        # most one) and whether free-form authored ports are allowed.
+        supportsAuthoredPorts
+        inputPortDeclarations {
+          role
+          label
+          multi
+          repeatable
+          minCount
+          defaultCount
+          instantiatedPortIds
+        }
         inputPorts {
           id
           identifier
           label
           multi
           quantity
+          role
+          # Solver-derived shape of the aggregate value delivered to this
+          # port; null when the solver couldn't determine it.
+          effectiveShape {
+            quantity
+            dimensionUuids
+            requiredDimensionUuids
+            forbiddenDimensionUuids
+            unit {
+              id
+              short
+              htmlShort
+            }
+          }
           unit {
             id
             short
@@ -381,6 +405,35 @@ const EDITOR_OPERATION_INFO_FIELDS = gql`
   }
 `;
 
+/**
+ * Structural conflicts the constraint solver found in a rejected write.
+ * Returned instead of the success type by createEdge, bindDataset,
+ * updateDatasetBinding, updateEdgeBinding and publishModelInstance; nothing
+ * was written when this comes back.
+ */
+export const CONSTRAINT_VIOLATIONS_FIELDS = gql`
+  fragment ConstraintViolationsFields on ConstraintViolations {
+    conflicts {
+      code
+      message
+      origins {
+        kind
+        nodeUuid
+        portId
+        bindingId
+        transformationIndex
+      }
+      value {
+        kind
+        direction
+        nodeUuid
+        portId
+        bindingId
+      }
+    }
+  }
+`;
+
 export const INSTANCE_EDITOR_PUBLISH_STATE = gql`
   fragment InstanceEditorPublishState on InstanceEditor {
     live
@@ -395,6 +448,7 @@ export const GET_INSTANCE_EDITOR_PUBLISH_STATE = gql`
   query EditorPublishState {
     instance {
       id
+      siteTitle
       editor {
         ...InstanceEditorPublishState
       }
@@ -417,11 +471,15 @@ export const PUBLISH_MODEL_INSTANCE = gql`
         ... on OperationInfo {
           ...EditorOperationInfoFields
         }
+        ... on ConstraintViolations {
+          ...ConstraintViolationsFields
+        }
       }
     }
   }
   ${INSTANCE_EDITOR_PUBLISH_STATE}
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const CREATE_NODE = gql`
@@ -499,10 +557,14 @@ export const CREATE_EDGE = gql`
         ... on OperationInfo {
           ...EditorOperationInfoFields
         }
+        ... on ConstraintViolations {
+          ...ConstraintViolationsFields
+        }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const BIND_DATASET = gql`
@@ -517,11 +579,15 @@ export const BIND_DATASET = gql`
           ... on OperationInfo {
             ...EditorOperationInfoFields
           }
+          ... on ConstraintViolations {
+            ...ConstraintViolationsFields
+          }
         }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const UPDATE_DATASET_BINDING = gql`
@@ -541,11 +607,15 @@ export const UPDATE_DATASET_BINDING = gql`
           ... on OperationInfo {
             ...EditorOperationInfoFields
           }
+          ... on ConstraintViolations {
+            ...ConstraintViolationsFields
+          }
         }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const UPDATE_EDGE_BINDING = gql`
@@ -565,11 +635,15 @@ export const UPDATE_EDGE_BINDING = gql`
           ... on OperationInfo {
             ...EditorOperationInfoFields
           }
+          ... on ConstraintViolations {
+            ...ConstraintViolationsFields
+          }
         }
       }
     }
   }
   ${EDITOR_OPERATION_INFO_FIELDS}
+  ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
 export const ADD_INPUT_PORT = gql`

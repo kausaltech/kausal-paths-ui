@@ -22,6 +22,7 @@
       "UserNotFoundError"
     ],
     "BindDatasetPayload": [
+      "ConstraintViolations",
       "DatasetPortType",
       "OperationInfo"
     ],
@@ -33,6 +34,10 @@
       "DataPoint",
       "OperationInfo"
     ],
+    "CreateDataPointsPayload": [
+      "DataPointsMutationResult",
+      "OperationInfo"
+    ],
     "CreateDataSourcePayload": [
       "DataSource",
       "OperationInfo"
@@ -42,6 +47,7 @@
       "OperationInfo"
     ],
     "CreateEdgePayload": [
+      "ConstraintViolations",
       "NodeEdgeType",
       "OperationInfo"
     ],
@@ -60,6 +66,10 @@
     ],
     "CreateSourceReferencePayload": [
       "DatasetSourceReference",
+      "OperationInfo"
+    ],
+    "DeleteDataPointsPayload": [
+      "DeleteDataPointsResult",
       "OperationInfo"
     ],
     "DeleteDataSourcePayload": [
@@ -141,6 +151,7 @@
       "TagOperationType"
     ],
     "PublishModelInstancePayload": [
+      "ConstraintViolations",
       "InstanceType",
       "OperationInfo"
     ],
@@ -210,11 +221,16 @@
       "DataPoint",
       "OperationInfo"
     ],
+    "UpdateDataPointsPayload": [
+      "DataPointsMutationResult",
+      "OperationInfo"
+    ],
     "UpdateDataSourcePayload": [
       "DataSource",
       "OperationInfo"
     ],
     "UpdateDatasetBindingPayload": [
+      "ConstraintViolations",
       "DatasetPortType",
       "OperationInfo"
     ],
@@ -227,6 +243,7 @@
       "OperationInfo"
     ],
     "UpdateEdgeBindingPayload": [
+      "ConstraintViolations",
       "NodeEdgeType",
       "OperationInfo"
     ],

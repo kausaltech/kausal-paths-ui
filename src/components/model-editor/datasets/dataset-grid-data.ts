@@ -1,6 +1,6 @@
 import type {
   DatasetDetailFieldsFragment,
-  UpdateDataPointMutationVariables,
+  UpdateDataPointInput,
 } from '@/common/__generated__/graphql';
 
 /**
@@ -94,7 +94,7 @@ export type ImportStagePayload = {
 export type Dataset = DatasetDetailFieldsFragment;
 export type DataPoint = Dataset['dataPoints'][number];
 
-export type UpdateInput = UpdateDataPointMutationVariables['input'];
+export type UpdateInput = UpdateDataPointInput;
 export const asUpdateInput = (partial: Partial<Record<keyof UpdateInput, unknown>>) =>
   partial as unknown as UpdateInput;
 

@@ -867,7 +867,20 @@ export default function DatasetDataGrid({
         onAddYears={editing.openAddYears}
         onAddRows={editing.openAddRows}
       />
-      <Box ref={gridWrapperRef} sx={{ flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
+      <Box
+        ref={gridWrapperRef}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
+          position: 'relative',
+          // Keep horizontal scrolls from chaining past the grid's edge to the
+          // document — Chrome interprets that overscroll as the back/forward
+          // navigation swipe, throwing the user off the edit page mid-scroll.
+          // Glide's scroll element is the internal `.dvn-scroller`.
+          '& .dvn-scroller': { overscrollBehaviorX: 'none' },
+        }}
+      >
         <DataEditor
           ref={gridRef}
           columns={columns}

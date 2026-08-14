@@ -79,6 +79,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     label: port.label ?? null,
     multi: port.multi,
     quantity: port.quantity ?? null,
+    role: port.role ?? null,
     unit: port.unit?.standard ?? null,
     requiredDimensions: [...port.requiredDimensions],
     supportedDimensions: [...port.supportedDimensions],

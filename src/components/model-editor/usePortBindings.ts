@@ -18,6 +18,7 @@ import type {
   UpdateEdgeBindingMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { constraintViolationError } from './constraintViolations';
 import {
   ADD_INPUT_PORT,
   BIND_DATASET,
@@ -89,6 +90,7 @@ export function useBindDataset() {
           awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.nodeEditor.bindDataset;
+        if (payload?.__typename === 'ConstraintViolations') constraintViolationError(payload);
         if (payload?.__typename === 'OperationInfo') operationError(payload);
       } catch (error) {
         handleError(error);
@@ -111,6 +113,8 @@ export function useAddInputPort() {
   return useCallback(
     async (args: {
       nodeId: string;
+      /** Semantic role from the node class's input port declarations. */
+      role?: string | null;
       label?: string | null;
       multi?: boolean;
       quantity?: string | null;
@@ -130,6 +134,7 @@ export function useAddInputPort() {
               quantity: args.quantity ?? null,
               unit: args.unit ?? null,
               multi: args.multi ?? false,
+              role: args.role ?? null,
               requiredDimensions: args.requiredDimensions?.length ? args.requiredDimensions : null,
               supportedDimensions: args.supportedDimensions?.length
                 ? args.supportedDimensions
@@ -182,6 +187,7 @@ export function useUpdateDatasetBinding() {
           awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.bindingEditor.updateDatasetBinding;
+        if (payload?.__typename === 'ConstraintViolations') constraintViolationError(payload);
         if (payload?.__typename === 'OperationInfo') operationError(payload);
       } catch (error) {
         handleError(error);
@@ -220,6 +226,7 @@ export function useUpdateEdgeBinding() {
           awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.bindingEditor.updateEdgeBinding;
+        if (payload?.__typename === 'ConstraintViolations') constraintViolationError(payload);
         if (payload?.__typename === 'OperationInfo') operationError(payload);
       } catch (error) {
         handleError(error);

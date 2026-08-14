@@ -11,6 +11,7 @@ import type { InputPort } from '../nodeHelpers';
 import DatasetSelector from './DatasetSelector';
 import NodeSelector from './NodeSelector';
 import { ConnectedNodeChip, getStyleForNode } from './shared';
+import { useDimensionNames } from './useDimensionNames';
 
 /** A node already bound to the port via an existing edge. */
 export type CurrentInputSource = {
@@ -65,6 +66,10 @@ function CriterionRow({ label, value }: { label: string; value: string }) {
 
 function PortCriteria({ port }: { port: InputPort }) {
   const t = useTranslations('model-editor');
+  const dimensionNames = useDimensionNames();
+  const shape = port.effectiveShape ?? null;
+  const shapeDimensions =
+    shape?.dimensionUuids?.map((uuid) => dimensionNames.get(uuid) ?? uuid) ?? null;
   return (
     <Box
       sx={{
@@ -92,6 +97,27 @@ function PortCriteria({ port }: { port: InputPort }) {
         label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
+      {/* Solver-derived shape of the value actually delivered to this port —
+          what the constraint solver worked out from the bindings, as opposed
+          to the declared constraints above. */}
+      {shape && (
+        <>
+          <CriterionRow
+            label={t('nodes-port-derived-shape')}
+            value={`${shape.quantity ?? '—'} · ${shape.unit?.short ?? '—'}`}
+          />
+          <CriterionRow
+            label={t('nodes-port-derived-dims')}
+            value={
+              shapeDimensions === null
+                ? t('nodes-port-derived-dims-unknown')
+                : shapeDimensions.length > 0
+                  ? shapeDimensions.join(', ')
+                  : '—'
+            }
+          />
+        </>
+      )}
     </Box>
   );
 }

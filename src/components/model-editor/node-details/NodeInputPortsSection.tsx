@@ -15,6 +15,8 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -57,6 +59,7 @@ import {
   getCategoryForNode,
   getStyleForNode,
 } from './shared';
+import { useDimensionNames } from './useDimensionNames';
 
 type OutputPort = NonNullable<ReturnType<typeof getNodeSpec>>['outputPorts'][number];
 
@@ -124,18 +127,30 @@ function boundDatasetUnit(port: InputPort): string | null {
   return null;
 }
 
-function PortTooltipContent({ port }: { port: InputPort }) {
+function PortTooltipContent({
+  port,
+  roleLabel,
+}: {
+  port: InputPort;
+  /** Human label of the declared role this port instantiates, if any. */
+  roleLabel: string | null;
+}) {
   const t = useTranslations('model-editor');
+  const dimensionNames = useDimensionNames();
   const datasetBindingCount = port.bindings.filter(
     (b) => b.__typename === 'DatasetPortType'
   ).length;
   const edgeBindingCount = port.bindings.filter((b) => b.__typename === 'NodeEdgeType').length;
   const datasetUnit = port.unit ? null : boundDatasetUnit(port);
+  const shape = port.effectiveShape ?? null;
+  const shapeDimensions =
+    shape?.dimensionUuids?.map((uuid) => dimensionNames.get(uuid) ?? uuid) ?? null;
 
   return (
     <Stack spacing={0.5} sx={{ py: 0.5 }}>
       <PortInfoRow label={t('nodes-port-id')} value={port.id} />
       <PortInfoRow label={t('nodes-port-label-field')} value={port.label ?? '—'} />
+      <PortInfoRow label={t('nodes-port-role')} value={roleLabel ?? '—'} />
       <PortInfoRow label={t('nodes-port-quantity')} value={port.quantity ?? '—'} />
       <PortInfoRow
         label={t('nodes-port-unit')}
@@ -156,6 +171,24 @@ function PortTooltipContent({ port }: { port: InputPort }) {
         label={t('nodes-port-supported-dims')}
         value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
       />
+      {shape && (
+        <>
+          <PortInfoRow
+            label={t('nodes-port-derived-shape')}
+            value={`${shape.quantity ?? '—'} · ${shape.unit?.short ?? '—'}`}
+          />
+          <PortInfoRow
+            label={t('nodes-port-derived-dims')}
+            value={
+              shapeDimensions === null
+                ? t('nodes-port-derived-dims-unknown')
+                : shapeDimensions.length > 0
+                  ? shapeDimensions.join(', ')
+                  : '—'
+            }
+          />
+        </>
+      )}
       <PortInfoRow
         label={t('nodes-port-bindings')}
         value={t('nodes-port-bindings-value', {
@@ -188,6 +221,7 @@ function inputPortsToInput(ports: readonly InputPort[]): InputPortInput[] {
     identifier: p.identifier ?? null,
     label: p.label ?? null,
     quantity: p.quantity ?? null,
+    role: p.role ?? null,
     unit: p.unit?.standard ?? null,
     multi: p.multi ?? false,
     requiredDimensions: [...p.requiredDimensions],
@@ -396,6 +430,7 @@ export default function NodeInputPortsSection({
   const addInputPort = useAddInputPort();
   const updateInputPorts = useUpdateInputPorts();
   const [addPortDialogOpen, setAddPortDialogOpen] = useState(false);
+  const [addPortMenuAnchor, setAddPortMenuAnchor] = useState<HTMLElement | null>(null);
   const [settingsPortId, setSettingsPortId] = useState<string | null>(null);
   const settingsPort = settingsPortId ? (ports.find((p) => p.id === settingsPortId) ?? null) : null;
 
@@ -403,6 +438,55 @@ export default function NodeInputPortsSection({
   const currentCategory = currentNode ? getCategoryForNode(currentNode) : null;
   const allowDatasetInputs =
     currentCategory === null || !NODES_ONLY_CATEGORIES.has(currentCategory);
+
+  // Add-port affordances from the node class's declared input roles: a
+  // repeatable role can always take another port instance, a non-repeatable
+  // one at most one. Free-form ports are a separate, class-gated capability
+  // (instance-authored algebra: formula/pipeline nodes).
+  const spec = currentNode?.editor?.spec;
+  const portDeclarations = spec?.inputPortDeclarations ?? [];
+  const availableRoles = portDeclarations.filter(
+    (d) => d.repeatable || d.instantiatedPortIds.length === 0
+  );
+  // `supportsAuthoredPorts` is presentation guidance, not enforced by the
+  // backend (addInputPort accepts free-form ports on any class). Override it
+  // only for classes with NO declarations at all — deleting such a node's
+  // ports would otherwise dead-end with no way to add one back. When
+  // declarations exist but every non-repeatable role is instantiated, the
+  // fixed-role class is legitimately full: no custom fallback.
+  const showAuthoredPortAdd =
+    (spec?.supportsAuthoredPorts ?? true) || portDeclarations.length === 0;
+  // Ways to add a port: one per role with capacity, plus the free-form
+  // dialog. A single option runs directly from the "Add port" button; with
+  // several, the button opens a menu of them.
+  const addPortOptions = [
+    ...availableRoles.map((decl) => ({
+      key: `role:${decl.role}`,
+      label: decl.label ?? decl.role,
+      action: () => {
+        // Carry the declaration's `multi` — an omitted multi serializes as
+        // false, which would turn a multi-role port into a single-input one
+        // (bindings replacing instead of appending).
+        void addInputPort({ nodeId: currentNodeId, role: decl.role, multi: decl.multi }).catch(
+          () => {}
+        );
+      },
+    })),
+    ...(showAuthoredPortAdd
+      ? [
+          {
+            key: 'custom',
+            label: t('nodes-add-port-custom'),
+            action: () => setAddPortDialogOpen(true),
+          },
+        ]
+      : []),
+  ];
+  // role → declaration's human label, for showing which role an existing
+  // port instantiates (and naming unlabeled role ports).
+  const roleLabelByRole = new Map(
+    (spec?.inputPortDeclarations ?? []).map((d) => [d.role, d.label ?? d.role])
+  );
 
   /**
    * When the node's class supports only a single input dataset, block adding
@@ -572,6 +656,7 @@ export default function NodeInputPortsSection({
               ).tags ?? [])
             : [];
         const hasSingleDataset = datasetBindings.length === 1 && connectedEdges.length === 0;
+        const roleLabel = port.role ? (roleLabelByRole.get(port.role) ?? port.role) : null;
         const derivedPortName = port.label
           ? null
           : hasSingleDataset
@@ -580,15 +665,28 @@ export default function NodeInputPortsSection({
               ? (singleEdgeTags[0] ?? singleSourceNode.identifier)
               : null;
 
+        // Declared constraints when the port has any; otherwise fall back to
+        // the solver-derived shape (marked as derived — it's a fact about
+        // the current wiring, not a constraint the port imposes).
+        const declaredQuantityAndUnit = [port.quantity, port.unit?.short]
+          .filter(Boolean)
+          .join(' · ');
+        const derivedQuantityAndUnit = declaredQuantityAndUnit
+          ? ''
+          : [port.effectiveShape?.quantity, port.effectiveShape?.unit?.short]
+              .filter(Boolean)
+              .join(' · ');
         const quantityAndUnit =
-          [port.quantity, port.unit?.short].filter(Boolean).join(' · ') ||
-          t('nodes-port-unrestricted');
+          declaredQuantityAndUnit ||
+          (derivedQuantityAndUnit
+            ? t('nodes-port-derived-value', { value: derivedQuantityAndUnit })
+            : t('nodes-port-unrestricted'));
 
         return (
           <Paper key={port.id} variant="outlined" sx={{ p: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
               <Tooltip
-                title={<PortTooltipContent port={port} />}
+                title={<PortTooltipContent port={port} roleLabel={roleLabel} />}
                 placement="right"
                 arrow
                 enterDelay={200}
@@ -607,7 +705,7 @@ export default function NodeInputPortsSection({
                   }}
                 >
                   {t('nodes-port-label', {
-                    label: port.label ?? derivedPortName ?? `#${index + 1}`,
+                    label: port.label ?? roleLabel ?? derivedPortName ?? `#${index + 1}`,
                   })}
                   {port.multi ? t('nodes-port-multi-suffix') : ''}
                   <InfoSquare size={10} aria-label={t('nodes-port-info')} />
@@ -810,16 +908,37 @@ export default function NodeInputPortsSection({
           </Paper>
         );
       })}
-      {!readOnly && (
+      {!readOnly && addPortOptions.length > 0 && (
         <Paper variant="outlined" sx={{ p: 1 }}>
           <Button
             size="small"
             startIcon={<Plus />}
-            onClick={() => setAddPortDialogOpen(true)}
+            onClick={(event) => {
+              if (addPortOptions.length === 1) addPortOptions[0].action();
+              else setAddPortMenuAnchor(event.currentTarget);
+            }}
             sx={{ textTransform: 'none' }}
           >
-            {t('nodes-add-input-port')}
+            {t('nodes-add-port')}
           </Button>
+          <Menu
+            anchorEl={addPortMenuAnchor}
+            open={addPortMenuAnchor !== null}
+            onClose={() => setAddPortMenuAnchor(null)}
+            slotProps={{ list: { dense: true } }}
+          >
+            {addPortOptions.map((option) => (
+              <MenuItem
+                key={option.key}
+                onClick={() => {
+                  setAddPortMenuAnchor(null);
+                  option.action();
+                }}
+              >
+                {option.label}
+              </MenuItem>
+            ))}
+          </Menu>
         </Paper>
       )}
       {addPortDialogOpen && (

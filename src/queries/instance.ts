@@ -18,6 +18,7 @@ const GET_INSTANCE_CONTEXT = gql`
     instance {
       id
       name
+      siteTitle
       themeIdentifier
       frameworkConfig {
         id

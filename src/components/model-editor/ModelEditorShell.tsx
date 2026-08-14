@@ -8,6 +8,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import '@fontsource-variable/inter';
 import { useLocale } from 'next-intl';
 
+import ConstraintViolationsNotice from '@/components/model-editor/ConstraintViolationsNotice';
 import EditorAccessGate from '@/components/model-editor/EditorAccessGate';
 import ModelEditorNav from '@/components/model-editor/ModelEditorNav';
 import StaleVersionNotice from '@/components/model-editor/StaleVersionNotice';
@@ -53,6 +54,7 @@ export default function ModelEditorShell({ children }: { children: ReactNode }) 
             <>
               <ModelEditorNav />
               <StaleVersionNotice />
+              <ConstraintViolationsNotice />
             </>
           }
         >

@@ -234,6 +234,9 @@ export type InputPortInput = {
   multi: boolean;
   quantity: string | null | undefined;
   requiredDimensions: Array<string> | null | undefined;
+  /** Semantic role from the node class's input port declarations. */
+  role: string | null | undefined;
+  /** @deprecated Never had solver semantics and is no longer stored. */
   supportedDimensions: Array<string> | null | undefined;
   unit: string | null | undefined;
 };
@@ -375,6 +378,11 @@ export type UpdateDataPointInput = {
   dimensionCategoryIds: Array<string> | null | undefined;
   metricId: string | null | undefined;
   value: number | null | undefined;
+};
+
+export type UpdateDataPointItemInput = {
+  dataPointId: string | number;
+  input: UpdateDataPointInput;
 };
 
 /** Change what a dataset binding carries or does. */
@@ -620,15 +628,56 @@ export type ModelEditorLandingDataQueryVariables = Exact<{ [key: string]: never;
 
 export type ModelEditorLandingDataQuery = (
   { instance: (
-    { id: string, nodes: Array<(
-      { id: string, name: string }
+    { id: string, siteTitle: string, users: Array<(
+      { user: (
+        { id: string }
+        & { __typename: 'User' }
+      ) }
+      & { __typename: 'InstanceMember' }
+    )>, nodes: Array<(
+      { id: string, uuid: string, name: string }
       & { __typename: 'ActionNode' | 'Node' }
     )>, editor: (
-      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
+      { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, latestChange: Array<(
+        { uuid: string, createdAt: string }
+        & { __typename: 'InstanceChangeOperationType' }
+      )>, constraintConflicts: Array<(
+        { code: string, message: string, origins: Array<(
+          { nodeUuid: string | null }
+          & { __typename: 'ConstraintOrigin' }
+        )>, value: (
+          { nodeUuid: string | null }
+          & { __typename: 'ConstraintValueRef' }
+        ) | null }
+        & { __typename: 'ConstraintConflict' }
+      )> }
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
-  ) }
+  ), scenarios: Array<(
+    { id: string, identifier: string, name: string, isDefault: boolean, allActionsEnabled: boolean }
+    & { __typename: 'ScenarioType' }
+  )>, parameters: Array<
+    | (
+      { id: string, label: string | null, boolDefault: boolean | null }
+      & { __typename: 'BoolParameterType' }
+    )
+    | (
+      { id: string, label: string | null, numberDefault: number | null, unit: (
+        { id: string, short: string }
+        & { __typename: 'UnitType' }
+      ) | null }
+      & { __typename: 'NumberParameterType' }
+    )
+    | (
+      { id: string, label: string | null, stringDefault: string | null }
+      & { __typename: 'StringParameterType' }
+    )
+    | (
+      { id: string, label: string | null }
+      & { __typename: 'UnknownParameterType' }
+    )
+  > }
   & { __typename: 'Query' }
 );
 
@@ -638,11 +687,8 @@ export type MyEditableInstancesQueryVariables = Exact<{ [key: string]: never; }>
 export type MyEditableInstancesQuery = (
   { me: (
     { id: string, email: string, editableInstances: Array<(
-      { id: string, identifier: string, name: string, themeIdentifier: string | null, frameworkConfig: (
-        { id: string, organizationName: string | null, viewUrl: string | null, framework: (
-          { id: string, identifier: string, name: string }
-          & { __typename: 'Framework' }
-        ) }
+      { id: string, identifier: string, name: string, siteTitle: string, themeIdentifier: string | null, frameworkConfig: (
+        { id: string, organizationName: string | null, viewUrl: string | null }
         & { __typename: 'FrameworkConfig' }
       ) | null }
       & { __typename: 'InstanceType' }
@@ -926,6 +972,17 @@ export type EditorDatasetSearchListQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null }
     & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
+export type EditorActiveScenarioQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorActiveScenarioQuery = (
+  { activeScenario: (
+    { id: string, name: string }
+    & { __typename: 'ScenarioType' }
   ) }
   & { __typename: 'Query' }
 );
@@ -1409,26 +1466,29 @@ export type DataPointFieldsFragment = (
   & { __typename: 'DataPoint' }
 );
 
-export type CreateDataPointMutationVariables = Exact<{
+export type CreateDataPointsMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;
-  input: CreateDataPointInput;
+  input: Array<CreateDataPointInput>;
 }>;
 
 
-export type CreateDataPointMutation = (
+export type CreateDataPointsMutation = (
   { instanceEditor: (
     { datasetEditor: (
-      { createDataPoint:
+      { createDataPoints:
         | (
-          { id: string, date: string, value: number | null, metric: (
-            { id: string }
-            & { __typename: 'DatasetMetric' }
-          ), dimensionCategories: Array<(
-            { uuid: string }
-            & { __typename: 'DatasetDimensionCategory' }
+          { dataPoints: Array<(
+            { id: string, date: string, value: number | null, metric: (
+              { id: string }
+              & { __typename: 'DatasetMetric' }
+            ), dimensionCategories: Array<(
+              { uuid: string }
+              & { __typename: 'DatasetDimensionCategory' }
+            )> }
+            & { __typename: 'DataPoint' }
           )> }
-          & { __typename: 'DataPoint' }
+          & { __typename: 'DataPointsMutationResult' }
         )
         | (
           { messages: Array<(
@@ -1445,27 +1505,29 @@ export type CreateDataPointMutation = (
   & { __typename: 'Mutation' }
 );
 
-export type UpdateDataPointMutationVariables = Exact<{
+export type UpdateDataPointsMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;
-  dataPointId: string | number;
-  input: UpdateDataPointInput;
+  input: Array<UpdateDataPointItemInput>;
 }>;
 
 
-export type UpdateDataPointMutation = (
+export type UpdateDataPointsMutation = (
   { instanceEditor: (
     { datasetEditor: (
-      { updateDataPoint:
+      { updateDataPoints:
         | (
-          { id: string, date: string, value: number | null, metric: (
-            { id: string }
-            & { __typename: 'DatasetMetric' }
-          ), dimensionCategories: Array<(
-            { uuid: string }
-            & { __typename: 'DatasetDimensionCategory' }
+          { dataPoints: Array<(
+            { id: string, date: string, value: number | null, metric: (
+              { id: string }
+              & { __typename: 'DatasetMetric' }
+            ), dimensionCategories: Array<(
+              { uuid: string }
+              & { __typename: 'DatasetDimensionCategory' }
+            )> }
+            & { __typename: 'DataPoint' }
           )> }
-          & { __typename: 'DataPoint' }
+          & { __typename: 'DataPointsMutationResult' }
         )
         | (
           { messages: Array<(
@@ -1482,23 +1544,29 @@ export type UpdateDataPointMutation = (
   & { __typename: 'Mutation' }
 );
 
-export type DeleteDataPointMutationVariables = Exact<{
+export type DeleteDataPointsMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;
-  dataPointId: string | number;
+  dataPointIds: Array<string | number>;
 }>;
 
 
-export type DeleteDataPointMutation = (
+export type DeleteDataPointsMutation = (
   { instanceEditor: (
     { datasetEditor: (
-      { deleteDataPoint: (
-        { messages: Array<(
-          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
-          & { __typename: 'OperationMessage' }
-        )> }
-        & { __typename: 'OperationInfo' }
-      ) | null }
+      { deleteDataPoints:
+        | (
+          { deletedDataPointIds: Array<string> }
+          & { __typename: 'DeleteDataPointsResult' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
       & { __typename: 'DatasetEditorMutation' }
     ) }
     & { __typename: 'InstanceEditorMutation' }
@@ -2003,6 +2071,23 @@ export type NodeOutputDataQuery = (
   & { __typename: 'Query' }
 );
 
+export type EditorDimensionNamesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EditorDimensionNamesQuery = (
+  { instance: (
+    { id: string, editor: (
+      { dimensions: Array<(
+        { id: string, name: string }
+        & { __typename: 'InstanceDimension' }
+      )> }
+      & { __typename: 'InstanceEditor' }
+    ) | null }
+    & { __typename: 'InstanceType' }
+  ) }
+  & { __typename: 'Query' }
+);
+
 type EditorPortTransformation_AssignCategoryType_AssignDimensionType_Fragment = (
   { dimension: string, category: string, kind: string, isSystemManaged: boolean }
   & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
@@ -2168,8 +2253,17 @@ export type NodeGraphQuery = (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
-            { inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+            { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+              { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+              & { __typename: 'InputPortDeclaration' }
+            )>, inputPorts: Array<(
+              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+                { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+                  { id: string, short: string, htmlShort: string }
+                  & { __typename: 'UnitType' }
+                ) | null }
+                & { __typename: 'EffectiveShape' }
+              ) | null, unit: (
                 { id: string, short: string, standard: string, dimensionality: Array<(
                   { dimension: string, value: number }
                   & { __typename: 'UnitDimensionality' }
@@ -2342,8 +2436,17 @@ export type NodeGraphQuery = (
             { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
             & { __typename: 'NodeGraphLayoutMeta' }
           ), spec: (
-            { inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+            { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+              { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+              & { __typename: 'InputPortDeclaration' }
+            )>, inputPorts: Array<(
+              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+                { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+                  { id: string, short: string, htmlShort: string }
+                  & { __typename: 'UnitType' }
+                ) | null }
+                & { __typename: 'EffectiveShape' }
+              ) | null, unit: (
                 { id: string, short: string, standard: string, dimensionality: Array<(
                   { dimension: string, value: number }
                   & { __typename: 'UnitDimensionality' }
@@ -2525,8 +2628,17 @@ type EditorNodeFields_ActionNode_Fragment = (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
-      { inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+      { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+        { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+        & { __typename: 'InputPortDeclaration' }
+      )>, inputPorts: Array<(
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+          { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+            { id: string, short: string, htmlShort: string }
+            & { __typename: 'UnitType' }
+          ) | null }
+          & { __typename: 'EffectiveShape' }
+        ) | null, unit: (
           { id: string, short: string, standard: string, dimensionality: Array<(
             { dimension: string, value: number }
             & { __typename: 'UnitDimensionality' }
@@ -2700,8 +2812,17 @@ type EditorNodeFields_Node_Fragment = (
       { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
       & { __typename: 'NodeGraphLayoutMeta' }
     ), spec: (
-      { inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, unit: (
+      { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+        { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+        & { __typename: 'InputPortDeclaration' }
+      )>, inputPorts: Array<(
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+          { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+            { id: string, short: string, htmlShort: string }
+            & { __typename: 'UnitType' }
+          ) | null }
+          & { __typename: 'EffectiveShape' }
+        ) | null, unit: (
           { id: string, short: string, standard: string, dimensionality: Array<(
             { dimension: string, value: number }
             & { __typename: 'UnitDimensionality' }
@@ -2932,6 +3053,20 @@ export type EditorOperationInfoFieldsFragment = (
   & { __typename: 'OperationInfo' }
 );
 
+export type ConstraintViolationsFieldsFragment = (
+  { conflicts: Array<(
+    { code: string, message: string, origins: Array<(
+      { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+      & { __typename: 'ConstraintOrigin' }
+    )>, value: (
+      { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+      & { __typename: 'ConstraintValueRef' }
+    ) | null }
+    & { __typename: 'ConstraintConflict' }
+  )> }
+  & { __typename: 'ConstraintViolations' }
+);
+
 export type InstanceEditorPublishStateFragment = (
   { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
   & { __typename: 'InstanceEditor' }
@@ -2942,7 +3077,7 @@ export type EditorPublishStateQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type EditorPublishStateQuery = (
   { instance: (
-    { id: string, editor: (
+    { id: string, siteTitle: string, editor: (
       { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
       & { __typename: 'InstanceEditor' }
     ) | null }
@@ -2960,6 +3095,19 @@ export type PublishModelInstanceMutationVariables = Exact<{
 export type PublishModelInstanceMutation = (
   { instanceEditor: (
     { publishModelInstance:
+      | (
+        { conflicts: Array<(
+          { code: string, message: string, origins: Array<(
+            { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+            & { __typename: 'ConstraintOrigin' }
+          )>, value: (
+            { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+            & { __typename: 'ConstraintValueRef' }
+          ) | null }
+          & { __typename: 'ConstraintConflict' }
+        )> }
+        & { __typename: 'ConstraintViolations' }
+      )
       | (
         { id: string, editor: (
           { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
@@ -3048,6 +3196,19 @@ export type CreateEdgeMutation = (
   { instanceEditor: (
     { createEdge:
       | (
+        { conflicts: Array<(
+          { code: string, message: string, origins: Array<(
+            { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+            & { __typename: 'ConstraintOrigin' }
+          )>, value: (
+            { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+            & { __typename: 'ConstraintValueRef' }
+          ) | null }
+          & { __typename: 'ConstraintConflict' }
+        )> }
+        & { __typename: 'ConstraintViolations' }
+      )
+      | (
         { id: string, fromRef: (
           { nodeUuid: string, portId: string }
           & { __typename: 'NodePortRef' }
@@ -3083,6 +3244,19 @@ export type BindDatasetMutation = (
     { nodeEditor: (
       { bindDataset:
         | (
+          { conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'ConstraintViolations' }
+        )
+        | (
           { id: string }
           & { __typename: 'DatasetPortType' }
         )
@@ -3114,6 +3288,19 @@ export type UpdateDatasetBindingMutation = (
     { bindingEditor: (
       { updateDatasetBinding:
         | (
+          { conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'ConstraintViolations' }
+        )
+        | (
           { id: string }
           & { __typename: 'DatasetPortType' }
         )
@@ -3144,6 +3331,19 @@ export type UpdateEdgeBindingMutation = (
   { instanceEditor: (
     { bindingEditor: (
       { updateEdgeBinding:
+        | (
+          { conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null, transformationIndex: number | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'ConstraintViolations' }
+        )
         | (
           { id: string }
           & { __typename: 'NodeEdgeType' }
@@ -5621,7 +5821,7 @@ export type InstanceContextQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type InstanceContextQuery = (
   { instance: (
-    { id: string, name: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string, leadParagraph: string | null, frameworkConfig: (
+    { id: string, name: string, siteTitle: string, themeIdentifier: string | null, owner: string | null, defaultLanguage: string, supportedLanguages: Array<string>, targetYear: number | null, modelEndYear: number, referenceYear: number | null, minimumHistoricalYear: number, maximumHistoricalYear: number | null, leadTitle: string, leadParagraph: string | null, frameworkConfig: (
       { id: string, framework: (
         { id: string, identifier: string, name: string }
         & { __typename: 'Framework' }

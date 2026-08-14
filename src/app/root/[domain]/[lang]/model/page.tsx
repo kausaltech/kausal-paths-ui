@@ -12,6 +12,7 @@ import {
   CardActionArea,
   CardContent,
   Chip,
+  Collapse,
   Container,
   Divider,
   List,
@@ -19,6 +20,7 @@ import {
   ListItemText,
   Paper,
   Snackbar,
+  Stack,
   Typography,
 } from '@mui/material';
 
@@ -29,10 +31,13 @@ import { useTranslations } from 'next-intl';
 import {
   ArrowRight,
   Box as BoxIcon,
+  CaretDownFill,
+  CaretRightFill,
   CircleFill,
   CloudUpload,
   Database,
   Diagram2,
+  House,
   People,
 } from 'react-bootstrap-icons';
 
@@ -41,6 +46,7 @@ import type {
   PublishModelInstanceMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { constraintViolationsVar } from '@/components/model-editor/constraintViolations';
 import {
   type EditableNodeField,
   type MockNodeEdit,
@@ -60,30 +66,126 @@ const GET_LANDING_DATA = gql`
   query ModelEditorLandingData {
     instance {
       id
+      siteTitle
+      users {
+        user {
+          id
+        }
+      }
       nodes {
         id
+        uuid
         name
       }
       editor {
         ...InstanceEditorPublishState
+        # Most recent draft edit, shown while the model has no published
+        # revision yet.
+        latestChange: changeHistory(limit: 1) {
+          uuid
+          createdAt
+        }
+        # Structural conflicts in the draft; publishing is blocked while any
+        # exist, so surface them before the user hits the button.
+        constraintConflicts {
+          code
+          message
+          origins {
+            nodeUuid
+          }
+          value {
+            nodeUuid
+          }
+        }
+      }
+    }
+    scenarios {
+      id
+      identifier
+      name
+      isDefault
+      allActionsEnabled
+    }
+    parameters {
+      __typename
+      id
+      label
+      ... on BoolParameterType {
+        boolDefault: defaultValue
+      }
+      ... on NumberParameterType {
+        numberDefault: defaultValue
+        unit {
+          id
+          short
+        }
+      }
+      ... on StringParameterType {
+        stringDefault: defaultValue
       }
     }
   }
   ${INSTANCE_EDITOR_PUBLISH_STATE}
 `;
 
+type LandingConflict = {
+  code: string;
+  message: string;
+  origins: { nodeUuid: string | null }[];
+  value: { nodeUuid: string | null } | null;
+};
+
+type LandingScenario = {
+  id: string;
+  identifier: string;
+  name: string;
+  isDefault: boolean;
+  allActionsEnabled: boolean;
+};
+
+type LandingParameter = {
+  __typename: string;
+  id: string;
+  label: string | null;
+  boolDefault?: boolean | null;
+  numberDefault?: number | null;
+  unit?: { short: string } | null;
+  stringDefault?: string | null;
+};
+
+function formatParameterDefault(p: LandingParameter): string {
+  switch (p.__typename) {
+    case 'BoolParameterType':
+      return p.boolDefault == null ? '—' : String(p.boolDefault);
+    case 'NumberParameterType':
+      return p.numberDefault == null
+        ? '—'
+        : `${p.numberDefault}${p.unit?.short ? ` ${p.unit.short}` : ''}`;
+    case 'StringParameterType':
+      return p.stringDefault ?? '—';
+    default:
+      return '—';
+  }
+}
+
 type LandingDataQuery = {
   instance: {
     id: string;
-    nodes: { id: string; name: string }[];
+    siteTitle: string;
+    users: { user: { id: string } }[];
+    nodes: { id: string; uuid: string; name: string }[];
     editor: {
       live: boolean;
       hasUnpublishedChanges: boolean;
       firstPublishedAt: string | null;
       lastPublishedAt: string | null;
       draftHeadToken: string | null;
+      latestChange: { uuid: string; createdAt: string }[];
+      constraintConflicts: LandingConflict[];
     } | null;
   };
+  scenarios: LandingScenario[];
+  parameters: LandingParameter[];
 };
 
 type ToastState = { severity: 'success' | 'error'; message: string } | null;
@@ -128,6 +230,17 @@ function getEditedFieldLabels(edit: MockNodeEdit, t: ReturnType<typeof useTransl
   return labels;
 }
 
+function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', gap: 2, alignItems: 'baseline' }}>
+      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 180, flexShrink: 0 }}>
+        {label}
+      </Typography>
+      <Box sx={{ minWidth: 0 }}>{children}</Box>
+    </Box>
+  );
+}
+
 function formatRelative(
   iso: string | null | undefined,
   t: ReturnType<typeof useTranslations>
@@ -164,6 +277,7 @@ export default function ModelEditorLandingPage() {
   >(PUBLISH_MODEL_INSTANCE);
 
   const [toast, setToast] = useState<ToastState>(null);
+  const [conflictsOpen, setConflictsOpen] = useState(false);
 
   const editedRows = useMemo<EditedNodeRow[]>(() => {
     const nodes = data?.instance.nodes ?? [];
@@ -199,9 +313,38 @@ export default function ModelEditorLandingPage() {
   const base = getModelEditorBase(pathname);
   const editor = data?.instance.editor ?? null;
   const hasUnpublishedChanges = editor?.hasUnpublishedChanges ?? false;
+  // Structural conflicts block publishing server-side; resolve the nodes
+  // each conflict points at so the list reads by name, not UUID. Until the
+  // check result has arrived, treat publishability as unknown — the button
+  // must not be enabled on the optimistic default.
+  const conflictsKnown = editor?.constraintConflicts != null;
+  const blockingConflicts = editor?.constraintConflicts ?? [];
+  const nodeNameByUuid = useMemo(
+    () => new Map((data?.instance.nodes ?? []).map((n) => [n.uuid, n.name])),
+    [data]
+  );
+  // The root `parameters` query returns only the instance-level (global)
+  // parameters that are visible — node-scoped ones are never included, so no
+  // filtering is needed here.
+  const globalParameters = data?.parameters ?? [];
+  // The backend returns `instance.users` only to instance admins, owners and
+  // superusers — everyone else gets `[]`. Any real instance has at least an
+  // owner, so an empty list means the count is restricted (or still
+  // loading), not zero.
+  const memberCount = data?.instance.users.length ?? 0;
+  const conflictNodeNames = (conflict: LandingConflict): string[] => {
+    const uuids = [...conflict.origins.map((o) => o.nodeUuid), conflict.value?.nodeUuid ?? null];
+    return [...new Set(uuids.filter((u): u is string => u != null))]
+      .map((u) => nodeNameByUuid.get(u))
+      .filter((n): n is string => n != null);
+  };
   const hasMockEdits = editedRows.length > 0;
   const lastPublishedLabel = editor?.lastPublishedAt ? df.dateTime(editor.lastPublishedAt) : null;
   const lastPublishedRelative = formatRelative(editor?.lastPublishedAt, t);
+  // Shown instead of a publish timestamp while nothing has been published.
+  const latestEditAt = editor?.latestChange?.[0]?.createdAt ?? null;
+  const latestEditLabel = latestEditAt ? df.dateTime(latestEditAt) : null;
+  const latestEditRelative = formatRelative(latestEditAt, t);
   const firstPublishedLabel = editor?.firstPublishedAt
     ? df.dateTime(editor.firstPublishedAt)
     : null;
@@ -240,6 +383,12 @@ export default function ModelEditorLandingPage() {
         refetchQueries: ['EditorPublishState', 'ModelEditorLandingData'],
       });
       const payload = result.data?.instanceEditor.publishModelInstance;
+      if (payload?.__typename === 'ConstraintViolations') {
+        // Publishing is blocked while the draft has structural conflicts;
+        // the top-level ConstraintViolationsNotice lists them.
+        constraintViolationsVar(payload.conflicts);
+        return;
+      }
       if (payload?.__typename === 'OperationInfo') {
         const msg =
           payload.messages.map((m) => m.message).join('; ') || t('editor-model-publish-failed');
@@ -263,26 +412,10 @@ export default function ModelEditorLandingPage() {
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="overline" color="text.secondary">
-          {t('editor-model-landing')}
-        </Typography>
-        <Typography variant="h1" sx={{ mt: 0.5 }}>
-          {instance.name}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          {instance.leadParagraph ?? t('editor-edit-the-model')}
-        </Typography>
-      </Box>
-
-      <Box sx={{ mb: 4 }}>
-        <Button
-          variant="outlined"
-          component={Link}
-          href={`${base}/users`}
-          startIcon={<People size={14} />}
-        >
-          {t('editor-manage-access')}
-        </Button>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <House size={22} />
+          <Typography variant="h5">{t('editor-nav-model')}</Typography>
+        </Stack>
       </Box>
 
       <Box
@@ -349,6 +482,15 @@ export default function ModelEditorLandingPage() {
                       })
                     : t('editor-last-published', { date: lastPublishedLabel })}
                 </Typography>
+              ) : latestEditLabel ? (
+                <Typography variant="caption" color="text.secondary">
+                  {latestEditRelative
+                    ? t('editor-last-edited-with-relative', {
+                        date: latestEditLabel,
+                        relative: latestEditRelative,
+                      })
+                    : t('editor-last-edited', { date: latestEditLabel })}
+                </Typography>
               ) : (
                 <Typography variant="caption" color="text.secondary">
                   {t('editor-never-published')}
@@ -367,19 +509,60 @@ export default function ModelEditorLandingPage() {
               color="primary"
               size="small"
               startIcon={<CloudUpload size={14} />}
-              disabled={publishing}
+              disabled={publishing || !conflictsKnown || blockingConflicts.length > 0}
               onClick={() => {
                 void handlePublish();
               }}
             >
               {publishing
                 ? t('common-publishing')
-                : hasBeenPublished
-                  ? t('common-publish')
-                  : t('common-publish-first-revision')}
+                : !conflictsKnown
+                  ? t('editor-checking-conflicts')
+                  : hasBeenPublished
+                    ? t('common-publish')
+                    : t('common-publish-first-revision')}
             </Button>
           )}
         </Box>
+
+        {isDraftView && blockingConflicts.length > 0 && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Box
+              onClick={() => setConflictsOpen((v) => !v)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+            >
+              {conflictsOpen ? <CaretDownFill size={11} /> : <CaretRightFill size={11} />}
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {t('editor-publish-blocked-conflicts', { count: blockingConflicts.length })}
+              </Typography>
+            </Box>
+            <Collapse in={conflictsOpen}>
+              <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5 }}>
+                {blockingConflicts.map((conflict, i) => {
+                  const names = conflictNodeNames(conflict);
+                  return (
+                    <Box component="li" key={i}>
+                      <Typography variant="body2" sx={{ fontSize: 13 }}>
+                        {conflict.message}
+                      </Typography>
+                      {names.length > 0 && (
+                        <Typography variant="caption" color="text.secondary">
+                          {names.join(', ')}
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Collapse>
+          </Alert>
+        )}
 
         {hasMockEdits && (
           <>
@@ -452,6 +635,102 @@ export default function ModelEditorLandingPage() {
             </List>
           </>
         )}
+      </Paper>
+
+      {/* General model properties from the instance configuration. Read-only
+          for now; this box is where they'll become editable. */}
+      <Paper variant="outlined" sx={{ p: 3, mt: 3 }}>
+        <Typography variant="h3" sx={{ fontSize: 18, mb: 0.5 }}>
+          {t('editor-model-properties')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {t('editor-model-properties-hint')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <PropertyRow label={t('editor-prop-name')}>
+            <Typography variant="body2">{instance.name}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-framework')}>
+            <Typography variant="body2">
+              {instance.frameworkConfig?.framework?.name ?? '—'}
+            </Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-owner')}>
+            <Typography variant="body2">{instance.owner ?? '—'}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-reference-year')}>
+            <Typography variant="body2">{instance.referenceYear ?? '—'}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-historical-range')}>
+            <Typography variant="body2">
+              {instance.minimumHistoricalYear}–{instance.maximumHistoricalYear ?? '—'}
+            </Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-model-end-year')}>
+            <Typography variant="body2">{instance.modelEndYear}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-target-year')}>
+            <Typography variant="body2">{instance.targetYear ?? '—'}</Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-languages')}>
+            <Typography variant="body2">
+              {/* Bold marks the default language. */}
+              <Box component="span" sx={{ fontWeight: 600 }}>
+                {instance.defaultLanguage}
+              </Box>
+              {instance.supportedLanguages
+                .filter((l) => l !== instance.defaultLanguage)
+                .map((l) => `, ${l}`)
+                .join('')}
+            </Typography>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-scenarios')}>
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {(data?.scenarios ?? []).length === 0 && <Typography variant="body2">—</Typography>}
+              {(data?.scenarios ?? []).map((scenario) => (
+                <Chip
+                  key={scenario.id}
+                  label={
+                    scenario.isDefault
+                      ? `${scenario.name} (${t('editor-prop-default-marker')})`
+                      : scenario.name
+                  }
+                  size="small"
+                  variant="outlined"
+                  color={scenario.isDefault ? 'primary' : 'default'}
+                  title={scenario.identifier}
+                />
+              ))}
+            </Box>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-parameters')}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+              {globalParameters.map((p) => (
+                <Typography key={p.id} variant="body2" title={p.id}>
+                  {p.label ?? p.id}:{' '}
+                  <Box component="span" sx={{ color: 'text.secondary' }}>
+                    {formatParameterDefault(p)}
+                  </Box>
+                </Typography>
+              ))}
+              {globalParameters.length === 0 && <Typography variant="body2">—</Typography>}
+            </Box>
+          </PropertyRow>
+          <PropertyRow label={t('editor-prop-users')}>
+            <Typography variant="body2">
+              {memberCount > 0 ? memberCount : '—'}
+              {' · '}
+              <Typography
+                component={Link}
+                href={`${base}/users`}
+                variant="body2"
+                sx={{ color: 'primary.main' }}
+              >
+                {t('editor-prop-manage-access')}
+              </Typography>
+            </Typography>
+          </PropertyRow>
+        </Box>
       </Paper>
 
       <Snackbar

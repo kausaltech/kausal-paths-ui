@@ -4,16 +4,18 @@ import { useMutation } from '@apollo/client/react';
 import { type EditableGridCell, GridCellKind } from '@glideapps/glide-data-grid';
 
 import type {
-  CreateDataPointMutation,
-  CreateDataPointMutationVariables,
+  CreateDataPointInput,
+  CreateDataPointsMutation,
+  CreateDataPointsMutationVariables,
   CreateDimensionCategoriesMutation,
   CreateDimensionCategoriesMutationVariables,
   CreateDimensionCategoryInput,
   DatasetDetailFieldsFragment,
-  DeleteDataPointMutation,
-  DeleteDataPointMutationVariables,
-  UpdateDataPointMutation,
-  UpdateDataPointMutationVariables,
+  DeleteDataPointsMutation,
+  DeleteDataPointsMutationVariables,
+  UpdateDataPointItemInput,
+  UpdateDataPointsMutation,
+  UpdateDataPointsMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { CREATE_DIMENSION_CATEGORIES } from '../dimensions/queries';
@@ -33,7 +35,7 @@ import {
   rowKey,
   yearColId,
 } from './dataset-grid-data';
-import { CREATE_DATA_POINT, DELETE_DATA_POINT, UPDATE_DATA_POINT } from './queries';
+import { CREATE_DATA_POINTS, DELETE_DATA_POINTS, UPDATE_DATA_POINTS } from './queries';
 
 /**
  * The derived grid data the write handlers operate on. Recomputed by the grid
@@ -120,34 +122,35 @@ export function useDataPointEditing({
   // Save), so the only server work is the save itself.
   const isMutating = saving;
 
-  const [createDataPoint] = useMutation<CreateDataPointMutation, CreateDataPointMutationVariables>(
-    CREATE_DATA_POINT
-  );
-  const [updateDataPoint] = useMutation<UpdateDataPointMutation, UpdateDataPointMutationVariables>(
-    UPDATE_DATA_POINT
-  );
+  const [createDataPoints] = useMutation<
+    CreateDataPointsMutation,
+    CreateDataPointsMutationVariables
+  >(CREATE_DATA_POINTS);
+  const [updateDataPoints] = useMutation<
+    UpdateDataPointsMutation,
+    UpdateDataPointsMutationVariables
+  >(UPDATE_DATA_POINTS);
   const [createDimensionCategories] = useMutation<
     CreateDimensionCategoriesMutation,
     CreateDimensionCategoriesMutationVariables
   >(CREATE_DIMENSION_CATEGORIES);
-  const [deleteDataPoint] = useMutation<DeleteDataPointMutation, DeleteDataPointMutationVariables>(
-    DELETE_DATA_POINT,
-    {
-      // Evict the deleted DataPoint from the normalised cache as soon as the
-      // mutation succeeds. Without this, references in `Dataset.dataPoints`
-      // can survive until the next refetch returns — which on slow connections
-      // makes the grid show stale columns / rows.
-      update: (cache, { data }, { variables }) => {
-        if (!variables?.dataPointId) return;
-        const messages = data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
-        if (messages.length > 0) return;
-        cache.evict({
-          id: cache.identify({ __typename: 'DataPoint', id: variables.dataPointId }),
-        });
-        cache.gc();
-      },
-    }
-  );
+  const [deleteDataPoints] = useMutation<
+    DeleteDataPointsMutation,
+    DeleteDataPointsMutationVariables
+  >(DELETE_DATA_POINTS, {
+    // Evict the deleted DataPoints from the normalised cache as soon as the
+    // mutation succeeds. Without this, references in `Dataset.dataPoints`
+    // can survive until the next refetch returns — which on slow connections
+    // makes the grid show stale columns / rows.
+    update: (cache, { data }) => {
+      const payload = data?.instanceEditor.datasetEditor.deleteDataPoints;
+      if (payload?.__typename !== 'DeleteDataPointsResult') return;
+      for (const id of payload.deletedDataPointIds) {
+        cache.evict({ id: cache.identify({ __typename: 'DataPoint', id }) });
+      }
+      cache.gc();
+    },
+  });
 
   const handleAddRows = useCallback(
     (selectedMetricIds: string[], newRows: string[][]) => {
@@ -496,57 +499,99 @@ export function useDataPointEditing({
       }
     }
 
-    // Saving is one mutation per data point + per anchor (sequential), so drive
-    // a determinate progress bar over the combined total. `tick` no-ops when no
-    // progress is shown (nothing to do).
-    const totalOps = queued.length + anchors.length + deletionIds.length;
-    if (totalOps > 0) setSaveProgress({ current: 0, total: totalOps });
-    const tick = () =>
-      setSaveProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
-
+    // Partition the queued edits by operation kind up front — each kind goes
+    // to the backend as ONE batch mutation. No-op edits (a create that ended
+    // as empty, a delete of a never-persisted point) succeed immediately.
+    type CreateItem = { key: string; edit: PendingEdit; input: CreateDataPointInput };
+    type UpdateItem = { key: string; edit: PendingEdit; item: UpdateDataPointItemInput };
+    type DeleteItem = { key: string; edit: PendingEdit; dataPointId: string };
+    const createItems: CreateItem[] = [];
+    const updateItems: UpdateItem[] = [];
+    const deleteItems: DeleteItem[] = [];
     for (const [key, edit] of queued) {
-      // Tick once per edit up front so the count advances on every path
-      // (including the no-op skips below), not just the mutating ones.
-      tick();
       const row = rowById.get(edit.rowId);
       if (!row) {
         successKeys.push(key);
         continue;
       }
       const kind = diffKind(edit.dataPointId, edit.nextValue);
+      if (kind === 'create') {
+        if (edit.nextValue === null) {
+          successKeys.push(key);
+          continue;
+        }
+        createItems.push({
+          key,
+          edit,
+          input: {
+            date: `${edit.year}-01-01`,
+            value: edit.nextValue,
+            metricId: row.metricId,
+            dimensionCategoryIds: Object.values(row.categoryByDim).filter(
+              (v): v is string => v !== null
+            ),
+          },
+        });
+      } else if (kind === 'delete') {
+        if (edit.dataPointId === null) {
+          successKeys.push(key);
+          continue;
+        }
+        deleteItems.push({ key, edit, dataPointId: edit.dataPointId });
+      } else {
+        if (edit.dataPointId === null) {
+          successKeys.push(key);
+          continue;
+        }
+        updateItems.push({
+          key,
+          edit,
+          item: { dataPointId: edit.dataPointId, input: asUpdateInput({ value: edit.nextValue }) },
+        });
+      }
+    }
 
+    // Progress still counts individual data points, but advances a whole
+    // batch at a time — saving is now one mutation per operation kind.
+    const totalOps =
+      createItems.length +
+      updateItems.length +
+      deleteItems.length +
+      anchors.length +
+      deletionIds.length;
+    if (totalOps > 0) setSaveProgress({ current: 0, total: totalOps });
+    const tickBy = (n: number) => {
+      if (n === 0) return;
+      setSaveProgress((prev) => (prev ? { ...prev, current: prev.current + n } : prev));
+    };
+    const joinMessages = (p: { messages: readonly { message: string }[] }) =>
+      p.messages.map((m) => m.message).join('; ');
+    // A batch is all-or-nothing on the backend: OperationInfo rejects the
+    // whole call, so every item in the batch shares the failure message.
+    const failBatch = (items: readonly { key: string; edit: PendingEdit }[], error: string) => {
+      for (const { key, edit } of items) failures.set(key, { edit, error });
+    };
+
+    if (createItems.length > 0) {
       try {
-        if (kind === 'create') {
-          if (edit.nextValue === null) {
-            successKeys.push(key);
-            continue;
-          }
-          const result = await createDataPoint({
-            variables: {
-              ...baseVars,
-              input: {
-                date: `${edit.year}-01-01`,
-                value: edit.nextValue,
-                metricId: row.metricId,
-                dimensionCategoryIds: Object.values(row.categoryByDim).filter(
-                  (v): v is string => v !== null
-                ),
-              },
-            },
-            // Append the new DataPoint to Dataset.dataPoints in the cache so
-            // the cell renders the persisted value as soon as the pending
-            // entry is dropped — even if the parent refetch (onMutated below)
-            // fails. Without this, a transient refetch error would leave the
-            // server-saved point absent from the cache, the cell would fall
-            // back to empty, and a user re-entry would create a duplicate.
-            update: (cache, { data: muData }) => {
-              const created = muData?.instanceEditor.datasetEditor.createDataPoint;
-              if (created?.__typename !== 'DataPoint') return;
-              const datasetCacheId = cache.identify({ __typename: 'Dataset', id: dataset.id });
+        const result = await createDataPoints({
+          variables: { ...baseVars, input: createItems.map((i) => i.input) },
+          // Append the new DataPoints to Dataset.dataPoints in the cache so
+          // the cells render the persisted values as soon as the pending
+          // entries are dropped — even if the parent refetch (onMutated below)
+          // fails. Without this, a transient refetch error would leave the
+          // server-saved points absent from the cache, the cells would fall
+          // back to empty, and a user re-entry would create duplicates.
+          update: (cache, { data: muData }) => {
+            const payload = muData?.instanceEditor.datasetEditor.createDataPoints;
+            if (payload?.__typename !== 'DataPointsMutationResult') return;
+            const datasetCacheId = cache.identify({ __typename: 'Dataset', id: dataset.id });
+            if (!datasetCacheId) return;
+            for (const created of payload.dataPoints) {
               const pointCacheId = cache.identify(created);
-              if (!datasetCacheId || !pointCacheId) return;
-              // CREATE_DATA_POINT returns DataPointFields, which does NOT
-              // include `comments`, but the active dataset query reads
+              if (!pointCacheId) continue;
+              // The mutation returns DataPointFields, which does NOT include
+              // `comments`, but the active dataset query reads
               // `dataPoint.comments` for every point. Seed the new point's
               // comments to [] (a brand-new point has none) BEFORE exposing
               // it via Dataset.dataPoints, so any re-render between this
@@ -571,103 +616,107 @@ export function useDataPointEditing({
                   },
                 },
               });
-            },
-          });
-          const payload = result.data?.instanceEditor.datasetEditor.createDataPoint;
-          if (payload?.__typename === 'OperationInfo') {
-            failures.set(key, {
-              edit,
-              error: payload.messages.map((m) => m.message).join('; '),
-            });
-          } else {
-            successKeys.push(key);
-          }
-        } else if (kind === 'delete') {
-          if (edit.dataPointId === null) {
-            successKeys.push(key);
-            continue;
-          }
-          const result = await deleteDataPoint({
-            variables: { ...baseVars, dataPointId: edit.dataPointId },
-          });
-          const msgs = result.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
-          if (msgs.length > 0) {
-            failures.set(key, { edit, error: msgs.map((m) => m.message).join('; ') });
-          } else {
-            successKeys.push(key);
-          }
+            }
+          },
+        });
+        const payload = result.data?.instanceEditor.datasetEditor.createDataPoints;
+        if (payload?.__typename === 'OperationInfo') {
+          failBatch(createItems, joinMessages(payload));
         } else {
-          if (edit.dataPointId === null) {
-            successKeys.push(key);
-            continue;
-          }
-          const result = await updateDataPoint({
-            variables: {
-              ...baseVars,
-              dataPointId: edit.dataPointId,
-              input: asUpdateInput({ value: edit.nextValue }),
-            },
-          });
-          const payload = result.data?.instanceEditor.datasetEditor.updateDataPoint;
-          if (payload?.__typename === 'OperationInfo') {
-            failures.set(key, {
-              edit,
-              error: payload.messages.map((m) => m.message).join('; '),
-            });
-          } else {
-            successKeys.push(key);
-          }
+          successKeys.push(...createItems.map((i) => i.key));
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        failures.set(key, { edit, error: msg });
+        failBatch(createItems, msg);
         unexpected ??= msg;
       }
+      tickBy(createItems.length);
     }
 
-    // Execute the anchors computed up front (null-valued data points that keep
-    // empty staged rows / added years alive across the refetch).
+    if (updateItems.length > 0) {
+      try {
+        const result = await updateDataPoints({
+          variables: { ...baseVars, input: updateItems.map((i) => i.item) },
+        });
+        const payload = result.data?.instanceEditor.datasetEditor.updateDataPoints;
+        if (payload?.__typename === 'OperationInfo') {
+          failBatch(updateItems, joinMessages(payload));
+        } else {
+          successKeys.push(...updateItems.map((i) => i.key));
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        failBatch(updateItems, msg);
+        unexpected ??= msg;
+      }
+      tickBy(updateItems.length);
+    }
+
+    if (deleteItems.length > 0) {
+      try {
+        const result = await deleteDataPoints({
+          variables: { ...baseVars, dataPointIds: deleteItems.map((i) => i.dataPointId) },
+        });
+        const payload = result.data?.instanceEditor.datasetEditor.deleteDataPoints;
+        if (payload?.__typename === 'OperationInfo') {
+          failBatch(deleteItems, joinMessages(payload));
+        } else {
+          successKeys.push(...deleteItems.map((i) => i.key));
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        failBatch(deleteItems, msg);
+        unexpected ??= msg;
+      }
+      tickBy(deleteItems.length);
+    }
+
+    // Persist the anchors computed up front (null-valued data points that keep
+    // empty staged rows / added years alive across the refetch) as one batch.
     const anchorFailedRowIds = new Set<string>();
     let anchorError: string | null = null;
-    for (const a of anchors) {
-      tick();
+    if (anchors.length > 0) {
       try {
-        const r = await createDataPoint({
+        const r = await createDataPoints({
           variables: {
             ...baseVars,
-            input: {
+            input: anchors.map((a) => ({
               date: `${a.year}-01-01`,
               value: null,
               metricId: a.metricId,
               dimensionCategoryIds: Object.values(a.categoryByDim).filter(
                 (v): v is string => v !== null
               ),
-            },
+            })),
           },
         });
-        const p = r.data?.instanceEditor.datasetEditor.createDataPoint;
+        const p = r.data?.instanceEditor.datasetEditor.createDataPoints;
         if (p?.__typename === 'OperationInfo') {
-          anchorError ??= p.messages.map((m) => m.message).join('; ');
-          anchorFailedRowIds.add(rowKey(a.metricId, a.categoryByDim));
+          anchorError = joinMessages(p);
+          for (const a of anchors) anchorFailedRowIds.add(rowKey(a.metricId, a.categoryByDim));
         }
       } catch (err) {
-        anchorError ??= err instanceof Error ? err.message : String(err);
-        anchorFailedRowIds.add(rowKey(a.metricId, a.categoryByDim));
+        anchorError = err instanceof Error ? err.message : String(err);
+        for (const a of anchors) anchorFailedRowIds.add(rowKey(a.metricId, a.categoryByDim));
       }
+      tickBy(anchors.length);
     }
 
-    // Delete the data points of rows / years staged for deletion. Kept staged
-    // (for retry) on failure; cleared on full success in the finally below.
+    // Delete the data points of rows / years staged for deletion, as one
+    // batch. Kept staged (for retry) on failure; cleared on full success in
+    // the finally below.
     let deleteError: string | null = null;
-    for (const id of deletionIds) {
-      tick();
+    if (deletionIds.length > 0) {
       try {
-        const r = await deleteDataPoint({ variables: { ...baseVars, dataPointId: id } });
-        const msgs = r.data?.instanceEditor.datasetEditor.deleteDataPoint?.messages ?? [];
-        if (msgs.length > 0) deleteError ??= msgs.map((m) => m.message).join('; ');
+        const r = await deleteDataPoints({
+          variables: { ...baseVars, dataPointIds: deletionIds },
+        });
+        const p = r.data?.instanceEditor.datasetEditor.deleteDataPoints;
+        if (p?.__typename === 'OperationInfo') deleteError = joinMessages(p);
       } catch (err) {
-        deleteError ??= err instanceof Error ? err.message : String(err);
+        deleteError = err instanceof Error ? err.message : String(err);
       }
+      tickBy(deletionIds.length);
     }
 
     // Wait for the parent to refetch the dataset (so the Apollo cache holds
@@ -735,9 +784,9 @@ export function useDataPointEditing({
     stagedRows,
     stagedDeletedRowIds,
     stagedDeletedYears,
-    createDataPoint,
-    updateDataPoint,
-    deleteDataPoint,
+    createDataPoints,
+    updateDataPoints,
+    deleteDataPoints,
     createDimensionCategories,
     onMutated,
     setPendingEdits,

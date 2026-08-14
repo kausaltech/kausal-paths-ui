@@ -8,6 +8,7 @@ import type {
   CreateEdgeMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { constraintViolationError } from './constraintViolations';
 import { CREATE_EDGE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
 
@@ -32,13 +33,7 @@ export function useCreateEdge() {
   const [mutate] = useMutation<CreateEdgeMutation, CreateEdgeMutationVariables>(CREATE_EDGE);
 
   return useCallback(
-    async ({
-      fromNodeUuid,
-      toNodeUuid,
-      fromPort,
-      toPort,
-      replace = false,
-    }: CreateEdgeArgs) => {
+    async ({ fromNodeUuid, toNodeUuid, fromPort, toPort, replace = false }: CreateEdgeArgs) => {
       try {
         const result = await mutate({
           variables: {
@@ -63,6 +58,9 @@ export function useCreateEdge() {
           awaitRefetchQueries: true,
         });
         const payload = result.data?.instanceEditor.createEdge;
+        if (payload?.__typename === 'ConstraintViolations') {
+          constraintViolationError(payload);
+        }
         if (payload?.__typename === 'OperationInfo') {
           const message = payload.messages.map((m) => m.message).join('; ');
           throw new Error(message || 'Failed to create edge');
