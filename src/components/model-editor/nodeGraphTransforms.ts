@@ -114,8 +114,8 @@ export function convertToElk(
     const src = nodesById.get(edge.fromRef.nodeId);
     const tgt = nodesById.get(edge.portRef.nodeId);
     if (src) {
-      const outPorts = getNodeSpec(src)?.outputPorts;
-      if (!outPorts || !outPorts.some((p) => p.id === edge.fromRef.portId)) {
+      const spec = getNodeSpec(src);
+      if (spec && !spec.outputPorts.some((p) => p.id === edge.fromRef.portId)) {
         console.warn(
           `Skipping edge ${edge.id}: fromPort="${edge.fromRef.portId}" not found on node "${src.identifier}"`
         );
@@ -123,8 +123,8 @@ export function convertToElk(
       }
     }
     if (tgt) {
-      const inPorts = getNodeSpec(tgt)?.inputPorts;
-      if (!inPorts || !inPorts.some((p) => p.id === edge.portRef.portId)) {
+      const spec = getNodeSpec(tgt);
+      if (spec && !spec.inputPorts.some((p) => p.id === edge.portRef.portId)) {
         console.warn(
           `Skipping edge ${edge.id}: toPort="${edge.portRef.portId}" not found on node "${tgt.identifier}"`
         );
@@ -138,7 +138,9 @@ export function convertToElk(
     const spec = getNodeSpec(node);
     const inputPorts = spec?.inputPorts ?? [];
     const outputPorts = spec?.outputPorts ?? [];
-    const srcHandles = outputPorts.map((p) => ({ id: p.id }));
+    const srcHandles = [
+      ...new Set([...outputPorts.map((p) => p.id), ...(sourceHandlesFromEdges.get(node.id) ?? [])]),
+    ].map((id) => ({ id }));
     const hiddenSourcesForNode = hiddenSourcesByNodeAndPort.get(node.id);
     const tgtHandles = inputPorts.map((p) => ({
       id: p.id,
@@ -150,6 +152,11 @@ export function convertToElk(
       ),
       hiddenSources: hiddenSourcesForNode?.get(p.id),
     }));
+    for (const id of targetHandlesFromEdges.get(node.id) ?? []) {
+      if (!tgtHandles.some((handle) => handle.id === id)) {
+        tgtHandles.push({ id, multi: false, datasets: [], hiddenSources: undefined });
+      }
+    }
 
     const typeConfig = spec?.typeConfig;
     const nodeClass =
@@ -163,6 +170,7 @@ export function convertToElk(
         nodeClass: nodeClass ?? '',
         color: node.color ?? '',
         isOutcome: node.__typename === 'Node' ? (node.isOutcome ?? false) : false,
+        isProtected: !node.isEditable,
         isEnabled: node.__typename === 'ActionNode' ? node.isEnabled : null,
         actionGroup:
           node.__typename === 'ActionNode' && node.group

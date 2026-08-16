@@ -99,10 +99,12 @@ export function SourceReferenceCard({
   reference: r,
   onDetach,
   detaching,
+  readOnly = false,
 }: {
   reference: DatasetSourceReferenceFieldsFragment;
   onDetach: () => void;
   detaching: boolean;
+  readOnly?: boolean;
 }) {
   const t = useTranslations('model-editor');
   const df = useEditorDateFormat();
@@ -113,18 +115,20 @@ export function SourceReferenceCard({
       <Stack spacing={0.5}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
           <Typography variant="subtitle2">{ds.name}</Typography>
-          <Tooltip title={t('datasets-detach-data-source')}>
-            <span>
-              <IconButton
-                size="small"
-                onClick={onDetach}
-                disabled={detaching}
-                aria-label={t('datasets-detach-data-source')}
-              >
-                <DashCircle size={14} />
-              </IconButton>
-            </span>
-          </Tooltip>
+          {!readOnly && (
+            <Tooltip title={t('datasets-detach-data-source')}>
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={onDetach}
+                  disabled={detaching}
+                  aria-label={t('datasets-detach-data-source')}
+                >
+                  <DashCircle size={14} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
         </Stack>
         {meta.length > 0 && (
           <Typography variant="caption" color="text.secondary">

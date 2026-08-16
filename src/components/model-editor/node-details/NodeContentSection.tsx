@@ -17,7 +17,6 @@ import RichTextField from '../RichTextField';
 import { getNativeLanguageName } from '../languageLabel';
 import type { MockNodeEdit } from '../mockEdits';
 import { NODE_TRANSLATION } from '../queries';
-import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useUpdateNodeMutation } from '../useUpdateNodeMutation';
 import {
   LiveTextField,
@@ -30,6 +29,7 @@ export type NodeContentSectionProps = {
   node: EditorNodeFieldsFragment;
   editorUserName: string;
   currentEdit: MockNodeEdit | undefined;
+  readOnly: boolean;
 };
 
 /**
@@ -41,10 +41,14 @@ export type NodeContentSectionProps = {
  * a small query with `context: { locale }` and `fetchPolicy: 'no-cache'` so
  * each switch returns fresh data without colliding on Apollo's cache key.
  */
-export function NodeContentSection({ node, editorUserName, currentEdit }: NodeContentSectionProps) {
+export function NodeContentSection({
+  node,
+  editorUserName,
+  currentEdit,
+  readOnly,
+}: NodeContentSectionProps) {
   const t = useTranslations('model-editor');
   const updateNode = useUpdateNodeMutation();
-  const readOnly = useIsEditorReadOnly();
   const instance = useInstance();
 
   const languages = [
@@ -191,7 +195,7 @@ export function NodeContentSection({ node, editorUserName, currentEdit }: NodeCo
 
   if (!readOnly || !isDefault) return body;
   return (
-    <Tooltip title={t('editor-read-only-desc')} placement="left" arrow followCursor>
+    <Tooltip title={t('entity-read-only-desc')} placement="left" arrow followCursor>
       {body}
     </Tooltip>
   );

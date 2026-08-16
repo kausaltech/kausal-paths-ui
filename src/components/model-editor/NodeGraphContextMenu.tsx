@@ -77,7 +77,14 @@ export type ContextMenuState =
       mouseX: number;
       mouseY: number;
     } & (
-      | { kind: 'node'; nodeId: string; isAction: boolean }
+      | {
+          kind: 'node';
+          nodeId: string;
+          isAction: boolean;
+          isProtected: boolean;
+          canChange: boolean;
+          canDelete: boolean;
+        }
       | { kind: 'edge'; edgeId: string }
       | { kind: 'pane'; flowX: number; flowY: number }
     ))
@@ -152,7 +159,9 @@ export default function NodeGraphContextMenu({
         </MenuItem>
       )}
       {!readOnly &&
-        state?.kind === 'node' && [
+        state?.kind === 'node' &&
+        state.canChange &&
+        !state.isProtected && [
           <MenuItem key="duplicate" onClick={handleDuplicateNode}>
             <ListItemIcon>
               <Copy size={14} />
@@ -171,7 +180,7 @@ export default function NodeGraphContextMenu({
             : []),
           <Divider key="divider" />,
         ]}
-      {!readOnly && state?.kind === 'node' && (
+      {!readOnly && state?.kind === 'node' && state.canDelete && (
         <MenuItem onClick={handleDeleteNode} sx={{ color: 'error.main' }}>
           <ListItemIcon sx={{ color: 'inherit' }}>
             <Trash size={14} />

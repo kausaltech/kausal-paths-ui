@@ -57,6 +57,8 @@
   "bindings-move-up": "Move up",
   "bindings-no-transformations": "No transformations.",
   "bindings-read-only": "Read-only",
+  "entity-protected": "Protected",
+  "entity-read-only-desc": "You can view this item, but you don't have permission to change it.",
   "bindings-save-failed": "Failed to save binding",
   "bindings-system-managed": "System managed",
   "bindings-tags": "Tags",

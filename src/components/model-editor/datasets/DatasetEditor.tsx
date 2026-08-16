@@ -5,6 +5,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Drawer,
   Paper,
@@ -15,7 +16,7 @@ import {
 
 import { useFragment, useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, InfoCircle, Sliders } from 'react-bootstrap-icons';
+import { ArrowLeft, InfoCircle, LockFill, Sliders } from 'react-bootstrap-icons';
 
 import type {
   CreateDataSourceInput,
@@ -35,6 +36,7 @@ import type {
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getModelEditorBase, getModelEditorSection } from '../paths';
+import { useIsEntityReadOnly } from '../useIsEditorReadOnly';
 import DataPointDetailsPanel from './DataPointDetailsPanel';
 import DatasetDataGrid from './DatasetDataGrid';
 import DatasetDetailsPanel from './DatasetDetailsPanel';
@@ -95,6 +97,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const modelEditorBase = getModelEditorBase(pathname);
 
   const dataset = data?.instance.editor?.dataset ?? null;
+  const readOnly = useIsEntityReadOnly(dataset);
 
   const [notice, setNotice] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<'details' | 'datapoint' | null>(null);
@@ -211,6 +214,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   // InstanceDataset observer doesn't re-render from a passive cache broadcast in
   // this runtime (the cache.modify is kept for the instant case where it does).
   const handleAttachSource = async (dataSourceId: string, dataPointId: string | null) => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
     const result = await createSourceReference({
       variables: {
         instanceId: instance.id,
@@ -243,6 +247,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   };
 
   const handleDetachSource = async (referenceId: string) => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
     const result = await deleteSourceReference({
       variables: { instanceId: instance.id, datasetId: dataset.id, referenceId },
       // Evict the normalised entity so Apollo drops dangling refs everywhere.
@@ -266,6 +271,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const handleCreateDataSource = async (
     input: CreateDataSourceInput
   ): Promise<DataSourceFieldsFragment> => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
     const result = await createDataSource({
       variables: { instanceId: instance.id, input },
       // Append to instance.editor.dataSources so the picker lists it; the
@@ -346,7 +352,17 @@ export default function DatasetEditor({ datasetId }: Props) {
         >
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
             <Box>
-              <Typography variant="h3">{dataset.name}</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="h3">{dataset.name}</Typography>
+                {!dataset.isEditable && (
+                  <Chip
+                    icon={<LockFill size={12} />}
+                    label={t('entity-protected')}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+              </Stack>
               {dataset.identifier && (
                 <Typography
                   variant="subtitle2"
@@ -380,6 +396,7 @@ export default function DatasetEditor({ datasetId }: Props) {
             <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <DatasetDataGrid
                 dataset={dataset}
+                readOnly={readOnly}
                 onMutated={() => refetch()}
                 onSelectedDataPointChange={setSelectedDataPointId}
                 onSelectedCellChange={setSelectedCell}
@@ -416,6 +433,7 @@ export default function DatasetEditor({ datasetId }: Props) {
               onCreateDataSource={handleCreateDataSource}
               onSubmitComment={submitComment}
               onSetResolved={setResolved}
+              readOnly={readOnly}
             />
           ) : (
             <DatasetDetailsPanel
@@ -434,6 +452,7 @@ export default function DatasetEditor({ datasetId }: Props) {
               onNavigateToNode={(id) =>
                 router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)
               }
+              readOnly={readOnly}
             />
           )}
         </Box>

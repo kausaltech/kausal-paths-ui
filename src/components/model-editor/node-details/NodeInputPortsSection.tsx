@@ -46,7 +46,6 @@ import { type CategoryKey, getNodeStyle } from '../ElkNode';
 import { type InputPort, getNodeSpec, outputMatchesPort } from '../nodeHelpers';
 import { QUANTITY_SUGGESTIONS } from '../quantities';
 import { useCreateEdge } from '../useCreateEdge';
-import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useAddInputPort, useBindDataset, useDeleteBinding } from '../usePortBindings';
 import { useUpdateInputPorts } from '../useUpdateOutputPorts';
 import BindingEditor, { type BindingEditorValue } from './BindingEditor';
@@ -405,6 +404,7 @@ type NodeInputPortsSectionProps = {
   onHover: (nodeId: string | null) => void;
   onShowDataset?: (bindingId: string) => void;
   onShowMetrics?: (nodeId: string, nodeName: string | null) => void;
+  readOnly: boolean;
 };
 
 export default function NodeInputPortsSection({
@@ -419,9 +419,9 @@ export default function NodeInputPortsSection({
   onHover,
   onShowDataset,
   onShowMetrics,
+  readOnly,
 }: NodeInputPortsSectionProps) {
   const t = useTranslations('model-editor');
-  const readOnly = useIsEditorReadOnly();
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
   const createEdge = useCreateEdge();
@@ -773,26 +773,28 @@ export default function NodeInputPortsSection({
                           }
                           onSelect={onSelectNode}
                           onHover={onHover}
-                          onDelete={() => void handleRemoveEdge(e.id)}
+                          onDelete={readOnly ? undefined : () => void handleRemoveEdge(e.id)}
                           deleting={removingEdgeId === e.id}
                         />
-                        <Tooltip title={t('bindings-edit')}>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              setEditingBinding({
-                                id: e.id,
-                                kind: 'edge',
-                                tags: e.tags,
-                                transformations: e.transformations,
-                              })
-                            }
-                            aria-label={t('bindings-edit')}
-                            sx={{ p: 0.5 }}
-                          >
-                            <Sliders size={12} />
-                          </IconButton>
-                        </Tooltip>
+                        {!readOnly && (
+                          <Tooltip title={t('bindings-edit')}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                setEditingBinding({
+                                  id: e.id,
+                                  kind: 'edge',
+                                  tags: e.tags,
+                                  transformations: e.transformations,
+                                })
+                              }
+                              aria-label={t('bindings-edit')}
+                              sx={{ p: 0.5 }}
+                            >
+                              <Sliders size={12} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         {sourceNode && onShowMetrics && (
                           <Tooltip title={t('nodes-port-show-source-data')}>
                             <IconButton
@@ -817,7 +819,7 @@ export default function NodeInputPortsSection({
                         variant="outlined"
                         onClick={() => onShowDataset?.(ds.id)}
                         disabled={removingEdgeId === ds.id}
-                        onDelete={() => void handleRemoveEdge(ds.id)}
+                        onDelete={readOnly ? undefined : () => void handleRemoveEdge(ds.id)}
                         deleteIcon={
                           <XCircleFill size={14} aria-label={t('nodes-remove-input-source')} />
                         }
@@ -837,25 +839,27 @@ export default function NodeInputPortsSection({
                           },
                         }}
                       />
-                      <Tooltip title={t('bindings-edit')}>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setEditingBinding({
-                              id: ds.id,
-                              kind: 'dataset',
-                              tags: ds.tags,
-                              transformations: ds.transformations,
-                              metricId: ds.metric.id,
-                              metrics: ds.dataset.metrics,
-                            })
-                          }
-                          aria-label={t('bindings-edit')}
-                          sx={{ p: 0.5 }}
-                        >
-                          <Sliders size={12} />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <Tooltip title={t('bindings-edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setEditingBinding({
+                                id: ds.id,
+                                kind: 'dataset',
+                                tags: ds.tags,
+                                transformations: ds.transformations,
+                                metricId: ds.metric.id,
+                                metrics: ds.dataset.metrics,
+                              })
+                            }
+                            aria-label={t('bindings-edit')}
+                            sx={{ p: 0.5 }}
+                          >
+                            <Sliders size={12} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {onShowDataset && (
                         <Tooltip title={t('nodes-port-show-source-dataset')}>
                           <IconButton
@@ -941,7 +945,7 @@ export default function NodeInputPortsSection({
           </Menu>
         </Paper>
       )}
-      {addPortDialogOpen && (
+      {!readOnly && addPortDialogOpen && (
         <InputPortSettingsDialog
           title={t('nodes-add-input-port')}
           submitLabel={t('common-add')}
@@ -949,7 +953,7 @@ export default function NodeInputPortsSection({
           onSubmit={(fields) => addInputPort({ nodeId: currentNodeId, ...fields })}
         />
       )}
-      {settingsPort && (
+      {!readOnly && settingsPort && (
         <InputPortSettingsDialog
           title={t('nodes-edit-input-port')}
           submitLabel={t('common-save')}
@@ -966,7 +970,12 @@ export default function NodeInputPortsSection({
           deleteDisabled={settingsPort.bindings.length > 0}
         />
       )}
-      <Dialog open={editingPort !== null} onClose={closeDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={!readOnly && editingPort !== null}
+        onClose={closeDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ pr: 6 }}>
           {sourcePortChoice
             ? t('nodes-select-output-port')
@@ -1079,7 +1088,7 @@ export default function NodeInputPortsSection({
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          {editingBinding && (
+          {!readOnly && editingBinding && (
             <BindingEditor
               binding={editingBinding}
               onSaved={() => setEditingBinding(null)}

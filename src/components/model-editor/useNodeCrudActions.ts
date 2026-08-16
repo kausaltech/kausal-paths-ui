@@ -56,6 +56,7 @@ export function useNodeCrudActions({
     (nodeId: string) => {
       const node = nodeMap.get(nodeId);
       if (!node) return;
+      if (node.isEditable === false || node.userPermissions?.change !== true) return;
       if (isDuplicating) return;
       // Capture the source position now, while the original is on screen and
       // stationary.
@@ -161,6 +162,7 @@ export function useNodeCrudActions({
     (nodeId: string) => {
       const node = nodeMap.get(nodeId);
       if (!node) return;
+      if (node.userPermissions?.delete !== true) return;
       setDeleteConfirmNode(node);
     },
     [nodeMap]

@@ -321,6 +321,8 @@
   "editor-status-problem-count": "{count, plural, one {# Hinweis im Modell} other {# Hinweise im Modell}}",
   "editor-this-model": "Dieses Modell",
   "editor-unpublished-changes": "Änderungen an diesem Modell wurden noch nicht veröffentlicht.",
+  "entity-protected": "Geschützt",
+  "entity-read-only-desc": "Sie können dieses Element ansehen, haben aber keine Berechtigung, es zu ändern.",
   "import-action": "Importieren",
   "import-applies-to": "Gilt für",
   "import-category": "Kategorie",

@@ -42,11 +42,13 @@ function DataPointCommentsSection({
   comments,
   onSubmitComment,
   onSetResolved,
+  readOnly,
 }: {
   dataPointId: string;
   comments: readonly CommentWithDataPoint[];
   onSubmitComment: (dataPointId: string, input: AddCommentInput) => Promise<void>;
   onSetResolved: (commentId: string, resolved: boolean) => Promise<void>;
+  readOnly: boolean;
 }) {
   const t = useTranslations('model-editor');
   const df = useEditorDateFormat();
@@ -102,16 +104,18 @@ function DataPointCommentsSection({
         </Typography>
       </Typography>
 
-      <Button
-        fullWidth
-        variant={formOpen ? 'outlined' : 'contained'}
-        size="small"
-        startIcon={<Plus />}
-        onClick={() => setFormOpen((v) => !v)}
-        sx={{ mb: formOpen ? 1 : 2 }}
-      >
-        {t('datasets-comment-datapoint')}
-      </Button>
+      {!readOnly && (
+        <Button
+          fullWidth
+          variant={formOpen ? 'outlined' : 'contained'}
+          size="small"
+          startIcon={<Plus />}
+          onClick={() => setFormOpen((v) => !v)}
+          sx={{ mb: formOpen ? 1 : 2 }}
+        >
+          {t('datasets-comment-datapoint')}
+        </Button>
+      )}
 
       <Collapse in={formOpen} unmountOnExit>
         <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
@@ -213,7 +217,7 @@ function DataPointCommentsSection({
                         <Checkbox
                           size="small"
                           checked={resolved}
-                          disabled={isResolving}
+                          disabled={readOnly || isResolving}
                           onChange={(e) => {
                             void handleToggleResolved(c.id, e.target.checked);
                           }}
@@ -261,6 +265,7 @@ function DataPointSourcesSection({
   onAttach,
   onDetach,
   onCreateDataSource,
+  readOnly,
 }: {
   dataPointId: string;
   sourceReferences: readonly DatasetSourceReferenceFieldsFragment[];
@@ -268,6 +273,7 @@ function DataPointSourcesSection({
   onAttach: (dataSourceId: string, dataPointId: string) => Promise<void>;
   onDetach: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
+  readOnly: boolean;
 }) {
   const t = useTranslations('model-editor');
   const refs = sourceReferences.filter((r) => r.dataPoint?.id === dataPointId);
@@ -301,12 +307,14 @@ function DataPointSourcesSection({
           ({refs.length})
         </Typography>
       </Typography>
-      <AttachSourceForm
-        availableDataSources={availableDataSources}
-        attachedIds={attachedIds}
-        onAttach={(dataSourceId: string) => onAttach(dataSourceId, dataPointId)}
-        onCreateDataSource={onCreateDataSource}
-      />
+      {!readOnly && (
+        <AttachSourceForm
+          availableDataSources={availableDataSources}
+          attachedIds={attachedIds}
+          onAttach={(dataSourceId: string) => onAttach(dataSourceId, dataPointId)}
+          onCreateDataSource={onCreateDataSource}
+        />
+      )}
       {refs.length === 0 ? (
         <Typography color="text.secondary" variant="body2">
           {t('datasets-no-sources-attached-datapoint')}
@@ -319,6 +327,7 @@ function DataPointSourcesSection({
               reference={r}
               onDetach={() => void handleDetach(r.id)}
               detaching={detachingIds.has(r.id)}
+              readOnly={readOnly}
             />
           ))}
         </Stack>
@@ -341,6 +350,7 @@ export default function DataPointDetailsPanel({
   onAttachSource,
   onDetachSource,
   onCreateDataSource,
+  readOnly,
 }: {
   dataPointId: string | null;
   selectedCell: SelectedCell | null;
@@ -352,6 +362,7 @@ export default function DataPointDetailsPanel({
   onAttachSource: (dataSourceId: string, dataPointId: string) => Promise<void>;
   onDetachSource: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
+  readOnly: boolean;
 }) {
   const t = useTranslations('model-editor');
   return (
@@ -368,6 +379,7 @@ export default function DataPointDetailsPanel({
             comments={comments}
             onSubmitComment={onSubmitComment}
             onSetResolved={onSetResolved}
+            readOnly={readOnly}
           />
           <DataPointSourcesSection
             dataPointId={dataPointId}
@@ -376,6 +388,7 @@ export default function DataPointDetailsPanel({
             onAttach={onAttachSource}
             onDetach={onDetachSource}
             onCreateDataSource={onCreateDataSource}
+            readOnly={readOnly}
           />
           <DataPointChangeHistorySection dataPointId={dataPointId} />
         </>

@@ -169,6 +169,12 @@ export const GET_NODE_GRAPH = gql`
         color
       }
       editor {
+        nodeLayouts {
+          nodeId
+          x
+          y
+          source
+        }
         graphLayout {
           thresholds {
             hubDegree
@@ -196,6 +202,11 @@ export const GET_NODE_GRAPH = gql`
   }
   fragment EditorNodeFields on NodeInterface {
     id
+    isEditable
+    userPermissions {
+      change
+      delete
+    }
     identifier
     name
     shortName
@@ -793,6 +804,11 @@ export const AVAILABLE_DATASETS = gql`
       editor {
         datasets {
           id
+          isEditable
+          userPermissions {
+            change
+            delete
+          }
           identifier
           name
           metrics {

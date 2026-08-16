@@ -250,6 +250,12 @@ const FlowCanvas = memo(function FlowCanvas({
 function FlowEditor(props: {
   nodes: readonly EditorNodeFieldsFragment[];
   edges: readonly EditorNodeEdgeFragment[];
+  nodeLayouts: readonly {
+    nodeId: string;
+    x: number;
+    y: number;
+    source: NodeLayoutSource;
+  }[];
   outcomeNodeIds: readonly string[];
   actionGroups: readonly { id: string; name: string; color: string | null }[];
 }) {
@@ -366,22 +372,16 @@ function FlowEditor(props: {
   const persistedPositions = useMemo<Record<string, CachedPosition>>(
     () =>
       Object.fromEntries(
-        props.nodes.flatMap((node) => {
-          const layout = node.editor?.layout;
-          if (!layout) return [];
-          return [
-            [
-              node.id,
-              {
-                x: layout.x,
-                y: layout.y,
-                source: layout.source === NodeLayoutSource.User ? 'user' : 'auto',
-              },
-            ],
-          ];
-        })
+        props.nodeLayouts.map((layout) => [
+          layout.nodeId,
+          {
+            x: layout.x,
+            y: layout.y,
+            source: layout.source === NodeLayoutSource.User ? 'user' : 'auto',
+          },
+        ])
       ),
-    [props.nodes]
+    [props.nodeLayouts]
   );
   const handleSaveLayouts = useCallback(
     (
@@ -427,6 +427,9 @@ function FlowEditor(props: {
         mouseY: event.clientY,
         nodeId: node.id,
         isAction,
+        isProtected: graphNode?.isEditable === false,
+        canChange: graphNode?.userPermissions?.change === true,
+        canDelete: graphNode?.userPermissions?.delete === true,
       });
     },
     [nodeMap]
@@ -672,6 +675,7 @@ export default function NodeGraphEditor() {
           <FlowEditor
             nodes={nodesWithOverrides}
             edges={editor.edges}
+            nodeLayouts={editor.nodeLayouts}
             outcomeNodeIds={editor.graphLayout.outcomeIds}
             actionGroups={data.instance.actionGroups}
           />

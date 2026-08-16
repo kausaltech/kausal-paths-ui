@@ -32,6 +32,7 @@ type ColumnFilterMenuState = {
 };
 
 type CellContextMenuProps = {
+  readOnly: boolean;
   contextMenu: CellContextMenuState | null;
   gridRef: RefObject<DataEditorRef | null>;
   onClose: () => void;
@@ -48,6 +49,7 @@ type ColumnFilterMenuProps = {
 };
 
 export function CellContextMenu({
+  readOnly,
   contextMenu,
   gridRef,
   onClose,
@@ -89,21 +91,23 @@ export function CellContextMenu({
               </ListItemIcon>
               <ListItemText>Copy</ListItemText>
             </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onClose();
-                gridRef.current?.focus();
-                // Reads via navigator.clipboard.readText — requires a user
-                // gesture (the menu click qualifies) and a secure context.
-                // No-ops silently if the browser denies permission.
-                void gridRef.current?.emit('paste');
-              }}
-            >
-              <ListItemIcon>
-                <Clipboard />
-              </ListItemIcon>
-              <ListItemText>Paste</ListItemText>
-            </MenuItem>
+            {!readOnly && (
+              <MenuItem
+                onClick={() => {
+                  onClose();
+                  gridRef.current?.focus();
+                  // Reads via navigator.clipboard.readText — requires a user
+                  // gesture (the menu click qualifies) and a secure context.
+                  // No-ops silently if the browser denies permission.
+                  void gridRef.current?.emit('paste');
+                }}
+              >
+                <ListItemIcon>
+                  <Clipboard />
+                </ListItemIcon>
+                <ListItemText>Paste</ListItemText>
+              </MenuItem>
+            )}
             <MenuItem
               onClick={() => {
                 onClose();

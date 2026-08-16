@@ -12,6 +12,7 @@ import {
   type ReactFlowState,
   useStore,
 } from '@xyflow/react';
+import { useTranslations } from 'next-intl';
 import {
   ArrowRepeat,
   ArrowRightCircleFill,
@@ -28,6 +29,7 @@ import {
   Flag,
   Gear,
   Intersect,
+  LockFill,
   PlusSquare,
   QuestionCircle,
   Signpost,
@@ -327,6 +329,7 @@ export type ElkNodeData = {
   nodeClass: string;
   color: string;
   isOutcome: boolean;
+  isProtected: boolean;
   /** Action nodes only: whether the action is on in the active scenario. */
   isEnabled?: boolean | null;
   /** Action nodes only: the action group the node belongs to, if any. */
@@ -340,6 +343,7 @@ export type ElkNodeData = {
 export type ElkNodeType = Node<ElkNodeData, 'elk'>;
 
 const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType>) => {
+  const t = useTranslations('model-editor');
   const showContent = useStore(zoomSelector);
   const { highlightedNodeIds, activeNodeId, onHiddenContextClick } = use(
     NodeGraphInteractionContext
@@ -553,6 +557,16 @@ const ElkNode: FC<NodeProps<ElkNodeType>> = ({ id, data }: NodeProps<ElkNodeType
               >
                 {data.label}
               </Typography>
+              {data.isProtected && (
+                <Tooltip title={t('entity-protected')} placement="top" arrow>
+                  <Box
+                    component="span"
+                    sx={{ ml: 'auto', color: 'text.secondary', display: 'inline-flex' }}
+                  >
+                    <LockFill size={10} aria-label={t('entity-protected')} />
+                  </Box>
+                </Tooltip>
+              )}
               {/* The quantity kind is domain classification, not node type — keep
                   it visible by moving it here when the type strip is hidden. */}
               {!display.showNodeType && data.quantityKind?.icon && (

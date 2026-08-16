@@ -1190,7 +1190,10 @@ export type DataPointInstanceChangeHistoryQuery = (
 );
 
 export type DatasetSummaryFieldsFragment = (
-  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, externalRef: (
+  { id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, userPermissions: (
+    { change: boolean, delete: boolean }
+    & { __typename: 'UserPermissions' }
+  ) | null, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
     & { __typename: 'DatasetExternalRefType' }
   ) | null, dimensions: Array<(
@@ -1243,7 +1246,10 @@ export type DatasetSourceReferenceFieldsFragment = (
 );
 
 export type DatasetDetailFieldsFragment = (
-  { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+  { id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, userPermissions: (
+    { change: boolean, delete: boolean }
+    & { __typename: 'UserPermissions' }
+  ) | null, externalRef: (
     { repoUrl: string, commit: string | null, datasetId: string }
     & { __typename: 'DatasetExternalRefType' }
   ) | null, dimensions: Array<(
@@ -1308,10 +1314,13 @@ export type InstanceDatasetsQuery = (
   { instance: (
     { id: string, editor: (
       { datasets: Array<(
-        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, dataPointComments: Array<(
+        { id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, dataPointComments: Array<(
           { id: string }
           & { __typename: 'DataPointComment' }
-        )>, externalRef: (
+        )>, userPermissions: (
+          { change: boolean, delete: boolean }
+          & { __typename: 'UserPermissions' }
+        ) | null, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
           & { __typename: 'DatasetExternalRefType' }
         ) | null, dimensions: Array<(
@@ -1342,7 +1351,10 @@ export type InstanceDatasetQuery = (
   { instance: (
     { id: string, editor: (
       { dataset: (
-        { id: string, identifier: string | null, name: string, isExternalPlaceholder: boolean, externalRef: (
+        { id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, userPermissions: (
+          { change: boolean, delete: boolean }
+          & { __typename: 'UserPermissions' }
+        ) | null, externalRef: (
           { repoUrl: string, commit: string | null, datasetId: string }
           & { __typename: 'DatasetExternalRefType' }
         ) | null, dimensions: Array<(
@@ -2169,7 +2181,10 @@ export type NodeGraphQuery = (
       { id: string, name: string, color: string | null }
       & { __typename: 'ActionGroupType' }
     )>, editor: (
-      { graphLayout: (
+      { nodeLayouts: Array<(
+        { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+        & { __typename: 'NodeLayout' }
+      )>, graphLayout: (
         { coreNodeIds: Array<string>, ghostableContextSourceIds: Array<string>, hubIds: Array<string>, actionIds: Array<string>, outcomeIds: Array<string>, mainGraphNodeIds: Array<string>, thresholds: (
           { hubDegree: number, ghostableOutDegree: number, ghostableTotalDegree: number, ghostableAvgOutgoingSpan: number }
           & { __typename: 'GraphLayoutThresholds' }
@@ -2236,9 +2251,12 @@ export type NodeGraphQuery = (
       & { __typename: 'InstanceEditor' }
     ) | null, nodes: Array<
       | (
-        { id: string, isEnabled: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+        { id: string, isEnabled: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
           { id: string, name: string, color: string | null }
           & { __typename: 'ActionGroupType' }
+        ) | null, userPermissions: (
+          { change: boolean, delete: boolean }
+          & { __typename: 'UserPermissions' }
         ) | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
@@ -2422,7 +2440,10 @@ export type NodeGraphQuery = (
         & { __typename: 'ActionNode' }
       )
       | (
-        { id: string, isOutcome: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
+        { id: string, isOutcome: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, userPermissions: (
+          { change: boolean, delete: boolean }
+          & { __typename: 'UserPermissions' }
+        ) | null, quantityKind: (
           { icon: string | null, id: string, label: string }
           & { __typename: 'QuantityKindType' }
         ) | null, editor: (
@@ -2611,9 +2632,12 @@ export type NodeGraphQuery = (
 );
 
 type EditorNodeFields_ActionNode_Fragment = (
-  { isEnabled: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+  { isEnabled: boolean, id: string, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
     { id: string, name: string, color: string | null }
     & { __typename: 'ActionGroupType' }
+  ) | null, userPermissions: (
+    { change: boolean, delete: boolean }
+    & { __typename: 'UserPermissions' }
   ) | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
@@ -2798,7 +2822,10 @@ type EditorNodeFields_ActionNode_Fragment = (
 );
 
 type EditorNodeFields_Node_Fragment = (
-  { isOutcome: boolean, id: string, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, quantityKind: (
+  { isOutcome: boolean, id: string, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, userPermissions: (
+    { change: boolean, delete: boolean }
+    & { __typename: 'UserPermissions' }
+  ) | null, quantityKind: (
     { icon: string | null, id: string, label: string }
     & { __typename: 'QuantityKindType' }
   ) | null, editor: (
@@ -3566,7 +3593,10 @@ export type AvailableDatasetsQuery = (
   { instance: (
     { id: string, editor: (
       { datasets: Array<(
-        { id: string, identifier: string | null, name: string, metrics: Array<(
+        { id: string, isEditable: boolean, identifier: string | null, name: string, userPermissions: (
+          { change: boolean, delete: boolean }
+          & { __typename: 'UserPermissions' }
+        ) | null, metrics: Array<(
           { id: string, name: string | null, label: string, unitInfo: (
             { id: string, dimensionality: Array<(
               { dimension: string, value: number }

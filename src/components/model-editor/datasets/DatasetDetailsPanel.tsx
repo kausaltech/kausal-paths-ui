@@ -114,12 +114,14 @@ function DatasetSourcesSection({
   onAttachToDataset,
   onDetach,
   onCreateDataSource,
+  readOnly,
 }: {
   refs: readonly DatasetSourceReferenceFieldsFragment[];
   availableDataSources: readonly DataSourceFieldsFragment[];
   onAttachToDataset: (dataSourceId: string) => Promise<void>;
   onDetach: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
+  readOnly: boolean;
 }) {
   const t = useTranslations('model-editor');
   const datasetScopeRefs = refs.filter((r) => r.dataPoint === null);
@@ -156,12 +158,14 @@ function DatasetSourcesSection({
           ({datasetScopeRefs.length})
         </Typography>
       </Typography>
-      <AttachSourceForm
-        availableDataSources={availableDataSources}
-        attachedIds={attachedIds}
-        onAttach={onAttachToDataset}
-        onCreateDataSource={onCreateDataSource}
-      />
+      {!readOnly && (
+        <AttachSourceForm
+          availableDataSources={availableDataSources}
+          attachedIds={attachedIds}
+          onAttach={onAttachToDataset}
+          onCreateDataSource={onCreateDataSource}
+        />
+      )}
       {datasetScopeRefs.length === 0 ? (
         <Typography color="text.secondary" variant="body2">
           {t('datasets-no-sources-attached-dataset')}
@@ -174,6 +178,7 @@ function DatasetSourcesSection({
               reference={r}
               onDetach={() => void handleDetach(r.id)}
               detaching={detachingIds.has(r.id)}
+              readOnly={readOnly}
             />
           ))}
         </Stack>
@@ -196,6 +201,7 @@ type Props = {
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
   onNotice: (message: string) => void;
   onNavigateToNode: (nodeId: string) => void;
+  readOnly: boolean;
 };
 
 export default function DatasetDetailsPanel({
@@ -212,6 +218,7 @@ export default function DatasetDetailsPanel({
   onCreateDataSource,
   onNotice,
   onNavigateToNode,
+  readOnly,
 }: Props) {
   const t = useTranslations('model-editor');
   const isExternal = dataset.isExternalPlaceholder;
@@ -241,6 +248,7 @@ export default function DatasetDetailsPanel({
             label={t('datasets-name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={readOnly}
             fullWidth
             size="small"
           />
@@ -289,7 +297,7 @@ export default function DatasetDetailsPanel({
               </Stack>
             </Paper>
           )}
-          {nameDirty && (
+          {!readOnly && nameDirty && (
             <Stack direction="row" spacing={1} justifyContent="flex-end">
               <Button size="small" variant="outlined" onClick={() => setName(dataset.name)}>
                 {t('common-discard')}
@@ -313,6 +321,7 @@ export default function DatasetDetailsPanel({
         onAttachToDataset={onAttachToDataset}
         onDetach={onDetachSource}
         onCreateDataSource={onCreateDataSource}
+        readOnly={readOnly}
       />
 
       {/* Connected nodes */}
@@ -355,13 +364,15 @@ export default function DatasetDetailsPanel({
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="subtitle1">{t('datasets-dimensions')}</Typography>
-          <Button
-            size="small"
-            startIcon={<Plus />}
-            onClick={() => onNotice(t('datasets-attaching-dimensions-not-implemented'))}
-          >
-            {t('common-add')}
-          </Button>
+          {!readOnly && (
+            <Button
+              size="small"
+              startIcon={<Plus />}
+              onClick={() => onNotice(t('datasets-attaching-dimensions-not-implemented'))}
+            >
+              {t('common-add')}
+            </Button>
+          )}
         </Stack>
         {dataset.dimensions.length === 0 ? (
           <Typography color="text.secondary" variant="body2">
@@ -388,18 +399,20 @@ export default function DatasetDetailsPanel({
                         <PencilSquare />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={t('datasets-detach-dimension')}>
-                      <span>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            onNotice(t('datasets-detaching-dimensions-not-implemented'))
-                          }
-                        >
-                          <Trash />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
+                    {!readOnly && (
+                      <Tooltip title={t('datasets-detach-dimension')}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              onNotice(t('datasets-detaching-dimensions-not-implemented'))
+                            }
+                          >
+                            <Trash />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
                   </Stack>
                 </Stack>
                 <DimensionCategories dim={dim} usedCategoryUuids={usedCategoryUuids} />
@@ -413,13 +426,15 @@ export default function DatasetDetailsPanel({
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="subtitle1">{t('datasets-metrics')}</Typography>
-          <Button
-            size="small"
-            startIcon={<Plus />}
-            onClick={() => onNotice(t('datasets-creating-metrics-not-implemented'))}
-          >
-            {t('common-add')}
-          </Button>
+          {!readOnly && (
+            <Button
+              size="small"
+              startIcon={<Plus />}
+              onClick={() => onNotice(t('datasets-creating-metrics-not-implemented'))}
+            >
+              {t('common-add')}
+            </Button>
+          )}
         </Stack>
         {sortedMetrics.length === 0 ? (
           <Typography color="text.secondary" variant="body2">
@@ -432,28 +447,34 @@ export default function DatasetDetailsPanel({
                 <Stack spacing={0.5}>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Typography variant="subtitle2">{m.label}</Typography>
-                    <Stack direction="row">
-                      <Tooltip title={t('common-edit')}>
-                        <span>
-                          <IconButton
-                            size="small"
-                            onClick={() => onNotice(t('datasets-editing-metrics-not-implemented'))}
-                          >
-                            <PencilSquare />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title={t('common-delete')}>
-                        <span>
-                          <IconButton
-                            size="small"
-                            onClick={() => onNotice(t('datasets-deleting-metrics-not-implemented'))}
-                          >
-                            <Trash />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Stack>
+                    {!readOnly && (
+                      <Stack direction="row">
+                        <Tooltip title={t('common-edit')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                onNotice(t('datasets-editing-metrics-not-implemented'))
+                              }
+                            >
+                              <PencilSquare />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={t('common-delete')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                onNotice(t('datasets-deleting-metrics-not-implemented'))
+                              }
+                            >
+                              <Trash />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Stack>
+                    )}
                   </Stack>
                   <Stack direction="row" spacing={2}>
                     <Typography

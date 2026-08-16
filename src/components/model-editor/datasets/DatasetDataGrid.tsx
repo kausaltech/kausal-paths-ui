@@ -63,6 +63,7 @@ import { type GridView, useDataPointEditing } from './useDataPointEditing';
 
 type Props = {
   dataset: DatasetDetailFieldsFragment;
+  readOnly: boolean;
   /**
    * Called when an edit / delete mutation completes. May return a promise that
    * resolves once the parent finishes refetching; `handleSave` awaits this so
@@ -88,6 +89,7 @@ type Props = {
 
 export default function DatasetDataGrid({
   dataset,
+  readOnly,
   onMutated,
   onSelectedDataPointChange,
   onSelectedCellChange,
@@ -427,9 +429,9 @@ export default function DatasetDataGrid({
           kind: GridCellKind.Number,
           data: value ?? undefined,
           displayData: formatNumber(value),
-          allowOverlay: !isDeleted,
+          allowOverlay: !readOnly && !isDeleted,
           // Don't let the user edit a cell that's about to be deleted.
-          readonly: isDeleted,
+          readonly: readOnly || isDeleted,
           contentAlign: 'right',
           themeOverride,
         };
@@ -464,6 +466,7 @@ export default function DatasetDataGrid({
       uncommittedYears,
       stagedDeletedRowIds,
       stagedDeletedYears,
+      readOnly,
     ]
   );
 
@@ -853,6 +856,7 @@ export default function DatasetDataGrid({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <DatasetDataGridToolbar
+        readOnly={readOnly}
         hasPending={hasPending}
         pendingCount={pendingCount}
         selectedRowCount={selectedRowCount}
@@ -886,12 +890,12 @@ export default function DatasetDataGrid({
           columns={columns}
           rows={rows.length}
           getCellContent={getCellContent}
-          onCellEdited={onCellEdited}
-          onCellsEdited={onCellsEdited}
-          coercePasteValue={coercePasteValue}
+          onCellEdited={readOnly ? undefined : onCellEdited}
+          onCellsEdited={readOnly ? undefined : onCellsEdited}
+          coercePasteValue={readOnly ? undefined : coercePasteValue}
           // Dimensional pastes (a year-header table) open the import modal;
           // everything else falls through to Glide's positional paste.
-          onPaste={importer.onPaste}
+          onPaste={readOnly ? false : importer.onPaste}
           onCellContextMenu={onCellContextMenu}
           onHeaderClicked={onHeaderClicked}
           onHeaderContextMenu={onHeaderContextMenu}
@@ -934,6 +938,7 @@ export default function DatasetDataGrid({
         <DatasetDataGridProgressOverlay saveProgress={editing.saveProgress} />
       </Box>
       <CellContextMenu
+        readOnly={readOnly}
         contextMenu={contextMenu}
         gridRef={gridRef}
         onClose={() => setContextMenu(null)}
@@ -947,24 +952,30 @@ export default function DatasetDataGrid({
         onClearFilter={clearCategoryFilter}
         onToggleFilter={toggleCategoryFilter}
       />
-      <AddRowsModal
-        open={editing.addRowsOpen}
-        onClose={editing.closeAddRows}
-        metrics={dataset.metrics}
-        dimensions={dataset.dimensions}
-        existingCombinations={existingCombinations}
-        onAdd={(selectedMetricIds, newRows) => editing.handleAddRows(selectedMetricIds, newRows)}
-      />
-      <AddYearsModal
-        open={editing.addYearsOpen}
-        existingYears={years}
-        onClose={editing.closeAddYears}
-        onAddYears={(newYears) => editing.handleAddYears(newYears)}
-      />
-      <ImportModal
-        key={importer.modalProps.matrix?.map((row) => row.join('\t')).join('\n') ?? 'empty'}
-        {...importer.modalProps}
-      />
+      {!readOnly && (
+        <AddRowsModal
+          open={editing.addRowsOpen}
+          onClose={editing.closeAddRows}
+          metrics={dataset.metrics}
+          dimensions={dataset.dimensions}
+          existingCombinations={existingCombinations}
+          onAdd={(selectedMetricIds, newRows) => editing.handleAddRows(selectedMetricIds, newRows)}
+        />
+      )}
+      {!readOnly && (
+        <AddYearsModal
+          open={editing.addYearsOpen}
+          existingYears={years}
+          onClose={editing.closeAddYears}
+          onAddYears={(newYears) => editing.handleAddYears(newYears)}
+        />
+      )}
+      {!readOnly && (
+        <ImportModal
+          key={importer.modalProps.matrix?.map((row) => row.join('\t')).join('\n') ?? 'empty'}
+          {...importer.modalProps}
+        />
+      )}
       <Snackbar
         open={editing.error !== null}
         autoHideDuration={5000}

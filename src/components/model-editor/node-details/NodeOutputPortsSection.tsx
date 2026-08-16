@@ -28,7 +28,6 @@ import type {
 import { getNodeStyle } from '../ElkNode';
 import type { getNodeSpec } from '../nodeHelpers';
 import { QUANTITY_SUGGESTIONS } from '../quantities';
-import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { useUpdateOutputPorts } from '../useUpdateOutputPorts';
 import DimensionsSelect from './DimensionsSelect';
 import { CollapsibleSection, ConnectedNodeChip, NotConnectedChip, getStyleForNode } from './shared';
@@ -201,6 +200,7 @@ type NodeOutputPortsSectionProps = {
   onToggle: () => void;
   onSelectNode: (nodeId: string) => void;
   onHover: (nodeId: string | null) => void;
+  readOnly: boolean;
 };
 
 export default function NodeOutputPortsSection({
@@ -213,9 +213,9 @@ export default function NodeOutputPortsSection({
   onToggle,
   onSelectNode,
   onHover,
+  readOnly,
 }: NodeOutputPortsSectionProps) {
   const t = useTranslations('model-editor');
-  const readOnly = useIsEditorReadOnly();
   const updateOutputPorts = useUpdateOutputPorts();
   const [editingPortId, setEditingPortId] = useState<string | null>(null);
   const editingPort = editingPortId ? (ports.find((p) => p.id === editingPortId) ?? null) : null;
@@ -369,7 +369,7 @@ export default function NodeOutputPortsSection({
           </Paper>
         );
       })}
-      {editingPort && (
+      {!readOnly && editingPort && (
         <OutputPortEditDialog
           key={editingPort.id}
           port={editingPort}

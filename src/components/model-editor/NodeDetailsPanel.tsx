@@ -28,6 +28,7 @@ import NodeOutputPortsSection from './node-details/NodeOutputPortsSection';
 import { CollapsibleSection, getStyleForNode } from './node-details/shared';
 import { getNodeGroup, getNodeSpec } from './nodeHelpers';
 import { type NodeStatusEntry, nodeStatusVar } from './queries';
+import { useIsEntityReadOnly } from './useIsEditorReadOnly';
 
 const GET_NODE_EXPLANATION = gql`
   query NodeExplanation($node: ID!) {
@@ -244,6 +245,7 @@ export default function NodeDetailsPanel({
   const [outputOpen, setOutputOpen] = useState(true);
   const [nodeDataOpen, setNodeDataOpen] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const readOnly = useIsEntityReadOnly(node);
 
   const currentEdit = node ? nodeEdits[node.id] : undefined;
   const displayName = node?.name ?? '';
@@ -363,6 +365,14 @@ export default function NodeDetailsPanel({
           <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>
             {displayName}
           </Typography>
+          {!node.isEditable && (
+            <Chip
+              label={t('entity-protected')}
+              size="small"
+              variant="outlined"
+              sx={{ mt: 0.75, height: 20, fontSize: 10 }}
+            />
+          )}
         </Box>
         <IconButton size="small" onClick={onClose} sx={{ mt: '-4px', mr: '-4px' }}>
           <X size={20} />
@@ -388,7 +398,12 @@ export default function NodeDetailsPanel({
         open={contentOpen}
         onToggle={() => setContentOpen((v) => !v)}
       >
-        <NodeContentSection node={node} editorUserName={editorUserName} currentEdit={currentEdit} />
+        <NodeContentSection
+          node={node}
+          editorUserName={editorUserName}
+          currentEdit={currentEdit}
+          readOnly={readOnly}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -402,6 +417,7 @@ export default function NodeDetailsPanel({
           currentEdit={currentEdit}
           nodeGroupOptions={nodeGroupOptions}
           actionGroupOptions={actionGroups}
+          readOnly={readOnly}
         />
       </CollapsibleSection>
 
@@ -464,6 +480,7 @@ export default function NodeDetailsPanel({
         onHover={handleHover}
         onShowDataset={onShowDataset}
         onShowMetrics={onShowMetrics}
+        readOnly={readOnly}
       />
 
       <CollapsibleSection
@@ -523,6 +540,7 @@ export default function NodeDetailsPanel({
         onToggle={() => setOutputOpen((v) => !v)}
         onSelectNode={handleNavigateToNode}
         onHover={handleHover}
+        readOnly={readOnly}
       />
     </Box>
   );

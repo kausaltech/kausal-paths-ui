@@ -15,7 +15,6 @@ import {
   metaChipSx,
 } from './node-details/fields';
 import { getNodeGroup } from './nodeHelpers';
-import { useIsEditorReadOnly } from './useIsEditorReadOnly';
 import { useUpdateNodeMutation } from './useUpdateNodeMutation';
 
 export type NodeDetailsSectionProps = {
@@ -24,6 +23,7 @@ export type NodeDetailsSectionProps = {
   currentEdit: MockNodeEdit | undefined;
   nodeGroupOptions: readonly string[];
   actionGroupOptions: readonly ActionGroupOption[];
+  readOnly: boolean;
 };
 
 export default function NodeDetailsSection({
@@ -32,10 +32,10 @@ export default function NodeDetailsSection({
   currentEdit,
   nodeGroupOptions,
   actionGroupOptions,
+  readOnly,
 }: NodeDetailsSectionProps) {
   const t = useTranslations('model-editor');
   const updateNode = useUpdateNodeMutation();
-  const readOnly = useIsEditorReadOnly();
 
   const originalIsOutcome = node.__typename === 'Node' ? (node.isOutcome ?? false) : false;
   const supportsOutcome = node.__typename === 'Node';
@@ -175,7 +175,7 @@ export default function NodeDetailsSection({
 
   if (!readOnly) return body;
   return (
-    <Tooltip title={t('editor-read-only-desc')} placement="left" arrow followCursor>
+    <Tooltip title={t('entity-read-only-desc')} placement="left" arrow followCursor>
       {body}
     </Tooltip>
   );

@@ -5,6 +5,11 @@ import { OPERATION_INFO_FIELDS } from '../dimensions/queries';
 export const DATASET_SUMMARY_FIELDS = gql`
   fragment DatasetSummaryFields on Dataset {
     id
+    isEditable
+    userPermissions {
+      change
+      delete
+    }
     identifier
     name
     isExternalPlaceholder
@@ -105,6 +110,11 @@ export const DATASET_SOURCE_REFERENCE_FIELDS = gql`
 export const DATASET_DETAIL_FIELDS = gql`
   fragment DatasetDetailFields on Dataset {
     id
+    isEditable
+    userPermissions {
+      change
+      delete
+    }
     identifier
     name
     isExternalPlaceholder

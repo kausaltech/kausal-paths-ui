@@ -37,7 +37,9 @@ import {
   ChatLeft,
   ChevronDown,
   Database,
+  Eye,
   Files,
+  LockFill,
   PencilSquare,
   Plus,
   ThreeDotsVertical,
@@ -47,6 +49,7 @@ import {
 import type { InstanceDatasetsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
 import { useEditorDateFormat } from '../useEditorDateFormat';
+import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { GET_INSTANCE_DATASETS } from './queries';
 import { getUserName } from './shared';
 
@@ -56,16 +59,22 @@ function getDatasetsBase(pathname: string): string {
 }
 
 type DatasetRowActionsProps = {
-  onEdit: () => void;
+  onOpen: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  canChange: boolean;
+  canDelete: boolean;
+  isProtected: boolean;
   onOpenChange?: (open: boolean) => void;
 };
 
 function DatasetRowActions({
-  onEdit,
+  onOpen,
   onDuplicate,
   onDelete,
+  canChange,
+  canDelete,
+  isProtected,
   onOpenChange,
 }: DatasetRowActionsProps) {
   const t = useTranslations('model-editor');
@@ -97,24 +106,26 @@ function DatasetRowActions({
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{ list: { dense: true } }}
       >
-        <MenuItem onClick={wrap(onEdit)}>
-          <ListItemIcon>
-            <PencilSquare size={14} />
-          </ListItemIcon>
-          <ListItemText>{t('datasets-edit')}</ListItemText>
+        <MenuItem onClick={wrap(onOpen)}>
+          <ListItemIcon>{canChange ? <PencilSquare size={14} /> : <Eye size={14} />}</ListItemIcon>
+          <ListItemText>{canChange ? t('datasets-edit') : t('common-view')}</ListItemText>
         </MenuItem>
-        <MenuItem onClick={wrap(onDuplicate)}>
-          <ListItemIcon>
-            <Files size={14} />
-          </ListItemIcon>
-          <ListItemText>{t('datasets-duplicate')}</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={wrap(onDelete)}>
-          <ListItemIcon>
-            <Trash size={14} />
-          </ListItemIcon>
-          <ListItemText>{t('datasets-delete')}</ListItemText>
-        </MenuItem>
+        {canChange && !isProtected && (
+          <MenuItem onClick={wrap(onDuplicate)}>
+            <ListItemIcon>
+              <Files size={14} />
+            </ListItemIcon>
+            <ListItemText>{t('datasets-duplicate')}</ListItemText>
+          </MenuItem>
+        )}
+        {canDelete && (
+          <MenuItem onClick={wrap(onDelete)}>
+            <ListItemIcon>
+              <Trash size={14} />
+            </ListItemIcon>
+            <ListItemText>{t('datasets-delete')}</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
@@ -145,6 +156,7 @@ function getSortValue(ds: DatasetRow, key: SortKey): string | number {
 export default function DatasetList() {
   const t = useTranslations('model-editor');
   const df = useEditorDateFormat();
+  const editorReadOnly = useIsEditorReadOnly();
   const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -217,6 +229,7 @@ export default function DatasetList() {
           variant="contained"
           startIcon={<Plus />}
           onClick={() => setNotice(t('datasets-creating-not-implemented'))}
+          disabled={editorReadOnly}
         >
           {t('datasets-new-dataset')}
         </Button>
@@ -304,6 +317,15 @@ export default function DatasetList() {
                 <TableCell>
                   <Box>
                     <Box component="span">{ds.name}</Box>
+                    {!ds.isEditable && (
+                      <Chip
+                        icon={<LockFill size={10} />}
+                        label={t('entity-protected')}
+                        size="small"
+                        variant="outlined"
+                        sx={{ ml: 1, height: 20, fontSize: 10 }}
+                      />
+                    )}
                     {ds.identifier && (
                       <Typography
                         variant="caption"
@@ -376,7 +398,10 @@ export default function DatasetList() {
                 </TableCell>
                 <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                   <DatasetRowActions
-                    onEdit={() => router.push(`${base}/${encodeURIComponent(ds.id)}`)}
+                    onOpen={() => router.push(`${base}/${encodeURIComponent(ds.id)}`)}
+                    canChange={!editorReadOnly && ds.userPermissions?.change === true}
+                    canDelete={!editorReadOnly && ds.userPermissions?.delete === true}
+                    isProtected={!ds.isEditable}
                     onDuplicate={() =>
                       setNotice(t('datasets-duplicating-not-implemented', { name: ds.name }))
                     }

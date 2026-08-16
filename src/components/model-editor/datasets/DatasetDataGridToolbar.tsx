@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Plus, Trash } from 'react-bootstrap-icons';
 
 type Props = {
+  readOnly: boolean;
   hasPending: boolean;
   pendingCount: number;
   selectedRowCount: number;
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export function DatasetDataGridToolbar({
+  readOnly,
   hasPending,
   pendingCount,
   selectedRowCount,
@@ -37,12 +39,12 @@ export function DatasetDataGridToolbar({
   const t = useTranslations('model-editor');
   return (
     <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} sx={{ mb: 1 }}>
-      {hasPending && (
+      {!readOnly && hasPending && (
         <Typography variant="body2" color="warning.main" sx={{ mr: 'auto' }}>
           {t('datasets-unsaved-changes', { count: pendingCount })}
         </Typography>
       )}
-      {selectedRowCount > 0 && (
+      {!readOnly && selectedRowCount > 0 && (
         <Button
           size="small"
           color="error"
@@ -55,7 +57,7 @@ export function DatasetDataGridToolbar({
           {t('datasets-delete-rows', { count: selectedRowCount })}
         </Button>
       )}
-      {selectedYearCount > 0 && (
+      {!readOnly && selectedYearCount > 0 && (
         <Button
           size="small"
           color="error"
@@ -68,7 +70,7 @@ export function DatasetDataGridToolbar({
           {t('datasets-delete-years', { count: selectedYearCount })}
         </Button>
       )}
-      {hasPending && (
+      {!readOnly && hasPending && (
         <>
           <Button size="small" onClick={onDiscard} disabled={isMutating} color="inherit">
             {t('common-discard')}
@@ -78,17 +80,21 @@ export function DatasetDataGridToolbar({
           </Button>
         </>
       )}
-      <Button size="small" startIcon={<Plus />} onClick={onAddYears} disabled={isMutating}>
-        {t('datasets-add-years')}
-      </Button>
-      <Button
-        size="small"
-        startIcon={<Plus />}
-        onClick={onAddRows}
-        disabled={isMutating || disableAddRows}
-      >
-        {t('datasets-add-rows')}
-      </Button>
+      {!readOnly && (
+        <Button size="small" startIcon={<Plus />} onClick={onAddYears} disabled={isMutating}>
+          {t('datasets-add-years')}
+        </Button>
+      )}
+      {!readOnly && (
+        <Button
+          size="small"
+          startIcon={<Plus />}
+          onClick={onAddRows}
+          disabled={isMutating || disableAddRows}
+        >
+          {t('datasets-add-rows')}
+        </Button>
+      )}
     </Stack>
   );
 }
