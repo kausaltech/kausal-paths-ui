@@ -207,6 +207,18 @@ export default function DatasetEditor({ datasetId }: Props) {
   }
 
   const isExternal = dataset.isExternalPlaceholder;
+  const validationViolations = dataset.validationViolations;
+
+  const validationMessage = (violation: (typeof validationViolations)[number]) => {
+    if (violation.code === 'required_combinations' && violation.requirementGroup) {
+      return t('datasets-validation-required-group', {
+        metric: violation.metric,
+        group: violation.requirementGroup,
+        years: violation.years.join(', '),
+      });
+    }
+    return violation.message;
+  };
 
   // Source-reference handlers shared by the dataset-scope sources panel and the
   // per-data-point sources section. Pass dataPointId=null to attach at dataset
@@ -390,6 +402,21 @@ export default function DatasetEditor({ datasetId }: Props) {
               </Button>
             </Stack>
           </Stack>
+          {validationViolations.length > 0 && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" component="div">
+                {t('datasets-validation-problem-count', { count: validationViolations.length })}
+              </Typography>
+              <Box component="ul" sx={{ my: 0.5, pl: 2.5 }}>
+                {validationViolations.map((violation, index) => (
+                  <Box component="li" key={`${violation.code}-${violation.metric}-${index}`}>
+                    {validationMessage(violation)}
+                  </Box>
+                ))}
+              </Box>
+              <Typography variant="body2">{t('datasets-validation-guidance')}</Typography>
+            </Alert>
+          )}
           {isExternal ? (
             <Alert severity="info">{t('datasets-external-source-info')}</Alert>
           ) : (
