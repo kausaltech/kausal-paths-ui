@@ -86,6 +86,10 @@
       "DatasetPortType",
       "NodeEdgeType"
     ],
+    "InstanceProblem": [
+      "ConstraintConflict",
+      "DatasetValidationViolation"
+    ],
     "InviteUserToInstancePayload": [
       "InstanceInvitation",
       "OperationInfo"
@@ -152,6 +156,7 @@
     ],
     "PublishModelInstancePayload": [
       "ConstraintViolations",
+      "DatasetValidationViolations",
       "InstanceType",
       "OperationInfo"
     ],
@@ -166,6 +171,10 @@
     "SetInstanceLockedPayload": [
       "OperationInfo",
       "SetInstanceLockedResult"
+    ],
+    "SetMetricValidationRulesPayload": [
+      "MetricValidationRulesResult",
+      "OperationInfo"
     ],
     "SnippetInterface": [
       "InstanceSiteContent"
@@ -264,6 +273,13 @@
     "UpdateScenarioPayload": [
       "OperationInfo",
       "ScenarioType"
+    ],
+    "ValidationRule": [
+      "AllowedCombinationsRule",
+      "DimensionSumRule",
+      "NoGapsRule",
+      "RequiredCombinationsRule",
+      "ValueRangeRule"
     ],
     "VisualizationEntry": [
       "VisualizationGroup",

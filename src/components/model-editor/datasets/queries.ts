@@ -164,6 +164,22 @@ export const DATASET_DETAIL_FIELDS = gql`
     sourceReferences(target: ALL) {
       ...DatasetSourceReferenceFields
     }
+    validationViolations {
+      code
+      message
+      severity
+      enforcement
+      metric
+      years
+      requirementGroup
+      combinationIds
+      coordinates {
+        dimension
+        category
+        dimensionLabel
+        categoryLabel
+      }
+    }
   }
   ${DATA_POINT_COMMENT_FIELDS}
   ${DATASET_SOURCE_REFERENCE_FIELDS}

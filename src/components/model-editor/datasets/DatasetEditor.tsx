@@ -207,6 +207,30 @@ export default function DatasetEditor({ datasetId }: Props) {
   }
 
   const isExternal = dataset.isExternalPlaceholder;
+  const validationViolations = dataset.validationViolations;
+
+  // Name the missing cell by its category labels, in the active language, rather than
+  // by the rule's internal group id: `industry_electricity` is how the requirement is
+  // keyed in the config, not something a city user should have to read. The labels come
+  // resolved from the backend, which knows how a dataset column maps to its dimension.
+  // Falls back to the group id if a coordinate cannot be resolved.
+  // `fallback` is passed in rather than read off the violation so the caller's
+  // truthiness guard keeps narrowing `requirementGroup` to a string.
+  const violationSubject = (violation: (typeof validationViolations)[number], fallback: string) =>
+    violation.coordinates.length > 0
+      ? violation.coordinates.map((coordinate) => coordinate.categoryLabel).join(' + ')
+      : fallback;
+
+  const validationMessage = (violation: (typeof validationViolations)[number]) => {
+    if (violation.code === 'required_combinations' && violation.requirementGroup) {
+      return t('datasets-validation-required-group', {
+        metric: violation.metric,
+        group: violationSubject(violation, violation.requirementGroup),
+        years: violation.years.join(', '),
+      });
+    }
+    return violation.message;
+  };
 
   // Source-reference handlers shared by the dataset-scope sources panel and the
   // per-data-point sources section. Pass dataPointId=null to attach at dataset
@@ -390,6 +414,21 @@ export default function DatasetEditor({ datasetId }: Props) {
               </Button>
             </Stack>
           </Stack>
+          {validationViolations.length > 0 && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" component="div">
+                {t('datasets-validation-problem-count', { count: validationViolations.length })}
+              </Typography>
+              <Box component="ul" sx={{ my: 0.5, pl: 2.5 }}>
+                {validationViolations.map((violation, index) => (
+                  <Box component="li" key={`${violation.code}-${violation.metric}-${index}`}>
+                    {validationMessage(violation)}
+                  </Box>
+                ))}
+              </Box>
+              <Typography variant="body2">{t('datasets-validation-guidance')}</Typography>
+            </Alert>
+          )}
           {isExternal ? (
             <Alert severity="info">{t('datasets-external-source-info')}</Alert>
           ) : (

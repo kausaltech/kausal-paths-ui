@@ -146,6 +146,12 @@ export const enum DataPointCommentReviewState {
   Unresolved = 'UNRESOLVED'
 };
 
+/** BLOCK_EDIT rules reject mutations that introduce new violations; BLOCK_PUBLISH rules allow edits but block publication while violations remain. */
+export const enum DatasetRuleEnforcement {
+  BlockEdit = 'BLOCK_EDIT',
+  BlockPublish = 'BLOCK_PUBLISH'
+};
+
 /** Exactly one transformation of a dataset binding. Order in the containing list is execution order. */
 export type DatasetTransformationInput =
   {   assignDimension: AssignDimensionInput; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
@@ -325,6 +331,12 @@ export const enum PrimaryLayoutClass {
   Core = 'CORE',
   GhostableContextSource = 'GHOSTABLE_CONTEXT_SOURCE',
   Outcome = 'OUTCOME'
+};
+
+/** How a problem is presented; every problem blocks publication. */
+export const enum ProblemSeverity {
+  Error = 'ERROR',
+  Warning = 'WARNING'
 };
 
 export type RegisterUserInput = {
@@ -1303,6 +1315,12 @@ export type DatasetDetailFieldsFragment = (
       & { __typename: 'User' }
     ) | null }
     & { __typename: 'DatasetSourceReference' }
+  )>, validationViolations: Array<(
+    { code: string, message: string, severity: ProblemSeverity, enforcement: DatasetRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<(
+      { dimension: string, category: string, dimensionLabel: string, categoryLabel: string }
+      & { __typename: 'DatasetDimensionCoordinate' }
+    )> }
+    & { __typename: 'DatasetValidationViolation' }
   )> }
   & { __typename: 'Dataset' }
 );
@@ -1408,6 +1426,12 @@ export type InstanceDatasetQuery = (
             & { __typename: 'User' }
           ) | null }
           & { __typename: 'DatasetSourceReference' }
+        )>, validationViolations: Array<(
+          { code: string, message: string, severity: ProblemSeverity, enforcement: DatasetRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<(
+            { dimension: string, category: string, dimensionLabel: string, categoryLabel: string }
+            & { __typename: 'DatasetDimensionCoordinate' }
+          )> }
+          & { __typename: 'DatasetValidationViolation' }
         )> }
         & { __typename: 'Dataset' }
       ) | null, dataSources: Array<(
@@ -3135,6 +3159,7 @@ export type PublishModelInstanceMutation = (
         )> }
         & { __typename: 'ConstraintViolations' }
       )
+      | { __typename: 'DatasetValidationViolations' }
       | (
         { id: string, editor: (
           { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null }
