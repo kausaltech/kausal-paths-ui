@@ -7,6 +7,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Collapse,
   Drawer,
   Paper,
   Snackbar,
@@ -16,7 +17,14 @@ import {
 
 import { useFragment, useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, InfoCircle, LockFill, Sliders } from 'react-bootstrap-icons';
+import {
+  ArrowLeft,
+  CaretDownFill,
+  CaretRightFill,
+  InfoCircle,
+  LockFill,
+  Sliders,
+} from 'react-bootstrap-icons';
 
 import type {
   CreateDataSourceInput,
@@ -106,6 +114,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   // value), reported by the grid. Set for empty cells too — those have no
   // dataPointId, so the panel shows the chips with a "no value" hint.
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
+  const [showViolations, setShowViolations] = useState(false);
   const drawerOpen = openPanel !== null;
   const DETAILS_WIDTH = 420;
 
@@ -404,17 +413,25 @@ export default function DatasetEditor({ datasetId }: Props) {
           </Stack>
           {validationViolations.length > 0 && (
             <Alert severity="warning" sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" component="div">
+              <Button
+                size="small"
+                color="inherit"
+                onClick={() => setShowViolations((v) => !v)}
+                startIcon={showViolations ? <CaretDownFill /> : <CaretRightFill />}
+                sx={{ textTransform: 'none', p: 0, minWidth: 0, typography: 'subtitle2' }}
+              >
                 {t('datasets-validation-problem-count', { count: validationViolations.length })}
-              </Typography>
-              <Box component="ul" sx={{ my: 0.5, pl: 2.5 }}>
-                {validationViolations.map((violation, index) => (
-                  <Box component="li" key={`${violation.code}-${violation.metric}-${index}`}>
-                    {validationMessage(violation)}
-                  </Box>
-                ))}
-              </Box>
-              <Typography variant="body2">{t('datasets-validation-guidance')}</Typography>
+              </Button>
+              <Collapse in={showViolations} unmountOnExit>
+                <Box component="ul" sx={{ my: 0.5, pl: 2.5 }}>
+                  {validationViolations.map((violation, index) => (
+                    <Box component="li" key={`${violation.code}-${violation.metric}-${index}`}>
+                      {validationMessage(violation)}
+                    </Box>
+                  ))}
+                </Box>
+                <Typography variant="body2">{t('datasets-validation-guidance')}</Typography>
+              </Collapse>
             </Alert>
           )}
           {isExternal ? (
