@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-
 import { Fade } from '@mui/material';
 
 import { useMutation, useQuery } from '@apollo/client/react';
@@ -24,22 +22,10 @@ function DashboardNormalizationBar() {
 
   const normalization = data?.availableNormalizations[0];
 
-  // Store normalization separately to optimistically update the UI on switch press
-  const [normalizationActive, setNormalizationActive] = useState(normalization?.isActive ?? false);
-
   // Todo handle mutation error
   const [setNormalization, { loading: mutationLoading }] = useMutation(SET_NORMALIZATION_MUTATION, {
     refetchQueries: 'active',
   });
-
-  useEffect(() => {
-    // Update the normalization state if it becomes out of sync with the latest data, for example if a mutation failed.
-    const isActive = normalization?.isActive ?? false;
-
-    if (isActive !== normalizationActive && !mutationLoading && !loading) {
-      setNormalizationActive(isActive);
-    }
-  }, [normalization, normalizationActive, mutationLoading, loading]);
 
   if (!normalization || (loading && !previousData) || !data || !data.parameters) {
     return null;
@@ -50,10 +36,25 @@ function DashboardNormalizationBar() {
       return;
     }
 
-    setNormalizationActive(active);
-
     try {
-      await setNormalization({ variables: { id: active ? normalization.id : null } });
+      await setNormalization({
+        variables: { id: active ? normalization.id : null },
+        optimisticResponse: {
+          __typename: 'Mutation',
+          setNormalizer: { __typename: 'SetNormalizerMutation', ok: true },
+        },
+        update(cache, { data: mutationData }) {
+          if (!mutationData?.setNormalizer.ok) return;
+          const normalizationCacheId = cache.identify(normalization);
+          if (!normalizationCacheId) return;
+          cache.modify({
+            id: normalizationCacheId,
+            fields: {
+              isActive: () => active,
+            },
+          });
+        },
+      });
     } catch (error) {
       console.error(error);
     }
@@ -65,7 +66,7 @@ function DashboardNormalizationBar() {
         <SettingsToggleBar
           title={t('display')}
           label={t('values-per', { normalization: normalization.label })}
-          value={normalizationActive}
+          value={normalization.isActive}
           onChange={(value) => void handleChangeNormalization(value)}
           isLoading={mutationLoading}
         />

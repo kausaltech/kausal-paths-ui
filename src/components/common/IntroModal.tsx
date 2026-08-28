@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 
 import {
   Button,
@@ -62,24 +62,39 @@ interface IntroModalProps {
   paragraph: string;
 }
 
+const INTRO_MODAL_STORAGE_KEY = 'show-intro-modal';
+
+function subscribeToIntroModalPreference(onStoreChange: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === INTRO_MODAL_STORAGE_KEY) onStoreChange();
+  };
+  window.addEventListener('storage', handleStorage);
+  return () => window.removeEventListener('storage', handleStorage);
+}
+
+function getIntroModalPreference() {
+  return localStorage.getItem(INTRO_MODAL_STORAGE_KEY) !== 'false';
+}
+
+function getServerIntroModalPreference() {
+  return false;
+}
+
 const IntroModal = ({ size = 'lg', title, paragraph }: IntroModalProps) => {
   const { t } = useTranslation();
-  const [enabled, setEnabled] = useState(true);
+  const preferenceEnabled = useSyncExternalStore(
+    subscribeToIntroModalPreference,
+    getIntroModalPreference,
+    getServerIntroModalPreference
+  );
+  const [dismissed, setDismissed] = useState(false);
   const [isChecked, setIsChecked] = useState(true);
 
-  useEffect(() => {
-    const showModal = localStorage.getItem('show-intro-modal');
-    if (showModal === null || JSON.parse(showModal) === true) {
-      setEnabled(true);
-    } else {
-      setEnabled(false);
-    }
-  }, []);
-
-  const handleClose = () => setEnabled(false);
+  const enabled = preferenceEnabled && !dismissed;
+  const handleClose = () => setDismissed(true);
 
   const handleClickClose = () => {
-    localStorage.setItem('show-intro-modal', JSON.stringify(!isChecked));
+    localStorage.setItem(INTRO_MODAL_STORAGE_KEY, JSON.stringify(!isChecked));
     handleClose();
   };
 

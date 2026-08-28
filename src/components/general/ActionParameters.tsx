@@ -15,8 +15,11 @@ const Parameters = styled.div`
 
 type ActionParameterType = ActionParameterFragment;
 
-const ActionParameters = (props: { parameters: ActionParameterType[] }) => {
-  const { parameters } = props;
+const ActionParameters = (props: {
+  parameters: ActionParameterType[];
+  onScenarioCustomized?: () => void;
+}) => {
+  const { parameters, onScenarioCustomized } = props;
 
   if (!parameters) {
     return null;
@@ -33,11 +36,19 @@ const ActionParameters = (props: { parameters: ActionParameterType[] }) => {
   return (
     <Parameters>
       {actionParameterSwitch && (
-        <ParameterWidget key={actionParameterSwitch.id} parameter={actionParameterSwitch} />
+        <ParameterWidget
+          key={actionParameterSwitch.id}
+          parameter={actionParameterSwitch}
+          onScenarioCustomized={onScenarioCustomized}
+        />
       )}
       {actionEnabled &&
         actionOtherParameters?.map((parameter) => (
-          <ParameterWidget key={parameter.id} parameter={parameter} />
+          <ParameterWidget
+            key={parameter.id}
+            parameter={parameter}
+            onScenarioCustomized={onScenarioCustomized}
+          />
         ))}
     </Parameters>
   );

@@ -34,6 +34,7 @@ const ActionsListItem = styled.div`
 
 type ActionListCardProps = {
   action: ActionsSummaryAction;
+  onScenarioCustomized: () => void;
 };
 
 /* Nice mock skeleton loader */
@@ -68,7 +69,7 @@ function LoaderSkeleton({ t }: { t: TFunction }) {
 }
 
 function ActionListCard(props: ActionListCardProps) {
-  const { action } = props;
+  const { action, onScenarioCustomized } = props;
   const actionParameterSwitch = findActionEnabledParam(action.parameters);
   const isActive = actionParameterSwitch?.boolValue ?? false;
   const theme = useTheme();
@@ -107,7 +108,10 @@ function ActionListCard(props: ActionListCardProps) {
       </CardActionArea>
 
       <CardActions sx={{ pt: 0 }}>
-        <ActionParameters parameters={action.parameters} />
+        <ActionParameters
+          parameters={action.parameters}
+          onScenarioCustomized={onScenarioCustomized}
+        />
       </CardActions>
     </Card>
   );
@@ -115,7 +119,11 @@ function ActionListCard(props: ActionListCardProps) {
 
 type ActionsSummaryAction = ActionsForChooserQuery['actions'][0];
 
-export default function ActionsChooser() {
+export default function ActionsChooser({
+  onScenarioCustomized,
+}: {
+  onScenarioCustomized: () => void;
+}) {
   const { t } = useTranslation();
   const queryResp = useQuery(GET_ACTIONS_FOR_CHOOSER, {
     fetchPolicy: 'cache-and-network',
@@ -169,7 +177,7 @@ export default function ActionsChooser() {
         {actions.map((action) => {
           return (
             <ActionsListItem key={action.id}>
-              <ActionListCard action={action} />
+              <ActionListCard action={action} onScenarioCustomized={onScenarioCustomized} />
             </ActionsListItem>
           );
         })}

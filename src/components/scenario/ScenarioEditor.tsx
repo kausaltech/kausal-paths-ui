@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   Box,
@@ -10,12 +10,10 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useReactiveVar } from '@apollo/client/react';
 import { X, XLg } from 'react-bootstrap-icons';
 
 import styled from '@common/themes/styled';
 
-import { activeScenarioVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import ScenarioSelector from '@/components/scenario/ScenarioSelector';
 import { useSiteWithSetter } from '@/context/site';
@@ -32,20 +30,10 @@ const DrawerHeader = styled.div`
 export default function ScenarioEditor({ handleDrawerClose }: { handleDrawerClose: () => void }) {
   const [site] = useSiteWithSetter();
   const { t } = useTranslation();
-  const activeScenario = useReactiveVar(activeScenarioVar);
   const [showCustomScenarioSnackbar, setShowCustomScenarioSnackbar] = useState(false);
-  const [suppressSnackbar, setSuppressSnackbar] = useState(true);
-
-  useEffect(() => {
-    if (!activeScenario.isUserSelected && !suppressSnackbar) {
-      setShowCustomScenarioSnackbar(true);
-      // We only want to show the snackbar once per scenario change
-      setSuppressSnackbar(true);
-    } else if (activeScenario.isUserSelected) {
-      // It's ok to show the snackbar again if the user has selected a scenario
-      setSuppressSnackbar(false);
-    }
-  }, [activeScenario.isUserSelected, suppressSnackbar]);
+  const handleScenarioCustomized = useCallback(() => {
+    setShowCustomScenarioSnackbar(true);
+  }, []);
 
   const handleSnackClose = (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
     if (reason === 'clickaway') {
@@ -96,10 +84,10 @@ export default function ScenarioEditor({ handleDrawerClose }: { handleDrawerClos
           {hasGlobalParameters && (
             <Box component="section" aria-label={t('all-settings')} sx={{ mb: 3 }}>
               <Divider />
-              <GlobalParameters />
+              <GlobalParameters onScenarioCustomized={handleScenarioCustomized} />
             </Box>
           )}
-          <ActionsChooser />
+          <ActionsChooser onScenarioCustomized={handleScenarioCustomized} />
         </Box>
       </Box>
       <Snackbar

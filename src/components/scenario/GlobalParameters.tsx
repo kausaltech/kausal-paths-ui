@@ -7,7 +7,7 @@ import ContentLoader from '@/components/common/ContentLoader';
 import ParameterWidget from '@/components/general/ParameterWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
-const GlobalParameters = () => {
+const GlobalParameters = ({ onScenarioCustomized }: { onScenarioCustomized: () => void }) => {
   const { loading, error, data, previousData } = useQuery(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
     context: {
@@ -42,7 +42,14 @@ const GlobalParameters = () => {
       </Typography>
       <Grid container spacing={1.5} sx={{ mt: 1, ml: 0.5, mr: 0.5 }}>
         {parameters.map(
-          (param) => param.isCustomizable && <ParameterWidget key={param.id} parameter={param} />
+          (param) =>
+            param.isCustomizable && (
+              <ParameterWidget
+                key={param.id}
+                parameter={param}
+                onScenarioCustomized={onScenarioCustomized}
+              />
+            )
         )}
       </Grid>
     </Box>

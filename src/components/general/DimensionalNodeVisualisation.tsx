@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import { type RefObject, type SetStateAction, useCallback, useMemo, useRef, useState } from 'react';
 
 import {
   Alert,
@@ -285,19 +285,27 @@ export default function DimensionalNodeVisualisation({
 
   // Slice config defines the dimension (dimensionId) and categories (categories[]) we are currently visualizing
   // Slice config is affected by the active goal and user selections
-  const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
-  const [sliceConfig, setSliceConfig] = useState<SliceConfig>(defaultConfig);
-
-  useEffect(() => {
-    /**
-     * If the active goal changes, we will reset the grouping + filtering
-     * to be compatible with the new choices (if the new goal has common
-     * dimensions with our metric).
-     */
-    if (!activeGoal) return;
-    const newDefault = metrics.default.getDefaultSliceConfig(activeGoal);
-    setSliceConfig(newDefault);
-  }, [activeGoal, metrics.default]);
+  const sliceConfigKey = `${metric.id}:${activeGoal?.id ?? ''}`;
+  const defaultConfig = useMemo(
+    () => metrics.default.getDefaultSliceConfig(activeGoal),
+    [activeGoal, metrics.default]
+  );
+  const [storedSliceConfig, setStoredSliceConfig] = useState<{
+    key: string;
+    config: SliceConfig;
+  }>(() => ({ key: sliceConfigKey, config: defaultConfig }));
+  const sliceConfig =
+    storedSliceConfig.key === sliceConfigKey ? storedSliceConfig.config : defaultConfig;
+  const setSliceConfig = useCallback(
+    (update: SetStateAction<SliceConfig>) => {
+      setStoredSliceConfig((current) => {
+        const currentConfig = current.key === sliceConfigKey ? current.config : defaultConfig;
+        const config = typeof update === 'function' ? update(currentConfig) : update;
+        return { key: sliceConfigKey, config };
+      });
+    },
+    [defaultConfig, sliceConfigKey]
+  );
 
   const activeDimensionLabel = metrics.default.getDimensionLabel(sliceConfig.dimensionId);
 

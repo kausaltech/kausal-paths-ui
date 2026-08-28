@@ -235,9 +235,11 @@ const CausalGrid = ({
   const instance = useInstance();
   const gridCanvas = useRef<ArcherContainerRef>(null);
 
-  const [gridExpanded, setGridExpanded] = useState(false);
-  const [pendingFocus, setPendingFocus] = useState(false);
+  const [expandedNodeId, setExpandedNodeId] = useState<string | null | undefined>(null);
+  const [pendingFocusNodeId, setPendingFocusNodeId] = useState<string | null | undefined>(null);
   const gridRegionRef = useRef<HTMLDivElement>(null);
+  const gridExpanded = expandedNodeId === selectedOutcomeNode;
+  const pendingFocus = pendingFocusNodeId === selectedOutcomeNode;
 
   const targetYear = instance.targetYear ?? yearRange[1];
   const targetYearGoal = lastNode.goals?.find((goal) => goal.year === targetYear)?.value;
@@ -248,10 +250,6 @@ const CausalGrid = ({
     if (gridCanvas.current) {
       gridCanvas.current.refreshScreen();
     }
-
-    // Close the grid when the selected outcome is changed
-    setGridExpanded(false);
-    setPendingFocus(false);
   }, [selectedOutcomeNode]);
 
   useEffect(() => {
@@ -259,11 +257,11 @@ const CausalGrid = ({
     requestAnimationFrame(() => {
       const didFocus = focusInsideRegion(gridRegionRef.current);
       if (didFocus) {
-        setPendingFocus(false);
+        setPendingFocusNodeId(null);
       } else {
         requestAnimationFrame(() => {
           focusInsideRegion(gridRegionRef.current);
-          setPendingFocus(false);
+          setPendingFocusNodeId(null);
         });
       }
     });
@@ -349,11 +347,13 @@ const CausalGrid = ({
   function handleToggleCalculationVisible() {
     const nextGridOpen = !gridExpanded;
 
-    setGridExpanded(nextGridOpen);
+    setExpandedNodeId(nextGridOpen ? selectedOutcomeNode : null);
 
     if (nextGridOpen) {
-      setPendingFocus(true);
+      setPendingFocusNodeId(selectedOutcomeNode);
       onClickExpandGrid();
+    } else {
+      setPendingFocusNodeId(null);
     }
   }
 

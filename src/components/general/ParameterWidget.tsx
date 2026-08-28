@@ -265,10 +265,11 @@ type ParameterWidgetProps = {
   parameter: ActionParameterFragment;
   WidgetWrapper?: typeof WidgetWrapper;
   disabled?: boolean;
+  onScenarioCustomized?: () => void;
 };
 
 const ParameterWidget = (props: ParameterWidgetProps) => {
-  const { parameter, disabled = false } = props;
+  const { parameter, disabled = false, onScenarioCustomized } = props;
   const [site] = useSiteWithSetter();
 
   const [setParameter, { loading: mutationLoading, error: _mutationError }] = useMutation(
@@ -281,7 +282,11 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
         // Although the mutation does not return the active scenario, so we need to set it manually
         // We  want to update activeScenarioVar only in onCompleted mutations
         if (customScenario) {
+          const previousScenario = activeScenarioVar();
+          const changedToAutomaticCustomScenario =
+            previousScenario.id !== customScenario.id || previousScenario.isUserSelected === true;
           activeScenarioVar({ ...customScenario, isUserSelected: false });
+          if (changedToAutomaticCustomScenario) onScenarioCustomized?.();
         }
       },
     }

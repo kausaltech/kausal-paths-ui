@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Grid } from '@mui/material';
 
@@ -102,11 +102,9 @@ function MacGraph(props: MacGraphProps) {
   const formatNumber = useNumberFormatter();
   const formatAxisLabel = useAxisLabelFormatter();
 
-  const [hoverId, setHoverId] = useState<number | null>(null);
-
-  useEffect(() => {
-    setHoverId(null);
-  }, [data]);
+  const [hoverActionId, setHoverActionId] = useState<string | null>(null);
+  const hoveredActionIndex = hoverActionId === null ? -1 : actionIds.indexOf(hoverActionId);
+  const hoverId = hoveredActionIndex >= 0 ? hoveredActionIndex : null;
   // TODO: Add sorting of data here
 
   const isEmpty = data.actions?.length < 1;
@@ -272,9 +270,9 @@ function MacGraph(props: MacGraphProps) {
       const value = (params as { axesInfo?: { value?: unknown }[] }).axesInfo?.[0]?.value;
       if (typeof value !== 'number') return;
       const index = bars.findIndex((bar) => value >= bar.start && value <= bar.end);
-      if (index >= 0) setHoverId(index);
+      if (index >= 0) setHoverActionId(actionIds[index] ?? null);
     },
-    [bars]
+    [actionIds, bars]
   );
   const onEvents = useMemo(() => ({ updateAxisPointer: handleAxisPointer }), [handleAxisPointer]);
 
