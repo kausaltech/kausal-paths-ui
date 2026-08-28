@@ -208,6 +208,8 @@ export const DATASET_DETAIL_FIELDS = gql`
       coordinates {
         dimension
         category
+        dimensionLabel
+        categoryLabel
       }
     }
   }

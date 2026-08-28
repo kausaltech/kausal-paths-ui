@@ -1336,7 +1336,7 @@ export type DatasetDetailFieldsFragment = (
     & { __typename: 'DatasetSourceReference' }
   )>, validationViolations: Array<(
     { code: string, message: string, severity: ProblemSeverity, enforcement: DatasetRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<(
-      { dimension: string, category: string }
+      { dimension: string, category: string, dimensionLabel: string, categoryLabel: string }
       & { __typename: 'DatasetDimensionCoordinate' }
     )> }
     & { __typename: 'DatasetValidationViolation' }
@@ -1453,7 +1453,7 @@ export type InstanceDatasetQuery = (
           & { __typename: 'DatasetSourceReference' }
         )>, validationViolations: Array<(
           { code: string, message: string, severity: ProblemSeverity, enforcement: DatasetRuleEnforcement, metric: string, years: Array<number>, requirementGroup: string | null, combinationIds: Array<string>, coordinates: Array<(
-            { dimension: string, category: string }
+            { dimension: string, category: string, dimensionLabel: string, categoryLabel: string }
             & { __typename: 'DatasetDimensionCoordinate' }
           )> }
           & { __typename: 'DatasetValidationViolation' }
