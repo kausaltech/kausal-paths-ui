@@ -190,5 +190,5 @@
     "react-dom": "^19.2.4",
     "@types/react": "^19.2.14"
   },
-  "packageManager": "pnpm@11.7.0"
+  "packageManager": "pnpm@11.24.0"
 }
