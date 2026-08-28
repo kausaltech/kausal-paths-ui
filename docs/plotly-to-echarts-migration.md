@@ -51,9 +51,8 @@ replacement:
   `@common/apollo/paths-cache` instead of defining its own, so shared paths
   components observe the goal this app sets. The cast there is because the
   app's goal fragment doesn't query `separateYears`.
-- The pie graph's `@generated/paths/graphql` import doesn't resolve in this
-  repo (type-only, erased at build) — its TS error is baselined, same as
-  kausal_common's `DimensionalNodeVisualisation`.
+- The pie graph's `@generated/paths/graphql` import is mapped to this app's
+  generated GraphQL module in `configs/tsconfig.next.json`.
 
 ## Remaining components
 
@@ -187,8 +186,8 @@ radius map but actually informative. Notes:
 ### 8. Final cleanup (done)
 
 `Plot.tsx` deleted; `plotly.js`, `plotly.js-locales`, `react-plotly.js` and
-both `@types` packages removed; baselines pruned; CLAUDE.md tech-stack line
-updated. `grep -rln plotly src/ package.json` comes up empty. No
+both `@types` packages removed; CLAUDE.md tech-stack line updated.
+`grep -rln plotly src/ package.json` comes up empty. No
 plotly-specific settings existed in `next.config.ts`.
 
 Deliberately kept: the `.js-plotly-plot` / `.plotly` print-CSS selectors in
@@ -202,8 +201,7 @@ matching it.
 
 ## Verification per step
 
-- `pnpm typecheck:baseline` and `pnpm lint:baseline` must pass (prune
-  baselines when a migration removes suppressed errors).
+- `pnpm typecheck` and `pnpm lint` must pass without errors or warnings.
 - Visual check in the dev server against production for the affected views
   (outcome page single-year view, actions comparison page, action detail
   page, node/causal pages).

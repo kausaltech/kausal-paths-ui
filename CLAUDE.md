@@ -35,12 +35,10 @@ pnpm graphql-codegen        # Regenerate GraphQL types from backend schema
 ### Quality Checks
 
 ```bash
-pnpm lint:baseline          # ESLint (against suppressed baseline)
-pnpm typecheck:baseline     # TypeScript (against suppressed baseline)
+pnpm lint                   # ESLint; the repository must remain warning-free
+pnpm typecheck              # TypeScript composite project build
 pnpm prettier:fix           # Format all files
 ```
-
-Both linting and typechecking use baseline files (`eslint-baseline.json`, `tsc-baseline.json`) so only new errors are surfaced. Update baselines with `:update` variants.
 
 TypeScript should be run with `tsc -b` (composite project build), not `tsc --noEmit`. The repo uses composite tsconfig references across the main app, `kausal_common/`, and `e2e-tests/`.
 
@@ -53,7 +51,7 @@ E2E tests live in `e2e-tests/` as a separate pnpm workspace with Playwright. The
 ### Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript (strict, with baseline suppression for legacy errors)
+- **Language**: TypeScript (strict, with zero type errors)
 - **GraphQL**: Apollo Client 3 with `@graphql-codegen` for type generation
 - **Styling**: Emotion (styled components) + MUI 7 + Bootstrap 5 / Reactstrap + Sass
 - **i18n**: next-intl (locales: en, fi, sv, de, de-CH, cs, da, lv, pl, es-US, el)
@@ -108,7 +106,7 @@ e2e-tests/             # Playwright E2E tests (separate workspace)
 
 ## Code Conventions
 
-- Pre-commit hook runs lint-staged: Prettier + ESLint baseline + TypeScript baseline on staged files
+- Pre-commit hook runs lint-staged: Prettier and ESLint on staged files; CI runs the full TypeScript build
 - Path aliases: `@/*` → `src/*`, `@common/*` → `kausal_common/src/*`
 - App Router routes under `src/app/root/[domain]/[lang]/`; route groups like `(with-layout)` for shared UI
 - GraphQL queries use codegen — never hand-write types for API responses

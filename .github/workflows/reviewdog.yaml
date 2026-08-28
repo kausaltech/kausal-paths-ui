@@ -10,7 +10,6 @@ jobs:
     permissions:
       checks: write
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -28,24 +27,13 @@ jobs:
 
       - uses: reviewdog/action-setup@v1
         with:
-          reviewdog_version: v0.20.3
+          reviewdog_version: v0.21.0
 
-      - name: Run reviewdog for push
-        if: github.event_name == 'push'
+      - name: Run lint and typecheck
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Running eslint"
-          reviewdog -reporter=github-check -runners eslint
-          echo "Running typecheck"
-          reviewdog -reporter=github-check -runners typecheck -filter-mode nofilter
-
-      - name: Run reviewdog for PR
-        if: github.event_name == 'pull_request'
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Running eslint"
-          reviewdog -reporter=github-pr-check -runners eslint
-          echo "Running typecheck"
-          reviewdog -reporter=github-pr-check -runners typecheck -filter-mode nofilter
+          status=0
+          reviewdog -reporter=github-check -fail-level=warning -runners eslint || status=$?
+          reviewdog -reporter=github-check -fail-level=error -runners typecheck || status=$?
+          exit "$status"

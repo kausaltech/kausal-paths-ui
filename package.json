@@ -14,14 +14,7 @@
     "prettier:fix": "prettier --write --cache ./",
     "prettier:check": "prettier --check --cache ./",
     "typecheck": "tsc -b",
-    "typecheck:baseline": "tsc -b | tsc-baseline -p tsc-baseline.json check",
-    "typecheck:baseline:ci": "tsc -b | tsc-baseline -p tsc-baseline.json check --error-format gitlab 2>&1 | node kausal_common/scripts/gitlab-to-rdjsonl.js",
-    "typecheck:baseline:update": "tsc -b | tsc-baseline -p tsc-baseline.json save",
     "lint": "eslint --cache",
-    "lint:baseline": "eslint --cache --suppressions-location eslint-baseline.json",
-    "lint:baseline:ci": "eslint --cache --suppressions-location eslint-baseline.json -f rdjson",
-    "lint:baseline:update": "eslint --cache --suppressions-location eslint-baseline.json --prune-suppressions",
-    "lint:baseline:suppress": "eslint --suppress-all --suppressions-location eslint-baseline.json",
     "lint:summary": "eslint --cache -f summary",
     "lint:nibble": "dlx eslint-nibble --cache ."
   },
@@ -168,7 +161,6 @@
     "proper-lockfile": "^4.1.2",
     "sass": "^1.101.0",
     "source-map-loader": "^5.0.0",
-    "tsc-baseline": "^1.9.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
     "webpack": "^5.108.4"
@@ -180,8 +172,7 @@
   "lint-staged": {
     "*.{tsx,ts,js,mjs,cjs}": [
       "prettier --write",
-      "pnpm run lint:baseline --",
-      "pnpm run typecheck:baseline --"
+      "pnpm run lint --"
     ],
     "*.{css,scss,md,json}": "prettier --write"
   },
