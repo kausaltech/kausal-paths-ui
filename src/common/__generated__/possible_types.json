@@ -26,6 +26,10 @@
       "DatasetPortType",
       "OperationInfo"
     ],
+    "CreateActionGroupPayload": [
+      "ActionGroupType",
+      "OperationInfo"
+    ],
     "CreateDataPointCommentPayload": [
       "DataPointComment",
       "OperationInfo"
@@ -42,7 +46,15 @@
       "DataSource",
       "OperationInfo"
     ],
+    "CreateDatasetPayload": [
+      "Dataset",
+      "OperationInfo"
+    ],
     "CreateDimensionCategoriesPayload": [
+      "InstanceDimension",
+      "OperationInfo"
+    ],
+    "CreateDimensionPayload": [
       "InstanceDimension",
       "OperationInfo"
     ],
@@ -53,6 +65,10 @@
     ],
     "CreateInstancePayload": [
       "CreateInstanceResult",
+      "OperationInfo"
+    ],
+    "CreateMetricPayload": [
+      "DatasetMetric",
       "OperationInfo"
     ],
     "CreateNodePayload": [
@@ -73,6 +89,14 @@
       "OperationInfo"
     ],
     "DeleteDataSourcePayload": [
+      "ModelDeletePayload",
+      "OperationInfo"
+    ],
+    "DeleteDatasetPayload": [
+      "ModelDeletePayload",
+      "OperationInfo"
+    ],
+    "DeleteDimensionPayload": [
       "ModelDeletePayload",
       "OperationInfo"
     ],
@@ -222,6 +246,10 @@
       "DataPointComment",
       "OperationInfo"
     ],
+    "UpdateActionGroupPayload": [
+      "ActionGroupType",
+      "OperationInfo"
+    ],
     "UpdateDataPointCommentPayload": [
       "DataPointComment",
       "OperationInfo"
@@ -243,6 +271,10 @@
       "DatasetPortType",
       "OperationInfo"
     ],
+    "UpdateDatasetPayload": [
+      "Dataset",
+      "OperationInfo"
+    ],
     "UpdateDimensionCategoriesPayload": [
       "InstanceDimension",
       "OperationInfo"
@@ -254,6 +286,10 @@
     "UpdateEdgeBindingPayload": [
       "ConstraintViolations",
       "NodeEdgeType",
+      "OperationInfo"
+    ],
+    "UpdateMetricPayload": [
+      "DatasetMetric",
       "OperationInfo"
     ],
     "UpdateNodeLayoutsPayload": [

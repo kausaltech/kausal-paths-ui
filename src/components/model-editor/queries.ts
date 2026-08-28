@@ -872,14 +872,7 @@ export const NODE_CHANGE_HISTORY = gql`
   query NodeChangeHistory($nodeId: ID!, $limit: Int! = 10) {
     node(id: $nodeId) {
       id
-      ... on Node {
-        uuid
-        changeHistory(limit: $limit) {
-          ...NodeHistoryEntry
-        }
-      }
-      ... on ActionNode {
-        uuid
+      editor {
         changeHistory(limit: $limit) {
           ...NodeHistoryEntry
         }

@@ -32,7 +32,7 @@ run = 'pnpm dev'
 
 [tasks.download-schema]
 description = 'Download the GraphQL schema'
-run = 'pnpx @graphql-inspector/cli introspect ${PATHS_BACKEND_URL}/v1/graphql/ --write schema.graphql'
+run = 'pnpm download-schema "${PATHS_BACKEND_URL}/v1/graphql/" schema.graphql'
 
 [tasks.portless]
 description = "Run the backend with Portless"

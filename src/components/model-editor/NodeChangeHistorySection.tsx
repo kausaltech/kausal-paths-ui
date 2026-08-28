@@ -132,11 +132,7 @@ export default function NodeChangeHistorySection({ nodeId, open, onToggle }: Pro
     }
   );
 
-  const node = data?.node;
-  const entries =
-    node && (node.__typename === 'Node' || node.__typename === 'ActionNode')
-      ? node.changeHistory
-      : [];
+  const entries = data?.node?.editor?.changeHistory ?? [];
 
   // Refresh "now" once per minute so relative timestamps don't go stale while
   // the panel stays open. Initial value captured via useState initializer so

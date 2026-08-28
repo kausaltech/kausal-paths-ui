@@ -285,6 +285,9 @@ importers:
       '@graphql-inspector/cli':
         specifier: ^6.0.8
         version: 6.0.8(@types/node@25.9.5)(encoding@0.1.13)(graphql@16.14.2)
+      '@graphql-tools/url-loader':
+        specifier: ^9.1.6
+        version: 9.1.6(@types/node@25.9.5)(graphql@16.14.2)
       '@next/eslint-plugin-next':
         specifier: ^16.2.10
         version: 16.2.10

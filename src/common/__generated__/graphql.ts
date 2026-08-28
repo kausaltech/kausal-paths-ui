@@ -20,6 +20,11 @@ export const enum ActionSortOrder {
   Standard = 'STANDARD'
 };
 
+export type AssignCategoryInput = {
+  category: string;
+  dimension: string;
+};
+
 export type AssignDimensionInput = {
   category: string;
   dimension: string;
@@ -40,6 +45,7 @@ export type BindDatasetInput = {
 };
 
 export const enum ChangeTargetKind {
+  ActionGroup = 'ACTION_GROUP',
   DatasetPort = 'DATASET_PORT',
   DataPoint = 'DATA_POINT',
   Dimension = 'DIMENSION',
@@ -88,11 +94,19 @@ export type CreateDimensionCategoryInput = {
 };
 
 export type CreateEdgeInput = {
+  /** @deprecated Use fromRef instead. */
+  fromNodeId: string | null | undefined;
+  /** @deprecated Use fromRef instead. */
+  fromPort: string | null | undefined;
   fromRef: NodePortRefInput | null | undefined;
   instanceId: string | number;
   portRef: NodePortRefInput | null | undefined;
   /** Atomically displace whatever occupies the target port — an edge or a dataset binding — instead of rejecting the edge. Validation runs first, so a rejected edge leaves the old binding untouched. Requires an explicit `toPort` (an auto-selected port is never occupied) and is not valid for `multi` ports. */
   replace: boolean;
+  /** @deprecated Use portRef instead. */
+  toNodeId: string | null | undefined;
+  /** @deprecated Use portRef instead. */
+  toPort: string | null | undefined;
   transformations: Array<EdgeTransformationInput> | null | undefined;
 };
 
@@ -140,21 +154,20 @@ export const enum DatasetRuleEnforcement {
 };
 
 /** Exactly one transformation of a dataset binding. Order in the containing list is execution order. */
-export type DatasetTransformationInput = {
-  assignDimension: AssignDimensionInput | null | undefined;
-  dropNulls: boolean | null | undefined;
-  ensureUnit: EnsureUnitInput | null | undefined;
-  filterColumn: FilterColumnInput | null | undefined;
-  filterDimension: FilterDimensionInput | null | undefined;
-  filterTemporal: FilterTemporalInput | null | undefined;
-  indexTemporal: boolean | null | undefined;
-  remapLegacyYears: boolean | null | undefined;
-  renameColumn: RenameColumnInput | null | undefined;
-  renameItem: RenameItemInput | null | undefined;
-  selectMetric: boolean | null | undefined;
-  setForecastFrom: SetForecastFromInput | null | undefined;
-  tagOperation: TagOperationInput | null | undefined;
-};
+export type DatasetTransformationInput =
+  {   assignDimension: AssignDimensionInput; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never;   dropNulls: boolean; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never;   ensureUnit: EnsureUnitInput; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never;   filterColumn: FilterColumnInput; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never;   filterDimension: FilterDimensionInput; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never;   filterTemporal: FilterTemporalInput; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never;   indexTemporal: boolean; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never;   remapLegacyYears: boolean; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never;   renameColumn: RenameColumnInput; renameItem?: never; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never;   renameItem: RenameItemInput; selectMetric?: never; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never;   selectMetric: boolean; setForecastFrom?: never; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never;   setForecastFrom: SetForecastFromInput; tagOperation?: never; }
+  |  { assignDimension?: never; dropNulls?: never; ensureUnit?: never; filterColumn?: never; filterDimension?: never; filterTemporal?: never; indexTemporal?: never; remapLegacyYears?: never; renameColumn?: never; renameItem?: never; selectMetric?: never; setForecastFrom?: never;   tagOperation: TagOperationInput; };
 
 /** Which governance level is applicable for an action */
 export const enum DecisionLevel {
@@ -176,10 +189,15 @@ export const enum DimensionKind {
 };
 
 /** Exactly one transformation of an edge binding. Order in the containing list is execution order. Only the dimension-reshaping transformations are accepted until edges execute the shared transform pipeline. */
-export type EdgeTransformationInput = {
-  assignDimension: AssignDimensionInput | null | undefined;
-  filterDimension: FilterDimensionInput | null | undefined;
-};
+export type EdgeTransformationInput =
+  {   /** @deprecated Use assignDimension instead. */
+  assignCategory: AssignCategoryInput; assignDimension?: never; filterDimension?: never; flatten?: never; selectCategories?: never; }
+  |  { assignCategory?: never;   assignDimension: AssignDimensionInput; filterDimension?: never; flatten?: never; selectCategories?: never; }
+  |  { assignCategory?: never; assignDimension?: never;   filterDimension: FilterDimensionInput; flatten?: never; selectCategories?: never; }
+  |  { assignCategory?: never; assignDimension?: never; filterDimension?: never;   /** @deprecated A port shape declaration, not a transformation; it moves onto the input port. */
+  flatten: FlattenInput; selectCategories?: never; }
+  |  { assignCategory?: never; assignDimension?: never; filterDimension?: never; flatten?: never;   /** @deprecated Use filterDimension instead. */
+  selectCategories: SelectCategoriesInput; };
 
 export type EnsureUnitInput = {
   unit: string;
@@ -208,6 +226,10 @@ export type FilterTemporalInput = {
   minYear: number | null | undefined;
 };
 
+export type FlattenInput = {
+  dimension: string;
+};
+
 export type FormulaConfigInput = {
   formula: string;
 };
@@ -221,6 +243,8 @@ export type InputPortInput = {
   requiredDimensions: Array<string> | null | undefined;
   /** Semantic role from the node class's input port declarations. */
   role: string | null | undefined;
+  /** @deprecated Never had solver semantics and is no longer stored. */
+  supportedDimensions: Array<string> | null | undefined;
   unit: string | null | undefined;
 };
 
@@ -231,12 +255,11 @@ export const enum InstanceMemberRole {
   Viewer = 'VIEWER'
 };
 
-export type NodeConfigInput = {
-  action: ActionConfigInput | null | undefined;
-  formula: FormulaConfigInput | null | undefined;
-  pipeline: PipelineConfigInput | null | undefined;
-  simple: SimpleConfigInput | null | undefined;
-};
+export type NodeConfigInput =
+  {   action: ActionConfigInput; formula?: never; pipeline?: never; simple?: never; }
+  |  { action?: never;   formula: FormulaConfigInput; pipeline?: never; simple?: never; }
+  |  { action?: never; formula?: never;   pipeline: PipelineConfigInput; simple?: never; }
+  |  { action?: never; formula?: never; pipeline?: never;   simple: SimpleConfigInput; };
 
 export const enum NodeErrorPhase {
   Computation = 'COMPUTATION',
@@ -342,6 +365,13 @@ export const enum ScenarioKind {
   Custom = 'CUSTOM',
   Default = 'DEFAULT',
   ProgressTracking = 'PROGRESS_TRACKING'
+};
+
+export type SelectCategoriesInput = {
+  categories: Array<string>;
+  dimension: string;
+  exclude: boolean;
+  flatten: boolean;
 };
 
 export type SetForecastFromInput = {
@@ -3644,10 +3674,13 @@ export type NodeChangeHistoryQueryVariables = Exact<{
 
 export type NodeChangeHistoryQuery = (
   { node: (
-    { uuid: string, id: string, changeHistory: Array<(
-      { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: Record<string, unknown> | unknown[] | null, after: Record<string, unknown> | unknown[] | null }
-      & { __typename: 'InstanceModelLogEntryType' }
-    )> }
+    { id: string, editor: (
+      { changeHistory: Array<(
+        { uuid: string, action: string, createdAt: string, targetKind: ChangeTargetKind, before: Record<string, unknown> | unknown[] | null, after: Record<string, unknown> | unknown[] | null }
+        & { __typename: 'InstanceModelLogEntryType' }
+      )> }
+      & { __typename: 'NodeEditor' }
+    ) | null }
     & { __typename: 'ActionNode' | 'Node' }
   ) | null }
   & { __typename: 'Query' }
