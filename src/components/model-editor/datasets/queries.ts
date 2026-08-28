@@ -1,5 +1,31 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
+import type {
+  CreateDataPointCommentMutation,
+  CreateDataPointCommentMutationVariables,
+  CreateDataPointsMutation,
+  CreateDataPointsMutationVariables,
+  CreateDataSourceMutation,
+  CreateDataSourceMutationVariables,
+  CreateSourceReferenceMutation,
+  CreateSourceReferenceMutationVariables,
+  DatasetConnectedNodesQuery,
+  DatasetConnectedNodesQueryVariables,
+  DeleteDataPointsMutation,
+  DeleteDataPointsMutationVariables,
+  DeleteSourceReferenceMutation,
+  DeleteSourceReferenceMutationVariables,
+  InstanceDatasetQuery,
+  InstanceDatasetQueryVariables,
+  InstanceDatasetsQuery,
+  InstanceDatasetsQueryVariables,
+  ResolveDataPointCommentMutation,
+  ResolveDataPointCommentMutationVariables,
+  UnresolveDataPointCommentMutation,
+  UnresolveDataPointCommentMutationVariables,
+  UpdateDataPointsMutation,
+  UpdateDataPointsMutationVariables,
+} from '@/common/__generated__/graphql';
 import { OPERATION_INFO_FIELDS } from '../dimensions/queries';
 
 export const DATASET_SUMMARY_FIELDS = gql`
@@ -183,7 +209,10 @@ export const DATASET_DETAIL_FIELDS = gql`
   ${DATASET_SOURCE_REFERENCE_FIELDS}
 `;
 
-export const GET_INSTANCE_DATASETS = gql`
+export const GET_INSTANCE_DATASETS: TypedDocumentNode<
+  InstanceDatasetsQuery,
+  InstanceDatasetsQueryVariables
+> = gql`
   query InstanceDatasets {
     instance {
       id
@@ -200,7 +229,10 @@ export const GET_INSTANCE_DATASETS = gql`
   ${DATASET_SUMMARY_FIELDS}
 `;
 
-export const GET_INSTANCE_DATASET = gql`
+export const GET_INSTANCE_DATASET: TypedDocumentNode<
+  InstanceDatasetQuery,
+  InstanceDatasetQueryVariables
+> = gql`
   query InstanceDataset($datasetId: ID!) {
     instance {
       id
@@ -218,7 +250,10 @@ export const GET_INSTANCE_DATASET = gql`
   ${DATA_SOURCE_FIELDS}
 `;
 
-export const GET_DATASET_CONNECTED_NODES = gql`
+export const GET_DATASET_CONNECTED_NODES: TypedDocumentNode<
+  DatasetConnectedNodesQuery,
+  DatasetConnectedNodesQueryVariables
+> = gql`
   query DatasetConnectedNodes($ids: [ID!]!) {
     instance {
       id
@@ -263,7 +298,10 @@ export const DATA_POINT_FIELDS = gql`
   }
 `;
 
-export const CREATE_DATA_POINTS = gql`
+export const CREATE_DATA_POINTS: TypedDocumentNode<
+  CreateDataPointsMutation,
+  CreateDataPointsMutationVariables
+> = gql`
   mutation CreateDataPoints($instanceId: ID!, $datasetId: ID!, $input: [CreateDataPointInput!]!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
@@ -285,7 +323,10 @@ export const CREATE_DATA_POINTS = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const UPDATE_DATA_POINTS = gql`
+export const UPDATE_DATA_POINTS: TypedDocumentNode<
+  UpdateDataPointsMutation,
+  UpdateDataPointsMutationVariables
+> = gql`
   mutation UpdateDataPoints(
     $instanceId: ID!
     $datasetId: ID!
@@ -311,7 +352,10 @@ export const UPDATE_DATA_POINTS = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_DATA_POINTS = gql`
+export const DELETE_DATA_POINTS: TypedDocumentNode<
+  DeleteDataPointsMutation,
+  DeleteDataPointsMutationVariables
+> = gql`
   mutation DeleteDataPoints($instanceId: ID!, $datasetId: ID!, $dataPointIds: [ID!]!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
@@ -330,7 +374,10 @@ export const DELETE_DATA_POINTS = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const CREATE_DATA_POINT_COMMENT = gql`
+export const CREATE_DATA_POINT_COMMENT: TypedDocumentNode<
+  CreateDataPointCommentMutation,
+  CreateDataPointCommentMutationVariables
+> = gql`
   mutation CreateDataPointComment(
     $instanceId: ID!
     $datasetId: ID!
@@ -355,7 +402,10 @@ export const CREATE_DATA_POINT_COMMENT = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const RESOLVE_DATA_POINT_COMMENT = gql`
+export const RESOLVE_DATA_POINT_COMMENT: TypedDocumentNode<
+  ResolveDataPointCommentMutation,
+  ResolveDataPointCommentMutationVariables
+> = gql`
   mutation ResolveDataPointComment($instanceId: ID!, $datasetId: ID!, $commentId: ID!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
@@ -375,7 +425,10 @@ export const RESOLVE_DATA_POINT_COMMENT = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const UNRESOLVE_DATA_POINT_COMMENT = gql`
+export const UNRESOLVE_DATA_POINT_COMMENT: TypedDocumentNode<
+  UnresolveDataPointCommentMutation,
+  UnresolveDataPointCommentMutationVariables
+> = gql`
   mutation UnresolveDataPointComment($instanceId: ID!, $datasetId: ID!, $commentId: ID!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {
@@ -395,7 +448,10 @@ export const UNRESOLVE_DATA_POINT_COMMENT = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const CREATE_SOURCE_REFERENCE = gql`
+export const CREATE_SOURCE_REFERENCE: TypedDocumentNode<
+  CreateSourceReferenceMutation,
+  CreateSourceReferenceMutationVariables
+> = gql`
   mutation CreateSourceReference(
     $instanceId: ID!
     $datasetId: ID!
@@ -419,7 +475,10 @@ export const CREATE_SOURCE_REFERENCE = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const CREATE_DATA_SOURCE = gql`
+export const CREATE_DATA_SOURCE: TypedDocumentNode<
+  CreateDataSourceMutation,
+  CreateDataSourceMutationVariables
+> = gql`
   mutation CreateDataSource($instanceId: ID!, $input: CreateDataSourceInput!) {
     instanceEditor(instanceId: $instanceId) {
       createDataSource(input: $input) {
@@ -437,7 +496,10 @@ export const CREATE_DATA_SOURCE = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_SOURCE_REFERENCE = gql`
+export const DELETE_SOURCE_REFERENCE: TypedDocumentNode<
+  DeleteSourceReferenceMutation,
+  DeleteSourceReferenceMutationVariables
+> = gql`
   mutation DeleteSourceReference($instanceId: ID!, $datasetId: ID!, $referenceId: ID!) {
     instanceEditor(instanceId: $instanceId) {
       datasetEditor(datasetId: $datasetId) {

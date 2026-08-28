@@ -6,11 +6,6 @@ import { useMutation, useQuery } from '@apollo/client/react';
 
 import { SettingsToggleBar } from '@common/components/SettingsToggleBar';
 
-import type {
-  ParametersQuery,
-  SetNormalizationFromWidgetMutation,
-  SetNormalizationFromWidgetMutationVariables,
-} from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import { SET_NORMALIZATION_MUTATION } from '@/components/general/NormalizationWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
@@ -23,7 +18,7 @@ import { GET_PARAMETERS } from '@/queries/getParameters';
 function DashboardNormalizationBar() {
   const { t } = useTranslation();
 
-  const { loading, data, previousData } = useQuery<ParametersQuery>(GET_PARAMETERS, {
+  const { loading, data, previousData } = useQuery(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
   });
 
@@ -33,10 +28,9 @@ function DashboardNormalizationBar() {
   const [normalizationActive, setNormalizationActive] = useState(normalization?.isActive ?? false);
 
   // Todo handle mutation error
-  const [setNormalization, { loading: mutationLoading }] = useMutation<
-    SetNormalizationFromWidgetMutation,
-    SetNormalizationFromWidgetMutationVariables
-  >(SET_NORMALIZATION_MUTATION, { refetchQueries: 'active' });
+  const [setNormalization, { loading: mutationLoading }] = useMutation(SET_NORMALIZATION_MUTATION, {
+    refetchQueries: 'active',
+  });
 
   useEffect(() => {
     // Update the normalization state if it becomes out of sync with the latest data, for example if a mutation failed.

@@ -2,7 +2,6 @@ import { Autocomplete, TextField } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
 
-import type { InstanceDimensionsQuery } from '@/common/__generated__/graphql';
 import { GET_INSTANCE_DIMENSIONS } from '../dimensions/queries';
 
 type Props = {
@@ -19,7 +18,7 @@ type Props = {
  * unknown identifier renders as-is instead of being unrepresentable.
  */
 export default function DimensionsSelect({ label, value, disabled, onChange }: Props) {
-  const { data } = useQuery<InstanceDimensionsQuery>(GET_INSTANCE_DIMENSIONS, {
+  const { data } = useQuery(GET_INSTANCE_DIMENSIONS, {
     fetchPolicy: 'cache-first',
   });
   const dimensions = data?.instance?.editor?.dimensions ?? [];

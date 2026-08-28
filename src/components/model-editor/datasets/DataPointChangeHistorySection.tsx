@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Box, Chip, Paper, Typography } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
+import type { DataPointInstanceChangeHistoryQueryVariables } from '@/common/__generated__/graphql';
 import { useEditorDateFormat } from '../useEditorDateFormat';
 
 // There's no per-datapoint `changeHistory` field on the backend (only Node /
@@ -13,7 +14,10 @@ import { useEditorDateFormat } from '../useEditorDateFormat';
 // wide audit trail and filter to the entries that target this data point. The
 // match is exact: DataPoint.id === the data point's uuid === the log entry's
 // `targetUuid`. Mirrors NodeChangeHistorySection's row style.
-const INSTANCE_CHANGE_HISTORY = gql`
+const INSTANCE_CHANGE_HISTORY: TypedDocumentNode<
+  InstanceChangeHistoryQuery,
+  DataPointInstanceChangeHistoryQueryVariables
+> = gql`
   query DataPointInstanceChangeHistory($limit: Int! = 100) {
     instance {
       id
@@ -63,9 +67,7 @@ type HistoryRowData = {
 };
 
 type ActionLabelKey =
-  | 'datasets-history-created'
-  | 'datasets-history-updated'
-  | 'datasets-history-deleted';
+  'datasets-history-created' | 'datasets-history-updated' | 'datasets-history-deleted';
 
 const ACTION_LABEL_KEY: Record<string, ActionLabelKey> = {
   'dataset.datapoint.create': 'datasets-history-created',
@@ -155,7 +157,7 @@ function HistoryRow({ row, now }: { row: HistoryRowData; now: number }) {
 
 export default function DataPointChangeHistorySection({ dataPointId }: { dataPointId: string }) {
   const t = useTranslations('model-editor');
-  const { data, loading } = useQuery<InstanceChangeHistoryQuery>(INSTANCE_CHANGE_HISTORY, {
+  const { data, loading } = useQuery(INSTANCE_CHANGE_HISTORY, {
     variables: { limit: 100 },
     fetchPolicy: 'cache-and-network',
   });

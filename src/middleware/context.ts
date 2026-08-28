@@ -1,6 +1,13 @@
 import type { NextRequest } from 'next/server';
 
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, gql } from '@apollo/client';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  type TypedDocumentNode,
+  gql,
+} from '@apollo/client';
 import * as Sentry from '@sentry/nextjs';
 import type { Logger } from 'pino';
 
@@ -17,7 +24,10 @@ import type {
 } from '@/common/__generated__/graphql';
 import { type ApolloClientOpts, getHttpHeaders } from '@/common/apollo-config';
 
-const GET_AVAILABLE_INSTANCES = gql`
+const GET_AVAILABLE_INSTANCES: TypedDocumentNode<
+  AvailableInstancesQuery,
+  AvailableInstancesQueryVariables
+> = gql`
   query AvailableInstances($hostname: String!) {
     availableInstances(hostname: $hostname) {
       ...AvailableInstance
@@ -88,7 +98,7 @@ function createApolloClient(req: NextRequest, logger: Logger) {
 }
 
 async function queryInstances(client: ApolloClientType, hostname: string, logger: Logger) {
-  const resp = await client.query<AvailableInstancesQuery, AvailableInstancesQueryVariables>({
+  const resp = await client.query({
     query: GET_AVAILABLE_INSTANCES,
     variables: {
       hostname: hostname,

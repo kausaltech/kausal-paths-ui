@@ -23,7 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { PersonPlus, XLg } from 'react-bootstrap-icons';
@@ -33,6 +33,7 @@ import {
   type AddUserToInstanceMutationVariables,
   InstanceMemberRole,
   type InstanceUsersQuery,
+  type InstanceUsersQueryVariables,
   type InviteUserToInstanceMutation,
   type InviteUserToInstanceMutationVariables,
   type RemoveInvitationMutation,
@@ -42,7 +43,7 @@ import { useInstance } from '@/common/instance';
 import { useEditorDateFormat } from '@/components/model-editor/useEditorDateFormat';
 import { useSession } from '@/lib/auth-client';
 
-const GET_INSTANCE_USERS = gql`
+const GET_INSTANCE_USERS: TypedDocumentNode<InstanceUsersQuery, InstanceUsersQueryVariables> = gql`
   query InstanceUsers {
     me {
       id
@@ -72,7 +73,10 @@ const GET_INSTANCE_USERS = gql`
   }
 `;
 
-const ADD_USER_TO_INSTANCE = gql`
+const ADD_USER_TO_INSTANCE: TypedDocumentNode<
+  AddUserToInstanceMutation,
+  AddUserToInstanceMutationVariables
+> = gql`
   mutation AddUserToInstance($instanceId: ID!, $email: String!) {
     instanceAdmin(instanceId: $instanceId) {
       addUserToInstance(email: $email) {
@@ -98,7 +102,10 @@ const ADD_USER_TO_INSTANCE = gql`
   }
 `;
 
-const REMOVE_INVITATION = gql`
+const REMOVE_INVITATION: TypedDocumentNode<
+  RemoveInvitationMutation,
+  RemoveInvitationMutationVariables
+> = gql`
   mutation RemoveInvitation($instanceId: ID!, $invitationId: ID!) {
     instanceAdmin(instanceId: $instanceId) {
       removeInvitation(invitationId: $invitationId) {
@@ -112,7 +119,10 @@ const REMOVE_INVITATION = gql`
   }
 `;
 
-const INVITE_USER_TO_INSTANCE = gql`
+const INVITE_USER_TO_INSTANCE: TypedDocumentNode<
+  InviteUserToInstanceMutation,
+  InviteUserToInstanceMutationVariables
+> = gql`
   mutation InviteUserToInstance($instanceId: ID!, $email: String!) {
     instanceAdmin(instanceId: $instanceId) {
       inviteUserToInstance(email: $email) {
@@ -173,24 +183,15 @@ export default function InstanceUsersPage() {
   );
   const [time, setTime] = useState(() => Date.now());
 
-  const { data, loading, error, refetch } = useQuery<InstanceUsersQuery>(GET_INSTANCE_USERS, {
+  const { data, loading, error, refetch } = useQuery(GET_INSTANCE_USERS, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [addUser, { loading: addLoading }] = useMutation<
-    AddUserToInstanceMutation,
-    AddUserToInstanceMutationVariables
-  >(ADD_USER_TO_INSTANCE);
+  const [addUser, { loading: addLoading }] = useMutation(ADD_USER_TO_INSTANCE);
 
-  const [inviteUser, { loading: inviteLoading }] = useMutation<
-    InviteUserToInstanceMutation,
-    InviteUserToInstanceMutationVariables
-  >(INVITE_USER_TO_INSTANCE);
+  const [inviteUser, { loading: inviteLoading }] = useMutation(INVITE_USER_TO_INSTANCE);
 
-  const [removeInvitation] = useMutation<
-    RemoveInvitationMutation,
-    RemoveInvitationMutationVariables
-  >(REMOVE_INVITATION);
+  const [removeInvitation] = useMutation(REMOVE_INVITATION);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const submitLoading = addLoading || inviteLoading;

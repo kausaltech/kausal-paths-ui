@@ -10,7 +10,7 @@ import {
   TextField,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
 
 import { startInteraction } from '@common/sentry/helpers';
@@ -31,7 +31,7 @@ const WidgetWrapper = styled.div`
   width: 100%;
 `;
 
-const SET_PARAMETER = gql`
+const SET_PARAMETER: TypedDocumentNode<SetParameterMutation, SetParameterMutationVariables> = gql`
   mutation SetParameter(
     $parameterId: ID!
     $boolValue: Boolean
@@ -265,21 +265,21 @@ const ParameterWidget = (props: ParameterWidgetProps) => {
   const { parameter, disabled = false } = props;
   const [site] = useSiteWithSetter();
 
-  const [setParameter, { loading: mutationLoading, error: _mutationError }] = useMutation<
-    SetParameterMutation,
-    SetParameterMutationVariables
-  >(SET_PARAMETER, {
-    refetchQueries: 'active',
-    onCompleted: () => {
-      const customScenario = site.scenarios.find((scen) => scen.id === 'custom');
-      // NOTE: We KNOW this mutation results in active scenario to be set to custom in backend
-      // Although the mutation does not return the active scenario, so we need to set it manually
-      // We  want to update activeScenarioVar only in onCompleted mutations
-      if (customScenario) {
-        activeScenarioVar({ ...customScenario, isUserSelected: false });
-      }
-    },
-  });
+  const [setParameter, { loading: mutationLoading, error: _mutationError }] = useMutation(
+    SET_PARAMETER,
+    {
+      refetchQueries: 'active',
+      onCompleted: () => {
+        const customScenario = site.scenarios.find((scen) => scen.id === 'custom');
+        // NOTE: We KNOW this mutation results in active scenario to be set to custom in backend
+        // Although the mutation does not return the active scenario, so we need to set it manually
+        // We  want to update activeScenarioVar only in onCompleted mutations
+        if (customScenario) {
+          activeScenarioVar({ ...customScenario, isUserSelected: false });
+        }
+      },
+    }
+  );
 
   type UserSelection =
     | { parameterId: string; numberValue: number }

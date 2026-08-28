@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 
 import type {
@@ -10,7 +10,12 @@ import type {
 } from '@/common/__generated__/graphql';
 import { DimensionalMetric } from '../dimensional-metric';
 
-const GET_ACTION_IMPACT = gql`
+type ActionNodeImpactDocument = TypedDocumentNode<
+  ActionNodeImpactQuery,
+  ActionNodeImpactQueryVariables
+>;
+
+const GET_ACTION_IMPACT: ActionNodeImpactDocument = gql`
   query ActionNodeImpact($nodeId: ID!, $targetNodeId: ID!) {
     node(id: $nodeId) {
       id
@@ -87,14 +92,11 @@ export function useActionImpact(
   nodeId: string | null,
   targetNodeId: string | null
 ): UseActionImpactResult {
-  const { data, loading, error } = useQuery<ActionNodeImpactQuery, ActionNodeImpactQueryVariables>(
-    GET_ACTION_IMPACT,
-    {
-      variables: { nodeId: nodeId ?? '', targetNodeId: targetNodeId ?? '' },
-      skip: !nodeId || !targetNodeId,
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const { data, loading, error } = useQuery(GET_ACTION_IMPACT, {
+    variables: { nodeId: nodeId ?? '', targetNodeId: targetNodeId ?? '' },
+    skip: !nodeId || !targetNodeId,
+    fetchPolicy: 'cache-and-network',
+  });
 
   const rawMetric = useMemo(() => {
     const impact = data?.node?.impactMetric;

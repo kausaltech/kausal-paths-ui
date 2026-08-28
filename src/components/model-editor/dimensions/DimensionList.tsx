@@ -26,7 +26,6 @@ import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { Pencil, Plus, Trash } from 'react-bootstrap-icons';
 
-import type { InstanceDimensionsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
 import { GET_INSTANCE_DIMENSIONS } from './queries';
 
@@ -37,7 +36,7 @@ function getDimensionsBase(pathname: string): string {
 
 export default function DimensionList() {
   const t = useTranslations('model-editor');
-  const { data, loading, error } = useQuery<InstanceDimensionsQuery>(GET_INSTANCE_DIMENSIONS, {
+  const { data, loading, error } = useQuery(GET_INSTANCE_DIMENSIONS, {
     fetchPolicy: 'cache-and-network',
   });
   const router = useRouter();

@@ -4,18 +4,8 @@ import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
 import type {
-  AddInputPortMutation,
-  AddInputPortMutationVariables,
-  BindDatasetMutation,
-  BindDatasetMutationVariables,
   DatasetTransformationInput,
-  DeleteBindingMutation,
-  DeleteBindingMutationVariables,
   EdgeTransformationInput,
-  UpdateDatasetBindingMutation,
-  UpdateDatasetBindingMutationVariables,
-  UpdateEdgeBindingMutation,
-  UpdateEdgeBindingMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { constraintViolationError } from './constraintViolations';
@@ -61,7 +51,7 @@ const refetchQueries = ['NodeGraph', 'EditorPublishState'];
 
 export function useBindDataset() {
   const { instanceId, editorContext, handleError } = useBindingMutationContext();
-  const [mutate] = useMutation<BindDatasetMutation, BindDatasetMutationVariables>(BIND_DATASET);
+  const [mutate] = useMutation(BIND_DATASET);
 
   return useCallback(
     async (args: {
@@ -108,7 +98,7 @@ export function useBindDataset() {
  */
 export function useAddInputPort() {
   const { instanceId, editorContext, handleError } = useBindingMutationContext();
-  const [mutate] = useMutation<AddInputPortMutation, AddInputPortMutationVariables>(ADD_INPUT_PORT);
+  const [mutate] = useMutation(ADD_INPUT_PORT);
 
   return useCallback(
     async (args: {
@@ -159,9 +149,7 @@ export function useAddInputPort() {
 
 export function useUpdateDatasetBinding() {
   const { instanceId, editorContext, handleError } = useBindingMutationContext();
-  const [mutate] = useMutation<UpdateDatasetBindingMutation, UpdateDatasetBindingMutationVariables>(
-    UPDATE_DATASET_BINDING
-  );
+  const [mutate] = useMutation(UPDATE_DATASET_BINDING);
 
   return useCallback(
     async (args: {
@@ -200,9 +188,7 @@ export function useUpdateDatasetBinding() {
 
 export function useUpdateEdgeBinding() {
   const { instanceId, editorContext, handleError } = useBindingMutationContext();
-  const [mutate] = useMutation<UpdateEdgeBindingMutation, UpdateEdgeBindingMutationVariables>(
-    UPDATE_EDGE_BINDING
-  );
+  const [mutate] = useMutation(UPDATE_EDGE_BINDING);
 
   return useCallback(
     async (args: {
@@ -239,9 +225,7 @@ export function useUpdateEdgeBinding() {
 
 export function useDeleteBinding() {
   const { instanceId, editorContext, handleError } = useBindingMutationContext();
-  const [mutate] = useMutation<DeleteBindingMutation, DeleteBindingMutationVariables>(
-    DELETE_BINDING
-  );
+  const [mutate] = useMutation(DELETE_BINDING);
 
   return useCallback(
     async (bindingId: string) => {

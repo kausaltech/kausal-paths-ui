@@ -1,5 +1,11 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
+import type {
+  ActionContentQuery,
+  ActionContentQueryVariables,
+  CausalChainQuery,
+  CausalChainQueryVariables,
+} from '@/common/__generated__/graphql';
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 import DimensionalFlow from '@/components/graphs/DimensionalFlow';
 import { DimensionalMetric } from '@/data/metric';
@@ -91,7 +97,7 @@ const CAUSAL_GRID_NODE_FRAGMENT = gql`
  * Returns the downstream nodes of a given action until a specific leaf node (outcome) is reached.
  * This is used to render the causal chain on an action page.
  */
-export const GET_CAUSAL_CHAIN = gql`
+export const GET_CAUSAL_CHAIN: TypedDocumentNode<CausalChainQuery, CausalChainQueryVariables> = gql`
   query CausalChain($node: ID!, $goal: ID, $untilNode: ID) {
     action(id: $node) {
       id
@@ -106,7 +112,7 @@ export const GET_CAUSAL_CHAIN = gql`
   ${ACTION_PARAMETER_FRAGMENT}
 `;
 
-const GET_ACTION_CONTENT = gql`
+const GET_ACTION_CONTENT: TypedDocumentNode<ActionContentQuery, ActionContentQueryVariables> = gql`
   query ActionContent($node: ID!, $goal: ID, $downstreamDepth: Int) {
     action(id: $node) {
       ...CausalGridNode

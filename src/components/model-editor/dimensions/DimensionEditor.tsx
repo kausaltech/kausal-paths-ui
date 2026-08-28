@@ -22,18 +22,9 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeft, GripVertical, Plus, Trash } from 'react-bootstrap-icons';
 
 import type {
-  CreateDimensionCategoriesMutation,
-  CreateDimensionCategoriesMutationVariables,
   CreateDimensionCategoryInput,
-  DeleteDimensionCategoryMutation,
-  DeleteDimensionCategoryMutationVariables,
   InstanceDimensionFieldsFragment,
-  InstanceDimensionsQuery,
-  UpdateDimensionCategoriesMutation,
-  UpdateDimensionCategoriesMutationVariables,
   UpdateDimensionCategoryInput,
-  UpdateDimensionMutation,
-  UpdateDimensionMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
@@ -97,10 +88,9 @@ function extractMessages(
 }
 
 export default function DimensionEditor({ dimensionId }: Props) {
-  const { data, loading, error, refetch } = useQuery<InstanceDimensionsQuery>(
-    GET_INSTANCE_DIMENSIONS,
-    { fetchPolicy: 'cache-and-network' }
-  );
+  const { data, loading, error, refetch } = useQuery(GET_INSTANCE_DIMENSIONS, {
+    fetchPolicy: 'cache-and-network',
+  });
   const t = useTranslations('model-editor');
   const router = useRouter();
   const pathname = usePathname();
@@ -178,21 +168,10 @@ function DimensionEditorForm({ dimension, listBase, refetch }: DimensionEditorFo
     return false;
   }, [dimension, name, rows, deletedIds]);
 
-  const [updateDimension] = useMutation<UpdateDimensionMutation, UpdateDimensionMutationVariables>(
-    UPDATE_DIMENSION
-  );
-  const [createCategories] = useMutation<
-    CreateDimensionCategoriesMutation,
-    CreateDimensionCategoriesMutationVariables
-  >(CREATE_DIMENSION_CATEGORIES);
-  const [updateCategories] = useMutation<
-    UpdateDimensionCategoriesMutation,
-    UpdateDimensionCategoriesMutationVariables
-  >(UPDATE_DIMENSION_CATEGORIES);
-  const [deleteCategory] = useMutation<
-    DeleteDimensionCategoryMutation,
-    DeleteDimensionCategoryMutationVariables
-  >(DELETE_DIMENSION_CATEGORY);
+  const [updateDimension] = useMutation(UPDATE_DIMENSION);
+  const [createCategories] = useMutation(CREATE_DIMENSION_CATEGORIES);
+  const [updateCategories] = useMutation(UPDATE_DIMENSION_CATEGORIES);
+  const [deleteCategory] = useMutation(DELETE_DIMENSION_CATEGORY);
 
   const handleReorder = useCallback((sourceId: string, targetId: string, placeBefore: boolean) => {
     setRows((prev) => {

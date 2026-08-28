@@ -3,11 +3,7 @@ import { useCallback } from 'react';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
-import type {
-  UpdateNodeInput,
-  UpdateNodeMutation,
-  UpdateNodeMutationVariables,
-} from '@/common/__generated__/graphql';
+import type { UpdateNodeInput } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import {
   type NodeFieldOverrides,
@@ -38,7 +34,7 @@ export function useUpdateNodeMutation() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
+  const [mutate] = useMutation(UPDATE_NODE);
   return useCallback(
     async (nodeId: string, input: Partial<UpdateNodeInput>) => {
       try {

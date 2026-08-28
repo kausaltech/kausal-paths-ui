@@ -6,11 +6,7 @@ import { useLazyQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 
-import type {
-  EditorNodeFieldsFragment,
-  NodeTranslationQuery,
-  NodeTranslationQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import RichTextField from '../RichTextField';
@@ -64,10 +60,10 @@ export function NodeContentSection({
   // operation's identity, so changing `selectedLang` while `variables` stays
   // the same doesn't refetch on its own. Drive the fetch explicitly via
   // useLazyQuery so each tab switch fires fresh with the latest locale.
-  const [fetchTranslation, { data: translationData, loading: translationLoading }] = useLazyQuery<
-    NodeTranslationQuery,
-    NodeTranslationQueryVariables
-  >(NODE_TRANSLATION, { fetchPolicy: 'no-cache' });
+  const [fetchTranslation, { data: translationData, loading: translationLoading }] = useLazyQuery(
+    NODE_TRANSLATION,
+    { fetchPolicy: 'no-cache' }
+  );
 
   useEffect(() => {
     if (isDefault) return;

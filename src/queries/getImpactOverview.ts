@@ -1,4 +1,9 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
+
+import type {
+  ImpactOverviewQuery,
+  ImpactOverviewQueryVariables,
+} from '@/common/__generated__/graphql';
 
 export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
   fragment ImpactOverviewDetail on ImpactOverviewType {
@@ -163,7 +168,10 @@ export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
   }
 `;
 
-export const GET_IMPACT_OVERVIEW = gql`
+export const GET_IMPACT_OVERVIEW: TypedDocumentNode<
+  ImpactOverviewQuery,
+  ImpactOverviewQueryVariables
+> = gql`
   query ImpactOverview($id: ID!) {
     impactOverview(id: $id) {
       # eslint-disable-next-line @graphql-eslint/require-selections -- costDim/metric ids omitted intentionally to avoid cache issues (see fragment)

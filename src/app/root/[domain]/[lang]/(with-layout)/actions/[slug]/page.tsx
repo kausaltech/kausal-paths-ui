@@ -10,12 +10,6 @@ import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
-import type {
-  ActionContentQuery,
-  ActionContentQueryVariables,
-  CausalChainQuery,
-  CausalChainQueryVariables,
-} from '@/common/__generated__/graphql';
 import { DecisionLevel } from '@/common/__generated__/graphql';
 import { activeGoalVar, activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -145,7 +139,7 @@ export default function ActionPage() {
 
   const isScenarioEditable = !hideNodeDetails;
 
-  const queryResp = useQuery<ActionContentQuery, ActionContentQueryVariables>(GET_ACTION_CONTENT, {
+  const queryResp = useQuery(GET_ACTION_CONTENT, {
     fetchPolicy: 'cache-and-network',
     variables: {
       node: slug,
@@ -155,10 +149,7 @@ export default function ActionPage() {
   });
 
   // Fetch the full causal chain only upon clicking the expand grid button
-  const [getCausalChain, causalChainResp] = useLazyQuery<
-    CausalChainQuery,
-    CausalChainQueryVariables
-  >(GET_CAUSAL_CHAIN);
+  const [getCausalChain, causalChainResp] = useLazyQuery(GET_CAUSAL_CHAIN);
 
   const { loading, error, previousData, refetch } = queryResp;
 
@@ -201,8 +192,7 @@ export default function ActionPage() {
 
   const isActive = (
     action.parameters.find((param) => param.id == `${param.node?.id}.enabled`) as
-      | { boolValue: boolean | null }
-      | undefined
+      { boolValue: boolean | null } | undefined
   )?.boolValue;
 
   const flowPlot = action.dimensionalFlow && <DimensionalPlot flow={action.dimensionalFlow} />;

@@ -1,5 +1,6 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
+import type { PageQuery, PageQueryVariables } from '@/common/__generated__/graphql';
 import { STREAM_FIELD_FRAGMENT } from '@/components/common/StreamField';
 import { UNIT_FRAGMENT } from './fragments';
 
@@ -152,7 +153,7 @@ const DASHBOARD_PAGE_FRAGMENT = gql`
   ${UNIT_FRAGMENT}
 `;
 
-const GET_PAGE = gql`
+const GET_PAGE: TypedDocumentNode<PageQuery, PageQueryVariables> = gql`
   ${DASHBOARD_PAGE_FRAGMENT}
   query Page($path: String!) {
     activeScenario {

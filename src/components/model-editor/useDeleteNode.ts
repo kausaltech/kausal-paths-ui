@@ -3,17 +3,13 @@ import { useCallback } from 'react';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
-import type {
-  DeleteNodeMutation,
-  DeleteNodeMutationVariables,
-} from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { DELETE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
 
 export function useDeleteNode() {
   const instance = useInstance();
   const client = useApolloClient();
-  const [mutate] = useMutation<DeleteNodeMutation, DeleteNodeMutationVariables>(DELETE_NODE);
+  const [mutate] = useMutation(DELETE_NODE);
 
   return useCallback(
     async (nodeId: string): Promise<void> => {

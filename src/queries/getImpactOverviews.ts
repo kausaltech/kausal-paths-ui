@@ -1,6 +1,14 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
-export const GET_IMPACT_OVERVIEWS = gql`
+import type {
+  ImpactOverviewsQuery,
+  ImpactOverviewsQueryVariables,
+} from '@/common/__generated__/graphql';
+
+export const GET_IMPACT_OVERVIEWS: TypedDocumentNode<
+  ImpactOverviewsQuery,
+  ImpactOverviewsQueryVariables
+> = gql`
   query ImpactOverviews {
     impactOverviews {
       id

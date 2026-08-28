@@ -5,13 +5,10 @@ import { useApolloClient, useMutation } from '@apollo/client/react';
 
 import type {
   CreateNodeInput,
-  CreateNodeMutation,
-  CreateNodeMutationVariables,
   EditorNodeFieldsFragment,
   InputPortInput,
   NodeConfigInput,
   NodeParametersQuery,
-  NodeParametersQueryVariables,
   OutputPortInput,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
@@ -143,7 +140,7 @@ export function useDuplicateNode() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<CreateNodeMutation, CreateNodeMutationVariables>(CREATE_NODE);
+  const [mutate] = useMutation(CREATE_NODE);
 
   return useCallback(
     async (
@@ -176,7 +173,7 @@ export function useDuplicateNode() {
       // them for just this node before building the input.
       let params: Record<string, string | number | boolean> | null = null;
       try {
-        const { data } = await client.query<NodeParametersQuery, NodeParametersQueryVariables>({
+        const { data } = await client.query({
           query: NODE_PARAMETERS,
           variables: { nodeId: source.id },
           context: editorContext,

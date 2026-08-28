@@ -28,17 +28,9 @@ import {
 
 import type {
   CreateDataSourceInput,
-  CreateDataSourceMutation,
-  CreateDataSourceMutationVariables,
-  CreateSourceReferenceMutation,
-  CreateSourceReferenceMutationVariables,
   DataSourceFieldsFragment,
-  DatasetConnectedNodesQuery,
-  DatasetConnectedNodesQueryVariables,
   DatasetSourceReferenceFieldsFragment,
   DatasetSummaryFieldsFragment,
-  DeleteSourceReferenceMutation,
-  DeleteSourceReferenceMutationVariables,
   InstanceDatasetQuery,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
@@ -66,7 +58,7 @@ type Props = {
 
 export default function DatasetEditor({ datasetId }: Props) {
   const t = useTranslations('model-editor');
-  const { data, loading, error, refetch } = useQuery<InstanceDatasetQuery>(GET_INSTANCE_DATASET, {
+  const { data, loading, error, refetch } = useQuery(GET_INSTANCE_DATASET, {
     variables: { datasetId },
     fetchPolicy: 'cache-and-network',
   });
@@ -87,18 +79,9 @@ export default function DatasetEditor({ datasetId }: Props) {
     datasetId,
     onRefetch: refetch,
   });
-  const [createSourceReference] = useMutation<
-    CreateSourceReferenceMutation,
-    CreateSourceReferenceMutationVariables
-  >(CREATE_SOURCE_REFERENCE);
-  const [deleteSourceReference] = useMutation<
-    DeleteSourceReferenceMutation,
-    DeleteSourceReferenceMutationVariables
-  >(DELETE_SOURCE_REFERENCE);
-  const [createDataSource] = useMutation<
-    CreateDataSourceMutation,
-    CreateDataSourceMutationVariables
-  >(CREATE_DATA_SOURCE);
+  const [createSourceReference] = useMutation(CREATE_SOURCE_REFERENCE);
+  const [deleteSourceReference] = useMutation(DELETE_SOURCE_REFERENCE);
+  const [createDataSource] = useMutation(CREATE_DATA_SOURCE);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getModelEditorSection(pathname, 'datasets');
@@ -159,10 +142,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   }, [dataset]);
   const connectedNodeCount = connectedNodeIds.length;
 
-  const { data: connectedNodesData } = useQuery<
-    DatasetConnectedNodesQuery,
-    DatasetConnectedNodesQueryVariables
-  >(GET_DATASET_CONNECTED_NODES, {
+  const { data: connectedNodesData } = useQuery(GET_DATASET_CONNECTED_NODES, {
     variables: { ids: connectedNodeIds },
     skip: connectedNodeIds.length === 0,
     fetchPolicy: 'cache-and-network',

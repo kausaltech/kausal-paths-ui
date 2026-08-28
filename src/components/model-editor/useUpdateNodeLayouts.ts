@@ -2,13 +2,7 @@ import { useCallback } from 'react';
 
 import { useMutation } from '@apollo/client/react';
 
-import type {
-  ClearNodeLayoutsMutation,
-  ClearNodeLayoutsMutationVariables,
-  UpdateNodeLayoutInput,
-  UpdateNodeLayoutsMutation,
-  UpdateNodeLayoutsMutationVariables,
-} from '@/common/__generated__/graphql';
+import type { UpdateNodeLayoutInput } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { CLEAR_NODE_LAYOUTS, UPDATE_NODE_LAYOUTS } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
@@ -16,9 +10,7 @@ import { useEditorApolloContext } from './useEditorApolloContext';
 export function useUpdateNodeLayouts() {
   const instance = useInstance();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<UpdateNodeLayoutsMutation, UpdateNodeLayoutsMutationVariables>(
-    UPDATE_NODE_LAYOUTS
-  );
+  const [mutate] = useMutation(UPDATE_NODE_LAYOUTS);
 
   return useCallback(
     async (input: readonly UpdateNodeLayoutInput[]): Promise<void> => {
@@ -43,9 +35,7 @@ export function useUpdateNodeLayouts() {
 export function useClearNodeLayouts() {
   const instance = useInstance();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<ClearNodeLayoutsMutation, ClearNodeLayoutsMutationVariables>(
-    CLEAR_NODE_LAYOUTS
-  );
+  const [mutate] = useMutation(CLEAR_NODE_LAYOUTS);
 
   return useCallback(async (): Promise<void> => {
     const result = await mutate({

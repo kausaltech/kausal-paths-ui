@@ -3,10 +3,6 @@ import { useCallback } from 'react';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
-import type {
-  DeleteEdgeMutation,
-  DeleteEdgeMutationVariables,
-} from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { DELETE_EDGE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
@@ -21,7 +17,7 @@ export function useDeleteEdge() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<DeleteEdgeMutation, DeleteEdgeMutationVariables>(DELETE_EDGE);
+  const [mutate] = useMutation(DELETE_EDGE);
 
   return useCallback(
     async (edgeId: string) => {

@@ -2,17 +2,13 @@ import { Box, Grid, Typography } from '@mui/material';
 
 import { useQuery } from '@apollo/client/react';
 
-import type { ParametersQuery, ParametersQueryVariables } from '@/common/__generated__/graphql';
 import { useTranslation } from '@/common/i18n';
 import ContentLoader from '@/components/common/ContentLoader';
 import ParameterWidget from '@/components/general/ParameterWidget';
 import { GET_PARAMETERS } from '@/queries/getParameters';
 
 const GlobalParameters = () => {
-  const { loading, error, data, previousData } = useQuery<
-    ParametersQuery,
-    ParametersQueryVariables
-  >(GET_PARAMETERS, {
+  const { loading, error, data, previousData } = useQuery(GET_PARAMETERS, {
     notifyOnNetworkStatusChange: true,
     context: {
       componentName: 'GlobalParameters',

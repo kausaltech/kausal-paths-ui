@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'react-bootstrap-icons';
@@ -14,7 +14,15 @@ import SVG from 'react-inlinesvg';
 import { useTheme } from '@common/themes';
 import { getThemeStaticURL } from '@common/themes/theme';
 
-const FRAMEWORK_NAME = gql`
+import type {
+  CreateInstanceFrameworkNameQueryVariables,
+  CreateInstanceMutationVariables,
+} from '@/common/__generated__/graphql';
+
+const FRAMEWORK_NAME: TypedDocumentNode<
+  CreateInstanceFrameworkNameData,
+  CreateInstanceFrameworkNameQueryVariables
+> = gql`
   query CreateInstanceFrameworkName($identifier: ID!) {
     framework(identifier: $identifier) {
       id
@@ -27,7 +35,7 @@ type CreateInstanceFrameworkNameData = {
   framework: { id: string; name: string } | null;
 };
 
-const CREATE_INSTANCE = gql`
+const CREATE_INSTANCE: TypedDocumentNode<CreateInstanceData, CreateInstanceMutationVariables> = gql`
   mutation CreateInstance($input: CreateInstanceInput!) {
     createInstance(input: $input) {
       ... on CreateInstanceResult {
@@ -113,9 +121,9 @@ export default function CreateInstancePage() {
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<{ instanceId: string; instanceName: string } | null>(null);
 
-  const [createInstance, { loading }] = useMutation<CreateInstanceData>(CREATE_INSTANCE);
+  const [createInstance, { loading }] = useMutation(CREATE_INSTANCE);
 
-  const { data: frameworkData } = useQuery<CreateInstanceFrameworkNameData>(FRAMEWORK_NAME, {
+  const { data: frameworkData } = useQuery(FRAMEWORK_NAME, {
     variables: { identifier: frameworkId },
     skip: !frameworkId,
   });

@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 
 import { startInteraction } from '@common/sentry/helpers';
@@ -19,7 +19,6 @@ import { transientOptions } from '@common/themes/styles/styled';
 import type {
   ActivateScenarioMutation,
   ActivateScenarioMutationVariables,
-  ScenariosQuery,
 } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
@@ -27,7 +26,10 @@ import { useInstance } from '@/common/instance';
 import type { SiteContextScenario } from '@/context/site';
 import { GET_SCENARIOS } from '@/queries/getScenarios';
 
-const ACTIVATE_SCENARIO = gql`
+const ACTIVATE_SCENARIO: TypedDocumentNode<
+  ActivateScenarioMutation,
+  ActivateScenarioMutationVariables
+> = gql`
   mutation ActivateScenario($scenarioId: ID!) {
     activateScenario(id: $scenarioId) {
       ok
@@ -96,7 +98,7 @@ export default function ScenarioSelector(props: { testId?: string }) {
   const selectId = 'scenario-select';
   const labelId = 'scenario-select-label';
 
-  const { loading, error, data, previousData } = useQuery<ScenariosQuery>(GET_SCENARIOS, {
+  const { loading, error, data, previousData } = useQuery(GET_SCENARIOS, {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
     context: {
@@ -106,24 +108,24 @@ export default function ScenarioSelector(props: { testId?: string }) {
 
   const testId = testIdBase ? `${testIdBase}-selector` : undefined;
 
-  const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation<
-    ActivateScenarioMutation,
-    ActivateScenarioMutationVariables
-  >(ACTIVATE_SCENARIO, {
-    refetchQueries: 'active',
-    onCompleted: (dat) => {
-      const newScenario = dat.activateScenario?.activeScenario;
-      // We  want to update activeScenarioVar only in onCompleted mutations
-      if (newScenario) {
-        activeScenarioVar({
-          ...newScenario,
-          kind: null,
-          actualHistoricalYears: null,
-          isUserSelected: true,
-        });
-      }
-    },
-  });
+  const [activateScenario, { loading: mutationLoading, error: mutationError }] = useMutation(
+    ACTIVATE_SCENARIO,
+    {
+      refetchQueries: 'active',
+      onCompleted: (dat) => {
+        const newScenario = dat.activateScenario?.activeScenario;
+        // We  want to update activeScenarioVar only in onCompleted mutations
+        if (newScenario) {
+          activeScenarioVar({
+            ...newScenario,
+            kind: null,
+            actualHistoricalYears: null,
+            isUserSelected: true,
+          });
+        }
+      },
+    }
+  );
 
   // Reconcile the activeScenarioVar with the fresh client-side GET_SCENARIOS
   // result. The SSR-initialized var can be stale (the RSC Apollo client

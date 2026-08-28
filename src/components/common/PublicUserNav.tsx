@@ -14,15 +14,16 @@ import {
   Typography,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { BoxArrowRight, ChevronDown, PencilSquare } from 'react-bootstrap-icons';
 
+import type { CanEditModelQueryVariables } from '@/common/__generated__/graphql';
 import { Link } from '@/common/links';
 import { authClient, useSession } from '@/lib/auth-client';
 
-const CAN_EDIT_MODEL = gql`
+const CAN_EDIT_MODEL: TypedDocumentNode<CanEditModelData, CanEditModelQueryVariables> = gql`
   query CanEditModel {
     instance {
       id
@@ -57,7 +58,7 @@ function getInitials(name: string | null | undefined, email: string | null | und
 export default function PublicUserNav() {
   const t = useTranslations('common');
   const { data: session } = useSession();
-  const { data: modelData } = useQuery<CanEditModelData>(CAN_EDIT_MODEL, {
+  const { data: modelData } = useQuery(CAN_EDIT_MODEL, {
     skip: !session?.user,
   });
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

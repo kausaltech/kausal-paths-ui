@@ -7,8 +7,6 @@ import {
   type ActionListQuery,
   DecisionLevel,
   type ImpactOverviewDetailFragment,
-  type ImpactOverviewQuery,
-  type ImpactOverviewQueryVariables,
   type ImpactOverviewsQuery,
 } from '@/common/__generated__/graphql';
 import { findActionEnabledParam, summarizeYearlyValuesBetween } from '@/common/preprocess';
@@ -92,7 +90,7 @@ export function useActionListData({
     data: overviewsData,
     loading: overviewsLoading,
     error: overviewsError,
-  } = useQuery<ImpactOverviewsQuery>(GET_IMPACT_OVERVIEWS, {
+  } = useQuery(GET_IMPACT_OVERVIEWS, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -114,7 +112,7 @@ export function useActionListData({
     previousData: detailPreviousData,
     loading: detailLoading,
     error: detailError,
-  } = useQuery<ImpactOverviewQuery, ImpactOverviewQueryVariables>(GET_IMPACT_OVERVIEW, {
+  } = useQuery(GET_IMPACT_OVERVIEW, {
     variables: { id: activeOverviewId ?? '' },
     skip: !activeOverviewId,
     fetchPolicy: 'cache-and-network',

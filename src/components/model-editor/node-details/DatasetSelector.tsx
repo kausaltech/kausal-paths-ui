@@ -8,10 +8,7 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
 import { Database } from 'react-bootstrap-icons';
 
-import type {
-  AvailableDatasetsQuery,
-  AvailableDatasetsQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { AvailableDatasetsQuery } from '@/common/__generated__/graphql';
 import type { getNodeSpec } from '../nodeHelpers';
 import { AVAILABLE_DATASETS } from '../queries';
 
@@ -76,10 +73,7 @@ export default function DatasetSelector({ port, searchQuery, onSelect }: Props) 
   const t = useTranslations('model-editor');
   const [showAll, setShowAll] = useState(false);
   const query = searchQuery?.trim().toLowerCase() ?? '';
-  const { data, loading } = useQuery<AvailableDatasetsQuery, AvailableDatasetsQueryVariables>(
-    AVAILABLE_DATASETS,
-    { fetchPolicy: 'cache-and-network' }
-  );
+  const { data, loading } = useQuery(AVAILABLE_DATASETS, { fetchPolicy: 'cache-and-network' });
 
   const matchesSearch = (candidate: Candidate) =>
     query === '' ||

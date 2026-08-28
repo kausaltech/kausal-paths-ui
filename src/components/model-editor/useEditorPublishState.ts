@@ -2,10 +2,7 @@ import { useEffect } from 'react';
 
 import { useQuery } from '@apollo/client/react';
 
-import type {
-  EditorPublishStateQuery,
-  EditorPublishStateQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { EditorPublishStateQuery } from '@/common/__generated__/graphql';
 import { GET_INSTANCE_EDITOR_PUBLISH_STATE, draftHeadTokenVar } from './queries';
 
 type EditorPublishState = {
@@ -23,10 +20,9 @@ type EditorPublishState = {
  * hook picks up the new head after a successful write.
  */
 export function useEditorPublishState(): EditorPublishState {
-  const { data } = useQuery<EditorPublishStateQuery, EditorPublishStateQueryVariables>(
-    GET_INSTANCE_EDITOR_PUBLISH_STATE,
-    { fetchPolicy: 'cache-and-network' }
-  );
+  const { data } = useQuery(GET_INSTANCE_EDITOR_PUBLISH_STATE, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const token = data?.instance.editor?.draftHeadToken ?? null;
   useEffect(() => {

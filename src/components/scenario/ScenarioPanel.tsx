@@ -11,7 +11,7 @@ import {
   useScrollTrigger,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { Sliders } from 'react-bootstrap-icons';
 
@@ -33,7 +33,10 @@ import YearRangeSelector from '../general/YearRangeSelector';
 import ScenarioOutcome from './ScenarioOutcome';
 import ScenarioSelector from './ScenarioSelector';
 
-export const GET_INSTANCE_GOAL_OUTCOME = gql`
+export const GET_INSTANCE_GOAL_OUTCOME: TypedDocumentNode<
+  InstanceGoalOutcomeQuery,
+  InstanceGoalOutcomeQueryVariables
+> = gql`
   query InstanceGoalOutcome($goal: ID!) {
     instance {
       id
@@ -149,16 +152,13 @@ const ScenarioPanel = () => {
   }, [scenarioEditorDrawerOpen]);
 
   // Get the goal outcome for the active goal
-  const { error, data } = useQuery<InstanceGoalOutcomeQuery, InstanceGoalOutcomeQueryVariables>(
-    GET_INSTANCE_GOAL_OUTCOME,
-    {
-      skip: !!hideNodeDetails,
-      variables: {
-        goal: activeGoal?.id ?? '',
-      },
-      errorPolicy: 'all',
-    }
-  );
+  const { error, data } = useQuery(GET_INSTANCE_GOAL_OUTCOME, {
+    skip: !!hideNodeDetails,
+    variables: {
+      goal: activeGoal?.id ?? '',
+    },
+    errorPolicy: 'all',
+  });
 
   if (error) {
     logApolloError(error, { component: 'ScenarioPanel' });

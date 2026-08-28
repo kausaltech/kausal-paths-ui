@@ -1,13 +1,12 @@
 import { CircularProgress, FormControlLabel, Switch } from '@mui/material';
 
-import { NetworkStatus, gql } from '@apollo/client';
+import { NetworkStatus, type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
 
 import { startInteraction } from '@common/sentry/helpers';
 import styled from '@common/themes/styled';
 
 import type {
-  ParametersQuery,
   SetNormalizationFromWidgetMutation,
   SetNormalizationFromWidgetMutationVariables,
 } from '@/common/__generated__/graphql';
@@ -23,7 +22,10 @@ const SwitchWrapper = styled.div`
   }
 `;
 
-export const SET_NORMALIZATION_MUTATION = gql`
+export const SET_NORMALIZATION_MUTATION: TypedDocumentNode<
+  SetNormalizationFromWidgetMutation,
+  SetNormalizationFromWidgetMutationVariables
+> = gql`
   mutation SetNormalizationFromWidget($id: ID) {
     setNormalizer(id: $id) {
       ok
@@ -34,17 +36,11 @@ export const SET_NORMALIZATION_MUTATION = gql`
 function NormalizationWidget() {
   const { t } = useTranslation();
 
-  const { loading, error, data, previousData, networkStatus } = useQuery<ParametersQuery>(
-    GET_PARAMETERS,
-    {
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const { loading, error, data, previousData, networkStatus } = useQuery(GET_PARAMETERS, {
+    notifyOnNetworkStatusChange: true,
+  });
 
-  const [setNormalization, { loading: mutationLoading }] = useMutation<
-    SetNormalizationFromWidgetMutation,
-    SetNormalizationFromWidgetMutationVariables
-  >(SET_NORMALIZATION_MUTATION, {
+  const [setNormalization, { loading: mutationLoading }] = useMutation(SET_NORMALIZATION_MUTATION, {
     refetchQueries: 'active',
   });
 

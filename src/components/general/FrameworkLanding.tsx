@@ -15,19 +15,25 @@ import {
   Typography,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import * as Sentry from '@sentry/nextjs';
 import { useTranslations } from 'next-intl';
 import { Compass, PencilSquare } from 'react-bootstrap-icons';
 
-import type { StreamFieldFragment } from '@/common/__generated__/graphql';
+import type {
+  FrameworkConfigsQueryVariables,
+  StreamFieldFragment,
+} from '@/common/__generated__/graphql';
 import { useSession } from '@/lib/auth-client';
 import ThemableIllustration from '../common/ThemableIllustration';
 
 type FrameworkLandingData = Extract<StreamFieldFragment, { __typename: 'FrameworkLandingBlock' }>;
 
-const GET_FRAMEWORK_CONFIGS = gql`
+const GET_FRAMEWORK_CONFIGS: TypedDocumentNode<
+  FrameworkConfigsData,
+  FrameworkConfigsQueryVariables
+> = gql`
   query FrameworkConfigs($identifier: ID!, $clientUrl: String) {
     framework(identifier: $identifier) {
       id
@@ -130,7 +136,7 @@ export function FrameworkLanding({ block }: Props) {
     data: configsData,
     loading: configsLoading,
     error: configsError,
-  } = useQuery<FrameworkConfigsData>(GET_FRAMEWORK_CONFIGS, {
+  } = useQuery(GET_FRAMEWORK_CONFIGS, {
     variables: {
       identifier: framework?.identifier ?? '',
       clientUrl: typeof window !== 'undefined' ? window.location.href : null,

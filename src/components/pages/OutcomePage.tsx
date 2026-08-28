@@ -7,11 +7,7 @@ import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
 
-import type {
-  OutcomeNodeQuery,
-  OutcomeNodeQueryVariables,
-  PageQuery,
-} from '@/common/__generated__/graphql';
+import type { PageQuery } from '@/common/__generated__/graphql';
 import { activeScenarioVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import InlineError from '@/components/common/InlineError';
@@ -65,7 +61,7 @@ export default function OutcomePage(props: OutcomePageProps) {
     }
   }, [activeScenario, refetch, queryActiveScenario]);
 
-  const queryResp = useQuery<OutcomeNodeQuery, OutcomeNodeQueryVariables>(GET_OUTCOME_NODE, {
+  const queryResp = useQuery(GET_OUTCOME_NODE, {
     variables: {
       id: outcomeNodeId,
       goal: activeGoalId,

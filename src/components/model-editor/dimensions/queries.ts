@@ -1,4 +1,17 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
+
+import type {
+  CreateDimensionCategoriesMutation,
+  CreateDimensionCategoriesMutationVariables,
+  DeleteDimensionCategoryMutation,
+  DeleteDimensionCategoryMutationVariables,
+  InstanceDimensionsQuery,
+  InstanceDimensionsQueryVariables,
+  UpdateDimensionCategoriesMutation,
+  UpdateDimensionCategoriesMutationVariables,
+  UpdateDimensionMutation,
+  UpdateDimensionMutationVariables,
+} from '@/common/__generated__/graphql';
 
 export const INSTANCE_DIMENSION_FIELDS = gql`
   fragment InstanceDimensionFields on InstanceDimension {
@@ -27,7 +40,10 @@ export const OPERATION_INFO_FIELDS = gql`
   }
 `;
 
-export const GET_INSTANCE_DIMENSIONS = gql`
+export const GET_INSTANCE_DIMENSIONS: TypedDocumentNode<
+  InstanceDimensionsQuery,
+  InstanceDimensionsQueryVariables
+> = gql`
   query InstanceDimensions {
     instance {
       id
@@ -42,7 +58,10 @@ export const GET_INSTANCE_DIMENSIONS = gql`
   ${INSTANCE_DIMENSION_FIELDS}
 `;
 
-export const UPDATE_DIMENSION = gql`
+export const UPDATE_DIMENSION: TypedDocumentNode<
+  UpdateDimensionMutation,
+  UpdateDimensionMutationVariables
+> = gql`
   mutation UpdateDimension($instanceId: ID!, $input: UpdateDimensionInput!) {
     instanceEditor(instanceId: $instanceId) {
       updateDimension(input: $input) {
@@ -60,7 +79,10 @@ export const UPDATE_DIMENSION = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const CREATE_DIMENSION_CATEGORIES = gql`
+export const CREATE_DIMENSION_CATEGORIES: TypedDocumentNode<
+  CreateDimensionCategoriesMutation,
+  CreateDimensionCategoriesMutationVariables
+> = gql`
   mutation CreateDimensionCategories($instanceId: ID!, $input: [CreateDimensionCategoryInput!]!) {
     instanceEditor(instanceId: $instanceId) {
       createDimensionCategories(input: $input) {
@@ -78,7 +100,10 @@ export const CREATE_DIMENSION_CATEGORIES = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const UPDATE_DIMENSION_CATEGORIES = gql`
+export const UPDATE_DIMENSION_CATEGORIES: TypedDocumentNode<
+  UpdateDimensionCategoriesMutation,
+  UpdateDimensionCategoriesMutationVariables
+> = gql`
   mutation UpdateDimensionCategories($instanceId: ID!, $input: [UpdateDimensionCategoryInput!]!) {
     instanceEditor(instanceId: $instanceId) {
       updateDimensionCategories(input: $input) {
@@ -96,7 +121,10 @@ export const UPDATE_DIMENSION_CATEGORIES = gql`
   ${OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_DIMENSION_CATEGORY = gql`
+export const DELETE_DIMENSION_CATEGORY: TypedDocumentNode<
+  DeleteDimensionCategoryMutation,
+  DeleteDimensionCategoryMutationVariables
+> = gql`
   mutation DeleteDimensionCategory($instanceId: ID!, $categoryId: UUID!) {
     instanceEditor(instanceId: $instanceId) {
       deleteDimensionCategory(categoryId: $categoryId) {

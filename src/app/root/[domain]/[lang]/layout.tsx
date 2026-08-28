@@ -13,10 +13,7 @@ import { getThemeStaticURL } from '@common/themes/theme';
 import { loadTheme } from '@common/themes/theme-init.server';
 import { getRequestOrigin } from '@common/utils/request.server';
 
-import type {
-  InstanceContextQuery,
-  InstanceContextQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { InstanceContextQuery } from '@/common/__generated__/graphql';
 import {
   BASE_PATH_HEADER,
   DEFAULT_LANGUAGE_HEADER,
@@ -50,7 +47,7 @@ async function getContextFromHeaders() {
 
 async function fetchInstanceContext(_identifier: string, _hostname: string, _locale: string) {
   const client = await getClient();
-  const { data } = await client.query<InstanceContextQuery, InstanceContextQueryVariables>({
+  const { data } = await client.query({
     query: GET_INSTANCE_CONTEXT,
   });
   return data;

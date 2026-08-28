@@ -5,17 +5,9 @@ import { type EditableGridCell, GridCellKind } from '@glideapps/glide-data-grid'
 
 import type {
   CreateDataPointInput,
-  CreateDataPointsMutation,
-  CreateDataPointsMutationVariables,
-  CreateDimensionCategoriesMutation,
-  CreateDimensionCategoriesMutationVariables,
   CreateDimensionCategoryInput,
   DatasetDetailFieldsFragment,
-  DeleteDataPointsMutation,
-  DeleteDataPointsMutationVariables,
   UpdateDataPointItemInput,
-  UpdateDataPointsMutation,
-  UpdateDataPointsMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { CREATE_DIMENSION_CATEGORIES } from '../dimensions/queries';
@@ -122,22 +114,10 @@ export function useDataPointEditing({
   // Save), so the only server work is the save itself.
   const isMutating = saving;
 
-  const [createDataPoints] = useMutation<
-    CreateDataPointsMutation,
-    CreateDataPointsMutationVariables
-  >(CREATE_DATA_POINTS);
-  const [updateDataPoints] = useMutation<
-    UpdateDataPointsMutation,
-    UpdateDataPointsMutationVariables
-  >(UPDATE_DATA_POINTS);
-  const [createDimensionCategories] = useMutation<
-    CreateDimensionCategoriesMutation,
-    CreateDimensionCategoriesMutationVariables
-  >(CREATE_DIMENSION_CATEGORIES);
-  const [deleteDataPoints] = useMutation<
-    DeleteDataPointsMutation,
-    DeleteDataPointsMutationVariables
-  >(DELETE_DATA_POINTS, {
+  const [createDataPoints] = useMutation(CREATE_DATA_POINTS);
+  const [updateDataPoints] = useMutation(UPDATE_DATA_POINTS);
+  const [createDimensionCategories] = useMutation(CREATE_DIMENSION_CATEGORIES);
+  const [deleteDataPoints] = useMutation(DELETE_DATA_POINTS, {
     // Evict the deleted DataPoints from the normalised cache as soon as the
     // mutation succeeds. Without this, references in `Dataset.dataPoints`
     // can survive until the next refetch returns — which on slow connections

@@ -1,9 +1,14 @@
 import { useMemo } from 'react';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 
-const GET_EDITOR_DIMENSION_NAMES = gql`
+import type { EditorDimensionNamesQueryVariables } from '@/common/__generated__/graphql';
+
+const GET_EDITOR_DIMENSION_NAMES: TypedDocumentNode<
+  EditorDimensionNamesQuery,
+  EditorDimensionNamesQueryVariables
+> = gql`
   query EditorDimensionNames {
     instance {
       id
@@ -30,7 +35,7 @@ type EditorDimensionNamesQuery = {
  * happen) fall back to the raw uuid so the row stays truthful.
  */
 export function useDimensionNames(): Map<string, string> {
-  const { data } = useQuery<EditorDimensionNamesQuery>(GET_EDITOR_DIMENSION_NAMES, {
+  const { data } = useQuery(GET_EDITOR_DIMENSION_NAMES, {
     fetchPolicy: 'cache-first',
   });
   return useMemo(

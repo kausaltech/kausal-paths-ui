@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 import { Box, Chip, FormControlLabel, IconButton, Switch, Typography } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useReactFlow } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
@@ -14,6 +14,7 @@ import {
   type EditorNodeEdgeFragment,
   type EditorNodeFieldsFragment,
   NodeErrorPhase,
+  type NodeExplanationQueryVariables,
   NodeStatus,
   type SetActionEnabledMutation,
   type SetActionEnabledMutationVariables,
@@ -30,7 +31,12 @@ import { getNodeGroup, getNodeSpec } from './nodeHelpers';
 import { type NodeStatusEntry, nodeStatusVar } from './queries';
 import { useIsEntityReadOnly } from './useIsEditorReadOnly';
 
-const GET_NODE_EXPLANATION = gql`
+type NodeExplanationDocument = TypedDocumentNode<
+  NodeExplanationQuery,
+  NodeExplanationQueryVariables
+>;
+
+const GET_NODE_EXPLANATION: NodeExplanationDocument = gql`
   query NodeExplanation($node: ID!) {
     node(id: $node) {
       id
@@ -49,7 +55,10 @@ const GET_NODE_EXPLANATION = gql`
 
 // Turning an action on/off is a session-level parameter change (same
 // mechanism as the public UI), not an edit to the model itself.
-const SET_ACTION_ENABLED = gql`
+const SET_ACTION_ENABLED: TypedDocumentNode<
+  SetActionEnabledMutation,
+  SetActionEnabledMutationVariables
+> = gql`
   mutation SetActionEnabled($parameterId: ID!, $enabled: Boolean!) {
     setParameter(id: $parameterId, boolValue: $enabled) {
       ok
@@ -163,10 +172,7 @@ function ActionEnabledToggle({
   // Keep the switch at its requested position until the refetched node data
   // confirms it, so it doesn't snap back while queries reload.
   const [pending, setPending] = useState<boolean | null>(null);
-  const [setParameter, { loading }] = useMutation<
-    SetActionEnabledMutation,
-    SetActionEnabledMutationVariables
-  >(SET_ACTION_ENABLED, {
+  const [setParameter, { loading }] = useMutation(SET_ACTION_ENABLED, {
     refetchQueries: 'active',
     awaitRefetchQueries: true,
   });
@@ -250,7 +256,7 @@ export default function NodeDetailsPanel({
   const currentEdit = node ? nodeEdits[node.id] : undefined;
   const displayName = node?.name ?? '';
 
-  const { data: explanationData } = useQuery<NodeExplanationQuery>(GET_NODE_EXPLANATION, {
+  const { data: explanationData } = useQuery(GET_NODE_EXPLANATION, {
     variables: { node: node?.id ?? '' },
     skip: !node?.id,
   });

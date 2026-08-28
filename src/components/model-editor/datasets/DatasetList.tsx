@@ -157,7 +157,7 @@ export default function DatasetList() {
   const t = useTranslations('model-editor');
   const df = useEditorDateFormat();
   const editorReadOnly = useIsEditorReadOnly();
-  const { data, loading, error } = useQuery<InstanceDatasetsQuery>(GET_INSTANCE_DATASETS, {
+  const { data, loading, error } = useQuery(GET_INSTANCE_DATASETS, {
     fetchPolicy: 'cache-and-network',
   });
   const router = useRouter();

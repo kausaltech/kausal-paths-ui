@@ -7,8 +7,6 @@ import type {
   InputPortInput,
   OutputPortInput,
   UpdateNodeInput,
-  UpdateNodeMutation,
-  UpdateNodeMutationVariables,
 } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { UPDATE_NODE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
@@ -28,7 +26,7 @@ function useUpdateNodePorts() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<UpdateNodeMutation, UpdateNodeMutationVariables>(UPDATE_NODE);
+  const [mutate] = useMutation(UPDATE_NODE);
 
   return useCallback(
     async (nodeId: string, input: UpdateNodeInput, failureMessage: string) => {

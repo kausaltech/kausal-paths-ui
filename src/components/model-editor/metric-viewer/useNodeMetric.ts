@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useLazyQuery } from '@apollo/client/react';
 
@@ -12,7 +12,9 @@ import type {
 import { DimensionalMetric } from '../dimensional-metric';
 import { DIMENSIONAL_METRIC_FIELDS } from '../queries';
 
-const GET_NODE_OUTPUT_DATA = gql`
+type NodeOutputDataDocument = TypedDocumentNode<NodeOutputDataQuery, NodeOutputDataQueryVariables>;
+
+const GET_NODE_OUTPUT_DATA: NodeOutputDataDocument = gql`
   query NodeOutputData($nodeId: ID!) {
     node(id: $nodeId) {
       id
@@ -96,10 +98,7 @@ type UseNodeMetricResult = {
 };
 
 export function useNodeMetric(nodeId: string | null): UseNodeMetricResult {
-  const [executeQuery, { data, loading, error }] = useLazyQuery<
-    NodeOutputDataQuery,
-    NodeOutputDataQueryVariables
-  >(GET_NODE_OUTPUT_DATA, {
+  const [executeQuery, { data, loading, error }] = useLazyQuery(GET_NODE_OUTPUT_DATA, {
     fetchPolicy: 'cache-and-network',
     // The per-port `output` field is resolved by computing the node, which
     // can fail per port. Keep the partial payload so the drawer can render

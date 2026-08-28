@@ -3,10 +3,6 @@ import { useCallback } from 'react';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useApolloClient, useMutation } from '@apollo/client/react';
 
-import type {
-  CreateEdgeMutation,
-  CreateEdgeMutationVariables,
-} from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { constraintViolationError } from './constraintViolations';
 import { CREATE_EDGE, draftHeadTokenVar, staleVersionNotificationVar } from './queries';
@@ -30,7 +26,7 @@ export function useCreateEdge() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<CreateEdgeMutation, CreateEdgeMutationVariables>(CREATE_EDGE);
+  const [mutate] = useMutation(CREATE_EDGE);
 
   return useCallback(
     async ({ fromNodeUuid, toNodeUuid, fromPort, toPort, replace = false }: CreateEdgeArgs) => {

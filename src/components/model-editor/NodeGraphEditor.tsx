@@ -24,7 +24,6 @@ import '@xyflow/react/dist/style.css';
 import type {
   EditorNodeEdgeFragment,
   EditorNodeFieldsFragment,
-  NodeGraphQuery,
 } from '@/common/__generated__/graphql';
 import { NodeLayoutSource } from '@/common/__generated__/graphql';
 import { nodeFiltersVar } from '@/common/cache';
@@ -639,7 +638,7 @@ function applyOverride(
 
 export default function NodeGraphEditor() {
   const editorContext = useEditorApolloContext();
-  const { data } = useSuspenseQuery<NodeGraphQuery>(GET_NODE_GRAPH, {
+  const { data } = useSuspenseQuery(GET_NODE_GRAPH, {
     fetchPolicy: 'no-cache',
     context: editorContext,
   });

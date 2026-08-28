@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useLazyQuery } from '@apollo/client/react';
 
 import {
@@ -10,7 +10,10 @@ import {
 import { DimensionalMetric } from '../dimensional-metric';
 import { DIMENSIONAL_METRIC_FIELDS, EDITOR_PORT_TRANSFORMATION } from '../queries';
 
-const GET_DATASET_PORT_DATA = gql`
+const GET_DATASET_PORT_DATA: TypedDocumentNode<
+  DatasetPortDataQuery,
+  DatasetPortDataQueryVariables
+> = gql`
   # eslint-disable @graphql-eslint/selection-set-depth -- editor/spec nesting plus dataset metadata exceeds the generic limit.
   query DatasetPortData($nodeId: ID!) {
     node(id: $nodeId) {
@@ -101,10 +104,7 @@ type UseDatasetDataResult = {
 };
 
 export function useDatasetData(nodeId: string | null): UseDatasetDataResult {
-  const [executeQuery, { data, loading, error }] = useLazyQuery<
-    DatasetPortDataQuery,
-    DatasetPortDataQueryVariables
-  >(GET_DATASET_PORT_DATA, {
+  const [executeQuery, { data, loading, error }] = useLazyQuery(GET_DATASET_PORT_DATA, {
     fetchPolicy: 'cache-and-network',
   });
 

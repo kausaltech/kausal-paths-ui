@@ -24,7 +24,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
@@ -38,13 +38,9 @@ import {
   Database,
   Diagram2,
   House,
-  People,
 } from 'react-bootstrap-icons';
 
-import type {
-  PublishModelInstanceMutation,
-  PublishModelInstanceMutationVariables,
-} from '@/common/__generated__/graphql';
+import type { ModelEditorLandingDataQueryVariables } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { constraintViolationsVar } from '@/components/model-editor/constraintViolations';
 import {
@@ -62,7 +58,12 @@ import {
 } from '@/components/model-editor/queries';
 import { useEditorDateFormat } from '@/components/model-editor/useEditorDateFormat';
 
-const GET_LANDING_DATA = gql`
+type LandingDataDocument = TypedDocumentNode<
+  LandingDataQuery,
+  ModelEditorLandingDataQueryVariables
+>;
+
+const GET_LANDING_DATA: LandingDataDocument = gql`
   query ModelEditorLandingData {
     instance {
       id
@@ -267,14 +268,11 @@ export default function ModelEditorLandingPage() {
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const previewMode = useReactiveVar(editorPreviewModeVar);
 
-  const { data } = useQuery<LandingDataQuery>(GET_LANDING_DATA, {
+  const { data } = useQuery(GET_LANDING_DATA, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [publish, { loading: publishing }] = useMutation<
-    PublishModelInstanceMutation,
-    PublishModelInstanceMutationVariables
-  >(PUBLISH_MODEL_INSTANCE);
+  const [publish, { loading: publishing }] = useMutation(PUBLISH_MODEL_INSTANCE);
 
   const [toast, setToast] = useState<ToastState>(null);
   const [conflictsOpen, setConflictsOpen] = useState(false);

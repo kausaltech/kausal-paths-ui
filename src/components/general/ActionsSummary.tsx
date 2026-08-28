@@ -4,11 +4,7 @@ import { useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
-import {
-  type ActionListQuery,
-  type ActionListQueryVariables,
-  DecisionLevel,
-} from '@/common/__generated__/graphql';
+import { type ActionListQuery, DecisionLevel } from '@/common/__generated__/graphql';
 import { activeGoalVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
@@ -141,7 +137,7 @@ type ActionsSummaryAction = ActionListQuery['actions'][0];
 const ActionsSummary = () => {
   const activeGoal = useReactiveVar(activeGoalVar);
   const { t } = useTranslation();
-  const queryResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
+  const queryResp = useQuery(GET_ACTION_LIST, {
     variables: {
       goal: activeGoal?.id ?? null,
     },

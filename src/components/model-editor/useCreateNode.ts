@@ -5,8 +5,6 @@ import { useApolloClient, useMutation } from '@apollo/client/react';
 
 import {
   type CreateNodeInput,
-  type CreateNodeMutation,
-  type CreateNodeMutationVariables,
   type NodeConfigInput,
   NodeKind,
   type OutputPortInput,
@@ -106,7 +104,7 @@ export function useCreateNode() {
   const instance = useInstance();
   const client = useApolloClient();
   const editorContext = useEditorApolloContext();
-  const [mutate] = useMutation<CreateNodeMutation, CreateNodeMutationVariables>(CREATE_NODE);
+  const [mutate] = useMutation(CREATE_NODE);
 
   return useCallback(
     async (

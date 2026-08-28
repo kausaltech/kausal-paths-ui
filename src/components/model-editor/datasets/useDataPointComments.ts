@@ -2,14 +2,6 @@ import { useCallback } from 'react';
 
 import { useMutation } from '@apollo/client/react';
 
-import type {
-  CreateDataPointCommentMutation,
-  CreateDataPointCommentMutationVariables,
-  ResolveDataPointCommentMutation,
-  ResolveDataPointCommentMutationVariables,
-  UnresolveDataPointCommentMutation,
-  UnresolveDataPointCommentMutationVariables,
-} from '@/common/__generated__/graphql';
 import { DataPointCommentReviewState } from '@/common/__generated__/graphql';
 import {
   CREATE_DATA_POINT_COMMENT,
@@ -32,18 +24,9 @@ type Params = {
 };
 
 export function useDataPointComments({ instanceId, datasetId, onRefetch }: Params) {
-  const [createComment] = useMutation<
-    CreateDataPointCommentMutation,
-    CreateDataPointCommentMutationVariables
-  >(CREATE_DATA_POINT_COMMENT);
-  const [resolveComment] = useMutation<
-    ResolveDataPointCommentMutation,
-    ResolveDataPointCommentMutationVariables
-  >(RESOLVE_DATA_POINT_COMMENT);
-  const [unresolveComment] = useMutation<
-    UnresolveDataPointCommentMutation,
-    UnresolveDataPointCommentMutationVariables
-  >(UNRESOLVE_DATA_POINT_COMMENT);
+  const [createComment] = useMutation(CREATE_DATA_POINT_COMMENT);
+  const [resolveComment] = useMutation(RESOLVE_DATA_POINT_COMMENT);
+  const [unresolveComment] = useMutation(UNRESOLVE_DATA_POINT_COMMENT);
 
   const submitComment = useCallback(
     async (dataPointId: string, input: AddCommentInput) => {

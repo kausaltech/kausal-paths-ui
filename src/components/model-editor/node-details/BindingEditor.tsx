@@ -24,7 +24,6 @@ import { ArrowDown, ArrowUp, Check2, Filter, Lock, Plus, Trash } from 'react-boo
 import type {
   EditorPortTransformationFragment,
   InstanceDimensionFieldsFragment,
-  InstanceDimensionsQuery,
 } from '@/common/__generated__/graphql';
 import { GET_INSTANCE_DIMENSIONS } from '../dimensions/queries';
 import {
@@ -351,7 +350,7 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
   const t = useTranslations('model-editor');
   const updateDatasetBinding = useUpdateDatasetBinding();
   const updateEdgeBinding = useUpdateEdgeBinding();
-  const { data: dimensionsData } = useQuery<InstanceDimensionsQuery>(GET_INSTANCE_DIMENSIONS, {
+  const { data: dimensionsData } = useQuery(GET_INSTANCE_DIMENSIONS, {
     fetchPolicy: 'cache-first',
   });
   const dimensionOptions = dimensionsData?.instance?.editor?.dimensions ?? [];

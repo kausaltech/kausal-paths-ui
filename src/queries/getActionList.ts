@@ -1,8 +1,9 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
+import type { ActionListQuery, ActionListQueryVariables } from '@/common/__generated__/graphql';
 import { ACTION_PARAMETER_FRAGMENT } from './actionParameterFragment';
 
-const GET_ACTION_LIST = gql`
+const GET_ACTION_LIST: TypedDocumentNode<ActionListQuery, ActionListQueryVariables> = gql`
   query ActionList($goal: ID) {
     instance {
       id

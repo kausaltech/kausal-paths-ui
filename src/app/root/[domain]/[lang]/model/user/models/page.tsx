@@ -11,15 +11,21 @@ import {
   Typography,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { ArrowClockwise, Compass, PencilSquare } from 'react-bootstrap-icons';
 
-import type { MyEditableInstancesQuery } from '@/common/__generated__/graphql';
+import type {
+  MyEditableInstancesQuery,
+  MyEditableInstancesQueryVariables,
+} from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 
-const GET_MY_EDITABLE_INSTANCES = gql`
+const GET_MY_EDITABLE_INSTANCES: TypedDocumentNode<
+  MyEditableInstancesQuery,
+  MyEditableInstancesQueryVariables
+> = gql`
   query MyEditableInstances {
     me {
       id
@@ -43,12 +49,9 @@ const GET_MY_EDITABLE_INSTANCES = gql`
 export default function MyModelsPage() {
   const t = useTranslations('model-editor');
   const currentInstance = useInstance();
-  const { data, loading, error, refetch } = useQuery<MyEditableInstancesQuery>(
-    GET_MY_EDITABLE_INSTANCES,
-    {
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const { data, loading, error, refetch } = useQuery(GET_MY_EDITABLE_INSTANCES, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const instances = data?.me?.editableInstances ?? [];
 

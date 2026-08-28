@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useApolloClient } from '@apollo/client/react';
 
 import { NodeStatus } from '@/common/__generated__/graphql';
-import type { NodeStatusesQuery } from '@/common/__generated__/graphql';
 import { NODE_STATUSES, type NodeStatusEntry, nodeStatusVar, setNodeStatuses } from './queries';
 import { useEditorApolloContext } from './useEditorApolloContext';
 
@@ -62,7 +61,7 @@ export function useNodeStatuses(nodes: readonly StatusNode[]): void {
     let cancelled = false;
     void (async () => {
       try {
-        const { data } = await client.query<NodeStatusesQuery>({
+        const { data } = await client.query({
           query: NODE_STATUSES,
           fetchPolicy: 'no-cache',
           context,

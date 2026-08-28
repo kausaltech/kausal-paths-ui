@@ -29,7 +29,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useApolloClient, useQuery, useReactiveVar } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
@@ -49,7 +49,13 @@ import {
   XLg,
 } from 'react-bootstrap-icons';
 
-import { NodeStatus } from '@/common/__generated__/graphql';
+import {
+  type EditorActiveScenarioQueryVariables,
+  type EditorDatasetSearchListQueryVariables,
+  type EditorDimensionSearchListQueryVariables,
+  type EditorNodeSearchListQueryVariables,
+  NodeStatus,
+} from '@/common/__generated__/graphql';
 import { nodeFiltersOpenVar, nodeFiltersVar } from '@/common/cache';
 import { useInstance } from '@/common/instance';
 import { Link as AppLink } from '@/common/links';
@@ -57,7 +63,10 @@ import { getModelEditorBase } from './paths';
 import { editorPreviewModeVar, nodeGraphOverridesVar, nodeStatusVar } from './queries';
 import { useEditorPublishState } from './useEditorPublishState';
 
-const GET_NODE_SEARCH_LIST = gql`
+const GET_NODE_SEARCH_LIST: TypedDocumentNode<
+  NodeSearchListQuery,
+  EditorNodeSearchListQueryVariables
+> = gql`
   query EditorNodeSearchList {
     instance {
       id
@@ -73,7 +82,10 @@ const GET_NODE_SEARCH_LIST = gql`
   }
 `;
 
-const GET_DATASET_SEARCH_LIST = gql`
+const GET_DATASET_SEARCH_LIST: TypedDocumentNode<
+  DatasetSearchListQuery,
+  EditorDatasetSearchListQueryVariables
+> = gql`
   query EditorDatasetSearchList {
     instance {
       id
@@ -88,7 +100,10 @@ const GET_DATASET_SEARCH_LIST = gql`
   }
 `;
 
-const GET_ACTIVE_SCENARIO = gql`
+const GET_ACTIVE_SCENARIO: TypedDocumentNode<
+  ActiveScenarioQuery,
+  EditorActiveScenarioQueryVariables
+> = gql`
   query EditorActiveScenario {
     activeScenario {
       id
@@ -101,7 +116,10 @@ type ActiveScenarioQuery = {
   activeScenario: { id: string; name: string } | null;
 };
 
-const GET_DIMENSION_SEARCH_LIST = gql`
+const GET_DIMENSION_SEARCH_LIST: TypedDocumentNode<
+  DimensionSearchListQuery,
+  EditorDimensionSearchListQueryVariables
+> = gql`
   query EditorDimensionSearchList {
     instance {
       id
@@ -218,7 +236,7 @@ const ALL_OUTCOMES_VALUE = '__all__';
  */
 function ActiveScenarioIndicator() {
   const t = useTranslations('model-editor');
-  const { data } = useQuery<ActiveScenarioQuery>(GET_ACTIVE_SCENARIO, {
+  const { data } = useQuery(GET_ACTIVE_SCENARIO, {
     fetchPolicy: 'cache-and-network',
   });
   const scenario = data?.activeScenario ?? null;
@@ -305,15 +323,15 @@ export default function ModelEditorNav() {
   const filters = useReactiveVar(nodeFiltersVar);
   const filtersOpen = useReactiveVar(nodeFiltersOpenVar);
 
-  const { data: nodesData } = useQuery<NodeSearchListQuery>(GET_NODE_SEARCH_LIST, {
+  const { data: nodesData } = useQuery(GET_NODE_SEARCH_LIST, {
     skip: mode !== 'nodes',
     fetchPolicy: 'cache-first',
   });
-  const { data: datasetsData } = useQuery<DatasetSearchListQuery>(GET_DATASET_SEARCH_LIST, {
+  const { data: datasetsData } = useQuery(GET_DATASET_SEARCH_LIST, {
     skip: mode !== 'datasets',
     fetchPolicy: 'cache-first',
   });
-  const { data: dimensionsData } = useQuery<DimensionSearchListQuery>(GET_DIMENSION_SEARCH_LIST, {
+  const { data: dimensionsData } = useQuery(GET_DIMENSION_SEARCH_LIST, {
     skip: mode !== 'dimensions',
     fetchPolicy: 'cache-first',
   });

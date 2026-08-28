@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { ArrowLeft } from 'react-bootstrap-icons';
 import SVG from 'react-inlinesvg';
@@ -13,10 +13,14 @@ import SVG from 'react-inlinesvg';
 import { useTheme } from '@common/themes';
 import { getThemeStaticURL } from '@common/themes/theme';
 
+import type {
+  FrameworkNameQueryVariables,
+  RegisterUserMutationVariables,
+} from '@/common/__generated__/graphql';
 import { authClient } from '@/lib/auth-client';
 import { KAUSAL_PROVIDER_ID } from '@/lib/auth-const';
 
-const GET_FRAMEWORK_NAME = gql`
+const GET_FRAMEWORK_NAME: TypedDocumentNode<FrameworkNameData, FrameworkNameQueryVariables> = gql`
   query FrameworkName($identifier: ID!) {
     framework(identifier: $identifier) {
       id
@@ -29,7 +33,7 @@ type FrameworkNameData = {
   framework: { id: string; name: string } | null;
 };
 
-const REGISTER_USER = gql`
+const REGISTER_USER: TypedDocumentNode<RegisterUserData, RegisterUserMutationVariables> = gql`
   mutation RegisterUser($input: RegisterUserInput!) {
     registerUser(input: $input) {
       ... on RegisterUserResult {
@@ -73,9 +77,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const [registerUser, { loading }] = useMutation<RegisterUserData>(REGISTER_USER);
+  const [registerUser, { loading }] = useMutation(REGISTER_USER);
 
-  const { data: frameworkData } = useQuery<FrameworkNameData>(GET_FRAMEWORK_NAME, {
+  const { data: frameworkData } = useQuery(GET_FRAMEWORK_NAME, {
     variables: { identifier: frameworkId },
     skip: !frameworkId,
   });
@@ -95,6 +99,7 @@ export default function RegisterPage() {
         variables: {
           input: {
             frameworkId,
+            invitationToken: null,
             email,
             password,
             firstName: firstName || null,

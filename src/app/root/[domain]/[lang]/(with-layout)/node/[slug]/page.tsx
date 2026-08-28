@@ -5,13 +5,17 @@ import { useParams } from 'next/navigation';
 
 import { Card, CardContent, Container } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery, useReactiveVar } from '@apollo/client/react';
 
 import { logApolloError } from '@common/logging/apollo';
 import styled from '@common/themes/styled';
 
-import type { NodePageQuery, OutcomeNodeFieldsFragment } from '@/common/__generated__/graphql';
+import type {
+  NodePageQuery,
+  NodePageQueryVariables,
+  OutcomeNodeFieldsFragment,
+} from '@/common/__generated__/graphql';
 import { activeScenarioVar, yearRangeVar } from '@/common/cache';
 import { useTranslation } from '@/common/i18n';
 import { ActionLink } from '@/common/links';
@@ -72,7 +76,7 @@ const BodyText = styled.div`
   padding: 1rem;
 `;
 
-const GET_NODE_PAGE_CONTENT = gql`
+const GET_NODE_PAGE_CONTENT: TypedDocumentNode<NodePageQuery, NodePageQueryVariables> = gql`
   query NodePage($node: ID!, $scenarios: [String!]) {
     node(id: $node) {
       id
@@ -120,7 +124,7 @@ export default function NodePage() {
   const slug = params.slug;
   const yearRange = useReactiveVar(yearRangeVar);
 
-  const { loading, error, data, refetch } = useQuery<NodePageQuery>(GET_NODE_PAGE_CONTENT, {
+  const { loading, error, data, refetch } = useQuery(GET_NODE_PAGE_CONTENT, {
     variables: {
       node: slug,
       scenarios: null,

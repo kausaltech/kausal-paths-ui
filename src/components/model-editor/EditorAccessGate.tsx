@@ -5,15 +5,21 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { Box, Button, CircularProgress, Container, Paper, Stack, Typography } from '@mui/material';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { ArrowClockwise, ExclamationTriangle, ShieldLock } from 'react-bootstrap-icons';
 
-import type { ModelEditorAccessQuery } from '@/common/__generated__/graphql';
+import type {
+  ModelEditorAccessQuery,
+  ModelEditorAccessQueryVariables,
+} from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
 import { useSession } from '@/lib/auth-client';
 
-const GET_EDITOR_ACCESS = gql`
+const GET_EDITOR_ACCESS: TypedDocumentNode<
+  ModelEditorAccessQuery,
+  ModelEditorAccessQueryVariables
+> = gql`
   query ModelEditorAccess {
     instance {
       id
@@ -55,7 +61,7 @@ export default function EditorAccessGate({ children, chrome }: Props) {
   const { data: session, isPending } = useSession();
   const exempt = isExempt(pathname);
 
-  const { data, loading, error, refetch } = useQuery<ModelEditorAccessQuery>(GET_EDITOR_ACCESS, {
+  const { data, loading, error, refetch } = useQuery(GET_EDITOR_ACCESS, {
     skip: !session?.user,
     fetchPolicy: 'cache-and-network',
   });

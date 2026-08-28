@@ -15,10 +15,7 @@ import { useQuery } from '@apollo/client/react';
 import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
-import type {
-  ActionsForChooserQuery,
-  ActionsForChooserQueryVariables,
-} from '@/common/__generated__/graphql';
+import type { ActionsForChooserQuery } from '@/common/__generated__/graphql';
 import type { TFunction } from '@/common/i18n';
 import { useTranslation } from '@/common/i18n';
 import { findActionEnabledParam } from '@/common/preprocess';
@@ -120,13 +117,10 @@ type ActionsSummaryAction = ActionsForChooserQuery['actions'][0];
 
 export default function ActionsChooser() {
   const { t } = useTranslation();
-  const queryResp = useQuery<ActionsForChooserQuery, ActionsForChooserQueryVariables>(
-    GET_ACTIONS_FOR_CHOOSER,
-    {
-      fetchPolicy: 'cache-and-network',
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const queryResp = useQuery(GET_ACTIONS_FOR_CHOOSER, {
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
+  });
 
   const { error, loading, previousData } = queryResp;
   const data = queryResp.data ?? previousData;

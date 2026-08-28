@@ -63,7 +63,7 @@ function Page(props: PageProps) {
       ? ['default', 'progress_tracking', ...(baselineScenario ? [baselineScenario.id] : [])]
       : null;
   const activeGoal = useReactiveVar(activeGoalVar);
-  const queryResp = useQuery<PageQuery, PageQueryVariables>(GET_PAGE, {
+  const queryResp = useQuery(GET_PAGE, {
     variables: {
       path,
     },

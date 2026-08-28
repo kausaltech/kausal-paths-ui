@@ -7,7 +7,7 @@ import { Fade } from 'reactstrap';
 
 import styled from '@common/themes/styled';
 
-import { DesiredOutcome, type NodeVisualizationsQuery } from '@/common/__generated__/graphql';
+import { DesiredOutcome } from '@/common/__generated__/graphql';
 import { type TFunction, useTranslation } from '@/common/i18n';
 import GraphQLError from '@/components/common/GraphQLError';
 import { useSiteWithSetter } from '@/context/site';
@@ -72,8 +72,8 @@ export function ProgressDriversWrapper({ nodeId }: Props) {
   const { t } = useTranslation();
   const [siteContext, setSiteContext] = useSiteWithSetter();
 
-  const { loading, error, data } = useQuery<NodeVisualizationsQuery>(GET_NODE_VISUALIZATIONS, {
-    variables: { nodeId, scenarios: ['default', 'progress_tracking'] },
+  const { loading, error, data } = useQuery(GET_NODE_VISUALIZATIONS, {
+    variables: { nodeId },
     notifyOnNetworkStatusChange: true,
   });
 

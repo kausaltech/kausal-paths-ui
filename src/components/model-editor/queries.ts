@@ -1,6 +1,49 @@
-import { gql, makeVar } from '@apollo/client';
+import { type TypedDocumentNode, gql, makeVar } from '@apollo/client';
 
-import type { NodeErrorPhase, NodeStatus } from '@/common/__generated__/graphql';
+import type {
+  AddInputPortMutation,
+  AddInputPortMutationVariables,
+  AvailableDatasetsQuery,
+  AvailableDatasetsQueryVariables,
+  BindDatasetMutation,
+  BindDatasetMutationVariables,
+  ClearNodeLayoutsMutation,
+  ClearNodeLayoutsMutationVariables,
+  CreateEdgeMutation,
+  CreateEdgeMutationVariables,
+  CreateNodeMutation,
+  CreateNodeMutationVariables,
+  DeleteBindingMutation,
+  DeleteBindingMutationVariables,
+  DeleteEdgeMutation,
+  DeleteEdgeMutationVariables,
+  DeleteNodeMutation,
+  DeleteNodeMutationVariables,
+  EditorPublishStateQuery,
+  EditorPublishStateQueryVariables,
+  NodeChangeHistoryQuery,
+  NodeChangeHistoryQueryVariables,
+  NodeErrorPhase,
+  NodeGraphQuery,
+  NodeGraphQueryVariables,
+  NodeParametersQuery,
+  NodeParametersQueryVariables,
+  NodeStatus,
+  NodeStatusesQuery,
+  NodeStatusesQueryVariables,
+  NodeTranslationQuery,
+  NodeTranslationQueryVariables,
+  PublishModelInstanceMutation,
+  PublishModelInstanceMutationVariables,
+  UpdateDatasetBindingMutation,
+  UpdateDatasetBindingMutationVariables,
+  UpdateEdgeBindingMutation,
+  UpdateEdgeBindingMutationVariables,
+  UpdateNodeLayoutsMutation,
+  UpdateNodeLayoutsMutationVariables,
+  UpdateNodeMutation,
+  UpdateNodeMutationVariables,
+} from '@/common/__generated__/graphql';
 
 // NodeGraph uses fetchPolicy: 'no-cache' for size reasons, so Apollo's
 // normalized cache updates from the updateNode mutation don't reach it.
@@ -157,7 +200,7 @@ export const EDITOR_PORT_TRANSFORMATION = gql`
  * entire model; updates reach graph consumers via the reactive vars above
  * instead of normalized-cache writes.
  */
-export const GET_NODE_GRAPH = gql`
+export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVariables> = gql`
   # eslint-disable @graphql-eslint/selection-set-depth -- editor/spec/binding transformation nesting exceeds the generic limit.
   query NodeGraph {
     instance {
@@ -455,7 +498,10 @@ export const INSTANCE_EDITOR_PUBLISH_STATE = gql`
   }
 `;
 
-export const GET_INSTANCE_EDITOR_PUBLISH_STATE = gql`
+export const GET_INSTANCE_EDITOR_PUBLISH_STATE: TypedDocumentNode<
+  EditorPublishStateQuery,
+  EditorPublishStateQueryVariables
+> = gql`
   query EditorPublishState {
     instance {
       id
@@ -468,7 +514,10 @@ export const GET_INSTANCE_EDITOR_PUBLISH_STATE = gql`
   ${INSTANCE_EDITOR_PUBLISH_STATE}
 `;
 
-export const PUBLISH_MODEL_INSTANCE = gql`
+export const PUBLISH_MODEL_INSTANCE: TypedDocumentNode<
+  PublishModelInstanceMutation,
+  PublishModelInstanceMutationVariables
+> = gql`
   mutation PublishModelInstance($instanceId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       publishModelInstance(instanceId: $instanceId) {
@@ -493,7 +542,7 @@ export const PUBLISH_MODEL_INSTANCE = gql`
   ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
-export const CREATE_NODE = gql`
+export const CREATE_NODE: TypedDocumentNode<CreateNodeMutation, CreateNodeMutationVariables> = gql`
   mutation CreateNode($instanceId: ID!, $input: CreateNodeInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       createNode(input: $input) {
@@ -526,7 +575,9 @@ export const CREATE_NODE = gql`
  * Fetched on demand rather than in the NodeGraph query, which spans the whole
  * model and would bloat with per-node parameter lists.
  */
-export const NODE_PARAMETERS = gql`
+type NodeParametersDocument = TypedDocumentNode<NodeParametersQuery, NodeParametersQueryVariables>;
+
+export const NODE_PARAMETERS: NodeParametersDocument = gql`
   query NodeParameters($nodeId: ID!) {
     node(id: $nodeId) {
       id
@@ -549,7 +600,7 @@ export const NODE_PARAMETERS = gql`
   }
 `;
 
-export const CREATE_EDGE = gql`
+export const CREATE_EDGE: TypedDocumentNode<CreateEdgeMutation, CreateEdgeMutationVariables> = gql`
   mutation CreateEdge($instanceId: ID!, $input: CreateEdgeInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       createEdge(input: $input) {
@@ -578,7 +629,9 @@ export const CREATE_EDGE = gql`
   ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
-export const BIND_DATASET = gql`
+type BindDatasetDocument = TypedDocumentNode<BindDatasetMutation, BindDatasetMutationVariables>;
+
+export const BIND_DATASET: BindDatasetDocument = gql`
   mutation BindDataset($instanceId: ID!, $nodeId: ID!, $input: BindDatasetInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       nodeEditor(nodeId: $nodeId) {
@@ -601,7 +654,10 @@ export const BIND_DATASET = gql`
   ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
-export const UPDATE_DATASET_BINDING = gql`
+export const UPDATE_DATASET_BINDING: TypedDocumentNode<
+  UpdateDatasetBindingMutation,
+  UpdateDatasetBindingMutationVariables
+> = gql`
   mutation UpdateDatasetBinding(
     $instanceId: ID!
     $bindingId: ID!
@@ -629,7 +685,10 @@ export const UPDATE_DATASET_BINDING = gql`
   ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
-export const UPDATE_EDGE_BINDING = gql`
+export const UPDATE_EDGE_BINDING: TypedDocumentNode<
+  UpdateEdgeBindingMutation,
+  UpdateEdgeBindingMutationVariables
+> = gql`
   mutation UpdateEdgeBinding(
     $instanceId: ID!
     $bindingId: ID!
@@ -657,7 +716,10 @@ export const UPDATE_EDGE_BINDING = gql`
   ${CONSTRAINT_VIOLATIONS_FIELDS}
 `;
 
-export const ADD_INPUT_PORT = gql`
+export const ADD_INPUT_PORT: TypedDocumentNode<
+  AddInputPortMutation,
+  AddInputPortMutationVariables
+> = gql`
   mutation AddInputPort($instanceId: ID!, $nodeId: ID!, $input: InputPortInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       nodeEditor(nodeId: $nodeId) {
@@ -676,7 +738,10 @@ export const ADD_INPUT_PORT = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_BINDING = gql`
+export const DELETE_BINDING: TypedDocumentNode<
+  DeleteBindingMutation,
+  DeleteBindingMutationVariables
+> = gql`
   mutation DeleteBinding($instanceId: ID!, $bindingId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       bindingEditor(bindingId: $bindingId) {
@@ -689,7 +754,7 @@ export const DELETE_BINDING = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_EDGE = gql`
+export const DELETE_EDGE: TypedDocumentNode<DeleteEdgeMutation, DeleteEdgeMutationVariables> = gql`
   mutation DeleteEdge($instanceId: ID!, $edgeId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       deleteEdge(edgeId: $edgeId) {
@@ -700,7 +765,7 @@ export const DELETE_EDGE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
-export const DELETE_NODE = gql`
+export const DELETE_NODE: TypedDocumentNode<DeleteNodeMutation, DeleteNodeMutationVariables> = gql`
   mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       deleteNode(nodeId: $nodeId) {
@@ -711,7 +776,10 @@ export const DELETE_NODE = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
-export const UPDATE_NODE_LAYOUTS = gql`
+export const UPDATE_NODE_LAYOUTS: TypedDocumentNode<
+  UpdateNodeLayoutsMutation,
+  UpdateNodeLayoutsMutationVariables
+> = gql`
   mutation UpdateNodeLayouts($instanceId: ID!, $input: [UpdateNodeLayoutInput!]!) {
     instanceEditor(instanceId: $instanceId) {
       updateNodeLayouts(input: $input) {
@@ -732,7 +800,10 @@ export const UPDATE_NODE_LAYOUTS = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
-export const CLEAR_NODE_LAYOUTS = gql`
+export const CLEAR_NODE_LAYOUTS: TypedDocumentNode<
+  ClearNodeLayoutsMutation,
+  ClearNodeLayoutsMutationVariables
+> = gql`
   mutation ClearNodeLayouts($instanceId: ID!) {
     instanceEditor(instanceId: $instanceId) {
       clearNodeLayouts {
@@ -743,7 +814,7 @@ export const CLEAR_NODE_LAYOUTS = gql`
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 
-export const UPDATE_NODE = gql`
+export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutationVariables> = gql`
   mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
       updateNode(nodeId: $nodeId, input: $input) {
@@ -786,7 +857,10 @@ export const UPDATE_NODE = gql`
  * translation in a non-default language; the resolver returns the matching
  * `*_i18n` value with fallback to the default-language column.
  */
-export const NODE_TRANSLATION = gql`
+export const NODE_TRANSLATION: TypedDocumentNode<
+  NodeTranslationQuery,
+  NodeTranslationQueryVariables
+> = gql`
   query NodeTranslation($nodeId: ID!) {
     node(id: $nodeId) {
       id
@@ -797,7 +871,10 @@ export const NODE_TRANSLATION = gql`
   }
 `;
 
-export const AVAILABLE_DATASETS = gql`
+export const AVAILABLE_DATASETS: TypedDocumentNode<
+  AvailableDatasetsQuery,
+  AvailableDatasetsQueryVariables
+> = gql`
   query AvailableDatasets {
     instance {
       id
@@ -839,7 +916,7 @@ export const AVAILABLE_DATASETS = gql`
  *
  * Whole-graph pass, fired once after the structural NodeGraph query resolves.
  */
-export const NODE_STATUSES = gql`
+export const NODE_STATUSES: TypedDocumentNode<NodeStatusesQuery, NodeStatusesQueryVariables> = gql`
   query NodeStatuses {
     instance {
       id
@@ -868,7 +945,10 @@ const NODE_HISTORY_ENTRY = gql`
   }
 `;
 
-export const NODE_CHANGE_HISTORY = gql`
+export const NODE_CHANGE_HISTORY: TypedDocumentNode<
+  NodeChangeHistoryQuery,
+  NodeChangeHistoryQueryVariables
+> = gql`
   query NodeChangeHistory($nodeId: ID!, $limit: Int! = 10) {
     node(id: $nodeId) {
       id

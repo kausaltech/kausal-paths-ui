@@ -1,5 +1,6 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
+import type { OutcomeNodeQuery, OutcomeNodeQueryVariables } from '@/common/__generated__/graphql';
 import dimensionalNodePlotFragment from '../queries/dimensionalNodePlot';
 import { UNIT_FRAGMENT } from './fragments';
 
@@ -76,7 +77,7 @@ const OUTCOME_NODE_FIELDS = gql`
   ${UNIT_FRAGMENT}
 `;
 
-const GET_OUTCOME_NODE = gql`
+const GET_OUTCOME_NODE: TypedDocumentNode<OutcomeNodeQuery, OutcomeNodeQueryVariables> = gql`
   ${OUTCOME_NODE_FIELDS}
   query OutcomeNode($id: ID!, $goal: ID, $scenarios: [String!]) {
     node(id: $id) {

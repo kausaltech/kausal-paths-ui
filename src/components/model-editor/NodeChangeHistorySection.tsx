@@ -5,11 +5,7 @@ import { Box, Chip, Typography } from '@mui/material';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 
-import type {
-  NodeChangeHistoryQuery,
-  NodeChangeHistoryQueryVariables,
-  NodeHistoryEntryFragment,
-} from '@/common/__generated__/graphql';
+import type { NodeHistoryEntryFragment } from '@/common/__generated__/graphql';
 import { CollapsibleSection } from './node-details/shared';
 import { NODE_CHANGE_HISTORY } from './queries';
 import { useEditorDateFormat } from './useEditorDateFormat';
@@ -124,13 +120,10 @@ function HistoryRow({ entry, now }: { entry: NodeHistoryEntryFragment; now: numb
 
 export default function NodeChangeHistorySection({ nodeId, open, onToggle }: Props) {
   const t = useTranslations('model-editor');
-  const { data, loading } = useQuery<NodeChangeHistoryQuery, NodeChangeHistoryQueryVariables>(
-    NODE_CHANGE_HISTORY,
-    {
-      variables: { nodeId, limit: 10 },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const { data, loading } = useQuery(NODE_CHANGE_HISTORY, {
+    variables: { nodeId, limit: 10 },
+    fetchPolicy: 'cache-and-network',
+  });
 
   const entries = data?.node?.editor?.changeHistory ?? [];
 

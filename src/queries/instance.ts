@@ -1,5 +1,9 @@
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 
+import type {
+  InstanceContextQuery,
+  InstanceContextQueryVariables,
+} from '@/common/__generated__/graphql';
 import { ACTION_PARAMETER_FRAGMENT } from '@/queries/actionParameterFragment';
 
 export const scenarioFragment = gql`
@@ -13,7 +17,12 @@ export const scenarioFragment = gql`
   }
 `;
 
-const GET_INSTANCE_CONTEXT = gql`
+type InstanceContextDocument = TypedDocumentNode<
+  InstanceContextQuery,
+  InstanceContextQueryVariables
+>;
+
+const GET_INSTANCE_CONTEXT: InstanceContextDocument = gql`
   query InstanceContext {
     instance {
       id

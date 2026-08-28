@@ -15,11 +15,7 @@ import { useTranslations } from 'next-intl';
 
 import styled from '@common/themes/styled';
 
-import {
-  type ActionListQuery,
-  type ActionListQueryVariables,
-  type PageQuery,
-} from '@/common/__generated__/graphql';
+import { type PageQuery } from '@/common/__generated__/graphql';
 import { activeGoalVar, yearRangeVar } from '@/common/cache';
 import { type TFunction } from '@/common/i18n';
 import { useInstance } from '@/common/instance';
@@ -169,7 +165,7 @@ function ActionListPage({ page }: ActionListPageProps) {
   const [listType, setListType] = useState<ViewType>('list');
   const [ascending, setAscending] = useState(true);
 
-  const actionListResp = useQuery<ActionListQuery, ActionListQueryVariables>(GET_ACTION_LIST, {
+  const actionListResp = useQuery(GET_ACTION_LIST, {
     variables: {
       goal: activeGoal?.id ?? null,
     },

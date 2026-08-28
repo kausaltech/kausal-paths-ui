@@ -1,14 +1,17 @@
 'use client';
 
-import { gql } from '@apollo/client';
+import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 
-import type { CytoscapeNodesQuery } from '@/common/__generated__/graphql';
+import type {
+  CytoscapeNodesQuery,
+  CytoscapeNodesQueryVariables,
+} from '@/common/__generated__/graphql';
 import CytoGraph from '@/components/CytoGraph';
 import ContentLoader from '@/components/common/ContentLoader';
 import GraphQLError from '@/components/common/GraphQLError';
 
-const GET_NODES = gql`
+const GET_NODES: TypedDocumentNode<CytoscapeNodesQuery, CytoscapeNodesQueryVariables> = gql`
   query CytoscapeNodes {
     nodes {
       id
@@ -50,7 +53,7 @@ const GET_NODES = gql`
 `;
 
 export default function Graph() {
-  const { loading, error, data } = useQuery<CytoscapeNodesQuery>(GET_NODES);
+  const { loading, error, data } = useQuery(GET_NODES);
 
   if (loading || typeof window === 'undefined') {
     return <ContentLoader />;
