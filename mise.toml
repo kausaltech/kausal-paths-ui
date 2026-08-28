@@ -13,6 +13,7 @@ postinstall = 'npm install -g corepack'
 [settings]
 experimental = true
 node.corepack = true
+idiomatic_version_file_enable_tools = ['pnpm', 'node']
 
 [deps]
 disable = ["npm", "yarn"]
