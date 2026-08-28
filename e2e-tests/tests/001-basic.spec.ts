@@ -16,6 +16,21 @@ function testInstance(instanceId: string) {
       });
 
       await ctx.waitForLoaded(page);
+
+      await test.step('Progress tracking indicator', async () => {
+        // Progress-tracked instances render a status indicator on their outcome
+        // pages; everything else must not.
+        const indicator = page.getByTestId('progress-indicator');
+        const isProgressTrackedOutcomePage =
+          ctx.hasProgressTracking() && ctx.getFrontPage()?.__typename === 'OutcomePage';
+
+        if (isProgressTrackedOutcomePage) {
+          await expect(indicator.first()).toBeVisible();
+        } else {
+          await expect(indicator).toHaveCount(0);
+        }
+      });
+
       await ctx.takeScreenshot(page, 'front-page');
     });
   });

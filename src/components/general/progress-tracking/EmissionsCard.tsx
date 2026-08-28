@@ -37,7 +37,7 @@ export function EmissionsCard({ title, value, unit, deltaPercentage }: Emissions
   const status = deltaPercentage ? getStatus(deltaPercentage, t, theme) : undefined;
 
   return (
-    <StyledCard>
+    <StyledCard data-testid="emissions-card">
       <StyledEmissionsCardTitle>{title}</StyledEmissionsCardTitle>
       <StyledEmissionsCardValue>
         {formatNumber(value)} <StyledEmissionsCardUnit>{unit}</StyledEmissionsCardUnit>

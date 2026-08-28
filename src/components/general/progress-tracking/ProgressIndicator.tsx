@@ -637,7 +637,7 @@ export const ProgressIndicator = ({
   return (
     <>
       <Global styles={globalModalCss} />
-      <StyledContainer>
+      <StyledContainer data-testid="progress-indicator">
         <StyledTitle>
           {t('calculated-emissions')} ({latestProgressData.year})
         </StyledTitle>
@@ -653,6 +653,7 @@ export const ProgressIndicator = ({
         <div>
           <StyledStatusBadgeButton
             as="button"
+            data-testid="progress-status-badge"
             onClick={handleOpenModal}
             $backgroundColor={status.backgroundColor}
             $color={status.color}
@@ -664,13 +665,16 @@ export const ProgressIndicator = ({
         </div>
 
         {showViewDetails && (
-          <StyledViewDetails onClick={handleOpenModal}>{t('view-details')}</StyledViewDetails>
+          <StyledViewDetails data-testid="progress-view-details" onClick={handleOpenModal}>
+            {t('view-details')}
+          </StyledViewDetails>
         )}
       </StyledContainer>
 
       <StyledModal
         isOpen={isModalOpen}
         toggle={handleCloseModal}
+        data-testid="progress-tracking-modal"
         role="dialog"
         aria-modal="true"
         size="lg"
@@ -697,7 +701,7 @@ export const ProgressIndicator = ({
               ) : (
                 <>
                   {observedYears.length > 1 && (
-                    <StyledYearSelector>
+                    <StyledYearSelector data-testid="progress-year-selector">
                       <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
                         <DropdownToggle caret>{selectedYear}</DropdownToggle>
                         <DropdownMenu>
@@ -734,7 +738,7 @@ export const ProgressIndicator = ({
                   )}
                   <h5>{t('emissions-by-sector', { year: selectedEmissions?.year ?? '' })}</h5>
                   <StyledCard>
-                    <StyledChartWrapper>
+                    <StyledChartWrapper data-testid="progress-emissions-chart">
                       {chartConfig && (
                         <StyledChart
                           isLoading={false}

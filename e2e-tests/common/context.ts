@@ -10,7 +10,13 @@ import type {
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
 import { shouldIgnoreConsoleMessage } from '@e2e-common/console-output.js';
 import { type ConsoleMessage, test as baseTest } from '@playwright/test';
-import { type Request, type Page, type PageScreenshotOptions, type Response, expect } from '@playwright/test';
+import {
+  type Page,
+  type PageScreenshotOptions,
+  type Request,
+  type Response,
+  expect,
+} from '@playwright/test';
 import type { FallbackLngObjList, i18n } from 'i18next';
 import i18next from 'i18next';
 
@@ -58,14 +64,24 @@ const GET_INSTANCE_INFO = gql`
     instance {
       id
       name
+      siteTitle
       defaultLanguage
       supportedLanguages
+      # The UI uses this as site.minYear, which progress tracking compares
+      # actualHistoricalYears against.
+      minimumHistoricalYear
       features {
         showRefreshPrompt
       }
       goals {
         id
       }
+    }
+    scenarios {
+      id
+      name
+      kind
+      actualHistoricalYears
     }
     pages {
       urlPath
@@ -89,6 +105,7 @@ const GET_INSTANCE_INFO = gql`
 
 type InstanceInfo = NonNullable<PlaywrightGetInstanceInfoQuery>;
 type ActionInfo = InstanceInfo['actions'][0];
+type ScenarioInfo = InstanceInfo['scenarios'][0];
 
 export type PathsPage = NonNullable<InstanceInfo['pages']>[0];
 export type ActionListPage = PathsPage & {
@@ -168,7 +185,6 @@ export class InflightRequests {
     this._page.removeListener('requestfailed', this.onFinished);
   }
 }
-
 
 export class InstanceContext {
   instance: InstanceInfo;
@@ -290,6 +306,11 @@ export class InstanceContext {
     return item;
   }
 
+  // Returns the page rendered at the instance root, or null if there is none
+  getFrontPage(): PathsPage | null {
+    return this.instance.pages.find((page) => page.urlPath === '/') || null;
+  }
+
   getActionListPage(): ActionListPage | null {
     function isActionPage(item: PathsPage): item is ActionListPage {
       if (item.__typename !== 'ActionListPage') return false;
@@ -301,6 +322,46 @@ export class InstanceContext {
 
   getVisibleActions(): ActionInfo[] {
     return this.instance.actions.filter((action) => action.isVisible && action.group !== null);
+  }
+
+  getProgressTrackingScenario(): ScenarioInfo | null {
+    return (
+      this.instance.scenarios.find((scenario) => scenario.kind === 'PROGRESS_TRACKING') ?? null
+    );
+  }
+
+  /**
+   * Years for which the progress tracking scenario has measured data.
+   *
+   * The UI (see `src/utils/progress-tracking.ts`) discards the instance's
+   * minimum historical year, since that's the baseline the measured data is
+   * compared against, not progress in itself. Sorted latest first, matching
+   * the order the UI's year selector uses.
+   */
+  getProgressYears(): number[] {
+    const scenario = this.getProgressTrackingScenario();
+    const minYear = this.instance.instance.minimumHistoricalYear;
+    return (scenario?.actualHistoricalYears ?? [])
+      .filter((year) => year !== minYear)
+      .sort((a, b) => b - a);
+  }
+
+  /**
+   * Whether this instance renders the progress tracking UI (the NZC/NZP
+   * framework flavour of the outcome pages).
+   *
+   * This mirrors the heuristic the UI itself applies: the `showRefreshPrompt`
+   * feature flag stands in for "is a NetZeroCities-style instance" (see
+   * `src/components/pages/Page.tsx`), and progress tracking only renders once
+   * there is a progress tracking scenario with measured years beyond the
+   * baseline.
+   */
+  hasProgressTracking(): boolean {
+    return (
+      this.instance.instance.features.showRefreshPrompt &&
+      !!this.getProgressTrackingScenario() &&
+      this.getProgressYears().length > 0
+    );
   }
 
   getActionURL(action: ActionInfo) {
@@ -315,7 +376,9 @@ export class InstanceContext {
 
   async checkMeta(page: Page) {
     const siteName = page.locator('head meta[property="og:site_name"]').first();
-    await expect(siteName).toHaveAttribute('content', this.instance.instance.name);
+    // The UI renders `siteTitle`, which may differ from `name` (framework
+    // instances prefix it with the framework name).
+    await expect(siteName).toHaveAttribute('content', this.instance.instance.siteTitle);
     await expect(page.locator('html')).toHaveAttribute('lang', this.i18n.language);
   }
 
@@ -337,7 +400,7 @@ export class InstanceContext {
     } finally {
       inflight.stop();
     }
-  };
+  }
 
   async waitForNavbarVisible(page: Page) {
     const brandingNav = page.locator('nav#branding-navigation-bar').first();
