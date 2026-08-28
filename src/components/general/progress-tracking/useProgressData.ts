@@ -91,6 +91,7 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
     };
 
     const defaultConfig = metrics.default.getDefaultSliceConfig(activeGoal);
+    if (!defaultConfig.dimensionId) return [];
     const defaultSlice = metrics.default.sliceBy(
       defaultConfig.dimensionId,
       true,
@@ -104,7 +105,7 @@ export function useProgressData(metric: MetricDim, color?: string): ProgressData
     );
 
     const baselineSlice = hasBaseline
-      ? metrics.baseline!.sliceBy(defaultConfig.dimensionId!, true, defaultConfig.categories)
+      ? metrics.baseline!.sliceBy(defaultConfig.dimensionId, true, defaultConfig.categories)
       : null;
 
     /**

@@ -1,4 +1,3 @@
-
 import styled from '@common/themes/styled';
 
 const StyledFooter = styled.div`
@@ -16,6 +15,8 @@ const StyledFooter = styled.div`
     }
   }
 `;
+
+const objectId = (value: string) => ({ 's-object-id': value });
 
 const Footer = () => {
   return (
@@ -45,7 +46,8 @@ const Footer = () => {
                     href="https://www.stadt-zuerich.ch/portal/de/index/footer/rechtliche_hinweise.html"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
-                    s-object-id="Legal notice" rel="noreferrer"
+                    {...objectId('Legal notice')}
+                    rel="noreferrer"
                   >
                     <div className="stzh-link__inner sc-stzh-link">
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
@@ -71,7 +73,8 @@ const Footer = () => {
                     href="https://www.stadt-zuerich.ch/netto-null-cockpit-impressum"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
-                    s-object-id="Imprint" rel="noreferrer"
+                    {...objectId('Imprint')}
+                    rel="noreferrer"
                   >
                     <div className="stzh-link__inner sc-stzh-link">
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>
@@ -97,7 +100,8 @@ const Footer = () => {
                     href="https://www.stadt-zuerich.ch/portal/de/index/footer/barrierefreiheit.html"
                     target="_blank"
                     className="stzh-link stzh-link--badge-position-icon stzh-link--align-default stzh-link--size-default stzh-link--default sc-stzh-link"
-                    s-object-id="Accessibility" rel="noreferrer"
+                    {...objectId('Accessibility')}
+                    rel="noreferrer"
                   >
                     <div className="stzh-link__inner sc-stzh-link">
                       <div className="stzh-link__icon-wrapper sc-stzh-link sc-stzh-link-s"></div>

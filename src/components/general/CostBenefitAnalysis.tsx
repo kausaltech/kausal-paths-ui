@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { useMemo, useState } from 'react';
 
 import { Box, Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
 import type { Theme } from '@emotion/react';
 
 import { useReactiveVar } from '@apollo/client/react';
+import type { CustomSeriesRenderItemAPI, CustomSeriesRenderItemParams } from 'echarts';
 import type { EChartsCoreOption } from 'echarts/core';
 import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
@@ -208,15 +208,19 @@ function getActionChartConfig(
         type: 'custom',
         name: labels.netBenefit,
         itemStyle: { color: theme.themeColors.black, borderWidth: 2 },
-        renderItem: function (params, api) {
+        renderItem: function (
+          params: CustomSeriesRenderItemParams,
+          api: CustomSeriesRenderItemAPI
+        ) {
           const categoryIndex = api.value('label');
           const netBenefit = api.value('netBenefit');
           const highPoint = api.coord([netBenefit, categoryIndex]);
-          const height = api.size([0, 1])[1];
+          const size = api.size?.([0, 1]);
+          const height = Array.isArray(size) ? size[1] : (size ?? 0);
           const halfHeight = height / 2;
           const OFFSET = 5;
           const color = api.visual('color');
-          const style = api.style({ stroke: color, fill: color });
+          const style = { stroke: color, fill: color, lineWidth: 2 };
           return {
             name: labels.netBenefit,
             type: 'group',

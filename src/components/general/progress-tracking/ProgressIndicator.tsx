@@ -6,9 +6,9 @@ import type { Theme } from '@emotion/react';
 import type {
   CustomSeriesRenderItemAPI,
   CustomSeriesRenderItemParams,
-  DefaultLabelFormatterCallbackParams,
   EChartsOption,
 } from 'echarts';
+import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 import {
   Dropdown,
   DropdownItem,
@@ -266,7 +266,7 @@ function getChartConfig(
       axisPointer: {
         type: 'shadow',
       },
-      formatter: function (params: DefaultLabelFormatterCallbackParams[]) {
+      formatter: function (params: TopLevelFormatterParams) {
         if (!Array.isArray(params) || params.length === 0) {
           return '';
         }

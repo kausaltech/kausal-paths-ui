@@ -30,7 +30,6 @@ export default function CallToActionCard({ title, content, linkUrl }: CallToActi
       underline="none"
       sx={{ display: 'block' }}
       aria-label={ariaLabel}
-      role="link"
     >
       <Card
         sx={{

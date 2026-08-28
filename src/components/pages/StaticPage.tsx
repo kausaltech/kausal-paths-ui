@@ -12,16 +12,16 @@ const BodyCard = styled.div`
   box-shadow: 3px 3px 12px rgba(33, 33, 33, 0.15);
 `;
 
+type StaticPageData = Extract<NonNullable<PageQuery['page']>, { body: unknown }>;
+
 type StaticPageProps = {
-  page: NonNullable<PageQuery['page']> & {
-    __typename: 'StaticPage';
-  };
+  page: StaticPageData;
   refetch: PageRefetchCallback;
 };
 
 function StaticPage({ page }: StaticPageProps) {
   return (
-    <PageHero title={page.title}>
+    <PageHero leadTitle={page.title}>
       <BodyCard>
         {page?.body?.map((block) => (block ? <StreamField key={block.id} block={block} /> : null))}
       </BodyCard>

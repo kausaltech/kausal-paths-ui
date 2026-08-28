@@ -5,6 +5,7 @@ import {
   FormControlLabel,
   InputAdornment,
   Slider,
+  type SliderProps,
   Stack,
   Switch,
   TextField,
@@ -117,13 +118,18 @@ const NumberWidget = (props: NumberWidgetProps) => {
     return isValid;
   };
 
-  const handleSlide = (event: Event, newValue: number) => {
+  const handleSlide: NonNullable<SliderProps['onChange']> = (_event, newValue) => {
+    if (typeof newValue !== 'number') return;
     setValue(newValue);
     setInputValue(newValue.toString());
     validateNumber(newValue);
   };
 
-  const handleSlideCommitted = (event: Event, newValue: number) => {
+  const handleSlideCommitted: NonNullable<SliderProps['onChangeCommitted']> = (
+    _event,
+    newValue
+  ) => {
+    if (typeof newValue !== 'number') return;
     setValue(newValue);
     setInputValue(newValue.toString());
     const isValid = validateNumber(newValue);

@@ -59,7 +59,8 @@ const GoalSelector = () => {
     activeGoalVar(goal);
   }, []);
 
-  const handleChange = (event: SelectChangeEvent) => {
+  const handleChange = (event: SelectChangeEvent<unknown>) => {
+    if (typeof event.target.value !== 'string') return;
     const selectedGoal = instance.model.goals.find((goal) => goal.id === event.target.value);
     if (selectedGoal) {
       selectGoal(selectedGoal);

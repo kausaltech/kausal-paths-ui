@@ -1,19 +1,21 @@
 import React from 'react';
 
-import parse, { domToReact } from 'html-react-parser';
+import parse, {
+  type DOMNode,
+  Element,
+  type HTMLReactParserOptions,
+  domToReact,
+} from 'html-react-parser';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 
+import { getPathsBackendUrl } from '@common/env';
 import styled from '@common/themes/styled';
 
-import { useInstance } from '@/common/instance';
 import Icon from '@/components/common/icon';
 
 type RichTextImageProps = {
-  attribs: {
-    src: string;
-    [key: string]: any;
-  };
+  attribs: Record<string, string> & { src: string };
 };
 
 const StyledRichText = styled.div`
@@ -51,37 +53,33 @@ const CompressIcon = styled(ICompress)`
 `;
 
 function RichTextImage(props: RichTextImageProps) {
-  const instance = useInstance();
   const { attribs } = props;
-  const { src, alt, height, width, ...rest } = attribs;
-  // FIXME: serveFileBaseUrl
-  const { serveFileBaseUrl } = instance;
-
-  rest.className = rest.class;
-  delete rest.class;
+  const { src, alt, height, width } = attribs;
+  const fileBaseUrl = getPathsBackendUrl();
 
   const imgElement = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`${serveFileBaseUrl}${src}`}
+      src={`${fileBaseUrl}${src}`}
       alt={alt}
       height={height}
       width={width}
-      className={rest.className}
+      className={attribs.class}
     />
   );
 
   const [origWidth, origHeight] = [
-    Number(rest['data-original-width']),
-    Number(rest['data-original-height']),
+    Number(attribs['data-original-width']),
+    Number(attribs['data-original-height']),
   ];
-  if (!isNaN(origWidth) && !isNaN(origHeight) && rest['data-original-src']) {
+  const originalSrc = attribs['data-original-src'];
+  if (!isNaN(origWidth) && !isNaN(origHeight) && originalSrc) {
     if (origWidth > Number(height) * 1.2 || origHeight > Number(width) * 1.2) {
       // Only stretch zoomed image full width if original has width > 1000px
       const zoomImgAttribs =
         origWidth > 1000
           ? {
-              src: `${serveFileBaseUrl}${rest['data-original-src']}`,
+              src: `${fileBaseUrl}${originalSrc}`,
               alt,
               height: origHeight,
               width: origWidth,
@@ -109,41 +107,41 @@ export default function RichText(props: RichTextProps) {
   if (typeof html !== 'string') return <div />;
 
   // FIXME: Hacky hack to figure out if the rich text links are internal
-  const cutHttp = (url) => url.replace(/^https?:\/\//, '');
+  const cutHttp = (url: string) => url.replace(/^https?:\/\//, '');
   // FIXME!!
   const currentDomain = 'foooo.com';
 
-  const options = {
-    replace: (domNode) => {
-      const { type, name, attribs, children } = domNode;
-      if (type !== 'tag') return null;
-      // Rewrite <a> tags to point to the FQDN
-      if (name === 'a') {
-        // File link
-        if (attribs['data-link-type']) {
-          // FIXME: Add icon based on attribs['data-file-extension']
-          return (
-            <a href={`${plan.serveFileBaseUrl}${attribs.href}`}>{domToReact(children, options)}</a>
-          );
-        }
-        // Internal link
-        if (cutHttp(attribs.href.split('.')[0]) === currentDomain || attribs.href.startsWith('#')) {
-          return <a href={attribs.href}>{domToReact(children, options)}</a>;
-        }
-        // Assumed external link, open in new tab
+  const fileBaseUrl = getPathsBackendUrl();
+  const options: HTMLReactParserOptions = {};
+  options.replace = (domNode) => {
+    if (!(domNode instanceof Element)) return;
+    const { name, attribs, children } = domNode;
+    // Rewrite <a> tags to point to the FQDN
+    if (name === 'a' && attribs.href) {
+      // File link
+      if (attribs['data-link-type']) {
+        // FIXME: Add icon based on attribs['data-file-extension']
         return (
-          <a target="_blank" href={attribs.href} rel="noreferrer">
-            <Icon name="arrow-up-right-from-square" />
-            {domToReact(children, options)}
-          </a>
+          <a href={`${fileBaseUrl}${attribs.href}`}>{domToReact(children as DOMNode[], options)}</a>
         );
-      } else if (name === 'img') {
-        if (attribs.src && attribs.src[0] === '/') {
-          return <RichTextImage attribs={attribs} />;
-        }
       }
-      return null;
-    },
+      // Internal link
+      if (cutHttp(attribs.href.split('.')[0]) === currentDomain || attribs.href.startsWith('#')) {
+        return <a href={attribs.href}>{domToReact(children as DOMNode[], options)}</a>;
+      }
+      // Assumed external link, open in new tab
+      return (
+        <a target="_blank" href={attribs.href} rel="noreferrer">
+          <Icon name="arrow-up-right-from-square" />
+          {domToReact(children as DOMNode[], options)}
+        </a>
+      );
+    } else if (name === 'img') {
+      if (attribs.src && attribs.src[0] === '/') {
+        return <RichTextImage attribs={{ ...attribs, src: attribs.src }} />;
+      }
+    }
+    return null;
   };
 
   const parsedContent = parse(html, options);

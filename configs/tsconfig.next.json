@@ -5,11 +5,12 @@
     "jsx": "preserve",
     "paths": {
       "@/*": ["../src/*"],
-      "@common/*": ["../kausal_common/src/*"]
+      "@common/*": ["../kausal_common/src/*"],
+      "@generated/paths/graphql": ["../src/common/__generated__/graphql.ts"]
     },
     "checkJs": true,
     "allowImportingTsExtensions": true
   },
   "include": ["../next-env.d.ts", "../src", "../kausal_common/src"],
-  "exclude": ["../kausal_common/components/paths", "../kausal_common/src/utils/paths"]
+  "exclude": ["../kausal_common/src/components/paths", "../kausal_common/src/utils/paths"]
 }

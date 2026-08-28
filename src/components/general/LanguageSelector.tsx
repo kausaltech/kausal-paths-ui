@@ -62,7 +62,6 @@ function LanguageSelector({ mobile }: { mobile: boolean }) {
   if (!locales || locales.length < 2) return null;
   const handleLocaleChange = (ev: React.MouseEvent<HTMLAnchorElement>) => {
     ev.preventDefault();
-    // eslint-disable-next-line react-compiler/react-compiler
     window.location.href = ev.currentTarget.href;
   };
 

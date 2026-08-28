@@ -3,7 +3,6 @@ import { headers } from 'next/headers';
 import * as Sentry from '@sentry/nextjs';
 import { getRequestConfig } from 'next-intl/server';
 
-
 import { CURRENT_LANGUAGE_HEADER } from '@/common/const';
 
 const FALLBACKS: Record<string, string> = {
@@ -18,8 +17,17 @@ const NAMESPACES: LocaleFile[] = ['common', 'errors', 'model-editor'];
 
 async function importLocale(locale: string, file: LocaleFile) {
   try {
-    const translations = (await import(`../../public/locales/${locale}/${file}.json`)).default;
-    return translations as Record<string, string>;
+    const translations: unknown = await import(`../../public/locales/${locale}/${file}.json`);
+    if (
+      typeof translations === 'object' &&
+      translations !== null &&
+      'default' in translations &&
+      typeof translations.default === 'object' &&
+      translations.default !== null
+    ) {
+      return translations.default as Record<string, string>;
+    }
+    return {};
   } catch (error) {
     console.warn(`kausal-paths-ui > Failed to load ${file} translations for ${locale}`);
     Sentry.captureException(error);

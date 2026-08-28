@@ -157,12 +157,6 @@ export default function ActionPage() {
     void refetch();
   }, [activeScenario, refetch]);
 
-  useEffect(() => {
-    if (!activeDownstreamNode && data?.action?.downstreamNodes?.length) {
-      setActiveDownstreamNode(data.action.downstreamNodes[0].id);
-    }
-  }, [activeDownstreamNode, data]);
-
   if (error) {
     return (
       <Container className="pt-5">
@@ -181,12 +175,11 @@ export default function ActionPage() {
 
   const action = data.action;
   const outcomeNodes = action.downstreamNodes;
-  const selectedOutcomeNode = outcomeNodes.find((node) => node.id === activeDownstreamNode);
-  const allNodes = (
-    causalChainResp.data?.action?.downstreamNodes
-      ? causalChainResp.data.action.downstreamNodes
-      : [selectedOutcomeNode]
-  ).filter((node): node is CausalGridNode => !!node);
+  const activeDownstreamNodeId = activeDownstreamNode ?? outcomeNodes[0]?.id;
+  const selectedOutcomeNode = outcomeNodes.find((node) => node.id === activeDownstreamNodeId);
+  const allNodes = (causalChainResp.data?.action?.downstreamNodes ?? [selectedOutcomeNode]).filter(
+    (node): node is CausalGridNode => !!node
+  );
 
   const isActive = (
     action.parameters.find((param) => param.id == `${param.node?.id}.enabled`) as
@@ -196,7 +189,7 @@ export default function ActionPage() {
   const flowPlot = action.dimensionalFlow && <DimensionalPlot flow={action.dimensionalFlow} />;
 
   const actionPlot = action.metric
-    ? flowPlot || (
+    ? (flowPlot ?? (
         <>
           <ActionGraphHeader>
             {t('impact')}: {action.name}
@@ -210,11 +203,11 @@ export default function ActionPage() {
             isAction={action.__typename === 'ActionNode'}
           />
         </>
-      )
+      ))
     : undefined;
 
   function handleExpandGrid() {
-    if (!activeDownstreamNode) {
+    if (!activeDownstreamNodeId) {
       return;
     }
 
@@ -222,7 +215,7 @@ export default function ActionPage() {
       variables: {
         node: slug,
         goal: activeGoal?.id ?? null,
-        untilNode: activeDownstreamNode,
+        untilNode: activeDownstreamNodeId,
       },
     });
   }
@@ -307,7 +300,7 @@ export default function ActionPage() {
           actionIsOff={!isActive}
           action={action}
           nodeOutcomeCards={getOutcomeCards(outcomeNodes)}
-          selectedOutcomeNode={activeDownstreamNode}
+          selectedOutcomeNode={activeDownstreamNodeId}
           onClickOutcomeNodeCard={(id) => setActiveDownstreamNode(id)}
           onClickExpandGrid={handleExpandGrid}
           expandedGridLoading={causalChainResp.loading}

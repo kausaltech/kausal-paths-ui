@@ -196,13 +196,7 @@ const OutcomeNodeContent = ({
             )}
             {activeTabId === 'info' && <OutcomeNodeDetails node={node} t={t} />}
             {activeTabId === 'table' && (
-              <DataTable
-                node={node}
-                subNodes={subNodes}
-                color={color}
-                startYear={startYear}
-                endYear={endYear}
-              />
+              <DataTable node={node} subNodes={subNodes} startYear={startYear} endYear={endYear} />
             )}
           </div>
         </ContentWrapper>

@@ -283,7 +283,7 @@ const CausalGrid = ({
 
   [action, ...visibleNodes].forEach((node) => {
     node.outputNodes.forEach((output) => {
-      const old = parentMap.get(output.id) || [];
+      const old = parentMap.get(output.id) ?? [];
       parentMap.set(output.id, [...old, node]);
     });
   });
@@ -294,7 +294,7 @@ const CausalGrid = ({
       node.outputNodes.map((output) => {
         const p = parentMap.get(output.id)!;
         p.splice(p.indexOf(node), 1);
-        parentMap.set(output.id, [...p, ...(parentMap.get(node.id) || [])]);
+        parentMap.set(output.id, [...p, ...(parentMap.get(node.id) ?? [])]);
       });
       return false;
     }
@@ -304,7 +304,7 @@ const CausalGrid = ({
   const findOutputs = (parentIds: string[], tree: CausalGridNode[][]) => {
     const grid = tree?.length ? tree : ([] as CausalGridNode[][]);
     // return all nodes that input to given node ids
-    const inputs = Array.from(new Set(parentIds.flatMap((id) => parentMap.get(id) || []))).filter(
+    const inputs = Array.from(new Set(parentIds.flatMap((id) => parentMap.get(id) ?? []))).filter(
       (node) => node.id !== action.id
     );
     // create grid row of ids
@@ -523,7 +523,7 @@ const CausalGrid = ({
                 </NodeLink>
                 <ImpactFigures>
                   <ImpactDisplay
-                    effectCumulative={cumulativeImpact || undefined}
+                    effectCumulative={cumulativeImpact ?? undefined}
                     effectYearly={impactAtTargetYear ?? 0}
                     yearRange={yearRange}
                     unitCumulative={lastNode.impactMetric?.unit?.htmlShort}

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return*/
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 // Ignore linting for this file, this component can be deprecated soon and the code is not worth fixing at this point
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -10,9 +10,7 @@ import Cytoscape, {
   type NodeDefinition,
 } from 'cytoscape';
 import dagre, { type DagreLayoutOptions } from 'cytoscape-dagre';
-// @ts-expect-error - No types available for cytoscape-elk
 import elk, { type ElkLayoutOptions } from 'cytoscape-elk';
-//import pdfExport from 'cytoscape-pdf-export';
 import { readableColor } from 'polished';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
@@ -39,11 +37,11 @@ const Toolbar = styled.div`
   margin-bottom: 10px;
 `;
 
-// @ts-expect-error - Cytoscape types package is not up-to-date
-Cytoscape.use(dagre);
-Cytoscape.use(elk);
+const registerExtension = Cytoscape.use.bind(Cytoscape);
+registerExtension(dagre);
+registerExtension(elk);
 function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {
-  const nodeColors = {
+  const nodeColors: Record<string, string> = {
     action: '#0A5E43',
     emissions: '#682901',
     utility: '#AAC5DB',
@@ -71,12 +69,12 @@ function getBackgroundColor(node: CytoscapeNodesQuery['nodes'][0]) {
   return '#eeeeee';
 }
 
-function wordWrap(inputStr, maxWidth, newLineStr = '\n') {
+function wordWrap(inputStr: string, maxWidth: number, newLineStr = '\n') {
   let done = false;
   let res = '';
   let str = inputStr;
 
-  function testWhite(x) {
+  function testWhite(x: string) {
     const white = new RegExp(/^\s$/);
     return white.test(x.charAt(0));
   }
@@ -123,7 +121,7 @@ function NodeSelector(props: NodeSelectorProps) {
       //label={t('choose-node')!}
       onChange={(val) => setSelectedNode(val ? val.id : '')}
       options={options}
-      value={selectedNode ? options.find((o) => o.id === selectedNode) || null : null}
+      value={selectedNode ? (options.find((o) => o.id === selectedNode) ?? null) : null}
       isMulti={false}
       isClearable={true}
     />
@@ -132,7 +130,7 @@ function NodeSelector(props: NodeSelectorProps) {
 
 type LayoutSelectorProps = {
   layoutId: string;
-  setLayout: React.Dispatch<React.SetStateAction<any>>;
+  setLayout: React.Dispatch<React.SetStateAction<LayoutOption>>;
 };
 
 function LayoutSelector(props: LayoutSelectorProps) {
@@ -146,17 +144,19 @@ function LayoutSelector(props: LayoutSelectorProps) {
       id="layout"
       //label={t('choose-node')!}
       onChange={(val) =>
-        setLayout(val ? graphSettings.find((s) => s.id === val.id) : graphSettings[0])
+        setLayout(
+          val ? (graphSettings.find((s) => s.id === val.id) ?? graphSettings[0]) : graphSettings[0]
+        )
       }
       options={options}
-      value={layoutId ? options.find((o) => o.id === layoutId) || null : null}
+      value={layoutId ? (options.find((o) => o.id === layoutId) ?? null) : null}
       isMulti={false}
     />
   );
 }
 
 const DownloadSelector = (props: {
-  handleExport: (format: 'jpg' | 'png' | 'json' | 'pdf') => void;
+  handleExport: (format: 'jpg' | 'png' | 'json' | 'pdf') => Promise<void>;
 }) => {
   const { handleExport } = props;
   const { t } = useTranslation();
@@ -167,16 +167,16 @@ const DownloadSelector = (props: {
         {` ${t('download-data')}`}
       </DropdownToggle>
       <DropdownMenu>
-        <DropdownItem onClick={() => handleExport('jpg')}>
+        <DropdownItem onClick={() => void handleExport('jpg')}>
           <Icon name="file" /> JPG
         </DropdownItem>
-        <DropdownItem onClick={() => handleExport('png')}>
+        <DropdownItem onClick={() => void handleExport('png')}>
           <Icon name="file" /> PNG
         </DropdownItem>
-        <DropdownItem onClick={() => handleExport('json')}>
+        <DropdownItem onClick={() => void handleExport('json')}>
           <Icon name="file" /> JSON
         </DropdownItem>
-        <DropdownItem onClick={() => handleExport('pdf')}>
+        <DropdownItem onClick={() => void handleExport('pdf')}>
           <Icon name="file" /> PDF
         </DropdownItem>
       </DropdownMenu>
@@ -313,11 +313,11 @@ const nodeStyle: Cytoscape.Css.Node = {
 const nodeToElement = (node: CytoscapeNodesQuery['nodes'][0]) => {
   const latestHistorical = node.metric?.historicalValues?.[0];
 
-  const latest = {
+  const latest: { year: number | undefined; value: string; unit: string } = {
     year: undefined,
     value: '',
     unit: (() => {
-      return sanitizeHtmlUnit(node.unit?.htmlShort || '');
+      return sanitizeHtmlUnit(node.unit?.htmlShort ?? '');
     })(),
   };
   if (latestHistorical) {
@@ -395,6 +395,15 @@ function saveAs(blob: Blob, filename: string) {
   link.click();
 }
 
+let pdfExportRegistration: Promise<void> | undefined;
+
+function registerPdfExport(): Promise<void> {
+  pdfExportRegistration ??= import('cytoscape-pdf-export').then(({ default: pdfExport }) => {
+    registerExtension(pdfExport);
+  });
+  return pdfExportRegistration;
+}
+
 type CytoGraphProps = {
   nodes: CytoscapeNodesQuery['nodes'];
 };
@@ -405,7 +414,7 @@ export default function CytoGraph(props: CytoGraphProps) {
   const [layout, setLayout] = useState(graphSettings[0]);
   const [cy, setCy] = useState<Cytoscape.Core | null>(null);
   const router = useRouter();
-  const cyRef = useRef<Cytoscape.Core | null>(null);
+  const cyRef = useRef<HTMLDivElement | null>(null);
 
   const elements = useMemo(() => {
     const allElements: ElementDefinition[] = [];
@@ -424,8 +433,8 @@ export default function CytoGraph(props: CytoGraphProps) {
     }
 
     // Filter to show only selected node and its predecessors/successors
-    const nodeElements = allElements.filter((el) => el.group === 'nodes');
-    const edgeElements = allElements.filter((el) => el.group === 'edges');
+    const nodeElements = allElements.filter((el): el is NodeDefinition => el.group === 'nodes');
+    const edgeElements = allElements.filter((el): el is EdgeDefinition => el.group === 'edges');
 
     // Recursively find all predecessors (upstream dependencies)
     const findAllPredecessors = (nodeId: string, visited = new Set<string>()): Set<string> => {
@@ -469,7 +478,9 @@ export default function CytoGraph(props: CytoGraphProps) {
 
     // Keep only the selected node and its full dependency tree
     const keepNodeIds = new Set([selectedNode, ...predecessorIds, ...successorIds]);
-    const filteredNodes = nodeElements.filter((node) => keepNodeIds.has(node.data.id));
+    const filteredNodes = nodeElements.filter(
+      (node) => typeof node.data.id === 'string' && keepNodeIds.has(node.data.id)
+    );
 
     // Keep only edges that connect the kept nodes
     const filteredEdges = edgeElements.filter(
@@ -512,18 +523,9 @@ export default function CytoGraph(props: CytoGraphProps) {
     if (!cyRef.current) {
       return;
     }
-    const registerPdfExport = async () => {
-      try {
-        // @ts-expect-error - No types available for cytoscape-pdf-export
-        const pdfExport = (await import('cytoscape-pdf-export')).default;
-        if (!Cytoscape?.pdf) {
-          Cytoscape.use(pdfExport);
-        }
-      } catch (error) {
-        console.error('Failed to load PDF export:', error);
-      }
-    };
-    registerPdfExport();
+    void registerPdfExport().catch((error: unknown) => {
+      console.error('Failed to load PDF export:', error);
+    });
 
     const cy = Cytoscape({
       container: cyRef.current,
@@ -568,7 +570,7 @@ export default function CytoGraph(props: CytoGraphProps) {
                 bg: '#ffffff',
                 output: 'blob-promise',
               });
-              saveAs(blob, 'graph.jpg', false);
+              saveAs(blob, 'graph.jpg');
               break;
             case 'png':
               console.log('EXPORTING: png');
@@ -578,25 +580,26 @@ export default function CytoGraph(props: CytoGraphProps) {
                 bg: '#ffffff',
                 output: 'blob-promise',
               });
-              saveAs(blob, 'graph.png', false);
+              saveAs(blob, 'graph.png');
               break;
-            case 'json':
+            case 'json': {
               console.log('EXPORTING: json');
               const json = cy.json();
               blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
-              saveAs(blob, 'graph.json', false);
+              saveAs(blob, 'graph.json');
               break;
+            }
             case 'pdf':
-              if (cy.pdf) {
-                console.log('EXPORTING: pdf', layout.id);
-                blob = await cy.pdf({
-                  full: true,
-                  paperSize: 'A4',
-                  orientation: layout.id === 'orthogonal-lr' ? 'PORTRAIT' : 'LANDSCAPE',
-                  bg: '#ffffff',
-                });
-                saveAs(blob, 'graph.pdf', true);
-              }
+              await registerPdfExport();
+              console.log('EXPORTING: pdf', layout.id);
+              blob = await cy.pdf({
+                full: true,
+                paperSize: 'A4',
+                orientation: layout.id === 'orthogonal-lr' ? 'PORTRAIT' : 'LANDSCAPE',
+                bg: '#ffffff',
+              });
+              saveAs(blob, 'graph.pdf');
+              break;
           }
         } catch (error) {
           console.error('Export failed:', error);

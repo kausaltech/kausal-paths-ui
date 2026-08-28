@@ -278,9 +278,11 @@ export default function OutcomeCard(props: OutcomeCardProps) {
   const isCompared = positiveTotal !== undefined && negativeTotal !== undefined;
   const siblingsTotal = isCompared ? positiveTotal - negativeTotal : undefined;
   const baseOutcomeValue = node.metric
-    ? getMetricValue({ metric: node.metric }, startYear) || 0
+    ? (getMetricValue({ metric: node.metric }, startYear) ?? 0)
     : 0;
-  const goalOutcomeValue = node.metric ? getMetricValue({ metric: node.metric }, endYear) || 0 : 0;
+  const goalOutcomeValue = node.metric
+    ? (getMetricValue({ metric: node.metric }, endYear) ?? 0)
+    : 0;
   const change = getMetricChange(baseOutcomeValue, goalOutcomeValue);
 
   const lastMeasuredYear =

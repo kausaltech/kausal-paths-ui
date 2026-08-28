@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   const clientIp =
     req.headers.get(FORWARDED_FOR_HEADER) ?? req.headers.get('x-forwarded-for') ?? undefined;
 
-  const body = Buffer.from(await req.arrayBuffer());
+  const body = await req.arrayBuffer();
   try {
     await forwardToSentry(body, sentryDsnUrl, {
       clientIp,

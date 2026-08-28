@@ -391,7 +391,10 @@ export default function DimensionalNodeVisualisation({
        * Include the reference year in order to draw a line from the total reference
        * year emissions to the first observed year emissions.
        */
-      const { x: filteredX, y: filteredY } = totalSumX.reduce(
+      const { x: filteredX, y: filteredY } = totalSumX.reduce<{
+        x: number[];
+        y: (number | null)[];
+      }>(
         (acc, x, index) =>
           [instance.referenceYear, ...progressYears].includes(x)
             ? { x: [...acc.x, x], y: [...acc.y, totalSumY[index]] }
@@ -400,7 +403,7 @@ export default function DimensionalNodeVisualisation({
       );
 
       filteredProgressYears.push(...filteredX);
-      filteredProgressValues.push(...filteredY.filter((y) => y !== null));
+      filteredProgressValues.push(...filteredY.filter((y): y is number => y !== null));
     }
   }
 
@@ -524,11 +527,11 @@ export default function DimensionalNodeVisualisation({
               onChange={(val) => {
                 setSliceConfig((old) => ({
                   ...old,
-                  dimensionId: val?.id || undefined,
+                  dimensionId: val?.id ?? undefined,
                 }));
               }}
               options={sliceableDims}
-              value={sliceableDims.find((dim) => sliceConfig.dimensionId === dim.id) || null}
+              value={sliceableDims.find((dim) => sliceConfig.dimensionId === dim.id) ?? null}
               isMulti={false}
               isClearable={false}
             />

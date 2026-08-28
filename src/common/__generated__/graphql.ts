@@ -4774,50 +4774,6 @@ export type ActionContentQuery = (
   & { __typename: 'Query' }
 );
 
-export type ActionImpactsQueryVariables = Exact<{
-  impact1: string | number;
-  impact2: string | number;
-}>;
-
-
-export type ActionImpactsQuery = (
-  { energyNode: (
-    { id: string, metric: (
-      { id: string | null, unit: (
-        { id: string, short: string }
-        & { __typename: 'UnitType' }
-      ) | null, yearlyCumulativeUnit: (
-        { id: string, short: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'ForecastMetricType' }
-    ) | null }
-    & { __typename: 'ActionNode' | 'Node' }
-  ) | null, costNode: (
-    { id: string, metric: (
-      { id: string | null, unit: (
-        { id: string, short: string }
-        & { __typename: 'UnitType' }
-      ) | null, yearlyCumulativeUnit: (
-        { id: string, short: string }
-        & { __typename: 'UnitType' }
-      ) | null }
-      & { __typename: 'ForecastMetricType' }
-    ) | null }
-    & { __typename: 'ActionNode' | 'Node' }
-  ) | null, actions: Array<(
-    { name: string, id: string, energy: (
-      { id: string | null, cumulativeForecastValue: number | null }
-      & { __typename: 'ForecastMetricType' }
-    ) | null, cost: (
-      { id: string | null, cumulativeForecastValue: number | null }
-      & { __typename: 'ForecastMetricType' }
-    ) | null }
-    & { __typename: 'ActionNode' }
-  )> }
-  & { __typename: 'Query' }
-);
-
 export type ActionListQueryVariables = Exact<{
   goal: string | number | null | undefined;
 }>;
@@ -4987,7 +4943,7 @@ export type ImpactOverviewDetailFragment = (
       { value: number, year: number }
       & { __typename: 'YearlyValue' }
     ) | null> | null, effectDim: (
-      { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+      { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
         { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
           { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
           & { __typename: 'MetricDimensionCategoryType' }
@@ -5003,7 +4959,7 @@ export type ImpactOverviewDetailFragment = (
         )> }
         & { __typename: 'DimensionalMetricGoalEntry' }
       )>, unit: (
-        { id: string, htmlShort: string, short: string }
+        { id: string, htmlShort: string, htmlLong: string, short: string, long: string }
         & { __typename: 'UnitType' }
       ), normalizedBy: (
         { id: string, name: string }
@@ -5085,7 +5041,7 @@ export type ImpactOverviewQuery = (
         { value: number, year: number }
         & { __typename: 'YearlyValue' }
       ) | null> | null, effectDim: (
-        { id: string, name: string, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
+        { id: string, name: string, measureDatapointYears: Array<number>, stackable: boolean, forecastFrom: number | null, years: Array<number>, values: Array<number>, dimensions: Array<(
           { id: string, label: string, originalId: string | null, helpText: string | null, categories: Array<(
             { id: string, originalId: string | null, label: string, color: string | null, order: number | null, group: string | null }
             & { __typename: 'MetricDimensionCategoryType' }
@@ -5101,7 +5057,7 @@ export type ImpactOverviewQuery = (
           )> }
           & { __typename: 'DimensionalMetricGoalEntry' }
         )>, unit: (
-          { id: string, htmlShort: string, short: string }
+          { id: string, htmlShort: string, htmlLong: string, short: string, long: string }
           & { __typename: 'UnitType' }
         ), normalizedBy: (
           { id: string, name: string }

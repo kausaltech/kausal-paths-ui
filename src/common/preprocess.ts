@@ -16,7 +16,7 @@ export const getMetricValue = (node: { metric: NodeMetric }, year: number) =>
   node.metric.forecastValues.find((dataPoint) => dataPoint.year === year)?.value ??
   node.metric.historicalValues.find((dataPoint) => dataPoint.year === year)?.value;
 
-export const getImpactMetricValue = (node: { impactMetric: NodeMetric }, date) =>
+export const getImpactMetricValue = (node: { impactMetric: NodeMetric }, date: number) =>
   node.impactMetric.forecastValues.find((dataPoint) => dataPoint.year === date)?.value ??
   node.impactMetric.historicalValues.find((dataPoint) => dataPoint.year === date)?.value ??
   0;
@@ -42,10 +42,6 @@ export const summarizeYearlyValuesBetween = (
     });
   if (metric?.forecastValues)
     metric.forecastValues.forEach((dataPoint) => {
-      if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
-    });
-  if (metric?.length)
-    metric.forEach((dataPoint) => {
       if (dataPoint.year >= startYear && dataPoint.year <= endYear) yearlyValues.push(dataPoint);
     });
   return summarizeYearlyValues(yearlyValues);

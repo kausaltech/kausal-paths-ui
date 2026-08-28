@@ -48,6 +48,7 @@ type DashboardVisualizationProps = {
   goalValues?: ({ year: number; value: number } | null)[];
   scenarioValues?: ScenarioValueFieldsFragment[];
   unit?: {
+    id: string;
     short: string;
     htmlShort: string;
     htmlLong: string;
@@ -157,18 +158,16 @@ function DashboardVisualization({
       unit={unit ?? undefined}
       maxValue={maxValue}
       goalYear={goal?.year}
-      items={progressVisualizations.map(
-        (viz): DashboardProgressItem => ({
-          type: viz.__typename as ProgressType,
-          title: viz.title,
-          chartLabel: viz.chartLabel,
-          color: viz.color ?? undefined,
-          value: getBarValue(viz, values) ?? undefined,
-          goalValue: getBarGoalValue(viz, values),
-          description: viz.description ?? undefined,
-          scenarioId: viz.__typename === 'ScenarioProgressBarBlock' ? viz.scenarioId : undefined,
-        })
-      )}
+      items={progressVisualizations.map((viz): DashboardProgressItem => ({
+        type: viz.__typename as ProgressType,
+        title: viz.title,
+        chartLabel: viz.chartLabel,
+        color: viz.color ?? undefined,
+        value: getBarValue(viz, values) ?? undefined,
+        goalValue: getBarGoalValue(viz, values),
+        description: viz.description ?? undefined,
+        scenarioId: viz.__typename === 'ScenarioProgressBarBlock' ? viz.scenarioId : undefined,
+      }))}
     />
   ) : null;
 

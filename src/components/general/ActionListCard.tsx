@@ -92,23 +92,45 @@ type ActionListCardProps = {
 const ActionListCard = (props: ActionListCardProps) => {
   const { action, displayYears, refetching } = props;
   const { t } = useTranslation();
+  const impactMetric = action.impactMetric;
 
   // const unitYearly = `kt CO<sub>2</sub>e${t('abbr-per-annum')}`;
-  const unitYearly = `${action.impactMetric.unit?.htmlShort}`;
+  const unitYearly = impactMetric?.unit?.htmlShort;
 
   //const actionEffectCumulative = action.impactMetric.cumulativeForecastValue;
-  const actionEffectCumulative = summarizeYearlyValuesBetween(
-    action.impactMetric,
-    displayYears[0],
-    displayYears[1]
-  );
+  const actionEffectCumulative = impactMetric
+    ? summarizeYearlyValuesBetween(impactMetric, displayYears[0], displayYears[1])
+    : 0;
 
   // const unitCumulative = 'kt CO<sub>2</sub>e';
-  const unitCumulative = action.impactMetric.yearlyCumulativeUnit?.htmlShort;
+  const unitCumulative = impactMetric?.yearlyCumulativeUnit?.htmlShort;
 
   const enabledParam = findActionEnabledParam(action.parameters);
   const isActive = !refetching && (enabledParam?.boolValue ?? false);
-  const hasEfficiency = 'cumulativeEfficiency' in action;
+  const efficiency =
+    action.cumulativeImpact != null &&
+    action.cumulativeImpactUnit != null &&
+    action.cumulativeImpactName != null &&
+    action.cumulativeCost != null &&
+    action.cumulativeCostUnit != null &&
+    action.cumulativeCostName != null &&
+    action.cumulativeEfficiency != null &&
+    action.cumulativeEfficiencyUnit != null &&
+    action.cumulativeEfficiencyName != null &&
+    action.efficiencyCap != null
+      ? {
+          impact: action.cumulativeImpact,
+          impactUnit: action.cumulativeImpactUnit,
+          impactLabel: action.cumulativeImpactName,
+          cost: action.cumulativeCost,
+          costUnit: action.cumulativeCostUnit,
+          costLabel: action.cumulativeCostName,
+          value: action.cumulativeEfficiency,
+          unit: action.cumulativeEfficiencyUnit,
+          label: action.cumulativeEfficiencyName,
+          cap: action.efficiencyCap,
+        }
+      : null;
 
   const removeHtml = /(<([^>]+)>)/gi;
 
@@ -143,7 +165,7 @@ const ActionListCard = (props: ActionListCardProps) => {
         <ActionState>
           <ActionParameters parameters={action.parameters} />
           <div>
-            {action.impactMetric && (
+            {impactMetric && (
               <ImpactDisplay
                 effectCumulative={actionEffectCumulative}
                 effectYearly={action.impactOnTargetYear}
@@ -154,19 +176,19 @@ const ActionListCard = (props: ActionListCardProps) => {
                 size="sm"
               />
             )}
-            {hasEfficiency && (
+            {efficiency && (
               <EfficiencyDisplay
                 showImpact={action.cumulativeImpactId !== 'net_emissions'}
-                impactCumulative={action.cumulativeImpact}
-                impactCumulativeUnit={action.cumulativeImpactUnit}
-                impactCumulativeLabel={action.cumulativeImpactName}
-                costCumulative={action.cumulativeCost}
-                costCumulativeUnit={action.cumulativeCostUnit}
-                costCumulativeLabel={action.cumulativeCostName}
-                efficiencyCumulative={action.cumulativeEfficiency}
-                efficiencyCumulativeUnit={action.cumulativeEfficiencyUnit}
-                efficiencyCumulativeLabel={action.cumulativeEfficiencyName}
-                efficiencyCap={action.efficiencyCap}
+                impactCumulative={efficiency.impact}
+                impactCumulativeUnit={efficiency.impactUnit}
+                impactCumulativeLabel={efficiency.impactLabel}
+                costCumulative={efficiency.cost}
+                costCumulativeUnit={efficiency.costUnit}
+                costCumulativeLabel={efficiency.costLabel}
+                efficiencyCumulative={efficiency.value}
+                efficiencyCumulativeUnit={efficiency.unit}
+                efficiencyCumulativeLabel={efficiency.label}
+                efficiencyCap={efficiency.cap}
                 yearRange={displayYears}
                 muted={!isActive}
               />

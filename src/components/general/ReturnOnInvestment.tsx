@@ -102,7 +102,10 @@ function getChartConfig(
           position: 'right',
           formatter(params: CallbackDataParams) {
             const activeIndex: number | undefined = params.encode?.x[0];
-            const value: number | null = activeIndex ? Number(params.value?.[activeIndex]) : null;
+            const value =
+              activeIndex != null && Array.isArray(params.value)
+                ? Number(params.value[activeIndex])
+                : null;
 
             return value ? `${formatNumber(value)} ${unit}` : '';
           },

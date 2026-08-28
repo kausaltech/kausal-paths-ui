@@ -82,7 +82,9 @@ function Page(props: PageProps) {
   if (error) {
     logApolloError(error, { component: 'Page' });
     if (isLocalDev) {
-      throw error;
+      throw error instanceof globalThis.Error
+        ? error
+        : new globalThis.Error('GraphQL request failed', { cause: error });
     } else {
       return <Error statusCode={500} />;
     }

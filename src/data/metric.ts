@@ -336,14 +336,14 @@ export class DimensionalMetric {
     let opts: { id: string; label: string; selected: boolean }[];
 
     if (dim.groups.length) {
-      const selected = choice?.groups || [];
+      const selected = choice?.groups ?? [];
       opts = dim.groups.map((grp) => ({
         id: grp.id,
         label: grp.label,
         selected: selected.some((grpId) => grp.id === grpId),
       }));
     } else {
-      const selected = choice?.categories || [];
+      const selected = choice?.categories ?? [];
       opts = dim.categories.map((cat) => ({
         id: cat.id,
         label: cat.label,
@@ -529,8 +529,8 @@ export class DimensionalMetric {
      * goal-based default filters. If so, we should choose another
      * dimension.
      */
-    if (defaultConfig.dimensionId && cubeDefault.hasOwnProperty(defaultConfig.dimensionId)) {
-      const firstPossible = this.dimensions.find((dim) => !cubeDefault.hasOwnProperty(dim.id));
+    if (defaultConfig.dimensionId && Object.hasOwn(cubeDefault, defaultConfig.dimensionId)) {
+      const firstPossible = this.dimensions.find((dim) => !Object.hasOwn(cubeDefault, dim.id));
       defaultConfig.dimensionId = firstPossible?.id;
     }
     return defaultConfig;
@@ -652,9 +652,7 @@ export class DimensionalMetric {
       const cat = row.dimCats[dimensionId];
       const rowId = useGroups ? cat.group! : cat.id;
       let val = catVals.get(rowId);
-      if (val === undefined) {
-        val = 0;
-      }
+      val ??= 0;
       const rowVal = row.value;
       // FIXME: What if metric can't be summed?
       if (rowVal !== null) val += rowVal;

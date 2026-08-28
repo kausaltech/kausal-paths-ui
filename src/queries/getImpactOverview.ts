@@ -87,6 +87,7 @@ export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
       effectDim {
         id
         name
+        measureDatapointYears
         dimensions {
           id
           label
@@ -120,7 +121,9 @@ export const IMPACT_OVERVIEW_DETAIL_FRAGMENT = gql`
         unit {
           id
           htmlShort
+          htmlLong
           short
+          long
         }
         stackable
         normalizedBy {

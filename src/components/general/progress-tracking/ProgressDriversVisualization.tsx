@@ -8,6 +8,7 @@ import type {
   EChartsCoreOption,
   EChartsOption,
 } from 'echarts';
+import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 
 import { Chart } from '@common/components/Chart';
 import { useTheme } from '@common/themes';
@@ -344,7 +345,7 @@ export function ProgressDriversVisualization({
         textStyle: {
           width: 20,
         },
-        formatter: function (params: DefaultLabelFormatterCallbackParams[]) {
+        formatter: function (params: TopLevelFormatterParams) {
           if (!(params instanceof Array)) {
             return '';
           }

@@ -1,6 +1,6 @@
 import { Container, Typography } from '@mui/material';
 
-export default function ErrorMessage({ message }) {
+export default function ErrorMessage({ message }: { message: string }) {
   return (
     <Container fixed maxWidth="xl">
       <Typography variant="h2" className="p-5">

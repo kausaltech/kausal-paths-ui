@@ -60,7 +60,7 @@ const ActionsComparison = ({
         impact:
           action.impactMetric?.forecastValues.find(
             (dataPoint) => dataPoint.year === displayYears[1]
-          )?.value || 0,
+          )?.value ?? 0,
         cumulativeImpact,
       };
     });

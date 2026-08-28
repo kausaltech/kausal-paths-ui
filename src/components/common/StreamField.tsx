@@ -61,7 +61,16 @@ export function StreamField({ block }: Props) {
     case 'CardListBlock':
       return (
         <CardListBlock
-          cards={block.cards?.filter((card) => !!card?.title) ?? []}
+          cards={
+            block.cards
+              ?.filter(
+                (card): card is NonNullable<typeof card> & { title: string } => !!card?.title
+              )
+              .map((card) => ({
+                title: card.title,
+                shortDescription: card.shortDescription ?? undefined,
+              })) ?? []
+          }
           title={block.title ?? undefined}
         />
       );
