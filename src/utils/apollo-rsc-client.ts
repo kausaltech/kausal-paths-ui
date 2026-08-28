@@ -1,4 +1,5 @@
 import { headers as getHeaders } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { registerApolloClient } from '@apollo/client-integration-nextjs';
@@ -33,12 +34,21 @@ export const { getClient } = registerApolloClient(async () => {
     headers.get(CURRENT_LANGUAGE_HEADER) ?? headers.get(DEFAULT_LANGUAGE_HEADER) ?? undefined;
 
   const accessToken = await getAccessToken();
+  const originalUrl = headers.get('x-url');
 
   const opts: ApolloClientOpts = {
     instanceHostname,
     instanceIdentifier,
     locale,
     authorizationToken: accessToken ?? undefined,
+    onInvalidToken: () => {
+      let returnTo = '/';
+      if (originalUrl) {
+        const url = new URL(originalUrl);
+        returnTo = `${url.pathname}${url.search}`;
+      }
+      redirect(`/api/auth/recover-invalid-token?returnTo=${encodeURIComponent(returnTo)}`);
+    },
   };
 
   const { link, cache } = getApolloClientConfig(opts);

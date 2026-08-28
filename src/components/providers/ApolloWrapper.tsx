@@ -8,6 +8,7 @@ import {
 
 import { getApolloClientConfig } from '@/common/apollo-config';
 import { editorPreviewModeVar } from '@/components/model-editor/queries';
+import { recoverFromInvalidToken } from '@/lib/invalid-token-recovery';
 
 type Props = {
   locale: string;
@@ -45,6 +46,7 @@ export function ApolloWrapper({ locale, instanceIdentifier, instanceHostname, ch
     instanceIdentifier,
     instanceHostname,
     previewMode: detectPreviewMode,
+    onInvalidToken: recoverFromInvalidToken,
   };
   const clientConfig = getApolloClientConfig(opts);
   return (

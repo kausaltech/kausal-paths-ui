@@ -2,9 +2,10 @@
 // are dead — the only recovery is to drop them and reload. After the reload:
 //   - public page → renders anonymously.
 //   - protected page → proxy auth gate redirects to /auth/sign-in.
-// Both the Apollo error link (client-side GraphQL failures) and the Next.js
-// error boundaries (RSC/SSR failures that surface to the browser) call into
-// this so the recovery is identical regardless of where the failure originated.
+// The Apollo error link handles client-side GraphQL failures. The Next.js
+// error boundaries provide a fallback for errors whose messages reach the
+// browser; production RSC errors are recovered before that point by the RSC
+// Apollo client and /api/auth/recover-invalid-token Route Handler.
 //
 // Sign-out goes through the better-auth client API (same path used by
 // PublicUserNav) rather than a raw fetch — the client wrapper sets the

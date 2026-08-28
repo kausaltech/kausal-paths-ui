@@ -1,8 +1,7 @@
 import { ApolloLink, HttpLink, type InMemoryCacheConfig } from '@apollo/client';
-import { CombinedGraphQLErrors } from '@apollo/client/errors';
-import { ErrorLink } from '@apollo/client/link/error';
 import { type DirectiveNode, Kind, type VariableDefinitionNode } from 'graphql';
 import type { Logger } from 'pino';
+import { tap } from 'rxjs';
 
 import type { DefaultApolloContext } from '@common/apollo';
 import { type DirectiveArg, createOperationDirective } from '@common/apollo/directives';
@@ -13,7 +12,6 @@ import { getPathsGraphQLUrl, getRuntimeConfig } from '@common/env';
 import type { CurrentURL } from '@common/utils';
 
 import possibleTypes from '@/common/__generated__/possible_types.json';
-import { recoverFromInvalidToken } from '@/lib/invalid-token-recovery';
 import {
   INSTANCE_HOSTNAME_HEADER,
   INSTANCE_IDENTIFIER_HEADER,
@@ -61,6 +59,8 @@ export type ApolloClientOpts = {
   currentURL?: CurrentURL;
   clientCookies?: string;
   logger?: Logger;
+  /** Called when the backend rejects the request's OAuth access token. */
+  onInvalidToken?: () => void;
   /**
    * Called per operation to decide whether to attach `preview` to the
    * `@instance` directive. Returning a mode forces the backend's Phase-4
@@ -254,18 +254,20 @@ async function apolloFetch(url: RequestInfo | URL, init?: RequestInit) {
   return await fetch(url, init);
 }
 
-// Catches client-side GraphQL invalid_token errors and delegates to the
-// shared recovery (sign-out + reload). RSC/SSR failures don't reach here
-// — they surface as render errors and are handled by the Next.js error
-// boundaries, which call into the same recovery helper.
-const authErrorLink = new ErrorLink(({ error }) => {
-  if (!CombinedGraphQLErrors.is(error)) return;
-  const isInvalidToken = error.errors.some(
-    (e) => e.extensions?.code === 'invalid_token' || e.message.startsWith('invalid_token')
+const makeAuthErrorLink = (opts: ApolloClientOpts) =>
+  new ApolloLink((operation, forward) =>
+    forward(operation).pipe(
+      tap((result) => {
+        const isInvalidToken = result.errors?.some(
+          (error) =>
+            error.extensions?.code === 'invalid_token' || error.message.startsWith('invalid_token')
+        );
+        // The browser callback starts an async sign-out. The RSC callback throws
+        // Next.js's redirect signal, which RxJS propagates as the operation error.
+        if (isInvalidToken) opts.onInvalidToken?.();
+      })
+    )
   );
-  if (!isInvalidToken) return;
-  recoverFromInvalidToken();
-});
 
 export function getApolloClientConfig(opts: ApolloClientOpts): {
   link: ApolloLink;
@@ -286,7 +288,7 @@ export function getApolloClientConfig(opts: ApolloClientOpts): {
   return {
     link: ApolloLink.from([
       retryLink,
-      authErrorLink,
+      makeAuthErrorLink(opts),
       createSentryLink(uri),
       logOperationLink,
       localeMiddleware,

@@ -175,8 +175,20 @@ Skipped on `/auth/*` paths to avoid racing with the sign-in/out flow.
 
 If the refresh token is expired or revoked, `auth.api.getAccessToken`
 throws `FAILED_TO_GET_ACCESS_TOKEN`. We swallow the error (logged to
-Sentry at debug level) and proceed. The user's next authenticated
-request will surface the 401 or hit the sign-in gate.
+Sentry at debug level) and proceed. If the backend subsequently rejects
+the stored access token with `invalid_token`, client-side GraphQL requests
+sign out through the better-auth client. For an RSC render, the shared Apollo
+auth-error link invokes a server-only callback that redirects through
+`/api/auth/recover-invalid-token`; that Route Handler calls the server-side
+`auth.api.signOut()`, forwards better-auth's expired cookies, and returns to the
+original URL. A public page then renders anonymously, while the proxy redirects
+a protected page to `/auth/sign-in`.
+
+This server-side handoff is necessary because RSC code cannot write cookies,
+and production Next.js responses redact server error messages before client
+error boundaries receive them. Recovery clears the three better-auth cookies
+(`session_token`, `session_data`, and `account_data`) but deliberately leaves
+the independent `paths_api_sessionid` model-state cookie intact.
 
 **Multi-pod rotation race (accepted):** Pods have no stickiness, and
 account state lives only in the cookie (no DB row to lock on). If two
