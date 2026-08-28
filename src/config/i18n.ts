@@ -3,7 +3,6 @@ import { headers } from 'next/headers';
 import * as Sentry from '@sentry/nextjs';
 import { getRequestConfig } from 'next-intl/server';
 
-import { DEFAULT_LANGUAGE_HEADER } from '@common/constants/headers.mjs';
 
 import { CURRENT_LANGUAGE_HEADER } from '@/common/const';
 

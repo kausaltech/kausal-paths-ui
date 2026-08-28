@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import  { useMemo, useState } from 'react';
 
 import { Global, css, useTheme } from '@emotion/react';
 import type { Theme } from '@emotion/react';

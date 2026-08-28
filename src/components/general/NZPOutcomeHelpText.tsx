@@ -1,4 +1,3 @@
-import React from 'react';
 
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 

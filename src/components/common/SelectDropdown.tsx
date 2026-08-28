@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 import { FormControl } from '@mui/material';
 import type { Theme } from '@emotion/react';

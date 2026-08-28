@@ -1,6 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
 
 import styled from '@common/themes/styled';
 

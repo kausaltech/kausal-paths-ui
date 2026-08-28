@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Box, CircularProgress, Container } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 
 import { useTranslations } from 'next-intl';
 

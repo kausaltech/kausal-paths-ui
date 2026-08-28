@@ -340,7 +340,7 @@ function OrgLogo(props: {
 
 function SiteFooter(props: SiteFooterProps) {
   const { t } = useTranslation();
-  const theme = useTheme() as Theme;
+  const theme = useTheme();
   const site = useSite();
 
   const { additionalLinks } = props;

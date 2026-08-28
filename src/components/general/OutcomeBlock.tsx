@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import {  useSearchParams } from 'next/navigation';
 
 import { Box, Skeleton, useTheme } from '@mui/material';
 

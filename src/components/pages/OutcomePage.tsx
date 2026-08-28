@@ -100,7 +100,7 @@ export default function OutcomePage(props: OutcomePageProps) {
       </PageHero>
       <Container fixed maxWidth="xl" sx={{ py: 1 }}>
         <Box my={3}>
-          <StyledTitle as={!!pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
+          <StyledTitle as={pageLeadTitle ? 'h2' : undefined}>{page.title}</StyledTitle>
           {error && <InlineError error={error} />}
           {(!error || outcomeNode) && (
             <OutcomeBlock

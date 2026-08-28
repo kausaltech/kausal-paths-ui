@@ -1,4 +1,3 @@
-import React from 'react';
 
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
 

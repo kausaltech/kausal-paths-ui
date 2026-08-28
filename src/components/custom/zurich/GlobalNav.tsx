@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import  { useMemo, useState } from 'react';
 import Script from 'next/script';
 
 import * as Icon from 'react-bootstrap-icons';

@@ -1,4 +1,3 @@
-import React from 'react';
 
 import styled from '@common/themes/styled';
 
