@@ -219,6 +219,7 @@ export default function LangLayout(props: Props) {
               locale={params.lang}
               instanceIdentifier={ctx.instanceIdentifier}
               instanceHostname={ctx.instanceHostname}
+              basePath={ctx.basePath}
             >
               <InstanceProviders
                 siteContext={siteContext}
