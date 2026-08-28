@@ -50,7 +50,7 @@ export function useUpdateNodeMutation() {
           // pass the new head and don't trip the stale-check.
           refetchQueries: ['EditorPublishState'],
         });
-        const payload = result.data?.instanceEditor.updateNode;
+        const payload = result.data?.instanceEditor.nodeEditor.update;
         if (payload?.__typename === 'Node' || payload?.__typename === 'ActionNode') {
           // NodeGraph query uses fetchPolicy: 'no-cache', so propagate the
           // updated fields via the reactive-var overlay.

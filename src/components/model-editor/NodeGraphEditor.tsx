@@ -283,7 +283,10 @@ function FlowEditor(props: {
     setOverlay(null);
   }
 
-  const nodeMap = useMemo(() => new Map(props.nodes.map((n) => [n.id, n])), [props.nodes]);
+  const nodeMap = useMemo(
+    () => new Map(props.nodes.flatMap((node) => [[node.id, node] as const, [node.uuid, node]])),
+    [props.nodes]
+  );
 
   // Keep the uuid → name lookup current so the constraint-violations notice
   // can name the nodes a conflict points at (conflicts reference UUIDs only).
@@ -301,7 +304,7 @@ function FlowEditor(props: {
     [props.nodes]
   );
 
-  const allNodeIdsSet = useMemo(() => new Set(props.nodes.map((n) => n.id)), [props.nodes]);
+  const allNodeUuids = useMemo(() => new Set(props.nodes.map((n) => n.uuid)), [props.nodes]);
 
   const autoSnippedEdgeIds = useMemo(
     () => computeSnippedEdgeIds(props.edges, props.nodes),
@@ -310,13 +313,15 @@ function FlowEditor(props: {
 
   const upstreamFilteredNodeIds = useMemo(() => {
     if (filters.outcomeId === null) return null;
-    return computeUpstreamNodeIds(new Set([filters.outcomeId]), props.edges, allNodeIdsSet);
-  }, [filters.outcomeId, props.edges, allNodeIdsSet]);
+    const outcomeUuid = nodeMap.get(filters.outcomeId)?.uuid;
+    if (!outcomeUuid) return new Set<string>();
+    return computeUpstreamNodeIds(new Set([outcomeUuid]), props.edges, allNodeUuids);
+  }, [filters.outcomeId, props.edges, allNodeUuids, nodeMap]);
 
   const visibleNodes = useMemo(
     () =>
       props.nodes.filter(
-        (node) => upstreamFilteredNodeIds === null || upstreamFilteredNodeIds.has(node.id)
+        (node) => upstreamFilteredNodeIds === null || upstreamFilteredNodeIds.has(node.uuid)
       ),
     [props.nodes, upstreamFilteredNodeIds]
   );
@@ -328,27 +333,27 @@ function FlowEditor(props: {
           !autoSnippedEdgeIds.has(edge.id) &&
           !userHiddenEdgeIds.has(edge.id) &&
           (upstreamFilteredNodeIds === null ||
-            (upstreamFilteredNodeIds.has(edge.fromRef.nodeId) &&
-              upstreamFilteredNodeIds.has(edge.portRef.nodeId)))
+            (upstreamFilteredNodeIds.has(edge.fromRef.nodeUuid) &&
+              upstreamFilteredNodeIds.has(edge.portRef.nodeUuid)))
       ),
     [props.edges, autoSnippedEdgeIds, userHiddenEdgeIds, upstreamFilteredNodeIds]
   );
 
-  const visibleNodeIdsSet = useMemo(() => new Set(visibleNodes.map((n) => n.id)), [visibleNodes]);
+  const visibleNodeUuids = useMemo(() => new Set(visibleNodes.map((n) => n.uuid)), [visibleNodes]);
 
   const snippedConnectionsByNodeId = useMemo(() => {
     const refs = new Map<string, Map<string, HiddenContextRef[]>>();
     for (const edge of props.edges) {
       if (!autoSnippedEdgeIds.has(edge.id)) continue;
-      const srcNode = nodeMap.get(edge.fromRef.nodeId);
-      const tgtNode = nodeMap.get(edge.portRef.nodeId);
+      const srcNode = nodeMap.get(edge.fromRef.nodeUuid);
+      const tgtNode = nodeMap.get(edge.portRef.nodeUuid);
       if (!srcNode || !tgtNode) continue;
-      if (!visibleNodeIdsSet.has(edge.portRef.nodeId)) continue;
-      const perPort = refs.get(edge.portRef.nodeId) ?? new Map<string, HiddenContextRef[]>();
+      if (!visibleNodeUuids.has(edge.portRef.nodeUuid)) continue;
+      const perPort = refs.get(edge.portRef.nodeUuid) ?? new Map<string, HiddenContextRef[]>();
       const list = perPort.get(edge.portRef.portId) ?? [];
       list.push({ id: srcNode.id, label: srcNode.name, color: getNodeBorderColor(srcNode) });
       perPort.set(edge.portRef.portId, list);
-      refs.set(edge.portRef.nodeId, perPort);
+      refs.set(edge.portRef.nodeUuid, perPort);
     }
     for (const perPort of refs.values()) {
       for (const list of perPort.values()) {
@@ -356,7 +361,7 @@ function FlowEditor(props: {
       }
     }
     return refs;
-  }, [props.edges, autoSnippedEdgeIds, nodeMap, visibleNodeIdsSet]);
+  }, [props.edges, autoSnippedEdgeIds, nodeMap, visibleNodeUuids]);
 
   const highlightedNodeIds = useMemo(() => new Set<string>(), []);
 
@@ -646,16 +651,16 @@ export default function NodeGraphEditor() {
   // Keeps draftHeadTokenVar current while the graph is open.
   useEditorPublishState();
   // Seeds init-time node status and asynchronously fetches compute-phase status.
-  useNodeStatuses(data.instance.nodes);
+  useNodeStatuses(data.instance.model.nodes);
   const editor = data.instance.editor;
 
   const nodesWithOverrides = useMemo(() => {
-    if (Object.keys(overrides).length === 0) return data.instance.nodes;
-    return data.instance.nodes.map((node) => {
+    if (Object.keys(overrides).length === 0) return data.instance.model.nodes;
+    return data.instance.model.nodes.map((node) => {
       const override = overrides[node.id];
       return override ? applyOverride(node, override) : node;
     });
-  }, [data.instance.nodes, overrides]);
+  }, [data.instance.model.nodes, overrides]);
 
   if (!editor) {
     return (

@@ -23,7 +23,7 @@ export function useDeleteNode() {
           refetchQueries: ['NodeGraph', 'EditorPublishState'],
           awaitRefetchQueries: true,
         });
-        const payload = result.data?.instanceEditor.deleteNode;
+        const payload = result.data?.instanceEditor.nodeEditor.delete;
         if (payload && payload.messages.length > 0) {
           const message = payload.messages.map((m) => m.message).join('; ');
           throw new Error(message || 'Failed to delete node');

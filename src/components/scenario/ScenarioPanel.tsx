@@ -40,18 +40,20 @@ export const GET_INSTANCE_GOAL_OUTCOME: TypedDocumentNode<
   query InstanceGoalOutcome($goal: ID!) {
     instance {
       id
-      goals(id: $goal) {
-        id
-        values {
-          year
-          goal
-          actual
-          isForecast
-          isInterpolated
-        }
-        unit {
+      model {
+        goals(id: $goal) {
           id
-          htmlShort
+          values {
+            year
+            goal
+            actual
+            isForecast
+            isInterpolated
+          }
+          unit {
+            id
+            htmlShort
+          }
         }
       }
     }
@@ -173,9 +175,9 @@ const ScenarioPanel = () => {
   const availableNormalizations =
     site.availableNormalizations.length > 0 ? site.availableNormalizations : [];
 
-  const nrGoals = instance.goals.length;
+  const nrGoals = instance.model.goals.length;
   const yearsWithGoals =
-    data?.instance?.goals?.[0]?.values
+    data?.instance?.model.goals?.[0]?.values
       .filter((value) => value.goal !== null)
       .map((value) => value.year) ?? [];
 
@@ -256,10 +258,10 @@ const ScenarioPanel = () => {
                   <GoalSelector />
                 </Grid>
               )}
-              {activeGoal && data?.instance?.goals?.[0] && (
+              {activeGoal && data?.instance?.model.goals?.[0] && (
                 <Grid size={{ xs: 12, md: 6 }}>
                   <ScenarioOutcome
-                    goalOutcome={data?.instance?.goals?.[0]}
+                    goalOutcome={data?.instance?.model.goals?.[0]}
                     activeGoal={activeGoal}
                     targetYear={yearRange[1]}
                     variant="compact"

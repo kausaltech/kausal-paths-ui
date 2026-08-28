@@ -87,7 +87,7 @@ export function useDatasetImport({
         id: m.id,
         label: m.label,
         name: m.name,
-        unit: m.unit,
+        unit: m.unitInfo?.standard ?? '',
       })),
       existingPoints: dataset.dataPoints.map((dp) => ({
         metricId: dp.metric.id,

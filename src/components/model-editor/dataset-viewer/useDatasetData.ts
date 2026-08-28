@@ -53,7 +53,10 @@ const GET_DATASET_PORT_DATA: TypedDocumentNode<
                     id
                     name
                     label
-                    unit
+                    unitInfo {
+                      id
+                      standard
+                    }
                   }
                 }
                 metric {

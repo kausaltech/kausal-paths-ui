@@ -351,7 +351,9 @@ export default function DatasetList() {
                 </TableCell>
                 <TableCell align="right">
                   {ds.metrics.length > 0 ? (
-                    <Tooltip title={ds.metrics.map((m) => m.unit || m.label).join(', ')}>
+                    <Tooltip
+                      title={ds.metrics.map((m) => m.unitInfo?.standard || m.label).join(', ')}
+                    >
                       <Chip label={ds.metrics.length} size="small" />
                     </Tooltip>
                   ) : (

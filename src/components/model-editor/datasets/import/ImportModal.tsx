@@ -116,7 +116,7 @@ export default function ImportModal({
         id: m.id,
         label: m.label,
         name: m.name,
-        unit: m.unit,
+        unit: m.unitInfo?.standard ?? '',
       })),
       existingPoints: dataset.dataPoints.map((dp) => ({
         metricId: dp.metric.id,
@@ -304,7 +304,7 @@ export default function ImportModal({
                   >
                     {dataset.metrics.map((m) => (
                       <MenuItem key={m.id} value={m.id}>
-                        {m.unit ? `${m.label} (${m.unit})` : m.label}
+                        {m.unitInfo?.standard ? `${m.label} (${m.unitInfo.standard})` : m.label}
                       </MenuItem>
                     ))}
                   </Select>

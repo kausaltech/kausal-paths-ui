@@ -64,18 +64,20 @@ const GET_INSTANCE_CONTEXT: InstanceContextDocument = gql`
           }
         }
       }
-      goals {
-        id
-        label
-        default
-        disabled
-        outcomeNode {
+      model {
+        goals {
           id
-        }
-        dimensions {
-          dimension
-          categories
-          groups
+          label
+          default
+          disabled
+          outcomeNode {
+            id
+          }
+          dimensions {
+            dimension
+            categories
+            groups
+          }
         }
       }
       actionListPage {

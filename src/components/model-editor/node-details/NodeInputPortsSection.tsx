@@ -121,7 +121,7 @@ function boundDatasetUnit(port: InputPort): string | null {
   for (const binding of port.bindings) {
     if (binding.__typename !== 'DatasetPortType') continue;
     const metric = binding.dataset?.metrics.find((m) => m.id === binding.metric?.id);
-    if (metric?.unit) return metric.unit;
+    if (metric?.unitInfo?.standard) return metric.unitInfo.standard;
   }
   return null;
 }
@@ -166,10 +166,6 @@ function PortTooltipContent({
         label={t('nodes-port-required-dims')}
         value={port.requiredDimensions.length ? port.requiredDimensions.join(', ') : '—'}
       />
-      <PortInfoRow
-        label={t('nodes-port-supported-dims')}
-        value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
-      />
       {shape && (
         <>
           <PortInfoRow
@@ -205,7 +201,6 @@ type PortSettingsFields = {
   quantity: string | null;
   unit: string | null;
   requiredDimensions: string[];
-  supportedDimensions: string[];
 };
 
 /**
@@ -224,7 +219,7 @@ function inputPortsToInput(ports: readonly InputPort[]): InputPortInput[] {
     unit: p.unit?.standard ?? null,
     multi: p.multi ?? false,
     requiredDimensions: [...p.requiredDimensions],
-    supportedDimensions: [...p.supportedDimensions],
+    supportedDimensions: null,
   }));
 }
 
@@ -260,9 +255,6 @@ function InputPortSettingsDialog({
   const [requiredDimensions, setRequiredDimensions] = useState<string[]>(
     initial?.requiredDimensions ?? []
   );
-  const [supportedDimensions, setSupportedDimensions] = useState<string[]>(
-    initial?.supportedDimensions ?? []
-  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -284,7 +276,6 @@ function InputPortSettingsDialog({
           quantity: quantity.trim() || null,
           unit: unit.trim() || null,
           requiredDimensions,
-          supportedDimensions,
         }),
       t('common-save-failed')
     );
@@ -354,11 +345,6 @@ function InputPortSettingsDialog({
             label={t('nodes-port-required-dims')}
             value={requiredDimensions}
             onChange={setRequiredDimensions}
-          />
-          <DimensionsSelect
-            label={t('nodes-port-supported-dims')}
-            value={supportedDimensions}
-            onChange={setSupportedDimensions}
           />
         </Box>
       </DialogContent>
@@ -641,7 +627,7 @@ export default function NodeInputPortsSection({
         const hasConnections = connectedEdges.length > 0 || datasetBindings.length > 0;
         const singleSourceNode =
           connectedEdges.length === 1
-            ? (nodeMap.get(connectedEdges[0].fromRef.nodeId) ?? null)
+            ? (nodeMap.get(connectedEdges[0].fromRef.nodeUuid) ?? null)
             : null;
         // For a port with no explicit label, derive the name the
         // formula/runtime references. Formula-node conventions:
@@ -747,8 +733,8 @@ export default function NodeInputPortsSection({
               {hasConnections ? (
                 <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
                   {connectedEdges.map((e) => {
-                    const sourceNode = nodeMap.get(e.fromRef.nodeId);
-                    const highlighted = hoveredNodeId === e.fromRef.nodeId;
+                    const sourceNode = nodeMap.get(e.fromRef.nodeUuid);
+                    const highlighted = hoveredNodeId === sourceNode?.id;
                     return (
                       <Box
                         key={e.id}
@@ -766,8 +752,8 @@ export default function NodeInputPortsSection({
                         }}
                       >
                         <ConnectedNodeChip
-                          nodeId={e.fromRef.nodeId}
-                          label={sourceNode?.name ?? e.fromRef.nodeId}
+                          nodeId={sourceNode?.id ?? e.fromRef.nodeUuid}
+                          label={sourceNode?.name ?? e.fromRef.nodeUuid}
                           style={
                             sourceNode ? getStyleForNode(sourceNode) : getNodeStyle('', '', false)
                           }
@@ -962,7 +948,6 @@ export default function NodeInputPortsSection({
             quantity: settingsPort.quantity ?? null,
             unit: settingsPort.unit?.standard ?? null,
             requiredDimensions: [...settingsPort.requiredDimensions],
-            supportedDimensions: [...settingsPort.supportedDimensions],
           }}
           onClose={() => setSettingsPortId(null)}
           onSubmit={(fields) => saveSettingsPort(settingsPort.id, fields)}
@@ -1042,8 +1027,8 @@ export default function NodeInputPortsSection({
                   datasetsDisabledReason={singleDatasetLimitReason(editingPort)}
                   currentSources={(incomingByPort.get(editingPort.id) ?? []).map((e) => ({
                     edgeId: e.id,
-                    node: nodeMap.get(e.fromRef.nodeId) ?? null,
-                    nodeRef: e.fromRef.nodeId,
+                    node: nodeMap.get(e.fromRef.nodeUuid) ?? null,
+                    nodeRef: nodeMap.get(e.fromRef.nodeUuid)?.id ?? e.fromRef.nodeUuid,
                   }))}
                   removingEdgeId={removingEdgeId}
                   onSelectNode={(id) => handleSelectNode(id)}

@@ -26,7 +26,6 @@ import Icon from '@/components/common/icon';
 import DimensionalNodeVisualisation from '@/components/general/DimensionalNodeVisualisation';
 import NodeLinks from '@/components/general/NodeLinks';
 import ScenarioPanel from '@/components/scenario/ScenarioPanel';
-import { useSiteWithSetter } from '@/context/site';
 import dimensionalNodePlotFragment from '@/queries/dimensionalNodePlot';
 
 const HeaderSection = styled.div<{ $color?: string }>`
@@ -119,7 +118,6 @@ const GET_NODE_PAGE_CONTENT: TypedDocumentNode<NodePageQuery, NodePageQueryVaria
 
 export default function NodePage() {
   const params = useParams<{ slug: string }>();
-  const [site] = useSiteWithSetter();
   const { t } = useTranslation();
   const slug = params.slug;
   const yearRange = useReactiveVar(yearRangeVar);

@@ -60,7 +60,7 @@ const GoalSelector = () => {
   }, []);
 
   const handleChange = (event: SelectChangeEvent) => {
-    const selectedGoal = instance.goals.find((goal) => goal.id === event.target.value);
+    const selectedGoal = instance.model.goals.find((goal) => goal.id === event.target.value);
     if (selectedGoal) {
       selectGoal(selectedGoal);
     }
@@ -73,7 +73,7 @@ const GoalSelector = () => {
         <MenuItem disabled value="">
           {t('change-target')}
         </MenuItem>
-        {instance.goals.map((goal) => (
+        {instance.model.goals.map((goal) => (
           <MenuItem key={goal.id} value={goal.id} disabled={goal.disabled}>
             <div>
               <span>{goal.label}</span>

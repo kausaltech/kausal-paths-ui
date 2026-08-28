@@ -237,9 +237,11 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
           ...EditorNodeEdge
         }
       }
-      nodes {
-        id
-        ...EditorNodeFields
+      model {
+        nodes {
+          id
+          ...EditorNodeFields
+        }
       }
     }
   }
@@ -352,14 +354,13 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
             }
           }
           requiredDimensions
-          supportedDimensions
           bindings {
             __typename
             ... on DatasetPortType {
               id
               tags
               portRef {
-                nodeId
+                nodeUuid
                 portId
               }
               dataset {
@@ -369,7 +370,10 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
                 metrics {
                   id
                   label
-                  unit
+                  unitInfo {
+                    id
+                    standard
+                  }
                 }
               }
               metric {
@@ -384,7 +388,7 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
               id
               tags
               portRef {
-                nodeId
+                nodeUuid
                 portId
               }
               transformations {
@@ -433,12 +437,10 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
     tags
     fromRef {
       nodeUuid
-      nodeId
       portId
     }
     portRef {
       nodeUuid
-      nodeId
       portId
     }
     transformations {
@@ -768,8 +770,10 @@ export const DELETE_EDGE: TypedDocumentNode<DeleteEdgeMutation, DeleteEdgeMutati
 export const DELETE_NODE: TypedDocumentNode<DeleteNodeMutation, DeleteNodeMutationVariables> = gql`
   mutation DeleteNode($instanceId: ID!, $nodeId: ID!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
-      deleteNode(nodeId: $nodeId) {
-        ...EditorOperationInfoFields
+      nodeEditor(nodeId: $nodeId) {
+        delete {
+          ...EditorOperationInfoFields
+        }
       }
     }
   }
@@ -817,33 +821,35 @@ export const CLEAR_NODE_LAYOUTS: TypedDocumentNode<
 export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutationVariables> = gql`
   mutation UpdateNode($instanceId: ID!, $nodeId: ID!, $input: UpdateNodeInput!, $version: UUID) {
     instanceEditor(instanceId: $instanceId, version: $version) {
-      updateNode(nodeId: $nodeId, input: $input) {
-        __typename
-        ... on Node {
-          id
-          name
-          shortName
-          description
-          color
-          isVisible
-          isOutcome
-          editor {
-            nodeGroup
+      nodeEditor(nodeId: $nodeId) {
+        update(input: $input) {
+          __typename
+          ... on Node {
+            id
+            name
+            shortName
+            description
+            color
+            isVisible
+            isOutcome
+            editor {
+              nodeGroup
+            }
           }
-        }
-        ... on ActionNode {
-          id
-          name
-          shortName
-          description
-          color
-          isVisible
-          editor {
-            nodeGroup
+          ... on ActionNode {
+            id
+            name
+            shortName
+            description
+            color
+            isVisible
+            editor {
+              nodeGroup
+            }
           }
-        }
-        ... on OperationInfo {
-          ...EditorOperationInfoFields
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
         }
       }
     }
@@ -920,13 +926,15 @@ export const NODE_STATUSES: TypedDocumentNode<NodeStatusesQuery, NodeStatusesQue
   query NodeStatuses {
     instance {
       id
-      nodes {
-        id
-        editor {
-          status(compute: true)
-          errors(compute: true) {
-            phase
-            message
+      model {
+        nodes {
+          id
+          editor {
+            status(compute: true)
+            errors(compute: true) {
+              phase
+              message
+            }
           }
         }
       }

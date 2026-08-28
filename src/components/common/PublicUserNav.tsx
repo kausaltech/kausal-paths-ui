@@ -27,8 +27,10 @@ const CAN_EDIT_MODEL: TypedDocumentNode<CanEditModelData, CanEditModelQueryVaria
   query CanEditModel {
     instance {
       id
-      nodes {
-        id
+      model {
+        nodes {
+          id
+        }
       }
     }
   }
@@ -37,7 +39,7 @@ const CAN_EDIT_MODEL: TypedDocumentNode<CanEditModelData, CanEditModelQueryVaria
 type CanEditModelData = {
   instance: {
     id: string;
-    nodes: { id: string }[];
+    model: { nodes: { id: string }[] };
   };
 };
 
@@ -65,7 +67,7 @@ export default function PublicUserNav() {
 
   if (!session?.user) return null;
 
-  const canEditModel = (modelData?.instance.nodes.length ?? 0) > 0;
+  const canEditModel = (modelData?.instance.model.nodes.length ?? 0) > 0;
 
   const user = session.user;
   const firstName = getFirstName(user.name, user.email);

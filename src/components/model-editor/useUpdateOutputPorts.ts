@@ -42,7 +42,7 @@ function useUpdateNodePorts() {
           refetchQueries: ['NodeGraph', 'EditorPublishState'],
           awaitRefetchQueries: true,
         });
-        const payload = result.data?.instanceEditor.updateNode;
+        const payload = result.data?.instanceEditor.nodeEditor.update;
         if (payload?.__typename === 'OperationInfo') {
           const message = payload.messages.map((m) => m.message).join('; ');
           throw new Error(message || failureMessage);

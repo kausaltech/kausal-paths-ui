@@ -49,25 +49,12 @@
       "count": 3
     }
   },
-  "src/components/FullScreenLayout.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    }
-  },
   "src/components/common/ErrorMessage.tsx": {
     "react/prop-types": {
       "count": 1
     }
   },
-  "src/components/common/Footer.tsx": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    }
-  },
   "src/components/common/IntroModal.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    },
     "react-hooks/set-state-in-effect": {
       "count": 1
     }
@@ -92,20 +79,7 @@
       "count": 1
     }
   },
-  "src/components/common/ScenarioBadge.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    }
-  },
-  "src/components/common/SelectDropdown.tsx": {
-    "@typescript-eslint/consistent-type-imports": {
-      "count": 1
-    }
-  },
   "src/components/custom/zurich/Footer.tsx": {
-    "react/jsx-no-target-blank": {
-      "count": 3
-    },
     "react/no-unknown-property": {
       "count": 3
     }
@@ -162,11 +136,6 @@
   },
   "src/components/graphs/MacGraph.tsx": {
     "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
-  "src/components/pages/OutcomePage.tsx": {
-    "no-extra-boolean-cast": {
       "count": 1
     }
   },

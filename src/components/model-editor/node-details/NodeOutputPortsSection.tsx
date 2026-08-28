@@ -247,7 +247,7 @@ export default function NodeOutputPortsSection({
         const connectedEdges = outgoingByPort.get(port.id) ?? [];
         const singleTargetNode =
           connectedEdges.length === 1
-            ? (nodeMap.get(connectedEdges[0].portRef.nodeId) ?? null)
+            ? (nodeMap.get(connectedEdges[0].portRef.nodeUuid) ?? null)
             : null;
         // For a port with no explicit label and exactly one outgoing edge,
         // use the name downstream formulas reference this output by:
@@ -333,8 +333,8 @@ export default function NodeOutputPortsSection({
               <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
                 {connectedEdges.length > 0 ? (
                   connectedEdges.map((e) => {
-                    const targetNode = nodeMap.get(e.portRef.nodeId);
-                    const highlighted = hoveredNodeId === e.portRef.nodeId;
+                    const targetNode = nodeMap.get(e.portRef.nodeUuid);
+                    const highlighted = hoveredNodeId === targetNode?.id;
                     return (
                       <Box
                         key={e.id}
@@ -350,8 +350,8 @@ export default function NodeOutputPortsSection({
                         }
                       >
                         <ConnectedNodeChip
-                          nodeId={e.portRef.nodeId}
-                          label={targetNode?.name ?? e.portRef.nodeId}
+                          nodeId={targetNode?.id ?? e.portRef.nodeUuid}
+                          label={targetNode?.name ?? e.portRef.nodeUuid}
                           style={
                             targetNode ? getStyleForNode(targetNode) : getNodeStyle('', '', false)
                           }

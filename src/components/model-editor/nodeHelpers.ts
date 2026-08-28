@@ -18,9 +18,8 @@ export type OutputPort = NodeSpec['outputPorts'][number];
  *   (`effectiveShape`) — role ports often declare nothing themselves while
  *   the shape rules still pin the quantity.
  * - Required dims: every required dimension must be present on the output.
- * - Supported dims: when set, the output may not carry a dimension outside the set.
  *
- * The derived shape's dimensions are NOT matched here: they reference
+ * The derived shape's dimensions are not matched here: they reference
  * dimensions by uuid while spec ports carry identifiers, and aggregation can
  * legitimately reshape inputs — quantity is the safe, high-signal filter.
  */
@@ -28,12 +27,6 @@ export function outputMatchesPort(port: InputPort, output: OutputPort): boolean 
   const requiredQuantity = port.quantity ?? port.effectiveShape?.quantity ?? null;
   if (requiredQuantity && requiredQuantity !== output.quantity) return false;
   if (port.requiredDimensions.some((req) => !output.dimensions.includes(req))) return false;
-  if (
-    port.supportedDimensions.length > 0 &&
-    output.dimensions.some((d) => !port.supportedDimensions.includes(d))
-  ) {
-    return false;
-  }
   return true;
 }
 

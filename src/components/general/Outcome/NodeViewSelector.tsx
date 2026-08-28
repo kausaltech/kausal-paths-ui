@@ -15,7 +15,6 @@ import { useTheme } from '@common/themes';
 import styled from '@common/themes/styled';
 
 import { useTranslations } from '@/common/i18n';
-import { useInstance } from '@/common/instance';
 import { formatUrl } from '@/common/links';
 import { useSiteOrNull } from '@/context/site';
 
@@ -42,7 +41,6 @@ const NodeViewSelector = ({
   const selectId = `${idPrefix}-view-select`;
   const t = useTranslations();
   const theme = useTheme();
-  const instance = useInstance();
   const router = useRouter();
   const site = useSiteOrNull();
 

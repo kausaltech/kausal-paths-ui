@@ -165,7 +165,7 @@ export function buildGridData(
           type: 'MetricHeader',
           metricId: dp.metric.id,
           label: metric?.label ?? dp.metric.id,
-          unit: metric?.unit ?? '',
+          unit: metric?.unitInfo?.standard ?? '',
         },
       };
       for (const dim of dataset.dimensions) {
@@ -205,7 +205,7 @@ export function buildGridData(
         type: 'MetricHeader',
         metricId: stagedRow.metricId,
         label: metric?.label ?? stagedRow.metricId,
-        unit: metric?.unit ?? '',
+        unit: metric?.unitInfo?.standard ?? '',
       },
     };
     for (const dim of dataset.dimensions) {

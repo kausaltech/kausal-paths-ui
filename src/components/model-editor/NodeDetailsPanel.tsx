@@ -284,7 +284,12 @@ export default function NodeDetailsPanel({
 
   if (!node) return null;
 
-  const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
+  const nodeMap = new Map(
+    allNodes.flatMap((candidate) => [
+      [candidate.id, candidate] as const,
+      [candidate.uuid, candidate] as const,
+    ])
+  );
   const spec = getNodeSpec(node);
 
   const nodeGroupOptions = Array.from(
@@ -292,7 +297,7 @@ export default function NodeDetailsPanel({
   ).sort();
 
   const incomingByPort = new Map<string, EditorNodeEdgeFragment[]>();
-  for (const e of edges.filter((e) => e.portRef.nodeId === node.id)) {
+  for (const e of edges.filter((e) => e.portRef.nodeUuid === node.uuid)) {
     const portId = e.portRef.portId;
     const list = incomingByPort.get(portId) ?? [];
     list.push(e);
@@ -300,7 +305,7 @@ export default function NodeDetailsPanel({
   }
 
   const outgoingByPort = new Map<string, EditorNodeEdgeFragment[]>();
-  for (const e of edges.filter((e) => e.fromRef.nodeId === node.id)) {
+  for (const e of edges.filter((e) => e.fromRef.nodeUuid === node.uuid)) {
     const portId = e.fromRef.portId;
     const list = outgoingByPort.get(portId) ?? [];
     list.push(e);

@@ -39,7 +39,7 @@ type ScenarioOutcomeProps = {
   activeGoal: InstanceGoal;
   targetYear: number;
   variant?: 'default' | 'verbose' | 'compact';
-  goalOutcome: InstanceGoalOutcomeQuery['instance']['goals'][0];
+  goalOutcome: InstanceGoalOutcomeQuery['instance']['model']['goals'][0];
   loading?: boolean;
   refetching?: boolean;
   scenarioId?: string;

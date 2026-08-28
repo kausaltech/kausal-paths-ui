@@ -93,10 +93,6 @@ function PortCriteria({ port }: { port: InputPort }) {
         label={t('nodes-port-required-dims')}
         value={port.requiredDimensions.length ? port.requiredDimensions.join(', ') : '—'}
       />
-      <CriterionRow
-        label={t('nodes-port-supported-dims')}
-        value={port.supportedDimensions.length ? port.supportedDimensions.join(', ') : '—'}
-      />
       {/* Solver-derived shape of the value actually delivered to this port —
           what the constraint solver worked out from the bindings, as opposed
           to the declared constraints above. */}

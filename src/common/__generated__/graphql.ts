@@ -647,10 +647,13 @@ export type ModelEditorLandingDataQuery = (
         & { __typename: 'User' }
       ) }
       & { __typename: 'InstanceMember' }
-    )>, nodes: Array<(
-      { id: string, uuid: string, name: string }
-      & { __typename: 'ActionNode' | 'Node' }
-    )>, editor: (
+    )>, model: (
+      { nodes: Array<(
+        { id: string, uuid: string, name: string }
+        & { __typename: 'ActionNode' | 'Node' }
+      )> }
+      & { __typename: 'InstanceModel' }
+    ), editor: (
       { live: boolean, hasUnpublishedChanges: boolean, firstPublishedAt: string | null, lastPublishedAt: string | null, draftHeadToken: string | null, latestChange: Array<(
         { uuid: string, createdAt: string }
         & { __typename: 'InstanceChangeOperationType' }
@@ -815,10 +818,13 @@ export type CanEditModelQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CanEditModelQuery = (
   { instance: (
-    { id: string, nodes: Array<(
-      { id: string }
-      & { __typename: 'ActionNode' | 'Node' }
-    )> }
+    { id: string, model: (
+      { nodes: Array<(
+        { id: string }
+        & { __typename: 'ActionNode' | 'Node' }
+      )> }
+      & { __typename: 'InstanceModel' }
+    ) }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
@@ -957,16 +963,19 @@ export type EditorNodeSearchListQueryVariables = Exact<{ [key: string]: never; }
 
 export type EditorNodeSearchListQuery = (
   { instance: (
-    { id: string, nodes: Array<
-      | (
-        { id: string, identifier: string, name: string }
-        & { __typename: 'ActionNode' }
-      )
-      | (
-        { isOutcome: boolean, id: string, identifier: string, name: string }
-        & { __typename: 'Node' }
-      )
-    > }
+    { id: string, model: (
+      { nodes: Array<
+        | (
+          { id: string, identifier: string, name: string }
+          & { __typename: 'ActionNode' }
+        )
+        | (
+          { isOutcome: boolean, id: string, identifier: string, name: string }
+          & { __typename: 'Node' }
+        )
+      > }
+      & { __typename: 'InstanceModel' }
+    ) }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
@@ -1133,7 +1142,10 @@ export type DatasetPortDataQuery = (
                   )> }
                   & { __typename: 'DatasetDimension' }
                 )>, metrics: Array<(
-                  { id: string, name: string | null, label: string, unit: string }
+                  { id: string, name: string | null, label: string, unitInfo: (
+                    { id: string, standard: string }
+                    & { __typename: 'UnitType' }
+                  ) | null }
                   & { __typename: 'DatasetMetric' }
                 )> }
                 & { __typename: 'Dataset' }
@@ -1213,7 +1225,10 @@ export type DatasetSummaryFieldsFragment = (
     { id: string, name: string }
     & { __typename: 'DatasetDimension' }
   )>, metrics: Array<(
-    { id: string, label: string, unit: string }
+    { id: string, label: string, unitInfo: (
+      { id: string, standard: string }
+      & { __typename: 'UnitType' }
+    ) | null }
     & { __typename: 'DatasetMetric' }
   )>, lastModifiedBy: (
     { id: string, firstName: string, lastName: string, email: string }
@@ -1272,7 +1287,10 @@ export type DatasetDetailFieldsFragment = (
     )> }
     & { __typename: 'DatasetDimension' }
   )>, metrics: Array<(
-    { id: string, name: string | null, label: string, unit: string, previousSibling: string | null, nextSibling: string | null }
+    { id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: (
+      { id: string, standard: string }
+      & { __typename: 'UnitType' }
+    ) | null }
     & { __typename: 'DatasetMetric' }
   )>, dataPoints: Array<(
     { id: string, date: string, value: number | null, metric: (
@@ -1297,7 +1315,7 @@ export type DatasetDetailFieldsFragment = (
     & { __typename: 'DataPoint' }
   )>, portBindings: Array<(
     { id: string, portRef: (
-      { nodeId: string, portId: string }
+      { nodeUuid: string, portId: string }
       & { __typename: 'NodePortRef' }
     ) }
     & { __typename: 'DatasetPortType' }
@@ -1346,7 +1364,10 @@ export type InstanceDatasetsQuery = (
           { id: string, name: string }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, label: string, unit: string }
+          { id: string, label: string, unitInfo: (
+            { id: string, standard: string }
+            & { __typename: 'UnitType' }
+          ) | null }
           & { __typename: 'DatasetMetric' }
         )>, lastModifiedBy: (
           { id: string, firstName: string, lastName: string, email: string }
@@ -1383,7 +1404,10 @@ export type InstanceDatasetQuery = (
           )> }
           & { __typename: 'DatasetDimension' }
         )>, metrics: Array<(
-          { id: string, name: string | null, label: string, unit: string, previousSibling: string | null, nextSibling: string | null }
+          { id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: (
+            { id: string, standard: string }
+            & { __typename: 'UnitType' }
+          ) | null }
           & { __typename: 'DatasetMetric' }
         )>, dataPoints: Array<(
           { id: string, date: string, value: number | null, metric: (
@@ -1408,7 +1432,7 @@ export type InstanceDatasetQuery = (
           & { __typename: 'DataPoint' }
         )>, portBindings: Array<(
           { id: string, portRef: (
-            { nodeId: string, portId: string }
+            { nodeUuid: string, portId: string }
             & { __typename: 'NodePortRef' }
           ) }
           & { __typename: 'DatasetPortType' }
@@ -1453,40 +1477,43 @@ export type DatasetConnectedNodesQueryVariables = Exact<{
 
 export type DatasetConnectedNodesQuery = (
   { instance: (
-    { id: string, nodes: Array<
-      | (
-        { id: string, name: string, kind: NodeKind | null, editor: (
-          { nodeType: string, spec: (
-            { typeConfig:
-              | (
-                { nodeClass: string }
-                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
-              )
-              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
-             }
-            & { __typename: 'NodeSpecType' }
+    { id: string, model: (
+      { nodes: Array<
+        | (
+          { id: string, name: string, kind: NodeKind | null, editor: (
+            { nodeType: string, spec: (
+              { typeConfig:
+                | (
+                  { nodeClass: string }
+                  & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+                )
+                | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+               }
+              & { __typename: 'NodeSpecType' }
+            ) | null }
+            & { __typename: 'NodeEditor' }
           ) | null }
-          & { __typename: 'NodeEditor' }
-        ) | null }
-        & { __typename: 'ActionNode' }
-      )
-      | (
-        { isOutcome: boolean, id: string, name: string, kind: NodeKind | null, editor: (
-          { nodeType: string, spec: (
-            { typeConfig:
-              | (
-                { nodeClass: string }
-                & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
-              )
-              | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
-             }
-            & { __typename: 'NodeSpecType' }
+          & { __typename: 'ActionNode' }
+        )
+        | (
+          { isOutcome: boolean, id: string, name: string, kind: NodeKind | null, editor: (
+            { nodeType: string, spec: (
+              { typeConfig:
+                | (
+                  { nodeClass: string }
+                  & { __typename: 'ActionConfigType' | 'SimpleConfigType' }
+                )
+                | { __typename: 'FormulaConfigType' | 'PipelineConfigType' }
+               }
+              & { __typename: 'NodeSpecType' }
+            ) | null }
+            & { __typename: 'NodeEditor' }
           ) | null }
-          & { __typename: 'NodeEditor' }
-        ) | null }
-        & { __typename: 'Node' }
-      )
-    > }
+          & { __typename: 'Node' }
+        )
+      > }
+      & { __typename: 'InstanceModel' }
+    ) }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
@@ -2217,10 +2244,10 @@ export type NodeGraphQuery = (
         & { __typename: 'GraphLayout' }
       ), edges: Array<(
         { id: string, tags: Array<string>, fromRef: (
-          { nodeUuid: string, nodeId: string, portId: string }
+          { nodeUuid: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), portRef: (
-          { nodeUuid: string, nodeId: string, portId: string }
+          { nodeUuid: string, portId: string }
           & { __typename: 'NodePortRef' }
         ), transformations: Array<
           | (
@@ -2274,383 +2301,392 @@ export type NodeGraphQuery = (
         & { __typename: 'NodeEdgeType' }
       )> }
       & { __typename: 'InstanceEditor' }
-    ) | null, nodes: Array<
-      | (
-        { id: string, isEnabled: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
-          { id: string, name: string, color: string | null }
-          & { __typename: 'ActionGroupType' }
-        ) | null, userPermissions: (
-          { change: boolean, delete: boolean }
-          & { __typename: 'UserPermissions' }
-        ) | null, quantityKind: (
-          { icon: string | null, id: string, label: string }
-          & { __typename: 'QuantityKindType' }
-        ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
-            { nodeId: string, x: number, y: number, source: NodeLayoutSource }
-            & { __typename: 'NodeLayout' }
-          ) | null, errors: Array<(
-            { phase: NodeErrorPhase, message: string }
-            & { __typename: 'NodeError' }
-          )>, layoutMeta: (
-            { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
-            & { __typename: 'NodeGraphLayoutMeta' }
-          ), spec: (
-            { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
-              { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
-              & { __typename: 'InputPortDeclaration' }
-            )>, inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
-                { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
-                  { id: string, short: string, htmlShort: string }
+    ) | null, model: (
+      { nodes: Array<
+        | (
+          { id: string, isEnabled: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, group: (
+            { id: string, name: string, color: string | null }
+            & { __typename: 'ActionGroupType' }
+          ) | null, userPermissions: (
+            { change: boolean, delete: boolean }
+            & { __typename: 'UserPermissions' }
+          ) | null, quantityKind: (
+            { icon: string | null, id: string, label: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null, editor: (
+            { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
+              { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+              & { __typename: 'NodeLayout' }
+            ) | null, errors: Array<(
+              { phase: NodeErrorPhase, message: string }
+              & { __typename: 'NodeError' }
+            )>, layoutMeta: (
+              { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
+              & { __typename: 'NodeGraphLayoutMeta' }
+            ), spec: (
+              { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+                { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+                & { __typename: 'InputPortDeclaration' }
+              )>, inputPorts: Array<(
+                { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, effectiveShape: (
+                  { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+                    { id: string, short: string, htmlShort: string }
+                    & { __typename: 'UnitType' }
+                  ) | null }
+                  & { __typename: 'EffectiveShape' }
+                ) | null, unit: (
+                  { id: string, short: string, standard: string, dimensionality: Array<(
+                    { dimension: string, value: number }
+                    & { __typename: 'UnitDimensionality' }
+                  )> }
                   & { __typename: 'UnitType' }
-                ) | null }
-                & { __typename: 'EffectiveShape' }
-              ) | null, unit: (
-                { id: string, short: string, standard: string, dimensionality: Array<(
-                  { dimension: string, value: number }
-                  & { __typename: 'UnitDimensionality' }
-                )> }
-                & { __typename: 'UnitType' }
-              ) | null, bindings: Array<
-                | (
-                  { id: string, tags: Array<string>, portRef: (
-                    { nodeId: string, portId: string }
-                    & { __typename: 'NodePortRef' }
-                  ), dataset: (
-                    { id: string, identifier: string | null, name: string, metrics: Array<(
-                      { id: string, label: string, unit: string }
-                      & { __typename: 'DatasetMetric' }
-                    )> }
-                    & { __typename: 'Dataset' }
-                  ) | null, metric: (
-                    { id: string, label: string }
-                    & { __typename: 'DatasetMetricRefType' }
-                  ) | null, transformations: Array<
-                    | (
-                      { dimension: string, category: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean, unit: (
-                        { id: string, short: string, standard: string }
-                        & { __typename: 'UnitType' }
-                      ) }
-                      & { __typename: 'EnsureUnitType' }
-                    )
-                    | (
-                      { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterColumnType' }
-                    )
-                    | (
-                      { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterDimensionType' }
-                    )
-                    | (
-                      { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameColumnType' }
-                    )
-                    | (
-                      { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameItemType' }
-                    )
-                    | (
-                      { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SelectCategoriesType' }
-                    )
-                    | (
-                      { year: number, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SetForecastFromType' }
-                    )
-                    | (
-                      { tag: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'TagOperationType' }
-                    )
-                  > }
-                  & { __typename: 'DatasetPortType' }
-                )
-                | (
-                  { id: string, tags: Array<string>, portRef: (
-                    { nodeId: string, portId: string }
-                    & { __typename: 'NodePortRef' }
-                  ), transformations: Array<
-                    | (
-                      { dimension: string, category: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean, unit: (
-                        { id: string, short: string, standard: string }
-                        & { __typename: 'UnitType' }
-                      ) }
-                      & { __typename: 'EnsureUnitType' }
-                    )
-                    | (
-                      { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterColumnType' }
-                    )
-                    | (
-                      { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterDimensionType' }
-                    )
-                    | (
-                      { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameColumnType' }
-                    )
-                    | (
-                      { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameItemType' }
-                    )
-                    | (
-                      { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SelectCategoriesType' }
-                    )
-                    | (
-                      { year: number, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SetForecastFromType' }
-                    )
-                    | (
-                      { tag: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'TagOperationType' }
-                    )
-                  > }
-                  & { __typename: 'NodeEdgeType' }
-                )
-              > }
-              & { __typename: 'InputPortType' }
-            )>, outputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
-                { id: string, short: string, standard: string }
-                & { __typename: 'UnitType' }
-              ) }
-              & { __typename: 'OutputPortType' }
-            )>, typeConfig:
-              | (
-                { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
-                & { __typename: 'ActionConfigType' }
-              )
-              | (
-                { formula: string }
-                & { __typename: 'FormulaConfigType' }
-              )
-              | (
-                { operations: Record<string, unknown> | unknown[] }
-                & { __typename: 'PipelineConfigType' }
-              )
-              | (
-                { nodeClass: string }
-                & { __typename: 'SimpleConfigType' }
-              )
-             }
-            & { __typename: 'NodeSpecType' }
-          ) | null }
-          & { __typename: 'NodeEditor' }
-        ) | null }
-        & { __typename: 'ActionNode' }
-      )
-      | (
-        { id: string, isOutcome: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, userPermissions: (
-          { change: boolean, delete: boolean }
-          & { __typename: 'UserPermissions' }
-        ) | null, quantityKind: (
-          { icon: string | null, id: string, label: string }
-          & { __typename: 'QuantityKindType' }
-        ) | null, editor: (
-          { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
-            { nodeId: string, x: number, y: number, source: NodeLayoutSource }
-            & { __typename: 'NodeLayout' }
-          ) | null, errors: Array<(
-            { phase: NodeErrorPhase, message: string }
-            & { __typename: 'NodeError' }
-          )>, layoutMeta: (
-            { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
-            & { __typename: 'NodeGraphLayoutMeta' }
-          ), spec: (
-            { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
-              { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
-              & { __typename: 'InputPortDeclaration' }
-            )>, inputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
-                { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
-                  { id: string, short: string, htmlShort: string }
+                ) | null, bindings: Array<
+                  | (
+                    { id: string, tags: Array<string>, portRef: (
+                      { nodeUuid: string, portId: string }
+                      & { __typename: 'NodePortRef' }
+                    ), dataset: (
+                      { id: string, identifier: string | null, name: string, metrics: Array<(
+                        { id: string, label: string, unitInfo: (
+                          { id: string, standard: string }
+                          & { __typename: 'UnitType' }
+                        ) | null }
+                        & { __typename: 'DatasetMetric' }
+                      )> }
+                      & { __typename: 'Dataset' }
+                    ) | null, metric: (
+                      { id: string, label: string }
+                      & { __typename: 'DatasetMetricRefType' }
+                    ) | null, transformations: Array<
+                      | (
+                        { dimension: string, category: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean }
+                        & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean, unit: (
+                          { id: string, short: string, standard: string }
+                          & { __typename: 'UnitType' }
+                        ) }
+                        & { __typename: 'EnsureUnitType' }
+                      )
+                      | (
+                        { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterColumnType' }
+                      )
+                      | (
+                        { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterDimensionType' }
+                      )
+                      | (
+                        { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterTemporalType' }
+                      )
+                      | (
+                        { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameColumnType' }
+                      )
+                      | (
+                        { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameItemType' }
+                      )
+                      | (
+                        { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SelectCategoriesType' }
+                      )
+                      | (
+                        { year: number, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SetForecastFromType' }
+                      )
+                      | (
+                        { tag: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'TagOperationType' }
+                      )
+                    > }
+                    & { __typename: 'DatasetPortType' }
+                  )
+                  | (
+                    { id: string, tags: Array<string>, portRef: (
+                      { nodeUuid: string, portId: string }
+                      & { __typename: 'NodePortRef' }
+                    ), transformations: Array<
+                      | (
+                        { dimension: string, category: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean }
+                        & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean, unit: (
+                          { id: string, short: string, standard: string }
+                          & { __typename: 'UnitType' }
+                        ) }
+                        & { __typename: 'EnsureUnitType' }
+                      )
+                      | (
+                        { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterColumnType' }
+                      )
+                      | (
+                        { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterDimensionType' }
+                      )
+                      | (
+                        { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterTemporalType' }
+                      )
+                      | (
+                        { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameColumnType' }
+                      )
+                      | (
+                        { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameItemType' }
+                      )
+                      | (
+                        { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SelectCategoriesType' }
+                      )
+                      | (
+                        { year: number, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SetForecastFromType' }
+                      )
+                      | (
+                        { tag: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'TagOperationType' }
+                      )
+                    > }
+                    & { __typename: 'NodeEdgeType' }
+                  )
+                > }
+                & { __typename: 'InputPortType' }
+              )>, outputPorts: Array<(
+                { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                  { id: string, short: string, standard: string }
                   & { __typename: 'UnitType' }
-                ) | null }
-                & { __typename: 'EffectiveShape' }
-              ) | null, unit: (
-                { id: string, short: string, standard: string, dimensionality: Array<(
-                  { dimension: string, value: number }
-                  & { __typename: 'UnitDimensionality' }
-                )> }
-                & { __typename: 'UnitType' }
-              ) | null, bindings: Array<
+                ) }
+                & { __typename: 'OutputPortType' }
+              )>, typeConfig:
                 | (
-                  { id: string, tags: Array<string>, portRef: (
-                    { nodeId: string, portId: string }
-                    & { __typename: 'NodePortRef' }
-                  ), dataset: (
-                    { id: string, identifier: string | null, name: string, metrics: Array<(
-                      { id: string, label: string, unit: string }
-                      & { __typename: 'DatasetMetric' }
-                    )> }
-                    & { __typename: 'Dataset' }
-                  ) | null, metric: (
-                    { id: string, label: string }
-                    & { __typename: 'DatasetMetricRefType' }
-                  ) | null, transformations: Array<
-                    | (
-                      { dimension: string, category: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean, unit: (
-                        { id: string, short: string, standard: string }
-                        & { __typename: 'UnitType' }
-                      ) }
-                      & { __typename: 'EnsureUnitType' }
-                    )
-                    | (
-                      { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterColumnType' }
-                    )
-                    | (
-                      { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterDimensionType' }
-                    )
-                    | (
-                      { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameColumnType' }
-                    )
-                    | (
-                      { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameItemType' }
-                    )
-                    | (
-                      { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SelectCategoriesType' }
-                    )
-                    | (
-                      { year: number, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SetForecastFromType' }
-                    )
-                    | (
-                      { tag: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'TagOperationType' }
-                    )
-                  > }
-                  & { __typename: 'DatasetPortType' }
+                  { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+                  & { __typename: 'ActionConfigType' }
                 )
                 | (
-                  { id: string, tags: Array<string>, portRef: (
-                    { nodeId: string, portId: string }
-                    & { __typename: 'NodePortRef' }
-                  ), transformations: Array<
-                    | (
-                      { dimension: string, category: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean }
-                      & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
-                    )
-                    | (
-                      { kind: string, isSystemManaged: boolean, unit: (
-                        { id: string, short: string, standard: string }
-                        & { __typename: 'UnitType' }
-                      ) }
-                      & { __typename: 'EnsureUnitType' }
-                    )
-                    | (
-                      { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterColumnType' }
-                    )
-                    | (
-                      { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterDimensionType' }
-                    )
-                    | (
-                      { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'FilterTemporalType' }
-                    )
-                    | (
-                      { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameColumnType' }
-                    )
-                    | (
-                      { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'RenameItemType' }
-                    )
-                    | (
-                      { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SelectCategoriesType' }
-                    )
-                    | (
-                      { year: number, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'SetForecastFromType' }
-                    )
-                    | (
-                      { tag: string, kind: string, isSystemManaged: boolean }
-                      & { __typename: 'TagOperationType' }
-                    )
-                  > }
-                  & { __typename: 'NodeEdgeType' }
+                  { formula: string }
+                  & { __typename: 'FormulaConfigType' }
                 )
-              > }
-              & { __typename: 'InputPortType' }
-            )>, outputPorts: Array<(
-              { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
-                { id: string, short: string, standard: string }
-                & { __typename: 'UnitType' }
-              ) }
-              & { __typename: 'OutputPortType' }
-            )>, typeConfig:
-              | (
-                { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
-                & { __typename: 'ActionConfigType' }
-              )
-              | (
-                { formula: string }
-                & { __typename: 'FormulaConfigType' }
-              )
-              | (
-                { operations: Record<string, unknown> | unknown[] }
-                & { __typename: 'PipelineConfigType' }
-              )
-              | (
-                { nodeClass: string }
-                & { __typename: 'SimpleConfigType' }
-              )
-             }
-            & { __typename: 'NodeSpecType' }
+                | (
+                  { operations: Record<string, unknown> | unknown[] }
+                  & { __typename: 'PipelineConfigType' }
+                )
+                | (
+                  { nodeClass: string }
+                  & { __typename: 'SimpleConfigType' }
+                )
+               }
+              & { __typename: 'NodeSpecType' }
+            ) | null }
+            & { __typename: 'NodeEditor' }
           ) | null }
-          & { __typename: 'NodeEditor' }
-        ) | null }
-        & { __typename: 'Node' }
-      )
-    > }
+          & { __typename: 'ActionNode' }
+        )
+        | (
+          { id: string, isOutcome: boolean, isEditable: boolean, identifier: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, uuid: string, kind: NodeKind | null, userPermissions: (
+            { change: boolean, delete: boolean }
+            & { __typename: 'UserPermissions' }
+          ) | null, quantityKind: (
+            { icon: string | null, id: string, label: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null, editor: (
+            { nodeGroup: string | null, nodeType: string, tags: Array<string> | null, inputDimensions: Array<string> | null, outputDimensions: Array<string> | null, status: NodeStatus | null, layout: (
+              { nodeId: string, x: number, y: number, source: NodeLayoutSource }
+              & { __typename: 'NodeLayout' }
+            ) | null, errors: Array<(
+              { phase: NodeErrorPhase, message: string }
+              & { __typename: 'NodeError' }
+            )>, layoutMeta: (
+              { primaryClass: PrimaryLayoutClass, isHub: boolean, ghostable: boolean, ghostTargets: Array<string>, canonicalRail: string | null, topologicalLayer: number, inDegree: number, outDegree: number, totalDegree: number, avgOutgoingSpan: number, maxOutgoingSpan: number, hasActionAncestor: boolean }
+              & { __typename: 'NodeGraphLayoutMeta' }
+            ), spec: (
+              { supportsAuthoredPorts: boolean, inputPortDeclarations: Array<(
+                { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
+                & { __typename: 'InputPortDeclaration' }
+              )>, inputPorts: Array<(
+                { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, effectiveShape: (
+                  { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
+                    { id: string, short: string, htmlShort: string }
+                    & { __typename: 'UnitType' }
+                  ) | null }
+                  & { __typename: 'EffectiveShape' }
+                ) | null, unit: (
+                  { id: string, short: string, standard: string, dimensionality: Array<(
+                    { dimension: string, value: number }
+                    & { __typename: 'UnitDimensionality' }
+                  )> }
+                  & { __typename: 'UnitType' }
+                ) | null, bindings: Array<
+                  | (
+                    { id: string, tags: Array<string>, portRef: (
+                      { nodeUuid: string, portId: string }
+                      & { __typename: 'NodePortRef' }
+                    ), dataset: (
+                      { id: string, identifier: string | null, name: string, metrics: Array<(
+                        { id: string, label: string, unitInfo: (
+                          { id: string, standard: string }
+                          & { __typename: 'UnitType' }
+                        ) | null }
+                        & { __typename: 'DatasetMetric' }
+                      )> }
+                      & { __typename: 'Dataset' }
+                    ) | null, metric: (
+                      { id: string, label: string }
+                      & { __typename: 'DatasetMetricRefType' }
+                    ) | null, transformations: Array<
+                      | (
+                        { dimension: string, category: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean }
+                        & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean, unit: (
+                          { id: string, short: string, standard: string }
+                          & { __typename: 'UnitType' }
+                        ) }
+                        & { __typename: 'EnsureUnitType' }
+                      )
+                      | (
+                        { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterColumnType' }
+                      )
+                      | (
+                        { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterDimensionType' }
+                      )
+                      | (
+                        { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterTemporalType' }
+                      )
+                      | (
+                        { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameColumnType' }
+                      )
+                      | (
+                        { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameItemType' }
+                      )
+                      | (
+                        { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SelectCategoriesType' }
+                      )
+                      | (
+                        { year: number, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SetForecastFromType' }
+                      )
+                      | (
+                        { tag: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'TagOperationType' }
+                      )
+                    > }
+                    & { __typename: 'DatasetPortType' }
+                  )
+                  | (
+                    { id: string, tags: Array<string>, portRef: (
+                      { nodeUuid: string, portId: string }
+                      & { __typename: 'NodePortRef' }
+                    ), transformations: Array<
+                      | (
+                        { dimension: string, category: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'AssignCategoryType' | 'AssignDimensionType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean }
+                        & { __typename: 'DropNullsType' | 'FlattenType' | 'IndexTemporalType' | 'RemapLegacyYearsType' | 'SelectMetricType' }
+                      )
+                      | (
+                        { kind: string, isSystemManaged: boolean, unit: (
+                          { id: string, short: string, standard: string }
+                          & { __typename: 'UnitType' }
+                        ) }
+                        & { __typename: 'EnsureUnitType' }
+                      )
+                      | (
+                        { column: string, value: string | null, values: Array<string>, ref: string | null, dropCol: boolean, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterColumnType' }
+                      )
+                      | (
+                        { dimension: string, groups: Array<string>, categories: Array<string>, exclude: boolean, flatten: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterDimensionType' }
+                      )
+                      | (
+                        { minYear: number | null, maxYear: number | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'FilterTemporalType' }
+                      )
+                      | (
+                        { column: string, newName: string | null, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameColumnType' }
+                      )
+                      | (
+                        { column: string, oldItem: string, newItem: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'RenameItemType' }
+                      )
+                      | (
+                        { dimension: string, categories: Array<string>, flatten: boolean, exclude: boolean, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SelectCategoriesType' }
+                      )
+                      | (
+                        { year: number, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'SetForecastFromType' }
+                      )
+                      | (
+                        { tag: string, kind: string, isSystemManaged: boolean }
+                        & { __typename: 'TagOperationType' }
+                      )
+                    > }
+                    & { __typename: 'NodeEdgeType' }
+                  )
+                > }
+                & { __typename: 'InputPortType' }
+              )>, outputPorts: Array<(
+                { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                  { id: string, short: string, standard: string }
+                  & { __typename: 'UnitType' }
+                ) }
+                & { __typename: 'OutputPortType' }
+              )>, typeConfig:
+                | (
+                  { nodeClass: string, decisionLevel: DecisionLevel | null, group: string | null, parent: string | null, noEffectValue: number | null }
+                  & { __typename: 'ActionConfigType' }
+                )
+                | (
+                  { formula: string }
+                  & { __typename: 'FormulaConfigType' }
+                )
+                | (
+                  { operations: Record<string, unknown> | unknown[] }
+                  & { __typename: 'PipelineConfigType' }
+                )
+                | (
+                  { nodeClass: string }
+                  & { __typename: 'SimpleConfigType' }
+                )
+               }
+              & { __typename: 'NodeSpecType' }
+            ) | null }
+            & { __typename: 'NodeEditor' }
+          ) | null }
+          & { __typename: 'Node' }
+        )
+      > }
+      & { __typename: 'InstanceModel' }
+    ) }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
@@ -2681,7 +2717,7 @@ type EditorNodeFields_ActionNode_Fragment = (
         { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
         & { __typename: 'InputPortDeclaration' }
       )>, inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, effectiveShape: (
           { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
             { id: string, short: string, htmlShort: string }
             & { __typename: 'UnitType' }
@@ -2696,11 +2732,14 @@ type EditorNodeFields_ActionNode_Fragment = (
         ) | null, bindings: Array<
           | (
             { id: string, tags: Array<string>, portRef: (
-              { nodeId: string, portId: string }
+              { nodeUuid: string, portId: string }
               & { __typename: 'NodePortRef' }
             ), dataset: (
               { id: string, identifier: string | null, name: string, metrics: Array<(
-                { id: string, label: string, unit: string }
+                { id: string, label: string, unitInfo: (
+                  { id: string, standard: string }
+                  & { __typename: 'UnitType' }
+                ) | null }
                 & { __typename: 'DatasetMetric' }
               )> }
               & { __typename: 'Dataset' }
@@ -2760,7 +2799,7 @@ type EditorNodeFields_ActionNode_Fragment = (
           )
           | (
             { id: string, tags: Array<string>, portRef: (
-              { nodeId: string, portId: string }
+              { nodeUuid: string, portId: string }
               & { __typename: 'NodePortRef' }
             ), transformations: Array<
               | (
@@ -2868,7 +2907,7 @@ type EditorNodeFields_Node_Fragment = (
         { role: string, label: string | null, multi: boolean, repeatable: boolean, minCount: number, defaultCount: number, instantiatedPortIds: Array<string> }
         & { __typename: 'InputPortDeclaration' }
       )>, inputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, supportedDimensions: Array<string>, effectiveShape: (
+        { id: string, identifier: string | null, label: string | null, multi: boolean, quantity: string | null, role: string | null, requiredDimensions: Array<string>, effectiveShape: (
           { quantity: string | null, dimensionUuids: Array<string> | null, requiredDimensionUuids: Array<string>, forbiddenDimensionUuids: Array<string>, unit: (
             { id: string, short: string, htmlShort: string }
             & { __typename: 'UnitType' }
@@ -2883,11 +2922,14 @@ type EditorNodeFields_Node_Fragment = (
         ) | null, bindings: Array<
           | (
             { id: string, tags: Array<string>, portRef: (
-              { nodeId: string, portId: string }
+              { nodeUuid: string, portId: string }
               & { __typename: 'NodePortRef' }
             ), dataset: (
               { id: string, identifier: string | null, name: string, metrics: Array<(
-                { id: string, label: string, unit: string }
+                { id: string, label: string, unitInfo: (
+                  { id: string, standard: string }
+                  & { __typename: 'UnitType' }
+                ) | null }
                 & { __typename: 'DatasetMetric' }
               )> }
               & { __typename: 'Dataset' }
@@ -2947,7 +2989,7 @@ type EditorNodeFields_Node_Fragment = (
           )
           | (
             { id: string, tags: Array<string>, portRef: (
-              { nodeId: string, portId: string }
+              { nodeUuid: string, portId: string }
               & { __typename: 'NodePortRef' }
             ), transformations: Array<
               | (
@@ -3040,10 +3082,10 @@ export type EditorNodeFieldsFragment =
 
 export type EditorNodeEdgeFragment = (
   { id: string, tags: Array<string>, fromRef: (
-    { nodeUuid: string, nodeId: string, portId: string }
+    { nodeUuid: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), portRef: (
-    { nodeUuid: string, nodeId: string, portId: string }
+    { nodeUuid: string, portId: string }
     & { __typename: 'NodePortRef' }
   ), transformations: Array<
     | (
@@ -3501,13 +3543,16 @@ export type DeleteNodeMutationVariables = Exact<{
 
 export type DeleteNodeMutation = (
   { instanceEditor: (
-    { deleteNode: (
-      { messages: Array<(
-        { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
-        & { __typename: 'OperationMessage' }
-      )> }
-      & { __typename: 'OperationInfo' }
-    ) | null }
+    { nodeEditor: (
+      { delete: (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      ) | null }
+      & { __typename: 'NodeEditorMutation' }
+    ) }
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }
@@ -3571,29 +3616,32 @@ export type UpdateNodeMutationVariables = Exact<{
 
 export type UpdateNodeMutation = (
   { instanceEditor: (
-    { updateNode:
-      | (
-        { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, editor: (
-          { nodeGroup: string | null }
-          & { __typename: 'NodeEditor' }
-        ) | null }
-        & { __typename: 'ActionNode' }
-      )
-      | (
-        { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
-          { nodeGroup: string | null }
-          & { __typename: 'NodeEditor' }
-        ) | null }
-        & { __typename: 'Node' }
-      )
-      | (
-        { messages: Array<(
-          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
-          & { __typename: 'OperationMessage' }
-        )> }
-        & { __typename: 'OperationInfo' }
-      )
-     }
+    { nodeEditor: (
+      { update:
+        | (
+          { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, editor: (
+            { nodeGroup: string | null }
+            & { __typename: 'NodeEditor' }
+          ) | null }
+          & { __typename: 'ActionNode' }
+        )
+        | (
+          { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
+            { nodeGroup: string | null }
+            & { __typename: 'NodeEditor' }
+          ) | null }
+          & { __typename: 'Node' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'NodeEditorMutation' }
+    ) }
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }
@@ -3646,16 +3694,19 @@ export type NodeStatusesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type NodeStatusesQuery = (
   { instance: (
-    { id: string, nodes: Array<(
-      { id: string, editor: (
-        { status: NodeStatus | null, errors: Array<(
-          { phase: NodeErrorPhase, message: string }
-          & { __typename: 'NodeError' }
-        )> }
-        & { __typename: 'NodeEditor' }
-      ) | null }
-      & { __typename: 'ActionNode' | 'Node' }
-    )> }
+    { id: string, model: (
+      { nodes: Array<(
+        { id: string, editor: (
+          { status: NodeStatus | null, errors: Array<(
+            { phase: NodeErrorPhase, message: string }
+            & { __typename: 'NodeError' }
+          )> }
+          & { __typename: 'NodeEditor' }
+        ) | null }
+        & { __typename: 'ActionNode' | 'Node' }
+      )> }
+      & { __typename: 'InstanceModel' }
+    ) }
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
@@ -3735,16 +3786,19 @@ export type InstanceGoalOutcomeQueryVariables = Exact<{
 
 export type InstanceGoalOutcomeQuery = (
   { instance: (
-    { id: string, goals: Array<(
-      { id: string, values: Array<(
-        { year: number, goal: number | null, actual: number | null, isForecast: boolean, isInterpolated: boolean | null }
-        & { __typename: 'InstanceYearlyGoalType' }
-      )>, unit: (
-        { id: string, htmlShort: string }
-        & { __typename: 'UnitType' }
-      ) }
-      & { __typename: 'InstanceGoalEntry' }
-    )> }
+    { id: string, model: (
+      { goals: Array<(
+        { id: string, values: Array<(
+          { year: number, goal: number | null, actual: number | null, isForecast: boolean, isInterpolated: boolean | null }
+          & { __typename: 'InstanceYearlyGoalType' }
+        )>, unit: (
+          { id: string, htmlShort: string }
+          & { __typename: 'UnitType' }
+        ) }
+        & { __typename: 'InstanceGoalEntry' }
+      )> }
+      & { __typename: 'InstanceModel' }
+    ) }
     & { __typename: 'InstanceType' }
   ), activeScenario: (
     { id: string }
@@ -5902,16 +5956,19 @@ export type InstanceContextQuery = (
         { field: string, value: string, id: string | null }
         & { __typename: 'RichTextBlock' }
       )
-    > | null, goals: Array<(
-      { id: string, label: string | null, default: boolean, disabled: boolean, outcomeNode: (
-        { id: string }
-        & { __typename: 'Node' }
-      ), dimensions: Array<(
-        { dimension: string, categories: Array<string>, groups: Array<string> }
-        & { __typename: 'InstanceGoalDimension' }
+    > | null, model: (
+      { goals: Array<(
+        { id: string, label: string | null, default: boolean, disabled: boolean, outcomeNode: (
+          { id: string }
+          & { __typename: 'Node' }
+        ), dimensions: Array<(
+          { dimension: string, categories: Array<string>, groups: Array<string> }
+          & { __typename: 'InstanceGoalDimension' }
+        )> }
+        & { __typename: 'InstanceGoalEntry' }
       )> }
-      & { __typename: 'InstanceGoalEntry' }
-    )>, actionListPage: (
+      & { __typename: 'InstanceModel' }
+    ), actionListPage: (
       { id: string | null, showInMenus: boolean }
       & { __typename: 'ActionListPage' }
     ) | null }

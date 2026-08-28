@@ -68,7 +68,7 @@ export function useNodeStatuses(nodes: readonly StatusNode[]): void {
         });
         if (cancelled || !data) return;
         const entries: Record<string, NodeStatusEntry> = {};
-        for (const node of data.instance.nodes) {
+        for (const node of data.instance.model.nodes) {
           entries[node.id] = toEntry(node, false);
         }
         setNodeStatuses(entries);

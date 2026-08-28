@@ -9,7 +9,6 @@ import { isInvalidTokenError, recoverFromInvalidToken } from '@/lib/invalid-toke
 
 export default function Error({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;

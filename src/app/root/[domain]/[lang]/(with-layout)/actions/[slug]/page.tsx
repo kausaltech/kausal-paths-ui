@@ -28,7 +28,6 @@ import CausalGrid, { type CausalGridNode } from '@/components/general/CausalGrid
 import NodePlot from '@/components/general/NodePlot';
 import DimensionalPlot from '@/components/graphs/DimensionalFlow';
 import ScenarioPanel from '@/components/scenario/ScenarioPanel';
-import { useSite } from '@/context/site';
 import { GET_ACTION_CONTENT, GET_CAUSAL_CHAIN } from '@/queries/getActionContent';
 
 const HeaderSection = styled.div`
@@ -132,7 +131,6 @@ export default function ActionPage() {
   const yearRange = useReactiveVar(yearRangeVar);
   const activeScenario = useReactiveVar(activeScenarioVar);
   const activeGoal = useReactiveVar(activeGoalVar);
-  const site = useSite();
   const [activeDownstreamNode, setActiveDownstreamNode] = useState<string | undefined>(undefined);
   const theme = useTheme();
   const { hideNodeDetails } = useFeatures();

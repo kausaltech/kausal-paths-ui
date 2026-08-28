@@ -73,10 +73,12 @@ const GET_LANDING_DATA: LandingDataDocument = gql`
           id
         }
       }
-      nodes {
-        id
-        uuid
-        name
+      model {
+        nodes {
+          id
+          uuid
+          name
+        }
       }
       editor {
         ...InstanceEditorPublishState
@@ -174,7 +176,7 @@ type LandingDataQuery = {
     id: string;
     siteTitle: string;
     users: { user: { id: string } }[];
-    nodes: { id: string; uuid: string; name: string }[];
+    model: { nodes: { id: string; uuid: string; name: string }[] };
     editor: {
       live: boolean;
       hasUnpublishedChanges: boolean;
@@ -278,7 +280,7 @@ export default function ModelEditorLandingPage() {
   const [conflictsOpen, setConflictsOpen] = useState(false);
 
   const editedRows = useMemo<EditedNodeRow[]>(() => {
-    const nodes = data?.instance.nodes ?? [];
+    const nodes = data?.instance.model.nodes ?? [];
     const byId = new Map(nodes.map((n) => [n.id, n.name]));
     const rows: EditedNodeRow[] = [];
     for (const [id, edit] of Object.entries(nodeEdits)) {
@@ -318,7 +320,7 @@ export default function ModelEditorLandingPage() {
   const conflictsKnown = editor?.constraintConflicts != null;
   const blockingConflicts = editor?.constraintConflicts ?? [];
   const nodeNameByUuid = useMemo(
-    () => new Map((data?.instance.nodes ?? []).map((n) => [n.uuid, n.name])),
+    () => new Map((data?.instance.model.nodes ?? []).map((n) => [n.uuid, n.name])),
     [data]
   );
   // The root `parameters` query returns only the instance-level (global)

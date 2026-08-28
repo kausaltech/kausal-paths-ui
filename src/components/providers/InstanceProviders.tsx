@@ -30,7 +30,7 @@ export function InstanceProviders({
   const [siteContext, setSiteContext] = useState<SiteContextType>(initialSiteContext);
 
   const activeScenario = siteContext.scenarios.find((sc) => sc.isActive);
-  const goals = instanceContext.goals;
+  const goals = instanceContext.model.goals;
 
   if (!activeGoalVar()) {
     const defaultGoal = goals.length > 1 ? goals.find((goal) => goal.default) : goals[0];

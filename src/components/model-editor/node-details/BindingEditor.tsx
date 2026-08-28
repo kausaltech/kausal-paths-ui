@@ -38,7 +38,11 @@ export type BindingEditorValue = {
   tags: readonly string[];
   transformations: readonly EditorPortTransformationFragment[];
   metricId?: string;
-  metrics?: readonly { id: string; label: string; unit: string }[];
+  metrics?: readonly {
+    id: string;
+    label: string;
+    unitInfo: { standard: string } | null;
+  }[];
 };
 
 type Props = {
@@ -508,7 +512,7 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
         >
           {binding.metrics.map((metric) => (
             <MenuItem key={metric.id} value={metric.id}>
-              {metric.label} ({metric.unit})
+              {metric.label} ({metric.unitInfo?.standard ?? '—'})
             </MenuItem>
           ))}
         </TextField>

@@ -138,7 +138,7 @@ function DatasetMetadata({
   const metricItems: DimmableChipItem[] = dataset.metrics
     .map((m) => ({
       key: m.id,
-      label: `${m.name ?? m.label} (${m.unit})`,
+      label: `${m.name ?? m.label} (${m.unitInfo?.standard ?? '—'})`,
       tooltip: m.label ?? undefined,
       dimmed: boundMetricRow != null && m.id !== boundMetricRow.id,
     }))

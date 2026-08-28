@@ -110,7 +110,6 @@ export function useAddInputPort() {
       quantity?: string | null;
       unit?: string | null;
       requiredDimensions?: string[] | null;
-      supportedDimensions?: string[] | null;
     }) => {
       try {
         const result = await mutate({
@@ -126,9 +125,7 @@ export function useAddInputPort() {
               multi: args.multi ?? false,
               role: args.role ?? null,
               requiredDimensions: args.requiredDimensions?.length ? args.requiredDimensions : null,
-              supportedDimensions: args.supportedDimensions?.length
-                ? args.supportedDimensions
-                : null,
+              supportedDimensions: null,
             },
             version: draftHeadTokenVar(),
           },

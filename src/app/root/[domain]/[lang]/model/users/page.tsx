@@ -181,7 +181,7 @@ export default function InstanceUsersPage() {
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(
     null
   );
-  const [time, setTime] = useState(() => Date.now());
+  const [time] = useState(() => Date.now());
 
   const { data, loading, error, refetch } = useQuery(GET_INSTANCE_USERS, {
     fetchPolicy: 'cache-and-network',

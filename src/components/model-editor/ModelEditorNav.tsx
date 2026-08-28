@@ -70,12 +70,14 @@ const GET_NODE_SEARCH_LIST: TypedDocumentNode<
   query EditorNodeSearchList {
     instance {
       id
-      nodes {
-        id
-        identifier
-        name
-        ... on Node {
-          isOutcome
+      model {
+        nodes {
+          id
+          identifier
+          name
+          ... on Node {
+            isOutcome
+          }
         }
       }
     }
@@ -139,7 +141,7 @@ type SearchItem = { id: string; name: string; identifier?: string };
 type NodeSearchItem = SearchItem & { __typename?: string; isOutcome?: boolean };
 
 type NodeSearchListQuery = {
-  instance: { id: string; nodes: NodeSearchItem[] };
+  instance: { id: string; model: { nodes: NodeSearchItem[] } };
 };
 
 type DatasetSearchListQuery = {
@@ -337,7 +339,7 @@ export default function ModelEditorNav() {
   });
 
   const items: SearchItem[] = useMemo(() => {
-    if (mode === 'nodes') return nodesData?.instance.nodes ?? [];
+    if (mode === 'nodes') return nodesData?.instance.model.nodes ?? [];
     if (mode === 'datasets') return datasetsData?.instance.editor?.datasets ?? [];
     if (mode === 'dimensions') return dimensionsData?.instance.editor?.dimensions ?? [];
     return [];
@@ -350,7 +352,7 @@ export default function ModelEditorNav() {
   }, [query, items]);
 
   const outcomeNodes = useMemo<SearchItem[]>(() => {
-    const nodes = nodesData?.instance.nodes ?? [];
+    const nodes = nodesData?.instance.model.nodes ?? [];
     return nodes.filter((n) => n.isOutcome);
   }, [nodesData]);
 

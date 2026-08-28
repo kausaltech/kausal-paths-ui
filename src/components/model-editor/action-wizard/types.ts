@@ -75,8 +75,8 @@ export function deriveStateFromSource(
   allEdges: readonly EditorNodeEdgeFragment[],
   allNodes: readonly EditorNodeFieldsFragment[]
 ): Partial<WizardState> {
-  const nodesById = new Map(allNodes.map((n) => [n.id, n]));
-  const outgoingEdges = allEdges.filter((e) => e.fromRef.nodeId === action.id);
+  const nodesByUuid = new Map(allNodes.map((n) => [n.uuid, n]));
+  const outgoingEdges = allEdges.filter((e) => e.fromRef.nodeUuid === action.uuid);
   const spec = action.editor?.spec;
 
   const outputMetrics: OutputMetric[] = (spec?.outputPorts ?? []).map((p) => ({
@@ -87,12 +87,12 @@ export function deriveStateFromSource(
   }));
 
   const edgeMappings: DraftEdgeMapping[] = outgoingEdges.map((edge) => {
-    const targetNode = nodesById.get(edge.portRef.nodeId);
+    const targetNode = nodesByUuid.get(edge.portRef.nodeUuid);
     return {
       id: edge.id,
       outputMetricPortId: edge.fromRef.portId,
-      targetNodeId: edge.portRef.nodeId,
-      targetNodeName: targetNode?.name ?? edge.portRef.nodeId,
+      targetNodeId: targetNode?.id ?? edge.portRef.nodeUuid,
+      targetNodeName: targetNode?.name ?? edge.portRef.nodeUuid,
       targetPortId: edge.portRef.portId,
       tags: [],
       fromDimensions: [],

@@ -38,7 +38,7 @@ import { AttachSourceForm, SourceReferenceCard } from './shared';
 type MetricRow = DatasetDetailFieldsFragment['metrics'][number];
 type DimensionRow = DatasetDetailFieldsFragment['dimensions'][number];
 type CategoryRow = DimensionRow['categories'][number];
-type ConnectedNode = DatasetConnectedNodesQuery['instance']['nodes'][number];
+type ConnectedNode = DatasetConnectedNodesQuery['instance']['model']['nodes'][number];
 
 function CategoryChip({ cat, used }: { cat: CategoryRow; used: boolean }) {
   const t = useTranslations('model-editor');
@@ -485,7 +485,7 @@ export default function DatasetDetailsPanel({
                       {m.name ?? '—'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {m.unit}
+                      {m.unitInfo?.standard ?? '—'}
                     </Typography>
                   </Stack>
                 </Stack>

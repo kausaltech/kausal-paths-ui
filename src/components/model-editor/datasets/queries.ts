@@ -51,7 +51,10 @@ export const DATASET_SUMMARY_FIELDS = gql`
     metrics {
       id
       label
-      unit
+      unitInfo {
+        id
+        standard
+      }
     }
     lastModifiedAt
     lastModifiedBy {
@@ -162,7 +165,10 @@ export const DATASET_DETAIL_FIELDS = gql`
       id
       name
       label
-      unit
+      unitInfo {
+        id
+        standard
+      }
       previousSibling
       nextSibling
     }
@@ -183,7 +189,7 @@ export const DATASET_DETAIL_FIELDS = gql`
     portBindings {
       id
       portRef {
-        nodeId
+        nodeUuid
         portId
       }
     }
@@ -257,24 +263,26 @@ export const GET_DATASET_CONNECTED_NODES: TypedDocumentNode<
   query DatasetConnectedNodes($ids: [ID!]!) {
     instance {
       id
-      nodes(id: $ids) {
-        __typename
-        id
-        name
-        kind
-        ... on Node {
-          isOutcome
-        }
-        editor {
-          nodeType
-          spec {
-            typeConfig {
-              __typename
-              ... on SimpleConfigType {
-                nodeClass
-              }
-              ... on ActionConfigType {
-                nodeClass
+      model {
+        nodes(id: $ids) {
+          __typename
+          id
+          name
+          kind
+          ... on Node {
+            isOutcome
+          }
+          editor {
+            nodeType
+            spec {
+              typeConfig {
+                __typename
+                ... on SimpleConfigType {
+                  nodeClass
+                }
+                ... on ActionConfigType {
+                  nodeClass
+                }
               }
             }
           }

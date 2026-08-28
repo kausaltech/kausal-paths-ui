@@ -137,7 +137,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const connectedNodeIds = useMemo(() => {
     if (!dataset) return [] as string[];
     const ids = new Set<string>();
-    for (const binding of dataset.portBindings) ids.add(binding.portRef.nodeId);
+    for (const binding of dataset.portBindings) ids.add(binding.portRef.nodeUuid);
     return [...ids];
   }, [dataset]);
   const connectedNodeCount = connectedNodeIds.length;
@@ -147,7 +147,7 @@ export default function DatasetEditor({ datasetId }: Props) {
     skip: connectedNodeIds.length === 0,
     fetchPolicy: 'cache-and-network',
   });
-  const connectedNodes = connectedNodesData?.instance.nodes ?? [];
+  const connectedNodes = connectedNodesData?.instance.model.nodes ?? [];
 
   if (loading && !data) {
     return (

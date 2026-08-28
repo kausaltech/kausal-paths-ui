@@ -79,7 +79,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     role: port.role ?? null,
     unit: port.unit?.standard ?? null,
     requiredDimensions: [...port.requiredDimensions],
-    supportedDimensions: [...port.supportedDimensions],
+    supportedDimensions: null,
   }));
   const outputPorts: OutputPortInput[] = (spec?.outputPorts ?? []).map((port) => ({
     id: crypto.randomUUID(),

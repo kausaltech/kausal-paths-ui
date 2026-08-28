@@ -32,7 +32,7 @@ export function MuiThemeExample() {
         MUI Theme Integration
       </Typography>
 
-      <Typography variant="body1" paragraph>
+      <Typography variant="body1" component="p">
         This component demonstrates how Material-UI components are styled using your the
         multi-tenant JSON theme configuration. All colors, fonts, spacing, and other design tokens
         come from the theme.json file.
