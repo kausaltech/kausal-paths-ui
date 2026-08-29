@@ -1,3 +1,7 @@
 [submodule "kausal_common"]
 	path = kausal_common
 	url = https://github.com/kausaltech/kausal-ui-common.git
+[submodule "private/assistant"]
+	path = private/assistant
+	url = git@github.com:kausaltech/kausal-ui-ai-assistant.git
+	update = none

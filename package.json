@@ -10,7 +10,7 @@
     "build:webpack": "next build --webpack",
     "start": "next start",
     "download-schema": "node scripts/download-graphql-schema.mjs",
-    "graphql-codegen": "graphql-codegen --config codegen.ts && prettier --write ./src/common/__generated__/graphql.ts ./e2e-tests/__generated__/graphql.ts",
+    "graphql-codegen": "graphql-codegen --config codegen.ts",
     "prettier:fix": "prettier --write --cache ./",
     "prettier:check": "prettier --check --cache ./",
     "typecheck": "tsc -b",

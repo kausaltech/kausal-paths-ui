@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Box, CircularProgress, Drawer } from '@mui/material';
 
 import { useReactiveVar, useSuspenseQuery } from '@apollo/client/react';
+import { AssistantIntegration } from '@paths-assistant/client';
 import {
   type Edge,
   type EdgeMouseHandler,
@@ -41,6 +42,7 @@ import NodeDisplaySettingsMenu from './NodeDisplaySettingsMenu';
 import NodeGraphContextMenu, { type ContextMenuState } from './NodeGraphContextMenu';
 import './NodeGraphEditor.css';
 import { nodeNamesByUuidVar } from './constraintViolations';
+import { EditorUiProvider, useCreateEditorUiController } from './editor-ui';
 import {
   type CachedPosition,
   type CachedPositionSource,
@@ -77,7 +79,6 @@ const NODE_POINTER_THRESHOLD = 4;
 
 type FlowCanvasProps = {
   instanceId: string;
-  graphNodes: readonly EditorNodeFieldsFragment[];
   nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
   layoutedNodes: ElkNodeType[];
   layoutedEdges: Edge[];
@@ -102,7 +103,6 @@ type FlowCanvasProps = {
  */
 const FlowCanvas = memo(function FlowCanvas({
   instanceId,
-  graphNodes,
   nodeMap,
   layoutedNodes,
   layoutedEdges,
@@ -172,10 +172,8 @@ const FlowCanvas = memo(function FlowCanvas({
 
   const { onMoveEnd } = useGraphNavigation({
     instanceId,
-    nodes: graphNodes,
     nodeMap,
     inspectedNodeId,
-    onInspectNode,
     isLayoutCurrent,
     savedViewport,
   });
@@ -258,7 +256,6 @@ function FlowEditor(props: {
   outcomeNodeIds: readonly string[];
   actionGroups: readonly { id: string; name: string; color: string | null }[];
 }) {
-  const [inspectedNodeId, setInspectedNodeId] = useState<string | null>(null);
   const [userHiddenEdgeIds, setUserHiddenEdgeIds] = useState<ReadonlySet<string>>(() => new Set());
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const filters = useReactiveVar(nodeFiltersVar);
@@ -273,15 +270,6 @@ function FlowEditor(props: {
     | null
   >(null);
   const overlayOpen = overlay !== null;
-
-  // Adjust-state-during-render (React's recommended pattern) to reset the
-  // overlay when the inspected node changes, without the cascading render that
-  // an effect-based reset would cause.
-  const [prevInspectedNodeId, setPrevInspectedNodeId] = useState(inspectedNodeId);
-  if (prevInspectedNodeId !== inspectedNodeId) {
-    setPrevInspectedNodeId(inspectedNodeId);
-    setOverlay(null);
-  }
 
   const nodeMap = useMemo(
     () => new Map(props.nodes.flatMap((node) => [[node.id, node] as const, [node.uuid, node]])),
@@ -326,6 +314,28 @@ function FlowEditor(props: {
     [props.nodes, upstreamFilteredNodeIds]
   );
 
+  const visibleNodeIds = useMemo(
+    () => new Set(visibleNodes.map((node) => node.id)),
+    [visibleNodes]
+  );
+  const editorUi = useCreateEditorUiController({
+    nodes: props.nodes,
+    edges: props.edges,
+    nodeMap,
+    visibleNodeIds,
+  });
+  const { focusedNodeId: inspectedNodeId, highlightedNodeIds } = editorUi.state;
+  const { inspectNode, focusNode } = editorUi.actions;
+
+  // Adjust-state-during-render (React's recommended pattern) to reset the
+  // overlay when the inspected node changes, without the cascading render that
+  // an effect-based reset would cause.
+  const [prevInspectedNodeId, setPrevInspectedNodeId] = useState(inspectedNodeId);
+  if (prevInspectedNodeId !== inspectedNodeId) {
+    setPrevInspectedNodeId(inspectedNodeId);
+    setOverlay(null);
+  }
+
   const visibleEdges = useMemo(
     () =>
       props.edges.filter(
@@ -362,8 +372,6 @@ function FlowEditor(props: {
     }
     return refs;
   }, [props.edges, autoSnippedEdgeIds, nodeMap, visibleNodeUuids]);
-
-  const highlightedNodeIds = useMemo(() => new Set<string>(), []);
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
     return convertToElk(visibleNodes, visibleEdges, snippedConnectionsByNodeId);
@@ -470,39 +478,31 @@ function FlowEditor(props: {
     [nodeMap]
   );
 
-  // Holds a new node's id until it is present in the visible graph. Inspection
-  // is editor state, so it does not need to manipulate React Flow selection.
-  const [pendingInspectNodeId, setPendingInspectNodeId] = useState<string | null>(null);
-
   const handleNodeDeleted = useCallback(
     (nodeId: string) => {
-      setInspectedNodeId((prev) => (prev === nodeId ? null : prev));
+      if (inspectedNodeId === nodeId) inspectNode(null, 'user');
       handleResetLayout();
     },
-    [handleResetLayout]
+    [handleResetLayout, inspectNode, inspectedNodeId]
   );
 
   const crud = useNodeCrudActions({
     instanceId,
     allNodes: props.nodes,
     nodeMap,
-    onCreated: setPendingInspectNodeId,
+    onCreated: (nodeId) => {
+      void focusNode(nodeId, { origin: 'user', highlight: true });
+    },
     onDeleted: handleNodeDeleted,
     onSaveLayouts: handleSaveLayouts,
   });
 
-  // Adjust state during render once a newly created node reaches graph data.
-  if (
-    pendingInspectNodeId !== null &&
-    visibleNodes.some((node) => node.id === pendingInspectNodeId)
-  ) {
-    setInspectedNodeId(pendingInspectNodeId);
-    setPendingInspectNodeId(null);
-  }
-
-  const handleSnippedNodeClick = useCallback((nodeId: string) => {
-    setInspectedNodeId(nodeId);
-  }, []);
+  const handleSnippedNodeClick = useCallback(
+    (nodeId: string) => {
+      inspectNode(nodeId, 'user');
+    },
+    [inspectNode]
+  );
 
   const interactionCtx = useMemo(
     () => ({
@@ -516,109 +516,110 @@ function FlowEditor(props: {
   const inspectedNode = inspectedNodeId ? (nodeMap.get(inspectedNodeId) ?? null) : null;
 
   return (
-    <NodeGraphInteractionContext value={interactionCtx}>
-      <Box sx={{ display: 'flex', width: '100%', height: '100%' }}>
-        <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ flex: 1, position: 'relative' }}>
-            <FlowCanvas
-              instanceId={instanceId}
-              graphNodes={props.nodes}
-              nodeMap={nodeMap}
-              layoutedNodes={layoutedNodes}
-              layoutedEdges={layoutedEdges}
-              persistedPositions={persistedPositions}
-              inspectedNodeId={inspectedNodeId}
-              layoutResetCounter={layoutResetCounter}
-              onInspectNode={setInspectedNodeId}
-              onResetLayout={handleResetLayout}
-              onEdgeContextMenu={onEdgeContextMenu}
-              onNodeContextMenu={onNodeContextMenu}
-              onPaneContextMenu={onPaneContextMenu}
-              onSaveLayouts={handleSaveLayouts}
-            />
-            <NodeGraphContextMenu
-              state={contextMenu}
-              onClose={() => setContextMenu(null)}
-              onHideEdge={handleHideEdge}
-              onOpenActionWizard={handleOpenActionWizard}
-              onDuplicateNode={crud.duplicateNode}
-              onDeleteNode={crud.requestDeleteNode}
-              onNewNode={crud.createNodeAt}
-            />
-            <Drawer
-              variant="persistent"
-              anchor="right"
-              open={!!inspectedNode}
-              slotProps={{
-                paper: {
-                  onClick: () => {
-                    if (overlayOpen) setOverlay(null);
-                  },
-                  sx: {
-                    width: DRAWER_WIDTH,
-                    maxWidth: 'none',
-                    boxShadow: 10,
-                    cursor: overlayOpen ? 'pointer' : 'default',
-                    transform: overlayOpen
-                      ? `translateX(-${OVERLAY_DRAWER_WIDTH - DRAWER_WIDTH + PANEL_PEEK_WIDTH}px) !important`
-                      : undefined,
-                    transition: (theme) =>
-                      theme.transitions.create('transform', {
-                        easing: theme.transitions.easing.sharp,
-                        duration: theme.transitions.duration.standard,
-                      }),
-                  },
-                },
-              }}
-            >
-              <NodeDetailsPanel
-                node={inspectedNode}
-                allNodes={props.nodes}
-                edges={props.edges}
-                actionGroups={props.actionGroups}
-                onClose={() => setInspectedNodeId(null)}
-                onSelectNode={setInspectedNodeId}
-                onShowMetrics={(nodeId, nodeName) =>
-                  setOverlay({ kind: 'metrics', nodeId, nodeName })
-                }
-                onShowDataset={(bindingId) => setOverlay({ kind: 'dataset', bindingId })}
+    <EditorUiProvider controller={editorUi}>
+      <NodeGraphInteractionContext value={interactionCtx}>
+        <Box sx={{ display: 'flex', position: 'relative', width: '100%', height: '100%' }}>
+          <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <Box data-editor-ui-target="graph-canvas" sx={{ flex: 1, position: 'relative' }}>
+              <FlowCanvas
+                instanceId={instanceId}
+                nodeMap={nodeMap}
+                layoutedNodes={layoutedNodes}
+                layoutedEdges={layoutedEdges}
+                persistedPositions={persistedPositions}
+                inspectedNodeId={inspectedNodeId}
+                layoutResetCounter={layoutResetCounter}
+                onInspectNode={(nodeId) => inspectNode(nodeId, 'user')}
+                onResetLayout={handleResetLayout}
+                onEdgeContextMenu={onEdgeContextMenu}
+                onNodeContextMenu={onNodeContextMenu}
+                onPaneContextMenu={onPaneContextMenu}
+                onSaveLayouts={handleSaveLayouts}
               />
-            </Drawer>
-            <MetricsDrawer
-              nodeId={overlay?.kind === 'metrics' ? overlay.nodeId : null}
-              nodeName={overlay?.kind === 'metrics' ? overlay.nodeName : null}
-              outcomeNodes={outcomeNodes}
-              open={overlay?.kind === 'metrics'}
-              onClose={() => setOverlay(null)}
-              width={OVERLAY_DRAWER_WIDTH}
-            />
-            <DatasetDrawer
-              nodeId={inspectedNode?.id ?? null}
-              bindingId={overlay?.kind === 'dataset' ? overlay.bindingId : null}
-              open={overlay?.kind === 'dataset' && !!inspectedNode}
-              onClose={() => setOverlay(null)}
-              width={OVERLAY_DRAWER_WIDTH}
-            />
+              <NodeGraphContextMenu
+                state={contextMenu}
+                onClose={() => setContextMenu(null)}
+                onHideEdge={handleHideEdge}
+                onOpenActionWizard={handleOpenActionWizard}
+                onDuplicateNode={crud.duplicateNode}
+                onDeleteNode={crud.requestDeleteNode}
+                onNewNode={crud.createNodeAt}
+              />
+              <Drawer
+                variant="persistent"
+                anchor="right"
+                open={!!inspectedNode}
+                slotProps={{
+                  paper: {
+                    onClick: () => {
+                      if (overlayOpen) setOverlay(null);
+                    },
+                    sx: {
+                      width: DRAWER_WIDTH,
+                      maxWidth: 'none',
+                      boxShadow: 10,
+                      cursor: overlayOpen ? 'pointer' : 'default',
+                      transform: overlayOpen
+                        ? `translateX(-${OVERLAY_DRAWER_WIDTH - DRAWER_WIDTH + PANEL_PEEK_WIDTH}px) !important`
+                        : undefined,
+                      transition: (theme) =>
+                        theme.transitions.create('transform', {
+                          easing: theme.transitions.easing.sharp,
+                          duration: theme.transitions.duration.standard,
+                        }),
+                    },
+                  },
+                }}
+              >
+                <NodeDetailsPanel
+                  node={inspectedNode}
+                  allNodes={props.nodes}
+                  edges={props.edges}
+                  actionGroups={props.actionGroups}
+                  onClose={() => inspectNode(null, 'user')}
+                  onShowMetrics={(nodeId, nodeName) =>
+                    setOverlay({ kind: 'metrics', nodeId, nodeName })
+                  }
+                  onShowDataset={(bindingId) => setOverlay({ kind: 'dataset', bindingId })}
+                />
+              </Drawer>
+              <MetricsDrawer
+                nodeId={overlay?.kind === 'metrics' ? overlay.nodeId : null}
+                nodeName={overlay?.kind === 'metrics' ? overlay.nodeName : null}
+                outcomeNodes={outcomeNodes}
+                open={overlay?.kind === 'metrics'}
+                onClose={() => setOverlay(null)}
+                width={OVERLAY_DRAWER_WIDTH}
+              />
+              <DatasetDrawer
+                nodeId={inspectedNode?.id ?? null}
+                bindingId={overlay?.kind === 'dataset' ? overlay.bindingId : null}
+                open={overlay?.kind === 'dataset' && !!inspectedNode}
+                onClose={() => setOverlay(null)}
+                width={OVERLAY_DRAWER_WIDTH}
+              />
+            </Box>
           </Box>
+          <AssistantIntegration />
         </Box>
-      </Box>
-      {wizardOpen && (
-        <Suspense fallback={null}>
-          <ActionWizard
-            key={wizardSourceAction?.id ?? 'blank'}
-            open={wizardOpen}
-            onClose={() => {
-              setWizardOpen(false);
-              setWizardSourceAction(null);
-            }}
-            nodes={props.nodes}
-            edges={props.edges}
-            initialSourceAction={wizardSourceAction}
-          />
-        </Suspense>
-      )}
-      <NodeCrudDialogs crud={crud} />
-    </NodeGraphInteractionContext>
+        {wizardOpen && (
+          <Suspense fallback={null}>
+            <ActionWizard
+              key={wizardSourceAction?.id ?? 'blank'}
+              open={wizardOpen}
+              onClose={() => {
+                setWizardOpen(false);
+                setWizardSourceAction(null);
+              }}
+              nodes={props.nodes}
+              edges={props.edges}
+              initialSourceAction={wizardSourceAction}
+            />
+          </Suspense>
+        )}
+        <NodeCrudDialogs crud={crud} />
+      </NodeGraphInteractionContext>
+    </EditorUiProvider>
   );
 }
 

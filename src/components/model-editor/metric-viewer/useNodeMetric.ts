@@ -14,7 +14,8 @@ import { DIMENSIONAL_METRIC_FIELDS } from '../queries';
 
 type NodeOutputDataDocument = TypedDocumentNode<NodeOutputDataQuery, NodeOutputDataQueryVariables>;
 
-const GET_NODE_OUTPUT_DATA: NodeOutputDataDocument = gql`
+// Exported for optional editor extensions that inspect node output.
+export const GET_NODE_OUTPUT_DATA: NodeOutputDataDocument = gql`
   query NodeOutputData($nodeId: ID!) {
     node(id: $nodeId) {
       id

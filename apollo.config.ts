@@ -1,12 +1,10 @@
-import { getLocalSchema, getRemoteSchema } from './graphql.config.ts';
-
-const JS = '*.{js,jsx,ts,tsx,mjs}';
+import graphqlConfig, { getLocalSchema, getRemoteSchema } from './graphql.config.ts';
 
 const localSchema = getLocalSchema();
 
 const config = {
   client: {
-    includes: [`./src/**/${JS}`, `./e2e-tests/**/${JS}`],
+    includes: graphqlConfig.documents,
     excludes: [
       '**/node_modules/**',
       '**/__generated__/**',

@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import dotenv from 'dotenv';
 import type { IGraphQLProject } from 'graphql-config';
 
+import { getPrivateExtensions } from './configs/private-extensions.ts';
+
 dotenv.config({ quiet: true });
 
 export function getLocalSchema() {
@@ -22,10 +24,16 @@ export function getSchema() {
   return getLocalSchema() ?? getRemoteSchema();
 }
 const JS = '*.{js,jsx,ts,tsx,mjs}';
+const documentDirs = [
+  'src',
+  'e2e-tests',
+  'kausal_common/src',
+  ...getPrivateExtensions().map(({ sourceDir }) => sourceDir),
+];
 
 const config = {
   schema: getSchema(),
-  documents: [`./src/**/${JS}`, `./e2e-tests/**/${JS}`, `./kausal_common/src/**/${JS}`],
+  documents: documentDirs.map((dir) => `./${dir}/**/${JS}`),
 } satisfies IGraphQLProject;
 
 export default config;

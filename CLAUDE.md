@@ -86,6 +86,7 @@ src/
   utils/               # General utilities
   middleware/          # Proxy helpers (instance resolution)
 kausal_common/         # Shared code (git submodule) with common configs
+private/assistant/     # Optional private assistant submodule (`update = none`)
 e2e-tests/             # Playwright E2E tests (separate workspace)
 ```
 
@@ -99,10 +100,19 @@ e2e-tests/             # Playwright E2E tests (separate workspace)
 
 **Theming**: Uses `@kausal/themes` (public) and optionally `@kausal-private/themes-private` for customer-specific themes. Themes are initialised at build time in `next.config.ts`.
 
+**Optional private assistant**: `private/assistant` is a private submodule with
+`update = none`, so public and recursive clones leave it uninitialized. Initialize
+it explicitly with `git submodule update --init --checkout private/assistant`.
+The public app selects no-op client/server fallbacks when its `package.json` is
+absent. Root install, lint, typecheck, formatting, and GraphQL codegen commands
+include the module whenever it is initialized.
+
 ### Important Environment Variables
 
 - `PATHS_BACKEND_URL` — Backend base URL (e.g. `http://localhost:8000`)
 - `ANALYZE_BUNDLE=1` — Enable webpack bundle analyzer
+- `ANTHROPIC_API_KEY` — Server-only secret for the model editor assistant (`/api/assistant`); without it the assistant endpoint returns 503. Never expose via `PUBLIC_ENV_VARS`.
+- `ASSISTANT_MODEL_ID` — Override the assistant's Claude model (default `claude-opus-5`)
 
 ## Code Conventions
 

@@ -4,14 +4,13 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { type OnMoveEnd, type Viewport, useReactFlow } from '@xyflow/react';
 
 import type { EditorNodeFieldsFragment } from '@/common/__generated__/graphql';
+import { useEditorUiActions } from './editor-ui';
 import { saveViewport } from './layoutCache';
 
 type Params = {
   instanceId: string;
-  nodes: readonly EditorNodeFieldsFragment[];
   nodeMap: ReadonlyMap<string, EditorNodeFieldsFragment>;
   inspectedNodeId: string | null;
-  onInspectNode: (nodeId: string) => void;
   /** True once the ELK layout has been applied to React Flow's node state. */
   isLayoutCurrent: boolean;
   /** The viewport the user left this instance at, captured once on mount. */
@@ -31,17 +30,16 @@ type Params = {
  */
 export function useGraphNavigation({
   instanceId,
-  nodes,
   nodeMap,
   inspectedNodeId,
-  onInspectNode,
   isLayoutCurrent,
   savedViewport,
 }: Params): { onMoveEnd: OnMoveEnd } {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedNodeKey = searchParams.get('node');
-  const { fitView, getNodes, setViewport } = useReactFlow();
+  const { setViewport } = useReactFlow();
+  const { focusNode } = useEditorUiActions();
   const handledNodeKeyRef = useRef<string | null>(null);
   const viewportRestoredRef = useRef(false);
 
@@ -74,20 +72,11 @@ export function useGraphNavigation({
     if (!isLayoutCurrent) return;
     if (handledNodeKeyRef.current === requestedNodeKey) return;
 
-    const target =
-      nodes.find((n) => n.identifier === requestedNodeKey) ??
-      nodes.find((n) => n.id === requestedNodeKey);
-    if (!target) return;
-
-    const rfNodes = getNodes();
-    const targetRfNode = rfNodes.find((n) => n.id === target.id);
-    if (!targetRfNode) return;
-
     handledNodeKeyRef.current = requestedNodeKey;
-    onInspectNode(target.id);
-    // fitView with a single node centers and zooms on it natively.
-    void fitView({ nodes: [{ id: target.id }], maxZoom: 1.2, duration: 400, padding: 0.4 });
-  }, [requestedNodeKey, isLayoutCurrent, nodes, getNodes, fitView, onInspectNode]);
+    void focusNode(requestedNodeKey, { origin: 'search', zoom: 'fit' }).then((result) => {
+      if (result.status !== 'focused') handledNodeKeyRef.current = null;
+    });
+  }, [requestedNodeKey, isLayoutCurrent, focusNode]);
 
   // Mirror the inspected node back into the URL (`?node=<identifier>`) so
   // the view is linkable/refreshable. Uses `window.history.replaceState` rather

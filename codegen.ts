@@ -2,6 +2,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
 
+import { getPrivateExtensions } from './configs/private-extensions.ts';
 import graphqlConfig, { getSchema } from './graphql.config.ts';
 
 type GraphQLOpConfig = TypeScriptDocumentsPluginConfig & TypeScriptPluginConfig;
@@ -38,17 +39,43 @@ const generalExcludes = [
 ];
 const e2eTestsExclude = '!./e2e-tests/**';
 const appExclude = '!./src/**';
-const apolloConfigDocs = [...generalExcludes, ...graphqlConfig.documents];
+const privateExtensions = getPrivateExtensions();
+const privateExcludes = privateExtensions.map(({ rootDir }) => `!./${rootDir}/**`);
+const allDocuments = [...generalExcludes, ...graphqlConfig.documents];
+const appDocuments = [e2eTestsExclude, ...privateExcludes, ...allDocuments];
+const e2eDocuments = [appExclude, ...privateExcludes, ...allDocuments];
 const schema = getSchema();
 
 console.log(`🍓 Using GraphQL schema from: ${schema}`);
 
+function getPrivateDocuments(currentRootDir: string): string[] {
+  const otherPrivateExcludes = privateExtensions
+    .filter(({ rootDir }) => rootDir !== currentRootDir)
+    .map(({ rootDir }) => `!./${rootDir}/**`);
+
+  return [appExclude, e2eTestsExclude, ...otherPrivateExcludes, ...allDocuments];
+}
+
+const privateGenerates: NonNullable<CodegenConfig['generates']> = Object.fromEntries(
+  privateExtensions.map(({ rootDir, sourceDir }) => [
+    `${sourceDir}/__generated__/graphql.ts`,
+    {
+      plugins: ['typescript-operations'],
+      documents: getPrivateDocuments(rootDir),
+      config: tsoConfig,
+    },
+  ])
+);
+
 const config: CodegenConfig = {
   schema,
+  hooks: {
+    afterAllFileWrite: ['prettier --write'],
+  },
   generates: {
     'src/common/__generated__/possible_types.json': {
       plugins: ['fragment-matcher'],
-      documents: [e2eTestsExclude, ...apolloConfigDocs],
+      documents: appDocuments,
       config: {
         useExplicitTyping: true,
       },
@@ -62,7 +89,7 @@ const config: CodegenConfig = {
     // },
     'src/common/__generated__/graphql.ts': {
       plugins: ['typescript-operations'],
-      documents: [e2eTestsExclude, ...apolloConfigDocs],
+      documents: appDocuments,
       config: tsoConfig,
     },
     'e2e-tests/__generated__/graphql.ts': {
@@ -72,8 +99,9 @@ const config: CodegenConfig = {
         useTypeImports: true,
         nonOptionalTypename: true,
       } satisfies GraphQLOpConfig,
-      documents: [appExclude, ...apolloConfigDocs],
+      documents: e2eDocuments,
     },
+    ...privateGenerates,
   },
 };
 

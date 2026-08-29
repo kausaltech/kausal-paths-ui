@@ -33,6 +33,19 @@ If you already have a pre-existing clone, you can update the submodule with:
 git submodule update --init
 ```
 
+The private model-editor assistant is pinned as an optional submodule and is
+skipped by normal recursive updates. Kausal developers with repository access
+can initialize it explicitly:
+
+```bash
+git submodule update --init --checkout private/assistant
+```
+
+When initialized, the normal `pnpm install`, `pnpm lint`, `pnpm typecheck`,
+`pnpm prettier:check`, and `pnpm graphql-codegen` commands include the private
+module. Without it, the public application uses a no-op fallback and does not
+display the assistant UI.
+
 Navigate to the paths-ui folder. Allow loading environment variables:
 
 ```bash
@@ -94,6 +107,10 @@ AUTH_SECRET=              # Secret for signing/encrypting session cookies (gener
 AUTH_CLIENT_ID=           # OAuth client ID from the backend's AuthApplication
 AUTH_CLIENT_SECRET=       # OAuth client secret from the backend's AuthApplication
 AUTH_ALLOWED_HOSTS=       # Additional allowed hostnames, comma-separated (optional, for non-wildcard domains)
+
+# Optional private model-editor assistant
+ANTHROPIC_API_KEY=        # Server-only; never expose through PUBLIC_ENV_VARS
+ASSISTANT_MODEL_ID=       # Optional; defaults to claude-opus-5
 ```
 
 `WILDCARD_DOMAINS` (defaults to `localhost` in dev) controls which

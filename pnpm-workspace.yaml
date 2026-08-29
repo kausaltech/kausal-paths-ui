@@ -1,5 +1,6 @@
 packages:
   - kausal_common
+  - private/assistant
 allowBuilds:
   '@parcel/watcher': false
   '@sentry-internal/node-cpu-profiler': false

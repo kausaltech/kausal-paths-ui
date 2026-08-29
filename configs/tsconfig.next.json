@@ -6,11 +6,13 @@
     "paths": {
       "@/*": ["../src/*"],
       "@common/*": ["../kausal_common/src/*"],
-      "@generated/paths/graphql": ["../src/common/__generated__/graphql.ts"]
+      "@generated/paths/graphql": ["../src/common/__generated__/graphql.ts"],
+      "@paths-assistant/client": ["../src/features/assistant/fallback-client.tsx"],
+      "@paths-assistant/server": ["../src/features/assistant/fallback-server.ts"]
     },
     "checkJs": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["../next-env.d.ts", "../src", "../kausal_common/src"],
+  "include": ["../next-env.d.ts", "../src", "../kausal_common/src", "../private/*/src"],
   "exclude": ["../kausal_common/src/components/paths", "../kausal_common/src/utils/paths"]
 }

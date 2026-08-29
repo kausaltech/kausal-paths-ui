@@ -4,7 +4,6 @@ import { Box, Chip, FormControlLabel, IconButton, Switch, Typography } from '@mu
 
 import { type TypedDocumentNode, gql } from '@apollo/client';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client/react';
-import { useReactFlow } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import 'overlayscrollbars/styles/overlayscrollbars.css';
@@ -22,6 +21,7 @@ import {
 import { useSession } from '@/lib/auth-client';
 import NodeChangeHistorySection from './NodeChangeHistorySection';
 import NodeDetailsSection from './NodeDetailsSection';
+import { useEditorUiActions } from './editor-ui';
 import { mockNodeEditsVar } from './mockEdits';
 import { NodeContentSection } from './node-details/NodeContentSection';
 import NodeInputPortsSection from './node-details/NodeInputPortsSection';
@@ -221,7 +221,6 @@ export type NodeDetailsPanelProps = {
   edges: readonly EditorNodeEdgeFragment[];
   actionGroups: readonly ActionGroupOption[];
   onClose: () => void;
-  onSelectNode: (nodeId: string) => void;
   onShowMetrics?: (nodeId: string, nodeName: string | null) => void;
   onShowDataset?: (bindingId: string) => void;
 };
@@ -232,12 +231,11 @@ export default function NodeDetailsPanel({
   edges,
   actionGroups,
   onClose,
-  onSelectNode,
   onShowMetrics,
   onShowDataset,
 }: NodeDetailsPanelProps) {
   const t = useTranslations('model-editor');
-  const { setCenter, getZoom, getNodes } = useReactFlow();
+  const { focusNode } = useEditorUiActions();
   const nodeEdits = useReactiveVar(mockNodeEditsVar);
   const statusEntry = useReactiveVar(nodeStatusVar)[node?.id ?? ''];
   const { data: session } = useSession();
@@ -264,18 +262,9 @@ export default function NodeDetailsPanel({
 
   const handleNavigateToNode = useCallback(
     (targetNodeId: string) => {
-      const rfNodes = getNodes();
-      const targetRfNode = rfNodes.find((n) => n.id === targetNodeId);
-      if (targetRfNode) {
-        const width = targetRfNode.measured?.width ?? targetRfNode.width ?? 0;
-        const height = targetRfNode.measured?.height ?? targetRfNode.height ?? 0;
-        const cx = targetRfNode.position.x + width / 2;
-        const cy = targetRfNode.position.y + height / 2;
-        void setCenter(cx, cy, { zoom: getZoom(), duration: 400 });
-      }
-      onSelectNode(targetNodeId);
+      void focusNode(targetNodeId, { origin: 'user', zoom: 'preserve' });
     },
-    [getNodes, setCenter, getZoom, onSelectNode]
+    [focusNode]
   );
 
   const handleHover = useCallback((nodeId: string | null) => {
@@ -333,7 +322,7 @@ export default function NodeDetailsPanel({
   return (
     // Generous bottom padding so the last section clears the panel edge when
     // scrolled to the end.
-    <Box sx={{ p: 0, pb: 8 }}>
+    <Box data-editor-ui-target="node-details" sx={{ p: 0, pb: 8 }}>
       <Box
         sx={{
           display: 'flex',

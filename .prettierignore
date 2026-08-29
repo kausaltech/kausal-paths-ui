@@ -4,6 +4,7 @@
 **/.hg
 **/node_modules
 **/__generated__/**
+**/pnpm-lock.yaml
 e2e-tests/playwright-report/**
 e2e-tests/test-results/**
 next-env.d.ts

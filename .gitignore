@@ -68,3 +68,6 @@ yarn-error.log
 .pnpm-store/
 .mise/
 .playwright-cli/
+
+# Local assistant debug logs
+.assistant-logs/

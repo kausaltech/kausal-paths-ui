@@ -438,7 +438,10 @@ export default function ModelEditorNav() {
         <>
           <Divider />
 
-          <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box
+            data-editor-ui-target="node-search"
+            sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
             <TextField
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -646,6 +649,7 @@ function PreviewModeToggle() {
     >
       <Box
         component="span"
+        data-editor-ui-target="preview-toggle"
         sx={{
           display: 'flex',
           alignItems: 'center',
