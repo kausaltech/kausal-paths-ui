@@ -53,7 +53,7 @@ E2E tests live in `e2e-tests/` as a separate pnpm workspace with Playwright. The
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict, with zero type errors)
 - **GraphQL**: Apollo Client 3 with `@graphql-codegen` for type generation
-- **Styling**: Emotion (styled components) + MUI 7 + Bootstrap 5 / Reactstrap + Sass
+- **Styling**: Emotion (styled components) + MUI 9 + Bootstrap 5 / Reactstrap + Sass
 - **i18n**: next-intl (locales: en, fi, sv, de, de-CH, cs, da, lv, pl, es-US, el)
 - **Charting**: ECharts, custom graph components (Cytoscape, @xyflow/react)
 - **Monitoring**: Sentry + OpenTelemetry
