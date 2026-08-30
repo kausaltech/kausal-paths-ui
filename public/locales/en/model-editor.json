@@ -43,6 +43,7 @@
   "assistant-send": "Send",
   "assistant-stop": "Stop",
   "assistant-title": "Assistant",
+  "assistant-working": "Working…",
   "bindings-add-assignment": "Add assignment",
   "bindings-add-filter": "Add filter",
   "bindings-assign-dimension-help": "Adds the selected dimension to the data, labeling all rows with the chosen category.",

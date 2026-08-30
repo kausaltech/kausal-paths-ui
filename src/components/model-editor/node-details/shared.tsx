@@ -47,6 +47,8 @@ type ConnectedNodeChipProps = {
   nodeId: string;
   label: string;
   style: NodeStyle;
+  /** Render as a vertically spaced span when embedded in inline prose. */
+  inline?: boolean;
   onSelect: (nodeId: string) => void;
   onHover: (nodeId: string | null) => void;
   /** When provided, renders a remove affordance that unbinds this source. */
@@ -61,6 +63,7 @@ export function ConnectedNodeChip({
   nodeId,
   label,
   style,
+  inline = false,
   onSelect,
   onHover,
   onDelete,
@@ -71,6 +74,7 @@ export function ConnectedNodeChip({
     label.length > CHIP_LABEL_MAX ? `${label.slice(0, CHIP_LABEL_MAX - 1)}…` : label;
   return (
     <Chip
+      component={inline ? 'span' : 'div'}
       icon={<Box sx={{ color: style.border, display: 'flex' }}>{style.icon}</Box>}
       label={truncated}
       title={label}
@@ -91,6 +95,7 @@ export function ConnectedNodeChip({
         backgroundColor: 'grey.100',
         borderColor: style.border,
         color: style.border,
+        ...(inline ? { my: 0.25, verticalAlign: 'middle' } : {}),
         '& .MuiChip-icon': { color: style.border, ml: '4px' },
       }}
     />
