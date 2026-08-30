@@ -424,6 +424,12 @@ export type UpdateDatasetBindingInput = {
   transformations: Array<DatasetTransformationInput> | null | undefined;
 };
 
+export type UpdateDatasetInput = {
+  datasetId: string;
+  identifier: string | null | undefined;
+  name: string | null | undefined;
+};
+
 export type UpdateDimensionCategoryInput = {
   categoryId: string;
   identifier: string | null | undefined;
@@ -1586,6 +1592,32 @@ export type CreateDatasetMetricMutation = (
        }
       & { __typename: 'DatasetEditorMutation' }
     ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateDatasetMutationVariables = Exact<{
+  instanceId: string | number;
+  input: UpdateDatasetInput;
+}>;
+
+
+export type UpdateDatasetMutation = (
+  { instanceEditor: (
+    { updateDataset:
+      | (
+        { id: string, name: string, identifier: string | null }
+        & { __typename: 'Dataset' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
     & { __typename: 'InstanceEditorMutation' }
   ) }
   & { __typename: 'Mutation' }

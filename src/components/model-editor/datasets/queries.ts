@@ -29,6 +29,8 @@ import type {
   UnresolveDataPointCommentMutationVariables,
   UpdateDataPointsMutation,
   UpdateDataPointsMutationVariables,
+  UpdateDatasetMutation,
+  UpdateDatasetMutationVariables,
 } from '@/common/__generated__/graphql';
 import { OPERATION_INFO_FIELDS } from '../dimensions/queries';
 
@@ -308,6 +310,28 @@ export const CREATE_METRIC: TypedDocumentNode<
           ... on OperationInfo {
             ...OperationInfoFields
           }
+        }
+      }
+    }
+  }
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_DATASET: TypedDocumentNode<
+  UpdateDatasetMutation,
+  UpdateDatasetMutationVariables
+> = gql`
+  mutation UpdateDataset($instanceId: ID!, $input: UpdateDatasetInput!) {
+    instanceEditor(instanceId: $instanceId) {
+      updateDataset(input: $input) {
+        __typename
+        ... on Dataset {
+          id
+          name
+          identifier
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
         }
       }
     }

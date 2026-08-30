@@ -50,6 +50,7 @@ import {
   DELETE_SOURCE_REFERENCE,
   GET_DATASET_CONNECTED_NODES,
   GET_INSTANCE_DATASET,
+  UPDATE_DATASET,
 } from './queries';
 import { type CommentWithDataPoint, type SelectedCell } from './shared';
 import { useDataPointComments } from './useDataPointComments';
@@ -85,6 +86,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [deleteSourceReference] = useMutation(DELETE_SOURCE_REFERENCE);
   const [createDataSource] = useMutation(CREATE_DATA_SOURCE);
   const [createMetric] = useMutation(CREATE_METRIC);
+  const [updateDataset] = useMutation(UPDATE_DATASET);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getModelEditorSection(pathname, 'datasets');
@@ -313,6 +315,27 @@ export default function DatasetEditor({ datasetId }: Props) {
     return payload;
   };
 
+  const handleRenameDataset = async (name: string) => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
+    const result = await updateDataset({
+      variables: {
+        instanceId: instance.id,
+        // `identifier: undefined` leaves it out of the request entirely — an
+        // explicit null could be read as clearing it.
+        input: { datasetId: dataset.id, name, identifier: undefined },
+      },
+    });
+    const payload = result.data?.instanceEditor.updateDataset;
+    if (payload?.__typename !== 'Dataset') {
+      const messages =
+        payload?.__typename === 'OperationInfo'
+          ? payload.messages.map((m) => m.message).join('; ')
+          : '';
+      throw new Error(messages || t('common-failed'));
+    }
+    await refetch();
+  };
+
   const handleCreateMetric = async (input: AddMetricInput) => {
     if (readOnly) throw new Error(t('entity-read-only-desc'));
     const result = await createMetric({
@@ -516,6 +539,7 @@ export default function DatasetEditor({ datasetId }: Props) {
               onDetachSource={handleDetachSource}
               onCreateDataSource={handleCreateDataSource}
               onCreateMetric={handleCreateMetric}
+              onRenameDataset={handleRenameDataset}
               onNotice={setNotice}
               onNavigateToNode={(id) =>
                 router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)

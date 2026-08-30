@@ -202,7 +202,6 @@
   "datasets-resolve": "Ratkaise",
   "datasets-resolved": "Ratkaistu",
   "datasets-resolved-by": "ratkaissut {name} · {date}",
-  "datasets-saving-metadata-not-implemented": "Tietoaineiston metatietojen tallentamista ei ole vielä toteutettu taustajärjestelmässä.",
   "datasets-saving-progress": "Tallennetaan {current}/{total} datapistettä…",
   "datasets-select-datapoint-for-details": "Valitse datapiste ruudukosta nähdäksesi sen tiedot.",
   "datasets-select-datapoint-to-comment": "Valitse kommentoitava datapiste",

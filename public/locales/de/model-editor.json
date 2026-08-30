@@ -202,7 +202,6 @@
   "datasets-resolve": "Auflösen",
   "datasets-resolved": "Aufgelöst",
   "datasets-resolved-by": "von {name} · {date}",
-  "datasets-saving-metadata-not-implemented": "Das Speichern von Datensatz-Metadaten ist im Backend noch nicht implementiert.",
   "datasets-saving-progress": "{current} von {total} Datenpunkten werden gespeichert…",
   "datasets-select-datapoint-for-details": "Wählen Sie einen Datenpunkt im Raster aus, um dessen Details anzuzeigen.",
   "datasets-select-datapoint-to-comment": "Wählen Sie einen Datenpunkt zum Kommentieren aus",

@@ -217,6 +217,7 @@ type Props = {
   onDetachSource: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
   onCreateMetric: (input: AddMetricInput) => Promise<void>;
+  onRenameDataset: (name: string) => Promise<void>;
   onNotice: (message: string) => void;
   onNavigateToNode: (nodeId: string) => void;
   readOnly: boolean;
@@ -235,6 +236,7 @@ export default function DatasetDetailsPanel({
   onDetachSource,
   onCreateDataSource,
   onCreateMetric,
+  onRenameDataset,
   onNotice,
   onNavigateToNode,
   readOnly,
@@ -251,6 +253,21 @@ export default function DatasetDetailsPanel({
     setName(dataset.name);
   }
   const nameDirty = name !== dataset.name;
+  const [savingName, setSavingName] = useState(false);
+
+  const handleSaveName = async () => {
+    const trimmed = name.trim();
+    if (trimmed === '' || savingName) return;
+    setSavingName(true);
+    try {
+      await onRenameDataset(trimmed);
+      onNotice(t('common-changes-saved'));
+    } catch (err) {
+      onNotice(err instanceof Error ? err.message : t('common-failed'));
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   return (
     <>
@@ -332,15 +349,21 @@ export default function DatasetDetailsPanel({
                 justifyContent: 'flex-end',
               }}
             >
-              <Button size="small" variant="outlined" onClick={() => setName(dataset.name)}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setName(dataset.name)}
+                disabled={savingName}
+              >
                 {t('common-discard')}
               </Button>
               <Button
                 size="small"
                 variant="contained"
-                onClick={() => onNotice(t('datasets-saving-metadata-not-implemented'))}
+                onClick={() => void handleSaveName()}
+                disabled={savingName || name.trim() === ''}
               >
-                {t('common-save-changes')}
+                {savingName ? t('common-saving') : t('common-save-changes')}
               </Button>
             </Stack>
           )}
