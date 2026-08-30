@@ -17,6 +17,8 @@ import type {
   DatasetConnectedNodesQueryVariables,
   DeleteDataPointsMutation,
   DeleteDataPointsMutationVariables,
+  DeleteDatasetMetricMutation,
+  DeleteDatasetMetricMutationVariables,
   DeleteSourceReferenceMutation,
   DeleteSourceReferenceMutationVariables,
   InstanceDatasetQuery,
@@ -29,6 +31,8 @@ import type {
   UnresolveDataPointCommentMutationVariables,
   UpdateDataPointsMutation,
   UpdateDataPointsMutationVariables,
+  UpdateDatasetMetricMutation,
+  UpdateDatasetMetricMutationVariables,
   UpdateDatasetMutation,
   UpdateDatasetMutationVariables,
 } from '@/common/__generated__/graphql';
@@ -175,6 +179,10 @@ export const DATASET_DETAIL_FIELDS = gql`
         id
         standard
       }
+      quantity {
+        id
+        label
+      }
       previousSibling
       nextSibling
     }
@@ -304,8 +312,70 @@ export const CREATE_METRIC: TypedDocumentNode<
               id
               standard
             }
+            quantity {
+              id
+              label
+            }
             previousSibling
             nextSibling
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_METRIC: TypedDocumentNode<
+  DeleteDatasetMetricMutation,
+  DeleteDatasetMetricMutationVariables
+> = gql`
+  mutation DeleteDatasetMetric(
+    $instanceId: ID!
+    $datasetId: ID!
+    $metricId: UUID!
+    $force: Boolean!
+  ) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        deleteMetric(metricId: $metricId, force: $force) {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_METRIC: TypedDocumentNode<
+  UpdateDatasetMetricMutation,
+  UpdateDatasetMetricMutationVariables
+> = gql`
+  mutation UpdateDatasetMetric(
+    $instanceId: ID!
+    $datasetId: ID!
+    $metricId: UUID!
+    $input: UpdateDatasetMetricInput!
+  ) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        updateMetric(metricId: $metricId, input: $input) {
+          __typename
+          ... on DatasetMetric {
+            id
+            name
+            label
+            unitInfo {
+              id
+              standard
+            }
+            quantity {
+              id
+              label
+            }
           }
           ... on OperationInfo {
             ...OperationInfoFields

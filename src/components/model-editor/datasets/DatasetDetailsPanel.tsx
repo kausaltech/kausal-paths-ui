@@ -6,6 +6,11 @@ import {
   Button,
   Chip,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
   Stack,
@@ -33,7 +38,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
-import { AddMetricDialog, type AddMetricInput } from './AddMetricDialog';
+import { MetricDialog, type MetricFormValues } from './MetricDialog';
 import { AttachSourceForm, SourceReferenceCard } from './shared';
 
 type MetricRow = DatasetDetailFieldsFragment['metrics'][number];
@@ -216,7 +221,9 @@ type Props = {
   onAttachToDataset: (dataSourceId: string) => Promise<void>;
   onDetachSource: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
-  onCreateMetric: (input: AddMetricInput) => Promise<void>;
+  onCreateMetric: (input: MetricFormValues) => Promise<void>;
+  onUpdateMetric: (metricId: string, input: MetricFormValues) => Promise<void>;
+  onDeleteMetric: (metricId: string, force: boolean) => Promise<'ok' | 'has-data-points'>;
   onRenameDataset: (name: string) => Promise<void>;
   onNotice: (message: string) => void;
   onNavigateToNode: (nodeId: string) => void;
@@ -236,6 +243,8 @@ export default function DatasetDetailsPanel({
   onDetachSource,
   onCreateDataSource,
   onCreateMetric,
+  onUpdateMetric,
+  onDeleteMetric,
   onRenameDataset,
   onNotice,
   onNavigateToNode,
@@ -243,7 +252,41 @@ export default function DatasetDetailsPanel({
 }: Props) {
   const t = useTranslations('model-editor');
   const isExternal = dataset.isExternalPlaceholder;
-  const [addMetricOpen, setAddMetricOpen] = useState(false);
+  // null = closed; 'new' = adding; otherwise the metric being edited.
+  const [metricDialogTarget, setMetricDialogTarget] = useState<MetricRow | 'new' | null>(null);
+  const editingMetric = metricDialogTarget !== 'new' ? metricDialogTarget : null;
+
+  // Two-phase delete: a plain confirmation first; if the backend reports
+  // metric_has_data_points, the dialog escalates to a data-loss warning and
+  // the next confirm retries with force=true.
+  const [deleteTarget, setDeleteTarget] = useState<MetricRow | null>(null);
+  const [deleteNeedsForce, setDeleteNeedsForce] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const openDeleteMetric = (m: MetricRow) => {
+    setDeleteTarget(m);
+    setDeleteNeedsForce(false);
+    setDeleteError('');
+  };
+
+  const handleConfirmDeleteMetric = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const result = await onDeleteMetric(deleteTarget.id, deleteNeedsForce);
+      if (result === 'has-data-points') {
+        setDeleteNeedsForce(true);
+        return;
+      }
+      setDeleteTarget(null);
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : t('common-failed'));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Local editable name, synced to the fetched dataset whenever it changes.
   const [name, setName] = useState(dataset.name);
@@ -515,7 +558,7 @@ export default function DatasetDetailsPanel({
         >
           <Typography variant="subtitle1">{t('datasets-metrics')}</Typography>
           {!readOnly && (
-            <Button size="small" startIcon={<Plus />} onClick={() => setAddMetricOpen(true)}>
+            <Button size="small" startIcon={<Plus />} onClick={() => setMetricDialogTarget('new')}>
               {t('common-add')}
             </Button>
           )}
@@ -546,24 +589,14 @@ export default function DatasetDetailsPanel({
                       <Stack direction="row">
                         <Tooltip title={t('common-edit')}>
                           <span>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                onNotice(t('datasets-editing-metrics-not-implemented'))
-                              }
-                            >
+                            <IconButton size="small" onClick={() => setMetricDialogTarget(m)}>
                               <PencilSquare />
                             </IconButton>
                           </span>
                         </Tooltip>
                         <Tooltip title={t('common-delete')}>
                           <span>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                onNotice(t('datasets-deleting-metrics-not-implemented'))
-                              }
-                            >
+                            <IconButton size="small" onClick={() => openDeleteMetric(m)}>
                               <Trash />
                             </IconButton>
                           </span>
@@ -587,6 +620,14 @@ export default function DatasetDetailsPanel({
                         color: 'text.secondary',
                       }}
                     >
+                      {m.quantity?.label ?? '—'}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {m.unitInfo?.standard ?? '—'}
                     </Typography>
                   </Stack>
@@ -597,11 +638,57 @@ export default function DatasetDetailsPanel({
         )}
       </Paper>
 
-      <AddMetricDialog
-        open={addMetricOpen}
-        onClose={() => setAddMetricOpen(false)}
-        onSubmit={onCreateMetric}
+      <MetricDialog
+        open={metricDialogTarget !== null}
+        title={editingMetric ? t('datasets-edit-metric') : t('datasets-new-metric')}
+        submitLabel={editingMetric ? t('common-save-changes') : t('common-add')}
+        savingLabel={editingMetric ? t('common-saving') : t('common-adding')}
+        initial={
+          editingMetric
+            ? {
+                label: editingMetric.label ?? '',
+                unit: editingMetric.unitInfo?.standard ?? '',
+                quantity: editingMetric.quantity?.id ?? '',
+              }
+            : undefined
+        }
+        onClose={() => setMetricDialogTarget(null)}
+        onSubmit={(values) =>
+          editingMetric ? onUpdateMetric(editingMetric.id, values) : onCreateMetric(values)
+        }
       />
+
+      <Dialog
+        open={deleteTarget !== null}
+        onClose={deleting ? undefined : () => setDeleteTarget(null)}
+      >
+        <DialogTitle>{t('datasets-delete-metric')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {deleteNeedsForce
+              ? t('datasets-delete-metric-has-data', { label: deleteTarget?.label ?? '' })
+              : t('datasets-delete-metric-confirm', { label: deleteTarget?.label ?? '' })}
+          </DialogContentText>
+          {deleteError && (
+            <Typography color="error" sx={{ mt: 1, fontSize: '0.9rem' }}>
+              {deleteError}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)} disabled={deleting}>
+            {t('common-cancel')}
+          </Button>
+          <Button
+            onClick={() => void handleConfirmDeleteMetric()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? t('common-deleting') : t('common-delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

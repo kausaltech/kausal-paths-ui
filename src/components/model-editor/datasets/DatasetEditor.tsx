@@ -37,20 +37,22 @@ import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getModelEditorBase, getModelEditorSection } from '../paths';
 import { useIsEntityReadOnly } from '../useIsEditorReadOnly';
-import { type AddMetricInput } from './AddMetricDialog';
 import DataPointDetailsPanel from './DataPointDetailsPanel';
 import DatasetDataGrid from './DatasetDataGrid';
 import DatasetDetailsPanel from './DatasetDetailsPanel';
+import { type MetricFormValues } from './MetricDialog';
 import { sortMetricsBySiblings } from './dataset-editor-utils';
 import {
   CREATE_DATA_SOURCE,
   CREATE_METRIC,
   CREATE_SOURCE_REFERENCE,
   DATASET_SUMMARY_FIELDS,
+  DELETE_METRIC,
   DELETE_SOURCE_REFERENCE,
   GET_DATASET_CONNECTED_NODES,
   GET_INSTANCE_DATASET,
   UPDATE_DATASET,
+  UPDATE_METRIC,
 } from './queries';
 import { type CommentWithDataPoint, type SelectedCell } from './shared';
 import { useDataPointComments } from './useDataPointComments';
@@ -87,6 +89,8 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [createDataSource] = useMutation(CREATE_DATA_SOURCE);
   const [createMetric] = useMutation(CREATE_METRIC);
   const [updateDataset] = useMutation(UPDATE_DATASET);
+  const [updateMetric] = useMutation(UPDATE_METRIC);
+  const [deleteMetric] = useMutation(DELETE_METRIC);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getModelEditorSection(pathname, 'datasets');
@@ -315,6 +319,28 @@ export default function DatasetEditor({ datasetId }: Props) {
     return payload;
   };
 
+  // 'has-data-points' asks the caller to confirm deleting the metric's data
+  // points and retry with force=true; other failures throw.
+  const handleDeleteMetric = async (
+    metricId: string,
+    force: boolean
+  ): Promise<'ok' | 'has-data-points'> => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
+    const result = await deleteMetric({
+      variables: { instanceId: instance.id, datasetId: dataset.id, metricId, force },
+    });
+    const messages = result.data?.instanceEditor.datasetEditor.deleteMetric?.messages ?? [];
+    if (messages.length > 0) {
+      if (!force && messages.some((m) => m.code === 'metric_has_data_points')) {
+        return 'has-data-points';
+      }
+      throw new Error(messages.map((m) => m.message).join('; '));
+    }
+    // Refetch: the metric's grid column (and any of its data points) is gone.
+    await refetch();
+    return 'ok';
+  };
+
   const handleRenameDataset = async (name: string) => {
     if (readOnly) throw new Error(t('entity-read-only-desc'));
     const result = await updateDataset({
@@ -336,13 +362,13 @@ export default function DatasetEditor({ datasetId }: Props) {
     await refetch();
   };
 
-  const handleCreateMetric = async (input: AddMetricInput) => {
+  const handleCreateMetric = async (input: MetricFormValues) => {
     if (readOnly) throw new Error(t('entity-read-only-desc'));
     const result = await createMetric({
       variables: {
         instanceId: instance.id,
         datasetId: dataset.id,
-        input: { id: null, label: input.label, unit: input.unit, quantity: null },
+        input: { id: null, label: input.label, unit: input.unit, quantity: input.quantity },
       },
     });
     const payload = result.data?.instanceEditor.datasetEditor.createMetric;
@@ -356,6 +382,29 @@ export default function DatasetEditor({ datasetId }: Props) {
     // Refetch instead of writing the cache: the new metric adds a grid column,
     // and the SSR-hydrated InstanceDataset observer doesn't re-render from a
     // passive cache broadcast in this runtime.
+    await refetch();
+  };
+
+  const handleUpdateMetric = async (metricId: string, input: MetricFormValues) => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
+    const result = await updateMetric({
+      variables: {
+        instanceId: instance.id,
+        datasetId: dataset.id,
+        metricId,
+        // Explicit null clears quantity; label/unit are always sent whole.
+        input: { label: input.label, unit: input.unit, quantity: input.quantity },
+      },
+    });
+    const payload = result.data?.instanceEditor.datasetEditor.updateMetric;
+    if (payload?.__typename !== 'DatasetMetric') {
+      const messages =
+        payload?.__typename === 'OperationInfo'
+          ? payload.messages.map((m) => m.message).join('; ')
+          : '';
+      throw new Error(messages || t('common-failed'));
+    }
+    // Refetch: the metric label is also a grid column header.
     await refetch();
   };
 
@@ -539,6 +588,8 @@ export default function DatasetEditor({ datasetId }: Props) {
               onDetachSource={handleDetachSource}
               onCreateDataSource={handleCreateDataSource}
               onCreateMetric={handleCreateMetric}
+              onUpdateMetric={handleUpdateMetric}
+              onDeleteMetric={handleDeleteMetric}
               onRenameDataset={handleRenameDataset}
               onNotice={setNotice}
               onNavigateToNode={(id) =>

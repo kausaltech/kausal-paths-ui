@@ -430,6 +430,13 @@ export type UpdateDatasetInput = {
   name: string | null | undefined;
 };
 
+export type UpdateDatasetMetricInput = {
+  label: string | null | undefined;
+  /** Quantity-kind identifier of what the metric measures. Set to null to clear. */
+  quantity: string | number | null | undefined;
+  unit: string | null | undefined;
+};
+
 export type UpdateDimensionCategoryInput = {
   categoryId: string;
   identifier: string | null | undefined;
@@ -1340,6 +1347,9 @@ export type DatasetDetailFieldsFragment = (
     { id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: (
       { id: string, standard: string }
       & { __typename: 'UnitType' }
+    ) | null, quantity: (
+      { id: string, label: string }
+      & { __typename: 'QuantityKindType' }
     ) | null }
     & { __typename: 'DatasetMetric' }
   )>, dataPoints: Array<(
@@ -1457,6 +1467,9 @@ export type InstanceDatasetQuery = (
           { id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: (
             { id: string, standard: string }
             & { __typename: 'UnitType' }
+          ) | null, quantity: (
+            { id: string, label: string }
+            & { __typename: 'QuantityKindType' }
           ) | null }
           & { __typename: 'DatasetMetric' }
         )>, dataPoints: Array<(
@@ -1579,6 +1592,71 @@ export type CreateDatasetMetricMutation = (
           { id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: (
             { id: string, standard: string }
             & { __typename: 'UnitType' }
+          ) | null, quantity: (
+            { id: string, label: string }
+            & { __typename: 'QuantityKindType' }
+          ) | null }
+          & { __typename: 'DatasetMetric' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type DeleteDatasetMetricMutationVariables = Exact<{
+  instanceId: string | number;
+  datasetId: string | number;
+  metricId: string;
+  force: boolean;
+}>;
+
+
+export type DeleteDatasetMetricMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { deleteMetric: (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      ) | null }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateDatasetMetricMutationVariables = Exact<{
+  instanceId: string | number;
+  datasetId: string | number;
+  metricId: string;
+  input: UpdateDatasetMetricInput;
+}>;
+
+
+export type UpdateDatasetMetricMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { updateMetric:
+        | (
+          { id: string, name: string | null, label: string, unitInfo: (
+            { id: string, standard: string }
+            & { __typename: 'UnitType' }
+          ) | null, quantity: (
+            { id: string, label: string }
+            & { __typename: 'QuantityKindType' }
           ) | null }
           & { __typename: 'DatasetMetric' }
         )
