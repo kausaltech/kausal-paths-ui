@@ -37,12 +37,14 @@ import { useInstance } from '@/common/instance';
 import GraphQLError from '@/components/common/GraphQLError';
 import { getModelEditorBase, getModelEditorSection } from '../paths';
 import { useIsEntityReadOnly } from '../useIsEditorReadOnly';
+import { type AddMetricInput } from './AddMetricDialog';
 import DataPointDetailsPanel from './DataPointDetailsPanel';
 import DatasetDataGrid from './DatasetDataGrid';
 import DatasetDetailsPanel from './DatasetDetailsPanel';
 import { sortMetricsBySiblings } from './dataset-editor-utils';
 import {
   CREATE_DATA_SOURCE,
+  CREATE_METRIC,
   CREATE_SOURCE_REFERENCE,
   DATASET_SUMMARY_FIELDS,
   DELETE_SOURCE_REFERENCE,
@@ -82,6 +84,7 @@ export default function DatasetEditor({ datasetId }: Props) {
   const [createSourceReference] = useMutation(CREATE_SOURCE_REFERENCE);
   const [deleteSourceReference] = useMutation(DELETE_SOURCE_REFERENCE);
   const [createDataSource] = useMutation(CREATE_DATA_SOURCE);
+  const [createMetric] = useMutation(CREATE_METRIC);
   const router = useRouter();
   const pathname = usePathname();
   const listBase = getModelEditorSection(pathname, 'datasets');
@@ -310,6 +313,29 @@ export default function DatasetEditor({ datasetId }: Props) {
     return payload;
   };
 
+  const handleCreateMetric = async (input: AddMetricInput) => {
+    if (readOnly) throw new Error(t('entity-read-only-desc'));
+    const result = await createMetric({
+      variables: {
+        instanceId: instance.id,
+        datasetId: dataset.id,
+        input: { id: null, label: input.label, unit: input.unit, quantity: null },
+      },
+    });
+    const payload = result.data?.instanceEditor.datasetEditor.createMetric;
+    if (payload?.__typename !== 'DatasetMetric') {
+      const messages =
+        payload?.__typename === 'OperationInfo'
+          ? payload.messages.map((m) => m.message).join('; ')
+          : '';
+      throw new Error(messages || t('common-failed'));
+    }
+    // Refetch instead of writing the cache: the new metric adds a grid column,
+    // and the SSR-hydrated InstanceDataset observer doesn't re-render from a
+    // passive cache broadcast in this runtime.
+    await refetch();
+  };
+
   return (
     <Box sx={{ display: 'flex', width: '100%' }}>
       <Box
@@ -489,6 +515,7 @@ export default function DatasetEditor({ datasetId }: Props) {
               onAttachToDataset={(dataSourceId) => handleAttachSource(dataSourceId, null)}
               onDetachSource={handleDetachSource}
               onCreateDataSource={handleCreateDataSource}
+              onCreateMetric={handleCreateMetric}
               onNotice={setNotice}
               onNavigateToNode={(id) =>
                 router.push(`${modelEditorBase}/nodes?node=${encodeURIComponent(id)}`)

@@ -33,6 +33,7 @@ import type {
 } from '@/common/__generated__/graphql';
 import { getNodeStyle } from '../ElkNode';
 import { ConnectedNodeChip } from '../node-details/shared';
+import { AddMetricDialog, type AddMetricInput } from './AddMetricDialog';
 import { AttachSourceForm, SourceReferenceCard } from './shared';
 
 type MetricRow = DatasetDetailFieldsFragment['metrics'][number];
@@ -215,6 +216,7 @@ type Props = {
   onAttachToDataset: (dataSourceId: string) => Promise<void>;
   onDetachSource: (referenceId: string) => Promise<void>;
   onCreateDataSource: (input: CreateDataSourceInput) => Promise<DataSourceFieldsFragment>;
+  onCreateMetric: (input: AddMetricInput) => Promise<void>;
   onNotice: (message: string) => void;
   onNavigateToNode: (nodeId: string) => void;
   readOnly: boolean;
@@ -232,12 +234,14 @@ export default function DatasetDetailsPanel({
   onAttachToDataset,
   onDetachSource,
   onCreateDataSource,
+  onCreateMetric,
   onNotice,
   onNavigateToNode,
   readOnly,
 }: Props) {
   const t = useTranslations('model-editor');
   const isExternal = dataset.isExternalPlaceholder;
+  const [addMetricOpen, setAddMetricOpen] = useState(false);
 
   // Local editable name, synced to the fetched dataset whenever it changes.
   const [name, setName] = useState(dataset.name);
@@ -488,11 +492,7 @@ export default function DatasetDetailsPanel({
         >
           <Typography variant="subtitle1">{t('datasets-metrics')}</Typography>
           {!readOnly && (
-            <Button
-              size="small"
-              startIcon={<Plus />}
-              onClick={() => onNotice(t('datasets-creating-metrics-not-implemented'))}
-            >
+            <Button size="small" startIcon={<Plus />} onClick={() => setAddMetricOpen(true)}>
               {t('common-add')}
             </Button>
           )}
@@ -573,6 +573,12 @@ export default function DatasetDetailsPanel({
           </Stack>
         )}
       </Paper>
+
+      <AddMetricDialog
+        open={addMetricOpen}
+        onClose={() => setAddMetricOpen(false)}
+        onSubmit={onCreateMetric}
+      />
     </>
   );
 }

@@ -7,6 +7,8 @@ import type {
   CreateDataPointsMutationVariables,
   CreateDataSourceMutation,
   CreateDataSourceMutationVariables,
+  CreateDatasetMetricMutation,
+  CreateDatasetMetricMutationVariables,
   CreateDatasetMutation,
   CreateDatasetMutationVariables,
   CreateSourceReferenceMutation,
@@ -276,6 +278,40 @@ export const CREATE_DATASET: TypedDocumentNode<
     }
   }
   ${DATASET_SUMMARY_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const CREATE_METRIC: TypedDocumentNode<
+  CreateDatasetMetricMutation,
+  CreateDatasetMetricMutationVariables
+> = gql`
+  mutation CreateDatasetMetric(
+    $instanceId: ID!
+    $datasetId: ID!
+    $input: CreateDatasetMetricInput!
+  ) {
+    instanceEditor(instanceId: $instanceId) {
+      datasetEditor(datasetId: $datasetId) {
+        createMetric(input: $input) {
+          __typename
+          ... on DatasetMetric {
+            id
+            name
+            label
+            unitInfo {
+              id
+              standard
+            }
+            previousSibling
+            nextSibling
+          }
+          ... on OperationInfo {
+            ...OperationInfoFields
+          }
+        }
+      }
+    }
+  }
   ${OPERATION_INFO_FIELDS}
 `;
 

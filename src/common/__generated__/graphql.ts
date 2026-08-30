@@ -1558,6 +1558,39 @@ export type CreateDatasetMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type CreateDatasetMetricMutationVariables = Exact<{
+  instanceId: string | number;
+  datasetId: string | number;
+  input: CreateDatasetMetricInput;
+}>;
+
+
+export type CreateDatasetMetricMutation = (
+  { instanceEditor: (
+    { datasetEditor: (
+      { createMetric:
+        | (
+          { id: string, name: string | null, label: string, previousSibling: string | null, nextSibling: string | null, unitInfo: (
+            { id: string, standard: string }
+            & { __typename: 'UnitType' }
+          ) | null }
+          & { __typename: 'DatasetMetric' }
+        )
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'DatasetEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type DatasetConnectedNodesQueryVariables = Exact<{
   ids: Array<string | number>;
 }>;
