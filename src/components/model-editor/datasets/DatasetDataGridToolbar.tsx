@@ -38,9 +38,23 @@ export function DatasetDataGridToolbar({
 }: Props) {
   const t = useTranslations('model-editor');
   return (
-    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} sx={{ mb: 1 }}>
+    <Stack
+      direction="row"
+      spacing={1}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        mb: 1,
+      }}
+    >
       {!readOnly && hasPending && (
-        <Typography variant="body2" color="warning.main" sx={{ mr: 'auto' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'warning.main',
+            mr: 'auto',
+          }}
+        >
           {t('datasets-unsaved-changes', { count: pendingCount })}
         </Typography>
       )}

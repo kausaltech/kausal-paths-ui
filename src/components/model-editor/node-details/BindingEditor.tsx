@@ -292,7 +292,10 @@ function CategoryMultiSelect({
           label={t('bindings-categories')}
           placeholder={value.length === 0 ? emptyPlaceholder : undefined}
           // Keep the label floated so the placeholder shows while unfocused.
-          slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
+          slotProps={{
+            ...params.slotProps,
+            inputLabel: { ...params.slotProps.inputLabel, shrink: true },
+          }}
         />
       )}
     />
@@ -524,7 +527,12 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
         </Typography>
         <Stack spacing={1}>
           {transformations.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               {t('bindings-no-transformations')}
             </Typography>
           )}
@@ -537,7 +545,13 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
             return (
               <Paper key={`${transformation.kind}-${index}`} variant="outlined" sx={{ p: 1.25 }}>
                 <Stack spacing={1.5}>
-                  <Stack direction="row" alignItems="center" spacing={0.75}>
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    sx={{
+                      alignItems: 'center',
+                    }}
+                  >
                     <Typography
                       variant="caption"
                       sx={{ fontWeight: 600, textTransform: 'capitalize', flex: 1 }}
@@ -604,7 +618,12 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                     )}
                   </Stack>
                   {summary && readOnly && (
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {summary}
                     </Typography>
                   )}
@@ -615,8 +634,11 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                           margins with a higher-specificity selector. */}
                       <Typography
                         variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'block', pb: 1.5 }}
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'block',
+                          pb: 1.5,
+                        }}
                       >
                         {t('bindings-filter-dimension-help')}
                       </Typography>
@@ -711,8 +733,11 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
                     <>
                       <Typography
                         variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'block', pb: 1.5 }}
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'block',
+                          pb: 1.5,
+                        }}
                       >
                         {t('bindings-assign-dimension-help')}
                       </Typography>
@@ -755,7 +780,12 @@ export default function BindingEditor({ binding, onSaved, onDelete }: Props) {
         </Stack>
       </Box>
 
-      <Stack direction="row" justifyContent="space-between">
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'space-between',
+        }}
+      >
         <Button
           color="error"
           startIcon={<Trash />}

@@ -11,8 +11,8 @@ export default function SignInPage() {
   const router = useRouter();
 
   const handleSignIn = () => {
-    void authClient.signIn.oauth2({
-      providerId: KAUSAL_PROVIDER_ID,
+    void authClient.signIn.social({
+      provider: KAUSAL_PROVIDER_ID,
       callbackURL: '/',
     });
   };

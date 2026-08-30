@@ -104,7 +104,12 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
           })}
           {filtered.length === 0 && (
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 No actions found
               </Typography>
             </Box>
@@ -115,7 +120,12 @@ export default function CopyActionStep({ nodes, selectedAction, onSelect }: Copy
       {selectedAction && (
         <Box sx={{ mt: 2, p: 2, bgcolor: 'action.selected', borderRadius: 1 }}>
           <Typography variant="subtitle2">Selected: {selectedAction.name}</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {selectedAction.identifier}
             {selectedAction.editor?.nodeGroup &&
               ` \u00b7 Group: ${selectedAction.editor.nodeGroup}`}

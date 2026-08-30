@@ -99,7 +99,13 @@ function DataPointCommentsSection({
     <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
       <Typography variant="subtitle1" sx={{ mb: 2 }}>
         {t('datasets-comments')}{' '}
-        <Typography component="span" variant="body2" color="text.secondary">
+        <Typography
+          component="span"
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           ({visibleComments.length})
         </Typography>
       </Typography>
@@ -147,7 +153,13 @@ function DataPointCommentsSection({
                 {submitError}
               </Alert>
             )}
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                justifyContent: 'flex-end',
+              }}
+            >
               <Button
                 size="small"
                 variant="text"
@@ -175,7 +187,12 @@ function DataPointCommentsSection({
       </Collapse>
 
       {visibleComments.length === 0 ? (
-        <Typography color="text.secondary" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('datasets-no-comments-datapoint')}
         </Typography>
       ) : (
@@ -196,17 +213,30 @@ function DataPointCommentsSection({
               >
                 <Stack
                   direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ mb: 1 }}
+                  sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
                 >
                   <Typography variant="subtitle2">{getUserName(c.createdBy ?? null, t)}</Typography>
                 </Stack>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
                   {c.text}
                 </Typography>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="text.secondary">
+                <Stack
+                  direction="row"
+                  sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
                     {df.dateTime(c.createdAt)}
                     {isCommentEdited(c.createdAt, c.lastModifiedAt) &&
                       t('datasets-comment-edited-suffix')}
@@ -237,8 +267,12 @@ function DataPointCommentsSection({
                 {resolved && c.resolvedAt && (
                   <Typography
                     variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'block', textAlign: 'right', mt: 0.25 }}
+                    sx={{
+                      color: 'text.secondary',
+                      display: 'block',
+                      textAlign: 'right',
+                      mt: 0.25,
+                    }}
                   >
                     {t('datasets-resolved-by', {
                       name: getUserName(c.resolvedBy ?? null, t),
@@ -303,7 +337,13 @@ function DataPointSourcesSection({
     <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
       <Typography variant="subtitle1" sx={{ mb: 2 }}>
         {t('datasets-data-sources')}{' '}
-        <Typography component="span" variant="body2" color="text.secondary">
+        <Typography
+          component="span"
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           ({refs.length})
         </Typography>
       </Typography>
@@ -316,7 +356,12 @@ function DataPointSourcesSection({
         />
       )}
       {refs.length === 0 ? (
-        <Typography color="text.secondary" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('datasets-no-sources-attached-datapoint')}
         </Typography>
       ) : (
@@ -395,12 +440,22 @@ export default function DataPointDetailsPanel({
       ) : selectedCell ? (
         <>
           <SelectedDataPointChips cell={selectedCell} />
-          <Typography color="text.secondary" variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('datasets-datapoint-no-value')}
           </Typography>
         </>
       ) : (
-        <Typography color="text.secondary" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('datasets-select-datapoint-for-details')}
         </Typography>
       )}

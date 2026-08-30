@@ -236,11 +236,27 @@ export function AddRowsModal({
       </DialogTitle>
 
       <DialogContent sx={{ p: 0, m: 0, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="body2" color="text.secondary" sx={{ px: HORIZONTAL_PADDING }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            px: HORIZONTAL_PADDING,
+          }}
+        >
           {t('datasets-add-rows-desc')}
         </Typography>
 
-        <Stack direction="row" alignItems="stretch" sx={CATEGORY_SELECTOR_WRAPPER_SX}>
+        <Stack
+          direction="row"
+          sx={[
+            {
+              alignItems: 'stretch',
+            },
+            ...(Array.isArray(CATEGORY_SELECTOR_WRAPPER_SX)
+              ? CATEGORY_SELECTOR_WRAPPER_SX
+              : [CATEGORY_SELECTOR_WRAPPER_SX]),
+          ]}
+        >
           <DimensionCategoryList
             metrics={metrics}
             onSelect={(metric) => handleCategorySelect('metric', metric)}
@@ -264,7 +280,13 @@ export function AddRowsModal({
       <DialogActions sx={DIALOG_ACTIONS_SX}>
         {isAdding && progress ? (
           <Box sx={{ flex: 1, mr: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                mb: 0.5,
+              }}
+            >
               {t('datasets-add-rows-progress', {
                 current: progress.current,
                 total: progress.total,

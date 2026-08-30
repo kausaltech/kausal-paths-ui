@@ -167,7 +167,15 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
         }
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1.5}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          px: 2,
+          py: 1.5,
+        }}
+      >
         <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.2rem', p: 0 }}>
           {t('datasets-add-years')}
         </DialogTitle>
@@ -177,12 +185,33 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
       </Box>
 
       <DialogContent sx={{ pt: 1, pb: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 1,
+          }}
+        >
           {t('datasets-add-years-desc')}
         </Typography>
-        <Box display="flex" gap={2} mb={1}>
-          <Box flex={1}>
-            <Typography fontWeight="bold" sx={{ mb: 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            mb: 1,
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 'bold',
+                mb: 0.5,
+              }}
+            >
               {t('datasets-add-years-first')}
             </Typography>
             <TextField
@@ -198,8 +227,17 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
               error={Boolean(startError)}
             />
           </Box>
-          <Box flex={1}>
-            <Typography fontWeight="bold" sx={{ mb: 0.5 }}>
+          <Box
+            sx={{
+              flex: 1,
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 'bold',
+                mb: 0.5,
+              }}
+            >
               {t('datasets-add-years-last')}
             </Typography>
             <TextField
@@ -246,7 +284,13 @@ export function AddYearsModal({ open, onClose, onAddYears, existingYears }: Prop
           </Typography>
         )}
         {!errorMessage && infoMessage && (
-          <Typography color="text.secondary" sx={{ mt: 1, fontSize: '0.9rem' }}>
+          <Typography
+            sx={{
+              color: 'text.secondary',
+              mt: 1,
+              fontSize: '0.9rem',
+            }}
+          >
             {infoMessage}
           </Typography>
         )}

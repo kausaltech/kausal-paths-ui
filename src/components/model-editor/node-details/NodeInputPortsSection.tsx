@@ -306,7 +306,14 @@ function InputPortSettingsDialog({
             {error}
           </Alert>
         )}
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+            display: 'block',
+            mb: 1.5,
+          }}
+        >
           {t('nodes-add-input-port-hint')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -330,7 +337,10 @@ function InputPortSettingsDialog({
                 {...params}
                 label={t('nodes-port-quantity')}
                 placeholder={t('nodes-port-quantity-hint')}
-                slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
+                slotProps={{
+                  ...params.slotProps,
+                  input: { ...params.slotProps.input, sx: { fontSize: 13 } },
+                }}
               />
             )}
           />
@@ -985,7 +995,13 @@ export default function NodeInputPortsSection({
           )}
           {sourcePortChoice ? (
             <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 1,
+                }}
+              >
                 {t('nodes-select-output-port-desc', {
                   node: sourcePortChoice.node.name ?? sourcePortChoice.node.identifier,
                 })}

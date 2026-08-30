@@ -198,11 +198,21 @@ export default function DataPointChangeHistorySection({ dataPointId }: { dataPoi
         {t('datasets-edit-history')}
       </Typography>
       {loading && rows.length === 0 ? (
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('common-loading')}
         </Typography>
       ) : rows.length === 0 ? (
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('datasets-no-change-history')}
         </Typography>
       ) : (

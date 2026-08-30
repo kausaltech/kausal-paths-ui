@@ -49,7 +49,13 @@ export default function EdgeConfigStep({
       </Typography>
 
       {edgeMappings.length === 0 && (
-        <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            py: 2,
+          }}
+        >
           No edge mappings. The source action had no outgoing edges.
         </Typography>
       )}
@@ -67,7 +73,12 @@ export default function EdgeConfigStep({
             <AccordionSummary expandIcon={<ChevronDown />}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
                 <Typography sx={{ flexShrink: 0 }}>{metricLabel}</Typography>
-                <Typography color="text.secondary" sx={{ mx: 0.5 }}>
+                <Typography
+                  sx={{
+                    color: 'text.secondary',
+                    mx: 0.5,
+                  }}
+                >
                   &rarr;
                 </Typography>
                 <Typography sx={{ flexGrow: 1 }}>{mapping.targetNodeName}</Typography>
@@ -118,7 +129,12 @@ export default function EdgeConfigStep({
                   size="small"
                   fullWidth
                 />
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   Dimension flattening and category mapping will be configurable when the backend
                   supports transformation editing.
                 </Typography>
@@ -132,7 +148,13 @@ export default function EdgeConfigStep({
         <Button variant="outlined" size="small" disabled>
           Add edge mapping
         </Button>
-        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+            ml: 1,
+          }}
+        >
           Available when backend mutations are ready
         </Typography>
       </Box>

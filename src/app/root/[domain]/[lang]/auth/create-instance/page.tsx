@@ -204,7 +204,13 @@ export default function CreateInstancePage() {
               {isSuccess ? t('create-model-all-set') : t('create-new-model')}
             </Typography>
             {!isSuccess && frameworkName && (
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t('create-model-using-framework', { framework: frameworkName })}
               </Typography>
             )}

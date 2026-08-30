@@ -223,7 +223,13 @@ export default function ImportModal({
       <DialogTitle>{t('import-title')}</DialogTitle>
       <DialogContent dividers>
         {!detected ? (
-          <Typography color="text.secondary">{t('import-no-data')}</Typography>
+          <Typography
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
+            {t('import-no-data')}
+          </Typography>
         ) : (
           <Stack spacing={3}>
             {/* Structure */}
@@ -231,7 +237,14 @@ export default function ImportModal({
               <Typography variant="subtitle2" gutterBottom>
                 {t('import-detected')}
               </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Stack
+                direction="row"
+                spacing={1}
+                useFlexGap
+                sx={{
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Chip
                   size="small"
                   label={t('import-data-rows', { count: detected.dataRowIndices.length })}
@@ -258,7 +271,14 @@ export default function ImportModal({
               </Typography>
               <Stack spacing={1.5}>
                 {detected.textColumns.map((col, i) => (
-                  <Stack key={col} direction="row" spacing={2} alignItems="center">
+                  <Stack
+                    key={col}
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: 'center',
+                    }}
+                  >
                     <Typography sx={{ minWidth: 180 }} variant="body2">
                       {detected.textColumnHeaders[i] || (
                         <em>{t('import-column-n', { number: col + 1 })}</em>
@@ -312,7 +332,14 @@ export default function ImportModal({
                 {pinnableDims.map((d) => {
                   const isFromFilter = pins[d.id] === undefined && filterPins[d.id] !== undefined;
                   return (
-                    <Stack key={d.id} direction="row" spacing={2} alignItems="center">
+                    <Stack
+                      key={d.id}
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: 'center',
+                      }}
+                    >
                       <Typography sx={{ minWidth: 180 }} variant="body2">
                         {d.label}
                       </Typography>
@@ -354,7 +381,14 @@ export default function ImportModal({
                 <Typography variant="subtitle2" gutterBottom>
                   {t('import-preview')}
                 </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  useFlexGap
+                  sx={{
+                    flexWrap: 'wrap',
+                  }}
+                >
                   <Chip
                     size="small"
                     color="success"
@@ -439,7 +473,13 @@ export default function ImportModal({
                       return (
                         <TableRow key={resolutionKey(item.dimensionId, item.label)}>
                           <TableCell>
-                            <Stack direction="row" spacing={1} alignItems="center">
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              sx={{
+                                alignItems: 'center',
+                              }}
+                            >
                               <Chip
                                 size="small"
                                 color={item.matchClass === 'fuzzy' ? 'warning' : 'error'}
@@ -494,7 +534,12 @@ export default function ImportModal({
                               />
                             )}
                             {res.kind === 'create' && (
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: 'text.secondary',
+                                }}
+                              >
                                 {t('import-creates', { label: item.label })}
                               </Typography>
                             )}
@@ -513,7 +558,13 @@ export default function ImportModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ justifyContent: 'space-between' }}>
-        <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+            pl: 1,
+          }}
+        >
           {t('import-stage-hint')}
         </Typography>
         <Box>

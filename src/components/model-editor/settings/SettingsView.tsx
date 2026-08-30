@@ -36,13 +36,24 @@ export default function SettingsView() {
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="overline" color="text.secondary">
+        <Typography
+          variant="overline"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('models-account')}
         </Typography>
         <Typography variant="h1" sx={{ mt: 0.5 }}>
           {t('settings-title')}
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            color: 'text.secondary',
+            mt: 1,
+          }}
+        >
           {t('settings-desc')}
         </Typography>
       </Box>
@@ -53,12 +64,23 @@ export default function SettingsView() {
             <Typography variant="h3" sx={{ fontSize: 16 }}>
               {t('settings-interface-language')}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                mt: 0.5,
+              }}
+            >
               {t('settings-interface-language-desc')}
             </Typography>
           </Box>
           {languages.length < 2 ? (
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               {t('settings-single-language', { name: getLanguageName(uiLocale) })}
             </Typography>
           ) : (

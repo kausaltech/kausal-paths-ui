@@ -139,11 +139,21 @@ export default function NodeChangeHistorySection({ nodeId, open, onToggle }: Pro
   return (
     <CollapsibleSection title={t('nodes-recent-changes')} open={open} onToggle={onToggle}>
       {loading && entries.length === 0 ? (
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('common-loading')}
         </Typography>
       ) : entries.length === 0 ? (
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('nodes-no-change-history')}
         </Typography>
       ) : (

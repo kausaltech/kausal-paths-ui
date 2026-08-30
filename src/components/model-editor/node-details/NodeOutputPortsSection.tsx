@@ -138,7 +138,10 @@ function OutputPortEditDialog({
                 {...params}
                 label={t('nodes-port-quantity')}
                 placeholder={t('nodes-port-quantity-hint')}
-                slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
+                slotProps={{
+                  ...params.slotProps,
+                  input: { ...params.slotProps.input, sx: { fontSize: 13 } },
+                }}
               />
             )}
           />

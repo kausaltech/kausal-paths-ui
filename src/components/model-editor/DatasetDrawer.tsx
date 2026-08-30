@@ -159,8 +159,12 @@ function DatasetMetadata({
         <Paper variant="outlined" sx={{ p: 1.5, mb: 1.5 }}>
           <Typography
             variant="caption"
-            color="text.secondary"
-            sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 600,
+              display: 'block',
+              mb: 1,
+            }}
           >
             {t('datasets-metrics')}
           </Typography>
@@ -172,8 +176,12 @@ function DatasetMetadata({
         <Paper variant="outlined" sx={{ p: 1.5 }}>
           <Typography
             variant="caption"
-            color="text.secondary"
-            sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 600,
+              display: 'block',
+              mb: 1,
+            }}
           >
             {t('datasets-categories')}
           </Typography>
@@ -291,8 +299,12 @@ function DatasetPortView({
 
       <Typography
         variant="caption"
-        color="text.secondary"
-        sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+        sx={{
+          color: 'text.secondary',
+          fontWeight: 600,
+          display: 'block',
+          mb: 1,
+        }}
       >
         {t('datasets-input-data-header')}
       </Typography>
@@ -305,7 +317,12 @@ function DatasetPortView({
           ))}
         </Box>
       ) : (
-        <Typography variant="body2" color="text.disabled">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.disabled',
+          }}
+        >
           {t('datasets-no-data-points')}
         </Typography>
       )}
@@ -396,7 +413,12 @@ export default function DatasetDrawer({ nodeId, bindingId, open, onClose, width,
           </Typography>
         )}
         {!loading && filtered.length === 0 && !error && (
-          <Typography color="text.secondary" sx={{ py: 2 }}>
+          <Typography
+            sx={{
+              color: 'text.secondary',
+              py: 2,
+            }}
+          >
             {t('datasets-no-bindings')}
           </Typography>
         )}

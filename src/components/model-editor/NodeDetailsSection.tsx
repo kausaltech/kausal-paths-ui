@@ -127,8 +127,8 @@ export default function NodeDetailsSection({
         >
           <Typography
             variant="caption"
-            color="text.secondary"
             sx={{
+              color: 'text.secondary',
               display: 'block',
               fontFamily: 'monospace',
               fontSize: 10,

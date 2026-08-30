@@ -1,4 +1,3 @@
-
 import { Box, Card, CardContent, Divider, Stack, type Theme, Typography } from '@mui/material';
 
 import type { EChartsCoreOption } from 'echarts/core';
@@ -67,7 +66,14 @@ const Legend = ({ groups }: { groups: ActionGroup[] }) => {
       {groups
         .filter((group) => !!group.color)
         .map((group) => (
-          <Stack key={group.id} direction="row" spacing={0.5} alignItems="center">
+          <Stack
+            key={group.id}
+            direction="row"
+            spacing={0.5}
+            sx={{
+              alignItems: 'center',
+            }}
+          >
             <Box
               sx={{
                 flexShrink: 0,
@@ -79,8 +85,10 @@ const Legend = ({ groups }: { groups: ActionGroup[] }) => {
             />
             <Typography
               variant="body2"
-              color="text.secondary"
-              sx={{ lineHeight: (theme) => theme.lineHeightSm }}
+              sx={{
+                color: 'text.secondary',
+                lineHeight: (theme) => theme.lineHeightSm,
+              }}
             >
               {group.name}
             </Typography>
@@ -240,7 +248,12 @@ const DashboardVisualizationActionImpact = ({ actions, chartLabel, unit }: Props
           )}
 
           {!!unit && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               {unit}
             </Typography>
           )}

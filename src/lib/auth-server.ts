@@ -3,7 +3,6 @@ import { headers } from 'next/headers';
 import { getLogger } from '@common/logging/logger';
 
 import { auth } from './auth';
-import { KAUSAL_PROVIDER_ID } from './auth-const';
 
 const authLogger = getLogger({ name: 'auth' });
 
@@ -52,7 +51,7 @@ export async function getAccessToken(): Promise<string | null> {
 export async function getFreshAccessToken(): Promise<string | null> {
   try {
     const result = await auth.api.getAccessToken({
-      body: { providerId: KAUSAL_PROVIDER_ID },
+      body: { useAccountCookie: true },
       headers: await headers(),
     });
     return result.accessToken ?? null;

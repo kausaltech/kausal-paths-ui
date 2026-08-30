@@ -114,10 +114,20 @@ export default function EditorAccessGate({ children, chrome }: Props) {
     return (
       <Container maxWidth="sm" sx={{ pt: 20, pb: 6 }}>
         <Paper variant="outlined" sx={{ p: 4 }}>
-          <Stack spacing={2} alignItems="flex-start">
+          <Stack
+            spacing={2}
+            sx={{
+              alignItems: 'flex-start',
+            }}
+          >
             <ExclamationTriangle size={28} />
             <Typography variant="h5">Couldn&apos;t check edit access</Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               We couldn&apos;t reach the backend to verify your access. Try again in a moment.
             </Typography>
             <Button
@@ -137,10 +147,20 @@ export default function EditorAccessGate({ children, chrome }: Props) {
     return (
       <Container maxWidth="sm" sx={{ pt: 20, pb: 6 }}>
         <Paper variant="outlined" sx={{ p: 4 }}>
-          <Stack spacing={2} alignItems="flex-start">
+          <Stack
+            spacing={2}
+            sx={{
+              alignItems: 'flex-start',
+            }}
+          >
             <ShieldLock size={28} />
             <Typography variant="h5">No edit access</Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               You don&apos;t have edit access to <strong>{instance.name}</strong>. Ask an
               administrator of this model to grant you access, or switch to a model you can edit.
             </Typography>

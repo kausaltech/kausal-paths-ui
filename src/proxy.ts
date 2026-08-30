@@ -34,7 +34,6 @@ import {
   THEME_IDENTIFIER_HEADER,
 } from './common/const';
 import { auth } from './lib/auth';
-import { KAUSAL_PROVIDER_ID } from './lib/auth-const';
 import { getInstancesForRequest } from './middleware/context';
 
 type Instance = AvailableInstanceFragment;
@@ -204,7 +203,7 @@ async function refreshAccessTokenIfNeeded(
   let setCookies: string[];
   try {
     const result = (await auth.api.getAccessToken({
-      body: { providerId: KAUSAL_PROVIDER_ID },
+      body: { useAccountCookie: true },
       headers: req.headers,
       returnHeaders: true,
     })) as { headers: Headers; response: unknown };
@@ -327,7 +326,7 @@ async function proxy(req: NextRequest) {
   reqHeaders.set(INSTANCE_HOSTNAME_HEADER, hostname);
   reqHeaders.set(MIDDLEWARE_RAN_HEADER, '1');
 
-  let instances: Instance[] = [];
+  let instances: Instance[];
   try {
     instances = await getInstancesForRequest(req, hostname, logger);
   } catch (error) {

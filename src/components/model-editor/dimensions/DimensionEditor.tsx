@@ -349,7 +349,14 @@ function DimensionEditorForm({ dimension, listBase, refetch }: DimensionEditorFo
       </Paper>
 
       <Paper sx={{ p: 3 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+          }}
+        >
           <Typography variant="h6">{t('dimensions-categories')}</Typography>
           <Button startIcon={<Plus />} onClick={handleAddCategory}>
             {t('dimensions-add-category')}
@@ -357,7 +364,12 @@ function DimensionEditorForm({ dimension, listBase, refetch }: DimensionEditorFo
         </Stack>
         <Divider sx={{ mb: 2 }} />
         {rows.length === 0 && (
-          <Typography color="text.secondary" sx={{ py: 2 }}>
+          <Typography
+            sx={{
+              color: 'text.secondary',
+              py: 2,
+            }}
+          >
             {t('dimensions-no-categories')}
           </Typography>
         )}
@@ -378,7 +390,14 @@ function DimensionEditorForm({ dimension, listBase, refetch }: DimensionEditorFo
         </Stack>
       </Paper>
 
-      <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 3 }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          justifyContent: 'flex-end',
+          mt: 3,
+        }}
+      >
         <Button
           variant="outlined"
           disabled={!isDirty || saving}
@@ -515,8 +534,8 @@ function CategoryRowView({
       <Stack
         direction="row"
         spacing={1}
-        alignItems="center"
         sx={{
+          alignItems: 'center',
           p: 1,
           border: 1,
           borderColor: 'divider',

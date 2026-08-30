@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import { lang } from 'next/root-params';
 
 import * as Sentry from '@sentry/nextjs';
 import { getRequestConfig } from 'next-intl/server';
@@ -62,11 +63,11 @@ export async function importLocales(
   return translations;
 }
 
-export default getRequestConfig(async ({ requestLocale }) => {
+export default getRequestConfig(async () => {
   const requestHeaders = await headers();
   const localeFromHeader = requestHeaders.get(CURRENT_LANGUAGE_HEADER);
-  const localeFromRequest = await requestLocale;
-  const locale = localeFromRequest ?? localeFromHeader ?? 'en';
+  const localeFromRoute = await lang();
+  const locale = localeFromRoute ?? localeFromHeader ?? 'en';
   const messages = await importLocales(locale);
   return {
     locale,

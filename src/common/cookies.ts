@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'http';
 
-import * as cookie from 'cookie';
+import { parseCookie, stringifySetCookie } from 'cookie';
 import type { NextApiResponse } from 'next';
 import setCookie from 'set-cookie-parser';
 
@@ -21,7 +21,7 @@ export function getApiCookies(req: IncomingMessage, apiType?: APIType) {
     return [];
   }
   const backendCookies: string[] = [];
-  const cookies = cookie.parse(reqCookieHeader);
+  const cookies = parseCookie(reqCookieHeader);
   const prefix = getCookiePrefix(apiType);
   Object.entries(cookies).forEach(([name, value]) => {
     if (!name.startsWith(prefix)) return;
@@ -42,7 +42,9 @@ export function setClientCookies(
   cookies.forEach((ck) => {
     res.appendHeader(
       'Set-Cookie',
-      cookie.serialize(`${prefix}${ck.name}`, ck.value, {
+      stringifySetCookie({
+        name: `${prefix}${ck.name}`,
+        value: ck.value,
         expires: ck.expires,
         maxAge: ck.maxAge,
         httpOnly: ck.httpOnly,

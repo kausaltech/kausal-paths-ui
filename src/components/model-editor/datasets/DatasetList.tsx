@@ -220,8 +220,21 @@ export default function DatasetList() {
 
   return (
     <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+        }}
+      >
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <Database size={22} />
           <Typography variant="h5">{t('datasets-title')}</Typography>
         </Stack>
@@ -300,7 +313,12 @@ export default function DatasetList() {
             {sortedDatasets.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6}>
-                  <Typography color="text.secondary" sx={{ py: 2 }}>
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                      py: 2,
+                    }}
+                  >
                     {t('datasets-none-defined')}
                   </Typography>
                 </TableCell>
@@ -330,8 +348,11 @@ export default function DatasetList() {
                       <Typography
                         variant="caption"
                         component="div"
-                        color="text.disabled"
-                        sx={{ fontFamily: 'monospace', lineHeight: 1.2 }}
+                        sx={{
+                          color: 'text.disabled',
+                          fontFamily: 'monospace',
+                          lineHeight: 1.2,
+                        }}
                       >
                         {ds.identifier}
                       </Typography>
@@ -344,7 +365,12 @@ export default function DatasetList() {
                       <Chip label={ds.dimensions.length} size="small" />
                     </Tooltip>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.disabled',
+                      }}
+                    >
                       —
                     </Typography>
                   )}
@@ -357,7 +383,12 @@ export default function DatasetList() {
                       <Chip label={ds.metrics.length} size="small" />
                     </Tooltip>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.disabled',
+                      }}
+                    >
                       —
                     </Typography>
                   )}
@@ -367,14 +398,21 @@ export default function DatasetList() {
                     <Stack
                       direction="row"
                       spacing={0.5}
-                      alignItems="center"
-                      justifyContent="flex-end"
+                      sx={{
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                      }}
                     >
                       <ChatLeft size={12} />
                       <span>{ds.dataPointComments.length}</span>
                     </Stack>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.disabled',
+                      }}
+                    >
                       —
                     </Typography>
                   )}
@@ -388,12 +426,23 @@ export default function DatasetList() {
                           : df.dateTime(ds.lastModifiedAt)
                       }
                     >
-                      <Typography variant="body2" color="text.secondary" component="span">
+                      <Typography
+                        variant="body2"
+                        component="span"
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
                         {df.relativeTime(ds.lastModifiedAt, now)}
                       </Typography>
                     </Tooltip>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.disabled',
+                      }}
+                    >
                       —
                     </Typography>
                   )}
@@ -456,7 +505,12 @@ export default function DatasetList() {
                               {repoUrl}
                             </Link>
                           ) : (
-                            <Typography variant="body2" color="text.disabled">
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: 'text.disabled',
+                              }}
+                            >
                               —
                             </Typography>
                           )}

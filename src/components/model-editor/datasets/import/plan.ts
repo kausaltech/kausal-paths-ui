@@ -282,9 +282,7 @@ export interface TriageItem {
 
 /** A user's decision for one (dimension, source label) pair. */
 export type LabelResolution =
-  | { kind: 'existing'; categoryUuid: string }
-  | { kind: 'create' }
-  | { kind: 'discard' };
+  { kind: 'existing'; categoryUuid: string } | { kind: 'create' } | { kind: 'discard' };
 
 /** Stable key for a resolution: dimension + normalised source label. */
 export function resolutionKey(dimensionId: string, label: string): string {

@@ -56,7 +56,14 @@ export default function DimensionList() {
 
   return (
     <Container maxWidth="lg" sx={{ pt: 20, pb: 3, mx: 0 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+        }}
+      >
         <Typography variant="h5">{t('dimensions-title')}</Typography>
         <Button
           variant="contained"
@@ -87,7 +94,12 @@ export default function DimensionList() {
             {dimensions.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4}>
-                  <Typography color="text.secondary" sx={{ py: 2 }}>
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                      py: 2,
+                    }}
+                  >
                     {t('dimensions-none-defined')}
                   </Typography>
                 </TableCell>

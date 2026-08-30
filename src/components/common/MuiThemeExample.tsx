@@ -44,7 +44,14 @@ export function MuiThemeExample() {
           <Typography variant="h3" gutterBottom>
             Buttons
           </Typography>
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+            }}
+          >
             <Button variant="contained">Primary Button</Button>
             <Button variant="outlined">Secondary Button</Button>
             <Button variant="text">Text Button</Button>
@@ -56,7 +63,14 @@ export function MuiThemeExample() {
           <Typography variant="h3" gutterBottom>
             Cards
           </Typography>
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+            }}
+          >
             <Card sx={{ minWidth: 275 }}>
               <CardContent>
                 <Typography variant="h5" component="div" gutterBottom>
@@ -86,7 +100,15 @@ export function MuiThemeExample() {
           <Typography variant="h3" gutterBottom>
             Form Elements
           </Typography>
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap mb={2}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+              mb: 2,
+            }}
+          >
             <TextField label="Text Field" placeholder="Enter some text..." variant="outlined" />
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel>Select Option</InputLabel>
@@ -101,7 +123,15 @@ export function MuiThemeExample() {
               </Select>
             </FormControl>
           </Stack>
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap mb={2}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+              mb: 2,
+            }}
+          >
             <FormControlLabel
               control={<Switch disabled={false} checked={true} />}
               label="This is base switch on"
@@ -119,7 +149,15 @@ export function MuiThemeExample() {
               }}
             />
           </Stack>
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap mb={2}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+              mb: 2,
+            }}
+          >
             <FormControlLabel
               control={<Switch disabled={false} checked={true} size="small" />}
               label="This is small switch on"
@@ -154,7 +192,14 @@ export function MuiThemeExample() {
           <Typography variant="h3" gutterBottom>
             Chips
           </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+            }}
+          >
             <Chip label="Default Chip" />
             <Chip label="Success" color="success" />
             <Chip label="Error" color="error" />
@@ -211,7 +256,12 @@ export function MuiThemeExample() {
               <Typography variant="h4" gutterBottom>
                 Primary
               </Typography>
-              <Stack direction="row" flexWrap="wrap">
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.light' }} />
                 <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.main' }} />
                 <Box sx={{ width: 100, height: 100, backgroundColor: 'primary.dark' }} />
@@ -222,7 +272,12 @@ export function MuiThemeExample() {
               <Typography variant="h4" gutterBottom>
                 Secondary
               </Typography>
-              <Stack direction="row" flexWrap="wrap">
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.light' }} />
                 <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.main' }} />
                 <Box sx={{ width: 100, height: 100, backgroundColor: 'secondary.dark' }} />

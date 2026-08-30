@@ -70,7 +70,12 @@ export default function MetricDataViewer(props: MetricDataViewerProps) {
             {metric.name}
           </Typography>
         )}
-        <Typography variant="body2" color="text.disabled">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.disabled',
+          }}
+        >
           {t('metric-no-data')}
         </Typography>
       </Box>

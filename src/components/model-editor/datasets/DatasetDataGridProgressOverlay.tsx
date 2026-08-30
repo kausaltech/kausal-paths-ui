@@ -33,7 +33,14 @@ export function DatasetDataGridProgressOverlay({ saveProgress }: Props) {
       }}
     >
       <Box sx={{ width: '60%', maxWidth: 360 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, textAlign: 'center' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 0.5,
+            textAlign: 'center',
+          }}
+        >
           {label}
         </Typography>
         <LinearProgress

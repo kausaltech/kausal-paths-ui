@@ -358,13 +358,24 @@ export default function InstanceUsersPage() {
         }}
       >
         <Box>
-          <Typography variant="overline" color="text.secondary">
+          <Typography
+            variant="overline"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {instance.name}
           </Typography>
           <Typography variant="h1" sx={{ mt: 0.5 }}>
             {t('users-title')}
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.secondary',
+              mt: 1,
+            }}
+          >
             {t('users-people-with-access')}
           </Typography>
         </Box>
@@ -393,7 +404,12 @@ export default function InstanceUsersPage() {
         </Box>
       ) : !isAdminViewer ? null : members.length === 0 && !isSuperuser ? (
         <Paper variant="outlined" sx={{ p: 3 }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('users-no-users')}
           </Typography>
         </Paper>
@@ -419,14 +435,22 @@ export default function InstanceUsersPage() {
                   {([me.firstName, me.lastName].filter(Boolean).join(' ').trim()
                     ? true
                     : false) && (
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {me.email}
                     </Typography>
                   )}
                   <Typography
                     variant="caption"
-                    color="text.secondary"
-                    sx={{ mt: 0.5, display: 'block' }}
+                    sx={{
+                      color: 'text.secondary',
+                      mt: 0.5,
+                      display: 'block',
+                    }}
                   >
                     {t('users-not-member')}
                   </Typography>
@@ -474,7 +498,12 @@ export default function InstanceUsersPage() {
                       />
                     </Box>
                     {fullName && (
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
                         {member.user.email}
                       </Typography>
                     )}
@@ -491,7 +520,13 @@ export default function InstanceUsersPage() {
           <Typography variant="h6" sx={{ mb: 1 }}>
             {t('users-pending-invitations')}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              mb: 2,
+            }}
+          >
             {t('users-pending-invitations-desc')}
           </Typography>
           <Stack spacing={1}>
@@ -516,7 +551,12 @@ export default function InstanceUsersPage() {
                           variant="outlined"
                         />
                       </Box>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
                         {expired
                           ? t('users-expired', { date: df.date(expires) })
                           : t('users-expires', { date: df.date(expires) })}
@@ -549,7 +589,12 @@ export default function InstanceUsersPage() {
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 0.5 }}>
             {dialogStep === 'add' ? (
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t('users-add-user-desc', { instanceName: instance.name })}
               </Typography>
             ) : (

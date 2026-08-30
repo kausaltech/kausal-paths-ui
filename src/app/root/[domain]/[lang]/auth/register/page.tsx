@@ -117,8 +117,8 @@ export default function RegisterPage() {
       }
 
       // Registration succeeded — start the OIDC login flow
-      void authClient.signIn.oauth2({
-        providerId: KAUSAL_PROVIDER_ID,
+      void authClient.signIn.social({
+        provider: KAUSAL_PROVIDER_ID,
         callbackURL: '/',
       });
     } catch (err) {
@@ -165,7 +165,13 @@ export default function RegisterPage() {
               Create an account
             </Typography>
             {frameworkName && (
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 The account can be used to acces {frameworkName} tool
               </Typography>
             )}

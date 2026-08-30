@@ -58,13 +58,24 @@ export default function MyModelsPage() {
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="overline" color="text.secondary">
+        <Typography
+          variant="overline"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           Account
         </Typography>
         <Typography variant="h1" sx={{ mt: 0.5 }}>
           My models
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            color: 'text.secondary',
+            mt: 1,
+          }}
+        >
           Model instances you can edit.
         </Typography>
       </Box>
@@ -77,9 +88,19 @@ export default function MyModelsPage() {
         // A failed load leaves `instances` empty too, so check `error` first —
         // otherwise a transient outage would masquerade as "no edit access".
         <Paper variant="outlined" sx={{ p: 3 }}>
-          <Stack spacing={2} alignItems="flex-start">
+          <Stack
+            spacing={2}
+            sx={{
+              alignItems: 'flex-start',
+            }}
+          >
             <Typography variant="body1">Couldn&apos;t load your models</Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               We couldn&apos;t reach the backend to load the models you can edit. Try again in a
               moment.
             </Typography>
@@ -95,7 +116,12 @@ export default function MyModelsPage() {
         </Paper>
       ) : instances.length === 0 ? (
         <Paper variant="outlined" sx={{ p: 3 }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             You don&apos;t have edit access to any model instances yet.
           </Typography>
         </Paper>
@@ -124,11 +150,22 @@ export default function MyModelsPage() {
                       )}
                     </Box>
                     {orgName && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          mt: 0.5,
+                        }}
+                      >
                         {orgName}
                       </Typography>
                     )}
-                    <Typography variant="caption" color="text.disabled">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'text.disabled',
+                      }}
+                    >
                       {instance.identifier}
                     </Typography>
                   </Box>

@@ -113,7 +113,13 @@ export function SourceReferenceCard({
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Stack spacing={0.5}>
-        <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+          }}
+        >
           <Typography variant="subtitle2">{ds.name}</Typography>
           {!readOnly && (
             <Tooltip title={t('datasets-detach-data-source')}>
@@ -131,7 +137,12 @@ export function SourceReferenceCard({
           )}
         </Stack>
         {meta.length > 0 && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {meta.join(' · ')}
           </Typography>
         )}
@@ -159,7 +170,13 @@ export function SourceReferenceCard({
             {ds.url}
           </Typography>
         )}
-        <Typography variant="caption" color="text.secondary" sx={{ pt: 0.5 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+            pt: 0.5,
+          }}
+        >
           {t('datasets-attached-by', {
             name: getUserName(r.createdBy ?? null, t),
             date: df.dateTime(r.createdAt),
@@ -352,13 +369,20 @@ export function AttachSourceForm({
                   <li {...props} key={o.id}>
                     <Stack
                       direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      sx={{ width: '100%' }}
+                      sx={{
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                      }}
                     >
                       <span>{o.label || o.name}</span>
                       {isAttached && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'text.secondary',
+                          }}
+                        >
                           {t('datasets-already-in-use')}
                         </Typography>
                       )}
@@ -387,7 +411,13 @@ export function AttachSourceForm({
                 {error}
               </Alert>
             )}
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                justifyContent: 'flex-end',
+              }}
+            >
               <Button size="small" variant="text" onClick={reset} disabled={attaching}>
                 {t('common-cancel')}
               </Button>

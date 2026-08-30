@@ -82,19 +82,24 @@ export function DimensionCategoryList({
     >
       <Typography
         component="h5"
-        fontWeight="fontWeightBold"
         variant="body1"
-        color="text.primary"
-        sx={{ pr: 2, whiteSpace: 'nowrap' }}
+        sx={{
+          fontWeight: 'fontWeightBold',
+          color: 'text.primary',
+          pr: 2,
+          whiteSpace: 'nowrap',
+        }}
       >
         {name}{' '}
         <Typography
           component="span"
-          fontWeight="fontWeightNormal"
           sx={{
+            fontWeight: 'fontWeightNormal',
             display: 'inline-block',
+
             // Stable width so the count flipping between digits doesn't shift layout.
             minWidth: '40px',
+
             fontSize: isNASelected ? 'body2.fontSize' : 'inherit',
           }}
         >

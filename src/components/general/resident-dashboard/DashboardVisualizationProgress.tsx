@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 
 import {
   Accordion,
@@ -191,7 +191,14 @@ function TargetVariation({ item }: { item: DashboardProgressItem }) {
   );
 
   return (
-    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 1 }}>
+    <Stack
+      direction="row"
+      spacing={0.5}
+      sx={{
+        alignItems: 'center',
+        mt: 1,
+      }}
+    >
       <Chip
         size="small"
         label={`${percentageAboveOrBelowTarget}%`}
@@ -330,7 +337,12 @@ const DashboardVisualizationProgress = ({
                     </Typography>
 
                     {!!unit && (
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
                         {unit.short}
                       </Typography>
                     )}
@@ -349,7 +361,13 @@ const DashboardVisualizationProgress = ({
                 </Card>
 
                 {item.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      mt: 1,
+                    }}
+                  >
                     {item.description}
                   </Typography>
                 )}

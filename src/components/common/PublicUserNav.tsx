@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   Avatar,
@@ -60,6 +61,7 @@ function getInitials(name: string | null | undefined, email: string | null | und
 export default function PublicUserNav() {
   const t = useTranslations('common');
   const { data: session } = useSession();
+  const router = useRouter();
   const { data: modelData } = useQuery(CAN_EDIT_MODEL, {
     skip: !session?.user,
   });
@@ -77,7 +79,7 @@ export default function PublicUserNav() {
   const handleSignOut = () => {
     setAnchorEl(null);
     void authClient.signOut().then(() => {
-      window.location.href = '/';
+      router.push('/');
     });
   };
 
@@ -194,7 +196,12 @@ export default function PublicUserNav() {
               </Typography>
             )}
             {user.email && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {user.email}
               </Typography>
             )}

@@ -79,11 +79,21 @@ function InstanceCard({ config }: { config: FrameworkConfigItem }) {
           {name}
         </Typography>
         {config.organizationName && config.instance?.name && (
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {config.organizationName}
           </Typography>
         )}
-        <Typography variant="caption" color="text.tertiary">
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.tertiary',
+          }}
+        >
           {config.instance?.identifier}
         </Typography>
       </CardContent>

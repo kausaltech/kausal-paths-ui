@@ -19,9 +19,9 @@ function createApolloClient(opts: ApolloClientOpts) {
 }
 
 export function initializeApollo(opts: ApolloClientOpts) {
-  const client = existingApolloClient ?? createApolloClient(opts);
-
   // For SSG and SSR always create a new Apollo Client
-  if (typeof window === 'undefined') return client;
-  return client;
+  if (typeof window === 'undefined') return createApolloClient(opts);
+
+  existingApolloClient ??= createApolloClient(opts);
+  return existingApolloClient;
 }

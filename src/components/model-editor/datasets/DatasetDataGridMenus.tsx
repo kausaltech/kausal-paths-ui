@@ -167,11 +167,20 @@ export function ColumnFilterMenu({
         <Paper elevation={8} sx={{ minWidth: 200, maxHeight: 360, overflow: 'auto' }}>
           <Stack
             direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ pl: 1.5, pr: 0.5, py: 0.25 }}
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              pl: 1.5,
+              pr: 0.5,
+              py: 0.25,
+            }}
           >
-            <Typography variant="caption" color="text.secondary">
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               {filterMenu?.colId === METRIC_COL ? 'Filter by metric' : 'Filter by category'}
             </Typography>
             <Button

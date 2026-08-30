@@ -281,8 +281,9 @@ export function ActionGroupMockField({
             {...params}
             placeholder={t('nodes-field-no-action-group')}
             slotProps={{
+              ...params.slotProps,
               input: {
-                ...params.InputProps,
+                ...params.slotProps.input,
                 startAdornment: selected?.color ? (
                   <Box
                     sx={{
@@ -356,8 +357,9 @@ export function LiveNodeGroupField({ value, options, onCommit }: LiveNodeGroupFi
             {...params}
             placeholder={t('nodes-no-group')}
             slotProps={{
+              ...params.slotProps,
               input: {
-                ...params.InputProps,
+                ...params.slotProps.input,
                 sx: { fontSize: 13 },
               },
             }}

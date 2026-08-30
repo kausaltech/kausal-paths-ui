@@ -166,8 +166,10 @@ export default function DatasetEditor({ datasetId }: Props) {
               {summaryFromCache.identifier && (
                 <Typography
                   variant="subtitle2"
-                  color="text.secondary"
-                  sx={{ fontFamily: 'monospace' }}
+                  sx={{
+                    color: 'text.secondary',
+                    fontFamily: 'monospace',
+                  }}
                 >
                   {summaryFromCache.identifier}
                 </Typography>
@@ -351,9 +353,22 @@ export default function DatasetEditor({ datasetId }: Props) {
             flexDirection: 'column',
           }}
         >
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+            }}
+          >
             <Box>
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  alignItems: 'center',
+                }}
+              >
                 <Typography variant="h3">{dataset.name}</Typography>
                 {!dataset.isEditable && (
                   <Chip
@@ -367,8 +382,10 @@ export default function DatasetEditor({ datasetId }: Props) {
               {dataset.identifier && (
                 <Typography
                   variant="subtitle2"
-                  color="text.secondary"
-                  sx={{ fontFamily: 'monospace' }}
+                  sx={{
+                    color: 'text.secondary',
+                    fontFamily: 'monospace',
+                  }}
                 >
                   {dataset.identifier}
                 </Typography>

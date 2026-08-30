@@ -1,4 +1,3 @@
-
 import { Box, Card, CardContent, Typography } from '@mui/material';
 
 import { Chart } from '@common/components/Chart';
@@ -94,7 +93,12 @@ const DashboardVisualizationDimension = ({ data, chartLabel, unit }: Props) => {
             </Typography>
           )}
           {!!unit && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               {unit}
             </Typography>
           )}

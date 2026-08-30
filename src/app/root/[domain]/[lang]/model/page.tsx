@@ -236,7 +236,14 @@ function getEditedFieldLabels(edit: MockNodeEdit, t: ReturnType<typeof useTransl
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <Box sx={{ display: 'flex', gap: 2, alignItems: 'baseline' }}>
-      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 180, flexShrink: 0 }}>
+      <Typography
+        variant="body2"
+        sx={{
+          color: 'text.secondary',
+          minWidth: 180,
+          flexShrink: 0,
+        }}
+      >
         {label}
       </Typography>
       <Box sx={{ minWidth: 0 }}>{children}</Box>
@@ -412,7 +419,13 @@ export default function ModelEditorLandingPage() {
   return (
     <Container maxWidth="md" sx={{ pt: 16, pb: 6, mx: 0 }}>
       <Box sx={{ mb: 4 }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <House size={22} />
           <Typography variant="h5">{t('editor-nav-model')}</Typography>
         </Stack>
@@ -436,7 +449,12 @@ export default function ModelEditorLandingPage() {
                   <Icon size={24} />
                 </Box>
                 <Typography variant="h3">{t(titleKey)}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {t(descKey)}
                 </Typography>
               </CardContent>
@@ -469,12 +487,23 @@ export default function ModelEditorLandingPage() {
                 sx={{ ml: 0.5, height: 20, fontSize: 10, fontWeight: 600 }}
               />
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                mt: 0.5,
+              }}
+            >
               {statusDescription}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, mt: 1 }}>
               {lastPublishedLabel ? (
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {lastPublishedRelative
                     ? t('editor-last-published-with-relative', {
                         date: lastPublishedLabel,
@@ -483,7 +512,12 @@ export default function ModelEditorLandingPage() {
                     : t('editor-last-published', { date: lastPublishedLabel })}
                 </Typography>
               ) : latestEditLabel ? (
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {latestEditRelative
                     ? t('editor-last-edited-with-relative', {
                         date: latestEditLabel,
@@ -492,12 +526,22 @@ export default function ModelEditorLandingPage() {
                     : t('editor-last-edited', { date: latestEditLabel })}
                 </Typography>
               ) : (
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {t('editor-never-published')}
                 </Typography>
               )}
               {firstPublishedLabel && firstPublishedLabel !== lastPublishedLabel && (
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {t('editor-first-published', { date: firstPublishedLabel })}
                 </Typography>
               )}
@@ -552,7 +596,12 @@ export default function ModelEditorLandingPage() {
                         {conflict.message}
                       </Typography>
                       {names.length > 0 && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'text.secondary',
+                          }}
+                        >
                           {names.join(', ')}
                         </Typography>
                       )}
@@ -643,7 +692,13 @@ export default function ModelEditorLandingPage() {
         <Typography variant="h3" sx={{ fontSize: 18, mb: 0.5 }}>
           {t('editor-model-properties')}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 2,
+          }}
+        >
           {t('editor-model-properties-hint')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

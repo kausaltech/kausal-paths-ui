@@ -77,7 +77,12 @@ function MetricSection({
             <MetricDataViewer metric={metric} fillHeight />
           </Suspense>
         ) : (
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('metric-no-data')}
           </Typography>
         )
@@ -90,7 +95,12 @@ function MetricSection({
           withTools={false}
         />
       ) : (
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('metric-no-data')}
         </Typography>
       )}

@@ -685,7 +685,12 @@ function ActionRow({
           <CardContent>
             <Grid container>
               <Grid size={{ xs: 12, md: 4, lg: 2 }}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {t('outcomes-of-interest-description')}
                 </Typography>
               </Grid>

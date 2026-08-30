@@ -76,7 +76,12 @@ function DimensionCategories({
           ))}
         </Box>
       ) : (
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('datasets-no-categories')}
         </Typography>
       )}
@@ -154,7 +159,13 @@ function DatasetSourcesSection({
     <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
       <Typography variant="subtitle1" sx={{ mb: 2 }}>
         {t('datasets-data-sources')}{' '}
-        <Typography component="span" variant="body2" color="text.secondary">
+        <Typography
+          component="span"
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           ({datasetScopeRefs.length})
         </Typography>
       </Typography>
@@ -167,7 +178,12 @@ function DatasetSourcesSection({
         />
       )}
       {datasetScopeRefs.length === 0 ? (
-        <Typography color="text.secondary" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('datasets-no-sources-attached-dataset')}
         </Typography>
       ) : (
@@ -262,7 +278,14 @@ export default function DatasetDetailsPanel({
           />
           {dataset.externalRef && (
             <Paper variant="outlined" sx={{ p: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  alignItems: 'center',
+                  mb: 1,
+                }}
+              >
                 <Link45deg />
                 <Typography variant="subtitle2">{t('datasets-external-source')}</Typography>
                 {isExternal && (
@@ -298,7 +321,13 @@ export default function DatasetDetailsPanel({
             </Paper>
           )}
           {!readOnly && nameDirty && (
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                justifyContent: 'flex-end',
+              }}
+            >
               <Button size="small" variant="outlined" onClick={() => setName(dataset.name)}>
                 {t('common-discard')}
               </Button>
@@ -328,12 +357,23 @@ export default function DatasetDetailsPanel({
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
         <Typography variant="subtitle1" sx={{ mb: 2 }}>
           {t('datasets-connected-nodes')}{' '}
-          <Typography component="span" variant="body2" color="text.secondary">
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             ({connectedNodeCount})
           </Typography>
         </Typography>
         {connectedNodeCount === 0 ? (
-          <Typography color="text.secondary" variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('datasets-no-nodes-bound')}
           </Typography>
         ) : (
@@ -362,7 +402,14 @@ export default function DatasetDetailsPanel({
 
       {/* Dimensions */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+          }}
+        >
           <Typography variant="subtitle1">{t('datasets-dimensions')}</Typography>
           {!readOnly && (
             <Button
@@ -375,7 +422,12 @@ export default function DatasetDetailsPanel({
           )}
         </Stack>
         {dataset.dimensions.length === 0 ? (
-          <Typography color="text.secondary" variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('datasets-no-dimensions-attached')}
           </Typography>
         ) : (
@@ -384,9 +436,11 @@ export default function DatasetDetailsPanel({
               <Paper key={dim.id} variant="outlined" sx={{ p: 2 }}>
                 <Stack
                   direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ mb: 1 }}
+                  sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
                 >
                   <Typography variant="subtitle2">{dim.name}</Typography>
                   <Stack direction="row">
@@ -424,7 +478,14 @@ export default function DatasetDetailsPanel({
 
       {/* Metrics */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+          }}
+        >
           <Typography variant="subtitle1">{t('datasets-metrics')}</Typography>
           {!readOnly && (
             <Button
@@ -437,7 +498,12 @@ export default function DatasetDetailsPanel({
           )}
         </Stack>
         {sortedMetrics.length === 0 ? (
-          <Typography color="text.secondary" variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('datasets-no-metrics-defined')}
           </Typography>
         ) : (
@@ -445,7 +511,13 @@ export default function DatasetDetailsPanel({
             {sortedMetrics.map((m) => (
               <Paper key={m.id} variant="outlined" sx={{ p: 1.5 }}>
                 <Stack spacing={0.5}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Typography variant="subtitle2">{m.label}</Typography>
                     {!readOnly && (
                       <Stack direction="row">
@@ -479,12 +551,19 @@ export default function DatasetDetailsPanel({
                   <Stack direction="row" spacing={2}>
                     <Typography
                       variant="caption"
-                      color="text.secondary"
-                      sx={{ fontFamily: 'monospace' }}
+                      sx={{
+                        color: 'text.secondary',
+                        fontFamily: 'monospace',
+                      }}
                     >
                       {m.name ?? '—'}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {m.unitInfo?.standard ?? '—'}
                     </Typography>
                   </Stack>

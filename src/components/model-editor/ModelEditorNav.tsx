@@ -541,7 +541,12 @@ export default function ModelEditorNav() {
                 </List>
               ) : (
                 <Box sx={{ px: 2, py: 1.5 }}>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
                     {t('common-no-matches')}
                   </Typography>
                 </Box>

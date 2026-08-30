@@ -41,7 +41,10 @@ export default function DimensionsSelect({ label, value, disabled, onChange }: P
         <TextField
           {...params}
           label={label}
-          slotProps={{ input: { ...params.InputProps, sx: { fontSize: 13 } } }}
+          slotProps={{
+            ...params.slotProps,
+            input: { ...params.slotProps.input, sx: { fontSize: 13 } },
+          }}
         />
       )}
     />

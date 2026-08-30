@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import {
   Avatar,
@@ -42,6 +42,7 @@ export default function UserNav() {
   const { data: session } = useSession();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   if (!session?.user) return null;
 
@@ -53,7 +54,7 @@ export default function UserNav() {
   const handleSignOut = () => {
     setAnchorEl(null);
     void authClient.signOut().then(() => {
-      window.location.href = '/';
+      router.push('/');
     });
   };
 
@@ -122,7 +123,12 @@ export default function UserNav() {
               </Typography>
             )}
             {user.email && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {user.email}
               </Typography>
             )}
@@ -161,7 +167,12 @@ export default function UserNav() {
             same UI features; the id also matches server logs and the Sentry
             release, so a screenshot pins the exact build. */}
         <Box sx={{ px: 2, py: 0.5 }}>
-          <Typography variant="caption" color="text.disabled">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.disabled',
+            }}
+          >
             {t('editor-app-version', {
               version: getRuntimeConfig().buildId,
               env: getRuntimeConfig().deploymentType,

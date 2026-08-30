@@ -48,20 +48,7 @@ const StyledFooter = styled.footer`
 
 const Branding = styled.div`
   display: flex;
-  flex-direction: ${(props) => {
-    let direction: 'row' | 'column' = 'row';
-    switch (props.theme.footerLogoPlacement) {
-      case 'left':
-        direction = 'row';
-        break;
-      case 'top':
-        direction = 'column';
-        break;
-      default:
-        direction = 'row';
-    }
-    return direction;
-  }};
+  flex-direction: ${(props) => (props.theme.footerLogoPlacement === 'top' ? 'column' : 'row')};
   margin-bottom: ${(props) => props.theme.spaces.s300};
 
   @media (max-width: ${(props) => props.theme.breakpoints.values.md}px) {
