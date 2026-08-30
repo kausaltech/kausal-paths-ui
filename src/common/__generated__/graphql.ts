@@ -78,6 +78,27 @@ export type CreateDataSourceInput = {
   url: string | null | undefined;
 };
 
+export type CreateDatasetInput = {
+  /** UUIDs of instance dimensions the data points are categorized by, in column order. */
+  dimensions: Array<string>;
+  /** Optional UUID for the new dataset. */
+  id: string | null | undefined;
+  /** Optional identifier, unique within the instance. */
+  identifier: string | null | undefined;
+  /** Metrics (value columns) of the dataset; at least one is required. */
+  metrics: Array<CreateDatasetMetricInput>;
+  name: string;
+};
+
+export type CreateDatasetMetricInput = {
+  /** Optional UUID for the new metric. */
+  id: string | null | undefined;
+  label: string;
+  /** Quantity-kind identifier of what the metric measures. Null means any quantity. */
+  quantity: string | number | null | undefined;
+  unit: string;
+};
+
 export type CreateDatasetSourceReferenceInput = {
   dataPointId: string | null | undefined;
   dataSourceId: string;
@@ -1491,6 +1512,50 @@ export type InstanceDatasetQuery = (
     & { __typename: 'InstanceType' }
   ) }
   & { __typename: 'Query' }
+);
+
+export type CreateDatasetMutationVariables = Exact<{
+  instanceId: string | number;
+  input: CreateDatasetInput;
+}>;
+
+
+export type CreateDatasetMutation = (
+  { instanceEditor: (
+    { createDataset:
+      | (
+        { id: string, isEditable: boolean, identifier: string | null, name: string, isExternalPlaceholder: boolean, lastModifiedAt: string | null, userPermissions: (
+          { change: boolean, delete: boolean }
+          & { __typename: 'UserPermissions' }
+        ) | null, externalRef: (
+          { repoUrl: string, commit: string | null, datasetId: string }
+          & { __typename: 'DatasetExternalRefType' }
+        ) | null, dimensions: Array<(
+          { id: string, name: string }
+          & { __typename: 'DatasetDimension' }
+        )>, metrics: Array<(
+          { id: string, label: string, unitInfo: (
+            { id: string, standard: string }
+            & { __typename: 'UnitType' }
+          ) | null }
+          & { __typename: 'DatasetMetric' }
+        )>, lastModifiedBy: (
+          { id: string, firstName: string, lastName: string, email: string }
+          & { __typename: 'User' }
+        ) | null }
+        & { __typename: 'Dataset' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
 );
 
 export type DatasetConnectedNodesQueryVariables = Exact<{

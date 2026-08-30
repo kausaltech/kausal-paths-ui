@@ -7,6 +7,8 @@ import type {
   CreateDataPointsMutationVariables,
   CreateDataSourceMutation,
   CreateDataSourceMutationVariables,
+  CreateDatasetMutation,
+  CreateDatasetMutationVariables,
   CreateSourceReferenceMutation,
   CreateSourceReferenceMutationVariables,
   DatasetConnectedNodesQuery,
@@ -254,6 +256,27 @@ export const GET_INSTANCE_DATASET: TypedDocumentNode<
   }
   ${DATASET_DETAIL_FIELDS}
   ${DATA_SOURCE_FIELDS}
+`;
+
+export const CREATE_DATASET: TypedDocumentNode<
+  CreateDatasetMutation,
+  CreateDatasetMutationVariables
+> = gql`
+  mutation CreateDataset($instanceId: ID!, $input: CreateDatasetInput!) {
+    instanceEditor(instanceId: $instanceId) {
+      createDataset(input: $input) {
+        __typename
+        ... on Dataset {
+          ...DatasetSummaryFields
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
+  ${DATASET_SUMMARY_FIELDS}
+  ${OPERATION_INFO_FIELDS}
 `;
 
 export const GET_DATASET_CONNECTED_NODES: TypedDocumentNode<

@@ -50,6 +50,7 @@ import type { InstanceDatasetsQuery } from '@/common/__generated__/graphql';
 import GraphQLError from '@/components/common/GraphQLError';
 import { useEditorDateFormat } from '../useEditorDateFormat';
 import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
+import { CreateDatasetDialog } from './CreateDatasetDialog';
 import { GET_INSTANCE_DATASETS } from './queries';
 import { getUserName } from './shared';
 
@@ -164,6 +165,7 @@ export default function DatasetList() {
   const pathname = usePathname();
   const base = getDatasetsBase(pathname);
   const [notice, setNotice] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -241,7 +243,7 @@ export default function DatasetList() {
         <Button
           variant="contained"
           startIcon={<Plus />}
-          onClick={() => setNotice(t('datasets-creating-not-implemented'))}
+          onClick={() => setCreateOpen(true)}
           disabled={editorReadOnly}
         >
           {t('datasets-new-dataset')}
@@ -524,6 +526,12 @@ export default function DatasetList() {
           </AccordionDetails>
         </Accordion>
       )}
+
+      <CreateDatasetDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(datasetId) => router.push(`${base}/${encodeURIComponent(datasetId)}`)}
+      />
 
       <Snackbar
         open={notice !== null}
