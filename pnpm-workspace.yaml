@@ -13,8 +13,8 @@ allowBuilds:
   sharp: false
   unrs-resolver: false
 hoistPattern:
-  - "@kausal/themes"
-  - "@kausal-private/themes-private"
+  - '@kausal/themes'
+  - '@kausal-private/themes-private'
 linkWorkspacePackages: false
 overrides:
   graphql: ^16.14.2
@@ -27,6 +27,6 @@ minimumReleaseAgeExclude:
   - '@kausal/themes'
   - '@kausal-private/themes-private'
 publicHoistPattern:
-  - "@kausal/themes"
-  - "@kausal-private/themes-private"
+  - '@kausal/themes'
+  - '@kausal-private/themes-private'
 storeDir: ./.pnpm-store

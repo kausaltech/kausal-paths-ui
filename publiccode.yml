@@ -1,19 +1,19 @@
-publiccodeYmlVersion: "0.4"
-name: "kausal-paths-ui"
-url: "https://github.com/kausaltech/kausal-paths-ui"
-landingURL: "https://kausal.tech"
-softwareVersion: "0.1.0"
-releaseDate: "2021-04-15"
+publiccodeYmlVersion: '0.4'
+name: 'kausal-paths-ui'
+url: 'https://github.com/kausaltech/kausal-paths-ui'
+landingURL: 'https://kausal.tech'
+softwareVersion: '0.1.0'
+releaseDate: '2021-04-15'
 platforms:
   - web
 usedBy:
-  - "Kausal"
+  - 'Kausal'
 # add other clients here?
 categories:
-  - "data-visualization"
-  - "data-analytics"
+  - 'data-visualization'
+  - 'data-analytics'
 developmentStatus: stable
-softwareType: "standalone/web"
+softwareType: 'standalone/web'
 localisation:
   localisationReady: true
   availableLanguages:
@@ -29,24 +29,24 @@ localisation:
     - pl
 intendedAudience:
   countries:
-    - "de"
-    - "fi"
-    - "se"
-    - "ca"
-    - "us"
-    - "ch"
-    - "cz"
-    - "dk"
-    - "gr"
-    - "lv"
-    - "pl"
+    - 'de'
+    - 'fi'
+    - 'se'
+    - 'ca'
+    - 'us'
+    - 'ch'
+    - 'cz'
+    - 'dk'
+    - 'gr'
+    - 'lv'
+    - 'pl'
   scope:
-    - "local-authorities"
-    - "environment"
-    - "government"
+    - 'local-authorities'
+    - 'environment'
+    - 'government'
 description:
   de:
-    genericName: "Klimaaktionsplanung"
+    genericName: 'Klimaaktionsplanung'
     shortDescription: >
       Web-Anwendung für die Planung und Modellierung von Klimaschutzmaßnahmen
       für Kommunen und lokale Behörden.
@@ -75,17 +75,17 @@ description:
       Kausal Paths ist Teil der Kausal-Softwarefamilie und arbeitet eng mit anderen
       Kausal-Tools zusammen, um eine umfassende Lösung für die Klimaplanung zu bieten.
     features:
-      - "Szenarien-Modellierung für Klimaschutzmaßnahmen"
-      - "Visualisierung kausaler Zusammenhänge zwischen Maßnahmen und Emissionen"
-      - "Analyse von Emissionsreduktionen über verschiedene Sektoren"
-      - "Vergleich verschiedener Klimaschutzstrategien"
-      - "Verfolgung historischer Daten und Prognosen"
-      - "Mehrsprachige Benutzeroberfläche"
-      - "Anpassbare Instanzen für verschiedene Kommunen"
-      - "GraphQL-basierte API-Integration"
+      - 'Szenarien-Modellierung für Klimaschutzmaßnahmen'
+      - 'Visualisierung kausaler Zusammenhänge zwischen Maßnahmen und Emissionen'
+      - 'Analyse von Emissionsreduktionen über verschiedene Sektoren'
+      - 'Vergleich verschiedener Klimaschutzstrategien'
+      - 'Verfolgung historischer Daten und Prognosen'
+      - 'Mehrsprachige Benutzeroberfläche'
+      - 'Anpassbare Instanzen für verschiedene Kommunen'
+      - 'GraphQL-basierte API-Integration'
     screenshots: []
   en:
-    genericName: "Climate Action Planning"
+    genericName: 'Climate Action Planning'
     shortDescription: >
       Web application for planning and modeling climate action measures
       for municipalities and local authorities.
@@ -110,22 +110,22 @@ description:
       Kausal Paths is part of the Kausal software family and works closely with other
       Kausal tools to provide a comprehensive solution for climate planning.
     features:
-      - "Scenario modeling for climate action measures"
-      - "Visualization of causal relationships between actions and emissions"
-      - "Analysis of emission reductions across various sectors"
-      - "Comparison of different climate action strategies"
-      - "Tracking of historical data and forecasts"
-      - "Multilingual user interface"
-      - "Customizable instances for different municipalities"
-      - "GraphQL-based API integration"
+      - 'Scenario modeling for climate action measures'
+      - 'Visualization of causal relationships between actions and emissions'
+      - 'Analysis of emission reductions across various sectors'
+      - 'Comparison of different climate action strategies'
+      - 'Tracking of historical data and forecasts'
+      - 'Multilingual user interface'
+      - 'Customizable instances for different municipalities'
+      - 'GraphQL-based API integration'
     screenshots: []
 legal:
   license: AGPL-3.0-or-later
 maintenance:
-  type: "internal"
+  type: 'internal'
   contacts:
-    - name: "Kausal Ltd"
-      email: "info@kausal.tech"
+    - name: 'Kausal Ltd'
+      email: 'info@kausal.tech'
   # contractors:
   #   - name: "Kausal Tech"
   #     email: "info@kausal.tech"

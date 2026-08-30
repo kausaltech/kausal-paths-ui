@@ -1,4 +1,4 @@
-import  { type HTMLProps } from 'react';
+import { type HTMLProps } from 'react';
 
 import SVG from 'react-inlinesvg';
 

@@ -1,4 +1,3 @@
-
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 
 import { ChevronDown } from 'react-bootstrap-icons';

@@ -1,4 +1,3 @@
-
 import styled from '@common/themes/styled';
 
 const TotalValue = styled.div<{ $size?: string; $muted?: boolean }>`

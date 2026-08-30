@@ -1,6 +1,5 @@
 'use client';
 
-
 import styled from '@common/themes/styled';
 
 import { useTranslations } from '@/common/i18n';

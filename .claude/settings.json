@@ -5,10 +5,7 @@
     "ENABLE_TOOL_SEARCH": "true"
   },
   "permissions": {
-    "allow": [
-      "Bash(head*)",
-      "Bash(pnpm list:*)"
-    ]
+    "allow": ["Bash(head*)", "Bash(pnpm list:*)"]
   },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,

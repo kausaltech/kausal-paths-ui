@@ -1,4 +1,3 @@
-
 async function frontPageFlow(page, userContext, events) {
   const url = userContext.vars.target;
   await page.goto(url);

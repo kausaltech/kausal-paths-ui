@@ -23,11 +23,11 @@ config:
   engines:
     playwright: {}
   # Path to JavaScript file that defines Playwright test functions
-  processor: "./flows.cjs"
+  processor: './flows.cjs'
 scenarios:
   #- name: Front page
   #  engine: playwright
   #  testFunction: "frontPageFlow"
   - name: Named URLs
     engine: playwright
-    flowFunction: "allPagesFlow"
+    flowFunction: 'allPagesFlow'
