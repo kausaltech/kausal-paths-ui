@@ -126,7 +126,7 @@ export function useAddInputPort() {
               isEditable: null,
               role: args.role ?? null,
               requiredDimensions: args.requiredDimensions?.length ? args.requiredDimensions : null,
-              supportedDimensions: null,
+              isEditable: null,
             },
             version: draftHeadTokenVar(),
           },

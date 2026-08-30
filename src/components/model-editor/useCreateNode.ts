@@ -124,6 +124,7 @@ export function useCreateNode() {
         role: null,
         quantity,
         dimensions: [],
+        role: null,
         isEditable: true,
       };
       const { nodeKind, config } = configForKind(kind);

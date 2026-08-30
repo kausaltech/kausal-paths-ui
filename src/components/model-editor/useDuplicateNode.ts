@@ -80,7 +80,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     unit: port.unit?.standard ?? null,
     isEditable: null,
     requiredDimensions: [...port.requiredDimensions],
-    supportedDimensions: null,
+    isEditable: null,
   }));
   const outputPorts: OutputPortInput[] = (spec?.outputPorts ?? []).map((port) => ({
     id: crypto.randomUUID(),
@@ -91,6 +91,7 @@ function buildPortInputs(source: EditorNodeFieldsFragment): {
     role: port.role ?? null,
     unit: port.unit?.standard ?? '',
     dimensions: [...port.dimensions],
+    role: null,
     isEditable: true,
   }));
   return { inputPorts, outputPorts };

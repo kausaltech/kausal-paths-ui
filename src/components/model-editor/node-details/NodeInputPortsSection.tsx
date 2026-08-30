@@ -221,7 +221,8 @@ function inputPortsToInput(ports: readonly InputPort[]): InputPortInput[] {
     // Null keeps the port's existing value when the id matches.
     isEditable: null,
     requiredDimensions: [...p.requiredDimensions],
-    supportedDimensions: null,
+    // Null preserves the port's protection flag on round-trip.
+    isEditable: null,
   }));
 }
 

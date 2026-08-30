@@ -94,19 +94,11 @@ export type CreateDimensionCategoryInput = {
 };
 
 export type CreateEdgeInput = {
-  /** @deprecated Use fromRef instead. */
-  fromNodeId: string | null | undefined;
-  /** @deprecated Use fromRef instead. */
-  fromPort: string | null | undefined;
   fromRef: NodePortRefInput | null | undefined;
   instanceId: string | number;
   portRef: NodePortRefInput | null | undefined;
   /** Atomically displace whatever occupies the target port — an edge or a dataset binding — instead of rejecting the edge. Validation runs first, so a rejected edge leaves the old binding untouched. Requires an explicit `toPort` (an auto-selected port is never occupied) and is not valid for `multi` ports. */
   replace: boolean;
-  /** @deprecated Use portRef instead. */
-  toNodeId: string | null | undefined;
-  /** @deprecated Use portRef instead. */
-  toPort: string | null | undefined;
   transformations: Array<EdgeTransformationInput> | null | undefined;
 };
 
@@ -246,8 +238,6 @@ export type InputPortInput = {
   requiredDimensions: Array<string> | null | undefined;
   /** Semantic role from the node class's input port declarations. Null keeps the existing role when `id` names an existing port. */
   role: string | null | undefined;
-  /** @deprecated Never had solver semantics and is no longer stored. */
-  supportedDimensions: Array<string> | null | undefined;
   unit: string | null | undefined;
 };
 

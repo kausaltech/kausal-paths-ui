@@ -38,10 +38,6 @@ export function useCreateEdge() {
               instanceId: instance.id,
               fromRef: { nodeUuid: fromNodeUuid, portId: fromPort },
               portRef: { nodeUuid: toNodeUuid, portId: toPort },
-              fromNodeId: null,
-              fromPort: null,
-              toNodeId: null,
-              toPort: null,
               replace,
               // Optional in the schema (defaults to null), but codegen types it
               // as required — send it explicitly.

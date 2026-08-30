@@ -58,7 +58,9 @@ function portsToInput(ports: readonly OutputPort[]): OutputPortInput[] {
     // nodes keep whatever they have; their columns are genuinely distinct.
     columnId: p.columnId ?? (ports.length === 1 ? 'Value' : null),
     dimensions: [...p.dimensions],
-    isEditable: true,
+    // Null preserves the port's role and protection flag on round-trip.
+    role: null,
+    isEditable: null,
   }));
 }
 
