@@ -288,6 +288,10 @@
       "NodeEdgeType",
       "OperationInfo"
     ],
+    "UpdateInputPortPayload": [
+      "OperationInfo",
+      "UpdateInputPortResult"
+    ],
     "UpdateMetricPayload": [
       "DatasetMetric",
       "OperationInfo"
@@ -300,6 +304,10 @@
       "ActionNode",
       "Node",
       "OperationInfo"
+    ],
+    "UpdateOutputPortPayload": [
+      "OperationInfo",
+      "UpdateOutputPortResult"
     ],
     "UpdatePayload": [
       "ActionNode",

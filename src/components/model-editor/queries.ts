@@ -39,10 +39,14 @@ import type {
   UpdateDatasetBindingMutationVariables,
   UpdateEdgeBindingMutation,
   UpdateEdgeBindingMutationVariables,
+  UpdateInputPortMutation,
+  UpdateInputPortMutationVariables,
   UpdateNodeLayoutsMutation,
   UpdateNodeLayoutsMutationVariables,
   UpdateNodeMutation,
   UpdateNodeMutationVariables,
+  UpdateOutputPortMutation,
+  UpdateOutputPortMutationVariables,
 } from '@/common/__generated__/graphql';
 
 // NodeGraph uses fetchPolicy: 'no-cache' for size reasons, so Apollo's
@@ -402,6 +406,7 @@ export const GET_NODE_GRAPH: TypedDocumentNode<NodeGraphQuery, NodeGraphQueryVar
           identifier
           label
           quantity
+          role
           columnId
           unit {
             id
@@ -486,6 +491,31 @@ export const CONSTRAINT_VIOLATIONS_FIELDS = gql`
         portId
         bindingId
       }
+    }
+  }
+`;
+
+/**
+ * One structural conflict as reported back by the in-place port update
+ * mutations. Same shape as the conflicts inside ConstraintViolationsFields,
+ * but selected on the bare ConstraintConflict list of the success payload.
+ */
+export const PORT_UPDATE_CONFLICT_FIELDS = gql`
+  fragment PortUpdateConflictFields on ConstraintConflict {
+    code
+    message
+    origins {
+      kind
+      nodeUuid
+      portId
+      bindingId
+    }
+    value {
+      kind
+      direction
+      nodeUuid
+      portId
+      bindingId
     }
   }
 `;
@@ -854,6 +884,101 @@ export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutati
       }
     }
   }
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+/**
+ * In-place update of one port; fields left unset in the input are untouched,
+ * so bindings, pairing and label translations survive the edit. The success
+ * payload carries the structural conflicts still touching the node after the
+ * write, from a fresh post-write solve — a fix can be verified from the
+ * mutation response alone.
+ */
+export const UPDATE_INPUT_PORT: TypedDocumentNode<
+  UpdateInputPortMutation,
+  UpdateInputPortMutationVariables
+> = gql`
+  mutation UpdateInputPort(
+    $instanceId: ID!
+    $nodeId: ID!
+    $portId: ID!
+    $input: UpdateInputPortInput!
+    $version: UUID
+  ) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      nodeEditor(nodeId: $nodeId) {
+        updateInputPort(portId: $portId, input: $input) {
+          __typename
+          ... on UpdateInputPortResult {
+            port {
+              id
+              identifier
+              label
+              role
+              quantity
+              unit {
+                id
+                short
+              }
+              multi
+              isEditable
+            }
+            conflicts {
+              ...PortUpdateConflictFields
+            }
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${PORT_UPDATE_CONFLICT_FIELDS}
+  ${EDITOR_OPERATION_INFO_FIELDS}
+`;
+
+export const UPDATE_OUTPUT_PORT: TypedDocumentNode<
+  UpdateOutputPortMutation,
+  UpdateOutputPortMutationVariables
+> = gql`
+  mutation UpdateOutputPort(
+    $instanceId: ID!
+    $nodeId: ID!
+    $portId: ID!
+    $input: UpdateOutputPortInput!
+    $version: UUID
+  ) {
+    instanceEditor(instanceId: $instanceId, version: $version) {
+      nodeEditor(nodeId: $nodeId) {
+        updateOutputPort(portId: $portId, input: $input) {
+          __typename
+          ... on UpdateOutputPortResult {
+            port {
+              id
+              identifier
+              label
+              role
+              quantity
+              unit {
+                id
+                short
+              }
+              columnId
+              isEditable
+            }
+            conflicts {
+              ...PortUpdateConflictFields
+            }
+          }
+          ... on OperationInfo {
+            ...EditorOperationInfoFields
+          }
+        }
+      }
+    }
+  }
+  ${PORT_UPDATE_CONFLICT_FIELDS}
   ${EDITOR_OPERATION_INFO_FIELDS}
 `;
 

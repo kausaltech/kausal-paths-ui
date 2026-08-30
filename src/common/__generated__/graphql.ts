@@ -237,11 +237,14 @@ export type FormulaConfigInput = {
 export type InputPortInput = {
   id: string | null | undefined;
   identifier: string | null | undefined;
+  /** Null keeps the existing value when `id` names an existing port; defaults to true for new ports. */
+  isEditable: boolean | null | undefined;
+  /** Written into the active request locale; translations in other languages are preserved when `id` names an existing port. */
   label: string | null | undefined;
   multi: boolean;
   quantity: string | null | undefined;
   requiredDimensions: Array<string> | null | undefined;
-  /** Semantic role from the node class's input port declarations. */
+  /** Semantic role from the node class's input port declarations. Null keeps the existing role when `id` names an existing port. */
   role: string | null | undefined;
   /** @deprecated Never had solver semantics and is no longer stored. */
   supportedDimensions: Array<string> | null | undefined;
@@ -312,9 +315,13 @@ export type OutputPortInput = {
   dimensions: Array<string> | null | undefined;
   id: string | null | undefined;
   identifier: string | null | undefined;
-  isEditable: boolean;
+  /** Null keeps the existing value when `id` names an existing port; defaults to true for new ports. */
+  isEditable: boolean | null | undefined;
+  /** Written into the active request locale; translations in other languages are preserved when `id` names an existing port. */
   label: string | null | undefined;
   quantity: string | null | undefined;
+  /** Semantic role from the node class's output port declarations. Null keeps the existing role when `id` names an existing port. */
+  role: string | null | undefined;
   unit: string;
 };
 
@@ -426,6 +433,19 @@ export type UpdateEdgeBindingInput = {
   transformations: Array<EdgeTransformationInput> | null | undefined;
 };
 
+/** Partial update of one input port. Unset fields are left untouched. */
+export type UpdateInputPortInput = {
+  identifier: string | null | undefined;
+  isEditable: boolean | null | undefined;
+  /** Written into the active request locale; translations in other languages are preserved. */
+  label: string | null | undefined;
+  multi: boolean | null | undefined;
+  quantity: string | null | undefined;
+  requiredDimensions: Array<string> | null | undefined;
+  role: string | null | undefined;
+  unit: string | null | undefined;
+};
+
 export type UpdateNodeInput = {
   allowNulls: boolean | null | undefined;
   color: string | null | undefined;
@@ -455,6 +475,19 @@ export type UpdateNodeLayoutInput = {
   source: NodeLayoutSource;
   x: number;
   y: number;
+};
+
+/** Partial update of one output port. Unset fields are left untouched. */
+export type UpdateOutputPortInput = {
+  columnId: string | null | undefined;
+  dimensions: Array<string> | null | undefined;
+  identifier: string | null | undefined;
+  isEditable: boolean | null | undefined;
+  /** Written into the active request locale; translations in other languages are preserved. */
+  label: string | null | undefined;
+  quantity: string | null | undefined;
+  role: string | null | undefined;
+  unit: string | null | undefined;
 };
 
 export type CytoscapeNodesQueryVariables = Exact<{ [key: string]: never; }>;
@@ -2466,7 +2499,7 @@ export type NodeGraphQuery = (
                 > }
                 & { __typename: 'InputPortType' }
               )>, outputPorts: Array<(
-                { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                { id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: (
                   { id: string, short: string, standard: string }
                   & { __typename: 'UnitType' }
                 ) }
@@ -2655,7 +2688,7 @@ export type NodeGraphQuery = (
                 > }
                 & { __typename: 'InputPortType' }
               )>, outputPorts: Array<(
-                { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+                { id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: (
                   { id: string, short: string, standard: string }
                   & { __typename: 'UnitType' }
                 ) }
@@ -2855,7 +2888,7 @@ type EditorNodeFields_ActionNode_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+        { id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: (
           { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) }
@@ -3045,7 +3078,7 @@ type EditorNodeFields_Node_Fragment = (
         > }
         & { __typename: 'InputPortType' }
       )>, outputPorts: Array<(
-        { id: string, identifier: string | null, label: string | null, quantity: string | null, columnId: string | null, dimensions: Array<string>, unit: (
+        { id: string, identifier: string | null, label: string | null, quantity: string | null, role: string | null, columnId: string | null, dimensions: Array<string>, unit: (
           { id: string, short: string, standard: string }
           & { __typename: 'UnitType' }
         ) }
@@ -3159,6 +3192,17 @@ export type ConstraintViolationsFieldsFragment = (
     & { __typename: 'ConstraintConflict' }
   )> }
   & { __typename: 'ConstraintViolations' }
+);
+
+export type PortUpdateConflictFieldsFragment = (
+  { code: string, message: string, origins: Array<(
+    { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+    & { __typename: 'ConstraintOrigin' }
+  )>, value: (
+    { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+    & { __typename: 'ConstraintValueRef' }
+  ) | null }
+  & { __typename: 'ConstraintConflict' }
 );
 
 export type InstanceEditorPublishStateFragment = (
@@ -3638,6 +3682,100 @@ export type UpdateNodeMutation = (
             & { __typename: 'OperationMessage' }
           )> }
           & { __typename: 'OperationInfo' }
+        )
+       }
+      & { __typename: 'NodeEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateInputPortMutationVariables = Exact<{
+  instanceId: string | number;
+  nodeId: string | number;
+  portId: string | number;
+  input: UpdateInputPortInput;
+  version: string | null | undefined;
+}>;
+
+
+export type UpdateInputPortMutation = (
+  { instanceEditor: (
+    { nodeEditor: (
+      { updateInputPort:
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+        | (
+          { port: (
+            { id: string, identifier: string | null, label: string | null, role: string | null, quantity: string | null, multi: boolean, isEditable: boolean, unit: (
+              { id: string, short: string }
+              & { __typename: 'UnitType' }
+            ) | null }
+            & { __typename: 'InputPortType' }
+          ), conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'UpdateInputPortResult' }
+        )
+       }
+      & { __typename: 'NodeEditorMutation' }
+    ) }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
+export type UpdateOutputPortMutationVariables = Exact<{
+  instanceId: string | number;
+  nodeId: string | number;
+  portId: string | number;
+  input: UpdateOutputPortInput;
+  version: string | null | undefined;
+}>;
+
+
+export type UpdateOutputPortMutation = (
+  { instanceEditor: (
+    { nodeEditor: (
+      { updateOutputPort:
+        | (
+          { messages: Array<(
+            { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+            & { __typename: 'OperationMessage' }
+          )> }
+          & { __typename: 'OperationInfo' }
+        )
+        | (
+          { port: (
+            { id: string, identifier: string | null, label: string | null, role: string | null, quantity: string | null, columnId: string | null, isEditable: boolean, unit: (
+              { id: string, short: string }
+              & { __typename: 'UnitType' }
+            ) }
+            & { __typename: 'OutputPortType' }
+          ), conflicts: Array<(
+            { code: string, message: string, origins: Array<(
+              { kind: string, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintOrigin' }
+            )>, value: (
+              { kind: string, direction: string | null, nodeUuid: string | null, portId: string | null, bindingId: string | null }
+              & { __typename: 'ConstraintValueRef' }
+            ) | null }
+            & { __typename: 'ConstraintConflict' }
+          )> }
+          & { __typename: 'UpdateOutputPortResult' }
         )
        }
       & { __typename: 'NodeEditorMutation' }

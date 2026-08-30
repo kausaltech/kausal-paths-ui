@@ -218,6 +218,8 @@ function inputPortsToInput(ports: readonly InputPort[]): InputPortInput[] {
     role: p.role ?? null,
     unit: p.unit?.standard ?? null,
     multi: p.multi ?? false,
+    // Null keeps the port's existing value when the id matches.
+    isEditable: null,
     requiredDimensions: [...p.requiredDimensions],
     supportedDimensions: null,
   }));
