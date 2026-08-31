@@ -357,12 +357,7 @@ export default function NodeDetailsPanel({
         open={contentOpen}
         onToggle={() => setContentOpen((v) => !v)}
       >
-        <NodeContentSection
-          node={node}
-          editorUserName={editorUserName}
-          currentEdit={currentEdit}
-          readOnly={readOnly}
-        />
+        <NodeContentSection node={node} readOnly={readOnly} />
       </CollapsibleSection>
 
       <CollapsibleSection

@@ -301,7 +301,6 @@
   "editor-error-desc": "Something went wrong while loading this part of the editor. The navigation still works — try again, or switch to another view.",
   "editor-error-title": "Couldn't load this view",
   "editor-field-action-group": "Action group",
-  "editor-field-short-description": "Short description",
   "editor-first-published": "First published {date}",
   "editor-hide-filters": "Hide filters",
   "editor-last-edited": "Last edited {date}",

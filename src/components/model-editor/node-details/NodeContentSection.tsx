@@ -11,20 +11,12 @@ import { useInstance } from '@/common/instance';
 import { NodeLink } from '@/common/links';
 import RichTextField from '../RichTextField';
 import { getNativeLanguageName } from '../languageLabel';
-import type { MockNodeEdit } from '../mockEdits';
 import { NODE_TRANSLATION } from '../queries';
 import { useUpdateNodeMutation } from '../useUpdateNodeMutation';
-import {
-  LiveTextField,
-  MockRichTextField,
-  ReadOnlyRichTextField,
-  ReadOnlyTextField,
-} from './fields';
+import { LiveTextField, ReadOnlyRichTextField, ReadOnlyTextField } from './fields';
 
 export type NodeContentSectionProps = {
   node: EditorNodeFieldsFragment;
-  editorUserName: string;
-  currentEdit: MockNodeEdit | undefined;
   readOnly: boolean;
 };
 
@@ -37,12 +29,7 @@ export type NodeContentSectionProps = {
  * a small query with `context: { locale }` and `fetchPolicy: 'no-cache'` so
  * each switch returns fresh data without colliding on Apollo's cache key.
  */
-export function NodeContentSection({
-  node,
-  editorUserName,
-  currentEdit,
-  readOnly,
-}: NodeContentSectionProps) {
+export function NodeContentSection({ node, readOnly }: NodeContentSectionProps) {
   const t = useTranslations('model-editor');
   const updateNode = useUpdateNodeMutation();
   const instance = useInstance();
@@ -128,21 +115,25 @@ export function NodeContentSection({
         onCommit={(next) => updateNode(node.id, { name: next })}
       />
 
-      <MockRichTextField
+      <RichTextField
+        key={`shortDescription:${node.id}`}
         label={t('nodes-short-description')}
-        field="shortDescription"
-        nodeId={node.id}
-        originalValue={node.shortDescription ?? null}
-        currentValue={currentEdit?.shortDescription}
-        editorUserName={editorUserName}
+        value={node.shortDescription ?? ''}
+        onCommit={(html) => updateNode(node.id, { shortDescription: html })}
         placeholder={t('nodes-short-description-hint')}
+        disabled={readOnly}
       />
 
       <RichTextField
         key={`description:${node.id}`}
         label={t('nodes-description')}
         value={node.description ?? ''}
-        onCommit={(html) => updateNode(node.id, { description: html })}
+        // The backend copies `description` into `short_description` when the
+        // input has no explicit shortDescription (compat for clients predating
+        // the field), so pin the current value to keep it from being clobbered.
+        onCommit={(html) =>
+          updateNode(node.id, { description: html, shortDescription: node.shortDescription ?? '' })
+        }
         disabled={readOnly}
       />
     </Box>

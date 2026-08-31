@@ -57,6 +57,7 @@ export type NodeFieldOverrides = {
   name?: string;
   shortName?: string | null;
   description?: string | null;
+  shortDescription?: string | null;
   color?: string | null;
   isVisible?: boolean;
   isOutcome?: boolean;
@@ -859,6 +860,7 @@ export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutati
             name
             shortName
             description
+            shortDescription
             color
             isVisible
             isOutcome
@@ -871,6 +873,7 @@ export const UPDATE_NODE: TypedDocumentNode<UpdateNodeMutation, UpdateNodeMutati
             name
             shortName
             description
+            shortDescription
             color
             isVisible
             editor {

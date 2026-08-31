@@ -265,7 +265,6 @@
   "editor-error-desc": "Beim Laden dieses Editor-Bereichs ist ein Fehler aufgetreten. Die Navigation funktioniert weiterhin — versuchen Sie es erneut oder wechseln Sie zu einer anderen Ansicht.",
   "editor-error-title": "Diese Ansicht konnte nicht geladen werden",
   "editor-field-action-group": "Maßnahmengruppe",
-  "editor-field-short-description": "Kurzbeschreibung",
   "editor-first-published": "Erstveröffentlichung {date}",
   "editor-hide-filters": "Filter ausblenden",
   "editor-last-edited": "Zuletzt bearbeitet {date}",

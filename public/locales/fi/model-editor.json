@@ -262,7 +262,6 @@
   "editor-error-desc": "Tämän editorin osan lataamisessa tapahtui virhe. Navigointi toimii edelleen — yritä uudelleen tai vaihda toiseen näkymään.",
   "editor-error-title": "Tätä näkymää ei voitu ladata",
   "editor-field-action-group": "Toimenpideryhmä",
-  "editor-field-short-description": "Lyhyt kuvaus",
   "editor-first-published": "Ensimmäinen julkaisu {date}",
   "editor-hide-filters": "Piilota suodattimet",
   "editor-last-edited": "Viimeksi muokattu {date}",

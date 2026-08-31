@@ -17,7 +17,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowCounterclockwise, X } from 'react-bootstrap-icons';
 
 import RichTextField from '../RichTextField';
-import { type EditableNodeField, setMockNodeFieldEdit } from '../mockEdits';
+import { setMockNodeFieldEdit } from '../mockEdits';
 
 /**
  * The field primitives of the node details panel. "Live" fields commit to the
@@ -153,64 +153,6 @@ export function LiveTextField({ label, value, onCommit, placeholder }: LiveTextF
         fullWidth
         placeholder={placeholder}
         slotProps={{ input: { sx: { fontSize: 13 } } }}
-      />
-    </Box>
-  );
-}
-
-type MockRichTextFieldProps = {
-  label: string;
-  field: Extract<EditableNodeField, 'shortDescription'>;
-  nodeId: string;
-  originalValue: string | null;
-  currentValue: string | null | undefined;
-  editorUserName: string;
-  placeholder?: string;
-};
-
-// Mock rich-text editor. Tiptap is seeded only at mount (see RichTextField),
-// so we re-key the inner component on revert to force a remount that re-reads
-// the original value.
-export function MockRichTextField({
-  label,
-  field,
-  nodeId,
-  originalValue,
-  currentValue,
-  editorUserName,
-  placeholder,
-}: MockRichTextFieldProps) {
-  const value = currentValue ?? originalValue ?? '';
-  const hasEdit = currentValue !== undefined && (currentValue ?? '') !== (originalValue ?? '');
-  const [revertTick, setRevertTick] = useState(0);
-
-  const handleCommit = (html: string | null) => {
-    setMockNodeFieldEdit(nodeId, field, html, originalValue, editorUserName);
-    return Promise.resolve();
-  };
-
-  const handleRevert = () => {
-    setMockNodeFieldEdit(nodeId, field, originalValue, originalValue, editorUserName);
-    setRevertTick((t) => t + 1);
-  };
-
-  return (
-    <Box
-      sx={{
-        '& .ProseMirror': { bgcolor: mockBg },
-      }}
-    >
-      <FieldLabel onRevert={hasEdit ? handleRevert : undefined} isMock>
-        {label}
-      </FieldLabel>
-      <RichTextField
-        key={`${field}:${nodeId}:${revertTick}`}
-        label={label}
-        value={value}
-        onCommit={handleCommit}
-        placeholder={placeholder}
-        hideHeader
-        disabled
       />
     </Box>
   );

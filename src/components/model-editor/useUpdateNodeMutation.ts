@@ -58,6 +58,9 @@ export function useUpdateNodeMutation() {
           if (input.name !== undefined) override.name = payload.name;
           if (input.shortName !== undefined) override.shortName = payload.shortName;
           if (input.description !== undefined) override.description = payload.description;
+          if (input.shortDescription !== undefined) {
+            override.shortDescription = payload.shortDescription;
+          }
           if (input.color !== undefined) override.color = payload.color;
           if (input.isVisible !== undefined) override.isVisible = payload.isVisible;
           if (input.isOutcome !== undefined && payload.__typename === 'Node') {

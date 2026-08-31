@@ -221,7 +221,6 @@ type EditedNodeRow = {
 };
 
 const FIELD_LABEL_KEYS = {
-  shortDescription: 'editor-field-short-description',
   actionGroup: 'editor-field-action-group',
 } as const satisfies Record<EditableNodeField, string>;
 

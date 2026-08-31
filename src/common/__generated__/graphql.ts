@@ -1083,28 +1083,6 @@ export type EditorDimensionSearchListQuery = (
   & { __typename: 'Query' }
 );
 
-export type NodeExplanationQueryVariables = Exact<{
-  node: string | number;
-}>;
-
-
-export type NodeExplanationQuery = (
-  { node: (
-    { id: string, explanation: string | null, parameters: Array<
-      | (
-        { id: string, nodeRelativeId: string | null }
-        & { __typename: 'BoolParameterType' | 'NumberParameterType' | 'UnknownParameterType' }
-      )
-      | (
-        { id: string, nodeRelativeId: string | null, stringValue: string | null }
-        & { __typename: 'StringParameterType' }
-      )
-    > }
-    & { __typename: 'ActionNode' | 'Node' }
-  ) | null }
-  & { __typename: 'Query' }
-);
-
 export type SetActionEnabledMutationVariables = Exact<{
   parameterId: string | number;
   enabled: boolean;
@@ -3861,14 +3839,14 @@ export type UpdateNodeMutation = (
     { nodeEditor: (
       { update:
         | (
-          { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, editor: (
+          { id: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, editor: (
             { nodeGroup: string | null }
             & { __typename: 'NodeEditor' }
           ) | null }
           & { __typename: 'ActionNode' }
         )
         | (
-          { id: string, name: string, shortName: string | null, description: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
+          { id: string, name: string, shortName: string | null, description: string | null, shortDescription: string | null, color: string | null, isVisible: boolean, isOutcome: boolean, editor: (
             { nodeGroup: string | null }
             & { __typename: 'NodeEditor' }
           ) | null }
