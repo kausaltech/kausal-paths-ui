@@ -232,12 +232,32 @@ export default function NodeGraphContextMenu({
               />
             </MenuItem>
           </SubMenuItem>,
-          <MenuItem key="new-action" onClick={() => handleNewNode('action')}>
-            <ListItemIcon>
-              <Lightning size={14} />
-            </ListItemIcon>
-            <ListItemText>{t('nodes-new-action')}</ListItemText>
-          </MenuItem>,
+          <SubMenuItem
+            key="new-action"
+            icon={<Lightning size={14} />}
+            label={t('nodes-add-action')}
+          >
+            <MenuItem onClick={() => handleNewNode('additive-action')}>
+              <ListItemIcon>
+                <PlusLg size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-additive-action')}
+                secondary={t('nodes-node-type-additive-action-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+            <MenuItem onClick={() => handleNewNode('action')}>
+              <ListItemIcon>
+                <Lightning size={14} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('nodes-node-type-generic-action')}
+                secondary={t('nodes-node-type-generic-action-desc')}
+                slotProps={{ secondary: { sx: { fontSize: 11 } } }}
+              />
+            </MenuItem>
+          </SubMenuItem>,
         ]}
       {readOnly && (state?.kind === 'node' || state?.kind === 'pane') && (
         <MenuItem disabled>
