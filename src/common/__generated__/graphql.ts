@@ -1578,6 +1578,33 @@ export type CreateDatasetMutation = (
   & { __typename: 'Mutation' }
 );
 
+export type DeleteDatasetMutationVariables = Exact<{
+  instanceId: string | number;
+  datasetId: string;
+  force: boolean;
+}>;
+
+
+export type DeleteDatasetMutation = (
+  { instanceEditor: (
+    { deleteDataset:
+      | (
+        { ok: boolean }
+        & { __typename: 'ModelDeletePayload' }
+      )
+      | (
+        { messages: Array<(
+          { kind: OperationMessageKind, field: string | null, message: string, code: string | null }
+          & { __typename: 'OperationMessage' }
+        )> }
+        & { __typename: 'OperationInfo' }
+      )
+     }
+    & { __typename: 'InstanceEditorMutation' }
+  ) }
+  & { __typename: 'Mutation' }
+);
+
 export type CreateDatasetMetricMutationVariables = Exact<{
   instanceId: string | number;
   datasetId: string | number;

@@ -11,6 +11,11 @@ import {
   Chip,
   CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Link,
   ListItemIcon,
@@ -31,6 +36,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import {
@@ -52,7 +58,7 @@ import GraphQLError from '@/components/common/GraphQLError';
 import { useEditorDateFormat } from '../useEditorDateFormat';
 import { useIsEditorReadOnly } from '../useIsEditorReadOnly';
 import { CreateDatasetDialog } from './CreateDatasetDialog';
-import { CREATE_DATASET, GET_INSTANCE_DATASETS } from './queries';
+import { CREATE_DATASET, DELETE_DATASET, GET_INSTANCE_DATASETS } from './queries';
 import { getUserName } from './shared';
 
 function getDatasetsBase(pathname: string): string {
@@ -171,6 +177,55 @@ export default function DatasetList() {
   const instance = useInstance();
   const [createDataset] = useMutation(CREATE_DATASET);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+
+  // Two-phase delete: a plain confirmation first; if the backend reports
+  // dataset_has_data_points, the dialog escalates to a data-loss warning and
+  // the next confirm retries with force=true.
+  const [deleteDataset, { loading: deleting }] = useMutation(DELETE_DATASET);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteNeedsForce, setDeleteNeedsForce] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const openDelete = (ds: DatasetRow) => {
+    setDeleteTarget({ id: ds.id, name: ds.name ?? '' });
+    setDeleteNeedsForce(false);
+    setDeleteError('');
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleteError('');
+    try {
+      const result = await deleteDataset({
+        variables: {
+          instanceId: instance.id,
+          datasetId: deleteTarget.id,
+          force: deleteNeedsForce,
+        },
+        refetchQueries: [GET_INSTANCE_DATASETS],
+      });
+      const payload = result.data?.instanceEditor.deleteDataset;
+      if (payload?.__typename === 'ModelDeletePayload' && payload.ok) {
+        setDeleteTarget(null);
+      } else if (payload?.__typename === 'OperationInfo') {
+        setDeleteError(payload.messages.map((m) => m.message).join(' '));
+      } else {
+        setDeleteError(t('common-failed'));
+      }
+    } catch (err) {
+      const errorCode = (code: string) =>
+        CombinedGraphQLErrors.is(err) && err.errors.some((e) => e.extensions?.code === code);
+      if (errorCode('dataset_has_data_points')) {
+        setDeleteNeedsForce(true);
+      } else if (errorCode('dataset_in_use')) {
+        setDeleteError(t('datasets-delete-in-use'));
+      } else if (errorCode('dataset_pinned')) {
+        setDeleteError(t('datasets-delete-pinned'));
+      } else {
+        setDeleteError(err instanceof Error ? err.message : t('common-failed'));
+      }
+    }
+  };
 
   // "Duplicate" copies the schema only (dimensions and metrics), not the data
   // points — the backend has no full-copy mutation yet.
@@ -500,9 +555,7 @@ export default function DatasetList() {
                     canDelete={!editorReadOnly && ds.userPermissions?.delete === true}
                     isProtected={!ds.isEditable}
                     onDuplicate={() => void handleDuplicate(ds)}
-                    onDelete={() =>
-                      setNotice(t('datasets-deleting-not-implemented', { name: ds.name }))
-                    }
+                    onDelete={() => openDelete(ds)}
                     onOpenChange={(open) => setOpenMenuRowId(open ? ds.id : null)}
                   />
                 </TableCell>
@@ -574,6 +627,38 @@ export default function DatasetList() {
         onClose={() => setCreateOpen(false)}
         onCreated={(datasetId) => router.push(`${base}/${encodeURIComponent(datasetId)}`)}
       />
+
+      <Dialog
+        open={deleteTarget !== null}
+        onClose={deleting ? undefined : () => setDeleteTarget(null)}
+      >
+        <DialogTitle>{t('datasets-delete-dataset')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {deleteNeedsForce
+              ? t('datasets-delete-dataset-has-data', { name: deleteTarget?.name ?? '' })
+              : t('datasets-delete-dataset-confirm', { name: deleteTarget?.name ?? '' })}
+          </DialogContentText>
+          {deleteError && (
+            <Typography color="error" sx={{ mt: 1, fontSize: '0.9rem' }}>
+              {deleteError}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)} disabled={deleting}>
+            {t('common-cancel')}
+          </Button>
+          <Button
+            onClick={() => void handleConfirmDelete()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? t('common-deleting') : t('common-delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={notice !== null}

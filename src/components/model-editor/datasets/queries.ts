@@ -19,6 +19,8 @@ import type {
   DeleteDataPointsMutationVariables,
   DeleteDatasetMetricMutation,
   DeleteDatasetMetricMutationVariables,
+  DeleteDatasetMutation,
+  DeleteDatasetMutationVariables,
   DeleteSourceReferenceMutation,
   DeleteSourceReferenceMutationVariables,
   InstanceDatasetQuery,
@@ -296,6 +298,26 @@ export const CREATE_DATASET: TypedDocumentNode<
     }
   }
   ${DATASET_SUMMARY_FIELDS}
+  ${OPERATION_INFO_FIELDS}
+`;
+
+export const DELETE_DATASET: TypedDocumentNode<
+  DeleteDatasetMutation,
+  DeleteDatasetMutationVariables
+> = gql`
+  mutation DeleteDataset($instanceId: ID!, $datasetId: UUID!, $force: Boolean!) {
+    instanceEditor(instanceId: $instanceId) {
+      deleteDataset(datasetId: $datasetId, force: $force) {
+        __typename
+        ... on ModelDeletePayload {
+          ok
+        }
+        ... on OperationInfo {
+          ...OperationInfoFields
+        }
+      }
+    }
+  }
   ${OPERATION_INFO_FIELDS}
 `;
 
