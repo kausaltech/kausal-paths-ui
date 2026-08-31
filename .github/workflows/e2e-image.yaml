@@ -87,6 +87,7 @@ jobs:
 
       - name: Check out submodules
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           if ssh_command=$(git config --local core.sshCommand); then
             export GIT_SSH_COMMAND="$ssh_command"
           fi

@@ -5,6 +5,7 @@ jobs:
   lint:
     uses: ./.github/workflows/reviewdog.yaml
     secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       PRIVATE_SUBMODULE_DEPLOY_KEY: ${{ secrets.PRIVATE_SUBMODULE_DEPLOY_KEY }}
 
   build:
