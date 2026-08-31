@@ -387,8 +387,13 @@ async function proxy(req: NextRequest) {
   // is treated identically to `/model`.
   const { locale, path: pathWithoutLocale } = determineLocale(instance, match.path);
 
+  // `requiresAuthentication` is an instance feature flag (e.g. set on CADS
+  // framework instances via the template spec): the whole instance, public
+  // exploration UI included, is only available to signed-in users.
   const requiresAuth =
-    ((instance.isProtected ?? false) || pathWithoutLocale.startsWith('/model')) &&
+    ((instance.isProtected ?? false) ||
+      (instance.requiresAuthentication ?? false) ||
+      pathWithoutLocale.startsWith('/model')) &&
     !pathWithoutLocale.startsWith('/auth/');
   if (requiresAuth) {
     const sessionCookie = getSessionCookie(req);

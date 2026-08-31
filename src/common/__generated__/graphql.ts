@@ -4297,7 +4297,7 @@ export type AvailableInstancesQueryVariables = Exact<{
 
 export type AvailableInstancesQuery = (
   { availableInstances: Array<(
-    { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
+    { identifier: string, isProtected: boolean, requiresAuthentication: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
       { basePath: string }
       & { __typename: 'InstanceHostname' }
     ) }
@@ -4307,7 +4307,7 @@ export type AvailableInstancesQuery = (
 );
 
 export type AvailableInstanceFragment = (
-  { identifier: string, isProtected: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
+  { identifier: string, isProtected: boolean, requiresAuthentication: boolean, defaultLanguage: string, supportedLanguages: Array<string>, themeIdentifier: string, hostname: (
     { basePath: string }
     & { __typename: 'InstanceHostname' }
   ) }

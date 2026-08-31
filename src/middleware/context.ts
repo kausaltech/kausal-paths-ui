@@ -36,6 +36,7 @@ const GET_AVAILABLE_INSTANCES: TypedDocumentNode<
   fragment AvailableInstance on InstanceBasicConfiguration {
     identifier
     isProtected
+    requiresAuthentication
     defaultLanguage
     supportedLanguages
     themeIdentifier
