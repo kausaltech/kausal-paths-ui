@@ -118,6 +118,7 @@
   "datasets-commit": "Commit",
   "datasets-connected-nodes": "Yhdistetyt solmut",
   "datasets-create-data-source-no-payload": "Tietolähteen luonti ei palauttanut tietoja.",
+  "datasets-create-dimensions-helper": "Datapisteet luokitellaan valittujen dimensioiden mukaan. Dimensioita ei voi muuttaa tietoaineiston luonnin jälkeen.",
   "datasets-data-grid-no-backing": "Vuosisolu, jolla ei ole taustalla datapistettä",
   "datasets-data-grid-uninitiated": "Alustamaton",
   "datasets-data-source": "Tietolähde",

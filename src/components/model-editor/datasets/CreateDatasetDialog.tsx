@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import {
+  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -12,11 +13,13 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
 import { X } from 'react-bootstrap-icons';
 
+import type { InstanceDimensionFieldsFragment } from '@/common/__generated__/graphql';
 import { useInstance } from '@/common/instance';
+import { GET_INSTANCE_DIMENSIONS } from '../dimensions/queries';
 import { CREATE_DATASET, GET_INSTANCE_DATASETS } from './queries';
 
 type Props = {
@@ -30,7 +33,16 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
   const t = useTranslations('model-editor');
   const instance = useInstance();
   const [createDataset, { loading }] = useMutation(CREATE_DATASET);
+  const { data: dimensionsData } = useQuery(GET_INSTANCE_DIMENSIONS, {
+    skip: !open,
+    fetchPolicy: 'cache-first',
+  });
+  const dimensionOptions = dimensionsData?.instance.editor?.dimensions ?? [];
   const [name, setName] = useState('');
+  // Selection order becomes the dataset's dimension column order.
+  const [selectedDimensions, setSelectedDimensions] = useState<InstanceDimensionFieldsFragment[]>(
+    []
+  );
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
   // Reset on each open so stale state from a previous open doesn't leak.
@@ -41,6 +53,7 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
     setPrevOpen(open);
     if (open) {
       setName('');
+      setSelectedDimensions([]);
       setErrorMessages([]);
     }
   }
@@ -62,7 +75,7 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
             metrics: [
               { id: null, label: t('datasets-default-metric-label'), unit: '', quantity: null },
             ],
-            dimensions: [],
+            dimensions: selectedDimensions.map((d) => d.id),
             identifier: null,
             id: null,
           },
@@ -92,7 +105,8 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
       maxWidth="sm"
       fullWidth
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && canConfirm) {
+        // defaultPrevented: the Autocomplete consumed Enter to pick an option.
+        if (e.key === 'Enter' && !e.defaultPrevented && canConfirm) {
           e.preventDefault();
           void handleConfirm();
         }
@@ -123,6 +137,21 @@ export function CreateDatasetDialog({ open, onClose, onCreated }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={loading}
+        />
+        <Typography sx={{ fontWeight: 'bold', mt: 2, mb: 0.5 }}>
+          {t('datasets-dimensions')}
+        </Typography>
+        <Autocomplete
+          multiple
+          options={dimensionOptions}
+          value={selectedDimensions}
+          disabled={loading}
+          getOptionLabel={(d) => d.name}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          onChange={(_, next) => setSelectedDimensions(next)}
+          renderInput={(params) => (
+            <TextField {...params} helperText={t('datasets-create-dimensions-helper')} />
+          )}
         />
         {errorMessages.map((msg, i) => (
           <Typography key={i} color="error" sx={{ mt: 1, fontSize: '0.9rem' }}>

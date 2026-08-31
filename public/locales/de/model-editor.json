@@ -118,6 +118,7 @@
   "datasets-commit": "Commit",
   "datasets-connected-nodes": "Verbundene Knoten",
   "datasets-create-data-source-no-payload": "Das Erstellen der Datenquelle hat keine Nutzdaten zurückgegeben.",
+  "datasets-create-dimensions-helper": "Datenpunkte werden nach den ausgewählten Dimensionen kategorisiert. Dimensionen können nach dem Erstellen des Datensatzes nicht mehr geändert werden.",
   "datasets-data-grid-no-backing": "Jahreszelle ohne zugrunde liegenden Datenpunkt",
   "datasets-data-grid-uninitiated": "Nicht initialisiert",
   "datasets-data-source": "Datenquelle",
